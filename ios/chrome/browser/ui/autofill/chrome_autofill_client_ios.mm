@@ -150,7 +150,7 @@ CreditCardOtpAuthenticator* ChromeAutofillClientIOS::GetOtpAuthenticator() {
 }
 
 PrefService* ChromeAutofillClientIOS::GetPrefs() {
-  return const_cast<PrefService*>(base::as_const(*this).GetPrefs());
+  return const_cast<PrefService*>(std::as_const(*this).GetPrefs());
 }
 
 const PrefService* ChromeAutofillClientIOS::GetPrefs() const {
@@ -190,8 +190,14 @@ AddressNormalizer* ChromeAutofillClientIOS::GetAddressNormalizer() {
   return AddressNormalizerFactory::GetInstance();
 }
 
-const GURL& ChromeAutofillClientIOS::GetLastCommittedURL() const {
+const GURL& ChromeAutofillClientIOS::GetLastCommittedPrimaryMainFrameURL()
+    const {
   return web_state_->GetLastCommittedURL();
+}
+
+url::Origin ChromeAutofillClientIOS::GetLastCommittedPrimaryMainFrameOrigin()
+    const {
+  return url::Origin::Create(GetLastCommittedPrimaryMainFrameURL());
 }
 
 security_state::SecurityLevel
@@ -356,6 +362,15 @@ bool ChromeAutofillClientIOS::IsFastCheckoutSupported() {
 bool ChromeAutofillClientIOS::IsFastCheckoutTriggerForm(
     const FormData& form,
     const FormFieldData& field) {
+  return false;
+}
+
+bool ChromeAutofillClientIOS::FastCheckoutScriptSupportsConsentlessExecution(
+    const url::Origin& origin) {
+  return false;
+}
+
+bool ChromeAutofillClientIOS::FastCheckoutClientSupportsConsentlessExecution() {
   return false;
 }
 

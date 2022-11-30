@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,9 +146,9 @@ void BackgroundReadback::ReadbackRGBTextureBackedFrameToMemory(
   ri->ReadbackARGBPixelsAsync(
       mailbox_holder.mailbox, mailbox_holder.texture_target, origin, info,
       base::saturated_cast<GLuint>(rgba_stide), dst_pixels,
-      WTF::Bind(&BackgroundReadback::OnARGBPixelsReadCompleted,
-                WrapCrossThreadPersistent(this), std::move(result_cb),
-                std::move(txt_frame), std::move(result)));
+      WTF::BindOnce(&BackgroundReadback::OnARGBPixelsReadCompleted,
+                    WrapCrossThreadPersistent(this), std::move(result_cb),
+                    std::move(txt_frame), std::move(result)));
 }
 
 void BackgroundReadback::OnARGBPixelsReadCompleted(

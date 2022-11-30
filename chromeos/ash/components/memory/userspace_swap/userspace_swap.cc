@@ -48,8 +48,9 @@ using memory_instrumentation::mojom::VmRegion;
 
 // NOTE: Descriptions for these feature params can be found in the userspace
 // swap header file for the UserspaceSwapConfig struct.
-const base::Feature kUserspaceSwap{"UserspaceSwapEnabled",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kUserspaceSwap,
+             "UserspaceSwapEnabled",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 const base::FeatureParam<int> kUserspaceSwapPagesPerRegion = {
     &kUserspaceSwap, "UserspaceSwapPagesPerRegion", 16};
 const base::FeatureParam<bool> kUserspaceSwapCompressedSwapFile = {
@@ -498,8 +499,8 @@ bool GetPartitionAllocSuperPagesInUse(
       partition_alloc::internal::AddressPoolManager::GetInstance();
 
   for (partition_alloc::internal::pool_handle ph :
-       {partition_alloc::internal::PartitionAddressSpace::GetRegularPool(),
-        partition_alloc::internal::PartitionAddressSpace::GetBRPPool()}) {
+       {partition_alloc::internal::kRegularPoolHandle,
+        partition_alloc::internal::kBRPPoolHandle}) {
     uintptr_t pool_base = pool_manager.GetPoolBaseAddress(ph);
     DCHECK(pool_base);
 

@@ -512,8 +512,7 @@ void NavigationURLLoaderImpl::CreateInterceptors(
   std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
       browser_interceptors =
           GetContentClient()->browser()->WillCreateURLLoaderRequestInterceptors(
-              navigation_ui_data_.get(), frame_tree_node_id_,
-              network_loader_factory_);
+              navigation_ui_data_.get(), frame_tree_node_id_);
   if (!browser_interceptors.empty()) {
     for (auto& browser_interceptor : browser_interceptors) {
       interceptors_.push_back(
@@ -1369,15 +1368,23 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     proxied_factory_remote_ = std::move(pending_factory);
   }
 
+  bool is_nav_allowed =
+      base::FeatureList::IsEnabled(
+          blink::features::kFileSystemUrlNavigationForChromeAppsOnly) &&
+      content::GetContentClient()->browser()->IsFileSystemURLNavigationAllowed(
+          storage_partition_->browser_context(), url_);
+
   const std::string storage_domain;
-  if (base::FeatureList::IsEnabled(blink::features::kFileSystemUrlNavigation) ||
+  if (is_nav_allowed ||
+      base::FeatureList::IsEnabled(blink::features::kFileSystemUrlNavigation) ||
       !frame_tree_node->navigation_request()->IsRendererInitiated()) {
     // TODO(https://crbug.com/256067): Once DevTools has support for sandboxed
     // file system inspection there isn't much reason anymore to support browser
     // initiated filesystem: navigations, so remove this entirely at that point.
 
     // Navigations in to filesystem: URLs are deprecated entirely for
-    // renderer-initiated navigations. The logic below is appropriate for
+    // renderer-initiated navigations except for those explicitly allowed by the
+    // embedder. The logic below is appropriate for
     // browser-initiated navigations, but it is incorrect to always use
     // first-party StorageKeys for renderer-initiated navigations when third
     // party storage partitioning is enabled.

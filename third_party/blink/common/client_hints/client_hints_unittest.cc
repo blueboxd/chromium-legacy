@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,9 +25,9 @@ TEST(ClientHintsTest, FindClientHintsToRemoveNoLegacy) {
           "device-memory", "dpr", "width", "viewport-width", "rtt", "downlink",
           "ect", "sec-ch-ua-arch", "sec-ch-ua-model", "sec-ch-ua-full-version",
           "sec-ch-ua-platform-version", "sec-ch-prefers-color-scheme",
-          "sec-ch-ua-bitness", "sec-ch-ua-reduced", "sec-ch-viewport-height",
-          "sec-ch-device-memory", "sec-ch-dpr", "sec-ch-width",
-          "sec-ch-viewport-width", "sec-ch-ua-full-version-list",
-          "sec-ch-ua-full", "sec-ch-ua-wow64"));
+          "sec-ch-prefers-reduced-motion", "sec-ch-ua-bitness",
+          "sec-ch-ua-reduced", "sec-ch-viewport-height", "sec-ch-device-memory",
+          "sec-ch-dpr", "sec-ch-width", "sec-ch-viewport-width",
+          "sec-ch-ua-full-version-list", "sec-ch-ua-full", "sec-ch-ua-wow64"));
 }
 }  // namespace blink

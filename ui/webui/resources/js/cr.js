@@ -398,59 +398,5 @@ var cr = cr || function(global) {
     dispatchPropertyChange: dispatchPropertyChange,
     dispatchSimpleEvent: dispatchSimpleEvent,
     PropertyKind: PropertyKind,
-
-    // C++ <-> JS communication related methods.
-    addWebUIListener: addWebUIListener,
-    removeWebUIListener: removeWebUIListener,
-    sendWithPromise: sendWithPromise,
-    webUIListenerCallback: webUIListenerCallback,
-    webUIResponse: webUIResponse,
-
-    /** Whether we are using a Mac or not. */
-    get isMac() {
-      return /Mac/.test(navigator.platform);
-    },
-
-    /** Whether this is on the Windows platform or not. */
-    get isWindows() {
-      return /Win/.test(navigator.platform);
-    },
-
-    /** Whether this is the ChromeOS/ash web browser. */
-    get isChromeOS() {
-      let returnValue = false;
-      // TODO(https://crbug.com/1118190): grit conditionals do not work in many
-      // WebUI tests.
-      // <if expr="chromeos_ash">
-      returnValue = true;
-      // </if>
-      return returnValue;
-    },
-
-    /** Whether this is the ChromeOS/Lacros web browser. */
-    get isLacros() {
-      let returnValue = false;
-      // TODO(https://crbug.com/1118190): grit conditionals do not work in many
-      // WebUI tests.
-      // <if expr="chromeos_lacros">
-      returnValue = true;
-      // </if>
-      return returnValue;
-    },
-
-    /** Whether this is on vanilla Linux (not chromeOS). */
-    get isLinux() {
-      return /Linux/.test(navigator.userAgent);
-    },
-
-    /** Whether this is on Android. */
-    get isAndroid() {
-      return /Android/.test(navigator.userAgent);
-    },
-
-    /** Whether this is on iOS. */
-    get isIOS() {
-      return /CriOS/.test(navigator.userAgent);
-    },
   };
 }(this);

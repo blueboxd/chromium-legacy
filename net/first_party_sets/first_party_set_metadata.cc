@@ -32,12 +32,23 @@ bool FirstPartySetMetadata::operator==(
          std::tie(other.context_, other.frame_entry_, other.top_frame_entry_);
 }
 
+bool FirstPartySetMetadata::operator!=(
+    const FirstPartySetMetadata& other) const {
+  return !(*this == other);
+}
+
 std::ostream& operator<<(std::ostream& os,
                          const FirstPartySetMetadata& metadata) {
   os << "{" << metadata.context() << ", "
      << base::OptionalToPtr(metadata.frame_entry()) << ", "
      << base::OptionalToPtr(metadata.top_frame_entry()) << "}";
   return os;
+}
+
+bool FirstPartySetMetadata::AreSitesInSameFirstPartySet() const {
+  if (!frame_entry_ || !top_frame_entry_)
+    return false;
+  return frame_entry_->primary() == top_frame_entry_->primary();
 }
 
 }  // namespace net

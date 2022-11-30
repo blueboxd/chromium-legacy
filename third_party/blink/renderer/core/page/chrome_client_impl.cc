@@ -179,7 +179,7 @@ ChromeClientImpl::ChromeClientImpl(WebViewImpl* web_view)
 }
 
 ChromeClientImpl::~ChromeClientImpl() {
-  DCHECK(file_chooser_queue_.IsEmpty());
+  DCHECK(file_chooser_queue_.empty());
 }
 
 void ChromeClientImpl::Trace(Visitor* visitor) const {
@@ -514,16 +514,32 @@ void ChromeClientImpl::ScheduleAnimation(const LocalFrameView* frame_view,
   }
 }
 
-gfx::Rect ChromeClientImpl::ViewportToScreen(
-    const gfx::Rect& rect_in_viewport,
+gfx::Rect ChromeClientImpl::LocalRootToScreenDIPs(
+    const gfx::Rect& rect_in_local_root,
     const LocalFrameView* frame_view) const {
   LocalFrame& frame = frame_view->GetFrame();
 
-  gfx::Rect screen_rect =
-      frame.GetWidgetForLocalRoot()->BlinkSpaceToEnclosedDIPs(rect_in_viewport);
-  gfx::Rect view_rect = frame.GetWidgetForLocalRoot()->ViewRect();
+  WebFrameWidgetImpl* widget =
+      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
 
+  gfx::Rect rect_in_widget;
+  if (widget->ForTopMostMainFrame()) {
+    rect_in_widget = frame.GetPage()->GetVisualViewport().RootFrameToViewport(
+        rect_in_local_root);
+  } else {
+    // TODO(bokan): This method needs to account for the visual viewport
+    // transform when in a non-top-most local frame root. Unfortunately, the
+    // widget's ViewRect doesn't include the visual viewport so this cannot be
+    // done from here yet. See: https://crbug.com/928825,
+    // https://crbug.com/840944.
+    rect_in_widget = rect_in_local_root;
+  }
+
+  gfx::Rect view_rect = widget->ViewRect();
+
+  gfx::Rect screen_rect = widget->BlinkSpaceToEnclosedDIPs(rect_in_widget);
   screen_rect.Offset(view_rect.x(), view_rect.y());
+
   return screen_rect;
 }
 
@@ -616,8 +632,7 @@ void ChromeClientImpl::ShowMouseOverURL(const HitTestResult& result) {
   // scrollbar and an element in the case of overlay scrollbars.
   if (!result.GetScrollbar()) {
     // Find out if the mouse is over a link, and if so, let our UI know...
-    if (result.IsLiveLink() &&
-        !result.AbsoluteLinkURL().GetString().IsEmpty()) {
+    if (result.IsLiveLink() && !result.AbsoluteLinkURL().GetString().empty()) {
       url = result.AbsoluteLinkURL();
     } else if (result.InnerNode() &&
                (IsA<HTMLObjectElement>(*result.InnerNode()) ||
@@ -640,7 +655,7 @@ void ChromeClientImpl::UpdateTooltipUnderCursor(LocalFrame& frame,
                                                 TextDirection dir) {
   WebFrameWidgetImpl* widget =
       WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
-  if (!tooltip_text.IsEmpty()) {
+  if (!tooltip_text.empty()) {
     widget->UpdateTooltipUnderCursor(tooltip_text, dir);
     did_request_non_empty_tool_tip_ = true;
   } else if (did_request_non_empty_tool_tip_) {
@@ -771,14 +786,14 @@ void ChromeClientImpl::OpenFileChooser(
 }
 
 void ChromeClientImpl::DidCompleteFileChooser(FileChooser& chooser) {
-  if (!file_chooser_queue_.IsEmpty() &&
+  if (!file_chooser_queue_.empty() &&
       file_chooser_queue_.front().get() != &chooser) {
     // This function is called even if |chooser| wasn't stored in
     // file_chooser_queue_.
     return;
   }
   file_chooser_queue_.EraseAt(0);
-  if (file_chooser_queue_.IsEmpty())
+  if (file_chooser_queue_.empty())
     return;
   FileChooser* next_chooser = file_chooser_queue_.front().get();
   if (next_chooser->OpenFileChooser(*this))

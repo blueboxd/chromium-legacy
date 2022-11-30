@@ -16,8 +16,7 @@
 #include "chromeos/ash/services/libassistant/public/mojom/speech_recognition_observer.mojom.h"
 #include "chromeos/assistant/internal/libassistant/shared_headers.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 namespace {
 
@@ -32,9 +31,7 @@ class LibassistantFactoryImpl : public LibassistantFactory {
   // LibassistantFactory implementation:
   std::unique_ptr<assistant_client::AssistantManager> CreateAssistantManager(
       const std::string& lib_assistant_config) override {
-    // If V2 flag is enabled, will fallback to load libassistant.so from rootfs.
-    if (chromeos::assistant::features::IsLibAssistantV2Enabled() ||
-        !chromeos::assistant::features::IsLibAssistantDlcEnabled()) {
+    if (!assistant::features::IsLibAssistantDlcEnabled()) {
       return base::WrapUnique(assistant_client::AssistantManager::Create(
           platform_api_, lib_assistant_config));
     }
@@ -47,9 +44,7 @@ class LibassistantFactoryImpl : public LibassistantFactory {
 
   assistant_client::AssistantManagerInternal* UnwrapAssistantManagerInternal(
       assistant_client::AssistantManager* assistant_manager) override {
-    // If V2 flag is enabled, will fallback to load libassistant.so from rootfs.
-    if (chromeos::assistant::features::IsLibAssistantV2Enabled() ||
-        !chromeos::assistant::features::IsLibAssistantDlcEnabled()) {
+    if (!assistant::features::IsLibAssistantDlcEnabled()) {
       return assistant_client::UnwrapAssistantManagerInternal(
           assistant_manager);
     }
@@ -159,10 +154,8 @@ void LibassistantService::AddSpeechRecognitionObserver(
 }
 
 void LibassistantService::AddAuthenticationStateObserver(
-    mojo::PendingRemote<
-        chromeos::libassistant::mojom::AuthenticationStateObserver> observer) {
+    mojo::PendingRemote<mojom::AuthenticationStateObserver> observer) {
   conversation_controller_.AddAuthenticationStateObserver(std::move(observer));
 }
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant

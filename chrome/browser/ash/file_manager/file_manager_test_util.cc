@@ -7,8 +7,11 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/ranges/algorithm.h"
 #include "base/test/bind.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_ash.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
+#include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager_observer.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -17,6 +20,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/services/app_service/public/cpp/intent_test_util.h"
 #include "extensions/browser/entry_info.h"
 #include "extensions/browser/extension_system.h"
 #include "net/base/mime_util.h"
@@ -54,10 +58,8 @@ void FolderInMyFiles::AddWithName(const base::FilePath& file,
 }
 
 OpenOperationResult FolderInMyFiles::Open(const base::FilePath& file) {
-  const auto& it = std::find_if(files_.begin(), files_.end(),
-                                [file](const base::FilePath& i) {
-                                  return i.BaseName() == file.BaseName();
-                                });
+  const auto& it =
+      base::ranges::find(files_, file.BaseName(), &base::FilePath::BaseName);
   EXPECT_FALSE(it == files_.end());
   if (it == files_.end())
     return platform_util::OPEN_FAILED_PATH_NOT_FOUND;
@@ -191,8 +193,8 @@ std::vector<file_tasks::FullTaskDescriptor> GetTasksForFile(
   std::vector<file_tasks::FullTaskDescriptor> result;
   bool invoked_synchronously = false;
   auto callback = base::BindLambdaForTesting(
-      [&](std::unique_ptr<std::vector<file_tasks::FullTaskDescriptor>> tasks) {
-        result = *tasks;
+      [&](std::unique_ptr<file_tasks::ResultingTasks> resulting_tasks) {
+        result = std::move(resulting_tasks->tasks);
         invoked_synchronously = true;
       });
 
@@ -202,6 +204,37 @@ std::vector<file_tasks::FullTaskDescriptor> GetTasksForFile(
   // available, and is provided in this helper.
   CHECK(invoked_synchronously);
   return result;
+}
+
+void AddFakeAppWithIntentFilters(
+    const std::string& app_id,
+    std::vector<apps::IntentFilterPtr> intent_filters,
+    apps::AppType app_type,
+    absl::optional<bool> handles_intents,
+    apps::AppServiceProxy* app_service_proxy) {
+  std::vector<apps::AppPtr> apps;
+  auto app = std::make_unique<apps::App>(app_type, app_id);
+  app->app_id = app_id;
+  app->app_type = app_type;
+  app->handles_intents = handles_intents;
+  app->readiness = apps::Readiness::kReady;
+  app->intent_filters = std::move(intent_filters);
+  apps.push_back(std::move(app));
+  app_service_proxy->AppRegistryCache().OnApps(
+      std::move(apps), app_type, false /* should_notify_initialized */);
+}
+
+void AddFakeWebApp(const std::string& app_id,
+                   const std::string& mime_type,
+                   const std::string& file_extension,
+                   const std::string& activity_label,
+                   absl::optional<bool> handles_intents,
+                   apps::AppServiceProxy* app_service_proxy) {
+  std::vector<apps::IntentFilterPtr> filters;
+  filters.push_back(apps_util::MakeFileFilterForView(mime_type, file_extension,
+                                                     activity_label));
+  AddFakeAppWithIntentFilters(app_id, std::move(filters), apps::AppType::kWeb,
+                              handles_intents, app_service_proxy);
 }
 
 }  // namespace test

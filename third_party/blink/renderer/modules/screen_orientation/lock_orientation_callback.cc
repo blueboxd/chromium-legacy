@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ void LockOrientationCallback::OnSuccess() {
   // resolving the promise.
   resolver_->GetExecutionContext()
       ->GetTaskRunner(TaskType::kMiscPlatformAPI)
-      ->PostTask(FROM_HERE, WTF::Bind(
+      ->PostTask(FROM_HERE, WTF::BindOnce(
                                 [](ScriptPromiseResolver* resolver) {
                                   resolver->Resolve();
                                 },

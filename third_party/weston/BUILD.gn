@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -62,6 +62,10 @@ config("weston_config") {
   ]
 
   ldflags = [ "-Wl,-rpath=\$ORIGIN" ]
+
+  if (!use_system_libwayland) {
+    configs = [ "//third_party/wayland:wayland_config" ]
+  }
 }
 
 pkg_config("pixman") {
@@ -78,6 +82,10 @@ pkg_config("libinput") {
 
 pkg_config("libevdev") {
   packages = [ "libevdev" ]
+}
+
+pkg_config("libsystemd") {
+  packages = [ "libsystemd" ]
 }
 
 pkg_config("wayland_cursor") {
@@ -415,6 +423,32 @@ shared_library("weston_test") {
   public_configs = [ ":pixman" ]
 }
 
+shared_library("weston_systemd_notify") {
+  output_prefix_override = true
+  output_name = "systemd-notify"
+
+  sources = [ "src/compositor/systemd-notify.c" ]
+
+  deps = [
+    ":compositor",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    ":weston_config",
+  ]
+
+  include_dirs = [
+    "src/compositor",
+  ]
+
+  public_configs = [
+    ":libsystemd",
+    ":pixman",
+  ]
+}
+
 executable("weston_keyboard") {
   output_name = "weston-keyboard"
 
@@ -525,6 +559,7 @@ executable("weston") {
     ":weston_keyboard",
     ":weston_screenshooter",
     ":weston_test",
+    ":weston_systemd_notify",
   ]
 
   configs += [ ":weston_config" ]

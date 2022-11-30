@@ -178,7 +178,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AccountType.SigninConsent" enum="SigninAccountType"
-    expires_after="2022-10-16">
+    expires_after="2023-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@chromium.org</owner>
   <summary>
@@ -188,7 +188,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AccountType.SyncConsent" enum="SigninAccountType"
-    expires_after="2022-10-16">
+    expires_after="2023-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@chromium.org</owner>
   <summary>
@@ -293,7 +293,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram base="true" name="Signin.CookieJar.SignedInCountWithPrimary"
-    units="accounts" expires_after="2022-11-20">
+    units="accounts" expires_after="2023-03-19">
   <owner>jkrcal@chromium.org</owner>
   <owner>droger@chromium.org</owner>
 <!-- Name completed by histogram_suffixes name="UnconsentedPrimaryAccountType" -->
@@ -373,7 +373,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.Enterprise.WorkProfile.ProfileCreatedWithPolicySet"
-    enum="BooleanCreated" expires_after="2023-01-15">
+    enum="BooleanCreated" expires_after="2023-03-15">
   <owner>pastarmovj@chromium.org</owner>
   <owner>ydago@chromium.org</owner>
   <summary>
@@ -385,7 +385,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.Enterprise.WorkProfile.ProfileCreatedwithPolicyUnset"
-    enum="BooleanCreated" expires_after="2022-09-14">
+    enum="BooleanCreated" expires_after="2023-03-15">
   <owner>pastarmovj@chromium.org</owner>
   <owner>ydago@chromium.org</owner>
   <summary>
@@ -398,7 +398,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.Extensions.GaiaRemoteConsentFlowResult"
-    enum="GaiaRemoteConsentFlowResult" expires_after="2022-12-25">
+    enum="GaiaRemoteConsentFlowResult" expires_after="2023-03-19">
   <owner>alexilin@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -408,7 +408,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.Extensions.GetAuthTokenResult"
-    enum="GetAuthTokenResult" expires_after="2023-01-22">
+    enum="GetAuthTokenResult" expires_after="2023-03-26">
 <!-- Name completed by histogram_suffixes name="GetAuthTokenType" -->
 
   <owner>alexilin@chromium.org</owner>
@@ -460,7 +460,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.Intercept.FRE.Event"
-    enum="SigninInterceptFREDialogEvent" expires_after="2023-01-22">
+    enum="SigninInterceptFREDialogEvent" expires_after="2023-03-26">
   <owner>alexilin@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -500,7 +500,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram base="true" name="Signin.InterceptResult"
-    enum="SigninInterceptResult" expires_after="2023-01-22">
+    enum="SigninInterceptResult" expires_after="2023-03-26">
 <!-- Name completed by histogram_suffixes name="SigninInterceptType" -->
 
   <owner>alexilin@chromium.org</owner>
@@ -831,7 +831,7 @@ should be kept to monitor/debug signin Multilogin issues-->
 </histogram>
 
 <histogram name="Signin.Reconciler.Operation" enum="SigninReconcilerOperation"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>msarda@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -959,6 +959,16 @@ OAuth Multilogin call. -->
   </summary>
 </histogram>
 
+<histogram name="Signin.SigninAbortedAccessPoint" enum="SigninAccessPoint"
+    expires_after="2023-10-06">
+  <owner>bsazonov@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Logs the original access point of each aborted sign in. Only logged on
+    Android.
+  </summary>
+</histogram>
+
 <histogram name="Signin.SigninAllowed" enum="BooleanEnabled"
     expires_after="never">
 <!-- expires-never: used to monitor the health of the signin feature.  -->
@@ -973,7 +983,7 @@ OAuth Multilogin call. -->
 </histogram>
 
 <histogram name="Signin.SigninCompletedAccessPoint" enum="SigninAccessPoint"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>msarda@chromium.org</owner>
   <owner>bsazonov@chromium.org</owner>
   <owner>droger@chromium.org</owner>
@@ -982,7 +992,7 @@ OAuth Multilogin call. -->
 </histogram>
 
 <histogram name="Signin.SigninReason" enum="SigninReason"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>msarda@chromium.org</owner>
   <owner>bsazonov@chromium.org</owner>
   <owner>droger@chromium.org</owner>
@@ -991,7 +1001,7 @@ OAuth Multilogin call. -->
 </histogram>
 
 <histogram name="Signin.SigninStartedAccessPoint" enum="SigninAccessPoint"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>msarda@chromium.org</owner>
   <owner>bsazonov@chromium.org</owner>
   <owner>droger@chromium.org</owner>
@@ -1109,26 +1119,23 @@ kept as long as profile signout is possible -->
 
 <histogram name="Signin.SyncConsentScreen.DataRowClicked"
     enum="SigninSyncConsentDataRow" expires_after="2023-08-18">
+  <owner>arthurmilchior@chromium.org</owner>
   <owner>triploblastic@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
     This histogram records which sync data row was clicked by the user on the
-    tangible sync consent page on Android.
+    tangible sync consent page on Android and iOS.
   </summary>
 </histogram>
 
-<histogram name="Signin.SyncError{PromptUI}{SyncErrorReason}"
+<histogram name="Signin.SyncErrorMessage{SyncErrorReason}"
     enum="SyncErrorPromptUIAction" expires_after="2023-09-12">
   <owner>triploblastic@chromium.org</owner>
   <owner>bsazonov@chromium.org</owner>
   <summary>
-    Records various UI and user action events related to the sync error
-    {PromptUI}. Android only.
+    Records various UI and user action events related to the sync error message.
+    Android only.
   </summary>
-  <token key="PromptUI">
-    <variant name="InfoBar" summary="infobar ui"/>
-    <variant name="Message" summary="message ui"/>
-  </token>
   <token key="SyncErrorReason">
     <variant name=".AuthError" summary="Auth error."/>
     <variant name=".ClientOutOfDate" summary="Client out of date."/>
@@ -1153,7 +1160,7 @@ kept as long as profile signout is possible -->
 </histogram>
 
 <histogram name="Signin.SyncPromo.{Action}.Count.{AccessPoint}" units="counts"
-    expires_after="M108">
+    expires_after="2023-09-22">
   <owner>triploblastic@chromium.org</owner>
   <owner>aliceywang@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>

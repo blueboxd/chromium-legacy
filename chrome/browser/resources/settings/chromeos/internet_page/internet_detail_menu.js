@@ -12,11 +12,13 @@ import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import '../../settings_shared.css.js';
 
-import {ESimManagerListenerBehavior, ESimManagerListenerBehaviorInterface} from 'chrome://resources/cr_components/chromeos/cellular_setup/esim_manager_listener_behavior.js';
-import {MojoInterfaceProvider, MojoInterfaceProviderImpl} from 'chrome://resources/cr_components/chromeos/network/mojo_interface_provider.js';
-import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.js';
-import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ESimManagerListenerBehavior, ESimManagerListenerBehaviorInterface} from 'chrome://resources/ash/common/cellular_setup/esim_manager_listener_behavior.js';
+import {MojoInterfaceProvider, MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
+import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {ESimProfileRemote} from 'chrome://resources/mojo/chromeos/ash/services/cellular_setup/public/mojom/esim_manager.mojom-webui.js';
+import {NetworkType, OncSource} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
+import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
 import {Route, Router} from '../../router.js';
@@ -160,7 +162,7 @@ class SettingsInternetDetailMenuElement extends
 
   /**
    * ESimManagerListenerBehavior override
-   * @param {!ash.cellularSetup.mojom.ESimProfileRemote} profile
+   * @param {!ESimProfileRemote} profile
    */
   onProfileChanged(profile) {
     this.setESimNetworkState_();
@@ -174,9 +176,7 @@ class SettingsInternetDetailMenuElement extends
     const networkConfig =
         MojoInterfaceProviderImpl.getInstance().getMojoServiceRemote();
     networkConfig.getNetworkState(this.guid_).then(response => {
-      if (!response.result ||
-          response.result.type !==
-              chromeos.networkConfig.mojom.NetworkType.kCellular ||
+      if (!response.result || response.result.type !== NetworkType.kCellular ||
           !response.result.typeState.cellular.eid ||
           !response.result.typeState.cellular.iccid) {
         this.eSimNetworkState_ = null;
@@ -217,8 +217,7 @@ class SettingsInternetDetailMenuElement extends
   isDotsMenuButtonDisabled_() {
     // Managed eSIM networks cannot be renamed or removed by user.
     if (this.eSimNetworkState_ &&
-        this.eSimNetworkState_.source ===
-            chromeos.networkConfig.mojom.OncSource.kDevicePolicy) {
+        this.eSimNetworkState_.source === OncSource.kDevicePolicy) {
       return true;
     }
 

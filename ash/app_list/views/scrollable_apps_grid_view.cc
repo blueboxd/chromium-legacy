@@ -136,10 +136,6 @@ int ScrollableAppsGridView::GetSelectedPage() const {
   return 0;
 }
 
-bool ScrollableAppsGridView::IsScrollAxisVertical() const {
-  return true;
-}
-
 bool ScrollableAppsGridView::MaybeAutoScroll() {
   ScrollDirection direction;
   if (!IsPointInAutoScrollMargin(last_drag_point(), &direction)) {
@@ -291,7 +287,7 @@ gfx::Vector2d ScrollableAppsGridView::GetGridCenteringOffset(int page) const {
 }
 
 void ScrollableAppsGridView::EnsureViewVisible(const GridIndex& index) {
-  // If called after usesr action that changes the grid size, make sure grid
+  // If called after user action that changes the grid size, make sure grid
   // view ancestor layout is up to date before attempting scroll.
   GetWidget()->LayoutRootViewIfNecessary();
 

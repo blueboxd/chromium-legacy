@@ -12,6 +12,7 @@
 #include "base/json/values_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -249,8 +250,8 @@ void KnownUser::SetPath(const AccountId& account_id,
   if (!account_id.is_valid())
     return;
 
-  ListPrefUpdate update(local_state_, kKnownUsers);
-  for (base::Value& element_value : update->GetList()) {
+  ScopedListPrefUpdate update(local_state_, kKnownUsers);
+  for (base::Value& element_value : *update) {
     if (element_value.is_dict()) {
       if (UserMatches(account_id, element_value)) {
         if (opt_value.has_value())
@@ -385,7 +386,7 @@ AccountId KnownUser::GetAccountId(const std::string& user_email,
   AccountId result(EmptyAccountId());
   // UserManager is usually NULL in unit tests.
   if (account_type == AccountType::UNKNOWN && UserManager::IsInitialized() &&
-      UserManager::Get()->GetPlatformKnownUserId(user_email, id, &result)) {
+      UserManager::Get()->GetPlatformKnownUserId(user_email, &result)) {
     return result;
   }
 
@@ -749,8 +750,8 @@ void KnownUser::RemovePrefs(const AccountId& account_id) {
   if (!account_id.is_valid())
     return;
 
-  ListPrefUpdate update(local_state_, kKnownUsers);
-  base::Value::List& update_list = update->GetList();
+  ScopedListPrefUpdate update(local_state_, kKnownUsers);
+  base::Value::List& update_list = update.Get();
   for (auto it = update_list.begin(); it != update_list.end(); ++it) {
     if (UserMatches(account_id, *it)) {
       update_list.erase(it);
@@ -760,8 +761,8 @@ void KnownUser::RemovePrefs(const AccountId& account_id) {
 }
 
 void KnownUser::CleanEphemeralUsers() {
-  ListPrefUpdate update(local_state_, kKnownUsers);
-  update->GetList().EraseIf([](const auto& value) {
+  ScopedListPrefUpdate update(local_state_, kKnownUsers);
+  update->EraseIf([](const auto& value) {
     if (!value.is_dict())
       return false;
 
@@ -771,8 +772,8 @@ void KnownUser::CleanEphemeralUsers() {
 }
 
 void KnownUser::CleanObsoletePrefs() {
-  ListPrefUpdate update(local_state_, kKnownUsers);
-  for (base::Value& user_entry : update.Get()->GetListDeprecated()) {
+  ScopedListPrefUpdate update(local_state_, kKnownUsers);
+  for (base::Value& user_entry : *update) {
     if (!user_entry.is_dict())
       continue;
     for (const std::string& key : kObsoleteKeys)
@@ -788,56 +789,26 @@ void KnownUser::RegisterPrefs(PrefRegistrySimple* registry) {
 // --- Legacy interface ---
 namespace known_user {
 
-AccountId GetAccountId(const std::string& user_email,
-                       const std::string& id,
-                       const AccountType& account_type) {
-  DCHECK((id.empty() && account_type == AccountType::UNKNOWN) ||
-         (!id.empty() && account_type != AccountType::UNKNOWN));
-  PrefService* local_state = GetLocalStateLegacy();
-  if (local_state) {
-    return KnownUser(local_state).GetAccountId(user_email, id, account_type);
-  }
-
-  // The handling of the local-state-not-initialized case is pretty complex - it
-  // is KnownUser::GetAccountId with all queries assuming to return false.
-  // This should be come unnecessary when all callers are migrated to the
-  // KnownUser class interface (https://crbug.com/1150434) and thus responsible
-  // to pass a valid |local_state| pointer.
-
-  // In tests empty accounts are possible.
-  if (user_email.empty() && id.empty() &&
-      account_type == AccountType::UNKNOWN) {
-    return EmptyAccountId();
-  }
-  AccountId result(EmptyAccountId());
-  // UserManager is usually NULL in unit tests.
-  if (account_type == AccountType::UNKNOWN && UserManager::IsInitialized() &&
-      UserManager::Get()->GetPlatformKnownUserId(user_email, id, &result)) {
-    return result;
-  }
-  const std::string sanitized_email =
-      user_email.empty()
-          ? std::string()
-          : gaia::CanonicalizeEmail(gaia::SanitizeEmail(user_email));
-  std::string stored_email;
-  switch (account_type) {
-    case AccountType::GOOGLE:
-      return AccountId::FromUserEmailGaiaId(sanitized_email, id);
-    case AccountType::ACTIVE_DIRECTORY:
-      return AccountId::AdFromUserEmailObjGuid(sanitized_email, id);
-    case AccountType::UNKNOWN:
-      return AccountId::FromUserEmail(sanitized_email);
-  }
-  NOTREACHED();
-  return EmptyAccountId();
-}
-
 std::vector<AccountId> GetKnownAccountIds() {
   PrefService* local_state = GetLocalStateLegacy();
   // Local State may not be initialized in tests.
   if (!local_state)
     return {};
   return KnownUser(local_state).GetKnownAccountIds();
+}
+
+AccountId GetPlatformKnownAccountId(const std::string& user_email) {
+  if (user_email.empty())
+    return EmptyAccountId();
+
+  AccountId result(EmptyAccountId());
+  // UserManager is usually NULL in unit tests.
+  if (UserManager::IsInitialized() &&
+      UserManager::Get()->GetPlatformKnownUserId(user_email, &result)) {
+    return result;
+  }
+  return AccountId::FromNonCanonicalEmail(user_email, std::string(),
+                                          AccountType::UNKNOWN);
 }
 
 }  // namespace known_user

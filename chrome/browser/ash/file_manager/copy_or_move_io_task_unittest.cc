@@ -511,8 +511,8 @@ class CopyOrMoveIOTaskWithScansTest
     file_system_context_ = storage::CreateFileSystemContextForTesting(
         nullptr, source_destination_testing_helper_->GetTempDirPath());
 
-    CopyOrMoveIOTaskScanningImpl::
-        SetFileTransferAnalysisDelegateFactoryForTesting(base::BindRepeating(
+    enterprise_connectors::FileTransferAnalysisDelegate::SetFactorForTesting(
+        base::BindRepeating(
             [](base::RepeatingCallback<void(
                    enterprise_connectors::MockFileTransferAnalysisDelegate*,
                    const storage::FileSystemURL& source_url)>
@@ -521,15 +521,13 @@ class CopyOrMoveIOTaskWithScansTest
                storage::FileSystemURL source_url,
                storage::FileSystemURL destination_url, Profile* profile,
                storage::FileSystemContext* file_system_context,
-               enterprise_connectors::AnalysisSettings settings,
-               base::OnceClosure result_callback)
+               enterprise_connectors::AnalysisSettings settings)
                 -> std::unique_ptr<
                     enterprise_connectors::FileTransferAnalysisDelegate> {
               auto delegate = std::make_unique<::testing::StrictMock<
                   enterprise_connectors::MockFileTransferAnalysisDelegate>>(
                   access_point, source_url, destination_url, profile,
-                  file_system_context, std::move(settings),
-                  std::move(result_callback));
+                  file_system_context, std::move(settings));
 
               mock_setup_callback.Run(delegate.get(), source_url);
 
@@ -547,18 +545,21 @@ class CopyOrMoveIOTaskWithScansTest
       const storage::FileSystemURL& source_url) {
     if (auto iter = scanning_expectations_.find(source_url);
         iter != scanning_expectations_.end()) {
-      EXPECT_CALL(*delegate, UploadData()).WillOnce([delegate]() {
-        delegate->RunCallback();
-      });
+      EXPECT_CALL(*delegate, UploadData(_))
+          .WillOnce(
+              [](base::OnceClosure callback) { std::move(callback).Run(); });
 
       EXPECT_CALL(*delegate, GetAnalysisResultAfterScan(source_url))
           .WillOnce(Return(iter->second));
-    } else if (auto iter = directory_scanning_expectations_.find(source_url);
-               iter != directory_scanning_expectations_.end()) {
+      return;
+    }
+
+    if (auto iter = directory_scanning_expectations_.find(source_url);
+        iter != directory_scanning_expectations_.end()) {
       // Scan for directory detected.
-      EXPECT_CALL(*delegate, UploadData()).WillOnce([delegate]() {
-        delegate->RunCallback();
-      });
+      EXPECT_CALL(*delegate, UploadData(_))
+          .WillOnce(
+              [](base::OnceClosure callback) { std::move(callback).Run(); });
 
       for (auto&& scanning_expectation : scanning_expectations_) {
         // Note: We're using IsParent here, so this doesn't support recursive
@@ -571,11 +572,12 @@ class CopyOrMoveIOTaskWithScansTest
               .WillOnce(Return(scanning_expectation.second));
         }
       }
-    } else {
-      // Expect no scans if we set no expectation.
-      EXPECT_CALL(*delegate, UploadData()).Times(0);
-      EXPECT_CALL(*delegate, GetAnalysisResultAfterScan(source_url)).Times(0);
+      return;
     }
+
+    // Expect no scans if we set no expectation.
+    EXPECT_CALL(*delegate, UploadData(_)).Times(0);
+    EXPECT_CALL(*delegate, GetAnalysisResultAfterScan(source_url)).Times(0);
   }
 
   // Expect a scan for the file specified using `file_info`.
@@ -583,13 +585,13 @@ class CopyOrMoveIOTaskWithScansTest
   void ExpectScan(FileInfo file_info,
                   enterprise_connectors::FileTransferAnalysisDelegate::
                       FileTransferAnalysisResult result) {
-    ASSERT_EQ(scanning_expectations_.count(file_info.source_url), 0);
+    ASSERT_EQ(scanning_expectations_.count(file_info.source_url), 0u);
     scanning_expectations_[file_info.source_url] = result;
   }
 
   // Expect a scan for the directory specified using `file_info`.
   void ExpectDirectoryScan(FileInfo file_info) {
-    ASSERT_EQ(directory_scanning_expectations_.count(file_info.source_url), 0);
+    ASSERT_EQ(directory_scanning_expectations_.count(file_info.source_url), 0u);
     directory_scanning_expectations_.insert(file_info.source_url);
   }
 
@@ -666,14 +668,12 @@ class CopyOrMoveIOTaskWithScansTest
           progress_callback,
       const std::vector<FileInfo>& file_infos,
       const storage::FileSystemURL& dest,
-      size_t total_num_files = -1) {
-    if (total_num_files == -1) {
-      total_num_files = file_infos.size();
-    }
-
-    EXPECT_CALL(progress_callback,
-                Run(AllOf(Field(&ProgressStatus::state, State::kInProgress),
-                          GetBaseMatcher(file_infos, dest, total_num_files))))
+      absl::optional<size_t> total_num_files = absl::nullopt) {
+    EXPECT_CALL(
+        progress_callback,
+        Run(AllOf(Field(&ProgressStatus::state, State::kInProgress),
+                  GetBaseMatcher(file_infos, dest,
+                                 total_num_files.value_or(file_infos.size())))))
         .Times(AnyNumber());
   }
 
@@ -756,10 +756,8 @@ class CopyOrMoveIOTaskWithScansTest
       const storage::FileSystemURL& dest,
       const std::vector<absl::optional<base::File::Error>>& expected_errors,
       base::RepeatingClosure quit_closure,
-      size_t total_num_files = -1) {
-    if (total_num_files == -1) {
-      total_num_files = file_infos.size();
-    }
+      absl::optional<size_t> maybe_total_num_files = absl::nullopt) {
+    size_t total_num_files = maybe_total_num_files.value_or(file_infos.size());
     ASSERT_EQ(expected_errors.size(), file_infos.size());
     // We should get one complete callback when the copy/move finishes.
     bool has_error = std::any_of(

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/streams/transform_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_base.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -249,7 +250,8 @@ scoped_refptr<SerializedScriptValue> V8ScriptValueSerializer::Serialize(
   v8::Isolate* isolate = script_state_->GetIsolate();
   v8::TryCatch try_catch(isolate);
   v8::MicrotasksScope microtasks_scope(
-      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+      isolate, ToMicrotaskQueue(script_state_),
+      v8::MicrotasksScope::kDoNotRunMicrotasks);
   bool wrote_value;
   if (!serializer_.WriteValue(script_state_->GetContext(), value)
            .To(&wrote_value)) {
@@ -328,7 +330,7 @@ void V8ScriptValueSerializer::FinalizeTransfer(
   if (transferables_)
     array_buffers.AppendVector(transferables_->array_buffers);
 
-  if (!array_buffers.IsEmpty()) {
+  if (!array_buffers.empty()) {
     serialized_script_value_->TransferArrayBuffers(isolate, array_buffers,
                                                    exception_state);
     if (exception_state.HadException())
@@ -386,9 +388,8 @@ void V8ScriptValueSerializer::WriteUTF8String(const String& string) {
 
 bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
                                              ExceptionState& exception_state) {
-  const WrapperTypeInfo* wrapper_type_info = wrappable->GetWrapperTypeInfo();
-  if (wrapper_type_info == V8Blob::GetWrapperTypeInfo()) {
-    Blob* blob = wrappable->ToImpl<Blob>();
+  ScriptWrappable::TypeDispatcher dispatcher(wrappable);
+  if (auto* blob = dispatcher.ToMostDerived<Blob>()) {
     serialized_script_value_->BlobDataHandles().Set(blob->Uuid(),
                                                     blob->GetBlobDataHandle());
     if (blob_info_array_) {
@@ -406,14 +407,13 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     }
     return true;
   }
-  if (wrapper_type_info == V8File::GetWrapperTypeInfo()) {
+  if (auto* file = dispatcher.ToMostDerived<File>()) {
     WriteTag(blob_info_array_ ? kFileIndexTag : kFileTag);
-    return WriteFile(wrappable->ToImpl<File>(), exception_state);
+    return WriteFile(file, exception_state);
   }
-  if (wrapper_type_info == V8FileList::GetWrapperTypeInfo()) {
+  if (auto* file_list = dispatcher.ToMostDerived<FileList>()) {
     // This does not presently deduplicate a File object and its entry in a
     // FileList, which is non-standard behavior.
-    FileList* file_list = wrappable->ToImpl<FileList>();
     unsigned length = file_list->length();
     WriteTag(blob_info_array_ ? kFileListIndexTag : kFileListTag);
     WriteUint32(length);
@@ -423,8 +423,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     }
     return true;
   }
-  if (wrapper_type_info == V8ImageBitmap::GetWrapperTypeInfo()) {
-    ImageBitmap* image_bitmap = wrappable->ToImpl<ImageBitmap>();
+  if (auto* image_bitmap = dispatcher.ToMostDerived<ImageBitmap>()) {
     if (image_bitmap->IsNeutered()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kDataCloneError,
@@ -505,8 +504,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteRawBytes(pixels.data(), pixels.size());
     return true;
   }
-  if (wrapper_type_info == V8ImageData::GetWrapperTypeInfo()) {
-    ImageData* image_data = wrappable->ToImpl<ImageData>();
+  if (auto* image_data = dispatcher.ToMostDerived<ImageData>()) {
     WriteTag(kImageDataTag);
     SerializedImageDataSettings settings(
         image_data->GetPredefinedColorSpace(),
@@ -528,8 +526,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     }
     return true;
   }
-  if (wrapper_type_info == V8DOMPoint::GetWrapperTypeInfo()) {
-    DOMPoint* point = wrappable->ToImpl<DOMPoint>();
+  if (auto* point = dispatcher.ToMostDerived<DOMPoint>()) {
     WriteTag(kDOMPointTag);
     WriteDouble(point->x());
     WriteDouble(point->y());
@@ -537,8 +534,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteDouble(point->w());
     return true;
   }
-  if (wrapper_type_info == V8DOMPointReadOnly::GetWrapperTypeInfo()) {
-    DOMPointReadOnly* point = wrappable->ToImpl<DOMPointReadOnly>();
+  if (auto* point = dispatcher.ToMostDerived<DOMPointReadOnly>()) {
     WriteTag(kDOMPointReadOnlyTag);
     WriteDouble(point->x());
     WriteDouble(point->y());
@@ -546,8 +542,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteDouble(point->w());
     return true;
   }
-  if (wrapper_type_info == V8DOMRect::GetWrapperTypeInfo()) {
-    DOMRect* rect = wrappable->ToImpl<DOMRect>();
+  if (auto* rect = dispatcher.ToMostDerived<DOMRect>()) {
     WriteTag(kDOMRectTag);
     WriteDouble(rect->x());
     WriteDouble(rect->y());
@@ -555,8 +550,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteDouble(rect->height());
     return true;
   }
-  if (wrapper_type_info == V8DOMRectReadOnly::GetWrapperTypeInfo()) {
-    DOMRectReadOnly* rect = wrappable->ToImpl<DOMRectReadOnly>();
+  if (auto* rect = dispatcher.ToMostDerived<DOMRectReadOnly>()) {
     WriteTag(kDOMRectReadOnlyTag);
     WriteDouble(rect->x());
     WriteDouble(rect->y());
@@ -564,8 +558,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteDouble(rect->height());
     return true;
   }
-  if (wrapper_type_info == V8DOMQuad::GetWrapperTypeInfo()) {
-    DOMQuad* quad = wrappable->ToImpl<DOMQuad>();
+  if (auto* quad = dispatcher.ToMostDerived<DOMQuad>()) {
     WriteTag(kDOMQuadTag);
     for (const DOMPoint* point :
          {quad->p1(), quad->p2(), quad->p3(), quad->p4()}) {
@@ -576,8 +569,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     }
     return true;
   }
-  if (wrapper_type_info == V8DOMMatrix::GetWrapperTypeInfo()) {
-    DOMMatrix* matrix = wrappable->ToImpl<DOMMatrix>();
+  if (auto* matrix = dispatcher.ToMostDerived<DOMMatrix>()) {
     if (matrix->is2D()) {
       WriteTag(kDOMMatrix2DTag);
       WriteDouble(matrix->a());
@@ -607,8 +599,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     }
     return true;
   }
-  if (wrapper_type_info == V8DOMMatrixReadOnly::GetWrapperTypeInfo()) {
-    DOMMatrixReadOnly* matrix = wrappable->ToImpl<DOMMatrixReadOnly>();
+  if (auto* matrix = dispatcher.ToMostDerived<DOMMatrixReadOnly>()) {
     if (matrix->is2D()) {
       WriteTag(kDOMMatrix2DReadOnlyTag);
       WriteDouble(matrix->a());
@@ -638,8 +629,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     }
     return true;
   }
-  if (wrapper_type_info == V8MessagePort::GetWrapperTypeInfo()) {
-    MessagePort* message_port = wrappable->ToImpl<MessagePort>();
+  if (auto* message_port = dispatcher.ToMostDerived<MessagePort>()) {
     size_t index = kNotFound;
     if (transferables_)
       index = transferables_->message_ports.Find(message_port);
@@ -654,9 +644,9 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteUint32(static_cast<uint32_t>(index));
     return true;
   }
-  if (wrapper_type_info == V8MojoHandle::GetWrapperTypeInfo() &&
-      RuntimeEnabledFeatures::MojoJSEnabled()) {
-    MojoHandle* mojo_handle = wrappable->ToImpl<MojoHandle>();
+  if (auto* mojo_handle = dispatcher.ToMostDerived<MojoHandle>()) {
+    if (!RuntimeEnabledFeatures::MojoJSEnabled())
+      return false;
     size_t index = kNotFound;
     if (transferables_)
       index = transferables_->mojo_handles.Find(mojo_handle);
@@ -674,8 +664,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteUint32(static_cast<uint32_t>(index));
     return true;
   }
-  if (wrapper_type_info == V8OffscreenCanvas::GetWrapperTypeInfo()) {
-    OffscreenCanvas* canvas = wrappable->ToImpl<OffscreenCanvas>();
+  if (auto* canvas = dispatcher.ToMostDerived<OffscreenCanvas>()) {
     size_t index = kNotFound;
     if (transferables_)
       index = transferables_->offscreen_canvases.Find(canvas);
@@ -710,8 +699,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
                     : 1);
     return true;
   }
-  if (wrapper_type_info == V8ReadableStream::GetWrapperTypeInfo()) {
-    ReadableStream* stream = wrappable->ToImpl<ReadableStream>();
+  if (auto* stream = dispatcher.ToMostDerived<ReadableStream>()) {
     size_t index = kNotFound;
     if (transferables_)
       index = transferables_->readable_streams.Find(stream);
@@ -731,8 +719,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteUint32(static_cast<uint32_t>(index));
     return true;
   }
-  if (wrapper_type_info == V8WritableStream::GetWrapperTypeInfo()) {
-    WritableStream* stream = wrappable->ToImpl<WritableStream>();
+  if (auto* stream = dispatcher.ToMostDerived<WritableStream>()) {
     size_t index = kNotFound;
     if (transferables_)
       index = transferables_->writable_streams.Find(stream);
@@ -757,8 +744,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
         static_cast<uint32_t>(index + transferables_->readable_streams.size()));
     return true;
   }
-  if (wrapper_type_info == V8TransformStream::GetWrapperTypeInfo()) {
-    TransformStream* stream = wrappable->ToImpl<TransformStream>();
+  if (auto* stream = dispatcher.ToMostDerived<TransformStream>()) {
     size_t index = kNotFound;
     if (transferables_)
       index = transferables_->transform_streams.Find(stream);
@@ -789,8 +775,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
                                       transferables_->writable_streams.size()));
     return true;
   }
-  if (wrapper_type_info == V8DOMException::GetWrapperTypeInfo()) {
-    DOMException* exception = wrappable->ToImpl<DOMException>();
+  if (auto* exception = dispatcher.ToMostDerived<DOMException>()) {
     WriteTag(kDOMExceptionTag);
     WriteUTF8String(exception->name());
     WriteUTF8String(exception->message());
@@ -872,7 +857,9 @@ v8::Maybe<bool> V8ScriptValueSerializer::WriteHostObject(
   }
   return v8::Nothing<bool>();
 }
+
 namespace {
+
 DOMSharedArrayBuffer* ToSharedArrayBuffer(v8::Isolate* isolate,
                                           v8::Local<v8::Value> value,
                                           ExceptionState& exception_state) {
@@ -901,6 +888,7 @@ DOMSharedArrayBuffer* ToSharedArrayBuffer(v8::Isolate* isolate,
   DCHECK(wrapper == v8_shared_array_buffer);
   return shared_array_buffer;
 }
+
 }  // namespace
 
 v8::Maybe<uint32_t> V8ScriptValueSerializer::GetSharedArrayBufferId(
@@ -997,6 +985,25 @@ void* V8ScriptValueSerializer::ReallocateBufferMemory(void* old_buffer,
 
 void V8ScriptValueSerializer::FreeBufferMemory(void* buffer) {
   return WTF::Partitions::BufferFree(buffer);
+}
+
+bool V8ScriptValueSerializer::AdoptSharedValueConveyor(
+    v8::Isolate* isolate,
+    v8::SharedValueConveyor&& conveyor) {
+  auto* execution_context = ExecutionContext::From(script_state_);
+  if (for_storage_ || !execution_context->SharedArrayBufferTransferAllowed()) {
+    DCHECK(exception_state_);
+    ExceptionState exception_state(script_state_->GetIsolate(),
+                                   exception_state_->GetContext());
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kDataCloneError,
+        for_storage_
+            ? "A shared JS value cannot be serialized for storage."
+            : "Shared JS value conveyance requires self.crossOriginIsolated.");
+    return false;
+  }
+  serialized_script_value_->shared_value_conveyor_.emplace(std::move(conveyor));
+  return true;
 }
 
 }  // namespace blink

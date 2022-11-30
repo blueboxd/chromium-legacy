@@ -40,7 +40,7 @@
       ],
       "mirroring_builder_group_and_names": [
         {
-          "builder": "cast_shell_linux",
+          "builder": "linux-x64-castos",
           "group": "tryserver.chromium.linux"
         }
       ]
@@ -61,6 +61,6 @@
   "builder_group": "chromium.linux",
   "recipe": "chromium",
   "sheriff_rotations": [
-    "chrome_browser_release"
+    "chromium"
   ]
 }

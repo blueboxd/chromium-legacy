@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -403,7 +403,7 @@ class CallTrackingClosure {
   base::OnceClosure Closure() {
     // This use of base::Unretained is safe because nothing can call the
     // callback once the test has finished.
-    return WTF::Bind(&CallTrackingClosure::Called, base::Unretained(this));
+    return WTF::BindOnce(&CallTrackingClosure::Called, base::Unretained(this));
   }
 
   bool WasCalled() const { return was_called_; }
@@ -434,7 +434,7 @@ TEST_F(WebSocketChannelImplTest, ConnectSuccess) {
                   .IsEquivalent(GetDocument().SiteForCookies()));
 
   ASSERT_TRUE(Channel()->Connect(KURL("ws://localhost/"), "x"));
-  EXPECT_TRUE(connector_.GetConnectArgs().IsEmpty());
+  EXPECT_TRUE(connector_.GetConnectArgs().empty());
 
   test::RunPendingTasks();
   auto connect_args = connector_.TakeConnectArgs();
@@ -484,7 +484,7 @@ TEST_F(WebSocketChannelImplTest, MojoConnectionErrorDuringHandshake) {
   }
 
   ASSERT_TRUE(Channel()->Connect(KURL("ws://localhost/"), "x"));
-  EXPECT_TRUE(connector_.GetConnectArgs().IsEmpty());
+  EXPECT_TRUE(connector_.GetConnectArgs().empty());
 
   test::RunPendingTasks();
   auto connect_args = connector_.TakeConnectArgs();

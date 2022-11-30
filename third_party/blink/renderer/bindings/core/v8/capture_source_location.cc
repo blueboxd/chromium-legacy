@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,7 +78,7 @@ std::unique_ptr<SourceLocation> CaptureSourceLocation(
 
   String url = ToCoreStringWithUndefinedOrNullCheck(
       message->GetScriptOrigin().ResourceName());
-  if (url.IsEmpty())
+  if (url.empty())
     url = execution_context->Url();
   return std::make_unique<SourceLocation>(url, String(), line_number,
                                           column_number, std::move(stack_trace),

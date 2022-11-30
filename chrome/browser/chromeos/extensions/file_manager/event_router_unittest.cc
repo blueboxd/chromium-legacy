@@ -173,7 +173,7 @@ class FileManagerEventRouterTest : public testing::Test {
 // extract the "outputs" key. It then looks at the output at `index` and matches
 // the `field` against the `expected_value`.
 MATCHER_P3(ExpectEventArgString, index, field, expected_value, "") {
-  EXPECT_GE(arg.size(), 1);
+  EXPECT_GE(arg.size(), 1u);
   const base::Value* outputs =
       arg[0].FindKeyOfType("outputs", base::Value::Type::LIST);
   EXPECT_TRUE(outputs) << "The outputs field is not available on the event";
@@ -217,10 +217,10 @@ TEST_F(FileManagerEventRouterTest, OnIOTaskStatusForTrash) {
       observer,
       OnBroadcastEvent(Field(
           &extensions::Event::event_args,
-          AllOf(ExpectEventArgString(0, "fileFullPath", "/bar.txt"),
-                ExpectEventArgString(0, "fileSystemName", "Downloads"),
+          AllOf(ExpectEventArgString(0u, "fileFullPath", "/bar.txt"),
+                ExpectEventArgString(0u, "fileSystemName", "Downloads"),
                 ExpectEventArgString(
-                    0, "fileSystemRoot",
+                    0u, "fileSystemRoot",
                     "filesystem:chrome-extension://abc/external/Downloads/")))))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
 

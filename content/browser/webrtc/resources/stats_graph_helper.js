@@ -11,7 +11,7 @@
 // Each group has an expand/collapse button and is collapsed initially.
 //
 
-import {$} from 'chrome://resources/js/util.m.js';
+import {$} from 'chrome://resources/js/util.js';
 
 import {TimelineDataSeries} from './data_series.js';
 import {peerConnectionDataStore} from './dump_creator.js';
@@ -414,7 +414,7 @@ function ensureStatsGraphTopContainer(peerConnectionElement, report) {
     container.firstChild.firstChild.className =
         STATS_GRAPH_CONTAINER_HEADING_CLASS;
     container.firstChild.firstChild.textContent =
-        'Stats graphs for ' + report.id + ' (' + report.type + ')';
+        'Stats graphs for ' + report.type + ' (id=' + report.id + ')';
     const statsType = getSsrcReportType(report);
     if (statsType !== '') {
       container.firstChild.firstChild.textContent += ' (' + statsType + ')';

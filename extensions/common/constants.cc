@@ -151,6 +151,7 @@ const char kGoogleSheetsDemoAppId[] = "nifkmgcdokhkjghdlgflonppnefddien";
 const char kGoogleSheetsPwaAppId[] = "hcgjdbbnhkmopplfiibmdgghhdhbiidh";
 const char kGoogleSlidesDemoAppId[] = "hdmobeajeoanbanmdlabnbnlopepchip";
 const char kGoogleKeepAppId[] = "hmjkmjkepdijhoojdojkdfohbdgmmhki";
+const char kOfficePwaAppId[] = "ocdlmjhbenodhlknglojajgokahchlkk";
 const char kYoutubeAppId[] = "blpcfgokakmgnkcojhhkbfbldkacnbeo";
 const char kYoutubePwaAppId[] = "agimnkijcaahngcdmfeangaknmldooml";
 const char kSpotifyAppId[] = "pjibgclleladliembfgfagdaldikeohf";
@@ -177,6 +178,9 @@ const char kStagingHighlightsAppId[] = "glochkamldfopmdlegmcnjmgkopfiplb";
 const char kNewAttractLoopAppId[] = "igilkdghcdehjdcpndaodgnjgdggiemm";
 // 2022 Highlights App ID
 const char kNewHighlightsAppId[] = "enchmnkoajljphdmahljlebfmpkkbnkj";
+// Specialized demo apps for blazey devices
+const char kBlazeyAttractLoopAppId[] = "lceekekmpiieklnpocjfahfakahjkhha";
+const char kBlazeyHighlightsAppId[] = "jbpnmbcpgemgfblnjfhnmlffhkofekmf";
 
 bool IsSystemUIApp(base::StringPiece extension_id) {
   static const char* const kApps[] = {
@@ -196,8 +200,16 @@ bool IsSystemUIApp(base::StringPiece extension_id) {
 
 bool IsDemoModeChromeApp(base::StringPiece extension_id) {
   static const char* const kDemoModeApps[] = {
-      kHighlightsAppId,        kScreensaverAppId,    kStagingAttractLoopAppId,
-      kStagingHighlightsAppId, kNewAttractLoopAppId, kNewHighlightsAppId,
+      // clang-format off
+      kHighlightsAppId,
+      kScreensaverAppId,
+      kStagingAttractLoopAppId,
+      kStagingHighlightsAppId,
+      kNewAttractLoopAppId,
+      kNewHighlightsAppId,
+      kBlazeyAttractLoopAppId,
+      kBlazeyHighlightsAppId
+      // clang-format on
   };
   for (const char* id : kDemoModeApps) {
     if (extension_id == id)
@@ -233,6 +245,13 @@ const char* const kHangoutsExtensionIds[6] = {
 // Error returned when scripting of a page is denied due to enterprise policy.
 const char kPolicyBlockedScripting[] =
     "This page cannot be scripted due to an ExtensionsSettings policy.";
+
+const char kIncognitoErrorMessage[] =
+    "You do not have permission to access incognito preferences.";
+
+const char kIncognitoSessionOnlyErrorMessage[] =
+    "You cannot set a preference with scope 'incognito_session_only' when no "
+    "incognito window is open.";
 
 const int kContentVerificationDefaultBlockSize = 4096;
 

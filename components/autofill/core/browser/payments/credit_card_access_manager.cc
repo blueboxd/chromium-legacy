@@ -250,9 +250,14 @@ void CreditCardAccessManager::FetchCreditCard(
     return;
   }
 
-  if (card->record_type() == CreditCard::VIRTUAL_CARD) {
+  // Log the server card unmasking attempt, and differentiate based on server
+  // card or virtual card.
+  CreditCard::RecordType record_type = card->record_type();
+  if (ShouldLogServerCardUnmaskAttemptMetrics(record_type)) {
     AutofillMetrics::LogServerCardUnmaskAttempt(
-        AutofillClient::PaymentsRpcCardType::kVirtualCard);
+        record_type == CreditCard::VIRTUAL_CARD
+            ? AutofillClient::PaymentsRpcCardType::kVirtualCard
+            : AutofillClient::PaymentsRpcCardType::kServerCard);
   }
 
   // If card has been previously unmasked, use cached data.
@@ -974,9 +979,9 @@ void CreditCardAccessManager::FetchVirtualCard() {
                      weak_ptr_factory_.GetWeakPtr()));
 
   // Send a risk-based unmasking request to server to attempt to fetch the card.
-  absl::optional<GURL> last_committed_url_origin =
-      client_->GetLastCommittedURL().DeprecatedGetOriginAsURL();
-  if (!last_committed_url_origin.has_value()) {
+  absl::optional<GURL> last_committed_primary_main_frame_origin =
+      client_->GetLastCommittedPrimaryMainFrameURL().DeprecatedGetOriginAsURL();
+  if (!last_committed_primary_main_frame_origin.has_value()) {
     accessor_->OnCreditCardFetched(CreditCardFetchResult::kTransientError);
     AutofillMetrics::LogServerCardUnmaskResult(
         AutofillMetrics::ServerCardUnmaskResult::kUnexpectedError,
@@ -986,8 +991,9 @@ void CreditCardAccessManager::FetchVirtualCard() {
     return;
   }
 
-  virtual_card_unmask_request_details_.last_committed_url_origin =
-      last_committed_url_origin;
+  virtual_card_unmask_request_details_
+      .last_committed_primary_main_frame_origin =
+      last_committed_primary_main_frame_origin;
   virtual_card_unmask_request_details_.card = *card_;
   virtual_card_unmask_request_details_.billing_customer_number =
       payments::GetBillingCustomerId(personal_data_manager_);
@@ -1203,6 +1209,27 @@ void CreditCardAccessManager::ShowUnmaskAuthenticatorSelectionDialog() {
           weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&CreditCardAccessManager::OnVirtualCardUnmaskCancelled,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+bool CreditCardAccessManager::ShouldLogServerCardUnmaskAttemptMetrics(
+    CreditCard::RecordType record_type) {
+  // We always want to log virtual card unmask attempts.
+  if (record_type == CreditCard::VIRTUAL_CARD)
+    return true;
+
+  // We only want to log masked server card or full server card unmask
+  // attempts if the `kAutofillEnableRemadeDownstreamMetrics` feature flag is
+  // enabled, due to this being a histogram refactoring that we want to roll out
+  // slowly to ensure that it works properly.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableRemadeDownstreamMetrics)) {
+    return record_type == CreditCard::MASKED_SERVER_CARD ||
+           record_type == CreditCard::FULL_SERVER_CARD;
+  }
+
+  // No conditions were met to log a server card unmasking attempt, so return
+  // false.
+  return false;
 }
 
 }  // namespace autofill

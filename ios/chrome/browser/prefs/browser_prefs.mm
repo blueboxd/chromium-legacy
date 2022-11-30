@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/prefs/browser_prefs.h"
 
+#import "base/stl_util.h"
 #import "base/time/time.h"
 #import "components/autofill/core/common/autofill_prefs.h"
 #import "components/browsing_data/core/pref_names.h"
@@ -67,6 +68,7 @@
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/prerender/prerender_pref.h"
+#import "ios/chrome/browser/push_notification/push_notification_service.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_mediator.h"
@@ -158,6 +160,8 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(metrics::prefs::kMetricsReportingEnabled,
                                 false);
 
+  registry->RegisterDictionaryPref(prefs::kIosPreRestoreAccountInfo);
+
   registry->RegisterListPref(prefs::kIosPromosManagerActivePromos);
   registry->RegisterListPref(prefs::kIosPromosManagerImpressions);
   registry->RegisterListPref(prefs::kIosPromosManagerSingleDisplayActivePromos);
@@ -221,7 +225,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   payments::RegisterProfilePrefs(registry);
   policy::URLBlocklistManager::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
-  prerender_prefs::RegisterNetworkPredictionPrefs(registry);
+  PushNotificationService::RegisterBrowserStatePrefs(registry);
   RegisterVoiceSearchBrowserStatePrefs(registry);
   safe_browsing::RegisterProfilePrefs(registry);
   segmentation_platform::SegmentationPlatformService::RegisterProfilePrefs(
@@ -311,7 +315,15 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterTimePref(prefs::kIosShareChromeLastShare, base::Time(),
                              PrefRegistry::LOSSY_PREF);
 
+
   registry->RegisterDictionaryPref(kPrefPromoObject);
+
+  // Register prerender network prediction preferences.
+  registry->RegisterIntegerPref(
+      prefs::kNetworkPredictionSetting,
+      base::to_underlying(
+          prerender_prefs::NetworkPredictionSetting::kEnabledWifiOnly),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -336,9 +348,6 @@ void MigrateObsoleteLocalStatePrefs(PrefService* prefs) {
 void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
   // Check MigrateDeprecatedAutofillPrefs() to see if this is safe to remove.
   autofill::prefs::MigrateDeprecatedAutofillPrefs(prefs);
-
-  // Added 9/2020.
-  prerender_prefs::MigrateNetworkPredictionPrefs(prefs);
 
   // Added 03/2022
   prefs->ClearPref(kShowReadingListInBookmarkBar);

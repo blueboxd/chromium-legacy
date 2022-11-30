@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_ambient_provider_impl.h"
 
-#include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>
@@ -26,6 +25,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager_factory.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_metrics.h"
@@ -38,8 +38,7 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "url/gurl.h"
 
-namespace ash {
-namespace personalization_app {
+namespace ash::personalization_app {
 
 namespace {
 
@@ -172,12 +171,12 @@ void PersonalizationAppAmbientProviderImpl::SetAlbumSelected(
     bool selected) {
   switch (topic_source) {
     case (ash::AmbientModeTopicSource::kGooglePhotos): {
-      ash::PersonalAlbum* personal_album = FindPersonalAlbumById(id);
-      if (!personal_album) {
+      ash::PersonalAlbum* target_personal_album = FindPersonalAlbumById(id);
+      if (!target_personal_album) {
         mojo::ReportBadMessage("Invalid album id.");
         return;
       }
-      personal_album->selected = selected;
+      target_personal_album->selected = selected;
 
       // For Google Photos, we will populate the |selected_album_ids| with IDs
       // of selected albums.
@@ -537,9 +536,8 @@ void PersonalizationAppAmbientProviderImpl::OnGooglePhotosAlbumsPreviewsFetched(
 ash::PersonalAlbum*
 PersonalizationAppAmbientProviderImpl::FindPersonalAlbumById(
     const std::string& album_id) {
-  auto it = std::find_if(
-      personal_albums_.albums.begin(), personal_albums_.albums.end(),
-      [&album_id](const auto& album) { return album.album_id == album_id; });
+  auto it = base::ranges::find(personal_albums_.albums, album_id,
+                               &ash::PersonalAlbum::album_id);
 
   if (it == personal_albums_.albums.end())
     return nullptr;
@@ -549,9 +547,8 @@ PersonalizationAppAmbientProviderImpl::FindPersonalAlbumById(
 
 ash::ArtSetting* PersonalizationAppAmbientProviderImpl::FindArtAlbumById(
     const std::string& album_id) {
-  auto it = std::find_if(
-      settings_->art_settings.begin(), settings_->art_settings.end(),
-      [&album_id](const auto& album) { return album.album_id == album_id; });
+  auto it = base::ranges::find(settings_->art_settings, album_id,
+                               &ash::ArtSetting::album_id);
   // Album does not exist any more.
   if (it == settings_->art_settings.end())
     return nullptr;
@@ -572,5 +569,4 @@ void PersonalizationAppAmbientProviderImpl::ResetLocalSettings() {
   has_pending_updates_for_backend_ = false;
 }
 
-}  // namespace personalization_app
-}  // namespace ash
+}  // namespace ash::personalization_app

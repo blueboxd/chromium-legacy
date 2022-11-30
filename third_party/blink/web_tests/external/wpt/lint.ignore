@@ -140,6 +140,7 @@ PARSE-FAILED: custom-elements/xhtml-crash.xhtml
 SET TIMEOUT: *-manual.*
 SET TIMEOUT: annotation-model/scripts/ajv.min.js
 SET TIMEOUT: apng/animated-png-timeout.html
+SET TIMEOUT: avif/animated-avif-timeout.html
 SET TIMEOUT: cookies/resources/testharness-helpers.js
 SET TIMEOUT: common/reftest-wait.js
 SET TIMEOUT: conformance-checkers/*
@@ -200,7 +201,7 @@ SET TIMEOUT: navigation-api/navigation-history-entry/entries-after-bfcache-in-if
 SET TIMEOUT: navigation-timing/*
 SET TIMEOUT: old-tests/submission/Microsoft/history/history_000.htm
 SET TIMEOUT: paint-timing/resources/subframe-painting.html
-SET TIMEOUT: pending_beacon/resources/pending_beacon-helper.js
+SET TIMEOUT: page-unload-beacon/resources/pending_beacon-helper.js
 SET TIMEOUT: performance-timeline/resources/navigation-id-detached-frame-page.html
 SET TIMEOUT: portals/resources/portals-adopt-predecessor-portal.html
 SET TIMEOUT: preload/single-download-preload.html
@@ -210,7 +211,7 @@ SET TIMEOUT: resource-timing/resources/nested-contexts.js
 SET TIMEOUT: reporting/resources/first-csp-report.https.sub.html
 SET TIMEOUT: reporting/resources/second-csp-report.https.sub.html
 SET TIMEOUT: secure-contexts/basic-popup-and-iframe-tests.https.js
-SET TIMEOUT: service-workers/cache-storage/script-tests/cache-abort.js
+SET TIMEOUT: service-workers/cache-storage/cache-abort.https.any.js
 SET TIMEOUT: service-workers/service-worker/activation.https.html
 SET TIMEOUT: service-workers/service-worker/fetch-frame-resource.https.html
 SET TIMEOUT: service-workers/service-worker/fetch-request-redirect.https.html
@@ -332,6 +333,7 @@ SET TIMEOUT: html/cross-origin-embedder-policy/resources/reporting-worker.js
 SET TIMEOUT: html/cross-origin-opener-policy/navigate-to-aboutblank.https.html
 SET TIMEOUT: html/cross-origin-opener-policy/navigate-top-to-aboutblank.https.html
 SET TIMEOUT: html/dom/documents/dom-tree-accessors/Document.currentScript.html
+SET TIMEOUT: html/webappapis/dynamic-markup-insertion/opening-the-input-stream/crbug-583445-regression.window.js
 SET TIMEOUT: html/webappapis/timers/*
 SET TIMEOUT: orientation-event/resources/orientation-event-helpers.js
 SET TIMEOUT: portals/history/resources/portal-harness.js
@@ -342,6 +344,7 @@ SET TIMEOUT: scheduler/tentative/current-task-signal-async-priority.any.js
 SET TIMEOUT: speculation-rules/prerender/resources/activation-start.html
 SET TIMEOUT: speculation-rules/prerender/resources/prerender-response-code.html
 SET TIMEOUT: speculation-rules/prerender/resources/deferred-promise-utils.js
+SET TIMEOUT: speculation-rules/prerender/resources/session-history-harness.js
 SET TIMEOUT: speculation-rules/prerender/resources/utils.js
 SET TIMEOUT: speculation-rules/prerender/resources/request-picture-in-picture.html
 SET TIMEOUT: speculation-rules/prerender/resources/media-autoplay-attribute.html

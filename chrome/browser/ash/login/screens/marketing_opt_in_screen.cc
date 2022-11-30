@@ -10,8 +10,10 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen.h"
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -146,10 +148,8 @@ void MarketingOptInScreen::ShowImpl() {
   // screen was shown.
   if (view_) {
     view_->UpdateA11ySettingsButtonVisibility(
-        static_cast<GestureNavigationScreen*>(
-            WizardController::default_controller()->screen_manager()->GetScreen(
-                GestureNavigationScreenView::kScreenId))
-            ->was_shown());
+        context()->is_gesture_navigation_screen_was_shown ||
+        switches::ShouldShowAccessibilityButtonOnMarketingOptInForTesting());
 
     view_->UpdateA11yShelfNavigationButtonToggle(prefs->GetBoolean(
         prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled));
@@ -176,13 +176,13 @@ void MarketingOptInScreen::OnUserAction(const base::Value::List& args) {
   const std::string& action_id = args[0].GetString();
 
   if (action_id == kUserActionGetStarted) {
-    CHECK_EQ(args.size(), 2);
+    CHECK_EQ(args.size(), 2u);
     const bool chromebook_email_opt_in = args[1].GetBool();
     OnGetStarted(chromebook_email_opt_in);
     return;
   }
   if (action_id == kUserActionSetA11yNavigationButtonsEnabled) {
-    CHECK_EQ(args.size(), 2);
+    CHECK_EQ(args.size(), 2u);
     const bool enabled = args[1].GetBool();
     SetA11yNavigationButtonsEnabled(enabled);
     return;
@@ -222,10 +222,11 @@ void MarketingOptInScreen::SetA11yButtonVisibilityForTest(bool shown) {
 }
 
 void MarketingOptInScreen::OnA11yShelfNavigationButtonPrefChanged() {
-  if (view_) {
-    ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
-        prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled);
-  }
+  if (!view_)
+    return;
+  view_->UpdateA11yShelfNavigationButtonToggle(
+      ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
+          prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled));
 }
 
 bool MarketingOptInScreen::IsCurrentUserManaged() {
@@ -291,10 +292,8 @@ bool MarketingOptInScreen::ShouldShowOptionToSubscribe() {
   // we need to know whether the prefs have been loaded.
   sync_preferences::PrefServiceSyncable* prefs =
       PrefServiceSyncableFromProfile(ProfileManager::GetActiveUserProfile());
-  const bool sync_complete = ignore_pref_sync_for_testing_ ||
-                             (features::IsSyncSettingsCategorizationEnabled()
-                                  ? prefs->AreOsPrefsSyncing()
-                                  : prefs->IsSyncing());
+  const bool sync_complete =
+      ignore_pref_sync_for_testing_ || prefs->AreOsPrefsSyncing();
   // Do not show if the preferences cannot be synced
   if (!sync_complete)
     return false;

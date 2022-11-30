@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -289,6 +289,8 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // Specify whether this will be the first fragment generated for the node.
   void SetIsFirstForNode(bool is_first) { is_first_for_node_ = is_first; }
 
+  void SetIsMonolithic(bool b) { is_monolithic_ = b; }
+
   // Set how much of the block-size we've used so far for this box. This will be
   // the sum of the block-size of all previous fragments PLUS the one we're
   // building now.
@@ -323,7 +325,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     // We should either do block fragmentation as part of normal layout, or
     // pre-set a break token.
     DCHECK(!did_break_self_);
-    DCHECK(child_break_tokens_.IsEmpty());
+    DCHECK(child_break_tokens_.empty());
 
     break_token_ = break_token;
   }
@@ -347,7 +349,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // token for this fragment nevertheless, so that we re-enter, descend and
   // resume at the broken children in the next fragmentainer.
   bool HasChildBreakInside() const {
-    if (!child_break_tokens_.IsEmpty())
+    if (!child_break_tokens_.empty())
       return true;
     // Inline nodes produce a "finished" trailing break token even if we don't
     // need to block-fragment.
@@ -459,6 +461,10 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   }
 
   void SetDisableSimplifiedLayout() { disable_simplified_layout = true; }
+
+  void SetIsTruncatedByFragmentationLine() {
+    is_truncated_by_fragmentation_line = true;
+  }
 
   // See |NGPhysicalBoxFragment::InflowBounds|.
   void SetInflowBounds(const LogicalRect& inflow_bounds) {
@@ -588,10 +594,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     use_last_baseline_for_inline_baseline_ = true;
   }
 
-  // The inline block baseline is at the block end margin edge under some
-  // circumstances. This function updates |LastBaseline| in such cases.
-  void SetLastBaselineToBlockEndMarginEdgeIfNeeded();
-
   void SetTableGridRect(const LogicalRect& table_grid_rect) {
     table_grid_rect_ = table_grid_rect;
   }
@@ -711,7 +713,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   bool HasForcedBreak() const { return has_forced_break_; }
 
   const NGBreakToken* LastChildBreakToken() const {
-    DCHECK(!child_break_tokens_.IsEmpty());
+    DCHECK(!child_break_tokens_.empty());
     return child_break_tokens_.back().Get();
   }
 
@@ -755,6 +757,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   bool is_known_to_fit_in_fragmentainer_ = false;
   bool requires_content_before_breaking_ = false;
   bool is_block_size_for_fragmentation_clamped_ = false;
+  bool is_monolithic_ = true;
   bool is_first_for_node_ = true;
   bool did_break_self_ = false;
   bool has_inflow_child_break_inside_ = false;
@@ -768,6 +771,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   bool is_at_block_end_ = false;
   bool disable_oof_descendants_propagation_ = false;
   bool disable_simplified_layout = false;
+  bool is_truncated_by_fragmentation_line = false;
   bool use_last_baseline_for_inline_baseline_ = false;
   LayoutUnit block_offset_for_additional_columns_;
 

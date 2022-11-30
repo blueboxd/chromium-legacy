@@ -95,6 +95,7 @@ class DiskMountManagerImpl : public DiskMountManager,
     if (const auto [_, ok] =
             mount_callbacks_.try_emplace(source_path, std::move(callback));
         !ok) {
+      LOG(ERROR) << "Disk '" << source_path << "' is already being mounted";
       std::move(callback).Run(MountError::kPathAlreadyMounted,
                               {source_path, "", type});
       return;
@@ -113,27 +114,23 @@ class DiskMountManagerImpl : public DiskMountManager,
     if (type == MountType::kDevice &&
         (it == disks_.end() || (*it)->is_hidden())) {
       VLOG(1) << "Disk '" << source_path << "' should not be mounted";
-      OnMountCompleted({MountError::kInternal, source_path, type});
+      OnMountCompleted({source_path, {}, type, MountError::kInternal});
       return;
     }
 
-    VLOG(1) << "Mounting Disk '" << source_path << "'...";
+    VLOG(1) << "Mounting '" << source_path << "'...";
     cros_disks_client_->Mount(
         source_path, source_format, mount_label, mount_options, access_mode,
         RemountOption::kMountNewDevice,
         BindOnce(&DiskMountManagerImpl::OnMount, weak_ptr_factory_.GetWeakPtr(),
                  source_path, type));
-
-    // Record the access mode option passed to CrosDisks.
-    // This is needed because CrosDisks service methods doesn't return the info
-    // via DBus.
-    access_modes_.emplace(source_path, access_mode);
   }
 
   // DiskMountManager override.
   void UnmountPath(const std::string& mount_path,
                    UnmountPathCallback callback) override {
     UnmountChildMounts(mount_path);
+    VLOG(1) << "Unmounting '" << mount_path << "'...";
     cros_disks_client_->Unmount(mount_path,
                                 BindOnce(&DiskMountManagerImpl::OnUnmountPath,
                                          weak_ptr_factory_.GetWeakPtr(),
@@ -389,7 +386,7 @@ class DiskMountManagerImpl : public DiskMountManager,
     if (result)
       return;
 
-    OnMountCompleted({MountError::kInternal, source_path, type});
+    OnMountCompleted({source_path, {}, type, MountError::kInternal});
   }
 
   void RemountRemovableDrive(const Disk& disk, MountAccessMode access_mode) {
@@ -399,24 +396,16 @@ class DiskMountManagerImpl : public DiskMountManager,
       // Not in mount_points_. This happens when the mount_points and disks_ are
       // inconsistent.
       LOG(ERROR) << "Cannot find mount point '" << mount_path << "'";
-      OnMountCompleted({MountError::kPathNotMounted, disk.device_path(),
-                        MountType::kDevice, mount_path});
+      OnMountCompleted({disk.device_path(), mount_path, MountType::kDevice,
+                        MountError::kPathNotMounted});
       return;
     }
 
-    const std::string& source_path = mount_point->source_path;
-
-    // Update the access mode option passed to CrosDisks.
-    // This is needed because CrosDisks service methods doesn't return the info
-    // via DBus, and must be updated before issuing Mount command as it'll be
-    // read by the handler of MountCompleted signal.
-    access_modes_[source_path] = access_mode;
-
     cros_disks_client_->Mount(
-        source_path, std::string(), std::string(), {}, access_mode,
+        mount_point->source_path, std::string(), std::string(), {}, access_mode,
         RemountOption::kRemountExistingDevice,
         BindOnce(&DiskMountManagerImpl::OnMount, weak_ptr_factory_.GetWeakPtr(),
-                 source_path, mount_point->mount_type));
+                 mount_point->source_path, mount_point->mount_type));
   }
 
   // Unmounts all mount points whose source path is transitively parented by
@@ -428,21 +417,24 @@ class DiskMountManagerImpl : public DiskMountManager,
     if (mount_path.back() != '/')
       mount_path += '/';
 
-    for (const auto& mount_point : mount_points_) {
-      if (base::StartsWith(mount_point.source_path, mount_path,
-                           base::CompareCase::SENSITIVE)) {
-        UnmountPath(mount_point.mount_path,
-                    BindOnce(
-                        [](const std::string& path, const MountError error) {
-                          if (error != MountError::kNone) {
-                            LOG(ERROR)
-                                << "Cannot unmount '" << path << "': " << error;
-                          } else {
-                            VLOG(1) << "Unmounted '" << path << "'";
-                          }
-                        },
-                        mount_point.mount_path));
-      }
+    // Paths to unmount, indexed by source path.
+    std::map<std::string, std::string> paths_to_unmount;
+
+    // For the already known mount points, use the mount path.
+    for (const MountPoint& mount_point : mount_points_) {
+      if (base::StartsWith(mount_point.source_path, mount_path))
+        paths_to_unmount.try_emplace(mount_point.source_path,
+                                     mount_point.mount_path);
+    }
+
+    // For the mount points that are not registered yet, use the source path.
+    for (const auto& [source_path, _] : mount_callbacks_) {
+      if (base::StartsWith(source_path, mount_path))
+        paths_to_unmount.try_emplace(source_path, source_path);
+    }
+
+    for (const auto& [_, path_to_unmount] : paths_to_unmount) {
+      UnmountPath(path_to_unmount, {});
     }
   }
 
@@ -465,7 +457,7 @@ class DiskMountManagerImpl : public DiskMountManager,
   }
 
   // CrosDisksClient::Observer override.
-  void OnMountCompleted(const MountEntry& entry) override {
+  void OnMountCompleted(const MountPoint& entry) override {
     if (const auto it = deferred_mount_events_.find(entry.source_path);
         it != deferred_mount_events_.end()) {
       it->second.push_back(entry);
@@ -474,43 +466,43 @@ class DiskMountManagerImpl : public DiskMountManager,
       return;
     }
 
-    bool want_to_keep = entry.error_code == MountError::kNone;
-    MountCondition mount_condition = MountCondition::kNone;
+    bool want_to_keep = entry.mount_error == MountError::kNone;
+    MountError mount_error = MountError::kNone;
     if (entry.mount_type == MountType::kDevice) {
-      if (entry.error_code == MountError::kUnknownFilesystem) {
-        mount_condition = MountCondition::kUnknownFilesystem;
+      if (entry.mount_error == MountError::kUnknownFilesystem) {
+        mount_error = MountError::kUnknownFilesystem;
         want_to_keep = true;
-      } else if (entry.error_code == MountError::kUnsupportedFilesystem) {
-        mount_condition = MountCondition::kUnsupportedFilesystem;
+      } else if (entry.mount_error == MountError::kUnsupportedFilesystem) {
+        mount_error = MountError::kUnsupportedFilesystem;
         want_to_keep = true;
       }
     }
 
-    const MountPoint mount_info{.source_path = entry.source_path,
-                                .mount_path = entry.mount_path,
-                                .mount_type = entry.mount_type,
-                                .mount_condition = mount_condition,
-                                .progress_percent = 100};
+    const MountPoint mount_info{
+        entry.source_path, entry.mount_path, entry.mount_type, mount_error, 100,
+        entry.read_only};
 
     // If the device is corrupted but it's still possible to format it, it will
     // be fake mounted.
     if (want_to_keep) {
+      VLOG(1) << "Mounted '" << mount_info.source_path << "' as '"
+              << mount_info.mount_path << "'";
       const auto [it, ok] = mount_points_.insert(mount_info);
-      if (ok) {
-        VLOG(1) << "Added MountPoint with mount_path '" << mount_info.mount_path
-                << "'";
-      } else {
+      if (!ok) {
         DCHECK_EQ(it->mount_path, mount_info.mount_path);
         // const_cast is Ok since we're not modifying it->mount_path.
         const_cast<MountPoint&>(*it) = mount_info;
-        VLOG(1) << "Updated MountPoint with mount_path '"
-                << mount_info.mount_path << "'";
+        VLOG(1) << "Updated mount point '" << mount_info.mount_path << "'";
       }
-    } else if (const MountPoints::const_iterator it =
-                   mount_points_.find(mount_info.mount_path);
-               it != mount_points_.end()) {
-      VLOG(1) << "Removed MountPoint '" << mount_info.mount_path << "'";
-      mount_points_.erase(it);
+    } else {
+      LOG(ERROR) << "Cannot mount '" << mount_info.source_path << "' as '"
+                 << mount_info.mount_path << "': " << entry.mount_error;
+      if (const MountPoints::const_iterator it =
+              mount_points_.find(mount_info.mount_path);
+          it != mount_points_.end()) {
+        VLOG(1) << "Removed mount point '" << mount_info.mount_path << "'";
+        mount_points_.erase(it);
+      }
     }
 
     const Disks::const_iterator disk_it = disks_.find(mount_info.source_path);
@@ -519,43 +511,39 @@ class DiskMountManagerImpl : public DiskMountManager,
     if (want_to_keep && mount_info.mount_type == MountType::kDevice &&
         !mount_info.source_path.empty() && !mount_info.mount_path.empty() &&
         disk) {
-      // Currently the MountCompleted signal doesn't tell whether the device
-      // is mounted in read-only mode or not. Instead use the mount option
-      // recorded by DiskMountManagerImpl::MountPath().
-      // |source_path| should be same as |disk->device_path| because
-      // |VolumeManager::OnDiskEvent()| passes the latter to cros-disks as a
-      // source path when mounting a device.
-      const AccessModeMap::const_iterator access_it =
-          access_modes_.find(entry.source_path);
+      DCHECK(disk);
+      DCHECK_EQ(disk->device_path(), mount_info.source_path);
 
       // Store whether the disk was mounted in read-only mode due to a policy.
-      disk->set_write_disabled_by_policy(
-          access_it != access_modes_.end() && !disk->is_read_only_hardware() &&
-          access_it->second == MountAccessMode::kReadOnly);
+      disk->set_write_disabled_by_policy(!disk->is_read_only_hardware() &&
+                                         entry.read_only);
 
       // Right now, a number of operations (format, rename, unmount) rely on the
       // mount path being set even if the disk isn't mounted. cros-disks also
       // does some tracking of non-mounted mount paths.
       disk->SetMountPath(mount_info.mount_path);
-      disk->set_mounted(entry.error_code == MountError::kNone);
+      disk->set_mounted(entry.mount_error == MountError::kNone);
     }
 
     // Observers may read the values of disks_. So notify them after tweaking
     // values of disks_.
     if (auto it = mount_callbacks_.find(entry.source_path);
         it != mount_callbacks_.end()) {
-      std::move(it->second).Run(entry.error_code, mount_info);
+      DCHECK_EQ(it->first, entry.source_path);
+      VLOG(1) << "Calling mount callback for '" << entry.source_path
+              << "' with error = " << entry.mount_error;
+      std::move(it->second).Run(entry.mount_error, mount_info);
       mount_callbacks_.erase(std::move(it));
+    } else {
+      LOG(ERROR) << "No mount callback for '" << entry.source_path << "'";
     }
 
-    NotifyMountStatusUpdate(MOUNTING, entry.error_code, mount_info);
+    NotifyMountStatusUpdate(MOUNTING, entry.mount_error, mount_info);
 
-    if (disk)
+    if (disk) {
+      DCHECK(disk_it != disks_.end());
       disk->set_is_first_mount(false);
-
-    if (!want_to_keep) {
-      if (disk_it != disks_.end()) {
-        DCHECK(disk);
+      if (!want_to_keep) {
         VLOG(1) << "Removed Disk '" << disk->device_path() << "'";
         disks_.erase(disk_it);
       }
@@ -563,15 +551,12 @@ class DiskMountManagerImpl : public DiskMountManager,
   }
 
   // CrosDisksClient::Observer override.
-  void OnMountProgress(const MountEntry& entry) override {
-    DCHECK_EQ(entry.error_code, MountError::kInProgress);
+  void OnMountProgress(const MountPoint& entry) override {
+    DCHECK_EQ(entry.mount_error, MountError::kInProgress);
 
-    const auto [it, ok] =
-        mount_points_.insert({.source_path = entry.source_path,
-                              .mount_path = entry.mount_path,
-                              .mount_type = entry.mount_type,
-                              .mount_condition = MountCondition::kInProgress,
-                              .progress_percent = entry.progress_percent});
+    const auto [it, ok] = mount_points_.insert(
+        {entry.source_path, entry.mount_path, entry.mount_type,
+         MountError::kInProgress, entry.progress_percent, entry.read_only});
     if (ok) {
       DCHECK_EQ(it->mount_path, entry.mount_path);
       VLOG(1) << "Added in-progress mount point '" << entry.mount_path
@@ -584,7 +569,8 @@ class DiskMountManagerImpl : public DiskMountManager,
     DCHECK_EQ(mount_point.mount_path, entry.mount_path);
     DCHECK_EQ(mount_point.source_path, entry.source_path);
     DCHECK_EQ(mount_point.mount_type, entry.mount_type);
-    DCHECK_EQ(mount_point.mount_condition, MountCondition::kInProgress);
+    DCHECK_EQ(mount_point.mount_error, MountError::kInProgress);
+    DCHECK_EQ(mount_point.read_only, entry.read_only);
 
     mount_point.progress_percent = entry.progress_percent;
     VLOG(1) << "Updated in-progress mount point '" << entry.mount_path
@@ -595,11 +581,15 @@ class DiskMountManagerImpl : public DiskMountManager,
   void OnUnmountPath(UnmountPathCallback callback,
                      const std::string& mount_path,
                      MountError error) {
-    if (error == MountError::kPathNotMounted ||
-        error == MountError::kInvalidPath) {
-      // The path was already unmounted by something else.
+    if (error == MountError::kNone) {
+      VLOG(1) << "Unmounted '" << mount_path << "'";
+    } else {
       LOG(ERROR) << "Cannot unmount '" << mount_path << "': " << error;
-      error = MountError::kNone;
+      if (error == MountError::kPathNotMounted ||
+          error == MountError::kInvalidPath) {
+        // The path was already unmounted by something else.
+        error = MountError::kNone;
+      }
     }
 
     if (const MountPoints::const_iterator mount_point =
@@ -873,9 +863,9 @@ class DiskMountManagerImpl : public DiskMountManager,
     auto mount_events_iter = deferred_mount_events_.find(device_path);
     if (mount_events_iter == deferred_mount_events_.end())
       return;
-    std::vector<MountEntry> entries = std::move(mount_events_iter->second);
+    std::vector<MountPoint> entries = std::move(mount_events_iter->second);
     deferred_mount_events_.erase(mount_events_iter);
-    for (const MountEntry& entry : entries)
+    for (const MountPoint& entry : entries)
       OnMountCompleted(entry);
   }
 
@@ -886,16 +876,17 @@ class DiskMountManagerImpl : public DiskMountManager,
       return;
     }
 
-    DVLOG(1) << "Found disk " << disk_info.device_path();
+    VLOG(1) << "Found disk '" << disk_info.device_path() << "'";
     // Delete previous disk info for this path:
     bool is_new = true;
     bool is_first_mount = false;
     std::string base_mount_path = std::string();
-    Disks::iterator iter = disks_.find(disk_info.device_path());
-    if (iter != disks_.end()) {
-      is_first_mount = iter->get()->is_first_mount();
-      base_mount_path = iter->get()->base_mount_path();
-      disks_.erase(iter);
+
+    if (Disks::iterator it = disks_.find(disk_info.device_path());
+        it != disks_.end()) {
+      is_first_mount = (*it)->is_first_mount();
+      base_mount_path = (*it)->base_mount_path();
+      disks_.erase(std::move(it));
       is_new = false;
     }
 
@@ -903,15 +894,16 @@ class DiskMountManagerImpl : public DiskMountManager,
     // Otherwise, default to false.
     // Lookup by |device_path| which we pass to cros-disks when mounting a
     // device in |VolumeManager::OnDiskEvent()|.
-    auto access_mode = access_modes_.find(disk_info.device_path());
-    bool write_disabled_by_policy =
-        access_mode != access_modes_.end() &&
-        access_mode->second == MountAccessMode::kReadOnly;
+    const MountPoints::const_iterator mount_point =
+        mount_points_.find(disk_info.mount_path());
+    const bool write_disabled_by_policy =
+        mount_point != mount_points_.end() && mount_point->read_only;
     std::unique_ptr<Disk> disk = std::make_unique<Disk>(
         disk_info, write_disabled_by_policy, base_mount_path);
     if (!is_new) {
       disk->set_is_first_mount(is_first_mount);
     }
+
     const auto [it, ok] = disks_.insert(std::move(disk));
     DCHECK(ok);
     NotifyDiskStatusUpdate(is_new ? DISK_ADDED : DISK_CHANGED, **it);
@@ -963,8 +955,8 @@ class DiskMountManagerImpl : public DiskMountManager,
 
   // Part of EnsureMountInfoRefreshed(). Called after mount entries are listed.
   void RefreshAfterEnumerateMountEntries(
-      const std::vector<MountEntry>& entries) {
-    for (const auto& entry : entries)
+      const std::vector<MountPoint>& entries) {
+    for (const MountPoint& entry : entries)
       OnMountCompleted(entry);
     RefreshCompleted(true);
   }
@@ -978,12 +970,12 @@ class DiskMountManagerImpl : public DiskMountManager,
   }
 
   // CrosDisksClient::Observer override.
-  void OnMountEvent(MountEventType event,
-                    const std::string& device_path_arg) override {
-    // Take a copy of the argument so we can modify it below.
-    std::string device_path = device_path_arg;
+  void OnMountEvent(const MountEventType event,
+                    const std::string& device_path) override {
+    VLOG(1) << "OnMountEvent: " << event << " for '" << device_path << "'";
+
     switch (event) {
-      case MountEventType::kDiskAdded: {
+      case MountEventType::kDiskAdded:
         // Ensure we have an entry indicating we're waiting for
         // GetDeviceProperties() to complete.
         deferred_mount_events_[device_path];
@@ -992,34 +984,36 @@ class DiskMountManagerImpl : public DiskMountManager,
             BindOnce(&DiskMountManagerImpl::OnGetDeviceProperties,
                      weak_ptr_factory_.GetWeakPtr()),
             base::DoNothing());
-        break;
-      }
-      case MountEventType::kDiskRemoved: {
+        return;
+
+      case MountEventType::kDiskRemoved:
         // Search and remove disks that are no longer present.
-        DiskMountManager::Disks::iterator iter = disks_.find(device_path);
-        if (iter != disks_.end()) {
-          Disk* disk = iter->get();
-          NotifyDiskStatusUpdate(DISK_REMOVED, *disk);
-          disks_.erase(iter);
+        if (Disks::const_iterator it = disks_.find(device_path);
+            it != disks_.end()) {
+          DCHECK(*it);
+          NotifyDiskStatusUpdate(DISK_REMOVED, **it);
+          disks_.erase(std::move(it));
         }
-        break;
-      }
-      case MountEventType::kDeviceAdded: {
+        return;
+
+      case MountEventType::kDeviceAdded:
         NotifyDeviceStatusUpdate(DEVICE_ADDED, device_path);
-        break;
-      }
-      case MountEventType::kDeviceRemoved: {
+        return;
+
+      case MountEventType::kDeviceRemoved:
         NotifyDeviceStatusUpdate(DEVICE_REMOVED, device_path);
-        break;
-      }
-      case MountEventType::kDeviceScanned: {
+        return;
+
+      case MountEventType::kDeviceScanned:
         NotifyDeviceStatusUpdate(DEVICE_SCANNED, device_path);
+        return;
+
+      case MountEventType::kDiskChanged:
         break;
-      }
-      default: {
-        LOG(ERROR) << "Unknown event: " << static_cast<int>(event);
-      }
     }
+
+    LOG(ERROR) << "Unexpected mount event " << event << " for '" << device_path
+               << "'";
   }
 
   // Notifies all observers about disk status update.
@@ -1094,46 +1088,31 @@ class DiskMountManagerImpl : public DiskMountManager,
   CrosDisksClient* const cros_disks_client_ = CrosDisksClient::Get();
 
   // The list of disks found.
-  DiskMountManager::Disks disks_;
+  Disks disks_;
 
-  std::map<std::string, MountPathCallback> mount_callbacks_;
-  DiskMountManager::MountPoints mount_points_;
+  // Callbacks of mount points in the process of being mounted, indexed by
+  // source path.
+  using MountCallbacks = std::map<std::string, MountPathCallback>;
+  MountCallbacks mount_callbacks_;
+
+  // Known mount points.
+  MountPoints mount_points_;
 
   // A map entry with a key of the device path will be created upon calling
   // GetDeviceProperties(), for deferring mount events, and removed once it has
   // completed. This prevents a race resulting in mount events being fired with
   // the corresponding Disk entry unexpectedly missing.
-  std::map<std::string, std::vector<MountEntry>> deferred_mount_events_;
+  std::map<std::string, std::vector<MountPoint>> deferred_mount_events_;
 
   bool already_refreshed_ = false;
   std::vector<EnsureMountInfoRefreshedCallback> refresh_callbacks_;
 
   SuspendUnmountManager suspend_unmount_manager_{this};
 
-  // Whether the instance attempted to mount a device in read-only mode for
-  // each source path.
-  typedef std::map<std::string, MountAccessMode> AccessModeMap;
-  AccessModeMap access_modes_;
-
   base::WeakPtrFactory<DiskMountManagerImpl> weak_ptr_factory_{this};
 };
 
 }  // namespace
-
-std::ostream& operator<<(std::ostream& out, MountCondition condition) {
-  switch (condition) {
-#define PRINT(s)          \
-  case MountCondition::s: \
-    return out << #s;
-    PRINT(kNone)
-    PRINT(kUnknownFilesystem)
-    PRINT(kUnsupportedFilesystem)
-    PRINT(kInProgress)
-#undef PRINT
-  }
-
-  return out << static_cast<std::underlying_type_t<MountCondition>>(condition);
-}
 
 DiskMountManager::Observer::~Observer() {
   DCHECK(!IsInObserverList());

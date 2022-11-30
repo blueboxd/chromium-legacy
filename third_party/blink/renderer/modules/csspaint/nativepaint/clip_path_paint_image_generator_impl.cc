@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,8 +29,10 @@ ClipPathPaintImageGeneratorImpl::ClipPathPaintImageGeneratorImpl(
 scoped_refptr<Image> ClipPathPaintImageGeneratorImpl::Paint(
     float zoom,
     const gfx::RectF& reference_box,
+    const gfx::SizeF& clip_area_size,
     const Node& node) {
-  return clip_path_paint_definition_->Paint(zoom, reference_box, node);
+  return clip_path_paint_definition_->Paint(zoom, reference_box, clip_area_size,
+                                            node);
 }
 
 Animation* ClipPathPaintImageGeneratorImpl::GetAnimationIfCompositable(

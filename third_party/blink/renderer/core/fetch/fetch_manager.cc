@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/request_mode.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/network/public/mojom/trust_tokens.mojom-blink.h"
@@ -97,7 +98,7 @@ bool HasNonEmptyLocationHeader(const FetchHeaderList* headers) {
   String value;
   if (!headers->Get(http_names::kLocation, value))
     return false;
-  return !value.IsEmpty();
+  return !value.empty();
 }
 
 const char* SerializeTrustTokenOperationType(
@@ -458,7 +459,7 @@ void FetchManager::Loader::DidReceiveResponse(
   Response* r =
       Response::Create(resolver_->GetExecutionContext(), tainted_response);
   r->headers()->SetGuard(Headers::kImmutableGuard);
-  if (fetch_request_data_->Integrity().IsEmpty()) {
+  if (fetch_request_data_->Integrity().empty()) {
     resolver_->Resolve(r);
     resolver_.Clear();
   } else {
@@ -481,7 +482,7 @@ void FetchManager::Loader::DidReceiveCachedMetadata(mojo_base::BigBuffer data) {
 }
 
 void FetchManager::Loader::DidStartLoadingResponseBody(BytesConsumer& body) {
-  if (fetch_request_data_->Integrity().IsEmpty() &&
+  if (fetch_request_data_->Integrity().empty() &&
       !response_has_no_store_header_) {
     // BufferingBytesConsumer reads chunks from |bytes_consumer| as soon as
     // they get available to relieve backpressure.  Buffering starts after
@@ -507,7 +508,7 @@ void FetchManager::Loader::DidFinishLoading(uint64_t) {
 
   auto* window = DynamicTo<LocalDOMWindow>(execution_context_.Get());
   if (window && window->GetFrame() &&
-      cors::IsOkStatus(response_http_status_code_)) {
+      network::IsSuccessfulStatus(response_http_status_code_)) {
     window->GetFrame()->GetPage()->GetChromeClient().AjaxSucceeded(
         window->GetFrame());
   }
@@ -886,7 +887,7 @@ void FetchManager::Loader::Failed(
   bool issue_only =
       base::FeatureList::IsEnabled(blink::features::kCORSErrorsIssueOnly) &&
       issue_id;
-  if (!message.IsEmpty() && !issue_only) {
+  if (!message.empty() && !issue_only) {
     // CORS issues are reported via network service instrumentation, with the
     // exception of early errors reported in FileIssueAndPerformNetworkError.
     auto* console_message = MakeGarbageCollected<ConsoleMessage>(
@@ -953,7 +954,8 @@ ScriptPromise FetchManager::Fetch(ScriptState* script_state,
       MakeGarbageCollected<Loader>(GetExecutionContext(), this, resolver,
                                    request, &script_state->World(), signal);
   loaders_.insert(loader);
-  signal->AddAlgorithm(WTF::Bind(&Loader::Abort, WrapWeakPersistent(loader)));
+  signal->AddAlgorithm(
+      WTF::BindOnce(&Loader::Abort, WrapWeakPersistent(loader)));
   // TODO(ricea): Reject the Response body with AbortError, not TypeError.
   loader->Start();
   return promise;

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,8 @@ class LayoutWorkletTest : public PageTestBase, public ModuleTestBase {
   ScriptEvaluationResult EvaluateScriptModule(const String& source_code) {
     ScriptState* script_state = GetScriptState();
     v8::MicrotasksScope microtasks_scope(
-        script_state->GetIsolate(), v8::MicrotasksScope::kDoNotRunMicrotasks);
+        script_state->GetIsolate(), ToMicrotaskQueue(script_state),
+        v8::MicrotasksScope::kDoNotRunMicrotasks);
     EXPECT_TRUE(script_state);
 
     KURL js_url("https://example.com/worklet.js");

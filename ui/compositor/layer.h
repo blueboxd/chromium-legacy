@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -572,6 +573,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   }
 
  private:
+  // TODO(https://crbug.com/1242749): temporary while tracking down crash.
+  friend class Compositor;
   friend class LayerOwner;
   class LayerMirror;
   class SubpixelPositionOffsetCache;
@@ -821,10 +824,9 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // layer.
   unsigned trilinear_filtering_request_;
 
-  // TODO(crbug.com/1172694): Remove once the root cause is identified.
-#if defined(ADDRESS_SANITIZER)
-  bool destroyed_ = false;
-#endif
+  // TODO(https://crbug.com/1242749): temporary while tracking down crash.
+  bool in_send_damaged_rects_ = false;
+  bool sending_damaged_rects_for_descendants_ = false;
 
   base::WeakPtrFactory<Layer> weak_ptr_factory_{this};
 };

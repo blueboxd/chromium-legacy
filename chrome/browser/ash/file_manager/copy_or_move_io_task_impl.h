@@ -46,8 +46,8 @@ class CopyOrMoveIOTaskImpl {
   virtual ~CopyOrMoveIOTaskImpl();
 
   // Starts the copy or move.
-  void Execute(ProgressCallback progress_callback,
-               CompleteCallback complete_callback);
+  virtual void Execute(ProgressCallback progress_callback,
+                       CompleteCallback complete_callback);
 
   // Cancels the operation.
   void Cancel();
@@ -120,7 +120,7 @@ class CopyOrMoveIOTaskImpl {
   bool completed_ = false;
 
   // The number of file for which the file size has been fetched.
-  int files_preprocessed_ = 0;
+  size_t files_preprocessed_ = 0;
 
   // Stores the size of each source so we know what to increment the progress
   // bytes by for each copy or move completion.

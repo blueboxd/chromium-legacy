@@ -34,6 +34,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/views/widget/widget.h"
 
@@ -344,7 +345,7 @@ void ViewTreeHostRootView::Paint() {
   int stride = resource->gpu_memory_buffer->stride(0);
   std::unique_ptr<SkCanvas> canvas =
       SkCanvas::MakeRasterDirect(info, data, stride);
-  canvas->setMatrix(rotate_transform_.matrix().asM33());
+  canvas->setMatrix(gfx::TransformToFlattenedSkMatrix(rotate_transform_));
   display_item_list->Raster(canvas.get());
 
   {
@@ -426,8 +427,8 @@ void ViewTreeHostRootView::SubmitCompositorFrame() {
         resource->context_provider->SharedImageInterface();
     if (resource->mailbox.IsZero()) {
       DCHECK(!resource->sync_token.HasData());
-      const uint32_t usage =
-          gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
+      const uint32_t usage = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
+                             gpu::SHARED_IMAGE_USAGE_SCANOUT;
       gpu::GpuMemoryBufferManager* gmb_manager =
           aura::Env::GetInstance()
               ->context_factory()
@@ -442,14 +443,11 @@ void ViewTreeHostRootView::SubmitCompositorFrame() {
     resource->damaged = false;
   }
 
-  viz::TransferableResource transferable_resource;
+  viz::TransferableResource transferable_resource =
+      viz::TransferableResource::MakeGpu(
+          resource->mailbox, GL_LINEAR, GL_TEXTURE_2D, resource->sync_token,
+          buffer_size_, viz::RGBA_8888, is_overlay_candidate_);
   transferable_resource.id = id_generator_.GenerateNextId();
-  transferable_resource.format = viz::RGBA_8888;
-  transferable_resource.filter = GL_LINEAR;
-  transferable_resource.size = buffer_size_;
-  transferable_resource.mailbox_holder = gpu::MailboxHolder(
-      resource->mailbox, resource->sync_token, GL_TEXTURE_2D);
-  transferable_resource.is_overlay_candidate = is_overlay_candidate_;
 
   gfx::Transform buffer_to_target_transform;
   bool rv = rotate_transform_.GetInverse(&buffer_to_target_transform);

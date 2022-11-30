@@ -128,6 +128,17 @@ PrerenderHost::PrerenderHost(const PrerenderAttributes& attributes,
     // DCHECK_NE(attributes.initiator_frame_tree_node_id,
     //           RenderFrameHost::kNoFrameTreeNodeId);
   }
+
+  // When `kPrerender2SequentialPrerendering` feature is enabled, the prerender
+  // host can be pending until the host starts or is cancelled. So the outcome
+  // is set here to track the pending status.
+  if (base::FeatureList::IsEnabled(
+          blink::features::kPrerender2SequentialPrerendering) &&
+      attempt_) {
+    attempt_->SetTriggeringOutcome(
+        PreloadingTriggeringOutcome::kTriggeredButPending);
+  }
+
   CreatePageHolder(*static_cast<WebContentsImpl*>(&web_contents));
 }
 
@@ -264,8 +275,9 @@ void PrerenderHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   }
 
   // The prerendered contents are considered ready for activation when the
-  // main frame navigation reaches DidFinishNavigation.
-  if (is_prerender_main_frame) {
+  // main frame navigation reaches DidFinishNavigation and the prerender host
+  // has not been canceled yet.
+  if (is_prerender_main_frame && !final_status_) {
     DCHECK(!is_ready_for_activation_);
     is_ready_for_activation_ = true;
 
@@ -276,10 +288,30 @@ void PrerenderHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
 
 void PrerenderHost::OnVisibilityChanged(Visibility visibility) {
   TRACE_EVENT("navigation", "PrerenderHost::OnVisibilityChanged");
-  // Keep prerenderings alive in the background when their visibility state
-  // changes to HIDDEN if the feature is enabled.
-  if (base::FeatureList::IsEnabled(blink::features::kPrerender2InBackground))
+  if (base::FeatureList::IsEnabled(blink::features::kPrerender2InBackground)) {
+    switch (visibility) {
+      case Visibility::HIDDEN:
+        // Keep a prerendered page alive in the background when its visibility
+        // state changes to HIDDEN if the feature is enabled.
+        DCHECK(!timeout_timer_.IsRunning());
+
+        timeout_timer_.SetTaskRunner(GetTimerTaskRunner());
+        // Cancel PrerenderHost in the background when it exceeds a certain
+        // amount of time defined in `kTimeToLiveInBackground`.
+        timeout_timer_.Start(
+            FROM_HERE, kTimeToLiveInBackground,
+            base::BindOnce(&PrerenderHost::Cancel, base::Unretained(this),
+                           FinalStatus::kTimeoutBackgrounded));
+        break;
+      case Visibility::OCCLUDED:
+        break;
+      case Visibility::VISIBLE:
+        // Stop the timer when a prerendered page gets visible to users.
+        timeout_timer_.Stop();
+        break;
+    }
     return;
+  }
 
   if (visibility == Visibility::HIDDEN) {
     Cancel(FinalStatus::kTriggerBackgrounded);
@@ -709,12 +741,15 @@ void PrerenderHost::SetFailureReason(FinalStatus status) {
   switch (status) {
     // When adding a new failure reason, consider whether it should be
     // propagated to `attempt_`. Most values should be propagated, but we
-    // explicitly do not propagate failure reasons if the prerender was actually
-    // successful (kActivated), or if prerender was successfully prepared but
-    // then destroyed because it wasn't needed for a subsequent navigation
-    // (kTriggerDestroyed).
+    // explicitly do not propagate failure reasons if:
+    // 1. the prerender was actually successful (kActivated).
+    // 2. prerender was successfully prepared but then destroyed because it
+    //    wasn't needed for a subsequent navigation (kTriggerDestroyed).
+    // 3. the prerender was still pending for its initial navigation when it was
+    //    activated (kActivatedBeforeStarted).
     case FinalStatus::kActivated:
     case FinalStatus::kTriggerDestroyed:
+    case FinalStatus::kActivatedBeforeStarted:
       return;
     case FinalStatus::kDestroyed:
     case FinalStatus::kLowEndDevice:
@@ -744,13 +779,14 @@ void PrerenderHost::SetFailureReason(FinalStatus status) {
     case FinalStatus::kAudioOutputDeviceRequested:
     case FinalStatus::kMixedContent:
     case FinalStatus::kTriggerBackgrounded:
-    case FinalStatus::kEmbedderTriggeredAndSameOriginRedirected:
     case FinalStatus::kEmbedderTriggeredAndCrossOriginRedirected:
     case FinalStatus::kMemoryLimitExceeded:
     case FinalStatus::kFailToGetMemoryUsage:
     case FinalStatus::kDataSaverEnabled:
     case FinalStatus::kHasEffectiveUrl:
-    case FinalStatus::kActivatedBeforeStarted:
+    case FinalStatus::kInactivePageRestriction:
+    case FinalStatus::kStartFailed:
+    case FinalStatus::kTimeoutBackgrounded:
       attempt_->SetFailureReason(ToPreloadingFailureReason(status));
       // We reset the attempt to ensure we don't update once we have reported it
       // as failure or accidentally use it for any other prerender attempts as
@@ -800,6 +836,17 @@ void PrerenderHost::Cancel(FinalStatus status) {
       host->delegate()->GetPrerenderHostRegistry();
   DCHECK(registry);
   registry->CancelHost(frame_tree_node_id_, status);
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+PrerenderHost::GetTimerTaskRunner() {
+  return timer_task_runner_for_testing_ ? timer_task_runner_for_testing_
+                                        : base::ThreadTaskRunnerHandle::Get();
+}
+
+void PrerenderHost::SetTaskRunnerForTesting(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  timer_task_runner_for_testing_ = std::move(task_runner);
 }
 
 }  // namespace content

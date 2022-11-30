@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,7 @@ bool ConvertAnimationEffects(
     HeapVector<Member<KeyframeEffect>>& keyframe_effects,
     String& error_string) {
   DCHECK(effects);
-  DCHECK(keyframe_effects.IsEmpty());
+  DCHECK(keyframe_effects.empty());
 
   // Currently we only support KeyframeEffect.
   switch (effects->GetContentType()) {
@@ -71,7 +71,7 @@ bool ConvertAnimationEffects(
     }
   }
 
-  if (keyframe_effects.IsEmpty()) {
+  if (keyframe_effects.empty()) {
     error_string = "Effects array must be non-empty";
     return false;
   }
@@ -551,7 +551,7 @@ void WorkletAnimation::UpdateCompositingState() {
 #if DCHECK_IS_ON()
     String warning_message;
     DCHECK(CheckCanStart(&warning_message));
-    DCHECK(warning_message.IsEmpty());
+    DCHECK(warning_message.empty());
 #endif  // DCHECK_IS_ON()
     if (StartOnCompositor())
       return;

@@ -387,15 +387,13 @@ CertStoreServiceTest::CertStoreServiceTest()
   cryptohome_mixin_.MarkUserAsExisting(affiliation_mixin_.account_id());
 
   // TODO(crbug.com/1311355): This test is run with the feature
-  // kUseAuthsessionAuthentication enabled and disabled because of a
+  // kUseAuthFactors enabled and disabled because of a
   // transitive dependency of AffiliationTestHelper on that feature. Remove
-  // the parameter when kUseAuthsessionAuthentication is removed.
+  // the parameter when kUseAuthFactors is removed.
   if (std::get<1>(GetParam())) {
-    feature_list_.InitAndEnableFeature(
-        ash::features::kUseAuthsessionAuthentication);
+    feature_list_.InitAndEnableFeature(ash::features::kUseAuthFactors);
   } else {
-    feature_list_.InitAndDisableFeature(
-        ash::features::kUseAuthsessionAuthentication);
+    feature_list_.InitAndDisableFeature(ash::features::kUseAuthFactors);
   }
 }
 
@@ -457,13 +455,15 @@ void CertStoreServiceTest::SetUpCerts(
   // Remember current size of |installed_certs_| before new certs.
   size_t initial_size = installed_certs_.size();
 
-  // Read certs from files.
-  base::RunLoop loop;
-  NssServiceFactory::GetForContext(profile())
-      ->UnsafelyGetNSSCertDatabaseForTesting(base::BindOnce(
-          &CertStoreServiceTest::SetUpTestClientCerts, base::Unretained(this),
-          certs_to_setup, loop.QuitClosure()));
-  loop.Run();
+  {
+    // Read certs from files.
+    base::RunLoop loop;
+    NssServiceFactory::GetForContext(profile())
+        ->UnsafelyGetNSSCertDatabaseForTesting(base::BindOnce(
+            &CertStoreServiceTest::SetUpTestClientCerts, base::Unretained(this),
+            certs_to_setup, loop.QuitClosure()));
+    loop.Run();
+  }
 
   // Verify |certs_to_setup.size()| new certs have been installed.
   ASSERT_EQ(installed_certs_.size(), certs_to_setup.size() + initial_size);

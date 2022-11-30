@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,23 +93,6 @@ TEST(CSSParserImplTest, AtSupportsOffsets) {
   EXPECT_EQ(test_css_parser_observer.rule_header_end_, 25u);
   EXPECT_EQ(test_css_parser_observer.rule_body_start_, 26u);
   EXPECT_EQ(test_css_parser_observer.rule_body_end_, 27u);
-}
-
-TEST(CSSParserImplTest, AtViewportOffsets) {
-  String sheet_text = "@viewport { }";
-  auto* context = MakeGarbageCollected<CSSParserContext>(
-      kUASheetMode, SecureContextMode::kInsecureContext);
-  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(context);
-  TestCSSParserObserver test_css_parser_observer;
-  CSSParserImpl::ParseStyleSheetForInspector(sheet_text, context, style_sheet,
-                                             test_css_parser_observer);
-  EXPECT_EQ(style_sheet->ChildRules().size(), 1u);
-  EXPECT_EQ(test_css_parser_observer.rule_type_,
-            StyleRule::RuleType::kViewport);
-  EXPECT_EQ(test_css_parser_observer.rule_header_start_, 10u);
-  EXPECT_EQ(test_css_parser_observer.rule_header_end_, 10u);
-  EXPECT_EQ(test_css_parser_observer.rule_body_start_, 10u);
-  EXPECT_EQ(test_css_parser_observer.rule_body_end_, 10u);
 }
 
 TEST(CSSParserImplTest, AtFontFaceOffsets) {
@@ -535,8 +518,7 @@ TEST(CSSParserImplTest, CorrectAtRuleOrderingWithLayers) {
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
   auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
-  CSSParserImpl::ParseStyleSheet(sheet_text, context, sheet,
-                                 /*use_arena=*/true);
+  CSSParserImpl::ParseStyleSheet(sheet_text, context, sheet);
 
   // All rules should parse successfully.
   EXPECT_EQ(1u, sheet->PreImportLayerStatementRules().size());
@@ -557,8 +539,7 @@ TEST(CSSParserImplTest, EmptyLayerStatementsAtWrongPositions) {
     auto* context = MakeGarbageCollected<CSSParserContext>(
         kHTMLStandardMode, SecureContextMode::kInsecureContext);
     auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
-    CSSParserImpl::ParseStyleSheet(sheet_text, context, sheet,
-                                   /*use_arena=*/true);
+    CSSParserImpl::ParseStyleSheet(sheet_text, context, sheet);
 
     EXPECT_EQ(1u, sheet->PreImportLayerStatementRules().size());
     EXPECT_EQ(1u, sheet->ChildRules().size());
@@ -580,8 +561,7 @@ TEST(CSSParserImplTest, EmptyLayerStatementsAtWrongPositions) {
     auto* context = MakeGarbageCollected<CSSParserContext>(
         kHTMLStandardMode, SecureContextMode::kInsecureContext);
     auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
-    CSSParserImpl::ParseStyleSheet(sheet_text, context, sheet,
-                                   /*use_arena=*/true);
+    CSSParserImpl::ParseStyleSheet(sheet_text, context, sheet);
 
     EXPECT_EQ(1u, sheet->PreImportLayerStatementRules().size());
     EXPECT_EQ(1u, sheet->ImportRules().size());
@@ -602,8 +582,7 @@ TEST(CSSParserImplTest, EmptyLayerStatementAfterRegularRule) {
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
   auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
-  CSSParserImpl::ParseStyleSheet(sheet_text, context, sheet,
-                                 /*use_arena=*/true);
+  CSSParserImpl::ParseStyleSheet(sheet_text, context, sheet);
 
   EXPECT_EQ(0u, sheet->PreImportLayerStatementRules().size());
   EXPECT_EQ(2u, sheet->ChildRules().size());

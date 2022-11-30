@@ -14,6 +14,7 @@
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
+#import "base/task/sequenced_task_runner.h"
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/tracker.h"
@@ -24,7 +25,6 @@
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/discover_feed/feed_constants.h"
 #import "ios/chrome/browser/feature_engagement/tracker_util.h"
@@ -114,6 +114,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/url_with_title.h"
 #import "ios/chrome/browser/upgrade/upgrade_center.h"
+#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_observer_bridge.h"
@@ -132,6 +133,7 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/promo_style/promo_style_view_controller.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/util/ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/components/webui/web_ui_url_constants.h"
 #import "ios/public/provider/chrome/browser/fullscreen/fullscreen_api.h"
@@ -784,7 +786,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)openNewTabFromOriginPoint:(CGPoint)originPoint
                      focusOmnibox:(BOOL)focusOmnibox
                     inheritOpener:(BOOL)inheritOpener {
-  NSTimeInterval startTime = [NSDate timeIntervalSinceReferenceDate];
+  const base::TimeTicks startTime = base::TimeTicks::Now();
   BOOL offTheRecord = _isOffTheRecord;
   ProceduralBlock oldForegroundTabWasAddedCompletionBlock =
       self.foregroundTabWasAddedCompletionBlock;
@@ -793,13 +795,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     if (oldForegroundTabWasAddedCompletionBlock) {
       oldForegroundTabWasAddedCompletionBlock();
     }
-    double duration = [NSDate timeIntervalSinceReferenceDate] - startTime;
-    base::TimeDelta timeDelta = base::Seconds(duration);
+    const base::TimeDelta duration = base::TimeTicks::Now() - startTime;
     if (offTheRecord) {
       UMA_HISTOGRAM_TIMES("Toolbar.Menu.NewIncognitoTabPresentationDuration",
-                          timeDelta);
+                          duration);
     } else {
-      UMA_HISTOGRAM_TIMES("Toolbar.Menu.NewTabPresentationDuration", timeDelta);
+      UMA_HISTOGRAM_TIMES("Toolbar.Menu.NewTabPresentationDuration", duration);
     }
     if (focusOmnibox) {
       [omniboxCommandHandler focusOmnibox];
@@ -951,16 +952,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // Dismissed controllers will be so after a delay. Queue the completion
     // callback after that.
     if (completion) {
-      dispatch_after(
-          dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)),
-          dispatch_get_main_queue(), ^{
-            completion();
-          });
+      base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+          FROM_HERE, base::BindOnce(completion), base::Milliseconds(400));
     }
   } else if (completion) {
     // If no view controllers are presented, we should be ok with dispatching
     // the completion block directly.
-    dispatch_async(dispatch_get_main_queue(), completion);
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(completion));
   }
 }
 
@@ -1546,7 +1545,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   } else {
     // Add a white bar when there is no tab strip so that the status bar on the
     // NTP is white.
-    _fakeStatusBarView.backgroundColor = ntp_home::kNTPBackgroundColor();
+    _fakeStatusBarView.backgroundColor = ntp_home::NTPBackgroundColor();
     [self.view insertSubview:_fakeStatusBarView atIndex:0];
   }
 }
@@ -1860,7 +1859,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       kTabSwitcherGuide,
       kNewTabButtonGuide,
       kSecondaryToolbarGuide,
-      kVoiceSearchButtonGuide,
       kDiscoverFeedHeaderMenuGuide,
       kPrimaryToolbarLocationViewGuide,
     ];
@@ -3298,21 +3296,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     if (self.foregroundTabWasAddedCompletionBlock) {
       // This callback is called before webState is activated. Dispatch the
       // callback asynchronously to be sure the activation is complete.
-      dispatch_async(dispatch_get_main_queue(), ^{
-        // Test existence again as the block may have been deleted.
-        if (self.foregroundTabWasAddedCompletionBlock) {
-          // Clear the property before executing the completion, in case the
-          // completion calls appendTabAddedCompletion:tabAddedCompletion.
-          // Clearing the property after running the completion would cause any
-          // newly appended completion to be immediately cleared without ever
-          // getting run. An example where this would happen is when opening
-          // multiple tabs via the "Open URLs in Chrome" Siri Shortcut.
-          ProceduralBlock completion =
-              self.foregroundTabWasAddedCompletionBlock;
-          self.foregroundTabWasAddedCompletionBlock = nil;
-          completion();
-        }
-      });
+      __weak BrowserViewController* weakSelf = self;
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE, base::BindOnce(^{
+            [weakSelf executeAndClearForegroundTabWasAddedCompletionBlock];
+          }));
     }
     return;
   }
@@ -3332,6 +3320,24 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           [weakSelf startVoiceSearchIfNecessary];
         }];
   }
+}
+
+// Helper which execute and then clears `foregroundTabWasAddedCompletionBlock`
+// if it is still set, or does nothing.
+- (void)executeAndClearForegroundTabWasAddedCompletionBlock {
+  // Test existence again as the block may have been deleted.
+  ProceduralBlock completion = self.foregroundTabWasAddedCompletionBlock;
+  if (!completion)
+    return;
+
+  // Clear the property before executing the completion, in case the
+  // completion calls appendTabAddedCompletion:tabAddedCompletion.
+  // Clearing the property after running the completion would cause any
+  // newly appended completion to be immediately cleared without ever
+  // getting run. An example where this would happen is when opening
+  // multiple tabs via the "Open URLs in Chrome" Siri Shortcut.
+  self.foregroundTabWasAddedCompletionBlock = nil;
+  completion();
 }
 
 // Helper which starts voice search at the end of new Tab animation if
@@ -3640,7 +3646,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // The LensCoordinator needs the content area of the webView with the
   // header and footer toolbars visible.
-  UIEdgeInsets viewportInsets = UIEdgeInsetsZero;
+  UIEdgeInsets viewportInsets = self.rootSafeAreaInsets;
   if (!IsRegularXRegularSizeClass(self)) {
     viewportInsets.bottom = [self secondaryToolbarHeightWithInset];
   }

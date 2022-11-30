@@ -44,7 +44,7 @@ std::string CreateSortKey(const CredentialUIEntry& credential) {
   std::string shown_origin = GetShownOrigin(credential);
 
   const auto facet_uri =
-      FacetURI::FromPotentiallyInvalidSpec(credential.signon_realm);
+      FacetURI::FromPotentiallyInvalidSpec(credential.GetFirstSignonRealm());
   const bool is_android_uri = facet_uri.IsValidAndroidFacetURI();
 
   if (is_android_uri) {
@@ -85,6 +85,27 @@ std::string CreateSortKey(const CredentialUIEntry& credential) {
   // To separate HTTP/HTTPS credentials, add the scheme to the key.
   key += kSortKeyPartsSeparator + GetShownUrl(credential).scheme();
 
+  return key;
+}
+
+std::string CreateUsernamePasswordSortKey(const PasswordForm& form) {
+  std::string key;
+  // The origin isn't taken into account for normal credentials since we want to
+  // group them together.
+  if (!form.blocked_by_user) {
+    key += base::UTF16ToUTF8(form.username_value) + kSortKeyPartsSeparator +
+           base::UTF16ToUTF8(form.password_value);
+
+    key += kSortKeyPartsSeparator;
+    if (!form.federation_origin.opaque())
+      key += form.federation_origin.host();
+    else
+      key += kSortKeyNoFederationSymbol;
+  } else {
+    // Key for blocked by user credential since it does not store username and
+    // password. These credentials are not grouped together.
+    key = GetShownOrigin(CredentialUIEntry(form));
+  }
   return key;
 }
 

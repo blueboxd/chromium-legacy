@@ -5,10 +5,17 @@
 #ifndef UI_ACCESSIBILITY_PLATFORM_AUTOMATION_AUTOMATION_TREE_MANAGER_OWNER_H_
 #define UI_ACCESSIBILITY_PLATFORM_AUTOMATION_AUTOMATION_TREE_MANAGER_OWNER_H_
 
+#include <vector>
 #include "ui/accessibility/ax_enums.mojom-shared.h"
+#include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_event_generator.h"
+#include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/accessibility/ax_tree_id.h"
+#include "ui/accessibility/ax_tree_update.h"
+#include "ui/accessibility/platform/automation/automation_api_util.h"
 #include "ui/accessibility/platform/automation/automation_ax_tree_wrapper.h"
+#include "ui/gfx/geometry/point.h"
+#include "v8/include/v8-isolate.h"
 
 // TODO(crbug.com/1357889): Remove this after migrating test logic to
 // ui/accessibility.
@@ -17,6 +24,7 @@ class AutomationInternalCustomBindingsTest;
 }
 
 namespace ui {
+class AutomationV8Bindings;
 
 // Virtual class that owns one or more AutomationAXTreeWrappers.
 // TODO(crbug.com/1357889): Merge some of this interface with
@@ -26,32 +34,26 @@ class AX_EXPORT AutomationTreeManagerOwner {
   AutomationTreeManagerOwner();
   virtual ~AutomationTreeManagerOwner();
 
-  //
-  // Virtual methods for sending data to the hosting bindings system.
-  // TODO(crbug.com/1357889): Create implementations of these through
-  // creating V8 values, and a virtual method to take V8 values and
-  // dispatch them. V8 logic should go in a separate class owned by
-  // this one.
-  //
+  virtual AutomationV8Bindings* GetAutomationV8Bindings() const = 0;
+  virtual void NotifyTreeEventListenersChanged() = 0;
 
   // Sends an event to automation in V8 that the nodes with IDs |ids|
   // have been removed from the |tree|.
-  virtual void SendNodesRemovedEvent(AXTree* tree,
-                                     const std::vector<int>& ids) = 0;
+  void SendNodesRemovedEvent(AXTree* tree, const std::vector<int>& ids);
 
   // Sends an event to automation in V8 that the |node| in |tree| has
   // undergone a |change_type| mutation.
-  virtual bool SendTreeChangeEvent(ax::mojom::Mutation change_type,
-                                   AXTree* tree,
-                                   AXNode* node) = 0;
+  bool SendTreeChangeEvent(ax::mojom::Mutation change_type,
+                           AXTree* tree,
+                           AXNode* node);
 
   // Sends an AXEvent to automation in V8.
-  virtual void SendAutomationEvent(
+  void SendAutomationEvent(
       AXTreeID tree_id,
       const gfx::Point& mouse_location,
       const AXEvent& event,
       absl::optional<AXEventGenerator::Event> generated_event_type =
-          absl::optional<AXEventGenerator::Event>()) = 0;
+          absl::optional<AXEventGenerator::Event>());
 
   // Gets the hosting node in a parent tree.
   AXNode* GetHostInParentTree(
@@ -84,16 +86,6 @@ class AX_EXPORT AutomationTreeManagerOwner {
 
   void SendAccessibilityFocusedLocationChange(const gfx::Point& mouse_location);
 
- protected:
-  friend class extensions::AutomationInternalCustomBindingsTest;
-
-  // Given an initial AutomationAXTreeWrapper, return the
-  // AutomationAXTreeWrapper and node of the focused node within this tree
-  // or a focused descendant tree.
-  bool GetFocusInternal(AutomationAXTreeWrapper* top_tree,
-                        AutomationAXTreeWrapper** out_tree,
-                        AXNode** out_node);
-
   // Adjust the bounding box of a node from local to global coordinates,
   // walking up the parent hierarchy to offset by frame offsets and
   // scroll offsets.
@@ -105,6 +97,99 @@ class AX_EXPORT AutomationTreeManagerOwner {
                                     gfx::RectF local_bounds = gfx::RectF(),
                                     bool* offscreen = nullptr,
                                     bool clip_bounds = true) const;
+
+  std::vector<int> CalculateSentenceBoundary(
+      AutomationAXTreeWrapper* tree_wrapper,
+      AXNode* node,
+      bool start_boundary);
+
+  bool GetFocus(AXTreeID* focused_tree_id, int* node_id) const;
+
+  size_t GetChildCount(AXNode* node) const;
+
+  // Gets the child IDs of the given node, and finds the AXTreeID that the node
+  // belongs to and sets |result_tree_id|.
+  std::vector<int> GetChildIDs(AXNode* node, AXTreeID* result_tree_id) const;
+
+  // Returns false unable to get bounds for range on this node, for
+  // example if it is not an inline text box.
+  bool GetBoundsForRange(AutomationAXTreeWrapper* tree_wrapper,
+                         AXNode* node,
+                         int start,
+                         int end,
+                         bool clipped,
+                         gfx::Rect* result) const;
+
+  const char* GetName(AXNode* node) const;
+
+  bool GetNextTextMatch(AutomationAXTreeWrapper* tree_wrapper,
+                        AXNode* node,
+                        const std::string& search_str,
+                        bool backward,
+                        AXTreeID* result_tree_id,
+                        int* result_node_id) const;
+
+  //
+  // Access the cached accessibility trees and properties of their nodes.
+  //
+
+  // Sets |child_tree_id| and |child_node_id|. Returns false if not successful.
+  bool GetChildIDAtIndex(const AXTreeID& ax_tree_id,
+                         int node_id,
+                         int index,
+                         AXTreeID* child_tree_id,
+                         int* child_node_id) const;
+
+  // Sets the |node_id| and |tree_id| for the node which has global
+  // accessibility focus, or returns false if it cannot find the focus.
+  bool GetAccessibilityFocus(AXTreeID* tree_id, int* node_id) const;
+
+  // Find the node with the given ID in the tree with the given ID, or
+  // returns nullptr if not found.
+  AXNode* GetNodeFromTree(const AXTreeID& tree_id, int node_id) const;
+
+  void AddTreeChangeObserver(int observer_id, TreeChangeObserverFilter filter);
+  void RemoveTreeChangeObserver(int observer_id);
+  void TreeEventListenersChanged(AutomationAXTreeWrapper* tree_wrapper);
+  bool ShouldSendTreeChangeEvent(ax::mojom::Mutation change_type,
+                                 ui::AXTree* tree,
+                                 ui::AXNode* node) const;
+  void DestroyAccessibilityTree(const ui::AXTreeID& tree_id);
+  void ClearCachedAccessibilityTrees();
+
+  // Calculate the state of the node with ID |node_id|, or returns false if the
+  // node cannot be found in the tree with ID |tree_id|.
+  bool CalculateNodeState(const ui::AXTreeID& tree_id,
+                          int node_id,
+                          uint32_t* node_state,
+                          bool* offscreen,
+                          bool* focused) const;
+
+  void SetAccessibilityFocus(AXTreeID tree_id);
+
+  void SetDesktopTreeId(AXTreeID tree_id) { desktop_tree_id_ = tree_id; }
+
+ protected:
+  friend class extensions::AutomationInternalCustomBindingsTest;
+
+  void OnAccessibilityEvents(const ui::AXTreeID& tree_id,
+                             const std::vector<AXEvent>& events,
+                             const std::vector<AXTreeUpdate>& updates,
+                             const gfx::Point& mouse_location,
+                             bool is_active_profile);
+
+  void OnAccessibilityLocationChange(const ui::AXTreeID& tree_id,
+                                     int node_id,
+                                     AXRelativeBounds new_location);
+
+  // Invalidates this AutomationTreeManagerOnwer.
+  void Invalidate();
+
+  bool HasTreesWithEventListeners() const;
+
+  void MaybeSendOnAllAutomationEventListenersRemoved();
+
+ private:
   // Gets the root(s) of a node's child tree. Multiple roots can occur when the
   // child tree uses ax::mojom::StringAttribute::kAppId.
   std::vector<AXNode*> GetRootsOfChildTree(AXNode* node) const;
@@ -117,10 +202,12 @@ class AX_EXPORT AutomationTreeManagerOwner {
       AXNode* start,
       AutomationAXTreeWrapper** in_out_tree_wrapper) const;
 
-  std::vector<int> CalculateSentenceBoundary(
-      AutomationAXTreeWrapper* tree_wrapper,
-      AXNode* node,
-      bool start_boundary);
+  // Given an initial AutomationAXTreeWrapper, return the
+  // AutomationAXTreeWrapper and node of the focused node within this tree
+  // or a focused descendant tree.
+  bool GetFocusInternal(AutomationAXTreeWrapper* top_tree,
+                        AutomationAXTreeWrapper** out_tree,
+                        AXNode** out_node) const;
 
   void CacheAutomationTreeWrapperForTreeID(
       const AXTreeID& tree_id,
@@ -130,25 +217,18 @@ class AX_EXPORT AutomationTreeManagerOwner {
 
   void ClearCachedAutomationTreeWrappers();
 
-  const AXTreeID& focus_tree_id() const { return focus_tree_id_; }
+  void UpdateOverallTreeChangeObserverFilter();
 
-  int32_t focus_id() const { return focus_id_; }
-
-  void SetDesktopTreeId(AXTreeID tree_id) { desktop_tree_id_ = tree_id; }
-
-  const AXTreeID& desktop_tree_id() { return desktop_tree_id_; }
-
-  void SetAccessibilityFocusedTreeID(AXTreeID tree_id) {
-    accessibility_focused_tree_id_ = tree_id;
-  }
-
-  const AXTreeID& accessibility_focused_tree_id() const {
-    return accessibility_focused_tree_id_;
-  }
-
- private:
   std::map<AXTreeID, std::unique_ptr<AutomationAXTreeWrapper>>
       tree_id_to_tree_wrapper_map_;
+
+  // Keeps track of all trees with event listeners.
+  std::set<ui::AXTreeID> trees_with_event_listeners_;
+
+  std::vector<TreeChangeObserver> tree_change_observers_;
+
+  // A bit-map of api::automation::TreeChangeObserverFilter.
+  int tree_change_observer_overall_filter_ = 0;
 
   // Keeps track  of the single desktop tree, if it exists.
   AXTreeID desktop_tree_id_ = AXTreeIDUnknown();
@@ -162,6 +242,8 @@ class AX_EXPORT AutomationTreeManagerOwner {
 
   // The global focused node id.
   int32_t focus_id_ = -1;
+
+  bool is_active_profile_ = true;
 };
 
 }  // namespace ui

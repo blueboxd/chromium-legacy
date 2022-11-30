@@ -7,7 +7,7 @@
  * states
  */
 
-import 'chrome://resources/cr_components/chromeos/cellular_setup/cellular_eid_dialog.js';
+import 'chrome://resources/ash/common/cellular_setup/cellular_eid_dialog.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_icons.css.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
@@ -18,16 +18,19 @@ import '../os_settings_icons_css.js';
 import './esim_install_error_dialog.js';
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 
-import {CellularSetupPageName} from 'chrome://resources/cr_components/chromeos/cellular_setup/cellular_types.js';
-import {ESimManagerListenerBehavior, ESimManagerListenerBehaviorInterface} from 'chrome://resources/cr_components/chromeos/cellular_setup/esim_manager_listener_behavior.js';
-import {getEuicc, getPendingESimProfiles} from 'chrome://resources/cr_components/chromeos/cellular_setup/esim_manager_utils.js';
-import {getSimSlotCount} from 'chrome://resources/cr_components/chromeos/network/cellular_utils.js';
-import {MojoInterfaceProvider, MojoInterfaceProviderImpl} from 'chrome://resources/cr_components/chromeos/network/mojo_interface_provider.js';
-import {NetworkList} from 'chrome://resources/cr_components/chromeos/network/network_list_types.js';
-import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.js';
-import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
-import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/cr_elements/web_ui_listener_behavior.js';
+import {CellularSetupPageName} from 'chrome://resources/ash/common/cellular_setup/cellular_types.js';
+import {ESimManagerListenerBehavior, ESimManagerListenerBehaviorInterface} from 'chrome://resources/ash/common/cellular_setup/esim_manager_listener_behavior.js';
+import {getEuicc, getPendingESimProfiles} from 'chrome://resources/ash/common/cellular_setup/esim_manager_utils.js';
+import {getSimSlotCount} from 'chrome://resources/ash/common/network/cellular_utils.js';
+import {MojoInterfaceProvider, MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
+import {NetworkList} from 'chrome://resources/ash/common/network/network_list_types.js';
+import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/ash/common/web_ui_listener_behavior.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
+import {ESimProfileProperties, ESimProfileRemote, EuiccRemote, ProfileInstallResult, ProfileState} from 'chrome://resources/mojo/chromeos/ash/services/cellular_setup/public/mojom/esim_manager.mojom-webui.js';
+import {CrosNetworkConfigRemote, GlobalPolicy, InhibitReason} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
+import {DeviceStateType, NetworkType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {MultiDeviceBrowserProxy, MultiDeviceBrowserProxyImpl} from '../multidevice_page/multidevice_browser_proxy.js';
@@ -99,7 +102,7 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
        */
       tetherDeviceState: Object,
 
-      /** @type {!chromeos.networkConfig.mojom.GlobalPolicy|undefined} */
+      /** @type {!GlobalPolicy|undefined} */
       globalPolicy: Object,
 
       /**
@@ -117,7 +120,7 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
       /**
        * Dictionary mapping pending eSIM profile iccids to pending eSIM
        * profiles.
-       * @type {!Map<string, ash.cellularSetup.mojom.ESimProfileRemote>}
+       * @type {!Map<string, ESimProfileRemote>}
        * @private
        */
       profilesMap_: {
@@ -178,7 +181,7 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
 
       /**
        * Euicc object representing the active euicc_ module on the device
-       * @private {?ash.cellularSetup.mojom.EuiccRemote}
+       * @private {?EuiccRemote}
        */
       euicc_: {
         type: Object,
@@ -187,7 +190,7 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
 
       /**
        * The current eSIM profile being installed.
-       * @type {?ash.cellularSetup.mojom.ESimProfileRemote}
+       * @type {?ESimProfileRemote}
        * @private
        */
       installingESimProfile_: {
@@ -197,7 +200,7 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
 
       /**
        * The error code returned when eSIM profile install attempt was made.
-       * @type {?ash.cellularSetup.mojom.ProfileInstallResult}
+       * @type {?ProfileInstallResult}
        * @private
        */
       eSimProfileInstallError_: {
@@ -229,7 +232,7 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
   constructor() {
     super();
 
-    /** @private {!chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
+    /** @private {!CrosNetworkConfigRemote} */
     this.networkConfig_ =
         MojoInterfaceProviderImpl.getInstance().getMojoServiceRemote();
     this.fetchEuiccAndESimPendingProfileList_();
@@ -251,7 +254,7 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
   }
 
   /**
-   * @param {!ash.cellularSetup.mojom.EuiccRemote} euicc
+   * @param {!EuiccRemote} euicc
    * ESimManagerListenerBehavior override
    */
   onProfileListChanged(euicc) {
@@ -266,7 +269,7 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
   }
 
   /**
-   * @param {!ash.cellularSetup.mojom.ESimProfileRemote} profile
+   * @param {!ESimProfileRemote} profile
    * ESimManagerListenerBehavior override
    */
   onProfileChanged(profile) {
@@ -278,8 +281,8 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
       if (!eSimPendingProfileItem) {
         return;
       }
-      eSimPendingProfileItem.customItemType = response.properties.state ===
-              ash.cellularSetup.mojom.ProfileState.kInstalling ?
+      eSimPendingProfileItem.customItemType =
+          response.properties.state === ProfileState.kInstalling ?
           NetworkList.CustomItemType.ESIM_INSTALLING_PROFILE :
           NetworkList.CustomItemType.ESIM_PENDING_PROFILE;
     });
@@ -322,7 +325,7 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
   }
 
   /**
-   * @param {!ash.cellularSetup.mojom.EuiccRemote} euicc
+   * @param {!EuiccRemote} euicc
    * @private
    */
   fetchESimPendingProfileListForEuicc_(euicc) {
@@ -331,7 +334,7 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
   }
 
   /**
-   * @param {Array<!ash.cellularSetup.mojom.ESimProfileRemote>} profiles
+   * @param {Array<!ESimProfileRemote>} profiles
    * @private
    */
   processESimPendingProfiles_(profiles) {
@@ -344,7 +347,7 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
   }
 
   /**
-   * @param {!ash.cellularSetup.mojom.ESimProfileRemote} profile
+   * @param {!ESimProfileRemote} profile
    * @return {!Promise<NetworkList.CustomItemState>}
    * @private
    */
@@ -356,13 +359,12 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
   }
 
   /**
-   * @param {!ash.cellularSetup.mojom.ESimProfileProperties} properties
+   * @param {!ESimProfileProperties} properties
    * @return {NetworkList.CustomItemState}
    */
   createESimPendingProfileItem_(properties) {
     return {
-      customItemType: properties.state ===
-              ash.cellularSetup.mojom.ProfileState.kInstalling ?
+      customItemType: properties.state === ProfileState.kInstalling ?
           NetworkList.CustomItemType.ESIM_INSTALLING_PROFILE :
           NetworkList.CustomItemType.ESIM_PENDING_PROFILE,
       customItemName: String.fromCharCode(...properties.name.data),
@@ -380,14 +382,12 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
    * @private
    */
   onNetworksListChanged_() {
-    const mojom = chromeos.networkConfig.mojom;
-
     const pSimNetworks = [];
     const eSimNetworks = [];
     const tetherNetworks = [];
 
     for (const network of this.networks) {
-      if (network.type === mojom.NetworkType.kTether) {
+      if (network.type === NetworkType.kTether) {
         tetherNetworks.push(network);
         continue;
       }
@@ -509,8 +509,7 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
     }
     this.installingESimProfile_ = this.profilesMap_.get(event.detail.iccid);
     this.installingESimProfile_.installProfile('').then((response) => {
-      if (response.result ===
-          ash.cellularSetup.mojom.ProfileInstallResult.kSuccess) {
+      if (response.result === ProfileInstallResult.kSuccess) {
         this.eSimProfileInstallError_ = null;
         this.installingESimProfile_ = null;
       } else {
@@ -543,7 +542,7 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
   /**
    * Return true if the add cellular button should be disabled.
    * @param {!OncMojo.DeviceStateProperties|undefined} cellularDeviceState
-   * @param {!chromeos.networkConfig.mojom.GlobalPolicy} globalPolicy
+   * @param {!GlobalPolicy} globalPolicy
    * @return {boolean}
    * @private
    */
@@ -564,7 +563,7 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
    * Return true if the policy indicator that next to the add cellular button
    * should be shown. This policy icon indicates the reason of disabling the
    * add cellular button.
-   * @param {!chromeos.networkConfig.mojom.GlobalPolicy} globalPolicy
+   * @param {!GlobalPolicy} globalPolicy
    * @return {boolean}
    * @private
    */
@@ -578,9 +577,8 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
    * @private
    */
   deviceIsEnabled_(cellularDeviceState) {
-    const mojom = chromeos.networkConfig.mojom;
     return !!cellularDeviceState &&
-        cellularDeviceState.deviceState === mojom.DeviceStateType.kEnabled;
+        cellularDeviceState.deviceState === DeviceStateType.kEnabled;
   }
 
   /**
@@ -623,21 +621,20 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
       return '';
     }
 
-    const mojom = chromeos.networkConfig.mojom.InhibitReason;
     const inhibitReason = this.cellularDeviceState.inhibitReason;
 
     switch (inhibitReason) {
-      case mojom.kInstallingProfile:
+      case InhibitReason.kInstallingProfile:
         return this.i18n('cellularNetworkInstallingProfile');
-      case mojom.kRenamingProfile:
+      case InhibitReason.kRenamingProfile:
         return this.i18n('cellularNetworkRenamingProfile');
-      case mojom.kRemovingProfile:
+      case InhibitReason.kRemovingProfile:
         return this.i18n('cellularNetworkRemovingProfile');
-      case mojom.kConnectingToProfile:
+      case InhibitReason.kConnectingToProfile:
         return this.i18n('cellularNetworkConnectingToProfile');
-      case mojom.kRefreshingProfileList:
+      case InhibitReason.kRefreshingProfileList:
         return this.i18n('cellularNetworRefreshingProfileListProfile');
-      case mojom.kResettingEuiccMemory:
+      case InhibitReason.kResettingEuiccMemory:
         return this.i18n('cellularNetworkResettingESim');
     }
 
@@ -653,8 +650,7 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
    */
   shouldShowNoESimMessageOrDownloadLink_(
       inhibitReason, eSimNetworks, eSimPendingProfiles) {
-    const mojom = chromeos.networkConfig.mojom.InhibitReason;
-    if (inhibitReason === mojom.kInstallingProfile) {
+    if (inhibitReason === InhibitReason.kInstallingProfile) {
       return false;
     }
 

@@ -5,7 +5,7 @@
 import 'chrome://resources/cr_elements/cr_tab_box/cr_tab_box.js';
 
 import {addWebUIListener, sendWithPromise} from 'chrome://resources/js/cr.m.js';
-import {$} from 'chrome://resources/js/util.m.js';
+import {$} from 'chrome://resources/js/util.js';
 
 /**
  * Asks the C++ SafeBrowsingUIHandler to get the lists of Safe Browsing
@@ -177,9 +177,11 @@ function initialize() {
     addDeepScan(result);
   });
 
+  // <if expr="is_android">
   sendWithPromise('getReferringAppInfo', []).then((info) => {
     addReferringAppInfo(info);
   });
+  // </if>
 
   $('get-referrer-chain-form').addEventListener('submit', addReferrerChain);
 
@@ -426,10 +428,12 @@ function addReferrerChain(ev) {
       });
 }
 
+// <if expr="is_android">
 function addReferringAppInfo(info) {
   $('referring-app-info').innerHTML = trustedTypes.emptyHTML;
   $('referring-app-info').textContent = info;
 }
+// </if>
 
 function showTab(tabId) {
   const tabs = document.querySelectorAll('div[slot=\'tab\']');

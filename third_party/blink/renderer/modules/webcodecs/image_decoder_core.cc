@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,12 +86,10 @@ ImageDecoderCore::ImageDecoderCore(
     String mime_type,
     scoped_refptr<SegmentReader> data,
     bool data_complete,
-    ImageDecoder::AlphaOption alpha_option,
     const ColorBehavior& color_behavior,
     const SkISize& desired_size,
     ImageDecoder::AnimationOption animation_option)
     : mime_type_(mime_type),
-      alpha_option_(alpha_option),
       color_behavior_(color_behavior),
       desired_size_(desired_size),
       animation_option_(animation_option),
@@ -242,8 +240,9 @@ std::unique_ptr<ImageDecoderCore::ImageDecodeResult> ImageDecoderCore::Decode(
 
   // This is zero copy; the VideoFrame points into the SkBitmap.
   const gfx::Size coded_size(sk_image->width(), sk_image->height());
-  auto frame = media::CreateFromSkImage(sk_image, gfx::Rect(coded_size),
-                                        coded_size, media::kNoTimestamp);
+  auto frame =
+      media::CreateFromSkImage(sk_image, gfx::Rect(coded_size), coded_size,
+                               GetTimestampForFrame(frame_index));
   if (!frame) {
     NOTREACHED() << "Failed to create VideoFrame from SkImage.";
     result->status = Status::kDecodeError;
@@ -305,6 +304,8 @@ void ImageDecoderCore::Clear() {
   have_completed_yuv_decode_ = false;
   last_decoded_frame_ = 0u;
   is_decoding_in_order_ = true;
+  timestamp_cache_.clear();
+  timestamp_cache_.emplace_back();
 }
 
 void ImageDecoderCore::Reinitialize(
@@ -312,7 +313,8 @@ void ImageDecoderCore::Reinitialize(
   Clear();
   animation_option_ = animation_option;
   decoder_ = ImageDecoder::CreateByMimeType(
-      mime_type_, segment_reader_, data_complete_, alpha_option_,
+      mime_type_, segment_reader_, data_complete_,
+      ImageDecoder::kAlphaNotPremultiplied,
       ImageDecoder::HighBitDepthDecodingOption::kDefaultBitDepth,
       color_behavior_, desired_size_, animation_option_);
   DCHECK(decoder_);
@@ -396,6 +398,7 @@ void ImageDecoderCore::MaybeDecodeToYuv() {
     }
   }
 
+  yuv_frame_->set_timestamp(GetTimestampForFrame(0));
   yuv_frame_->metadata().transformation = ImageOrientationToVideoTransformation(
       decoder_->Orientation().Orientation());
 
@@ -424,6 +427,33 @@ void ImageDecoderCore::MaybeDecodeToYuv() {
 
   yuv_frame_->set_color_space(YUVColorSpaceToGfxColorSpace(
       skyuv_cs, gfx::ColorSpace::PrimaryID::BT2020, transfer_id));
+}
+
+base::TimeDelta ImageDecoderCore::GetTimestampForFrame(uint32_t index) const {
+  // The zero entry is always populated by this point.
+  DCHECK_GE(timestamp_cache_.size(), 1u);
+
+  auto ts = decoder_->FrameTimestampAtIndex(index);
+  if (ts.has_value())
+    return *ts;
+
+  if (index < timestamp_cache_.size())
+    return timestamp_cache_[index];
+
+  // Calling FrameCount() ensures duration information is populated for every
+  // frame up to the current count. DecodeFrameBufferAtIndex() or DecodeToYUV()
+  // have also been called this point, so index is always valid.
+  DCHECK_LT(index, decoder_->FrameCount());
+  DCHECK(!decoder_->Failed());
+
+  const auto old_size = timestamp_cache_.size();
+  timestamp_cache_.resize(decoder_->FrameCount());
+  for (auto i = old_size; i < timestamp_cache_.size(); ++i) {
+    timestamp_cache_[i] =
+        timestamp_cache_[i - 1] + decoder_->FrameDurationAtIndex(i - 1);
+  }
+
+  return timestamp_cache_[index];
 }
 
 }  // namespace blink

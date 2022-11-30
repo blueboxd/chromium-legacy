@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,6 +104,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       const PermissionsPolicy* policy,
       const absl::optional<ClientHintImageInfo>& image_info,
       const absl::optional<WTF::AtomicString>& prefers_color_scheme,
+      const absl::optional<WTF::AtomicString>& prefers_reduced_motion,
       ResourceRequest& request);
 
  protected:
@@ -140,9 +141,6 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
 
   // TODO(yhirano): Remove this.
   virtual void AddConsoleMessage(ConsoleMessage*) const = 0;
-
-  void AddBackForwardCacheExperimentHTTPHeaderIfNeeded(
-      ResourceRequest& request);
 
   virtual ExecutionContext* GetExecutionContext() const = 0;
 

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ class GPUDevice;
 class GPUCanvasConfiguration;
 class GPUSwapChain;
 class GPUTexture;
-class TextureAlphaClearer;
+class WebGPUTextureAlphaClearer;
 class V8UnionHTMLCanvasElementOrOffscreenCanvas;
 
 // A GPUCanvasContext does little by itself and basically just binds a canvas
@@ -50,8 +50,6 @@ class GPUCanvasContext : public CanvasRenderingContext,
 
   GPUCanvasContext(const GPUCanvasContext&) = delete;
   GPUCanvasContext& operator=(const GPUCanvasContext&) = delete;
-
-  ~GPUCanvasContext() override;
 
   void Trace(Visitor*) const override;
 
@@ -140,7 +138,7 @@ class GPUCanvasContext : public CanvasRenderingContext,
   Member<GPUDevice> device_;
   Member<GPUTexture> texture_;
   V8GPUCanvasAlphaMode::Enum alpha_mode_;
-  std::unique_ptr<TextureAlphaClearer> alpha_clearer_;
+  scoped_refptr<WebGPUTextureAlphaClearer> alpha_clearer_;
   scoped_refptr<WebGPUSwapBufferProvider> swap_buffers_;
 
   bool new_texture_required_ = true;

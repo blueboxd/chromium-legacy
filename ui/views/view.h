@@ -14,7 +14,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/as_const.h"
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
@@ -758,6 +757,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // specific to the current Layout Manager)
   virtual void Layout();
 
+  bool needs_layout() const { return needs_layout_; }
+
   // Mark this view and all parents to require a relayout. This ensures the
   // next call to Layout() will propagate to this view, even if the bounds of
   // parent views do not change.
@@ -858,6 +859,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
                                    const View* target,
                                    gfx::Point* point);
 
+  [[nodiscard]] static gfx::Point ConvertPointToTarget(const View* source,
+                                                       const View* target,
+                                                       const gfx::Point& point);
+
   // Convert |rect| from the coordinate system of |source| to the coordinate
   // system of |target|.
   //
@@ -867,6 +872,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   static void ConvertRectToTarget(const View* source,
                                   const View* target,
                                   gfx::RectF* rect);
+  [[nodiscard]] static gfx::RectF ConvertRectToTarget(const View* source,
+                                                      const View* target,
+                                                      const gfx::RectF& rect);
 
   // Convert a point from a View's coordinate system to that of its Widget.
   static void ConvertPointToWidget(const View* src, gfx::Point* point);
@@ -926,7 +934,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Returns the ColorProvider from the ColorProviderManager.
   ui::ColorProvider* GetColorProvider() {
     return const_cast<ui::ColorProvider*>(
-        base::as_const(*this).GetColorProvider());
+        std::as_const(*this).GetColorProvider());
   }
   const ui::ColorProvider* GetColorProvider() const;
 
@@ -936,7 +944,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // set. Warning: the default theme might not be correct; you should probably
   // override OnThemeChanged().
   ui::NativeTheme* GetNativeTheme() {
-    return const_cast<ui::NativeTheme*>(base::as_const(*this).GetNativeTheme());
+    return const_cast<ui::NativeTheme*>(std::as_const(*this).GetNativeTheme());
   }
   const ui::NativeTheme* GetNativeTheme() const;
 
@@ -1126,7 +1134,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Convenience method to retrieve the InputMethod associated with the
   // Widget that contains this view.
   ui::InputMethod* GetInputMethod() {
-    return const_cast<ui::InputMethod*>(base::as_const(*this).GetInputMethod());
+    return const_cast<ui::InputMethod*>(std::as_const(*this).GetInputMethod());
   }
   const ui::InputMethod* GetInputMethod() const;
 
@@ -1510,8 +1518,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // have changed. The visible bounds are the region of the View not clipped by
   // its ancestors. This is used for clipping NativeViewHost.
   virtual void OnVisibleBoundsChanged();
-
-  bool needs_layout() const { return needs_layout_; }
 
   // Tree operations -----------------------------------------------------------
 

@@ -28,7 +28,7 @@ if (is_chromeos_ash) {
 
   js_library("router") {
     deps = [
-      "//ui/webui/resources/js:assert.m",
+      "//ui/webui/resources/js:assert",
       "//ui/webui/resources/js:load_time_data.m",
     ]
     externs_list = [ "$externs_path/metrics_private.js" ]
@@ -90,8 +90,6 @@ build_webui("build") {
     "images/privacy_guide/waa_graphic.svg",
     "images/privacy_guide/welcome_banner_dark.svg",
     "images/privacy_guide/welcome_banner.svg",
-    "images/privacy_sandbox_banner_dark.svg",
-    "images/privacy_sandbox_banner.svg",
     "images/privacy_sandbox_banner_v3_dark.svg",
     "images/privacy_sandbox_banner_v3.svg",
     "images/privacy_sandbox_floc_banner_dark.svg",
@@ -157,7 +155,11 @@ build_webui("build") {
     "on_startup_page/startup_url_dialog.ts",
     "on_startup_page/startup_url_entry.ts",
     "on_startup_page/startup_urls_page.ts",
+    "performance_page/battery_page.ts",
     "performance_page/performance_page.ts",
+    "performance_page/tab_discard_exception_dialog.ts",
+    "performance_page/tab_discard_exception_entry.ts",
+    "performance_page/tab_discard_exception_list.ts",
     "people_page/people_page.ts",
     "people_page/signout_dialog.ts",
     "people_page/sync_account_control.ts",
@@ -273,6 +275,8 @@ build_webui("build") {
 
   if (!is_mac) {
     web_component_files += [ "a11y_page/captions_subpage.ts" ]
+  } else {
+    web_component_files += [ "autofill_page/passkey_edit_dialog.ts" ]
   }
 
   if (is_win) {
@@ -285,7 +289,10 @@ build_webui("build") {
     ]
   }
   if (is_win || is_mac) {
-    web_component_files += [ "autofill_page/passkeys_subpage.ts" ]
+    web_component_files += [
+      "autofill_page/passkeys_subpage.ts",
+      "autofill_page/passkeys_delete_confirmation_dialog.ts",
+    ]
   }
   if (is_chromeos) {
     web_component_files += [ "controls/password_prompt_dialog.ts" ]
@@ -332,6 +339,7 @@ build_webui("build") {
     "people_page/sync_browser_proxy.ts",
     "people_page/profile_info_browser_proxy.ts",
     "performance_page/performance_browser_proxy.ts",
+    "performance_page/performance_metrics_proxy.ts",
     "prefs/prefs_mixin.ts",
     "prefs/prefs.ts",
     "prefs/prefs_types.ts",
@@ -428,6 +436,7 @@ build_webui("build") {
     "//tools/typescript/definitions/pending.d.ts",
     "//tools/typescript/definitions/runtime.d.ts",
     "//tools/typescript/definitions/settings_private.d.ts",
+    "//tools/typescript/definitions/tabs.d.ts",
   ]
   if (is_chromeos) {
     ts_definitions +=
@@ -437,6 +446,7 @@ build_webui("build") {
   ts_deps = [
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources:library",
+    "//ui/webui/resources/cr_components/help_bubble:build_ts",
   ]
 
   if (!is_chromeos_ash) {

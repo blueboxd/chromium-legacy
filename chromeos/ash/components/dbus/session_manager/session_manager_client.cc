@@ -28,8 +28,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/unguessable_token.h"
+#include "chromeos/ash/components/dbus/arc/arc.pb.h"
 #include "chromeos/ash/components/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/ash/components/dbus/login_manager/arc.pb.h"
 #include "chromeos/ash/components/dbus/login_manager/login_screen_storage.pb.h"
 #include "chromeos/ash/components/dbus/login_manager/policy_descriptor.pb.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
@@ -441,7 +441,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
         login_manager::kSessionManagerHandleLockScreenDismissed);
   }
 
-  bool RequestBrowserDataMigration(
+  bool BlockingRequestBrowserDataMigration(
       const cryptohome::AccountIdentifier& cryptohome_id,
       const std::string& mode) override {
     dbus::MethodCall method_call(
@@ -455,7 +455,30 @@ class SessionManagerClientImpl : public SessionManagerClient {
         blocking_method_caller_->CallMethodAndBlockWithError(&method_call,
                                                              &error);
     if (!response) {
-      LOG(ERROR) << "RequestBrowserDataMigration failed"
+      LOG(ERROR) << "BlockingRequestBrowserDataMigration failed"
+                 << (error.is_set()
+                         ? base::StringPrintf(" :%s:%s", error.name(),
+                                              error.message())
+                         : ".");
+      return false;
+    }
+
+    return true;
+  }
+
+  bool BlockingRequestBrowserDataBackwardMigration(
+      const cryptohome::AccountIdentifier& cryptohome_id) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerStartBrowserDataBackwardMigration);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(cryptohome_id.account_id());
+    dbus::ScopedDBusError error;
+    std::unique_ptr<dbus::Response> response =
+        blocking_method_caller_->CallMethodAndBlockWithError(&method_call,
+                                                             &error);
+    if (!response) {
+      LOG(ERROR) << "BlockingRequestBrowserDataBackwardMigration failed"
                  << (error.is_set()
                          ? base::StringPrintf(" :%s:%s", error.name(),
                                               error.message())
@@ -635,7 +658,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   void StartArcMiniContainer(
-      const login_manager::StartArcMiniContainerRequest& request,
+      const arc::StartArcMiniInstanceRequest& request,
       chromeos::VoidDBusMethodCallback callback) override {
     DCHECK(!callback.is_null());
     dbus::MethodCall method_call(
@@ -651,9 +674,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void UpgradeArcContainer(
-      const login_manager::UpgradeArcContainerRequest& request,
-      chromeos::VoidDBusMethodCallback callback) override {
+  void UpgradeArcContainer(const arc::UpgradeArcContainerRequest& request,
+                           chromeos::VoidDBusMethodCallback callback) override {
     DCHECK(!callback.is_null());
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,

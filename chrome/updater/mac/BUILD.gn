@@ -77,10 +77,10 @@ source_set("privileged_helper_sources") {
   ]
 
   deps = [
+    ":helper_header",
     "//base",
     "//chrome/updater:base",
     "//chrome/updater:branding_header",
-    "//chrome/updater:constants_prod",
   ]
 }
 
@@ -106,6 +106,16 @@ process_version("priviledged_launchd_plist") {
   output = "$target_gen_dir/$privileged_helper_name-launchd.plist"
 }
 
+process_version("helper_header") {
+  extra_args = [
+    "-e",
+    "UPDATER_HELPER_BUNDLE_ID=\"$privileged_helper_name\"",
+  ]
+
+  template_file = "privileged_helper/helper_branding.h.in"
+  output = "$target_gen_dir/privileged_helper/helper_branding.h"
+}
+
 executable("privileged_helper") {
   output_name = privileged_helper_name
 
@@ -115,9 +125,13 @@ executable("privileged_helper") {
     ":priviledged_launchd_plist",
     ":privileged_helper_sources",
     "//base",
+    "//chrome/updater:constants_prod",
   ]
 
-  frameworks = [ "Foundation.framework" ]
+  frameworks = [
+    "Foundation.framework",
+    "Security.framework",
+  ]
 
   inputs = [
     "$target_gen_dir/$privileged_helper_name-Info.plist",

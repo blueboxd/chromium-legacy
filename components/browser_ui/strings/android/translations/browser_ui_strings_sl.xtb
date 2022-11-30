@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
+<translation id="1005794457625275818">Piškotki so dovoljeni za toliko spletnih mest v skupini <ph name="FPS_OWNER" />: <ph name="FPS_MEMBERS_COUNT" />, vključno s tem: <ph name="FPS_MEMBER" />.</translation>
 <translation id="1006017844123154345">Odpri v spletu</translation>
 <translation id="1044891598689252897">Spletna mesta bodo delovala normalno</translation>
 <translation id="1124090076051167250">S tem boste izbrisali <ph name="DATASIZE" /> podatkov in piškotkov, ki so jih shranila spletna mesta ali aplikacije na začetnem zaslonu.</translation>
@@ -21,6 +22,7 @@
 <translation id="1426410128494586442">Da</translation>
 <translation id="1446450296470737166">Dovolitev popolnega nadzora nad napravami MIDI</translation>
 <translation id="1620510694547887537">Kamera</translation>
+<translation id="1633720957382884102">Povezana spletna mesta</translation>
 <translation id="1644574205037202324">Zgodovina</translation>
 <translation id="1647582022260550163">Ali ste prepričani, da želite ponastaviti dovoljenja in izbrisati piškotke ter podatke spletnega mesta?</translation>
 <translation id="1660204651932907780">Dovoli spletnim mestom predvajanje zvoka (priporočljivo)</translation>
@@ -115,6 +117,7 @@
 <translation id="3333961966071413176">Vsi stiki</translation>
 <translation id="3362437373201486687">Iskanje naprav Bluetooth</translation>
 <translation id="3386292677130313581">Prikaži poziv, preden se spletnim mestom razkrije vaša lokacija (priporočeno)</translation>
+<translation id="3521663503435878242">Spletna mesta domene <ph name="DOMAIN" /></translation>
 <translation id="3538390592868664640">Preprečevanje, da bi spletna mesta ustvarila 3D-zemljevid vaše okolice ali spremljala položaj kamere</translation>
 <translation id="3551268116566418498">Izklop anonimnega načina?</translation>
 <translation id="3586500876634962664">Uporaba kamere in mikrofona</translation>
@@ -260,6 +263,7 @@
 <translation id="6554732001434021288">Nazadnje obiskano pred toliko dnevi: <ph name="NUM_DAYS" /></translation>
 <translation id="6561560012278703671">Uporaba manj vsiljivih sporočil (preprečuje, da bi vas motili pozivi za pošiljanje obvestil)</translation>
 <translation id="6593061639179217415">Mesto za namizne račun.</translation>
+<translation id="6608211702542341247">To spletno mesto je v skupini spletnih mest <ph name="FPS_OWNER" />, ki si lahko ogledajo vašo dejavnost v skupini.</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Zaščitena vsebina</translation>
 <translation id="662080504995468778">Ostani</translation>
@@ -348,7 +352,6 @@
 <translation id="8380167699614421159">To spletno mesto prikazuje vsiljive ali zavajajoče oglase</translation>
 <translation id="8394832520002899662">Dotaknite se, če se želite vrniti na spletno mesto</translation>
 <translation id="8409345997656833551">Prejmite obvestilo, ko je članek lahko prikazan v poenostavljenem pogledu.</translation>
-<translation id="8425213833346101688">Spremeni</translation>
 <translation id="8428213095426709021">Nastavitve</translation>
 <translation id="8441146129660941386">Išči nazaj</translation>
 <translation id="8444433999583714703">Če želite aplikaciji <ph name="APP_NAME" /> omogočiti dostop do lokacije, lokacijo vklopite tudi v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
@@ -372,6 +375,7 @@
 <translation id="8751914237388039244">Izberite sliko</translation>
 <translation id="8801436777607969138">Preprečevanje JavaScripta za določeno spletno mesto.</translation>
 <translation id="8816026460808729765">Preprečevanje spletnim mestom dostopa do tipal</translation>
+<translation id="8823559166155093873">Blokiraj piškotke</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8903921497873541725">Povečaj</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>

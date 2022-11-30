@@ -8,10 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/components/multidevice/remote_device_ref.h"
-#include "ash/components/multidevice/remote_device_test_util.h"
-#include "ash/components/multidevice/software_feature.h"
-#include "ash/components/multidevice/software_feature_state.h"
 #include "ash/constants/ash_features.h"
 #include "ash/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "ash/services/multidevice_setup/fake_host_status_provider.h"
@@ -22,6 +18,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/timer/mock_timer.h"
+#include "chromeos/ash/components/multidevice/remote_device_ref.h"
+#include "chromeos/ash/components/multidevice/remote_device_test_util.h"
+#include "chromeos/ash/components/multidevice/software_feature.h"
+#include "chromeos/ash/components/multidevice/software_feature_state.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -245,8 +245,8 @@ class MultiDeviceSetupGlobalStateFeatureManagerImplTest
   }
 
   void SetFeatureFlags(bool use_v1_devicesync, bool enable_feature_flag) {
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
 
     // These flags have no direct effect of on the GlobalStateFeatureManager;
     // however, v2 Enrollment and DeviceSync must be enabled before v1

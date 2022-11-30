@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="kk">
+<translation id="1005794457625275818">Cookie файлдары <ph name="FPS_OWNER" /> тобындағы <ph name="FPS_MEMBERS_COUNT" /> сайт, соның ішінде <ph name="FPS_MEMBER" /> үшін рұқсат етілген.</translation>
 <translation id="1006017844123154345">Онлайн режимде ашу</translation>
 <translation id="1044891598689252897">Сайттар қалыпты күйде жұмыс істейді.</translation>
 <translation id="1124090076051167250">Негізгі экрандағы сайттар мен қолданбаларда сақталған <ph name="DATASIZE" /> деректер мен cookie файлдары өшіріледі.</translation>
@@ -21,6 +22,7 @@
 <translation id="1426410128494586442">Иә</translation>
 <translation id="1446450296470737166">MIDI толық бақылауға рұқсат беру</translation>
 <translation id="1620510694547887537">Камера</translation>
+<translation id="1633720957382884102">Қатысты сайттар</translation>
 <translation id="1644574205037202324">Тарих</translation>
 <translation id="1647582022260550163">Рұқсаттарды бастапқы күйге қайтарып, cookie файлдары мен сайт деректерін өшіргіңіз келе ме?</translation>
 <translation id="1660204651932907780">Сайттарда дыбыстың шығуына рұқсат ету (ұсынылады)</translation>
@@ -115,6 +117,7 @@
 <translation id="3333961966071413176">Барлық контакт</translation>
 <translation id="3362437373201486687">Bluetooth құрылғылары сканерленуде</translation>
 <translation id="3386292677130313581">Сайттар орналасқан орныңызды анықтау үшін рұқсат сұрайды (ұсынылады)</translation>
+<translation id="3521663503435878242"><ph name="DOMAIN" /> доменіндегі сайттар</translation>
 <translation id="3538390592868664640">Сайттарға айналаңыздың 3D картасын жасауға немесе камера орнын бақылауға тыйым салу</translation>
 <translation id="3551268116566418498">Инкогнито режимінен шығасыз ба?</translation>
 <translation id="3586500876634962664">Камера мен микрофонды пайдалану</translation>
@@ -348,7 +351,6 @@
 <translation id="8380167699614421159">Бұл сайтта мазалайтын немесе жалған ақпаратты жарнамалар көрсетіледі</translation>
 <translation id="8394832520002899662">Сайтқа оралу үшін түртіңіз.</translation>
 <translation id="8409345997656833551">Мақала үшін қарапайым көрініс қолжетімді болған кезде хабарлау</translation>
-<translation id="8425213833346101688">Өзгерту</translation>
 <translation id="8428213095426709021">Параметрлер</translation>
 <translation id="8441146129660941386">Артқа</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" /> браузері геодерегіңізді пайдалануы үшін, <ph name="BEGIN_LINK" />Android параметрлерінде<ph name="END_LINK" /> оны да қосыңыз.</translation>
@@ -372,6 +374,7 @@
 <translation id="8751914237388039244">Кескін таңдау</translation>
 <translation id="8801436777607969138">Белгілі бір сайт үшін JavaScript бағдарламасын бөгеуге болады.</translation>
 <translation id="8816026460808729765">Сайттардың датчиктерді пайдалануына тыйым салу</translation>
+<translation id="8823559166155093873">Cookie файлдарын бөгеу</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8903921497873541725">Үлкейту</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>

@@ -22,7 +22,7 @@ import './live_caption_section.js';
 
 // </if>
 
-import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
+import {WebUIListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BaseMixin} from '../base_mixin.js';
@@ -37,10 +37,10 @@ import {CaptionsBrowserProxyImpl} from './captions_browser_proxy.js';
 
 // </if>
 
-const SettingsA11YPageElementBase =
+const SettingsA11yPageElementBase =
     WebUIListenerMixin(BaseMixin(PolymerElement));
 
-class SettingsA11YPageElement extends SettingsA11YPageElementBase {
+class SettingsA11yPageElement extends SettingsA11yPageElementBase {
   static get is() {
     return 'settings-a11y-page';
   }
@@ -209,4 +209,4 @@ class SettingsA11YPageElement extends SettingsA11YPageElementBase {
   }
 }
 
-customElements.define(SettingsA11YPageElement.is, SettingsA11YPageElement);
+customElements.define(SettingsA11yPageElement.is, SettingsA11yPageElement);

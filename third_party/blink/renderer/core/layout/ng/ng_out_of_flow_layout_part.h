@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,11 +75,11 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
     ColumnBalancingInfo() = default;
 
     bool HasOutOfFlowFragmentainerDescendants() const {
-      return !out_of_flow_fragmentainer_descendants.IsEmpty();
+      return !out_of_flow_fragmentainer_descendants.empty();
     }
     void SwapOutOfFlowFragmentainerDescendants(
         HeapVector<NGLogicalOOFNodeForFragmentation>* descendants) {
-      DCHECK(descendants->IsEmpty());
+      DCHECK(descendants->empty());
       std::swap(out_of_flow_fragmentainer_descendants, *descendants);
     }
 
@@ -413,6 +413,9 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   }
 
   NGBoxFragmentBuilder* container_builder_;
+  // The builder for the outer block fragmentation context when this is an inner
+  // layout of nested block fragmentation.
+  NGBoxFragmentBuilder* outer_container_builder_ = nullptr;
   ContainingBlockInfo default_containing_block_info_for_absolute_;
   ContainingBlockInfo default_containing_block_info_for_fixed_;
   HeapHashMap<Member<const LayoutObject>, ContainingBlockInfo>

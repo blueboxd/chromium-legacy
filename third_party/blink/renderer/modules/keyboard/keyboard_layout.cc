@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,7 +96,7 @@ ScriptPromise KeyboardLayout::GetKeyboardLayoutMap(
   script_promise_resolver_ =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   service_->GetKeyboardLayoutMap(
-      script_promise_resolver_->WrapCallbackInScriptScope(WTF::Bind(
+      script_promise_resolver_->WrapCallbackInScriptScope(WTF::BindOnce(
           &KeyboardLayout::GotKeyboardLayoutMap, WrapPersistent(this))));
   return script_promise_resolver_->Promise();
 }

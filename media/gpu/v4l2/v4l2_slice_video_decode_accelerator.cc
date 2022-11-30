@@ -20,9 +20,11 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -788,7 +790,8 @@ void V4L2SliceVideoDecodeAccelerator::DestroyInputBuffers() {
 
   DCHECK(!input_queue_->IsStreaming());
 
-  input_queue_->DeallocateBuffers();
+  if (!input_queue_->DeallocateBuffers())
+    VLOGF(1) << "Failed to deallocate V4L2 input buffers";
 }
 
 void V4L2SliceVideoDecodeAccelerator::DismissPictures(
@@ -1287,7 +1290,8 @@ bool V4L2SliceVideoDecodeAccelerator::DestroyOutputBuffers() {
 
   output_buffer_map_.clear();
 
-  output_queue_->DeallocateBuffers();
+  if (!output_queue_->DeallocateBuffers())
+    VLOGF(1) << "Failed to deallocate V4L2 output buffers";
 
   return true;
 }
@@ -1571,11 +1575,8 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
   if (surface_set_change_pending_)
     return;
 
-  const auto iter =
-      std::find_if(output_buffer_map_.begin(), output_buffer_map_.end(),
-                   [picture_buffer_id](const OutputRecord& output_record) {
-                     return output_record.picture_id == picture_buffer_id;
-                   });
+  const auto iter = base::ranges::find(output_buffer_map_, picture_buffer_id,
+                                       &OutputRecord::picture_id);
   if (iter == output_buffer_map_.end()) {
     // It's possible that we've already posted a DismissPictureBuffer for this
     // picture, but it has not yet executed when this ImportBufferForPicture was
@@ -2249,8 +2250,7 @@ bool V4L2SliceVideoDecodeAccelerator::IsSupportedProfile(
     for (const SupportedProfile& entry : profiles)
       supported_profiles_.push_back(entry.profile);
   }
-  return std::find(supported_profiles_.begin(), supported_profiles_.end(),
-                   profile) != supported_profiles_.end();
+  return base::Contains(supported_profiles_, profile);
 }
 
 size_t V4L2SliceVideoDecodeAccelerator::GetNumOfOutputRecordsAtDevice() const {

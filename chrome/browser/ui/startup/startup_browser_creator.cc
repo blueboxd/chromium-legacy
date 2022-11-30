@@ -40,6 +40,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
 #include "chrome/browser/apps/platform_apps/platform_app_launch.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/extensions/startup_helper.h"
@@ -420,36 +421,35 @@ Profile* GetPrivateProfileIfRequested(const base::CommandLine& command_line,
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-StartupProfilePathInfo GetProfilePickerStartupProfilePathInfo() {
-  // To indicate that we want to show the profile picker, return the guest
-  // profile.
-  // TODO(https://crbug.com/1150326): Return an empty path instead of a guest
-  // profile path.
-  return {ProfileManager::GetGuestProfilePath(),
-          StartupProfileMode::kProfilePicker};
+base::FilePath GetProfilePickerStartupProfilePath() {
+  return base::FeatureList::IsEnabled(features::kObserverBasedPostProfileInit)
+             ? base::FilePath()
+             : ProfileManager::GetGuestProfilePath();
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 StartupProfileInfo GetProfilePickerStartupProfileInfo() {
-  auto path_info = GetProfilePickerStartupProfilePathInfo();
-  DCHECK_EQ(path_info.mode, StartupProfileMode::kProfilePicker);
-
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-
-  // We can only show the profile picker this if the system profile
-  // (where the profile picker lives) also exists (or is creatable).
+  // We can only show the profile picker if the system profile (where the
+  // profile picker lives) also exists (or is creatable).
   // TODO(crbug.com/1271859): Remove unnecessary system profile check here.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (!profile_manager->GetProfile(ProfileManager::GetSystemProfilePath()))
-    return {nullptr, StartupProfileMode::kError};
+    return {.profile = nullptr, .mode = StartupProfileMode::kError};
 
-  Profile* guest_profile = profile_manager->GetProfile(path_info.path);
-  if (guest_profile) {
+  if (!base::FeatureList::IsEnabled(features::kObserverBasedPostProfileInit)) {
+    DCHECK_EQ(GetProfilePickerStartupProfilePath(),
+              ProfileManager::GetGuestProfilePath());
+    Profile* guest_profile =
+        profile_manager->GetProfile(ProfileManager::GetGuestProfilePath());
+    if (!guest_profile)
+      return {.profile = nullptr, .mode = StartupProfileMode::kError};
     DCHECK(guest_profile->IsGuestSession());
-    return {guest_profile, path_info.mode};
+    return {.profile = guest_profile,
+            .mode = StartupProfileMode::kProfilePicker};
   }
 
-  return {nullptr, StartupProfileMode::kError};
+  return {.profile = nullptr, .mode = StartupProfileMode::kProfilePicker};
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -520,8 +520,8 @@ bool MaybeLaunchAppShortcutWindow(const base::CommandLine& command_line,
           apps::OpenExtensionAppShortcutWindow(profile, url);
       if (web_contents) {
         web_app::startup::FinalizeWebAppLaunch(
-            LaunchMode::kAsWebAppInWindowByUrl, command_line, is_first_run,
-            chrome::FindBrowserWithWebContents(web_contents),
+            web_app::startup::OpenMode::kInWindowByUrl, command_line,
+            is_first_run, chrome::FindBrowserWithWebContents(web_contents),
             apps::LaunchContainer::kLaunchContainerWindow);
         return true;
       }
@@ -544,10 +544,11 @@ bool MaybeLaunchExtensionApp(const base::CommandLine& command_line,
   if (!extension)
     return false;
 
-  LaunchAppWithCallback(profile, app_id, command_line, cur_dir,
-                        base::BindOnce(&web_app::startup::FinalizeWebAppLaunch,
-                                       LaunchMode::kAsWebAppInWindowByAppId,
-                                       command_line, is_first_run));
+  LaunchAppWithCallback(
+      profile, app_id, command_line, cur_dir,
+      base::BindOnce(&web_app::startup::FinalizeWebAppLaunch,
+                     web_app::startup::OpenMode::kInWindowByAppId, command_line,
+                     is_first_run));
   return true;
 }
 
@@ -1508,9 +1509,8 @@ StartupProfilePathInfo GetStartupProfilePath(
     auto has_tabs =
         StartupTabProviderImpl().HasCommandLineTabs(command_line, cur_dir);
     if (has_tabs == CommandLineTabsPresent::kNo) {
-      StartupProfilePathInfo info = GetProfilePickerStartupProfilePathInfo();
-      DCHECK_EQ(info.mode, StartupProfileMode::kProfilePicker);
-      return info;
+      return {.path = GetProfilePickerStartupProfilePath(),
+              .mode = StartupProfileMode::kProfilePicker};
     }
   }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)

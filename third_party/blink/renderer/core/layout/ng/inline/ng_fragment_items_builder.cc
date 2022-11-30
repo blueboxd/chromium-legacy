@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -130,7 +130,7 @@ void NGFragmentItemsBuilder::AddLine(
   const wtf_size_t estimated_size = size_before + line_items->size() + 1;
   const wtf_size_t old_capacity = items_.capacity();
   if (estimated_size > old_capacity)
-    items_.ReserveCapacity(std::max(estimated_size, old_capacity * 2));
+    items_.reserve(std::max(estimated_size, old_capacity * 2));
 
   // Add an empty item so that the start of the line can be set later.
   const wtf_size_t line_start_index = items_.size();
@@ -232,11 +232,11 @@ NGFragmentItemsBuilder::AddPreviousItems(
     first_line_text_content_ = items.FirstLineText();
   }
 
-  DCHECK(items_.IsEmpty());
+  DCHECK(items_.empty());
   const NGFragmentItems::Span source_items = items.Items();
   const wtf_size_t estimated_size =
       base::checked_cast<wtf_size_t>(source_items.size());
-  items_.ReserveCapacity(estimated_size);
+  items_.reserve(estimated_size);
 
   // Convert offsets to logical. The logic is opposite to |ConvertToPhysical|.
   // This is needed because the container size may be different, in that case,

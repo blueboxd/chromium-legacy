@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,6 +63,9 @@ BLINK_COMMON_EXPORT mojom::CaptureLinks CaptureLinksFromString(
 
 BLINK_COMMON_EXPORT absl::optional<mojom::ManifestLaunchHandler::ClientMode>
 ClientModeFromString(const std::string& client_mode);
+
+// Returns the URL format manifest ID from the relative id.
+BLINK_COMMON_EXPORT GURL GetIdFromManifest(const mojom::Manifest& manifest);
 
 }  // namespace blink
 

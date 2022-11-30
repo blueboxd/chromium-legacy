@@ -693,7 +693,7 @@ TEST_F(AsyncSharedStorageDatabaseImplFromFileV1Test, Version1_LoadFromFile) {
 
   std::vector<url::Origin> origins;
   for (const auto& info : FetchOriginsSync())
-    origins.push_back(info->origin);
+    origins.push_back(info->storage_key.origin());
   EXPECT_THAT(
       origins,
       ElementsAre(abc_xyz, url::Origin::Create(GURL("http://chromium.org")),
@@ -733,7 +733,7 @@ TEST_F(AsyncSharedStorageDatabaseImplFromFileV1NoBudgetTableTest,
 
   std::vector<url::Origin> origins;
   for (const auto& info : FetchOriginsSync())
-    origins.push_back(info->origin);
+    origins.push_back(info->storage_key.origin());
   EXPECT_THAT(
       origins,
       ElementsAre(abc_xyz, url::Origin::Create(GURL("http://chromium.org")),
@@ -1946,7 +1946,7 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest, PurgeStaleOrigins) {
 
   std::vector<url::Origin> origins;
   for (const auto& info : infos2)
-    origins.push_back(info->origin);
+    origins.push_back(info->storage_key.origin());
   EXPECT_THAT(origins, ElementsAre(kOrigin1, kOrigin2, kOrigin3, kOrigin4));
 
   EXPECT_TRUE(success1);
@@ -1961,12 +1961,12 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest, PurgeStaleOrigins) {
 
   origins.clear();
   for (const auto& info : infos3)
-    origins.push_back(info->origin);
+    origins.push_back(info->storage_key.origin());
   EXPECT_THAT(origins, ElementsAre(kOrigin2, kOrigin3, kOrigin4));
 
   origins.clear();
   for (const auto& info : infos4)
-    origins.push_back(info->origin);
+    origins.push_back(info->storage_key.origin());
   EXPECT_THAT(origins, ElementsAre(kOrigin2, kOrigin3, kOrigin4));
 
   EXPECT_TRUE(success2);
@@ -1981,12 +1981,12 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest, PurgeStaleOrigins) {
 
   origins.clear();
   for (const auto& info : infos5)
-    origins.push_back(info->origin);
+    origins.push_back(info->storage_key.origin());
   EXPECT_THAT(origins, ElementsAre(kOrigin2, kOrigin4));
 
   origins.clear();
   for (const auto& info : infos6)
-    origins.push_back(info->origin);
+    origins.push_back(info->storage_key.origin());
   EXPECT_THAT(origins, ElementsAre(kOrigin2, kOrigin4));
 
   // Database is still intact after trimming memory.
@@ -2378,7 +2378,7 @@ TEST_P(AsyncSharedStorageDatabaseImplPurgeMatchingOriginsParamTest,
 
   std::vector<url::Origin> origins;
   for (const auto& info : infos2)
-    origins.push_back(info->origin);
+    origins.push_back(info->storage_key.origin());
   EXPECT_THAT(origins,
               ElementsAre(kOrigin1, kOrigin2, kOrigin3, kOrigin4, kOrigin5));
 
@@ -2394,12 +2394,12 @@ TEST_P(AsyncSharedStorageDatabaseImplPurgeMatchingOriginsParamTest,
 
   origins.clear();
   for (const auto& info : infos3)
-    origins.push_back(info->origin);
+    origins.push_back(info->storage_key.origin());
   EXPECT_THAT(origins, ElementsAre(kOrigin2, kOrigin3, kOrigin4, kOrigin5));
 
   origins.clear();
   for (const auto& info : infos4)
-    origins.push_back(info->origin);
+    origins.push_back(info->storage_key.origin());
   EXPECT_THAT(origins,
               ElementsAre(kOrigin1, kOrigin2, kOrigin3, kOrigin4, kOrigin5));
 
@@ -2418,12 +2418,12 @@ TEST_P(AsyncSharedStorageDatabaseImplPurgeMatchingOriginsParamTest,
 
   origins.clear();
   for (const auto& info : infos5)
-    origins.push_back(info->origin);
+    origins.push_back(info->storage_key.origin());
   EXPECT_THAT(origins, ElementsAre(kOrigin2, kOrigin4));
 
   origins.clear();
   for (const auto& info : infos6)
-    origins.push_back(info->origin);
+    origins.push_back(info->storage_key.origin());
   EXPECT_THAT(origins,
               ElementsAre(kOrigin1, kOrigin2, kOrigin3, kOrigin4, kOrigin5));
 

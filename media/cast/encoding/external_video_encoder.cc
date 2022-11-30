@@ -90,7 +90,8 @@ bool IsHardwareVP8EncodingSupported(
   }
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS) && ARCH_CPU_X86_64
+#if (BUILDFLAG(IS_CHROMEOS) && ARCH_CPU_X86_64) || \
+    (BUILDFLAG(IS_CHROMEOS_ASH) && ARCH_CPU_ARM_FAMILY)
   // The encoder also doesn't work well with some first party Chromecast
   // devices. See https://crbug.com/1342276 for more information.
   if (base::StartsWith(receiver_model_name, "Chromecast")) {
@@ -427,7 +428,11 @@ class ExternalVideoEncoder::VEAClientImpl final
 
       auto encoded_frame = std::make_unique<SenderEncodedFrame>();
       encoded_frame->dependency =
-          metadata.key_frame ? EncodedFrame::KEY : EncodedFrame::DEPENDENT;
+          metadata.key_frame
+              ?
+
+              openscreen::cast::EncodedFrame::Dependency::kKeyFrame
+              : openscreen::cast::EncodedFrame::Dependency::kDependent;
       encoded_frame->frame_id = next_frame_id_++;
       if (metadata.key_frame) {
         encoded_frame->referenced_frame_id = encoded_frame->frame_id;

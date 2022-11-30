@@ -46,8 +46,6 @@ import sys
 import time
 import traceback
 
-from six.moves import range
-
 from blinkpy.common import exit_codes
 from blinkpy.common import path_finder
 from blinkpy.common.net.file_uploader import FileUploader
@@ -168,17 +166,7 @@ class Manager(object):
         should_retry_failures = self._options.num_retries > 0
 
         try:
-            if not self._port.host.platform.is_win():
-                _pid = os.getpid()
-                def sighandler(signum, frame):
-                    self._printer.write_update("Received SIGTERM in %d" % os.getpid())
-                    message = ''.join(traceback.format_stack(frame))
-                    self._printer.write_update(message)
-                    if os.getpid() == _pid:
-                        os.killpg(os.getpgrp(), signal.SIGINT)
-                    else:
-                        os.kill(os.getpid(), signal.SIGINT)
-                signal.signal(signal.SIGTERM, sighandler)
+            self._register_termination_handler()
             self._start_servers(tests_to_run)
             if self._options.watch:
                 run_results = self._run_test_loop(tests_to_run, tests_to_skip)
@@ -232,7 +220,8 @@ class Manager(object):
 
             self._copy_results_html_file(self._artifacts_directory,
                                          'results.html')
-            if initial_results.keyboard_interrupted:
+            if (initial_results.interrupt_reason is
+                    test_run_results.InterruptReason.EXTERNAL_SIGNAL):
                 exit_code = exit_codes.INTERRUPTED_EXIT_STATUS
             else:
                 if initial_results.interrupted:
@@ -248,6 +237,19 @@ class Manager(object):
         return test_run_results.RunDetails(exit_code, summarized_full_results,
                                            summarized_failing_results,
                                            initial_results, all_retry_results)
+
+    def _register_termination_handler(self):
+        if self._port.host.platform.is_win():
+            signum = signal.SIGBREAK
+        else:
+            signum = signal.SIGTERM
+        signal.signal(signum, self._on_termination)
+
+    def _on_termination(self, signum, _frame):
+        self._printer.write_update(
+            'Received signal "%s" (%d) in %d' %
+            (signal.strsignal(signum), signum, os.getpid()))
+        raise KeyboardInterrupt
 
     def _run_test_loop(self, tests_to_run, tests_to_skip):
         # Don't show results in a new browser window because we're already
@@ -284,9 +286,8 @@ class Manager(object):
             self._options.iterations, num_workers)
 
         # Don't retry failures when interrupted by user or failures limit exception.
-        should_retry_failures = should_retry_failures and not (
-            initial_results.interrupted
-            or initial_results.keyboard_interrupted)
+        should_retry_failures = (should_retry_failures
+                                 and not initial_results.interrupted)
 
         tests_to_retry = self._tests_to_retry(initial_results)
         all_retry_results = []
@@ -327,7 +328,8 @@ class Manager(object):
     def _collect_tests(self, args):
         return self._finder.find_tests(
             args,
-            filter_files=self._options.test_list,
+            test_lists=self._options.test_list,
+            filter_files=self._options.isolated_script_test_filter_file,
             fastest_percentile=self._options.fastest,
             filters=self._options.isolated_script_test_filter)
 

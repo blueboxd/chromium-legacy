@@ -137,11 +137,8 @@ void AddResourcesForCartDiscountConsentV2(content::WebUIDataSource* source) {
       "modulesCartStepOneUseStaticContent",
       commerce::kNtpChromeCartModuleDiscountConsentNtpStepOneUseStaticContent
           .Get());
-  // This does not have a raw string resource.
-  source->AddString(
-      "modulesCartStepOneStaticContent",
-      commerce::kNtpChromeCartModuleDiscountConsentNtpStepOneStaticContent
-          .Get());
+  source->AddLocalizedString("modulesCartStepOneStaticContent",
+                             IDS_NTP_CART_DISCOUNT_STEP_ONE_CONTENT);
 
   AddRawStringOrDefault(
       source, "modulesCartConsentStepOneOneMerchantContent",
@@ -284,6 +281,31 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       {"tryAgain", IDS_NEW_TAB_VOICE_TRY_AGAIN},
       {"voiceSearchButtonLabel", IDS_TOOLTIP_MIC_SEARCH},
       {"waiting", IDS_NEW_TAB_VOICE_WAITING},
+
+      // Lens image search.
+      {"lensSearchButtonLabel", IDS_TOOLTIP_LENS_SEARCH},
+      {"lensSearchUploadDialogCloseButtonLabel",
+       IDS_LENS_SEARCH_UPLOAD_DIALOG_CLOSE_BUTTON_LABEL},
+      {"lensSearchUploadDialogTitle", IDS_LENS_SEARCH_UPLOAD_DIALOG_TITLE},
+      {"lensSearchUploadDialogDragTitle",
+       IDS_LENS_SEARCH_UPLOAD_DIALOG_DRAG_TITLE},
+      {"lensSearchUploadDialogUploadFileTitle",
+       IDS_LENS_SEARCH_UPLOAD_DIALOG_UPLOAD_FILE_TITLE},
+      {"lensSearchUploadDialogOrText", IDS_LENS_SEARCH_UPLOAD_DIALOG_OR_TEXT},
+      {"lensSearchUploadDialogTextPlaceholder",
+       IDS_LENS_SEARCH_UPLOAD_DIALOG_TEXT_PLACEHOLDER},
+      {"lensSearchUploadDialogSearchButtonLabel",
+       IDS_LENS_SEARCH_UPLOAD_DIALOG_SEARCH_BUTTON_LABEL},
+      {"lensSearchUploadDialogDragDropTitle",
+       IDS_LENS_SEARCH_UPLOAD_DIALOG_DRAG_DROP_TITLE},
+      {"lensSearchUploadDialogLoadingText",
+       IDS_LENS_SEARCH_UPLOAD_DIALOG_LOADING_TEXT},
+      {"lensSearchUploadDialogOfflineText",
+       IDS_LENS_SEARCH_UPLOAD_DIALOG_OFFLINE_TEXT},
+      {"lensSearchUploadDialogOfflineSubtitleText",
+       IDS_LENS_SEARCH_UPLOAD_DIALOG_OFFLINE_SUBTITLE_TEXT},
+      {"lensSearchUploadDialogOfflineButtonLabel",
+       IDS_LENS_SEARCH_UPLOAD_DIALOG_OFFLINE_BUTTON_LABEL},
 
       // Logo/doodle.
       {"copyLink", IDS_NTP_DOODLE_SHARE_DIALOG_COPY_LABEL},
@@ -518,7 +540,6 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
       theme_service_(ThemeServiceFactory::GetForProfile(profile_)),
       ntp_custom_background_service_(
           NtpCustomBackgroundServiceFactory::GetForProfile(profile_)),
-      web_contents_(web_ui->GetWebContents()),
       // We initialize navigation_start_time_ to a reasonable value to account
       // for the unlikely case where the NewTabPageHandler is created before we
       // received the DidStartNavigation event.
@@ -562,22 +583,18 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
   // background image available as soon as the page loads to prevent a potential
   // white flicker.
 
-  // Load time data is cached across page reloads. Listen for theme changes so
-  // that theme info is up-to-date when reloading.
-  native_theme_observation_.Observe(ui::NativeTheme::GetInstanceForNativeUi());
-  theme_service_observation_.Observe(theme_service_.get());
   ntp_custom_background_service_observation_.Observe(
       ntp_custom_background_service_.get());
 
   // Create and register customize chrome entry on unified side panel
   if (customize_chrome::IsSidePanelEnabled()) {
     auto* customize_chrome_tab_helper =
-        CustomizeChromeTabHelper::FromWebContents(web_contents_);
+        CustomizeChromeTabHelper::FromWebContents(web_contents());
     customize_chrome_tab_helper->CreateAndRegisterEntry();
   }
 
   // Populates the load time data with basic info.
-  OnThemeChanged();
+  OnColorProviderChanged();
   OnCustomBackgroundImageUpdated();
   OnLoad();
 }
@@ -588,7 +605,7 @@ NewTabPageUI::~NewTabPageUI() {
   // Deregister customize chrome entry on unified side panel
   if (customize_chrome::IsSidePanelEnabled()) {
     auto* customize_chrome_tab_helper =
-        CustomizeChromeTabHelper::FromWebContents(web_contents_);
+        CustomizeChromeTabHelper::FromWebContents(web_contents());
     customize_chrome_tab_helper->DeregisterEntry();
   }
 }
@@ -657,7 +674,7 @@ void NewTabPageUI::BindInterface(
 void NewTabPageUI::BindInterface(
     mojo::PendingReceiver<realbox::mojom::PageHandler> pending_page_handler) {
   realbox_handler_ = std::make_unique<RealboxHandler>(
-      std::move(pending_page_handler), profile_, web_contents_);
+      std::move(pending_page_handler), profile_, web_contents());
 }
 
 void NewTabPageUI::BindInterface(
@@ -702,7 +719,7 @@ void NewTabPageUI::BindInterface(
 void NewTabPageUI::BindInterface(
     mojo::PendingReceiver<photos::mojom::PhotosHandler> pending_receiver) {
   photos_handler_ = std::make_unique<PhotosHandler>(std::move(pending_receiver),
-                                                    profile_, web_contents_);
+                                                    profile_, web_contents());
 }
 
 void NewTabPageUI::BindInterface(
@@ -722,7 +739,7 @@ void NewTabPageUI::BindInterface(
     mojo::PendingReceiver<chrome_cart::mojom::CartHandler>
         pending_page_handler) {
   cart_handler_ = std::make_unique<CartHandler>(std::move(pending_page_handler),
-                                                profile_, web_contents_);
+                                                profile_, web_contents());
 }
 
 void NewTabPageUI::CreatePageHandler(
@@ -733,7 +750,7 @@ void NewTabPageUI::CreatePageHandler(
   page_handler_ = std::make_unique<NewTabPageHandler>(
       std::move(pending_page_handler), std::move(pending_page), profile_,
       ntp_custom_background_service_, theme_service_,
-      LogoServiceFactory::GetForProfile(profile_), web_contents_,
+      LogoServiceFactory::GetForProfile(profile_), web_contents(),
       navigation_start_time_);
 }
 
@@ -743,7 +760,7 @@ void NewTabPageUI::CreateCustomizeThemesHandler(
     mojo::PendingReceiver<customize_themes::mojom::CustomizeThemesHandler>
         pending_handler) {
   customize_themes_handler_ = std::make_unique<ChromeCustomizeThemesHandler>(
-      std::move(pending_client), std::move(pending_handler), web_contents_,
+      std::move(pending_client), std::move(pending_handler), web_contents(),
       profile_);
 }
 
@@ -767,19 +784,17 @@ void NewTabPageUI::CreatePageHandler(
   DCHECK(pending_page.is_valid());
   most_visited_page_handler_ = std::make_unique<MostVisitedHandler>(
       std::move(pending_page_handler), std::move(pending_page), profile_,
-      web_contents_, GURL(chrome::kChromeUINewTabPageURL),
+      web_contents(), GURL(chrome::kChromeUINewTabPageURL),
       navigation_start_time_);
   most_visited_page_handler_->EnableCustomLinks(IsCustomLinksEnabled());
   most_visited_page_handler_->SetShortcutsVisible(IsShortcutsVisible());
 }
 
-void NewTabPageUI::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
-  OnThemeChanged();
-}
-
-void NewTabPageUI::OnThemeChanged() {
+void NewTabPageUI::OnColorProviderChanged() {
+  if (!web_contents())
+    return;
   base::Value::Dict update;
-  const ui::ColorProvider& color_provider = web_contents_->GetColorProvider();
+  const ui::ColorProvider& color_provider = web_contents()->GetColorProvider();
   auto background_color = color_provider.GetColor(kColorNewTabPageBackground);
   update.Set("backgroundColor", skia::SkColorToHexString(background_color));
   content::WebUIDataSource::Update(profile_, chrome::kChromeUINewTabPageHost,

@@ -15,9 +15,7 @@
 #include "chrome/browser/ash/account_manager/account_apps_availability_factory.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
@@ -25,13 +23,9 @@
 #include "chrome/browser/ui/webui/chromeos/edu_coexistence/edu_coexistence_login_handler_chromeos.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/mixin_based_in_process_browser_test.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/account_manager_core/account_manager_facade.h"
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
 #include "components/account_manager_core/mock_account_manager_facade.h"
-#include "components/signin/public/identity_manager/accounts_mutator.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -406,13 +400,13 @@ class InlineLoginHandlerChromeOSTestWithArcRestrictions
     identity_test_env()->MakeAccountAvailable(email);
   }
 
-  bool ValuesListContainAccount(const base::span<const base::Value> values,
+  bool ValuesListContainAccount(const base::Value::List& values,
                                 const std::string& email) {
     return ValuesListGetAccount(values, email).has_value();
   }
 
   absl::optional<base::Value> ValuesListGetAccount(
-      const base::span<const base::Value> values,
+      const base::Value::List& values,
       const std::string& email) {
     for (const base::Value& value : values) {
       const std::string* email_val = value.FindStringKey("email");
@@ -423,7 +417,7 @@ class InlineLoginHandlerChromeOSTestWithArcRestrictions
     return absl::nullopt;
   }
 
-  const base::span<const base::Value> CallGetAccountsNotAvailableInArc() {
+  const base::Value::List& CallGetAccountsNotAvailableInArc() {
     // Call "getAccountsNotAvailableInArc".
     base::Value::List args;
     args.Append(kHandleFunctionName);
@@ -437,7 +431,7 @@ class InlineLoginHandlerChromeOSTestWithArcRestrictions
     EXPECT_TRUE(call_data.arg2()->GetBool());
 
     // Get results from JS callback.
-    return call_data.arg3()->GetListDeprecated();
+    return call_data.arg3()->GetList();
   }
 
  private:
@@ -526,8 +520,7 @@ IN_PROC_BROWSER_TEST_P(InlineLoginHandlerChromeOSTestWithArcRestrictions,
   AddAccount(kSecondaryAccount3Email, /*is_available_in_arc=*/false);
 
   // Call "getAccountsNotAvailableInArc".
-  const base::span<const base::Value> result =
-      CallGetAccountsNotAvailableInArc();
+  const base::Value::List& result = CallGetAccountsNotAvailableInArc();
   // Two accounts are not available in ARC.
   EXPECT_EQ(2u, result.size());
   EXPECT_FALSE(ValuesListContainAccount(result, kSecondaryAccount1Email));
@@ -541,8 +534,7 @@ IN_PROC_BROWSER_TEST_P(InlineLoginHandlerChromeOSTestWithArcRestrictions,
   AddAccount(kSecondaryAccount2Email, /*is_available_in_arc=*/false);
 
   // Call "getAccountsNotAvailableInArc".
-  const base::span<const base::Value> result =
-      CallGetAccountsNotAvailableInArc();
+  const base::Value::List& result = CallGetAccountsNotAvailableInArc();
   // One account is not available in ARC.
   EXPECT_EQ(1u, result.size());
   EXPECT_FALSE(ValuesListContainAccount(result, kSecondaryAccount1Email));
@@ -554,8 +546,7 @@ IN_PROC_BROWSER_TEST_P(InlineLoginHandlerChromeOSTestWithArcRestrictions,
   web_ui()->HandleReceivedMessage(kMakeAvailableInArcMessage, args_1);
 
   // Call "getAccountsNotAvailableInArc".
-  const base::span<const base::Value> result_1 =
-      CallGetAccountsNotAvailableInArc();
+  const base::Value::List& result_1 = CallGetAccountsNotAvailableInArc();
   // Zero accounts are not available in ARC.
   EXPECT_EQ(0u, result_1.size());
 }

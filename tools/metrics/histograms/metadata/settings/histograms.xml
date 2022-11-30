@@ -88,6 +88,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Settings.FirstPartySets.State" enum="FirstPartySetsState"
+    expires_after="2023-04-04">
+  <owner>alimariam@google.com</owner>
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <summary>
+    Records either the state of first party sets (FPS) or not relevant,
+    depending on the user's cookie settings. This is logged on startup.
+  </summary>
+</histogram>
+
 <histogram name="Settings.GivenShowHomeButton_HomePageIsNewTabPage"
     enum="Boolean" expires_after="2023-02-26">
   <owner>mpearson@chromium.org</owner>
@@ -203,7 +214,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.PrivacyGuide.EntryExit"
-    enum="SettingsPrivacyGuideInteractions" expires_after="2023-01-15">
+    enum="SettingsPrivacyGuideInteractions" expires_after="2023-03-19">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
   <owner>chrome-friendly-settings@google.com</owner>
@@ -214,7 +225,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.PrivacyGuide.NextNavigation"
-    enum="SettingsPrivacyGuideInteractions" expires_after="2023-01-15">
+    enum="SettingsPrivacyGuideInteractions" expires_after="2023-03-19">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
   <owner>chrome-friendly-settings@google.com</owner>
@@ -224,7 +235,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.PrivacyGuide.SettingsStates"
-    enum="SettingsPrivacyGuideSettingsStates" expires_after="2022-11-13">
+    enum="SettingsPrivacyGuideSettingsStates" expires_after="2023-03-19">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
   <owner>chrome-friendly-settings@google.com</owner>
@@ -329,7 +340,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.SafetyCheck.Interactions"
-    enum="SettingsSafetyCheckInteractions" expires_after="2023-01-15">
+    enum="SettingsSafetyCheckInteractions" expires_after="2023-03-19">
   <owner>rainhard@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <owner>anaudrey@chromium.org</owner>
@@ -362,7 +373,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.SearchEngines.Interactions"
-    enum="SettingsSearchEnginesInteractions" expires_after="2023-01-15">
+    enum="SettingsSearchEnginesInteractions" expires_after="2023-03-19">
   <owner>yoangela@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -444,7 +455,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.StartupPageEngineTypes"
-    enum="OmniboxSearchEngineType" expires_after="2023-01-15">
+    enum="OmniboxSearchEngineType" expires_after="2023-03-19">
   <owner>mpearson@chromium.org</owner>
   <owner>csharp@chromium.org</owner>
   <summary>

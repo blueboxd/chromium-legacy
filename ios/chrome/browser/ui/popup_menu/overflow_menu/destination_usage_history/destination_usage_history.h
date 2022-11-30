@@ -47,9 +47,6 @@ class PrefService;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Disconnect the Destination Usage History.
-- (void)disconnect;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_POPUP_MENU_OVERFLOW_MENU_DESTINATION_USAGE_HISTORY_DESTINATION_USAGE_HISTORY_H_

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,10 +28,10 @@ class LargeStickyAdViolationBrowserTest : public SubresourceFilterBrowserTest {
   LargeStickyAdViolationBrowserTest() = default;
 
   void SetUp() override {
-    std::vector<base::Feature> enabled = {
+    std::vector<base::test::FeatureRef> enabled = {
         subresource_filter::kAdTagging,
         subresource_filter::kAdsInterventionsEnforced};
-    std::vector<base::Feature> disabled = {
+    std::vector<base::test::FeatureRef> disabled = {
         blink::features::kFrequencyCappingForLargeStickyAdDetection};
 
     feature_list_.InitWithFeatures(enabled, disabled);
@@ -105,8 +105,9 @@ class LargeStickyAdViolationBrowserTestWithoutEnforcement
   LargeStickyAdViolationBrowserTestWithoutEnforcement() = default;
 
   void SetUp() override {
-    std::vector<base::Feature> enabled = {subresource_filter::kAdTagging};
-    std::vector<base::Feature> disabled = {
+    std::vector<base::test::FeatureRef> enabled = {
+        subresource_filter::kAdTagging};
+    std::vector<base::test::FeatureRef> disabled = {
         subresource_filter::kAdsInterventionsEnforced,
         blink::features::kFrequencyCappingForLargeStickyAdDetection};
 

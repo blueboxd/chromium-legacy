@@ -94,7 +94,7 @@ class MessageSender : public ExtensionHostRegistry::Observer {
       GURL event_url) {
     auto event = std::make_unique<Event>(
         events::TEST_ON_MESSAGE, "test.onMessage",
-        std::move(event_args->GetList()), browser_context);
+        std::move(*event_args).TakeList(), browser_context);
     event->event_url = std::move(event_url);
     return event;
   }
@@ -270,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(MessagingApiTest, MessagingExternal) {
 // no background page.
 IN_PROC_BROWSER_TEST_F(MessagingApiTest, MessagingNoBackground) {
   ASSERT_TRUE(RunExtensionTest("messaging/connect_nobackground",
-                               {.page_url = "page_in_main_frame.html"}))
+                               {.extension_url = "page_in_main_frame.html"}))
       << message_;
 }
 

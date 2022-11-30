@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,6 +60,7 @@ class CORE_EXPORT MediaValuesDynamic : public MediaValues {
   float ExFontSize() const override;
   float ChFontSize() const override;
   float IcFontSize() const override;
+  float LineHeight() const override;
   double ViewportWidth() const override;
   double ViewportHeight() const override;
   double SmallViewportWidth() const override;

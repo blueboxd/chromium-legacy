@@ -4,9 +4,9 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <iterator>
 
+#include "base/ranges/algorithm.h"
 #include "device/gamepad/gamepad_id_list.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
 
@@ -888,10 +888,58 @@ void MapperElecomWirelessDirectInput(const Gamepad& input, Gamepad* mapped) {
   mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[2];
 }
 
+void MapperDjiFpv(const Gamepad& input, Gamepad* mapped) {
+  enum DjiFpvAxis {
+    kDjiFpvAxisGimbalDial = AXIS_INDEX_COUNT,
+    kDjiFpvAxisFlightModeSwitch,
+    kDjiFpvAxisC2Switch,
+    kDjiFpvAxisCount,
+  };
+
+  double flight_mode_axis;
+  if (input.buttons[6].pressed)
+    flight_mode_axis = -1.0;
+  else if (input.buttons[7].pressed)
+    flight_mode_axis = 1.0;
+  else
+    flight_mode_axis = 0.0;
+
+  double c2_axis;
+  if (input.buttons[4].pressed)
+    c2_axis = 0.0;
+  else if (input.buttons[5].pressed)
+    c2_axis = -1.0;
+  else
+    c2_axis = 1.0;
+
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_PRIMARY] = NullButton();
+  mapped->buttons[BUTTON_INDEX_SECONDARY] = NullButton();
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = NullButton();
+  mapped->buttons[BUTTON_INDEX_QUATERNARY] = NullButton();
+  mapped->buttons[BUTTON_INDEX_LEFT_SHOULDER] =
+      input.buttons[2];  // Flight Pause/RTH
+  mapped->buttons[BUTTON_INDEX_RIGHT_SHOULDER] =
+      input.buttons[3];  // Shutter/Record
+  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = NullButton();
+  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = input.buttons[1];  // Start/Stop
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[0];    // C1
+  mapped->axes[AXIS_INDEX_LEFT_STICK_X] = input.axes[3];
+  mapped->axes[AXIS_INDEX_LEFT_STICK_Y] = -input.axes[2];
+  mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = input.axes[0];
+  mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = -input.axes[1];
+  mapped->axes[kDjiFpvAxisGimbalDial] = input.axes[4];
+  mapped->axes[kDjiFpvAxisFlightModeSwitch] = flight_mode_axis;
+  mapped->axes[kDjiFpvAxisC2Switch] = c2_axis;
+
+  mapped->buttons_length = 9;
+  mapped->axes_length = kDjiFpvAxisCount;
+}
+
 constexpr struct MappingData {
   GamepadId gamepad_id;
   GamepadStandardMappingFunction function;
-} AvailableMappings[] = {
+} kAvailableMappings[] = {
     // PowerA Wireless Controller - Nintendo GameCube style
     {GamepadId::kPowerALicPro, MapperSwitchPro},
     // DragonRise Generic USB
@@ -980,6 +1028,8 @@ constexpr struct MappingData {
     {GamepadId::kOnLiveProduct100a, MapperOnLiveWireless},
     // OUYA Controller
     {GamepadId::kOuyaProduct0001, MapperOUYA},
+    // DJI FPV Remote Controller 2
+    {GamepadId::kDjiProduct1020, MapperDjiFpv},
     // SCUF Vantage, SCUF Vantage 2
     {GamepadId::kScufProduct7725, MapperDualshock4},
     // boom PSX+N64 USB Converter
@@ -1005,13 +1055,10 @@ GamepadStandardMappingFunction GetGamepadStandardMappingFunction(
     GamepadBusType bus_type) {
   GamepadId gamepad_id =
       GamepadIdList::Get().GetGamepadId(product_name, vendor_id, product_id);
-  const MappingData* begin = std::begin(AvailableMappings);
-  const MappingData* end = std::end(AvailableMappings);
-  const auto* find_it = std::find_if(begin, end, [=](const MappingData& item) {
-    return gamepad_id == item.gamepad_id;
-  });
+  const auto* find_it = base::ranges::find(kAvailableMappings, gamepad_id,
+                                           &MappingData::gamepad_id);
   GamepadStandardMappingFunction mapper =
-      (find_it == end) ? nullptr : find_it->function;
+      (find_it == std::end(kAvailableMappings)) ? nullptr : find_it->function;
 
   // The Linux kernel was updated in version 4.10 to better support Dualshock 4
   // and Dualshock 3/SIXAXIS gamepads. The driver patches the bcdHID value when

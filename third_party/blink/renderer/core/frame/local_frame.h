@@ -42,6 +42,8 @@
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "third_party/blink/public/common/frame/frame_ad_evidence.h"
 #include "third_party/blink/public/common/frame/transient_allow_fullscreen.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/public/mojom/back_forward_cache_not_restored_reasons.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
@@ -206,6 +208,7 @@ class CORE_EXPORT LocalFrame final
   // response to the creation of a RenderFrameHost) or by blink if this is a
   // synchronously created LocalFrame child.
   void Init(Frame* opener,
+            const DocumentToken& document_token,
             std::unique_ptr<PolicyContainer> policy_container,
             const StorageKey& storage_key);
   void SetView(LocalFrameView*);
@@ -602,6 +605,15 @@ class CORE_EXPORT LocalFrame final
   mojom::blink::BackForwardCacheControllerHost&
   GetBackForwardCacheControllerHostRemote();
 
+  // Sets back/forward cache NotRestoredReasons for this frame. Only set for
+  // outermost main frame.
+  void SetNotRestoredReasons(
+      mojom::blink::BackForwardCacheNotRestoredReasonsPtr);
+  const mojom::blink::BackForwardCacheNotRestoredReasonsPtr&
+  GetNotRestoredReasons();
+  // Returns if the saved NotRestoredReasons has any blocking reasons.
+  bool HasBlockingReasons();
+
   const AtomicString& GetReducedAcceptLanguage() const {
     return reduced_accept_language_;
   }
@@ -775,8 +787,6 @@ class CORE_EXPORT LocalFrame final
   // Invokes on first paint, this method could be invoked multiple times, refer
   // to FrameFirstPaint.
   void OnFirstPaint(bool text_painted, bool image_painted);
-  void IncrementNavigationId() { navigation_id_++; }
-  uint32_t GetNavigationId() { return navigation_id_; }
 
 #if BUILDFLAG(IS_MAC)
   void ResetTextInputHostForTesting();
@@ -869,6 +879,10 @@ class CORE_EXPORT LocalFrame final
                                     String& clip_html,
                                     gfx::Rect& clip_rect);
 
+  // Helper function for |HasBlockingReasons()|.
+  bool HasBlockingReasonsHelper(
+      const mojom::blink::BackForwardCacheNotRestoredReasonsPtr&);
+
 #if !BUILDFLAG(IS_ANDROID)
   void SetTitlebarAreaDocumentStyleEnvironmentVariables() const;
   void MaybeUpdateWindowControlsOverlayWithNewZoomLevel();
@@ -940,6 +954,9 @@ class CORE_EXPORT LocalFrame final
   InterfaceRegistry* const interface_registry_;
 
   mojom::blink::ViewportIntersectionState intersection_state_;
+
+  // Only set for outermost main frame.
+  mojom::blink::BackForwardCacheNotRestoredReasonsPtr not_restored_reasons_;
 
   // Per-frame URLLoader factory.
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;
@@ -1027,9 +1044,6 @@ class CORE_EXPORT LocalFrame final
 
   // Indicate if the current document's color scheme was notified.
   bool notified_color_scheme_ = false;
-  // Tracks the number of times this document has been retrieved from the
-  // bfcache.
-  uint32_t navigation_id_ = 1;
 
   // Stores whether this frame is affected by a CSPEE policy (from any ancestor
   // frame). Calculated browser-side and used to help determine if this frame

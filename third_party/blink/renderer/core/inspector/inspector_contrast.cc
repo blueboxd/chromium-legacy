@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ void BlendWithColorsFromGradient(cssvalue::CSSGradientValue* gradient,
   const ComputedStyle& style = layout_object.StyleRef();
 
   Vector<Color> stop_colors = gradient->GetStopColors(document, style);
-  if (colors.IsEmpty()) {
+  if (colors.empty()) {
     colors.AppendRange(stop_colors.begin(), stop_colors.end());
   } else {
     if (colors.size() > 1) {
@@ -210,7 +210,7 @@ ContrastInfo InspectorContrast::GetContrast(Element* top_element) {
     return result;
 
   const String& text = text_node->data().StripWhiteSpace();
-  if (text.IsEmpty())
+  if (text.empty())
     return result;
 
   const LayoutObject* layout_object = top_element->GetLayoutObject();
@@ -359,7 +359,7 @@ bool InspectorContrast::GetColorsFromRect(PhysicalRect rect,
     if (background_color.Alpha() != 0) {
       found_non_transparent_color = true;
       if (background_color.HasAlpha()) {
-        if (colors.IsEmpty()) {
+        if (colors.empty()) {
           colors.push_back(background_color);
         } else {
           for (auto& color : colors)

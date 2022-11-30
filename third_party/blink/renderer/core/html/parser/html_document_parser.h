@@ -112,6 +112,10 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
 
   bool DidPumpTokenizerForTesting() const { return did_pump_tokenizer_; }
 
+  HTMLTokenProducer* TokenProducerForTesting() { return token_producer_.get(); }
+
+  unsigned GetChunkCountForTesting() const;
+
   TextPosition GetTextPosition() const final;
   OrdinalNumber LineNumber() const final;
 
@@ -178,8 +182,9 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   NextTokenStatus CanTakeNextToken(base::TimeDelta& time_executing_script);
   bool PumpTokenizer();
   void PumpTokenizerIfPossible();
-  void DeferredPumpTokenizerIfPossible();
-  void SchedulePumpTokenizer();
+  void DeferredPumpTokenizerIfPossible(bool from_finish_append,
+                                       base::TimeTicks schedule_time);
+  void SchedulePumpTokenizer(bool from_finish_append);
   void ScheduleEndIfDelayed();
   void ConstructTreeFromToken(AtomicHTMLToken& atomic_token);
 
@@ -220,15 +225,20 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
 
   bool HasPendingPreloads() {
     base::AutoLock lock(pending_preload_lock_);
-    return !pending_preload_data_.IsEmpty();
+    return !pending_preload_data_.empty();
   }
 
   void CreateTokenProducer(
       bool can_use_background_token_producer = true,
       HTMLTokenizer::State initial_state = HTMLTokenizer::kDataState);
 
-  const HTMLParserOptions options_;
+  // Returns true if the data should be processed (tokenizer pumped) now. If
+  // this returns false, SchedulePumpTokenizer() should be called. This is
+  // called when data is available.
+  bool ShouldPumpTokenizerNowForFinishAppend() const;
+
   HTMLInputStream input_;
+  const HTMLParserOptions options_;
   Member<HTMLParserReentryPermit> reentry_permit_ =
       MakeGarbageCollected<HTMLParserReentryPermit>();
 

@@ -51,4 +51,7 @@ public interface PaymentAppFactoryDelegate {
      * app is created.
      */
     default void setCanMakePaymentEvenWithoutApps() {}
+
+    /** @return The Content-Security-Policy (CSP) checker. */
+    CSPChecker getCSPChecker();
 }

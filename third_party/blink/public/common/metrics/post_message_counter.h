@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,11 +26,14 @@ class BLINK_COMMON_EXPORT PostMessageCounter {
       : partition_(partition) {}
   ~PostMessageCounter() = default;
 
-  void RecordMessage(ukm::SourceId source_id,
-                     const StorageKey& source_storage_key,
-                     ukm::SourceId target_id,
-                     const StorageKey& target_storage_key,
-                     ukm::UkmRecorder* recorder);
+  // This function not only bumps postMessage counters, but it returns true if
+  // the postMessage itself should be sent. The postMessage might be gated if
+  // the storage keys are same-origin but different-partition.
+  bool RecordMessageAndCheckIfShouldSend(ukm::SourceId source_id,
+                                         const StorageKey& source_storage_key,
+                                         ukm::SourceId target_id,
+                                         const StorageKey& target_storage_key,
+                                         ukm::UkmRecorder* recorder);
 
  private:
   PostMessagePartition partition_;

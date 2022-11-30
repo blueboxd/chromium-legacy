@@ -965,7 +965,7 @@ class CORE_EXPORT LocalFrameView final
 
   bool RunCSSToggleSteps();
 
-  bool NotifyResizeObservers(DocumentLifecycle::LifecycleState target_state);
+  bool NotifyResizeObservers();
   bool RunResizeObserverSteps(DocumentLifecycle::LifecycleState target_state);
   void ClearResizeObserverLimit();
 
@@ -1171,7 +1171,17 @@ class CORE_EXPORT LocalFrameView final
   // Filter used for inverting the document background for forced darkening.
   std::unique_ptr<DarkModeFilter> dark_mode_filter_;
 
+  // A set of objects needing a transform property tree update. These updates
+  // are deferred until the end prepaint and updating them directly, if
+  // possible, avoids needing to walk the tree to update them. See:
+  // https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/core/paint/README.md#Transform-update-optimization
+  // for more on the fast path
   Member<HeapHashSet<Member<LayoutObject>>> pending_transform_updates_;
+
+  // TODO(1370937): Currently we don't yet know how to handle soft navigation
+  // UKM reporting. This flag indicates that First Contentful Paint was reported
+  // once and should not be reported again.
+  bool was_fcp_reported_ = false;
 
 #if DCHECK_IS_ON()
   bool is_updating_descendant_dependent_flags_;

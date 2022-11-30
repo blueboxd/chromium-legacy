@@ -28,6 +28,7 @@ class Profile;
 
 namespace app_list {
 struct FileSuggestData;
+enum class FileSuggestionType;
 class SearchController;
 
 class ZeroStateDriveProvider : public SearchProvider,
@@ -65,14 +66,15 @@ class ZeroStateDriveProvider : public SearchProvider,
  private:
   // Called when file suggestion data are fetched from the service.
   void OnSuggestFileDataFetched(
-      absl::optional<std::vector<FileSuggestData>> suggest_results);
+      const absl::optional<std::vector<FileSuggestData>>& suggest_results);
 
   // Builds the search results from file suggestions then publishes the results.
-  void SetSearchResults(std::vector<FileSuggestData> suggest_results);
+  void SetSearchResults(const std::vector<FileSuggestData>& suggest_results);
 
   std::unique_ptr<FileResult> MakeListResult(
+      const std::string& result_id,
       const base::FilePath& filepath,
-      const absl::optional<std::string>& prediction_reason,
+      const absl::optional<std::u16string>& prediction_reason,
       const float relevance);
 
   // Requests an update from the ItemSuggestCache, but only if the call is long
@@ -83,8 +85,7 @@ class ZeroStateDriveProvider : public SearchProvider,
   void MaybeUpdateCache();
 
   // FileSuggestKeyedService::Observer:
-  void OnFileSuggestionUpdated(
-      FileSuggestKeyedService::SuggestionType type) override;
+  void OnFileSuggestionUpdated(FileSuggestionType type) override;
 
   Profile* const profile_;
   drive::DriveIntegrationService* const drive_service_;

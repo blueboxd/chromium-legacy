@@ -10,24 +10,9 @@
 #include "url/origin.h"
 #include "url/url_util.h"
 
-namespace network {
-
-namespace cors {
+namespace network::cors {
 
 namespace {
-
-bool IsSubdomainOfHost(const std::string& subdomain, const std::string& host) {
-  if (subdomain.length() <= host.length())
-    return false;
-
-  if (subdomain[subdomain.length() - host.length() - 1] != '.')
-    return false;
-
-  if (!base::EndsWith(subdomain, host, base::CompareCase::SENSITIVE))
-    return false;
-
-  return true;
-}
 
 bool IsPublicSuffixSubdomainOfHost(const std::string& subdomain,
                                    const std::string& host) {
@@ -43,6 +28,19 @@ bool IsPublicSuffixSubdomainOfHost(const std::string& subdomain,
 }
 
 }  // namespace
+
+bool IsSubdomainOfHost(const std::string& subdomain, const std::string& host) {
+  if (subdomain.length() <= host.length())
+    return false;
+
+  if (subdomain[subdomain.length() - host.length() - 1] != '.')
+    return false;
+
+  if (!base::EndsWith(subdomain, host, base::CompareCase::SENSITIVE))
+    return false;
+
+  return true;
+}
 
 OriginAccessEntry::OriginAccessEntry(
     const std::string& protocol,
@@ -159,6 +157,4 @@ OriginAccessEntry::CreateCorsOriginPattern() const {
       protocol_, host_, port_, domain_match_mode_, port_match_mode_, priority_);
 }
 
-}  // namespace cors
-
-}  // namespace network
+}  // namespace network::cors

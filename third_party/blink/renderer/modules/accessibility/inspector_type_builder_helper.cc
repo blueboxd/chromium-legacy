@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,7 +110,7 @@ std::unique_ptr<AXRelatedNode> RelatedNodeForAXObject(const AXObject& ax_object,
     return related_node;
 
   String idref = element->GetIdAttribute();
-  if (!idref.IsEmpty())
+  if (!idref.empty())
     related_node->setIdref(idref);
 
   if (name)
@@ -216,7 +216,7 @@ std::unique_ptr<AXValueSource> CreateValueSource(NameSource& name_source) {
   String type = ValueSourceType(name_source.type);
   std::unique_ptr<AXValueSource> value_source =
       AXValueSource::create().setType(type).build();
-  if (!name_source.related_objects.IsEmpty()) {
+  if (!name_source.related_objects.empty()) {
     if (name_source.attribute == html_names::kAriaLabelledbyAttr ||
         name_source.attribute == html_names::kAriaLabeledbyAttr) {
       std::unique_ptr<AXValue> attribute_value = CreateRelatedNodeListValue(

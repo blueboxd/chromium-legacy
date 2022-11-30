@@ -134,6 +134,10 @@
     "platforms": ["Linux", "Mac", "Win", "Fuchsia"],
     "bases": ["fast/css3-text/css3-text-decoration/stable",
               "fast/dom/Window",
+              "external/wpt/css/css-color/parsing/",
+              "external/wpt/css/css-transitions/parsing/",
+              "external/wpt/css/css-animations/parsing/",
+              "external/wpt/css/css-images/parsing/",
               "http/tests/navigation",
               "http/tests/sendbeacon",
               "http/tests/serviceworker/webexposed",
@@ -235,6 +239,7 @@
               "external/wpt/css/filter-effects",
               "external/wpt/css/css-grid/animation",
               "external/wpt/largest-contentful-paint",
+              "fast/forms/file/file-appearance-no-default-width.html",
               "fast/hidpi/static",
               "http/tests/csspaint/hidpi",
               "http/tests/images/document-policy",
@@ -260,12 +265,6 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/cookies"],
     "args": ["--disable-features=SchemefulSameSite"]
-  },
-  {
-    "prefix": "layout_ng_printing",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["printing"],
-    "args": ["--enable-blink-features=LayoutNGPrinting"]
   },
   {
     "prefix": "dark-mode-default",
@@ -616,9 +615,10 @@
   {
     "prefix": "fluent-non-overlay-scrollbar",
     "platforms": ["Win"],
-    "bases": [],
+    "bases": ["fast/scrolling/scrollbars"],
     "args": ["--enable-features=FluentScrollbar",
-             "--enable-threaded-compositing"]
+             "--enable-threaded-compositing",
+             "--disable-smooth-scrolling"]
   },
   {
     "prefix": "fluent-non-overlay-scrollbar-dsf-150",
@@ -692,16 +692,28 @@
     "args": ["--disable-features=UserAgentClientHint"]
   },
   {
+    "prefix": "disable-prefers-reduced-motion-client-hint",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/client-hints", "wpt_internal/client-hints"],
+    "args": ["--disable-features=PrefersReducedMotionClientHintHeader"]
+  },
+  {
+    "prefix": "disable-wildcard-subdomains-in-permissions-policy",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/permissions-policy/"],
+    "args": ["--disable-features=WildcardSubdomainsInPermissionsPolicy"]
+  },
+  {
     "prefix": "storage-access-api",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [ "external/wpt/storage-access-api" ],
     "args": [ "--enable-features=StorageAccessAPI" ]
   },
   {
-    "prefix": "storage-access-api-for-site-extension",
+    "prefix": "storage-access-api-for-origin-extension",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [ "wpt_internal/storage-access-api" ],
-    "args": [ "--enable-features=StorageAccessAPI,StorageAccessAPIForSiteExtension" ]
+    "args": [ "--enable-features=StorageAccessAPI,StorageAccessAPIForOriginExtension" ]
   },
   {
     "prefix": "web-bluetooth-new-permissions-backend",
@@ -766,12 +778,6 @@
     "args": [ "--enable-features=RestrictGamepadAccess" ]
   },
   {
-    "prefix": "bfcache-experiment-control",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [ "http/tests/origin_trials/webexposed/bfcache-experiment-http-header-origin-trial.php" ],
-    "args": [ "--enable-features=BackForwardCacheABExperimentControl" ]
-  },
-  {
     "prefix": "third-party-storage-partitioning",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
@@ -790,6 +796,7 @@
       "external/wpt/service-workers/service-worker/partitioned-matchAll.tentative.https.html",
       "external/wpt/service-workers/service-worker/partitioned-claim.tentative.https.html",
       "external/wpt/webstorage/localstorage-basic-partitioned.tentative.sub.html",
+      "external/wpt/webstorage/sessionStorage-basic-partitioned.tentative.sub.html",
       "external/wpt/webmessaging/broadcastchannel/cross-partition.https.tentative.html",
       "external/wpt/IndexedDB",
       "external/wpt/webstorage/localstorage-about-blank-3P-iframe-opens-3P-window.partitioned.tentative.html",
@@ -798,6 +805,12 @@
       "http/tests/storage/partitioned-storage"
     ],
     "args": [ "--enable-features=ThirdPartyStoragePartitioning" ]
+  },
+  {
+    "prefix": "post-message-different-partition-same-origin-blocked",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/html/browsers/windows/post-message"],
+    "args": ["--enable-features=PostMessageDifferentPartitionSameOriginBlocked"]
   },
   {
     "prefix": "threaded-composited-iframes",
@@ -840,13 +853,6 @@
               "http/tests/cookies/partitioned-cookies",
               "http/tests/inspector-protocol/network/"],
     "args": ["--enable-features=PartitionedCookies,PartitionedCookiesBypassOriginTrial"]
-  },
-  {
-    "prefix": "partitioned-cookies-first-party-sets",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["http/tests/inspector-protocol/network/"],
-    "args": ["--enable-features=PartitionedCookies,PartitionedCookiesBypassOriginTrial",
-             "--use-first-party-set={\"primary\":\"https://devtools.test\",\"associatedSites\":[\"https://example.test\"]}"]
   },
   {
     "prefix": "prerender",
@@ -941,7 +947,7 @@
       "http/tests/inspector-protocol/storage/interest-groups.js"
     ],
     "args": [
-      "--enable-features=InterestGroupStorage,AdInterestGroupAPI,Fledge,PrivacySandboxAdsAPIsOverride,FencedFrames:implementation_type/shadow_dom"
+      "--enable-features=InterestGroupStorage,AdInterestGroupAPI,Fledge,PrivacySandboxAdsAPIsOverride,FencedFrames:implementation_type/mparch"
     ]
   },
   {
@@ -952,7 +958,7 @@
       "wpt_internal/async-script-scheduling"
     ],
     "args": [
-      "--enable-features=AutomaticLazyFrameLoadingToEmbeds:timeout/1000,AutomaticLazyFrameLoadingToEmbedUrls:allowed_websites/http%3A%2F%2Fbad3p.test%3A3001%7C%2Fembed,AutomaticLazyFrameLoadingToAds:timeout/5000,DelayAsyncScriptExecution:target/cross_site_with_allow_list/limit/1m/allow_list/http%3A%2F%2Fbad3p.test",
+      "--enable-features=AutomaticLazyFrameLoadingToEmbeds:timeout/1000,AutomaticLazyFrameLoadingToEmbedUrls:allowed_websites/http%3A%2F%2Fbad3p.test%3A3001%7C%2Fembed,AutomaticLazyFrameLoadingToAds:timeout/5000,DelayAsyncScriptExecution:delay_async_exec_target/cross_site_with_allow_list/delay_async_exec_allow_list/http%3A%2F%2Fbad3p.test",
       "--disable-field-trial-config"
     ]
   },
@@ -972,31 +978,37 @@
     "prefix": "async-script-scheduling-apply-to-cross-site-only",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["wpt_internal/async-script-scheduling"],
-    "args": ["--enable-features=DelayAsyncScriptExecution:target/cross_site_only"]
+    "args": ["--enable-features=DelayAsyncScriptExecution:delay_async_exec_target/cross_site_only"]
   },
   {
     "prefix": "async-script-scheduling-apply-to-allowlist",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["wpt_internal/async-script-scheduling"],
-    "args": ["--enable-features=DelayAsyncScriptExecution:target/cross_site_with_allow_list/limit/1m/allow_list/http%3A%2F%2Fbad3p.test%7C%2Fwpt_internal%2Fasync-script-scheduling%2Fresources%2Fscript.sub.js"]
+    "args": ["--enable-features=DelayAsyncScriptExecution:delay_async_exec_target/cross_site_with_allow_list/delay_async_exec_allow_list/http%3A%2F%2Fbad3p.test%7C%2Fwpt_internal%2Fasync-script-scheduling%2Fresources%2Fscript.sub.js"]
   },
   {
     "prefix": "async-script-scheduling-finished-parsing",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["wpt_internal/async-script-scheduling"],
-    "args": ["--enable-features=DelayAsyncScriptExecution:delay_type/finished_parsing"]
+    "args": ["--enable-features=DelayAsyncScriptExecution:delay_async_exec_delay_type/finished_parsing"]
   },
   {
     "prefix": "async-script-scheduling-finished-parsing-with-dom-content-loaded-wait-for-async-script",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["wpt_internal/async-script-scheduling"],
-    "args": ["--enable-features=DelayAsyncScriptExecution:delay_type/finished_parsing,DOMContentLoadedWaitForAsyncScript"]
+    "args": ["--enable-features=DelayAsyncScriptExecution:delay_async_exec_delay_type/finished_parsing,DOMContentLoadedWaitForAsyncScript"]
   },
   {
     "prefix": "async-script-scheduling-first-paint-or-finished-parsing",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["wpt_internal/async-script-scheduling"],
-    "args": ["--enable-features=DelayAsyncScriptExecution:delay_type/first_paint_or_finished_parsing"]
+    "args": ["--enable-features=DelayAsyncScriptExecution:delay_async_exec_delay_type/first_paint_or_finished_parsing"]
+  },
+  {
+    "prefix": "low-priority-script-loading",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["http/tests/devtools/network/resource-priority.js"],
+    "args": ["--enable-features=LowPriorityScriptLoading"]
   },
   {
     "prefix": "initially-invisible-images-lcp",
@@ -1151,7 +1163,10 @@
   {
     "prefix": "mediastreamtrack-transfer",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": [ "external/wpt/mediacapture-streams/MediaStreamTrack-iframe-transfer.https.html" ],
+    "bases": [
+      "external/wpt/mediacapture-streams/MediaStreamTrack-iframe-transfer.https.html",
+      "external/wpt/mediacapture-streams/MediaStreamTrack-iframe-audio-transfer.https.html"
+    ],
     "args": [
       "--enable-blink-features=MediaStreamTrackTransfer",
       "--enable-features=MediaStreamTrackTransfer",
@@ -1210,7 +1225,7 @@
       "http/tests/inspector-protocol/prefetch"
     ],
     "args": [
-      "--enable-blink-features=SpeculationRulesPrefetchProxy",
+      "--enable-blink-features=SpeculationRulesPrefetchProxy,SpeculationRulesFetchFromHeader",
       "--enable-features=SpeculationRulesPrefetchProxy,PrefetchUseContentRefactor",
       "--bypass-prefetch-proxy-for-host=not-web-platform.test",
       "--isolated-prerender-allow-all-domains"
@@ -1235,7 +1250,10 @@
   {
     "prefix": "pending-beacon",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/pending_beacon"],
+    "bases": [
+      "external/wpt/page-unload-beacon",
+      "wpt_internal/pending_beacon"
+    ],
     "args": [
       "--enable-features=PendingBeaconAPI:requires_origin_trial/false"
     ]
@@ -1272,5 +1290,35 @@
       "external/wpt/close-watcher"
     ],
     "args": ["--enable-blink-features=CloseWatcher"]
+  },
+  {
+    "prefix": "orb-v01",
+    "platforms": ["Linux"],
+    "args": ["--enable-features=OpaqueResponseBlockingV01"],
+    "bases": [
+      "external/wpt/fetch/corb",
+      "external/wpt/fetch/api",
+      "external/wpt/fetch/nosniff"
+    ]
+  },
+  {
+    "prefix": "orb-v02",
+    "platforms": ["Linux"],
+    "args": ["--enable-features=OpaqueResponseBlockingV01,OpaqueResponseBlockingV02"],
+    "bases": [
+      "external/wpt/fetch/corb"
+    ]
+  },
+  {
+    "prefix": "js-shared-memory",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["wpt_internal/js/shared_memory"],
+    "args": ["--enable-features=JavaScriptExperimentalSharedMemory"]
+  },
+  {
+    "prefix": "scoped-custom-element-registry-disabled",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/custom-elements/scoped-registry"],
+    "args": ["--disable-blink-features=ScopedCustomElementRegistry"]
   }
 ]

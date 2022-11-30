@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,8 +71,8 @@ ScriptPromise BluetoothRemoteGATTDescriptor::readValue(
   GetGatt()->AddToActiveAlgorithms(resolver);
   GetBluetooth()->Service()->RemoteDescriptorReadValue(
       descriptor_->instance_id,
-      WTF::Bind(&BluetoothRemoteGATTDescriptor::ReadValueCallback,
-                WrapPersistent(this), WrapPersistent(resolver)));
+      WTF::BindOnce(&BluetoothRemoteGATTDescriptor::ReadValueCallback,
+                    WrapPersistent(this), WrapPersistent(resolver)));
 
   return promise;
 }
@@ -148,8 +148,9 @@ ScriptPromise BluetoothRemoteGATTDescriptor::writeValue(
   GetGatt()->AddToActiveAlgorithms(resolver);
   GetBluetooth()->Service()->RemoteDescriptorWriteValue(
       descriptor_->instance_id, value_vector,
-      WTF::Bind(&BluetoothRemoteGATTDescriptor::WriteValueCallback,
-                WrapPersistent(this), WrapPersistent(resolver), value_vector));
+      WTF::BindOnce(&BluetoothRemoteGATTDescriptor::WriteValueCallback,
+                    WrapPersistent(this), WrapPersistent(resolver),
+                    value_vector));
 
   return promise;
 }

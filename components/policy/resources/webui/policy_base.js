@@ -12,9 +12,9 @@ import './status_box.js';
 import './policy_table.js';
 
 import {addSingletonGetter, addWebUIListener} from 'chrome://resources/js/cr.m.js';
-import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.js';
+import {FocusOutlineManager} from 'chrome://resources/js/focus_outline_manager.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {$} from 'chrome://resources/js/util.m.js';
+import {$} from 'chrome://resources/js/util.js';
 
 /**
  * @typedef {{
@@ -203,8 +203,12 @@ export class Page {
 
     // Add a status box for each scope that has a cloud policy status.
     for (const scope in status) {
+      const boxStatus = status[scope];
+      if (!boxStatus.policyDescriptionKey) {
+        continue;
+      }
       const box = document.createElement('status-box');
-      box.initialize(scope, status[scope]);
+      box.initialize(scope, boxStatus);
       container.appendChild(box);
       // Show the status section.
       section.hidden = false;

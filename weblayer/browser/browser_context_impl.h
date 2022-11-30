@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,6 +67,8 @@ class BrowserContextImpl : public content::BrowserContext {
   content::ContentIndexProvider* GetContentIndexProvider() override;
   content::ReduceAcceptLanguageControllerDelegate*
   GetReduceAcceptLanguageControllerDelegate() override;
+  content::OriginTrialsControllerDelegate* GetOriginTrialsControllerDelegate()
+      override;
 
   ProfileImpl* profile_impl() const { return profile_impl_; }
 

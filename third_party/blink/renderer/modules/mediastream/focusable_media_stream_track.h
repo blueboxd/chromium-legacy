@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,9 +54,8 @@ class MODULES_EXPORT FocusableMediaStreamTrack : public MediaStreamTrackImpl {
   // Clones may not be focus()-ed.
   const bool is_clone_;
 
-  // Calling focus() after the microtask on which getDisplayMedia()'s Promise
-  // was settled raises an exception.
-  bool promise_settled_ = false;
+  // Track whether the window of opportunity to call focus() is still open.
+  bool focus_window_of_opportunity_is_open_ = true;
 
   // First call to focus() is allowed. Subsequent calls produce an error.
   bool focus_called_ = false;

@@ -519,6 +519,15 @@ component("headless_non_renderer") {
     ]
   }
 
+  if (headless_use_prefs) {
+    deps += [
+      "//components/origin_trials:browser",
+      "//components/origin_trials:common",
+      "//components/user_prefs",
+      "//third_party/blink/public/common",
+    ]
+  }
+
   if (is_component_build) {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
@@ -570,10 +579,7 @@ component("headless_non_renderer") {
     }
 
     if (headless_use_policy) {
-      deps += [
-        "//components/policy/content",
-        "//components/user_prefs",
-      ]
+      deps += [ "//components/policy/content" ]
     }
   }
 
@@ -822,8 +828,6 @@ test("headless_browsertests") {
   data_deps = []
 
   if (is_fuchsia) {
-    use_cfv1 = false
-
     # TODO(https://crbug.com/1185811): Investigate removing the requirement for
     # job_policy_ambient_mark_vmo_exec for the sake of V8's allocator in tests.
     test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"

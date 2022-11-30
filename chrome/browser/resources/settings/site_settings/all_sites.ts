@@ -24,8 +24,8 @@ import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
-import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
+import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -94,6 +94,8 @@ const AllSitesElementBase = AllSitesElementBaseTemp as unknown as {
   new (): PolymerElement & I18nMixinInterface & WebUIListenerMixinInterface &
       SiteSettingsMixinInterface & RouteObserverMixinInterface,
 };
+
+const FPS_RELATED_SEARCH_PREFIX: string = 'related:';
 
 export class AllSitesElement extends AllSitesElementBase {
   static get is() {
@@ -255,9 +257,10 @@ export class AllSitesElement extends AllSitesElementBase {
    *
    * RouteObserverBehavior
    */
-  override currentRouteChanged(currentRoute: Route) {
+  override currentRouteChanged(currentRoute: Route, oldRoute?: Route) {
     super.currentRouteChanged(currentRoute);
-    if (currentRoute === routes.SITE_SETTINGS_ALL) {
+    if (currentRoute === routes.SITE_SETTINGS_ALL &&
+        currentRoute !== oldRoute) {
       this.populateList_();
     }
   }
@@ -319,7 +322,7 @@ export class AllSitesElement extends AllSitesElementBase {
       siteGroupMap: Map<string, SiteGroup>, searchQuery: string): SiteGroup[] {
     const result = [];
     for (const [_etldPlus1, siteGroup] of siteGroupMap) {
-      if (this.filter.startsWith('related:')) {
+      if (this.filter.startsWith(FPS_RELATED_SEARCH_PREFIX)) {
         const fpsOwnerFilter =
             this.filter.substring(this.filter.indexOf(':') + 1);
         // Checking `siteGroup.fpsOwner` to ensure that we're not matching with
@@ -473,12 +476,18 @@ export class AllSitesElement extends AllSitesElementBase {
     this.$.menu.get().showAt(target);
   }
 
+  private shouldShowFpsLearnMore_(): boolean {
+    return this.filter.startsWith(FPS_RELATED_SEARCH_PREFIX) &&
+        this.filteredList_ && this.filteredList_.length > 0;
+  }
+
   private onShowRelatedSites_() {
+    this.browserProxy.recordAction(AllSitesAction2.FILTER_BY_FPS_OWNER);
     this.$.menu.get().close();
     const siteGroup = this.filteredList_[this.actionMenuModel_!.index];
     const searchParams = new URLSearchParams(
         'searchSubpage=' +
-        encodeURIComponent('related:' + siteGroup.fpsOwner!));
+        encodeURIComponent(FPS_RELATED_SEARCH_PREFIX + siteGroup.fpsOwner!));
     const currentRoute = Router.getInstance().getCurrentRoute();
     Router.getInstance().navigateTo(currentRoute, searchParams);
   }
@@ -490,6 +499,21 @@ export class AllSitesElement extends AllSitesElementBase {
 
   private onRemove_() {
     this.$.confirmRemoveSite.get().showModal();
+  }
+
+  // Creates a placeholder origin used to hold cookies scoped at the eTLD+1
+  // level.
+  private generatePlaceholderOrigin_(etldPlus1: string, numCookies: number):
+      OriginInfo {
+    return {
+      origin: `http://${etldPlus1}/`,
+      engagement: 0,
+      usage: 0,
+      numCookies: numCookies,
+      hasPermissionSettings: false,
+      isInstalled: false,
+      isPartitioned: false,
+    };
   }
 
   private onConfirmRemoveSite_(e: Event) {
@@ -528,6 +552,12 @@ export class AllSitesElement extends AllSitesElementBase {
               .find(
                   o => o.isPartitioned === isPartitioned &&
                       o.origin === origin)!.numCookies;
+      if (updatedSiteGroup.origins.length === 0 &&
+          updatedSiteGroup.numCookies > 0) {
+        const originPlaceHolder = this.generatePlaceholderOrigin_(
+            updatedSiteGroup.etldPlus1, updatedSiteGroup.numCookies);
+        updatedSiteGroup.origins.push(originPlaceHolder);
+      }
     } else {
       this.browserProxy.recordAction(AllSitesAction2.REMOVE_SITE_GROUP);
       this.browserProxy.clearEtldPlus1DataAndCookies(
@@ -587,6 +617,11 @@ export class AllSitesElement extends AllSitesElementBase {
     return this.filter !== '';
   }
 
+  private getFpsLearnMoreLabel_() {
+    const fpsOwner = this.filter.substring(this.filter.indexOf(':') + 1);
+    return loadTimeData.getStringF(
+        'siteSettingsFirstPartySetsLearnMore', fpsOwner);
+  }
   /**
    * Selects the appropriate string to display for clear button based on whether
    * a filter is applied.
@@ -927,15 +962,8 @@ export class AllSitesElement extends AllSitesElementBase {
       // If there is no origin for this site group that has any data,
       // but the ETLD+1 has cookies in use, create a origin placeholder
       // for display purposes.
-      const originPlaceHolder = {
-        origin: `http://${siteGroupToUpdate.etldPlus1}/`,
-        engagement: 0,
-        usage: 0,
-        numCookies: siteGroupToUpdate.numCookies,
-        hasPermissionSettings: false,
-        isInstalled: false,
-        isPartitioned: false,
-      };
+      const originPlaceHolder = this.generatePlaceholderOrigin_(
+          siteGroupToUpdate.etldPlus1, siteGroupToUpdate.numCookies);
       updatedSiteGroup.origins.push(originPlaceHolder);
       this.set('filteredList_.' + index, updatedSiteGroup);
     } else {
@@ -1021,10 +1049,11 @@ export class AllSitesElement extends AllSitesElementBase {
   private updateSiteGroup_(index: number, updatedSiteGroup: SiteGroup) {
     if (updatedSiteGroup.origins.length > 0) {
       this.set('filteredList_.' + index, updatedSiteGroup);
+      this.siteGroupMap.set(updatedSiteGroup.etldPlus1, updatedSiteGroup);
     } else {
       this.splice('filteredList_', index, 1);
+      this.siteGroupMap.delete(updatedSiteGroup.etldPlus1);
     }
-    this.siteGroupMap.delete(updatedSiteGroup.etldPlus1);
   }
 
   /**
@@ -1068,16 +1097,19 @@ export class AllSitesElement extends AllSitesElementBase {
    */
   private onClearAllData_(e: Event) {
     this.browserProxy.recordAction(AllSitesAction2.CLEAR_ALL_DATA);
-
     const scopes = [AllSitesDialog.CLEAR_DATA, 'All'];
     const anyAppsInstalled = this.filteredList_.some(g => g.hasInstalledPWA);
     const installed = anyAppsInstalled ? 'Installed' : '';
     this.recordUserAction_([...scopes, installed, 'Confirm']);
-
+    if (this.filter.startsWith(FPS_RELATED_SEARCH_PREFIX)) {
+      this.browserProxy.recordAction(AllSitesAction2.DELETE_FOR_ENTIRE_FPS);
+    }
     for (let index = this.filteredList_.length - 1; index >= 0; index--) {
       this.clearDataForSiteGroupIndex_(index);
     }
-    this.$.allSitesList.fire('iron-resize');
+    // Needed to update the filteredList_ for the "No sites found" text to
+    // appear.
+    this.forceListUpdate_();
     this.totalUsage_ = '0 B';
     this.onCloseDialog_(e);
   }

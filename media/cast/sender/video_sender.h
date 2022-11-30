@@ -60,7 +60,7 @@ class VideoSender : public FrameSender::Client {
               const FrameSenderConfig& video_config,
               StatusChangeCallback status_change_cb,
               const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
-              openscreen::cast::Sender* sender,
+              std::unique_ptr<openscreen::cast::Sender> sender,
               PlayoutDelayChangeCB playout_delay_change_cb,
               media::VideoCaptureFeedbackCB feedback_cb,
               FrameSender::GetSuggestedVideoBitrateCB get_bitrate_cb);
@@ -135,9 +135,6 @@ class VideoSender : public FrameSender::Client {
   // and its playback on the receiver (i.e., shown to a user).
   base::TimeDelta min_playout_delay_;
   base::TimeDelta max_playout_delay_;
-
-  // Starting playout delay when streaming animated content.
-  base::TimeDelta animated_playout_delay_;
 
   PlayoutDelayChangeCB playout_delay_change_cb_;
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2018 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -184,6 +184,7 @@ if (build_with_chromium) {
         "absl/base:config_test",
         "absl/base:prefetch_test",
         "absl/cleanup:cleanup_test",
+        "absl/container:common_policy_traits_test",
         "absl/container:inlined_vector_test",
         "absl/container:node_slot_policy_test",
         "absl/container:sample_element_size_test",

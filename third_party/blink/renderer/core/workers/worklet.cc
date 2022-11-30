@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,10 +87,11 @@ ScriptPromise Worklet::addModule(ScriptState* script_state,
   // loading.
   GetExecutionContext()
       ->GetTaskRunner(TaskType::kInternalLoading)
-      ->PostTask(FROM_HERE,
-                 WTF::Bind(&Worklet::FetchAndInvokeScript, WrapPersistent(this),
-                           module_url_record, options->credentials(),
-                           WrapPersistent(pending_tasks)));
+      ->PostTask(
+          FROM_HERE,
+          WTF::BindOnce(&Worklet::FetchAndInvokeScript, WrapPersistent(this),
+                        module_url_record, options->credentials(),
+                        WrapPersistent(pending_tasks)));
   return promise;
 }
 

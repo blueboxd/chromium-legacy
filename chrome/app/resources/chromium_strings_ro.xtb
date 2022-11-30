@@ -10,6 +10,8 @@
 <translation id="1131805035311359397">Ca să verifici dacă parolele sunt protejate împotriva încălcării securității datelor și a altor probleme de securitate, <ph name="BEGIN_LINK" />conectează-te la Chromium<ph name="END_LINK" />.</translation>
 <translation id="1185134272377778587">Despre Chromium</translation>
 <translation id="1203500561924088507">Mulțumim pentru instalare. Înainte să folosești <ph name="BUNDLE_NAME" /> trebuie să repornești browserul.</translation>
+<translation id="1231839967188101156">Când opțiunea este activată, Chromium eliberează memorie din filele inactive. Astfel, filele active și alte aplicații beneficiază de mai multe resurse ale computerului și Chromium funcționează rapid. Filele inactive se reactivează automat când revii la ele. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
+<translation id="1261119230216066228">Datorită Economisirii memoriei, Chromium este mai rapid</translation>
 <translation id="1315551408014407711">Configurează noul profil Chromium</translation>
 <translation id="1385859895174722837">Asistentul Google în Chromium</translation>
 <translation id="1396446129537741364">Chromium încearcă să afișeze parolele.</translation>
@@ -180,6 +182,7 @@ Permisiunile pe care le-ai acordat deja site-urilor și aplicațiilor se pot apl
 <translation id="5386450000063123300">Chromium se actualizează (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Permite conectarea la Chromium</translation>
 <translation id="5398878173008909840">Este disponibilă o nouă versiune Chromium.</translation>
+<translation id="5405650547142096840">Eliminați din Chromium</translation>
 <translation id="5427571867875391349">Setați Chromium ca browser prestabilit</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
 <translation id="5473971139929175403">Este posibil ca Chromium să nu funcționeze corespunzător, deoarece nu mai este acceptat pe această versiune Linux</translation>
@@ -207,6 +210,7 @@ Permisiunile pe care le-ai acordat deja site-urilor și aplicațiilor se pot apl
 <translation id="6055895534982063517">Este disponibilă o nouă versiune Chromium, iar aceasta este mai rapidă ca oricând.</translation>
 <translation id="6063093106622310249">&amp;Deschide în Chromium</translation>
 <translation id="6072279588547424923">Extensia <ph name="EXTENSION_NAME" /> a fost adăugată la Chromium</translation>
+<translation id="6072463441809498330">Crește eficiența în Chromium</translation>
 <translation id="608006075545470555">Adaugă un profil de serviciu în acest browser</translation>
 <translation id="6096348254544841612">Personalizează și controlează Chromium. Este disponibilă o actualizare.</translation>
 <translation id="6119438414301547735">Permite extensiei să afișeze solicitări de acces în bara de instrumente Chromium</translation>
@@ -250,6 +254,7 @@ Permisiunile pe care le-ai acordat deja site-urilor și aplicațiilor se pot apl
 <translation id="6717134281241384636">Profilul dvs. nu poate fi utilizat, deoarece provine de la o versiune mai nouă a sistemului de operare Chromium.
 
 Este posibil ca unele funcții să nu fie disponibile. Specificați un director de profil diferit sau utilizați o versiune mai nouă de Chromium.</translation>
+<translation id="6730677189742196061">Datorită Economisirii memoriei, Chromium este mai rapid</translation>
 <translation id="6734291798041940871">Chromium este instalat deja pentru toți utilizatorii de pe computerul tău.</translation>
 <translation id="673636774878526923">Pentru a accesa informațiile din Chromium pe toate dispozitivele, conectează-te, apoi activează sincronizarea.</translation>
 <translation id="6774082503108938489">Părintele tău a dezactivat opțiunea „Permisiuni pentru site-uri, aplicații și extensii” în Chromium. Activarea acestei <ph name="EXTENSION_TYPE_PARAMETER" /> nu este permisă.</translation>
@@ -302,9 +307,9 @@ Chromium nu poate recupera setările.</translation>
 <translation id="7682601070171973634">Chromium explorează noi funcții care le dau site-urilor posibilitatea să ofere aceeași experiență de navigare, folosind mai puține date despre tine</translation>
 <translation id="7686590090926151193">Chromium nu este browserul prestabilit</translation>
 <translation id="7689606757190482937">Sincronizează și personalizează Chromium pe toate dispozitivele</translation>
-<translation id="7714577916146996629">Când opțiunea este activată, Chromium revendică memoria din filele pe care nu le folosești în mod activ. Acțiunea eliberează resursele computerului pentru alte activități și menține viteza ridicată a browserului Chromium. Filele inactive se afișează goale și se reîncarcă automat când dai clic pe ele. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /> sau <ph name="BEGIN_LINK_2" />trimite feedback<ph name="END_LINK_2" /></translation>
 <translation id="7745317241717453663">Astfel, se vor șterge datele de navigare de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chromium ca <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Programul de instalare nu a putut crea un director temporar. Verifică dacă există suficient spațiu liber și dacă ai drepturile necesare pentru a instala software-ul.</translation>
+<translation id="7786760609782648049">Crește eficiența în Chromium</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7828947555739565424">Există deja un profil Chromium asociat acestui cont pe dispozitiv</translation>
 <translation id="7845233973568007926">Mulțumim pentru instalare. Înainte să folosești <ph name="BUNDLE_NAME" /> trebuie să repornești computerul.</translation>
@@ -332,11 +337,11 @@ Chromium nu poate recupera setările.</translation>
 <translation id="8453117565092476964">Arhiva programului de instalare este deteriorată sau nevalidă. Descărcați din nou Chromium.</translation>
 <translation id="8463672209299734063">Opțional: contribuie la îmbunătățirea funcțiilor și a performanței sistemului de operare Chromium, trimițând automat la Google date de diagnosticare și de utilizare.</translation>
 <translation id="8493179195440786826">Chromium nu este actualizat</translation>
-<translation id="8522220489792889625">După cum este necesar, Chromium revendică memoria din filele pe care nu le folosești în mod activ. Poți modifica oricând opțiunea din Setări.</translation>
 <translation id="8550334526674375523">Acest profil de serviciu este complet separat de profilul tău personal.</translation>
 <translation id="8558383651099478961">Părintele tău a dezactivat opțiunea „Permisiuni pentru site-uri, aplicații și extensii” în Chromium. Adăugarea acestei <ph name="EXTENSION_TYPE_PARAMETER" /> nu este permisă.</translation>
 <translation id="8561285221328166383">Pentru a primi actualizările Chromium viitoare, vei avea nevoie de macOS 10.13 sau o versiune ulterioară. Acest computer folosește macOS 10.12.</translation>
 <translation id="8568283329061645092">Chromium poate să îți verifice parolele atunci când te conectezi folosind Contul Google</translation>
+<translation id="8574036838419011058">Când opțiunea este activată, Chromium economisește energia bateriei limitând activitatea de fundal și efectele vizuale, cum ar fi derularea lină și ratele de cadre ale videoclipurilor. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. Toate drepturile rezervate.</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />Cum folosim aceste date:<ph name="END_BOLD" /> site-urile pot stoca informații în Chromium despre interesele tale. De exemplu, dacă accesezi un site ca să cumperi pantofi pentru un maraton, site-ul poate defini interesul tău drept maraton. Mai târziu, dacă accesezi alt site ca să te înscrii într-o cursă, acel site îți poate afișa un anunț pentru pantofi de alergare pe baza intereselor tale.</translation>
 <translation id="8619360774459241877">Se lansează Chromium...</translation>

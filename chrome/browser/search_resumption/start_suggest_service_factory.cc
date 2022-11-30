@@ -50,7 +50,7 @@ KeyedService* StartSuggestServiceFactory::BuildServiceInstanceFor(
   return new StartSuggestService(
       template_url_service, url_loader_factory,
       std::make_unique<ChromeAutocompleteSchemeClassifier>(profile),
-      std::string(), std::string(), GURL(chrome::kChromeUINewTabURL));
+      GURL(chrome::kChromeUINewTabURL));
 }
 
 }  // namespace search_resumption_module

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
+<translation id="1005794457625275818">A(z) <ph name="FPS_OWNER" /> csoportban <ph name="FPS_MEMBERS_COUNT" /> webhely számára engedélyezettek a cookie-k, köztük a következő webhely számára is: <ph name="FPS_MEMBER" /></translation>
 <translation id="1006017844123154345">Online megnyitás</translation>
 <translation id="1044891598689252897">A webhelyek a megszokott módon fognak működni</translation>
 <translation id="1124090076051167250">Ezzel törli azt a(z) <ph name="DATASIZE" />-nyi adatot és cookie-t, amelyeket a webhelyek és a kezdőképernyőn lévő alkalmazások tárolnak az eszközön.</translation>
@@ -21,6 +22,7 @@
 <translation id="1426410128494586442">Igen</translation>
 <translation id="1446450296470737166">MIDI-eszközök teljes vezérlése</translation>
 <translation id="1620510694547887537">Kamera</translation>
+<translation id="1633720957382884102">Kapcsolódó webhelyek</translation>
 <translation id="1644574205037202324">Előzmények</translation>
 <translation id="1647582022260550163">Biztosan visszaállítja az engedélyeket, és törölni szeretné cookie-kat és a webhelyadatokat?</translation>
 <translation id="1660204651932907780">A webhelyek lejátszhatnak hangokat (ajánlott)</translation>
@@ -115,6 +117,7 @@
 <translation id="3333961966071413176">Összes névjegy</translation>
 <translation id="3362437373201486687">Bluetooth-eszközök keresése…</translation>
 <translation id="3386292677130313581">Kérdezzen rá, mielőtt engedélyezné a webhelyek számára a tartózkodási helyhez való hozzáférést (ajánlott)</translation>
+<translation id="3521663503435878242">Webhelyek a(z) <ph name="DOMAIN" /> domain alatt</translation>
 <translation id="3538390592868664640">Az Ön környezetéről készített 3D-s térkép létrehozásának, valamint a kamerapozíció követésének letiltása a webhelyek számára</translation>
 <translation id="3551268116566418498">Kilép az inkognitó módból?</translation>
 <translation id="3586500876634962664">Kamera- és mikrofonhasználat</translation>
@@ -260,6 +263,7 @@
 <translation id="6554732001434021288">Utolsó látogatás: <ph name="NUM_DAYS" /> napja</translation>
 <translation id="6561560012278703671">Csendesebb üzenetküldés használata (letiltja az értesítéseket, hogy ne zavarják meg Önt)</translation>
 <translation id="6593061639179217415">Asztali webhely</translation>
+<translation id="6608211702542341247">Ez a webhely a(z) <ph name="FPS_OWNER" /> azon webhelycsoportjába tartozik, amely láthatja az Ön tevékenységeit a csoportban</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Védett tartalom</translation>
 <translation id="662080504995468778">Mégse</translation>
@@ -348,7 +352,6 @@
 <translation id="8380167699614421159">Ez a webhely tolakodó vagy félrevezető hirdetéseket jelenít meg</translation>
 <translation id="8394832520002899662">Koppintson a webhelyre való visszatéréshez</translation>
 <translation id="8409345997656833551">Értesítés megjelenítése, ha az adott cikk megjeleníthető egyszerűsített négyzetben</translation>
-<translation id="8425213833346101688">Módosítás</translation>
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8441146129660941386">Ugrás visszafelé</translation>
 <translation id="8444433999583714703">Ahhoz, hogy a(z) <ph name="APP_NAME" /> hozzáférhessen a helyadatokhoz, a helyadatokat az <ph name="BEGIN_LINK" />Android-beállítások<ph name="END_LINK" /> között is be kell kapcsolni.</translation>
@@ -372,6 +375,7 @@
 <translation id="8751914237388039244">Válasszon képet</translation>
 <translation id="8801436777607969138">JavaScript letiltása adott webhelynél.</translation>
 <translation id="8816026460808729765">Az érzékelőkhöz való hozzáférés tiltása a webhelyek számára</translation>
+<translation id="8823559166155093873">Cookie-k tiltása</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8903921497873541725">Nagyítás</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>

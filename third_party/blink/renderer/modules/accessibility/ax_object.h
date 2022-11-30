@@ -1338,7 +1338,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   void PopulateAXRelativeBounds(ui::AXRelativeBounds& bounds,
                                 bool* clips_children) const;
 
-  void MarkAllImageAXObjectsDirty(ax::mojom::blink::Action event_from_action);
+  void MarkAllImageAXObjectsDirty();
 
  protected:
   AXID id_;
@@ -1356,8 +1356,8 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   virtual void AddChildren() = 0;
 
-  // Used only inside textAlternative():
-  static String CollapseWhitespace(const String&);
+  // Collapses multiple whitespace characters into one. Used by GetName().
+  String SimplifyName(const String&) const;
   static String RecursiveTextAlternative(
       const AXObject&,
       const AXObject* aria_label_or_description_root,

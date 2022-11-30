@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,8 +82,8 @@ HID::HID(NavigatorBase& navigator)
 }
 
 HID::~HID() {
-  DCHECK(get_devices_promises_.IsEmpty());
-  DCHECK(request_device_promises_.IsEmpty());
+  DCHECK(get_devices_promises_.empty());
+  DCHECK(request_device_promises_.empty());
 }
 
 ExecutionContext* HID::GetExecutionContext() const {
@@ -153,8 +153,8 @@ ScriptPromise HID::getDevices(ScriptState* script_state,
   get_devices_promises_.insert(resolver);
 
   EnsureServiceConnection();
-  service_->GetDevices(WTF::Bind(&HID::FinishGetDevices, WrapPersistent(this),
-                                 WrapPersistent(resolver)));
+  service_->GetDevices(WTF::BindOnce(
+      &HID::FinishGetDevices, WrapPersistent(this), WrapPersistent(resolver)));
   return resolver->Promise();
 }
 
@@ -186,7 +186,7 @@ ScriptPromise HID::requestDevice(ScriptState* script_state,
 
   Vector<mojom::blink::HidDeviceFilterPtr> mojo_filters;
   if (options->hasFilters()) {
-    mojo_filters.ReserveCapacity(options->filters().size());
+    mojo_filters.reserve(options->filters().size());
     for (const auto& filter : options->filters()) {
       String error_message = CheckDeviceFilterValidity(*filter);
       if (error_message) {
@@ -205,7 +205,7 @@ ScriptPromise HID::requestDevice(ScriptState* script_state,
           "'exclusionFilters', if present, must contain at least one filter.");
       return ScriptPromise();
     }
-    mojo_exclusion_filters.ReserveCapacity(options->exclusionFilters().size());
+    mojo_exclusion_filters.reserve(options->exclusionFilters().size());
     for (const auto& exclusion_filter : options->exclusionFilters()) {
       String error_message = CheckDeviceFilterValidity(*exclusion_filter);
       if (error_message) {
@@ -221,8 +221,8 @@ ScriptPromise HID::requestDevice(ScriptState* script_state,
   EnsureServiceConnection();
   service_->RequestDevice(
       std::move(mojo_filters), std::move(mojo_exclusion_filters),
-      WTF::Bind(&HID::FinishRequestDevice, WrapPersistent(this),
-                WrapPersistent(resolver)));
+      WTF::BindOnce(&HID::FinishRequestDevice, WrapPersistent(this),
+                    WrapPersistent(resolver)));
   return promise;
 }
 
@@ -293,7 +293,7 @@ void HID::EnsureServiceConnection() {
   GetExecutionContext()->GetBrowserInterfaceBroker().GetInterface(
       service_.BindNewPipeAndPassReceiver(task_runner));
   service_.set_disconnect_handler(
-      WTF::Bind(&HID::CloseServiceConnection, WrapWeakPersistent(this)));
+      WTF::BindOnce(&HID::CloseServiceConnection, WrapWeakPersistent(this)));
   DCHECK(!receiver_.is_bound());
   service_->RegisterClient(receiver_.BindNewEndpointAndPassRemote());
 }

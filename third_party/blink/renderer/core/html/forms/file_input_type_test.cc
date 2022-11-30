@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,7 +63,7 @@ TEST(FileInputTypeTest, createFileList) {
   EXPECT_EQ("display-name", list->item(0)->name());
   EXPECT_TRUE(list->item(0)->FileSystemURL().IsEmpty());
 
-  EXPECT_TRUE(list->item(1)->GetPath().IsEmpty());
+  EXPECT_TRUE(list->item(1)->GetPath().empty());
   EXPECT_EQ("non-native-file", list->item(1)->name());
   EXPECT_EQ(url, list->item(1)->FileSystemURL());
   EXPECT_EQ(64u, list->item(1)->size());

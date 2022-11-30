@@ -288,17 +288,17 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
       custom_pseudo_element_name, tag_name, part_name, pseudo_type);
 
   // Prefer rule sets in order of most likely to apply infrequently.
-  if (!id.IsEmpty()) {
+  if (!id.empty()) {
     AddToRuleSet(id, id_rules_, rule_data);
     return true;
   }
 
-  if (!class_name.IsEmpty()) {
+  if (!class_name.empty()) {
     AddToRuleSet(class_name, class_rules_, rule_data);
     return true;
   }
 
-  if (!attr_name.IsEmpty()) {
+  if (!attr_name.empty()) {
     AddToRuleSet(attr_name, attr_rules_, rule_data);
     if (attr_name == html_names::kStyleAttr) {
       has_bucket_for_style_attr_ = true;
@@ -306,19 +306,19 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
     return true;
   }
 
-  if (!custom_pseudo_element_name.IsEmpty()) {
+  if (!custom_pseudo_element_name.empty()) {
     // Custom pseudos come before ids and classes in the order of tagHistory,
     // and have a relation of ShadowPseudo between them. Therefore we should
     // never be a situation where ExtractSelectorValues finds id and
     // className in addition to custom pseudo.
-    DCHECK(id.IsEmpty());
-    DCHECK(class_name.IsEmpty());
+    DCHECK(id.empty());
+    DCHECK(class_name.empty());
     AddToRuleSet(custom_pseudo_element_name, ua_shadow_pseudo_element_rules_,
                  rule_data);
     return true;
   }
 
-  if (!part_name.IsEmpty()) {
+  if (!part_name.empty()) {
     AddToRuleSet(part_pseudo_rules_, rule_data);
     return true;
   }
@@ -369,7 +369,7 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
       break;
   }
 
-  if (!tag_name.IsEmpty()) {
+  if (!tag_name.empty()) {
     AddToRuleSet(tag_name, tag_rules_, rule_data);
     return true;
   }
@@ -396,7 +396,8 @@ void RuleSet::AddRule(StyleRule* rule,
   RuleData rule_data(rule, selector_index, rule_count_, extra_specificity,
                      add_rule_flags);
   ++rule_count_;
-  if (features_.CollectFeaturesFromRuleData(&rule_data, style_scope) ==
+  if (features_.CollectFeaturesFromSelector(rule_data.Selector(),
+                                            style_scope) ==
       RuleFeatureSet::kSelectorNeverMatches)
     return;
 
@@ -430,8 +431,8 @@ void RuleSet::AddRuleToLayerIntervals(const CascadeLayer* cascade_layer,
   // interval's layer. Note that the implicit outer layer may also be
   // represented by a nullptr.
   const CascadeLayer* last_interval_layer =
-      layer_intervals_.IsEmpty() ? implicit_outer_layer_.Get()
-                                 : layer_intervals_.back().value.Get();
+      layer_intervals_.empty() ? implicit_outer_layer_.Get()
+                               : layer_intervals_.back().value.Get();
   if (!cascade_layer)
     cascade_layer = implicit_outer_layer_;
   if (cascade_layer == last_interval_layer)
@@ -449,7 +450,7 @@ static void AddRuleToIntervals(const T* value,
                                unsigned position,
                                HeapVector<RuleSet::Interval<T>>& intervals) {
   const T* last_value =
-      intervals.IsEmpty() ? nullptr : intervals.back().value.Get();
+      intervals.empty() ? nullptr : intervals.back().value.Get();
   if (value == last_value)
     return;
 
@@ -645,13 +646,13 @@ void RuleMap::Compact() {
   if (compacted) {
     return;
   }
-  if (backing.IsEmpty()) {
+  if (backing.empty()) {
     // Nothing to do.
     compacted = true;
     return;
   }
 
-  backing.ShrinkToFit();
+  backing.shrink_to_fit();
 
   // Order by (bucket_number, order_in_bucket) by way of a simple
   // in-place counting sort (which is O(n), because our highest bucket
@@ -751,7 +752,7 @@ bool RuleSet::CanIgnoreEntireList(base::span<const RuleData> list,
   }
 
   // See CreateSubstringMatchers().
-  if (value.IsEmpty()) {
+  if (value.empty()) {
     return false;
   }
 
@@ -786,9 +787,9 @@ void RuleSet::CreateSubstringMatchers(
       ExtractBestSelectorValues(
           rule.Selector(), id, class_name, attr_name, attr_value, is_exact_attr,
           custom_pseudo_element_name, tag_name, part_name, pseudo_type);
-      DCHECK(!attr_name.IsEmpty());
+      DCHECK(!attr_name.empty());
 
-      if (attr_value.IsEmpty()) {
+      if (attr_value.empty()) {
         if (is_exact_attr) {
           // The empty string would make the entire tree useless
           // (it is a substring of every possible value),
@@ -841,25 +842,25 @@ void RuleSet::CompactRules() {
   CreateSubstringMatchers(attr_rules_, attr_substring_matchers_);
   tag_rules_.Compact();
   ua_shadow_pseudo_element_rules_.Compact();
-  link_pseudo_class_rules_.ShrinkToFit();
-  cue_pseudo_rules_.ShrinkToFit();
-  focus_pseudo_class_rules_.ShrinkToFit();
-  selector_fragment_anchor_rules_.ShrinkToFit();
-  focus_visible_pseudo_class_rules_.ShrinkToFit();
-  spatial_navigation_interest_class_rules_.ShrinkToFit();
-  universal_rules_.ShrinkToFit();
-  shadow_host_rules_.ShrinkToFit();
-  part_pseudo_rules_.ShrinkToFit();
-  slotted_pseudo_element_rules_.ShrinkToFit();
-  visited_dependent_rules_.ShrinkToFit();
-  page_rules_.ShrinkToFit();
-  font_face_rules_.ShrinkToFit();
-  font_palette_values_rules_.ShrinkToFit();
-  keyframes_rules_.ShrinkToFit();
-  property_rules_.ShrinkToFit();
-  counter_style_rules_.ShrinkToFit();
-  position_fallback_rules_.ShrinkToFit();
-  layer_intervals_.ShrinkToFit();
+  link_pseudo_class_rules_.shrink_to_fit();
+  cue_pseudo_rules_.shrink_to_fit();
+  focus_pseudo_class_rules_.shrink_to_fit();
+  selector_fragment_anchor_rules_.shrink_to_fit();
+  focus_visible_pseudo_class_rules_.shrink_to_fit();
+  spatial_navigation_interest_class_rules_.shrink_to_fit();
+  universal_rules_.shrink_to_fit();
+  shadow_host_rules_.shrink_to_fit();
+  part_pseudo_rules_.shrink_to_fit();
+  slotted_pseudo_element_rules_.shrink_to_fit();
+  visited_dependent_rules_.shrink_to_fit();
+  page_rules_.shrink_to_fit();
+  font_face_rules_.shrink_to_fit();
+  font_palette_values_rules_.shrink_to_fit();
+  keyframes_rules_.shrink_to_fit();
+  property_rules_.shrink_to_fit();
+  counter_style_rules_.shrink_to_fit();
+  position_fallback_rules_.shrink_to_fit();
+  layer_intervals_.shrink_to_fit();
 
 #if EXPENSIVE_DCHECKS_ARE_ON()
   AssertRuleListsSorted();

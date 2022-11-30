@@ -18,6 +18,7 @@
 #include "content/browser/aggregation_service/aggregatable_report.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
+#include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -30,15 +31,9 @@ namespace content {
 // report. This class can represent multiple different types of reports.
 class CONTENT_EXPORT AttributionReport {
  public:
-  enum class ReportType {
-    kEventLevel = 0,
-    kAggregatableAttribution = 1,
-    kMinValue = kEventLevel,
-    kMaxValue = kAggregatableAttribution,
-  };
+  using Type = ::attribution_reporting::mojom::ReportType;
 
-  using ReportTypes =
-      base::EnumSet<ReportType, ReportType::kMinValue, ReportType::kMaxValue>;
+  using Types = base::EnumSet<Type, Type::kMinValue, Type::kMaxValue>;
 
   // Struct that contains the data specific to the event-level report.
   struct CONTENT_EXPORT EventLevelData {
@@ -116,8 +111,8 @@ class CONTENT_EXPORT AttributionReport {
 
   using Id = absl::variant<EventLevelData::Id, AggregatableAttributionData::Id>;
 
-  static ReportType GetReportType(Id report_id) {
-    return static_cast<ReportType>(report_id.index());
+  static Type GetReportType(Id report_id) {
+    return static_cast<Type>(report_id.index());
   }
 
   // Returns the minimum non-null time of `a` and `b`, or `absl::nullopt` if
@@ -129,6 +124,7 @@ class CONTENT_EXPORT AttributionReport {
       AttributionInfo attribution_info,
       base::Time report_time,
       base::GUID external_report_id,
+      int failed_send_attempts,
       absl::variant<EventLevelData, AggregatableAttributionData> data);
   AttributionReport(const AttributionReport&);
   AttributionReport& operator=(const AttributionReport&);
@@ -160,13 +156,9 @@ class CONTENT_EXPORT AttributionReport {
     return data_;
   }
 
-  ReportType GetReportType() const {
-    return static_cast<ReportType>(data_.index());
-  }
+  Type GetReportType() const { return static_cast<Type>(data_.index()); }
 
   void set_report_time(base::Time report_time);
-
-  void set_failed_send_attempts(int failed_send_attempts);
 
   void SetExternalReportIdForTesting(base::GUID external_report_id);
 
@@ -182,7 +174,7 @@ class CONTENT_EXPORT AttributionReport {
   base::GUID external_report_id_;
 
   // Number of times the browser has tried and failed to send this report.
-  int failed_send_attempts_ = 0;
+  int failed_send_attempts_;
 
   // Only one type of data may be stored at once.
   absl::variant<EventLevelData, AggregatableAttributionData> data_;

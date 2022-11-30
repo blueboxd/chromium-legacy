@@ -9,8 +9,6 @@
 
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
-#include "base/containers/flat_map.h"
-#include "base/containers/flat_set.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/no_destructor.h"
@@ -26,11 +24,14 @@
 #include "content/browser/first_party_sets/local_set_declaration.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/first_party_sets_handler.h"
-#include "net/base/schemeful_site.h"
-#include "net/first_party_sets/first_party_set_entry.h"
 #include "net/first_party_sets/first_party_sets_context_config.h"
-#include "net/first_party_sets/public_sets.h"
+#include "net/first_party_sets/global_first_party_sets.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace net {
+class FirstPartySetEntry;
+class SchemefulSite;
+}  // namespace net
 
 namespace content {
 
@@ -45,9 +46,30 @@ class BrowserContext;
 // the current First-Party Sets data to disk.
 class CONTENT_EXPORT FirstPartySetsHandlerImpl : public FirstPartySetsHandler {
  public:
-  using FlattenedSets =
-      base::flat_map<net::SchemefulSite, net::FirstPartySetEntry>;
-  using SetsReadyOnceCallback = base::OnceCallback<void(net::PublicSets)>;
+  // The outcome types of clearing site data for data types covered in
+  // FirstPartySetsSiteDataRemover. We only clear
+  // `BrowsingDataRemover::DATA_TYPE_COOKIES` and
+  // `BrowsingDataRemover::DATA_TYPE_DOM_STORAGE` for now. Cache is "cleared"
+  // with a different approach.
+  //
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class ClearSiteDataOutcomeType {
+    kSuccess = 0,
+    // Failed to clear data type of `BrowsingDataRemover::DATA_TYPE_COOKIES`.
+    kCookieFailed = 1,
+    // Failed to clear data type of
+    // `BrowsingDataRemover::DATA_TYPE_DOM_STORAGE`.
+    kStorageFailed = 2,
+    // Failed to clear both `BrowsingDataRemover::DATA_TYPE_COOKIES` and
+    // `BrowsingDataRemover::DATA_TYPE_DOM_STORAGE` data types.
+    kCookieAndStorageFailed = 3,
+
+    kMaxValue = kCookieAndStorageFailed,
+  };
+
+  using SetsReadyOnceCallback =
+      base::OnceCallback<void(net::GlobalFirstPartySets)>;
 
   static FirstPartySetsHandlerImpl* GetInstance();
 
@@ -69,17 +91,17 @@ class CONTENT_EXPORT FirstPartySetsHandlerImpl : public FirstPartySetsHandler {
   void Init(const base::FilePath& user_data_dir,
             const LocalSetDeclaration& local_set);
 
-  // Returns the fully-parsed and validated public First-Party Sets data.
+  // Returns the fully-parsed and validated global First-Party Sets data.
   // Returns the data synchronously via an optional if it's already available,
   // or via an asynchronously-invoked callback if the data is not ready yet.
   //
-  // This function makes a clone of the public First-Party Sets.
+  // This function makes a clone of the underlying data.
   //
   // If `callback` is null, it will not be invoked, even if the First-Party Sets
   // data is not ready yet.
   //
   // Must not be called if First-Party Sets is disabled.
-  [[nodiscard]] absl::optional<net::PublicSets> GetSets(
+  [[nodiscard]] absl::optional<net::GlobalFirstPartySets> GetSets(
       SetsReadyOnceCallback callback);
 
   // FirstPartySetsHandler
@@ -87,16 +109,20 @@ class CONTENT_EXPORT FirstPartySetsHandlerImpl : public FirstPartySetsHandler {
   void SetPublicFirstPartySets(const base::Version& version,
                                base::File sets_file) override;
   void ResetForTesting() override;
-  void GetCustomizationForPolicy(
-      const base::Value::Dict& policy,
+  void SetGlobalSetsForTesting(net::GlobalFirstPartySets global_sets) override;
+  absl::optional<net::FirstPartySetEntry> FindEntry(
+      const net::SchemefulSite& site,
+      const net::FirstPartySetsContextConfig& config) const override;
+  void GetContextConfigForPolicy(
+      const base::Value::Dict* policy,
       base::OnceCallback<void(net::FirstPartySetsContextConfig)> callback)
       override;
-  // TODO(shuuran@chromium.org): Implement the code to clear site state.
   void ClearSiteDataOnChangedSetsForContext(
       base::RepeatingCallback<BrowserContext*()> browser_context_getter,
       const std::string& browser_context_id,
-      const net::FirstPartySetsContextConfig* context_config,
-      base::OnceClosure callback) override;
+      net::FirstPartySetsContextConfig context_config,
+      base::OnceCallback<void(net::FirstPartySetsContextConfig)> callback)
+      override;
 
   // Sets whether FPS is enabled (for testing).
   void SetEnabledForTesting(bool enabled) {
@@ -109,15 +135,19 @@ class CONTENT_EXPORT FirstPartySetsHandlerImpl : public FirstPartySetsHandler {
     embedder_will_provide_public_sets_ = enabled_ && will_provide;
   }
 
-  void GetPersistedPublicSetsForTesting(
-      base::OnceCallback<void(
-          absl::optional<FirstPartySetsHandlerImpl::FlattenedSets>)> callback);
+  void GetPersistedGlobalSetsForTesting(
+      const std::string& browser_context_id,
+      base::OnceCallback<void(absl::optional<net::GlobalFirstPartySets>)>
+          callback);
+  void HasBrowserContextClearedForTesting(
+      const std::string& browser_context_id,
+      base::OnceCallback<void(absl::optional<bool>)> callback);
 
   // Computes information needed by the FirstPartySetsAccessDelegate in order
   // to update the browser's list of First-Party Sets to respect a profile's
   // setting for the per-profile FirstPartySetsOverrides policy.
-  static net::FirstPartySetsContextConfig ComputeEnterpriseCustomizations(
-      const net::PublicSets& public_sets,
+  static net::FirstPartySetsContextConfig ComputeEnterpriseContextConfig(
+      const net::GlobalFirstPartySets& browser_sets,
       const FirstPartySetParser::ParsedPolicySetLists& policy);
 
  private:
@@ -126,8 +156,8 @@ class CONTENT_EXPORT FirstPartySetsHandlerImpl : public FirstPartySetsHandler {
   FirstPartySetsHandlerImpl(bool enabled,
                             bool embedder_will_provide_public_sets);
 
-  // Sets the public First-Party Sets data. Must be called exactly once.
-  void SetCompleteSets(net::PublicSets public_sets);
+  // Sets the global First-Party Sets data. Must be called exactly once.
+  void SetCompleteSets(net::GlobalFirstPartySets sets);
 
   // Sets `db_helper_`, which will initialize the underlying First-Party Sets
   // database under `user_data_dir`. Must be called exactly once.
@@ -136,29 +166,56 @@ class CONTENT_EXPORT FirstPartySetsHandlerImpl : public FirstPartySetsHandler {
   // Invokes any pending queries.
   void InvokePendingQueries();
 
-  // Returns the list of public First-Party Sets. This clones the underlying
+  // Returns the global First-Party Sets. This clones the underlying
   // data.
   //
   // Must be called after the list has been initialized.
-  net::PublicSets GetSetsSync() const;
+  net::GlobalFirstPartySets GetGlobalSetsSync() const;
+
+  // Performs the actual state clearing for the given context. Must not be
+  // called until initialization is complete.
+  void ClearSiteDataOnChangedSetsForContextInternal(
+      base::RepeatingCallback<BrowserContext*()> browser_context_getter,
+      const std::string& browser_context_id,
+      net::FirstPartySetsContextConfig context_config,
+      base::OnceCallback<void(net::FirstPartySetsContextConfig)> callback);
 
   // Parses the policy and computes the config that represents the changes
-  // needed to apply `policy` to `sets_`.
-  net::FirstPartySetsContextConfig GetCustomizationForPolicyInternal(
+  // needed to apply `policy` to `global_sets_`.
+  net::FirstPartySetsContextConfig GetContextConfigForPolicyInternal(
       const base::Value::Dict& policy) const;
+
+  void OnGetSitesToClear(
+      base::RepeatingCallback<BrowserContext*()> browser_context_getter,
+      const std::string& browser_context_id,
+      net::FirstPartySetsContextConfig context_config,
+      base::OnceCallback<void(net::FirstPartySetsContextConfig)> callback,
+      std::vector<net::SchemefulSite> sites_to_clear) const;
+
+  // `failed_data_types` is a bitmask used to indicate data types from
+  // BrowsingDataRemover::DataType enum that were failed to remove. 0 indicates
+  // success.
+  void DidClearSiteDataOnChangedSetsForContext(
+      const std::string& browser_context_id,
+      net::FirstPartySetsContextConfig context_config,
+      base::OnceCallback<void(net::FirstPartySetsContextConfig)> callback,
+      uint64_t failed_data_types) const;
 
   // Whether Init has been called already or not.
   bool initialized_ = false;
 
-  // The public First-Party Sets, after parsing and validation.
+  // The global First-Party Sets, after parsing and validation.
   //
   // This is nullopt until all of the required inputs have been received.
-  absl::optional<net::PublicSets> public_sets_
+  absl::optional<net::GlobalFirstPartySets> global_sets_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
-  // The version of the public First-Party Sets. This is nullopt until the
-  // `SetPublicFirstPartySets()` is called.
-  absl::optional<base::Version> version_;
+  // The version of the public First-Party Sets. It is invalid until the
+  // `SetPublicFirstPartySets()` is called with a valid version.
+  //
+  // TODO(crbug.com/1219656): bundle `version_` with `global_sets_` to
+  // guarantee that we have both or neither.
+  base::Version version_;
 
   bool enabled_ GUARDED_BY_CONTEXT(sequence_checker_);
   bool embedder_will_provide_public_sets_ GUARDED_BY_CONTEXT(sequence_checker_);

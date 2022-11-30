@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -200,8 +200,8 @@ class RTCVideoDecoderStreamAdapterTest
         sdp_format_(webrtc::SdpVideoFormat(
             webrtc::CodecTypeToPayloadString(webrtc::kVideoCodecVP9))),
         spatial_index_(0) {
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
 #if BUILDFLAG(IS_WIN)
     enabled_features.push_back(::media::kD3D11Vp9kSVCHWDecoding);
 #endif

@@ -67,9 +67,9 @@ void WebEnginePermissionDelegate::RequestPermissionsFromCurrentDocument(
         callback) {
   FrameImpl* frame = FrameImpl::FromRenderFrameHost(render_frame_host);
   DCHECK(frame);
-  auto requesting_origin = render_frame_host->GetLastCommittedOrigin();
   frame->permission_controller()->RequestPermissions(
-      permissions, requesting_origin, user_gesture, std::move(callback));
+      permissions, render_frame_host->GetLastCommittedOrigin(), user_gesture,
+      std::move(callback));
 }
 
 blink::mojom::PermissionStatus WebEnginePermissionDelegate::GetPermissionStatus(

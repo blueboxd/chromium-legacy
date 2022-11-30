@@ -39,7 +39,7 @@ void HeadlessUiController::OnInterruptFinished() {
   }
 }
 
-// TODO(b/201964911): fail execution instead of just logging a warning if a
+// TODO(b/249983799): fail execution instead of just logging a warning if a
 // method is unexpectedly called.
 
 void HeadlessUiController::SetStatusMessage(const std::string& message) {}
@@ -137,7 +137,9 @@ void HeadlessUiController::SetGenericUi(
     std::unique_ptr<GenericUserInterfaceProto> generic_ui,
     base::OnceCallback<void(const ClientStatus&)> end_action_callback,
     base::OnceCallback<void(const ClientStatus&)>
-        view_inflation_finished_callback) {
+        view_inflation_finished_callback,
+    base::RepeatingCallback<void(const RequestBackendDataProto&)>
+        request_backend_data_callback) {
   VLOG(2) << "Unexpected UI method called: " << __func__;
 }
 void HeadlessUiController::SetPersistentGenericUi(

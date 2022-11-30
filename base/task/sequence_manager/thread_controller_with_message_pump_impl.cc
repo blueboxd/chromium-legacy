@@ -47,8 +47,9 @@ TimeTicks CapAtOneDay(TimeTicks next_run_time, LazyNow* lazy_now) {
 }
 
 // Feature to run tasks by batches before pumping out messages.
-const Feature kRunTasksByBatches = {"RunTasksByBatches",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kRunTasksByBatches,
+             "RunTasksByBatches",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 std::atomic_bool g_align_wake_ups = false;
 std::atomic_bool g_run_tasks_by_batches = false;
@@ -443,8 +444,8 @@ WorkDetails ThreadControllerWithMessagePumpImpl::DoWorkImpl(
                               if (selected_task->task_execution_trace_logger)
                                 selected_task->task_execution_trace_logger.Run(
                                     ctx, selected_task->task);
-                              SequenceManagerImpl::EmitTaskPriority(
-                                  ctx, selected_task->priority);
+                              SequenceManagerImpl::MaybeEmitTaskDetails(
+                                  ctx, selected_task.value());
                             });
 
     LazyNow lazy_now_after_run_task(time_source_);

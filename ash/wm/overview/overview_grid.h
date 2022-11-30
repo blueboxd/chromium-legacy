@@ -12,9 +12,9 @@
 
 #include "ash/public/cpp/wallpaper/wallpaper_controller_observer.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
+#include "ash/style/rounded_label_widget.h"
 #include "ash/wm/desks/templates/saved_desk_save_desk_button_container.h"
 #include "ash/wm/overview/overview_session.h"
-#include "ash/wm/overview/rounded_label_widget.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/splitview/split_view_observer.h"
@@ -40,24 +40,14 @@ class SavedDeskSaveDeskButton;
 class SavedDeskSaveDeskButtonContainer;
 class SavedDeskLibraryView;
 
-// Represents a grid of windows in the Overview Mode in a particular root
-// window, and manages a selection widget that can be moved with the arrow keys.
-// The idea behind the movement strategy is that it should be possible to access
-// any window pressing a given arrow key repeatedly.
-// +-------+  +-------+  +-------+
-// |   0   |  |   1   |  |   2   |
-// +-------+  +-------+  +-------+
-// +-------+  +-------+  +-------+
-// |   3   |  |   4   |  |   5   |
-// +-------+  +-------+  +-------+
-// +-------+
-// |   6   |
-// +-------+
-// Example sequences:
-//  - Going right to left
-//    0, 1, 2, 3, 4, 5, 6
-// The selector is switched to the next window grid (if available) or wrapped if
-// it reaches the end of its movement sequence.
+// Manages and positions the overview UI on a per root window basis. Overview UI
+// elements include:
+//   - Desks bar view which contains a desk preview and desk name per desk.
+//   - Splitview indicators for snapping windows in overview.
+//   - Overview items representing each application window associated with the
+//     root window of the grid.
+//   - Saved desk UI elements to create saved desks and display saved desks.
+//   - etc.
 class ASH_EXPORT OverviewGrid : public SplitViewObserver,
                                 public ScreenRotationAnimatorObserver,
                                 public WallpaperControllerObserver {
@@ -343,9 +333,9 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // Commits any on-going name changes if any.
   void CommitNameChanges();
 
-  // Shows the grid of the desks templates. Creates the widget if needed. If
-  // `was_zero_state` is true then we will expand the desks bar.
-  void ShowDesksTemplatesGrid(bool was_zero_state);
+  // Shows the grid of the desks templates. Creates the widget if needed. The
+  // desks bar will be expanded if it isn't already.
+  void ShowDesksTemplatesGrid();
 
   // Hides the grid of desks templates and reshow the overview items. Updates
   // the templates button if we are not exiting overview.
@@ -370,6 +360,9 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // Updates bounds, tooltips and a11y focus, as well as handles animations on
   // `save_desk_button_container_widget_`.
   void UpdateSaveDeskButtons();
+
+  // Enable the save desk button container.
+  void EnableSaveDeskButtonContainer();
 
   bool IsSaveDeskButtonContainerVisible() const;
   bool IsSaveDeskAsTemplateButtonVisible() const;
@@ -425,8 +418,7 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   const views::Widget* desks_widget() const { return desks_widget_.get(); }
 
   const DesksBarView* desks_bar_view() const { return desks_bar_view_; }
-
-  const gfx::Rect bounds() const { return bounds_; }
+  DesksBarView* desks_bar_view() { return desks_bar_view_; }
 
   bool should_animate_when_exiting() const {
     return should_animate_when_exiting_;
@@ -435,8 +427,6 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   void set_suspend_reposition(bool value) { suspend_reposition_ = value; }
 
   views::Widget* drop_target_widget() { return drop_target_widget_.get(); }
-
-  float scroll_offset() const { return scroll_offset_; }
 
   OverviewGridEventHandler* grid_event_handler() {
     return grid_event_handler_.get();
@@ -453,6 +443,9 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   int num_incognito_windows() const { return num_incognito_windows_; }
 
   int num_unsupported_windows() const { return num_unsupported_windows_; }
+
+  const gfx::Rect bounds_for_testing() const { return bounds_; }
+  float scroll_offset_for_testing() const { return scroll_offset_; }
 
  private:
   class TargetWindowObserver;

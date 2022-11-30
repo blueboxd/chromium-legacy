@@ -24,6 +24,7 @@
 
 using autofill::PasswordAndMetadata;
 using autofill::PasswordFormFillData;
+using url::Origin;
 using Logger = autofill::SavePasswordProgressLogger;
 
 namespace password_manager {
@@ -32,15 +33,15 @@ namespace {
 
 // Controls whether we should suppress the account storage promos for websites
 // that are blocked by the user.
-const base::Feature kSuppressAccountStoragePromosForBlockedWebsite{
-    "SuppressAccountStoragePromosForBlockedWebsite",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kSuppressAccountStoragePromosForBlockedWebsite,
+             "SuppressAccountStoragePromosForBlockedWebsite",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether we should suppress the account storage promos for when the
 // credentials service is disabled.
-const base::Feature kSuppressAccountStoragePromosWhenCredentialServiceDisabled{
-    "SuppressAccountStoragePromosWhenCredentialServiceDisabled",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kSuppressAccountStoragePromosWhenCredentialServiceDisabled,
+             "SuppressAccountStoragePromosWhenCredentialServiceDisabled",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool PreferredRealmIsFromAndroid(const PasswordFormFillData& fill_data) {
   return FacetURI::FromPotentiallyInvalidSpec(fill_data.preferred_realm)
@@ -86,7 +87,8 @@ void Autofill(PasswordManagerClient* client,
   }
 
   PasswordFormFillData fill_data = CreatePasswordFormFillData(
-      form_for_autofill, best_matches, preferred_match, wait_for_username);
+      form_for_autofill, best_matches, preferred_match,
+      client->GetLastCommittedOrigin(), wait_for_username);
   if (logger)
     logger->LogBoolean(Logger::STRING_WAIT_FOR_USERNAME, wait_for_username);
   UMA_HISTOGRAM_BOOLEAN(
@@ -101,13 +103,12 @@ void Autofill(PasswordManagerClient* client,
   // to be notified.
   if (!best_matches.empty() || !federated_matches.empty()) {
     client->PasswordWasAutofilled(best_matches,
-                                  url::Origin::Create(form_for_autofill.url),
-                                  &federated_matches);
+                                  Origin::Create(form_for_autofill.url),
+                                  &federated_matches, !wait_for_username);
   }
 }
 
 std::string GetPreferredRealm(const PasswordForm& form) {
-  DCHECK(IsPublicSuffixMatchOrAffiliationBasedMatch(form));
   return form.app_display_name.empty() ? form.signon_realm
                                        : form.app_display_name;
 }
@@ -203,8 +204,8 @@ LikelyFormFilling SendFillInformationToRenderer(
   if (client->IsIncognito()) {
     wait_for_username_reason = WaitForUsernameReason::kIncognitoMode;
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-  } else if (password_manager_util::IsBiometricAuthenticationForFillingEnabled(
-                 client)) {
+  } else if (client->GetPasswordFeatureManager()
+                 ->IsBiometricAuthenticationBeforeFillingEnabled()) {
     wait_for_username_reason = WaitForUsernameReason::kBiometricAuthentication;
 #endif
   } else if (preferred_match && preferred_match->is_affiliation_based_match &&
@@ -264,6 +265,7 @@ LikelyFormFilling SendFillInformationToRenderer(
   Autofill(client, driver, observed_form, best_matches, federated_matches,
            preferred_match ? *preferred_match : PasswordForm(),
            wait_for_username);
+
   return wait_for_username ? LikelyFormFilling::kFillOnAccountSelect
                            : LikelyFormFilling::kFillOnPageLoad;
 }
@@ -272,6 +274,7 @@ PasswordFormFillData CreatePasswordFormFillData(
     const PasswordForm& form_on_page,
     const std::vector<const PasswordForm*>& matches,
     const PasswordForm& preferred_match,
+    const Origin& main_frame_origin,
     bool wait_for_username) {
   PasswordFormFillData result;
 
@@ -308,7 +311,12 @@ PasswordFormFillData CreatePasswordFormFillData(
     result.password_field.form_control_type = "password";
   }
 
+  Origin credential_origin = Origin::Create(form_on_page.url);
   if (IsPublicSuffixMatchOrAffiliationBasedMatch(preferred_match)) {
+    result.preferred_realm = GetPreferredRealm(preferred_match);
+  } else if (!main_frame_origin.IsSameOriginWith(credential_origin)) {
+    // If the suggestion is for a cross-origin iframe, display the origin of
+    // the suggestion.
     result.preferred_realm = GetPreferredRealm(preferred_match);
   }
 
@@ -322,7 +330,13 @@ PasswordFormFillData CreatePasswordFormFillData(
     value.username = match->username_value;
     value.password = match->password_value;
     value.uses_account_store = match->IsUsingAccountStore();
+
+    Origin match_origin = Origin::Create(match->url);
     if (IsPublicSuffixMatchOrAffiliationBasedMatch(*match)) {
+      value.realm = GetPreferredRealm(*match);
+    } else if (!main_frame_origin.IsSameOriginWith(match_origin)) {
+      // If the suggestion is for a cross-origin iframe, display the origin of
+      // the suggestion.
       value.realm = GetPreferredRealm(*match);
     }
     result.additional_logins.push_back(std::move(value));

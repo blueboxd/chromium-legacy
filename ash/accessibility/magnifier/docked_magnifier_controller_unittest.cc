@@ -132,7 +132,8 @@ class DockedMagnifierTest : public NoSessionAshTestBase {
     // The magnifier layer's transform, when applied to the point of interest
     // (in root coordinates), should take it to the point at the center of the
     // viewport widget (also in root coordinates).
-    magnifier_layer->transform().TransformPoint(&point_of_interest_in_root_f);
+    point_of_interest_in_root_f =
+        magnifier_layer->transform().MapPoint(point_of_interest_in_root_f);
     const views::Widget* viewport_widget =
         controller()->GetViewportWidgetForTesting();
     const gfx::Point viewport_center_in_root =
@@ -578,10 +579,11 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
   auto* overview_controller = Shell::Get()->overview_controller();
   EnterOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(
+      window.get(), SplitViewController::SnapPosition::kPrimary);
   EXPECT_EQ(split_view_controller()->state(),
-            SplitViewController::State::kLeftSnapped);
-  EXPECT_EQ(split_view_controller()->left_window(), window.get());
+            SplitViewController::State::kPrimarySnapped);
+  EXPECT_EQ(split_view_controller()->primary_window(), window.get());
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
   // Enable the docked magnifier and expect that both overview and split view
@@ -626,9 +628,10 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
   EXPECT_EQ(split_view_controller()->InSplitViewMode(), false);
-  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
-  split_view_controller()->SnapWindow(window2.get(),
-                                      SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(
+      window1.get(), SplitViewController::SnapPosition::kPrimary);
+  split_view_controller()->SnapWindow(
+      window2.get(), SplitViewController::SnapPosition::kSecondary);
   EXPECT_EQ(split_view_controller()->InSplitViewMode(), true);
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kBothSnapped);
@@ -799,8 +802,8 @@ TEST_F(DockedMagnifierTest, TransformSimple) {
   viewport_top_edge_center.set_y(0);
   const ui::Layer* magnifier_layer =
       controller()->GetViewportMagnifierLayerForTesting();
-  magnifier_layer->transform().TransformPoint(&point_of_interest);
-  EXPECT_EQ(viewport_top_edge_center, point_of_interest);
+  EXPECT_EQ(viewport_top_edge_center,
+            magnifier_layer->transform().MapPoint(point_of_interest));
   // The minimum height for the point of interest is the bottom of the viewport
   // + the height of the separator + half the height of the viewport when scaled
   // back to the non-magnified space.
@@ -818,8 +821,8 @@ TEST_F(DockedMagnifierTest, TransformSimple) {
   TestMagnifierLayerTransform(point_of_interest, root_windows[0]);
   point_of_interest.set_y(viewport_height +
                           DockedMagnifierController::kSeparatorHeight);
-  magnifier_layer->transform().TransformPoint(&point_of_interest);
-  EXPECT_EQ(viewport_top_edge_center, point_of_interest);
+  EXPECT_EQ(viewport_top_edge_center,
+            magnifier_layer->transform().MapPoint(point_of_interest));
 
   EXPECT_FLOAT_EQ(viewport_height +
                       DockedMagnifierController::kSeparatorHeight +
@@ -830,9 +833,7 @@ TEST_F(DockedMagnifierTest, TransformSimple) {
 // Tests resizing docked magnifier by dragging the separator.
 TEST_F(DockedMagnifierTest, ResizeDockedMagnifier) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      std::vector<base::Feature>{::features::kDockedMagnifierResizing},
-      std::vector<base::Feature>{});
+  features.InitWithFeatures({::features::kDockedMagnifierResizing}, {});
 
   UpdateDisplay("800x600");
   const auto root_windows = Shell::GetAllRootWindows();
@@ -866,9 +867,7 @@ TEST_F(DockedMagnifierTest, ResizeDockedMagnifier) {
 // Tests to verify dragging above separator does not resize docked magnifier.
 TEST_F(DockedMagnifierTest, DragAboveSeparatorDoesNotResizeDockedMagnifier) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      std::vector<base::Feature>{::features::kDockedMagnifierResizing},
-      std::vector<base::Feature>{});
+  features.InitWithFeatures({::features::kDockedMagnifierResizing}, {});
 
   UpdateDisplay("800x600");
   const auto root_windows = Shell::GetAllRootWindows();

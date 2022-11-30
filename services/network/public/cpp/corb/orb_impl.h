@@ -40,6 +40,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) OpaqueResponseBlockingAnalyzer final
   Decision Sniff(base::StringPiece data) override;
   Decision HandleEndOfSniffableResponseBody() override;
   bool ShouldReportBlockedResponse() const override;
+  BlockedResponseHandling ShouldHandleBlockedResponseAs() const override;
 
   // TODO(https://crbug.com/1178928): Remove this once we gather enough
   // DumpWithoutCrashing data.
@@ -85,7 +86,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) OpaqueResponseBlockingAnalyzer final
   // Remembering which past requests sniffed as media.  Never null.
   // TODO(lukasza): Replace with raw_ref<T> or nonnull_raw_ptr<T> once
   // available.
-  raw_ptr<PerFactoryState> per_factory_state_;
+  raw_ptr<PerFactoryState, DanglingUntriaged> per_factory_state_;
 
   BlockingDecisionReason blocking_decision_reason_ =
       BlockingDecisionReason::kInvalid;

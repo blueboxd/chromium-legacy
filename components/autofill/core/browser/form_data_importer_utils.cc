@@ -8,7 +8,6 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
@@ -190,62 +189,64 @@ MultiStepImportMerger::MultiStepImportMerger(
     const std::string& app_locale,
     const std::string& variation_country_code)
     : app_locale_(app_locale),
-      variation_country_code_(variation_country_code) {}
-MultiStepImportMerger::~MultiStepImportMerger() {}
+      variation_country_code_(variation_country_code),
+      comparator_(app_locale_) {}
+MultiStepImportMerger::~MultiStepImportMerger() = default;
 
 void MultiStepImportMerger::ProcessMultiStepImport(
     AutofillProfile& profile,
-    ProfileImportMetadata& import_metadata,
-    const url::Origin& origin) {
+    ProfileImportMetadata& import_metadata) {
   if (!base::FeatureList::IsEnabled(
           features::kAutofillEnableMultiStepImports)) {
     return;
   }
 
   multistep_candidates_.RemoveOutdatedItems(
-      features::kAutofillMultiStepImportCandidateTTL.Get(), origin);
+      features::kAutofillMultiStepImportCandidateTTL.Get(),
+      import_metadata.origin);
   bool has_min_address_requirements =
-      MergeProfileWithMultiStepCandidates(profile, import_metadata, origin);
-
-  if (!has_min_address_requirements ||
-      features::kAutofillEnableMultiStepImportComplements.Get()) {
-    // Add `profile| as a `multistep_candidate`. This happens for incomplete
-    // profiles, which can then be complemented in later steps. When
-    // `kAutofillEnableMultiStepImportComplements` is enabled, complete profiles
-    // are stored too, which enables updating them in later steps.
-    // In the latter case, Autofill tries to import the `profile`. This logs
-    // metrics depending on `import_metadata`. To prevent double counting,
-    // an we store an empty `ProfileImportMetadata` object in this case.
-    multistep_candidates_.Push({.profile = profile,
-                                .import_metadata = has_min_address_requirements
-                                                       ? ProfileImportMetadata()
-                                                       : import_metadata},
-                               origin);
+      MergeProfileWithMultiStepCandidates(profile, import_metadata);
+  if (!has_min_address_requirements) {
+    // Add the incomplete `profile` as an `multistep_candidate`, so it can be
+    // complemented during later imports. Complete profiles for multi-step
+    // complements are added in the AddressProfileSaveManager after a user
+    // decision was made.
+    AddMultiStepImportCandidate(profile, import_metadata);
   }
+}
+
+void MultiStepImportMerger::AddMultiStepImportCandidate(
+    const AutofillProfile& profile,
+    const ProfileImportMetadata& import_metadata) {
+  multistep_candidates_.Push({profile, import_metadata},
+                             import_metadata.origin);
 }
 
 bool MultiStepImportMerger::MergeProfileWithMultiStepCandidates(
     AutofillProfile& profile,
-    ProfileImportMetadata& import_metadata,
-    const url::Origin& origin) {
-  // Greedily merge with a prefix of |multistep_candidates|.
-  AutofillProfileComparator comparator(app_locale_);
+    ProfileImportMetadata& import_metadata) {
+  // Start merging with the most recent `multistep_candidates_`.
   auto candidate = multistep_candidates_.begin();
   AutofillProfile completed_profile = profile;
   ProfileImportMetadata completed_metadata = import_metadata;
-  // Country completion has not happened yet, so this field can be ignored.
-  DCHECK(!completed_metadata.did_complement_country);
+  // If `complement_country_early` is enabled, merging might fail due to an
+  // incorrectly complemented country in one of the merge candidates.
+  // Without the feature, the country complement logic has not happened yet.
+  bool complement_country_early =
+      base::FeatureList::IsEnabled(features::kAutofillComplementCountryEarly);
+  DCHECK(complement_country_early ||
+         !completed_metadata.did_complement_country);
   while (candidate != multistep_candidates_.end()) {
-    if (!comparator.AreMergeable(completed_profile, candidate->profile) ||
-        completed_profile.MergeDataFrom(candidate->profile, app_locale_)) {
+    if (!comparator_.AreMergeable(completed_profile, candidate->profile) &&
+        (!complement_country_early ||
+         !MergeableByRemovingIncorrectlyComplementedCountry(
+             completed_profile, completed_metadata.did_complement_country,
+             candidate->profile,
+             candidate->import_metadata.did_complement_country))) {
       break;
     }
-    // ProfileImportMetadata is only relevant for metrics. If the phone number
-    // was removed from a partial profile, we still want that removal to appear
-    // in the metrics, because it would have hindered that partial profile from
-    // import and merging.
-    completed_metadata.did_remove_invalid_phone_number |=
-        candidate->import_metadata.did_remove_invalid_phone_number;
+    completed_profile.MergeDataFrom(candidate->profile, app_locale_);
+    MergeImportMetadata(candidate->import_metadata, completed_metadata);
     candidate++;
   }
 
@@ -266,6 +267,59 @@ bool MultiStepImportMerger::MergeProfileWithMultiStepCandidates(
     multistep_candidates_.erase(candidate, multistep_candidates_.end());
     return false;
   }
+}
+
+bool MultiStepImportMerger::MergeableByRemovingIncorrectlyComplementedCountry(
+    AutofillProfile& profile_a,
+    bool& complemented_profile_a,
+    AutofillProfile& profile_b,
+    bool& complemented_profile_b) const {
+  // Check if exactly one of the profiles has a complemented country.
+  if (complemented_profile_a == complemented_profile_b ||
+      profile_a.GetInfo(ADDRESS_HOME_COUNTRY, app_locale_) ==
+          profile_b.GetInfo(ADDRESS_HOME_COUNTRY, app_locale_)) {
+    return false;
+  }
+  AutofillProfile& complemented_profile =
+      complemented_profile_a ? profile_a : profile_b;
+  std::u16string complemented_country =
+      complemented_profile.GetInfo(ADDRESS_HOME_COUNTRY, app_locale_);
+  complemented_profile.ClearFields({ADDRESS_HOME_COUNTRY});
+  if (comparator_.AreMergeable(profile_a, profile_b)) {
+    if (complemented_profile_a)
+      complemented_profile_a = false;
+    else
+      complemented_profile_b = false;
+    return true;
+  }
+  // Even after removing the disagreeing country code, merging still failed.
+  // Reset the profile back to it's original state. Otherwise we might end up
+  // importing a countryless profile.
+  complemented_profile.SetInfoWithVerificationStatus(
+      AutofillType(ADDRESS_HOME_COUNTRY), complemented_country, app_locale_,
+      structured_address::VerificationStatus::kObserved);
+  return false;
+}
+
+void MultiStepImportMerger::MergeImportMetadata(
+    const ProfileImportMetadata& source,
+    ProfileImportMetadata& target) const {
+  // If an invalid phone number was observed in either of the partial profiles,
+  // importing was only possible due to its removal. So for the purpose of
+  // metrics, we want to merge towards invalid to measure the impact of the
+  // invalid phone number removal feature.
+  if (target.phone_import_status != PhoneImportStatus::kInvalid &&
+      source.phone_import_status != PhoneImportStatus::kNone) {
+    target.phone_import_status = source.phone_import_status;
+  }
+  // If either of the partial profiles contains information imported from an
+  // unrecognized autocomplete attribute, so does the combined profile.
+  target.did_import_from_unrecognized_autocomplete_field |=
+      source.did_import_from_unrecognized_autocomplete_field;
+  // The country of the merged profile is only considered complemented if both
+  // of them were complemented. Otherwise one of them was observed and
+  // complementing the country has not made a difference.
+  target.did_complement_country &= source.did_complement_country;
 }
 
 void MultiStepImportMerger::OnBrowsingHistoryCleared(

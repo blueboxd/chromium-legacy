@@ -46,11 +46,8 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/security_alert_commands.h"
-#import "ios/chrome/browser/ui/main/layout_guide_scene_agent.h"
-#import "ios/chrome/browser/ui/main/scene_state.h"
-#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
+#import "ios/chrome/browser/ui/main/layout_guide_util.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/util_swift.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -147,9 +144,6 @@ BubbleViewType BubbleTypeFromFeature() {
 @property(nonatomic, readonly)
     feature_engagement::Tracker* featureEngagementTracker;
 
-// The layout guide center to use to coordinate views.
-@property(nonatomic, readonly) LayoutGuideCenter* layoutGuideCenter;
-
 @end
 
 @implementation FormInputAccessoryCoordinator
@@ -180,8 +174,9 @@ BubbleViewType BubbleTypeFromFeature() {
   self.formInputAccessoryViewController =
       [[FormInputAccessoryViewController alloc]
           initWithManualFillAccessoryViewControllerDelegate:self];
-  self.formInputAccessoryViewController.layoutGuideCenter =
-      self.layoutGuideCenter;
+  LayoutGuideCenter* layoutGuideCenter =
+      LayoutGuideCenterForBrowser(self.browser);
+  self.formInputAccessoryViewController.layoutGuideCenter = layoutGuideCenter;
 
   DCHECK(self.browserState);
   auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
@@ -210,8 +205,8 @@ BubbleViewType BubbleTypeFromFeature() {
   [self.formInputAccessoryViewController.view
       addGestureRecognizer:self.formInputAccessoryTapRecognizer];
 
-  self.layoutGuide = [self.layoutGuideCenter
-      makeLayoutGuideNamed:kAutofillFirstSuggestionGuide];
+  self.layoutGuide =
+      [layoutGuideCenter makeLayoutGuideNamed:kAutofillFirstSuggestionGuide];
   [self.baseViewController.view addLayoutGuide:self.layoutGuide];
 }
 
@@ -536,18 +531,6 @@ BubbleViewType BubbleTypeFromFeature() {
   return tracker;
 }
 
-- (LayoutGuideCenter*)layoutGuideCenter {
-  SceneState* sceneState =
-      SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
-  LayoutGuideSceneAgent* layoutGuideSceneAgent =
-      [LayoutGuideSceneAgent agentFromScene:sceneState];
-  if (self.browserState && self.browserState->IsOffTheRecord()) {
-    return layoutGuideSceneAgent.incognitoLayoutGuideCenter;
-  } else {
-    return layoutGuideSceneAgent.layoutGuideCenter;
-  }
-}
-
 // Shows confirmation dialog before opening Other passwords.
 - (void)showConfirmationDialogToUseOtherPassword {
   WebStateList* webStateList = self.browser->GetWebStateList();
@@ -657,17 +640,6 @@ BubbleViewType BubbleTypeFromFeature() {
   const base::Feature& feature =
       feature_engagement::kIPHPasswordSuggestionsFeature;
   if (!tracker || !tracker->ShouldTriggerHelpUI(feature)) {
-    return;
-  }
-
-  // Return if the user shouldn't see an IPH.
-  // This is done after ShouldTriggerHelpUI so that metrics regarding IPH are
-  // logged similarly for experimental groups and for the control group.
-  if (!base::FeatureList::IsEnabled(kBubbleRichIPH)) {
-    // Immediately mark the IPH as dismissed. It is required everytime
-    // ShouldTriggerHelpUI returns `true`.
-    [self IPHDidDismissWithSnoozeAction:feature_engagement::Tracker::
-                                            SnoozeAction::DISMISSED];
     return;
   }
 

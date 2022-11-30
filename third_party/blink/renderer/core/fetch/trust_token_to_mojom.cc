@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,7 +63,7 @@ bool ConvertTrustTokenToMojom(const TrustToken& in,
   DCHECK(in.hasIncludeTimestampHeader());  // default is defined
   out->include_timestamp_header = in.includeTimestampHeader();
 
-  if (in.hasIssuers() && !in.issuers().IsEmpty()) {
+  if (in.hasIssuers() && !in.issuers().empty()) {
     for (const String& issuer : in.issuers()) {
       // Two conditions on the issuers:
       // 1. HTTP or HTTPS (because much Trust Tokens protocol state is

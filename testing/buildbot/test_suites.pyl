@@ -169,8 +169,6 @@
         },
       },
       'viz_unittests': {},
-      'weblayer_bundle_test': {},
-      'weblayer_instrumentation_test_apk': {},
       'webview_instrumentation_test_apk': {
         'swarming': {
           'shards': 7,
@@ -185,7 +183,7 @@
     'android_specific_chromium_gtests': {
       'android_browsertests': {
         'swarming': {
-          'shards': 1,
+          'shards': 2,
         },
       },
       'android_sync_integration_tests': {
@@ -461,6 +459,24 @@
       },
     },
 
+    # TODO(crbug/1239300): Remove when persistent_shell experiment is over.
+    'chrome_persistent_shell_tests': {
+       'chrome_public_persistent_shell_unit_test_apk': {
+         'args': [
+           '--use-persistent-shell',
+         ],
+         'ci_only': True,
+         'test': 'chrome_public_unit_test_apk',
+         'experiment_percentage': 100,
+         'swarming': {
+           'shards': 2,
+         },
+         'mixins': [
+           'skia_gold_test',
+         ],
+      }
+    },
+
     'chrome_public_tests': {
       'chrome_public_test_apk': {
         'swarming': {
@@ -570,6 +586,36 @@
       },
     },
 
+    'chromeos_browser_all_tast_tests': {
+      'chrome_all_tast_tests': {
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/923426#c27
+          # Tast test doesn't always output. See crbug.com/1306300
+          'io_timeout': 3600,
+          'shards': 10,
+        },
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+      },
+    },
+
+    # TODO(crbug.com/1306345): Merge this back to
+    # 'chromeos_browser_all_tast_tests'.
+    'chromeos_browser_all_tast_tests_with_lacros': {
+      'chrome_all_tast_tests_with_lacros': {
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/923426#c27
+          # Tast test doesn't always output. See crbug.com/1306300
+          'io_timeout': 3600,
+          'shards': 10,
+        },
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+      },
+    },
+
     'chromeos_browser_finch_tests': {
       'chrome_variations_tast_tests': {
         'swarming': {
@@ -583,17 +629,6 @@
     },
 
     'chromeos_browser_integration_tests': {
-      'chrome_all_tast_tests': {
-        'swarming': {
-          'idempotent': False,  # https://crbug.com/923426#c27
-          # Tast test doesn't always output. See crbug.com/1306300
-          'io_timeout': 3600,
-          'shards': 10,
-        },
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-      },
       'disk_usage_tast_test': {
         "args": [
           # Stripping gives more accurate disk usage data.
@@ -608,6 +643,13 @@
         'mixins': [
           'has_native_resultdb_integration',
         ],
+      },
+    },
+
+    'chromeos_chrome_all_tast_tests': {
+      'chrome_all_tast_tests': {
+        'tast_expr': '("group:mainline" && "dep:chrome" && !informational)',
+        'timeout_sec': 21600,
       },
     },
 
@@ -1045,13 +1087,6 @@
           'nougat-x86-emulator',
         ],
       },
-      'weblayer_junit_tests': {
-        'remove_mixins': [
-          'nougat-x86-emulator',
-        ],
-        # Experimental until we're sure these are stable.
-        'experiment_percentage': 100
-      },
     },
 
     'chromium_linux_scripts': {
@@ -1093,7 +1128,6 @@
     'chromium_swarm_android_gtests': {
       'base_unittests': {},
       'chrome_modern_public_bundle_smoke_test': {},
-      'weblayer_bundle_test': {},
     },
 
     'chromium_swarm_desktop_gtests': {
@@ -1563,6 +1597,9 @@
           '--enable-features=PartitionAllocDanglingPtr:mode/crash',
         ],
         'test': 'content_browsertests',
+        'swarming': {
+          'shards': 8,
+        },
       },
     },
 
@@ -1867,7 +1904,37 @@
       'base_unittests': {},
     },
 
-    'fuchsia_chrome_gtests': {
+    'fuchsia_chrome_large_gtests': {
+      'browser_tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.browser_tests.filter',
+          '--',
+          '--test-launcher-timeout=60000',
+        ],
+        'swarming': {
+          'shards': 40,
+        },
+      },
+      # TODO(crbug.com/1371630): Move to one of the fuchsia_common_gtests* sets.
+      'content_browsertests': {
+        'args': [
+          '--',
+          '--disable-gpu',
+          '--headless',
+          '--ozone-platform=headless',
+        ],
+        'swarming': {
+          'shards': 8,
+        },
+      },
+      'unit_tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.unit_tests.filter',
+        ],
+      },
+    },
+
+    'fuchsia_chrome_small_gtests': {
       'courgette_unittests': {},
       'extensions_unittests': {},
       'headless_unittests': {},
@@ -1972,35 +2039,6 @@
       'viz_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.viz_unittests.filter',
-        ],
-      },
-    },
-
-    'fuchsia_experimental_gtests': {
-      'browser_tests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.browser_tests.filter',
-          '--',
-          '--test-launcher-timeout=60000',
-        ],
-        'swarming': {
-          'shards': 40,
-        },
-      },
-      'content_browsertests': {
-        'args': [
-          '--',
-          '--disable-gpu',
-          '--headless',
-          '--ozone-platform=headless',
-        ],
-        'swarming': {
-          'shards': 8,
-        },
-      },
-      'unit_tests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.unit_tests.filter',
         ],
       },
     },
@@ -3565,16 +3603,7 @@
     'js_code_coverage_browser_tests' : {
       'js_code_coverage_browser_tests': {
         'args': [
-          '--gtest_filter=*FilesApp*'
-        ],
-        'test': 'browser_tests',
-      }
-    },
-
-    'js_code_coverage_browser_tests_reduced' : {
-      'js_code_coverage_browser_tests_reduced': {
-        'args': [
-          '--gtest_filter=*DevToolsListenerBrowserTest*'
+          '--gtest_filter=*NewTabPage*'
         ],
         'test': 'browser_tests',
       }
@@ -4151,15 +4180,6 @@
         'test': 'content_browsertests',
       },
     },
-
-    'opus_tests': {
-      'opus_tests': {
-        'args': [
-          '--shard-timeout=3000'
-        ],
-        'test': 'opus_tests',
-       },
-     },
 
     # TODO(petermcneeley) : Remove once OverlayPrioritization has landed on
     # all ozone platforms.
@@ -4747,7 +4767,6 @@
     'web_engine_gtests': {
       'cast_runner_browsertests': {},
       'cast_runner_integration_tests': {},
-      'cast_runner_integration_tests_cfv1': {},
       'cast_runner_unittests': {},
       'web_engine_browsertests': {},
       'web_engine_integration_tests': {
@@ -4764,71 +4783,6 @@
       },
       'web_engine_unittests': {},
       'web_runner_integration_tests': {},
-    },
-
-    'weblayer_android_gtests': {
-      'weblayer_bundle_test': {
-      },
-      'weblayer_instrumentation_test_apk': {
-      },
-      'weblayer_private_instrumentation_test_apk': {
-      },
-    },
-
-
-    'weblayer_gtests': {
-      'weblayer_browsertests': {
-      },
-      'weblayer_unittests': {
-      },
-    },
-
-    'weblayer_instrumentation_tests': {
-      'weblayer_instrumentation_test_apk': {
-      }
-    },
-
-    'weblayer_shell_wpt': {
-      'weblayer_shell_wpt': {
-        'args': [
-          '--no-wpt-internal',
-        ],
-        'swarming': {
-          'shards': 18,
-          'expiration': 18000,
-          'hard_timeout': 14400,
-        },
-        'experiment_percentage': 100,
-        'merge': {
-          'args': [
-            '--verbose',
-          ],
-          'script': '//third_party/blink/tools/merge_web_test_results.py',
-        },
-        'results_handler': 'layout tests',
-      },
-    },
-
-    'weblayer_skew_tests': {
-      'weblayer_skew_tests': {
-        'swarming': {
-          'shards': 2,
-        },
-        'args': [
-          '--additional-apk=apks/WebLayerShellSystemWebView.apk',
-        ],
-      },
-    },
-
-    'weblayer_skew_tests_with_chrome': {
-      'weblayer_skew_tests_with_chrome': {
-        'swarming': {
-          'shards': 2,
-        },
-        'args': [
-          '--additional-apk=apks/ChromePublic.apk'
-        ],
-      },
     },
 
     'webrtc_chromium_baremetal_gtests': {
@@ -4862,10 +4816,11 @@
     },
 
     'webrtc_chromium_gtests': {
-      'browser_tests_apprtc': {
-        'args': ['--gtest_filter=WebRtcApprtcBrowserTest.*',
-                 '--run-manual', '--test-launcher-jobs=1'],
-      },
+      # TODO(b/246519185) - Py3 incompatible, decide if to keep test.:
+      #'browser_tests_apprtc': {
+      #  'args': ['--gtest_filter=WebRtcApprtcBrowserTest.*',
+      #           '--run-manual', '--test-launcher-jobs=1'],
+      #},
       'browser_tests_functional': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/webrtc_functional.browser_tests.filter',
@@ -5114,7 +5069,7 @@
         },
       },
       'polymer_tools_python_unittests': {
-        'experiment_percentage': 100,
+        'experiment_percentage': 0,
       },
     },
 
@@ -5142,7 +5097,6 @@
         'args': [
           '--no-wpt-internal',
           '--child-processes=8',
-          '--run-by-dir=0',
           '--no-restart-on-new-group',
           '--log-wptreport',
         ],
@@ -5165,7 +5119,6 @@
       'wpt_tests_suite': {
         'args': [
           '--child-processes=8',
-          '--run-by-dir=0',
           '--no-restart-on-new-group',
           '--log-wptreport',
           '--xvfb'
@@ -5234,7 +5187,6 @@
       'wpt_tests_suite': {
         'args': [
           '--child-processes=8',
-          '--run-by-dir=0',
           '--no-restart-on-new-group',
           '--product=chrome_ios'
         ],
@@ -5269,25 +5221,6 @@
       'android_trichrome_smoke_tests',
     ],
 
-    # This is the same as 'android_marshmallow_gtests'
-    # with the addition of 'webview_cts_tests_gtest' and
-    # 'webview_ui_instrumentation_tests'
-    'android_marshmallow_coverage_gtests': [
-      'android_modern_smoke_tests',
-      'android_smoke_tests',
-      'android_specific_chromium_gtests',  # Already includes gl_gtests.
-      'chromium_gtests',
-      'chromium_gtests_for_devices_with_graphical_output',
-      'chrome_public_tests',
-      'linux_flavor_specific_chromium_gtests',
-      'vr_android_specific_chromium_tests',
-      'vr_platform_specific_chromium_gtests',
-      'weblayer_android_gtests',
-      'weblayer_gtests',
-      'webview_cts_tests_gtest',
-      'webview_ui_instrumentation_tests',
-    ],
-
     'android_marshmallow_gtests': [
       'android_modern_smoke_tests',
       'android_smoke_tests',
@@ -5298,8 +5231,6 @@
       'linux_flavor_specific_chromium_gtests',
       'vr_android_specific_chromium_tests',
       'vr_platform_specific_chromium_gtests',
-      'weblayer_android_gtests',
-      'weblayer_gtests',
     ],
 
     'android_nougat_emulator_gtests': [
@@ -5308,12 +5239,11 @@
       'android_smoke_tests',
       'android_specific_chromium_gtests',  # Already includes gl_gtests.
       'android_wpr_record_replay_tests',
+      'chrome_persistent_shell_tests',
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'linux_flavor_specific_chromium_gtests',
       'system_webview_shell_instrumentation_tests', # Not an experimental test
-      'weblayer_android_gtests',
-      'weblayer_gtests',
       'webview_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
     ],
@@ -5331,6 +5261,23 @@
       'android_monochrome_smoke_tests',
       'android_oreo_standard_gtests',
       'android_smoke_tests',
+    ],
+
+    # This is the same as 'chromium_android_gtests'
+    # with the addition of 'android_modern_smoke_tests',
+    # 'webview_cts_tests_gtest', and 'webview_ui_instrumentation_tests',
+    'android_pie_coverage_gtests': [
+      'android_modern_smoke_tests',
+      'android_smoke_tests',
+      'android_specific_chromium_gtests',  # Already includes gl_gtests.
+      'chromium_gtests',
+      'chromium_gtests_for_devices_with_graphical_output',
+      'chrome_public_tests',
+      'linux_flavor_specific_chromium_gtests',
+      'vr_android_specific_chromium_tests',
+      'vr_platform_specific_chromium_gtests',
+      'webview_cts_tests_gtest',
+      'webview_ui_instrumentation_tests',
     ],
 
     'android_pie_gtests': [
@@ -5357,8 +5304,6 @@
       'chromium_gtests_for_devices_with_graphical_output',
       'linux_flavor_specific_chromium_gtests',
       'system_webview_shell_instrumentation_tests', # Not an experimental test
-      'weblayer_android_gtests',
-      'weblayer_gtests',
       'webview_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
     ],
@@ -5374,19 +5319,19 @@
     #   'android_specific_chromium_gtests',  # Already includes gl_gtests.
     #   'chromium_gtests',
     #   'chromium_gtests_for_devices_with_graphical_output',
+      'chrome_persistent_shell_tests',
       'chrome_public_tests',
     #   'linux_flavor_specific_chromium_gtests',
       'system_webview_shell_instrumentation_tests',
     #   'vr_android_specific_chromium_tests',
     #   'vr_platform_specific_chromium_gtests',
-    #   'weblayer_android_gtests',
-      'weblayer_gtests',
       'webview_64_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
     ],
 
     'backuprefptr_gtests': [
       'backuprefptr_generic_gtests',
+      'dangling_pointer_detection_tests',
     ],
 
     'bfcache_android_gtests': [
@@ -5400,11 +5345,24 @@
     ],
 
     'chromeos_device_gtests': [
+      'chromeos_browser_all_tast_tests',
       'chromeos_browser_integration_tests',
       'chromeos_device_only_gtests',
     ],
 
+    'chromeos_device_gtests_with_lacros': [
+      'chromeos_browser_all_tast_tests_with_lacros',
+      'chromeos_browser_integration_tests',
+      'chromeos_device_only_gtests',
+    ],
+
+    'chromeos_device_no_gtests': [
+      'chromeos_browser_all_tast_tests',
+      'chromeos_browser_integration_tests',
+    ],
+
     'chromeos_vm_gtests': [
+      'chromeos_browser_all_tast_tests',
       'chromeos_browser_finch_tests',
       'chromeos_browser_integration_tests',
       'chromeos_system_friendly_gtests',
@@ -5442,7 +5400,6 @@
       'non_android_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
       'overlay_prioritization_gtests',
-      'weblayer_gtests',
     ],
 
     # This is meant to be a superset of 'chromium_linux_and_gl_gtests'. Any
@@ -5462,7 +5419,6 @@
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_android_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
-      'weblayer_gtests',
     ],
 
     # gl_tests requires dedicated slaves with GPUs on linux, so have a separate
@@ -5481,7 +5437,6 @@
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_android_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
-      'weblayer_gtests',
     ],
 
     'chromium_linux_cast_audio_gtests': [
@@ -5520,7 +5475,6 @@
       'non_android_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
       'overlay_prioritization_gtests',
-      'weblayer_gtests',
     ],
 
     'chromium_linux_rel_isolated_scripts': [
@@ -5532,6 +5486,17 @@
       'telemetry_perf_unittests_isolated_scripts',
       'vulkan_swiftshader_isolated_scripts',
       'chromium_web_tests_high_dpi_isolated_scripts',
+    ],
+
+    'chromium_mac_and_dangling_pointer_detection_gtests': [
+      'dangling_pointer_detection_tests',
+      'chromium_gtests',
+      'chromium_gtests_for_devices_with_graphical_output',
+      'chromium_gtests_for_linux_and_mac_only',
+      'mac_specific_chromium_gtests',
+      'nocompile_tests',
+      'non_android_and_cast_and_chromeos_chromium_gtests',
+      'non_android_chromium_gtests',
     ],
 
     'chromium_mac_gtests': [
@@ -5594,7 +5559,20 @@
       'non_android_chromium_gtests_skia_gold',
       'pixel_browser_tests_gtests',
       'vr_platform_specific_chromium_gtests',
-      'weblayer_gtests',
+      'win_specific_chromium_gtests',
+    ],
+
+    'chromium_win_and_dangling_pointer_detection_gtests': [
+      'dangling_pointer_detection_tests',
+      'aura_gtests',
+      'chromium_gtests',
+      'chromium_gtests_for_devices_with_graphical_output',
+      'chromium_gtests_for_win_and_linux_only',
+      'non_android_and_cast_and_chromeos_chromium_gtests',
+      'non_android_chromium_gtests',
+      'non_android_chromium_gtests_skia_gold',
+      'pixel_browser_tests_gtests',
+      'vr_platform_specific_chromium_gtests',
       'win_specific_chromium_gtests',
     ],
 
@@ -5614,7 +5592,6 @@
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_android_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
-      'weblayer_gtests',
       'win_specific_chromium_gtests',
     ],
 
@@ -5649,7 +5626,7 @@
 
     # All gtests that can be run on Fuchsia CI/CQ
     'fuchsia_gtests': [
-      'fuchsia_chrome_gtests',
+      'fuchsia_chrome_small_gtests',
       'fuchsia_common_gtests',
       'fuchsia_common_gtests_with_graphical_output',
       'web_engine_gtests',
@@ -6154,8 +6131,6 @@
       'chromium_gtests_for_devices_with_graphical_output': {},
       'linux_flavor_specific_chromium_gtests': {},
       'system_webview_shell_instrumentation_tests': {}, # Not an experimental test
-      'weblayer_android_gtests': {},
-      'weblayer_gtests': {},
       'webview_trichrome_cts_tests': {
         'variants': [
           'WEBVIEW_TRICHROME_FULL_CTS_TESTS',
@@ -6178,8 +6153,6 @@
       'chromium_gtests_for_devices_with_graphical_output': {},
       'linux_flavor_specific_chromium_gtests': {},
       'system_webview_shell_instrumentation_tests': {}, # Not an experimental test
-      'weblayer_android_gtests': {},
-      'weblayer_gtests': {},
       'webview_trichrome_64_cts_tests': {
         'variants': [
           'WEBVIEW_TRICHROME_FULL_CTS_TESTS',
@@ -6198,71 +6171,15 @@
       'chromium_gtests_for_devices_with_graphical_output': {},
       'linux_flavor_specific_chromium_gtests': {},
       'system_webview_shell_instrumentation_tests': {}, # Not an experimental test
-      'weblayer_android_gtests': {},
-      'weblayer_gtests': {},
       'webview_ui_instrumentation_tests': {},
     },
 
-
-    'android_weblayer_x86_10_gtests': {
-      'weblayer_instrumentation_tests': {
+    'chromeos_trogdor64_skylab_tests': {
+      'chromeos_chrome_all_tast_tests': {
         'variants': [
-          {'identifier': 'ToT_Tests'}
+          'CROS_TROGDOR64_RELEASE_LKGM',
         ]
       },
-      'weblayer_skew_tests': {
-        'variants': [
-          'WEBLAYER_10_AND_M_IMPL_SKEW_TESTS_NTH_MILESTONE',
-          'WEBLAYER_10_AND_M_IMPL_SKEW_TESTS_NTH_MINUS_ONE_MILESTONE',
-          'WEBLAYER_10_AND_M_IMPL_SKEW_TESTS_NTH_MINUS_TWO_MILESTONE',
-          'WEBLAYER_10_AND_M_IMPL_SKEW_TESTS_NTH_MINUS_THREE_MILESTONE',
-          'WEBLAYER_10_AND_M_IMPL_SKEW_TESTS_NTH_MINUS_FOUR_MILESTONE',
-          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MILESTONE',
-          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_ONE_MILESTONE',
-          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_TWO_MILESTONE',
-          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_THREE_MILESTONE',
-          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_FOUR_MILESTONE',
-        ]
-      }
-    },
-
-    'android_weblayer_x86_marshmallow_gtests': {
-      'weblayer_skew_tests_with_chrome': {
-        'variants': [
-          'WEBLAYER_10_AND_M_IMPL_SKEW_TESTS_NTH_MILESTONE',
-          'WEBLAYER_10_AND_M_IMPL_SKEW_TESTS_NTH_MINUS_ONE_MILESTONE',
-          'WEBLAYER_10_AND_M_IMPL_SKEW_TESTS_NTH_MINUS_TWO_MILESTONE',
-          'WEBLAYER_10_AND_M_IMPL_SKEW_TESTS_NTH_MINUS_THREE_MILESTONE',
-          'WEBLAYER_10_AND_M_IMPL_SKEW_TESTS_NTH_MINUS_FOUR_MILESTONE',
-          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MILESTONE',
-          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_ONE_MILESTONE',
-          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_TWO_MILESTONE',
-          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_THREE_MILESTONE',
-          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_FOUR_MILESTONE',
-        ]
-      }
-    },
-
-    'android_weblayer_x86_pie_oreo_gtests': {
-      'weblayer_instrumentation_tests': {
-        'variants': [
-          {'identifier': 'ToT_Tests'}
-        ]
-      },
-      'weblayer_skew_tests': {
-        'variants': [
-          'WEBLAYER_IMPL_SKEW_TESTS_NTH_MILESTONE',
-          'WEBLAYER_IMPL_SKEW_TESTS_NTH_MINUS_ONE_MILESTONE',
-          'WEBLAYER_IMPL_SKEW_TESTS_NTH_MINUS_TWO_MILESTONE',
-          'WEBLAYER_IMPL_SKEW_TESTS_NTH_MINUS_THREE_MILESTONE',
-          'WEBLAYER_IMPL_SKEW_TESTS_NTH_MINUS_FOUR_MILESTONE',
-          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MILESTONE',
-          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_ONE_MILESTONE',
-          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_TWO_MILESTONE',
-          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_THREE_MILESTONE',
-          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_FOUR_MILESTONE',
-        ]
-      }
     },
 
     'fieldtrial_ios_simulator_tests': {
@@ -6396,40 +6313,40 @@
     'ios16_beta_simulator_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_X_16_0',
+          'SIM_IPHONE_X_16_1',
         ],
       },
       'ios_eg2_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_X_16_0',
-          'SIM_IPHONE_8_16_0',
-          'SIM_IPAD_AIR_3RD_GEN_16_0',
-          'SIM_IPAD_6_GEN_16_0',
-          'SIM_IPAD_PRO_3RD_GEN_16_0',
+          'SIM_IPHONE_X_16_1',
+          'SIM_IPHONE_8_16_1',
+          'SIM_IPAD_AIR_3RD_GEN_16_1',
+          'SIM_IPAD_6_GEN_16_1',
+          'SIM_IPAD_PRO_3RD_GEN_16_1',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_8_16_0',
-          'SIM_IPHONE_X_16_0',
-          'SIM_IPAD_6_GEN_16_0',
-          'SIM_IPAD_PRO_3RD_GEN_16_0',
+          'SIM_IPHONE_8_16_1',
+          'SIM_IPHONE_X_16_1',
+          'SIM_IPAD_6_GEN_16_1',
+          'SIM_IPAD_PRO_3RD_GEN_16_1',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_8_PLUS_16_0',
-          'SIM_IPHONE_X_16_0',
-          'SIM_IPAD_AIR_3RD_GEN_16_0',
-          'SIM_IPAD_PRO_3RD_GEN_16_0',
+          'SIM_IPHONE_8_PLUS_16_1',
+          'SIM_IPHONE_X_16_1',
+          'SIM_IPAD_AIR_3RD_GEN_16_1',
+          'SIM_IPAD_PRO_3RD_GEN_16_1',
         ],
       },
       'ios_crash_xcuitests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_X_16_0',
+          'SIM_IPHONE_X_16_1',
         ]
       },
     },
@@ -6437,7 +6354,7 @@
     'ios16_sdk_simulator_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_8_16_0',
+          'SIM_IPHONE_8_16_1',
           'SIM_IPHONE_6S_15_5',
           'SIM_IPHONE_6S_14_4',
         ],
@@ -6445,17 +6362,17 @@
       'ios_crash_xcuitests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_X_16_0',
+          'SIM_IPHONE_X_16_1',
           'SIM_IPHONE_6S_15_5',
           'SIM_IPHONE_6S_14_4',
         ]
       },
       'ios_eg2_tests': {
-        'mixins': ['xcode_parallelization'],
+        'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
-          'SIM_IPHONE_8_16_0',
-          'SIM_IPAD_AIR_3RD_GEN_16_0',
-          'SIM_IPHONE_X_16_0',
+          'SIM_IPHONE_8_16_1',
+          'SIM_IPAD_AIR_3RD_GEN_16_1',
+          'SIM_IPHONE_X_16_1',
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
           'SIM_IPHONE_X_15_5',
@@ -6463,15 +6380,15 @@
           'SIM_IPAD_AIR_2_14_4',
           'SIM_IPHONE_X_14_4',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_0',
+          'SIM_IPAD_PRO_3RD_GEN_16_1',
         ]
       },
       'ios_eg2_cq_tests': {
-        'mixins': ['xcode_parallelization'],
+        'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
-          'SIM_IPHONE_8_16_0',
-          'SIM_IPAD_AIR_3RD_GEN_16_0',
-          'SIM_IPHONE_X_16_0',
+          'SIM_IPHONE_8_16_1',
+          'SIM_IPAD_AIR_3RD_GEN_16_1',
+          'SIM_IPHONE_X_16_1',
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
           'SIM_IPHONE_X_15_5',
@@ -6479,16 +6396,16 @@
           'SIM_IPAD_AIR_2_14_4',
           'SIM_IPHONE_X_14_4',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_0',
+          'SIM_IPAD_PRO_3RD_GEN_16_1',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_8_PLUS_16_0',
-          'SIM_IPHONE_8_16_0',
-          'SIM_IPHONE_SE_3RD_GEN_16_0',
-          'SIM_IPAD_AIR_3RD_GEN_16_0',
-          'SIM_IPAD_PRO_3RD_GEN_16_0',
+          'SIM_IPHONE_8_PLUS_16_1',
+          'SIM_IPHONE_8_16_1',
+          'SIM_IPHONE_SE_3RD_GEN_16_1',
+          'SIM_IPAD_AIR_3RD_GEN_16_1',
+          'SIM_IPAD_PRO_3RD_GEN_16_1',
         ],
       },
     },

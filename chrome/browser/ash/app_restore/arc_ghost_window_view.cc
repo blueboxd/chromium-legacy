@@ -9,6 +9,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/app_restore/arc_ghost_window_handler.h"
+#include "chrome/browser/ash/arc/window_predictor/window_predictor_utils.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/strings/grit/components_strings.h"
@@ -19,10 +20,22 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
 
 namespace {
+
+constexpr char kGhostWindowTypeHistogram[] = "Arc.GhostWindowViewType";
+
+// Ghost window view type enumeration; Used for UMA counter.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class GhostWindowType {
+  kIconSpinning = 0,
+  kIconSpinningWithFixupText = 1,
+  kMaxValue = kIconSpinningWithFixupText,
+};
 
 class Throbber : public views::View {
  public:
@@ -60,14 +73,18 @@ class Throbber : public views::View {
 
 namespace ash::full_restore {
 
-ArcGhostWindowView::ArcGhostWindowView(int throbber_diameter,
+ArcGhostWindowView::ArcGhostWindowView(arc::GhostWindowType type,
+                                       int throbber_diameter,
                                        uint32_t theme_color) {
-  InitLayout(theme_color, throbber_diameter);
+  // TODO(sstan): Show different content for different type.
+  InitLayout(type, theme_color, throbber_diameter);
 }
 
 ArcGhostWindowView::~ArcGhostWindowView() = default;
 
-void ArcGhostWindowView::InitLayout(uint32_t theme_color, int diameter) {
+void ArcGhostWindowView::InitLayout(arc::GhostWindowType type,
+                                    uint32_t theme_color,
+                                    int diameter) {
   SetBackground(views::CreateSolidBackground(theme_color));
   views::BoxLayout* layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -86,6 +103,7 @@ void ArcGhostWindowView::InitLayout(uint32_t theme_color, int diameter) {
   throbber->SetPreferredSize(gfx::Size(diameter, diameter));
   throbber->GetViewAccessibility().OverrideRole(ax::mojom::Role::kImage);
 
+  SetType(type);
   // TODO(sstan): Set window title and accessible name from saved data.
 }
 
@@ -105,6 +123,35 @@ void ArcGhostWindowView::LoadIcon(const std::string& app_id) {
           ? base::BindOnce(&ArcGhostWindowView::OnIconLoaded,
                            weak_ptr_factory_.GetWeakPtr())
           : std::move(icon_loaded_cb_for_testing_));
+}
+
+void ArcGhostWindowView::SetType(arc::GhostWindowType type) {
+  // Currently the only difference of App Fixup and other type of ghost window
+  // is that App Fixup ghost window has a message label.
+  if (type == arc::GhostWindowType::kFixup) {
+    if (!message_label_) {
+      auto label = std::make_unique<views::Label>(
+          l10n_util::GetStringUTF16(IDS_ARC_GHOST_WINDOW_APP_FIXUP_MESSAGE));
+      // TODO(sstan): Set font size or height, according to future UI update.
+      label->SetMultiLine(true);
+      message_label_ = label.get();
+      AddChildView(std::move(label));
+      Layout();
+
+      base::UmaHistogramEnumeration(
+          kGhostWindowTypeHistogram,
+          GhostWindowType::kIconSpinningWithFixupText);
+    }
+  } else {
+    if (message_label_) {
+      RemoveChildView(message_label_);
+      message_label_ = nullptr;
+      Layout();
+
+      base::UmaHistogramEnumeration(kGhostWindowTypeHistogram,
+                                    GhostWindowType::kIconSpinning);
+    }
+  }
 }
 
 void ArcGhostWindowView::OnIconLoaded(apps::IconValuePtr icon_value) {

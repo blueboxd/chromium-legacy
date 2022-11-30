@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
@@ -63,6 +64,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
+#include "components/session_manager/session_manager_types.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -252,6 +254,8 @@ void ScreenLocker::OnAuthFailure(const AuthFailure& error) {
 
   UMA_HISTOGRAM_ENUMERATION("ScreenLocker.AuthenticationFailure",
                             unlock_attempt_type_, UnlockType::AUTH_COUNT);
+  session_manager::SessionManager::Get()->NotifyUnlockAttempt(
+      /*success*/ false, TransformUnlockType());
 
   EnableInput();
   // Don't enable signout button here as we're showing
@@ -296,6 +300,8 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
 
   UMA_HISTOGRAM_ENUMERATION("ScreenLocker.AuthenticationSuccess",
                             unlock_attempt_type_, UnlockType::AUTH_COUNT);
+  session_manager::SessionManager::Get()->NotifyUnlockAttempt(
+      /*success*/ true, TransformUnlockType());
 
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(user_context.GetAccountId());
@@ -338,14 +344,15 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
   ScreenLocker::Hide();
 }
 
-void ScreenLocker::OnPasswordAuthSuccess(const UserContext& user_context) {
+void ScreenLocker::OnPasswordAuthSuccess(
+    std::unique_ptr<UserContext> user_context) {
   // The user has signed in using their password, so reset the PIN timeout.
   quick_unlock::QuickUnlockStorage* quick_unlock_storage =
       quick_unlock::QuickUnlockFactory::GetForAccountId(
-          user_context.GetAccountId());
+          user_context->GetAccountId());
   if (quick_unlock_storage)
     quick_unlock_storage->MarkStrongAuth();
-  SaveSyncPasswordHash(user_context);
+  SaveSyncPasswordHash(std::move(user_context));
 }
 
 void ScreenLocker::ReenableAuthForUser(const AccountId& account_id) {
@@ -373,13 +380,13 @@ void ScreenLocker::TemporarilyDisableAuthForUser(
                                                      auth_disabled_data);
 }
 
-void ScreenLocker::Authenticate(const UserContext& user_context,
+void ScreenLocker::Authenticate(std::unique_ptr<UserContext> user_context,
                                 AuthenticateCallback callback) {
-  LOG_ASSERT(IsUserLoggedIn(user_context.GetAccountId()))
+  LOG_ASSERT(IsUserLoggedIn(user_context->GetAccountId()))
       << "Invalid user trying to unlock.";
 
   // Do not attempt authentication if it is disabled for the user.
-  if (IsAuthTemporarilyDisabledForUser(user_context.GetAccountId())) {
+  if (IsAuthTemporarilyDisabledForUser(user_context->GetAccountId())) {
     VLOG(1) << "Authentication disabled for user.";
     if (auth_status_consumer_) {
       auth_status_consumer_->OnAuthFailure(
@@ -391,29 +398,30 @@ void ScreenLocker::Authenticate(const UserContext& user_context,
   }
 
   DCHECK(!pending_auth_state_);
-  pending_auth_state_ = std::make_unique<AuthState>(user_context.GetAccountId(),
-                                                    std::move(callback));
+  pending_auth_state_ = std::make_unique<AuthState>(
+      user_context->GetAccountId(), std::move(callback));
   unlock_attempt_type_ = AUTH_PASSWORD;
 
   authentication_start_time_ = base::Time::Now();
-  if (user_context.IsUsingPin())
+  if (user_context->IsUsingPin())
     unlock_attempt_type_ = AUTH_PIN;
 
-  const user_manager::User* user = FindUnlockUser(user_context.GetAccountId());
+  const user_manager::User* user = FindUnlockUser(user_context->GetAccountId());
   if (user) {
     // Check to see if the user submitted a PIN and it is valid.
     if (unlock_attempt_type_ == AUTH_PIN) {
+      const ash::Key* key = user_context->GetKey();
+      CHECK(key);
       quick_unlock::PinBackend::GetInstance()->TryAuthenticate(
-          user_context.GetAccountId(), *user_context.GetKey(),
-          quick_unlock::Purpose::kUnlock,
+          std::move(user_context), *key, quick_unlock::Purpose::kUnlock,
           base::BindOnce(&ScreenLocker::OnPinAttemptDone,
-                         weak_factory_.GetWeakPtr(), user_context));
+                         weak_factory_.GetWeakPtr()));
       // OnPinAttemptDone will call ContinueAuthenticate.
       return;
     }
   }
 
-  ContinueAuthenticate(user_context);
+  ContinueAuthenticate(std::move(user_context));
 }
 
 void ScreenLocker::AuthenticateWithChallengeResponse(
@@ -469,51 +477,64 @@ void ScreenLocker::OnChallengeResponseKeysPrepared(
   const user_manager::User* const user =
       user_manager::UserManager::Get()->FindUser(account_id);
   DCHECK(user);
-  UserContext user_context(*user);
-  *user_context.GetMutableChallengeResponseKeys() =
+  auto user_context = std::make_unique<UserContext>(*user);
+  *user_context->GetMutableChallengeResponseKeys() =
       std::move(challenge_response_keys);
-  ContinueAuthenticate(user_context);
+  ContinueAuthenticate(std::move(user_context));
 }
 
-void ScreenLocker::OnPinAttemptDone(const UserContext& user_context,
-                                    bool success) {
-  if (success) {
-    // Mark strong auth if this is cryptohome based pin.
-    if (quick_unlock::PinBackend::GetInstance()->ShouldUseCryptohome(
-            user_context.GetAccountId())) {
-      quick_unlock::QuickUnlockStorage* quick_unlock_storage =
-          quick_unlock::QuickUnlockFactory::GetForAccountId(
-              user_context.GetAccountId());
-      if (quick_unlock_storage)
-        quick_unlock_storage->MarkStrongAuth();
-    }
-    OnAuthSuccess(user_context);
-  } else {
+void ScreenLocker::OnPinAttemptDone(std::unique_ptr<UserContext> user_context,
+                                    absl::optional<AuthenticationError> error) {
+  if (error.has_value()) {
     // PIN authentication has failed; try submitting as a normal password.
-    ContinueAuthenticate(user_context);
+    user_context->SetIsUsingPin(false);
+    ContinueAuthenticate(std::move(user_context));
+    return;
   }
+
+  OnAuthSuccess(std::move(*user_context));
 }
 
-void ScreenLocker::ContinueAuthenticate(const UserContext& user_context) {
-  if (user_context.GetAccountId().GetAccountType() ==
+void ScreenLocker::ContinueAuthenticate(
+    std::unique_ptr<UserContext> user_context) {
+  DCHECK(!user_context->IsUsingPin());
+  if (user_context->GetAccountId().GetAccountType() ==
           AccountType::ACTIVE_DIRECTORY &&
-      user_context.GetKey()->GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN) {
+      user_context->GetKey()->GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN) {
     // Try to get kerberos TGT while we have user's password typed on the lock
     // screen. Failure to get TGT here is OK - that could mean e.g. Active
     // Directory server is not reachable. AuthPolicyCredentialsManager regularly
     // checks TGT status inside the user session.
     AuthPolicyHelper::TryAuthenticateUser(
-        user_context.GetAccountId().GetUserEmail(),
-        user_context.GetAccountId().GetObjGuid(),
-        user_context.GetKey()->GetSecret());
+        user_context->GetAccountId().GetUserEmail(),
+        user_context->GetAccountId().GetObjGuid(),
+        user_context->GetKey()->GetSecret());
   }
-
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
-      base::BindOnce(&ExtendedAuthenticator::AuthenticateToCheck,
-                     extended_authenticator_.get(), user_context,
-                     base::BindOnce(&ScreenLocker::OnPasswordAuthSuccess,
-                                    weak_factory_.GetWeakPtr(), user_context)));
+      base::BindOnce(&ScreenLocker::AttemptUnlock, weak_factory_.GetWeakPtr(),
+                     std::move(user_context)));
+}
+
+void ScreenLocker::AttemptUnlock(std::unique_ptr<UserContext> user_context) {
+  if (features::IsUseAuthFactorsEnabled()) {
+    authenticator_->AuthenticateToUnlock(std::move(user_context));
+  } else {
+    // Take a copy of the user context and bind a callback to pass to
+    // `AuthenticateToCheck`.
+    // The copy of the user context might seem unnecessary because
+    // AuthenticateToCheck takes it by const reference, but it isn't: At least
+    // the fake implementation of AuthenticateToCheck accesses this reference
+    // *after* running the callback. Since the callback owns the unique_ptr
+    // that holds onto the context, that user context is destroyed after the
+    // callback is done executing, and any references to it would be dangling.
+    UserContext user_context_copy = *user_context;
+    auto callback =
+        base::BindOnce(&ScreenLocker::OnPasswordAuthSuccess,
+                       weak_factory_.GetWeakPtr(), std::move(user_context));
+    extended_authenticator_->AuthenticateToCheck(user_context_copy,
+                                                 std::move(callback));
+  }
 }
 
 const user_manager::User* ScreenLocker::FindUnlockUser(
@@ -699,17 +720,18 @@ void ScreenLocker::ScheduleDeletion() {
   screen_locker_ = nullptr;
 }
 
-void ScreenLocker::SaveSyncPasswordHash(const UserContext& user_context) {
-  if (!user_context.GetSyncPasswordData().has_value())
+void ScreenLocker::SaveSyncPasswordHash(
+    std::unique_ptr<UserContext> user_context) {
+  if (!user_context->GetSyncPasswordData().has_value())
     return;
 
   const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(user_context.GetAccountId());
+      user_manager::UserManager::Get()->FindUser(user_context->GetAccountId());
   if (!user || !user->is_active())
     return;
   auto* profile = ProfileHelper::Get()->GetProfileByUser(user);
   if (profile)
-    login::SaveSyncPasswordDataToProfile(user_context, profile);
+    login::SaveSyncPasswordDataToProfile(*user_context, profile);
 }
 
 bool ScreenLocker::IsAuthTemporarilyDisabledForUser(
@@ -909,7 +931,7 @@ void ScreenLocker::OnAuthScanDone(
   quick_unlock_storage->fingerprint_storage()->RecordFingerprintUnlockResult(
       quick_unlock::FingerprintUnlockResult::kSuccess);
   LoginScreen::Get()->GetModel()->NotifyFingerprintAuthResult(
-      primary_user->GetAccountId(), true /*success*/);
+      primary_user->GetAccountId(), /*success*/ true);
   VLOG(1) << "Fingerprint unlock is successful.";
   OnAuthSuccess(user_context);
 }
@@ -928,7 +950,9 @@ void ScreenLocker::OnFingerprintAuthFailure(const user_manager::User& user) {
   UMA_HISTOGRAM_ENUMERATION("ScreenLocker.AuthenticationFailure",
                             unlock_attempt_type_, UnlockType::AUTH_COUNT);
   LoginScreen::Get()->GetModel()->NotifyFingerprintAuthResult(
-      user.GetAccountId(), false /*success*/);
+      user.GetAccountId(), /*success*/ false);
+  session_manager::SessionManager::Get()->NotifyUnlockAttempt(
+      /*success*/ false, TransformUnlockType());
 
   quick_unlock::QuickUnlockStorage* quick_unlock_storage =
       quick_unlock::QuickUnlockFactory::GetForUser(&user);
@@ -1006,6 +1030,28 @@ void ScreenLocker::UpdateFingerprintStateForUser(
   LoginScreen::Get()->GetModel()->SetFingerprintState(
       user->GetAccountId(), quick_unlock::GetFingerprintStateForUser(
                                 user, quick_unlock::Purpose::kUnlock));
+}
+
+session_manager::UnlockType ScreenLocker::TransformUnlockType() {
+  session_manager::UnlockType unlock_type;
+  switch (unlock_attempt_type_) {
+    case AUTH_PASSWORD:
+      unlock_type = session_manager::UnlockType::PASSWORD;
+      break;
+    case AUTH_PIN:
+      unlock_type = session_manager::UnlockType::PIN;
+      break;
+    case AUTH_FINGERPRINT:
+      unlock_type = session_manager::UnlockType::FINGERPRINT;
+      break;
+    case AUTH_CHALLENGE_RESPONSE:
+      unlock_type = session_manager::UnlockType::CHALLENGE_RESPONSE;
+      break;
+    case AUTH_COUNT:
+      unlock_type = session_manager::UnlockType::UNKNOWN;
+      break;
+  }
+  return unlock_type;
 }
 
 }  // namespace ash

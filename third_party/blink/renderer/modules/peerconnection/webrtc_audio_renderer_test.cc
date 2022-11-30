@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -148,6 +148,7 @@ class WebRtcAudioRendererTest : public testing::Test {
             &web_local_frame_client_,
             nullptr,
             LocalFrameToken(),
+            DocumentToken(),
             /*policy_container=*/nullptr)) {
     MediaStreamComponentVector dummy_components;
     stream_descriptor_ = MakeGarbageCollected<MediaStreamDescriptor>(

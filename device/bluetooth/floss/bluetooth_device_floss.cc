@@ -418,6 +418,7 @@ bool BluetoothDeviceFloss::IsBondedImpl() const {
 
 void BluetoothDeviceFloss::OnGetRemoteType(
     DBusResult<FlossAdapterClient::BluetoothDeviceType> ret) {
+  TriggerInitDevicePropertiesCallback();
   if (!ret.has_value()) {
     BLUETOOTH_LOG(ERROR) << "GetRemoteType() failed: " << ret.error();
     return;
@@ -439,6 +440,7 @@ void BluetoothDeviceFloss::OnGetRemoteType(
 }
 
 void BluetoothDeviceFloss::OnGetRemoteClass(DBusResult<uint32_t> ret) {
+  TriggerInitDevicePropertiesCallback();
   if (!ret.has_value()) {
     BLUETOOTH_LOG(ERROR) << "GetRemoteClass() failed: " << ret.error();
     return;
@@ -448,6 +450,7 @@ void BluetoothDeviceFloss::OnGetRemoteClass(DBusResult<uint32_t> ret) {
 }
 
 void BluetoothDeviceFloss::OnGetRemoteUuids(DBusResult<UUIDList> ret) {
+  TriggerInitDevicePropertiesCallback();
   if (!ret.has_value()) {
     BLUETOOTH_LOG(ERROR) << "GetRemoteUuids() failed: " << ret.error();
     return;
@@ -471,10 +474,8 @@ void BluetoothDeviceFloss::OnConnectAllEnabledProfiles(DBusResult<Void> ret) {
 
 void BluetoothDeviceFloss::TriggerConnectCallback(
     absl::optional<BluetoothDevice::ConnectErrorCode> error_code) {
-  if (--num_connecting_calls_ == 0)
+  if (num_connecting_calls_ > 0 && --num_connecting_calls_ == 0)
     adapter_->NotifyDeviceChanged(this);
-
-  DCHECK(num_connecting_calls_ >= 0);
 
   if (pending_callback_on_connect_profiles_) {
     std::move(*pending_callback_on_connect_profiles_).Run(error_code);
@@ -518,7 +519,13 @@ void BluetoothDeviceFloss::OnConnectToServiceError(
   std::move(error_callback).Run(error_message);
 }
 
-void BluetoothDeviceFloss::InitializeDeviceProperties() {
+void BluetoothDeviceFloss::InitializeDeviceProperties(
+    base::OnceClosure callback) {
+  pending_callback_on_init_props_ = std::move(callback);
+  // This must be incremented when adding more properties below
+  // and followed up with a TriggerInitDevicePropertiesCallback()
+  // in the callback.
+  num_pending_properties_ += 3;
   // TODO(b/204708206): Update with property framework when available
   FlossDBusManager::Get()->GetAdapterClient()->GetRemoteType(
       base::BindOnce(&BluetoothDeviceFloss::OnGetRemoteType,
@@ -532,6 +539,15 @@ void BluetoothDeviceFloss::InitializeDeviceProperties() {
       base::BindOnce(&BluetoothDeviceFloss::OnGetRemoteUuids,
                      weak_ptr_factory_.GetWeakPtr()),
       AsFlossDeviceId());
+}
+
+void BluetoothDeviceFloss::TriggerInitDevicePropertiesCallback() {
+  if (--num_pending_properties_ == 0 && pending_callback_on_init_props_) {
+    std::move(*pending_callback_on_init_props_).Run();
+    pending_callback_on_init_props_ = absl::nullopt;
+  }
+
+  DCHECK(num_pending_properties_ >= 0);
 }
 
 }  // namespace floss

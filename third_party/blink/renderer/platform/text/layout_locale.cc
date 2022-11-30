@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -223,7 +223,7 @@ const LayoutLocale& LayoutLocale::GetDefault() {
   if (UNLIKELY(!data.default_locale)) {
     AtomicString language = DefaultLanguage();
     data.default_locale =
-        LayoutLocale::Get(!language.IsEmpty() ? language : "en");
+        LayoutLocale::Get(!language.empty() ? language : "en");
   }
   return *data.default_locale;
 }
@@ -324,7 +324,7 @@ scoped_refptr<QuotesData> LayoutLocale::GetQuotesData() const {
 
 AtomicString LayoutLocale::LocaleWithBreakKeyword(
     LineBreakIteratorMode mode) const {
-  if (string_.IsEmpty())
+  if (string_.empty())
     return string_;
 
   // uloc_setKeywordValue_58 has a problem to handle "@" in the original

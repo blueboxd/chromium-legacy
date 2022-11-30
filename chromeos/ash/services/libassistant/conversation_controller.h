@@ -11,8 +11,6 @@
 #include "base/component_export.h"
 #include "base/sequence_checker.h"
 #include "chromeos/ash/services/assistant/public/cpp/conversation_observer.h"
-// TODO(https://crbug.com/1164001): move to forward declaration
-#include "chromeos/ash/services/libassistant/grpc/assistant_client.h"
 #include "chromeos/ash/services/libassistant/grpc/assistant_client_observer.h"
 #include "chromeos/ash/services/libassistant/public/cpp/assistant_notification.h"
 #include "chromeos/ash/services/libassistant/public/mojom/authentication_state_observer.mojom.h"
@@ -23,12 +21,13 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
-namespace chromeos {
-namespace assistant {
-namespace action {
+namespace chromeos::assistant::action {
 class CrosActionModule;
-}  // namespace action
-}  // namespace assistant
+}
+
+namespace ash {
+
+class AssistantClient;
 
 namespace libassistant {
 
@@ -38,9 +37,9 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) ConversationController
       public chromeos::assistant::action::AssistantActionObserver,
       public chromeos::assistant::ConversationObserver {
  public:
-  using AssistantNotification = ::chromeos::assistant::AssistantNotification;
-  using AssistantQuerySource = ::chromeos::assistant::AssistantQuerySource;
-  using AssistantFeedback = ::chromeos::assistant::AssistantFeedback;
+  using AssistantNotification = assistant::AssistantNotification;
+  using AssistantQuerySource = assistant::AssistantQuerySource;
+  using AssistantFeedback = assistant::AssistantFeedback;
 
   ConversationController();
   ConversationController(const ConversationController&) = delete;
@@ -54,8 +53,7 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) ConversationController
   void AddActionObserver(
       chromeos::assistant::action::AssistantActionObserver* observer);
   void AddAuthenticationStateObserver(
-      mojo::PendingRemote<
-          chromeos::libassistant::mojom::AuthenticationStateObserver> observer);
+      mojo::PendingRemote<mojom::AuthenticationStateObserver> observer);
 
   // AssistantClientObserver:
   void OnAssistantClientCreated(AssistantClient* assistant_client) override;
@@ -85,19 +83,19 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) ConversationController
   void OnShowText(const std::string& text) override;
   void OnShowContextualQueryFallback() override;
   void OnShowSuggestions(
-      const std::vector<assistant::action::Suggestion>& suggestions) override;
+      const std::vector<chromeos::assistant::action::Suggestion>& suggestions)
+      override;
   void OnOpenUrl(const std::string& url, bool in_background) override;
   void OnOpenAndroidApp(
-      const chromeos::assistant::AndroidAppInfo& app_info,
+      const assistant::AndroidAppInfo& app_info,
       const chromeos::assistant::InteractionInfo& interaction) override;
   void OnScheduleWait(int id, int time_ms) override;
   void OnShowNotification(
-      const assistant::action::Notification& notification) override;
+      const chromeos::assistant::action::Notification& notification) override;
 
   // chromeos::assistant::ConversationObserver:
   void OnInteractionStarted(
-      const chromeos::assistant::AssistantInteractionMetadata& metadata)
-      override;
+      const assistant::AssistantInteractionMetadata& metadata) override;
   void OnInteractionFinished(
       chromeos::assistant::AssistantInteractionResolution resolution) override;
 
@@ -105,7 +103,7 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) ConversationController
     return &observers_;
   }
 
-  assistant::action::CrosActionModule* action_module() {
+  chromeos::assistant::action::CrosActionModule* action_module() {
     return action_module_.get();
   }
 
@@ -130,7 +128,7 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) ConversationController
   bool requests_are_allowed_ = false;
 
   std::unique_ptr<GrpcEventsObserver> events_observer_;
-  std::unique_ptr<assistant::action::CrosActionModule> action_module_;
+  std::unique_ptr<chromeos::assistant::action::CrosActionModule> action_module_;
 
   std::unique_ptr<base::CancelableOnceClosure> stop_interaction_closure_;
   base::TimeDelta stop_interaction_delay_ = base::Milliseconds(500);
@@ -140,6 +138,6 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) ConversationController
 };
 
 }  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  //  CHROMEOS_ASH_SERVICES_LIBASSISTANT_CONVERSATION_CONTROLLER_H_

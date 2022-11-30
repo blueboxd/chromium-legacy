@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/values.h"
@@ -81,6 +82,42 @@ void OsTelemetryGetBatteryInfoFunction::OnResult(
       ArgumentList(api::os_telemetry::GetBatteryInfo::Results::Create(result)));
 }
 
+// OsTelemetryGetNonRemovableBlockDevicesInfoFunction --------------------------
+
+OsTelemetryGetNonRemovableBlockDevicesInfoFunction::
+    OsTelemetryGetNonRemovableBlockDevicesInfoFunction() = default;
+OsTelemetryGetNonRemovableBlockDevicesInfoFunction::
+    ~OsTelemetryGetNonRemovableBlockDevicesInfoFunction() = default;
+
+void OsTelemetryGetNonRemovableBlockDevicesInfoFunction::RunIfAllowed() {
+  auto cb = base::BindOnce(
+      &OsTelemetryGetNonRemovableBlockDevicesInfoFunction::OnResult, this);
+
+  GetRemoteService()->ProbeTelemetryInfo(
+      {crosapi::mojom::ProbeCategoryEnum::kNonRemovableBlockDevices},
+      std::move(cb));
+}
+
+void OsTelemetryGetNonRemovableBlockDevicesInfoFunction::OnResult(
+    crosapi::mojom::ProbeTelemetryInfoPtr ptr) {
+  if (!ptr || !ptr->block_device_result ||
+      !ptr->block_device_result->is_block_device_info()) {
+    Respond(Error("API internal error"));
+    return;
+  }
+  auto& block_device_info = ptr->block_device_result->get_block_device_info();
+
+  auto infos = converters::ConvertPtrVector<
+      api::os_telemetry::NonRemovableBlockDeviceInfo>(
+      std::move(block_device_info));
+  api::os_telemetry::NonRemovableBlockDeviceInfoResponse result;
+  result.device_infos = std::move(infos);
+
+  Respond(ArgumentList(
+      api::os_telemetry::GetNonRemovableBlockDevicesInfo::Results::Create(
+          result)));
+}
+
 // OsTelemetryGetCpuInfoFunction -----------------------------------------------
 
 OsTelemetryGetCpuInfoFunction::OsTelemetryGetCpuInfoFunction() = default;
@@ -112,6 +149,50 @@ void OsTelemetryGetCpuInfoFunction::OnResult(
           std::move(cpu_info->physical_cpus));
 
   Respond(ArgumentList(api::os_telemetry::GetCpuInfo::Results::Create(result)));
+}
+
+// OsTelemetryGetInternetConnectivityInfoFunction ------------------------------
+
+OsTelemetryGetInternetConnectivityInfoFunction::
+    OsTelemetryGetInternetConnectivityInfoFunction() = default;
+OsTelemetryGetInternetConnectivityInfoFunction::
+    ~OsTelemetryGetInternetConnectivityInfoFunction() = default;
+
+void OsTelemetryGetInternetConnectivityInfoFunction::RunIfAllowed() {
+  auto cb = base::BindOnce(
+      &OsTelemetryGetInternetConnectivityInfoFunction::OnResult, this);
+
+  GetRemoteService()->ProbeTelemetryInfo(
+      {crosapi::mojom::ProbeCategoryEnum::kNetwork}, std::move(cb));
+}
+
+void OsTelemetryGetInternetConnectivityInfoFunction::OnResult(
+    crosapi::mojom::ProbeTelemetryInfoPtr ptr) {
+  if (!ptr || !ptr->network_result ||
+      !ptr->network_result->is_network_health()) {
+    Respond(Error("API internal error"));
+    return;
+  }
+  auto& network_info = ptr->network_result->get_network_health();
+
+  // TODO(b/249246037): This is not part of the converter since we will need to
+  // check permissions here for additional fields like MAC address that we want
+  // to add soon. Add the permission here as soon as it is available.
+  api::os_telemetry::InternetConnectivityInfo result;
+  for (auto& network : network_info->networks) {
+    auto converted_network =
+        converters::ConvertPtr<api::os_telemetry::NetworkInfo>(
+            std::move(network));
+
+    // Don't include networks with an undefined type.
+    if (converted_network.type !=
+        api::os_telemetry::NetworkType::NETWORK_TYPE_NONE) {
+      result.networks.push_back(std::move(converted_network));
+    }
+  }
+
+  Respond(ArgumentList(
+      api::os_telemetry::GetInternetConnectivityInfo::Results::Create(result)));
 }
 
 // OsTelemetryGetMemoryInfoFunction --------------------------------------------
@@ -256,6 +337,32 @@ void OsTelemetryGetStatefulPartitionInfoFunction::OnResult(
 
   Respond(ArgumentList(
       api::os_telemetry::GetStatefulPartitionInfo::Results::Create(result)));
+}
+
+// OsTelemetryGetTpmInfoFunction -----------------------------------------------
+
+OsTelemetryGetTpmInfoFunction::OsTelemetryGetTpmInfoFunction() = default;
+OsTelemetryGetTpmInfoFunction::~OsTelemetryGetTpmInfoFunction() = default;
+
+void OsTelemetryGetTpmInfoFunction::RunIfAllowed() {
+  auto cb = base::BindOnce(&OsTelemetryGetTpmInfoFunction::OnResult, this);
+
+  GetRemoteService()->ProbeTelemetryInfo(
+      {crosapi::mojom::ProbeCategoryEnum::kTpm}, std::move(cb));
+}
+
+void OsTelemetryGetTpmInfoFunction::OnResult(
+    crosapi::mojom::ProbeTelemetryInfoPtr ptr) {
+  if (!ptr || !ptr->tpm_result || !ptr->tpm_result->is_tpm_info()) {
+    Respond(Error("API internal error"));
+    return;
+  }
+  auto& tpm_info = ptr->tpm_result->get_tpm_info();
+
+  api::os_telemetry::TpmInfo result =
+      converters::ConvertPtr<api::os_telemetry::TpmInfo>(std::move(tpm_info));
+
+  Respond(ArgumentList(api::os_telemetry::GetTpmInfo::Results::Create(result)));
 }
 
 // OsTelemetryGetVpdInfoFunction -----------------------------------------------

@@ -109,7 +109,7 @@ void SegmentationPlatformServiceTestBase::InitPlatform(
   auto storage_service = std::make_unique<StorageService>(
       std::move(segment_db), std::move(signal_db),
       std::move(segment_storage_config_db), &test_clock_, ukm_data_manager,
-      all_segment_ids, model_provider_factory.get());
+      all_segment_ids, model_provider_factory.get(), &pref_service_);
 
   auto params = std::make_unique<SegmentationPlatformServiceImpl::InitParams>();
   params->storage_service = std::move(storage_service);
@@ -133,13 +133,13 @@ void SegmentationPlatformServiceTestBase::DestroyPlatform() {
 }
 
 void SegmentationPlatformServiceTestBase::SetUpPrefs() {
-  DictionaryPrefUpdate update(&pref_service_, kSegmentationResultPref);
-  base::Value* dictionary = update.Get();
+  ScopedDictPrefUpdate update(&pref_service_, kSegmentationResultPref);
+  base::Value::Dict& dictionary = update.Get();
 
-  base::Value segmentation_result(base::Value::Type::DICTIONARY);
-  segmentation_result.SetIntKey(
-      "segment_id", SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SHARE);
-  dictionary->SetKey(kTestSegmentationKey1, std::move(segmentation_result));
+  base::Value::Dict segmentation_result;
+  segmentation_result.Set("segment_id",
+                          SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SHARE);
+  dictionary.Set(kTestSegmentationKey1, std::move(segmentation_result));
 }
 
 std::vector<std::unique_ptr<Config>>

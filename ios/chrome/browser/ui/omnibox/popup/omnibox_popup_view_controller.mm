@@ -9,13 +9,20 @@
 #import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/time/time.h"
+#import "components/favicon/core/large_icon_service.h"
+#import "components/omnibox/common/omnibox_features.h"
+#import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_layout_util.h"
 #import "ios/chrome/browser/ui/elements/self_sizing_table_view.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes_with_payload.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion.h"
+#import "ios/chrome/browser/ui/omnibox/popup/carousel_item.h"
 #import "ios/chrome/browser/ui/omnibox/popup/content_providing.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_accessibility_identifier_constants.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_carousel_cell.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row_cell.h"
 #import "ios/chrome/browser/ui/omnibox/popup/popup_match_preview_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
@@ -42,10 +49,15 @@ const CGFloat kFooterHeightVariation2 = 16.0;
 // Percentage of the suggestion height that needs to be visible in order to
 // consider the suggestion as visible.
 const CGFloat kVisibleSuggestionThreshold = 0.6;
+// Minimum size of the fetched favicon for tiles.
+const CGFloat kMinTileFaviconSize = 32.0f;
+// Maximum size of the fetched favicon for tiles.
+const CGFloat kMaxTileFaviconSize = 48.0f;
 }  // namespace
 
 @interface OmniboxPopupViewController () <UITableViewDataSource,
                                           UITableViewDelegate,
+                                          OmniboxPopupCarouselCellDelegate,
                                           OmniboxPopupRowCellDelegate,
                                           KeyboardObserverHelperConsumer>
 
@@ -89,6 +101,14 @@ const CGFloat kVisibleSuggestionThreshold = 0.6;
 // and highlight.
 @property(nonatomic, assign) NSUInteger preselectedMatchGroupIndex;
 
+// Provider used to fetch carousel favicons.
+@property(nonatomic, strong)
+    FaviconAttributesProvider* carouselAttributeProvider;
+
+// UITableViewCell displaying the most visited carousel in (Web and SRP) ZPS
+// state.
+@property(nonatomic, strong) OmniboxPopupCarouselCell* carouselCell;
+
 @end
 
 @implementation OmniboxPopupViewController
@@ -131,6 +151,15 @@ const CGFloat kVisibleSuggestionThreshold = 0.6;
 }
 
 - (void)loadView {
+  // TODO(crbug.com/1365374): Check why largeIconService not available in
+  // icognito.
+  if (self.largeIconService) {
+    _carouselAttributeProvider = [[FaviconAttributesProvider alloc]
+        initWithFaviconSize:kMaxTileFaviconSize
+             minFaviconSize:kMinTileFaviconSize
+           largeIconService:self.largeIconService];
+    _carouselAttributeProvider.cache = self.largeIconCache;
+  }
   UITableViewStyle style = IsOmniboxActionsVisualTreatment2()
                                ? UITableViewStyleInsetGrouped
                                : UITableViewStylePlain;
@@ -157,6 +186,16 @@ const CGFloat kVisibleSuggestionThreshold = 0.6;
     [self highlightRowAtIndexPath:_highlightedIndexPath];
     [self didHighlightSelectedSuggestion];
   }
+}
+
+- (OmniboxPopupCarouselCell*)carouselCell {
+  DCHECK(base::FeatureList::IsEnabled(omnibox::kMostVisitedTiles));
+  if (!_carouselCell) {
+    _carouselCell = [[OmniboxPopupCarouselCell alloc] init];
+    _carouselCell.delegate = self;
+    _carouselCell.menuProvider = self.carouselMenuProvider;
+  }
+  return _carouselCell;
 }
 
 #pragma mark - View lifecycle
@@ -291,6 +330,37 @@ const CGFloat kVisibleSuggestionThreshold = 0.6;
   }
   [self.dataSource
       requestResultsWithVisibleSuggestionCount:self.visibleSuggestionCount];
+}
+
+#pragma mark - OmniboxKeyboardDelegate
+
+- (BOOL)canPerformKeyboardAction:(OmniboxKeyboardAction)keyboardAction {
+  switch (keyboardAction) {
+    case OmniboxKeyboardActionUpArrow:
+    case OmniboxKeyboardActionDownArrow:
+      return YES;
+    case OmniboxKeyboardActionLeftArrow:
+    case OmniboxKeyboardActionRightArrow:
+      // TODO(crbug.com/1371453): Add left and right action for tile selection.
+      return NO;
+  }
+}
+
+- (void)performKeyboardAction:(OmniboxKeyboardAction)keyboardAction {
+  DCHECK([self canPerformKeyboardAction:keyboardAction]);
+  switch (keyboardAction) {
+    case OmniboxKeyboardActionUpArrow:
+      [self highlightPreviousSuggestion];
+      break;
+    case OmniboxKeyboardActionDownArrow:
+      [self highlightNextSuggestion];
+      break;
+    case OmniboxKeyboardActionLeftArrow:
+    case OmniboxKeyboardActionRightArrow:
+      // TODO(crbug.com/1371453): Add left and right action for tile selection.
+      NOTREACHED();
+      break;
+  }
 }
 
 #pragma mark - OmniboxPopupRowCellDelegate
@@ -446,6 +516,7 @@ const CGFloat kVisibleSuggestionThreshold = 0.6;
 
 - (BOOL)tableView:(UITableView*)tableView
     shouldHighlightRowAtIndexPath:(NSIndexPath*)indexPath {
+  // TODO(crbug.com/1365374): Handle Carousel's highlight.
   return YES;
 }
 
@@ -460,6 +531,7 @@ const CGFloat kVisibleSuggestionThreshold = 0.6;
   // early. See b/5813291.
   if (row >= self.currentResult[indexPath.section].suggestions.count)
     return;
+  // TODO(crbug.com/1365374): Handle Carousel's selection.
   [self.delegate
       autocompleteResultConsumer:self
              didSelectSuggestion:self.currentResult[indexPath.section]
@@ -469,7 +541,7 @@ const CGFloat kVisibleSuggestionThreshold = 0.6;
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForHeaderInSection:(NSInteger)section {
-  return FLT_MIN;
+  return self.currentResult[section].title ? 29.0f : FLT_MIN;
 }
 
 - (CGFloat)tableView:(UITableView*)tableView
@@ -526,7 +598,14 @@ const CGFloat kVisibleSuggestionThreshold = 0.6;
 
 - (NSInteger)tableView:(UITableView*)tableView
     numberOfRowsInSection:(NSInteger)section {
-  return self.currentResult[section].suggestions.count;
+  switch (self.currentResult[section].displayStyle) {
+    case SuggestionGroupDisplayStyleDefault:
+      return self.currentResult[section].suggestions.count;
+    case SuggestionGroupDisplayStyleCarousel:
+      DCHECK(base::FeatureList::IsEnabled(omnibox::kMostVisitedTiles));
+      // The carousel displays suggestions on one row.
+      return 1;
+  }
 }
 
 - (BOOL)tableView:(UITableView*)tableView
@@ -537,6 +616,11 @@ const CGFloat kVisibleSuggestionThreshold = 0.6;
   if ((NSUInteger)indexPath.row >=
       self.currentResult[indexPath.section].suggestions.count)
     return NO;
+
+  if (self.currentResult[indexPath.section].displayStyle ==
+      SuggestionGroupDisplayStyleCarousel) {
+    return NO;
+  }
 
   return [self.currentResult[indexPath.section].suggestions[indexPath.row]
       supportsDeletion];
@@ -555,6 +639,65 @@ const CGFloat kVisibleSuggestionThreshold = 0.6;
                didSelectSuggestionForDeletion:suggestion
                                         inRow:indexPath.row];
   }
+}
+
+- (CGFloat)tableView:(UITableView*)tableView
+    heightForRowAtIndexPath:(NSIndexPath*)indexPath {
+  return UITableViewAutomaticDimension;
+}
+
+- (NSString*)tableView:(UITableView*)tableView
+    titleForHeaderInSection:(NSInteger)section {
+  return self.currentResult[section].title;
+}
+
+// Customize the appearance of table view cells.
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  DCHECK_LT((NSUInteger)indexPath.row,
+            self.currentResult[indexPath.section].suggestions.count);
+
+  switch (self.currentResult[indexPath.section].displayStyle) {
+    case SuggestionGroupDisplayStyleDefault: {
+      OmniboxPopupRowCell* cell = [self.tableView
+          dequeueReusableCellWithIdentifier:OmniboxPopupRowCellReuseIdentifier
+                               forIndexPath:indexPath];
+      cell.faviconRetriever = self.faviconRetriever;
+      cell.imageRetriever = self.imageRetriever;
+      [cell
+          setupWithAutocompleteSuggestion:self.currentResult[indexPath.section]
+                                              .suggestions[indexPath.row]
+                                incognito:self.incognito];
+      cell.showsSeparator =
+          (NSUInteger)indexPath.row <
+          self.currentResult[indexPath.section].suggestions.count - 1;
+      cell.delegate = self;
+      return cell;
+    }
+    case SuggestionGroupDisplayStyleCarousel: {
+      DCHECK(base::FeatureList::IsEnabled(omnibox::kMostVisitedTiles));
+      NSArray<CarouselItem*>* carouselItems = [self
+          carouselItemsFromSuggestionGroup:self.currentResult[indexPath.section]
+                            groupIndexPath:indexPath];
+      [self.carouselCell setupWithCarouselItems:carouselItems];
+      for (CarouselItem* item in carouselItems) {
+        [self fetchFaviconForCarouselItem:item];
+      }
+      return self.carouselCell;
+    }
+  }
+}
+
+#pragma mark - OmniboxPopupCarouselCellDelegate
+
+- (void)didTapCarouselItem:(CarouselItem*)carouselItem {
+  id<AutocompleteSuggestion> suggestion =
+      [self suggestionAtIndexPath:carouselItem.indexPath];
+  DCHECK(suggestion);
+
+  [self.delegate autocompleteResultConsumer:self
+                        didSelectSuggestion:suggestion
+                                      inRow:carouselItem.indexPath.row];
 }
 
 #pragma mark - Internal API methods
@@ -629,35 +772,6 @@ const CGFloat kVisibleSuggestionThreshold = 0.6;
 
   [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow
                                 animated:NO];
-}
-
-
-#pragma mark - Table view data source
-
-- (CGFloat)tableView:(UITableView*)tableView
-    heightForRowAtIndexPath:(NSIndexPath*)indexPath {
-  return UITableViewAutomaticDimension;
-}
-
-// Customize the appearance of table view cells.
-- (UITableViewCell*)tableView:(UITableView*)tableView
-        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
-  DCHECK_LT((NSUInteger)indexPath.row,
-            self.currentResult[indexPath.section].suggestions.count);
-  OmniboxPopupRowCell* cell = [self.tableView
-      dequeueReusableCellWithIdentifier:OmniboxPopupRowCellReuseIdentifier
-                           forIndexPath:indexPath];
-  cell.faviconRetriever = self.faviconRetriever;
-  cell.imageRetriever = self.imageRetriever;
-  [cell setupWithAutocompleteSuggestion:self.currentResult[indexPath.section]
-                                            .suggestions[indexPath.row]
-                              incognito:self.incognito];
-  cell.showsSeparator =
-      (NSUInteger)indexPath.row <
-      self.currentResult[indexPath.section].suggestions.count - 1;
-  cell.delegate = self;
-
-  return cell;
 }
 
 #pragma mark - Keyboard events
@@ -767,6 +881,44 @@ const CGFloat kVisibleSuggestionThreshold = 0.6;
     return kTopBottomPaddingVariation2Ipad;
   }
   return kTopAndBottomPadding;
+}
+
+- (NSArray<CarouselItem*>*)
+    carouselItemsFromSuggestionGroup:(id<AutocompleteSuggestionGroup>)group
+                      groupIndexPath:(NSIndexPath*)groupIndexPath {
+  NSMutableArray* carouselItems =
+      [[NSMutableArray alloc] initWithCapacity:group.suggestions.count];
+  for (NSUInteger i = 0; i < group.suggestions.count; ++i) {
+    id<AutocompleteSuggestion> suggestion = group.suggestions[i];
+    NSIndexPath* itemIndexPath =
+        [NSIndexPath indexPathForRow:i inSection:groupIndexPath.section];
+    CarouselItem* item = [[CarouselItem alloc] init];
+    item.title = suggestion.text.string;
+    item.indexPath = itemIndexPath;
+    item.URL = suggestion.destinationUrl;
+    [carouselItems addObject:item];
+  }
+  return carouselItems;
+}
+
+// TODO(crbug.com/1365374): Move to a mediator.
+- (void)fetchFaviconForCarouselItem:(CarouselItem*)carouselItem {
+  __weak OmniboxPopupCarouselCell* weakCell = self.carouselCell;
+  __weak CarouselItem* weakItem = carouselItem;
+
+  void (^completion)(FaviconAttributes*) = ^(FaviconAttributes* attributes) {
+    OmniboxPopupCarouselCell* strongCell = weakCell;
+    CarouselItem* strongItem = weakItem;
+    if (!strongCell || !strongItem)
+      return;
+
+    strongItem.faviconAttributes = attributes;
+    [strongCell updateCarouselItem:strongItem];
+  };
+
+  [self.carouselAttributeProvider
+      fetchFaviconAttributesForURL:carouselItem.URL.gurl
+                        completion:completion];
 }
 
 @end

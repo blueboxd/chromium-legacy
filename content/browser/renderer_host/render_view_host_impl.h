@@ -27,6 +27,7 @@
 #include "content/browser/renderer_host/page_lifecycle_state_manager.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
+#include "content/browser/site_instance_group.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/render_message_filter.mojom.h"
@@ -262,11 +263,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   // length) and the timestamp corresponding to the start of the back-forward
   // cached navigation, which would be communicated to the page to allow it to
   // record the latency of this navigation.
-  // TODO(https://crbug.com/1234634): Remove
-  // restoring_main_frame_from_back_forward_cache.
   void LeaveBackForwardCache(
-      blink::mojom::PageRestoreParamsPtr page_restore_params,
-      bool restoring_main_frame_from_back_forward_cache);
+      blink::mojom::PageRestoreParamsPtr page_restore_params);
 
   bool is_in_back_forward_cache() const { return is_in_back_forward_cache_; }
 
@@ -323,6 +321,16 @@ class CONTENT_EXPORT RenderViewHostImpl
   // class to FrameTree/FrameTreeNode.
   FrameTree* frame_tree() const { return frame_tree_; }
   void SetFrameTree(FrameTree& frame_tree);
+
+  // Mark this RenderViewHost as not available for reuse. This will remove
+  // it from being registered with the associated FrameTree.
+  void DisallowReuse();
+
+  base::SafeRef<RenderViewHostImpl> GetSafeRef();
+
+  SiteInstanceGroup* site_instance_group() const {
+    return &*site_instance_group_;
+  }
 
   // NOTE: Do not add functions that just send an IPC message that are called in
   // one or two places. Have the caller send the IPC message directly (unless
@@ -398,6 +406,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   // field.
   FrameTree::RenderViewHostMapId render_view_host_map_id_;
 
+  // The SiteInstanceGroup this RenderViewHostImpl belongs to.
+  base::SafeRef<SiteInstanceGroup> site_instance_group_;
+
   // Provides information for selecting the session storage namespace for this
   // view.
   const StoragePartitionConfig storage_partition_config_;
@@ -452,6 +463,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   // See main_browsing_context_state() for more details.
   absl::optional<base::SafeRef<BrowsingContextState>>
       main_browsing_context_state_;
+
+  bool registered_with_frame_tree_ = false;
 
   base::WeakPtrFactory<RenderViewHostImpl> weak_factory_{this};
 };

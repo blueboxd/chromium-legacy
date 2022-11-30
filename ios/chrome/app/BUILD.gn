@@ -49,6 +49,7 @@ source_set("app") {
     "//base",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/url:constants",
     "//net",
     "//url",
   ]
@@ -63,6 +64,7 @@ source_set("unit_tests") {
     "app_metrics_app_state_agent_unittest.mm",
     "deferred_initialization_runner_unittest.mm",
     "main_application_delegate_unittest.mm",
+    "post_restore_app_agent_unittest.mm",
     "safe_mode_app_state_agent_unittest.mm",
     "tab_opener_unittest.mm",
   ]
@@ -70,11 +72,13 @@ source_set("unit_tests") {
     ":app",
     ":app_internal",
     ":app_metrics_app_state_agent",
+    ":post_restore_app_agent",
     ":safe_mode_app_state_agent",
     "//base",
     "//base/test:test_support",
     "//components/metrics",
     "//components/prefs",
+    "//components/prefs:test_support",
     "//components/sync_preferences:sync_preferences",
     "//components/sync_preferences:test_support",
     "//ios/chrome/app:enterprise_app_agent",
@@ -87,10 +91,17 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/metrics:metrics",
     "//ios/chrome/browser/prefs:browser_prefs",
+    "//ios/chrome/browser/promos_manager:constants",
+    "//ios/chrome/browser/promos_manager:promos_manager",
+    "//ios/chrome/browser/promos_manager:test_support",
+    "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/signin:signin_util",
+    "//ios/chrome/browser/signin:test_support",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/main:scene",
     "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/ui/main/test",
+    "//ios/chrome/browser/ui/post_restore_signin:features",
     "//ios/chrome/browser/ui/safe_mode",
     "//ios/chrome/common/app_group",
     "//ios/chrome/test:test_support",
@@ -100,6 +111,7 @@ source_set("unit_tests") {
     "//ios/testing:block_swizzler",
     "//ios/third_party/material_components_ios",
     "//ios/web/public/test:test",
+    "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
     "//url",
@@ -216,6 +228,19 @@ source_set("safe_mode_app_state_agent") {
   ]
 }
 
+source_set("variations_app_state_agent") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "variations_app_state_agent.h",
+    "variations_app_state_agent.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/app/application_delegate:app_state_header",
+    "//ios/chrome/app/application_delegate:observing_app_state_agent",
+  ]
+}
+
 source_set("enterprise_app_agent") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -245,7 +270,7 @@ source_set("enterprise_app_agent_ui") {
   ]
   deps = [
     "//base",
-    "//ios/chrome/app/strings:ios_chromium_strings_grit",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/first_run:constants",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/util",
@@ -295,7 +320,9 @@ source_set("post_restore_app_agent") {
     "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
     "//ios/chrome/browser/application_context:application_context",
+    "//ios/chrome/browser/promos_manager:constants",
     "//ios/chrome/browser/promos_manager:promos_manager",
+    "//ios/chrome/browser/signin",
     "//ios/chrome/browser/signin:signin_util",
     "//ios/chrome/browser/ui/post_restore_signin:features",
   ]
@@ -352,6 +379,7 @@ source_set("app_internal") {
     ":post_restore_app_agent",
     ":safe_mode_app_state_agent",
     ":tests_hook",
+    ":variations_app_state_agent",
     "//base",
     "//build:branding_buildflags",
     "//components/bookmarks/browser",
@@ -434,6 +462,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/ui/download",
     "//ios/chrome/browser/ui/first_run",
     "//ios/chrome/browser/ui/first_run:utils",
+    "//ios/chrome/browser/ui/keyboard:features",
     "//ios/chrome/browser/ui/main",
     "//ios/chrome/browser/ui/main:scene",
     "//ios/chrome/browser/ui/main:scene_state_header",
@@ -518,6 +547,7 @@ source_set("main") {
     "//ios/chrome/app/startup:startup_basic",
     "//ios/chrome/browser/crash_report",
     "//ios/chrome/common",
+    "//ios/public/provider/chrome/browser/primes:primes_api",
   ]
   if (ios_enable_sandbox_dump) {
     deps += [ "//ios/chrome/app/startup:sandbox_dump" ]

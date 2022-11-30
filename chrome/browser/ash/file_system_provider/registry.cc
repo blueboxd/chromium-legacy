@@ -91,19 +91,13 @@ void Registry::RememberFileSystem(
   PrefService* const pref_service = profile_->GetPrefs();
   DCHECK(pref_service);
 
-  DictionaryPrefUpdate dict_update(pref_service,
+  ScopedDictPrefUpdate dict_update(pref_service,
                                    prefs::kFileSystemProviderMounted);
 
-  base::Value* file_systems_per_extension = dict_update->FindKeyOfType(
-      file_system_info.provider_id().ToString(), base::Value::Type::DICTIONARY);
-  if (!file_systems_per_extension) {
-    file_systems_per_extension =
-        dict_update->SetKey(file_system_info.provider_id().ToString(),
-                            base::Value(base::Value::Type::DICTIONARY));
-  }
-
-  file_systems_per_extension->SetKey(file_system_info.file_system_id(),
-                                     std::move(file_system));
+  base::Value::Dict* file_systems_per_extension =
+      dict_update->EnsureDict(file_system_info.provider_id().ToString());
+  file_systems_per_extension->Set(file_system_info.file_system_id(),
+                                  std::move(file_system));
 }
 
 void Registry::ForgetFileSystem(const ProviderId& provider_id,
@@ -111,17 +105,17 @@ void Registry::ForgetFileSystem(const ProviderId& provider_id,
   PrefService* const pref_service = profile_->GetPrefs();
   DCHECK(pref_service);
 
-  DictionaryPrefUpdate dict_update(pref_service,
+  ScopedDictPrefUpdate dict_update(pref_service,
                                    prefs::kFileSystemProviderMounted);
 
-  base::Value* file_systems_per_extension =
-      dict_update->FindDictKey(provider_id.ToString());
+  base::Value::Dict* file_systems_per_extension =
+      dict_update->FindDict(provider_id.ToString());
   if (!file_systems_per_extension)
     return;  // Nothing to forget.
 
-  file_systems_per_extension->RemoveKey(file_system_id);
-  if (file_systems_per_extension->DictEmpty())
-    dict_update->RemoveKey(provider_id.ToString());
+  file_systems_per_extension->Remove(file_system_id);
+  if (file_systems_per_extension->empty())
+    dict_update->Remove(provider_id.ToString());
 }
 
 std::unique_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
@@ -141,14 +135,14 @@ std::unique_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
   std::unique_ptr<RestoredFileSystems> restored_file_systems(
       new RestoredFileSystems);
 
-  for (const auto it : *file_systems_per_extension) {
-    if (!it.second.is_dict()) {
+  for (const auto file_system_it : *file_systems_per_extension) {
+    if (!file_system_it.second.is_dict()) {
       LOG(ERROR)
           << "Malformed provided file system information in preferences.";
       continue;
     }
 
-    const base::Value::Dict& file_system = it.second.GetDict();
+    const base::Value::Dict& file_system = file_system_it.second.GetDict();
 
     const std::string* file_system_id =
         file_system.FindString(kPrefKeyFileSystemId);
@@ -186,13 +180,13 @@ std::unique_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
     // Restore watchers. It's optional, since this field is new.
     const base::Value::Dict* watchers = file_system.FindDict(kPrefKeyWatchers);
     if (watchers) {
-      for (const auto it : *watchers) {
-        if (!it.second.is_dict()) {
+      for (const auto watcher_it : *watchers) {
+        if (!watcher_it.second.is_dict()) {
           LOG(ERROR) << "Malformed watcher information in preferences.";
           continue;
         }
 
-        const base::Value::Dict& watcher = it.second.GetDict();
+        const base::Value::Dict& watcher = watcher_it.second.GetDict();
 
         const std::string* entry_path =
             watcher.FindString(kPrefKeyWatcherEntryPath);
@@ -204,7 +198,7 @@ std::unique_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
             watcher.FindList(kPrefKeyWatcherPersistentOrigins);
 
         if (!entry_path || !recursive || !last_tag || !persistent_origins ||
-            it.first != *entry_path || entry_path->empty() ||
+            watcher_it.first != *entry_path || entry_path->empty() ||
             (!options.supports_notify_tag &&
              (!last_tag->empty() || persistent_origins->size()))) {
           LOG(ERROR) << "Malformed watcher information in preferences.";
@@ -243,25 +237,25 @@ void Registry::UpdateWatcherTag(const ProvidedFileSystemInfo& file_system_info,
 
   // TODO(mtomasz): Consider optimizing it by moving information about watchers
   // or even file systems to leveldb.
-  DictionaryPrefUpdate dict_update(pref_service,
+  ScopedDictPrefUpdate dict_update(pref_service,
                                    prefs::kFileSystemProviderMounted);
 
   // All of the following checks should not happen in healthy environment.
   // However, since they rely on storage, DCHECKs can't be used.
-  base::Value* file_systems_per_extension =
-      dict_update->FindDictKey(file_system_info.provider_id().ToString());
-  base::Value* file_system = nullptr;
-  base::Value* watchers = nullptr;
-  base::Value* watcher_value = nullptr;
+  base::Value::Dict* file_systems_per_extension =
+      dict_update->FindDict(file_system_info.provider_id().ToString());
+  base::Value::Dict* file_system = nullptr;
+  base::Value::Dict* watchers = nullptr;
+  base::Value::Dict* watcher_value = nullptr;
 
   if (file_systems_per_extension) {
-    file_system = file_systems_per_extension->FindDictKey(
-        file_system_info.file_system_id());
+    file_system =
+        file_systems_per_extension->FindDict(file_system_info.file_system_id());
   }
   if (file_system)
-    watchers = file_system->FindDictKey(kPrefKeyWatchers);
+    watchers = file_system->FindDict(kPrefKeyWatchers);
   if (watchers)
-    watcher_value = watchers->FindDictKey(watcher.entry_path.value());
+    watcher_value = watchers->FindDict(watcher.entry_path.value());
 
   if (!watcher_value) {
     // Broken preferences.
@@ -269,7 +263,7 @@ void Registry::UpdateWatcherTag(const ProvidedFileSystemInfo& file_system_info,
     return;
   }
 
-  watcher_value->SetKey(kPrefKeyWatcherLastTag, base::Value(watcher.last_tag));
+  watcher_value->Set(kPrefKeyWatcherLastTag, watcher.last_tag);
 }
 
 }  // namespace file_system_provider

@@ -31,13 +31,11 @@ public class FastCheckoutSheetContent implements BottomSheetContent {
     @Nullable
     @Override
     public View getToolbarView() {
-        // TODO(crbug.com/1334642): Implement.
         return null;
     }
 
     @Override
     public int getVerticalScrollOffset() {
-        // TODO(crbug.com/1334642): Implement.
         return 0;
     }
 
@@ -66,13 +64,6 @@ public class FastCheckoutSheetContent implements BottomSheetContent {
 
     @Override
     public float getFullHeightRatio() {
-        // TODO(crbug.com/1334642): Implement.
-        return HeightMode.WRAP_CONTENT;
-    }
-
-    @Override
-    public float getHalfHeightRatio() {
-        // TODO(crbug.com/1334642): Implement.
         return HeightMode.WRAP_CONTENT;
     }
 
@@ -88,11 +79,11 @@ public class FastCheckoutSheetContent implements BottomSheetContent {
 
     @Override
     public int getSheetHalfHeightAccessibilityStringId() {
-        return R.string.fast_checkout_sheet_half_height;
+        return R.string.fast_checkout_content_description;
     }
 
     @Override
     public int getSheetFullHeightAccessibilityStringId() {
-        return R.string.fast_checkout_sheet_full_height;
+        return R.string.fast_checkout_content_description;
     }
 }

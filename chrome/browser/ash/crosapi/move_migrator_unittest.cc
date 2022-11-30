@@ -41,7 +41,7 @@ constexpr char kBookmarksFilePath[] = "Bookmarks";             // lacros
 constexpr char kCookiesFilePath[] = "Cookies";                 // lacros
 constexpr char kDownloadsFilePath[] = "Downloads";             // remain in ash
 constexpr char kExtensionStateFilePath[] = "Extension State";  // split
-constexpr char kPolicyFilePath[] = "Policy";                   // need copy
+constexpr char kSharedProtoDBPath[] = "shared_proto_db";       // need copy
 constexpr char kCacheFilePath[] = "Cache";                     // deletable
 
 constexpr char kDataFilePath[] = "Data";
@@ -352,7 +352,7 @@ void SetUpProfileDirectory(const base::FilePath& path) {
   // |- IndexedDB/
   // |- Local Storage/
   // |- Login Data/
-  // |- Policy/
+  // |- shared_proto_db/
   // |- Preferences
   // |- Storage/
   // |- Sync Data/
@@ -378,10 +378,11 @@ void SetUpProfileDirectory(const base::FilePath& path) {
       base::WriteFile(path.Append(kCookiesFilePath), kDataContent, kDataSize),
       kDataSize);
 
-  ASSERT_TRUE(base::CreateDirectory(path.Append(kPolicyFilePath)));
-  ASSERT_EQ(base::WriteFile(path.Append(kPolicyFilePath).Append(kDataFilePath),
-                            kDataContent, kDataSize),
-            kDataSize);
+  ASSERT_TRUE(base::CreateDirectory(path.Append(kSharedProtoDBPath)));
+  ASSERT_EQ(
+      base::WriteFile(path.Append(kSharedProtoDBPath).Append(kDataFilePath),
+                      kDataContent, kDataSize),
+      kDataSize);
 
   ASSERT_TRUE(base::CreateDirectory(
       path.Append(browser_data_migrator_util::kSyncDataFilePath)));
@@ -510,7 +511,7 @@ TEST(MoveMigratorTest, SetupLacrosDir) {
   // Check chrome::kFirstRunSentinel, need copy item and lacros item exist in
   // lacros dir.
   EXPECT_TRUE(base::PathExists(tmp_user_dir.Append(chrome::kFirstRunSentinel)));
-  EXPECT_TRUE(base::PathExists(tmp_profile_dir.Append(kPolicyFilePath)));
+  EXPECT_TRUE(base::PathExists(tmp_profile_dir.Append(kSharedProtoDBPath)));
 }
 
 TEST(MoveMigratorTest, MoveLacrosItemsToNewDir) {
@@ -623,7 +624,7 @@ TEST(MoveMigratorTest, SetupAshSplitDir) {
   // Check the content of the leveldb database. It should contain only
   // extensions in the keep list.
   auto db_map = ReadLevelDB(path);
-  EXPECT_EQ(5, db_map.size());
+  EXPECT_EQ(5u, db_map.size());
   EXPECT_EQ("1", db_map["VERSION"]);
   std::string key = "_chrome-extension://" + keep_extension_id + "\x00key"s;
   EXPECT_EQ("meta", db_map["META:chrome-extension://" + keep_extension_id]);
@@ -638,7 +639,7 @@ TEST(MoveMigratorTest, SetupAshSplitDir) {
   // Check the content of the leveldb database. It should contain only
   // extensions in the keep list.
   db_map = ReadLevelDB(path);
-  EXPECT_EQ(2, db_map.size());
+  EXPECT_EQ(2u, db_map.size());
   EXPECT_EQ("value", db_map[keep_extension_id + ".key"]);
 
   // Check Preferences is present in both tmp_profile_dir and tmp_split_dir.
@@ -741,7 +742,7 @@ class MoveMigratorMigrateTest : public ::testing::Test {
     // |- IndexedDB
     // |- Local Storage
     // |- Login Data
-    // |- Policy
+    // |- shared_proto_db
     // |- Preferences
     // |- Storage/
     // |- Sync Data/LevelDB
@@ -752,7 +753,7 @@ class MoveMigratorMigrateTest : public ::testing::Test {
     //     |- Extensions
     //     |- IndexedDB
     //     |- Local Storage
-    //     |- Policy
+    //     |- shared_proto_db
     //     |- Preferences
     //     |- Storage/
     //     |- Sync Data/
@@ -776,8 +777,8 @@ class MoveMigratorMigrateTest : public ::testing::Test {
     EXPECT_TRUE(base::PathExists(new_profile_dir.Append(kCookiesFilePath)));
 
     EXPECT_TRUE(
-        base::PathExists(original_profile_dir_.Append(kPolicyFilePath)));
-    EXPECT_TRUE(base::PathExists(new_profile_dir.Append(kPolicyFilePath)));
+        base::PathExists(original_profile_dir_.Append(kSharedProtoDBPath)));
+    EXPECT_TRUE(base::PathExists(new_profile_dir.Append(kSharedProtoDBPath)));
 
     EXPECT_TRUE(
         base::PathExists(original_profile_dir_.Append(kDownloadsFilePath)));
@@ -842,10 +843,10 @@ class MoveMigratorMigrateTest : public ::testing::Test {
     EXPECT_TRUE(base::PathExists(lacros_local_storage_path));
     // Ash contains only keys relevant to the extension keep list.
     auto ash_local_storage = ReadLevelDB(ash_local_storage_path);
-    EXPECT_EQ(5, ash_local_storage.size());
+    EXPECT_EQ(5u, ash_local_storage.size());
     // Lacros contains all the keys.
     auto lacros_local_storage = ReadLevelDB(lacros_local_storage_path);
-    EXPECT_EQ(7, lacros_local_storage.size());
+    EXPECT_EQ(7u, lacros_local_storage.size());
 
     // Ash contains only IndexedDB folders of extensions in keeplist.
     {
@@ -952,14 +953,14 @@ TEST_F(MoveMigratorMigrateTest, MigrateResumeFromMoveLacrosItems) {
   // Setup `original_profile_dir_` as below.
   // |- Cookies
   // |- Downloads
-  // |- Policy
+  // |- shared_proto_db
   // |- move_migrator/First Run
   // |- move_migrator/Default/
   //     |- Bookmarks
   //     |- Extensions
   //     |- IndexedDB
   //     |- Local Storage
-  //     |- Policy
+  //     |- shared_proto_db
   //     |- Preferences
   //     |- Storage/
   //     |- Sync Data/
@@ -988,9 +989,10 @@ TEST_F(MoveMigratorMigrateTest, MigrateResumeFromMoveLacrosItems) {
       0);
   ASSERT_TRUE(base::CreateDirectory(tmp_profile_dir));
   ASSERT_TRUE(base::CreateDirectory(tmp_split_dir));
-  ASSERT_TRUE(base::CopyDirectory(original_profile_dir_.Append(kPolicyFilePath),
-                                  tmp_profile_dir.Append(kPolicyFilePath),
-                                  /*recursive=*/true));
+  ASSERT_TRUE(
+      base::CopyDirectory(original_profile_dir_.Append(kSharedProtoDBPath),
+                          tmp_profile_dir.Append(kSharedProtoDBPath),
+                          /*recursive=*/true));
   ASSERT_TRUE(base::Move(original_profile_dir_.Append(kBookmarksFilePath),
                          tmp_profile_dir.Append(kBookmarksFilePath)));
 
@@ -1061,7 +1063,7 @@ TEST_F(MoveMigratorMigrateTest, MigrateResumeFromMoveSplitItems) {
 
   // Setup `original_profile_dir_` as below.
   // |- Downloads
-  // |- Policy
+  // |- shared_proto_db
   // |- move_migrator/First Run
   // |- move_migrator/Default/
   //     |- Bookmarks
@@ -1069,7 +1071,7 @@ TEST_F(MoveMigratorMigrateTest, MigrateResumeFromMoveSplitItems) {
   //     |- Extensions
   //     |- IndexedDB
   //     |- Local Storage
-  //     |- Policy
+  //     |- shared_proto_db
   //     |- Preferences
   //     |- Storage/
   //     |- Sync Data/
@@ -1098,9 +1100,10 @@ TEST_F(MoveMigratorMigrateTest, MigrateResumeFromMoveSplitItems) {
       0);
   ASSERT_TRUE(base::CreateDirectory(tmp_profile_dir));
   ASSERT_TRUE(base::CreateDirectory(tmp_split_dir));
-  ASSERT_TRUE(base::CopyDirectory(original_profile_dir_.Append(kPolicyFilePath),
-                                  tmp_profile_dir.Append(kPolicyFilePath),
-                                  /*recursive=*/true));
+  ASSERT_TRUE(
+      base::CopyDirectory(original_profile_dir_.Append(kSharedProtoDBPath),
+                          tmp_profile_dir.Append(kSharedProtoDBPath),
+                          /*recursive=*/true));
   ASSERT_TRUE(base::Move(original_profile_dir_.Append(kBookmarksFilePath),
                          tmp_profile_dir.Append(kBookmarksFilePath)));
   ASSERT_TRUE(base::Move(original_profile_dir_.Append(kCookiesFilePath),
@@ -1178,7 +1181,7 @@ TEST_F(MoveMigratorMigrateTest, MigrateResumeFromMoveTmpDir) {
   // |- Downloads
   // |- Extensions
   // |- Local Storage
-  // |- Policy
+  // |- shared_proto_db
   // |- Preferences
   // |- Storage/
   // |- Sync Data/LevelDB
@@ -1188,7 +1191,7 @@ TEST_F(MoveMigratorMigrateTest, MigrateResumeFromMoveTmpDir) {
   //     |- Cookies
   //     |- Extensions
   //     |- Local Storage
-  //     |- Policy
+  //     |- shared_proto_db
   //     |- Preferences
   //     |- Storage/
   //     |- Sync Data/
@@ -1207,9 +1210,10 @@ TEST_F(MoveMigratorMigrateTest, MigrateResumeFromMoveTmpDir) {
       base::WriteFile(tmp_user_dir.Append(chrome::kFirstRunSentinel), "", 0),
       0);
   ASSERT_TRUE(base::CreateDirectory(tmp_profile_dir));
-  ASSERT_TRUE(base::CopyDirectory(original_profile_dir_.Append(kPolicyFilePath),
-                                  tmp_profile_dir.Append(kPolicyFilePath),
-                                  /*recursive=*/true));
+  ASSERT_TRUE(
+      base::CopyDirectory(original_profile_dir_.Append(kSharedProtoDBPath),
+                          tmp_profile_dir.Append(kSharedProtoDBPath),
+                          /*recursive=*/true));
   ASSERT_TRUE(base::Move(original_profile_dir_.Append(kBookmarksFilePath),
                          tmp_profile_dir.Append(kBookmarksFilePath)));
   ASSERT_TRUE(base::Move(original_profile_dir_.Append(kCookiesFilePath),

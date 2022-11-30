@@ -4,17 +4,16 @@
 
 #include "chrome/browser/ui/webui/settings/ash/metrics_consent_handler.h"
 
-#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "base/check.h"
 #include "chrome/browser/ash/settings/stats_reporting_controller.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/profile_pref_names.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/user_manager/user_manager.h"
 
-namespace chromeos {
-namespace settings {
+namespace ash::settings {
 
 const char MetricsConsentHandler::kGetMetricsConsentState[] =
     "getMetricsConsentState";
@@ -63,7 +62,7 @@ void MetricsConsentHandler::HandleGetMetricsConsentState(
   base::Value consent_pref =
       ShouldUseUserConsent()
           ? base::Value(::metrics::prefs::kMetricsUserConsent)
-          : base::Value(::ash::kStatsReportingPref);
+          : base::Value(kStatsReportingPref);
 
   response.Set("prefName", std::move(consent_pref));
   response.Set("isConfigurable", base::Value(IsMetricsConsentConfigurable()));
@@ -82,7 +81,7 @@ void MetricsConsentHandler::HandleUpdateMetricsConsent(
   CHECK(metrics_consent);
 
   if (!ShouldUseUserConsent()) {
-    auto* stats_reporting_controller = ash::StatsReportingController::Get();
+    auto* stats_reporting_controller = StatsReportingController::Get();
     stats_reporting_controller->SetEnabled(profile_, *metrics_consent);
 
     // Re-read from |stats_reporting_controller|. If |profile_| is not owner,
@@ -108,5 +107,4 @@ bool MetricsConsentHandler::ShouldUseUserConsent() const {
          metrics_service_->GetCurrentUserMetricsConsent().has_value();
 }
 
-}  // namespace settings
-}  // namespace chromeos
+}  // namespace ash::settings

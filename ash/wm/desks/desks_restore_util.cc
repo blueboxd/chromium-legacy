@@ -80,9 +80,7 @@ PrefService* GetPrimaryUserPrefService() {
 // DesksController.
 bool IsValidDeskIndex(int desk_index) {
   return desk_index >= 0 &&
-         desk_index <
-             static_cast<int>(DesksController::Get()->desks().size()) &&
-         desk_index < int{desks_util::kMaxNumberOfDesks};
+         desk_index < static_cast<int>(DesksController::Get()->desks().size());
 }
 
 base::Time GetTime(int year, int month, int day_of_month, int day_of_week) {
@@ -151,12 +149,15 @@ void RestorePrimaryUserDesks() {
       primary_user_prefs->GetList(prefs::kDesksMetricsList);
 
   // First create the same number of desks.
-  const size_t restore_size = desks_names_list.size();
+  size_t restore_size = desks_names_list.size();
 
-  // If we don't have any restore data, or the list is corrupt for some reason,
-  // abort.
-  if (!restore_size || restore_size > desks_util::kMaxNumberOfDesks)
+  // If we don't have any restore data, abort.
+  if (restore_size == 0)
     return;
+
+  // If we have more restore data than the *current* max, clamp it. This can
+  // happen if the restore data was created when more desks were permitted.
+  restore_size = std::min(restore_size, desks_util::GetMaxNumberOfDesks());
 
   auto* desks_controller = DesksController::Get();
   while (desks_controller->desks().size() < restore_size)
@@ -257,8 +258,8 @@ void UpdatePrimaryUserDeskNamesPrefs() {
     return;
   }
 
-  ListPrefUpdate name_update(primary_user_prefs, prefs::kDesksNamesList);
-  base::Value::List& name_pref_data = name_update->GetList();
+  ScopedListPrefUpdate name_update(primary_user_prefs, prefs::kDesksNamesList);
+  base::Value::List& name_pref_data = name_update.Get();
   name_pref_data.clear();
 
   const auto& desks = DesksController::Get()->desks();
@@ -290,8 +291,9 @@ void UpdatePrimaryUserDeskMetricsPrefs() {
   }
 
   // Save per-desk metrics.
-  ListPrefUpdate metrics_update(primary_user_prefs, prefs::kDesksMetricsList);
-  base::Value::List& metrics_pref_data = metrics_update->GetList();
+  ScopedListPrefUpdate metrics_update(primary_user_prefs,
+                                      prefs::kDesksMetricsList);
+  base::Value::List& metrics_pref_data = metrics_update.Get();
   metrics_pref_data.clear();
 
   auto* desks_controller = DesksController::Get();
@@ -311,14 +313,14 @@ void UpdatePrimaryUserDeskMetricsPrefs() {
   DCHECK_EQ(metrics_pref_data.size(), desks.size());
 
   // Save weekly active report time.
-  DictionaryPrefUpdate weekly_active_desks_update(
+  ScopedDictPrefUpdate weekly_active_desks_update(
       primary_user_prefs, prefs::kDesksWeeklyActiveDesksMetrics);
-  weekly_active_desks_update->SetIntPath(
+  weekly_active_desks_update->SetByDottedPath(
       kReportTimeKey, desks_controller->GetWeeklyActiveReportTime()
                           .ToDeltaSinceWindowsEpoch()
                           .InMinutes());
-  weekly_active_desks_update->SetIntPath(kWeeklyActiveDesksKey,
-                                         Desk::GetWeeklyActiveDesks());
+  weekly_active_desks_update->SetByDottedPath(kWeeklyActiveDesksKey,
+                                              Desk::GetWeeklyActiveDesks());
 }
 
 void UpdatePrimaryUserActiveDeskPrefs(int active_desk_index) {

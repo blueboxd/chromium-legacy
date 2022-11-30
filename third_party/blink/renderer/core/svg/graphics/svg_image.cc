@@ -770,8 +770,9 @@ void SVGImage::LoadCompleted() {
       // to make LoadEventFinished() true when AsyncLoadCompleted() is called.
       GetFrame()
           ->GetTaskRunner(TaskType::kInternalLoading)
-          ->PostTask(FROM_HERE, WTF::Bind(&SVGImage::NotifyAsyncLoadCompleted,
-                                          scoped_refptr<SVGImage>(this)));
+          ->PostTask(FROM_HERE,
+                     WTF::BindOnce(&SVGImage::NotifyAsyncLoadCompleted,
+                                   scoped_refptr<SVGImage>(this)));
       break;
 
     case kDataChangedNotStarted:
@@ -827,7 +828,7 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
     // Because this page is detached, it can't get default font settings
     // from the embedder. Copy over font settings so we have sensible
     // defaults. These settings are fixed and will not update if changed.
-    if (!Page::OrdinaryPages().IsEmpty()) {
+    if (!Page::OrdinaryPages().empty()) {
       Settings& default_settings =
           (*Page::OrdinaryPages().begin())->GetSettings();
       page->GetSettings().GetGenericFontFamilySettings() =
@@ -866,7 +867,8 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
         FrameInsertType::kInsertInConstructor, LocalFrameToken(), nullptr,
         nullptr);
     frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
-    frame->Init(/*opener=*/nullptr, /*policy_container=*/nullptr, StorageKey());
+    frame->Init(/*opener=*/nullptr, DocumentToken(),
+                /*policy_container=*/nullptr, StorageKey());
   }
 
   // SVG Images will always synthesize a viewBox, if it's not available, and

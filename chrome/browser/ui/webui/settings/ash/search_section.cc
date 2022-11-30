@@ -34,6 +34,14 @@
 
 namespace chromeos {
 namespace settings {
+
+// TODO(https://crbug.com/1164001): remove after migrating to ash.
+namespace mojom {
+using ::ash::settings::mojom::SearchResultDefaultRank;
+using ::ash::settings::mojom::SearchResultIcon;
+using ::ash::settings::mojom::SearchResultType;
+}  // namespace mojom
+
 namespace {
 
 bool ShouldShowQuickAnswersSettings() {
@@ -284,7 +292,6 @@ SearchSection::~SearchSection() {
 void SearchSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"osSearchEngineLabel", IDS_OS_SETTINGS_SEARCH_ENGINE_LABEL},
-      {"osSearchEngineButtonLabel", IDS_OS_SETTINGS_SEARCH_ENGINE_BUTTON_LABEL},
       {"searchSubpageTitle", IDS_SETTINGS_SEARCH_SUBPAGE_TITLE},
       {"searchGoogleAssistant", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT},
       {"searchGoogleAssistantEnabled",
@@ -298,9 +305,6 @@ void SearchSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("shouldShowQuickAnswersSettings",
                           ShouldShowQuickAnswersSettings());
-  html_source->AddBoolean(
-      "syncSettingsCategorizationEnabled",
-      chromeos::features::IsSyncSettingsCategorizationEnabled());
   const bool is_assistant_allowed = IsAssistantAllowed();
   html_source->AddBoolean("isAssistantAllowed", is_assistant_allowed);
   html_source->AddLocalizedString("osSearchPageTitle",
@@ -318,8 +322,7 @@ void SearchSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 void SearchSection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(
       std::make_unique<::settings::SearchEnginesHandler>(profile()));
-  web_ui->AddMessageHandler(
-      std::make_unique<chromeos::settings::GoogleAssistantHandler>());
+  web_ui->AddMessageHandler(std::make_unique<GoogleAssistantHandler>());
 }
 
 int SearchSection::GetSectionNameMessageId() const {

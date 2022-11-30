@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,6 +81,12 @@ content_settings::PageSpecificContentSettings::MicrophoneCameraState
 PageSpecificContentSettingsDelegate::GetMicrophoneCameraState() {
   return content_settings::PageSpecificContentSettings::
       MICROPHONE_CAMERA_NOT_ACCESSED;
+}
+
+content::WebContents* PageSpecificContentSettingsDelegate::
+    MaybeGetSyncedWebContentsForPictureInPicture(
+        content::WebContents* web_contents) {
+  return nullptr;
 }
 
 void PageSpecificContentSettingsDelegate::OnContentAllowed(

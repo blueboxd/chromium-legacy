@@ -12,9 +12,10 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/detailed_view_controller.h"
 #include "ash/system/unified/feature_pod_button.h"
-#include "ash/system/unified/feature_pods_container_view.h"
+#include "ash/system/unified/feature_tiles_container_view.h"
 #include "ash/system/unified/page_indicator_view.h"
-#include "ash/system/unified/top_shortcuts_view.h"
+#include "ash/system/unified/quick_settings_footer.h"
+#include "ash/system/unified/quick_settings_header.h"
 #include "ash/system/unified/unified_system_info_view.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "media/base/media_switches.h"
@@ -85,14 +86,14 @@ SlidersContainerView::SlidersContainerView() {
 SlidersContainerView::~SlidersContainerView() = default;
 
 int SlidersContainerView::GetHeight() const {
-  return std::accumulate(children().cbegin(), children().cend(), 0,
-                         [](int height, const auto* v) {
-                           return height + v->GetHeightForWidth(kTrayMenuWidth);
-                         });
+  return std::accumulate(
+      children().cbegin(), children().cend(), 0, [](int height, const auto* v) {
+        return height + v->GetHeightForWidth(kRevampedTrayMenuWidth);
+      });
 }
 
 gfx::Size SlidersContainerView::CalculatePreferredSize() const {
-  return gfx::Size(kTrayMenuWidth, GetHeight());
+  return gfx::Size(kRevampedTrayMenuWidth, GetHeight());
 }
 
 BEGIN_METADATA(SlidersContainerView, views::View)
@@ -137,12 +138,11 @@ QuickSettingsView::QuickSettingsView(UnifiedSystemTrayController* controller)
 
   system_tray_container_ =
       AddChildView(std::make_unique<SystemTrayContainer>());
-  top_shortcuts_view_ = system_tray_container_->AddChildView(
-      std::make_unique<TopShortcutsView>(controller_));
-  top_shortcuts_view_->SetExpandedAmount(1.0f);
 
-  feature_pods_container_ = system_tray_container_->AddChildView(
-      std::make_unique<FeaturePodsContainerView>(controller_, true));
+  header_ = system_tray_container_->AddChildView(
+      std::make_unique<QuickSettingsHeader>());
+  feature_tiles_container_ = system_tray_container_->AddChildView(
+      std::make_unique<FeatureTilesContainerView>(controller_));
   page_indicator_view_ = system_tray_container_->AddChildView(
       std::make_unique<PageIndicatorView>(controller_, true));
 
@@ -154,8 +154,9 @@ QuickSettingsView::QuickSettingsView(UnifiedSystemTrayController* controller)
 
   sliders_container_ = system_tray_container_->AddChildView(
       std::make_unique<SlidersContainerView>());
-  system_info_view_ = system_tray_container_->AddChildView(
-      std::make_unique<UnifiedSystemInfoView>(controller_));
+
+  footer_ = system_tray_container_->AddChildView(
+      std::make_unique<QuickSettingsFooter>(controller_));
 
   system_tray_container_->SetFlexForView(page_indicator_view_);
 
@@ -169,8 +170,10 @@ QuickSettingsView::QuickSettingsView(UnifiedSystemTrayController* controller)
 
 QuickSettingsView::~QuickSettingsView() = default;
 
-void QuickSettingsView::AddFeaturePodButton(FeaturePodButton* button) {
-  feature_pods_container_->AddFeaturePodButton(button);
+void QuickSettingsView::SetMaxHeight(int max_height) {
+  max_height_ = max_height;
+  feature_tiles_container_->SetRowsFromHeight(
+      CalculateHeightForFeatureTilesContainer());
 }
 
 void QuickSettingsView::AddSliderView(views::View* slider_view) {
@@ -235,8 +238,15 @@ int QuickSettingsView::GetCurrentHeight() const {
   return GetPreferredSize().height();
 }
 
-int QuickSettingsView::GetVisibleFeaturePodCount() const {
-  return feature_pods_container_->GetVisibleCount();
+int QuickSettingsView::CalculateHeightForFeatureTilesContainer() {
+  int media_controls_container_height =
+      media_controls_container_ ? media_controls_container_->GetExpandedHeight()
+                                : 0;
+
+  return max_height_ - header_->GetPreferredSize().height() -
+         page_indicator_view_->GetPreferredSize().height() -
+         sliders_container_->GetHeight() - media_controls_container_height -
+         footer_->GetPreferredSize().height();
 }
 
 std::u16string QuickSettingsView::GetDetailedViewAccessibleName() const {
@@ -251,13 +261,13 @@ gfx::Size QuickSettingsView::CalculatePreferredSize() const {
   int media_controls_container_height =
       media_controls_container_ ? media_controls_container_->GetExpandedHeight()
                                 : 0;
-  return gfx::Size(kTrayMenuWidth,
-                   top_shortcuts_view_->GetPreferredSize().height() +
-                       feature_pods_container_->GetExpandedHeight() +
+  return gfx::Size(kRevampedTrayMenuWidth,
+                   header_->GetPreferredSize().height() +
+                       feature_tiles_container_->GetPreferredSize().height() +
                        page_indicator_view_->GetExpandedHeight() +
                        sliders_container_->GetHeight() +
                        media_controls_container_height +
-                       system_info_view_->GetPreferredSize().height());
+                       footer_->GetPreferredSize().height());
 }
 
 void QuickSettingsView::OnGestureEvent(ui::GestureEvent* event) {

@@ -474,6 +474,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::MojoBinderPolicyMap& policy_map) override;
   void RegisterBrowserInterfaceBindersForServiceWorker(
       content::BrowserContext* browser_context,
+      const content::ServiceWorkerVersionBaseInfo& service_worker_version_info,
       mojo::BinderMapWithContext<const content::ServiceWorkerVersionBaseInfo&>*
           map) override;
   void RegisterAssociatedInterfaceBindersForRenderFrameHost(
@@ -555,9 +556,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
   WillCreateURLLoaderRequestInterceptors(
       content::NavigationUIData* navigation_ui_data,
-      int frame_tree_node_id,
-      const scoped_refptr<network::SharedURLLoaderFactory>&
-          network_loader_factory) override;
+      int frame_tree_node_id) override;
   content::ContentBrowserClient::URLLoaderRequestHandler
   CreateURLLoaderHandlerForServiceWorkerNavigationPreload(
       int frame_tree_node_id,
@@ -709,7 +708,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   std::vector<blink::mojom::EpochTopicPtr> GetBrowsingTopicsForJsApi(
       const url::Origin& context_origin,
-      content::RenderFrameHost* main_frame) override;
+      content::RenderFrameHost* main_frame,
+      bool observe) override;
 
   bool IsBluetoothScanningBlocked(content::BrowserContext* browser_context,
                                   const url::Origin& requesting_origin,
@@ -826,6 +826,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   bool ShouldSendOutermostOriginToRenderer(
       const url::Origin& outermost_origin) override;
+
+  bool IsFileSystemURLNavigationAllowed(
+      content::BrowserContext* browser_context,
+      const GURL& url) override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ TEST(InertEffectTest, IsCurrent) {
   {
     Timing timing;
     timing.iteration_duration = ANIMATION_TIME_DELTA_FROM_SECONDS(1000);
-    timing.start_delay = ANIMATION_TIME_DELTA_FROM_SECONDS(500);
+    timing.start_delay = Timing::Delay(ANIMATION_TIME_DELTA_FROM_SECONDS(500));
 
     auto* inert_effect = MakeGarbageCollected<InertEffect>(
         opacity_model, timing, /* paused */ false, AnimationTimeDelta(),
@@ -50,7 +50,7 @@ TEST(InertEffectTest, IsCurrent) {
   {
     Timing timing;
     timing.iteration_duration = ANIMATION_TIME_DELTA_FROM_SECONDS(1000);
-    timing.start_delay = ANIMATION_TIME_DELTA_FROM_SECONDS(500);
+    timing.start_delay = Timing::Delay(ANIMATION_TIME_DELTA_FROM_SECONDS(500));
 
     auto* inert_effect = MakeGarbageCollected<InertEffect>(
         opacity_model, timing, /* paused */ false, AnimationTimeDelta(),

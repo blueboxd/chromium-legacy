@@ -12,10 +12,11 @@
 namespace apps {
 
 // Enumeration of possible app launch sources.
-// This should be kept in sync with metadata/apps/histograms.xml, and
-// LaunchSource in enums.xml.
-// Note the enumeration is used in UMA histogram so entries should not be
-// re-ordered or removed. New entries should be added at the bottom.
+// This should be kept in sync with metadata/apps/histograms.xml,
+// LaunchSource in enums.xml, as well as ApplicationLaunchSource in
+// //components/services/app_service/public/protos/app_types.proto. Note the
+// enumeration is used in UMA histogram so entries should not be re-ordered or
+// removed. New entries should be added at the bottom.
 enum class LaunchSource {
   kUnknown = 0,
   kFromAppListGrid = 1,              // Grid of apps, not the search box.
@@ -52,10 +53,11 @@ enum class LaunchSource {
   kFromOsLogin = 29,                   // Run on OS login.
   kFromProtocolHandler = 30,           // Protocol handler.
   kFromUrlHandler = 31,                // Url handler.
+  kFromLockScreen = 32,                // Lock screen app launcher.
 
   // Add any new values above this one, and update kMaxValue to the highest
   // enumerator value.
-  kMaxValue = kFromUrlHandler,
+  kMaxValue = kFromLockScreen,
 };
 
 // Don't remove items or change the order of this enum.  It's used in

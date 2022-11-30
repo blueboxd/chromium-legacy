@@ -20,9 +20,6 @@
 #include "content/public/test/browser_test.h"
 #include "third_party/blink/public/common/switches.h"
 
-// TODO(crbug.com/1215089): Enable this test suite on Lacros.
-#if !BUILDFLAG(IS_CHROMEOS_LACROS)
-
 namespace {
 
 using content::WebContents;
@@ -302,8 +299,6 @@ IN_PROC_BROWSER_TEST_F(ConditionalFocusBrowserTest,
           /*on_correct_microtask=*/false,
           /*expected_result=*/
           "InvalidStateError: Failed to execute 'focus' on "
-          "'BrowserCaptureMediaStreamTrack': The microtask on which the "
-          "Promise was settled has terminated.");
+          "'BrowserCaptureMediaStreamTrack': The window of opportunity for "
+          "focus-decision is closed.");
 }
-
-#endif  //  !BUILDFLAG(IS_CHROMEOS_LACROS)

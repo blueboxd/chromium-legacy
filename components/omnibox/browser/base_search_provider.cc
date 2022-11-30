@@ -259,30 +259,33 @@ bool BaseSearchProvider::CanSendPageURLInRequest(const GURL& page_url) {
 }
 
 // static
-bool BaseSearchProvider::CanSendRequest(
-    const GURL& suggest_url,
+bool BaseSearchProvider::CanSendZeroSuggestRequest(
     const TemplateURL* template_url,
     const SearchTermsData& search_terms_data,
     const AutocompleteProviderClient* client) {
   // Make sure we are sending the suggest request through a cryptographically
   // secure channel to prevent exposing the current page URL or personalized
   // results without encryption.
+  const GURL& suggest_url =
+      template_url->GenerateSuggestionURL(search_terms_data);
   if (!suggest_url.is_valid() || !suggest_url.SchemeIsCryptographic()) {
     return false;
   }
 
-  // Don't run if in incognito mode.
+  // Don't make a suggest request if in incognito mode.
   if (client->IsOffTheRecord()) {
     return false;
   }
 
-  // Don't run if we can't get preferences or search suggest is not enabled.
+  // Don't make a suggest request if suggest is not enabled.
   if (!client->SearchSuggestEnabled()) {
     return false;
   }
 
-  // Only make the request if we know that the provider supports zero-suggest
-  // requests. (Currently only the prepopulated Google provider supports it.)
+  // Don't make a suggest request if Google is not the default search engine.
+  // Note that currently only the pre-populated Google search provider supports
+  // zero-prefix suggestions. If other pre-populated search engines decide to
+  // support it, revise this test accordingly.
   if (template_url == nullptr ||
       !template_url->SupportsReplacement(search_terms_data) ||
       template_url->GetEngineType(search_terms_data) != SEARCH_ENGINE_GOOGLE) {
@@ -293,36 +296,20 @@ bool BaseSearchProvider::CanSendRequest(
 }
 
 // static
-bool BaseSearchProvider::CanSendRequestWithURL(
+bool BaseSearchProvider::CanSendSuggestRequestWithURL(
     const GURL& current_page_url,
-    const GURL& suggest_url,
     const TemplateURL* template_url,
     const SearchTermsData& search_terms_data,
-    const AutocompleteProviderClient* client,
-    bool sending_search_terms) {
-  if (!CanSendRequest(suggest_url, template_url, search_terms_data, client)) {
+    const AutocompleteProviderClient* client) {
+  if (!CanSendZeroSuggestRequest(template_url, search_terms_data, client)) {
     return false;
   }
 
-  // If URL data collection is off, forbid sending the current page URL to the
-  // suggest endpoint - unless both of these hold:
-  //  * The suggest endpoint and current page must be same-origin. In that
-  //    case, the suggest endpoint could have already logged the current URL
-  //    when the user accessed it from the server.
-  //  * The search terms must be empty. When the user is typing new search
-  //    terms, Chrome should not leak to the endpoint which tab the user is
-  //    looking at. On-focus suggest requests don't contain a query.
-  if (!client->IsPersonalizedUrlDataCollectionActive()) {
-    bool safe_to_send_url_without_data_collection_active =
-        url::IsSameOriginWith(current_page_url, suggest_url) &&
-        !sending_search_terms;
-
-    if (!safe_to_send_url_without_data_collection_active) {
-      return false;
-    }
-  }
-
-  return true;
+  // Forbid sending the current page URL to the suggest endpoint if personalized
+  // URL data collection is off; unless the current page is the provider's
+  // Search Results Page.
+  return template_url->IsSearchURL(current_page_url, search_terms_data) ||
+         client->IsPersonalizedUrlDataCollectionActive();
 }
 
 void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
@@ -460,9 +447,8 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
       suggestion.additional_query_params();
   match.search_terms_args->append_extra_query_params_from_command_line =
       append_extra_query_params_from_command_line;
-  // This is the destination URL sans assisted query stats.  This must be set
-  // so the AutocompleteController can properly de-dupe; the controller will
-  // eventually overwrite it before it reaches the user.
+  // Must be set for deduplication and navigation. AutocompleteController will
+  // ultimately overwrite this with the searchbox stats before navigation.
   match.destination_url = GURL(search_url.ReplaceSearchTerms(
       *match.search_terms_args, search_terms_data));
 
@@ -535,17 +521,17 @@ void BaseSearchProvider::AddMatchToMap(
   if (result.should_prefetch())
     match.RecordAdditionalInfo(kSuggestMetadataKey, metadata);
 
-  // Try to add |match| to |map|.  If a match for this suggestion is
-  // already in |map|, replace it if |match| is more relevant.
+  // Try to add `match` to `map`.
   // NOTE: Keep this ToLower() call in sync with url_database.cc.
   MatchKey match_key(
       std::make_pair(base::i18n::ToLower(result.suggestion()),
                      match.search_terms_args->additional_query_params));
   const std::pair<MatchMap::iterator, bool> i(
-       map->insert(std::make_pair(match_key, match)));
-
-  bool should_prefetch = result.should_prefetch();
+      map->insert(std::make_pair(match_key, match)));
   if (!i.second) {
+    auto& existing_match = i.first->second;
+    // If a duplicate match is already in the map, replace it with `match` if it
+    // is more relevant.
     // NOTE: We purposefully do a direct relevance comparison here instead of
     // using AutocompleteMatch::MoreRelevant(), so that we'll prefer "items
     // added first" rather than "items alphabetically first" when the scores
@@ -554,15 +540,15 @@ void BaseSearchProvider::AddMatchToMap(
     // system returns results sorted by recency, this means we'll pick the most
     // recent such result even if the precision of our relevance score is too
     // low to distinguish the two.
-    if (match.relevance > i.first->second.relevance) {
+    if (match.relevance > existing_match.relevance) {
       match.duplicate_matches.insert(match.duplicate_matches.end(),
-                                     i.first->second.duplicate_matches.begin(),
-                                     i.first->second.duplicate_matches.end());
-      i.first->second.duplicate_matches.clear();
-      match.duplicate_matches.push_back(i.first->second);
-      i.first->second = std::move(match);
+                                     existing_match.duplicate_matches.begin(),
+                                     existing_match.duplicate_matches.end());
+      existing_match.duplicate_matches.clear();
+      match.duplicate_matches.push_back(existing_match);
+      existing_match = std::move(match);
     } else {
-      if (match.keyword == i.first->second.keyword) {
+      if (match.keyword == existing_match.keyword) {
         // Old and new matches are from the same search provider. It is okay to
         // record one match's prefetch/prerender data onto a different match
         // (for the same query string) for the following reasons:
@@ -575,26 +561,27 @@ void BaseSearchProvider::AddMatchToMap(
         // it thinks is sufficiently relevant that the user is likely to choose
         // it. Surely setting the prefetch/prerender bit on a match of even
         // higher relevance won't violate this assumption.
-        should_prefetch |= ShouldPrefetch(i.first->second);
-        i.first->second.RecordAdditionalInfo(kShouldPrefetchKey,
-                                             should_prefetch ? kTrue : kFalse);
-        if (should_prefetch)
-          i.first->second.RecordAdditionalInfo(kSuggestMetadataKey, metadata);
-        bool should_prerender =
-            result.should_prerender() || ShouldPrerender(i.first->second);
-        i.first->second.RecordAdditionalInfo(kShouldPrerenderKey,
-                                             should_prerender ? kTrue : kFalse);
+        const bool should_prefetch =
+            result.should_prefetch() || ShouldPrefetch(existing_match);
+        existing_match.RecordAdditionalInfo(kShouldPrefetchKey,
+                                            should_prefetch ? kTrue : kFalse);
+        if (should_prefetch) {
+          existing_match.RecordAdditionalInfo(kSuggestMetadataKey, metadata);
+        }
+        const bool should_prerender =
+            result.should_prerender() || ShouldPrerender(existing_match);
+        existing_match.RecordAdditionalInfo(kShouldPrerenderKey,
+                                            should_prerender ? kTrue : kFalse);
       }
-      i.first->second.duplicate_matches.push_back(std::move(match));
+      existing_match.duplicate_matches.push_back(std::move(match));
     }
-    // Copy over answer data from lower-ranking item, if necessary.
-    // This depends on the lower-ranking item always being added last - see
+    // Copy over answer data from lower-ranking duplicate, if necessary.
+    // This depends on the lower-ranking duplicate always being added last - see
     // use of push_back above.
-    AutocompleteMatch& more_relevant_match = i.first->second;
-    const AutocompleteMatch& less_relevant_match =
-        more_relevant_match.duplicate_matches.back();
-    if (less_relevant_match.answer && !more_relevant_match.answer) {
-      more_relevant_match.answer = less_relevant_match.answer;
+    const auto& less_relevant_duplicate_match =
+        existing_match.duplicate_matches.back();
+    if (less_relevant_duplicate_match.answer && !existing_match.answer) {
+      existing_match.answer = less_relevant_duplicate_match.answer;
     }
   }
 }

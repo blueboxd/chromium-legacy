@@ -31,7 +31,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.TimingMetric;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
@@ -59,8 +58,8 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
 
     private final int[] mTempPosition = new int[2];
     private final Rect mTempRect = new Rect();
+    private final SuggestionLayoutScrollListener mLayoutScrollListener;
 
-    private final SuggestionScrollListener mScrollListener;
     private @Nullable OmniboxSuggestionsDropdownAdapter mAdapter;
     private @Nullable OmniboxSuggestionsDropdownEmbedder mEmbedder;
     private @Nullable OmniboxSuggestionsDropdown.Observer mObserver;
@@ -117,23 +116,63 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
         void onGesture(boolean isGestureUp, long timestamp);
     }
 
-    /** Scroll listener that propagates scroll event notification to registered observers. */
-    private class SuggestionScrollListener extends RecyclerView.OnScrollListener {
-        @Override
-        public void onScrolled(RecyclerView view, int dx, int dy) {}
+    /** Scroll manager that propagates scroll event notification to registered observers. */
+    @VisibleForTesting
+    /* package */ class SuggestionLayoutScrollListener extends LinearLayoutManager {
+        private boolean mLastKeyboardShowState;
 
-        @Override
-        public void onScrollStateChanged(RecyclerView view, int scrollState) {
-            if (scrollState == SCROLL_STATE_DRAGGING && mObserver != null) {
-                mObserver.onSuggestionDropdownScroll();
-            }
+        public SuggestionLayoutScrollListener(Context context) {
+            super(context);
+            mLastKeyboardShowState = true;
         }
 
-        void onOverscrollToTop() {
-            mObserver.onSuggestionDropdownOverscrolledToTop();
+        @Override
+        public int scrollVerticallyBy(
+                int deltaY, RecyclerView.Recycler recycler, RecyclerView.State state) {
+            int scrollY = super.scrollVerticallyBy(deltaY, recycler, state);
+            return updateKeyboardVisibilityAndScroll(scrollY, deltaY);
+        }
+
+        /**
+         * Respond to scroll event.
+         * - Upon first scroll down, suppresses the scroll delta and dismisses the
+         *   keyboard,
+         * - Subsequent scroll down actions should result in scroll,
+         * - Upon overscroll to top (= when the list is already on top and a scroll up is
+         *   requested), request keyboard to show up.
+         *
+         * @param scrollY The current vertical scroll position.
+         * @param deltaY The requested scroll delta.
+         * @return Value of scrollY, if scroll is permitted, or 0 when it is suppressed.
+         */
+        @VisibleForTesting
+        /* package */ int updateKeyboardVisibilityAndScroll(int scrollY, int deltaY) {
+            boolean keyboardShouldShow = (scrollY == 0 && deltaY <= 0);
+
+            if (mObserver == null) return scrollY;
+            if (mLastKeyboardShowState == keyboardShouldShow) return scrollY;
+            mLastKeyboardShowState = keyboardShouldShow;
+
+            if (keyboardShouldShow) {
+                mObserver.onSuggestionDropdownOverscrolledToTop();
+            } else {
+                mObserver.onSuggestionDropdownScroll();
+                return 0;
+            }
+            return scrollY;
+        }
+
+        /**
+         * Reset the internal keyboard state.
+         * This needs to be called either when the SuggestionsDropdown is hidden or shown again
+         * to reflect either the end of the current or beginning of the next interaction
+         * session.
+         */
+        @VisibleForTesting
+        /* package */ void resetKeyboardShowState() {
+            mLastKeyboardShowState = true;
         }
     }
-
     /**
      * RecyclerView pool that records performance of the view recycling mechanism.
      * @see OmniboxSuggestionsListViewListAdapter#canReuseView(View, int)
@@ -153,6 +192,7 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
             setMaxRecycledViews(OmniboxSuggestionUiType.HEADER, 4);
             setMaxRecycledViews(OmniboxSuggestionUiType.TILE_NAVSUGGEST, 1);
             setMaxRecycledViews(OmniboxSuggestionUiType.PEDAL_SUGGESTION, 3);
+            setMaxRecycledViews(OmniboxSuggestionUiType.DIVIDER_LINE, 1);
         }
 
         @Override
@@ -172,8 +212,7 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
      * Constructs a new list designed for containing omnibox suggestions.
      * @param context Context used for contained views.
      */
-    public OmniboxSuggestionsDropdown(
-            @NonNull Context context, @NonNull LocationBarDataProvider locationBarDataProvider) {
+    public OmniboxSuggestionsDropdown(@NonNull Context context) {
         super(context, null, android.R.attr.dropDownListViewStyle);
         setFocusable(true);
         setFocusableInTouchMode(true);
@@ -182,35 +221,22 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
         // By default RecyclerViews come with item animators.
         setItemAnimator(null);
 
-        mScrollListener = new SuggestionScrollListener();
-        setOnScrollListener(mScrollListener);
-        setLayoutManager(new LinearLayoutManager(context) {
-            @Override
-            public int scrollVerticallyBy(
-                    int deltaY, RecyclerView.Recycler recycler, RecyclerView.State state) {
-                int scrollY = super.scrollVerticallyBy(deltaY, recycler, state);
-                if (scrollY == 0 && deltaY < 0) {
-                    mScrollListener.onOverscrollToTop();
-                }
-                return scrollY;
-            }
-        });
+        mLayoutScrollListener = new SuggestionLayoutScrollListener(context);
+        setLayoutManager(mLayoutScrollListener);
 
         boolean shouldShowModernizeVisualUpdate =
                 OmniboxFeatures.shouldShowModernizeVisualUpdate(context);
         final Resources resources = context.getResources();
-        int paddingSide = shouldShowModernizeVisualUpdate
-                ? resources.getDimensionPixelOffset(R.dimen.omnibox_suggestion_list_padding_side)
-                : 0;
         int paddingBottom =
                 resources.getDimensionPixelOffset(R.dimen.omnibox_suggestion_list_padding_bottom);
-        ViewCompat.setPaddingRelative(this, paddingSide, 0, paddingSide, paddingBottom);
+        ViewCompat.setPaddingRelative(this, 0, 0, 0, paddingBottom);
 
         mStandardBgColor = shouldShowModernizeVisualUpdate
-                ? locationBarDataProvider.getDropdownStandardBackgroundColor()
+                ? ChromeColors.getSurfaceColor(
+                        context, R.dimen.omnibox_suggestion_dropdown_bg_elevation)
                 : ChromeColors.getDefaultThemeColor(context, false);
         mIncognitoBgColor = shouldShowModernizeVisualUpdate
-                ? locationBarDataProvider.getDropdownIncognitoBackgroundColor()
+                ? context.getColor(R.color.omnibox_dropdown_bg_incognito)
                 : ChromeColors.getDefaultThemeColor(context, true);
     }
 
@@ -267,6 +293,8 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
         if (mAdapter != null && mAdapter.getSelectedViewIndex() != 0) {
             mAdapter.resetSelection();
         }
+
+        mLayoutScrollListener.resetKeyboardShowState();
     }
 
     /** Hide the suggestions list and release any cached resources. */
@@ -556,13 +584,18 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
                 getPaddingBottom());
     }
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @VisibleForTesting
     public int getStandardBgColor() {
         return mStandardBgColor;
     }
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @VisibleForTesting
     public int getIncognitoBgColor() {
         return mIncognitoBgColor;
+    }
+
+    @VisibleForTesting
+    SuggestionLayoutScrollListener getLayoutScrollListener() {
+        return mLayoutScrollListener;
     }
 }

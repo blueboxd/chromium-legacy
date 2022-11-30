@@ -13,8 +13,8 @@
 
 namespace updater {
 
-constexpr int kRegistrationSuccess = 0;
-constexpr int kRegistrationAlreadyRegistered = 1;
+inline constexpr int kRegistrationSuccess = 0;
+inline constexpr int kRegistrationAlreadyRegistered = 1;
 
 struct RegistrationRequest {
   RegistrationRequest();
@@ -48,13 +48,6 @@ struct RegistrationRequest {
   // whether an app has been uninstalled via deletion. May be the empty
   // string; if so, the app is assumed to be installed unconditionally.
   base::FilePath existence_checker_path;
-};
-
-struct RegistrationResponse {
-  explicit RegistrationResponse(int status_code) : status_code(status_code) {}
-
-  // Status code of the registration.
-  int status_code = kRegistrationSuccess;
 };
 
 }  // namespace updater

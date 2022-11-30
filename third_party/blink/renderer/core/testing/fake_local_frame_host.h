@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/policy_container.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
+#include "ui/base/ime/mojom/virtual_keyboard_types.mojom-blink.h"
 
 namespace blink {
 
@@ -42,7 +43,8 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void DidContainInsecureFormAction() override;
   void MainDocumentElementAvailable(bool uses_temporary_zoom_level) override;
   void SetNeedsOcclusionTracking(bool needs_tracking) override;
-  void SetVirtualKeyboardOverlayPolicy(bool vk_overlays_content) override;
+  void SetVirtualKeyboardMode(
+      ui::mojom::blink::VirtualKeyboardMode mode) override;
   void VisibilityChanged(mojom::blink::FrameVisibility visibility) override;
   void DidChangeThemeColor(absl::optional<::SkColor> theme_color) override;
   void DidChangeBackgroundColor(SkColor background_color,
@@ -159,6 +161,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
       blink::mojom::PreferredColorScheme preferred_color_scheme) override;
   void DidChangeSrcDoc(const blink::FrameToken& child_frame_token,
                        const WTF::String& srcdoc_value) override;
+  void DidChangeBaseURL(const ::blink::KURL& url) override;
   void ReceivedDelegatedCapability(
       blink::mojom::DelegatedCapability delegated_capability) override;
   void CreatePortal(

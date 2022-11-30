@@ -23,8 +23,7 @@ class WebUI;
 class WebUIDataSource;
 }  // namespace content
 
-namespace chromeos {
-namespace settings {
+namespace ash::settings {
 
 class SearchTagRegistry;
 
@@ -60,7 +59,7 @@ class OsSettingsSection {
     // Registers a subpage whose parent is this section.
     virtual void RegisterTopLevelSubpage(
         int name_message_id,
-        mojom::Subpage subpage,
+        chromeos::settings::mojom::Subpage subpage,
         mojom::SearchResultIcon icon,
         mojom::SearchResultDefaultRank default_rank,
         const std::string& url_path_with_parameters) = 0;
@@ -68,30 +67,34 @@ class OsSettingsSection {
     // Registers a subpage whose parent is another subpage in this section.
     virtual void RegisterNestedSubpage(
         int name_message_id,
-        mojom::Subpage subpage,
-        mojom::Subpage parent_subpage,
+        chromeos::settings::mojom::Subpage subpage,
+        chromeos::settings::mojom::Subpage parent_subpage,
         mojom::SearchResultIcon icon,
         mojom::SearchResultDefaultRank default_rank,
         const std::string& url_path_with_parameters) = 0;
 
     // Registers a setting embedded directly in the section (i.e., not within a
     // subpage). This functions is for primary locations (see above).
-    virtual void RegisterTopLevelSetting(mojom::Setting setting) = 0;
+    virtual void RegisterTopLevelSetting(
+        chromeos::settings::mojom::Setting setting) = 0;
 
     // Registers a setting embedded within a subpage in this section. This
     // function is for primary locations (see above).
-    virtual void RegisterNestedSetting(mojom::Setting setting,
-                                       mojom::Subpage subpage) = 0;
+    virtual void RegisterNestedSetting(
+        chromeos::settings::mojom::Setting setting,
+        chromeos::settings::mojom::Subpage subpage) = 0;
 
     // Register an alternate location for a setting embedded directly in the
     // section (i.e., not within a subpage). This function is for alternate
     // locations (see above).
-    virtual void RegisterTopLevelAltSetting(mojom::Setting setting) = 0;
+    virtual void RegisterTopLevelAltSetting(
+        chromeos::settings::mojom::Setting setting) = 0;
 
     // Registers a setting embedded within a subpage in this section. This
     // function is for alternate locations (see above).
-    virtual void RegisterNestedAltSetting(mojom::Setting setting,
-                                          mojom::Subpage subpage) = 0;
+    virtual void RegisterNestedAltSetting(
+        chromeos::settings::mojom::Setting setting,
+        chromeos::settings::mojom::Subpage subpage) = 0;
   };
 
   virtual ~OsSettingsSection();
@@ -111,7 +114,7 @@ class OsSettingsSection {
   virtual int GetSectionNameMessageId() const = 0;
 
   // Provides the Section enum for this section.
-  virtual mojom::Section GetSection() const = 0;
+  virtual chromeos::settings::mojom::Section GetSection() const = 0;
 
   // Provides the icon for this section.
   virtual mojom::SearchResultIcon GetSectionIcon() const = 0;
@@ -121,7 +124,8 @@ class OsSettingsSection {
 
   // Logs metrics for the updated |setting| with optional |value|. Returns
   // whether the setting change was logged.
-  virtual bool LogMetric(mojom::Setting setting, base::Value& value) const = 0;
+  virtual bool LogMetric(chromeos::settings::mojom::Setting setting,
+                         base::Value& value) const = 0;
 
   // Registers the subpages and/or settings which reside in this section. Every
   // subpage and setting within a section must be registered, regardless of
@@ -148,8 +152,8 @@ class OsSettingsSection {
 
  protected:
   static void RegisterNestedSettingBulk(
-      mojom::Subpage,
-      const base::span<const mojom::Setting>& settings,
+      chromeos::settings::mojom::Subpage,
+      const base::span<const chromeos::settings::mojom::Setting>& settings,
       HierarchyGenerator* generator);
 
   OsSettingsSection(Profile* profile, SearchTagRegistry* search_tag_registry);
@@ -179,7 +183,11 @@ class OsSettingsSection {
   SearchTagRegistry* search_tag_registry_;
 };
 
-}  // namespace settings
-}  // namespace chromeos
+}  // namespace ash::settings
+
+// TODO(https://crbug.com/1164001): remove when the migration is finished.
+namespace chromeos::settings {
+using ::ash::settings::OsSettingsSection;
+}
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SETTINGS_ASH_OS_SETTINGS_SECTION_H_

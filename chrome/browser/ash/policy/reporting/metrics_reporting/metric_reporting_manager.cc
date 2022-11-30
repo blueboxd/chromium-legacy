@@ -9,11 +9,11 @@
 #include <string>
 #include <vector>
 
-#include "ash/components/settings/cros_settings_names.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/strings/string_piece.h"
+#include "base/values.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/audio/audio_events_observer.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/cros_healthd_metric_sampler.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/network/https_latency_sampler.h"
@@ -25,12 +25,14 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/reporting/metric_default_utils.h"
 #include "chrome/browser/chromeos/reporting/network/network_bandwidth_sampler.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/reporting/client/report_queue_configuration.h"
 #include "components/reporting/metrics/configured_sampler.h"
 #include "components/reporting/metrics/metric_data_collector.h"
 #include "components/reporting/metrics/metric_event_observer_manager.h"
 #include "components/reporting/metrics/metric_report_queue.h"
 #include "components/reporting/metrics/sampler.h"
+#include "components/reporting/proto/synced/metric_data.pb.h"
 #include "components/user_manager/user.h"
 
 namespace em = enterprise_management;
@@ -60,6 +62,16 @@ bool MetricReportingManager::Delegate::IsDeprovisioned() const {
              em::PolicyData::DEPROVISIONED;
 }
 
+std::unique_ptr<Sampler>
+MetricReportingManager::Delegate::GetHttpsLatencySampler() const {
+  return std::make_unique<HttpsLatencySampler>();
+}
+
+std::unique_ptr<Sampler>
+MetricReportingManager::Delegate::GetNetworkTelemetrySampler() const {
+  return std::make_unique<NetworkTelemetrySampler>();
+}
+
 // static
 std::unique_ptr<MetricReportingManager> MetricReportingManager::Create(
     policy::ManagedSessionService* managed_session_service) {
@@ -87,11 +99,11 @@ void MetricReportingManager::OnLogin(Profile* profile) {
   }
 
   // Create user metric report queues here since they depend on the user
-  // profile only available after login.
-  user_telemetry_report_queue_ = delegate_->CreatePeriodicUploadReportQueue(
-      EventType::kUser, Destination::TELEMETRY_METRIC, Priority::MANUAL_BATCH,
-      &reporting_settings_, ::ash::kReportUploadFrequency,
-      metrics::GetDefaultReportUploadFrequency());
+  // profile only available after login. These should rely on the
+  // `telemetry_report_queue_` for periodic uploads to avoid overlapping flush
+  // operations.
+  user_telemetry_report_queue_ = delegate_->CreateMetricReportQueue(
+      EventType::kUser, Destination::TELEMETRY_METRIC, Priority::MANUAL_BATCH);
 
   InitOnAffiliatedLogin();
   delayed_init_on_login_timer_.Start(
@@ -109,7 +121,14 @@ void MetricReportingManager::DeviceSettingsUpdated() {
 std::vector<ConfiguredSampler*> MetricReportingManager::GetTelemetrySamplers(
     MetricEventType event_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return {};
+  switch (event_type) {
+    case NETWORK_SIGNAL_STRENGTH_LOW:
+    case NETWORK_SIGNAL_STRENGTH_RECOVERED:
+      return GetTelemetrySamplersFromSetting(
+          ::ash::kReportDeviceSignalStrengthEventDrivenTelemetry);
+    default:
+      return {};
+  }
 }
 
 MetricReportingManager::MetricReportingManager(
@@ -243,13 +262,11 @@ void MetricReportingManager::InitTelemetrySamplersOnAffiliatedLogin() {
       std::move(audio_telemetry_sampler),
       /*enable_setting_path=*/::ash::kReportDeviceAudioStatus,
       metrics::kReportDeviceAudioStatusDefaultValue);
-  auto https_latency_sampler = std::make_unique<HttpsLatencySampler>();
   InitNetworkConfiguredSampler(/*sampler_name=*/kSamplerHttpsLatency,
-                               std::move(https_latency_sampler));
-  auto network_telemetry_sampler = std::make_unique<NetworkTelemetrySampler>();
+                               delegate_->GetHttpsLatencySampler());
   InitNetworkConfiguredSampler(
       /*sampler_name=*/kSamplerNetworkTelemetry,
-      std::move(network_telemetry_sampler));
+      delegate_->GetNetworkTelemetrySampler());
   auto peripheral_telemetry_sampler =
       std::make_unique<CrosHealthdMetricSampler>(
           ::ash::cros_healthd::mojom::ProbeCategoryEnum::kBus,
@@ -486,4 +503,36 @@ void MetricReportingManager::InitDisplayCollectors() {
                         metrics::GetDefaultCollectionRate(
                             metrics::kDefaultGraphicsTelemetryCollectionRate));
 }
+
+std::vector<ConfiguredSampler*>
+MetricReportingManager::GetTelemetrySamplersFromSetting(
+    base::StringPiece setting_name) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const base::Value::List* telemetry_list = nullptr;
+  const bool valid = ::ash::CrosSettings::Get()->GetList(
+      std::string(setting_name), &telemetry_list);
+  if (!valid || !telemetry_list) {
+    return {};
+  }
+
+  std::vector<ConfiguredSampler*> samplers;
+  for (const base::Value& telemetry : *telemetry_list) {
+    if (samplers.size() == telemetry_sampler_map_.size()) {
+      // All samplers are already used, remaining telemetry names would be
+      // either invalid or duplicates.
+      break;
+    }
+
+    const std::string* telemetry_name = telemetry.GetIfString();
+    if (telemetry_name &&
+        base::Contains(telemetry_sampler_map_, *telemetry_name) &&
+        !base::Contains(samplers,
+                        telemetry_sampler_map_.at(*telemetry_name).get())) {
+      samplers.push_back(telemetry_sampler_map_.at(*telemetry_name).get());
+    }
+  }
+  return samplers;
+}
+
 }  // namespace reporting

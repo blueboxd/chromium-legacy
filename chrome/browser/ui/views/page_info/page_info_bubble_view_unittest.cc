@@ -6,6 +6,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/values_test_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -593,11 +594,11 @@ TEST_F(PageInfoBubbleViewOffTheRecordTest, ResetBlockedInIncognitoPermission) {
   // Verify labels match the settings on the PermissionInfoList.
   EXPECT_EQ(u"Notifications", api_->GetPermissionLabelTextAt(0));
 
-  PageInfo::PermissionInfo window_placement_permission;
-  window_placement_permission.type = ContentSettingsType::WINDOW_PLACEMENT;
-  window_placement_permission.setting = CONTENT_SETTING_ALLOW;
-  window_placement_permission.default_setting = CONTENT_SETTING_ASK;
-  list.push_back(window_placement_permission);
+  PageInfo::PermissionInfo window_management_permission;
+  window_management_permission.type = ContentSettingsType::WINDOW_MANAGEMENT;
+  window_management_permission.setting = CONTENT_SETTING_ALLOW;
+  window_management_permission.default_setting = CONTENT_SETTING_ASK;
+  list.push_back(window_management_permission);
 
   num_expected_children = list.size();
   api_->SetPermissionInfo(list);
@@ -1155,6 +1156,7 @@ class PageInfoBubbleViewCookiesSubpageTest : public PageInfoBubbleViewTest {
 // Test that texts on buttons are correct and there is no more views than
 // necessary.
 TEST_F(PageInfoBubbleViewCookiesSubpageTest, TextsOnButtonsAreCorrect) {
+  base::HistogramTester histogram_tester;
   // Create fake cookie information.
   PageInfoUI::CookiesNewInfo cookie_info;
   cookie_info.blocked_sites_count = 10;
@@ -1188,8 +1190,7 @@ TEST_F(PageInfoBubbleViewCookiesSubpageTest, TextsOnButtonsAreCorrect) {
       fps_button, l10n_util::GetStringFUTF16(IDS_PAGE_INFO_FPS_BUTTON_SUBTITLE,
                                              owner_name));
   ExpectViewContainsText(
-      fps_button,
-      l10n_util::GetStringFUTF16(IDS_PAGE_INFO_FPS_BUTTON_TITLE, owner_name));
+      fps_button, l10n_util::GetStringUTF16(IDS_PAGE_INFO_FPS_BUTTON_TITLE));
   ExpectViewContainsText(api_->blocking_third_party_cookies_subtitle(),
                          l10n_util::GetPluralStringFUTF16(
                              IDS_PAGE_INFO_COOKIES_BLOCKED_SITES_COUNT,
@@ -1198,6 +1199,10 @@ TEST_F(PageInfoBubbleViewCookiesSubpageTest, TextsOnButtonsAreCorrect) {
   EXPECT_TRUE(blocking_third_party_cookies_row->GetVisible());
   EXPECT_TRUE(fps_button->GetVisible());
   EXPECT_TRUE(api_->cookies_dialog_button()->GetVisible());
+  histogram_tester.ExpectBucketCount("Security.PageInfo.Cookies.HasFPSInfo",
+                                     false, 0);
+  histogram_tester.ExpectBucketCount("Security.PageInfo.Cookies.HasFPSInfo",
+                                     true, 1);
 
   // Check if buttons get hidden when permission changes.
   cookie_info.status = CookieControlsStatus::kDisabled;
@@ -1206,6 +1211,11 @@ TEST_F(PageInfoBubbleViewCookiesSubpageTest, TextsOnButtonsAreCorrect) {
   EXPECT_FALSE(blocking_third_party_cookies_row->GetVisible());
   EXPECT_FALSE(fps_button->GetVisible());
   EXPECT_EQ(kExpectedChildren, cookies_buttons_container->children().size());
+  // Check the histogram count is not increased on permission changes
+  histogram_tester.ExpectBucketCount("Security.PageInfo.Cookies.HasFPSInfo",
+                                     false, 0);
+  histogram_tester.ExpectBucketCount("Security.PageInfo.Cookies.HasFPSInfo",
+                                     true, 1);
 
   // Check if buttons reappear when permission changes.
   cookie_info.status = CookieControlsStatus::kDisabledForSite;
@@ -1214,4 +1224,9 @@ TEST_F(PageInfoBubbleViewCookiesSubpageTest, TextsOnButtonsAreCorrect) {
   EXPECT_TRUE(blocking_third_party_cookies_row->GetVisible());
   EXPECT_TRUE(fps_button->GetVisible());
   EXPECT_EQ(kExpectedChildren, cookies_buttons_container->children().size());
+  // Check the histogram count is not increased on permission changes
+  histogram_tester.ExpectBucketCount("Security.PageInfo.Cookies.HasFPSInfo",
+                                     false, 0);
+  histogram_tester.ExpectBucketCount("Security.PageInfo.Cookies.HasFPSInfo",
+                                     true, 1);
 }

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,9 @@ ReceiveStream::ReceiveStream(ScriptState* script_state,
                              mojo::ScopedDataPipeConsumerHandle handle)
     : incoming_stream_(MakeGarbageCollected<IncomingStream>(
           script_state,
-          WTF::Bind(ForgetStream, WrapWeakPersistent(web_transport), stream_id),
+          WTF::BindOnce(ForgetStream,
+                        WrapWeakPersistent(web_transport),
+                        stream_id),
           std::move(handle))) {}
 
 void ReceiveStream::Trace(Visitor* visitor) const {

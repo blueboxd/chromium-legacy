@@ -13,10 +13,6 @@
 #include "components/sync/engine/nigori/nigori.h"
 #include "components/sync/test/test_sync_service.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_features.h"
-#endif
-
 namespace syncer {
 
 ModelTypeSet UserSelectableTypesToModelTypes(
@@ -98,9 +94,7 @@ ModelTypeSet TestSyncUserSettings::GetPreferredDataTypes() const {
   types.PutAll(AlwaysPreferredUserTypes());
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
-    types.PutAll(UserSelectableOsTypesToModelTypes(GetSelectedOsTypes()));
-  }
+  types.PutAll(UserSelectableOsTypesToModelTypes(GetSelectedOsTypes()));
 #endif
   types.PutAll(ControlTypes());
   return types;

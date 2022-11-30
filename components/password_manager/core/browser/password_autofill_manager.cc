@@ -228,8 +228,8 @@ void MaybeAppendManagePasswordsEntry(
   if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillVisualImprovementsForSuggestionUi) &&
       !suggestions->empty()) {
-    suggestions->push_back(autofill::Suggestion());
-    suggestions->back().frontend_id = autofill::POPUP_ITEM_ID_SEPARATOR;
+    suggestions->push_back(
+        autofill::Suggestion(autofill::POPUP_ITEM_ID_SEPARATOR));
   }
 #endif
 
@@ -436,18 +436,18 @@ void PasswordAutofillManager::OnUnlockItemAccepted(
 }
 
 void PasswordAutofillManager::DidAcceptSuggestion(
-    const std::u16string& value,
-    int frontend_id,
-    const autofill::Suggestion::Payload& payload,
+    const autofill::Suggestion& suggestion,
     int position) {
   using metrics_util::PasswordDropdownSelectedOption;
-  if (frontend_id == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY) {
+  if (suggestion.frontend_id ==
+      autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY) {
     password_client_->GeneratePassword(PasswordGenerationType::kAutomatic);
     metrics_util::LogPasswordDropdownItemSelected(
         PasswordDropdownSelectedOption::kGenerate,
         password_client_->IsIncognito());
-  } else if (frontend_id == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY ||
-             frontend_id ==
+  } else if (suggestion.frontend_id ==
+                 autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY ||
+             suggestion.frontend_id ==
                  autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY) {
     password_client_->NavigateToManagePasswordsPage(
         ManagePasswordsReferrer::kPasswordDropdown);
@@ -461,7 +461,7 @@ void PasswordAutofillManager::DidAcceptSuggestion(
       password_client_->GetMetricsRecorder()->RecordPageLevelUserAction(
           UserAction::kShowAllPasswordsWhileSomeAreSuggested);
     }
-  } else if (frontend_id ==
+  } else if (suggestion.frontend_id ==
              autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN) {
     password_client_->TriggerSignIn(
         signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN);
@@ -469,27 +469,33 @@ void PasswordAutofillManager::DidAcceptSuggestion(
         PasswordDropdownSelectedOption::kResigninToUnlockAccountStore,
         password_client_->IsIncognito());
   } else if (
-      frontend_id == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN ||
-      frontend_id ==
+      suggestion.frontend_id ==
+          autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN ||
+      suggestion.frontend_id ==
           autofill::
               POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE) {
-    OnUnlockItemAccepted(static_cast<autofill::PopupItemId>(frontend_id));
+    OnUnlockItemAccepted(
+        static_cast<autofill::PopupItemId>(suggestion.frontend_id));
     metrics_util::LogPasswordDropdownItemSelected(
-        frontend_id == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN
+        suggestion.frontend_id ==
+                autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN
             ? PasswordDropdownSelectedOption::kUnlockAccountStorePasswords
             : PasswordDropdownSelectedOption::kUnlockAccountStoreGeneration,
         password_client_->IsIncognito());
-  } else if (frontend_id == autofill::POPUP_ITEM_ID_WEBAUTHN_CREDENTIAL) {
+  } else if (suggestion.frontend_id ==
+             autofill::POPUP_ITEM_ID_WEBAUTHN_CREDENTIAL) {
     metrics_util::LogPasswordDropdownItemSelected(
         PasswordDropdownSelectedOption::kWebAuthn,
         password_client_->IsIncognito());
     password_client_
         ->GetWebAuthnCredentialsDelegateForDriver(password_manager_driver_)
         ->SelectWebAuthnCredential(
-            absl::holds_alternative<autofill::Suggestion::BackendId>(payload)
-                ? absl::get<autofill::Suggestion::BackendId>(payload).value()
+            absl::holds_alternative<autofill::Suggestion::BackendId>(
+                suggestion.payload)
+                ? absl::get<autofill::Suggestion::BackendId>(suggestion.payload)
+                      .value()
                 : std::string());
-  } else if (frontend_id ==
+  } else if (suggestion.frontend_id ==
              autofill::POPUP_ITEM_ID_WEBAUTHN_SIGN_IN_WITH_ANOTHER_DEVICE) {
     metrics_util::LogPasswordDropdownItemSelected(
         PasswordDropdownSelectedOption::kWebAuthnSignInWithAnotherDevice,
@@ -511,7 +517,8 @@ void PasswordAutofillManager::DidAcceptSuggestion(
             device_reauth::BiometricAuthRequester::kAutofillSuggestion,
             password_client_)) {
       bool success =
-          FillSuggestion(GetUsernameFromSuggestion(value), frontend_id);
+          FillSuggestion(GetUsernameFromSuggestion(suggestion.main_text.value),
+                         suggestion.frontend_id);
       DCHECK(success);
     } else {
       authenticator_ = std::move(authenticator);
@@ -521,7 +528,8 @@ void PasswordAutofillManager::DidAcceptSuggestion(
       authenticator_->Authenticate(
           device_reauth::BiometricAuthRequester::kAutofillSuggestion,
           base::BindOnce(&PasswordAutofillManager::OnBiometricReauthCompleted,
-                         base::Unretained(this), value, frontend_id),
+                         base::Unretained(this), suggestion.main_text.value,
+                         suggestion.frontend_id),
           /*use_last_valid_auth=*/true);
 #elif BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
       const std::u16string origin =
@@ -535,7 +543,8 @@ void PasswordAutofillManager::DidAcceptSuggestion(
           l10n_util::GetStringFUTF16(IDS_PASSWORD_MANAGER_FILLING_REAUTH,
                                      origin),
           base::BindOnce(&PasswordAutofillManager::OnBiometricReauthCompleted,
-                         base::Unretained(this), value, frontend_id));
+                         base::Unretained(this), suggestion.main_text.value,
+                         suggestion.frontend_id));
 #endif
     }
   }
@@ -591,9 +600,16 @@ void PasswordAutofillManager::OnAddPasswordFillData(
   // If the `fill_data_` changes, then it's likely that the filling context
   // changed as well, so the biometric auth is now out of scope.
   CancelBiometricReauthIfOngoing();
+  RequestFavicon(fill_data.url);
+
+  // If there are no username or password suggestions, WebAuthn credentials
+  // can still cause a popup to appear.
+  if (fill_data.username_field.value.empty() &&
+      fill_data.password_field.value.empty()) {
+    return;
+  }
 
   fill_data_ = std::make_unique<autofill::PasswordFormFillData>(fill_data);
-  RequestFavicon(fill_data.url);
 
   if (!autofill_client_ || autofill_client_->GetPopupSuggestions().empty())
     return;
@@ -709,8 +725,10 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
   WebAuthnCredentialsDelegate* delegate =
       password_client_->GetWebAuthnCredentialsDelegateForDriver(
           password_manager_driver_);
-  if (show_webauthn_credentials && delegate &&
-      delegate->IsWebAuthnAutofillEnabled()) {
+  bool should_show_webauthn_suggestions = show_webauthn_credentials &&
+                                          delegate &&
+                                          delegate->IsWebAuthnAutofillEnabled();
+  if (should_show_webauthn_suggestions) {
     absl::optional<std::vector<autofill::Suggestion>> webauthn_suggestions =
         delegate->GetWebAuthnSuggestions();
     if (webauthn_suggestions.has_value()) {
@@ -723,7 +741,11 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
   }
 
   if (!fill_data_ && !show_account_storage_optin &&
-      !show_account_storage_resignin && suggestions.empty()) {
+      !show_account_storage_resignin &&
+#if !BUILDFLAG(IS_ANDROID)
+      !should_show_webauthn_suggestions &&
+#endif  // !BUILDFLAG(IS_ANDROID)
+      suggestions.empty()) {
     // Probably the credential was deleted in the mean time.
     return suggestions;
   }
@@ -737,8 +759,7 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
 
 #if !BUILDFLAG(IS_ANDROID)
   // Add "Sign in with another device" button.
-  if (show_webauthn_credentials && delegate &&
-      delegate->IsWebAuthnAutofillEnabled()) {
+  if (should_show_webauthn_suggestions) {
     suggestions.push_back(CreateWebAuthnEntry());
   }
 #endif  // !BUILDFLAG(IS_ANDROID)

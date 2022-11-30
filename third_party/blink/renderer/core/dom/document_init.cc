@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/dom/document_init.h"
 
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
@@ -65,13 +66,14 @@ DocumentInit::DocumentInit(const DocumentInit&) = default;
 
 DocumentInit::~DocumentInit() = default;
 
-DocumentInit& DocumentInit::ForTest() {
+DocumentInit& DocumentInit::ForTest(ExecutionContext* execution_context) {
   DCHECK(!execution_context_);
   DCHECK(!window_);
 #if DCHECK_IS_ON()
   DCHECK(!for_test_);
   for_test_ = true;
 #endif
+  execution_context_ = execution_context;
   return *this;
 }
 
@@ -81,6 +83,12 @@ bool DocumentInit::ShouldSetURL() const {
 
 bool DocumentInit::IsSrcdocDocument() const {
   return window_ && !window_->GetFrame()->IsMainFrame() && is_srcdoc_document_;
+}
+
+const KURL& DocumentInit::FallbackSrcdocBaseURL() const {
+  DCHECK(window_ && !window_->GetFrame()->IsMainFrame() ||
+         fallback_srcdoc_base_url_.IsEmpty());
+  return fallback_srcdoc_base_url_;
 }
 
 DocumentInit& DocumentInit::WithWindow(LocalDOMWindow* window,
@@ -95,6 +103,18 @@ DocumentInit& DocumentInit::WithWindow(LocalDOMWindow* window,
   execution_context_ = window;
   owner_document_ = owner_document;
   return *this;
+}
+
+DocumentInit& DocumentInit::WithToken(const DocumentToken& token) {
+  token_ = token;
+  return *this;
+}
+
+const DocumentToken& DocumentInit::GetToken() const {
+  if (!token_) {
+    token_.emplace();
+  }
+  return *token_;
 }
 
 DocumentInit& DocumentInit::ForInitialEmptyDocument(bool empty) {
@@ -231,6 +251,11 @@ DocumentInit& DocumentInit::WithSrcdocDocument(bool is_srcdoc_document) {
   return *this;
 }
 
+DocumentInit& DocumentInit::WithFallbackSrcdocBaseURL(
+    const KURL& fallback_srcdoc_base_url) {
+  fallback_srcdoc_base_url_ = fallback_srcdoc_base_url;
+  return *this;
+}
 
 DocumentInit& DocumentInit::WithWebBundleClaimedUrl(
     const KURL& web_bundle_claimed_url) {

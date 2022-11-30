@@ -187,6 +187,20 @@ void RecordWebPlatformSecurityMetrics(RenderFrameHostImpl* rfh,
         .Record(ukm::UkmRecorder::Get());
   }
 
+  // Record whether <iframe> with the anonymous attribute contains sandboxed
+  // document or not. Please note:
+  // - This is recorded once for every new document in the iframe.
+  // - It excludes nested document that are anonymous only by inheritance.
+  // - It would have been better to take a snapshot of the frame.anonymous
+  //   attribute at the beginning of the navigation, as opposed to when the
+  //   new document has been created, because it might have changed. Still, it
+  //   is good enough, a priori.
+  if (rfh->frame_tree_node()->anonymous()) {
+    base::UmaHistogramBoolean(
+        "Navigation.AnonymousIframeIsSandboxed",
+        rfh->active_sandbox_flags() != network::mojom::WebSandboxFlags::kNone);
+  }
+
   // Webview tag guests do not follow regular process model decisions. They
   // always stay in their original SiteInstance, regardless of COOP. Assumption
   // made below about COOP:same-origin and unsafe-none never being in the same
@@ -853,7 +867,8 @@ void Navigator::NavigateFromFrameProxy(
     const absl::optional<blink::Impression>& impression,
     base::TimeTicks navigation_start_time,
     bool is_embedder_initiated_fenced_frame_navigation,
-    bool is_unfenced_top_navigation) {
+    bool is_unfenced_top_navigation,
+    bool force_new_browsing_instance) {
   // |method != "POST"| should imply absence of |post_body|.
   if (method != "POST" && post_body) {
     NOTREACHED();
@@ -896,8 +911,8 @@ void Navigator::NavigateFromFrameProxy(
       download_policy, method, post_body, extra_headers,
       std::move(source_location), std::move(blob_url_loader_factory),
       is_form_submission, impression, navigation_start_time,
-      is_embedder_initiated_fenced_frame_navigation,
-      is_unfenced_top_navigation);
+      is_embedder_initiated_fenced_frame_navigation, is_unfenced_top_navigation,
+      force_new_browsing_instance);
 }
 
 void Navigator::BeforeUnloadCompleted(FrameTreeNode* frame_tree_node,
@@ -919,7 +934,7 @@ void Navigator::BeforeUnloadCompleted(FrameTreeNode* frame_tree_node,
   // after the navigation started. The last user input should be respected, and
   // the navigation cancelled anyway.
   if (!proceed) {
-    CancelNavigation(frame_tree_node);
+    CancelNavigation(frame_tree_node, NavigationDiscardReason::kCancelled);
     return;
   }
 
@@ -985,7 +1000,8 @@ void Navigator::OnBeginNavigation(
           .is_history_navigation_in_new_child_frame) {
     // Preemptively clear this local pointer before deleting the request.
     ongoing_navigation_request = nullptr;
-    frame_tree_node->ResetNavigationRequest(false);
+    frame_tree_node->ResetNavigationRequest(
+        NavigationDiscardReason::kNewNavigation);
   }
 
   // Verify this navigation has precedence.
@@ -1074,10 +1090,11 @@ void Navigator::RestartNavigationAsCrossDocument(
   // See https://crbug.com/770157.
 }
 
-void Navigator::CancelNavigation(FrameTreeNode* frame_tree_node) {
+void Navigator::CancelNavigation(FrameTreeNode* frame_tree_node,
+                                 NavigationDiscardReason reason) {
   if (frame_tree_node->navigation_request())
     frame_tree_node->navigation_request()->set_net_error(net::ERR_ABORTED);
-  frame_tree_node->ResetNavigationRequest(false);
+  frame_tree_node->ResetNavigationRequest(reason);
   if (frame_tree_node->IsMainFrame())
     navigation_data_.reset();
 }

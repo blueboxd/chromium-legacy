@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 import {MockFileEntry, MockFileSystem} from './mock_entry.js';
 import {VolumeManagerCommon} from './volume_manager_types.js';
@@ -43,13 +43,9 @@ export function testEveryRootTypeHasAVolumeType() {
     // switch because they do not have a corresponding volume.
     // TODO(tapted): Validate this against util.isFakeEntry(..) when
     // files_app_entry_types is moved to file_manager/base.
-    if (rootType === VolumeManagerCommon.RootType.RECENT ||
-        rootType === VolumeManagerCommon.RootType.RECENT_AUDIO ||
-        rootType === VolumeManagerCommon.RootType.RECENT_IMAGES ||
-        rootType === VolumeManagerCommon.RootType.RECENT_VIDEOS ||
-        rootType === VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT ||
-        rootType ===
-            VolumeManagerCommon.RootType.DEPRECATED_ADD_NEW_SERVICES_MENU) {
+    if (rootType.startsWith('DEPRECATED_') ||
+        rootType === VolumeManagerCommon.RootType.RECENT ||
+        rootType === VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT) {
       return;
     }
 
@@ -70,4 +66,17 @@ export function testIsRecentArcEntry() {
           'com.android.providers.media.documents:documents_root'),
       'Documents/abc.pdf');
   assertTrue(VolumeManagerCommon.isRecentArcEntry(recentEntry));
+}
+
+// Deprecated roots shouldn't have an enum on RootType, however all te indexes
+// in the UMA array has to still match the enums.xml.
+export function testRootTypeEnumIndexes() {
+  const numDeprecatedRoots =
+      VolumeManagerCommon.RootTypesForUMA
+          .filter(r => r.toLowerCase().startsWith('deprecated'))
+          .length;
+  assertEquals(
+      Object.keys(VolumeManagerCommon.RootType).length,
+      VolumeManagerCommon.RootTypesForUMA.length - numDeprecatedRoots,
+      'Members in RootTypesForUMA do not match them in RootTypes.');
 }

@@ -316,10 +316,10 @@ bool Database::OpenAndVerifyVersion(bool set_version_in_new_database,
       async_task_context->Schedule(GetExecutionContext(), "openDatabase");
       GetExecutionContext()
           ->GetTaskRunner(TaskType::kDatabaseAccess)
-          ->PostTask(FROM_HERE, WTF::Bind(&Database::RunCreationCallback,
-                                          WrapPersistent(this),
-                                          WrapPersistent(creation_callback),
-                                          std::move(async_task_context)));
+          ->PostTask(FROM_HERE, WTF::BindOnce(&Database::RunCreationCallback,
+                                              WrapPersistent(this),
+                                              WrapPersistent(creation_callback),
+                                              std::move(async_task_context)));
     }
   }
 
@@ -344,7 +344,7 @@ void Database::Close() {
     // Transaction phase 1 cleanup. See comment on "What happens if a
     // transaction is interrupted?" at the top of SQLTransactionBackend.cpp.
     SQLTransactionBackend* transaction = nullptr;
-    while (!transaction_queue_.IsEmpty()) {
+    while (!transaction_queue_.empty()) {
       transaction = transaction_queue_.TakeFirst();
       transaction->NotifyDatabaseThreadIsShuttingDown();
     }
@@ -388,7 +388,7 @@ void Database::InProgressTransactionCompleted() {
 void Database::ScheduleTransaction() {
   SQLTransactionBackend* transaction = nullptr;
 
-  if (is_transaction_queue_enabled_ && !transaction_queue_.IsEmpty())
+  if (is_transaction_queue_enabled_ && !transaction_queue_.empty())
     transaction = transaction_queue_.TakeFirst();
 
   if (transaction && GetDatabaseContext()->DatabaseThreadAvailable()) {
@@ -470,7 +470,7 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
                                     DatabaseError& error,
                                     String& error_message) {
   DoneCreatingDatabaseOnExitCaller on_exit_caller(this);
-  DCHECK(error_message.IsEmpty());
+  DCHECK(error_message.empty());
   DCHECK_EQ(error,
             DatabaseError::kNone);  // Better not have any errors already.
   // Presumed failure. We'll clear it if we succeed below.
@@ -855,9 +855,9 @@ void Database::RunTransaction(
       auto error = std::make_unique<SQLErrorData>(SQLError::kUnknownErr,
                                                   "database has been closed");
       GetDatabaseTaskRunner()->PostTask(
-          FROM_HERE, WTF::Bind(&CallTransactionErrorCallback,
-                               WrapPersistent(transaction_error_callback),
-                               std::move(error)));
+          FROM_HERE, WTF::BindOnce(&CallTransactionErrorCallback,
+                                   WrapPersistent(transaction_error_callback),
+                                   std::move(error)));
     }
   }
 }

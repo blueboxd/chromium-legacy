@@ -75,6 +75,7 @@ class CSSPropertyValueSet;
 class CSSStyleDeclaration;
 class CSSToggleMap;
 class CustomElementDefinition;
+class CustomElementRegistry;
 class DOMRect;
 class DOMRectList;
 class DOMStringMap;
@@ -190,6 +191,12 @@ enum class HidePopupForcingLevel {
 enum class HidePopupIndependence {
   kLeaveUnrelated,
   kHideUnrelated,
+};
+
+enum class PopUpAncestorType {
+  kDefault,
+  kNewPopUp,
+  kInclusive,
 };
 
 typedef HeapVector<Member<Attr>> AttrNodeList;
@@ -407,11 +414,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   Vector<gfx::Rect> OutlineRectsInWidget(
       DocumentUpdateReason reason = DocumentUpdateReason::kUnknown) const;
 
-  // Returns an intersection rectangle of the bounds rectangle and the visual
-  // viewport's rectangle in the visual viewport's coordinate space.
-  // Applies ancestors' frames' clipping, but does not (yet) apply (overflow)
-  // element clipping (crbug.com/889840).
-  gfx::Rect VisibleBoundsInVisualViewport() const;
+  // Returns the bounds of this element relative to the local root frame's
+  // origin. While the rect is relative to the local root, it is intersected
+  // with all ancestor frame clips, including the visual viewport transform and
+  // clip in the main frame. While this applies ancestor frame clipping, it
+  // does not (yet) apply (overflow) element clipping (crbug.com/889840).
+  gfx::Rect VisibleBoundsInLocalRoot() const;
 
   DOMRectList* getClientRects();
   // Returns a rectangle in zoomed pixel units.
@@ -598,8 +606,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void HidePopUpInternal(HidePopupFocusBehavior focus_behavior,
                          HidePopupForcingLevel forcing_level);
   void PopupHideFinishIfNeeded();
-  static const Element* NearestOpenAncestralPopup(const Node& node,
-                                                  bool inclusive = false);
+  static const Element* NearestOpenAncestralPopup(const Node&,
+                                                  PopUpAncestorType);
   // Retrieves the element pointed to by this element's 'anchor' content
   // attribute, if that element exists, and if this element is a pop-up.
   Element* anchorElement() const;
@@ -722,7 +730,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   ShadowRoot& AttachShadowRootInternal(
       ShadowRootType,
       FocusDelegation focus_delegation = FocusDelegation::kNone,
-      SlotAssignmentMode slot_assignment_mode = SlotAssignmentMode::kNamed);
+      SlotAssignmentMode slot_assignment_mode = SlotAssignmentMode::kNamed,
+      CustomElementRegistry* registry = nullptr);
 
   // Returns the shadow root attached to this element if it is a shadow host.
   ShadowRoot* GetShadowRoot() const;
@@ -1245,6 +1254,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void AddPropertyToPresentationAttributeStyle(MutableCSSPropertyValueSet*,
                                                CSSPropertyID,
                                                const CSSValue&);
+  void MapLanguageAttributeToLocale(const AtomicString&,
+                                    MutableCSSPropertyValueSet*);
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;
@@ -1467,7 +1478,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   void ClientQuads(Vector<gfx::QuadF>& quads) const;
 
-  NodeType getNodeType() const final;
   bool ChildTypeAllowed(NodeType) const final;
 
   // Returns the attribute's index or `kNotFound` if not found.

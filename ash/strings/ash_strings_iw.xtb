@@ -78,7 +78,6 @@
 <translation id="1306549533752902673">אפליקציות מומלצות</translation>
 <translation id="1312604459020188865">עוצמת האות: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">המדף תמיד מוצג</translation>
-<translation id="1316811122439383437">מדף: צילומי מסך אחרונים, הורדות וקבצים מוצמדים</translation>
 <translation id="132346741904777634">המצלמה מוצמדת לפינה הימנית העליונה. התנגשות עם תצוגת המערכת.</translation>
 <translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> מחובר</translation>
 <translation id="1341651618736211726">אפשרויות נוספות</translation>
@@ -166,6 +165,7 @@
 <translation id="1838895407229022812">תאורת הלילה כבויה.</translation>
 <translation id="1862380676329487333">עדכון ויציאה מהחשבון</translation>
 <translation id="1864454756846565995">‏מכשיר עם יציאת USB-C (יציאה אחורית)</translation>
+<translation id="1869497990620230175">קבצים מהירים</translation>
 <translation id="1879018240766558464">בשלב זה, אין תמיכה בחלונות פרטיים. אפליקציות אחרות יישמרו.</translation>
 <translation id="1882814835921407042">אין רשת סלולרית</translation>
 <translation id="1882897271359938046">משקף אל <ph name="DISPLAY_NAME" /></translation>
@@ -190,6 +190,7 @@
 <translation id="1989113344093894667">לא ניתן לצלם תוכן</translation>
 <translation id="1990046457226896323">הסתיימה ההורדה של קובצי הדיבור</translation>
 <translation id="1993072747612765854">מידע נוסף על העדכון האחרון של <ph name="SYSTEM_APP_NAME" /></translation>
+<translation id="1995660704900986789">כיבוי</translation>
 <translation id="1998100899771863792">שולחן העבודה הווירטואלי הנוכחי</translation>
 <translation id="2001444736072756133">חיפוש ב<ph name="CATEGORY" />, בקבצים, באפליקציות ועוד.</translation>
 <translation id="2016340657076538683">כאן מקלידים את ההודעה</translation>
@@ -226,6 +227,7 @@
 <translation id="2227179592712503583">הסרת ההצעה</translation>
 <translation id="225680501294068881">מתבצעת סריקה לאיתור מכשירים...</translation>
 <translation id="2257486738914982088">משהו השתבש במהלך ההורדה של <ph name="FILENAME" /></translation>
+<translation id="2258734398699965611">הצעות לקבצים</translation>
 <translation id="2268130516524549846">‏Bluetooth מושבת</translation>
 <translation id="2268813581635650749">הוצאת כולם</translation>
 <translation id="2269016722240250274">אפליקציה כלשהי משתמשת במיקרופון</translation>
@@ -236,6 +238,7 @@
 <translation id="2298170939937364391">‏הגדלה של כל המסך הופעלה. כדי להשבית אותה יש להקיש שוב על Ctrl+Search+M.</translation>
 <translation id="2302092602801625023">‏החשבון הזה מנוהל באמצעות Family Link</translation>
 <translation id="2303600792989757991">החלפת סקירת חלון</translation>
+<translation id="2315005022200073389"><ph name="HOLDING_SPACE_TITLE" />: צילומי מסך אחרונים, הורדות וקבצים מוצמדים</translation>
 <translation id="2318576281648121272">היום <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060"><ph name="CATEGORY" /> , קטגוריה של תוצאות חיפוש</translation>
 <translation id="2322173485024759474">אות אחת אחורה</translation>
@@ -370,6 +373,7 @@
 <translation id="3105990244222795498">‏<ph name="DEVICE_NAME" />‏ (Bluetooth)</translation>
 <translation id="3120421559657122717">לכבות את המכשיר?</translation>
 <translation id="3126069444801937830">הפעלה מחדש כדי לעדכן</translation>
+<translation id="3139382871451988441">השבתת הגישה למצלמה.</translation>
 <translation id="3139942575505304791">שולחן עבודה 1</translation>
 <translation id="315116470104423982">נתוני נייד</translation>
 <translation id="3151786313568798007">כיוון</translation>
@@ -492,7 +496,6 @@
 <translation id="383058930331066723">מצב חיסכון בסוללה מופעל</translation>
 <translation id="383629559565718788">צפייה בהגדרות המקלדת</translation>
 <translation id="384082539148746321">למחוק את התבנית?</translation>
-<translation id="3842239759367498783">אפשר להמשיך לקרוא מהמכשיר הנייד <ph name="TITLE" /></translation>
 <translation id="3846575436967432996">אין מידע רשת זמין</translation>
 <translation id="385051799172605136">חזרה</translation>
 <translation id="385300504083504382">התחלה</translation>
@@ -507,7 +510,6 @@
 <translation id="3922427723338465344">{0,plural, =1{שינוי המכשיר לגרסה קודמת בתוך דקה}two{שינוי המכשיר לגרסה קודמת בתוך # דקות}many{שינוי המכשיר לגרסה קודמת בתוך # דקות}other{שינוי המכשיר לגרסה קודמת בתוך # דקות}}</translation>
 <translation id="3923494859158167397">לא הוגדרו רשתות סלולריות</translation>
 <translation id="3925540965556789199"><ph name="DATE" />, האירועים בטעינה.</translation>
-<translation id="392627956579011934">נדרשת הפעלה מחדש כדי להתקין את קובצי זיהוי הדיבור.</translation>
 <translation id="3932043219784172185">אין מכשיר מחובר</translation>
 <translation id="3934456833412894880">הטעינה הדינמית מופעלת. רמת הטעינה של הסוללה תישאר על 80% כדי להאריך את חיי הסוללה, ותתבצע טעינה מלאה כשיהיה בכך צורך.</translation>
 <translation id="3943857333388298514">הדבקה</translation>
@@ -562,7 +564,6 @@
 <translation id="4242533952199664413">פתיחת ההגדרות</translation>
 <translation id="4247123849143712100">עדכון וכיבוי</translation>
 <translation id="4250229828105606438">צילום מסך</translation>
-<translation id="4250899820387052060">קבצים מהירים</translation>
 <translation id="425364040945105958">‏אין כרטיס SIM</translation>
 <translation id="4261870227682513959">צפייה בהגדרות של הודעות. ההודעות מושבתות</translation>
 <translation id="4269883910223712419">מנהל המכשיר הזה יכול:</translation>
@@ -648,6 +649,7 @@
 <ph name="QUERY" /></translation>
 <translation id="4659419629803378708">‏ChromeVox הופעל</translation>
 <translation id="4665114317261903604">החלפת מצב 'נא לא להפריע'. <ph name="STATE_TEXT" /></translation>
+<translation id="4666082839192943839">כדי לחסום את כל המצלמות כל הזמן, צריך להשבית את הגישה למצלמה במכשיר הזה.</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" /> בהורדה</translation>
 <translation id="4690510401873698237">המדף בחלק התחתון</translation>
 <translation id="4696813013609194136">ביטול נעילת המכשיר באמצעות קוד הורה</translation>
@@ -658,7 +660,6 @@
 <translation id="4731797938093519117">גישת הורים</translation>
 <translation id="4733161265940833579">%<ph name="BATTERY_PERCENTAGE" /> (שמאל)</translation>
 <translation id="4734965478015604180">אופקי</translation>
-<translation id="4735498845456076464">מקשי הקיצור <ph name="LAUNCHER_KEY_NAME" /> + ספרה הוחלפו. כדי לדמות את הפעולה של מקשי הפונקציה, יש להקיש על המקש <ph name="LAUNCHER_KEY_NAME" /> + מקש כלשהו בשורה העליונה של המקלדת.</translation>
 <translation id="473775607612524610">עדכון</translation>
 <translation id="4740516757091333363">למחוק את שולחן העבודה השמור?</translation>
 <translation id="4752784485658729358">ניתן לשמור רק 6 שולחנות עבודה וירטואליים. צריך להסיר שולחן עבודה וירטואלי כדי לשמור אחד חדש.</translation>
@@ -667,6 +668,7 @@
 <translation id="4776917500594043016">סיסמה עבור <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">‏חנות Play</translation>
 <translation id="4778095205580009397">‏Google Assistant לא זמינה בסשן הדגמה.</translation>
+<translation id="4789348252524569426">לא ניתן להתקין את קובצי זיהוי הדיבור. צריך לעדכן את המכשיר. כדאי להפעיל מחדש את המכשיר ולנסות שוב.</translation>
 <translation id="479989351350248267">Search</translation>
 <translation id="4804818685124855865">ניתוק</translation>
 <translation id="4814539958450445987">מסך הכניסה</translation>
@@ -768,16 +770,6 @@
 <translation id="5393156353051693207">לוחצים לחיצה ארוכה במקום כלשהו כדי למיין מחדש את האפליקציות</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> מעל <ph name="IN_PLACE_APP" />. יש לשחרר כדי ליצור תיקייה.</translation>
 <translation id="5397578532367286026">‏המנהל (<ph name="MANAGER_EMAIL" />) יכול לבדוק את השימוש וההיסטוריה של משתמש זה ב-chrome.com.</translation>
-<translation id="5399673806694250334">מגש סטטוס, שעה <ph name="TIME" />,
-        <ph name="BATTERY" />
-        <ph name="CHANNEL" />
-        <ph name="NETWORK" />,
-        <ph name="MIC" />,
-        <ph name="CAMERA" />,
-        <ph name="MANAGED" />
-        <ph name="NOTIFICATION" />,
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="5400461572260843123">הגדרות מהירות, יש להקיש על מקש החיפוש ביחד עם מקש חץ שמאלה כדי לגשת אל מרכז ההתראות.</translation>
 <translation id="5426063383988017631">תפריט ההגדרות נסגר</translation>
 <translation id="5428899915242071344">אני רוצה להתחיל לבחור</translation>
@@ -897,9 +889,11 @@
 <translation id="6064463340679478396">סיימתי להשתמש בקובץ</translation>
 <translation id="6073451960410192870">הפסקת צילום הסרטון</translation>
 <translation id="6074087755403037157">ערוץ בטא</translation>
+<translation id="6095008505822982596">קצב דיבור</translation>
 <translation id="6099678161144790572">נערך בחודש האחרון</translation>
 <translation id="6103838137565245112">מערכת</translation>
 <translation id="6114505516289286752">הורדת קובצי הדיבור של <ph name="LANGUAGE" /> הסתיימה</translation>
+<translation id="6116825164611323644">הגישה למצלמה מושבתת במכשיר הזה</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">אישור ההורדה של <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">‏Google Assistant לא זמינה בגלישה כאורח.</translation>
@@ -1000,7 +994,6 @@
 <translation id="6700713906295497288">‏לחצן תפריט IME</translation>
 <translation id="6707693040195709527">מועד שינוי המכשיר לגרסה קודמת כבר חלף</translation>
 <translation id="6710213216561001401">הקודם</translation>
-<translation id="6713285437468012787">‏מכשיר ה-Bluetooth‏ "<ph name="DEVICE_NAME" />" הותאם והוא זמין כעת לכל המשתמשים. ניתן להסיר את ההתאמה הזו ב'הגדרות'.</translation>
 <translation id="6723839937902243910">חשמל</translation>
 <translation id="6727969043791803658">‏מחובר, ‎<ph name="BATTERY_PERCENTAGE" />%‎ סוללה</translation>
 <translation id="6732800389263199929">‎+<ph name="COUNT" /></translation>
@@ -1098,7 +1091,6 @@
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7313193732017069507">הרחבת המצלמה</translation>
 <translation id="731589979057211264">מצב קבוצת המדפים פועל.</translation>
-<translation id="7319740667687257810">מרכז האפליקציות, תצוגה חלקית</translation>
 <translation id="7346909386216857016">בסדר, הבנתי</translation>
 <translation id="7348093485538360975">מקלדת על המסך</translation>
 <translation id="735745346212279324">‏VPN מנותק</translation>
@@ -1126,6 +1118,7 @@
 <translation id="746232733191930409">מצב הקלטת מסך</translation>
 <translation id="7466449121337984263">יש לגעת בחיישן</translation>
 <translation id="7477793887173910789">שליטה במוזיקה, בסרטונים ועוד</translation>
+<translation id="7490360161041035804">‏ניתן להצמיד קבצים חשובים, כולל קבצים מ-Google Drive. כדי להצמיד, מעבירים את העכבר מעל פריט או פותחים את 'קבצים' ולוחצים לחיצה ימנית על פריט.</translation>
 <translation id="7497767806359279797">בחירת שפה ומקלדת</translation>
 <translation id="7508690557411636492">נפתח בחודש האחרון</translation>
 <translation id="7509246181739783082">אימות זהות</translation>
@@ -1145,6 +1138,7 @@
 <translation id="7564874036684306347">העברת חלונות לשולחן עבודה אחר עלולה לגרום להתנהגות בלתי צפויה.
 
 ייתכן שהודעות, חלונות ותיבות דו-שיח יתפצלו בהמשך בין שולחנות עבודה.</translation>
+<translation id="7567076708801803118">רוצה להשבית את הגישה למצלמה במכשיר הזה?</translation>
 <translation id="7569509451529460200">‏כתב ברייל ו-ChromeVox מופעלים</translation>
 <translation id="7573585051776738856">החלון הפעיל מוצמד לצד שמאל.</translation>
 <translation id="7579778809502851308">צילום מסך</translation>
@@ -1224,6 +1218,7 @@
 <translation id="7982789257301363584">רשת</translation>
 <translation id="7984197416080286869">יותר מדי ניסיונות טביעת אצבע</translation>
 <translation id="798779949890829624">ההגדרה הזו מנוהלת על-ידי האדמין</translation>
+<translation id="799296642788192631">ניתן להצמיד קבצים חשובים. כדי להצמיד, מעבירים את העכבר מעל פריט או פותחים את 'קבצים' ולוחצים לחיצה ימנית על פריט.</translation>
 <translation id="7994370417837006925">כניסה עם מספר חשבונות</translation>
 <translation id="7995804128062002838">צילום המסך נכשל</translation>
 <translation id="8000066093800657092">אין רשת</translation>
@@ -1255,7 +1250,6 @@
 <translation id="8152264887680882389"><ph name="TEXT" />, השלמה אוטומטית</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> ההגדרה הזו מנוהלת על-ידי מנהל המערכת שלך.</translation>
 <translation id="8155628902202578800">פתיחת תיבת דו-שיח עם מידע על <ph name="USER_EMAIL_ADDRESS" /></translation>
-<translation id="8157728322324420120">הצעות בשבילך</translation>
 <translation id="8167567890448493835">המיקום הנוכחי הוא<ph name="LOCALE_NAME" /></translation>
 <translation id="8183592608247778598">הצגת התמונות, המדיה, ההתראות והאפליקציות שבטלפון מהזמן האחרון ב-<ph name="DEVICE_TYPE" /></translation>
 <translation id="8192202700944119416">ההתראות מוסתרות.</translation>
@@ -1352,6 +1346,7 @@
 <translation id="8734991477317290293">ייתכן שהיא מנסה לתעד את ההקשות שלך.</translation>
 <translation id="8735678380411481005">הצבע של התאורה האחורית של המקלדת</translation>
 <translation id="8735953464173050365">צפייה בהגדרות המקלדת. המקלדת שנבחרה היא <ph name="KEYBOARD_NAME" /></translation>
+<translation id="8752416742247198423">עליך להעניק גישה למצלמה כדי לאפשר לאפליקציות ולדפי אינטרנט עם הרשאת גישה למצלמה להשתמש במצלמות שמחוברות למכשיר הזה.</translation>
 <translation id="8755498163081687682">אימות הזהות שלך: על מנת להתחבר אל <ph name="ORIGIN_NAME" /> יש לאמת את זהותך</translation>
 <translation id="875593634123171288">‏צפייה בהגדרות VPN</translation>
 <translation id="8759408218731716181">לא ניתן להגדיר כניסה עם מספר חשבונות</translation>
@@ -1366,6 +1361,7 @@
 <translation id="8819728065740986820">הטעינה הדינמית מופעלת</translation>
 <translation id="8825863694328519386">יש להחליק מצד ימין כדי לחזור אחורה</translation>
 <translation id="8834539327799336565">מחובר עכשיו</translation>
+<translation id="8834657930627018205">צריך להעניק גישה למצלמה.</translation>
 <translation id="8841375032071747811">לחצן 'הקודם'</translation>
 <translation id="8843682306134542540">הפעלה או השבתה של נעילת הסיבוב. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>

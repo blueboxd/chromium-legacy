@@ -23,7 +23,6 @@ group("resources") {
     public_deps += [
       ":component_extension_resources",
       ":dev_ui_paks",
-      ":webid_resources",
       "access_code_cast:resources",
       "app_service_internals:resources",
       "bookmarks:resources",
@@ -36,6 +35,7 @@ group("resources") {
       "history:resources",
       "image_editor:trusted_resources",
       "image_editor:untrusted_resources",
+      "inline_login:resources",
       "management:resources",
       "new_tab_page:resources",
       "new_tab_page_instant:resources",
@@ -128,7 +128,6 @@ if (enable_js_type_check) {
       deps += [
         "gaia_auth_host:closure_compile",
         "image_editor:closure_compile",
-        "inline_login:closure_compile",
       ]
     }
     if (is_chromeos_ash) {
@@ -170,7 +169,10 @@ if (!is_android) {
     # Some resources within component_extension_resources.grd are generated at
     # build time so we include them as explicit dependencies here
     if (is_chromeos) {
-      deps = [ "chromeos/contact_center_insights:generate_ccaas_deps" ]
+      deps = [
+        "chromeos/contact_center_insights:generate_ccaas_deps",
+        "chromeos/desk_api:generate_desk_api_bundle",
+      ]
     }
 
     outputs = [
@@ -178,18 +180,6 @@ if (!is_android) {
       "grit/component_extension_resources_map.cc",
       "grit/component_extension_resources_map.h",
       "component_extension_resources.pak",
-    ]
-    output_dir = "$root_gen_dir/chrome"
-  }
-
-  grit("webid_resources") {
-    source = "webid/webid_resources.grd"
-    defines = chrome_grit_defines
-    outputs = [
-      "grit/webid_resources.h",
-      "grit/webid_resources_map.cc",
-      "grit/webid_resources_map.h",
-      "webid_resources_100_percent.pak",
     ]
     output_dir = "$root_gen_dir/chrome"
   }
@@ -289,6 +279,7 @@ repack("dev_ui_paks") {
     "$root_gen_dir/components/dev_ui_components_resources.pak",
     "$root_gen_dir/components/download_internals_resources.pak",
     "$root_gen_dir/components/history_clusters_internals_resources.pak",
+    "$root_gen_dir/components/metrics_internals_resources.pak",
     "$root_gen_dir/components/optimization_guide_internals_resources.pak",
     "$root_gen_dir/components/sync_driver_sync_internals_resources.pak",
     "$root_gen_dir/content/browser/resources/media/media_internals_resources.pak",
@@ -307,6 +298,7 @@ repack("dev_ui_paks") {
     "//chrome/browser/resources/usb_internals:resources",
     "//components/download/resources/download_internals:resources",
     "//components/history_clusters/history_clusters_internals/resources",
+    "//components/metrics/debug:resources",
     "//components/optimization_guide/optimization_guide_internals/resources",
     "//components/resources:dev_ui_components_resources",
     "//components/sync/driver/resources",

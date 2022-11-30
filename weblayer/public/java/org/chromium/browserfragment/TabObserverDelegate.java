@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,21 +20,28 @@ class TabObserverDelegate extends ITabObserverDelegate.Stub {
 
     private ObserverList<TabObserver> mTabObservers = new ObserverList<TabObserver>();
 
+    public TabObserverDelegate() {
+        // Assert on UI thread as ObserverList can only be accessed from one thread.
+        ThreadCheck.ensureOnUiThread();
+    }
+
     /**
-     * Registers a {@link TabObserver}.
+     * Registers a {@link TabObserver}. Call only from the UI thread.
      *
      * @return true if the observer was added to the list of observers.
      */
     boolean registerObserver(TabObserver tabObserver) {
+        ThreadCheck.ensureOnUiThread();
         return mTabObservers.addObserver(tabObserver);
     }
 
     /**
-     * Unregisters a {@link TabObserver}.
+     * Unregisters a {@link TabObserver}. Call only from the UI thread.
      *
      * @return true if the observer was removed from the list of observers.
      */
     boolean unregisterObserver(TabObserver tabObserver) {
+        ThreadCheck.ensureOnUiThread();
         return mTabObservers.removeObserver(tabObserver);
     }
 

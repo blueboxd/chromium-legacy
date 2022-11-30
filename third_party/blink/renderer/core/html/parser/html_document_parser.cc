@@ -491,6 +491,12 @@ HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document,
   script_runner_ =
       HTMLParserScriptRunner::Create(ReentryPermit(), &document, this);
 
+  if (can_use_background_token_producer && document.IsInitialEmptyDocument()) {
+    // Empty docs generally have no data, so that using a background tokenizer
+    // for them is overkill. Eempty docs may be written to (via
+    // document.write()), but this disables the background tokenizer too.
+    can_use_background_token_producer = false;
+  }
   CreateTokenProducer(can_use_background_token_producer);
 
   // Allow declarative shadow DOM for the document parser, if not explicitly
@@ -598,6 +604,12 @@ bool HTMLDocumentParser::HasPendingWorkScheduledForTesting() const {
   return task_runner_state_->IsScheduled();
 }
 
+unsigned HTMLDocumentParser::GetChunkCountForTesting() const {
+  // If `metrics_reporter_` is not set, chunk count is not tracked.
+  DCHECK(metrics_reporter_);
+  return metrics_reporter_->chunk_count();
+}
+
 void HTMLDocumentParser::Detach() {
   // Unwind any nested batch operations before being detached
   FlushFetchBatch();
@@ -678,7 +690,9 @@ bool HTMLDocumentParser::IsParsingFragment() const {
   return tree_builder_->IsParsingFragment();
 }
 
-void HTMLDocumentParser::DeferredPumpTokenizerIfPossible() {
+void HTMLDocumentParser::DeferredPumpTokenizerIfPossible(
+    bool from_finish_append,
+    base::TimeTicks schedule_time) {
   // This method is called asynchronously, continues building the HTML document.
 
   // If we're scheduled for a tokenizer pump, then document should be attached
@@ -691,6 +705,13 @@ void HTMLDocumentParser::DeferredPumpTokenizerIfPossible() {
   TRACE_EVENT2("blink", "HTMLDocumentParser::DeferredPumpTokenizerIfPossible",
                "parser", (void*)this, "state",
                task_runner_state_->GetStateAsString());
+
+  if (metrics_reporter_ && from_finish_append && !did_pump_tokenizer_) {
+    base::UmaHistogramCustomMicrosecondsTimes(
+        "Blink.HTMLParsing.TimeToDeferredPumpTokenizer4",
+        base::TimeTicks::Now() - schedule_time, base::Microseconds(1),
+        base::Seconds(1), 100);
+  }
 
   // This method is called when the post task is executed, marking the end of
   // a yield. Report the yielded time.
@@ -731,7 +752,7 @@ void HTMLDocumentParser::PumpTokenizerIfPossible() {
 
   if (yielded) {
     DCHECK(!task_runner_state_->ShouldComplete());
-    SchedulePumpTokenizer();
+    SchedulePumpTokenizer(/*from_finish_append=*/false);
   } else if (task_runner_state_->ShouldAttemptToEndOnEOF()) {
     // Fall into this branch if ::Finish has been previously called and we've
     // just finished asynchronously parsing everything.
@@ -912,7 +933,7 @@ bool HTMLDocumentParser::PumpTokenizer() {
     // There should only be PendingText left since the tree-builder always
     // flushes the task queue before returning. In case that ever changes,
     // crash.
-    tree_builder_->Flush(kFlushAlways);
+    tree_builder_->Flush();
     CHECK(!IsStopped());
   }
 
@@ -948,7 +969,7 @@ bool HTMLDocumentParser::PumpTokenizer() {
   return should_yield;
 }
 
-void HTMLDocumentParser::SchedulePumpTokenizer() {
+void HTMLDocumentParser::SchedulePumpTokenizer(bool from_finish_append) {
   TRACE_EVENT0("blink", "HTMLDocumentParser::SchedulePumpTokenizer");
   DCHECK(!IsStopped());
   DCHECK(!task_runner_state_->InPumpSession());
@@ -958,8 +979,10 @@ void HTMLDocumentParser::SchedulePumpTokenizer() {
     return;
   }
   loading_task_runner_->PostTask(
-      FROM_HERE, WTF::Bind(&HTMLDocumentParser::DeferredPumpTokenizerIfPossible,
-                           WrapPersistent(this)));
+      FROM_HERE,
+      WTF::BindOnce(&HTMLDocumentParser::DeferredPumpTokenizerIfPossible,
+                    WrapPersistent(this), from_finish_append,
+                    base::TimeTicks::Now()));
   task_runner_state_->SetState(
       HTMLDocumentParserState::DeferredParserState::kScheduled);
 
@@ -976,8 +999,9 @@ void HTMLDocumentParser::ScheduleEndIfDelayed() {
   if (!task_runner_state_->IsScheduled()) {
     loading_task_runner_->PostTask(
         FROM_HERE,
-        WTF::Bind(&HTMLDocumentParser::DeferredPumpTokenizerIfPossible,
-                  WrapPersistent(this)));
+        WTF::BindOnce(&HTMLDocumentParser::DeferredPumpTokenizerIfPossible,
+                      WrapPersistent(this),
+                      /*from_finish_append=*/false, base::TimeTicks::Now()));
     yield_timer_ = std::make_unique<base::ElapsedTimer>();
   }
   // If a pump is already scheduled, it's OK to just upgrade it to one
@@ -1011,7 +1035,7 @@ bool HTMLDocumentParser::HasInsertionPoint() {
 
 void HTMLDocumentParser::insert(const String& source) {
   // No need to do any processing if the supplied text is empty.
-  if (IsStopped() || source.IsEmpty())
+  if (IsStopped() || source.empty())
     return;
 
   TRACE_EVENT2("blink", "HTMLDocumentParser::insert", "source_length",
@@ -1124,16 +1148,10 @@ void HTMLDocumentParser::Append(const String& input_source) {
 }
 
 void HTMLDocumentParser::FinishAppend() {
-  // Schedule a tokenizer pump to process this new data. We schedule to give
-  // paint a chance to happen, and because devtools somehow depends on it
-  // for js loads.
-  if (task_runner_state_->GetMode() ==
-          ParserSynchronizationPolicy::kAllowDeferredParsing &&
-      !task_runner_state_->ShouldComplete()) {
-    SchedulePumpTokenizer();
-  } else {
+  if (ShouldPumpTokenizerNowForFinishAppend())
     PumpTokenizerIfPossible();
-  }
+  else
+    SchedulePumpTokenizer(/*from_finish_append=*/true);
 }
 
 void HTMLDocumentParser::CommitPreloadedData() {
@@ -1293,7 +1311,7 @@ void HTMLDocumentParser::ResumeParsingAfterPause() {
   if (task_runner_state_->GetMode() == kAllowDeferredParsing &&
       !task_runner_state_->ShouldComplete() &&
       !task_runner_state_->InPumpSession()) {
-    SchedulePumpTokenizer();
+    SchedulePumpTokenizer(/*from_finish_append=*/false);
   } else {
     ShouldCompleteScope should_complete(task_runner_state_);
     PumpTokenizerIfPossible();
@@ -1430,7 +1448,6 @@ void HTMLDocumentParser::Flush() {
 
 void HTMLDocumentParser::SetDecoder(
     std::unique_ptr<TextResourceDecoder> decoder) {
-  DCHECK(decoder);
   DecodedDataDocumentParser::SetDecoder(std::move(decoder));
 }
 
@@ -1533,7 +1550,7 @@ void HTMLDocumentParser::FetchQueuedPreloads() {
   DCHECK(preloader_);
   TRACE_EVENT0("blink", "HTMLDocumentParser::FetchQueuedPreloads");
 
-  if (!queued_preloads_.IsEmpty()) {
+  if (!queued_preloads_.empty()) {
     base::ElapsedTimer timer;
     preloader_->TakeAndPreload(queued_preloads_);
     base::UmaHistogramTimes(base::StrCat({"Blink.FetchQueuedPreloadsTime",
@@ -1598,7 +1615,7 @@ void HTMLDocumentParser::AddPreloadDataOnBackgroundThread(
     base::AutoLock lock(pending_preload_lock_);
     // Only post a task if the preload data is empty. Otherwise, a task has
     // already been posted and will consume the new data.
-    should_post_task = pending_preload_data_.IsEmpty();
+    should_post_task = pending_preload_data_.empty();
     pending_preload_data_.push_back(std::move(preload_data));
   }
 
@@ -1617,6 +1634,9 @@ void HTMLDocumentParser::FlushPendingPreloads() {
 
   if (IsDetached() || !preloader_)
     return;
+
+  // Batch the preload requests across multiple chunks
+  FetchBatchScope fetch_batch(this);
 
   // Do this in a loop in case more preloads are added in the background.
   while (HasPendingPreloads()) {
@@ -1664,6 +1684,28 @@ void HTMLDocumentParser::FlushFetchBatch() {
       fetcher->EndBatch();
     }
   }
+}
+
+bool HTMLDocumentParser::ShouldPumpTokenizerNowForFinishAppend() const {
+  if (task_runner_state_->GetMode() !=
+          ParserSynchronizationPolicy::kAllowDeferredParsing ||
+      task_runner_state_->ShouldComplete()) {
+    return true;
+  }
+  if (!base::FeatureList::IsEnabled(features::kProcessHtmlDataImmediately))
+    return false;
+
+  // When a debugger is attached a nested message loop may be created during
+  // commit. Processing the data now can lead to unexpected states.
+  // TODO(https://crbug.com/1364695): see if this limitation can be removed.
+  if (auto* sink = probe::ToCoreProbeSink(GetDocument())) {
+    if (sink->HasAgentsGlobal(CoreProbeSink::kInspectorDOMDebuggerAgent))
+      return false;
+  }
+
+  return did_pump_tokenizer_
+             ? features::kProcessHtmlDataImmediatelySubsequentChunks.Get()
+             : features::kProcessHtmlDataImmediatelyFirstChunk.Get();
 }
 
 }  // namespace blink

@@ -1,4 +1,4 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -107,6 +107,16 @@ component("controller") {
 
   configs -= [ "//build/config/compiler:default_symbols" ]
   configs += blink_symbols_config
+
+  # These targets are not necessary to build the Blink renderer, however, these
+  # targets are quite useful for Blink developers to get error if any when
+  # adding/editing *.idl files, especially because it's very easy to forget to
+  # add generated bindings files to the lists defined in
+  # generated_in_{core,modules}.gni. Hence, run the check scripts here.
+  deps += [
+    "//third_party/blink/renderer/bindings:check_generated_file_list",
+    "//third_party/blink/renderer/bindings:validate_web_idl",
+  ]
 }
 
 group("blink_unittests_data") {
@@ -132,7 +142,6 @@ test("blink_unittests") {
   data_deps = [
     ":blink_unittests_data",
     "//content/shell:pak",
-    "//testing/buildbot/filters:blink_unittests_filters",
   ]
 
   if (is_android) {
@@ -148,8 +157,6 @@ test("blink_unittests") {
   }
 
   if (is_fuchsia) {
-    use_cfv1 = false
-
     # TODO(https://crbug.com/1185811): Investigate removing the requirement for
     # job_policy_ambient_mark_vmo_exec for the sake of V8's allocator in tests.
     test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"

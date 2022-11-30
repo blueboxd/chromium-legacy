@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,7 +120,7 @@ void PendingBeaconDispatcher::PageVisibilityChanged() {
 }
 
 void PendingBeaconDispatcher::ScheduleDispatchBeacons() {
-  if (pending_beacons_.IsEmpty()) {
+  if (pending_beacons_.empty()) {
     return;
   }
 
@@ -142,7 +142,7 @@ void PendingBeaconDispatcher::ScheduleDispatchBeacons() {
   // | 500ms | 201ms | 101ms | 100ms | 99ms | 1ms | 0ms |
   // |---------------------------------------------------
   //
-  CopyToVector(pending_beacons_, background_timeout_descending_beacons_);
+  background_timeout_descending_beacons_.assign(pending_beacons_);
   std::sort(background_timeout_descending_beacons_.begin(),
             background_timeout_descending_beacons_.end(),
             ReverseBeaconTimeoutSorter());
@@ -152,7 +152,7 @@ void PendingBeaconDispatcher::ScheduleDispatchBeacons() {
 }
 
 void PendingBeaconDispatcher::ScheduleDispatchNextBundledBeacons() {
-  if (background_timeout_descending_beacons_.IsEmpty()) {
+  if (background_timeout_descending_beacons_.empty()) {
     return;
   }
 
@@ -191,8 +191,8 @@ void PendingBeaconDispatcher::ScheduleDispatchNextBundledBeacons() {
   // this class and members should not outlive the Document (ExecutionContext).
   task_handle_ = PostNonNestableDelayedCancellableTask(
       *task_runner, FROM_HERE,
-      WTF::Bind(&PendingBeaconDispatcher::OnDispatchBeaconsAndRepeat,
-                WrapWeakPersistent(this), start_index),
+      WTF::BindOnce(&PendingBeaconDispatcher::OnDispatchBeaconsAndRepeat,
+                    WrapWeakPersistent(this), start_index),
       delayed);
 }
 

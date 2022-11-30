@@ -1480,12 +1480,12 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, StretchContentToFillBounds) {
   auto* output_quad = render_pass->quad_list.back();
 
   EXPECT_EQ(DrawQuad::Material::kSolidColor, output_quad->material);
-  gfx::RectF output_rect(100.f, 100.f);
 
   // SurfaceAggregator should stretch the SolidColorDrawQuad to fit the bounds
   // of the parent's SurfaceDrawQuad.
-  output_quad->shared_quad_state->quad_to_target_transform.TransformRect(
-      &output_rect);
+  gfx::RectF output_rect =
+      output_quad->shared_quad_state->quad_to_target_transform.MapRect(
+          gfx::RectF(100.f, 100.f));
 
   EXPECT_EQ(gfx::RectF(50.f, 25.f), output_rect);
 }
@@ -1547,12 +1547,12 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, StretchContentToFillStretchedBounds) {
   auto* output_quad = render_pass->quad_list.back();
 
   EXPECT_EQ(DrawQuad::Material::kSolidColor, output_quad->material);
-  gfx::RectF output_rect(200.f, 200.f);
 
   // SurfaceAggregator should stretch the SolidColorDrawQuad to fit the bounds
   // of the parent's SurfaceDrawQuad.
-  output_quad->shared_quad_state->quad_to_target_transform.TransformRect(
-      &output_rect);
+  gfx::RectF output_rect =
+      output_quad->shared_quad_state->quad_to_target_transform.MapRect(
+          gfx::RectF(200.f, 200.f));
 
   EXPECT_EQ(gfx::RectF(100.f, 50.f), output_rect);
 }
@@ -5043,7 +5043,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
 
     auto* child_noninvertible_sqs =
         child_pass_list[2]->shared_quad_state_list.ElementAt(0u);
-    child_noninvertible_sqs->quad_to_target_transform.matrix().setRC(0, 0, 0.0);
+    child_noninvertible_sqs->quad_to_target_transform.set_rc(0, 0, 0.0);
     EXPECT_FALSE(
         child_noninvertible_sqs->quad_to_target_transform.IsInvertible());
     child_pass_list[2]->quad_list.ElementAt(0)->visible_rect =
@@ -6877,7 +6877,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, DamageRectWithClippedChildSurface) {
   { auto aggregated_frame = AggregateFrame(root_surface_id_); }
 
   // Parameters used for damage rect testing
-  gfx::Transform transform(0.5, 0, 0, 0.5, 20, 0);
+  auto transform = gfx::Transform::MakeTranslation(20, 0) *
+                   gfx::Transform::MakeScale(0.5, 0.5);
   gfx::Rect clip_rect = gfx::Rect(30, 30, 40, 40);
 
   // Clipping is off
@@ -7069,7 +7070,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, OverlayOccludingDamageRect) {
 
   // Original video quad (0, 0, 100, 100) x this video_transform matrix ==
   // (10, 0, 80, 80).
-  gfx::Transform video_transform(0.8f, 0, 0, 0.8f, 10.0f, 0);
+  auto video_transform = gfx::Transform::MakeTranslation(10.f, 0) *
+                         gfx::Transform::MakeScale(0.8f);
 
   // root surface quads
   std::vector<Quad> root_surface_quads = {
@@ -7434,8 +7436,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RenderPassHasPerQuadDamage) {
                                        std::move(child_surface_frame));
   }
   gfx::PointF child_surface_offset(10.0f, 5.0f);
-  gfx::Transform child_surface_transform(
-      1.f, 0, 0, 1.f, child_surface_offset.x(), child_surface_offset.y());
+  gfx::Transform child_surface_transform = gfx::Transform::MakeTranslation(
+      child_surface_offset.x(), child_surface_offset.y());
 
   auto apply_transform = [child_surface_offset](const gfx::Rect orig_rect) {
     auto rtn_rect = orig_rect;
@@ -8609,14 +8611,13 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, DelegatedInkMetadataTest) {
 
   // Update the expected metadata to reflect the transforms to point and area
   // that are expected to occur.
-  gfx::PointF pt = metadata.point();
-  gfx::RectF area = metadata.presentation_area();
-  root_frame.render_pass_list[0]
-      ->shared_quad_state_list.ElementAt(0)
-      ->quad_to_target_transform.TransformPoint(&pt);
-  root_frame.render_pass_list[0]
-      ->shared_quad_state_list.ElementAt(0)
-      ->quad_to_target_transform.TransformRect(&area);
+  gfx::PointF pt = root_frame.render_pass_list[0]
+                       ->shared_quad_state_list.ElementAt(0)
+                       ->quad_to_target_transform.MapPoint(metadata.point());
+  gfx::RectF area =
+      root_frame.render_pass_list[0]
+          ->shared_quad_state_list.ElementAt(0)
+          ->quad_to_target_transform.MapRect(metadata.presentation_area());
   metadata = gfx::DelegatedInkMetadata(
       pt, metadata.diameter(), metadata.color(), metadata.timestamp(), area,
       metadata.frame_time(), metadata.is_hovering());
@@ -8693,14 +8694,13 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
 
   // Update the expected metadata to reflect the transforms to point and area
   // that are expected to occur.
-  gfx::PointF pt = metadata.point();
-  gfx::RectF area = metadata.presentation_area();
-  grandchild_frame.render_pass_list[0]
-      ->shared_quad_state_list.ElementAt(0)
-      ->quad_to_target_transform.TransformPoint(&pt);
-  grandchild_frame.render_pass_list[0]
-      ->shared_quad_state_list.ElementAt(0)
-      ->quad_to_target_transform.TransformRect(&area);
+  gfx::PointF pt = grandchild_frame.render_pass_list[0]
+                       ->shared_quad_state_list.ElementAt(0)
+                       ->quad_to_target_transform.MapPoint(metadata.point());
+  gfx::RectF area =
+      grandchild_frame.render_pass_list[0]
+          ->shared_quad_state_list.ElementAt(0)
+          ->quad_to_target_transform.MapRect(metadata.presentation_area());
 
   TestSurfaceIdAllocator grandchild_surface_id(
       grand_child_support->frame_sink_id());
@@ -8721,12 +8721,12 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
       ->shared_quad_state_list.ElementAt(0)
       ->quad_to_target_transform.Translate(36, 15);
 
-  child_frame.render_pass_list[0]
-      ->shared_quad_state_list.ElementAt(0)
-      ->quad_to_target_transform.TransformPoint(&pt);
-  child_frame.render_pass_list[0]
-      ->shared_quad_state_list.ElementAt(0)
-      ->quad_to_target_transform.TransformRect(&area);
+  pt = child_frame.render_pass_list[0]
+           ->shared_quad_state_list.ElementAt(0)
+           ->quad_to_target_transform.MapPoint(pt);
+  area = child_frame.render_pass_list[0]
+             ->shared_quad_state_list.ElementAt(0)
+             ->quad_to_target_transform.MapRect(area);
 
   TestSurfaceIdAllocator child_surface_id(child_sink_->frame_sink_id());
   child_sink_->SubmitCompositorFrame(child_surface_id.local_surface_id(),
@@ -8750,12 +8750,12 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
       ->shared_quad_state_list.ElementAt(0)
       ->quad_to_target_transform.Translate(70, 240);
 
-  root_frame.render_pass_list[0]
-      ->shared_quad_state_list.ElementAt(0)
-      ->quad_to_target_transform.TransformPoint(&pt);
-  root_frame.render_pass_list[0]
-      ->shared_quad_state_list.ElementAt(0)
-      ->quad_to_target_transform.TransformRect(&area);
+  pt = root_frame.render_pass_list[0]
+           ->shared_quad_state_list.ElementAt(0)
+           ->quad_to_target_transform.MapPoint(pt);
+  area = root_frame.render_pass_list[0]
+             ->shared_quad_state_list.ElementAt(0)
+             ->quad_to_target_transform.MapRect(area);
 
   root_sink_->SubmitCompositorFrame(root_surface_id_.local_surface_id(),
                                     std::move(root_frame));
@@ -8870,14 +8870,13 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
 
   // Update the expected metadata to reflect the transforms to point and area
   // that are expected to occur.
-  gfx::PointF pt = metadata.point();
-  gfx::RectF area = metadata.presentation_area();
-  root_frame.render_pass_list[0]
-      ->shared_quad_state_list.ElementAt(1)
-      ->quad_to_target_transform.TransformPoint(&pt);
-  root_frame.render_pass_list[0]
-      ->shared_quad_state_list.ElementAt(1)
-      ->quad_to_target_transform.TransformRect(&area);
+  gfx::PointF pt = root_frame.render_pass_list[0]
+                       ->shared_quad_state_list.ElementAt(1)
+                       ->quad_to_target_transform.MapPoint(metadata.point());
+  gfx::RectF area =
+      root_frame.render_pass_list[0]
+          ->shared_quad_state_list.ElementAt(1)
+          ->quad_to_target_transform.MapRect(metadata.presentation_area());
 
   root_sink_->SubmitCompositorFrame(root_surface_id_.local_surface_id(),
                                     std::move(root_frame));
@@ -9007,14 +9006,14 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
   // Two surfaces have delegated ink metadata on them, and when this happens
   // on the metadata with the most recent timestamp should be used. Take this
   // metadata and transform it to what should be expected.
-  gfx::PointF pt = later_metadata.point();
-  gfx::RectF area = later_metadata.presentation_area();
-  root_frame.render_pass_list[0]
-      ->shared_quad_state_list.ElementAt(1)
-      ->quad_to_target_transform.TransformPoint(&pt);
-  root_frame.render_pass_list[0]
-      ->shared_quad_state_list.ElementAt(1)
-      ->quad_to_target_transform.TransformRect(&area);
+  gfx::PointF pt =
+      root_frame.render_pass_list[0]
+          ->shared_quad_state_list.ElementAt(1)
+          ->quad_to_target_transform.MapPoint(later_metadata.point());
+  gfx::RectF area = root_frame.render_pass_list[0]
+                        ->shared_quad_state_list.ElementAt(1)
+                        ->quad_to_target_transform.MapRect(
+                            later_metadata.presentation_area());
 
   root_sink_->SubmitCompositorFrame(root_surface_id_.local_surface_id(),
                                     std::move(root_frame));

@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,6 @@
 
 namespace cc {
 class AnimationHost;
-class RasterDarkModeFilter;
 class LayerTreeFrameSink;
 class LayerTreeHost;
 class LayerTreeSettings;
@@ -78,6 +77,7 @@ class PLATFORM_EXPORT LayerTreeView
       bool defer_status,
       cc::PaintHoldingReason reason,
       absl::optional<cc::PaintHoldingCommitTrigger> trigger) override;
+  void OnPauseRenderingChanged(bool) override;
   void BeginMainFrameNotExpectedSoon() override;
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override;
   void UpdateLayerTreeHost() override;
@@ -156,7 +156,6 @@ class PLATFORM_EXPORT LayerTreeView
 
   scoped_refptr<scheduler::WidgetScheduler> widget_scheduler_;
   const std::unique_ptr<cc::AnimationHost> animation_host_;
-  std::unique_ptr<cc::RasterDarkModeFilter> dark_mode_filter_;
 
   // The delegate_ becomes null when Disconnect() is called. After that, the
   // class should do nothing in calls from the LayerTreeHost, and just wait to

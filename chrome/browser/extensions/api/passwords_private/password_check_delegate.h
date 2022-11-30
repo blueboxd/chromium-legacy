@@ -62,14 +62,11 @@ class PasswordCheckDelegate
   PasswordCheckDelegate& operator=(const PasswordCheckDelegate&) = delete;
   ~PasswordCheckDelegate() override;
 
-  // Obtains information about compromised credentials. This includes the last
-  // time a check was run, as well as all compromised credentials that are
+  // Obtains information about insecure credentials. This includes the last
+  // time a check was run, as well as all insecure credentials that are
   // present in the password store.
-  std::vector<api::passwords_private::PasswordUiEntry>
-  GetCompromisedCredentials();
-
-  // Obtains information about weak credentials.
-  std::vector<api::passwords_private::PasswordUiEntry> GetWeakCredentials();
+  // TODO:(crbug.com/1350947) - Rename to GetInsecureCredentialsUiEntry.
+  std::vector<api::passwords_private::PasswordUiEntry> GetInsecureCredentials();
 
   // Attempts to mute `credential` from the password store. Returns whether
   // the mute succeeded.
@@ -119,11 +116,6 @@ class PasswordCheckDelegate
   // a valid pointer can be obtained.
   void OnInsecureCredentialsChanged() override;
 
-  // password_manager::InsecureCredentialsManager::Observer:
-  // Invokes PasswordsPrivateEventRouter::OnWeakCredentialsChanged if a valid
-  // pointer can be obtained.
-  void OnWeakCredentialsChanged() override;
-
   // password_manager::BulkLeakCheckService::Observer:
   void OnStateChanged(
       password_manager::BulkLeakCheckService::State state) override;
@@ -161,7 +153,7 @@ class PasswordCheckDelegate
   void NotifyPasswordCheckStatusChanged();
 
   // Constructs `PasswordUiEntry` from `CredentialUIEntry`.
-  api::passwords_private::PasswordUiEntry ConstructInsecureCredential(
+  api::passwords_private::PasswordUiEntry ConstructInsecureCredentialUiEntry(
       const password_manager::CredentialUIEntry& entry);
 
   // Returns a raw pointer to the `PasswordChangeSuccessTracker` associated

@@ -21,7 +21,7 @@
 #include "content/browser/first_party_sets/local_set_declaration.h"
 #include "net/base/schemeful_site.h"
 #include "net/first_party_sets/first_party_set_entry.h"
-#include "net/first_party_sets/public_sets.h"
+#include "net/first_party_sets/global_first_party_sets.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
@@ -85,8 +85,8 @@ void FirstPartySetsLoader::OnReadSetsFile(const std::string& raw_sets) {
   std::istringstream stream(raw_sets);
   FirstPartySetParser::SetsAndAliases public_sets =
       FirstPartySetParser::ParseSetsFromStream(stream, /*emit_errors=*/false);
-  public_sets_ = net::PublicSets(std::move(public_sets.first),
-                                 std::move(public_sets.second));
+  sets_ = net::GlobalFirstPartySets(std::move(public_sets.first),
+                                    std::move(public_sets.second));
 
   component_sets_parse_progress_ = Progress::kFinished;
   UmaHistogramTimes(
@@ -109,21 +109,14 @@ void FirstPartySetsLoader::DisposeFile(base::File sets_file) {
 
 void FirstPartySetsLoader::MaybeFinishLoading() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!HasAllInputs())
+  if (component_sets_parse_progress_ != Progress::kFinished ||
+      !manually_specified_set_.has_value()) {
     return;
-  if (!manually_specified_set_->empty()) {
-    public_sets_->ApplyManuallySpecifiedSet(
-        manually_specified_set_->GetPrimary(),
-        manually_specified_set_->GetSet(),
-        manually_specified_set_->GetAliases());
   }
-  std::move(on_load_complete_).Run(std::move(public_sets_).value());
-}
-
-bool FirstPartySetsLoader::HasAllInputs() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return component_sets_parse_progress_ == Progress::kFinished &&
-         manually_specified_set_.has_value();
+  if (!manually_specified_set_->empty()) {
+    sets_->ApplyManuallySpecifiedSet(manually_specified_set_->GetSet());
+  }
+  std::move(on_load_complete_).Run(std::move(sets_).value());
 }
 
 }  // namespace content

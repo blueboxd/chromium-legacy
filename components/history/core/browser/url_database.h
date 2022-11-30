@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/time/time.h"
+#include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/keyword_id.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/query_parser/query_parser.h"
@@ -30,7 +31,6 @@ namespace history {
 
 class KeywordSearchTermVisitEnumerator;
 struct KeywordSearchTermRow;
-struct KeywordSearchTermVisit;
 
 class VisitDatabase;  // For friend statement.
 
@@ -145,13 +145,13 @@ class URLDatabase {
     bool GetNextURL(URLRow* r);
   };
 
-  // Initializes the given enumerator to enumerator all URLs in the database.
+  // Initializes the given enumerator to enumerate all URLs in the database.
   bool InitURLEnumeratorForEverything(URLEnumerator* enumerator);
 
-  // Initializes the given enumerator to enumerator all URLs in the database
-  // that are historically significant: ones having their URL manually typed
-  // more than once, having been visited within 3 days, or having been visited
-  // more than 3 times in the order of the most significant ones first.
+  // Initializes the given enumerator to enumerate all URLs in the database that
+  // are historically significant: ones having their URL manually typed at least
+  // once, having been visited within 3 days, or having been visited at least 4
+  // times in the order of the most significant ones first.
   bool InitURLEnumeratorForSignificant(URLEnumerator* enumerator);
 
   // Autocomplete --------------------------------------------------------------
@@ -221,11 +221,10 @@ class URLDatabase {
   // keyword.
   // TODO(crbug.com/1119654): Remove this in favor of the enumerator-based
   // function below after experimentation.
-  void GetMostRecentKeywordSearchTerms(
-      KeywordID keyword_id,
-      const std::u16string& prefix,
-      int max_count,
-      std::vector<std::unique_ptr<KeywordSearchTermVisit>>* visits);
+  void GetMostRecentKeywordSearchTerms(KeywordID keyword_id,
+                                       const std::u16string& prefix,
+                                       int max_count,
+                                       KeywordSearchTermVisitList* visits);
 
   // Returns an enumerator to enumerate all the KeywordSearchTermVisits starting
   // with `prefix` for the specified keyword. The visits are ordered first by
@@ -239,10 +238,9 @@ class URLDatabase {
   // the specified keyword.
   // TODO(crbug.com/1119654): Remove this in favor of the enumerator-based
   // function below after experimentation.
-  void GetMostRecentKeywordSearchTerms(
-      KeywordID keyword_id,
-      base::Time age_threshold,
-      std::vector<std::unique_ptr<KeywordSearchTermVisit>>* visits);
+  void GetMostRecentKeywordSearchTerms(KeywordID keyword_id,
+                                       base::Time age_threshold,
+                                       KeywordSearchTermVisitList* visits);
 
   // Returns an enumerator to enumerate all the KeywordSearchTermVisits no older
   // than `age_threshold` for the given keyword. The visits are ordered first by

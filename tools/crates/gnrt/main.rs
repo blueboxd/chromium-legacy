@@ -4,8 +4,7 @@
 
 use gnrt_lib::*;
 
-use crates::ThirdPartyCrate;
-use deps::ThirdPartyDep;
+use crates::{ChromiumVendoredCrate, StdVendoredCrate};
 use manifest::*;
 
 use std::collections::{HashMap, HashSet};
@@ -18,24 +17,67 @@ use clap::arg;
 
 fn main() -> ExitCode {
     let args = clap::Command::new("gnrt")
-        .about("Generate GN build rules from third_party/rust crates")
-        .arg(
-            arg!(--"output-cargo-toml" "Output third_party/rust/Cargo.toml then exit immediately")
+        .subcommand(clap::Command::new("gen")
+            .about("Generate GN build rules from third_party/rust crates")
+            .arg(arg!(--"output-cargo-toml" "Output third_party/rust/Cargo.toml then exit \
+                immediately"))
+            .arg(arg!(--"skip-patch" "Don't apply gnrt_build_patch after generating build files. \
+                Useful when updating the patch."))
+            .arg(arg!(--"for-std" "(WIP) Generate build files for Rust std library instead of \
+                third_party/rust"))
         )
-        .arg(arg!(--"skip-patch" "Don't apply gnrt_build_patch after generating build files. Useful when updating the patch."))
+        .subcommand(clap::Command::new("download")
+            .about("Download the crate with the given name and version to third_party/rust.")
+            .arg(arg!([NAME] "Name of the crate to download").required(true))
+            .arg(arg!([VERSION] "Version of the crate to download").required(true))
+            .arg(
+                arg!(--"security-critical" <YESNO> "Whether the crate is considered to be \
+                    security critical."
+                ).possible_values(["yes", "no"]).required(true)
+            )
+        )
         .get_matches();
 
     let paths = paths::ChromiumPaths::new().unwrap();
 
+    match args.subcommand() {
+        Some(("gen", args)) => {
+            if args.is_present("for-std") {
+                // This is not fully implemented. Currently, it will print data helpful
+                // for development then quit.
+                generate_for_std(&args, &paths)
+            } else {
+                generate_for_third_party(&args, &paths)
+            }
+        }
+        Some(("download", args)) => {
+            let security = args.value_of("security-critical").unwrap() == "yes";
+            let name = args.value_of("NAME").unwrap();
+            use std::str::FromStr;
+            let version = semver::Version::from_str(args.value_of("VERSION").unwrap())
+                .expect("Invalid version specified");
+            download::download(name, version, security, &paths)
+        }
+        _ => unreachable!("Invalid subcommand"),
+    }
+}
+
+fn generate_for_third_party(args: &clap::ArgMatches, paths: &paths::ChromiumPaths) -> ExitCode {
     let manifest_contents =
         String::from_utf8(fs::read(paths.third_party.join("third_party.toml")).unwrap()).unwrap();
-    let third_party_manifest: ThirdPartyManifest = toml::de::from_str(&manifest_contents).unwrap();
+    let third_party_manifest: ThirdPartyManifest = match toml::de::from_str(&manifest_contents) {
+        Ok(m) => m,
+        Err(e) => {
+            eprintln!("Failed to parse 'third_party.toml': {e}");
+            return ExitCode::FAILURE;
+        }
+    };
 
     // Collect special fields from third_party.toml.
     //
     // TODO(crbug.com/1291994): handle visibility separately for each kind.
-    let mut pub_deps = HashSet::<ThirdPartyCrate>::new();
-    let mut build_script_outputs = HashMap::<ThirdPartyCrate, Vec<String>>::new();
+    let mut pub_deps = HashSet::<ChromiumVendoredCrate>::new();
+    let mut build_script_outputs = HashMap::<ChromiumVendoredCrate, Vec<String>>::new();
 
     for (dep_name, dep_spec) in [
         &third_party_manifest.dependency_spec.dependencies,
@@ -54,7 +96,7 @@ fn main() -> ExitCode {
             ),
         };
         let epoch = crates::Epoch::from_version_req_str(&version_req.0);
-        let crate_id = crates::ThirdPartyCrate { name: dep_name.clone(), epoch };
+        let crate_id = crates::ChromiumVendoredCrate { name: dep_name.clone(), epoch };
         if is_public {
             pub_deps.insert(crate_id.clone());
         }
@@ -76,13 +118,10 @@ fn main() -> ExitCode {
     // Generate a fake root Cargo.toml for dependency resolution.
     let cargo_manifest = generate_fake_cargo_toml(
         third_party_manifest,
-        crates.iter().map(|(c, _)| {
-            let crate_path = paths.third_party.join(c.crate_path()).canonicalize().unwrap();
-            manifest::PatchSpecification {
-                package_name: c.name.clone(),
-                patch_name: c.patch_name(),
-                path: crate_path,
-            }
+        crates.iter().map(|(c, _)| manifest::PatchSpecification {
+            package_name: c.name.clone(),
+            patch_name: c.patch_name(),
+            path: c.crate_path(),
         }),
     );
 
@@ -111,8 +150,8 @@ fn main() -> ExitCode {
     // Run `cargo metadata` and process the output to get a list of crates we
     // depend on.
     let mut command = cargo_metadata::MetadataCommand::new();
-    command.current_dir(paths.third_party.clone());
-    let dependencies = deps::collect_dependencies(&command.exec().unwrap());
+    command.current_dir(&paths.third_party);
+    let dependencies = deps::collect_dependencies(&command.exec().unwrap(), None);
 
     // Compare cargo's dependency resolution with the crates we have on disk. We
     // want to ensure:
@@ -121,17 +160,41 @@ fn main() -> ExitCode {
     // * Each discovered crate matches with a resolved dependency (no unused
     //   crates).
     let mut has_error = false;
-    let present_crates: HashSet<&ThirdPartyCrate> = crates.iter().map(|(c, _)| c).collect();
-    let req_crates: HashSet<ThirdPartyCrate> =
-        dependencies.iter().map(ThirdPartyDep::crate_id).collect();
+    let present_crates: HashSet<&ChromiumVendoredCrate> = crates.iter().map(|(c, _)| c).collect();
+
+    // Construct the set of requested third-party crates, ensuring we don't have
+    // duplicate epochs. For example, if we resolved two versions of a
+    // dependency with the same major version, we cannot continue.
+    let mut req_crates = HashSet::<ChromiumVendoredCrate>::new();
+    for package in &dependencies {
+        if !req_crates.insert(package.third_party_crate_id()) {
+            panic!("found another requested package with the same name and epoch: {:?}", package);
+        }
+    }
+    let req_crates = req_crates;
 
     for dep in dependencies.iter() {
-        if !present_crates.contains(&dep.crate_id()) {
+        if !present_crates.contains(&dep.third_party_crate_id()) {
             has_error = true;
-            println!("Missing dependency: {} {}", dep.package_name, dep.epoch);
+            println!("Missing dependency: {} {}", dep.package_name, dep.version);
             for edge in dep.dependency_path.iter() {
                 println!("    {edge}");
             }
+        } else if !dep.is_local {
+            // Transitive deps may be requested with version requirements stricter than
+            // ours: e.g. 1.57 instead of just major version 1. If the version we have
+            // checked in, e.g. 1.56, has the same epoch but doesn't meet the version
+            // requirement, the symptom is Cargo will resolve the dependency to an
+            // upstream source instead of our local path. We must detect this case to
+            // ensure correctness.
+            has_error = true;
+            println!(
+                "Resolved {} {} to an upstream source. The requested version \
+                 likely has the same epoch as the discovered crate but \
+                 something has a more stringent version requirement.",
+                dep.package_name, dep.version
+            );
+            println!("    Resolved version: {}", dep.version);
         }
     }
 
@@ -142,28 +205,11 @@ fn main() -> ExitCode {
         }
     }
 
-    // Transitive deps may be requested with version requirements stricter than
-    // ours: e.g. 1.57 instead of just major version 1. If the version we have
-    // checked in, e.g. 1.56, has the same epoch but doesn't meet the version
-    // requirement, the symptom is Cargo will resolve the dependency to an
-    // upstream source instead of our local path. We must detect this case to
-    // ensure correctness.
-    for nonlocal_dep in dependencies.iter().filter(|dep| !dep.is_local) {
-        has_error = true;
-        println!(
-            "Resolved {} {} to an upstream source. The requested version \
-                 likely has the same epoch as the discovered crate but \
-                 something has a more stringent version requirement.",
-            nonlocal_dep.package_name, nonlocal_dep.epoch
-        );
-        println!("    Resolved version: {}", nonlocal_dep.version);
-    }
-
     if has_error {
         return ExitCode::FAILURE;
     }
 
-    let build_files: HashMap<ThirdPartyCrate, gn::BuildFile> = gn::build_files_from_deps(
+    let build_files: HashMap<ChromiumVendoredCrate, gn::BuildFile> = gn::build_files_from_deps(
         &dependencies,
         &paths,
         &crates.iter().cloned().collect(),
@@ -216,7 +262,7 @@ fn main() -> ExitCode {
         let status = process::Command::new("git")
             .arg("apply")
             .arg(build_patch)
-            .current_dir(paths.root)
+            .current_dir(&paths.root)
             .status()
             .unwrap();
         check_exit_status(status, "applying build patch").unwrap();
@@ -225,7 +271,100 @@ fn main() -> ExitCode {
     ExitCode::SUCCESS
 }
 
-fn build_file_path(crate_id: &ThirdPartyCrate, paths: &paths::ChromiumPaths) -> PathBuf {
+fn generate_for_std(_args: &clap::ArgMatches, paths: &paths::ChromiumPaths) -> ExitCode {
+    // Run `cargo metadata` from the std package in the Rust source tree (which
+    // is a workspace).
+    let mut command = cargo_metadata::MetadataCommand::new();
+    command.current_dir(paths.rust_std);
+    // Ensure we use exactly the dependency versions specified in the Rust
+    // source's Cargo.lock. This is the only officially tested libstd.
+    command.other_options(["--locked".to_string(), "--offline".to_string()]);
+
+    // Compute the set of crates we need to build to build libstd.
+    let dependencies =
+        deps::collect_dependencies(&command.exec().unwrap(), Some(vec!["std".to_string()]));
+
+    // Collect the set of third-party dependencies vendored in the Rust source
+    // package.
+    let vendored_crates: HashMap<StdVendoredCrate, manifest::CargoPackage> =
+        crates::collect_std_vendored_crates(paths.rust_src_vendor).unwrap().into_iter().collect();
+
+    // Collect vendored dependencies, and also check that all resolved
+    // dependencies point to our Rust source package. Build rules will be
+    // generated for these crates separately from std, alloc, and core which
+    // need special treatment.
+    let src_prefix = paths.root.join(paths.rust_src);
+    for dep in &dependencies {
+        // Skip workspace members. They are not third-party deps in this
+        // context.
+        if dep.is_workspace_member {
+            continue;
+        }
+
+        // Skip "rust-std-workspace-*" deps, which are shims to allow std to
+        // depend on third-party crates. See
+        // https://github.com/rust-lang/rust/tree/master/library/rustc-std-workspace-core
+        if dep.package_name.starts_with("rustc-std-workspace-") {
+            continue;
+        }
+
+        // Skip crates in stdarch, which is a separate workspace in the same
+        // source tree.
+        if dep.package_name.starts_with("std_detect") {
+            continue;
+        }
+
+        // Skip "rustc-workspace-hack", which is irrelevant to the standard
+        // library build.
+        if dep.package_name.starts_with("rustc-workspace-hack") {
+            continue;
+        }
+
+        // Only process deps with a library target: we are producing build rules
+        // for the standard library, so transitive binary dependencies don't
+        // make sense.
+        let lib = match &dep.lib_target {
+            Some(lib) => lib,
+            None => continue,
+        };
+
+        if !lib.root.starts_with(&src_prefix) {
+            println!(
+                "Found dependency that was not locally available: {} {}",
+                dep.package_name, dep.version
+            );
+            return ExitCode::FAILURE;
+        }
+
+        let (crate_id, _): (&StdVendoredCrate, _) =
+            match vendored_crates.get_key_value(&StdVendoredCrate {
+                name: dep.package_name.clone(),
+                version: dep.version.clone(),
+                // Placeholder value for lookup.
+                is_latest: false,
+            }) {
+                Some(id) => id,
+                None => {
+                    println!(
+                        "Resolved dependency does not match any vendored crate: {} {}",
+                        dep.package_name, dep.version
+                    );
+                    return ExitCode::FAILURE;
+                }
+            };
+
+        // To test, print the list of needed vendored crates and the path of
+        // dependency edges leading to them.
+        println!("{crate_id}");
+        for next in &dep.dependency_path {
+            println!("  {next}");
+        }
+    }
+
+    ExitCode::SUCCESS
+}
+
+fn build_file_path(crate_id: &ChromiumVendoredCrate, paths: &paths::ChromiumPaths) -> PathBuf {
     let mut path = paths.root.clone();
     path.push(&paths.third_party);
     path.push(crate_id.build_path());

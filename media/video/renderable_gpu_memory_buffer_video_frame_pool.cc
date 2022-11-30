@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bits.h"
 #include "base/logging.h"
 #include "base/task/bind_post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -169,9 +170,17 @@ bool FrameResources::Initialize() {
   constexpr gfx::BufferFormat kBufferFormat =
       gfx::BufferFormat::YUV_420_BIPLANAR;
 
+  // Align number of rows to 2, because it's required by YUV_420_BIPLANAR
+  // buffer allocation code.
+  // Align buffer stride to 4, because our rendering code at
+  // GLImageMemory::Initialize() requires it, since it sometimes treats
+  // Y-planes are 4 bytes per pixel textures.
+  gfx::Size buffer_size_in_pixels(base::bits::AlignUp(coded_size_.width(), 4),
+                                  base::bits::AlignUp(coded_size_.height(), 2));
+
   // Create the GpuMemoryBuffer.
-  gpu_memory_buffer_ =
-      context->CreateGpuMemoryBuffer(coded_size_, kBufferFormat, kBufferUsage);
+  gpu_memory_buffer_ = context->CreateGpuMemoryBuffer(
+      buffer_size_in_pixels, kBufferFormat, kBufferUsage);
   if (!gpu_memory_buffer_) {
     DLOG(ERROR) << "Failed to allocate GpuMemoryBuffer for frame: coded_size="
                 << coded_size_.ToString()
@@ -190,7 +199,7 @@ bool FrameResources::Initialize() {
       gpu::SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX |
 #endif
       gpu::SHARED_IMAGE_USAGE_GLES2 | gpu::SHARED_IMAGE_USAGE_RASTER |
-      gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
+      gpu::SHARED_IMAGE_USAGE_DISPLAY_READ | gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
   uint32_t texture_target = GL_TEXTURE_2D;
 #if BUILDFLAG(IS_MAC)

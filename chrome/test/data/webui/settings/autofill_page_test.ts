@@ -11,11 +11,11 @@ import {CrSettingsPrefs, OpenWindowProxyImpl, PasswordManagerImpl, SettingsAutof
 import {SettingsRoutes} from 'chrome://settings/settings_routes.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {TestPluralStringProxy} from 'chrome://webui-test/test_plural_string_proxy.js';
-import {flushTasks} from 'chrome://webui-test/test_util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {FakeSettingsPrivate} from './fake_settings_private.js';
 import {AutofillManagerExpectations, createAddressEntry, createCreditCardEntry, createExceptionEntry, createPasswordEntry, PaymentsManagerExpectations, TestAutofillManager, TestPaymentsManager} from './passwords_and_autofill_fake_data.js';
-import {makeCompromisedCredential} from './passwords_and_autofill_fake_data.js';
+import {makeInsecureCredential} from './passwords_and_autofill_fake_data.js';
 import {TestOpenWindowProxy} from './test_open_window_proxy.js';
 import {PasswordManagerExpectations,TestPasswordManagerProxy} from './test_password_manager_proxy.js';
 
@@ -142,7 +142,8 @@ suite('PasswordsAndForms', function() {
 
 
   setup(async function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
 
     // Override the PasswordManagerImpl for testing.
     passwordManager = new TestPasswordManagerProxy();
@@ -308,7 +309,7 @@ function createAutofillPageSection() {
       value: false,
     },
   };
-  document.body.innerHTML = '';
+  document.body.innerHTML = window.trustedTypes!.emptyHTML as unknown as string;
   document.body.appendChild(autofillPage);
   flush();
   return autofillPage;
@@ -346,16 +347,16 @@ suite('PasswordsUITest', function() {
 
     // Simulate one compromised password
     const leakedPasswords = [
-      makeCompromisedCredential(
+      makeInsecureCredential(
           'google.com', 'jdoerrie',
-          chrome.passwordsPrivate.CompromiseType.LEAKED),
+          [chrome.passwordsPrivate.CompromiseType.LEAKED]),
     ];
-    passwordManager.data.leakedCredentials = leakedPasswords;
+    passwordManager.data.insecureCredentials = leakedPasswords;
 
     // create autofill page with leaked credentials
     autofillPage = createAutofillPageSection();
 
-    await passwordManager.whenCalled('getCompromisedCredentials');
+    await passwordManager.whenCalled('getInsecureCredentials');
     await pluralString.whenCalled('getPluralString');
 
     // With compromised credentials sublabel should have text

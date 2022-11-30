@@ -26,9 +26,11 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/strings/strcat.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
 #include "chrome/installer/util/lzma_util.h"
 #include "chrome/installer/util/util_constants.h"
@@ -271,17 +273,41 @@ ProcessExitResult HandleRunElevated(const base::CommandLine& command_line) {
 
   // The metainstaller is elevated because unpacking its files and running
   // updater.exe must happen from a secure directory.
-  DWORD exit_code = 0;
-  HRESULT hr = RunElevated(
-      command_line.GetProgram(),
-      [&command_line]() {
+  HResultOr<DWORD> result =
+      RunElevated(command_line.GetProgram(), [&command_line]() {
         base::CommandLine elevate_command_line = command_line;
         elevate_command_line.AppendSwitchASCII(kCmdLineExpectElevated, {});
         return elevate_command_line.GetArgumentsString();
-      }(),
-      &exit_code);
+      }());
+
+  return result.has_value()
+             ? ProcessExitResult(result.value())
+             : ProcessExitResult(RUN_SETUP_FAILED_COULD_NOT_CREATE_PROCESS,
+                                 result.error());
+}
+
+ProcessExitResult HandleRunDeElevated(const base::CommandLine& command_line) {
+  DCHECK(::IsUserAnAdmin());
+
+  if (command_line.HasSwitch(kCmdLineExpectDeElevated)) {
+    VLOG(1) << __func__ << "Unexpected de-elevation loop! "
+            << command_line.GetCommandLineString();
+    return ProcessExitResult(UNABLE_TO_DE_ELEVATE_METAINSTALLER);
+  }
+
+  base::win::ScopedCOMInitializer com_initializer(
+      base::win::ScopedCOMInitializer::kMTA);
+  DCHECK(com_initializer.Succeeded());
+
+  // Deelevate the metainstaller.
+  HRESULT hr =
+      RunDeElevated(command_line.GetProgram().value(), [&command_line]() {
+        base::CommandLine de_elevate_command_line = command_line;
+        de_elevate_command_line.AppendSwitch(kCmdLineExpectDeElevated);
+        return de_elevate_command_line.GetArgumentsString();
+      }());
   return SUCCEEDED(hr)
-             ? ProcessExitResult(exit_code)
+             ? ProcessExitResult(SUCCESS_EXIT_CODE)
              : ProcessExitResult(RUN_SETUP_FAILED_COULD_NOT_CREATE_PROCESS, hr);
 }
 
@@ -299,25 +325,34 @@ ProcessExitResult WMain(HMODULE module) {
   if (args_result.exit_code != SUCCESS_EXIT_CODE)
     return args_result;
 
-  if (!::IsUserAnAdmin()) {
-    const base::CommandLine command_line =
-        base::CommandLine::FromString(::GetCommandLineW());
-    if (GetUpdaterScopeForCommandLine(command_line) == UpdaterScope::kSystem) {
-      ProcessExitResult run_elevated_result = HandleRunElevated(command_line);
-      if (run_elevated_result.exit_code !=
-              RUN_SETUP_FAILED_COULD_NOT_CREATE_PROCESS ||
-          !IsPrefersForCommandLine(command_line)) {
-        return run_elevated_result;
-      }
+  // Both `RunElevated` and `RunDeElevated` use shell APIs to run the process,
+  // which can have issues with relative paths. So we use the full exe path for
+  // the program in the command line.
+  base::FilePath exe_path;
+  if (!base::PathService::Get(base::FILE_EXE, &exe_path))
+    return ProcessExitResult(UNABLE_TO_GET_EXE_PATH);
+  const base::CommandLine command_line = base::CommandLine::FromString(
+      base::StrCat({L"\"", exe_path.value(), L"\" ", cmd_line_args.get()}));
 
-      // "needsadmin=prefers" case: Could not elevate. So fall through to
-      // install as a per-user app.
-      if (!cmd_line_args.append(L" --") ||
-          !cmd_line_args.append(
-              base::SysUTF8ToWide(kCmdLinePrefersUser).c_str())) {
-        return ProcessExitResult(COMMAND_STRING_OVERFLOW);
-      }
+  const UpdaterScope scope = GetUpdaterScopeForCommandLine(command_line);
+
+  if (!::IsUserAnAdmin() && scope == UpdaterScope::kSystem) {
+    ProcessExitResult run_elevated_result = HandleRunElevated(command_line);
+    if (run_elevated_result.exit_code !=
+            RUN_SETUP_FAILED_COULD_NOT_CREATE_PROCESS ||
+        !IsPrefersForCommandLine(command_line)) {
+      return run_elevated_result;
     }
+
+    // "needsadmin=prefers" case: Could not elevate. So fall through to
+    // install as a per-user app.
+    if (!cmd_line_args.append(L" --") ||
+        !cmd_line_args.append(
+            base::SysUTF8ToWide(kCmdLinePrefersUser).c_str())) {
+      return ProcessExitResult(COMMAND_STRING_OVERFLOW);
+    }
+  } else if (::IsUserAnAdmin() && scope == UpdaterScope::kUser && IsUACOn()) {
+    return HandleRunDeElevated(command_line);
   }
 
   ProcessExitResult exit_code = ProcessExitResult(SUCCESS_EXIT_CODE);

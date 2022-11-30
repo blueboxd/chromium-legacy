@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_widget_sublevel.h"
 #include "chrome/browser/ui/views/title_origin_label.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/permissions/features.h"
@@ -72,6 +73,12 @@ std::u16string GetDisplayName(
   // File URLs should be displayed as "This file".
   if (origin_url.SchemeIsFile())
     return l10n_util::GetStringUTF16(IDS_PERMISSIONS_BUBBLE_PROMPT_THIS_FILE);
+
+  // Isolated Web Apps should show the app's name instead of the origin.
+  if (browser && browser->app_controller() &&
+      browser->app_controller()->IsIsolatedWebApp()) {
+    return browser->app_controller()->GetAppShortName();
+  }
 
   // Web URLs should be displayed as the origin in the URL.
   return url_formatter::FormatUrlForSecurityDisplay(
@@ -163,11 +170,21 @@ bool GetDisplayNameIsOrigin(Browser* browser,
                             permissions::PermissionPrompt::Delegate& delegate) {
   DCHECK(!delegate.Requests().empty());
   GURL origin_url = delegate.GetRequestingOrigin();
-  return (!origin_url.SchemeIs(extensions::kExtensionScheme) ||
-          extensions::ui_util::GetEnabledExtensionNameForUrl(origin_url,
-                                                             browser->profile())
-              .empty()) &&
-         !origin_url.SchemeIsFile();
+
+  if (origin_url.SchemeIsFile()) {
+    return false;
+  }
+  if (origin_url.SchemeIs(extensions::kExtensionScheme) &&
+      !extensions::ui_util::GetEnabledExtensionNameForUrl(origin_url,
+                                                          browser->profile())
+           .empty()) {
+    return false;
+  }
+  if (browser && browser->app_controller() &&
+      browser->app_controller()->IsIsolatedWebApp()) {
+    return false;
+  }
+  return true;
 }
 
 // Get extra information to display for the permission, if any.

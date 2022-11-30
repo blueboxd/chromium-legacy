@@ -126,63 +126,41 @@ chromium-metrics-reviews@google.com.
 <histogram name="Fingerprint.Unlock.AttemptsCountBeforeSuccess" units="count"
     expires_after="2023-04-05">
   <owner>emaamari@google.com</owner>
-  <owner>jessejames@chromium.org</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>
     Counts the number of fingerprint attempts until successful screen unlock.
+
+    A count of 0 means that the user unlocked the screen on the first attempt.
+    The maximum number of unlock attempts is governed by kMaximumUnlockAttempts,
+    such that this value must be less than the max.
+
+    This is related to Fingerprint.Unlock.RecentAttemptsCountBeforeSuccess.
   </summary>
 </histogram>
 
 <histogram name="Fingerprint.Unlock.AuthSuccessful" enum="BooleanSuccess"
     expires_after="2023-04-05">
   <owner>emaamari@google.com</owner>
-  <owner>jessejames@chromium.org</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>
     Counts the number of times that the fingerprint match successfully vs.
     rejected.
+
+    This is recorded in the same location as Fingerprint.Unlock.Result. When the
+    Fingerprint.Unlock.Result is success, AuthSuccessful reports true, otherwise
+    AuthSuccessful reports false.
   </summary>
 </histogram>
 
 <histogram name="Fingerprint.Unlock.EnrolledFingerCount" units="count"
     expires_after="2023-04-05">
-  <owner>emaamari@google.com</owner>
-  <owner>jessejames@chromium.org</owner>
-  <owner>cros-lurs@google.com</owner>
+  <owner>tomhughes@chromium.org</owner>
+  <owner>chromeos-fingerprint@google.com</owner>
   <summary>Counts the number of fingers enrolled by the user.</summary>
 </histogram>
 
-<histogram name="Fingerprint.Unlock.Match.Duration.Capture" units="ms"
-    expires_after="2023-04-05">
-  <owner>bobbycasey@google.com</owner>
-  <owner>chromeos-fingerprint@google.com</owner>
-  <summary>
-    Measures the time it took to capture the fingerprint image in the 'match'
-    case.
-  </summary>
-</histogram>
-
-<histogram name="Fingerprint.Unlock.Match.Duration.Matcher" units="ms"
-    expires_after="2023-04-05">
-  <owner>bobbycasey@google.com</owner>
-  <owner>chromeos-fingerprint@google.com</owner>
-  <summary>
-    Measures the time it took to run matcher in the 'match' case.
-  </summary>
-</histogram>
-
-<histogram name="Fingerprint.Unlock.Match.Duration.Overall" units="ms"
-    expires_after="2023-04-05">
-  <owner>bobbycasey@google.com</owner>
-  <owner>chromeos-fingerprint@google.com</owner>
-  <summary>
-    Measures the time it took between the detection of a finger and the 'match'
-    event being sent to the AP.
-  </summary>
-</histogram>
-
 <histogram name="Fingerprint.Unlock.Match.PositiveMatchSecretCorrect"
-    enum="BooleanCorrect" expires_after="2023-01-02">
+    enum="BooleanCorrect" expires_after="2023-04-09">
   <owner>hesling@chromium.org</owner>
   <owner>chromeos-fingerprint@google.com</owner>
   <summary>
@@ -200,35 +178,6 @@ chromium-metrics-reviews@google.com.
     power button press. Fingerprint matches will be ignored for a duration of
     kAuthIgnoreTimeoutmsecs (1000 ms) after each power button press. This only
     applies to fingerprint sensors that reside on a power button.
-  </summary>
-</histogram>
-
-<histogram name="Fingerprint.Unlock.NoMatch.Duration.Capture" units="ms"
-    expires_after="2023-04-05">
-  <owner>bobbycasey@google.com</owner>
-  <owner>chromeos-fingerprint@google.com</owner>
-  <summary>
-    Measures the time it took to capture the fingerprint image in the 'no-match'
-    case.
-  </summary>
-</histogram>
-
-<histogram name="Fingerprint.Unlock.NoMatch.Duration.Matcher" units="ms"
-    expires_after="2023-04-05">
-  <owner>bobbycasey@google.com</owner>
-  <owner>chromeos-fingerprint@google.com</owner>
-  <summary>
-    Measures the time it took to run the matcher in the 'no-match' case.
-  </summary>
-</histogram>
-
-<histogram name="Fingerprint.Unlock.NoMatch.Duration.Overall" units="ms"
-    expires_after="2023-04-05">
-  <owner>bobbycasey@google.com</owner>
-  <owner>chromeos-fingerprint@google.com</owner>
-  <summary>
-    Measures the time it took between the detection of a finger and the
-    'no-match' event being sent to the AP.
   </summary>
 </histogram>
 
@@ -254,6 +203,12 @@ chromium-metrics-reviews@google.com.
     unlock. Recent attempts are defined as happening within 3 seconds from each
     others. The goal is to count intentional attempt to unlock the device and
     exclude incidental touches of the fingerprint sensor.
+
+    A count of 0 means that the user unlocked the screen on the first attempt.
+    The maximum number of unlock attempts is governed by kMaximumUnlockAttempts,
+    such that this value must be less than the max.
+
+    This is related to Fingerprint.Unlock.AttemptsCountBeforeSuccess.
   </summary>
 </histogram>
 
@@ -281,24 +236,33 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Fingerprint.Unlock.{Outcome}.Duration.{Interval}" units="ms"
+    expires_after="2023-04-05">
+  <owner>bobbycasey@google.com</owner>
+  <owner>chromeos-fingerprint@google.com</owner>
+  <summary>
+    Measures the time it took {Interval} in the '{Outcome}' case.
+  </summary>
+  <token key="Outcome">
+    <variant name="Match" summary="match"/>
+    <variant name="NoMatch" summary="no-match"/>
+  </token>
+  <token key="Interval">
+    <variant name="Capture" summary="to capture the fingerprint image"/>
+    <variant name="Matcher" summary="to run the matcher"/>
+    <variant name="Overall"
+        summary="between the detection of the finger and the match/no-match
+                 event being sent to the Application Processor(AP)"/>
+  </token>
+</histogram>
+
 <histogram name="Fingerprint.UnlockEnabled" enum="BooleanEnabled"
-    expires_after="2023-02-12">
+    expires_after="2023-04-05">
   <owner>tomhughes@chromium.org</owner>
   <owner>chromeos-fingerprint@google.com</owner>
   <summary>
     Track whether fingerprint is enabled to unlock the screen, when the user
     logs in.
-  </summary>
-</histogram>
-
-<histogram name="Fingerprint.Updater.NoUpdate.Duration.Overall" units="ms"
-    expires_after="2023-04-05">
-  <owner>tomhughes@chromium.org</owner>
-  <owner>hesling@chromium.org</owner>
-  <owner>chromeos-fingerprint@google.com</owner>
-  <summary>
-    Measures the total time it takes to run the fingerprint firmware updater
-    when an update was not necessary.
   </summary>
 </histogram>
 
@@ -320,15 +284,19 @@ chromium-metrics-reviews@google.com.
   <summary>Tracks the fingerprint firmware updater's overall status.</summary>
 </histogram>
 
-<histogram name="Fingerprint.Updater.Update.Duration.Overall" units="ms"
+<histogram name="Fingerprint.Updater.{Outcome}.Duration.Overall" units="ms"
     expires_after="2023-04-05">
   <owner>tomhughes@chromium.org</owner>
   <owner>hesling@chromium.org</owner>
   <owner>chromeos-fingerprint@google.com</owner>
   <summary>
     Measures the total time it takes to run the fingerprint firmware updater
-    when an update was necessary.
+    when an update was {Outcome}.
   </summary>
+  <token key="Outcome">
+    <variant name="NoUpdate" summary="not necessary"/>
+    <variant name="Update" summary="necessary"/>
+  </token>
 </histogram>
 
 </histograms>

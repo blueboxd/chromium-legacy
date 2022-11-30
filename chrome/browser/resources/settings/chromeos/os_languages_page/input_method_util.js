@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 
 import {Route} from '../../router.js';
 import {routes} from '../os_route.js';
 
 import {getInputMethodSettings, SettingsType} from './input_method_settings.js';
-import {JAPANESE_INPUT_MODE, JAPANESE_KEYMAP_STYLE, JAPANESE_PUNCTUATION_STYLE, JAPANESE_SECTION_SHORTCUT, JAPANESE_SPACE_INPUT_STYLE, JAPANESE_SYMBOL_STYLE} from './input_method_types.js';
+import {JAPANESE_INPUT_MODE, JAPANESE_KEYMAP_STYLE, JAPANESE_PUNCTUATION_STYLE, JAPANESE_SECTION_SHORTCUT, JAPANESE_SHIFT_KEY_MODE_STYLE, JAPANESE_SPACE_INPUT_STYLE, JAPANESE_SYMBOL_STYLE} from './input_method_types.js';
+
 
 /**
  * @fileoverview constants related to input method options.
@@ -67,6 +68,11 @@ export const OptionType = {
   VIRTUAL_KEYBOARD_ENABLE_CAPITALIZATION: 'virtualKeyboardEnableCapitalization',
   XKB_LAYOUT: 'xkbLayout',
   // Options for Japanese input method.
+  JAPANESE_AUTOMATICALLY_SWITCH_TO_HALFWIDTH: 'AutomaticallySwitchToHalfwidth',
+  JAPANESE_SHIFT_KEY_MODE_STYLE: 'ShiftKeyModeStyle',
+  JAPANESE_USE_INPUT_HISTORY: 'UseInputHistory',
+  JAPANESE_USE_SYSTEM_DICTIONARY: 'UseSystemDictionary',
+  JAPANESE_NUMBER_OF_SUGGESTIONS: 'numberOfSuggestions',
   JAPANESE_INPUT_MODE: 'JapaneseInputMode',
   JAPANESE_INPUT_MODE_KANA: 'JapaneseInputModeKana',
   JAPANESE_INPUT_MODE_ROMAJI: 'JapaneseInputModeRomaji',
@@ -75,6 +81,11 @@ export const OptionType = {
   JAPANESE_SPACE_INPUT_STYLE: 'JapaneseSpaceInputStyle',
   JAPANESE_SECTION_SHORTCUT: 'JapaneseSectionShortcut',
   JAPANESE_KEYMAP_STYLE: 'JapaneseKeymapStyle',
+  JAPANESE_MANAGE_USER_DICTIONARY: 'JapaneseManageUserDictionary',
+  JAPANESE_CLEAR_PERSONALIZATION_DATA: 'JapaneseClearPersonalizationData',
+  JAPANESE_DISABLE_PERSONALIZED_SUGGESTIONS: 'JapaneseDisableSuggestions',
+  JAPANESE_AUTOMATICALLY_SEND_STATISTICS_TO_GOOGLE:
+      'AutomaticallySendStatisticsToGoogle',
   // Options for Korean input method.
   KOREAN_ENABLE_SYLLABLE_INPUT: 'koreanEnableSyllableInput',
   KOREAN_KEYBOARD_LAYOUT: 'koreanKeyboardLayout',
@@ -118,6 +129,12 @@ export const OPTION_DEFAULT = {
   [OptionType.ENABLE_GESTURE_TYPING]: true,
   [OptionType.ENABLE_PREDICTION]: false,
   [OptionType.ENABLE_SOUND_ON_KEYPRESS]: false,
+  [OptionType.JAPANESE_AUTOMATICALLY_SWITCH_TO_HALFWIDTH]: true,
+  [OptionType.JAPANESE_SHIFT_KEY_MODE_STYLE]:
+      JAPANESE_SHIFT_KEY_MODE_STYLE.ALPHANUMERIC,
+  [OptionType.JAPANESE_USE_INPUT_HISTORY]: true,
+  [OptionType.JAPANESE_USE_SYSTEM_DICTIONARY]: true,
+  [OptionType.JAPANESE_NUMBER_OF_SUGGESTIONS]: 3,
   [OptionType.PHYSICAL_KEYBOARD_AUTO_CORRECTION_LEVEL]: 0,
   [OptionType.PHYSICAL_KEYBOARD_ENABLE_CAPITALIZATION]: true,
   [OptionType.PHYSICAL_KEYBOARD_ENABLE_PREDICTIVE_WRITING]: true,
@@ -136,6 +153,9 @@ export const OPTION_DEFAULT = {
   [OptionType.JAPANESE_SECTION_SHORTCUT]:
       JAPANESE_SECTION_SHORTCUT.DIGITS_123456789,
   [OptionType.JAPANESE_KEYMAP_STYLE]: JAPANESE_KEYMAP_STYLE.CUSTOM,
+  [OptionType.JAPANESE_DISABLE_PERSONALIZED_SUGGESTIONS]: true,
+  [OptionType.JAPANESE_AUTOMATICALLY_SEND_STATISTICS_TO_GOOGLE]: true,
+
   // Options for Korean input method.
   [OptionType.KOREAN_ENABLE_SYLLABLE_INPUT]: true,
   [OptionType.KOREAN_KEYBOARD_LAYOUT]: KeyboardLayout.SET2,
@@ -174,7 +194,17 @@ export const OPTION_DEFAULT = {
 export const UiType = {
   DROPDOWN: 'dropdown',
   LINK: 'link',
+  SUBMENU_BUTTON: 'submenuButton',
   TOGGLE_BUTTON: 'toggleButton',
+};
+
+/**
+ * All possible submenu button types.
+ *
+ * @enum {string}
+ */
+export const SubmenuButton = {
+  JAPANESE_CLEAR_PERSONALIZATION_DATA: 'SubmenuButtonClearPersonalizedData',
 };
 
 /**
@@ -238,44 +268,33 @@ const Settings = {
       ],
     },
     {
-      // TODO(b/234790486): Customize inputAssistance with the correct values.
-      // The correct values are the ones from the legacy settings page that used
-      // to be found in
-      // chrome-extension://jkghodnilhceideoidjikpgommlajknk/mozc_option.html.
       title: SettingsHeaders.INPUT_ASSISTANCE,
-      optionNames: [{
-        name: OptionType.JAPANESE_INPUT_MODE,
-      }],
+      optionNames: [
+        {name: OptionType.JAPANESE_AUTOMATICALLY_SWITCH_TO_HALFWIDTH},
+        {name: OptionType.JAPANESE_SHIFT_KEY_MODE_STYLE},
+      ],
     },
     {
-      // TODO(b/234790486): Customize suggestions with the correct values.
-      // The correct values are the ones from the legacy settings page that used
-      // to be found in
-      // chrome-extension://jkghodnilhceideoidjikpgommlajknk/mozc_option.html.
       title: SettingsHeaders.SUGGESTIONS,
-      optionNames: [{
-        name: OptionType.JAPANESE_INPUT_MODE,
-      }],
+      optionNames: [
+        {name: OptionType.JAPANESE_USE_INPUT_HISTORY},
+        {name: OptionType.JAPANESE_USE_SYSTEM_DICTIONARY},
+        {name: OptionType.JAPANESE_NUMBER_OF_SUGGESTIONS},
+      ],
     },
     {
-      // TODO(b/234790486): Customize userDictionaries with the correct values.
-      // The correct values are the ones from the legacy settings page that used
-      // to be found in
-      // chrome-extension://jkghodnilhceideoidjikpgommlajknk/mozc_option.html.
       title: SettingsHeaders.USER_DICTIONARIES,
       optionNames: [{
-        name: OptionType.JAPANESE_INPUT_MODE,
+        name: OptionType.JAPANESE_MANAGE_USER_DICTIONARY,
       }],
     },
     {
-      // TODO(b/234790486): Customize privacy with the correct values. The
-      // correct values are the ones from the legacy settings page that used to
-      // be found in
-      // chrome-extension://jkghodnilhceideoidjikpgommlajknk/mozc_option.html.
       title: SettingsHeaders.PRIVACY,
-      optionNames: [{
-        name: OptionType.JAPANESE_INPUT_MODE,
-      }],
+      optionNames: [
+        {name: OptionType.JAPANESE_CLEAR_PERSONALIZATION_DATA},
+        {name: OptionType.JAPANESE_DISABLE_PERSONALIZED_SUGGESTIONS},
+        {name: OptionType.JAPANESE_AUTOMATICALLY_SEND_STATISTICS_TO_GOOGLE},
+      ],
     },
   ],
   [SettingsType.ZHUYIN_SETTINGS]: [{
@@ -437,6 +456,11 @@ export function getOptionUiType(option) {
     case OptionType.ENABLE_GESTURE_TYPING:
     case OptionType.ENABLE_PREDICTION:
     case OptionType.ENABLE_SOUND_ON_KEYPRESS:
+    case OptionType.JAPANESE_AUTOMATICALLY_SWITCH_TO_HALFWIDTH:
+    case OptionType.JAPANESE_USE_SYSTEM_DICTIONARY:
+    case OptionType.JAPANESE_USE_INPUT_HISTORY:
+    case OptionType.JAPANESE_DISABLE_PERSONALIZED_SUGGESTIONS:
+    case OptionType.JAPANESE_AUTOMATICALLY_SEND_STATISTICS_TO_GOOGLE:
     case OptionType.PHYSICAL_KEYBOARD_ENABLE_CAPITALIZATION:
     case OptionType.PHYSICAL_KEYBOARD_ENABLE_PREDICTIVE_WRITING:
     case OptionType.PHYSICAL_KEYBOARD_ENABLE_DIACRITICS_ON_LONGPRESS:
@@ -470,17 +494,23 @@ export function getOptionUiType(option) {
     case OptionType.JAPANESE_SPACE_INPUT_STYLE:
     case OptionType.JAPANESE_SECTION_SHORTCUT:
     case OptionType.JAPANESE_KEYMAP_STYLE:
+    case OptionType.JAPANESE_SHIFT_KEY_MODE_STYLE:
+    case OptionType.JAPANESE_NUMBER_OF_SUGGESTIONS:
     case OptionType.KOREAN_KEYBOARD_LAYOUT:
     case OptionType.ZHUYIN_KEYBOARD_LAYOUT:
     case OptionType.ZHUYIN_SELECT_KEYS:
     case OptionType.ZHUYIN_PAGE_SIZE:
       return UiType.DROPDOWN;
     case OptionType.EDIT_USER_DICT:
+    case OptionType.JAPANESE_MANAGE_USER_DICTIONARY:
       return UiType.LINK;
+    case OptionType.JAPANESE_CLEAR_PERSONALIZATION_DATA:
+      return UiType.SUBMENU_BUTTON;
     default:
       assertNotReached();
   }
 }
+
 export function isOptionLabelTranslated(option) {
   switch (option) {
     // TODO(b/191608723): Clean up switch statements.
@@ -554,6 +584,24 @@ export function getOptionLabelName(option) {
       return 'inputMethodOptionsJapaneseInputModeKana';
     case OptionType.JAPANESE_INPUT_MODE_ROMAJI:
       return 'inputMethodOptionsJapaneseInputModeRomaji';
+    case OptionType.JAPANESE_AUTOMATICALLY_SWITCH_TO_HALFWIDTH:
+      return 'inputMethodOptionsJapaneseAutomaticallySwitchToHalfwidth';
+    case OptionType.JAPANESE_SHIFT_KEY_MODE_STYLE:
+      return 'inputMethodOptionsJapaneseShiftKeyModeStyle';
+    case OptionType.JAPANESE_USE_INPUT_HISTORY:
+      return 'inputMethodOptionsJapaneseUseInputHistory';
+    case OptionType.JAPANESE_USE_SYSTEM_DICTIONARY:
+      return 'inputMethodOptionsJapaneseUseSystemDictionary';
+    case OptionType.JAPANESE_NUMBER_OF_SUGGESTIONS:
+      return 'inputMethodOptionsJapaneseNumberOfSuggestions';
+    case OptionType.JAPANESE_MANAGE_USER_DICTIONARY:
+      return 'inputMethodOptionsJapaneseManageUserDictionary';
+    case OptionType.JAPANESE_CLEAR_PERSONALIZATION_DATA:
+      return 'inputMethodOptionsJapaneseClearPersonalizationData';
+    case OptionType.JAPANESE_DISABLE_PERSONALIZED_SUGGESTIONS:
+      return 'inputMethodOptionsJapaneseDisablePersonalizedSuggestions';
+    case OptionType.JAPANESE_AUTOMATICALLY_SEND_STATISTICS_TO_GOOGLE:
+      return 'inputMethodOptionsJapaneseAutomaticallySendStatisticsToGoogle';
     case OptionType.XKB_LAYOUT:
       return 'inputMethodOptionsXkbLayout';
     case OptionType.EDIT_USER_DICT:
@@ -582,6 +630,14 @@ export function getOptionSubtitleName(option) {
   switch (option) {
     case OptionType.PHYSICAL_KEYBOARD_ENABLE_DIACRITICS_ON_LONGPRESS:
       return 'inputMethodOptionsDiacriticsOnPhysicalKeyboardLongpressSubtitle';
+    // TODO(b/234790486): The subtitle is not forced to the next line if it is
+    // too short. You end up with something like :
+    // https://screenshot.googleplex.com/8xk2BfbBXcGqhvs This likely also
+    // affects the diacritics label. This is not currently an issue since both
+    // string are long enough and force themself to the next line, but it may be
+    // an issue in other languages or with future strings which may be shorter.
+    case OptionType.JAPANESE_MANAGE_USER_DICTIONARY:
+      return 'inputMethodOptionsJapaneseManageUserDictionarySubtitle';
     default:
       return '';
   }
@@ -665,11 +721,11 @@ export function getOptionMenuItems(option) {
       return [
         {
           value: JAPANESE_INPUT_MODE.KANA,
-          name: 'inputMethodOptionsJapaneseInputModeRomaji',
+          name: 'inputMethodOptionsJapaneseInputModeKana',
         },
         {
           value: JAPANESE_INPUT_MODE.ROMAJI,
-          name: 'inputMethodOptionsJapaneseInputModeKana',
+          name: 'inputMethodOptionsJapaneseInputModeRomaji',
         },
       ];
     case OptionType.JAPANESE_PUNCTUATION_STYLE:
@@ -767,6 +823,51 @@ export function getOptionMenuItems(option) {
           name: 'inputMethodOptionsJapaneseKeymapStyleChromeOs',
         },
       ];
+    case OptionType.JAPANESE_SHIFT_KEY_MODE_STYLE:
+      return [
+        {
+          value: JAPANESE_SHIFT_KEY_MODE_STYLE.OFF,
+          name: 'inputMethodOptionsJapaneseShiftKeyModeStyleOff',
+        },
+        {
+          value: JAPANESE_SHIFT_KEY_MODE_STYLE.ALPHANUMERIC,
+          name: 'inputMethodOptionsJapaneseShiftKeyModeStyleAlphanumeric',
+        },
+        {
+          value: JAPANESE_SHIFT_KEY_MODE_STYLE.KATAKANA,
+          name: 'inputMethodOptionsJapaneseShiftKeyModeStyleKatakana',
+        },
+      ];
+    case OptionType.JAPANESE_NUMBER_OF_SUGGESTIONS:
+      return [
+        {
+          value: 1,
+        },
+        {
+          value: 2,
+        },
+        {
+          value: 3,
+        },
+        {
+          value: 4,
+        },
+        {
+          value: 5,
+        },
+        {
+          value: 6,
+        },
+        {
+          value: 7,
+        },
+        {
+          value: 8,
+        },
+        {
+          value: 9,
+        },
+      ];
     case OptionType.KOREAN_KEYBOARD_LAYOUT:
       // Korean layout strings are already Korean / English, so not
       // translated. The literal values of these strings are critical.
@@ -783,15 +884,14 @@ export function getOptionMenuItems(option) {
   }
 }
 
+
 /**
  * @param {!OptionType} option The option type.
  * @return {boolean} true if the value for |option| is a number.
  */
-export function isNumberValue(option) {
-  return option === OptionType.PHYSICAL_KEYBOARD_AUTO_CORRECTION_LEVEL ||
-      option === OptionType.VIRTUAL_KEYBOARD_AUTO_CORRECTION_LEVEL;
+export function shouldStoreNumberAsString(option) {
+  return option === OptionType.PHYSICAL_KEYBOARD_AUTO_CORRECTION_LEVEL;
 }
-
 /**
  * @param {!OptionType} option The option type.
  * @return {Route|undefined} The url to open for |option|, returns
@@ -800,6 +900,21 @@ export function isNumberValue(option) {
 export function getOptionUrl(option) {
   if (option === OptionType.EDIT_USER_DICT) {
     return routes.OS_LANGUAGES_EDIT_DICTIONARY;
+  }
+  if (option === OptionType.JAPANESE_MANAGE_USER_DICTIONARY) {
+    return routes.OS_LANGUAGES_JAPANESE_MANAGE_USER_DICTIONARY;
+  }
+  return undefined;
+}
+
+/**
+ * @param {!OptionType} option The option type.
+ * @return {SubmenuButton|undefined} The submenu button type for
+ * |option|, returns undefined if |option| does not have a submenu button type.
+ */
+export function getSubmenuButtonType(option) {
+  if (option === OptionType.JAPANESE_CLEAR_PERSONALIZATION_DATA) {
+    return SubmenuButton.JAPANESE_CLEAR_PERSONALIZATION_DATA;
   }
   return undefined;
 }

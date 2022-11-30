@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,7 +99,7 @@ void SetIntListAttribute(ax::mojom::blink::IntListAttribute attribute,
     return;
   HeapVector<Member<Element>>* attr_associated_elements =
       element->GetElementArrayAttribute(qualified_name);
-  if (!attr_associated_elements || attr_associated_elements->IsEmpty())
+  if (!attr_associated_elements || attr_associated_elements->empty())
     return;
   std::vector<int32_t> ax_ids;
 
@@ -116,7 +116,7 @@ void SetIntListAttribute(ax::mojom::blink::IntListAttribute attribute,
 
 AXSparseAttributeSetterMap& GetAXSparseAttributeSetterMap() {
   DEFINE_STATIC_LOCAL(AXSparseAttributeSetterMap, ax_sparse_setter_map, ());
-  if (ax_sparse_setter_map.IsEmpty()) {
+  if (ax_sparse_setter_map.empty()) {
     ax_sparse_setter_map.Set(
         html_names::kAriaActivedescendantAttr,
         WTF::BindRepeating(&SetObjectAttribute,

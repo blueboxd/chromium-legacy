@@ -9,6 +9,7 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/constants/tray_background_view_catalog.h"
 #include "ash/projector/projector_controller_impl.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/stylus_utils.h"
@@ -31,6 +32,7 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -244,7 +246,7 @@ class StylusEventHandler : public ui::EventHandler {
 }  // namespace
 
 PaletteTray::PaletteTray(Shelf* shelf)
-    : TrayBackgroundView(shelf),
+    : TrayBackgroundView(shelf, TrayBackgroundViewCatalogName::kPalette),
       palette_tool_manager_(std::make_unique<PaletteToolManager>(this)),
       welcome_bubble_(std::make_unique<PaletteWelcomeBubble>(this)),
       stylus_event_handler_(std::make_unique<StylusEventHandler>(this)),
@@ -330,8 +332,7 @@ bool PaletteTray::ShouldShowOnDisplay() {
 
   for (const ui::TouchscreenDevice& device :
        ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices()) {
-    if (device.has_stylus && std::find(ids.begin(), ids.end(),
-                                       device.target_display_id) != ids.end()) {
+    if (device.has_stylus && base::Contains(ids, device.target_display_id)) {
       return true;
     }
   }

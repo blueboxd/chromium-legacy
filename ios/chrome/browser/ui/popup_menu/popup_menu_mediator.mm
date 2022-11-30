@@ -27,7 +27,7 @@
 #import "components/translate/core/browser/translate_manager.h"
 #import "components/translate/core/browser/translate_prefs.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/commerce/price_alert_util.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #import "ios/chrome/browser/follow/follow_browser_agent.h"
 #import "ios/chrome/browser/follow/follow_menu_updater.h"
@@ -63,6 +63,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/url_loading/image_search_param_generator.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -214,6 +215,7 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 @property(nonatomic, strong) PopupMenuToolsItem* requestDesktopSiteItem;
 @property(nonatomic, strong) PopupMenuToolsItem* requestMobileSiteItem;
 @property(nonatomic, strong) PopupMenuToolsItem* readingListItem;
+@property(nonatomic, strong) PopupMenuToolsItem* priceNotificationsItem;
 // Array containing all the nonnull items/
 @property(nonatomic, strong)
     NSArray<TableViewItem<PopupMenuItem>*>* specificItems;
@@ -571,6 +573,8 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
       [specificItems addObject:self.requestMobileSiteItem];
     if (self.readingListItem)
       [specificItems addObject:self.readingListItem];
+    if (self.priceNotificationsItem)
+      [specificItems addObject:self.priceNotificationsItem];
     self.specificItems = specificItems;
   }
   return _items;
@@ -781,7 +785,7 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   } else {
     self.bookmarkItem.title =
-        l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_BOOKMARK);
+        l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_ADD_TO_BOOKMARKS);
     self.bookmarkItem.accessibilityIdentifier = kToolsMenuAddToBookmarks;
     self.bookmarkItem.image = [[UIImage imageNamed:@"popup_menu_add_bookmark"]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
@@ -1108,8 +1112,7 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 - (NSArray<TableViewItem*>*)actionItems {
   NSMutableArray* actionsArray = [NSMutableArray array];
 
-  if (!self.isIncognito && IsWebChannelsEnabled() &&
-      GetFollowActionState(self.webState) != FollowActionStateHidden) {
+  if (GetFollowActionState(self.webState) != FollowActionStateHidden) {
     // Follow.
     self.followItem =
         CreateFollowItem(IDS_IOS_TOOLS_MENU_FOLLOW, PopupMenuActionFollow,
@@ -1122,9 +1125,17 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
       @"popup_menu_read_later", kToolsMenuReadLater);
   [actionsArray addObject:self.readLaterItem];
 
+  self.priceNotificationsItem = CreateTableViewItem(
+      IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_TITLE,
+      PopupMenuActionPriceNotifications, @"popup_menu_price_notifications",
+      kToolsMenuPriceNotifications);
+  if (IsPriceNotificationsEnabled()) {
+    [actionsArray addObject:self.priceNotificationsItem];
+  }
+
   // Add to bookmark.
   self.bookmarkItem = CreateTableViewItem(
-      IDS_IOS_TOOLS_MENU_BOOKMARK, PopupMenuActionPageBookmark,
+      IDS_IOS_TOOLS_MENU_ADD_TO_BOOKMARKS, PopupMenuActionPageBookmark,
       @"popup_menu_add_bookmark", kToolsMenuAddToBookmarks);
   [actionsArray addObject:self.bookmarkItem];
 

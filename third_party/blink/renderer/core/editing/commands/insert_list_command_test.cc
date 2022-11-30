@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -353,5 +353,23 @@ TEST_F(InsertListCommandTest, SelectionFromEndOfTableToAfterTable) {
   EXPECT_EQ(
       "<table><tbody><tr><td><ol><li>|<br></li></ol></td></tr></tbody></table>",
       GetSelectionTextFromBody());
+}
+
+// Refer https://crbug.com/1366749
+TEST_F(InsertListCommandTest, ListItemWithSpace) {
+  Document& document = GetDocument();
+  document.setDesignMode("on");
+  Selection().SetSelection(
+      SetSelectionTextToBody(
+          "<li>^ <div contenteditable='false'>A</div>B|</li>"),
+      SetSelectionOptions());
+
+  auto* command = MakeGarbageCollected<InsertListCommand>(
+      document, InsertListCommand::kOrderedList);
+
+  // Crash happens here.
+  EXPECT_FALSE(command->Apply());
+  EXPECT_EQ("<ul><li> <div contenteditable=\"false\">A</div>B|</li></ul><br>",
+            GetSelectionTextFromBody());
 }
 }

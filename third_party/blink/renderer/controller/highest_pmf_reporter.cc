@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,7 +93,8 @@ void HighestPmfReporter::OnMemoryPing(MemoryUsage usage) {
   if (FirstNavigationStarted()) {
     task_runner_->PostDelayedTask(
         FROM_HERE,
-        WTF::Bind(&HighestPmfReporter::OnReportMetrics, WTF::Unretained(this)),
+        WTF::BindOnce(&HighestPmfReporter::OnReportMetrics,
+                      WTF::Unretained(this)),
         time_to_report[0]);
   }
 
@@ -131,7 +132,8 @@ void HighestPmfReporter::OnReportMetrics() {
       time_to_report[report_count_] - time_to_report[report_count_ - 1];
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      WTF::Bind(&HighestPmfReporter::OnReportMetrics, WTF::Unretained(this)),
+      WTF::BindOnce(&HighestPmfReporter::OnReportMetrics,
+                    WTF::Unretained(this)),
       delay);
 }
 

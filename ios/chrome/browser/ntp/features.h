@@ -11,11 +11,11 @@
 
 // Feature flag to enable feed background refresh.
 // Use IsFeedBackgroundRefreshEnabled() instead of this constant directly.
-extern const base::Feature kEnableFeedBackgroundRefresh;
+BASE_DECLARE_FEATURE(kEnableFeedBackgroundRefresh);
 
 // Feature flag to enable the Following feed in the NTP.
 // Use IsWebChannelsEnabled() instead of this constant directly.
-extern const base::Feature kEnableWebChannels;
+BASE_DECLARE_FEATURE(kEnableWebChannels);
 
 // Feature param under `kEnableFeedBackgroundRefresh` to also enable background
 // refresh for the Following feed.
@@ -53,6 +53,9 @@ bool IsDiscoverFeedServiceCreatedEarly();
 // This function always returns false if the `IOS_BACKGROUND_MODE_ENABLED`
 // buildflag is not defined.
 bool IsFeedBackgroundRefreshEnabled();
+
+// Whether Good Visits metric logging is enabled.
+bool IsGoodVisitsMetricEnabled();
 
 // Saves the current value for feature `kEnableFeedBackgroundRefresh`. This call
 // DCHECKs on the availability of `base::FeatureList`.

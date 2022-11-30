@@ -7,17 +7,15 @@
  * Provides WebviewEventManager which can register and keep track of listeners
  * on EventTargets and WebRequests, and unregister all listeners later.
  */
-'use strict';
 
 /**
  * Creates a new WebviewEventManager.
- * @constructor
  */
-/* #export */ function WebviewEventManager() {
-  this.unbindWebviewCleanupFunctions_ = [];
-}
+export class WebviewEventManager {
+  constructor() {
+    this.unbindWebviewCleanupFunctions_ = [];
+  }
 
-WebviewEventManager.prototype = {
   /**
    * Adds a EventListener to |eventTarget| and adds a clean-up function so we
    * can remove the listener in unbindFromWebview.
@@ -29,7 +27,7 @@ WebviewEventManager.prototype = {
     eventTarget.addEventListener(type, listener);
     this.unbindWebviewCleanupFunctions_.push(
         eventTarget.removeEventListener.bind(eventTarget, type, listener));
-  },
+  }
 
   /**
    * Adds a listener to |webRequestEvent| and adds a clean-up function so we can
@@ -45,7 +43,7 @@ WebviewEventManager.prototype = {
     webRequestEvent.addListener(listener, filter, extraInfoSpec);
     this.unbindWebviewCleanupFunctions_.push(
         webRequestEvent.removeListener.bind(webRequestEvent, listener));
-  },
+  }
 
   /**
    * Unbinds this Authenticator from the currently bound webview.
@@ -55,13 +53,5 @@ WebviewEventManager.prototype = {
       this.unbindWebviewCleanupFunctions_[i]();
     }
     this.unbindWebviewCleanupFunctions_ = [];
-  },
-};
-
-/**
- * Class factory.
- * @return {WebviewEventManager}
- */
-WebviewEventManager.create = function() {
-  return new WebviewEventManager();
-};
+  }
+}

@@ -38,16 +38,16 @@ namespace ash {
 
 namespace {
 
+using assistant::AndroidAppInfo;
 using assistant::Assistant;
+using assistant::AssistantInteractionMetadata;
 using assistant::AssistantInteractionSubscriber;
+using assistant::AssistantInteractionType;
+using assistant::AssistantQuerySource;
+using assistant::AssistantSuggestion;
+using assistant::AssistantSuggestionType;
 using assistant::MockAssistantInteractionSubscriber;
 using assistant::ScopedAssistantInteractionSubscriber;
-using chromeos::assistant::AndroidAppInfo;
-using chromeos::assistant::AssistantInteractionMetadata;
-using chromeos::assistant::AssistantInteractionType;
-using chromeos::assistant::AssistantQuerySource;
-using chromeos::assistant::AssistantSuggestion;
-using chromeos::assistant::AssistantSuggestionType;
 
 using ::testing::Invoke;
 using ::testing::Mock;
@@ -275,10 +275,8 @@ TEST_F(AssistantInteractionControllerImplTest, CompactBubbleLauncher) {
   static constexpr int kNarrowLayoutAshWebViewWidth = 496;
 
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {app_list_features::kCompactBubbleLauncher,
-       features::kProductivityLauncher},
-      {});
+  scoped_feature_list.InitAndEnableFeature(
+      app_list_features::kCompactBubbleLauncher);
 
   UpdateDisplay("1200x800");
   ShowAssistantUi();

@@ -318,6 +318,7 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
       {"hardwareErrorMessage", IDS_SHIMLESS_RMA_HARDWARE_ERROR_MESSAGE},
       {"hardwareErrorShutDownButton",
        IDS_SHIMLESS_RMA_HARDWARE_SHUTDOWN_BUTTON},
+      {"hardwareErrorCode", IDS_SHIMLESS_RMA_HARDWARE_ERROR_CODE_MESSAGE},
       // Reboot page
       {"rebootPageTitle", IDS_SHIMLESS_RMA_REBOOT_PAGE_TITLE},
       {"rebootPageMessage", IDS_SHIMLESS_RMA_REBOOT_PAGE_MESSAGE},
@@ -416,7 +417,8 @@ ShimlessRMADialogUI::ShimlessRMADialogUI(
           kChromeUIShimlessRMAHost);
   html_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
-      "script-src chrome://resources chrome://test 'self';");
+      "script-src chrome://resources chrome://test chrome://webui-test "
+      "'self';");
   html_source->DisableTrustedTypesCSP();
 
   const auto resources =

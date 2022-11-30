@@ -48,7 +48,6 @@ import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.MOVEM
 
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -57,7 +56,6 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.text.SpannableString;
 import android.text.style.LocaleSpan;
 import android.text.style.SuggestionSpan;
@@ -82,6 +80,7 @@ import androidx.core.view.accessibility.AccessibilityNodeProviderCompat;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.UserData;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -136,9 +135,12 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
     public static final int CONTENT_CHANGE_TYPE_PANE_APPEARED = 0x00000010;
 
     // Constants defined for AccessibilityNodeInfo Bundle extras keys.
+    public static final String EXTRAS_KEY_BRAILLE_LABEL = "AccessibilityNodeInfo.brailleLabel";
+    public static final String EXTRAS_KEY_BRAILLE_ROLE_DESCRIPTION =
+            "AccessibilityNodeInfo.brailleRoleDescription";
     public static final String EXTRAS_KEY_CHROME_ROLE = "AccessibilityNodeInfo.chromeRole";
     public static final String EXTRAS_KEY_CLICKABLE_SCORE = "AccessibilityNodeInfo.clickableScore";
-    public static final String EXTRAS_KEY_CSS_DISPLAY = "AccessibilityNodeInfo.blockDisplay";
+    public static final String EXTRAS_KEY_CSS_DISPLAY = "AccessibilityNodeInfo.cssDisplay";
     public static final String EXTRAS_KEY_HAS_IMAGE = "AccessibilityNodeInfo.hasImage";
     public static final String EXTRAS_KEY_HINT = "AccessibilityNodeInfo.hint";
     public static final String EXTRAS_KEY_IMAGE_DATA = "AccessibilityNodeInfo.imageData";
@@ -218,8 +220,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
     // WebView.
     private boolean mShouldFocusOnPageLoad;
 
-    // Whether the image descriptions feature is allowed for this instance.
-    private boolean mAllowImageDescriptions;
+    // True if this instance is a candidate to have the image descriptions feature enabled. The
+    // feature is dependent on embedder behavior and screen reader state. Default false.
+    private boolean mIsImageDescriptionsCandidate;
 
     // If true, the web contents are obscured by another view and we shouldn't
     // return an AccessibilityNodeProvider or process touch exploration events.
@@ -280,6 +283,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
     }
 
     protected WebContentsAccessibilityImpl(AccessibilityDelegate delegate) {
+        TraceEvent.begin("WebContentsAccessibilityImpl.ctor");
         mDelegate = delegate;
         mView = mDelegate.getContainerView();
         mContext = mView.getContext();
@@ -381,6 +385,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
                 Log.e(TAG, "AutofillManager did not resolve before time limit.");
             }
         }
+
+        TraceEvent.end("WebContentsAccessibilityImpl.ctor");
     }
 
     /**
@@ -388,6 +394,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
      * to do initialization that is not required until the native is set up.
      */
     protected void onNativeInit() {
+        TraceEvent.begin("WebContentsAccessibilityImpl.onNativeInit");
         mAccessibilityFocusId = View.NO_ID;
         mSelectionNodeId = View.NO_ID;
         mIsHovering = false;
@@ -417,10 +424,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
             mView.post(serviceMaskRunnable);
         }
 
-        // Set whether image descriptions should be enabled for this instance. We do not want
-        // the feature to run in certain cases (e.g. WebView or Chrome Custom Tab).
-        WebContentsAccessibilityImplJni.get().setAllowImageDescriptions(
-                mNativeObj, mAllowImageDescriptions);
+        TraceEvent.end("WebContentsAccessibilityImpl.onNativeInit");
     }
 
     @CalledByNative
@@ -520,10 +524,12 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
 
     @Override
     public void onAttachedToWindow() {
+        TraceEvent.begin("WebContentsAccessibilityImpl.onAttachedToWindow");
         mAccessibilityManager.addAccessibilityStateChangeListener(this);
         refreshState();
         mCaptioningController.startListening();
         registerLocaleChangeReceiver();
+        TraceEvent.end("WebContentsAccessibilityImpl.onAttachedToWindow");
     }
 
     private void registerLocaleChangeReceiver() {
@@ -540,6 +546,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
 
     @Override
     public void onWindowAndroidChanged(WindowAndroid windowAndroid) {
+        TraceEvent.begin("WebContentsAccessibilityImpl.onWindowAndroidChanged");
         // Delete this object when switching between WindowAndroids/Activities.
         if (mDelegate.getWebContents() != null) {
             WindowEventObserverManager.from(mDelegate.getWebContents()).removeObserver(this);
@@ -548,17 +555,22 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
         }
 
         deleteEarly();
+        TraceEvent.end("WebContentsAccessibilityImpl.onWindowAndroidChanged");
     }
 
     @Override
     public void destroy() {
+        TraceEvent.begin("WebContentsAccessibilityImpl.destroy");
         if (mDelegate.getWebContents() == null) deleteEarly();
+        TraceEvent.end("WebContentsAccessibilityImpl.destroy");
     }
 
     protected void deleteEarly() {
         if (mNativeObj != 0) {
+            TraceEvent.begin("WebContentsAccessibilityImpl.deleteEarly");
             WebContentsAccessibilityImplJni.get().deleteEarly(mNativeObj);
             assert mNativeObj == 0;
+            TraceEvent.end("WebContentsAccessibilityImpl.deleteEarly");
         }
     }
 
@@ -650,10 +662,12 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
         if (!isAccessibilityEnabled()) {
             return null;
         }
-        int rootId = WebContentsAccessibilityImplJni.get().getRootId(mNativeObj);
+        if (mCurrentRootId == View.NO_ID) {
+            mCurrentRootId = WebContentsAccessibilityImplJni.get().getRootId(mNativeObj);
+        }
 
         if (virtualViewId == View.NO_ID) {
-            return createNodeForHost(rootId);
+            return createNodeForHost(mCurrentRootId);
         }
 
         if (!isFrameInfoInitialized()) {
@@ -700,7 +714,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
             info.setPackageName(mContext.getPackageName());
             info.setSource(mView, virtualViewId);
 
-            if (virtualViewId == rootId) {
+            if (virtualViewId == mCurrentRootId) {
                 info.setParent(mView);
             }
 
@@ -746,11 +760,21 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
 
     @Override
     public void onBrowserAccessibilityStateChanged(boolean newScreenReaderEnabledState) {
-        if (!isAccessibilityEnabled()) return;
+        if (!isNativeInitialized()) return;
 
         // Update the AXMode based on screen reader status.
         WebContentsAccessibilityImplJni.get().setAXMode(mNativeObj, newScreenReaderEnabledState,
                 /* isAccessibilityEnabled= */ true);
+
+        // Update the state of how passwords are exposed based on user settings.
+        WebContentsAccessibilityImplJni.get().setPasswordRules(mNativeObj,
+                AccessibilityAutofillHelper.shouldRespectDisplayedPasswordText(),
+                AccessibilityAutofillHelper.shouldExposePasswordText());
+
+        // Update the state of enabling/disabling the image descriptions feature. To enable the
+        // feature, this instance must be a candidate and a screen reader must be enabled.
+        WebContentsAccessibilityImplJni.get().setAllowImageDescriptions(
+                mNativeObj, mIsImageDescriptionsCandidate && newScreenReaderEnabledState);
 
         // Update the list of events we dispatch to enabled services.
         if (ContentFeatureList.isEnabled(ContentFeatureList.ON_DEMAND_ACCESSIBILITY_EVENTS)) {
@@ -804,8 +828,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
     }
 
     @Override
-    public void setAllowImageDescriptions(boolean allowImageDescriptions) {
-        mAllowImageDescriptions = allowImageDescriptions;
+    public void setIsImageDescriptionsCandidate(boolean isImageDescriptionsCandidate) {
+        mIsImageDescriptionsCandidate = isImageDescriptionsCandidate;
     }
 
     @Override
@@ -1558,20 +1582,15 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
 
     @CalledByNative
     private void handleContentChanged(int id) {
-        int rootId = WebContentsAccessibilityImplJni.get().getRootId(mNativeObj);
-        if (rootId != mCurrentRootId) {
-            mCurrentRootId = rootId;
-            sendAccessibilityEvent(View.NO_ID, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
-        } else {
-            sendAccessibilityEvent(id, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
-        }
+        sendAccessibilityEvent(id, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
     }
 
     @CalledByNative
-    private void handleNavigate() {
+    private void handleNavigate(int newRootId) {
         mAccessibilityFocusId = View.NO_ID;
         mAccessibilityFocusRect = null;
         mUserHasTouchExplored = false;
+        mCurrentRootId = newRootId;
         // Invalidate the host, since its child is now gone.
         sendAccessibilityEvent(View.NO_ID, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
     }
@@ -1629,11 +1648,6 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
             event.setContentDescription(null);
             requestSendAccessibilityEvent(event);
         }
-    }
-
-    @CalledByNative
-    private void setAccessibilityNodeInfoParent(AccessibilityNodeInfoCompat node, int parentId) {
-        node.setParent(mView, parentId);
     }
 
     @CalledByNative
@@ -1790,12 +1804,19 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
 
     @CalledByNative
     private void setAccessibilityNodeInfoBaseAttributes(AccessibilityNodeInfoCompat node,
-            boolean isRoot, String className, String role, String roleDescription, String hint,
-            String targetUrl, boolean canOpenPopup, boolean multiLine, int inputType,
-            int liveRegion, String errorMessage, int clickableScore, String display) {
+            int virtualViewId, int parentId, String className, String role, String roleDescription,
+            String hint, String targetUrl, boolean canOpenPopup, boolean multiLine, int inputType,
+            int liveRegion, String errorMessage, int clickableScore, String display,
+            String brailleLabel, String brailleRoleDescription) {
         node.setClassName(className);
 
         Bundle bundle = node.getExtras();
+        if (!brailleLabel.isEmpty()) {
+            bundle.putCharSequence(EXTRAS_KEY_BRAILLE_LABEL, brailleLabel);
+        }
+        if (!brailleRoleDescription.isEmpty()) {
+            bundle.putCharSequence(EXTRAS_KEY_BRAILLE_ROLE_DESCRIPTION, brailleRoleDescription);
+        }
         bundle.putCharSequence(EXTRAS_KEY_CHROME_ROLE, role);
         bundle.putCharSequence(EXTRAS_KEY_ROLE_DESCRIPTION, roleDescription);
         bundle.putCharSequence(EXTRAS_KEY_HINT, hint);
@@ -1805,8 +1826,12 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
         if (!targetUrl.isEmpty()) {
             bundle.putCharSequence(EXTRAS_KEY_TARGET_URL, targetUrl);
         }
-        if (isRoot) {
+        if (virtualViewId == mCurrentRootId) {
             bundle.putCharSequence(EXTRAS_KEY_SUPPORTED_ELEMENTS, mSupportedHtmlElementTypes);
+        }
+
+        if (parentId != View.NO_ID) {
+            node.setParent(mView, parentId);
         }
 
         node.setCanOpenPopup(canOpenPopup);
@@ -1984,11 +2009,11 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
     @CalledByNative
     protected void setAccessibilityNodeInfoLocation(AccessibilityNodeInfoCompat node,
             final int virtualViewId, int absoluteLeft, int absoluteTop, int parentRelativeLeft,
-            int parentRelativeTop, int width, int height, boolean isRootNode, boolean isOffscreen) {
+            int parentRelativeTop, int width, int height, boolean isOffscreen) {
         // First set the bounds in parent.
         Rect boundsInParent = new Rect(parentRelativeLeft, parentRelativeTop,
                 parentRelativeLeft + width, parentRelativeTop + height);
-        if (isRootNode) {
+        if (virtualViewId == mCurrentRootId) {
             // Offset of the web content relative to the View.
             AccessibilityCoordinates ac = mDelegate.getAccessibilityCoordinates();
             boundsInParent.offset(0, (int) ac.getContentOffsetYPix());
@@ -2167,74 +2192,6 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
         }
     }
 
-    boolean isCompatAutofillOnlyPossibleAccessibilityConsumer() {
-        // Compatibility Autofill is only available on Android P+.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
-            return false;
-        }
-        // The Android Autofill CompatibilityBridge, which is responsible for translating
-        // Accessibility information to Autofill events, directly hooks into the
-        // AccessibilityManager via an AccessibilityPolicy rather than by running an
-        // AccessibilityService. We can thus check whether it is the only consumer of Accessibility
-        // information by reading the names of active accessibility services from settings.
-        //
-        // Note that the CompatibilityBridge makes getEnabledAccessibilityServicesList return a mock
-        // service to indicate its presence. It is thus easier to read the setting directly than
-        // to filter out this service from the returned list. Furthermore, since Accessibility is
-        // only initialized if there is at least one actual service or if Autofill is enabled,
-        // there is no need to check that Autofill is enabled here.
-        //
-        // https://cs.android.com/android/platform/superproject/+/HEAD:frameworks/base/core/java/android/view/autofill/AutofillManager.java;l=2817;drc=dd7d52f9632a0dbb8b14b69520c5ea31e0b3b4a2
-        String activeServices = Settings.Secure.getString(
-                mContext.getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
-        if (activeServices != null && !activeServices.isEmpty()) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * On Android O and higher, we should respect whatever is displayed in a password box and
-     * report that via accessibility APIs, whether that's the unobscured password, or all dots.
-     * However, we deviate from this rule if the only consumer of accessibility information is
-     * Autofill in order to allow third-party Autofill services to save the real, unmasked password.
-     *
-     * Previous to O, shouldExposePasswordText() returns a system setting
-     * that determines whether we should return the unobscured password or all
-     * dots, independent of what was displayed visually.
-     */
-    @CalledByNative
-    boolean shouldRespectDisplayedPasswordText() {
-        if (isCompatAutofillOnlyPossibleAccessibilityConsumer()) {
-            return false;
-        }
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
-    }
-
-    /**
-     * Only relevant prior to Android O, see shouldRespectDisplayedPasswordText, unless the only
-     * Accessibility consumer is compatibility Autofill.
-     */
-    @CalledByNative
-    boolean shouldExposePasswordText() {
-        // Should always expose the actual password text to Autofill so that third-party Autofill
-        // services can save it rather than obtain only the masking characters.
-        if (isCompatAutofillOnlyPossibleAccessibilityConsumer()) {
-            return true;
-        }
-
-        ContentResolver contentResolver = mContext.getContentResolver();
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            return (Settings.System.getInt(contentResolver, Settings.System.TEXT_SHOW_PASSWORD, 1)
-                    == 1);
-        }
-
-        return (Settings.Secure.getInt(
-                        contentResolver, Settings.Secure.ACCESSIBILITY_SPEAK_PASSWORD, 0)
-                == 1);
-    }
-
     @NativeMethods
     interface Natives {
         long init(WebContentsAccessibilityImpl caller, WebContents webContents);
@@ -2284,6 +2241,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
         void enable(long nativeWebContentsAccessibilityAndroid, boolean screenReaderMode);
         void setAXMode(long nativeWebContentsAccessibilityAndroid, boolean screenReaderMode,
                 boolean isAccessibilityEnabled);
+        void setPasswordRules(long nativeWebContentsAccessibilityAndroid,
+                boolean shouldRespectDisplayedPasswordText, boolean shouldExposePasswordText);
         boolean areInlineTextBoxesLoaded(long nativeWebContentsAccessibilityAndroid, int id);
         void loadInlineTextBoxes(long nativeWebContentsAccessibilityAndroid, int id);
         int[] getCharacterBoundingBoxes(

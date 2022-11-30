@@ -15,6 +15,7 @@
 #include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
+#include "base/strings/string_piece.h"
 #include "chromeos/dbus/common/dbus_client.h"
 #include "chromeos/dbus/common/dbus_method_call_status.h"
 
@@ -26,10 +27,9 @@ namespace dbus {
 class Response;
 }
 
-// TODO(tbarzic): We should move these enums inside CrosDisksClient,
-// to be clearer where they come from. Also, most of these are partially or
-// completely duplicated in third_party/dbus/service_constants.h. We should
-// probably use enums from service_contstants directly.
+// TODO(crbug.com/1368408): Most of these are partially or completely duplicated
+// in third_party/dbus/service_constants.h. We should probably use enums from
+// service_contstants directly.
 namespace ash {
 
 // Enum describing types of mount used by cros-disks.
@@ -83,7 +83,8 @@ enum class MountError {
   kNeedPassword = 17,
   kInProgress = 18,
   kCancelled = 19,
-  kCount,
+  kBusy = 20,
+  kMaxValue = 20,
 };
 
 // Output operator for logging.
@@ -126,7 +127,7 @@ enum class FormatError {
   kInvalidOptions = 9,
   kLongName = 10,
   kInvalidCharacter = 11,
-  kCount = 12,
+  kMaxValue = 11,
 };
 
 // Output operator for logging.
@@ -158,6 +159,10 @@ enum class MountEventType {
   kDeviceRemoved,
   kDeviceScanned,
 };
+
+// Output operator for logging.
+COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS)
+std::ostream& operator<<(std::ostream& out, MountEventType event);
 
 // Mount option to control write permission to a device.
 enum class MountAccessMode {
@@ -290,17 +295,38 @@ class COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS) DiskInfo {
 };
 
 // A struct to represent information about a mount point sent from cros-disks.
-struct MountEntry {
-  MountError error_code = MountError::kUnknown;
+struct COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS) MountPoint {
+  // Device or archive path.
   std::string source_path;
-  MountType mount_type = MountType::kInvalid;
+  // Mounted path.
   std::string mount_path;
+  // Type of mount.
+  MountType mount_type = MountType::kInvalid;
+  // Condition of mount.
+  MountError mount_error = MountError::kNone;
+  // Progress percent between 0 and 100 when mount_error is kInProgress.
   int progress_percent = 0;
+  // Read-only file system?
+  bool read_only = false;
+
+  MountPoint(const MountPoint&);
+  MountPoint& operator=(const MountPoint&);
+
+  MountPoint(MountPoint&&);
+  MountPoint& operator=(MountPoint&&);
+
+  MountPoint();
+  MountPoint(base::StringPiece source_path,
+             base::StringPiece mount_path,
+             MountType mount_type = MountType::kInvalid,
+             MountError mount_error = MountError::kNone,
+             int progress_percent = 0,
+             bool read_only = false);
 };
 
 // Output operator for logging.
 COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS)
-std::ostream& operator<<(std::ostream& out, const MountEntry& entry);
+std::ostream& operator<<(std::ostream& out, const MountPoint& entry);
 
 // A class to make the actual DBus calls for cros-disks service.
 // This class only makes calls, result/error handling should be done
@@ -315,7 +341,7 @@ class COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS) CrosDisksClient
 
   // A callback to handle the result of EnumerateMountEntries.
   // The argument is the enumerated mount entries.
-  typedef base::OnceCallback<void(const std::vector<MountEntry>& entries)>
+  typedef base::OnceCallback<void(const std::vector<MountPoint>& entries)>
       EnumerateMountEntriesCallback;
 
   // A callback to handle the result of GetDeviceProperties.
@@ -338,10 +364,10 @@ class COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS) CrosDisksClient
                               const std::string& device_path) = 0;
 
     // Called when a MountCompleted signal is received.
-    virtual void OnMountCompleted(const MountEntry& entry) = 0;
+    virtual void OnMountCompleted(const MountPoint& entry) = 0;
 
     // Called when a MountProgress signal is received.
-    virtual void OnMountProgress(const MountEntry& entry) = 0;
+    virtual void OnMountProgress(const MountPoint& entry) = 0;
 
     // Called when a FormatCompleted signal is received.
     virtual void OnFormatCompleted(FormatError error_code,

@@ -49,7 +49,6 @@ css3/blending/svg-blend-exclusion.html
 css3/blending/svg-blend-multiply.html
 css3/filters/backdrop-filter-boundary.html
 css3/filters/composited-layer-bounds-after-sw-blur-animation.html
-css3/flexbox/flexbox-baseline.html
 custom-elements/form-validation-bubble-appearance.html
 editing/caret/caret-color.html
 editing/caret/in-multicol-child.html
@@ -410,7 +409,7 @@ external/wpt/html/semantics/scripting-1/the-script-element/moving-between-docume
 external/wpt/html/syntax/charset/after-head-after-1kb-crlf.html
 external/wpt/html/syntax/speculative-parsing/generated/document-write/meta-viewport-link-stylesheet-media.tentative.sub.html
 external/wpt/html/syntax/speculative-parsing/generated/document-write/svg-script-src.tentative.sub.html
-external/wpt/html/user-activation/propagation-crossorigin.sub.tentative.html
+external/wpt/html/user-activation/propagation-crossorigin.sub.html
 external/wpt/html/webappapis/scripting/events/event-handler-attributes-body-window.html
 external/wpt/html/webappapis/update-rendering/child-document-raf-order.html
 external/wpt/idle-detection/interceptor.https.html
@@ -1001,7 +1000,6 @@ http/tests/preload/without_doc_write_evaluator.html
 http/tests/security/cross-origin-shared-worker-allowed.html
 http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change-async.html
 http/tests/security/offscreencanvas-placeholder-read-blocked-no-crossorigin.html
-http/tests/security/opened-document-security-origin-resets-on-navigation.html
 ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm
 images/color-profile-image-filter-all.html
 images/color-profile-svg-foreign-object.html
@@ -1486,13 +1484,6 @@ virtual/gpu-rasterization/images/yuv-decode-eligible/jpeg-missing-eoi.html
 virtual/gpu-rasterization/images/yuv-decode-eligible/webp-no-color-profile-lossy.html
 virtual/gpu/fast/canvas/canvas-textMetrics-width.html
 virtual/jxl-enabled/images/jxl/jxl-images.html
-virtual/layout_ng_printing/printing/avoid-setting-header-offset-on-header.html
-virtual/layout_ng_printing/printing/iframe-print.html
-virtual/layout_ng_printing/printing/page-orientation-propagated.html
-virtual/layout_ng_printing/printing/tfoot-repeats-at-bottom-of-each-page-multiple-tables.html
-virtual/layout_ng_printing/printing/tfoot-repeats-at-bottom-of-each-page.html
-virtual/layout_ng_printing/printing/thead-repeats-at-top-of-each-page-multiple-tables.html
-virtual/layout_ng_printing/printing/thead-repeats-at-top-of-each-page.html
 virtual/no-alloc-direct-call/external/wpt/html/canvas/element/compositing/2d.composite.canvas.source-out.html
 virtual/no-alloc-direct-call/external/wpt/html/canvas/element/compositing/2d.composite.clip.xor.html
 virtual/no-alloc-direct-call/external/wpt/html/canvas/element/compositing/2d.composite.operation.darker.html
@@ -1608,9 +1599,6 @@ virtual/oopr-canvas2d/fast/canvas/color-space/canvas-createImageBitmap-p3.html
 virtual/oopr-canvas2d/fast/canvas/image-object-in-canvas.html
 virtual/oopr-canvas2d/fast/canvas/quadraticCurveTo.xml
 virtual/overlay-scrollbar/plugin-overlay-scrollbar-mouse-capture.html
-virtual/partitioned-cookies-first-party-sets/http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax-browser-navigate.js
-virtual/partitioned-cookies-first-party-sets/http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax-js-navigate.js
-virtual/partitioned-cookies-first-party-sets/http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax-js-subresource.js
 virtual/partitioned-cookies/http/tests/inspector-protocol/network/blocked-cookie-same-site-strict-browser-navigate.js
 virtual/partitioned-cookies/http/tests/inspector-protocol/network/blocked-cookie-same-site-strict-js-navigate.js
 virtual/partitioned-cookies/http/tests/inspector-protocol/network/blocked-cookie-same-site-strict-js-subresource.js
@@ -1711,7 +1699,8 @@ virtual/text-antialias/caps-lock-indicator-enabled.html
 virtual/text-antialias/cg-fallback-bolding.html
 virtual/text-antialias/cg-vs-atsui.html
 virtual/text-antialias/color-emoji.html
-virtual/text-antialias/colrv1-samples-visual.html
+virtual/text-antialias/colrv1.html
+virtual/text-antialias/colrv1-variable.html
 virtual/text-antialias/complex-path-with-no-subpixel-fonts.html
 virtual/text-antialias/complex-preferred-logical-widths.html
 virtual/text-antialias/complex-synthetic-bold-space-width.html

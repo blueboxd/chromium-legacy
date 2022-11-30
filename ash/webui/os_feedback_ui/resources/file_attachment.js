@@ -8,11 +8,12 @@ import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
 import {stringToMojoString16} from 'chrome://resources/ash/common/mojo_utils.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {AttachedFile, FeedbackAppPreSubmitAction, FeedbackServiceProviderInterface} from './feedback_types.js';
@@ -158,7 +159,6 @@ export class FileAttachmentElement extends FileAttachmentElementBase {
   /** @protected */
   handleSelectedImageClick_() {
     this.$.selectedImageDialog.showModal();
-    this.$.closeDialogButton.focus();
     this.feedbackServiceProvider_.recordPreSubmitAction(
         FeedbackAppPreSubmitAction.kViewedImage);
   }

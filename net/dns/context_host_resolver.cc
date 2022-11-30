@@ -78,7 +78,7 @@ ContextHostResolver::CreateRequest(
     return HostResolver::CreateFailingRequest(ERR_CONTEXT_SHUT_DOWN);
 
   return manager_->CreateRequest(
-      std::move(host), std::move(network_anonymization_key),
+      Host(std::move(host)), std::move(network_anonymization_key),
       std::move(source_net_log), std::move(optional_parameters),
       resolve_context_.get(), resolve_context_->host_cache());
 }
@@ -156,9 +156,10 @@ size_t ContextHostResolver::CacheSize() const {
                                         : 0;
 }
 
-void ContextHostResolver::SetProcParamsForTesting(
-    const ProcTaskParams& proc_params) {
-  manager_->set_proc_params_for_test(proc_params);
+void ContextHostResolver::SetHostResolverSystemParamsForTest(
+    const HostResolverSystemTask::Params& host_resolver_system_params) {
+  manager_->set_host_resolver_system_params_for_test(  // IN-TEST
+      host_resolver_system_params);
 }
 
 void ContextHostResolver::SetTickClockForTesting(

@@ -11,7 +11,6 @@ mojom("mojom") {
   sources = [
     "battery_monitor.mojom",
     "battery_status.mojom",
-    "bluetooth_system.mojom",
     "device_posture_provider.mojom",
     "fingerprint.mojom",
     "geolocation.mojom",
@@ -25,7 +24,7 @@ mojom("mojom") {
     "nfc_provider.mojom",
     "power_monitor.mojom",
     "pressure_manager.mojom",
-    "pressure_state.mojom",
+    "pressure_update.mojom",
     "public_ip_address_geolocation_provider.mojom",
     "screen_orientation.mojom",
     "screen_orientation_lock_types.mojom",
@@ -61,8 +60,6 @@ mojom("mojom") {
           cpp = "::std::array<::uint8_t, 6>"
         },
       ]
-      traits_headers = [ "//services/device/public/cpp/bluetooth/bluetooth_system_mojom_traits.h" ]
-      traits_sources = [ "//services/device/public/cpp/bluetooth/bluetooth_system_mojom_traits.cc" ]
       traits_public_deps = [ "//base" ]
     },
   ]

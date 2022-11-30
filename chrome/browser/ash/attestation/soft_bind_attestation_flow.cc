@@ -153,8 +153,8 @@ void SoftBindAttestationFlow::Session::ReportSuccess(
 SoftBindAttestationFlow::SoftBindAttestationFlow()
     : attestation_client_(AttestationClient::Get()) {
   std::unique_ptr<ServerProxy> attestation_ca_client(new AttestationCAClient());
-  attestation_flow_ = std::make_unique<AttestationFlow>(
-      std::move(attestation_ca_client), ::attestation::KEY_TYPE_RSA);
+  attestation_flow_ =
+      std::make_unique<AttestationFlow>(std::move(attestation_ca_client));
 }
 
 SoftBindAttestationFlow::~SoftBindAttestationFlow() = default;
@@ -190,8 +190,8 @@ void SoftBindAttestationFlow::GetCertificateInternal(
                      weak_ptr_factory_.GetWeakPtr(), std::move(session));
   attestation_flow_->GetCertificate(PROFILE_SOFT_BIND_CERTIFICATE, account_id,
                                     /*request_origin=*/std::string(),
-                                    force_new_key, key_name,
-                                    std::move(certificate_callback));
+                                    force_new_key, ::attestation::KEY_TYPE_RSA,
+                                    key_name, std::move(certificate_callback));
 }
 
 void SoftBindAttestationFlow::OnCertificateReady(
@@ -347,8 +347,8 @@ void SoftBindAttestationFlow::OnCertificateSigned(
         weak_ptr_factory_.GetWeakPtr(), std::move(certificate_chain));
     attestation_flow_->GetCertificate(
         PROFILE_SOFT_BIND_CERTIFICATE, session->GetAccountId(),
-        /*request_origin=*/std::string(), /*force_new_key=*/true, kSoftBindKey,
-        std::move(renew_callback));
+        /*request_origin=*/std::string(), /*force_new_key=*/true,
+        ::attestation::KEY_TYPE_RSA, kSoftBindKey, std::move(renew_callback));
   }
 }
 

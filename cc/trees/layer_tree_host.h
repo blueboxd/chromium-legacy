@@ -315,6 +315,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // during the main frame) updates are presented before rendering is paused.
   [[nodiscard]] std::unique_ptr<ScopedPauseRendering> PauseRendering();
 
+  // Notification that the proxy paused or resumed rendering.
+  void OnPauseRenderingChanged(bool);
+
   // Returns whether main frame updates are deferred. See conditions above.
   bool MainFrameUpdatesAreDeferred() const;
 
@@ -418,6 +421,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   const Layer* root_layer() const {
     return thread_unsafe_commit_state().root_layer.get();
   }
+  bool has_root_layer() const { return root_layer(); }
 
   // Sets the collection of viewport property ids, defined to allow viewport
   // pinch-zoom etc. on the compositor thread. This is set only on the
@@ -732,7 +736,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       const gfx::PresentationFeedback& feedback);
   // Called when the compositor completed page scale animation.
   void DidCompletePageScaleAnimation();
-  void ApplyCompositorChanges(CompositorCommitData* commit_data);
+  // Virtual for testing
+  virtual void ApplyCompositorChanges(CompositorCommitData* commit_data);
   void ApplyMutatorEvents(std::unique_ptr<MutatorEvents> events);
   void RecordStartOfFrameMetrics();
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time,
@@ -1026,6 +1031,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   std::unordered_map<ElementId, Layer*, ElementIdHash> element_layers_map_;
 
   bool in_paint_layer_contents_ = false;
+
+  bool in_apply_compositor_changes_ = false;
 
   // This is true if atleast one layer in the layer tree has a copy request. We
   // use this bool to decide whether we need to compute subtree has copy request

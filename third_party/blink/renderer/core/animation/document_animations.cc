@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -52,8 +53,8 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 
 namespace blink {
 
@@ -101,7 +102,7 @@ void DocumentAnimations::UpdateAnimationTimingForAnimationFrame() {
   // This is to ensure that any microtasks queued up as a result of resolving or
   // rejecting Promise objects as part of updating timelines run their callbacks
   // prior to dispatching animation events and generating the next main frame.
-  Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
+  document_->GetAgent()->event_loop()->PerformMicrotaskCheckpoint();
 }
 
 bool DocumentAnimations::NeedsAnimationTimingUpdate() {
@@ -180,13 +181,17 @@ HeapVector<Member<Animation>> DocumentAnimations::getAnimations(
   return animations;
 }
 
-void DocumentAnimations::ValidateTimelines() {
+bool DocumentAnimations::ValidateTimelines() {
+  bool all_timelines_valid = true;
   for (auto& timeline : unvalidated_timelines_) {
-    if (auto* scroll_timeline = DynamicTo<ScrollTimeline>(timeline.Get()))
-      scroll_timeline->ValidateState();
+    if (auto* scroll_timeline = DynamicTo<ScrollTimeline>(timeline.Get())) {
+      bool timeline_valid = scroll_timeline->ValidateState();
+      all_timelines_valid &= timeline_valid;
+    }
   }
 
   unvalidated_timelines_.clear();
+  return all_timelines_valid;
 }
 
 void DocumentAnimations::DetachCompositorTimelines() {
@@ -279,6 +284,8 @@ void DocumentAnimations::RemoveReplacedAnimations(
         animations_to_remove.push_back(*anim_it);
     }
   }
+  scoped_refptr<scheduler::EventLoop> event_loop =
+      document_->GetAgent()->event_loop();
 
   // The list of animations for removal is constructed in reverse composite
   // ordering for efficiency. Flip the ordering to ensure that events are
@@ -287,8 +294,8 @@ void DocumentAnimations::RemoveReplacedAnimations(
   for (auto it = animations_to_remove.rbegin();
        it != animations_to_remove.rend(); it++) {
     Animation* animation = *it;
-    Microtask::EnqueueMicrotask(WTF::Bind(&Animation::RemoveReplacedAnimation,
-                                          WrapWeakPersistent(animation)));
+    event_loop->EnqueueMicrotask(WTF::BindOnce(
+        &Animation::RemoveReplacedAnimation, WrapWeakPersistent(animation)));
   }
 }
 

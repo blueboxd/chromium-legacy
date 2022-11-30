@@ -5,11 +5,14 @@
 import './accelerator_edit_dialog.js';
 import './shortcut_input.js';
 import './shortcuts_page.js';
-import '../css/shortcut_customization_fonts.css.js';
+import '../strings.m.js';
+import '../css/shortcut_customization_shared.css.js';
 import 'chrome://resources/ash/common/navigation_view_panel.js';
 import 'chrome://resources/ash/common/page_toolbar.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
 import {NavigationViewPanelElement} from 'chrome://resources/ash/common/navigation_view_panel.js';
+import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {AcceleratorEditDialogElement} from './accelerator_edit_dialog.js';
@@ -19,6 +22,7 @@ import {ShowEditDialogEvent} from './accelerator_row.js';
 import {getShortcutProvider} from './mojo_interface_provider.js';
 import {getTemplate} from './shortcut_customization_app.html.js';
 import {AcceleratorConfig, AcceleratorInfo, AcceleratorSource, AcceleratorState, AcceleratorType, LayoutInfoList, ShortcutProviderInterface} from './shortcut_types.js';
+import {isCustomizationDisabled} from './shortcut_utils.js';
 
 export interface ShortcutCustomizationAppElement {
   $: {
@@ -39,7 +43,11 @@ declare global {
  * 'shortcut-customization-app' is the main landing page for the shortcut
  * customization app.
  */
-export class ShortcutCustomizationAppElement extends PolymerElement {
+
+const ShortcutCustomizationAppElementBase = I18nMixin(PolymerElement);
+
+export class ShortcutCustomizationAppElement extends
+    ShortcutCustomizationAppElementBase {
   static get is() {
     return 'shortcut-customization-app';
   }
@@ -77,7 +85,6 @@ export class ShortcutCustomizationAppElement extends PolymerElement {
       },
     };
   }
-
 
   protected showRestoreAllDialog_: boolean;
   protected dialogShortcutTitle_: string;
@@ -131,18 +138,16 @@ export class ShortcutCustomizationAppElement extends PolymerElement {
   private addNavigationSelectors_() {
     const pages = [
       this.$.navigationPanel.createSelectorItem(
-          'Chrome OS', 'shortcuts-page',
-          'navigation-selector:laptop-chromebook', 'chromeos-page-id',
+          'Chrome OS', 'shortcuts-page', '', 'chromeos-page-id',
           {category: /**ChromeOS*/ 0}),
       this.$.navigationPanel.createSelectorItem(
-          'Browser', 'shortcuts-page', 'navigation-selector:laptop-chromebook',
-          'browser-page-id', {category: /**Browser*/ 1}),
+          'Browser', 'shortcuts-page', '', 'browser-page-id',
+          {category: /**Browser*/ 1}),
       this.$.navigationPanel.createSelectorItem(
-          'Android', 'shortcuts-page', 'navigation-selector:laptop-chromebook',
-          'android-page-id', {category: /**Android*/ 2}),
+          'Android', 'shortcuts-page', '', 'android-page-id',
+          {category: /**Android*/ 2}),
       this.$.navigationPanel.createSelectorItem(
-          'Accessibility', 'shortcuts-page',
-          'navigation-selector:laptop-chromebook', 'a11y-page-id',
+          'Accessibility', 'shortcuts-page', '', 'a11y-page-id',
           {category: /**Accessbility*/ 3}),
 
     ];
@@ -193,6 +198,10 @@ export class ShortcutCustomizationAppElement extends PolymerElement {
 
   protected closeRestoreAllDialog_() {
     this.showRestoreAllDialog_ = false;
+  }
+
+  protected shouldHideRestoreAllButton_() {
+    return isCustomizationDisabled();
   }
 
   static get template() {

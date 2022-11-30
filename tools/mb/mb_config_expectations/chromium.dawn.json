@@ -1,4 +1,32 @@
 {
+  "Dawn Android arm DEPS Release (Pixel 4)": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "debuggable_apks": false,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "target_os": "android",
+      "use_dawn": true,
+      "use_remoteexec": true
+    }
+  },
+  "Dawn Android arm Release (Pixel 4)": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "debuggable_apks": false,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "target_os": "android",
+      "use_dawn": true,
+      "use_remoteexec": true
+    }
+  },
   "Dawn Linux x64 Builder": {
     "gn_args": {
       "dawn_enable_desktop_gl": true,
@@ -32,7 +60,7 @@
       "symbol_level": 1,
       "use_allocator": "none",
       "use_dawn": true,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "Dawn Mac x64 DEPS Builder": {
@@ -44,7 +72,7 @@
       "symbol_level": 1,
       "use_allocator": "none",
       "use_dawn": true,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "Dawn Win10 x64 ASAN Release": {

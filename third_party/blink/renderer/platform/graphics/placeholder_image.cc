@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -294,7 +294,7 @@ void PlaceholderImage::Draw(cc::PaintCanvas* canvas,
     return;
   }
 
-  if (text_.IsEmpty()) {
+  if (text_.empty()) {
     DrawCenteredIcon(canvas, base_flags, dest_rect,
                      draw_options.sampling_options,
                      icon_and_text_scale_factor_);

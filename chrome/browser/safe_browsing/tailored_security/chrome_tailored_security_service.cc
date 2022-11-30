@@ -25,7 +25,7 @@
 #else
 #include "chrome/browser/safe_browsing/tailored_security/notification_handler_desktop.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/views/safe_browsing/tailored_security_desktop_dialog.h"
+#include "chrome/browser/ui/views/safe_browsing/tailored_security_desktop_dialog_manager.h"
 #endif
 
 namespace safe_browsing {
@@ -54,11 +54,16 @@ content::WebContents* GetWebContentsForProfile(Profile* profile) {
 ChromeTailoredSecurityService::ChromeTailoredSecurityService(Profile* profile)
     : TailoredSecurityService(IdentityManagerFactory::GetForProfile(profile),
                               profile->GetPrefs()),
-      profile_(profile) {}
+      profile_(profile) {
+  AddObserver(this);
+}
 
-ChromeTailoredSecurityService::~ChromeTailoredSecurityService() = default;
+ChromeTailoredSecurityService::~ChromeTailoredSecurityService() {
+  RemoveObserver(this);
+}
 
-void ChromeTailoredSecurityService::ShowSyncNotification(bool is_enabled) {
+void ChromeTailoredSecurityService::OnSyncNotificationMessageRequest(
+    bool is_enabled) {
 #if BUILDFLAG(IS_ANDROID)
   content::WebContents* web_contents = GetWebContentsForProfile(profile_);
   if (!web_contents) {
@@ -115,9 +120,9 @@ void ChromeTailoredSecurityService::DisplayDesktopDialog(
     Browser* browser,
     bool show_enable_modal) {
   if (show_enable_modal) {
-    ShowEnabledDialogForBrowser(browser);
+    dialog_manager_.ShowEnabledDialogForBrowser(browser);
   } else {
-    ShowDisabledDialogForBrowser(browser);
+    dialog_manager_.ShowDisabledDialogForBrowser(browser);
   }
 }
 #endif

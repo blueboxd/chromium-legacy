@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -166,8 +166,7 @@ scoped_refptr<CSSVariableData> CreateVariableData(String s) {
   bool is_animation_tainted = false;
   bool needs_variable_resolution = false;
   return CSSVariableData::Create({range, StringView(s)}, is_animation_tainted,
-                                 needs_variable_resolution, KURL(),
-                                 WTF::TextEncoding());
+                                 needs_variable_resolution);
 }
 
 const CSSValue* CreateCustomIdent(AtomicString s) {
@@ -224,9 +223,9 @@ CSSSelectorList ParseSelectorList(const String& string) {
   const auto tokens = tokenizer.TokenizeToEOF();
   CSSParserTokenRange range(tokens);
   Arena arena;
-  CSSSelectorVector<> vector =
-      CSSSelectorParser<>::ParseSelector(range, context, sheet, arena);
-  return CSSSelectorList::AdoptSelectorVector</*UseArena=*/true>(vector);
+  CSSSelectorVector vector =
+      CSSSelectorParser::ParseSelector(range, context, sheet, arena);
+  return CSSSelectorList::AdoptSelectorVector(vector);
 }
 
 }  // namespace css_test_helpers

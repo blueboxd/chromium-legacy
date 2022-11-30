@@ -118,6 +118,8 @@ class PageFreezingPolicy : public GraphObserver,
   void OnIsCapturingDisplayChanged(const PageNode* page_node) override;
   void OnIsAutoDiscardableChanged(const PageNode* page_node) override {}
   void OnWasDiscardedChanged(const PageNode* page_node) override {}
+  void OnIsActiveTabChanged(const PageNode* page_node) override {}
+  void OnContentSettingsChanged(const PageNode* page_node) override {}
 
   // Helper function that either calls SubmitNegativeVote() or
   // InvalidateNegativeVote() when the value of a property changes.

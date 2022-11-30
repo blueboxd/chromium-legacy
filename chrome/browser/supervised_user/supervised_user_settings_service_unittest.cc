@@ -131,7 +131,6 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
     // Check that we are uploading sync data.
     ASSERT_EQ(1u, sync_processor_->changes().size());
     syncer::SyncChange sync_change = sync_processor_->changes()[0];
-    ASSERT_TRUE(sync_change.IsValid());
     EXPECT_EQ(expected_sync_change_type, sync_change.change_type());
     EXPECT_EQ(
         sync_change.sync_data().GetSpecifics().managed_user_setting().name(),
@@ -240,9 +239,7 @@ TEST_F(SupervisedUserSettingsServiceTest, ProcessSplitSetting) {
   ASSERT_TRUE(settings_);
   value = settings_->FindKey(kSettingsName);
   ASSERT_TRUE(value);
-  const base::DictionaryValue* dict_value = nullptr;
-  ASSERT_TRUE(value->GetAsDictionary(&dict_value));
-  EXPECT_EQ(*dict_value, dict);
+  EXPECT_EQ(value->GetDict(), dict);
 }
 
 TEST_F(SupervisedUserSettingsServiceTest, NotifyForWebsiteApprovals) {
@@ -379,7 +376,6 @@ TEST_F(SupervisedUserSettingsServiceTest, UploadItem) {
   StartSyncing(syncer::SyncDataList());
   ASSERT_EQ(3u, sync_processor_->changes().size());
   for (const syncer::SyncChange& sync_change : sync_processor_->changes()) {
-    ASSERT_TRUE(sync_change.IsValid());
     EXPECT_EQ(syncer::SyncChange::ACTION_ADD, sync_change.change_type());
     VerifySyncDataItem(sync_change.sync_data());
   }
@@ -396,7 +392,6 @@ TEST_F(SupervisedUserSettingsServiceTest, UploadItem) {
   UploadSplitItem("froodle", "narf");
   ASSERT_EQ(1u, sync_processor_->changes().size());
   syncer::SyncChange change = sync_processor_->changes()[0];
-  ASSERT_TRUE(change.IsValid());
   EXPECT_EQ(syncer::SyncChange::ACTION_ADD, change.change_type());
   VerifySyncDataItem(change.sync_data());
 
@@ -412,7 +407,6 @@ TEST_F(SupervisedUserSettingsServiceTest, UploadItem) {
   UploadSplitItem("blurp", "snarl");
   ASSERT_EQ(1u, sync_processor_->changes().size());
   change = sync_processor_->changes()[0];
-  ASSERT_TRUE(change.IsValid());
   EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, change.change_type());
   VerifySyncDataItem(change.sync_data());
 
@@ -426,7 +420,6 @@ TEST_F(SupervisedUserSettingsServiceTest, UploadItem) {
   UploadAtomicItem("fjord");
   ASSERT_EQ(1u, sync_processor_->changes().size());
   change = sync_processor_->changes()[0];
-  ASSERT_TRUE(change.IsValid());
   EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, change.change_type());
   VerifySyncDataItem(change.sync_data());
 

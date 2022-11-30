@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,7 @@ class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
       bool defer_status,
       cc::PaintHoldingReason reason,
       absl::optional<cc::PaintHoldingCommitTrigger> trigger) override {}
+  void OnPauseRenderingChanged(bool) override {}
   void DidBeginMainFrame() override {}
   void DidCommitAndDrawCompositorFrame() override {}
   void WillCommitCompositorFrame() override {}

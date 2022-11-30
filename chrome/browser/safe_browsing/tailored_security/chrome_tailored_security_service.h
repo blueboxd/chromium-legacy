@@ -8,9 +8,12 @@
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "components/safe_browsing/core/browser/tailored_security_service/tailored_security_service.h"
+#include "components/safe_browsing/core/browser/tailored_security_service/tailored_security_service_observer.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/safe_browsing/tailored_security/consented_message_android.h"
+#else
+#include "chrome/browser/ui/views/safe_browsing/tailored_security_desktop_dialog_manager.h"
 #endif
 
 class Browser;
@@ -18,14 +21,16 @@ class Profile;
 
 namespace safe_browsing {
 
-class ChromeTailoredSecurityService : public TailoredSecurityService {
+class ChromeTailoredSecurityService : public TailoredSecurityService,
+                                      public TailoredSecurityServiceObserver {
  public:
   explicit ChromeTailoredSecurityService(Profile* profile);
   ~ChromeTailoredSecurityService() override;
 
- protected:
-  void ShowSyncNotification(bool is_enabled) override;
+  // TailoredSecurityServiceObserver.
+  void OnSyncNotificationMessageRequest(bool is_enabled) override;
 
+ protected:
 #if !BUILDFLAG(IS_ANDROID)
   // Shows a dialog on the provided `browser`. If `show_enable_dialog` is
   // true, display the enabled dialog; otherwise show the disabled dialog. This
@@ -40,6 +45,8 @@ class ChromeTailoredSecurityService : public TailoredSecurityService {
   void MessageDismissed();
 
   std::unique_ptr<TailoredSecurityConsentedModalAndroid> message_;
+#else
+  TailoredSecurityDesktopDialogManager dialog_manager_;
 #endif
 
   raw_ptr<Profile> profile_;

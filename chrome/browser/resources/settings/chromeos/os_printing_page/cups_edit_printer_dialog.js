@@ -17,10 +17,12 @@ import './cups_add_printer_dialog.js';
 import './cups_printer_dialog_error.js';
 import './cups_printer_shared_css.js';
 
-import {MojoInterfaceProvider, MojoInterfaceProviderImpl} from 'chrome://resources/cr_components/chromeos/network/mojo_interface_provider.js';
-import {NetworkListenerBehavior, NetworkListenerBehaviorInterface} from 'chrome://resources/cr_components/chromeos/network/network_listener_behavior.js';
-import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
+import {MojoInterfaceProvider, MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
+import {NetworkListenerBehavior, NetworkListenerBehaviorInterface} from 'chrome://resources/ash/common/network/network_listener_behavior.js';
+import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
+import {CrosNetworkConfigRemote, FilterType, NetworkStateProperties, NO_LIMIT} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
+import {NetworkType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {recordSettingChange} from '../metrics_recorder.js';
@@ -189,7 +191,7 @@ class SettingsCupsEditPrinterDialogElement extends
     /** @private {!CupsPrintersBrowserProxy} */
     this.browserProxy_ = CupsPrintersBrowserProxyImpl.getInstance();
 
-    /** @private {!chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
+    /** @private {!CrosNetworkConfigRemote} */
     this.networkConfig_ =
         MojoInterfaceProviderImpl.getInstance().getMojoServiceRemote();
   }
@@ -216,7 +218,7 @@ class SettingsCupsEditPrinterDialogElement extends
 
   /**
    * CrosNetworkConfigObserver impl
-   * @param {!Array<chromeos.networkConfig.mojom.NetworkStateProperties>}
+   * @param {!Array<NetworkStateProperties>}
    *     networks
    * @private
    */
@@ -519,9 +521,9 @@ class SettingsCupsEditPrinterDialogElement extends
   refreshNetworks_() {
     this.networkConfig_
         .getNetworkStateList({
-          filter: chromeos.networkConfig.mojom.FilterType.kActive,
-          networkType: chromeos.networkConfig.mojom.NetworkType.kAll,
-          limit: chromeos.networkConfig.mojom.NO_LIMIT,
+          filter: FilterType.kActive,
+          networkType: NetworkType.kAll,
+          limit: NO_LIMIT,
         })
         .then((responseParams) => {
           this.onActiveNetworksChanged(responseParams.result);

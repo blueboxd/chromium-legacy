@@ -193,8 +193,8 @@ std::vector<WebFeature> AllAddressSpaceFeatures() {
 class PrivateNetworkAccessBrowserTestBase : public InProcessBrowserTest {
  public:
   PrivateNetworkAccessBrowserTestBase(
-      std::vector<base::Feature> enabled_features,
-      std::vector<base::Feature> disabled_features) {
+      std::vector<base::test::FeatureRef> enabled_features,
+      std::vector<base::test::FeatureRef> disabled_features) {
     features_.InitWithFeatures(enabled_features, disabled_features);
   }
 
@@ -727,7 +727,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
   EXPECT_TRUE(
       content::NavigateToURL(web_contents(), PublicNonSecureURL(*server)));
 
-  browser()->profile()->GetPrefs()->Set(
+  browser()->profile()->GetPrefs()->SetDict(
       proxy_config::prefs::kProxy,
       ProxyConfigDictionary::CreateFixedServers(
           server->host_port_pair().ToString(), ""));

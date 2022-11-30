@@ -94,7 +94,7 @@ class HTMLTreeBuilder final : public GarbageCollected<HTMLTreeBuilder> {
 
   // Synchronously flush pending text and queued tasks, possibly creating more
   // DOM nodes. Flushing pending text depends on |mode|.
-  void Flush(FlushMode mode) { tree_.Flush(mode); }
+  void Flush() { tree_.Flush(); }
 
   void SetShouldSkipLeadingNewline(bool should_skip) {
     should_skip_leading_newline_ = should_skip;
@@ -233,10 +233,6 @@ class HTMLTreeBuilder final : public GarbageCollected<HTMLTreeBuilder> {
   };
 
   // https://html.spec.whatwg.org/C/#frameset-ok-flag
-  bool frameset_ok_;
-#if DCHECK_IS_ON()
-  bool is_attached_ = true;
-#endif
   FragmentParsingContext fragment_context_;
   HTMLConstructionSite tree_;
 
@@ -254,6 +250,11 @@ class HTMLTreeBuilder final : public GarbageCollected<HTMLTreeBuilder> {
   bool should_skip_leading_newline_;
 
   const bool include_shadow_roots_;
+
+  bool frameset_ok_;
+#if DCHECK_IS_ON()
+  bool is_attached_ = true;
+#endif
 
   // We access parser because HTML5 spec requires that we be able to change the
   // state of the tokenizer from within parser actions. We also need it to track

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@ package org.chromium.browserfragment.interfaces;
 
 import android.view.SurfaceControlViewHost.SurfacePackage;
 
+import org.chromium.browserfragment.interfaces.ICookieManagerDelegate;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 
 oneway interface IBrowserFragmentDelegateClient {
@@ -20,4 +21,6 @@ oneway interface IBrowserFragmentDelegateClient {
     void onContentViewRenderViewReady(in IObjectWrapper contentViewRenderView) = 2;
 
     void onStarted(in Bundle instanceState) = 3;
+
+    void onCookieManagerReady(in ICookieManagerDelegate delegate) = 4;
 }

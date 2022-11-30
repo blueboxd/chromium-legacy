@@ -460,19 +460,7 @@ function testDone(result) {
       }
     } else if (hasWindow && window.webUiTest) {
       let testRunner;
-      if (webUiTest.mojom.TestRunnerPtr) {
-        // For mojo WebUI tests.
-        testRunner = new webUiTest.mojom.TestRunnerPtr();
-
-        /**
-         * @suppress {missingProperties} for mojo.makeRequest - internal method
-         * declared in mojo/public/js/bindings.js.
-         */
-        const mojoMakeRequest = () => mojo.makeRequest(testRunner);
-
-        Mojo.bindInterface(
-            webUiTest.mojom.TestRunner.name, mojoMakeRequest().handle);
-      } else if (webUiTest.mojom.TestRunnerRemote) {
+      if (webUiTest.mojom.TestRunnerRemote) {
         // For mojo-lite WebUI tests.
         testRunner = webUiTest.mojom.TestRunner.getRemote();
       } else {
@@ -480,7 +468,7 @@ function testDone(result) {
             'Mojo bindings found, but no valid test interface loaded');
       }
       if (success) {
-        testRunner.testComplete();
+        testRunner.testComplete(null);
       } else {
         testRunner.testComplete(errorMessage);
       }
@@ -820,28 +808,6 @@ function GEN() {}
  * During generation phase, this outputs; do nothing at runtime.
  */
 function GEN_INCLUDE() {}
-
-/**
- * At runtime, register the testName with a test fixture. Since this method
- * doesn't have a test fixture, create a dummy fixture to hold its |name|
- * and |testCaseBodies|.
- * @param {string} testCaseName The name of the test case.
- * @param {string} testName The name of the test function.
- * @param {Function} testBody The body to execute when running this test.
- */
-function TEST(testCaseName, testName, testBody) {
-  let fixtureConstructor = this[testCaseName];
-  if (fixtureConstructor === undefined) {
-    fixtureConstructor = function() {};
-    this[testCaseName] = fixtureConstructor;
-    fixtureConstructor.prototype = {
-      __proto__: Test.prototype,
-      name: testCaseName,
-    };
-    fixtureConstructor.testCaseBodies = {};
-  }
-  fixtureConstructor.testCaseBodies[testName] = testBody;
-}
 
 /**
  * At runtime, register the testName with its fixture. Stuff the |name| into
@@ -1232,7 +1198,6 @@ exports.runAllActionsAsync = runAllActionsAsync;
 exports.runTest = runTest;
 exports.runTestFunction = runTestFunction;
 exports.DUMMY_URL = DUMMY_URL;
-exports.TEST = TEST;
 exports.TEST_F = TEST_F;
 exports.TEST_F_WITH_PREAMBLE = TEST_F_WITH_PREAMBLE;
 exports.RUNTIME_TEST_F = TEST_F;

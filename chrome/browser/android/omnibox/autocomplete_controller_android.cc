@@ -31,6 +31,8 @@
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
+#include "chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_service.h"
+#include "chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_service_factory.h"
 #include "chrome/browser/preloading/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -53,7 +55,6 @@
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/omnibox/browser/voice_suggest_provider.h"
-#include "components/omnibox/browser/zero_suggest_prefetcher.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/search_engines/template_url.h"
@@ -168,23 +169,34 @@ void AutocompleteControllerAndroid::Start(JNIEnv* env,
   autocomplete_controller_->Start(input_);
 }
 
-void AutocompleteControllerAndroid::StartPrefetch(JNIEnv* env) {
-  AutocompleteInput ntp_prefetch_input(
-      u"", metrics::OmniboxEventProto::NTP_ZPS_PREFETCH,
-      ChromeAutocompleteSchemeClassifier(profile_));
-  ntp_prefetch_input.set_focus_type(
-      metrics::OmniboxFocusType::INTERACTION_FOCUS);
-
-  if (OmniboxFieldTrial::UseSharedInstanceForZeroSuggestPrefetching()) {
-    autocomplete_controller_->StartPrefetch(ntp_prefetch_input);
-  } else {
-    // ZeroSuggestPrefetcher deletes itself after it's done prefetching.
-    new ZeroSuggestPrefetcher(
-        std::make_unique<ChromeAutocompleteProviderClient>(profile_),
-        ntp_prefetch_input,
-        /*use_prefetch_path=*/
-        base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetching));
+void AutocompleteControllerAndroid::StartPrefetch(
+    JNIEnv* env,
+    const JavaRef<jstring>& j_current_url,
+    jint j_page_classification) {
+  auto page_classification =
+      OmniboxEventProto::PageClassification(j_page_classification);
+  if (!OmniboxFieldTrial::IsZeroSuggestPrefetchingEnabledInContext(
+          page_classification)) {
+    return;
   }
+
+  const bool interaction_clobber_focus_type =
+      base::FeatureList::IsEnabled(
+          omnibox::kOmniboxOnClobberFocusTypeOnContent) &&
+      !BaseSearchProvider::IsNTPPage(page_classification);
+
+  GURL current_url;
+  if (!j_current_url.is_null()) {
+    current_url = GURL(ConvertJavaStringToUTF16(env, j_current_url));
+  }
+
+  AutocompleteInput input(u"", page_classification,
+                          ChromeAutocompleteSchemeClassifier(profile_));
+  input.set_current_url(current_url);
+  input.set_focus_type(interaction_clobber_focus_type
+                           ? metrics::OmniboxFocusType::INTERACTION_CLOBBER
+                           : metrics::OmniboxFocusType::INTERACTION_FOCUS);
+  autocomplete_controller_->StartPrefetch(input);
 }
 
 ScopedJavaLocalRef<jobject> AutocompleteControllerAndroid::Classify(
@@ -231,6 +243,12 @@ void AutocompleteControllerAndroid::OnOmniboxFocused(
 
   auto page_class =
       OmniboxEventProto::PageClassification(j_page_classification);
+  const bool interaction_clobber_focus_type =
+      base::FeatureList::IsEnabled(
+          omnibox::kOmniboxOnClobberFocusTypeOnContent) &&
+      !BaseSearchProvider::IsNTPPage(page_class);
+  if (interaction_clobber_focus_type)
+    omnibox_text.clear();
 
   // Proactively start up a renderer, to reduce the time to display search
   // results, especially if a Service Worker is used. This is done in a PostTask
@@ -253,7 +271,17 @@ void AutocompleteControllerAndroid::OnOmniboxFocused(
                              ChromeAutocompleteSchemeClassifier(profile_));
   input_.set_current_url(current_url);
   input_.set_current_title(current_title);
-  input_.set_focus_type(metrics::OmniboxFocusType::INTERACTION_FOCUS);
+
+  // Assign focus type to INTERACTION_CLOBBER to non-NTP zero-prefix requests
+  input_.set_focus_type(interaction_clobber_focus_type
+                            ? metrics::OmniboxFocusType::INTERACTION_CLOBBER
+                            : metrics::OmniboxFocusType::INTERACTION_FOCUS);
+
+  base::UmaHistogramEnumeration("Omnibox.ZeroPrefixFocusType",
+                                input_.focus_type(),
+                                static_cast<metrics::OmniboxFocusType>(
+                                    metrics::OmniboxFocusType_MAX + 1));
+
   autocomplete_controller_->Start(input_);
 }
 
@@ -325,10 +353,15 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
 
   OmniboxEventGlobalTracker::GetInstance()->OnURLOpened(&log);
 
-  // Record the value if prerender for search suggestion was not started. Other
-  // values (kHitFinished, kUnused, kCancelled) are recorded in
-  // PrerenderManager.
   if (web_contents) {
+    if (auto* search_prefetch_service =
+            SearchPrefetchServiceFactory::GetForProfile(profile_)) {
+      search_prefetch_service->OnURLOpenedFromOmnibox(&log, web_contents);
+    }
+
+    // Record the value if prerender for search suggestion was not started.
+    // Other values (kHitFinished, kUnused, kCancelled) are recorded in
+    // PrerenderManager.
     auto* prerender_manager = PrerenderManager::FromWebContents(web_contents);
     if (!prerender_manager ||
         !prerender_manager->HasSearchResultPagePrerendered()) {
@@ -337,7 +370,6 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
           PrerenderPredictionStatus::kNotStarted);
     }
   }
-
   predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_)
       ->OnOmniboxOpenedUrl(log);
 }

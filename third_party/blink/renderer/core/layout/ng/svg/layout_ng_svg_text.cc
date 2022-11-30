@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,12 +35,12 @@ void LayoutNGSVGText::StyleDidChange(StyleDifference diff,
   if (needs_text_metrics_update_ && diff.HasDifference())
     diff.SetNeedsFullLayout();
   LayoutNGBlockFlowMixin<LayoutSVGBlock>::StyleDidChange(diff, old_style);
-  SVGResources::UpdatePaints(*GetElement(), old_style, StyleRef());
+  SVGResources::UpdatePaints(*this, old_style, StyleRef());
 }
 
 void LayoutNGSVGText::WillBeDestroyed() {
   NOT_DESTROYED();
-  SVGResources::ClearPaints(*GetElement(), Style());
+  SVGResources::ClearPaints(*this, Style());
   LayoutNGBlockFlowMixin<LayoutSVGBlock>::WillBeDestroyed();
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,8 @@ class PageSpecificContentSettingsDelegate
       const std::string& media_stream_selected_video_device) override;
   content_settings::PageSpecificContentSettings::MicrophoneCameraState
   GetMicrophoneCameraState() override;
+  content::WebContents* MaybeGetSyncedWebContentsForPictureInPicture(
+      content::WebContents* web_contents) override;
   void OnContentAllowed(ContentSettingsType type) override;
   void OnContentBlocked(ContentSettingsType type) override;
   void OnStorageAccessAllowed(

@@ -5,8 +5,8 @@
 import 'chrome://crostini-installer/app.js';
 
 import {BrowserProxy} from 'chrome://crostini-installer/browser_proxy.js';
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.js';
-import {flushTasks} from 'chrome://test/test_util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
+import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
 const InstallerState = crostini.mojom.InstallerState;
 const InstallerError = crostini.mojom.InstallerError;
@@ -66,8 +66,7 @@ class FakePageHandler extends TestBrowserProxy {
 class FakeBrowserProxy {
   constructor() {
     this.handler = new FakePageHandler();
-    this.callbackRouter =
-        new chromeos.crostiniInstaller.mojom.PageCallbackRouter();
+    this.callbackRouter = new ash.crostiniInstaller.mojom.PageCallbackRouter();
     /** @type {appManagement.mojom.PageRemote} */
     this.page = this.callbackRouter.$.bindNewPipeAndPassRemote();
   }

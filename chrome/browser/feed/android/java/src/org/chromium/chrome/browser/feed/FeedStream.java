@@ -18,8 +18,8 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.LayoutManager;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Function;
@@ -44,12 +44,13 @@ import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.xsurface.FeedActionsHandler;
-import org.chromium.chrome.browser.xsurface.FeedActionsHandler.FeedIdentifier;
 import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger;
 import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger.StreamType;
 import org.chromium.chrome.browser.xsurface.HybridListRenderer;
+import org.chromium.chrome.browser.xsurface.ListLayoutHelper;
 import org.chromium.chrome.browser.xsurface.LoggingParameters;
 import org.chromium.chrome.browser.xsurface.SurfaceActionsHandler;
+import org.chromium.chrome.browser.xsurface.SurfaceActionsHandler.OpenMode;
 import org.chromium.chrome.browser.xsurface.SurfaceScope;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
@@ -96,65 +97,116 @@ public class FeedStream implements Stream {
         }
 
         @Override
-        public void navigateTab(String url, View actionSourceView) {
+        public void openUrl(@OpenMode int openMode, String url, OpenUrlOptions options) {
             assert ThreadUtils.runningOnUiThread();
-            FeedStreamJni.get().reportOpenAction(mNativeFeedStream, FeedStream.this,
-                    mMakeGURL.apply(url), getSliceIdFromView(actionSourceView),
-                    OpenActionType.DEFAULT);
-
-            openSuggestionUrl(url, WindowOpenDisposition.CURRENT_TAB, /*inGroup=*/false);
+            switch (openMode) {
+                case OpenMode.UNKNOWN:
+                case OpenMode.SAME_TAB:
+                    FeedStreamJni.get().reportOpenAction(mNativeFeedStream, FeedStream.this,
+                            mMakeGURL.apply(url), getSliceIdFromView(options.actionSourceView()),
+                            OpenActionType.DEFAULT);
+                    openSuggestionUrl(url, WindowOpenDisposition.CURRENT_TAB, /*inGroup=*/false);
+                    break;
+                case OpenMode.NEW_TAB:
+                    FeedStreamJni.get().reportOpenAction(mNativeFeedStream, FeedStream.this,
+                            mMakeGURL.apply(url), getSliceIdFromView(options.actionSourceView()),
+                            OpenActionType.NEW_TAB);
+                    openSuggestionUrl(
+                            url, WindowOpenDisposition.NEW_BACKGROUND_TAB, /*inGroup=*/false);
+                    break;
+                case OpenMode.INCOGNITO_TAB:
+                    FeedStreamJni.get().reportOtherUserAction(mNativeFeedStream, FeedStream.this,
+                            FeedUserActionType.TAPPED_OPEN_IN_NEW_INCOGNITO_TAB);
+                    openSuggestionUrl(url, WindowOpenDisposition.OFF_THE_RECORD, /*inGroup=*/false);
+                    break;
+                case OpenMode.DOWNLOAD_LINK:
+                    FeedStreamJni.get().reportOtherUserAction(
+                            mNativeFeedStream, FeedStream.this, FeedUserActionType.TAPPED_DOWNLOAD);
+                    mActionDelegate.downloadPage(url);
+                    break;
+                case OpenMode.READ_LATER:
+                    FeedStreamJni.get().reportOtherUserAction(mNativeFeedStream, FeedStream.this,
+                            FeedUserActionType.TAPPED_ADD_TO_READING_LIST);
+                    mActionDelegate.addToReadingList(options.getTitle(), url);
+                    break;
+                case OpenMode.THANK_CREATOR:
+                    FeedStreamJni.get().reportOtherUserAction(mNativeFeedStream, FeedStream.this,
+                            FeedUserActionType.TAPPED_CROW_BUTTON);
+                    mActionDelegate.openCrow(url);
+                    break;
+                case OpenMode.NEW_TAB_IN_GROUP:
+                    FeedStreamJni.get().reportOpenAction(mNativeFeedStream, FeedStream.this,
+                            mMakeGURL.apply(url), getSliceIdFromView(options.actionSourceView()),
+                            OpenActionType.NEW_TAB_IN_GROUP);
+                    openSuggestionUrl(url, WindowOpenDisposition.NEW_BACKGROUND_TAB,
+                            /*inGroup=*/true);
+                    break;
+            }
 
             // Attempts to load more content if needed.
             maybeLoadMore();
         }
 
+        // Deprecated in favor of openUrl(), will be removed once internal references are removed.
+        @Override
+        public void navigateTab(String url, View actionSourceView) {
+            openUrl(OpenMode.SAME_TAB, url, new OpenUrlOptions() {
+                @Override
+                public View actionSourceView() {
+                    return actionSourceView;
+                }
+            });
+        }
+
+        // Deprecated in favor of openUrl(), will be removed once internal references are removed.
         @Override
         public void navigateNewTab(String url, View actionSourceView) {
-            assert ThreadUtils.runningOnUiThread();
-            FeedStreamJni.get().reportOpenAction(mNativeFeedStream, FeedStream.this,
-                    mMakeGURL.apply(url), getSliceIdFromView(actionSourceView),
-                    OpenActionType.NEW_TAB);
-
-            openSuggestionUrl(url, WindowOpenDisposition.NEW_BACKGROUND_TAB, /*inGroup=*/false);
-
-            // Attempts to load more content if needed.
-            maybeLoadMore();
+            openUrl(OpenMode.NEW_TAB, url, new OpenUrlOptions() {
+                @Override
+                public View actionSourceView() {
+                    return actionSourceView;
+                }
+            });
         }
 
+        // Deprecated in favor of openUrl(), will be removed once internal references are removed.
         @Override
         public void navigateIncognitoTab(String url) {
-            assert ThreadUtils.runningOnUiThread();
-            FeedStreamJni.get().reportOtherUserAction(mNativeFeedStream, FeedStream.this,
-                    FeedUserActionType.TAPPED_OPEN_IN_NEW_INCOGNITO_TAB);
-
-            openSuggestionUrl(url, WindowOpenDisposition.OFF_THE_RECORD, /*inGroup=*/false);
-
-            // Attempts to load more content if needed.
-            maybeLoadMore();
+            openUrl(OpenMode.INCOGNITO_TAB, url, new OpenUrlOptions() {});
         }
 
+        // Deprecated in favor of openUrl(), will be removed once internal references are removed.
         @Override
         public void downloadLink(String url) {
-            assert ThreadUtils.runningOnUiThread();
-            FeedStreamJni.get().reportOtherUserAction(
-                    mNativeFeedStream, FeedStream.this, FeedUserActionType.TAPPED_DOWNLOAD);
-            mActionDelegate.downloadPage(url);
+            openUrl(OpenMode.DOWNLOAD_LINK, url, new OpenUrlOptions() {});
         }
 
+        // Deprecated in favor of openUrl(), will be removed once internal references are removed.
         @Override
         public void addToReadingList(String title, String url) {
-            assert ThreadUtils.runningOnUiThread();
-            FeedStreamJni.get().reportOtherUserAction(mNativeFeedStream, FeedStream.this,
-                    FeedUserActionType.TAPPED_ADD_TO_READING_LIST);
-            mActionDelegate.addToReadingList(title, url);
+            openUrl(OpenMode.READ_LATER, url, new OpenUrlOptions() {
+                @Override
+                public String getTitle() {
+                    return title;
+                }
+            });
         }
 
+        // Deprecated in favor of openUrl(), will be removed once internal references are removed.
         @Override
         public void navigateCrow(String url) {
-            assert ThreadUtils.runningOnUiThread();
-            FeedStreamJni.get().reportOtherUserAction(
-                    mNativeFeedStream, FeedStream.this, FeedUserActionType.TAPPED_CROW_BUTTON);
-            mActionDelegate.openCrow(url);
+            openUrl(OpenMode.THANK_CREATOR, url, new OpenUrlOptions() {});
+        }
+
+        // Deprecated in favor of openUrl(), will be removed once internal references are removed.
+        @Override
+        public void navigateNewTabInGroup(String url, View actionSourceView) {
+            openUrl(OpenMode.NEW_TAB_IN_GROUP, url, new OpenUrlOptions() {
+                @Override
+                public View actionSourceView() {
+                    return actionSourceView;
+                }
+            });
         }
 
         @Override
@@ -277,20 +329,6 @@ public class FeedStream implements Stream {
                         visitResult
                         -> FeedServiceBridge.reportOpenVisitComplete(visitResult.visitTimeMs));
             });
-        }
-
-        @Override
-        public void navigateNewTabInGroup(String url, View actionSourceView) {
-            assert ThreadUtils.runningOnUiThread();
-            FeedStreamJni.get().reportOpenAction(mNativeFeedStream, FeedStream.this,
-                    mMakeGURL.apply(url), getSliceIdFromView(actionSourceView),
-                    OpenActionType.NEW_TAB_IN_GROUP);
-
-            openSuggestionUrl(url, WindowOpenDisposition.NEW_BACKGROUND_TAB,
-                    /*inGroup=*/true);
-
-            // Attempts to load more content if needed.
-            maybeLoadMore();
         }
     }
 
@@ -680,8 +718,8 @@ public class FeedStream implements Stream {
 
         mScrollStateToRestore = savedInstanceState;
         manager.setHandlers(mHandlersMap);
-        mSliceViewTracker =
-                new FeedSliceViewTracker(rootView, manager, new FeedStream.ViewTrackerObserver());
+        mSliceViewTracker = new FeedSliceViewTracker(rootView, manager,
+                renderer.getListLayoutHelper(), new FeedStream.ViewTrackerObserver());
         mSliceViewTracker.bind();
 
         rootView.addOnScrollListener(mMainScrollListener);
@@ -883,7 +921,7 @@ public class FeedStream implements Stream {
             return false;
         }
         // Checks if loading more can be triggered.
-        LinearLayoutManager layoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
+        LayoutManager layoutManager = mRecyclerView.getLayoutManager();
         if (layoutManager == null) {
             return false;
         }
@@ -899,7 +937,7 @@ public class FeedStream implements Stream {
         // beyond the end of the feed. This can occur if maybeLoadMore() is called during a feed
         // swap, after the feed items have been cleared, but before the view has finished updating
         // (which happens asynchronously).
-        int lastVisibleItem = layoutManager.findLastVisibleItemPosition();
+        int lastVisibleItem = mRenderer.getListLayoutHelper().findLastVisibleItemPosition();
         if (totalItemCount < lastVisibleItem) {
             return false;
         }
@@ -1082,6 +1120,8 @@ public class FeedStream implements Stream {
                 return StreamType.FOR_YOU;
             case StreamKind.FOLLOWING:
                 return StreamType.WEB_FEED;
+            case StreamKind.CHANNEL:
+                return StreamType.CHANNEL;
             default:
                 return StreamType.UNSPECIFIED;
         }
@@ -1103,9 +1143,9 @@ public class FeedStream implements Stream {
         // spinner.
         if (mContentManager.getContent(state.lastPosition).isNativeView()) return false;
 
-        LinearLayoutManager layoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
-        if (layoutManager != null) {
-            layoutManager.scrollToPositionWithOffset(state.position, state.offset);
+        ListLayoutHelper layoutHelper = mRenderer.getListLayoutHelper();
+        if (layoutHelper != null) {
+            layoutHelper.scrollToPositionWithOffset(state.position, state.offset);
         }
         return true;
     }
@@ -1115,11 +1155,11 @@ public class FeedStream implements Stream {
         if (!isOnboardingEnabled()) return;
 
         // Scroll to the first position, which should be the tab header.
-        LinearLayoutManager layoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
-        if (layoutManager != null) {
+        ListLayoutHelper layoutHelper = mRenderer.getListLayoutHelper();
+        if (layoutHelper != null) {
             int omnibarHeight = (int) (mActivity.getResources().getDimensionPixelSize(
                     R.dimen.toolbar_height_no_shadow));
-            layoutManager.scrollToPositionWithOffset(/*position=*/mHeaderCount - 1,
+            layoutHelper.scrollToPositionWithOffset(/*position=*/mHeaderCount - 1,
                     /*offset=*/omnibarHeight);
         }
     }
@@ -1298,6 +1338,8 @@ public class FeedStream implements Stream {
     public interface Natives {
         long init(FeedStream caller, @StreamKind int streamKind,
                 long nativeFeedReliabilityLoggingBridge);
+        long initWebFeed(
+                FeedStream caller, byte[] webFeedId, long nativeFeedReliabilityLoggingBridge);
         void reportFeedViewed(long nativeFeedStream, FeedStream caller);
         void reportSliceViewed(long nativeFeedStream, FeedStream caller, String sliceId);
         void reportPageLoaded(long nativeFeedStream, FeedStream caller, boolean inNewTab);

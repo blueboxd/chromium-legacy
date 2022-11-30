@@ -30,15 +30,17 @@ namespace gpu {
 
 // Main feature flag to control the entire experiment, encompassing bot CPU and
 // GPU ablations.
-const base::Feature kGPUMemoryAblationFeature{
-    "GPUMemoryAblation", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kGPUMemoryAblationFeature,
+             "GPUMemoryAblation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Field Trial Parameter that defines the size of memory allocations.
 const char kGPUMemoryAblationFeatureSizeParam[] = "Size";
 
 // Image allocation parameters.
-constexpr viz::ResourceFormat kFormat = viz::ResourceFormat::RGBA_8888;
-constexpr uint32_t kUsage = SHARED_IMAGE_USAGE_DISPLAY;
+constexpr viz::SharedImageFormat kFormat =
+    viz::SharedImageFormat::SinglePlane(viz::ResourceFormat::RGBA_8888);
+constexpr uint32_t kUsage = SHARED_IMAGE_USAGE_DISPLAY_READ;
 
 bool GpuMemoryAblationExperiment::ExperimentSupported() {
   if (!base::FeatureList::IsEnabled(kGPUMemoryAblationFeature))

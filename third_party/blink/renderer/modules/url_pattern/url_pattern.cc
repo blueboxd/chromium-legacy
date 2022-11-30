@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ namespace {
 // kURL values this mainly consists of a check for a leading slash.  For
 // patterns we do some additional checking for escaped or grouped slashes.
 bool IsAbsolutePathname(const String& pathname, ValueType type) {
-  if (pathname.IsEmpty())
+  if (pathname.empty())
     return false;
 
   if (pathname[0] == '/')
@@ -63,7 +63,7 @@ bool IsAbsolutePathname(const String& pathname, ValueType type) {
 // Utility function to determine if the default port for the given protocol
 // matches the given port number.
 bool IsProtocolDefaultPort(const String& protocol, const String& port) {
-  if (protocol.IsEmpty() || port.IsEmpty())
+  if (protocol.empty() || port.empty())
     return false;
 
   bool port_ok = false;
@@ -194,7 +194,7 @@ URLPatternComponentResult* MakeURLPatternComponentResult(
   // TODO(crbug.com/1293259): Use webidl `(USVString or undefined)` when
   //                          available in the webidl compiler.
   HeapVector<std::pair<String, ScriptValue>> v8_group_values;
-  v8_group_values.ReserveCapacity(group_values.size());
+  v8_group_values.reserve(group_values.size());
   for (const auto& pair : group_values) {
     v8::Local<v8::Value> v8_value;
     if (pair.second.IsNull()) {

@@ -23,6 +23,7 @@
 #include "components/renderer_context_menu/render_view_context_menu_base.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
+#include "components/search_engines/template_url.h"
 #include "components/services/screen_ai/buildflags/buildflags.h"
 #include "content/public/browser/context_menu_params.h"
 #include "extensions/buildflags/buildflags.h"
@@ -127,12 +128,28 @@ class RenderViewContextMenu
       base::OnceCallback<void(content::RenderFrameHost*,
                               blink::mojom::PluginActionType)> cb);
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  lens::LensRegionSearchController* GetLensRegionSearchControllerForTesting() {
+    return lens_region_search_controller_.get();
+  }
+#endif
+
  protected:
   Profile* GetProfile() const;
 
   // This may return nullptr (e.g. for WebUI dialogs). Virtual to allow tests to
   // override.
   virtual Browser* GetBrowser() const;
+
+  // Returns the correct IDC for the Search by Image context menu string
+  int GetSearchForImageIdc() const;
+
+  // Returns the correct IDC for the Region Search context menu string
+  int GetRegionSearchIdc() const;
+
+  // Returns the correct provider name for the Search by Image context menu
+  // string
+  std::u16string GetImageSearchProviderName(const TemplateURL* provider) const;
 
   // Returns a (possibly truncated) version of the current selection text
   // suitable for putting in the title of a menu item.
@@ -195,7 +212,12 @@ class RenderViewContextMenu
 
   // Queries the Translate service to obtain the user's Translate target
   // language and returns the language name in its same locale.
-  std::u16string GetTargetLanguageDisplayName() const;
+  // On an already translated page, full page translation uses the current page
+  // language as the target language while partial translation uses the last
+  // used target language. |is_full_page_translation| controls the desired
+  // outcome.
+  std::u16string GetTargetLanguageDisplayName(
+      bool is_full_page_translation) const;
 
   bool IsInProgressiveWebApp() const;
 
@@ -247,6 +269,7 @@ class RenderViewContextMenu
   void AppendClickToCallItem();
 #endif
   void AppendRegionSearchItem();
+  void AppendLiveCaptionItem();
   bool AppendFollowUnfollowItem();
   void AppendSendTabToSelfItem(bool add_separator);
   void AppendUserNotesItems();
@@ -301,6 +324,7 @@ class RenderViewContextMenu
   void ExecMute();
   void ExecLoop();
   void ExecControls();
+  void ExecLiveCaption();
   void ExecRotateCW();
   void ExecRotateCCW();
   void ExecReloadPackagedApp();

@@ -1,10 +1,11 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "third_party/blink/public/common/permissions_policy/permissions_policy_declaration.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/permissions_policy/origin_with_possible_wildcards.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -34,15 +35,17 @@ TEST(ParsedPermissionsPolicyDeclarationTest, Contains) {
 
   // Origin mismatch.
   ParsedPermissionsPolicyDeclaration mismatch_decl;
-  mismatch_decl.allowed_origins.push_back(
-      url::Origin::Create(GURL("https://example2.test/")));
+  mismatch_decl.allowed_origins.emplace_back(
+      url::Origin::Create(GURL("https://example2.test/")),
+      /*has_subdomain_wildcard=*/false);
   EXPECT_FALSE(mismatch_decl.Contains(kTestOrigin));
   EXPECT_FALSE(mismatch_decl.Contains(kOpaqueOrigin));
 
   // Origin match.
   ParsedPermissionsPolicyDeclaration match_decl;
-  match_decl.allowed_origins.push_back(
-      url::Origin::Create(GURL("https://example.test/")));
+  match_decl.allowed_origins.emplace_back(
+      url::Origin::Create(GURL("https://example.test/")),
+      /*has_subdomain_wildcard=*/false);
   EXPECT_TRUE(match_decl.Contains(kTestOrigin));
   EXPECT_FALSE(match_decl.Contains(kOpaqueOrigin));
 }

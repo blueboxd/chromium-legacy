@@ -1,4 +1,4 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """WPTManifest is responsible for handling MANIFEST.json.
@@ -205,6 +205,10 @@ class WPTManifest(object):
     def is_crash_test(self, url):
         """Checks if a WPT is a crashtest according to the manifest."""
         return self.get_test_type(url) == 'crashtest'
+
+    def is_manual_test(self, url):
+        """Checks if a WPT is a manual according to the manifest."""
+        return self.get_test_type(url) == 'manual'
 
     def is_print_reftest(self, url):
         """Checks if a WPT is a print reftest according to the manifest."""

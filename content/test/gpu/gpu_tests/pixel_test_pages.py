@@ -205,7 +205,8 @@ class PixelTestPages():
             'pixel_webgl_sad_canvas.html',
             base_name + '_WebGLSadCanvas',
             test_rect=[0, 0, 300, 300],
-            optional_action='CrashGpuProcessTwiceWaitForContextRestored'),
+            optional_action='CrashGpuProcessTwiceWaitForContextRestored',
+            grace_period_end=date(2022, 9, 20)),
         PixelTestPage('pixel_scissor.html',
                       base_name + '_ScissorTestWithPreserveDrawingBuffer',
                       test_rect=[0, 0, 300, 300]),
@@ -214,7 +215,7 @@ class PixelTestPages():
                       test_rect=[0, 0, 300, 300]),
         PixelTestPage('pixel_background.html',
                       base_name + '_SolidColorBackground',
-                      test_rect=[500, 500, 100, 100]),
+                      test_rect=[500, 500, 600, 600]),
         PixelTestPage(
             'pixel_video_mp4.html?width=240&height=135&use_timer=1',
             base_name + '_Video_MP4',
@@ -518,10 +519,6 @@ class PixelTestPages():
         'one_copy': False,
         'accelerated_two_copy': True
     }
-    other_args_canvas_cpu_two_copy = {
-        'one_copy': False,
-        'accelerated_two_copy': False
-    }
 
     # Setting grace_period_end to monitor the affects on bots for 2 weeks
     # without making the bots red unexpectedly.
@@ -541,15 +538,6 @@ class PixelTestPages():
             matching_algorithm=GENERAL_MP4_ALGO,
             browser_args=browser_args_canvas_disable_one_copy_capture,
             other_args=other_args_canvas_accelerated_two_copy,
-            grace_period_end=date(2022, 8, 30)),
-        # Disabled OneCopyCapture + canvas has alpha
-        PixelTestPage(
-            'pixel_webgpu_canvas_capture_to_video.html?has_alpha=true',
-            base_name + '_WebGPUCanvasDisableOneCopyCapture_CpuReadback',
-            test_rect=[0, 0, 400, 200],
-            matching_algorithm=GENERAL_MP4_ALGO,
-            browser_args=browser_args_canvas_disable_one_copy_capture,
-            other_args=other_args_canvas_cpu_two_copy,
             grace_period_end=date(2022, 8, 30)),
     ]
 
@@ -1170,86 +1158,86 @@ class PixelTestPages():
     # Tests for <video> element rendering results of <canvas> capture.
     # It's important for video conference software.
 
-    # All these tests contain 4 or 8 solid colored rectangles
-    # around 50x100 pixels, this should account for possible antialiasing and
-    # color cenversion during RGB<->YUV conversions.
-    match_algo = algo.SobelMatchingAlgorithm(max_different_pixels=11000,
-                                             pixel_delta_threshold=50,
-                                             edge_threshold=30,
-                                             ignored_border_thickness=1)
-
+    match_algo = VERY_PERMISSIVE_SOBEL_ALGO
     # Use shorter timeout since the tests are not supposed to be long.
     timeout = 150
+    test_rect = [0, 0, 200, 200]
+    grace_period_end = date(2022, 10, 20)
 
     return [
         PixelTestPage('pixel_video_from_canvas_2d.html',
                       base_name + '_VideoStreamFrom2DCanvas',
-                      test_rect=[0, 0, 200, 200],
+                      test_rect=test_rect,
                       browser_args=[],
                       matching_algorithm=match_algo,
+                      grace_period_end=grace_period_end,
                       timeout=timeout),
         PixelTestPage('pixel_video_from_canvas_2d_alpha.html',
                       base_name + '_VideoStreamFrom2DAlphaCanvas',
-                      test_rect=[0, 0, 200, 200],
+                      test_rect=test_rect,
                       browser_args=[],
                       matching_algorithm=match_algo,
+                      grace_period_end=grace_period_end,
                       timeout=timeout),
         PixelTestPage('pixel_video_from_canvas_webgl2_alpha.html',
                       base_name + '_VideoStreamFromWebGLAlphaCanvas',
-                      test_rect=[0, 0, 200, 200],
+                      test_rect=test_rect,
                       browser_args=[],
                       matching_algorithm=match_algo,
+                      grace_period_end=grace_period_end,
                       timeout=timeout),
         PixelTestPage('pixel_video_from_canvas_webgl2.html',
                       base_name + '_VideoStreamFromWebGLCanvas',
-                      test_rect=[0, 0, 200, 200],
+                      test_rect=test_rect,
                       browser_args=[],
                       matching_algorithm=match_algo,
+                      grace_period_end=grace_period_end,
                       timeout=timeout),
 
         # Safeguard against repeating crbug.com/1337101
         PixelTestPage(
             'pixel_video_from_canvas_2d_alpha.html',
             base_name + '_VideoStreamFrom2DAlphaCanvas_DisableOOPRaster',
-            test_rect=[0, 0, 200, 200],
+            test_rect=test_rect,
             browser_args=['--disable-features=CanvasOopRasterization'],
             matching_algorithm=match_algo,
+            grace_period_end=grace_period_end,
+            timeout=timeout),
+
+        # Safeguard against repeating crbug.com/1371308
+        PixelTestPage(
+            'pixel_video_from_canvas_2d.html',
+            base_name +
+            '_VideoStreamFrom2DAlphaCanvas_DisableReadbackFromTexture',
+            test_rect=test_rect,
+            browser_args=[
+                '--disable-features=GpuMemoryBufferReadbackFromTexture'
+            ],
+            matching_algorithm=match_algo,
+            grace_period_end=grace_period_end,
             timeout=timeout),
 
         # Test OneCopyCanvasCapture
         PixelTestPage('pixel_video_from_canvas_webgl2.html',
                       base_name + '_VideoStreamFromWebGLCanvas_OneCopy',
-                      test_rect=[0, 0, 200, 200],
+                      test_rect=test_rect,
                       browser_args=['--enable-features=OneCopyCanvasCapture'],
                       other_args={'one_copy': True},
                       matching_algorithm=match_algo,
-                      grace_period_end=date(2022, 8, 30),
+                      grace_period_end=grace_period_end,
                       timeout=timeout),
         # TwoCopyCanvasCapture
         PixelTestPage('pixel_video_from_canvas_webgl2.html',
                       base_name +
                       '_VideoStreamFromWebGLCanvas_TwoCopy_Accelerated',
-                      test_rect=[0, 0, 200, 200],
+                      test_rect=test_rect,
                       browser_args=['--disable-features=OneCopyCanvasCapture'],
                       other_args={
                           'one_copy': False,
                           'accelerated_two_copy': True
                       },
                       matching_algorithm=match_algo,
-                      grace_period_end=date(2022, 8, 30),
-                      timeout=timeout),
-        # Having alpha channel would disable TwoCopy's accelerated path
-        PixelTestPage('pixel_video_from_canvas_webgl2_alpha.html',
-                      base_name +
-                      '_VideoStreamFromWebGLAlphaCanvas_TwoCopy_CpuReadback',
-                      test_rect=[0, 0, 200, 200],
-                      browser_args=['--disable-features=OneCopyCanvasCapture'],
-                      other_args={
-                          'one_copy': False,
-                          'accelerated_two_copy': False
-                      },
-                      matching_algorithm=match_algo,
-                      grace_period_end=date(2022, 8, 30),
+                      grace_period_end=grace_period_end,
                       timeout=timeout),
     ]
 
@@ -1266,29 +1254,6 @@ class PixelTestPages():
             base_name + '_Canvas2DRedBoxHdr10',
             test_rect=[0, 0, 300, 300],
             browser_args=['--force-color-profile=hdr10']),
-    ]
-
-  @staticmethod
-  def RootSwapChainPages(base_name: str) -> List[PixelTestPage]:
-    return [
-        PixelTestPage(
-            'wait_for_compositing.html',
-            base_name + '_ForceFullDamage',
-            test_rect=[0, 0, 0, 0],
-            other_args={
-                'has_alpha': False,
-                'full_damage': True
-            },
-            browser_args=[cba.ENABLE_DIRECT_COMPOSITION_FORCE_FULL_DAMAGE]),
-        PixelTestPage(
-            'wait_for_compositing.html',
-            base_name + '_ForcePartialDamage',
-            test_rect=[0, 0, 0, 0],
-            other_args={
-                'has_alpha': False,
-                'full_damage': False
-            },
-            browser_args=[cba.DISABLE_DIRECT_COMPOSITION_FORCE_FULL_DAMAGE]),
     ]
 
   # This should only be used with the cast_streaming suite.

@@ -71,6 +71,8 @@ import org.chromium.chrome.browser.xsurface.FeedActionsHandler;
 import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger;
 import org.chromium.chrome.browser.xsurface.HybridListRenderer;
 import org.chromium.chrome.browser.xsurface.SurfaceActionsHandler;
+import org.chromium.chrome.browser.xsurface.SurfaceActionsHandler.OpenMode;
+import org.chromium.chrome.browser.xsurface.SurfaceActionsHandler.OpenUrlOptions;
 import org.chromium.chrome.browser.xsurface.SurfaceActionsHandler.WebFeedFollowUpdate;
 import org.chromium.chrome.browser.xsurface.SurfaceScope;
 import org.chromium.chrome.test.util.browser.Features;
@@ -194,6 +196,7 @@ public class FeedStreamTest {
         mContentManager = new NtpListContentManager();
         mLayoutManager = new FakeLinearLayoutManager(mActivity);
         mRecyclerView.setLayoutManager(mLayoutManager);
+        when(mRenderer.getListLayoutHelper()).thenReturn(mLayoutManager);
 
         setFeatureOverrides(/*feedLoadingPlaceholderOn=*/true, /*onboardingOn=*/false);
 
@@ -471,13 +474,26 @@ public class FeedStreamTest {
 
     @Test
     @SmallTest
+    public void testOpenUrlSameTab() {
+        bindToView();
+        FeedStream.FeedSurfaceActionsHandler handler =
+                (FeedStream.FeedSurfaceActionsHandler) mContentManager.getContextValues(0).get(
+                        SurfaceActionsHandler.KEY);
+        handler.openUrl(OpenMode.SAME_TAB, TEST_URL, new OpenUrlOptions() {});
+        verify(mActionDelegate)
+                .openSuggestionUrl(eq(org.chromium.ui.mojom.WindowOpenDisposition.CURRENT_TAB),
+                        any(), eq(false), any(), any());
+    }
+
+    @Test
+    @SmallTest
     public void testLogLaunchFinishedOnOpenSuggestionUrl() {
         when(mLaunchReliabilityLogger.isLaunchInProgress()).thenReturn(true);
         bindToView();
         FeedStream.FeedSurfaceActionsHandler handler =
                 (FeedStream.FeedSurfaceActionsHandler) mContentManager.getContextValues(0).get(
                         SurfaceActionsHandler.KEY);
-        handler.navigateTab(TEST_URL, null);
+        handler.openUrl(OpenMode.SAME_TAB, TEST_URL, new OpenUrlOptions() {});
         verify(mLaunchReliabilityLogger)
                 .logLaunchFinished(anyLong(), eq(DiscoverLaunchResult.CARD_TAPPED.getNumber()));
     }
@@ -490,7 +506,22 @@ public class FeedStreamTest {
         FeedStream.FeedSurfaceActionsHandler handler =
                 (FeedStream.FeedSurfaceActionsHandler) mContentManager.getContextValues(0).get(
                         SurfaceActionsHandler.KEY);
-        handler.navigateNewTab(TEST_URL, null);
+        handler.openUrl(OpenMode.NEW_TAB, TEST_URL, new OpenUrlOptions() {});
+
+        // Don't log "launch finished" if the card was opened in a new tab in the background.
+        verify(mLaunchReliabilityLogger, never())
+                .logLaunchFinished(anyLong(), eq(DiscoverLaunchResult.CARD_TAPPED.getNumber()));
+    }
+
+    @Test
+    @SmallTest
+    public void testLogLaunchFinishedOnOpenUrlNewTab() {
+        when(mLaunchReliabilityLogger.isLaunchInProgress()).thenReturn(true);
+        bindToView();
+        FeedStream.FeedSurfaceActionsHandler handler =
+                (FeedStream.FeedSurfaceActionsHandler) mContentManager.getContextValues(0).get(
+                        SurfaceActionsHandler.KEY);
+        handler.openUrl(OpenMode.NEW_TAB, TEST_URL, new OpenUrlOptions() {});
         // Don't log "launch finished" if the card was opened in a new tab in the background.
         verify(mLaunchReliabilityLogger, never())
                 .logLaunchFinished(anyLong(), eq(DiscoverLaunchResult.CARD_TAPPED.getNumber()));
@@ -526,6 +557,21 @@ public class FeedStreamTest {
 
     @Test
     @SmallTest
+    public void testOpenUrlInNewTab() {
+        bindToView();
+        FeedStream.FeedSurfaceActionsHandler handler =
+                (FeedStream.FeedSurfaceActionsHandler) mContentManager.getContextValues(0).get(
+                        SurfaceActionsHandler.KEY);
+
+        handler.openUrl(OpenMode.NEW_TAB, TEST_URL, new OpenUrlOptions() {});
+        verify(mActionDelegate)
+                .openSuggestionUrl(
+                        eq(org.chromium.ui.mojom.WindowOpenDisposition.NEW_BACKGROUND_TAB), any(),
+                        eq(false), any(), any());
+    }
+
+    @Test
+    @SmallTest
     public void testNavigateNewTabInGroup() {
         bindToView();
         FeedStream.FeedSurfaceActionsHandler handler =
@@ -541,12 +587,40 @@ public class FeedStreamTest {
 
     @Test
     @SmallTest
+    public void testOpenUrlNewTabInGroup() {
+        bindToView();
+        FeedStream.FeedSurfaceActionsHandler handler =
+                (FeedStream.FeedSurfaceActionsHandler) mContentManager.getContextValues(0).get(
+                        SurfaceActionsHandler.KEY);
+
+        handler.openUrl(OpenMode.NEW_TAB_IN_GROUP, TEST_URL, new OpenUrlOptions() {});
+        verify(mActionDelegate)
+                .openSuggestionUrl(
+                        eq(org.chromium.ui.mojom.WindowOpenDisposition.NEW_BACKGROUND_TAB), any(),
+                        eq(true), any(), any());
+    }
+
+    @Test
+    @SmallTest
     public void testNavigateIncognitoTab() {
         bindToView();
         FeedStream.FeedSurfaceActionsHandler handler =
                 (FeedStream.FeedSurfaceActionsHandler) mContentManager.getContextValues(0).get(
                         SurfaceActionsHandler.KEY);
         handler.navigateIncognitoTab(TEST_URL);
+        verify(mActionDelegate)
+                .openSuggestionUrl(eq(org.chromium.ui.mojom.WindowOpenDisposition.OFF_THE_RECORD),
+                        any(), eq(false), any(), any());
+    }
+
+    @Test
+    @SmallTest
+    public void testOpenUrlIncognitoTab() {
+        bindToView();
+        FeedStream.FeedSurfaceActionsHandler handler =
+                (FeedStream.FeedSurfaceActionsHandler) mContentManager.getContextValues(0).get(
+                        SurfaceActionsHandler.KEY);
+        handler.openUrl(OpenMode.INCOGNITO_TAB, TEST_URL, new OpenUrlOptions() {});
         verify(mActionDelegate)
                 .openSuggestionUrl(eq(org.chromium.ui.mojom.WindowOpenDisposition.OFF_THE_RECORD),
                         any(), eq(false), any(), any());

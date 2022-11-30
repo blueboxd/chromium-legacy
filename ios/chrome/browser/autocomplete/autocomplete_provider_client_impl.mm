@@ -25,9 +25,9 @@
 #import "ios/chrome/browser/autocomplete/remote_suggestions_service_factory.h"
 #import "ios/chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #import "ios/chrome/browser/autocomplete/tab_matcher_impl.h"
+#import "ios/chrome/browser/autocomplete/zero_suggest_cache_service_factory.h"
 #import "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/history/history_service_factory.h"
 #import "ios/chrome/browser/history/top_sites_factory.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -37,6 +37,7 @@
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/components/webui/web_ui_url_constants.h"
 #import "services/network/public/cpp/shared_url_loader_factory.h"
@@ -132,6 +133,18 @@ DocumentSuggestionsService*
 AutocompleteProviderClientImpl::GetDocumentSuggestionsService(
     bool create_if_necessary) const {
   return nullptr;
+}
+
+ZeroSuggestCacheService*
+AutocompleteProviderClientImpl::GetZeroSuggestCacheService() {
+  return ios::ZeroSuggestCacheServiceFactory::GetForBrowserState(
+      browser_state_);
+}
+
+const ZeroSuggestCacheService*
+AutocompleteProviderClientImpl::GetZeroSuggestCacheService() const {
+  return ios::ZeroSuggestCacheServiceFactory::GetForBrowserState(
+      browser_state_);
 }
 
 OmniboxPedalProvider* AutocompleteProviderClientImpl::GetPedalProvider() const {

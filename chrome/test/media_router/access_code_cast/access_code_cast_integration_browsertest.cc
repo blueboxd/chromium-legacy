@@ -6,11 +6,13 @@
 
 #include "base/auto_reset.h"
 #include "base/memory/ptr_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/router/chrome_media_router_factory.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_constants.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
@@ -72,6 +74,10 @@ class CloseObserver : public content::WebContentsObserver {
   base::RunLoop close_loop_;
 };
 
+std::unique_ptr<KeyedService> CreateTestSyncService(content::BrowserContext*) {
+  return std::make_unique<syncer::TestSyncService>();
+}
+
 }  // namespace
 
 namespace media_router {
@@ -93,6 +99,11 @@ void AccessCodeCastIntegrationBrowserTest::SetUp() {
   CastConfigControllerMediaRouter::SetMediaRouterForTest(nullptr);
 #endif
   InProcessBrowserTest::SetUp();
+
+  // This command removes the verify pixels switch so that our TestDialog code
+  // does not automatically take pixel screenshots.
+  base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+      "browser-ui-tests-verify-pixels");
 }
 
 void AccessCodeCastIntegrationBrowserTest::SetUpInProcessBrowserTestFixture() {
@@ -106,6 +117,9 @@ void AccessCodeCastIntegrationBrowserTest::SetUpInProcessBrowserTestFixture() {
 
 void AccessCodeCastIntegrationBrowserTest::OnWillCreateBrowserContextServices(
     content::BrowserContext* context) {
+  SyncServiceFactory::GetInstance()->SetTestingFactory(
+      context, base::BindRepeating(&CreateTestSyncService));
+
   media_router_ = static_cast<TestMediaRouter*>(
       media_router::MediaRouterFactory::GetInstance()->SetTestingFactoryAndUse(
           context, base::BindRepeating(&TestMediaRouter::Create)));
@@ -120,8 +134,7 @@ void AccessCodeCastIntegrationBrowserTest::OnWillCreateBrowserContextServices(
   // this to occur).
   ON_CALL(*media_router_, UnregisterMediaSinksObserver(_))
       .WillByDefault([this](MediaSinksObserver* observer) {
-        auto it = std::find(media_sinks_observers_.begin(),
-                            media_sinks_observers_.end(), observer);
+        auto it = base::ranges::find(media_sinks_observers_, observer);
         if (it != media_sinks_observers_.end()) {
           media_sinks_observers_.erase(it);
         }
@@ -137,8 +150,7 @@ void AccessCodeCastIntegrationBrowserTest::OnWillCreateBrowserContextServices(
   // this to occur).
   ON_CALL(*media_router_, UnregisterMediaRoutesObserver(_))
       .WillByDefault([this](MediaRoutesObserver* observer) {
-        auto it = std::find(media_routes_observers_.begin(),
-                            media_routes_observers_.end(), observer);
+        auto it = base::ranges::find(media_routes_observers_, observer);
         if (it != media_routes_observers_.end()) {
           media_routes_observers_.erase(it);
         }
@@ -181,6 +193,13 @@ void AccessCodeCastIntegrationBrowserTest::OnWillCreateBrowserContextServices(
 
 void AccessCodeCastIntegrationBrowserTest::SetUpOnMainThread() {
   InProcessBrowserTest::SetUpOnMainThread();
+  network_connection_tracker_ =
+      network::TestNetworkConnectionTracker::CreateInstance();
+  content::SetNetworkConnectionTrackerForTesting(nullptr);
+  content::SetNetworkConnectionTrackerForTesting(
+      network_connection_tracker_.get());
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
   url_loader_interceptor_ =
       std::make_unique<content::URLLoaderInterceptor>(base::BindRepeating(
           &AccessCodeCastIntegrationBrowserTest::InterceptRequest,
@@ -198,11 +217,18 @@ void AccessCodeCastIntegrationBrowserTest::SetUpOnMainThread() {
 
 void AccessCodeCastIntegrationBrowserTest::SetUpPrimaryAccountWithHostedDomain(
     signin::ConsentLevel consent_level,
-    Profile* profile) {
+    Profile* profile,
+    bool sign_in_account) {
   ASSERT_TRUE(identity_test_environment_);
   // Ensure that the stub user is signed in.
   identity_test_environment_->MakePrimaryAccountAvailable(
       user_manager::kStubUserEmail, consent_level);
+
+  if (sign_in_account) {
+    signin::MakePrimaryAccountAvailable(
+        IdentityManagerFactory::GetForProfile(profile),
+        user_manager::kStubUserEmail, consent_level);
+  }
 
   identity_test_environment_->SetAutomaticIssueOfAccessTokens(true);
 
@@ -210,6 +236,17 @@ void AccessCodeCastIntegrationBrowserTest::SetUpPrimaryAccountWithHostedDomain(
   AccessCodeCastSinkServiceFactory::GetForProfile(profile)
       ->SetIdentityManagerForTesting(
           identity_test_environment_->identity_manager());
+
+  switch (consent_level) {
+    case signin::ConsentLevel::kSignin:
+      sync_service(profile)->SetTransportState(
+          syncer::SyncService::TransportState::PAUSED);
+      break;
+    case signin::ConsentLevel::kSync:
+      sync_service(profile)->SetTransportState(
+          syncer::SyncService::TransportState::ACTIVE);
+      break;
+  }
 
   base::RunLoop().RunUntilIdle();
 }
@@ -220,9 +257,7 @@ void AccessCodeCastIntegrationBrowserTest::EnableAccessCodeCasting() {
   base::RunLoop().RunUntilIdle();
 }
 
-content::WebContents* AccessCodeCastIntegrationBrowserTest::ShowDialog() {
-  content::WebContentsAddedObserver observer;
-
+void AccessCodeCastIntegrationBrowserTest::ShowUi(const std::string& name) {
   CastModeSet tab_mode = {MediaCastMode::TAB_MIRROR};
   std::unique_ptr<MediaRouteStarter> starter =
       std::make_unique<MediaRouteStarter>(
@@ -230,14 +265,16 @@ content::WebContents* AccessCodeCastIntegrationBrowserTest::ShowDialog() {
   AccessCodeCastDialog::Show(
       tab_mode, std::move(starter),
       AccessCodeCastDialogOpenLocation::kBrowserCastMenu);
+}
 
-  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
+content::WebContents* AccessCodeCastIntegrationBrowserTest::ShowDialog() {
+  content::WebContentsAddedObserver observer;
+  // This string is empty since the ShowUi function requires a string. We do not
+  // need one in the context we are using the function.
+  ShowUi("");
+  EXPECT_TRUE(VerifyUi());
   content::WebContents* dialog_contents = observer.GetWebContents();
   EXPECT_TRUE(content::WaitForLoadStop(dialog_contents));
-
-  auto* web_ui = dialog_contents->GetWebUI();
-  EXPECT_TRUE(web_ui);
-  EXPECT_TRUE(web_ui->CanCallJavascript());
 
   return dialog_contents;
 }

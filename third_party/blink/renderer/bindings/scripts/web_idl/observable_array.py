@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,7 +9,7 @@ from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
 from .composition_parts import WithIdentifier
-from .idl_type import IdlType
+from .idl_type import IdlType  # pylint: disable=cyclic-import
 
 
 class ObservableArray(WithIdentifier, WithCodeGeneratorInfo, WithComponent,

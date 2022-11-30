@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 import {CrButtonElement, NativeLayerImpl, PluginProxyImpl, PrintPreviewLinkContainerElement, PrintPreviewSidebarElement, ScalingType, whenReady} from 'chrome://print/print_preview.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {eventToPromise, waitBeforeNextRender} from 'chrome://webui-test/test_util.js';
+import {waitBeforeNextRender} from 'chrome://webui-test/polymer_test_util.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
+
 import {NativeLayerStub} from './native_layer_stub.js';
 import {getDefaultInitialSettings, selectOption} from './print_preview_test_utils.js';
 import {TestPluginProxy} from './test_plugin_proxy.js';
@@ -39,7 +41,8 @@ suite(system_dialog_browsertest.suiteName, function() {
   setup(function() {
     nativeLayer = new NativeLayerStub();
     NativeLayerImpl.setInstance(nativeLayer);
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
 
     const initialSettings = getDefaultInitialSettings();
     nativeLayer.setInitialSettings(initialSettings);

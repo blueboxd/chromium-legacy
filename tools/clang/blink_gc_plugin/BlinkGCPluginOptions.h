@@ -49,19 +49,10 @@ struct BlinkGCPluginOptions {
   // TODO(chromium:1283720): Enable this checks once all violations are handled.
   bool enable_members_on_stack_check = false;
 
-  // Whether to fix to the bugs of RecordInfo::IsConsideredAbstract(). This is
-  // passed to IsConsideredAbstract() when checking manual dispatch, to let the
-  // function
-  // - not to consider a class abstract if the class has the implicit default
-  //   constructor
-  // - check public Create methods instead of any Create methods.
-  // If IsConsideredAbstract() returns false, the class is required to be
-  // checked in the class's or its ancestor class's TraceAfterDispatch() and
-  // FinalizeGarbageCollectionObject() methods.
-  //
-  // This is disabled by default until the plugin is pushed to goma and
-  // developers and we ensure there are no violations.
-  bool fix_bugs_of_is_considered_abstract = false;
+  // Checks that any inlined classes (ones that could be a value-type of heap
+  // containers) don't have extra padding potentially introduced by Member (e.g
+  // due to pointer compression).
+  bool enable_extra_padding_check = false;
 
   std::set<std::string> ignored_classes;
   std::set<std::string> checked_namespaces;

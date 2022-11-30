@@ -72,30 +72,6 @@
 namespace updater {
 namespace {
 
-bool GetShellDispatch(Microsoft::WRL::ComPtr<IShellDispatch2>* shell_dispatch) {
-  long hwnd = 0;
-  Microsoft::WRL::ComPtr<IShellWindows> shell;
-  Microsoft::WRL::ComPtr<IDispatch> dispatch;
-  Microsoft::WRL::ComPtr<IServiceProvider> service;
-  Microsoft::WRL::ComPtr<IShellBrowser> browser;
-  Microsoft::WRL::ComPtr<IShellView> view;
-  Microsoft::WRL::ComPtr<IShellFolderViewDual> folder;
-  return SUCCEEDED(::CoCreateInstance(CLSID_ShellWindows, nullptr, CLSCTX_ALL,
-                                      IID_PPV_ARGS(&shell))) &&
-         SUCCEEDED(shell->FindWindowSW(
-             base::win::ScopedVariant(CSIDL_DESKTOP).AsInput(), nullptr,
-             SWC_DESKTOP, &hwnd, SWFO_NEEDDISPATCH, &dispatch)) &&
-         SUCCEEDED(dispatch.As(&service)) &&
-         SUCCEEDED(service->QueryService(SID_STopLevelBrowser,
-                                         IID_PPV_ARGS(&browser))) &&
-         SUCCEEDED(browser->QueryActiveShellView(&view)) &&
-         SUCCEEDED(
-             view->GetItemObject(SVGIO_BACKGROUND, IID_PPV_ARGS(&dispatch))) &&
-         SUCCEEDED(dispatch.As(&folder)) &&
-         SUCCEEDED(folder->get_Application(&dispatch)) &&
-         SUCCEEDED(dispatch.As(shell_dispatch));
-}
-
 class InstallProgressSilentObserver : public InstallProgressObserver {
  public:
   explicit InstallProgressSilentObserver(ui::OmahaWndEvents* events_sink);
@@ -328,8 +304,8 @@ class InstallProgressObserverIPC : public InstallProgressObserver {
 
 InstallProgressObserverIPC::InstallProgressObserverIPC(
     InstallProgressObserver* observer,
-    DWORD obserer_thread_id)
-    : observer_(observer), observer_thread_id_(obserer_thread_id) {
+    DWORD observer_thread_id)
+    : observer_(observer), observer_thread_id_(observer_thread_id) {
   DCHECK(observer);
 }
 
@@ -548,8 +524,6 @@ class AppInstallControllerImpl : public AppInstallController,
 
   void InstallAppOffline(const std::string& app_id,
                          const std::string& app_name,
-                         const base::FilePath& offline_dir,
-                         bool enterprise,
                          base::OnceCallback<void(int)> callback) override;
 
  private:
@@ -582,10 +556,11 @@ class AppInstallControllerImpl : public AppInstallController,
   void DoInstallApp();
   void DoInstallAppOffline(const base::FilePath& installer_path,
                            const std::string& install_args,
-                           const std::string& install_data,
-                           bool enterprise);
+                           const std::string& install_data);
   void InstallComplete(UpdateService::Result result);
-  void HandleInstallResult(const UpdateService::UpdateState& update_state);
+
+  [[nodiscard]] static ObserverCompletionInfo HandleInstallResult(
+      const UpdateService::UpdateState& update_state);
 
   // Returns the thread id of the thread which owns the progress window.
   DWORD GetUIThreadID() const;
@@ -619,6 +594,11 @@ class AppInstallControllerImpl : public AppInstallController,
   // The adapter for the inter-thread calls between the updater main thread
   // and the UI thread.
   std::unique_ptr<InstallProgressObserverIPC> install_progress_observer_ipc_;
+
+  // Contains the result of installing the application. This is populated
+  // by the `StateChangeCallback` or the completion callback, if the
+  // former callback was not posted.
+  absl::optional<ObserverCompletionInfo> observer_completion_info_;
 
   // Called when InstallApp is done.
   base::OnceCallback<void(int)> callback_;
@@ -686,6 +666,7 @@ void AppInstallControllerImpl::DoInstallApp() {
                          *tag_args->usage_stats_enable),
       base::BindOnce(
           &UpdateService::Install, update_service_, request,
+          GetDecodedInstallDataFromAppArgs(app_id_),
           GetInstallDataIndexFromAppArgs(app_id_),
           UpdateService::Priority::kForeground,
           base::BindRepeating(&AppInstallControllerImpl::StateChange, this),
@@ -695,8 +676,6 @@ void AppInstallControllerImpl::DoInstallApp() {
 void AppInstallControllerImpl::InstallAppOffline(
     const std::string& app_id,
     const std::string& app_name,
-    const base::FilePath& offline_dir,
-    bool enterprise,
     base::OnceCallback<void(int)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
@@ -708,50 +687,52 @@ void AppInstallControllerImpl::InstallAppOffline(
   ui_task_runner_->PostTaskAndReply(
       FROM_HERE, base::BindOnce(&AppInstallControllerImpl::InitializeUI, this),
       base::BindOnce(
-          [](scoped_refptr<AppInstallControllerImpl> self,
-             const base::FilePath& offline_dir, bool enterprise) {
+          [](scoped_refptr<AppInstallControllerImpl> self) {
             base::ThreadPool::PostTaskAndReplyWithResult(
                 FROM_HERE, {base::MayBlock()},
                 base::BindOnce(
-                    [](const base::FilePath& offline_dir,
-                       const std::string& app_id) {
+                    [](const std::string& app_id) {
+                      const base::CommandLine cmd_line =
+                          GetCommandLineLegacyCompatible();
                       // Parse the offline manifest to get the install
                       // command and install data.
                       base::FilePath installer_path;
                       std::string install_args;
                       std::string install_data;
-
-                      absl::optional<tagging::AppArgs> app_args =
-                          GetAppArgs(app_id);
                       ReadInstallCommandFromManifest(
-                          offline_dir, app_id,
-                          app_args ? app_args->install_data_index
-                                   : std::string(),
+                          cmd_line.GetSwitchValuePath(kOfflineDirSwitch),
+                          app_id,
+                          GetInstallDataIndexFromAppArgsForCommandLine(cmd_line,
+                                                                       app_id),
                           installer_path, install_args, install_data);
+
+                      const std::string client_install_data =
+                          GetDecodedInstallDataFromAppArgsForCommandLine(
+                              cmd_line, app_id);
                       return std::make_tuple(installer_path, install_args,
-                                             install_data);
+                                             client_install_data.empty()
+                                                 ? install_data
+                                                 : client_install_data);
                     },
-                    offline_dir, self->app_id_),
+                    self->app_id_),
                 base::BindOnce(
                     [](scoped_refptr<AppInstallControllerImpl> self,
-                       bool enterprise,
                        const std::tuple<base::FilePath /*installer_path*/,
                                         std::string /*arguments*/,
                                         std::string /*install_data*/>& result) {
-                      self->DoInstallAppOffline(
-                          std::get<0>(result), std::get<1>(result),
-                          std::get<2>(result), enterprise);
+                      self->DoInstallAppOffline(std::get<0>(result),
+                                                std::get<1>(result),
+                                                std::get<2>(result));
                     },
-                    self, enterprise));
+                    self));
           },
-          base::WrapRefCounted(this), offline_dir, enterprise));
+          base::WrapRefCounted(this)));
 }
 
 void AppInstallControllerImpl::DoInstallAppOffline(
     const base::FilePath& installer_path,
     const std::string& install_args,
-    const std::string& install_data,
-    bool enterprise) {
+    const std::string& install_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // At this point, the UI has been initialized, which means the UI can be
   // used from now on as an observer of the application install. The task
@@ -767,8 +748,12 @@ void AppInstallControllerImpl::DoInstallAppOffline(
   // TODO(crbug.com/1286581): fine-tune installation behavior by serializing
   // other related command line options, such as "/sessionid <sid>" into
   // `install_settings`.
+  base::CommandLine cmd_line = GetCommandLineLegacyCompatible();
   base::Value::Dict install_settings_dict;
-  install_settings_dict.Set(kEnterpriseSwitch, enterprise);
+  install_settings_dict.Set(kEnterpriseSwitch,
+                            cmd_line.HasSwitch(kEnterpriseSwitch));
+  install_settings_dict.Set(kSessionIdSwitch,
+                            cmd_line.GetSwitchValueASCII(kSessionIdSwitch));
 
   std::string install_settings;
   if (!JSONStringValueSerializer(&install_settings)
@@ -776,11 +761,13 @@ void AppInstallControllerImpl::DoInstallAppOffline(
     VLOG(1) << "Failed to serialize install settings.";
   }
 
-  absl::optional<tagging::TagArgs> tag_args = GetTagArgs().tag_args;
+  absl::optional<tagging::TagArgs> tag_args =
+      GetTagArgsForCommandLine(cmd_line).tag_args;
   RegistrationRequest request;
   request.app_id = app_id_;
 
-  absl::optional<tagging::AppArgs> app_args = GetAppArgs(app_id_);
+  absl::optional<tagging::AppArgs> app_args =
+      GetAppArgsForCommandLine(cmd_line, app_id_);
   if (app_args)
     request.ap = app_args->ap;
   if (tag_args)
@@ -798,11 +785,10 @@ void AppInstallControllerImpl::DoInstallAppOffline(
                  const base::FilePath& installer_path,
                  const std::string& install_args,
                  const std::string& install_data,
-                 const std::string& install_settings,
-                 const RegistrationResponse& response) {
-                if (response.status_code != kRegistrationSuccess &&
-                    response.status_code != kRegistrationAlreadyRegistered) {
-                  VLOG(1) << "Registration failed: " << response.status_code;
+                 const std::string& install_settings, int result) {
+                if (result != kRegistrationSuccess &&
+                    result != kRegistrationAlreadyRegistered) {
+                  VLOG(1) << "Registration failed: " << result;
                   self->InstallComplete(UpdateService::Result::kServiceFailed);
                   return;
                 }
@@ -821,16 +807,18 @@ void AppInstallControllerImpl::DoInstallAppOffline(
 // TODO(crbug.com/1218219) - propagate error code in case of errors.
 void AppInstallControllerImpl::InstallComplete(UpdateService::Result result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  VLOG(1) << __func__;
   if (result == UpdateService::Result::kServiceFailed) {
     UpdateService::UpdateState update_state;
     update_state.app_id = app_id_;
     update_state.state = UpdateService::UpdateState::State::kUpdateError;
     update_state.error_category = UpdateService::ErrorCategory::kService;
     update_state.error_code = -1;
-    HandleInstallResult(update_state);
+    observer_completion_info_ = HandleInstallResult(update_state);
   }
-
   update_service_ = nullptr;
+  CHECK(observer_completion_info_.has_value());
+  install_progress_observer_ipc_->OnComplete(observer_completion_info_.value());
 }
 
 void AppInstallControllerImpl::StateChange(
@@ -875,7 +863,7 @@ void AppInstallControllerImpl::StateChange(
     case UpdateService::UpdateState::State::kUpdated:
     case UpdateService::UpdateState::State::kNoUpdate:
     case UpdateService::UpdateState::State::kUpdateError:
-      HandleInstallResult(update_state);
+      observer_completion_info_ = HandleInstallResult(update_state);
       break;
 
     case UpdateService::UpdateState::State::kUnknown:
@@ -884,7 +872,7 @@ void AppInstallControllerImpl::StateChange(
   }
 }
 
-void AppInstallControllerImpl::HandleInstallResult(
+ObserverCompletionInfo AppInstallControllerImpl::HandleInstallResult(
     const UpdateService::UpdateState& update_state) {
   CompletionCodes completion_code = CompletionCodes::COMPLETION_CODE_ERROR;
   std::wstring completion_text;
@@ -913,10 +901,10 @@ void AppInstallControllerImpl::HandleInstallResult(
   ObserverCompletionInfo observer_info;
   observer_info.completion_code = completion_code;
   observer_info.completion_text = completion_text;
-  observer_info.help_url =
-      base::StringPrintf("%s?product=%s&error=%d", HELP_CENTER_URL,
-                         base::EscapeUrlEncodedData(app_id_, false).c_str(),
-                         update_state.error_code);
+  observer_info.help_url = base::StringPrintf(
+      "%s?product=%s&error=%d", HELP_CENTER_URL,
+      base::EscapeUrlEncodedData(update_state.app_id, false).c_str(),
+      update_state.error_code);
 
   AppCompletionInfo app_info;
   if (update_state.state != UpdateService::UpdateState::State::kNoUpdate) {
@@ -947,7 +935,7 @@ void AppInstallControllerImpl::HandleInstallResult(
   }
   observer_info.apps_info.push_back(app_info);
 
-  install_progress_observer_ipc_->OnComplete(observer_info);
+  return observer_info;
 }
 
 // Creates the install progress observer. The observer has thread affinity. It
@@ -1012,14 +1000,8 @@ DWORD AppInstallControllerImpl::GetUIThreadID() const {
 
 bool AppInstallControllerImpl::DoLaunchBrowser(const std::string& url) {
   DCHECK_EQ(GetUIThreadID(), GetCurrentThreadId());
-  Microsoft::WRL::ComPtr<IShellDispatch2> shell_dispatch;
-  base::win::ScopedVariant empty(L"");
-#undef ShellExecute
-  return GetShellDispatch(&shell_dispatch) &&
-         SUCCEEDED(shell_dispatch->ShellExecute(
-             base::win::ScopedBstr(base::SysUTF8ToWide(url).c_str()).Get(),
-             *empty.AsInput(), *empty.AsInput(), *empty.AsInput(),
-             *base::win::ScopedVariant(SW_SHOWNORMAL).AsInput()));
+
+  return SUCCEEDED(RunDeElevated(base::SysUTF8ToWide(url), {}));
 }
 
 bool AppInstallControllerImpl::DoRestartBrowser(

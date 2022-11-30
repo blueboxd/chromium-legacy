@@ -47,8 +47,7 @@ std::string SimulateGroupAssignment(
           study.name(), processed_study.total_probability(),
           processed_study.GetDefaultExperimentName(), entropy_value));
 
-  for (int i = 0; i < study.experiment_size(); ++i) {
-    const Study_Experiment& experiment = study.experiment(i);
+  for (const auto& experiment : study.experiment()) {
     // TODO(asvitkine): This needs to properly handle the case where a group was
     // forced via forcing_flag in the current state, so that it is not treated
     // as changed.
@@ -64,9 +63,9 @@ std::string SimulateGroupAssignment(
 // or NULL if it does not exist.
 const Study_Experiment* FindExperiment(const Study& study,
                                        const std::string& experiment_name) {
-  for (int i = 0; i < study.experiment_size(); ++i) {
-    if (study.experiment(i).name() == experiment_name)
-      return &study.experiment(i);
+  for (const auto& experiment : study.experiment()) {
+    if (experiment.name() == experiment_name)
+      return &experiment;
   }
   return nullptr;
 }
@@ -82,10 +81,10 @@ bool VariationParamsAreEqual(const Study& study,
   if (static_cast<int>(params.size()) != experiment.param_size())
     return false;
 
-  for (int i = 0; i < experiment.param_size(); ++i) {
+  for (const auto& param : experiment.param()) {
     std::map<std::string, std::string>::const_iterator it =
-        params.find(experiment.param(i).name());
-    if (it == params.end() || it->second != experiment.param(i).value())
+        params.find(param.name());
+    if (it == params.end() || it->second != param.value())
       return false;
   }
 
@@ -104,10 +103,8 @@ VariationsSeedSimulator::Result::~Result() {
 }
 
 VariationsSeedSimulator::VariationsSeedSimulator(
-    const base::FieldTrial::EntropyProvider& default_entropy_provider,
-    const base::FieldTrial::EntropyProvider& low_entropy_provider)
-    : default_entropy_provider_(default_entropy_provider),
-      low_entropy_provider_(low_entropy_provider) {}
+    const EntropyProviders& entropy_providers)
+    : entropy_providers_(entropy_providers) {}
 
 VariationsSeedSimulator::~VariationsSeedSimulator() {
 }
@@ -115,21 +112,22 @@ VariationsSeedSimulator::~VariationsSeedSimulator() {
 VariationsSeedSimulator::Result VariationsSeedSimulator::SimulateSeedStudies(
     const VariationsSeed& seed,
     const ClientFilterableState& client_state) {
-  std::vector<ProcessedStudy> filtered_studies;
-  VariationsLayers layers(seed, &low_entropy_provider_);
-  FilterAndValidateStudies(seed, client_state, layers, &filtered_studies);
+  VariationsLayers layers(seed, entropy_providers_);
+  std::vector<ProcessedStudy> filtered_studies =
+      FilterAndValidateStudies(seed, client_state, layers);
 
-  return ComputeDifferences(filtered_studies);
+  return ComputeDifferences(filtered_studies, layers);
 }
 
 VariationsSeedSimulator::Result VariationsSeedSimulator::ComputeDifferences(
-    const std::vector<ProcessedStudy>& processed_studies) {
+    const std::vector<ProcessedStudy>& processed_studies,
+    const VariationsLayers& layers) {
   std::map<std::string, std::string> current_state;
   GetCurrentTrialState(&current_state);
 
   Result result;
-  for (size_t i = 0; i < processed_studies.size(); ++i) {
-    const Study& study = *processed_studies[i].study();
+  for (const auto& processed_study : processed_studies) {
+    const Study& study = *processed_study.study();
     std::map<std::string, std::string>::const_iterator it =
         current_state.find(study.name());
 
@@ -148,11 +146,10 @@ VariationsSeedSimulator::Result VariationsSeedSimulator::ComputeDifferences(
     const std::string& selected_group = it->second;
     ChangeType change_type = NO_CHANGE;
     if (study.consistency() == Study_Consistency_PERMANENT) {
-      change_type = PermanentStudyGroupChanged(processed_studies[i],
-                                               selected_group);
+      change_type =
+          PermanentStudyGroupChanged(processed_study, selected_group, layers);
     } else if (study.consistency() == Study_Consistency_SESSION) {
-      change_type = SessionStudyGroupChanged(processed_studies[i],
-                                             selected_group);
+      change_type = SessionStudyGroupChanged(processed_study, selected_group);
     }
 
     switch (change_type) {
@@ -196,14 +193,13 @@ VariationsSeedSimulator::ConvertExperimentTypeToChangeType(
 VariationsSeedSimulator::ChangeType
 VariationsSeedSimulator::PermanentStudyGroupChanged(
     const ProcessedStudy& processed_study,
-    const std::string& selected_group) {
+    const std::string& selected_group,
+    const VariationsLayers& layers) {
   const Study& study = *processed_study.study();
   DCHECK_EQ(Study_Consistency_PERMANENT, study.consistency());
 
-  const base::FieldTrial::EntropyProvider& entropy_provider =
-      VariationsSeedProcessor::ShouldStudyUseLowEntropy(study)
-          ? low_entropy_provider_
-          : default_entropy_provider_;
+  const auto& entropy_provider =
+      processed_study.SelectEntropyProviderForStudy(entropy_providers_, layers);
 
   const std::string simulated_group =
       SimulateGroupAssignment(entropy_provider, processed_study);

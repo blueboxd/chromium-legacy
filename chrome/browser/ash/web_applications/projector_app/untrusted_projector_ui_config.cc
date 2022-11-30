@@ -44,6 +44,12 @@ void ChromeUntrustedProjectorUIDelegate::PopulateLoadTimeData(
           base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI));
   source->AddBoolean("isReportToCrash2Enabled",
                      ash::features::IsProjectorWebReportCrashEnabled());
+  source->AddBoolean(
+      "isUseApiKeyForTranslationEnabled",
+      ash::features::IsProjectorUseApiKeyForTranslationEnabled());
+  source->AddBoolean(
+      "isViewerUseSecondaryAccountEnabled",
+      ash::features::IsProjectorViewerUseSecondaryAccountEnabled());
   source->AddString("appLocale", g_browser_process->GetApplicationLocale());
 }
 

@@ -26,17 +26,16 @@ public class TabSelectionEditorActionProperties {
     public static final ReadableIntPropertyKey ICON_POSITION = new ReadableIntPropertyKey();
 
     public static final WritableIntPropertyKey TITLE_RESOURCE_ID = new WritableIntPropertyKey();
+    public static final WritableBooleanPropertyKey TITLE_IS_PLURAL =
+            new WritableBooleanPropertyKey();
     public static final WritableObjectPropertyKey<Integer> CONTENT_DESCRIPTION_RESOURCE_ID =
             new WritableObjectPropertyKey();
+    public static final WritableObjectPropertyKey<String> TITLE = new WritableObjectPropertyKey();
+    public static final WritableObjectPropertyKey<String> CONTENT_DESCRIPTION =
+            new WritableObjectPropertyKey<>();
     public static final WritableObjectPropertyKey<Drawable> ICON =
             new WritableObjectPropertyKey<>();
-
-    /**
-     * Force enabled to update on each selection state change. Otherwise it gets set to enabled by
-     * by something in the Selection Layout if more than 1 tab is selected.
-     */
-    public static final WritableObjectPropertyKey<Boolean> ENABLED =
-            new WritableObjectPropertyKey<>(/*skipEquality=*/true);
+    public static final WritableBooleanPropertyKey ENABLED = new WritableBooleanPropertyKey();
     public static final WritableIntPropertyKey ITEM_COUNT = new WritableIntPropertyKey();
     public static final WritableObjectPropertyKey<ColorStateList> TEXT_TINT =
             new WritableObjectPropertyKey<>();
@@ -59,8 +58,17 @@ public class TabSelectionEditorActionProperties {
     public static final WritableObjectPropertyKey<Callback<List<Integer>>>
             ON_SELECTION_STATE_CHANGE = new WritableObjectPropertyKey<>();
 
-    public static final PropertyKey[] ALL_KEYS = {MENU_ITEM_ID, SHOW_MODE, BUTTON_TYPE,
-            ICON_POSITION, TITLE_RESOURCE_ID, CONTENT_DESCRIPTION_RESOURCE_ID, ICON, ENABLED,
-            ITEM_COUNT, TEXT_TINT, ICON_TINT, SKIP_ICON_TINT, ON_CLICK_LISTENER,
+    /**
+     * Keys for the {@link TabSelectionEditorAction}.
+     */
+    public static final PropertyKey[] ACTION_KEYS = {MENU_ITEM_ID, SHOW_MODE, BUTTON_TYPE,
+            ICON_POSITION, TITLE_RESOURCE_ID, TITLE_IS_PLURAL, CONTENT_DESCRIPTION_RESOURCE_ID,
+            ICON, ENABLED, ITEM_COUNT, TEXT_TINT, ICON_TINT, SKIP_ICON_TINT, ON_CLICK_LISTENER,
             ON_SELECTION_STATE_CHANGE};
+
+    /**
+     * Keys for the {@link TabSelectionEditorMenuItem}.
+     */
+    public static final PropertyKey[] MENU_ITEM_KEYS = {
+            MENU_ITEM_ID, TITLE, CONTENT_DESCRIPTION, ICON, ENABLED, ITEM_COUNT};
 }

@@ -265,7 +265,7 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
           << " should have been '" << test.expected << "': was '"
           << result.referrer.Utf8() << "'.";
     } else {
-      EXPECT_TRUE(result.referrer.IsEmpty())
+      EXPECT_TRUE(result.referrer.empty())
           << "'" << test.referrer << "' to '" << test.destination
           << "' should have been empty: was '" << result.referrer.Utf8()
           << "'.";
@@ -414,6 +414,26 @@ TEST(SecurityPolicyTest, TrustworthySafelist) {
       EXPECT_TRUE(origin1->IsPotentiallyTrustworthy());
       EXPECT_TRUE(origin2->IsPotentiallyTrustworthy());
     }
+  }
+}
+
+TEST(SecurityPolicyTest, ReferrerPolicyToAndFromString) {
+  const char* policies[] = {"no-referrer",
+                            "unsafe-url",
+                            "origin",
+                            "origin-when-cross-origin",
+                            "same-origin",
+                            "strict-origin",
+                            "strict-origin-when-cross-origin",
+                            "no-referrer-when-downgrade"};
+
+  for (const char* policy : policies) {
+    network::mojom::ReferrerPolicy result =
+        network::mojom::ReferrerPolicy::kDefault;
+    EXPECT_TRUE(SecurityPolicy::ReferrerPolicyFromString(
+        policy, kDoNotSupportReferrerPolicyLegacyKeywords, &result));
+    String string_result = SecurityPolicy::ReferrerPolicyAsString(result);
+    EXPECT_EQ(string_result, policy);
   }
 }
 

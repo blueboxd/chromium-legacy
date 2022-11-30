@@ -82,6 +82,10 @@ static const blink::WebStyleSheetKey GenerateStyleSheetKey() {
 
 namespace blink {
 
+const DocumentToken& WebDocument::Token() const {
+  return ConstUnwrap<Document>()->Token();
+}
+
 WebURL WebDocument::Url() const {
   return ConstUnwrap<Document>()->Url();
 }
@@ -203,7 +207,7 @@ WebVector<WebFormElement> WebDocument::Forms() const {
       const_cast<Document*>(ConstUnwrap<Document>())->forms();
 
   Vector<WebFormElement> form_elements;
-  form_elements.ReserveCapacity(forms->length());
+  form_elements.reserve(forms->length());
   for (Element* element : *forms) {
     form_elements.emplace_back(blink::To<HTMLFormElement>(element));
   }

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,6 +59,9 @@ class MODULES_EXPORT TransferredMediaStreamTrack : public MediaStreamTrack {
                                  const MediaTrackConstraints*) override;
 
   bool HasImplementation() const { return !!track_; }
+  // TODO(1288839): access to track_ is a baby-step toward removing
+  // TransferredMediaStreamTrack.
+  MediaStreamTrack* track() const { return track_; }
   void SetImplementation(MediaStreamTrack* track);
   void SetComponentImplementation(MediaStreamComponent* component);
 

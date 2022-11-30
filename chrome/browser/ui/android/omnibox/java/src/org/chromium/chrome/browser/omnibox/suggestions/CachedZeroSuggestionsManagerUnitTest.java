@@ -4,8 +4,13 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions;
 
+import static org.chromium.components.omnibox.GroupConfigTestSupport.SECTION_1_EXPANDED_NO_HEADER;
+import static org.chromium.components.omnibox.GroupConfigTestSupport.SECTION_2_COLLAPSED_WITH_HEADER;
+import static org.chromium.components.omnibox.GroupConfigTestSupport.SECTION_2_EXPANDED_WITH_HEADER;
+import static org.chromium.components.omnibox.GroupConfigTestSupport.SECTION_3_EXPANDED_WITH_HEADER;
+import static org.chromium.components.omnibox.GroupConfigTestSupport.SECTION_INVALID;
+
 import android.util.ArraySet;
-import android.util.SparseArray;
 
 import androidx.test.filters.SmallTest;
 
@@ -22,7 +27,7 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteMatchBuilder;
 import org.chromium.components.omnibox.AutocompleteResult;
-import org.chromium.components.omnibox.AutocompleteResult.GroupDetails;
+import org.chromium.components.omnibox.GroupsProto.GroupsInfo;
 import org.chromium.url.JUnitTestGURLs;
 import org.chromium.url.ShadowGURL;
 
@@ -42,17 +47,8 @@ public class CachedZeroSuggestionsManagerUnitTest {
      * they're not. Note that order is just as relevant as the content for caching.
      */
     void assertAutocompleteResultEquals(AutocompleteResult data1, AutocompleteResult data2) {
-        final List<AutocompleteMatch> list1 = data1.getSuggestionsList();
-        final List<AutocompleteMatch> list2 = data2.getSuggestionsList();
-        Assert.assertEquals(list1, list2);
-
-        final SparseArray<GroupDetails> groupsDetails1 = data1.getGroupsDetails();
-        final SparseArray<GroupDetails> groupsDetails2 = data2.getGroupsDetails();
-        Assert.assertEquals(groupsDetails1.size(), groupsDetails2.size());
-        for (int index = 0; index < groupsDetails1.size(); index++) {
-            Assert.assertEquals(groupsDetails1.keyAt(index), groupsDetails2.keyAt(index));
-            Assert.assertEquals(groupsDetails1.valueAt(index), groupsDetails2.valueAt(index));
-        }
+        Assert.assertEquals(data1.getSuggestionsList(), data2.getSuggestionsList());
+        Assert.assertEquals(data1.getGroupsInfo(), data2.getGroupsInfo());
     }
 
     /**
@@ -152,11 +148,13 @@ public class CachedZeroSuggestionsManagerUnitTest {
 
     @Test
     @SmallTest
-    public void groupsDetails_cacheAllSaneGroupDetails() {
-        SparseArray<GroupDetails> groupsDetails = new SparseArray<>();
-        groupsDetails.put(10, new GroupDetails("Header For Group 10", false));
-        groupsDetails.put(20, new GroupDetails("Header For Group 20", false));
-        groupsDetails.put(30, new GroupDetails("Header For Group 30", false));
+    public void groupsDetails_cacheAllSaneGroupConfig() {
+        var groupsDetails = GroupsInfo.newBuilder()
+                                    .putGroupConfigs(10, SECTION_1_EXPANDED_NO_HEADER)
+                                    .putGroupConfigs(20, SECTION_2_EXPANDED_WITH_HEADER)
+                                    .putGroupConfigs(30, SECTION_3_EXPANDED_WITH_HEADER)
+                                    .build();
+
         AutocompleteResult dataToCache = AutocompleteResult.fromCache(null, groupsDetails);
         CachedZeroSuggestionsManager.saveToCache(dataToCache);
         AutocompleteResult dataFromCache = CachedZeroSuggestionsManager.readFromCache();
@@ -165,35 +163,43 @@ public class CachedZeroSuggestionsManagerUnitTest {
 
     @Test
     @SmallTest
-    public void groupsDetails_cachePartiallySaneGroupDetailsDropsInvalidEntries() {
-        SparseArray<GroupDetails> groupsDetails = new SparseArray<>();
-        groupsDetails.put(10, new GroupDetails("Header For Group 10", false));
-        groupsDetails.put(
-                AutocompleteMatch.INVALID_GROUP, new GroupDetails("Header For Group 20", true));
-        groupsDetails.put(30, new GroupDetails("", false));
-
-        AutocompleteResult dataToCache = AutocompleteResult.fromCache(null, groupsDetails);
-        CachedZeroSuggestionsManager.saveToCache(dataToCache);
-        AutocompleteResult dataFromCache = CachedZeroSuggestionsManager.readFromCache();
-
-        SparseArray<GroupDetails> validGroupsDetails = new SparseArray<>();
-        validGroupsDetails.put(10, new GroupDetails("Header For Group 10", false));
-        assertAutocompleteResultEquals(
-                dataFromCache, AutocompleteResult.fromCache(null, validGroupsDetails));
-    }
-
-    @Test
-    @SmallTest
     public void groupsDetails_restoreInvalidGroupsDetailsFromCache() {
-        SparseArray<GroupDetails> groupsDetails = new SparseArray<>();
-        groupsDetails.put(
-                AutocompleteMatch.INVALID_GROUP, new GroupDetails("This group is invalid", true));
-        groupsDetails.put(20, new GroupDetails("", false));
-        groupsDetails.put(30, new GroupDetails("", false));
+        final SharedPreferencesManager manager = SharedPreferencesManager.getInstance();
+        var groupsDetails = GroupsInfo.newBuilder()
+                                    .putGroupConfigs(20, SECTION_2_EXPANDED_WITH_HEADER)
+                                    .putGroupConfigs(30, SECTION_1_EXPANDED_NO_HEADER)
+                                    .build();
 
+        // Write to disk.
         AutocompleteResult dataToCache = AutocompleteResult.fromCache(null, groupsDetails);
         CachedZeroSuggestionsManager.saveToCache(dataToCache);
+
+        // Check that it works the first time (group details are correct).
+        // Only the INVALID_GROUP should be removed.
         AutocompleteResult dataFromCache = CachedZeroSuggestionsManager.readFromCache();
+        assertAutocompleteResultEquals(dataToCache, dataFromCache);
+
+        // Truncate the data.
+        var data = manager.readString(
+                ChromePreferenceKeys.OMNIBOX_CACHED_ZERO_SUGGEST_GROUPS_INFO, null);
+        data = data.substring(0, data.length() - 10);
+        manager.writeString(ChromePreferenceKeys.OMNIBOX_CACHED_ZERO_SUGGEST_GROUPS_INFO, data);
+        dataFromCache = CachedZeroSuggestionsManager.readFromCache();
+        assertAutocompleteResultEquals(dataFromCache, AutocompleteResult.EMPTY_RESULT);
+        Assert.assertNull(manager.readString(
+                ChromePreferenceKeys.OMNIBOX_CACHED_ZERO_SUGGEST_GROUPS_INFO, null));
+
+        // Corrupt the data.
+        manager.writeString(
+                ChromePreferenceKeys.OMNIBOX_CACHED_ZERO_SUGGEST_GROUPS_INFO, "abcdefgh");
+        dataFromCache = CachedZeroSuggestionsManager.readFromCache();
+        assertAutocompleteResultEquals(dataFromCache, AutocompleteResult.EMPTY_RESULT);
+        Assert.assertNull(manager.readString(
+                ChromePreferenceKeys.OMNIBOX_CACHED_ZERO_SUGGEST_GROUPS_INFO, null));
+
+        // Remove the data.
+        manager.removeKey(ChromePreferenceKeys.OMNIBOX_CACHED_ZERO_SUGGEST_GROUPS_INFO);
+        dataFromCache = CachedZeroSuggestionsManager.readFromCache();
         assertAutocompleteResultEquals(dataFromCache, AutocompleteResult.EMPTY_RESULT);
     }
 
@@ -202,8 +208,9 @@ public class CachedZeroSuggestionsManagerUnitTest {
     public void dropSuggestions_suggestionsWithValidGroupsAssociation() {
         List<AutocompleteMatch> list = buildDummySuggestionsList(2, false);
         list.add(createSuggestionBuilder(33).setGroupId(1).build());
-        SparseArray<GroupDetails> groupsDetails = new SparseArray<>();
-        groupsDetails.put(1, new GroupDetails("Valid Header", true));
+
+        var groupsDetails =
+                GroupsInfo.newBuilder().putGroupConfigs(1, SECTION_2_COLLAPSED_WITH_HEADER).build();
 
         AutocompleteResult dataToCache = AutocompleteResult.fromCache(list, groupsDetails);
         CachedZeroSuggestionsManager.saveToCache(dataToCache);
@@ -262,59 +269,18 @@ public class CachedZeroSuggestionsManagerUnitTest {
 
     @Test
     @SmallTest
-    public void malformedCache_dropsMissingGroupDetails() {
-        // Clear cache explicitly, otherwise this test will be flaky until the suite is re-executed.
-        ContextUtils.getAppSharedPreferences().edit().clear().apply();
-
-        final SharedPreferencesManager manager = SharedPreferencesManager.getInstance();
-
-        // Write 3 wrong group groupsDetails to the cache
-        SparseArray<GroupDetails> groupsDetails = new SparseArray<>();
-        groupsDetails.put(12, new GroupDetails("Valid group", true));
-        groupsDetails.put(34, new GroupDetails("", false));
-        groupsDetails.put(AutocompleteMatch.INVALID_GROUP, new GroupDetails("Invalid group", true));
-        AutocompleteResult invalidDataToCache = AutocompleteResult.fromCache(null, groupsDetails);
-        CachedZeroSuggestionsManager.saveToCache(invalidDataToCache);
-
-        // Report that we actually have 4 items in the cache.
-        manager.writeInt(ChromePreferenceKeys.KEY_ZERO_SUGGEST_HEADER_LIST_SIZE, 4);
-
-        // Read raw suggestions from the cache. Note that the sparse array will only have 3 elements
-        // because we put one item with INVALID_GROUP, and additional INVALID_GROUP will be deduced
-        // from missing data with null title and default expanded state set to true.
-        SparseArray<GroupDetails> rawGroupsDetails =
-                CachedZeroSuggestionsManager.readCachedGroupsDetails(manager);
-        Assert.assertEquals(3, rawGroupsDetails.size());
-        Assert.assertEquals(rawGroupsDetails.get(12).title, "Valid group");
-        Assert.assertEquals(rawGroupsDetails.get(12).collapsedByDefault, true);
-        Assert.assertEquals(rawGroupsDetails.get(34).title, "");
-        Assert.assertEquals(rawGroupsDetails.get(34).collapsedByDefault, false);
-        Assert.assertEquals(rawGroupsDetails.get(AutocompleteMatch.INVALID_GROUP).title, null);
-        Assert.assertEquals(
-                rawGroupsDetails.get(AutocompleteMatch.INVALID_GROUP).collapsedByDefault, false);
-
-        // Cache recovery however should be smart here and remove items that make no sense.
-        SparseArray<GroupDetails> wantGroupsDetails = new SparseArray<>();
-        wantGroupsDetails.put(12, new GroupDetails("Valid group", true));
-        AutocompleteResult wantDataFromCache =
-                AutocompleteResult.fromCache(null, wantGroupsDetails);
-        AutocompleteResult dataFromCache = CachedZeroSuggestionsManager.readFromCache();
-
-        assertAutocompleteResultEquals(dataFromCache, wantDataFromCache);
-    }
-
-    @Test
-    @SmallTest
     public void removeInvalidSuggestions_dropsInvalidSuggestionsAndGroupsDetails() {
         // Write 3 wrong group groupsDetails to the cache
-        SparseArray<GroupDetails> groupsDetailsExpected = new SparseArray<>();
-        groupsDetailsExpected.put(12, new GroupDetails("Valid group", true));
-
-        SparseArray<GroupDetails> groupsDetailsWithInvalidItems = new SparseArray<>();
-        groupsDetailsWithInvalidItems.put(12, new GroupDetails("Valid group", true));
-        groupsDetailsWithInvalidItems.put(34, new GroupDetails("", false));
-        groupsDetailsWithInvalidItems.put(
-                AutocompleteMatch.INVALID_GROUP, new GroupDetails("Invalid group", true));
+        var groupsDetailsExpected =
+                GroupsInfo.newBuilder()
+                        .putGroupConfigs(12, SECTION_2_COLLAPSED_WITH_HEADER)
+                        .putGroupConfigs(AutocompleteMatch.INVALID_GROUP, SECTION_INVALID)
+                        .build();
+        var groupsDetailsWithInvalidItems =
+                GroupsInfo.newBuilder()
+                        .putGroupConfigs(12, SECTION_2_COLLAPSED_WITH_HEADER)
+                        .putGroupConfigs(AutocompleteMatch.INVALID_GROUP, SECTION_INVALID)
+                        .build();
 
         List<AutocompleteMatch> listExpected = buildDummySuggestionsList(2, false);
         listExpected.add(createSuggestionBuilder(72).setGroupId(12).build());
@@ -333,7 +299,8 @@ public class CachedZeroSuggestionsManagerUnitTest {
                 AutocompleteResult.fromCache(listExpected, groupsDetailsExpected);
 
         CachedZeroSuggestionsManager.removeInvalidSuggestionsAndGroupsDetails(
-                dataWithInvalidItems.getSuggestionsList(), dataWithInvalidItems.getGroupsDetails());
+                dataWithInvalidItems.getSuggestionsList(),
+                dataWithInvalidItems.getGroupsInfo().getGroupConfigsMap());
         assertAutocompleteResultEquals(dataWithInvalidItems, dataExpected);
     }
 

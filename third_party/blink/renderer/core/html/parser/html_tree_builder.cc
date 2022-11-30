@@ -137,11 +137,6 @@ class HTMLTreeBuilder::CharacterTokenBuffer {
     DCHECK(!IsEmpty());
   }
 
-  explicit CharacterTokenBuffer(const String& characters)
-      : characters_(characters.Impl()), current_(0), end_(characters.length()) {
-    DCHECK(!IsEmpty());
-  }
-
   CharacterTokenBuffer(const CharacterTokenBuffer&) = delete;
   CharacterTokenBuffer& operator=(const CharacterTokenBuffer&) = delete;
 
@@ -238,12 +233,12 @@ HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser,
                                  const HTMLParserOptions& options,
                                  bool include_shadow_roots,
                                  HTMLTokenProducer* token_producer)
-    : frameset_ok_(true),
-      tree_(parser->ReentryPermit(), document, parser_content_policy),
+    : tree_(parser->ReentryPermit(), document, parser_content_policy),
       insertion_mode_(kInitialMode),
       original_insertion_mode_(kInitialMode),
       should_skip_leading_newline_(false),
       include_shadow_roots_(include_shadow_roots),
+      frameset_ok_(true),
       parser_(parser),
       script_to_process_start_position_(UninitializedPositionValue1()),
       options_(options),
@@ -366,7 +361,7 @@ void HTMLTreeBuilder::ProcessToken(AtomicHTMLToken* token) {
   // Any non-character token needs to cause us to flush any pending text
   // immediately. NOTE: flush() can cause any queued tasks to execute, possibly
   // re-entering the parser.
-  tree_.Flush(kFlushAlways);
+  tree_.Flush();
   should_skip_leading_newline_ = false;
 
   switch (token->GetType()) {
@@ -977,7 +972,7 @@ void HTMLTreeBuilder::ProcessTemplateStartTag(AtomicHTMLToken* token) {
 bool HTMLTreeBuilder::ProcessTemplateEndTag(AtomicHTMLToken* token) {
   DCHECK_EQ(token->GetName(), html_names::kTemplateTag.LocalName());
   if (!tree_.OpenElements()->HasTemplateInHTMLScope()) {
-    DCHECK(template_insertion_modes_.IsEmpty() ||
+    DCHECK(template_insertion_modes_.empty() ||
            (template_insertion_modes_.size() == 1 &&
             IsA<HTMLTemplateElement>(fragment_context_.ContextElement())));
     ParseError(token);
@@ -2454,7 +2449,7 @@ ReprocessBuffer:
     }
     case kInHeadMode: {
       StringView leading_whitespace = buffer.TakeLeadingWhitespace();
-      if (!leading_whitespace.IsEmpty())
+      if (!leading_whitespace.empty())
         tree_.InsertTextNode(leading_whitespace, kAllWhitespace);
       if (buffer.IsEmpty())
         return;
@@ -2463,7 +2458,7 @@ ReprocessBuffer:
     }
     case kAfterHeadMode: {
       StringView leading_whitespace = buffer.TakeLeadingWhitespace();
-      if (!leading_whitespace.IsEmpty())
+      if (!leading_whitespace.empty())
         tree_.InsertTextNode(leading_whitespace, kAllWhitespace);
       if (buffer.IsEmpty())
         return;
@@ -2480,7 +2475,7 @@ ReprocessBuffer:
     case kInTableMode:
     case kInTableBodyMode:
     case kInRowMode: {
-      DCHECK(pending_table_characters_.IsEmpty());
+      DCHECK(pending_table_characters_.empty());
       if (tree_.CurrentStackItem()->IsElementNode() &&
           (tree_.CurrentStackItem()->MatchesHTMLTag(HTMLTag::kTable) ||
            tree_.CurrentStackItem()->MatchesHTMLTag(HTMLTag::kTbody) ||
@@ -2503,7 +2498,7 @@ ReprocessBuffer:
     }
     case kInColumnGroupMode: {
       StringView leading_whitespace = buffer.TakeLeadingWhitespace();
-      if (!leading_whitespace.IsEmpty())
+      if (!leading_whitespace.empty())
         tree_.InsertTextNode(leading_whitespace, kAllWhitespace);
       if (buffer.IsEmpty())
         return;
@@ -2520,7 +2515,7 @@ ReprocessBuffer:
     case kAfterAfterBodyMode: {
       // FIXME: parse error
       StringView leading_whitespace = buffer.TakeLeadingWhitespace();
-      if (!leading_whitespace.IsEmpty()) {
+      if (!leading_whitespace.empty()) {
         InsertionMode mode = GetInsertionMode();
         SetInsertionMode(kInBodyMode);
         tree_.InsertTextNode(leading_whitespace, kAllWhitespace);
@@ -2537,7 +2532,7 @@ ReprocessBuffer:
     }
     case kInHeadNoscriptMode: {
       StringView leading_whitespace = buffer.TakeLeadingWhitespace();
-      if (!leading_whitespace.IsEmpty())
+      if (!leading_whitespace.empty())
         tree_.InsertTextNode(leading_whitespace, kAllWhitespace);
       if (buffer.IsEmpty())
         return;
@@ -2547,7 +2542,7 @@ ReprocessBuffer:
     case kInFramesetMode:
     case kAfterFramesetMode: {
       String leading_whitespace = buffer.TakeRemainingWhitespace();
-      if (!leading_whitespace.IsEmpty())
+      if (!leading_whitespace.empty())
         tree_.InsertTextNode(leading_whitespace, kAllWhitespace);
       // FIXME: We should generate a parse error if we skipped over any
       // non-whitespace characters.
@@ -2560,7 +2555,7 @@ ReprocessBuffer:
     }
     case kAfterAfterFramesetMode: {
       String leading_whitespace = buffer.TakeRemainingWhitespace();
-      if (!leading_whitespace.IsEmpty()) {
+      if (!leading_whitespace.empty()) {
         tree_.ReconstructTheActiveFormattingElements();
         tree_.InsertTextNode(leading_whitespace, kAllWhitespace);
       }
@@ -2604,7 +2599,7 @@ void HTMLTreeBuilder::ProcessEndOfFile(AtomicHTMLToken* token) {
     case kInRowMode:
       // Emit parse error based on what elements are still open.
       DVLOG(1) << "Not implemented.";
-      if (!template_insertion_modes_.IsEmpty() &&
+      if (!template_insertion_modes_.empty() &&
           ProcessEndOfFileForInTemplateContents(token))
         return;
       break;
@@ -2634,7 +2629,7 @@ void HTMLTreeBuilder::ProcessEndOfFile(AtomicHTMLToken* token) {
     case kInSelectMode:
       if (tree_.CurrentNode() != tree_.OpenElements()->RootNode())
         ParseError(token);
-      if (!template_insertion_modes_.IsEmpty() &&
+      if (!template_insertion_modes_.empty() &&
           ProcessEndOfFileForInTemplateContents(token))
         return;
       break;
@@ -2830,7 +2825,7 @@ void HTMLTreeBuilder::ProcessTokenInForeignContent(AtomicHTMLToken* token) {
     return;
   }
 
-  tree_.Flush(kFlushAlways);
+  tree_.Flush();
   HTMLStackItem* adjusted_current_node = AdjustedCurrentStackItem();
 
   switch (token->GetType()) {
@@ -2966,7 +2961,7 @@ void HTMLTreeBuilder::Finished() {
   if (IsParsingFragment())
     return;
 
-  DCHECK(template_insertion_modes_.IsEmpty());
+  DCHECK(template_insertion_modes_.empty());
 #if DCHECK_IS_ON()
   DCHECK(is_attached_);
 #endif

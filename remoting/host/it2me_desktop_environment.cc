@@ -14,6 +14,7 @@
 #include "remoting/host/host_window.h"
 #include "remoting/host/host_window_proxy.h"
 #include "remoting/host/input_monitor/local_input_monitor.h"
+#include "remoting/host/session_terminator.h"
 
 #if BUILDFLAG(IS_POSIX)
 #include <sys/types.h>
@@ -93,12 +94,17 @@ bool It2MeDesktopEnvironment::InitializeCurtainMode() {
 #if BUILDFLAG(IS_CHROMEOS)
   if (base::FeatureList::IsEnabled(features::kEnableCrdAdminRemoteAccess)) {
     if (desktop_environment_options().enable_curtaining()) {
-      curtain_mode_ = std::make_unique<CurtainModeChromeOs>();
+      curtain_mode_ = std::make_unique<CurtainModeChromeOs>(ui_task_runner());
       if (!curtain_mode_->Activate()) {
         LOG(ERROR) << "Failed to activate the curtain mode.";
         curtain_mode_ = nullptr;
         return false;
       }
+
+      // Log out the current user when a curtained off session is disconnected,
+      // to prevent a local passerby from gaining control of the logged-in
+      // session when they unplug the ethernet cable.
+      session_terminator_ = SessionTerminator::Create(ui_task_runner());
       return true;
     }
   }

@@ -512,17 +512,19 @@
             search-label="$i18n{siteSettingsAllSitesSearch}"
             search-term="{{searchFilter_}}">
           <div id="notificationRadioGroup" class="radio-group">
-            <div class="secondary">
-              $i18n{siteSettingsNotificationsDescription}
-            </div>
-            <template is="dom-if" if="[[safetyCheckPermissionsEnabled_]]">
+            <template is="dom-if" if="[[!showNotificationPermissionsReview_]]">
+              <div class="secondary">
+                $i18n{siteSettingsNotificationsDescription}
+              </div>
+            </template>
+            <template is="dom-if" if="[[showNotificationPermissionsReview_]]">
               <review-notification-permissions>
               </review-notification-permissions>
             </template>
             <h2>$i18n{siteSettingsDefaultBehavior}</h2>
             <div id="notificationSubHeading"
               class="secondary radio-sub-heading">
-              $i18n{siteSettingsDefaultBehaviorDescription}
+              [[notificationsDefaultBehaviorLabel_]]
             </div>
             <settings-radio-group
                 pref="{{prefs.generated.notification}}"
@@ -964,24 +966,25 @@
           </category-setting-exceptions>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/content/windowPlacement" no-search>
-        <settings-subpage page-title="$i18n{siteSettingsWindowPlacement}"
+      <template is="dom-if" route-path="/content/windowManagement" no-search>
+        <settings-subpage page-title="$i18n{siteSettingsWindowManagement}"
             search-label="$i18n{siteSettingsAllSitesSearch}"
             search-term="{{searchFilter_}}">
           <div class="content-settings-header secondary">
-            $i18n{siteSettingsWindowPlacementDescription}
+            $i18n{siteSettingsWindowManagementDescription}
           </div>
           <settings-category-default-radio-group
-              category="[[contentSettingsTypesEnum_.WINDOW_PLACEMENT]]"
-              allow-option-label="$i18n{siteSettingsWindowPlacementAsk}"
-              allow-option-icon="settings:window-placement"
-              block-option-label="$i18n{siteSettingsWindowPlacementBlocked}"
-              block-option-icon="settings:window-placement-off">
+              category="[[contentSettingsTypesEnum_.WINDOW_MANAGEMENT]]"
+              allow-option-label="$i18n{siteSettingsWindowManagementAsk}"
+              allow-option-icon="settings:window-management"
+              block-option-label="$i18n{siteSettingsWindowManagementBlocked}"
+              block-option-icon="settings:window-management-off">
           </settings-category-default-radio-group>
           <category-setting-exceptions
-              category="[[contentSettingsTypesEnum_.WINDOW_PLACEMENT]]"
-              allow-header="$i18n{siteSettingsWindowPlacementAskExceptions}"
-              block-header="$i18n{siteSettingsWindowPlacementBlockedExceptions}"
+              category="[[contentSettingsTypesEnum_.WINDOW_MANAGEMENT]]"
+              allow-header="$i18n{siteSettingsWindowManagementAskExceptions}"
+              block-header=
+                  "$i18n{siteSettingsWindowManagementBlockedExceptions}"
               search-filter="[[searchFilter_]]">
           </category-setting-exceptions>
         </settings-subpage>

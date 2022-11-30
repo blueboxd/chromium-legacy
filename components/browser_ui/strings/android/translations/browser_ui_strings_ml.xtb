@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ml">
+<translation id="1005794457625275818"><ph name="FPS_MEMBER" /> ഉൾപ്പെടെ, <ph name="FPS_OWNER" /> ഗ്രൂപ്പിലെ <ph name="FPS_MEMBERS_COUNT" /> സെെറ്റുകൾക്ക് കുക്കികൾ അനുവദനീയമാണ്</translation>
 <translation id="1006017844123154345">ഓൺലൈനായി തുറക്കുക</translation>
 <translation id="1044891598689252897">സൈറ്റുകൾ സാധാരണ രീതിയിൽ പ്രവർത്തിക്കും</translation>
 <translation id="1124090076051167250">ഇത് നിങ്ങളുടെ ഹോം സ്ക്രീനിൽ സൈറ്റുകളോ ആപ്പുകളോ സംഭരിച്ച <ph name="DATASIZE" /> ഡാറ്റയും കുക്കികളും മായ്‌ക്കും.</translation>
@@ -21,6 +22,7 @@
 <translation id="1426410128494586442">അതെ</translation>
 <translation id="1446450296470737166">MIDI ഉപകരണങ്ങളുടെ പൂർണ്ണ നിയന്ത്രണം അനുവദിക്കുക</translation>
 <translation id="1620510694547887537">ക്യാമറ</translation>
+<translation id="1633720957382884102">അനുബന്ധ സെെറ്റുകൾ</translation>
 <translation id="1644574205037202324">ചരിത്രം</translation>
 <translation id="1647582022260550163">അനുമതികൾ റീസെറ്റ് ചെയ്യണമെന്നും കുക്കികളും സൈറ്റ് ഡാറ്റയും മായ്ക്കണമെന്നും നിങ്ങൾക്ക് തീർച്ചയാണോ?</translation>
 <translation id="1660204651932907780">ശബ്‌ദം പ്ലേ ചെയ്യാൻ സൈറ്റുകളെ അനുവദിക്കുക (ശുപാർശ ചെയ്യുന്നു)</translation>
@@ -115,6 +117,7 @@
 <translation id="3333961966071413176">എല്ലാ കോൺടാക്റ്റുകളും</translation>
 <translation id="3362437373201486687">Bluetooth ഉപകരണങ്ങൾക്കായി സ്‌കാൻ ചെയ്യുന്നു</translation>
 <translation id="3386292677130313581">നിങ്ങളുടെ ലൊക്കേഷൻ അറിയാൻ സൈറ്റുകളെ അനുവദിക്കുന്നതിന് മുമ്പ് ചോദിക്കുക (ശുപാർശചെയ്‌തിരിക്കുന്നു)</translation>
+<translation id="3521663503435878242"><ph name="DOMAIN" /> എന്നതിന് കീഴിലുള്ള സൈറ്റുകൾ</translation>
 <translation id="3538390592868664640">നിങ്ങളുടെ ചുറ്റുപാടുകളുടെ 3D മാപ്പ് സൃഷ്ടിക്കുന്നതിൽ നിന്നോ ക്യാമറയുടെ സ്ഥാനം ട്രാക്ക് ചെയ്യുന്നതിൽ നിന്നോ സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="3551268116566418498">അദൃശ്യ മോഡ് വിടണോ?</translation>
 <translation id="3586500876634962664">ക്യാമറ, മൈക്രോഫോൺ ഉപയോഗം</translation>
@@ -260,6 +263,7 @@
 <translation id="6554732001434021288">അവസാനം സന്ദർശിച്ചത് <ph name="NUM_DAYS" /> ദിവസം മുമ്പായിരുന്നു</translation>
 <translation id="6561560012278703671">നിശബ്ദമായ സന്ദേശമയയ്ക്കൽ ഉപയോഗിക്കുക (നിങ്ങളെ തടസ്സപ്പെടുത്തുന്നതിൽ നിന്ന് അറിയിപ്പ് നിർദ്ദേശങ്ങളെ ബ്ലോക്ക് ചെയ്യുന്നു)</translation>
 <translation id="6593061639179217415">ഡെസ്‌ക്‌ടോപ്പ് സൈറ്റ്</translation>
+<translation id="6608211702542341247">ഈ സൈറ്റ് <ph name="FPS_OWNER" /> എന്നതിന്റെ സൈറ്റുകളുടെ ഗ്രൂപ്പിലുണ്ട്, അതിന് ഗ്രൂപ്പിലെ നിങ്ങളുടെ ആക്റ്റിവിറ്റി കാണാം</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">പരിരക്ഷിത ഉള്ളടക്കം</translation>
 <translation id="662080504995468778">തുടരുക</translation>
@@ -348,7 +352,6 @@
 <translation id="8380167699614421159">ഈ സൈറ്റ്, അനാവശ്യമോ തെറ്റിദ്ധരിപ്പിക്കുന്നതോ ആയ പരസ്യങ്ങള്‍ കാണിക്കുന്നു</translation>
 <translation id="8394832520002899662">സൈറ്റിലേക്ക് മടങ്ങാൻ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="8409345997656833551">ലളിതമാക്കിയ കാഴ്ചയിൽ ഒരു ലേഖനം കാണിക്കാൻ കഴിയുമ്പോൾ അറിയിപ്പ് നേടുക</translation>
-<translation id="8425213833346101688">മാറ്റുക</translation>
 <translation id="8428213095426709021">ക്രമീകരണം</translation>
 <translation id="8441146129660941386">പുറകിലേക്ക് സീക്കുചെയ്യുക</translation>
 <translation id="8444433999583714703">നിങ്ങളുടെ ലൊക്കേഷൻ ആക്‌സസ് ചെയ്യാൻ <ph name="APP_NAME" /> ആപ്പിനെ അനുവദിക്കുന്നതിന്, <ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിലും<ph name="END_LINK" /> ലൊക്കേഷൻ ഓണാക്കുക.</translation>
@@ -372,6 +375,7 @@
 <translation id="8751914237388039244">ഒരു ചിത്രം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="8801436777607969138">ഒരു നിർദ്ദിഷ്‌ട സൈറ്റിനായി JavaScript ബ്ലോക്ക് ചെയ്യുക.</translation>
 <translation id="8816026460808729765">സെൻസറുകൾ ആക്‌സസ് ചെയ്യുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക</translation>
+<translation id="8823559166155093873">കുക്കികൾ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8903921497873541725">സൂം ഇന്‍ ചെയ്യുക</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>

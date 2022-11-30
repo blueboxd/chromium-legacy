@@ -12,10 +12,12 @@
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/common/mock_attestation_service.h"
+#include "chrome/browser/enterprise/connectors/device_trust/common/common_types.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_connector_service.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_features.h"
 #include "chrome/browser/enterprise/connectors/device_trust/prefs.h"
@@ -53,6 +55,9 @@ constexpr char kJsonChallenge[] =
     "NWxqRi6qgZm84q0ylm0ybs6TFjdgLvSViAIp0Z9p/An/"
     "u3W4CMboCswxIxNYRCGrIIVPElE3Yb4QS65mKrg=\""
     "}";
+
+constexpr char kResultHistogramName[] =
+    "Enterprise.DeviceTrust.Attestation.Result";
 
 std::string GetSerializedSignedChallenge(const std::string& response) {
   absl::optional<base::Value> data = base::JSONReader::Read(
@@ -135,6 +140,7 @@ class DeviceTrustServiceTest
   raw_ptr<MockAttestationService> mock_attestation_service_;
   raw_ptr<MockSignalsService> mock_signals_service_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder;
+  base::HistogramTester histogram_tester_;
 };
 
 // Tests that IsEnabled returns true only when the feature flag is enabled and
@@ -148,25 +154,29 @@ TEST_P(DeviceTrustServiceTest, IsEnabled) {
 TEST_P(DeviceTrustServiceTest, BuildChallengeResponse) {
   auto device_trust_service = CreateService();
 
-  std::string fake_device_id = "fake_device_id";
+  std::string fake_display_name = "fake_display_name";
   EXPECT_CALL(*mock_signals_service_, CollectSignals(_))
       .WillOnce(Invoke(
-          [&fake_device_id](
+          [&fake_display_name](
               base::OnceCallback<void(base::Value::Dict)> signals_callback) {
             auto fake_signals = std::make_unique<base::Value::Dict>();
-            fake_signals->Set(device_signals::names::kDeviceId, fake_device_id);
+            fake_signals->Set(device_signals::names::kDisplayName,
+                              fake_display_name);
             std::move(signals_callback).Run(std::move(*fake_signals));
           }));
 
+  const DTAttestationResult result_code = DTAttestationResult::kSuccess;
   EXPECT_CALL(*mock_attestation_service_,
               BuildChallengeResponseForVAChallenge(
                   GetSerializedSignedChallenge(kJsonChallenge), _, _))
-      .WillOnce(Invoke([&fake_device_id](const std::string& challenge,
-                                         const base::Value::Dict signals,
-                                         AttestationCallback callback) {
-        EXPECT_EQ(signals.FindString(device_signals::names::kDeviceId)->c_str(),
-                  fake_device_id);
-        std::move(callback).Run(challenge);
+      .WillOnce(Invoke([&fake_display_name](
+                           const std::string& challenge,
+                           const base::Value::Dict signals,
+                           AttestationService::AttestationCallback callback) {
+        EXPECT_EQ(
+            signals.FindString(device_signals::names::kDisplayName)->c_str(),
+            fake_display_name);
+        std::move(callback).Run({challenge, result_code});
       }));
 
   base::RunLoop run_loop;
@@ -175,6 +185,8 @@ TEST_P(DeviceTrustServiceTest, BuildChallengeResponse) {
       /*callback=*/base::BindLambdaForTesting(
           [&run_loop](const std::string& response) { run_loop.Quit(); }));
   run_loop.Run();
+
+  histogram_tester_.ExpectUniqueSample(kResultHistogramName, result_code, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

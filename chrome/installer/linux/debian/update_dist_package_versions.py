@@ -22,15 +22,12 @@ import urllib2
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 SUPPORTED_DEBIAN_RELEASES = {
-    'Debian 9 (Stretch)': 'stretch',
     'Debian 10 (Buster)': 'buster',
     # TODO: bullseye-updates does not have a .gz file.
     # 'Debian 11 (Bullseye)': 'bullseye',
 }
 
 SUPPORTED_UBUNTU_RELEASES = {
-    'Ubuntu 14.04 (Trusty)': 'trusty',
-    'Ubuntu 16.04 (Xenial)': 'xenial',
     'Ubuntu 18.04 (Bionic)': 'bionic',
     'Ubuntu 20.04 (Focal)': 'focal',
 }
@@ -55,7 +52,6 @@ PACKAGE_FILTER = set([
     "libpangocairo-1.0-0",
     "libstdc++6",
     "libuuid1",
-    "libwayland-client0",
     "libx11-6",
     "libx11-xcb1",
     "libxcb1",

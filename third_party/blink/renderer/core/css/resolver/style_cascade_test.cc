@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/css/active_style_sheets.h"
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_color_value.h"
 #include "third_party/blink/renderer/core/css/css_pending_substitution_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -3645,6 +3646,31 @@ TEST_F(StyleCascadeTest, InlineStyleLostCascade) {
               /*is_inline_style=*/true);
   cascade.Apply();
   EXPECT_TRUE(cascade.InlineStyleLostCascade());
+}
+
+TEST_F(StyleCascadeTest, LhUnitCycle) {
+  RegisterProperty(GetDocument(), "--x", "<length>", "0px", false);
+
+  TestCascade cascade(GetDocument());
+  cascade.Add("line-height", "var(--x)");
+  cascade.Add("--x", "10lh");
+  cascade.Apply();
+
+  EXPECT_EQ("0px", cascade.ComputedValue("--x"));
+}
+
+TEST_F(StyleCascadeTest, SubstitutingLhCycles) {
+  RegisterProperty(GetDocument(), "--x", "<length>", "0px", false);
+
+  TestCascade cascade(GetDocument());
+  cascade.Add("line-height", "var(--x)");
+  cascade.Add("--x", "10lh");
+  cascade.Add("--y", "var(--x)");
+  cascade.Add("--z", "var(--x,1px)");
+  cascade.Apply();
+
+  EXPECT_EQ("0px", cascade.ComputedValue("--y"));
+  EXPECT_EQ("0px", cascade.ComputedValue("--z"));
 }
 
 }  // namespace blink

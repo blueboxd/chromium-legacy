@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "ash/accelerators/accelerator_commands.h"
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accelerators/accelerator_history_impl.h"
 #include "ash/accelerators/accelerator_notifications.h"
@@ -14,7 +15,6 @@
 #include "ash/accessibility/magnifier/fullscreen_magnifier_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/accessibility/ui/accessibility_confirmation_dialog.h"
-#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_types.h"
@@ -24,16 +24,13 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/ime/ime_controller_impl.h"
-#include "ash/ime/mode_indicator_observer.h"
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/capture_mode/capture_mode_test_api.h"
 #include "ash/public/cpp/ime_info.h"
-#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/test/test_new_window_delegate.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
@@ -54,13 +51,11 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
@@ -74,14 +69,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
-#include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/media_keys_util.h"
 #include "ui/base/accelerators/test_accelerator_target.h"
-#include "ui/base/ime/ash/fake_ime_keyboard.h"
-#include "ui/base/ime/ash/ime_keyboard.h"
 #include "ui/base/ime/ash/mock_input_method_manager.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/mock_input_method.h"
@@ -333,18 +324,22 @@ class AcceleratorControllerTest : public AshTestBase {
                           kFullscreenMagnifierToggleAccelNotificationId);
   }
 
-  bool IsConfirmationDialogOpen() {
-    return !!(test_api_->GetConfirmationDialog());
+  AccessibilityConfirmationDialog* GetConfirmationDialog() {
+    return Shell::Get()
+        ->accessibility_controller()
+        ->GetConfirmationDialogForTest();
   }
 
+  bool IsConfirmationDialogOpen() { return !!GetConfirmationDialog(); }
+
   void AcceptConfirmationDialog() {
-    DCHECK(test_api_->GetConfirmationDialog());
-    test_api_->GetConfirmationDialog()->AcceptDialog();
+    DCHECK(GetConfirmationDialog());
+    GetConfirmationDialog()->AcceptDialog();
   }
 
   void CancelConfirmationDialog() {
-    DCHECK(test_api_->GetConfirmationDialog());
-    test_api_->GetConfirmationDialog()->CancelDialog();
+    DCHECK(GetConfirmationDialog());
+    GetConfirmationDialog()->CancelDialog();
   }
 
   void TriggerRotateScreenShortcut() {
@@ -1128,7 +1123,7 @@ TEST_F(AcceleratorControllerTest, DontRepeatToggleFullscreen) {
       {true, ui::VKEY_J, ui::EF_ALT_DOWN, TOGGLE_FULLSCREEN},
       {true, ui::VKEY_K, ui::EF_ALT_DOWN, TOGGLE_FULLSCREEN},
   };
-  test_api_->RegisterAccelerators(accelerators, std::size(accelerators));
+  test_api_->RegisterAccelerators(accelerators);
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(5, 5, 20, 20);
@@ -1548,16 +1543,14 @@ TEST_F(AcceleratorControllerTest, PreferredReservedAccelerators) {
 TEST_F(AcceleratorControllerTest, SideVolumeButtonLocation) {
   // |side_volume_button_location_| should be empty when location info file
   // doesn't exist.
-  EXPECT_TRUE(test_api_->side_volume_button_location().region.empty());
-  EXPECT_TRUE(test_api_->side_volume_button_location().side.empty());
+  EXPECT_TRUE(test_api_->GetSideVolumeButtonLocation().region.empty());
+  EXPECT_TRUE(test_api_->GetSideVolumeButtonLocation().side.empty());
 
   // Tests that |side_volume_button_location_| is read correctly if the location
   // file exists.
   base::DictionaryValue location;
-  location.SetStringKey(AcceleratorControllerImpl::kVolumeButtonRegion,
-                        AcceleratorControllerImpl::kVolumeButtonRegionScreen);
-  location.SetStringKey(AcceleratorControllerImpl::kVolumeButtonSide,
-                        AcceleratorControllerImpl::kVolumeButtonSideLeft);
+  location.SetString(kVolumeButtonRegion, kVolumeButtonRegionScreen);
+  location.SetString(kVolumeButtonSide, kVolumeButtonSideLeft);
   std::string json_location;
   base::JSONWriter::Write(location, &json_location);
   base::ScopedTempDir file_tmp_dir;
@@ -1566,10 +1559,10 @@ TEST_F(AcceleratorControllerTest, SideVolumeButtonLocation) {
   ASSERT_TRUE(WriteJsonFile(file_path, json_location));
   EXPECT_TRUE(base::PathExists(file_path));
   test_api_->SetSideVolumeButtonFilePath(file_path);
-  EXPECT_EQ(AcceleratorControllerImpl::kVolumeButtonRegionScreen,
-            test_api_->side_volume_button_location().region);
-  EXPECT_EQ(AcceleratorControllerImpl::kVolumeButtonSideLeft,
-            test_api_->side_volume_button_location().side);
+  EXPECT_EQ(kVolumeButtonRegionScreen,
+            test_api_->GetSideVolumeButtonLocation().region);
+  EXPECT_EQ(kVolumeButtonSideLeft,
+            test_api_->GetSideVolumeButtonLocation().side);
   base::DeleteFile(file_path);
 }
 
@@ -1626,13 +1619,10 @@ class SideVolumeButtonAcceleratorTest
   }
 
   bool IsLeftOrRightSide() const {
-    return side_ == AcceleratorControllerImpl::kVolumeButtonSideLeft ||
-           side_ == AcceleratorControllerImpl::kVolumeButtonSideRight;
+    return side_ == kVolumeButtonSideLeft || side_ == kVolumeButtonSideRight;
   }
 
-  bool IsOnKeyboard() const {
-    return region_ == AcceleratorControllerImpl::kVolumeButtonRegionKeyboard;
-  }
+  bool IsOnKeyboard() const { return region_ == kVolumeButtonRegionKeyboard; }
 
  private:
   std::string region_, side_;
@@ -1723,27 +1713,20 @@ INSTANTIATE_TEST_SUITE_P(
     AshSideVolumeButton,
     SideVolumeButtonAcceleratorTest,
     testing::ValuesIn(
-        {std::make_pair<std::string, std::string>(
-             AcceleratorControllerImpl::kVolumeButtonRegionKeyboard,
-             AcceleratorControllerImpl::kVolumeButtonSideLeft),
-         std::make_pair<std::string, std::string>(
-             AcceleratorControllerImpl::kVolumeButtonRegionKeyboard,
-             AcceleratorControllerImpl::kVolumeButtonSideRight),
-         std::make_pair<std::string, std::string>(
-             AcceleratorControllerImpl::kVolumeButtonRegionKeyboard,
-             AcceleratorControllerImpl::kVolumeButtonSideBottom),
-         std::make_pair<std::string, std::string>(
-             AcceleratorControllerImpl::kVolumeButtonRegionScreen,
-             AcceleratorControllerImpl::kVolumeButtonSideLeft),
-         std::make_pair<std::string, std::string>(
-             AcceleratorControllerImpl::kVolumeButtonRegionScreen,
-             AcceleratorControllerImpl::kVolumeButtonSideRight),
-         std::make_pair<std::string, std::string>(
-             AcceleratorControllerImpl::kVolumeButtonRegionScreen,
-             AcceleratorControllerImpl::kVolumeButtonSideTop),
-         std::make_pair<std::string, std::string>(
-             AcceleratorControllerImpl::kVolumeButtonRegionScreen,
-             AcceleratorControllerImpl::kVolumeButtonSideBottom)}));
+        {std::make_pair<std::string, std::string>(kVolumeButtonRegionKeyboard,
+                                                  kVolumeButtonSideLeft),
+         std::make_pair<std::string, std::string>(kVolumeButtonRegionKeyboard,
+                                                  kVolumeButtonSideRight),
+         std::make_pair<std::string, std::string>(kVolumeButtonRegionKeyboard,
+                                                  kVolumeButtonSideBottom),
+         std::make_pair<std::string, std::string>(kVolumeButtonRegionScreen,
+                                                  kVolumeButtonSideLeft),
+         std::make_pair<std::string, std::string>(kVolumeButtonRegionScreen,
+                                                  kVolumeButtonSideRight),
+         std::make_pair<std::string, std::string>(kVolumeButtonRegionScreen,
+                                                  kVolumeButtonSideTop),
+         std::make_pair<std::string, std::string>(kVolumeButtonRegionScreen,
+                                                  kVolumeButtonSideBottom)}));
 
 // Tests the TOGGLE_CAPS_LOCK accelerator.
 TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {

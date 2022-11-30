@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -766,6 +766,27 @@ public final class TabImpl extends ITab.Stub {
             }
         };
         TabImplJni.get().executeScript(mNativeTab, script, useSeparateIsolate, nativeCallback);
+    }
+
+    @Override
+    public void executeScriptIfAllowed(
+            String script, boolean useSeparateIsolate, IObjectWrapper callback) {
+        StrictModeWorkaround.apply();
+
+        WebLayerOriginVerificationScheduler originVerifier =
+                WebLayerOriginVerificationScheduler.getInstance();
+        String url = mWebContents.getVisibleUrl().getSpec();
+        originVerifier.verify(url, mProfile, (verified) -> {
+            // Make sure the page hasn't changed since we started verification.
+            if (!url.equals(mWebContents.getVisibleUrl().getSpec())) {
+                return;
+            }
+            if (verified) {
+                executeScript(script, useSeparateIsolate, callback);
+            } else {
+                // TODO(swestphal): Propagate exception to calling api.
+            }
+        });
     }
 
     @Override

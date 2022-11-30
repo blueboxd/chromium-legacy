@@ -1,19 +1,48 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/compute_pressure/pressure_observer_manager.h"
 
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_pressure_observer_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_pressure_source.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
+using device::mojom::blink::PressureFactor;
+using device::mojom::blink::PressureState;
+
 namespace blink {
+
+namespace {
+
+V8PressureFactor::Enum PressureFactorToV8PressureFactor(PressureFactor factor) {
+  switch (factor) {
+    case PressureFactor::kThermal:
+      return V8PressureFactor::Enum::kThermal;
+    case PressureFactor::kPowerSupply:
+      return V8PressureFactor::Enum::kPowerSupply;
+  }
+  NOTREACHED();
+}
+
+V8PressureState::Enum PressureStateToV8PressureState(PressureState state) {
+  switch (state) {
+    case PressureState::kNominal:
+      return V8PressureState::Enum::kNominal;
+    case PressureState::kFair:
+      return V8PressureState::Enum::kFair;
+    case PressureState::kSerious:
+      return V8PressureState::Enum::kSerious;
+    case PressureState::kCritical:
+      return V8PressureState::Enum::kCritical;
+  }
+  NOTREACHED();
+}
+
+}  // namespace
 
 // static
 const char PressureObserverManager::kSupplementName[] =
@@ -40,45 +69,29 @@ PressureObserverManager::PressureObserverManager(LocalDOMWindow& window)
 
 PressureObserverManager::~PressureObserverManager() = default;
 
-ScriptPromise PressureObserverManager::AddObserver(
-    V8PressureSource source,
-    blink::PressureObserver* observer,
-    ScriptState* script_state,
-    ExceptionState& exception_state) {
-  DCHECK(script_state->ContextIsValid());
-
+void PressureObserverManager::AddObserver(V8PressureSource source,
+                                          blink::PressureObserver* observer) {
   if (IsRegistering(source, observer) || IsRegistered(source, observer))
-    return ScriptPromise::CastUndefined(script_state);
+    return;
 
   const wtf_size_t source_index = static_cast<wtf_size_t>(source.AsEnum());
   registering_observers_[source_index].insert(observer);
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
-
   EnsureServiceConnection();
-  if (!receiver_.is_bound()) {
-    // Not connected to the browser process yet. Make the binding.
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
-    pressure_service_->BindObserver(
-        receiver_.BindNewPipeAndPassRemote(std::move(task_runner)),
-        resolver->WrapCallbackInScriptScope(WTF::Bind(
-            &PressureObserverManager::DidBindObserver, WrapWeakPersistent(this),
-            source, WrapPersistent(observer))));
-    receiver_.set_disconnect_handler(
-        WTF::Bind(&PressureObserverManager::Reset, WrapWeakPersistent(this)));
-  } else {
-    // Already connected to the browser process, just change the quantization
-    // options if necessary.
-    auto mojo_options = mojom::blink::PressureQuantization::New(
-        observer->normalized_options()->cpuUtilizationThresholds());
-    pressure_service_->SetQuantization(
-        std::move(mojo_options),
-        resolver->WrapCallbackInScriptScope(WTF::Bind(
-            &PressureObserverManager::DidSetQuantization,
-            WrapWeakPersistent(this), source, WrapPersistent(observer))));
+  if (receiver_.is_bound()) {
+    DidBindObserver(source, observer, mojom::blink::PressureStatus::kOk);
+    return;
   }
-  return resolver->Promise();
+
+  // Not connected to the browser process yet. Make the binding.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
+  pressure_service_->BindObserver(
+      receiver_.BindNewPipeAndPassRemote(std::move(task_runner)),
+      WTF::BindOnce(&PressureObserverManager::DidBindObserver,
+                    WrapWeakPersistent(this), source,
+                    WrapPersistent(observer)));
+  receiver_.set_disconnect_handler(
+      WTF::BindOnce(&PressureObserverManager::Reset, WrapWeakPersistent(this)));
 }
 
 void PressureObserverManager::RemoveObserver(
@@ -90,8 +103,8 @@ void PressureObserverManager::RemoveObserver(
 
   // Disconnected from the browser process only when PressureObserverManager is
   // active and there is no other observers.
-  if (receiver_.is_bound() && registered_observers_[source_index].IsEmpty() &&
-      registering_observers_[source_index].IsEmpty()) {
+  if (receiver_.is_bound() && registered_observers_[source_index].empty() &&
+      registering_observers_[source_index].empty()) {
     // TODO(crbug.com/1342184): Consider other sources.
     // For now, "cpu" is the only source, so disconnect directly.
     receiver_.reset();
@@ -117,7 +130,7 @@ void PressureObserverManager::ContextLifecycleStateChanged(
 }
 
 void PressureObserverManager::OnUpdate(
-    device::mojom::blink::PressureStatePtr state) {
+    device::mojom::blink::PressureUpdatePtr update) {
   // TODO(crbug.com/1342184): Consider other sources.
   // For now, "cpu" is the only source.
   const wtf_size_t source_index =
@@ -125,10 +138,21 @@ void PressureObserverManager::OnUpdate(
 
   // New observers may be created and added. Take a snapshot so as
   // to safely iterate.
-  HeapVector<Member<blink::PressureObserver>> observers;
-  CopyToVector(registered_observers_[source_index], observers);
-  for (const auto& observer : observers)
-    observer->OnUpdate(state.Clone());
+  HeapVector<Member<blink::PressureObserver>> observers(
+      registered_observers_[source_index]);
+  for (const auto& observer : observers) {
+    Vector<V8PressureFactor> v8_factors;
+    for (const auto& factor : update->factors) {
+      v8_factors.push_back(
+          V8PressureFactor(PressureFactorToV8PressureFactor(factor)));
+    }
+    // TODO(crbug.com/1342184): Consider other sources.
+    // For now, "cpu" is the only source.
+    observer->OnUpdate(
+        GetExecutionContext(), V8PressureSource::Enum::kCpu,
+        PressureStateToV8PressureState(update->state), std::move(v8_factors),
+        static_cast<DOMHighResTimeStamp>(update->timestamp.ToDoubleT()));
+  }
 }
 
 void PressureObserverManager::Trace(blink::Visitor* visitor) const {
@@ -153,8 +177,8 @@ void PressureObserverManager::EnsureServiceConnection() {
   GetExecutionContext()->GetBrowserInterfaceBroker().GetInterface(
       pressure_service_.BindNewPipeAndPassReceiver(task_runner));
   pressure_service_.set_disconnect_handler(
-      WTF::Bind(&PressureObserverManager::OnServiceConnectionError,
-                WrapWeakPersistent(this)));
+      WTF::BindOnce(&PressureObserverManager::OnServiceConnectionError,
+                    WrapWeakPersistent(this)));
 }
 
 void PressureObserverManager::OnServiceConnectionError() {
@@ -187,66 +211,30 @@ bool PressureObserverManager::IsRegistered(
 void PressureObserverManager::DidBindObserver(
     V8PressureSource source,
     blink::PressureObserver* observer,
-    ScriptPromiseResolver* resolver,
     mojom::blink::PressureStatus status) {
   // unobserve/disconnect may be called before this method was called.
-  if (!IsRegistering(source, observer)) {
-    resolver->Resolve();
+  if (!IsRegistering(source, observer))
     return;
-  }
 
   DCHECK(pressure_service_.is_bound());
 
   switch (status) {
     case mojom::blink::PressureStatus::kOk: {
-      auto mojo_options = mojom::blink::PressureQuantization::New(
-          observer->normalized_options()->cpuUtilizationThresholds());
-      pressure_service_->SetQuantization(
-          std::move(mojo_options),
-          resolver->WrapCallbackInScriptScope(WTF::Bind(
-              &PressureObserverManager::DidSetQuantization,
-              WrapWeakPersistent(this), source, WrapPersistent(observer))));
+      const wtf_size_t source_index = static_cast<wtf_size_t>(source.AsEnum());
+      registering_observers_[source_index].erase(observer);
+      registered_observers_[source_index].insert(observer);
       break;
     }
-    case mojom::blink::PressureStatus::kNotSupported: {
-      Reset();
-      resolver->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
-                                       "Not available on this platform.");
-      break;
-    }
+    // TODO(crbug.com/1342184): Consider other sources.
+    // For now, "cpu" is the only source, hence both statuses end up
+    // in Reset().
+    // In the future, these 2 error statuses will be treated separately.
+    case mojom::blink::PressureStatus::kNotSupported:
+      [[fallthrough]];
     case mojom::blink::PressureStatus::kSecurityError: {
       Reset();
-      const char kSecurityError[] =
-          "Security error. Make sure the page is visible.";
-      resolver->RejectWithSecurityError(kSecurityError, kSecurityError);
       break;
     }
-  }
-}
-
-void PressureObserverManager::DidSetQuantization(
-    V8PressureSource source,
-    blink::PressureObserver* observer,
-    ScriptPromiseResolver* resolver,
-    mojom::blink::SetQuantizationStatus status) {
-  // unobserve/disconnect may be called before this method was called.
-  if (!IsRegistering(source, observer)) {
-    resolver->Resolve();
-    return;
-  }
-
-  const wtf_size_t source_index = static_cast<wtf_size_t>(source.AsEnum());
-  registering_observers_[source_index].erase(observer);
-
-  switch (status) {
-    case mojom::blink::SetQuantizationStatus::kChanged:
-      // Clear registered observers, then do same steps as kUnchanged.
-      registered_observers_[source_index].clear();
-      [[fallthrough]];
-    case mojom::blink::SetQuantizationStatus::kUnchanged:
-      registered_observers_[source_index].insert(observer);
-      resolver->Resolve();
-      break;
   }
 }
 

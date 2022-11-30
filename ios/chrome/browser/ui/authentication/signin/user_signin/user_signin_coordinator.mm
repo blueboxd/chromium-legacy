@@ -8,13 +8,13 @@
 #import "base/mac/foundation_util.h"
 #import "components/sync/driver/sync_service.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/consent_auditor/consent_auditor_factory.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/sync/consent_auditor_factory.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
@@ -159,9 +159,13 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   self.mediator.delegate = self;
 
   // Setup UnifiedConsentCoordinator.
+  BOOL postRestoreSigninPromo =
+      self.logger.accessPoint ==
+      AccessPoint::ACCESS_POINT_POST_DEVICE_RESTORE_SIGNIN_PROMO;
   self.unifiedConsentCoordinator = [[UnifiedConsentCoordinator alloc]
       initWithBaseViewController:nil
-                         browser:self.browser];
+                         browser:self.browser
+          postRestoreSigninPromo:postRestoreSigninPromo];
   self.unifiedConsentCoordinator.delegate = self;
   if (self.defaultIdentity) {
     self.unifiedConsentCoordinator.selectedIdentity = self.defaultIdentity;
@@ -327,9 +331,6 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 }
 
 - (int)userSigninMediatorGetConsentConfirmationId {
-  if (self.userSigninMediatorGetSettingsLinkWasTapped) {
-    return self.unifiedConsentCoordinator.openSettingsStringId;
-  }
   return self.viewController.acceptSigninButtonStringId;
 }
 
@@ -347,7 +348,8 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 
   ChromeIdentity* identity =
       (signinResult == SigninCoordinatorResultSuccess)
-          ? self.unifiedConsentCoordinator.selectedIdentity
+          ? base::mac::ObjCCastStrict<ChromeIdentity>(
+                self.unifiedConsentCoordinator.selectedIdentity)
           : nil;
   SigninCompletionAction completionAction = SigninCompletionActionNone;
   if (self.managedLearnMoreLinkWasTapped) {
@@ -492,8 +494,9 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
           [self.viewController supportedInterfaceOrientations];
       if (!((1 << orientation) & supportedOrientationsMask)) {
         SigninCompletionInfo* completionInfo = [SigninCompletionInfo
-            signinCompletionInfoWithIdentity:self.unifiedConsentCoordinator
-                                                 .selectedIdentity];
+            signinCompletionInfoWithIdentity:
+                base::mac::ObjCCastStrict<ChromeIdentity>(
+                    self.unifiedConsentCoordinator.selectedIdentity)];
         [self runCompletionCallbackWithSigninResult:
                   SigninCoordinatorResultInterrupted
                                      completionInfo:completionInfo];
@@ -626,7 +629,9 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   self.unifiedConsentCoordinator.uiDisabled = YES;
   [self.viewController signinWillStart];
   [self.mediator
-      authenticateWithIdentity:self.unifiedConsentCoordinator.selectedIdentity
+      authenticateWithIdentity:base::mac::ObjCCastStrict<ChromeIdentity>(
+                                   self.unifiedConsentCoordinator
+                                       .selectedIdentity)
             authenticationFlow:authenticationFlow];
 }
 

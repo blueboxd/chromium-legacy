@@ -25,6 +25,7 @@
 #include "chrome/browser/ash/login/signin/signin_error_notifier.h"
 #include "chrome/browser/ash/login/signin/token_handle_util.h"
 #include "chrome/browser/ash/login/signin_specifics.h"
+#include "chrome/browser/ash/login/test/cryptohome_mixin.h"
 #include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
 #include "chrome/browser/ash/login/test/local_state_mixin.h"
@@ -44,13 +45,10 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
-#include "chromeos/ash/components/cryptohome/system_salt_getter.h"
 #include "chromeos/ash/components/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
-#include "chromeos/ash/components/login/auth/public/cryptohome_key_constants.h"
-#include "chromeos/ash/components/login/auth/public/key.h"
 #include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "chromeos/ash/components/login/auth/stub_authenticator.h"
 #include "chromeos/ash/components/login/auth/stub_authenticator_builder.h"
@@ -162,11 +160,9 @@ class PasswordChangeTest : public PasswordChangeTestBase,
  protected:
   PasswordChangeTest() {
     if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kUseAuthsessionAuthentication);
+      scoped_feature_list_.InitAndEnableFeature(features::kUseAuthFactors);
     } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kUseAuthsessionAuthentication);
+      scoped_feature_list_.InitAndDisableFeature(features::kUseAuthFactors);
     }
   }
 
@@ -179,25 +175,9 @@ class PasswordChangeTest : public PasswordChangeTestBase,
   }
 
   void AddFakeUser(const std::string& password) {
-    // Add the user. Initially it has no keys.
-    auto account_identifier =
-        cryptohome::CreateAccountIdentifierFromAccountId(test_account_id_);
-    FakeUserDataAuthClient::TestApi::Get()->AddExistingUser(account_identifier);
+    cryptohome_.MarkUserAsExisting(test_account_id_);
+    cryptohome_.AddGaiaPassword(test_account_id_, password);
     CreateTestingFile();
-
-    // Hash the password, as only hashed passwords appear at the userdataauth
-    // level.
-    Key key(password);
-    key.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
-                  SystemSaltGetter::ConvertRawSaltToHexString(
-                      FakeCryptohomeMiscClient::GetStubSystemSalt()));
-
-    // Add the password key to the user.
-    cryptohome::Key cryptohome_key;
-    cryptohome_key.mutable_data()->set_label(kCryptohomeGaiaKeyLabel);
-    cryptohome_key.set_secret(key.GetSecret());
-    FakeUserDataAuthClient::TestApi::Get()->AddKey(account_identifier,
-                                                   cryptohome_key);
   }
 
   bool TestingFileExists() const {
@@ -234,6 +214,7 @@ class PasswordChangeTest : public PasswordChangeTestBase,
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
+  ash::CryptohomeMixin cryptohome_{&mixin_host_};
   FakeGaiaMixin fake_gaia_{&mixin_host_};
 };
 
@@ -245,7 +226,7 @@ IN_PROC_BROWSER_TEST_P(PasswordChangeTest, MigrateOldCryptohome) {
   SetGaiaScreenCredentials(test_account_id_, "new user password");
   WaitForPasswordChangeScreen();
   histogram_tester.ExpectBucketCount("Login.PasswordChanged.ReauthReason",
-                                     ReauthReason::OTHER, 1);
+                                     ReauthReason::kOther, 1);
 
   test::OobeJS().CreateVisibilityWaiter(true, kPasswordStep)->Wait();
 
@@ -267,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeStubAuthTest, SubmitOnEnterKeyPressed) {
   SetUpStubAuthenticatorAndAttemptLogin("old user password");
   WaitForPasswordChangeScreen();
   histogram_tester.ExpectBucketCount("Login.PasswordChanged.ReauthReason",
-                                     ReauthReason::OTHER, 1);
+                                     ReauthReason::kOther, 1);
 
   test::OobeJS().CreateVisibilityWaiter(true, kPasswordStep)->Wait();
 
@@ -435,7 +416,7 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTokenCheck, LoginScreenPasswordChange) {
   SetUpStubAuthenticatorAndAttemptLogin("old user password");
   WaitForPasswordChangeScreen();
   histogram_tester.ExpectBucketCount("Login.PasswordChanged.ReauthReason",
-                                     ReauthReason::INVALID_TOKEN_HANDLE, 1);
+                                     ReauthReason::kInvalidTokenHandle, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordChangeTokenCheck, LoginScreenNoPasswordChange) {
@@ -449,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTokenCheck, LoginScreenNoPasswordChange) {
   login_mixin_.LoginWithDefaultContext(login_mixin_.users().back());
   login_mixin_.WaitForActiveSession();
   histogram_tester.ExpectBucketCount("Login.PasswordNotChanged.ReauthReason",
-                                     ReauthReason::INVALID_TOKEN_HANDLE, 1);
+                                     ReauthReason::kInvalidTokenHandle, 1);
 }
 
 // Helper class to create NotificationDisplayServiceTester before notification
@@ -522,7 +503,7 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTokenCheck, Session) {
   SetUpStubAuthenticatorAndAttemptLogin("old user password");
   WaitForPasswordChangeScreen();
   histogram_tester.ExpectBucketCount("Login.PasswordChanged.ReauthReason",
-                                     ReauthReason::INVALID_TOKEN_HANDLE, 1);
+                                     ReauthReason::kInvalidTokenHandle, 1);
 }
 
 // Notification should not be triggered because token was checked on the login

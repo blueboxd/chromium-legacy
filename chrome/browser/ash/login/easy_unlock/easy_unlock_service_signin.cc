@@ -8,14 +8,6 @@
 
 #include <memory>
 
-#include "ash/components/multidevice/logging/logging.h"
-#include "ash/components/multidevice/remote_device.h"
-#include "ash/components/multidevice/remote_device_cache.h"
-#include "ash/components/multidevice/remote_device_ref.h"
-#include "ash/components/multidevice/software_feature_state.h"
-#include "ash/components/proximity_auth/proximity_auth_local_state_pref_manager.h"
-#include "ash/components/proximity_auth/smart_lock_metrics_recorder.h"
-#include "ash/components/tpm/tpm_token_loader.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/smartlock_state.h"
 #include "base/base64url.h"
@@ -37,6 +29,14 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/login/auth/public/user_context.h"
+#include "chromeos/ash/components/multidevice/logging/logging.h"
+#include "chromeos/ash/components/multidevice/remote_device.h"
+#include "chromeos/ash/components/multidevice/remote_device_cache.h"
+#include "chromeos/ash/components/multidevice/remote_device_ref.h"
+#include "chromeos/ash/components/multidevice/software_feature_state.h"
+#include "chromeos/ash/components/proximity_auth/proximity_auth_local_state_pref_manager.h"
+#include "chromeos/ash/components/proximity_auth/smart_lock_metrics_recorder.h"
+#include "chromeos/ash/components/tpm/tpm_token_loader.h"
 #include "chromeos/login/login_state/login_state.h"
 
 namespace ash {
@@ -133,8 +133,7 @@ std::vector<multidevice::BeaconSeed> DeserializeBeaconSeeds(
     return beacon_seeds;
   }
 
-  for (const base::Value& beacon_seed_value :
-       deserialized_value->GetListDeprecated()) {
+  for (const base::Value& beacon_seed_value : deserialized_value->GetList()) {
     if (!beacon_seed_value.is_string()) {
       PA_LOG(ERROR) << "Expected Base64 BeaconSeed.";
       continue;

@@ -22,7 +22,6 @@ import android.view.ViewStub;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
@@ -34,8 +33,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.video_tutorials.NewTabPageVideoIPHManager;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.cryptids.ProbabilisticCryptidRenderer;
-import org.chromium.chrome.browser.explore_sites.ExperimentalExploreSitesSection;
-import org.chromium.chrome.browser.explore_sites.ExploreSitesBridge;
 import org.chromium.chrome.browser.feed.FeedSurfaceScrollDelegate;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lens.LensEntryPoint;
@@ -78,12 +75,6 @@ public class NewTabPageLayout extends LinearLayout implements VrModeObserver {
     // Used to signify the cached resource value is unset.
     private static final int UNSET_RESOURCE_FLAG = -1;
 
-    /**
-     * The maximum number of tiles to try and fit in a row. On smaller screens, there may not be
-     * enough space to fit all of them.
-     */
-    private static final int MAX_TILE_COLUMNS = 4;
-
     private final int mTileGridLayoutBleed;
     private final Context mContext;
     private int mSearchBoxEndPadding = UNSET_RESOURCE_FLAG;
@@ -97,11 +88,6 @@ public class NewTabPageLayout extends LinearLayout implements VrModeObserver {
     private ImageView mCryptidHolder;
     private ViewGroup mMvTilesContainerLayout;
     private MostVisitedTilesCoordinator mMostVisitedTilesCoordinator;
-
-    @Nullable
-    private View mExploreSectionView; // View is null if explore flag is disabled.
-    @Nullable
-    private Object mExploreSection; // Null when explore sites disabled.
 
     private OnSearchBoxScrollListener mSearchBoxScrollListener;
 
@@ -165,13 +151,6 @@ public class NewTabPageLayout extends LinearLayout implements VrModeObserver {
         mVideoIPHManager = new NewTabPageVideoIPHManager(
                 findViewById(R.id.video_iph_stub), Profile.getLastUsedRegularProfile());
         insertSiteSectionView();
-
-        int variation = ExploreSitesBridge.getVariation();
-        if (ExploreSitesBridge.isExperimental(variation)) {
-            ViewStub exploreStub = findViewById(R.id.explore_sites_stub);
-            exploreStub.setLayoutResource(R.layout.experimental_explore_sites_section);
-            mExploreSectionView = exploreStub.inflate();
-        }
     }
 
     /**
@@ -357,18 +336,12 @@ public class NewTabPageLayout extends LinearLayout implements VrModeObserver {
         mMostVisitedTilesCoordinator = new MostVisitedTilesCoordinator(mActivity,
                 activityLifecycleDispatcher, mMvTilesContainerLayout, mWindowAndroid,
                 /*shouldShowSkeletonUIPreNative=*/false, isScrollableMvtEnabled, maxRows,
-                MAX_TILE_COLUMNS, () -> mSnapshotTileGridChanged = true, () -> {
+                () -> mSnapshotTileGridChanged = true, () -> {
                     if (mUrlFocusChangePercent == 1f) mTileCountChanged = true;
                 });
 
         mMostVisitedTilesCoordinator.initWithNative(
                 mManager, tileGroupDelegate, touchEnabledDelegate);
-
-        int variation = ExploreSitesBridge.getVariation();
-        if (ExploreSitesBridge.isExperimental(variation)) {
-            mExploreSection = new ExperimentalExploreSitesSection(
-                    mExploreSectionView, profile, mManager.getNavigationDelegate());
-        }
     }
 
     /**
@@ -518,7 +491,6 @@ public class NewTabPageLayout extends LinearLayout implements VrModeObserver {
      * Updates the margins for the tile grid based on what is shown above it.
      */
     private void updateTilesLayoutMargins() {
-        // Set a bit more top padding on the tile grid if there is no logo.
         MarginLayoutParams marginLayoutParams =
                 (MarginLayoutParams) mMvTilesContainerLayout.getLayoutParams();
 
@@ -535,6 +507,7 @@ public class NewTabPageLayout extends LinearLayout implements VrModeObserver {
             marginLayoutParams.bottomMargin = getResources().getDimensionPixelOffset(
                     R.dimen.tile_carousel_layout_bottom_margin);
         } else {
+            // Set a bit more top padding on the tile grid if there is no logo.
             ViewGroup.LayoutParams layoutParams = mMvTilesContainerLayout.getLayoutParams();
             layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
             marginLayoutParams.topMargin = getGridMvtTopMargin();
@@ -885,20 +858,11 @@ public class NewTabPageLayout extends LinearLayout implements VrModeObserver {
                 final int width = mMvTilesContainerLayout.getMeasuredWidth() - mTileGridLayoutBleed;
                 measureExactly(searchBoxView, width, searchBoxView.getMeasuredHeight());
                 measureExactly(logoView, width, logoView.getMeasuredHeight());
-
-                if (mExploreSectionView != null) {
-                    measureExactly(mExploreSectionView, mMvTilesContainerLayout.getMeasuredWidth(),
-                            mExploreSectionView.getMeasuredHeight());
-                }
             } else {
-                final int exploreWidth = getMeasuredWidth() - mTileGridLayoutBleed;
-                measureExactly(searchBoxView, exploreWidth, searchBoxView.getMeasuredHeight());
-                measureExactly(logoView, exploreWidth, logoView.getMeasuredHeight());
+                final int width = getMeasuredWidth() - mTileGridLayoutBleed;
+                measureExactly(searchBoxView, width, searchBoxView.getMeasuredHeight());
+                measureExactly(logoView, width, logoView.getMeasuredHeight());
             }
-        } else if (mExploreSectionView != null) {
-            final int exploreWidth = mExploreSectionView.getMeasuredWidth() - mTileGridLayoutBleed;
-            measureExactly(searchBoxView, exploreWidth, searchBoxView.getMeasuredHeight());
-            measureExactly(logoView, exploreWidth, logoView.getMeasuredHeight());
         }
     }
 

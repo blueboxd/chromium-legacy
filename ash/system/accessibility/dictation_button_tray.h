@@ -8,11 +8,17 @@
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
+#include "ash/constants/tray_background_view_catalog.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ui/base/ime/input_method_observer.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/events/event_constants.h"
+
+namespace ui {
+class Event;
+}  // namespace ui
 
 namespace views {
 class ImageView;
@@ -32,15 +38,12 @@ class ASH_EXPORT DictationButtonTray : public TrayBackgroundView,
                                        public SessionObserver,
                                        public ui::InputMethodObserver {
  public:
-  explicit DictationButtonTray(Shelf* shelf);
+  METADATA_HEADER(DictationButtonTray);
 
+  DictationButtonTray(Shelf* shelf, TrayBackgroundViewCatalogName catalog_name);
   DictationButtonTray(const DictationButtonTray&) = delete;
   DictationButtonTray& operator=(const DictationButtonTray&) = delete;
-
   ~DictationButtonTray() override;
-
-  // ActionableView:
-  bool PerformAction(const ui::Event& event) override;
 
   // ShellObserver:
   void OnDictationStarted() override;
@@ -61,9 +64,6 @@ class ASH_EXPORT DictationButtonTray : public TrayBackgroundView,
   void OnThemeChanged() override;
   void Layout() override;
 
-  // views::View:
-  const char* GetClassName() const override;
-
   // ui::InputMethodObserver:
   void OnFocus() override {}
   void OnBlur() override {}
@@ -80,6 +80,9 @@ class ASH_EXPORT DictationButtonTray : public TrayBackgroundView,
  private:
   friend class DictationButtonTrayTest;
   friend class DictationButtonTraySodaTest;
+
+  // Callback called when this is pressed.
+  void OnDictationButtonPressed(const ui::Event& event);
 
   // Sets the icon when Dictation is activated / deactivated.
   // Also updates visibility when Dictation is enabled / disabled.
@@ -99,7 +102,7 @@ class ASH_EXPORT DictationButtonTray : public TrayBackgroundView,
   void TextInputChanged(const ui::TextInputClient* client);
 
   // Weak pointer, will be parented by TrayContainer for its lifetime.
-  views::ImageView* icon_;
+  views::ImageView* icon_ = nullptr;
 
   // SODA download progress. A value of 0 < X < 100 indicates that download is
   // in-progress.

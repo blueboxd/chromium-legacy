@@ -59,16 +59,17 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -215,7 +216,7 @@ class AnimationAnimationTestNoCompositing : public PaintTestConfigurations,
   void SimulateAwaitReady() { SimulateFrame(last_frame_time); }
 
   void SimulateMicrotask() {
-    Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
+    GetDocument().GetAgent()->event_loop()->PerformMicrotaskCheckpoint();
   }
 
   void SimulateFrameForScrollAnimations() {
@@ -1034,9 +1035,9 @@ TEST_P(AnimationAnimationTestNoCompositing, AnimationsDisassociateFromEffect) {
 
 TEST_P(AnimationAnimationTestNoCompositing, AnimationsReturnTimeToNextEffect) {
   Timing timing;
-  timing.start_delay = ANIMATION_TIME_DELTA_FROM_SECONDS(1);
+  timing.start_delay = Timing::Delay(ANIMATION_TIME_DELTA_FROM_SECONDS(1));
   timing.iteration_duration = ANIMATION_TIME_DELTA_FROM_SECONDS(1);
-  timing.end_delay = ANIMATION_TIME_DELTA_FROM_SECONDS(1);
+  timing.end_delay = Timing::Delay(ANIMATION_TIME_DELTA_FROM_SECONDS(1));
   auto* keyframe_effect = MakeGarbageCollected<KeyframeEffect>(
       nullptr, MakeEmptyEffectModel(), timing);
   animation = timeline->Play(keyframe_effect);
@@ -1177,7 +1178,7 @@ TEST_P(AnimationAnimationTestNoCompositing, AttachedAnimations) {
       1U, element->GetElementAnimations()->Animations().find(animation)->value);
 
   ThreadState::Current()->CollectAllGarbageForTesting();
-  EXPECT_TRUE(element->GetElementAnimations()->Animations().IsEmpty());
+  EXPECT_TRUE(element->GetElementAnimations()->Animations().empty());
 }
 
 TEST_P(AnimationAnimationTestNoCompositing, HasLowerCompositeOrdering) {

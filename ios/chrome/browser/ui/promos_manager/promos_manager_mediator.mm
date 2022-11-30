@@ -8,6 +8,8 @@
 #import <map>
 
 #import "base/containers/small_map.h"
+#import "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/promos_manager/constants.h"
 #import "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -25,8 +27,9 @@
             promoImpressionLimits {
   if (self = [super init]) {
     _promosManager = promosManager;
-    _promosManager->InitializePromoImpressionLimits(
-        std::move(promoImpressionLimits));
+    if (promoImpressionLimits.size())
+      _promosManager->InitializePromoImpressionLimits(
+          std::move(promoImpressionLimits));
   }
 
   return self;
@@ -38,8 +41,21 @@
 
 - (absl::optional<promos_manager::Promo>)nextPromoForDisplay {
   DCHECK_NE(_promosManager, nullptr);
-
+  NSString* forcedPromoName = [self forcedPromoToDisplay];
+  if ([forcedPromoName length] > 0) {
+    absl::optional<promos_manager::Promo> forcedPromo =
+        promos_manager::PromoForName(base::SysNSStringToUTF8(forcedPromoName));
+    DCHECK(forcedPromo);
+    return forcedPromo;
+  }
   return self.promosManager->NextPromoForDisplay();
+}
+
+// Returns the promo selected in the Force Promo experimental setting.
+// If none are selected, returns empty string. If user is in beta/stable,
+// this method always returns nil.
+- (NSString*)forcedPromoToDisplay {
+  return experimental_flags::GetForcedPromoToDisplay();
 }
 
 @end

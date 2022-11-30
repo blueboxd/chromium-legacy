@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ class PLATFORM_EXPORT PaintArtifact final : public RefCounted<PaintArtifact> {
   PaintArtifact(PaintArtifact&& other) = delete;
   PaintArtifact& operator=(PaintArtifact&& other) = delete;
 
-  bool IsEmpty() const { return chunks_.IsEmpty(); }
+  bool IsEmpty() const { return chunks_.empty(); }
 
   DisplayItemList& GetDisplayItemList() { return display_item_list_; }
   const DisplayItemList& GetDisplayItemList() const {

@@ -715,7 +715,7 @@ TEST(RawRef, CTAD) {
 }
 
 using RawPtrCountingImpl =
-    base::internal::RawPtrCountingImplWrapperForTest<base::DefaultRawPtrImpl>;
+    base::internal::RawPtrCountingImplWrapperForTest<base::DefaultRawPtrType>;
 
 template <typename T>
 using CountingRawRef = raw_ref<T, RawPtrCountingImpl>;
@@ -775,8 +775,7 @@ TEST(RawRef, StdLess) {
 #if BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
 
 TEST(AsanBackupRefPtrImpl, RawRefGet) {
-  if (base::RawPtrAsanService::GetInstance().mode() !=
-      base::RawPtrAsanService::Mode::kEnabled) {
+  if (!base::RawPtrAsanService::GetInstance().IsEnabled()) {
     base::RawPtrAsanService::GetInstance().Configure(
         base::EnableDereferenceCheck(true), base::EnableExtractionCheck(true),
         base::EnableInstantiationCheck(true));

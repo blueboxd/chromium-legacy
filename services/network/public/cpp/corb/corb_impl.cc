@@ -37,8 +37,7 @@ using Decision = network::corb::ResponseAnalyzer::Decision;
 using MimeType = network::corb::CrossOriginReadBlocking::MimeType;
 using SniffingResult = network::corb::CrossOriginReadBlocking::SniffingResult;
 
-namespace network {
-namespace corb {
+namespace network::corb {
 
 namespace {
 
@@ -1029,6 +1028,13 @@ bool CrossOriginReadBlocking::CorbResponseAnalyzer::
   return true;
 }
 
+ResponseAnalyzer::BlockedResponseHandling
+CrossOriginReadBlocking::CorbResponseAnalyzer::ShouldHandleBlockedResponseAs()
+    const {
+  // CORB wants blocked responses to be empty responses.
+  return ResponseAnalyzer::BlockedResponseHandling::kEmptyResponse;
+}
+
 Decision CrossOriginReadBlocking::CorbResponseAnalyzer::GetCorbDecision() {
   if (ShouldBlock())
     return Decision::kBlock;
@@ -1200,5 +1206,4 @@ void CrossOriginReadBlocking::CorbResponseAnalyzer::
       supports_range_requests_);
 }
 
-}  // namespace corb
-}  // namespace network
+}  // namespace network::corb

@@ -33,6 +33,7 @@
 #include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/test/server.h"
 #include "chrome/updater/test_scope.h"
+#include "chrome/updater/unittest_util.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
@@ -50,8 +51,10 @@
 #include "chrome/updater/win/win_util.h"
 #endif  // BUILDFLAG(IS_WIN)
 
-namespace updater {
-namespace test {
+// TODO(noahrose): Enable tests once updater is implemented for Linux
+#if !BUILDFLAG(IS_LINUX)
+
+namespace updater::test {
 namespace {
 
 #if BUILDFLAG(IS_WIN) || !defined(COMPONENT_BUILD)
@@ -93,6 +96,9 @@ class IntegrationTest : public ::testing::Test {
                          true,    // enable_thread_id
                          true,    // enable_timestamp
                          false);  // enable_tickcount
+#if BUILDFLAG(IS_WIN)
+    ASSERT_TRUE(base::PathExists(updater_path_)) << updater_path_;
+#endif
     Clean();
     ExpectClean();
     // TODO(crbug.com/1233612) - reenable the code when system tests pass.
@@ -101,6 +107,7 @@ class IntegrationTest : public ::testing::Test {
   }
 
   void TearDown() override {
+    ExitTestMode();
     ExpectClean();
     PrintLog();
     // TODO(crbug.com/1159189): Use a specific test output directory
@@ -109,6 +116,9 @@ class IntegrationTest : public ::testing::Test {
     // TODO(crbug.com/1233612) - reenable the code when system tests pass.
     // TearDownTestService();
     Clean();
+#if BUILDFLAG(IS_WIN)
+    ASSERT_TRUE(base::PathExists(updater_path_)) << updater_path_;
+#endif
   }
 
   void CopyLog() { test_commands_->CopyLog(); }
@@ -135,6 +145,8 @@ class IntegrationTest : public ::testing::Test {
   void ExpectClean() { test_commands_->ExpectClean(); }
 
   void EnterTestMode(const GURL& url) { test_commands_->EnterTestMode(url); }
+
+  void ExitTestMode() { test_commands_->ExitTestMode(); }
 
   void SetGroupPolicies(const base::Value::Dict& values) {
     test_commands_->SetGroupPolicies(values);
@@ -322,14 +334,15 @@ class IntegrationTest : public ::testing::Test {
 
   void ExpectLastStarted() { test_commands_->ExpectLastStarted(); }
 
-  void RunOfflineInstall(bool is_silent_install) {
-    test_commands_->RunOfflineInstall(is_silent_install);
+  void RunOfflineInstall(bool is_legacy_install, bool is_silent_install) {
+    test_commands_->RunOfflineInstall(is_legacy_install, is_silent_install);
   }
 
   scoped_refptr<IntegrationTestCommands> test_commands_;
 
  private:
   base::test::TaskEnvironment environment_;
+  const base::FilePath updater_path_ = GetUpdaterTestPath();
 };
 
 // The project's position is that component builds are not portable outside of
@@ -337,6 +350,9 @@ class IntegrationTest : public ::testing::Test {
 // expected to work and these tests do not run on component builders.
 // See crbug.com/1112527.
 #if BUILDFLAG(IS_WIN) || !defined(COMPONENT_BUILD)
+
+// Tests the setup and teardown of the fixture.
+TEST_F(IntegrationTest, DoNothing) {}
 
 TEST_F(IntegrationTest, InstallUninstall) {
   Install();
@@ -767,15 +783,7 @@ TEST_F(IntegrationTest, MAYBE_SelfUpdateFromOldReal) {
 
 // Tests that installing and uninstalling an old version of the updater from
 // CIPD is possible.
-// TODO(crbug.com/1341471) - this may be slightly flaky as the typelib errors
-// showing up on Windows (which resulted in disabling SelfUpdateFromOldReal) are
-// being investigated. This test is simpler than SelfUpdateFromOldReal.
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_InstallUninstallLowerVersion DISABLED_InstallUninstallLowerVersion
-#else
-#define MAYBE_InstallUninstallLowerVersion InstallUninstallLowerVersion
-#endif
-TEST_F(IntegrationTest, MAYBE_InstallUninstallLowerVersion) {
+TEST_F(IntegrationTest, InstallUninstallLowerVersion) {
   SetupRealUpdaterLowerVersion();
   ExpectVersionNotActive(kUpdaterVersion);
   Uninstall();
@@ -904,18 +912,26 @@ TEST_F(IntegrationTest, RecoveryNoUpdater) {
 TEST_F(IntegrationTest, OfflineInstall) {
   Install();
   ExpectInstalled();
-  RunOfflineInstall(/*is_silent_install=*/false);
+  RunOfflineInstall(/*is_legacy_install=*/false, /*is_silent_install=*/false);
   Uninstall();
 }
 
 TEST_F(IntegrationTest, SilentOfflineInstall) {
   Install();
   ExpectInstalled();
-  RunOfflineInstall(/*is_silent_install=*/true);
+  RunOfflineInstall(/*is_legacy_install=*/false, /*is_silent_install=*/true);
+  Uninstall();
+}
+
+TEST_F(IntegrationTest, LegacySilentOfflineInstall) {
+  Install();
+  ExpectInstalled();
+  RunOfflineInstall(/*is_legacy_install=*/true, /*is_silent_install=*/true);
   Uninstall();
 }
 
 #endif  // BUILDFLAG(IS_WIN) || !defined(COMPONENT_BUILD)
 
-}  // namespace test
-}  // namespace updater
+}  // namespace updater::test
+
+#endif  // !BUILDFLAG(IS_LINUX)

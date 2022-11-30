@@ -245,18 +245,16 @@ class WindowCloseObserver : public aura::WindowObserver {
     }
 
     // Show the library, this should highlight the newly saved item.
-    OverviewGrid* overview_grid =
-        overview_session->GetGridWithRootWindow(root_window_);
-    overview_session->ShowDesksTemplatesGrids(
-        overview_grid->desks_bar_view()->IsZeroState(), saved_desk_guid_,
-        saved_desk_name_, root_window_);
+    overview_session->ShowDesksTemplatesGrids(saved_desk_guid_,
+                                              saved_desk_name_, root_window_);
 
     // Remove the current desk, this will be done without animation.
     if (remove_desk) {
       auto* desks_controller = DesksController::Get();
       if (DeskExists(desks_controller, desk_to_remove_)) {
         if (!desks_controller->CanRemoveDesks())
-          desks_controller->NewDesk(DesksCreationRemovalSource::kSaveAndRecall);
+          desks_controller->NewDesk(
+              DesksCreationRemovalSource::kEnsureDefaultDesk);
 
         desks_controller->RemoveDesk(desk_to_remove_,
                                      DesksCreationRemovalSource::kSaveAndRecall,
@@ -318,8 +316,6 @@ SavedDeskPresenter::SavedDeskPresenter(OverviewSession* overview_session)
 
   auto* desk_model = GetDeskModel();
   desk_model_observation_.Observe(desk_model);
-  GetAllEntries(base::GUID(), /*saved_desk_name=*/u"",
-                Shell::GetPrimaryRootWindow());
 
   should_show_templates_ui_ =
       !Shell::Get()->tablet_mode_controller()->InTabletMode() &&
@@ -381,8 +377,7 @@ void SavedDeskPresenter::UpdateDesksTemplatesUI() {
     should_show_templates_ui_ =
         !in_tablet_mode && (is_showing_library || has_saved_desks);
 
-    if (DesksBarView* desks_bar_view =
-            const_cast<DesksBarView*>(overview_grid->desks_bar_view())) {
+    if (DesksBarView* desks_bar_view = overview_grid->desks_bar_view()) {
       desks_bar_view->UpdateDesksTemplatesButtonVisibility();
       desks_bar_view->UpdateButtonsForDesksTemplatesGrid();
       overview_grid->UpdateSaveDeskButtons();
@@ -414,17 +409,15 @@ void SavedDeskPresenter::LaunchSavedDesk(
         /*text=*/
         l10n_util::GetStringFUTF16(
             IDS_ASH_DESKS_TEMPLATES_REACH_MAXIMUM_DESK_TOAST,
-            base::FormatNumber(desks_util::kMaxNumberOfDesks))};
+            base::FormatNumber(desks_util::GetMaxNumberOfDesks()))};
     ToastManager::Get()->Show(toast_data);
     return;
   }
 
   // Copy fields we need from `desk_template` since we're about to move it.
   const auto saved_desk_type = saved_desk->type();
-  const bool activate_desk = saved_desk_type == DeskTemplateType::kTemplate;
-
   const Desk* new_desk = desks_controller->CreateNewDeskForTemplate(
-      activate_desk, saved_desk->template_name());
+      saved_desk_type, saved_desk->template_name());
   LaunchSavedDeskIntoNewDesk(std::move(saved_desk), root_window, new_desk);
 
   // Note: `LaunchSavedDeskIntoNewDesk` *may* cause overview mode to exit. This
@@ -511,9 +504,9 @@ void SavedDeskPresenter::GetAllEntries(const base::GUID& item_to_focus,
     // Populate `SavedDeskLibraryView` with the desk template entries.
     if (SavedDeskLibraryView* library_view =
             overview_grid->GetSavedDeskLibraryView()) {
-      library_view->PopulateGridUI(result.entries,
-                                   overview_grid->GetGridEffectiveBounds(),
-                                   /*last_saved_desk_uuid=*/item_to_focus);
+      library_view->AddOrUpdateEntries(result.entries, item_to_focus,
+                                       /*animate=*/false);
+
       SavedDeskItemView* item_view =
           library_view->GetItemForUUID(item_to_focus);
       if (!item_view)
@@ -605,9 +598,9 @@ void SavedDeskPresenter::LaunchSavedDeskIntoNewDesk(
     return;
   }
 
-  DesksBarView* desks_bar_view = const_cast<DesksBarView*>(
-      overview_session_->GetGridWithRootWindow(root_window)->desks_bar_view());
-  desks_bar_view->NudgeDeskName(desk_index);
+  overview_session_->GetGridWithRootWindow(root_window)
+      ->desks_bar_view()
+      ->NudgeDeskName(desk_index);
 
   if (saved_desk_type == DeskTemplateType::kSaveAndRecall) {
     // Passing nullopt as type since this indicates that we don't want to record
@@ -647,8 +640,6 @@ void SavedDeskPresenter::OnAddOrUpdateEntry(
   OverviewGrid* overview_grid =
       overview_session_->GetGridWithRootWindow(root_window);
   DCHECK(overview_grid);
-  DCHECK(overview_grid->desks_bar_view());
-  const bool is_zero_state = overview_grid->desks_bar_view()->IsZeroState();
 
   if (auto* library_view = overview_grid->GetSavedDeskLibraryView()) {
     // TODO(dandersson): Rework literally all of this. This path is only taken
@@ -658,7 +649,7 @@ void SavedDeskPresenter::OnAddOrUpdateEntry(
 
     if (!was_update) {
       // Shows the grid if it was hidden. This will not call `GetAllEntries`.
-      overview_session_->ShowDesksTemplatesGrids(is_zero_state, base::GUID(),
+      overview_session_->ShowDesksTemplatesGrids(base::GUID(),
                                                  /*saved_desk_name=*/u"",
                                                  root_window);
       if (SavedDeskItemView* item_view =
@@ -673,8 +664,8 @@ void SavedDeskPresenter::OnAddOrUpdateEntry(
   } else if (desk_template->type() != DeskTemplateType::kSaveAndRecall) {
     // This will update the templates button and save as desks button too. This
     // will call `GetAllEntries`.
-    overview_session_->ShowDesksTemplatesGrids(
-        is_zero_state, desk_template->uuid(), saved_desk_name, root_window);
+    overview_session_->ShowDesksTemplatesGrids(desk_template->uuid(),
+                                               saved_desk_name, root_window);
   }
 
   if (!was_update) {
@@ -726,9 +717,8 @@ void SavedDeskPresenter::AddOrUpdateUIEntries(
 
   for (auto& overview_grid : overview_session_->grid_list()) {
     if (auto* library_view = overview_grid->GetSavedDeskLibraryView()) {
-      library_view->AddOrUpdateTemplates(
-          new_entries, /*initializing_grid_view=*/false,
-          /*last_saved_template_uuid=*/base::GUID());
+      library_view->AddOrUpdateEntries(new_entries, /*order_first_uuid=*/{},
+                                       /*animate=*/true);
     }
   }
 
@@ -746,7 +736,7 @@ void SavedDeskPresenter::RemoveUIEntries(const std::vector<base::GUID>& uuids) {
   for (auto& overview_grid : overview_session_->grid_list()) {
     // Remove the entries from `SavedDeskLibraryView`.
     if (auto* library_view = overview_grid->GetSavedDeskLibraryView())
-      library_view->DeleteTemplates(uuids, /*delete_animation=*/true);
+      library_view->DeleteEntries(uuids, /*delete_animation=*/true);
   }
 
   if (on_update_ui_closure_for_testing_)

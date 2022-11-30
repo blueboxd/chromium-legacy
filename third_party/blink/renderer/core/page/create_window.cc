@@ -77,7 +77,7 @@ WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string,
 
   // This code follows the HTML spec, specifically
   // https://html.spec.whatwg.org/C/#concept-window-open-features-tokenize
-  if (feature_string.IsEmpty())
+  if (feature_string.empty())
     return window_features;
 
   bool ui_features_were_disabled = false;
@@ -148,7 +148,7 @@ WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string,
     // Listing a key with no value is shorthand for key=yes
     int value;
     constexpr auto kLoose = WTF::NumberParsingOptions::Loose();
-    if (value_string.IsEmpty() || value_string == "yes" ||
+    if (value_string.empty() || value_string == "yes" ||
         value_string == "true") {
       value = 1;
     } else if (value_string.Is8Bit()) {
@@ -218,7 +218,7 @@ WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string,
       const String decoded = DecodeURLEscapeSequences(
           original_case_value_string.ToString(), DecodeURLMode::kUTF8);
 
-      if (!decoded.IsEmpty()) {
+      if (!decoded.empty()) {
         window_features.impression =
             dom_window->GetFrame()
                 ->GetAttributionSrcLoader()
@@ -295,15 +295,11 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
   request.SetFrameType(mojom::RequestContextFrameType::kAuxiliary);
 
   const KURL& url = request.GetResourceRequest().Url();
-  auto* csp_for_world = opener_window.GetContentSecurityPolicyForCurrentWorld();
-  if (url.ProtocolIsJavaScript() && csp_for_world) {
-    String script_source = DecodeURLEscapeSequences(
-        url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
-
-    if (!csp_for_world->AllowInline(
-            ContentSecurityPolicy::InlineType::kNavigation,
-            nullptr /* element */, script_source, String() /* nonce */,
-            opener_window.Url(), OrdinalNumber::First())) {
+  if (url.ProtocolIsJavaScript()) {
+    if (opener_window
+            .CheckAndGetJavascriptUrl(request.JavascriptWorld().get(), url,
+                                      nullptr /* element */)
+            .empty()) {
       return nullptr;
     }
   }

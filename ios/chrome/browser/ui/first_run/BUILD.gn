@@ -14,10 +14,10 @@ source_set("field_trial") {
   ]
   deps = [
     ":field_trial_constants",
+    ":field_trial_ids",
     "//base",
     "//components/prefs",
     "//components/signin/ios/browser:features",
-    "//components/variations",
     "//components/version_info",
     "//ios/chrome/app:tests_hook",
     "//ios/chrome/browser/first_run",
@@ -33,6 +33,18 @@ source_set("field_trial_constants") {
   sources = [
     "field_trial_constants.cc",
     "field_trial_constants.h",
+  ]
+}
+
+source_set("field_trial_ids") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "field_trial_ids.cc",
+    "field_trial_ids.h",
+  ]
+  public_deps = [
+    "//base",
+    "//components/variations",
   ]
 }
 
@@ -91,6 +103,7 @@ source_set("first_run") {
     "//ios/chrome/browser/ui/first_run/legacy_signin",
     "//ios/chrome/browser/ui/first_run/signin",
     "//ios/chrome/browser/ui/first_run/sync",
+    "//ios/chrome/browser/ui/first_run/tangible_sync",
     "//ios/chrome/browser/ui/first_run/welcome",
     "//ios/chrome/browser/ui/screen:screen_provider",
     "//ios/chrome/browser/ui/screen:screen_type",
@@ -98,6 +111,7 @@ source_set("first_run") {
     "//ios/chrome/browser/ui/settings/utils",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/ui/util:terms_util",
+    "//ios/chrome/browser/url:constants",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/common:string_util",
     "//ios/chrome/common/ui/colors",
@@ -149,7 +163,6 @@ source_set("utils") {
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/settings/sync/utils",
-    "//ios/chrome/browser/ui/util",
     "//ios/web/public/thread",
     "//ui/gfx",
   ]
@@ -176,7 +189,6 @@ source_set("static_file_ui") {
   ]
   deps = [
     "//base",
-    "//ios/chrome/app/strings",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui/icons",
     "//ios/chrome/browser/ui/util",
@@ -210,6 +222,7 @@ source_set("unit_tests") {
   deps = [
     ":field_trial",
     ":field_trial_constants",
+    ":field_trial_ids",
     ":first_run",
     ":utils",
     "//base",
@@ -218,7 +231,6 @@ source_set("unit_tests") {
     "//components/policy/core/common:common_constants",
     "//components/prefs",
     "//components/prefs:test_support",
-    "//components/variations",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/ui:feature_flags",
@@ -226,7 +238,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/content_suggestions:feature_flags",
     "//ios/chrome/browser/ui/fancy_ui",
     "//ios/chrome/browser/ui/start_surface:feature_flags",
-    "//ios/chrome/browser/ui/util",
     "//ios/chrome/test:test_support",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser:test_support",
@@ -264,8 +275,6 @@ source_set("eg2_tests") {
     "//components/policy/test_support:test_support",
     "//components/signin/ios/browser:features",
     "//ios/chrome/app/strings",
-    "//ios/chrome/app/strings:ios_chromium_strings_grit",
-    "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/policy:eg_test_support+eg2",
     "//ios/chrome/browser/policy:policy_util",
     "//ios/chrome/browser/ui:feature_flags",

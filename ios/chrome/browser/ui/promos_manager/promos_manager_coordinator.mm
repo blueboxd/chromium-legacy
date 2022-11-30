@@ -12,6 +12,11 @@
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/application_context/application_context.h"
+#import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/ui/app_store_rating/app_store_rating_display_handler.h"
+#import "ios/chrome/browser/ui/app_store_rating/features.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/promos_manager_commands.h"
 #import "ios/chrome/browser/ui/post_restore_signin/features.h"
 #import "ios/chrome/browser/ui/post_restore_signin/post_restore_signin_provider.h"
 #import "ios/chrome/browser/ui/promos_manager/bannered_promo_view_provider.h"
@@ -65,19 +70,44 @@
 // The current BanneredPromoViewProvider, if any.
 @property(nonatomic, weak) id<BanneredPromoViewProvider> banneredProvider;
 
+// The current ConfirmationAlertViewController, if any.
+@property(nonatomic, strong) ConfirmationAlertViewController* viewController;
+
+// The current PromoStyleViewController, if any.
+@property(nonatomic, strong) PromoStyleViewController* banneredViewController;
+
 @end
 
 @implementation PromosManagerCoordinator
 
+#pragma mark - Initialization
+
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser {
+  if (self = [super initWithBaseViewController:viewController
+                                       browser:browser]) {
+    [self registerPromos];
+
+    BOOL promosExist = _displayHandlerPromos.size() > 0 ||
+                       _viewProviderPromos.size() > 0 ||
+                       _banneredViewProviderPromos.size() > 0 ||
+                       _alertProviderPromos.size() > 0;
+
+    if (promosExist) {
+      // Don't create PromosManagerMediator unless promos exist that are
+      // registered with PromosManagerCoordinator via `registerPromos`.
+      _mediator = [[PromosManagerMediator alloc]
+          initWithPromosManager:GetApplicationContext()->GetPromosManager()
+          promoImpressionLimits:[self promoImpressionLimits]];
+    }
+  }
+
+  return self;
+}
+
 #pragma mark - Public
 
 - (void)start {
-  [self registerPromos];
-
-  self.mediator = [[PromosManagerMediator alloc]
-      initWithPromosManager:GetApplicationContext()->GetPromosManager()
-      promoImpressionLimits:[self promoImpressionLimits]];
-
   absl::optional<promos_manager::Promo> nextPromoForDisplay =
       [self.mediator nextPromoForDisplay];
 
@@ -87,6 +117,23 @@
 
 - (void)stop {
   self.mediator = nil;
+  [self dismissViewControllers];
+}
+
+- (void)dismissViewControllers {
+  if (self.viewController) {
+    [self.viewController.presentingViewController
+        dismissViewControllerAnimated:YES
+                           completion:nil];
+    self.viewController = nil;
+  }
+
+  if (self.banneredViewController) {
+    [self.banneredViewController.presentingViewController
+        dismissViewControllerAnimated:YES
+                           completion:nil];
+    self.banneredViewController = nil;
+  }
 }
 
 - (void)displayPromo:(promos_manager::Promo)promo {
@@ -100,44 +147,70 @@
          bannered_provider_it == _banneredViewProviderPromos.end() ||
          alert_provider_it == _alertProviderPromos.end());
 
+  id<PromosManagerCommands> promosManagerCommandsHandler = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), PromosManagerCommands);
+
   if (handler_it != _displayHandlerPromos.end()) {
     id<StandardPromoDisplayHandler> handler = handler_it->second;
+
+    if ([handler respondsToSelector:@selector(setHandler:)])
+      handler.handler = promosManagerCommandsHandler;
 
     [handler handleDisplay];
 
     [self.mediator recordImpression:handler.identifier];
+
+    if ([handler respondsToSelector:@selector(promoWasDisplayed)]) {
+      [handler promoWasDisplayed];
+    }
   } else if (provider_it != _viewProviderPromos.end()) {
     id<StandardPromoViewProvider> provider = provider_it->second;
 
-    ConfirmationAlertViewController* promoViewController =
-        [provider viewController];
-    promoViewController.presentationController.delegate = self;
-    promoViewController.actionHandler = self;
+    if ([provider respondsToSelector:@selector(setHandler:)])
+      provider.handler = promosManagerCommandsHandler;
+
+    self.viewController = [provider viewController];
+    self.viewController.presentationController.delegate = self;
+    self.viewController.actionHandler = self;
+
     self.provider = provider;
 
-    [self.baseViewController presentViewController:promoViewController
+    [self.baseViewController presentViewController:self.viewController
                                           animated:YES
                                         completion:nil];
 
     [self.mediator recordImpression:provider.identifier];
+
+    if ([provider respondsToSelector:@selector(promoWasDisplayed)]) {
+      [provider promoWasDisplayed];
+    }
   } else if (bannered_provider_it != _banneredViewProviderPromos.end()) {
     id<BanneredPromoViewProvider> banneredProvider =
         bannered_provider_it->second;
 
-    PromoStyleViewController* promoViewController =
-        [banneredProvider viewController];
+    if ([banneredProvider respondsToSelector:@selector(setHandler:)])
+      banneredProvider.handler = promosManagerCommandsHandler;
 
-    promoViewController.presentationController.delegate = self;
-    promoViewController.delegate = self;
+    self.banneredViewController = [banneredProvider viewController];
+
+    self.banneredViewController.presentationController.delegate = self;
+    self.banneredViewController.delegate = self;
     self.banneredProvider = banneredProvider;
 
-    [self.baseViewController presentViewController:promoViewController
+    [self.baseViewController presentViewController:self.banneredViewController
                                           animated:YES
                                         completion:nil];
 
     [self.mediator recordImpression:banneredProvider.identifier];
+
+    if ([banneredProvider respondsToSelector:@selector(promoWasDisplayed)]) {
+      [banneredProvider promoWasDisplayed];
+    }
   } else if (alert_provider_it != _alertProviderPromos.end()) {
     id<StandardPromoAlertProvider> alertProvider = alert_provider_it->second;
+
+    if ([alertProvider respondsToSelector:@selector(setHandler:)])
+      alertProvider.handler = promosManagerCommandsHandler;
 
     DCHECK([alertProvider.title length] != 0);
     DCHECK([alertProvider.message length] != 0);
@@ -175,18 +248,25 @@
                   style:UIAlertActionStyleCancel
                 handler:^(UIAlertAction* action) {
                   if ([alertProvider respondsToSelector:@selector
-                                     (standardPromoAlertCancelAction)])
+                                     (standardPromoAlertCancelAction)]) {
                     [alertProvider standardPromoAlertCancelAction];
+                    [self dismissViewControllers];
+                  }
                 }];
 
     [alert addAction:defaultAction];
     [alert addAction:cancelAction];
+    alert.preferredAction = defaultAction;
 
     [self.baseViewController presentViewController:alert
                                           animated:YES
                                         completion:nil];
 
     [self.mediator recordImpression:alertProvider.identifier];
+
+    if ([alertProvider respondsToSelector:@selector(promoWasDisplayed)]) {
+      [alertProvider promoWasDisplayed];
+    }
   } else {
     NOTREACHED();
   }
@@ -209,11 +289,16 @@
 - (void)didTapSecondaryActionButton {
   DCHECK(self.banneredProvider);
 
-  if (![self.banneredProvider
-          respondsToSelector:@selector(standardPromoSecondaryAction)])
-    return;
-
-  [self.banneredProvider standardPromoSecondaryAction];
+  // Sometimes the secondary action button for a PromoStyleViewController is
+  // used as the dismiss action button.
+  if ([self.banneredProvider
+          respondsToSelector:@selector(standardPromoDismissAction)]) {
+    [self.banneredProvider standardPromoDismissAction];
+    [self dismissViewControllers];
+  } else if ([self.banneredProvider
+                 respondsToSelector:@selector(standardPromoSecondaryAction)]) {
+    [self.banneredProvider standardPromoSecondaryAction];
+  }
 }
 
 // Invoked when the tertiary action button is tapped.
@@ -291,11 +376,11 @@
   if ([self.provider
           respondsToSelector:@selector(standardPromoDismissAction)]) {
     [self.provider standardPromoDismissAction];
+    [self dismissViewControllers];
   } else if ([self.banneredProvider
                  respondsToSelector:@selector(standardPromoDismissAction)]) {
     [self.banneredProvider standardPromoDismissAction];
-  } else {
-    NOTREACHED();
+    [self dismissViewControllers];
   }
 }
 
@@ -303,14 +388,28 @@
 
 - (void)presentationControllerDidDismiss:
     (UIPresentationController*)presentationController {
-  [self confirmationAlertDismissAction];
+  DCHECK(self.provider || self.banneredProvider);
+
+  if ([self.provider respondsToSelector:@selector(standardPromoDismissSwipe)]) {
+    [self.provider standardPromoDismissSwipe];
+    [self dismissViewControllers];
+  } else if ([self.banneredProvider
+                 respondsToSelector:@selector(standardPromoDismissSwipe)]) {
+    [self.banneredProvider standardPromoDismissSwipe];
+    [self dismissViewControllers];
+  } else {
+    [self confirmationAlertDismissAction];
+  }
 }
 
 #pragma mark - Private
 
 - (void)registerPromos {
   // Add StandardPromoDisplayHandler promos here. For example:
-  // TODO(crbug.com/1360880): Create first StandardPromoDisplayHandler promo.
+  if (IsAppStoreRatingEnabled()) {
+    _displayHandlerPromos[promos_manager::Promo::AppStoreRating] =
+        [[AppStoreRatingDisplayHandler alloc] init];
+  }
 
   // Add StandardPromoViewProvider promos here. For example:
   // TODO(crbug.com/1360880): Create first StandardPromoViewProvider promo.

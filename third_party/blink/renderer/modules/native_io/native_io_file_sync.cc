@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ NativeIOFileSync::NativeIOFileSync(
       capacity_tracker_(capacity_tracker) {
   DCHECK_GE(backing_file_length, 0);
   DCHECK(capacity_tracker);
-  backend_file_.set_disconnect_handler(WTF::Bind(
+  backend_file_.set_disconnect_handler(WTF::BindOnce(
       &NativeIOFileSync::OnBackendDisconnect, WrapWeakPersistent(this)));
 }
 

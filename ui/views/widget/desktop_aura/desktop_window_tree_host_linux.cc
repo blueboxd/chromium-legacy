@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/null_window_targeter.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
@@ -186,10 +187,11 @@ void DesktopWindowTreeHostLinux::DispatchEvent(ui::Event* event) {
     ui::LocatedEvent* located_event = event->AsLocatedEvent();
     if (GetContentWindow() && GetContentWindow()->delegate()) {
       int flags = located_event->flags();
-      gfx::Point location_in_dip = located_event->location();
-      GetRootTransform().TransformPointReverse(&location_in_dip);
+      gfx::PointF location = located_event->location_f();
+      gfx::PointF location_in_dip =
+          GetRootTransform().InverseMapPoint(location).value_or(location);
       hit_test_code = GetContentWindow()->delegate()->GetNonClientComponent(
-          location_in_dip);
+          gfx::ToRoundedPoint(location_in_dip));
       if (hit_test_code != HTCLIENT && hit_test_code != HTNOWHERE)
         flags |= ui::EF_IS_NON_CLIENT;
       located_event->set_flags(flags);

@@ -1,4 +1,4 @@
-// Copyright 2017 the Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ class CORE_EXPORT DeclaredStylePropertyMap final : public StylePropertyMap {
  protected:
   const CSSValue* GetProperty(CSSPropertyID) const override;
   const CSSValue* GetCustomProperty(const AtomicString&) const override;
-  void ForEachProperty(const IterationCallback&) override;
+  void ForEachProperty(IterationFunction visitor) override;
   void SetProperty(CSSPropertyID, const CSSValue&) override;
   bool SetShorthandProperty(CSSPropertyID,
                             const String&,

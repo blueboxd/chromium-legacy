@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/notreached.h"
 #include "base/synchronization/waitable_event.h"
 #include "gpu/command_buffer/client/webgpu_interface.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -20,9 +21,12 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_request_adapter_options.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/navigator_base.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_adapter.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
@@ -137,6 +141,28 @@ WGPURequestAdapterOptions AsDawnType(
   }
 
   return dawn_options;
+}
+
+// Returns the execution context token given the context. Currently returning
+// the WebGPU specific execution context token.
+// TODO(dawn:549) Might be able to use ExecutionContextToken instead of WebGPU
+//     specific execution context token if/when DocumentToken becomes a part of
+//     ExecutionContextToken.
+WebGPUExecutionContextToken GetExecutionContextToken(
+    const ExecutionContext* execution_context) {
+  // WebGPU only supports 2 types of context tokens, DocumentTokens and
+  // DedicatedWorkerTokens. The token is sent to the GPU process so that it can
+  // be cross-referenced against the browser process to get an isolation key for
+  // caching purposes.
+  if (execution_context->IsDedicatedWorkerGlobalScope()) {
+    return execution_context->GetExecutionContextToken()
+        .GetAs<DedicatedWorkerToken>();
+  }
+  if (execution_context->IsWindow()) {
+    return To<LocalDOMWindow>(execution_context)->document()->Token();
+  }
+  NOTREACHED();
+  return WebGPUExecutionContextToken();
 }
 
 }  // anonymous namespace
@@ -265,10 +291,9 @@ ScriptPromise GPU::requestAdapter(ScriptState* script_state,
                                   const GPURequestAdapterOptions* options) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
 
   if (!dawn_control_client_ || dawn_control_client_->IsContextLost()) {
-    ExecutionContext* execution_context = ExecutionContext::From(script_state);
-
     // TODO(natlee@microsoft.com): if GPU process is lost, wait for the GPU
     // process to come back instead of rejecting right away
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider =
@@ -281,11 +306,8 @@ ScriptPromise GPU::requestAdapter(ScriptState* script_state,
       resolver->Resolve(v8::Null(script_state->GetIsolate()));
       return promise;
     } else {
-      // Get an identifying token from the execution context to be sent to the
-      // GPU process so that it can be cross-referenced against the browser
-      // process to get an isolation key for caching purposes.
-      context_provider->WebGPUInterface()->SetExecutionContextToken(
-          execution_context->GetExecutionContextToken());
+      context_provider->WebGPUInterface()->SetWebGPUExecutionContextToken(
+          GetExecutionContextToken(execution_context));
 
       // Make a new DawnControlClientHolder with the context provider we just
       // made and set the lost context callback
@@ -306,16 +328,21 @@ ScriptPromise GPU::requestAdapter(ScriptState* script_state,
   dawn_control_client_->GetProcs().instanceRequestAdapter(
       dawn_control_client_->GetWGPUInstance(), &dawn_options,
       callback->UnboundCallback(), callback->AsUserdata());
-  dawn_control_client_->EnsureFlush();
+  dawn_control_client_->EnsureFlush(
+      *execution_context->GetAgent()->event_loop());
 
-  UseCounter::Count(ExecutionContext::From(script_state), WebFeature::kWebGPU);
+  UseCounter::Count(execution_context, WebFeature::kWebGPU);
 
   return promise;
 }
 
 String GPU::getPreferredCanvasFormat() {
   // TODO(crbug.com/1007166): Return actual preferred format for the swap chain.
+#if BUILDFLAG(IS_ANDROID)
+  return "rgba8unorm";
+#else
   return "bgra8unorm";
+#endif
 }
 
 void GPU::TrackMappableBuffer(GPUBuffer* buffer) {

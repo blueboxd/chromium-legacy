@@ -71,8 +71,12 @@ struct StructTraits<crosapi::mojom::AppDataView, apps::AppPtr> {
     return r->install_reason;
   }
 
-  static const absl::optional<std::string>& policy_id(const apps::AppPtr& r) {
-    return r->policy_id;
+  // This method is required for Ash-Lacros backwards compatibility.
+  static absl::optional<std::string> deprecated_policy_id(
+      const apps::AppPtr& r);
+
+  static const std::vector<std::string>& policy_ids(const apps::AppPtr& r) {
+    return r->policy_ids;
   }
 
   static crosapi::mojom::OptionalBool recommendable(const apps::AppPtr& r);
@@ -271,6 +275,10 @@ struct StructTraits<crosapi::mojom::IconValueDataView, apps::IconValuePtr> {
 
   static bool is_placeholder_icon(const apps::IconValuePtr& r) {
     return r->is_placeholder_icon;
+  }
+
+  static bool is_fallback_icon(const apps::IconValuePtr& r) {
+    return r->is_fallback_icon;
   }
 
   static bool Read(crosapi::mojom::IconValueDataView, apps::IconValuePtr* out);

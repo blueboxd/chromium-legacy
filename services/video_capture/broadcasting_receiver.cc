@@ -7,43 +7,14 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/files/scoped_file.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/unsafe_shared_memory_region.h"
+#include "base/ranges/algorithm.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace video_capture {
-
-namespace {
-
-media::mojom::VideoBufferHandlePtr
-CloneUnsafeShmemRegionToRawFileDescriptorHandle(
-    const base::UnsafeSharedMemoryRegion& region) {
-  base::subtle::PlatformSharedMemoryRegion platform_region =
-      base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
-          region.Duplicate());
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_WIN) || \
-    BUILDFLAG(IS_ANDROID)
-  // On these platforms, the PlatformHandle is a single scoper object.
-  auto platform_handle = platform_region.PassPlatformHandle();
-#else
-  // On Linux, a valid platform handle is a pair of FDs, and at least one of
-  // those FDs must be valid: `fd`, if present, is readable and writable and
-  // `readonly_fd`, if present, is only readable.
-  //
-  // For an `UnsafeSharedMemoryRegion` which is always writable, only `fd` is
-  // present.
-  base::ScopedFD platform_handle =
-      std::move(platform_region.PassPlatformHandle().fd);
-#endif
-  return media::mojom::VideoBufferHandle::NewSharedMemoryViaRawFileDescriptor(
-      media::mojom::SharedMemoryViaRawFileDescriptor::New(
-          mojo::PlatformHandle(std::move(platform_handle)), region.GetSize()));
-}
-
-}  // namespace
 
 // A mojom::VideoFrameAccessHandler implementation that forwards buffer release
 // calls to the BroadcastingReceiver.
@@ -195,22 +166,6 @@ BroadcastingReceiver::BufferContext::CloneBufferHandle(
       if (buffer_handle_->is_unsafe_shmem_region()) {
         return media::mojom::VideoBufferHandle::NewUnsafeShmemRegion(
             buffer_handle_->get_unsafe_shmem_region().Duplicate());
-      } else if (buffer_handle_->is_shared_memory_via_raw_file_descriptor()) {
-        ConvertRawFileDescriptorToUnsafeShmemRegion();
-        return media::mojom::VideoBufferHandle::NewUnsafeShmemRegion(
-            buffer_handle_->get_unsafe_shmem_region().Duplicate());
-      } else {
-        NOTREACHED() << "Unexpected video buffer handle type";
-      }
-      break;
-    case media::VideoCaptureBufferType::kSharedMemoryViaRawFileDescriptor:
-      if (buffer_handle_->is_unsafe_shmem_region()) {
-        return CloneUnsafeShmemRegionToRawFileDescriptorHandle(
-            buffer_handle_->get_unsafe_shmem_region());
-      } else if (buffer_handle_->is_shared_memory_via_raw_file_descriptor()) {
-        ConvertRawFileDescriptorToUnsafeShmemRegion();
-        return CloneUnsafeShmemRegionToRawFileDescriptorHandle(
-            buffer_handle_->get_unsafe_shmem_region().Duplicate());
       } else {
         NOTREACHED() << "Unexpected video buffer handle type";
       }
@@ -228,35 +183,6 @@ BroadcastingReceiver::BufferContext::CloneBufferHandle(
 #endif
   }
   return media::mojom::VideoBufferHandlePtr();
-}
-
-void BroadcastingReceiver::BufferContext::
-    ConvertRawFileDescriptorToUnsafeShmemRegion() {
-  DCHECK(buffer_handle_->is_shared_memory_via_raw_file_descriptor());
-
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-  const size_t handle_size =
-      buffer_handle_->get_shared_memory_via_raw_file_descriptor()
-          ->shared_memory_size_in_bytes;
-  base::ScopedFD platform_file =
-      buffer_handle_->get_shared_memory_via_raw_file_descriptor()
-          ->file_descriptor_handle.TakeFD();
-  base::UnguessableToken guid = base::UnguessableToken::Create();
-  base::subtle::PlatformSharedMemoryRegion platform_region =
-      base::subtle::PlatformSharedMemoryRegion::Take(
-          std::move(platform_file),
-          base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe, handle_size,
-          guid);
-  if (!platform_region.IsValid()) {
-    NOTREACHED();
-    return;
-  }
-  buffer_handle_->set_unsafe_shmem_region(
-      base::UnsafeSharedMemoryRegion::Deserialize(std::move(platform_region)));
-#else
-  NOTREACHED() << "Unable to consume buffer handle of type "
-                  "kSharedMemoryViaRawFileDescriptor on non-Linux platform.";
-#endif
 }
 
 BroadcastingReceiver::BroadcastingReceiver()
@@ -529,11 +455,8 @@ void BroadcastingReceiver::OnStopped() {
 void BroadcastingReceiver::OnClientFinishedConsumingFrame(
     int32_t buffer_context_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto buffer_context_iter =
-      std::find_if(buffer_contexts_.begin(), buffer_contexts_.end(),
-                   [buffer_context_id](const BufferContext& entry) {
-                     return entry.buffer_context_id() == buffer_context_id;
-                   });
+  auto buffer_context_iter = base::ranges::find(
+      buffer_contexts_, buffer_context_id, &BufferContext::buffer_context_id);
   CHECK(buffer_context_iter != buffer_contexts_.end());
   buffer_context_iter->DecreaseConsumerCount();
   if (buffer_context_iter->is_retired() &&
@@ -551,11 +474,10 @@ std::vector<BroadcastingReceiver::BufferContext>::iterator
 BroadcastingReceiver::FindUnretiredBufferContextFromBufferId(
     int32_t buffer_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return std::find_if(buffer_contexts_.begin(), buffer_contexts_.end(),
-                      [buffer_id](const BufferContext& entry) {
-                        return !entry.is_retired() &&
-                               entry.buffer_id() == buffer_id;
-                      });
+  return base::ranges::find_if(
+      buffer_contexts_, [buffer_id](const BufferContext& entry) {
+        return !entry.is_retired() && entry.buffer_id() == buffer_id;
+      });
 }
 
 }  // namespace video_capture

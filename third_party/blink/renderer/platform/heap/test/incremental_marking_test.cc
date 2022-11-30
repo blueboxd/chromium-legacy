@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1292,7 +1292,7 @@ TEST_F(IncrementalMarkingTest, IncrementalMarkingShrinkingBackingCompaction) {
   }
   // Ensure that shrinking the backing does not crash in compaction as there may
   // be registered slots left in the area that is already freed.
-  holder->ShrinkToFit();
+  holder->shrink_to_fit();
   driver.FinishGC();
 }
 
@@ -1306,7 +1306,7 @@ TEST_F(IncrementalMarkingTest,
   // Allocate a vector and reserve a buffer to avoid triggering the write
   // barrier during incremental marking.
   WeakPersistent<Nested> nested = MakeGarbageCollected<Nested>();
-  nested->ReserveCapacity(32);
+  nested->reserve(32);
   driver.StartGC();
   // Initialize the inner vector, triggering tracing and slots registration.
   // This could be an object using DISALLOW_NEW() but HeapVector is easier to
@@ -1344,7 +1344,7 @@ TEST_F(IncrementalMarkingTest, AdjustMarkedBytesOnMarkedBackingStore) {
   // free as the resulting memory block is too small for a free list entry.
   for (int i = 15; i > 0; i--) {
     holder->Shrink(i);
-    holder->ShrinkToFit();
+    holder->shrink_to_fit();
   }
   IncrementalMarkingTestDriver driver(ThreadState::Current());
   driver.StartGC();
@@ -1435,7 +1435,7 @@ TEST_F(IncrementalMarkingTest, LinkedHashSetMovingCallback) {
   // Destroy the link between original HeapLinkedHashSet object and its backing
   // store.
   wrapper->Swap();
-  DCHECK(wrapper->hash_set_.IsEmpty());
+  DCHECK(wrapper->hash_set_.empty());
 
   PreciselyCollectGarbage();
 

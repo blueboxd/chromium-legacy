@@ -13,6 +13,7 @@
 #include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -60,7 +61,6 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 using offline_items_collection::android::OfflineItemBridge;
-using OfflineItemSchedule = offline_items_collection::OfflineItemSchedule;
 
 namespace {
 
@@ -160,9 +160,6 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
     otr_profile_id = profile->GetOTRProfileID().ConvertToJavaOTRProfileID(env);
   }
 
-  absl::optional<OfflineItemSchedule> offline_item_schedule;
-  auto j_offline_item_schedule =
-      OfflineItemBridge::CreateOfflineItemSchedule(env, offline_item_schedule);
   return Java_DownloadInfo_createDownloadInfo(
       env, ConvertUTF8ToJavaString(env, item->GetGuid()),
       ConvertUTF8ToJavaString(env, item->GetFileNameToReportUser().value()),
@@ -180,8 +177,7 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
       item->GetLastAccessTime().ToJavaTime(), item->IsDangerous(),
       static_cast<int>(
           OfflineItemUtils::ConvertDownloadInterruptReasonToFailState(
-              item->GetLastReason())),
-      j_offline_item_schedule);
+              item->GetLastReason())));
 }
 
 static jlong JNI_DownloadManagerService_Init(JNIEnv* env,
@@ -698,8 +694,8 @@ void DownloadManagerService::OnPendingDownloadsLoaded() {
   is_pending_downloads_loaded_ = true;
 
   auto result =
-      std::find_if(coordinators_.begin(), coordinators_.end(),
-                   [](const auto& it) { return !it.first->IsOffTheRecord(); });
+      base::ranges::find_if_not(coordinators_, &ProfileKey::IsOffTheRecord,
+                                &Coordinators::value_type::first);
   CHECK(result != coordinators_.end())
       << "A non-OffTheRecord coordinator should exist when "
          "OnPendingDownloadsLoaded is triggered.";

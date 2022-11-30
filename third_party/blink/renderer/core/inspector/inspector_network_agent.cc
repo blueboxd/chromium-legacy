@@ -322,8 +322,8 @@ class InspectorPostBodyParser
       return;
     auto* reader = new InspectorFileReaderLoaderClient(
         blob_handle, task_runner_,
-        WTF::Bind(&InspectorPostBodyParser::BlobReadCallback,
-                  WTF::RetainedRef(this), WTF::Unretained(destination)));
+        WTF::BindOnce(&InspectorPostBodyParser::BlobReadCallback,
+                      WTF::RetainedRef(this), WTF::Unretained(destination)));
     reader->Start();
   }
 
@@ -645,7 +645,7 @@ std::unique_ptr<protocol::Network::TrustTokenParams> BuildTrustTokenParams(
           .setRefreshPolicy(GetTrustTokenRefreshPolicy(params.refresh_policy))
           .build();
 
-  if (!params.issuers.IsEmpty()) {
+  if (!params.issuers.empty()) {
     auto issuers = std::make_unique<protocol::Array<protocol::String>>();
     for (const auto& issuer : params.issuers) {
       issuers->push_back(issuer->ToString());
@@ -909,7 +909,7 @@ BuildObjectForResourceRequest(const ResourceRequest& request,
           .build();
   if (url.FragmentIdentifier())
     result->setUrlFragment("#" + url.FragmentIdentifier());
-  if (!data_string.IsEmpty())
+  if (!data_string.empty())
     result->setPostData(data_string);
   if (data_entries->size())
     result->setPostDataEntries(std::move(data_entries));
@@ -920,6 +920,38 @@ BuildObjectForResourceRequest(const ResourceRequest& request,
         BuildTrustTokenParams(*request.TrustTokenParams()));
   }
   return result;
+}
+
+String AlternateProtocolUsageToString(
+    net::AlternateProtocolUsage alternate_protocol_usage) {
+  switch (alternate_protocol_usage) {
+    case net::AlternateProtocolUsage::ALTERNATE_PROTOCOL_USAGE_NO_RACE:
+      return protocol::Network::AlternateProtocolUsageEnum::
+          AlternativeJobWonWithoutRace;
+    case net::AlternateProtocolUsage::ALTERNATE_PROTOCOL_USAGE_WON_RACE:
+      return protocol::Network::AlternateProtocolUsageEnum::
+          AlternativeJobWonRace;
+    case net::AlternateProtocolUsage::
+        ALTERNATE_PROTOCOL_USAGE_MAIN_JOB_WON_RACE:
+      return protocol::Network::AlternateProtocolUsageEnum::MainJobWonRace;
+    case net::AlternateProtocolUsage::ALTERNATE_PROTOCOL_USAGE_MAPPING_MISSING:
+      return protocol::Network::AlternateProtocolUsageEnum::MappingMissing;
+    case net::AlternateProtocolUsage::ALTERNATE_PROTOCOL_USAGE_BROKEN:
+      return protocol::Network::AlternateProtocolUsageEnum::Broken;
+    case net::AlternateProtocolUsage::
+        ALTERNATE_PROTOCOL_USAGE_DNS_ALPN_H3_JOB_WON_WITHOUT_RACE:
+      return protocol::Network::AlternateProtocolUsageEnum::
+          DnsAlpnH3JobWonWithoutRace;
+    case net::AlternateProtocolUsage::
+        ALTERNATE_PROTOCOL_USAGE_DNS_ALPN_H3_JOB_WON_RACE:
+      return protocol::Network::AlternateProtocolUsageEnum::DnsAlpnH3JobWonRace;
+    case net::AlternateProtocolUsage::
+        ALTERNATE_PROTOCOL_USAGE_UNSPECIFIED_REASON:
+      return protocol::Network::AlternateProtocolUsageEnum::UnspecifiedReason;
+    case net::AlternateProtocolUsage::ALTERNATE_PROTOCOL_USAGE_MAX:
+      return protocol::Network::AlternateProtocolUsageEnum::UnspecifiedReason;
+  }
+  return protocol::Network::AlternateProtocolUsageEnum::UnspecifiedReason;
 }
 
 static std::unique_ptr<protocol::Network::Response>
@@ -958,11 +990,11 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
   // or the response is a 304 Not Modified.
   String mime_type = response.MimeType();
   if (cached_resource &&
-      (mime_type.IsEmpty() || response.HttpStatusCode() == 304))
+      (mime_type.empty() || response.HttpStatusCode() == 304))
     mime_type = cached_resource->GetResponse().MimeType();
 
   if (is_empty)
-    *is_empty = !status && mime_type.IsEmpty() && !headers_map.size();
+    *is_empty = !status && mime_type.empty() && !headers_map.size();
 
   std::unique_ptr<protocol::Network::Response> response_object =
       protocol::Network::Response::create()
@@ -987,7 +1019,7 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
     response_object->setResponseTime(
         response.ResponseTime().ToJsTimeIgnoringNull());
   }
-  if (!response.CacheStorageCacheName().IsEmpty()) {
+  if (!response.CacheStorageCacheName().empty()) {
     response_object->setCacheStorageCacheName(response.CacheStorageCacheName());
   }
 
@@ -1004,7 +1036,7 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
   }
 
   String protocol = response.AlpnNegotiatedProtocol();
-  if (protocol.IsEmpty() || protocol == "unknown") {
+  if (protocol.empty() || protocol == "unknown") {
     if (response.WasFetchedViaSPDY()) {
       protocol = "h2";
     } else if (response.IsHTTP()) {
@@ -1023,6 +1055,8 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
     }
   }
   response_object->setProtocol(protocol);
+  response_object->setAlternateProtocolUsage(
+      AlternateProtocolUsageToString(response.AlternateProtocolUsage()));
 
   const absl::optional<net::SSLInfo>& ssl_info = response.GetSSLInfo();
   if (ssl_info.has_value()) {
@@ -1189,7 +1223,7 @@ void InspectorNetworkAgent::WillSendRequestInternal(
                            ? UrlWithoutFragment(loader->Url()).GetString()
                            : UrlWithoutFragment(fetch_context_url).GetString();
   Maybe<String> maybe_frame_id;
-  if (!frame_id.IsEmpty())
+  if (!frame_id.empty())
     maybe_frame_id = frame_id;
   if (loader && loader->GetFrame() && loader->GetFrame()->GetDocument()) {
     request_info->setIsSameSite(
@@ -1408,7 +1442,7 @@ void InspectorNetworkAgent::DidReceiveResourceResponse(
     return;
   if (resource_response && !resource_is_empty) {
     Maybe<String> maybe_frame_id;
-    if (!frame_id.IsEmpty())
+    if (!frame_id.empty())
       maybe_frame_id = frame_id;
     GetFrontend()->responseReceived(
         request_id, loader_id,
@@ -1610,7 +1644,7 @@ InspectorNetworkAgent::BuildInitiatorObject(
     Document* document,
     const FetchInitiatorInfo& initiator_info,
     int max_async_depth) {
-  if (initiator_info.is_imported_module && !initiator_info.referrer.IsEmpty()) {
+  if (initiator_info.is_imported_module && !initiator_info.referrer.empty()) {
     std::unique_ptr<protocol::Network::Initiator> initiator_object =
         protocol::Network::Initiator::create()
             .setType(protocol::Network::Initiator::TypeEnum::Script)
@@ -1626,7 +1660,7 @@ InspectorNetworkAgent::BuildInitiatorObject(
   bool was_requested_by_stylesheet =
       initiator_info.name == fetch_initiator_type_names::kCSS ||
       initiator_info.name == fetch_initiator_type_names::kUacss;
-  if (was_requested_by_stylesheet && !initiator_info.referrer.IsEmpty()) {
+  if (was_requested_by_stylesheet && !initiator_info.referrer.empty()) {
     std::unique_ptr<protocol::Network::Initiator> initiator_object =
         protocol::Network::Initiator::create()
             .setType(protocol::Network::Initiator::TypeEnum::Parser)
@@ -1753,7 +1787,7 @@ void InspectorNetworkAgent::DidReceiveWebSocketHandshakeResponse(
           .setStatusText(response->status_text)
           .setHeaders(BuildObjectForHeaders(response_headers))
           .build();
-  if (!response->headers_text.IsEmpty())
+  if (!response->headers_text.empty())
     response_object->setHeadersText(response->headers_text);
 
   if (request) {
@@ -1763,7 +1797,7 @@ void InspectorNetworkAgent::DidReceiveWebSocketHandshakeResponse(
                           AtomicString(header->value));
     }
     response_object->setRequestHeaders(BuildObjectForHeaders(request_headers));
-    if (!request->headers_text.IsEmpty())
+    if (!request->headers_text.empty())
       response_object->setRequestHeadersText(request->headers_text);
   }
 
@@ -1790,7 +1824,7 @@ void InspectorNetworkAgent::DidReceiveWebSocketMessage(
     size += span.size();
   }
   Vector<char> flatten;
-  flatten.ReserveCapacity(base::checked_cast<wtf_size_t>(size));
+  flatten.reserve(base::checked_cast<wtf_size_t>(size));
   for (const auto& span : data) {
     flatten.Append(span.data(), base::checked_cast<wtf_size_t>(span.size()));
   }
@@ -1938,8 +1972,8 @@ void InspectorNetworkAgent::GetResponseBodyBlob(
   }
   InspectorFileReaderLoaderClient* client = new InspectorFileReaderLoaderClient(
       blob, context->GetTaskRunner(TaskType::kFileReading),
-      WTF::Bind(ResponseBodyFileReaderLoaderDone, resource_data->MimeType(),
-                resource_data->TextEncodingName(), std::move(callback)));
+      WTF::BindOnce(ResponseBodyFileReaderLoaderDone, resource_data->MimeType(),
+                    resource_data->TextEncodingName(), std::move(callback)));
   client->Start();
 }
 
@@ -2026,7 +2060,7 @@ Response InspectorNetworkAgent::setAcceptedEncodings(
   }
   // If invoked with an empty list, it means none of the encodings should be
   // accepted. See InspectorNetworkAgent::PrepareRequest.
-  if (accepted_encodings.IsEmpty())
+  if (accepted_encodings.empty())
     accepted_encodings.insert("none");
 
   // Set the inspector state.
@@ -2062,7 +2096,9 @@ Response InspectorNetworkAgent::emulateNetworkConditions(
       // so we must post a task there to make it possible to use
       // NetworkStateNotifier.
       PostCrossThreadTask(
-          *Thread::MainThread()->GetDeprecatedTaskRunner(), FROM_HERE,
+          *Thread::MainThread()->GetTaskRunner(
+              MainThreadTaskRunnerRestricted()),
+          FROM_HERE,
           CrossThreadBindOnce(SetNetworkStateOverride, offline, latency,
                               download_throughput, upload_throughput, type));
       return Response::Success();
@@ -2082,7 +2118,7 @@ Response InspectorNetworkAgent::setCacheDisabled(bool cache_disabled) {
   // queried from FrameLoader and other places.
   cache_disabled_.Set(cache_disabled);
   if (cache_disabled && IsMainThread())
-    GetMemoryCache()->EvictResources();
+    MemoryCache::Get()->EvictResources();
   return Response::Success();
 }
 
@@ -2123,7 +2159,7 @@ void InspectorNetworkAgent::DidCommitLoad(LocalFrame* frame,
     return;
 
   if (cache_disabled_.Get())
-    GetMemoryCache()->EvictResources();
+    MemoryCache::Get()->EvictResources();
 
   resources_data_->Clear(IdentifiersFactory::LoaderId(loader));
 }
@@ -2215,7 +2251,7 @@ bool InspectorNetworkAgent::FetchResourceContent(Document* document,
   // First try to fetch content from the cached resource.
   Resource* cached_resource = document->Fetcher()->CachedResource(url);
   if (!cached_resource) {
-    cached_resource = GetMemoryCache()->ResourceForURL(
+    cached_resource = MemoryCache::Get()->ResourceForURL(
         url, document->Fetcher()->GetCacheIdentifier(url));
   }
   if (cached_resource && InspectorPageAgent::CachedResourceContent(

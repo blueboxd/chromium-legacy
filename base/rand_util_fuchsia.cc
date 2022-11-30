@@ -22,8 +22,9 @@ namespace {
 // rand_util_win.cc.
 std::atomic<bool> g_use_boringssl;
 
-const Feature kUseBoringSSLForRandBytes{"UseBoringSSLForRandBytes",
-                                        FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kUseBoringSSLForRandBytes,
+             "UseBoringSSLForRandBytes",
+             FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace
 
@@ -49,5 +50,16 @@ void RandBytes(void* output, size_t output_length) {
 
   zx_cprng_draw(output, output_length);
 }
+
+namespace internal {
+
+double RandDoubleAvoidAllocation() {
+  uint64_t number;
+  zx_cprng_draw(&number, sizeof(number));
+  // This transformation is explained in rand_util.cc.
+  return (number >> 11) * 0x1.0p-53;
+}
+
+}  // namespace internal
 
 }  // namespace base

@@ -137,9 +137,7 @@ HostResolverMdnsTask::HostResolverMdnsTask(MDnsClient* mdns_client,
   DCHECK(!query_types.Empty());
   DCHECK(!query_types.Has(DnsQueryType::UNSPECIFIED));
 
-  static constexpr DnsQueryTypeSet kUnwantedQueries(
-      DnsQueryType::HTTPS, DnsQueryType::INTEGRITY,
-      DnsQueryType::HTTPS_EXPERIMENTAL);
+  static constexpr DnsQueryTypeSet kUnwantedQueries(DnsQueryType::HTTPS);
 
   for (DnsQueryType query_type : Difference(query_types, kUnwantedQueries))
     transactions_.emplace_back(query_type, this);
@@ -174,8 +172,7 @@ HostCache::Entry HostResolverMdnsTask::GetResults() const {
                               [](const Transaction& t) { return t.IsDone(); }));
 
   auto found_error =
-      std::find_if(transactions_.begin(), transactions_.end(),
-                   [](const Transaction& t) { return t.IsError(); });
+      base::ranges::find_if(transactions_, &Transaction::IsError);
   if (found_error != transactions_.end()) {
     return found_error->results();
   }
@@ -208,13 +205,9 @@ HostCache::Entry HostResolverMdnsTask::ParseResult(
     case DnsQueryType::UNSPECIFIED:
       // Should create two separate transactions with specified type.
     case DnsQueryType::HTTPS:
-    case DnsQueryType::HTTPS_EXPERIMENTAL:
       // Not supported.
       // TODO(ericorth@chromium.org): Consider support for HTTPS in mDNS if it
       // is ever decided to support HTTPS via non-DoH.
-    case DnsQueryType::INTEGRITY:
-      // INTEGRITY queries are not expected to be useful in mDNS, so they're not
-      // supported.
       NOTREACHED();
       return HostCache::Entry(ERR_FAILED, HostCache::Entry::SOURCE_UNKNOWN);
     case DnsQueryType::A:

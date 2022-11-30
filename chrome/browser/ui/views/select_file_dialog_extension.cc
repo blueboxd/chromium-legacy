@@ -28,8 +28,10 @@
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/ui/login_web_dialog.h"
 #include "chrome/browser/ash/login/ui/webui_login_view.h"
+#include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/extensions/file_manager/select_file_dialog_extension_user_data.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_view_host.h"
@@ -44,6 +46,7 @@
 #include "chromeos/ui/base/window_properties.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window.h"
 #include "ui/base/base_window.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
@@ -243,6 +246,14 @@ class SystemFilesAppDialogDelegate : public chromeos::SystemWebDialogDelegate {
 
 SelectFileDialogExtension::Owner::Owner() = default;
 SelectFileDialogExtension::Owner::~Owner() = default;
+SelectFileDialogExtension::Owner::Owner(
+    const SelectFileDialogExtension::Owner&) = default;
+SelectFileDialogExtension::Owner& SelectFileDialogExtension::Owner::operator=(
+    const SelectFileDialogExtension::Owner&) = default;
+SelectFileDialogExtension::Owner::Owner(SelectFileDialogExtension::Owner&&) =
+    default;
+SelectFileDialogExtension::Owner& SelectFileDialogExtension::Owner::operator=(
+    SelectFileDialogExtension::Owner&&) = default;
 
 // static
 SelectFileDialogExtension* SelectFileDialogExtension::Create(
@@ -261,7 +272,7 @@ SelectFileDialogExtension::~SelectFileDialogExtension() = default;
 
 bool SelectFileDialogExtension::IsRunning(
     gfx::NativeWindow owner_window) const {
-  return owner_window_ == owner_window;
+  return owner_.window == owner_window;
 }
 
 void SelectFileDialogExtension::ListenerDestroyed() {
@@ -274,13 +285,13 @@ void SelectFileDialogExtension::OnSystemDialogShown(
     content::WebContents* web_contents,
     const std::string& id) {
   system_files_app_web_contents_ = web_contents;
-  SelectFileDialogExtensionUserData::SetRoutingIdForWebContents(web_contents,
-                                                                id);
+  SelectFileDialogExtensionUserData::SetDialogDataForWebContents(
+      web_contents, id, owner_.dialog_caller);
 }
 
 void SelectFileDialogExtension::OnSystemDialogWillClose() {
   profile_ = nullptr;
-  owner_window_ = nullptr;
+  owner_ = {};
   system_files_app_web_contents_ = nullptr;
   PendingDialog::GetInstance()->Remove(routing_id_);
   // Actually invoke the appropriate callback on our listener.
@@ -404,7 +415,7 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
     const std::string& search_query,
     bool show_android_picker_apps,
     bool use_media_store_filter) {
-  if (owner_window_) {
+  if (owner_.window) {
     LOG(ERROR) << "File dialog already in use!";
     return;
   }
@@ -473,6 +484,8 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
   gfx::NativeWindow parent_window =
       base_window ? base_window->GetNativeWindow() : owner.window;
 
+  owner_ = owner;
+
   auto* dialog_delegate = new SystemFilesAppDialogDelegate(
       weak_factory_.GetWeakPtr(), routing_id, file_manager_url, dialog_title);
   dialog_delegate->SetModal(owner.window != nullptr);
@@ -484,7 +497,6 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
 
   params_ = params;
   routing_id_ = routing_id;
-  owner_window_ = owner.window;
 }
 
 void SelectFileDialogExtension::SelectFileImpl(
@@ -495,10 +507,14 @@ void SelectFileDialogExtension::SelectFileImpl(
     int file_type_index,
     const base::FilePath::StringType& default_extension,
     gfx::NativeWindow owner_window,
-    void* params) {
+    void* params,
+    const GURL* caller) {
   // |default_extension| is ignored.
   Owner owner;
   owner.window = owner_window;
+  if (caller && caller->is_valid()) {
+    owner.dialog_caller.emplace(caller->spec());
+  }
   SelectFileWithFileManagerParams(type, title, default_path, file_types,
                                   file_type_index, params, owner,
                                   /*search_query=*/"",

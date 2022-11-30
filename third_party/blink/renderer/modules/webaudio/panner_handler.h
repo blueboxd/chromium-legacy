@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/audio/cone_effect.h"
 #include "third_party/blink/renderer/platform/audio/distance_effect.h"
 #include "third_party/blink/renderer/platform/audio/panner.h"
+#include "third_party/blink/renderer/platform/heap/cross_thread_persistent.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 

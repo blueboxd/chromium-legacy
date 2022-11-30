@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -179,8 +179,7 @@ message OmniboxEventProto {
     // enum is used in other places too, and not only OmniboxEventProto.)
     NTP_ZPS_PREFETCH = 20;
 
-    // Android's auxiliary search backend.
-    ANDROID_AUXILIARY_SEARCH = 21;
+    // Note: PageClassification 21 has never been used.
 
     // The Search Results Page zero-prefix suggestion prefetch.
     // Used for prefetching suggestions and should never appear in an
@@ -334,7 +333,9 @@ message OmniboxEventProto {
                                    // contains the input (the input might or
                                    // might not also match the title or URL of
                                    // this page).
-      OPEN_TAB = 32;  // A currently open tab whose URL contains the input.
+      OPEN_TAB = 32;      // A currently open tab whose URL contains the input.
+      STARTER_PACK = 33;  // A built-in URL suggestion specifically created for
+                          // the starter pack keyword mode chip to attach to.
     }
     optional ResultType result_type = 2;
 

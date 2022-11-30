@@ -19,10 +19,14 @@
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/open_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ui/app_list/search/files/file_suggest_keyed_service.h"
+#include "chrome/browser/ui/app_list/search/files/file_suggest_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/clipboard_util.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_util.h"
+#include "components/drive/drive_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "net/base/mime_util.h"
 #include "storage/browser/file_system/file_system_context.h"
 
@@ -138,6 +142,10 @@ base::FilePath HoldingSpaceClientImpl::CrackFileSystemUrl(
   return file_manager::util::GetFileManagerFileSystemContext(profile_)
       ->CrackURLInFirstPartyContext(file_system_url)
       .path();
+}
+
+bool HoldingSpaceClientImpl::IsDriveDisabled() const {
+  return profile_->GetPrefs()->GetBoolean(drive::prefs::kDisableDrive);
 }
 
 void HoldingSpaceClientImpl::OpenDownloads(SuccessCallback callback) {
@@ -262,19 +270,17 @@ void HoldingSpaceClientImpl::PinFiles(
     const std::vector<base::FilePath>& file_paths) {
   std::vector<storage::FileSystemURL> file_system_urls;
 
-  HoldingSpaceKeyedService* service = GetHoldingSpaceKeyedService(profile_);
   for (const base::FilePath& file_path : file_paths) {
     const GURL crack_url =
         holding_space_util::ResolveFileSystemUrl(profile_, file_path);
     const storage::FileSystemURL& file_system_url =
         file_manager::util::GetFileManagerFileSystemContext(profile_)
             ->CrackURLInFirstPartyContext(crack_url);
-    if (!service->ContainsPinnedFile(file_system_url))
-      file_system_urls.push_back(file_system_url);
+    file_system_urls.push_back(file_system_url);
   }
 
   if (!file_system_urls.empty())
-    service->AddPinnedFiles(file_system_urls);
+    GetHoldingSpaceKeyedService(profile_)->AddPinnedFiles(file_system_urls);
 }
 
 void HoldingSpaceClientImpl::PinItems(
@@ -296,6 +302,13 @@ void HoldingSpaceClientImpl::PinItems(
 
   if (!file_system_urls.empty())
     service->AddPinnedFiles(file_system_urls);
+}
+
+void HoldingSpaceClientImpl::RemoveFileSuggestions(
+    const std::vector<base::FilePath>& absolute_file_paths) {
+  app_list::FileSuggestKeyedServiceFactory::GetInstance()
+      ->GetService(profile_)
+      ->RemoveSuggestionsAndNotify(absolute_file_paths);
 }
 
 void HoldingSpaceClientImpl::ShowItemInFolder(const HoldingSpaceItem& item,

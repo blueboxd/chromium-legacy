@@ -23,8 +23,6 @@
 #import "ios/chrome/app/application_delegate/memory_warning_helper.h"
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
-#import "ios/chrome/app/application_delegate/tab_opening.h"
-#import "ios/chrome/app/application_delegate/tab_switching.h"
 #import "ios/chrome/app/application_delegate/user_activity_handler.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #import "ios/chrome/app/main_application_delegate.h"
@@ -49,7 +47,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #import "ios/chrome/browser/ui/main/scene_delegate.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/session_metrics.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_metrics_browser_agent.h"
 #import "ios/net/cookies/cookie_store_ios.h"
@@ -411,7 +408,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   // Halt the tabs, so any outstanding requests get cleaned up, without actually
   // closing the tabs. Set the BVC to inactive to cancel all the dialogs.
   // Don't do this if there are no scenes, since there's no defined interface
-  // provider (and no tabs)
+  // provider (and no tabs).
   if (self.initStage >= InitStageBrowserObjectsForUI) {
     for (SceneState* sceneState in self.connectedScenes) {
       sceneState.interfaceProvider.currentInterface.userInteractionEnabled = NO;

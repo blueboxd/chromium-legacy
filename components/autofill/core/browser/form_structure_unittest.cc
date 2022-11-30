@@ -41,11 +41,14 @@
 
 using ::base::ASCIIToUTF16;
 using ::testing::AllOf;
+using ::testing::AnyOf;
 using ::testing::Each;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
+using ::testing::Matcher;
 using ::testing::Not;
 using ::testing::Pointee;
+using ::testing::Property;
 using ::testing::ResultOf;
 using ::testing::Truly;
 using ::testing::UnorderedElementsAre;
@@ -53,9 +56,14 @@ using ::version_info::GetProductNameAndVersionForUserAgent;
 
 namespace autofill {
 
+using FieldPrediction = ::autofill::AutofillQueryResponse::FormSuggestion::
+    FieldSuggestion::FieldPrediction;
 using autofill::features::kAutofillLabelAffixRemoval;
 using autofill::mojom::SubmissionIndicatorEvent;
 using autofill::mojom::SubmissionSource;
+using autofill::test::AddFieldPredictionsToForm;
+using autofill::test::AddFieldPredictionToForm;
+using autofill::test::CreateFieldPrediction;
 
 namespace {
 
@@ -70,29 +78,14 @@ std::string SerializeAndEncode(const AutofillQueryResponse& response) {
   return response_string;
 }
 
-// Sets |field_type| suggestion for |field_data|'s signature.
-void AddFieldSuggestionToForm(
-    ::autofill::AutofillQueryResponse_FormSuggestion* form_suggestion,
-    const autofill::FormFieldData& field_data,
-    ServerFieldType field_type) {
-  auto* field_suggestion = form_suggestion->add_field_suggestions();
-  field_suggestion->set_field_signature(
-      CalculateFieldSignatureForField(field_data).value());
-  field_suggestion->add_predictions()->set_type(field_type);
-}
-
 void AddFieldOverrideToForm(
-    ::autofill::AutofillQueryResponse_FormSuggestion* form_suggestion,
     autofill::FormFieldData field_data,
-    ServerFieldType field_type) {
-  AddFieldSuggestionToForm(form_suggestion, field_data, field_type);
-
-  DCHECK_GT(form_suggestion->field_suggestions().size(), 0);
-  form_suggestion
-      ->mutable_field_suggestions(form_suggestion->field_suggestions().size() -
-                                  1)
-      ->mutable_predictions(0)
-      ->set_override(true);
+    ServerFieldType field_type,
+    ::autofill::AutofillQueryResponse_FormSuggestion* form_suggestion) {
+  AddFieldPredictionsToForm(
+      field_data,
+      {CreateFieldPrediction(field_type, FieldPrediction::SOURCE_OVERRIDE)},
+      form_suggestion);
 }
 
 // Matches any protobuf `actual` whose serialization is equal to the
@@ -130,6 +123,10 @@ constexpr DenseSet<PatternSource> kAllPatternSources {
       PatternSource::kNextGen
 #endif
 };
+
+Matcher<FieldPrediction> EqualsPrediction(ServerFieldType type) {
+  return Property(&FieldPrediction::type, type);
+}
 
 }  // namespace
 
@@ -1088,6 +1085,14 @@ TEST_F(FormStructureTestImpl, PasswordFormShouldBeQueried) {
 // Verify that we can correctly process sections listed in the |autocomplete|
 // attribute.
 TEST_F(FormStructureTestImpl, HeuristicsAutocompleteAttributeWithSections) {
+  // This test tests whether credit card fields are implicitly in one, separate
+  // credit card section, independent of whether they have a valid autocomplete
+  // attribute section. With the new sectioning, credit card fields with a valid
+  // autocomplete attribute section S are in section S.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kAutofillUseParameterizedSectioning);
+
   FormData form;
   form.url = GURL("http://www.foo.com/");
 
@@ -1241,6 +1246,16 @@ TEST_F(FormStructureTestImpl,
 // local heuristics.
 TEST_F(FormStructureTestImpl,
        HeuristicsDontOverrideAutocompleteAttributeSections) {
+  // With the new sectioning, fields with a valid autocomplete attribute section
+  // S are in section S. All other <input> fields that are focusable are
+  // partitioned into intervals, each of which is a section.
+  // This is different compared to the old behavior which assigns fields without
+  // an autocomplete attribute section to the empty, "-default" section if there
+  // is a field with a valid autocomplete attribute section in the form.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kAutofillUseParameterizedSectioning);
+
   FormData form;
   form.url = GURL("http://www.foo.com/");
 
@@ -2168,8 +2183,8 @@ TEST_F(FormStructureTestImpl, HeuristicsInferCCNames_NamesFirst) {
 TEST_P(ParameterizedFormStructureTest, EncodeQueryRequest) {
   bool autofill_across_iframes = GetParam();
   base::test::ScopedFeatureList scoped_features;
-  std::vector<base::Feature> enabled;
-  std::vector<base::Feature> disabled;
+  std::vector<base::test::FeatureRef> enabled;
+  std::vector<base::test::FeatureRef> disabled;
   (autofill_across_iframes ? &enabled : &disabled)
       ->push_back(features::kAutofillAcrossIframes);
   scoped_features.InitWithFeatures(enabled, disabled);
@@ -5000,8 +5015,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithSingleUsernameData) {
             uploads.front().single_username_data().prompt_edit());
 }
 
-// Test that server predictions get precedence over htmll types if they are
-// overrides.
+// Test that server overrides get precedence over HTML types.
 TEST_F(FormStructureTestImpl, ParseQueryResponse_ServerPredictionIsOverride) {
   FormData form_data;
   FormFieldData field;
@@ -5022,92 +5036,49 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_ServerPredictionIsOverride) {
   // name.
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
-  AddFieldOverrideToForm(form_suggestion, form_data.fields[0], NAME_FIRST);
-  AddFieldSuggestionToForm(form_suggestion, form_data.fields[1], NAME_LAST);
+  AddFieldOverrideToForm(form_data.fields[0], NAME_FIRST, form_suggestion);
+  AddFieldPredictionToForm(form_data.fields[1], NAME_LAST, form_suggestion);
 
   std::string response_string = SerializeAndEncode(response);
 
-  // Disable the feature which gives overrides precedence.
-  {
-    base::test::ScopedFeatureList scoped_feature;
-    scoped_feature.InitAndDisableFeature(
-        features::kAutofillServerTypeTakesPrecedence);
+  // Parse the response and update the field type predictions.
+  FormStructure form(form_data);
+  form.DetermineHeuristicTypes(nullptr, nullptr);
+  std::vector<FormStructure*> forms{&form};
+  FormStructure::ParseApiQueryResponse(response_string, forms,
+                                       test::GetEncodedSignatures(forms),
+                                       nullptr, nullptr);
+  ASSERT_EQ(form.field_count(), 2U);
 
-    // Parse the response and update the field type predictions.
-    FormStructure form(form_data);
-    form.DetermineHeuristicTypes(nullptr, nullptr);
-    std::vector<FormStructure*> forms{&form};
-    FormStructure::ParseApiQueryResponse(response_string, forms,
-                                         test::GetEncodedSignatures(forms),
-                                         nullptr, nullptr);
-    ASSERT_EQ(form.field_count(), 2U);
+  // Validate the type predictions.
+  EXPECT_EQ(UNKNOWN_TYPE, form.field(0)->heuristic_type());
+  EXPECT_EQ(HtmlFieldType::kName, form.field(0)->html_type());
+  EXPECT_EQ(NAME_FIRST, form.field(0)->server_type());
+  EXPECT_EQ(UNKNOWN_TYPE, form.field(1)->heuristic_type());
+  EXPECT_EQ(HtmlFieldType::kName, form.field(1)->html_type());
+  EXPECT_EQ(NAME_LAST, form.field(1)->server_type());
 
-    // Validate the type predictions.
-    EXPECT_EQ(UNKNOWN_TYPE, form.field(0)->heuristic_type());
-    EXPECT_EQ(HtmlFieldType::kName, form.field(0)->html_type());
-    EXPECT_EQ(NAME_FIRST, form.field(0)->server_type());
-    EXPECT_EQ(UNKNOWN_TYPE, form.field(1)->heuristic_type());
-    EXPECT_EQ(HtmlFieldType::kName, form.field(1)->html_type());
-    EXPECT_EQ(NAME_LAST, form.field(1)->server_type());
+  // Validate that the overrides are set correctly.
+  EXPECT_TRUE(form.field(0)->server_type_prediction_is_override());
+  EXPECT_FALSE(form.field(1)->server_type_prediction_is_override());
 
-    // Validate that the overrides are set correctly.
-    EXPECT_TRUE(form.field(0)->server_type_prediction_is_override());
-    EXPECT_FALSE(form.field(1)->server_type_prediction_is_override());
+  // Validate that the server prediction won for the first field.
+  EXPECT_EQ(form.field(0)->Type().GetStorableType(), NAME_FIRST);
+  EXPECT_EQ(form.field(1)->Type().GetStorableType(), NAME_FULL);
 
-    // Validate that the html prediction won.
-    EXPECT_EQ(form.field(0)->Type().GetStorableType(), NAME_FULL);
-    EXPECT_EQ(form.field(1)->Type().GetStorableType(), NAME_FULL);
-  }
+  // Validate that the server override cannot be altered.
+  form.field(0)->SetTypeTo(AutofillType(NAME_FULL));
+  EXPECT_EQ(form.field(0)->Type().GetStorableType(), NAME_FIRST);
 
-  // Enable the feature to give overrides precedence.
-  {
-    base::test::ScopedFeatureList scoped_feature;
-    scoped_feature.InitAndEnableFeature(
-        features::kAutofillServerTypeTakesPrecedence);
-
-    // Parse the response and update the field type predictions.
-    FormStructure form(form_data);
-    form.DetermineHeuristicTypes(nullptr, nullptr);
-    std::vector<FormStructure*> forms{&form};
-    FormStructure::ParseApiQueryResponse(response_string, forms,
-                                         test::GetEncodedSignatures(forms),
-                                         nullptr, nullptr);
-    ASSERT_EQ(form.field_count(), 2U);
-
-    // Validate the type predictions.
-    EXPECT_EQ(UNKNOWN_TYPE, form.field(0)->heuristic_type());
-    EXPECT_EQ(HtmlFieldType::kName, form.field(0)->html_type());
-    EXPECT_EQ(NAME_FIRST, form.field(0)->server_type());
-    EXPECT_EQ(UNKNOWN_TYPE, form.field(1)->heuristic_type());
-    EXPECT_EQ(HtmlFieldType::kName, form.field(1)->html_type());
-    EXPECT_EQ(NAME_LAST, form.field(1)->server_type());
-
-    // Validate that the overrides are set correctly.
-    EXPECT_TRUE(form.field(0)->server_type_prediction_is_override());
-    EXPECT_FALSE(form.field(1)->server_type_prediction_is_override());
-
-    // Validate that the server prediction won for the first field.
-    EXPECT_EQ(form.field(0)->Type().GetStorableType(), NAME_FIRST);
-    EXPECT_EQ(form.field(1)->Type().GetStorableType(), NAME_FULL);
-
-    // Validate that the server override cannot be altered.
-    form.field(0)->SetTypeTo(AutofillType(NAME_FULL));
-    EXPECT_EQ(form.field(0)->Type().GetStorableType(), NAME_FIRST);
-
-    // Validate that that the non-override can be altered.
-    form.field(1)->SetTypeTo(AutofillType(NAME_FIRST));
-    EXPECT_EQ(form.field(1)->Type().GetStorableType(), NAME_FIRST);
-  }
+  // Validate that that the non-override can be altered.
+  form.field(1)->SetTypeTo(AutofillType(NAME_FIRST));
+  EXPECT_EQ(form.field(1)->Type().GetStorableType(), NAME_FIRST);
 }
 
 // Test the heuristic prediction for NAME_LAST_SECOND overrides server
 // predictions.
 TEST_F(FormStructureTestImpl,
        ParseQueryResponse_HeuristicsOverrideSpanishLastNameTypes) {
-  base::test::ScopedFeatureList scoped_feature;
-  scoped_feature.InitAndEnableFeature(
-      features::kAutofillEnableSupportForMoreStructureInNames);
-
   FormData form_data;
   FormFieldData field;
   form_data.url = GURL("http://foo.com");
@@ -5139,10 +5110,10 @@ TEST_F(FormStructureTestImpl,
   // Setup the query response.
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
-  AddFieldSuggestionToForm(form_suggestion, form_data.fields[0], NAME_FIRST);
+  AddFieldPredictionToForm(form_data.fields[0], NAME_FIRST, form_suggestion);
   // Simulate a NAME_LAST classification for the two last name fields.
-  AddFieldSuggestionToForm(form_suggestion, form_data.fields[1], NAME_LAST);
-  AddFieldSuggestionToForm(form_suggestion, form_data.fields[2], NAME_LAST);
+  AddFieldPredictionToForm(form_data.fields[1], NAME_LAST, form_suggestion);
+  AddFieldPredictionToForm(form_data.fields[2], NAME_LAST, form_suggestion);
 
   std::string response_string = SerializeAndEncode(response);
 
@@ -5163,39 +5134,12 @@ TEST_F(FormStructureTestImpl,
   EXPECT_EQ(form.field(0)->Type().GetStorableType(), NAME_FIRST);
   EXPECT_EQ(form.field(1)->Type().GetStorableType(), NAME_LAST_FIRST);
   EXPECT_EQ(form.field(2)->Type().GetStorableType(), NAME_LAST_SECOND);
-
-  // Now disable the feature and process the query again.
-  scoped_feature.Reset();
-  scoped_feature.InitAndDisableFeature(
-      features::kAutofillEnableSupportForMoreStructureInNames);
-
-  std::vector<FormStructure*> forms2{&form};
-  FormStructure::ParseApiQueryResponse(response_string, forms2,
-                                       test::GetEncodedSignatures(forms2),
-                                       nullptr, nullptr);
-  ASSERT_EQ(form.field_count(), 3U);
-
-  // Validate the heuristic and server predictions.
-  EXPECT_EQ(NAME_LAST_FIRST, form.field(1)->heuristic_type());
-  EXPECT_EQ(NAME_LAST_SECOND, form.field(2)->heuristic_type());
-  EXPECT_EQ(NAME_LAST, form.field(1)->server_type());
-  EXPECT_EQ(NAME_LAST, form.field(2)->server_type());
-
-  // Validate that the heuristic prediction does not win for the two last name
-  // fields.
-  EXPECT_EQ(form.field(0)->Type().GetStorableType(), NAME_FIRST);
-  EXPECT_EQ(form.field(1)->Type().GetStorableType(), NAME_LAST);
-  EXPECT_EQ(form.field(2)->Type().GetStorableType(), NAME_LAST);
 }
 
 // Test the heuristic prediction for ADDRESS_HOME_STREET_NAME and
 // ADDRESS_HOME_HOUSE_NUMBER overrides server predictions.
 TEST_F(FormStructureTestImpl,
        ParseQueryResponse_HeuristicsOverrideStreetNameAndHouseNumberTypes) {
-  base::test::ScopedFeatureList scoped_feature;
-  scoped_feature.InitAndEnableFeature(
-      features::kAutofillEnableSupportForMoreStructureInAddresses);
-
   FormData form_data;
   FormFieldData field;
   form_data.url = GURL("http://foo.com");
@@ -5231,12 +5175,12 @@ TEST_F(FormStructureTestImpl,
   // Setup the query response.
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
-  AddFieldSuggestionToForm(form_suggestion, form_data.fields[0], NAME_FULL);
+  AddFieldPredictionToForm(form_data.fields[0], NAME_FULL, form_suggestion);
   // Simulate ADDRESS_LINE classifications for the two last name fields.
-  AddFieldSuggestionToForm(form_suggestion, form_data.fields[1],
-                           ADDRESS_HOME_LINE1);
-  AddFieldSuggestionToForm(form_suggestion, form_data.fields[2],
-                           ADDRESS_HOME_LINE2);
+  AddFieldPredictionToForm(form_data.fields[1], ADDRESS_HOME_LINE1,
+                           form_suggestion);
+  AddFieldPredictionToForm(form_data.fields[2], ADDRESS_HOME_LINE2,
+                           form_suggestion);
 
   std::string response_string = SerializeAndEncode(response);
 
@@ -5257,28 +5201,6 @@ TEST_F(FormStructureTestImpl,
   // number.
   EXPECT_EQ(form.field(1)->Type().GetStorableType(), ADDRESS_HOME_STREET_NAME);
   EXPECT_EQ(form.field(2)->Type().GetStorableType(), ADDRESS_HOME_HOUSE_NUMBER);
-
-  // Now disable the feature and process the query again.
-  scoped_feature.Reset();
-  scoped_feature.InitAndDisableFeature(
-      features::kAutofillEnableSupportForMoreStructureInAddresses);
-
-  std::vector<FormStructure*> forms2{&form};
-  FormStructure::ParseApiQueryResponse(response_string, forms2,
-                                       test::GetEncodedSignatures(forms2),
-                                       nullptr, nullptr);
-  ASSERT_EQ(form.field_count(), 4U);
-
-  // Validate the heuristic and server predictions.
-  EXPECT_EQ(ADDRESS_HOME_STREET_NAME, form.field(1)->heuristic_type());
-  EXPECT_EQ(ADDRESS_HOME_HOUSE_NUMBER, form.field(2)->heuristic_type());
-  EXPECT_EQ(ADDRESS_HOME_LINE1, form.field(1)->server_type());
-  EXPECT_EQ(ADDRESS_HOME_LINE2, form.field(2)->server_type());
-
-  // Validate that the heuristic prediction does not win for the street name and
-  // house number.
-  EXPECT_EQ(form.field(1)->Type().GetStorableType(), ADDRESS_HOME_LINE1);
-  EXPECT_EQ(form.field(2)->Type().GetStorableType(), ADDRESS_HOME_LINE2);
 }
 
 // Tests proper resolution heuristic, server and html field types when the
@@ -5304,10 +5226,10 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_TooManyTypes) {
   // Setup the query response.
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
-  AddFieldSuggestionToForm(form_suggestion, form_data.fields[0], NAME_FIRST);
-  AddFieldSuggestionToForm(form_suggestion, form_data.fields[1], NAME_LAST);
-  AddFieldSuggestionToForm(form_suggestion, form_data.fields[2],
-                           ADDRESS_HOME_LINE1);
+  AddFieldPredictionToForm(form_data.fields[0], NAME_FIRST, form_suggestion);
+  AddFieldPredictionToForm(form_data.fields[1], NAME_LAST, form_suggestion);
+  AddFieldPredictionToForm(form_data.fields[2], ADDRESS_HOME_LINE1,
+                           form_suggestion);
   form_suggestion->add_field_suggestions()->add_predictions()->set_type(
       EMAIL_ADDRESS);
   form_suggestion->add_field_suggestions()->add_predictions()->set_type(
@@ -5372,11 +5294,11 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_UnknownType) {
   // Setup the query response.
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
-  AddFieldSuggestionToForm(form_suggestion, form_data.fields[0], UNKNOWN_TYPE);
-  AddFieldSuggestionToForm(form_suggestion, form_data.fields[1],
-                           NO_SERVER_DATA);
-  AddFieldSuggestionToForm(form_suggestion, form_data.fields[2],
-                           ADDRESS_HOME_LINE1);
+  AddFieldPredictionToForm(form_data.fields[0], UNKNOWN_TYPE, form_suggestion);
+  AddFieldPredictionToForm(form_data.fields[1], NO_SERVER_DATA,
+                           form_suggestion);
+  AddFieldPredictionToForm(form_data.fields[2], ADDRESS_HOME_LINE1,
+                           form_suggestion);
 
   std::string response_string = SerializeAndEncode(response);
 
@@ -5486,26 +5408,26 @@ TEST_F(FormStructureTestImpl, ParseApiQueryResponseWithDifferentRendererForms) {
       test::GetEncodedSignatures(forms);
   {
     auto* form_suggestion = api_response.add_form_suggestions();
-    AddFieldSuggestionToForm(form_suggestion, fields[0], expected_types[0]);
-    AddFieldSuggestionToForm(form_suggestion, fields[1], NO_SERVER_DATA);
-    AddFieldSuggestionToForm(form_suggestion, fields[2], NO_SERVER_DATA);
-    AddFieldSuggestionToForm(form_suggestion, fields[3], expected_types[3]);
-    AddFieldSuggestionToForm(form_suggestion, fields[4], expected_types[4]);
+    AddFieldPredictionToForm(fields[0], expected_types[0], form_suggestion);
+    AddFieldPredictionToForm(fields[1], NO_SERVER_DATA, form_suggestion);
+    AddFieldPredictionToForm(fields[2], NO_SERVER_DATA, form_suggestion);
+    AddFieldPredictionToForm(fields[3], expected_types[3], form_suggestion);
+    AddFieldPredictionToForm(fields[4], expected_types[4], form_suggestion);
   }
   // Response for the FormFieldData::host_form_signature 12345.
   encoded_signatures.push_back(FormSignature(12345));
   {
     auto* form_suggestion = api_response.add_form_suggestions();
-    AddFieldSuggestionToForm(form_suggestion, fields[0], NO_SERVER_DATA);
-    AddFieldSuggestionToForm(form_suggestion, fields[1], expected_types[1]);
-    AddFieldSuggestionToForm(form_suggestion, fields[2], expected_types[2]);
+    AddFieldPredictionToForm(fields[0], NO_SERVER_DATA, form_suggestion);
+    AddFieldPredictionToForm(fields[1], expected_types[1], form_suggestion);
+    AddFieldPredictionToForm(fields[2], expected_types[2], form_suggestion);
   }
   // Response for the FormFieldData::host_form_signature 67890.
   encoded_signatures.push_back(FormSignature(67890));
   {
     auto* form_suggestion = api_response.add_form_suggestions();
-    AddFieldSuggestionToForm(form_suggestion, fields[4], ADDRESS_HOME_CITY);
-    AddFieldSuggestionToForm(form_suggestion, fields[5], expected_types[5]);
+    AddFieldPredictionToForm(fields[4], ADDRESS_HOME_CITY, form_suggestion);
+    AddFieldPredictionToForm(fields[5], expected_types[5], form_suggestion);
   }
 
   // Serialize API response.
@@ -5581,18 +5503,15 @@ TEST_F(FormStructureTestImpl, ParseApiQueryResponse) {
   AutofillQueryResponse api_response;
   // Make form 1 suggestions.
   auto* form_suggestion = api_response.add_form_suggestions();
-  auto* field0 = form_suggestion->add_field_suggestions();
-  field0->set_field_signature(
-      CalculateFieldSignatureForField(form.fields[0]).value());
-  auto* field_prediction0 = field0->add_predictions();
-  field_prediction0->set_type(NAME_FULL);
-  auto* field_prediction1 = field0->add_predictions();
-  field_prediction1->set_type(PHONE_HOME_COUNTRY_CODE);
-  AddFieldSuggestionToForm(form_suggestion, form.fields[1], ADDRESS_HOME_LINE1);
+  AddFieldPredictionsToForm(form.fields[0],
+                            {CreateFieldPrediction(NAME_FULL),
+                             CreateFieldPrediction(PHONE_HOME_COUNTRY_CODE)},
+                            form_suggestion);
+  AddFieldPredictionToForm(form.fields[1], ADDRESS_HOME_LINE1, form_suggestion);
   // Make form 2 suggestions.
   form_suggestion = api_response.add_form_suggestions();
-  AddFieldSuggestionToForm(form_suggestion, form2.fields[0], EMAIL_ADDRESS);
-  AddFieldSuggestionToForm(form_suggestion, form2.fields[1], NO_SERVER_DATA);
+  AddFieldPredictionToForm(form2.fields[0], EMAIL_ADDRESS, form_suggestion);
+  AddFieldPredictionToForm(form2.fields[1], NO_SERVER_DATA, form_suggestion);
   // Serialize API response.
   std::string response_string;
   std::string encoded_response_string;
@@ -5607,21 +5526,23 @@ TEST_F(FormStructureTestImpl, ParseApiQueryResponse) {
   // the query.
   ASSERT_GE(forms[0]->field_count(), 2U);
   ASSERT_GE(forms[1]->field_count(), 2U);
+
   EXPECT_EQ(NAME_FULL, forms[0]->field(0)->server_type());
-  ASSERT_EQ(2U, forms[0]->field(0)->server_predictions().size());
-  EXPECT_EQ(NAME_FULL, forms[0]->field(0)->server_predictions()[0].type());
-  EXPECT_EQ(PHONE_HOME_COUNTRY_CODE,
-            forms[0]->field(0)->server_predictions()[1].type());
+  EXPECT_THAT(forms[0]->field(0)->server_predictions(),
+              ElementsAre(EqualsPrediction(NAME_FULL),
+                          EqualsPrediction(PHONE_HOME_COUNTRY_CODE)));
+
   EXPECT_EQ(ADDRESS_HOME_LINE1, forms[0]->field(1)->server_type());
-  ASSERT_EQ(1U, forms[0]->field(1)->server_predictions().size());
-  EXPECT_EQ(ADDRESS_HOME_LINE1,
-            forms[0]->field(1)->server_predictions()[0].type());
+  EXPECT_THAT(forms[0]->field(1)->server_predictions(),
+              ElementsAre(EqualsPrediction(ADDRESS_HOME_LINE1)));
+
   EXPECT_EQ(EMAIL_ADDRESS, forms[1]->field(0)->server_type());
-  ASSERT_EQ(1U, forms[1]->field(0)->server_predictions().size());
-  EXPECT_EQ(EMAIL_ADDRESS, forms[1]->field(0)->server_predictions()[0].type());
+  EXPECT_THAT(forms[1]->field(0)->server_predictions(),
+              ElementsAre(EqualsPrediction(EMAIL_ADDRESS)));
+
   EXPECT_EQ(NO_SERVER_DATA, forms[1]->field(1)->server_type());
-  ASSERT_EQ(1U, forms[1]->field(1)->server_predictions().size());
-  EXPECT_EQ(0, forms[1]->field(1)->server_predictions()[0].type());
+  EXPECT_THAT(forms[1]->field(1)->server_predictions(),
+              ElementsAre(EqualsPrediction(NO_SERVER_DATA)));
 }
 
 // Tests ParseApiQueryResponse when the payload cannot be parsed to an
@@ -5640,10 +5561,8 @@ TEST_F(FormStructureTestImpl,
 
   // Add form to the vector needed by the response parsing function.
   FormStructure form_structure(form);
-  AutofillQueryResponse::FormSuggestion::FieldSuggestion::FieldPrediction
-      prediction;
-  prediction.set_type(NAME_FULL);
-  form_structure.field(0)->set_server_predictions({prediction});
+  form_structure.field(0)->set_server_predictions(
+      {CreateFieldPrediction(NAME_FULL)});
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
 
@@ -5673,10 +5592,8 @@ TEST_F(FormStructureTestImpl, ParseApiQueryResponseWhenPayloadNotBase64) {
 
   // Add form to the vector needed by the response parsing function.
   FormStructure form_structure(form);
-  AutofillQueryResponse::FormSuggestion::FieldSuggestion::FieldPrediction
-      prediction;
-  prediction.set_type(NAME_FULL);
-  form_structure.field(0)->set_server_predictions({prediction});
+  form_structure.field(0)->set_server_predictions(
+      {CreateFieldPrediction(NAME_FULL)});
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
 
@@ -5689,7 +5606,7 @@ TEST_F(FormStructureTestImpl, ParseApiQueryResponseWhenPayloadNotBase64) {
   // is no issue when parsing the query response. In this test case there is an
   // issue with the encoding of the data, hence EMAIL_ADDRESS should not be
   // applied because of early exit of the parsing function.
-  AddFieldSuggestionToForm(form_suggestion, form.fields[0], EMAIL_ADDRESS);
+  AddFieldPredictionToForm(form.fields[0], EMAIL_ADDRESS, form_suggestion);
 
   // Serialize API response.
   std::string response_string;
@@ -5724,9 +5641,9 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_AuthorDefinedTypes) {
 
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
-  AddFieldSuggestionToForm(form_suggestion, form.fields[0], EMAIL_ADDRESS);
-  AddFieldSuggestionToForm(form_suggestion, form.fields[1],
-                           ACCOUNT_CREATION_PASSWORD);
+  AddFieldPredictionToForm(form.fields[0], EMAIL_ADDRESS, form_suggestion);
+  AddFieldPredictionToForm(form.fields[1], ACCOUNT_CREATION_PASSWORD,
+                           form_suggestion);
 
   std::string response_string = SerializeAndEncode(response);
   FormStructure::ParseApiQueryResponse(response_string, forms,
@@ -5786,10 +5703,10 @@ TEST_F(FormStructureTestImpl,
 
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
-  AddFieldSuggestionToForm(form_suggestion, form.fields[0], NAME_FIRST);
-  AddFieldSuggestionToForm(form_suggestion, form.fields[1], NO_SERVER_DATA);
-  AddFieldSuggestionToForm(form_suggestion, form.fields[2], NO_SERVER_DATA);
-  AddFieldSuggestionToForm(form_suggestion, form.fields[3], NO_SERVER_DATA);
+  AddFieldPredictionToForm(form.fields[0], NAME_FIRST, form_suggestion);
+  AddFieldPredictionToForm(form.fields[1], NO_SERVER_DATA, form_suggestion);
+  AddFieldPredictionToForm(form.fields[2], NO_SERVER_DATA, form_suggestion);
+  AddFieldPredictionToForm(form.fields[3], NO_SERVER_DATA, form_suggestion);
 
   std::string response_string = SerializeAndEncode(response);
 
@@ -5849,10 +5766,10 @@ TEST_F(FormStructureTestImpl, NoServerDataCCFields_CVC_NoOverwrite) {
 
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
-  AddFieldSuggestionToForm(form_suggestion, form.fields[0], NO_SERVER_DATA);
-  AddFieldSuggestionToForm(form_suggestion, form.fields[1], NO_SERVER_DATA);
-  AddFieldSuggestionToForm(form_suggestion, form.fields[2], NO_SERVER_DATA);
-  AddFieldSuggestionToForm(form_suggestion, form.fields[3], NO_SERVER_DATA);
+  AddFieldPredictionToForm(form.fields[0], NO_SERVER_DATA, form_suggestion);
+  AddFieldPredictionToForm(form.fields[1], NO_SERVER_DATA, form_suggestion);
+  AddFieldPredictionToForm(form.fields[2], NO_SERVER_DATA, form_suggestion);
+  AddFieldPredictionToForm(form.fields[3], NO_SERVER_DATA, form_suggestion);
 
   std::string response_string = SerializeAndEncode(response);
 
@@ -5916,12 +5833,12 @@ TEST_F(FormStructureTestImpl, WithServerDataCCFields_CVC_NoOverwrite) {
 
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
-  AddFieldSuggestionToForm(form_suggestion, form.fields[0],
-                           CREDIT_CARD_NAME_FULL);
-  AddFieldSuggestionToForm(form_suggestion, form.fields[1], CREDIT_CARD_NUMBER);
-  AddFieldSuggestionToForm(form_suggestion, form.fields[2],
-                           CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
-  AddFieldSuggestionToForm(form_suggestion, form.fields[3], NO_SERVER_DATA);
+  AddFieldPredictionToForm(form.fields[0], CREDIT_CARD_NAME_FULL,
+                           form_suggestion);
+  AddFieldPredictionToForm(form.fields[1], CREDIT_CARD_NUMBER, form_suggestion);
+  AddFieldPredictionToForm(form.fields[2], CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR,
+                           form_suggestion);
+  AddFieldPredictionToForm(form.fields[3], NO_SERVER_DATA, form_suggestion);
 
   std::string response_string = SerializeAndEncode(response);
 
@@ -5979,9 +5896,9 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_RankEqualSignatures) {
   // Setup the query response.
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
-  AddFieldSuggestionToForm(form_suggestion, form_data.fields[0], NAME_FIRST);
-  AddFieldSuggestionToForm(form_suggestion, form_data.fields[1], NAME_LAST);
-  AddFieldSuggestionToForm(form_suggestion, form_data.fields[2], EMAIL_ADDRESS);
+  AddFieldPredictionToForm(form_data.fields[0], NAME_FIRST, form_suggestion);
+  AddFieldPredictionToForm(form_data.fields[1], NAME_LAST, form_suggestion);
+  AddFieldPredictionToForm(form_data.fields[2], EMAIL_ADDRESS, form_suggestion);
 
   std::string response_string = SerializeAndEncode(response);
 
@@ -6024,8 +5941,8 @@ TEST_F(FormStructureTestImpl,
   // Setup the query response.
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
-  AddFieldSuggestionToForm(form_suggestion, form_data.fields[0], NAME_FIRST);
-  AddFieldSuggestionToForm(form_suggestion, form_data.fields[2], EMAIL_ADDRESS);
+  AddFieldPredictionToForm(form_data.fields[0], NAME_FIRST, form_suggestion);
+  AddFieldPredictionToForm(form_data.fields[2], EMAIL_ADDRESS, form_suggestion);
 
   std::string response_string = SerializeAndEncode(response);
 
@@ -6216,6 +6133,53 @@ TEST_F(FormStructureTestImpl, NoSplitByRecurringPhoneFieldType) {
   EXPECT_EQ("blue-billing", form_structure.field(4)->section.ToString());
   EXPECT_EQ("blue-billing", form_structure.field(5)->section.ToString());
   EXPECT_EQ("blue-billing", form_structure.field(6)->section.ToString());
+}
+
+// Tests that adjacent name field types are not split into different sections.
+TEST_F(FormStructureTestImpl, NoSplitAdjacentNameFieldType) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(features::kAutofillUseParameterizedSectioning);
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+
+  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
+  form.fields.push_back(field);
+
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  form.fields.push_back(field);
+
+  test::CreateTestFormField("Phonetic First Name", "firstname", "", "text",
+                            &field);
+  form.fields.push_back(field);
+
+  test::CreateTestFormField("Phonetic Last Name", "lastname", "", "text",
+                            &field);
+  form.fields.push_back(field);
+
+  test::CreateTestFormField("Country", "country", "", "text", &field);
+  form.fields.push_back(field);
+
+  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  test_api(&form_structure)
+      .SetFieldTypes({NAME_FIRST, NAME_LAST, NAME_FIRST, NAME_LAST,
+                      ADDRESS_HOME_COUNTRY, NAME_FIRST});
+
+  test_api(&form_structure).IdentifySections(/*ignore_autocomplete=*/false);
+
+  // Assert the correct number of fields.
+  ASSERT_EQ(6U, form_structure.field_count());
+
+  EXPECT_EQ(form_structure.field(0)->section, form_structure.field(1)->section);
+  EXPECT_EQ(form_structure.field(0)->section, form_structure.field(2)->section);
+  EXPECT_EQ(form_structure.field(0)->section, form_structure.field(3)->section);
+  EXPECT_EQ(form_structure.field(0)->section, form_structure.field(4)->section);
+  // The non-adjacent name field should be split into a different section.
+  EXPECT_NE(form_structure.field(0)->section, form_structure.field(5)->section);
 }
 
 // Tests if a new logical form is started with the second appearance of a field

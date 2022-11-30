@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/color/color_provider_source_observer.h"
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
@@ -84,6 +85,11 @@ class SelectFileDialogExtension : public ui::SelectFileDialog {
   struct Owner {
     Owner();
     ~Owner();
+    Owner(const Owner&);
+    Owner& operator=(const Owner&);
+    Owner(Owner&&);
+    Owner& operator=(Owner&&);
+
     // The native window that opened the dialog.
     aura::Window* window = nullptr;
     // Android task ID if the owner window is an Android app.
@@ -94,6 +100,10 @@ class SelectFileDialogExtension : public ui::SelectFileDialog {
     absl::optional<std::string> lacros_window_id;
     // Set to true only if SelectFileAsh opened the dialog.
     bool is_lacros = false;
+    // The URL or Component type of the caller that opened the dialog (Save
+    // As/File Picker).
+    absl::optional<policy::DlpFilesController::DlpFileDestination>
+        dialog_caller;
   };
   void SelectFileWithFileManagerParams(Type type,
                                        const std::u16string& title,
@@ -115,7 +125,8 @@ class SelectFileDialogExtension : public ui::SelectFileDialog {
                       int file_type_index,
                       const base::FilePath::StringType& default_extension,
                       gfx::NativeWindow owning_window,
-                      void* params) override;
+                      void* params,
+                      const GURL* caller) override;
   bool HasMultipleFileTypeChoicesImpl() override;
 
  private:
@@ -165,8 +176,8 @@ class SelectFileDialogExtension : public ui::SelectFileDialog {
   // Pointer to the profile the dialog is running in.
   Profile* profile_ = nullptr;
 
-  // The window that created the dialog.
-  aura::Window* owner_window_ = nullptr;
+  // Information about the dialog's owner, such as the window or app type.
+  Owner owner_;
 
   // We defer the callback into SelectFileDialog::Listener until the window
   // closes, to match the semantics of file selection on Windows and Mac.

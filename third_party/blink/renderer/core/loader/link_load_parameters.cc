@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,7 +60,7 @@ LinkLoadParameters::LinkLoadParameters(const LinkHeader& header,
       image_sizes(header.ImageSizes()),
       blocking(header.Blocking()),
       reason(Reason::kDefault) {
-  if (!header.ReferrerPolicy().IsEmpty()) {
+  if (!header.ReferrerPolicy().empty()) {
     SecurityPolicy::ReferrerPolicyFromString(
         header.ReferrerPolicy(), kDoNotSupportReferrerPolicyLegacyKeywords,
         &referrer_policy);

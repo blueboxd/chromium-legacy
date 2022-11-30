@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "chromeos/ash/components/dbus/cryptohome/auth_factor.pb.h"
@@ -14,6 +15,8 @@
 namespace cryptohome {
 
 namespace {
+
+using ::ash::ChallengeResponseKey;
 
 user_data_auth::AuthFactorType ConvertFactorTypeToProto(AuthFactorType type) {
   switch (type) {
@@ -28,8 +31,9 @@ user_data_auth::AuthFactorType ConvertFactorTypeToProto(AuthFactorType type) {
       return user_data_auth::AUTH_FACTOR_TYPE_CRYPTOHOME_RECOVERY;
     case AuthFactorType::kKiosk:
       return user_data_auth::AUTH_FACTOR_TYPE_KIOSK;
-    case AuthFactorType::kLegacyFingerprint:
     case AuthFactorType::kSmartCard:
+      return user_data_auth::AUTH_FACTOR_TYPE_SMART_CARD;
+    case AuthFactorType::kLegacyFingerprint:
       NOTIMPLEMENTED() << "Auth factor " << static_cast<int>(type)
                        << " is not implemented in cryptohome yet.";
       return user_data_auth::AUTH_FACTOR_TYPE_UNSPECIFIED;
@@ -51,10 +55,29 @@ AuthFactorType ConvertFactorTypeFromProto(user_data_auth::AuthFactorType type) {
       return AuthFactorType::kRecovery;
     case user_data_auth::AUTH_FACTOR_TYPE_KIOSK:
       return AuthFactorType::kKiosk;
+    case user_data_auth::AUTH_FACTOR_TYPE_SMART_CARD:
+      return AuthFactorType::kSmartCard;
     default:
       NOTREACHED() << "Unknown auth factor type " << static_cast<int>(type);
       return AuthFactorType::kUnknownLegacy;
   }
+}
+
+user_data_auth::SmartCardSignatureAlgorithm
+ChallengeSignatureAlgorithmToProtoEnum(
+    ChallengeResponseKey::SignatureAlgorithm algorithm) {
+  using Algorithm = ChallengeResponseKey::SignatureAlgorithm;
+  switch (algorithm) {
+    case Algorithm::kRsassaPkcs1V15Sha1:
+      return user_data_auth::CHALLENGE_RSASSA_PKCS1_V1_5_SHA1;
+    case Algorithm::kRsassaPkcs1V15Sha256:
+      return user_data_auth::CHALLENGE_RSASSA_PKCS1_V1_5_SHA256;
+    case Algorithm::kRsassaPkcs1V15Sha384:
+      return user_data_auth::CHALLENGE_RSASSA_PKCS1_V1_5_SHA384;
+    case Algorithm::kRsassaPkcs1V15Sha512:
+      return user_data_auth::CHALLENGE_RSASSA_PKCS1_V1_5_SHA512;
+  }
+  NOTREACHED();
 }
 
 void SerializeAuthFactor(const AuthFactor& factor,
@@ -63,7 +86,19 @@ void SerializeAuthFactor(const AuthFactor& factor,
   out_proto->set_label(factor.ref().label().value());
   // Do not do anything with is_active_for_login yet.
 
-  // TODO(b/241259026): fill in common metadata.
+  CHECK_NE(factor.GetCommonMetadata().chrome_version_last_updated().value(),
+           kFallbackFactorVersion);
+  CHECK_NE(factor.GetCommonMetadata().chromeos_version_last_updated().value(),
+           kFallbackFactorVersion);
+
+  out_proto->mutable_common_metadata()->set_chrome_version_last_updated(
+      factor.GetCommonMetadata().chrome_version_last_updated().value());
+  const auto& chromeos_version =
+      factor.GetCommonMetadata().chromeos_version_last_updated().value();
+  if (!chromeos_version.empty()) {
+    out_proto->mutable_common_metadata()->set_chromeos_version_last_updated(
+        chromeos_version);
+  }
 
   switch (factor.ref().type()) {
     case AuthFactorType::kPassword:
@@ -78,11 +113,14 @@ void SerializeAuthFactor(const AuthFactor& factor,
     case AuthFactorType::kKiosk:
       out_proto->mutable_kiosk_metadata();
       break;
+    case AuthFactorType::kSmartCard:
+      out_proto->mutable_smart_card_metadata()->set_public_key_spki_der(
+          factor.GetSmartCardMetadata().public_key_spki_der);
+      break;
     case AuthFactorType::kUnknownLegacy:
       LOG(FATAL) << "Unknown factor type should never be serialized";
       break;
     case AuthFactorType::kLegacyFingerprint:
-    case AuthFactorType::kSmartCard:
       NOTIMPLEMENTED() << "Auth factor "
                        << static_cast<int>(factor.ref().type())
                        << " is not implemented in cryptohome yet.";
@@ -117,11 +155,21 @@ void SerializeAuthInput(const AuthFactorRef& ref,
       // Just create an input.
       out_proto->mutable_kiosk_input();
       break;
+    case AuthFactorType::kSmartCard: {
+      auto* proto_input = out_proto->mutable_smart_card_input();
+      proto_input->set_key_delegate_dbus_service_name(
+          auth_input.GetSmartCardInput().key_delegate_dbus_service_name);
+      for (auto algorithm :
+           auth_input.GetSmartCardInput().signature_algorithms) {
+        proto_input->add_signature_algorithms(
+            ChallengeSignatureAlgorithmToProtoEnum(algorithm));
+      }
+      break;
+    }
     case AuthFactorType::kUnknownLegacy:
       LOG(FATAL) << "Unknown factor type should never be serialized";
       break;
     case AuthFactorType::kLegacyFingerprint:
-    case AuthFactorType::kSmartCard:
       NOTIMPLEMENTED() << "Auth factor "
                        << static_cast<int>(auth_input.GetType())
                        << " is not implemented in cryptohome yet.";
@@ -138,11 +186,32 @@ AuthFactor DeserializeAuthFactor(const user_data_auth::AuthFactor& proto,
     type = fallback_type;
   } else {
     type = ConvertFactorTypeFromProto(proto.type());
+    // TODO(b/243808147): Remove this hack after fixing cryptohome to return
+    // `AUTH_FACTOR_TYPE_UNSPECIFIED` for legacy kiosk keysets.
+    if (fallback_type == cryptohome::AuthFactorType::kKiosk &&
+        type != cryptohome::AuthFactorType::kKiosk) {
+      LOG(WARNING) << "Fixup kiosk key type for " << proto.label() << " "
+                   << proto.type();
+      type = cryptohome::AuthFactorType::kKiosk;
+    }
   }
   AuthFactorRef ref(type, KeyLabel{proto.label()});
-  AuthFactorCommonMetadata common_metadata;
+  ComponentVersion chrome_ver{kFallbackFactorVersion};
+  ComponentVersion chromeos_ver{kFallbackFactorVersion};
+  if (proto.has_common_metadata()) {
+    if (!proto.common_metadata().chrome_version_last_updated().empty()) {
+      chrome_ver = ComponentVersion(
+          proto.common_metadata().chrome_version_last_updated());
+    }
+    if (!proto.common_metadata().chromeos_version_last_updated().empty()) {
+      chromeos_ver = ComponentVersion(
+          proto.common_metadata().chromeos_version_last_updated());
+    }
+  }
+  AuthFactorCommonMetadata common_metadata{std::move(chrome_ver),
+                                           std::move(chromeos_ver)};
+
   // Ignore is_active_for_login for now
-  // TODO(b/241259026) : fill in common metadata
   switch (type) {
     case AuthFactorType::kPassword:
       return AuthFactor(std::move(ref), std::move(common_metadata));
@@ -156,11 +225,19 @@ AuthFactor DeserializeAuthFactor(const user_data_auth::AuthFactor& proto,
       return AuthFactor(std::move(ref), std::move(common_metadata),
                         std::move(pin_status));
     }
+    case AuthFactorType::kSmartCard: {
+      DCHECK(proto.has_smart_card_metadata());
+      SmartCardMetadata smart_card_metadata;
+      smart_card_metadata.public_key_spki_der =
+          proto.smart_card_metadata().public_key_spki_der();
+      return AuthFactor(std::move(ref), std::move(common_metadata),
+                        std::move(smart_card_metadata));
+    }
+
     case AuthFactorType::kUnknownLegacy:
       LOG(FATAL) << "Should already be handled above";
       __builtin_unreachable();
     case AuthFactorType::kLegacyFingerprint:
-    case AuthFactorType::kSmartCard:
       NOTIMPLEMENTED() << "Auth factor " << static_cast<int>(type)
                        << " is not implemented in cryptohome yet.";
       return AuthFactor(std::move(ref), std::move(common_metadata));

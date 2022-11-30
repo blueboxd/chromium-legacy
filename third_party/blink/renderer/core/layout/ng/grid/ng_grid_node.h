@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,11 +21,15 @@ class CORE_EXPORT NGGridNode final : public NGBlockNode {
 
   const NGGridPlacementData& CachedPlacementData() const;
 
-  GridItems GridItemsIncludingSubgridded(
-      NGGridPlacementData* placement_data) const;
+  GridItems ConstructGridItems(const NGGridPlacementData& placement_data,
+                               bool* has_nested_subgrid) const;
+  GridItems ConstructGridItems(const NGGridPlacementData& placement_data,
+                               const ComputedStyle& root_grid_style,
+                               bool must_consider_grid_items_for_column_sizing,
+                               bool must_consider_grid_items_for_row_sizing,
+                               bool* has_nested_subgrid = nullptr) const;
 
- private:
-  GridItems ConstructGridItems(NGGridPlacementData* placement_data) const;
+  void AppendSubgriddedItems(GridItems* grid_items) const;
 };
 
 template <>

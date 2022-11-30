@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,6 +137,7 @@ class NodeLink : public msg::NodeMessageListener {
   // construct a new NodeLink to that node.
   void AcceptIntroduction(const NodeName& name,
                           LinkSide side,
+                          Node::Type remote_node_type,
                           uint32_t remote_protocol_version,
                           Ref<DriverTransport> transport,
                           DriverMemory memory);
@@ -235,6 +236,8 @@ class NodeLink : public msg::NodeMessageListener {
   bool OnRequestIntroduction(msg::RequestIntroduction& request) override;
   bool OnAcceptIntroduction(msg::AcceptIntroduction& accept) override;
   bool OnRejectIntroduction(msg::RejectIntroduction& reject) override;
+  bool OnRequestIndirectIntroduction(
+      msg::RequestIndirectIntroduction& request) override;
   bool OnAddBlockBuffer(msg::AddBlockBuffer& add) override;
   bool OnAcceptParcel(msg::AcceptParcel& accept) override;
   bool OnAcceptParcelDriverObjects(

@@ -39,12 +39,6 @@
       path: "/config/data",
     },
     {
-      availability: "optional",
-      directory: "config-data-for-testing",
-      rights: [ "r*" ],
-      path: "/config/data-for-testing",
-    },
-    {
       protocol: [
         // Capabilities to be passed to WebEngine instances.
         "fuchsia.accessibility.semantics.SemanticsManager",
@@ -80,9 +74,10 @@
       // Optional capabilities to be passed to WebEngine instances.
       protocol: [
         "fuchsia.camera3.DeviceWatcher",
+        "fuchsia.media.Audio",
         "fuchsia.media.drm.PlayReady",
         "fuchsia.media.drm.Widevine",
-        "fuchsia.media.Audio",
+        "fuchsia.tracing.perfetto.ProducerConnector",
       ],
       availability: "optional"
     },

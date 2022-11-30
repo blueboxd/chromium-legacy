@@ -9,11 +9,12 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
@@ -21,8 +22,9 @@
 #include "base/types/expected.h"
 #include "base/values.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
+#include "chrome/browser/web_applications/isolated_web_apps/pending_install_info.h"
 #include "chrome/browser/web_applications/isolation_data.h"
-#include "chrome/browser/web_applications/locks/shared_web_contents_with_app_lock.h"
+#include "chrome/browser/web_applications/locks/app_lock.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -34,6 +36,7 @@
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
@@ -59,18 +62,25 @@ absl::optional<std::string> UTF16ToUTF8(base::StringPiece16 src) {
 
 InstallIsolatedAppCommand::InstallIsolatedAppCommand(
     const GURL& url,
-    WebAppUrlLoader& url_loader,
+    const IsolationData& isolation_data,
+    std::unique_ptr<content::WebContents> web_contents,
+    std::unique_ptr<WebAppUrlLoader> url_loader,
     WebAppInstallFinalizer& install_finalizer,
     base::OnceCallback<void(base::expected<InstallIsolatedAppCommandSuccess,
                                            InstallIsolatedAppCommandError>)>
         callback)
-    : lock_(std::make_unique<SharedWebContentsWithAppLock>(
+    : lock_(std::make_unique<AppLock>(
           base::flat_set<AppId>{GenerateAppId("", GURL{url})})),
       url_(url),
-      url_loader_(url_loader),
+      isolation_data_(isolation_data),
+      web_contents_(std::move(web_contents)),
+      url_loader_(std::move(url_loader)),
       install_finalizer_(install_finalizer),
       data_retriever_(std::make_unique<WebAppDataRetriever>()) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
+
+  DCHECK(web_contents_ != nullptr);
+  DCHECK(url_loader_ != nullptr);
 
   DCHECK(url_.is_valid());
   DCHECK(!callback.is_null());
@@ -100,10 +110,19 @@ void InstallIsolatedAppCommand::Start() {
 }
 
 void InstallIsolatedAppCommand::LoadUrl() {
-  url_loader_.LoadUrl(url_, shared_web_contents(),
-                      WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef,
-                      base::BindOnce(&InstallIsolatedAppCommand::OnLoadUrl,
-                                     weak_factory_.GetWeakPtr()));
+  DCHECK(url_.is_valid());
+  DCHECK(web_contents_ != nullptr);
+
+  // |web_app::IsolatedWebAppURLLoaderFactory| uses the isolation data in order
+  // to determine the current state of content serving (installation process vs
+  // application data serving) and source of data (proxy, web bundle, etc...).
+  IsolatedWebAppPendingInstallInfo::FromWebContents(*web_contents_)
+      .set_isolation_data(isolation_data_);
+
+  url_loader_->LoadUrl(url_, web_contents_.get(),
+                       WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef,
+                       base::BindOnce(&InstallIsolatedAppCommand::OnLoadUrl,
+                                      weak_factory_.GetWeakPtr()));
 }
 
 void InstallIsolatedAppCommand::OnLoadUrl(WebAppUrlLoaderResult result) {
@@ -120,7 +139,7 @@ void InstallIsolatedAppCommand::OnLoadUrl(WebAppUrlLoaderResult result) {
 
 void InstallIsolatedAppCommand::CheckInstallabilityAndRetrieveManifest() {
   data_retriever_->CheckInstallabilityAndRetrieveManifest(
-      shared_web_contents(),
+      web_contents_.get(),
       /*bypass_service_worker_check=*/true,
       base::BindOnce(
           &InstallIsolatedAppCommand::OnCheckInstallabilityAndRetrieveManifest,
@@ -219,9 +238,7 @@ void InstallIsolatedAppCommand::OnCheckInstallabilityAndRetrieveManifest(
 void InstallIsolatedAppCommand::FinalizeInstall(const WebAppInstallInfo& info) {
   WebAppInstallFinalizer::FinalizeOptions options(
       webapps::WebappInstallSource::ISOLATED_APP_DEV_INSTALL);
-  // Treat all apps as Dev Mode proxying apps (rewriting URLs to HTTP) for now.
-  options.isolation_data =
-      IsolationData(IsolationData::DevModeProxy{.proxy_url = url_.spec()});
+  options.isolation_data = isolation_data_;
 
   install_finalizer_.FinalizeInstall(
       info, options,
@@ -245,7 +262,7 @@ void InstallIsolatedAppCommand::OnFinalizeInstall(
 void InstallIsolatedAppCommand::DownloadIcons(WebAppInstallInfo install_info) {
   base::flat_set<GURL> icon_urls = GetValidIconUrlsToDownload(install_info);
   data_retriever_->GetIcons(
-      shared_web_contents(), std::move(icon_urls),
+      web_contents_.get(), std::move(icon_urls),
       /*skip_page_favicons=*/true,
       base::BindOnce(&InstallIsolatedAppCommand::OnGetIcons,
                      weak_factory_.GetWeakPtr(), std::move(install_info)));

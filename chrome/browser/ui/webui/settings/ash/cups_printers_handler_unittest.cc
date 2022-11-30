@@ -25,9 +25,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
+#include "url/gurl.h"
 
-namespace chromeos {
-namespace settings {
+namespace ash::settings {
+
+using ::chromeos::Printer;
 
 class CupsPrintersHandlerTest;
 
@@ -51,14 +53,14 @@ class TestCupsPrintersManager : public StubCupsPrintersManager {
   }
 };
 
-class FakePpdProvider : public PpdProvider {
+class FakePpdProvider : public chromeos::PpdProvider {
  public:
   FakePpdProvider() = default;
 
   void ResolveManufacturers(ResolveManufacturersCallback cb) override {}
   void ResolvePrinters(const std::string& manufacturer,
                        ResolvePrintersCallback cb) override {}
-  void ResolvePpdReference(const PrinterSearchData& search_data,
+  void ResolvePpdReference(const chromeos::PrinterSearchData& search_data,
                            ResolvePpdReferenceCallback cb) override {}
   void ResolvePpd(const Printer::PpdReference& reference,
                   ResolvePpdCallback cb) override {}
@@ -100,7 +102,8 @@ class FakeSelectFileDialog : public ui::SelectFileDialog {
                       int file_type_index,
                       const base::FilePath::StringType& default_extension,
                       gfx::NativeWindow owning_window,
-                      void* params) override {
+                      void* params,
+                      const GURL* caller) override {
     // Check that the extensions we expect match the actual extensions passed
     // from the CupsPrintersHandler.
     VerifyExtensions(file_types);
@@ -245,5 +248,4 @@ TEST_F(CupsPrintersHandlerTest, VerifyOnlyPpdFilesAllowed) {
   web_ui_.HandleReceivedMessage("selectPPDFile", args);
 }
 
-}  // namespace settings.
-}  // namespace chromeos.
+}  // namespace ash::settings

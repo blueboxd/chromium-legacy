@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -454,7 +454,7 @@ void XRWebGLDrawingBuffer::Resize(const gfx::Size& new_size) {
 scoped_refptr<XRWebGLDrawingBuffer::ColorBuffer>
 XRWebGLDrawingBuffer::CreateColorBuffer() {
   auto* sii = drawing_buffer_->ContextProvider()->SharedImageInterface();
-  uint32_t usage = gpu::SHARED_IMAGE_USAGE_DISPLAY |
+  uint32_t usage = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
                    gpu::SHARED_IMAGE_USAGE_GLES2 |
                    gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
   gpu::Mailbox mailbox = sii->CreateSharedImage(
@@ -480,7 +480,7 @@ XRWebGLDrawingBuffer::CreateColorBuffer() {
 
 scoped_refptr<XRWebGLDrawingBuffer::ColorBuffer>
 XRWebGLDrawingBuffer::CreateOrRecycleColorBuffer() {
-  if (!recycled_color_buffer_queue_.IsEmpty()) {
+  if (!recycled_color_buffer_queue_.empty()) {
     scoped_refptr<ColorBuffer> recycled =
         recycled_color_buffer_queue_.TakeLast();
     if (recycled->receive_sync_token.HasData()) {

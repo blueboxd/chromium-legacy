@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -412,11 +412,11 @@ class RTCPeerConnectionHandlerTest : public SimTest {
       const String& audio_track_label) {
     rtc::scoped_refptr<webrtc::MediaStreamInterface> stream(
         mock_dependency_factory_->CreateLocalMediaStream(stream_label).get());
-    if (!video_track_label.IsEmpty()) {
+    if (!video_track_label.empty()) {
       InvokeAddTrack(
           stream, MockWebRtcVideoTrack::Create(video_track_label.Utf8()).get());
     }
-    if (!audio_track_label.IsEmpty()) {
+    if (!audio_track_label.empty()) {
       InvokeAddTrack(
           stream, MockWebRtcAudioTrack::Create(audio_track_label.Utf8()).get());
     }
@@ -832,7 +832,10 @@ TEST_F(RTCPeerConnectionHandlerTest, addAndRemoveStream) {
 
   EXPECT_FALSE(AddStream(local_stream));
   EXPECT_TRUE(RemoveStream(local_stream));
-  EXPECT_EQ(0u, mock_peer_connection_->GetSenders().size());
+  // Senders are not removed, only their tracks are nulled.
+  ASSERT_EQ(2u, mock_peer_connection_->GetSenders().size());
+  EXPECT_EQ(mock_peer_connection_->GetSenders()[0]->track(), nullptr);
+  EXPECT_EQ(mock_peer_connection_->GetSenders()[0]->track(), nullptr);
 
   StopAllTracks(local_stream);
 }
@@ -1208,7 +1211,7 @@ TEST_F(RTCPeerConnectionHandlerTest, CheckInsertableStreamsConfig) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, ThermalResourceDefaultValue) {
-  EXPECT_TRUE(mock_peer_connection_->adaptation_resources().IsEmpty());
+  EXPECT_TRUE(mock_peer_connection_->adaptation_resources().empty());
   pc_handler_->OnThermalStateChange(
       mojom::blink::DeviceThermalState::kCritical);
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
@@ -1217,7 +1220,7 @@ TEST_F(RTCPeerConnectionHandlerTest, ThermalResourceDefaultValue) {
   bool expect_disabled = true;
 #endif
   // A ThermalResource is created in response to the thermal signal.
-  EXPECT_EQ(mock_peer_connection_->adaptation_resources().IsEmpty(),
+  EXPECT_EQ(mock_peer_connection_->adaptation_resources().empty(),
             expect_disabled);
 }
 
@@ -1227,11 +1230,11 @@ TEST_F(RTCPeerConnectionHandlerTest,
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(kWebRtcThermalResource);
 
-  EXPECT_TRUE(mock_peer_connection_->adaptation_resources().IsEmpty());
+  EXPECT_TRUE(mock_peer_connection_->adaptation_resources().empty());
   pc_handler_->OnThermalStateChange(
       mojom::blink::DeviceThermalState::kCritical);
   // A ThermalResource is created in response to the thermal signal.
-  EXPECT_TRUE(mock_peer_connection_->adaptation_resources().IsEmpty());
+  EXPECT_TRUE(mock_peer_connection_->adaptation_resources().empty());
 }
 
 TEST_F(RTCPeerConnectionHandlerTest,
@@ -1240,7 +1243,7 @@ TEST_F(RTCPeerConnectionHandlerTest,
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kWebRtcThermalResource);
 
-  EXPECT_TRUE(mock_peer_connection_->adaptation_resources().IsEmpty());
+  EXPECT_TRUE(mock_peer_connection_->adaptation_resources().empty());
   // ThermalResource is created and injected on the fly.
   pc_handler_->OnThermalStateChange(
       mojom::blink::DeviceThermalState::kCritical);

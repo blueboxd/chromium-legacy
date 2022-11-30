@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/pre_paint_tree_walk.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -505,9 +504,11 @@ void DisplayLockContext::UpgradeForcedScope(ForcedPhase old_phase,
       MarkAncestorsForPrePaintIfNeeded();
     }
 
-    if (emit_warnings && v8::Isolate::GetCurrent()->InContext() &&
-        !IsActivatable(DisplayLockActivationReason::kAny) && document_ &&
-        element_) {
+    if (emit_warnings && v8::Isolate::GetCurrent()->InContext() && document_ &&
+        element_ &&
+        (!IsActivatable(DisplayLockActivationReason::kAny) ||
+         RuntimeEnabledFeatures::
+             WarnOnContentVisibilityRenderAccessEnabled())) {
       document_->GetDisplayLockDocumentState().IssueForcedRenderWarning(
           element_);
     }
@@ -855,6 +856,7 @@ void DisplayLockContext::WillStartLifecycleUpdate(const LocalFrameView& view) {
   if (has_pending_subtree_checks_ || has_pending_top_layer_check_) {
     DetermineIfSubtreeHasTopLayerElement();
     has_pending_top_layer_check_ = false;
+    update_registration = true;
   }
 
   if (has_pending_subtree_checks_) {

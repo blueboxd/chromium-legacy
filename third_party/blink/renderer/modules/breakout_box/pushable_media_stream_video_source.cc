@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -174,7 +174,7 @@ void PushableMediaStreamVideoSource::StopSourceImpl() {
 }
 
 base::WeakPtr<MediaStreamVideoSource>
-PushableMediaStreamVideoSource::GetWeakPtr() const {
+PushableMediaStreamVideoSource::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
@@ -189,7 +189,7 @@ PushableMediaStreamVideoSource::GetFeedbackCallback() const {
       GetTaskRunner(),
       WTF::BindRepeating(
           &PushableMediaStreamVideoSource::ProcessFeedbackInternal,
-          weak_factory_.GetWeakPtr()));
+          weak_factory_.GetMutableWeakPtr()));
 }
 
 void PushableMediaStreamVideoSource::ProcessFeedbackInternal(

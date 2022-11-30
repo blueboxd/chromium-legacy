@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,8 +60,8 @@ class BodyConsumerBase : public GarbageCollected<BodyConsumerBase>,
   template <typename T>
   void ResolveLater(const T& object) {
     task_runner_->PostTask(FROM_HERE,
-                           WTF::Bind(&BodyConsumerBase::ResolveNow<T>,
-                                     WrapPersistent(this), object));
+                           WTF::BindOnce(&BodyConsumerBase::ResolveNow<T>,
+                                         WrapPersistent(this), object));
   }
 
   void Trace(Visitor* visitor) const override {
@@ -247,7 +247,7 @@ ScriptPromise Body::formData(ScriptState* script_state,
     const String boundary =
         parsedTypeWithParameters.ParameterValueForName("boundary");
     auto* body_buffer = BodyBuffer();
-    if (body_buffer && !boundary.IsEmpty()) {
+    if (body_buffer && !boundary.empty()) {
       body_buffer->StartLoading(
           FetchDataLoader::CreateLoaderAsFormData(boundary),
           MakeGarbageCollected<BodyFormDataConsumer>(resolver),

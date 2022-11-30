@@ -7,13 +7,16 @@
  * 'os-settings-privacy-hub-page' contains privacy hub configurations.
  */
 
+import '../../settings_shared.css.js';
+import 'chrome://resources/cr_elements/cr_shared_style.css.js';
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import '../../controls/settings_toggle_button.js';
 import './metrics_consent_toggle_button.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/ash/common/web_ui_listener_behavior.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/cr_elements/web_ui_listener_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
@@ -22,7 +25,18 @@ import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking
 import {routes} from '../os_route.js';
 import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_observer_behavior.js';
 
+import {MediaDevicesProxy} from './media_devices_proxy.js';
 import {PrivacyHubBrowserProxy, PrivacyHubBrowserProxyImpl} from './privacy_hub_browser_proxy.js';
+
+/**
+ * These values are persisted to logs and should not be renumbered or re-used.
+ * Keep in sync with PrivacyHubNavigationOrigin in
+ * tools/metrics/histograms/enums.xml.
+ */
+export const PrivacyHubNavigationOrigin = {
+  SYSTEM_SETTINGS: 0,
+  NOTIFICATION: 1,
+};
 
 /**
  * @constructor
@@ -83,6 +97,9 @@ class SettingsPrivacyHubPage extends SettingsPrivacyHubPageBase {
         (available) => {
           this.setMicrophoneForSimpleUsageAvailable_(available);
         });
+    this.updateMediaDeviceLists_();
+    MediaDevicesProxy.getMediaDevices().addEventListener(
+        'devicechange', () => this.updateMediaDeviceLists_());
   }
 
   static get properties() {
@@ -155,6 +172,35 @@ class SettingsPrivacyHubPage extends SettingsPrivacyHubPageBase {
         },
       },
 
+      /**
+       * The list of connected cameras.
+       * @private {Array<string>}
+       */
+      camerasConnected_: {
+        type: Array,
+        value: [],
+      },
+
+      /** @private {boolean} */
+      isCameraListEmpty_: {
+        type: Boolean,
+        computed: 'computeIsCameraListEmpty_(camerasConnected_)',
+      },
+
+      /**
+       * The list of connected microphones.
+       * @private {Array<string>}
+       */
+      microphonesConnected_: {
+        type: Array,
+        value: [],
+      },
+
+      /** @private {boolean} */
+      isMicListEmpty_: {
+        type: Boolean,
+        computed: 'computeIsMicListEmpty_(microphonesConnected_)',
+      },
     };
   }
 
@@ -223,6 +269,61 @@ class SettingsPrivacyHubPage extends SettingsPrivacyHubPageBase {
   computeShouldDisableMicrophoneToggle_() {
     return this.microphoneHardwareToggleActive_ ||
         !this.microphoneForSimpleUsageAvailable_;
+  }
+
+  /**
+   * @return {boolean} Whether the list of cameras displayed in this page is
+   *     empty.
+   * @private
+   */
+  computeIsCameraListEmpty_() {
+    return (this.camerasConnected_.length === 0);
+  }
+
+  /**
+   * @return {boolean} Whether the list of microphones displayed in this page is
+   *     empty.
+   * @private
+   */
+  computeIsMicListEmpty_() {
+    return (this.microphonesConnected_.length === 0);
+  }
+
+  /** @private */
+  updateMediaDeviceLists_() {
+    MediaDevicesProxy.getMediaDevices().enumerateDevices().then((devices) => {
+      const connectedCameras = [];
+      const connectedMicrophones = [];
+      devices.forEach((device) => {
+        if (device.kind === 'videoinput') {
+          connectedCameras.push(device.label);
+        } else if (
+            device.kind === 'audioinput' && device.deviceId !== 'default') {
+          connectedMicrophones.push(device.label);
+        }
+      });
+      this.camerasConnected_ = connectedCameras;
+      this.microphonesConnected_ = connectedMicrophones;
+    });
+  }
+
+  /**
+   * @param {!CustomEvent} event
+   * @private
+   */
+  onCameraToggleChanged_(event) {
+    chrome.metricsPrivate.recordBoolean(
+        'ChromeOS.PrivacyHub.Camera.Settings.Enabled', event.target.checked);
+  }
+
+  /**
+   * @param {!CustomEvent} event
+   * @private
+   */
+  onMicrophoneToggleChanged_(event) {
+    chrome.metricsPrivate.recordBoolean(
+        'ChromeOS.PrivacyHub.Microphone.Settings.Enabled',
+        event.target.checked);
   }
 }
 

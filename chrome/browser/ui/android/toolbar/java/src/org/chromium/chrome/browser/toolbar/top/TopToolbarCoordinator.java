@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarProgressBar;
 import org.chromium.chrome.browser.toolbar.ToolbarTabController;
+import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures.AdaptiveToolbarButtonVariant;
 import org.chromium.chrome.browser.toolbar.menu_button.MenuButton;
 import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.browser.toolbar.top.NavigationPopup.HistoryDelegate;
@@ -130,6 +131,9 @@ public class TopToolbarCoordinator implements Toolbar {
      *         toolbar and the logo click events are processed in NewTabPageLayout. So this callback
      *         will only be called on Start surface.
      * @param constraintsSupplier supplier for browser controls constraints.
+     * @param shouldCreateLogoInStartToolbar Whether logo should be created in Start surface
+     *         toolbar. True if the logo should be created in the Start surface toolbar; False if
+     *         the logo should be shown in Start surface content.
      */
     public TopToolbarCoordinator(ToolbarControlContainer controlContainer, ViewStub toolbarStub,
             ViewStub fullscreenToolbarStub, ToolbarLayout toolbarLayout,
@@ -153,8 +157,8 @@ public class TopToolbarCoordinator implements Toolbar {
             HistoryDelegate historyDelegate, BooleanSupplier partnerHomepageEnabledSupplier,
             OfflineDownloader offlineDownloader, boolean initializeWithIncognitoColors,
             Callback<LoadUrlParams> startSurfaceLogoClickedCallback,
-            boolean isStartSurfaceRefactorEnabled,
-            ObservableSupplier<Integer> constraintsSupplier) {
+            boolean isStartSurfaceRefactorEnabled, ObservableSupplier<Integer> constraintsSupplier,
+            boolean shouldCreateLogoInStartToolbar) {
         mControlContainer = controlContainer;
         mToolbarLayout = toolbarLayout;
         mMenuButtonCoordinator = browsingModeMenuButtonCoordinator;
@@ -170,7 +174,8 @@ public class TopToolbarCoordinator implements Toolbar {
                     overviewModeMenuButtonCoordinator, identityDiscButtonSupplier,
                     isGridTabSwitcherEnabled, isTabToGtsAnimationEnabled,
                     isTabGroupsAndroidContinuationEnabled, isIncognitoModeEnabledSupplier,
-                    startSurfaceLogoClickedCallback, mIsStartSurfaceRefactorEnabled);
+                    startSurfaceLogoClickedCallback, mIsStartSurfaceRefactorEnabled,
+                    shouldCreateLogoInStartToolbar);
         } else if (mToolbarLayout instanceof ToolbarPhone || isTabletGridTabSwitcherEnabled()) {
             mTabSwitcherModeCoordinator = new TabSwitcherModeTTCoordinator(toolbarStub,
                     fullscreenToolbarStub, overviewModeMenuButtonCoordinator,
@@ -389,6 +394,15 @@ public class TopToolbarCoordinator implements Toolbar {
     public void updateButtonVisibility() {
         mToolbarLayout.updateButtonVisibility();
         mOptionalButtonController.updateButtonVisibility();
+    }
+
+    /**
+     * Gets the {@link AdaptiveToolbarButtonVariant} of the currently shown optional button. {@code
+     * AdaptiveToolbarButtonVariant.NONE} is returned if there's no visible optional button.
+     * @return A value from {@link AdaptiveToolbarButtonVariant}.
+     */
+    public @AdaptiveToolbarButtonVariant int getCurrentOptionalButtonVariant() {
+        return mOptionalButtonController.getCurrentButtonVariant();
     }
 
     /**

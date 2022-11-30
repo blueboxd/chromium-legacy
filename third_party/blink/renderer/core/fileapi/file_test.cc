@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -208,7 +208,7 @@ TEST(FileTest, BlobBackingFileWithoutTimestamp) {
   auto* const file = MakeGarbageCollected<File>("name", absl::nullopt,
                                                 BlobDataHandle::Create());
   EXPECT_FALSE(file->HasBackingFile());
-  EXPECT_TRUE(file->GetPath().IsEmpty());
+  EXPECT_TRUE(file->GetPath().empty());
   EXPECT_TRUE(file->FileSystemURL().IsEmpty());
   ExpectTimestampIsNow(*file);
 }
@@ -217,7 +217,7 @@ TEST(FileTest, BlobBackingFileWithWindowsEpochTimestamp) {
   auto* const file = MakeGarbageCollected<File>("name", base::Time(),
                                                 BlobDataHandle::Create());
   EXPECT_FALSE(file->HasBackingFile());
-  EXPECT_TRUE(file->GetPath().IsEmpty());
+  EXPECT_TRUE(file->GetPath().empty());
   EXPECT_TRUE(file->FileSystemURL().IsEmpty());
   EXPECT_EQ((base::Time() - base::Time::UnixEpoch()).InMilliseconds(),
             file->lastModified());
@@ -230,7 +230,7 @@ TEST(FileTest, BlobBackingFileWithUnixEpochTimestamp) {
   auto* const file = MakeGarbageCollected<File>("name", base::Time::UnixEpoch(),
                                                 blob_data_handle);
   EXPECT_FALSE(file->HasBackingFile());
-  EXPECT_TRUE(file->GetPath().IsEmpty());
+  EXPECT_TRUE(file->GetPath().empty());
   EXPECT_TRUE(file->FileSystemURL().IsEmpty());
   EXPECT_EQ(INT64_C(0), file->lastModified());
   EXPECT_EQ(base::Time::UnixEpoch(), file->LastModifiedTime());
@@ -241,7 +241,7 @@ TEST(FileTest, BlobBackingFileWithApocalypseTimestamp) {
   auto* const file =
       MakeGarbageCollected<File>("name", kMaxTime, BlobDataHandle::Create());
   EXPECT_FALSE(file->HasBackingFile());
-  EXPECT_TRUE(file->GetPath().IsEmpty());
+  EXPECT_TRUE(file->GetPath().empty());
   EXPECT_TRUE(file->FileSystemURL().IsEmpty());
   EXPECT_EQ((kMaxTime - base::Time::UnixEpoch()).InMilliseconds(),
             file->lastModified());
@@ -324,7 +324,7 @@ TEST(FileTest, fileSystemFileWithoutNativeSnapshot) {
   File* const file = File::CreateForFileSystemFile(
       url, metadata, File::kIsUserVisible, BlobDataHandle::Create());
   EXPECT_FALSE(file->HasBackingFile());
-  EXPECT_TRUE(file->GetPath().IsEmpty());
+  EXPECT_TRUE(file->GetPath().empty());
   EXPECT_EQ(url, file->FileSystemURL());
 }
 

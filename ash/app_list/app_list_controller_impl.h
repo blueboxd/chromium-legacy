@@ -44,10 +44,6 @@
 
 class PrefRegistrySimple;
 
-namespace ui {
-class MouseWheelEvent;
-}  // namespace ui
-
 namespace ash {
 
 class AppListBadgeController;
@@ -124,8 +120,6 @@ class ASH_EXPORT AppListControllerImpl
   void Show(int64_t display_id,
             absl::optional<AppListShowSource> show_source,
             base::TimeTicks event_time_stamp);
-  void ProcessMouseWheelEvent(const ui::MouseWheelEvent& event);
-  void ProcessScrollEvent(const ui::ScrollEvent& event);
   void UpdateAppListWithNewTemporarySortOrder(
       const absl::optional<AppListSortOrder>& new_order,
       bool animate,
@@ -171,7 +165,6 @@ class ASH_EXPORT AppListControllerImpl
   void ViewShown(int64_t display_id) override;
   bool AppListTargetVisibility() const override;
   void ViewClosing() override;
-  const std::vector<SkColor>& GetWallpaperProminentColors() override;
   void ActivateItem(const std::string& id,
                     int event_flags,
                     AppListLaunchedFrom launched_from) override;
@@ -196,7 +189,6 @@ class ASH_EXPORT AppListControllerImpl
   void OnStateTransitionAnimationCompleted(
       AppListViewState state,
       bool was_animation_interrupted) override;
-  int AdjustAppListViewScrollOffset(int offset, ui::EventType type) override;
   void LoadIcon(const std::string& app_id) override;
   bool HasValidProfile() const override;
   bool ShouldHideContinueSection() const override;
@@ -287,10 +279,6 @@ class ASH_EXPORT AppListControllerImpl
       float opacity,
       absl::optional<HomeLauncherAnimationInfo> animation_info,
       UpdateAnimationSettingsCallback callback);
-
-  // Disables background blur in home screen UI while the returned
-  // ScopedClosureRunner is in scope.
-  base::ScopedClosureRunner DisableHomeScreenBackgroundBlur();
 
   // Called when the HomeLauncher positional animation has completed.
   void OnHomeLauncherAnimationComplete(bool shown, int64_t display_id);
@@ -511,11 +499,6 @@ class ASH_EXPORT AppListControllerImpl
 
   // The last time the app list was shown.
   absl::optional<base::TimeTicks> last_show_timestamp_;
-
-  // ScopedClosureRunner which while in scope keeps background blur in home
-  // screen (in particular, apps container suggestion chips background)
-  // disabled. Set while home screen transitions are in progress.
-  absl::optional<base::ScopedClosureRunner> home_screen_blur_disabler_;
 
   base::ObserverList<AppListControllerObserver> observers_;
 

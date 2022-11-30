@@ -329,7 +329,7 @@ void HTMLLinkElement::ScheduleEvent() {
       .GetTaskRunner(TaskType::kDOMManipulation)
       ->PostTask(
           FROM_HERE,
-          WTF::Bind(
+          WTF::BindOnce(
               &HTMLLinkElement::DispatchPendingEvent, WrapPersistent(this),
               std::make_unique<IncrementLoadEventDelayCount>(GetDocument())));
 }
@@ -367,7 +367,7 @@ const QualifiedName& HTMLLinkElement::SubResourceAttributeName() const {
 
 KURL HTMLLinkElement::Href() const {
   const String& url = FastGetAttribute(html_names::kHrefAttr);
-  if (url.IsEmpty())
+  if (url.empty())
     return KURL();
   return GetDocument().CompleteURL(url);
 }

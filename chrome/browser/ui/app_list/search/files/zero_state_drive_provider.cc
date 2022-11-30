@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/app_list/search/ranking/util.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
-#include "components/drive/drive_pref_names.h"
 #include "components/drive/file_errors.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -39,8 +38,6 @@ namespace app_list {
 namespace {
 
 using SuggestResults = std::vector<FileSuggestData>;
-
-constexpr char kSchema[] = "zero_state_drive://";
 
 // How long to wait before making the first request for results from the
 // ItemSuggestCache.
@@ -57,10 +54,6 @@ ash::SearchResultDisplayType GetDisplayType() {
   return ash::features::IsProductivityLauncherEnabled()
              ? ash::SearchResultDisplayType::kContinue
              : ash::SearchResultDisplayType::kList;
-}
-
-bool IsDriveDisabled(Profile* profile) {
-  return profile->GetPrefs()->GetBoolean(drive::prefs::kDisableDrive);
 }
 
 }  // namespace
@@ -181,13 +174,13 @@ void ZeroStateDriveProvider::StartZeroState() {
   weak_factory_.InvalidateWeakPtrs();
 
   file_suggest_service_->GetSuggestFileData(
-      FileSuggestKeyedService::SuggestionType::kItemSuggest,
+      FileSuggestionType::kDriveFile,
       base::BindOnce(&ZeroStateDriveProvider::OnSuggestFileDataFetched,
                      weak_factory_.GetWeakPtr()));
 }
 
 void ZeroStateDriveProvider::OnSuggestFileDataFetched(
-    absl::optional<SuggestResults> suggest_results) {
+    const absl::optional<SuggestResults>& suggest_results) {
   // Fail to fetch the suggest data, so return early.
   if (!suggest_results)
     return;
@@ -195,7 +188,8 @@ void ZeroStateDriveProvider::OnSuggestFileDataFetched(
   SetSearchResults(*suggest_results);
 }
 
-void ZeroStateDriveProvider::SetSearchResults(SuggestResults suggest_results) {
+void ZeroStateDriveProvider::SetSearchResults(
+    const SuggestResults& suggest_results) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Assign scores to results by simply using their position in the results
@@ -208,8 +202,8 @@ void ZeroStateDriveProvider::SetSearchResults(SuggestResults suggest_results) {
     const double score = 1.0 - (item_index / total_items);
     ++item_index;
 
-    provider_results.emplace_back(
-        MakeListResult(result.file_path, result.prediction_reason, score));
+    provider_results.emplace_back(MakeListResult(
+        result.id, result.file_path, result.prediction_reason, score));
   }
 
   SwapResults(&provider_results);
@@ -217,17 +211,18 @@ void ZeroStateDriveProvider::SetSearchResults(SuggestResults suggest_results) {
 }
 
 std::unique_ptr<FileResult> ZeroStateDriveProvider::MakeListResult(
+    const std::string& result_id,
     const base::FilePath& filepath,
-    const absl::optional<std::string>& prediction_reason,
+    const absl::optional<std::u16string>& prediction_reason,
     const float relevance) {
   absl::optional<std::u16string> details;
   if (prediction_reason && ash::features::IsProductivityLauncherEnabled())
-    details = base::UTF8ToUTF16(prediction_reason.value());
+    details = prediction_reason.value();
 
   auto result = std::make_unique<FileResult>(
-      kSchema, filepath, details, ash::AppListSearchResultType::kZeroStateDrive,
-      GetDisplayType(), relevance, std::u16string(), FileResult::Type::kFile,
-      profile_);
+      result_id, filepath, details,
+      ash::AppListSearchResultType::kZeroStateDrive, GetDisplayType(),
+      relevance, std::u16string(), FileResult::Type::kFile, profile_);
   return result;
 }
 
@@ -238,10 +233,9 @@ void ZeroStateDriveProvider::MaybeUpdateCache() {
   }
 }
 
-void ZeroStateDriveProvider::OnFileSuggestionUpdated(
-    FileSuggestKeyedService::SuggestionType type) {
-  DCHECK_EQ(FileSuggestKeyedService::SuggestionType::kItemSuggest, type);
-  StartZeroState();
+void ZeroStateDriveProvider::OnFileSuggestionUpdated(FileSuggestionType type) {
+  if (type == FileSuggestionType::kDriveFile)
+    StartZeroState();
 }
 
 }  // namespace app_list

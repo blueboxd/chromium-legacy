@@ -32,6 +32,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/graphics/color_behavior.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
@@ -341,6 +342,13 @@ class PLATFORM_EXPORT ImageDecoder {
   // Returns true if a cached complete decode is available.
   bool FrameIsDecodedAtIndex(wtf_size_t) const;
 
+  // Timestamp for displaying a frame. This method is only used by animated
+  // images. Only formats with timestamps (like AVIF) should implement this.
+  virtual absl::optional<base::TimeDelta> FrameTimestampAtIndex(
+      wtf_size_t) const {
+    return absl::nullopt;
+  }
+
   // Duration for displaying a frame. This method is only used by animated
   // images.
   virtual base::TimeDelta FrameDurationAtIndex(wtf_size_t) const {
@@ -411,7 +419,7 @@ class PLATFORM_EXPORT ImageDecoder {
     // Not all animated image formats share these requirements. Blocking
     // all animated formats is overly aggressive. If a need arises for an
     // external memory allocator for animated images, this should be changed.
-    if (frame_buffer_cache_.IsEmpty()) {
+    if (frame_buffer_cache_.empty()) {
       // Ensure that InitializeNewFrame is called, after parsing if
       // necessary.
       if (!FrameCount())
@@ -589,6 +597,10 @@ class PLATFORM_EXPORT ImageDecoder {
 
   bool purge_aggressively_;
 
+  // Update `sk_image_color_space_` and `embedded_to_sk_image_transform_`, if
+  // needed.
+  void UpdateSkImageColorSpaceAndTransform();
+
   // This methods gets called at the end of InitFrameBuffer. Subclasses can do
   // format specific initialization, for e.g. alpha settings, here.
   virtual void OnInitFrameBuffer(wtf_size_t) {}
@@ -602,11 +614,19 @@ class PLATFORM_EXPORT ImageDecoder {
   bool is_all_data_received_ = false;
   bool failed_ = false;
 
+  // The precise color profile of the image.
   std::unique_ptr<ColorProfile> embedded_color_profile_;
-  sk_sp<SkColorSpace> color_space_for_sk_images_;
 
-  bool source_to_target_color_transform_needs_update_ = false;
-  std::unique_ptr<ColorProfileTransform> source_to_target_color_transform_;
+  // The color space for the SkImage that will be produced.  If
+  // `color_behavior_` is tag, then this is the SkColorSpace representation of
+  // `embedded_color_profile_`. If `color_behavior_` is convert to sRGB, then
+  // this is sRGB.
+  sk_sp<SkColorSpace> sk_image_color_space_;
+
+  // Transforms `embedded_color_profile_` to `sk_image_color_space_`. This
+  // is needed if `sk_image_color_space_` is not an exact representation of
+  // `embedded_color_profile_`.
+  std::unique_ptr<ColorProfileTransform> embedded_to_sk_image_transform_;
 
   wtf_size_t metrics_frame_index_ = kNotFound;
   base::TimeDelta metrics_time_delta_;

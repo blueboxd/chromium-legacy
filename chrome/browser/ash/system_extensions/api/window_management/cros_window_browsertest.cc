@@ -3,34 +3,24 @@
 // found in the LICENSE file.
 
 #include "ash/constants/ash_features.h"
-#include "ash/constants/ash_switches.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "base/json/json_reader.h"
-#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/token.h"
-#include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/system_extensions/api/test_support/system_extensions_api_browsertest.h"
 #include "chrome/browser/ash/system_extensions/api/window_management/cros_window_management_test_helper.test-mojom.h"
-#include "chrome/browser/ash/system_extensions/system_extensions_install_manager.h"
-#include "chrome/browser/ash/system_extensions/system_extensions_provider.h"
 #include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_installation.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/web_applications/test/app_registry_cache_waiter.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/user_manager/user.h"
@@ -40,7 +30,6 @@
 #include "content/public/browser/service_worker_context_observer.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "ui/aura/window_delegate.h"
@@ -49,65 +38,19 @@
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
-class AshTestBase;
-class Shelf;
-class ShelfWidget;
 
 namespace {
 
-constexpr SystemExtensionId kTestSystemExtensionId = {1, 2, 3, 4};
-
-// Used to wait for a message to get added to the Service Worker console.
-// Returns the first message added to the console.
-class ServiceWorkerConsoleObserver
-    : public content::ServiceWorkerContextObserver {
- public:
-  ServiceWorkerConsoleObserver(Profile* profile, const GURL& scope)
-      : profile_(profile), scope_(scope) {
-    auto* worker_context =
-        profile->GetDefaultStoragePartition()->GetServiceWorkerContext();
-    worker_context->AddObserver(this);
-  }
-  ~ServiceWorkerConsoleObserver() override = default;
-
-  // Get the first message added to the console since the observer was
-  // constructed. Will wait if there are no messages yet.
-  const std::u16string& WaitAndGetNextConsoleMessage() {
-    if (!message_.has_value())
-      run_loop_.Run();
-
-    return message_.value();
-  }
-
-  base::Value WaitAndGetNextConsoleMessageAsValue() {
-    std::string result = base::UTF16ToUTF8(WaitAndGetNextConsoleMessage());
-    return *base::JSONReader::Read(result);
-  }
-
-  void OnReportConsoleMessage(int64_t version_id,
-                              const GURL& scope,
-                              const content::ConsoleMessage& message) override {
-    if (scope != scope_)
-      return;
-
-    auto* worker_context =
-        profile_->GetDefaultStoragePartition()->GetServiceWorkerContext();
-    worker_context->RemoveObserver(this);
-
-    // Shouldn't happen because we unregistered as observers.
-    DCHECK(!message_.has_value());
-
-    message_ = message.message;
-    run_loop_.Quit();
-  }
-
- private:
-  Profile* const profile_;
-  const GURL scope_;
-
-  absl::optional<std::u16string> message_;
-  base::RunLoop run_loop_;
-};
+static constexpr const char kTestsDir[] =
+    "chrome/browser/ash/system_extensions/api/window_management/test";
+static constexpr const char kManifestTemplate[] = R"(
+{
+  "name": "Test Window Manager Extension",
+  "short_name": "Test",
+  "service_worker_url": "/%s",
+  "id": "01020304",
+  "type": "window-management"
+})";
 
 Profile* GetProfile() {
   user_manager::User* active_user =
@@ -171,24 +114,7 @@ class InstanceRegistryEventWaiter : public apps::InstanceRegistry::Observer {
   absl::optional<base::UnguessableToken> window_id_;
 };
 
-base::FilePath GetWindowManagerExtensionDir() {
-  base::FilePath test_dir;
-  base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
-  return test_dir.Append("system_extensions")
-      .Append("window_manager_extension");
-}
-
-static constexpr const char kTestsDir[] =
-    "chrome/browser/ash/system_extensions/api/window_management/test";
-static constexpr const char kManifestTemplate[] = R"(
-{
-  "name": "Test Window Manager Extension",
-  "short_name": "Test",
-  "service_worker_url": "/%s",
-  "id": "01020304",
-  "type": "echo"
-})";
-
+// Class used by tests to perform actions on the browser side.
 class CrosWindowManagementTestHelper
     : public system_extensions_test::mojom::CrosWindowManagementTestHelper {
  public:
@@ -353,54 +279,6 @@ class CrosWindowManagementBrowserTest : public SystemExtensionsApiBrowserTest {
       test_helpers_;
   std::unique_ptr<TestSystemWebAppInstallation> installation_;
 
-  base::test::ScopedFeatureList feature_list_;
-};
-
-class CrosWindowExtensionBrowserTest : public InProcessBrowserTest {
- public:
-  CrosWindowExtensionBrowserTest() {
-    feature_list_.InitWithFeatures(
-        {features::kSystemExtensions,
-         ::features::kEnableServiceWorkersForChromeUntrusted},
-        {});
-  }
-
-  ~CrosWindowExtensionBrowserTest() override = default;
-
-  void InstallSystemExtension() {
-    auto& provider = SystemExtensionsProvider::Get(browser()->profile());
-    auto& install_manager = provider.install_manager();
-
-    base::RunLoop run_loop;
-    install_manager.InstallUnpackedExtensionFromDir(
-        GetWindowManagerExtensionDir(),
-        base::BindLambdaForTesting(
-            [&](InstallStatusOrSystemExtensionId result) {
-              ASSERT_TRUE(result.ok());
-              ASSERT_EQ(kTestSystemExtensionId, result.value());
-              run_loop.Quit();
-            }));
-    run_loop.Run();
-  }
-
-  void InstallAndStartExtension() {
-    ServiceWorkerConsoleObserver sw_console_observer(
-        browser()->profile(),
-        GURL("chrome-untrusted://system-extension-echo-01020304/"));
-
-    InstallSystemExtension();
-
-    ASSERT_EQ(u"start event fired",
-              sw_console_observer.WaitAndGetNextConsoleMessage());
-  }
-
-  ServiceWorkerConsoleObserver GetConsoleObserver() {
-    return ServiceWorkerConsoleObserver(
-        browser()->profile(),
-        GURL("chrome-untrusted://system-extension-echo-01020304/"));
-  }
-
- private:
   base::test::ScopedFeatureList feature_list_;
 };
 
@@ -585,31 +463,19 @@ IN_PROC_BROWSER_TEST_F(CrosWindowManagementBrowserTest,
   RunTest("accelerator_event_arrow_keys.js");
 }
 
-IN_PROC_BROWSER_TEST_F(CrosWindowExtensionBrowserTest,
+IN_PROC_BROWSER_TEST_F(CrosWindowManagementBrowserTest,
                        AcceleratorEvent_WakeUpWorker) {
-  InstallAndStartExtension();
+  InitMultiRunTest("accelerator_event_wake_up_sw.js");
+  WaitForRun("First run");
 
-  // Stop the Service Worker.
-  auto* worker_context = browser()
-                             ->profile()
-                             ->GetDefaultStoragePartition()
-                             ->GetServiceWorkerContext();
-  base::RunLoop run_loop;
-  worker_context->StopAllServiceWorkers(run_loop.QuitClosure());
-  run_loop.Run();
+  StopServiceWorkers();
 
   // Dispatch event. The Service Worker should wake up and fire an event.
-  auto observer = GetConsoleObserver();
   ui::test::EventGenerator generator(ash::Shell::Get()->GetPrimaryRootWindow());
   generator.PressKey(ui::KeyboardCode::VKEY_A,
                      ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN);
 
-  base::Value result = observer.WaitAndGetNextConsoleMessageAsValue();
-  const auto& dict = result.GetDict();
-
-  EXPECT_EQ("acceleratordown", *dict.FindString("type"));
-  EXPECT_EQ("Control Alt KeyA", *dict.FindString("name"));
-  EXPECT_FALSE(*dict.FindBool("repeat"));
+  WaitForRun("Test event properties");
 }
 
 }  //  namespace ash

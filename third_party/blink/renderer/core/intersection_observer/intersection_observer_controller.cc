@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,9 +29,9 @@ void IntersectionObserverController::PostTaskToDeliverNotifications() {
       ->GetTaskRunner(TaskType::kInternalIntersectionObserver)
       ->PostTask(
           FROM_HERE,
-          WTF::Bind(&IntersectionObserverController::DeliverNotifications,
-                    WrapWeakPersistent(this),
-                    IntersectionObserver::kPostTaskToDeliver));
+          WTF::BindOnce(&IntersectionObserverController::DeliverNotifications,
+                        WrapWeakPersistent(this),
+                        IntersectionObserver::kPostTaskToDeliver));
 }
 
 void IntersectionObserverController::ScheduleIntersectionObserverForDelivery(
@@ -70,10 +70,10 @@ bool IntersectionObserverController::ComputeIntersections(
   TRACE_EVENT0("blink,devtools.timeline",
                "IntersectionObserverController::"
                "computeIntersections");
-  HeapVector<Member<IntersectionObserver>> observers_to_process;
-  CopyToVector(tracked_explicit_root_observers_, observers_to_process);
-  HeapVector<Member<IntersectionObservation>> observations_to_process;
-  CopyToVector(tracked_implicit_root_observations_, observations_to_process);
+  HeapVector<Member<IntersectionObserver>> observers_to_process(
+      tracked_explicit_root_observers_);
+  HeapVector<Member<IntersectionObservation>> observations_to_process(
+      tracked_implicit_root_observations_);
   int64_t internal_observation_count = 0;
   int64_t javascript_observation_count = 0;
   {

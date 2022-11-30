@@ -15,6 +15,7 @@
 #include "base/types/expected.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_validator.h"
 #include "chrome/browser/web_applications/isolated_web_apps/signed_web_bundle_reader.h"
+#include "chrome/browser/web_applications/isolated_web_apps/signed_web_bundle_signature_verifier.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/web_package/mojom/web_bundle_parser.mojom-forward.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -36,7 +37,10 @@ namespace web_app {
 class IsolatedWebAppReaderRegistry : public KeyedService {
  public:
   explicit IsolatedWebAppReaderRegistry(
-      std::unique_ptr<IsolatedWebAppValidator> validator);
+      std::unique_ptr<IsolatedWebAppValidator> validator,
+      base::RepeatingCallback<
+          std::unique_ptr<SignedWebBundleSignatureVerifier>()>
+          signature_verifier_factory);
   ~IsolatedWebAppReaderRegistry() override;
 
   IsolatedWebAppReaderRegistry(const IsolatedWebAppReaderRegistry&) = delete;
@@ -44,7 +48,10 @@ class IsolatedWebAppReaderRegistry : public KeyedService {
       delete;
 
   // A `Response` object contains the response head, as well as a `ReadBody`
-  // function to read the response's body.
+  // function to read the response's body. It holds weakly onto a
+  // `SignedWebBundleReader` for reading the response body. This reference will
+  // remain valid until the reader is evicted from the cache of the
+  // `IsolatedWebAppReaderRegistry`.
   class Response {
    public:
     Response(web_package::mojom::BundleResponsePtr head,
@@ -63,7 +70,9 @@ class IsolatedWebAppReaderRegistry : public KeyedService {
     const web_package::mojom::BundleResponsePtr& head() { return head_; }
 
     // Reads the body of the response into `producer_handle`, calling `callback`
-    // on both success and failure.
+    // with `net::OK` on success, and another error code on failure. A failure
+    // may also occur if the `SignedWebBundleReader` that was used to read the
+    // response head has since been evicted from the cache.
     void ReadBody(mojo::ScopedDataPipeProducerHandle producer_handle,
                   base::OnceCallback<void(net::Error net_error)> callback);
 
@@ -112,7 +121,7 @@ class IsolatedWebAppReaderRegistry : public KeyedService {
       const web_package::SignedWebBundleId& web_bundle_id,
       const std::vector<web_package::Ed25519PublicKey>& public_key_stack,
       base::OnceCallback<
-          void(SignedWebBundleReader::IntegrityVerificationAction)> callback);
+          void(SignedWebBundleReader::SignatureVerificationAction)> callback);
 
   void OnIntegrityBlockAndMetadataRead(
       const base::FilePath& web_bundle_path,
@@ -130,9 +139,9 @@ class IsolatedWebAppReaderRegistry : public KeyedService {
                      SignedWebBundleReader::ReadResponseError> response_head);
 
   // A `CacheEntry` has two states: In its initial `kPending` state, it caches
-  // requests made to a web bundle until the `SignedWebBundleReader` is ready.
-  // Once the `SignedWebBundleReader` is ready to serve responses, all queued
-  // requests are run and the state is updated to `kReady`.
+  // requests made to a Signed Web Bundle until the `SignedWebBundleReader` is
+  // ready. Once the `SignedWebBundleReader` is ready to serve responses, all
+  // queued requests are run and the state is updated to `kReady`.
   struct CacheEntry {
     explicit CacheEntry(std::unique_ptr<SignedWebBundleReader> reader);
     ~CacheEntry();
@@ -154,6 +163,8 @@ class IsolatedWebAppReaderRegistry : public KeyedService {
   base::flat_map<base::FilePath, CacheEntry> reader_cache_;
 
   std::unique_ptr<IsolatedWebAppValidator> validator_;
+  base::RepeatingCallback<std::unique_ptr<SignedWebBundleSignatureVerifier>()>
+      signature_verifier_factory_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

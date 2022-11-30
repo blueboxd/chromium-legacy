@@ -56,6 +56,8 @@ export class PasswordCheckListItemElement extends
        */
       item: Object,
 
+      showDetails: Boolean,
+
       isPasswordVisible: {
         type: Boolean,
         computed: 'computePasswordVisibility_(item.password)',
@@ -73,17 +75,18 @@ export class PasswordCheckListItemElement extends
 
       buttonClass_: {
         type: String,
-        computed: 'computeButtonClass_(item.compromisedInfo)',
+        computed: 'computeButtonClass_(showDetails)',
       },
 
       iconClass_: {
         type: String,
-        computed: 'computeIconClass_(item.compromisedInfo)',
+        computed: 'computeIconClass_(showDetails)',
       },
     };
   }
 
   item: chrome.passwordsPrivate.PasswordUiEntry;
+  showDetails: boolean = false;
   isPasswordVisible: boolean;
   private password_: string;
   clickedChangePassword: boolean;
@@ -92,33 +95,23 @@ export class PasswordCheckListItemElement extends
   private passwordManager_: PasswordManagerProxy =
       PasswordManagerImpl.getInstance();
 
-  /**
-   * @return Whether |item| is compromised credential.
-   */
-  private isCompromisedItem_(): boolean {
-    return !!this.item.compromisedInfo;
-  }
-
-  /**
-   * @return Whether |item| is compromised credential but not muted.
-   */
-  private isNonMutedCompromisedItem_(): boolean {
-    return this.isCompromisedItem_() && !this.item.compromisedInfo!.isMuted;
-  }
-
   private getCompromiseType_(): string {
-    switch (this.item.compromisedInfo!.compromiseType) {
-      case chrome.passwordsPrivate.CompromiseType.PHISHED:
-        return loadTimeData.getString('phishedPassword');
-      case chrome.passwordsPrivate.CompromiseType.LEAKED:
-        return loadTimeData.getString('leakedPassword');
-      case chrome.passwordsPrivate.CompromiseType.PHISHED_AND_LEAKED:
-        return loadTimeData.getString('phishedAndLeakedPassword');
-      default:
-        assertNotReached(
-            'Can\'t find a string for type: ' +
-            this.item.compromisedInfo!.compromiseType);
+    const isLeaked = this.item.compromisedInfo!.compromiseTypes.some(
+        type => type === chrome.passwordsPrivate.CompromiseType.LEAKED);
+    const isPhished = this.item.compromisedInfo!.compromiseTypes.some(
+        type => type === chrome.passwordsPrivate.CompromiseType.PHISHED);
+    if (isLeaked && isPhished) {
+      return loadTimeData.getString('phishedAndLeakedPassword');
     }
+    if (isPhished) {
+      return loadTimeData.getString('phishedPassword');
+    }
+    if (isLeaked) {
+      return loadTimeData.getString('leakedPassword');
+    }
+
+    assertNotReached(
+        'Can\'t find a string for type: ' + this.item.compromisedInfo!);
   }
 
   private fire_(eventName: string, detail?: any) {
@@ -158,7 +151,7 @@ export class PasswordCheckListItemElement extends
   }
 
   private computeButtonClass_(): string {
-    if (this.isNonMutedCompromisedItem_()) {
+    if (this.showDetails) {
       // Strong CTA.
       return 'action-button';
     }
@@ -167,7 +160,7 @@ export class PasswordCheckListItemElement extends
   }
 
   private computeIconClass_(): string {
-    if (this.isNonMutedCompromisedItem_()) {
+    if (this.showDetails) {
       // Strong CTA, white icon.
       return '';
     }

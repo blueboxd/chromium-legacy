@@ -216,7 +216,7 @@ void AppListPresenterImpl::Show(AppListViewState preferred_state,
   // App list view state accessibility alerts should be suppressed when the app
   // list view is shown by the assistant. The assistant UI should handle its
   // own accessibility notifications.
-  if (show_source && *show_source == kAssistantEntryPoint) {
+  if (show_source && *show_source == AppListShowSource::kAssistantEntryPoint) {
     scoped_accessibility_lock =
         std::make_unique<AppListView::ScopedAccessibilityAnnouncementLock>(
             view_);
@@ -395,20 +395,6 @@ bool AppListPresenterImpl::GetTargetVisibility() const {
   return is_target_visibility_show_;
 }
 
-void AppListPresenterImpl::ProcessScrollOffset(
-    const gfx::Point& location,
-    const gfx::Vector2d& scroll_offset_vector) {
-  if (view_)
-    view_->HandleScroll(location, scroll_offset_vector, ui::ET_SCROLL);
-}
-
-void AppListPresenterImpl::ProcessMouseWheelOffset(
-    const gfx::Point& location,
-    const gfx::Vector2d& scroll_offset_vector) {
-  if (view_)
-    view_->HandleScroll(location, scroll_offset_vector, ui::ET_MOUSEWHEEL);
-}
-
 void AppListPresenterImpl::UpdateScaleAndOpacityForHomeLauncher(
     float scale,
     float opacity,
@@ -437,16 +423,6 @@ void AppListPresenterImpl::UpdateScaleAndOpacityForHomeLauncher(
   if (!callback.is_null()) {
     settings.emplace(layer->GetAnimator());
     callback.Run(&settings.value());
-
-    // Disable suggestion chips blur during animations to improve performance.
-    base::ScopedClosureRunner blur_disabler =
-        view_->app_list_main_view()
-            ->contents_view()
-            ->apps_container_view()
-            ->DisableSuggestionChipsBlur();
-    // The observer will delete itself when the animations are completed.
-    settings->AddObserver(
-        new CallbackRunnerLayerAnimationObserver(std::move(blur_disabler)));
   }
 
   // The animation metrics reporter will run for opacity and transform

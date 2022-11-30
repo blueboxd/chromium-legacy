@@ -63,9 +63,13 @@ ProfilePickerDiceSignInProvider::~ProfilePickerDiceSignInProvider() {
     if (IsInitialized()) {
       contents()->SetDelegate(nullptr);
 
-      // Schedule the profile for deletion, it's not needed any more.
-      g_browser_process->profile_manager()->ScheduleEphemeralProfileForDeletion(
-          profile_->GetPath());
+      // Schedule the profile for deletion if it wasn't deleted yet, since it's
+      // not needed any more.
+      if (!ProfileManager::IsProfileDirectoryMarkedForDeletion(
+              profile_->GetPath())) {
+        g_browser_process->profile_manager()
+            ->ScheduleEphemeralProfileForDeletion(profile_->GetPath());
+      }
     }
 
     ProfileMetrics::LogProfileAddSignInFlowOutcome(
@@ -274,5 +278,5 @@ void ProfilePickerDiceSignInProvider::FinishFlow(bool is_saml) {
   host_->SetNativeToolbarVisible(false);
   contents()->SetDelegate(nullptr);
   identity_manager_observation_.Reset();
-  std::move(callback_).Run(profile_.get(), std::move(contents_), is_saml);
+  std::move(callback_).Run(profile_.get(), is_saml, std::move(contents_));
 }

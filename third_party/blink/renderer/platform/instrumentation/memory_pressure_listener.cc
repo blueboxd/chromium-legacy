@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,9 +15,10 @@
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/platform/fonts/font_global_context.h"
 #include "third_party/blink/renderer/platform/graphics/image_decoding_store.h"
+#include "third_party/blink/renderer/platform/heap/cross_thread_persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/scheduler/public/non_main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
@@ -75,12 +76,12 @@ MemoryPressureListenerRegistry& MemoryPressureListenerRegistry::Instance() {
   return *external.Get();
 }
 
-void MemoryPressureListenerRegistry::RegisterThread(Thread* thread) {
+void MemoryPressureListenerRegistry::RegisterThread(NonMainThread* thread) {
   base::AutoLock lock(threads_lock_);
   threads_.insert(thread);
 }
 
-void MemoryPressureListenerRegistry::UnregisterThread(Thread* thread) {
+void MemoryPressureListenerRegistry::UnregisterThread(NonMainThread* thread) {
   base::AutoLock lock(threads_lock_);
   threads_.erase(thread);
 }
@@ -121,11 +122,11 @@ void MemoryPressureListenerRegistry::OnPurgeMemory() {
   // Thread-specific data never issues a layout, so we are safe here.
   base::AutoLock lock(threads_lock_);
   for (auto* thread : threads_) {
-    if (!thread->GetDeprecatedTaskRunner())
+    if (!thread->GetTaskRunner())
       continue;
 
     PostCrossThreadTask(
-        *thread->GetDeprecatedTaskRunner(), FROM_HERE,
+        *thread->GetTaskRunner(), FROM_HERE,
         CrossThreadBindOnce(
             MemoryPressureListenerRegistry::ClearThreadSpecificMemory));
   }

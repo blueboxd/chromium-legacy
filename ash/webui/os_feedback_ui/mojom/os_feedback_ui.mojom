@@ -74,6 +74,10 @@ struct FeedbackContext {
   string? email;
   // Whether or not the signed in email is an internal google account.
   bool is_internal_account;
+  // Whether or not the feedback app is opened from Assistant.
+  bool from_assistant;
+  // Whether or not the assistant debug info is allowed by user.
+  bool assistant_debug_info_allowed;
   // The URL of the page that this issue was being experienced on.
   url.mojom.Url?  page_url;
   // Extra diagnostics information provided by source CrOS application by
@@ -86,6 +90,8 @@ struct FeedbackContext {
   // When a report is sent with bluetooth logs, the category_tag will be set
   // to BluetoothReportWithLogs.
   string? category_tag;
+  // The performance trace id.
+  int32 trace_id;
 };
 
 // Status of the sending of a feedback report.
@@ -223,9 +229,6 @@ interface FeedbackServiceProvider {
   // Open system info dialog (which displays the system logs
   // to be sent with the report if the user has opted in).
   OpenSystemInfoDialog();
-  // Open bluetooth logs info dialog (which displays the bluetooth logs
-  // to be sent with the report if the user has opted in).
-  OpenBluetoothLogsInfoDialog();
   // Record the metrics of users' first action on confirmation page.
   RecordPostSubmitAction(FeedbackAppPostSubmitAction action);
   // Record metrics of users' action before sending the feedback.

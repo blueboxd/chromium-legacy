@@ -56,6 +56,16 @@
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
+			<string>Force Feed Signin Promo</string>
+			<key>Key</key>
+			<string>ForceFeedSigninPromo</string>
+			<key>DefaultValue</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
 			<string>Always show Follow IPH</string>
 			<key>Key</key>
 			<string>AlwaysShowFollowIPH</string>
@@ -122,6 +132,26 @@
 				<string>French</string>
 				<string>Hebrew</string>
 				<string>Hindi</string>
+			</array>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSMultiValueSpecifier</string>
+			<key>Title</key>
+			<string>Force Promo</string>
+			<key>Key</key>
+			<string>NextPromoForDisplayOverride</string>
+			<key>DefaultValue</key>
+			<string></string>
+			<key>Values</key>
+			<array>
+				<string></string>
+				<string>promos_manager::Promo::AppStoreRating</string>
+			</array>
+			<key>Titles</key>
+			<array>
+				<string>Disabled (No Promos Forced)</string>
+				<string>App Store Rating</string>
 			</array>
 		</dict>
 		<dict>
@@ -193,16 +223,6 @@
 			<string>Enable SyncDisabled</string>
 			<key>Key</key>
 			<string>EnableSyncDisabledPolicy</string>
-			<key>DefaultValue</key>
-			<false/>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSToggleSwitchSpecifier</string>
-			<key>Title</key>
-			<string>Enable UserPolicy</string>
-			<key>Key</key>
-			<string>EnableUserPolicy</string>
 			<key>DefaultValue</key>
 			<false/>
 		</dict>

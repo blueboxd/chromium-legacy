@@ -287,11 +287,12 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::TryCatch try_block(isolate);
   v8::MicrotasksScope microtasks_scope(
-      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+      isolate, context->GetMicrotaskQueue(),
+      v8::MicrotasksScope::kDoNotRunMicrotasks);
 
   // Process stack - will return when complete.
   while (true) {
-    DCHECK(!stack.IsEmpty());
+    DCHECK(!stack.empty());
     Record* top = stack.back().get();
     const wtf_size_t item_index = top->subkeys.size();
 
@@ -302,7 +303,7 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
       seen.pop_back();
       stack.pop_back();
 
-      if (stack.IsEmpty())
+      if (stack.empty())
         return key;
       top = stack.back().get();
       top->subkeys.push_back(std::move(key));
@@ -393,7 +394,8 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::TryCatch block(isolate);
   v8::MicrotasksScope microtasks_scope(
-      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+      isolate, context->GetMicrotaskQueue(),
+      v8::MicrotasksScope::kDoNotRunMicrotasks);
   for (wtf_size_t i = 0; i < key_path_elements.size(); ++i) {
     const String& element = key_path_elements[i];
 

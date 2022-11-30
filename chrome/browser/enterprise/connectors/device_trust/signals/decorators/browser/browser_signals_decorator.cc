@@ -5,34 +5,30 @@
 #include "chrome/browser/enterprise/connectors/device_trust/signals/decorators/browser/browser_signals_decorator.h"
 
 #include <functional>
+#include <utility>
 
 #include "base/check.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/enterprise/connectors/device_trust/signals/decorators/common/metrics_utils.h"
+#include "chrome/browser/enterprise/connectors/device_trust/signals/decorators/common/signals_utils.h"
 #include "chrome/browser/enterprise/signals/device_info_fetcher.h"
 #include "chrome/browser/enterprise/signals/signals_common.h"
 #include "components/device_signals/core/common/signals_constants.h"
-#include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 namespace enterprise_connectors {
 
 namespace {
-using policy::BrowserDMTokenStorage;
 using policy::CloudPolicyStore;
 
 constexpr char kLatencyHistogramVariant[] = "Browser";
-constexpr char kLatencyHistogramWithCacheVariant[] = "Browser.WithCache";
 }  // namespace
 
 BrowserSignalsDecorator::BrowserSignalsDecorator(
-    BrowserDMTokenStorage* dm_token_storage,
     CloudPolicyStore* cloud_policy_store)
-    : dm_token_storage_(dm_token_storage),
-      cloud_policy_store_(cloud_policy_store) {
-  DCHECK(dm_token_storage_);
+    : cloud_policy_store_(cloud_policy_store) {
   DCHECK(cloud_policy_store_);
 }
 
@@ -42,23 +38,11 @@ void BrowserSignalsDecorator::Decorate(base::Value::Dict& signals,
                                        base::OnceClosure done_closure) {
   auto start_time = base::TimeTicks::Now();
 
-  signals.Set(device_signals::names::kDeviceId,
-              dm_token_storage_->RetrieveClientId());
-
   if (cloud_policy_store_->has_policy()) {
     const auto* policy = cloud_policy_store_->policy();
-    signals.Set(device_signals::names::kObfuscatedCustomerId,
-                policy->obfuscated_customer_id());
-    signals.Set(device_signals::names::kEnrollmentDomain,
+    signals.Set(device_signals::names::kDeviceEnrollmentDomain,
                 policy->has_managed_by() ? policy->managed_by()
                                          : policy->display_domain());
-  }
-
-  if (cache_initialized_) {
-    UpdateFromCache(signals);
-    LogSignalsCollectionLatency(kLatencyHistogramWithCacheVariant, start_time);
-    std::move(done_closure).Run();
-    return;
   }
 
   base::ThreadPool::PostTaskAndReplyWithResult(
@@ -75,29 +59,34 @@ void BrowserSignalsDecorator::OnDeviceInfoFetched(
     base::TimeTicks start_time,
     base::OnceClosure done_closure,
     const enterprise_signals::DeviceInfo& device_info) {
-  cached_serial_number_ = device_info.serial_number;
-  cached_is_disk_encrypted_ =
-      enterprise_signals::SettingValueToBool(device_info.disk_encrypted);
+  signals.Set(device_signals::names::kSerialNumber, device_info.serial_number);
+  signals.Set(device_signals::names::kScreenLockSecured,
+              static_cast<int32_t>(device_info.screen_lock_secured));
+  signals.Set(device_signals::names::kDiskEncrypted,
+              static_cast<int32_t>(device_info.disk_encrypted));
+  signals.Set(device_signals::names::kDeviceHostName,
+              device_info.device_host_name);
+  signals.Set(device_signals::names::kMacAddresses,
+              ToListValue(device_info.mac_addresses));
 
-  cache_initialized_ = true;
-  UpdateFromCache(signals);
+  if (device_info.windows_machine_domain) {
+    signals.Set(device_signals::names::kWindowsMachineDomain,
+                device_info.windows_machine_domain.value());
+  }
+
+  if (device_info.windows_user_domain) {
+    signals.Set(device_signals::names::kWindowsUserDomain,
+                device_info.windows_user_domain.value());
+  }
+
+  if (device_info.secure_boot_enabled) {
+    signals.Set(device_signals::names::kSecureBootEnabled,
+                static_cast<int32_t>(device_info.secure_boot_enabled.value()));
+  }
 
   LogSignalsCollectionLatency(kLatencyHistogramVariant, start_time);
 
   std::move(done_closure).Run();
-}
-
-void BrowserSignalsDecorator::UpdateFromCache(base::Value::Dict& signals) {
-  DCHECK(cache_initialized_);
-  if (cached_serial_number_) {
-    signals.Set(device_signals::names::kSerialNumber,
-                cached_serial_number_.value());
-  }
-
-  if (cached_is_disk_encrypted_.has_value()) {
-    signals.Set(device_signals::names::kIsDiskEncrypted,
-                cached_is_disk_encrypted_.value());
-  }
 }
 
 }  // namespace enterprise_connectors

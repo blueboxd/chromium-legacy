@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -264,7 +264,7 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
   if (UNLIKELY(InvolvedInBlockFragmentation(container_builder_))) {
     NGBreakStatus status = FinishFragmentation(
         Node(), ConstraintSpace(), /* trailing_border_padding */ LayoutUnit(),
-        FragmentainerSpaceAtBfcStart(ConstraintSpace()), &container_builder_);
+        FragmentainerSpaceLeft(ConstraintSpace()), &container_builder_);
 
     // TODO(mstensho): Deal with early-breaks.
     DCHECK_EQ(status, NGBreakStatus::kContinue);
@@ -276,7 +276,9 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
                 container_builder_.FragmentBlockSize()));
   }
 
-  container_builder_.SetFirstBaseline(row_baseline_tabulator.ComputeBaseline(
+  // NOTE: When we support "align-content: last baseline" for tables there may
+  // be two baseline alignment contexts.
+  container_builder_.SetBaselines(row_baseline_tabulator.ComputeBaseline(
       container_builder_.FragmentBlockSize()));
 
   NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();

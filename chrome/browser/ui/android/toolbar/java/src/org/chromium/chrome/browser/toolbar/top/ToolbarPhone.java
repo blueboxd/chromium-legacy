@@ -332,7 +332,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     }
 
     @Override
-    void destroy() {
+    public void destroy() {
         cancelAnimations();
         Handler handler = getHandler();
         if (handler != null) {
@@ -542,6 +542,13 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        // In case the call came from the handler after we destroyed the dependencies, skip the work
+        // that could touch the already destroyed objects.
+        if (mDestroyChecker.isDestroyed()) {
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+            return;
+        }
+
         if (!mDisableLocationBarRelayout) {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
@@ -965,6 +972,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
             mHomeButton.setVisibility(toolbarButtonVisibility);
         }
 
+        updateToolbarLayoutForExpansionAnimationOnActiveColor();
         updateLocationBarLayoutForExpansionAnimation();
     }
 
@@ -986,6 +994,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         TraceEvent.begin("ToolbarPhone.updateLocationBarLayoutForExpansionAnimation");
         if (mOptimizationsEnabled && isInTabSwitcherMode()) return;
 
+        boolean isLocationBarShownInNTP = isLocationBarShownInNTP();
         FrameLayout.LayoutParams locationBarLayoutParams =
                 mLocationBar.getPhoneCoordinator().getFrameLayoutParams();
         int currentLeftMargin = locationBarLayoutParams.leftMargin;
@@ -1035,7 +1044,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         if (currentTab != null) {
             getToolbarDataProvider().getNewTabPageDelegate().setUrlFocusChangeAnimationPercent(
                     mUrlFocusChangeFraction);
-            if (isLocationBarShownInNTP()
+            if (isLocationBarShownInNTP
                     && !getToolbarDataProvider().isInOverviewAndShowingOmnibox()) {
                 updateNtpTransitionAnimation();
             } else {
@@ -1054,16 +1063,6 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
 
         mLocationBar.getPhoneCoordinator().setTranslationX(locationBarTranslationX);
 
-        // When the dse icon is enabled, the UrlBar needs additional translation to compensate for
-        // the additional translation applied to the LocationBar. See comments in
-        // LocationBar#getUrlBarTranslationXForToolbarAnimation() for implementation details.
-        if (SearchEngineLogoUtils.getInstance().shouldShowSearchEngineLogo(isIncognito)) {
-            mUrlBar.setTranslationX(
-                    getUrlBarTranslationXForToolbarAnimation(mUrlExpansionFraction, hasFocus()));
-        } else {
-            mUrlBar.setTranslationX(0);
-        }
-
         if (!mOptionalButtonAnimationRunning) {
             mUrlActionContainer.setTranslationX(getUrlActionsTranslationXForExpansionAnimation(
                     isLocationBarRtl, locationBarBaseTranslationX));
@@ -1074,7 +1073,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
             // But for the mShouldShowModernizeVisualUpdate, toolbar and locationbar will have
             // different color when they are focused than in NTP, so the color need to be updated in
             // this case.
-            if ((mShouldShowModernizeVisualUpdate || !isLocationBarShownInNTP())
+            if ((mShouldShowModernizeVisualUpdate || !isLocationBarShownInNTP)
                     && mTabSwitcherState == STATIC_TAB) {
                 int defaultColor = getToolbarDefaultColor();
                 int defaultLocationBarColor =
@@ -1097,6 +1096,33 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         mLocationBar.getPhoneCoordinator().invalidate();
         invalidate();
         TraceEvent.end("ToolbarPhone.updateLocationBarLayoutForExpansionAnimation");
+    }
+
+    /**
+     * Updates the toolbar height and bottom padding, as the result of either a focus change or
+     * scrolling the New Tab Page.
+     */
+    private void updateToolbarLayoutForExpansionAnimationOnActiveColor() {
+        if (!(OmniboxFeatures.shouldShowModernizeVisualUpdate(getContext())
+                    && OmniboxFeatures.shouldShowActiveColorOnOmnibox())) {
+            return;
+        }
+
+        int heightIncrease = (int) (getResources().getDimensionPixelSize(
+                                            R.dimen.toolbar_url_focus_height_increase)
+                * mUrlExpansionFraction);
+        int bottomPaddingIncrease =
+                (int) (getResources().getDimensionPixelSize(
+                               R.dimen.toolbar_url_focus_bottom_padding_increase)
+                        * mUrlExpansionFraction);
+
+        var layoutParams = getLayoutParams();
+        layoutParams.height = getResources().getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
+                + heightIncrease;
+        setLayoutParams(layoutParams);
+
+        setPaddingRelative(
+                getPaddingStart(), getPaddingTop(), getPaddingEnd(), bottomPaddingIncrease);
     }
 
     /**
@@ -1694,7 +1720,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     }
 
     private boolean hideShadowForRegularNtpTextureCapture() {
-        return !isIncognito() && UrlUtilities.isNTPUrl(getToolbarDataProvider().getCurrentUrl())
+        return !isIncognito() && UrlUtilities.isNTPUrl(getToolbarDataProvider().getCurrentGurl())
                 && mNtpSearchBoxScrollFraction < 1.f;
     }
 
@@ -1950,8 +1976,29 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     public void onUrlFocusChange(final boolean hasFocus) {
         super.onUrlFocusChange(hasFocus);
 
+        updateBackground(hasFocus);
+
         if (mToggleTabStackButton != null) mToggleTabStackButton.setClickable(!hasFocus);
         triggerUrlFocusAnimation(hasFocus);
+    }
+
+    /**
+     * @param hasFocus Whether the URL field has gained focus.
+     */
+    private void updateBackground(final boolean hasFocus) {
+        if (hasFocus) {
+            mActiveLocationBarBackground = mLocationBarBackground;
+        } else if (isLocationBarShownInNTP()) {
+            updateToNtpBackground();
+        }
+    }
+
+    private void updateToNtpBackground() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            NtpSearchBoxDrawable ntpSearchBox = new NtpSearchBoxDrawable(getContext(), this);
+            getToolbarDataProvider().getNewTabPageDelegate().setSearchBoxBackground(ntpSearchBox);
+            mActiveLocationBarBackground = ntpSearchBox;
+        }
     }
 
     /**
@@ -2133,12 +2180,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         resetNtpAnimationValues();
         ntpDelegate.setSearchBoxScrollListener(this::onNtpScrollChanged);
         if (ntpDelegate.isLocationBarShown()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                NtpSearchBoxDrawable ntpSearchBox = new NtpSearchBoxDrawable(getContext(), this);
-                ntpDelegate.setSearchBoxBackground(ntpSearchBox);
-                mActiveLocationBarBackground = ntpSearchBox;
-            }
-
+            updateToNtpBackground();
             requestLayout();
         } else if (wasShowingNtp) {
             // Convert the previous NTP scroll progress to URL focus progress because that
@@ -2213,7 +2255,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     }
 
     private boolean hideShadowForIncognitoNtp() {
-        return isIncognito() && UrlUtilities.isNTPUrl(getToolbarDataProvider().getCurrentUrl());
+        return isIncognito() && UrlUtilities.isNTPUrl(getToolbarDataProvider().getCurrentGurl());
     }
 
     private boolean hideShadowForInterstitial() {
@@ -2604,60 +2646,6 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         // right-hand side.
         int offset = statusCoordinator.getStatusIconWidth() - getAdditionalOffsetForNTP();
         return mLocationBar.isLayoutRtl() ? offset : -offset;
-    }
-
-    /**
-     * Function used to position the url bar inside the location bar during omnibox animation.
-     *
-     * @param urlExpansionPercent The current expansion percent, 1 is fully focused and 0 is
-     *                            completely unfocused.
-     * @param hasFocus True if the LocationBar has focus, this will be true between the focus
-     *                 animation starting and the unfocus animation starting.
-     * @return The X translation for the URL bar, used in the toolbar animation.
-     */
-    private float getUrlBarTranslationXForToolbarAnimation(
-            float urlExpansionPercent, boolean hasFocus) {
-        StatusCoordinator statusCoordinator = mLocationBar.getStatusCoordinator();
-        if (statusCoordinator == null) return 0;
-        SearchEngineLogoUtils searchEngineLogoUtils = SearchEngineLogoUtils.getInstance();
-        assert searchEngineLogoUtils != null;
-
-        // No offset is required if the experiment is disabled.
-        if (!searchEngineLogoUtils.shouldShowSearchEngineLogo(
-                    getToolbarDataProvider().isIncognito())) {
-            return 0;
-        }
-
-        boolean isRtl = mLocationBar.isLayoutRtl();
-        // The calculation here is: the difference in padding between the focused vs unfocused
-        // states and also accounts for the translation that the status icon will do. In the end,
-        // this translation will be the distance that the url bar needs to travel to arrive at the
-        // desired padding when focused.
-        float translation =
-                urlExpansionPercent * statusCoordinator.getEndPaddingPixelSizeOnFocusDelta();
-
-        boolean scrollingOnNtp = !hasFocus && statusCoordinator.isSearchEngineStatusIconVisible()
-                && UrlUtilities.isCanonicalizedNTPUrl(getToolbarDataProvider().getCurrentUrl());
-        if (scrollingOnNtp) {
-            // When:
-            // 1. unfocusing the LocationBar on the NTP.
-            // 2. scrolling the fakebox to the LocationBar on the NTP.
-            // The status icon and the URL bar text overlap in the animation.
-            //
-            // This branch calculates the negative distance the URL bar needs to travel to
-            // completely overlap the status icon and end up in a state that matches the fakebox.
-            float overStatusIconTranslation = translation
-                    - (1f - urlExpansionPercent)
-                            * (statusCoordinator.getStatusIconWidth()
-                                    - getAdditionalOffsetForNTP());
-            // For LTR, the value is negative because the status icon is left of the url bar on the
-            // x/y plane.
-            // For RTL, the value is positive because the status icon is right of the url bar on the
-            // x/y plane.
-            return isRtl ? -overStatusIconTranslation : overStatusIconTranslation;
-        }
-
-        return isRtl ? -translation : translation;
     }
 
     private int getAdditionalOffsetForNTP() {

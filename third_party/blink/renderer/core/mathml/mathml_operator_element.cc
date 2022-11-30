@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,7 +137,7 @@ void MathMLOperatorElement::ComputeDictionaryCategory() {
   if (properties_.dictionary_category !=
       MathMLOperatorDictionaryCategory::kUndefined)
     return;
-  if (GetTokenContent().characters.IsEmpty()) {
+  if (GetTokenContent().characters.empty()) {
     properties_.dictionary_category = MathMLOperatorDictionaryCategory::kNone;
     return;
   }
@@ -179,9 +179,10 @@ void MathMLOperatorElement::ComputeDictionaryCategory() {
   } else {
     if (!explicit_form) {
       // Step 3.
-      for (uint8_t fallback_form = MathMLOperatorDictionaryForm::kInfix;
-           fallback_form <= MathMLOperatorDictionaryForm::kPostfix;
-           fallback_form++) {
+      for (const auto& fallback_form :
+           {MathMLOperatorDictionaryForm::kInfix,
+            MathMLOperatorDictionaryForm::kPostfix,
+            MathMLOperatorDictionaryForm::kPrefix}) {
         if (fallback_form == form)
           continue;
         category = FindCategory(

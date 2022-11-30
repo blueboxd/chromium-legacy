@@ -43,7 +43,6 @@ import six
 import sre_compile
 import unicodedata
 
-from blinkpy.common.memoized import memoized
 from blinkpy.common.system.filesystem import FileSystem
 
 from functools import total_ordering
@@ -2443,8 +2442,8 @@ _RE_PATTERN_STRING = re.compile(r'\bstring\b')
 _re_pattern_algorithm_header = []
 for _template in ('copy', 'max', 'min', 'min_element', 'sort', 'swap',
                   'transform'):
-    # Match max<type>(..., ...), max(..., ...), but not foo->max, foo.max or
-    # type::max().
+    # Match max<type>(..., ...), max(..., ...), but not foo->max, foo.max,
+    # or type::max().
     _re_pattern_algorithm_header.append(
         (re.compile(r'[^>.]\b' + _template + r'(<.*?>)?\([^\)]'), _template,
          '<algorithm>'))

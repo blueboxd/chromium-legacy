@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import '//resources/js/util.m.js';
+import '//resources/js/util.js';
 import '//resources/cr_elements/cr_button/cr_button.js';
 import '//resources/cr_elements/cr_dialog/cr_dialog.js';
 import '//resources/cr_elements/cr_input/cr_input.js';
@@ -27,11 +27,11 @@ import '//resources/cr_elements/cr_toast/cr_toast.js';
 import {CrDialogElement} from '//resources/cr_elements/cr_dialog/cr_dialog.js';
 import {CrInputElement} from '//resources/cr_elements/cr_input/cr_input.js';
 import {assert, assertNotReached} from '//resources/js/assert_ts.js';
-import {focusWithoutInk} from '//resources/js/cr/ui/focus_without_ink.js';
-import {WebUIListenerMixin, WebUIListenerMixinInterface} from '//resources/js/web_ui_listener_mixin.js';
+import {focusWithoutInk} from '//resources/js/focus_without_ink.js';
+import {WebUIListenerMixin, WebUIListenerMixinInterface} from '//resources/cr_elements/web_ui_listener_mixin.js';
 import {IronCollapseElement} from '//resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import {flush, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
+import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
 
 import {FocusConfig} from '../focus_config.js';
 import {loadTimeData} from '../i18n_setup.js';
@@ -340,9 +340,9 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
 
   private showActivityControls_(): boolean {
     // <if expr="chromeos_ash">
-    if (loadTimeData.getBoolean('syncSettingsCategorizationEnabled')) {
-      // Should be hidden in OS settings.
-      return !loadTimeData.getBoolean('isOSSettings');
+    // Should be hidden in OS settings.
+    if (loadTimeData.getBoolean('isOSSettings')) {
+      return false;
     }
     // </if>
     return true;
@@ -367,8 +367,7 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
 
   private getSyncAdvancedPageRoute_(): Route {
     // <if expr="chromeos_ash">
-    if (loadTimeData.getBoolean('syncSettingsCategorizationEnabled') &&
-        loadTimeData.getBoolean('isOSSettings')) {
+    if (loadTimeData.getBoolean('isOSSettings')) {
       // In OS settings on ChromeOS a different page is used to show the list of
       // sync data types.
       return getSyncRoutes().OS_SYNC;

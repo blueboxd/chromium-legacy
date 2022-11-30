@@ -41,6 +41,25 @@ import java.util.List;
 class TabSelectionEditorCoordinator {
     static final String COMPONENT_NAME = "TabSelectionEditor";
 
+    // TODO(977271): Unify similar interfaces in other components that used the TabListCoordinator.
+    /**
+     * Interface for resetting the selectable tab grid.
+     */
+    interface ResetHandler {
+        /**
+         * Handles the reset event.
+         * @param tabs List of {@link Tab}s to reset.
+         * @param preSelectedCount First {@code preSelectedCount} {@code tabs} are pre-selected.
+         * @param quickMode whether to use quick mode.
+         */
+        void resetWithListOfTabs(@Nullable List<Tab> tabs, int preSelectedCount, boolean quickMode);
+
+        /**
+         * Handles cleanup.
+         */
+        void postHiding();
+    }
+
     /**
      * An interface to control the TabSelectionEditor.
      */
@@ -109,10 +128,12 @@ class TabSelectionEditorCoordinator {
     public static class TabSelectionEditorNavigationProvider {
         private final TabSelectionEditorCoordinator
                 .TabSelectionEditorController mTabSelectionEditorController;
+        private final Context mContext;
 
-        public TabSelectionEditorNavigationProvider(
+        public TabSelectionEditorNavigationProvider(Context context,
                 TabSelectionEditorCoordinator
                         .TabSelectionEditorController tabSelectionEditorController) {
+            mContext = context;
             mTabSelectionEditorController = tabSelectionEditorController;
         }
 
@@ -120,7 +141,11 @@ class TabSelectionEditorCoordinator {
          * Defines what to do when the navigation button is clicked.
          */
         public void goBack() {
-            RecordUserAction.record("TabMultiSelect.Cancelled");
+            if (TabUiFeatureUtilities.isTabSelectionEditorV2Enabled(mContext)) {
+                RecordUserAction.record("TabMultiSelectV2.ClosedByUser");
+            } else {
+                RecordUserAction.record("TabMultiSelect.Cancelled");
+            }
             mTabSelectionEditorController.hide();
         }
     }
@@ -156,7 +181,10 @@ class TabSelectionEditorCoordinator {
 
             TabListMediator.ThumbnailProvider thumbnailProvider = displayGroups
                     ? new MultiThumbnailCardProvider(context, tabContentManager, tabModelSelector)
-                    : tabContentManager::getTabThumbnailWithCallback;
+                    : (tabId, thumbnailSize, callback, forceUpdate, writeBack, isSelected) -> {
+                tabContentManager.getTabThumbnailWithCallback(
+                        tabId, thumbnailSize, callback, forceUpdate, writeBack);
+            };
             PseudoTab.TitleProvider titleProvider = displayGroups ? this::getTitle : null;
 
             // TODO(ckitagawa): Lazily instantiate the TabSelectionEditorCoordinator. When doing so,
@@ -171,6 +199,9 @@ class TabSelectionEditorCoordinator {
             // initialized.
             assert LibraryLoader.getInstance().isInitialized();
             mTabListCoordinator.initWithNative(null);
+            if (thumbnailProvider instanceof MultiThumbnailCardProvider) {
+                ((MultiThumbnailCardProvider) thumbnailProvider).initWithNative();
+            }
 
             mTabListCoordinator.registerItemType(TabProperties.UiType.DIVIDER,
                     new LayoutViewBuilder(R.layout.divider_preference),
@@ -206,8 +237,22 @@ class TabSelectionEditorCoordinator {
             mTabSelectionEditorLayoutChangeProcessor = PropertyModelChangeProcessor.create(
                     mModel, mTabSelectionEditorLayout, TabSelectionEditorLayoutBinder::bind, false);
 
+            ResetHandler resetHandler = new ResetHandler() {
+                @Override
+                public void resetWithListOfTabs(
+                        @Nullable List<Tab> tabs, int preSelectedCount, boolean quickMode) {
+                    TabSelectionEditorCoordinator.this.resetWithListOfTabs(
+                            tabs, preSelectedCount, quickMode);
+                }
+
+                @Override
+                public void postHiding() {
+                    mTabListCoordinator.postHiding();
+                    mTabListCoordinator.softCleanup();
+                }
+            };
             mTabSelectionEditorMediator = new TabSelectionEditorMediator(mContext,
-                    mTabModelSelector, mTabListCoordinator, this::resetWithListOfTabs, mModel,
+                    mTabModelSelector, mTabListCoordinator, resetHandler, mModel,
                     mSelectionDelegate, mTabSelectionEditorLayout.getToolbar(), displayGroups);
         }
     }

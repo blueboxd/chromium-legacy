@@ -75,12 +75,7 @@ class TestProfileClient : public DemographicMetricsProvider::ProfileClient {
       case SYNC_FEATURE_ENABLED_BUT_PAUSED:
         sync_service_ = std::make_unique<syncer::TestSyncService>();
         // Mimic the user signing out from content are (sync paused).
-        sync_service_->SetAuthError(
-            GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
-                GoogleServiceAuthError::InvalidGaiaCredentialsReason::
-                    CREDENTIALS_REJECTED_BY_CLIENT));
-        sync_service_->SetTransportState(
-            syncer::SyncService::TransportState::PAUSED);
+        sync_service_->SetPersistentAuthErrorWithWebSignout();
 
         CHECK(sync_service_->GetUserSettings()->IsSyncRequested());
         CHECK(sync_service_->GetDisableReasons().Empty());
@@ -250,8 +245,7 @@ TEST(DemographicMetricsProviderTest,
      ProvideSyncedUserNoisedBirthYearAndGender_FeatureDisabled) {
   // Disable demographics reporting feature.
   base::test::ScopedFeatureList local_feature;
-  local_feature.InitAndDisableFeature(
-      DemographicMetricsProvider::kDemographicMetricsReporting);
+  local_feature.InitAndDisableFeature(kDemographicMetricsReporting);
 
   base::HistogramTester histogram;
 

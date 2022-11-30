@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/settings/ash/search/search_tag_registry.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom-forward.h"
 #include "chrome/browser/ui/webui/settings/languages_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
@@ -27,6 +28,14 @@
 
 namespace chromeos {
 namespace settings {
+
+// TODO(https://crbug.com/1164001): remove after migrating to ash.
+namespace mojom {
+using ::ash::settings::mojom::SearchResultDefaultRank;
+using ::ash::settings::mojom::SearchResultIcon;
+using ::ash::settings::mojom::SearchResultType;
+}  // namespace mojom
+
 namespace {
 
 const std::vector<SearchConcept>& GetLanguagesPageSearchConceptsV2() {
@@ -193,6 +202,26 @@ void AddInputMethodOptionsStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_INPUT_METHOD_OPTIONS_USER_DICTIONARIES},
       {"inputMethodOptionsPrivacySectionTitle",
        IDS_SETTINGS_INPUT_METHOD_OPTIONS_PRIVACY},
+      {"inputMethodOptionsJapaneseAutomaticallySwitchToHalfwidth",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_AUTOMATICALLY_SWITCH_TO_HALFWIDTH},
+      {"inputMethodOptionsJapaneseShiftKeyModeStyle",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_SHIFT_KEY_MODE_STYLE},
+      {"inputMethodOptionsJapaneseShiftKeyModeStyleOff",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_SHIFT_KEY_MODE_STYLE_OFF},
+      {"inputMethodOptionsJapaneseShiftKeyModeStyleAlphanumeric",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_SHIFT_KEY_MODE_STYLE_ALPHANUMERIC},
+      {"inputMethodOptionsJapaneseShiftKeyModeStyleKatakana",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_SHIFT_KEY_MODE_STYLE_KATAKANA},
+      {"inputMethodOptionsJapaneseUseInputHistory",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_USE_INPUT_HISTORY},
+      {"inputMethodOptionsJapaneseUseSystemDictionary",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_USE_SYSTEM_DICTIONARY},
+      {"inputMethodOptionsJapaneseNumberOfSuggestions",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_NUMBER_OF_SUGGESTIONS},
+      {"inputMethodOptionsJapaneseDisablePersonalizedSuggestions",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_DISABLE_PERSONALIZED_SUGGESTIONS},
+      {"inputMethodOptionsJapaneseAutomaticallySendStatisticsToGoogle",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_SEND_STATISTICS_TO_GOOGLE},
       {"inputMethodOptionsEnableDoubleSpacePeriod",
        IDS_SETTINGS_INPUT_METHOD_OPTIONS_ENABLE_DOUBLE_SPACE_PERIOD},
       {"inputMethodOptionsEnableGestureTyping",
@@ -277,6 +306,12 @@ void AddInputMethodOptionsStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_KEYMAP_STYLE_MOBILE},
       {"inputMethodOptionsJapaneseKeymapStyleChromeOs",
        IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_KEYMAP_STYLE_CHROMEOS},
+      {"inputMethodOptionsJapaneseManageUserDictionary",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_MANAGE_USER_DICTIONARY},
+      {"inputMethodOptionsJapaneseClearPersonalizationData",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_CLEAR_PERSONALIZATION_DATA},
+      {"inputMethodOptionsJapaneseManageUserDictionarySubtitle",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_MANAGE_USER_DICTIONARY_SUBTITLE},
       {"inputMethodOptionsPinyinChinesePunctuation",
        IDS_SETTINGS_INPUT_METHOD_OPTIONS_PINYIN_CHINESE_PUNCTUATION},
       {"inputMethodOptionsPinyinDefaultChinese",
@@ -432,6 +467,8 @@ void AddInputPageStringsV2(content::WebUIDataSource* html_source) {
       {"languagesDictionaryDownloadRetryDescription",
        IDS_OS_SETTINGS_LANGUAGES_DICTIONARY_DOWNLOAD_RETRY_DESCRIPTION},
       {"editDictionaryLabel", IDS_OS_SETTINGS_LANGUAGES_EDIT_DICTIONARY_LABEL},
+      {"japaneseManageUserDictionaryLabel",
+       IDS_OS_SETTINGS_LANGUAGES_JAPANESE_MANAGE_USER_DICTIONARY_LABEL},
       {"editDictionaryDescription",
        IDS_OS_SETTINGS_LANGUAGES_EDIT_DICTIONARY_DESCRIPTION},
       {"addDictionaryWordButtonLabel",
@@ -584,6 +621,13 @@ void LanguagesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::Subpage::kEditDictionary, mojom::Subpage::kInput,
       mojom::SearchResultIcon::kGlobe, mojom::SearchResultDefaultRank::kMedium,
       mojom::kEditDictionarySubpagePath);
+
+  // Japanese Manage User Dictionary
+  generator->RegisterNestedSubpage(
+      IDS_OS_SETTINGS_LANGUAGES_JAPANESE_MANAGE_USER_DICTIONARY_LABEL,
+      mojom::Subpage::kJapaneseManageUserDictionary, mojom::Subpage::kInput,
+      mojom::SearchResultIcon::kGlobe, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kJapaneseManageUserDictionarySubpagePath);
 
   generator->RegisterNestedSetting(mojom::Setting::kAddLanguage,
                                    mojom::Subpage::kLanguages);

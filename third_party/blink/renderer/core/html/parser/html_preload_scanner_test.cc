@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -218,7 +218,7 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
     if (strlen(nonce))
       EXPECT_EQ(nonce, preload_request_->Nonce());
     else
-      EXPECT_TRUE(preload_request_->Nonce().IsEmpty());
+      EXPECT_TRUE(preload_request_->Nonce().empty());
   }
 
   void ContextVerification(bool is_image_set) {

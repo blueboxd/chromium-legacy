@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "base/containers/contains.h"
+#include "base/containers/flat_set.h"
 #include "build/build_config.h"
+#include "components/viz/service/display/resource_fence.h"
 #include "gpu/command_buffer/service/scheduler_sequence.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 
@@ -168,9 +170,9 @@ DisplayResourceProviderSkia::LockSetForExternalUse::LockResource(
       resource.image_context =
           resource_provider_->external_use_client_->CreateImageContext(
               resource.transferable.mailbox_holder, resource.transferable.size,
-              resource.transferable.format, maybe_concurrent_reads,
-              resource.transferable.ycbcr_info, std::move(image_color_space),
-              raw_draw_is_possible);
+              resource.transferable.format.resource_format(),
+              maybe_concurrent_reads, resource.transferable.ycbcr_info,
+              std::move(image_color_space), raw_draw_is_possible);
     }
     resource.locked_for_external_use = true;
 
@@ -186,8 +188,10 @@ DisplayResourceProviderSkia::LockSetForExternalUse::LockResource(
         break;
     }
 
-    if (resource.resource_fence)
-      resource.resource_fence->Set();
+    if (resource.resource_fence) {
+      resource.resource_fence->set();
+      resource.resource_fence->TrackDeferredResource(id);
+    }
   }
 
   DCHECK(base::Contains(resources_, std::make_pair(id, &resource)));

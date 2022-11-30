@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,7 +93,7 @@ class ContainerQueryEvaluatorTest : public PageTestBase,
 
     scoped_refptr<ComputedStyle> style =
         GetDocument().GetStyleResolver().InitialStyleForElement();
-    style->SetVariableData(AtomicString(custom_property_name), value->Value(),
+    style->SetVariableData(AtomicString(custom_property_name), &value->Value(),
                            false);
     ContainerElement().SetComputedStyle(style);
 
@@ -663,6 +663,7 @@ TEST_F(ContainerQueryEvaluatorTest, LegacyPrinting) {
 }
 
 TEST_F(ContainerQueryEvaluatorTest, Printing) {
+  ScopedLayoutNGForTest ng_scope(true);
   ScopedLayoutNGPrintingForTest ng_printing_scope(true);
 
   SetBodyInnerHTML(R"HTML(

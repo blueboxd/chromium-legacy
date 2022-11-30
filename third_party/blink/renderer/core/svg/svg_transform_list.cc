@@ -78,7 +78,7 @@ SVGParseStatus ParseTransformArgumentsForType(SVGTransformType type,
   const size_t optional = kOptionalValuesForType[static_cast<int>(type)];
   const size_t required_with_optional = required + optional;
   DCHECK_LE(required_with_optional, kMaxTransformArguments);
-  DCHECK(arguments.IsEmpty());
+  DCHECK(arguments.empty());
 
   bool trailing_delimiter = false;
 
@@ -156,7 +156,7 @@ SVGTransformList::SVGTransformList() = default;
 
 SVGTransformList::SVGTransformList(SVGTransformType transform_type,
                                    const String& value) {
-  if (value.IsEmpty())
+  if (value.empty())
     return;
   TransformArguments arguments;
   bool success =
@@ -363,7 +363,7 @@ bool SVGTransformList::Parse(const LChar*& ptr, const LChar* end) {
 }
 
 SVGTransformType ParseTransformType(const String& string) {
-  if (string.IsEmpty())
+  if (string.empty())
     return SVGTransformType::kUnknown;
   return WTF::VisitCharacters(string, [&](const auto* chars, unsigned length) {
     return ParseAndSkipTransformType(chars, chars + length);
@@ -371,7 +371,7 @@ SVGTransformType ParseTransformType(const String& string) {
 }
 
 SVGParsingError SVGTransformList::SetValueAsString(const String& value) {
-  if (value.IsEmpty()) {
+  if (value.empty()) {
     Clear();
     return SVGParseStatus::kNoError;
   }

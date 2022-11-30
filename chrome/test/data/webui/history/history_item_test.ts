@@ -7,7 +7,7 @@ import 'chrome://history/history.js';
 import {BrowserServiceImpl, HistoryItemElement, HistoryListElement} from 'chrome://history/history.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks} from 'chrome://webui-test/test_util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {TestBrowserService} from './test_browser_service.js';
 import {createHistoryEntry, createSearchEntry} from './test_util.js';
@@ -31,7 +31,8 @@ suite('<history-item> unit test', function() {
   let item: HistoryItemElement;
 
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     BrowserServiceImpl.setInstance(new TestBrowserService());
 
     item = document.createElement('history-item');
@@ -74,7 +75,8 @@ suite('<history-item> integration test', function() {
   let element: HistoryListElement;
 
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     const testService = new TestBrowserService();
     BrowserServiceImpl.setInstance(testService);
 

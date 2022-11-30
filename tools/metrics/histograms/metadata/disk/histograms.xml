@@ -125,7 +125,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DiskCache.0.Error" enum="DiskCacheError"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>wfh@chromium.org</owner>
   <owner>src/net/disk_cache/OWNERS</owner>
   <summary>
@@ -435,6 +435,28 @@ chromium-metrics-reviews@google.com.
   <summary>
     The total time it takes to perform a payload IO operation (AKA, directed to
     an entry). This is measured from the IO thread.
+  </summary>
+</histogram>
+
+<histogram name="DiskCache.0.TotalIOTimeRead" units="ms"
+    expires_after="2023-04-09">
+  <owner>jam@chromium.org</owner>
+  <owner>swarm-team@google.com</owner>
+  <summary>
+    The total time it takes to perform a read IO operation. This is emitted at
+    each cache read, and measures from the IO thread to background thread,
+    waiting for the disk read, and back to the IO thread.
+  </summary>
+</histogram>
+
+<histogram name="DiskCache.0.TotalIOTimeWrite" units="ms"
+    expires_after="2023-04-09">
+  <owner>jam@chromium.org</owner>
+  <owner>swarm-team@google.com</owner>
+  <summary>
+    The total time it takes to perform a write IO operation. This is emitted at
+    each cache read, and measures from the IO thread to background thread,
+    optionally waiting for the disk write, and back to the IO thread.
   </summary>
 </histogram>
 

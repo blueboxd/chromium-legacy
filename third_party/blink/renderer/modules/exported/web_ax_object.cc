@@ -154,40 +154,6 @@ int WebAXObject::AxID() const {
   return private_->AXObjectID();
 }
 
-// This method must be called before serializing any accessibility nodes, in
-// order to ensure that layout calls are not made at an unsafe time in the
-// document lifecycle.
-bool WebAXObject::MaybeUpdateLayoutAndCheckValidity() {
-  DCHECK(!IsDetached());
-
-  if (!MaybeUpdateLayoutAndCheckValidity(GetDocument()))
-    return false;
-
-  // Doing a layout can cause this object to be invalid, so check again.
-  return CheckValidity();
-}
-
-// Returns true if the object is valid and can be accessed.
-bool WebAXObject::CheckValidity() {
-  if (IsDetached())
-    return false;
-
-#if DCHECK_IS_ON()
-  Node* node = private_->GetNode();
-  if (!node)
-    return true;
-
-  // Has up-to-date layout info or is display-locked (content-visibility), which
-  // is handled as a special case inside of accessibility code.
-  Document* document = private_->GetDocument();
-  DCHECK(!document->NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(*node) ||
-         DisplayLockUtilities::LockedAncestorPreventingPaint(*node))
-      << "Node needs layout update and is not display locked";
-#endif  // DCHECK_IS_ON()
-
-  return true;
-}
-
 ax::mojom::DefaultActionVerb WebAXObject::Action() const {
   if (IsDetached())
     return ax::mojom::DefaultActionVerb::kNone;
@@ -228,6 +194,16 @@ void WebAXObject::Serialize(ui::AXNodeData* node_data,
   if (IsDetached())
     return;
 
+#if DCHECK_IS_ON()
+  if (Node* node = private_->GetNode()) {
+    Document* document = private_->GetDocument();
+    DCHECK(
+        !document->NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(*node) ||
+        DisplayLockUtilities::LockedAncestorPreventingPaint(*node))
+        << "Node needs layout update and is not display locked";
+  }
+#endif
+
   private_->Serialize(node_data, accessibility_mode);
 }
 
@@ -245,6 +221,17 @@ bool WebAXObject::SerializeChanges(ui::AXTreeUpdate* update) {
   if (IsDetached())
     return true;
   return private_->AXObjectCache().SerializeChanges(*private_, update);
+}
+
+void WebAXObject::MarkDirty(
+    bool subtree,
+    ax::mojom::blink::EventFrom event_from,
+    ax::mojom::blink::Action event_from_action,
+    std::vector<ui::AXEventIntent> event_intents) const {
+  if (IsDetached())
+    return;
+  private_->AXObjectCache().MarkAXObjectDirty(
+      private_.Get(), subtree, event_from, event_from_action, event_intents);
 }
 
 bool WebAXObject::IsInClientTree() {
@@ -1373,8 +1360,13 @@ void WebAXObject::UpdateLayout(const WebDocument& web_document) {
 bool WebAXObject::MaybeUpdateLayoutAndCheckValidity(
     const WebDocument& web_document) {
   const Document* document = web_document.ConstUnwrap<Document>();
-  if (!document || !document->View())
+  if (!document)
     return false;
+
+  DCHECK(document->defaultView());
+  DCHECK(document->GetFrame());
+  DCHECK(document->View());
+  DCHECK(document->ExistingAXObjectCache());
 
   if (document->NeedsLayoutTreeUpdate() || document->View()->NeedsLayout() ||
       document->Lifecycle().GetState() < DocumentLifecycle::kPrePaintClean) {

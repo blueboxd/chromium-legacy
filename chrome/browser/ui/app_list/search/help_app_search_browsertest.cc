@@ -38,10 +38,8 @@ namespace app_list {
 class HelpAppSearchBrowserTestBase : public AppListSearchBrowserTest {
  public:
   HelpAppSearchBrowserTestBase() {
-    scoped_feature_list_.InitWithFeatures(
-        {chromeos::features::kHelpAppLauncherSearch,
-         ash::features::kProductivityLauncher},
-        {});
+    scoped_feature_list_.InitAndEnableFeature(
+        chromeos::features::kHelpAppLauncherSearch);
   }
 
   ~HelpAppSearchBrowserTestBase() override = default;
@@ -327,10 +325,6 @@ IN_PROC_BROWSER_TEST_P(HelpAppSwaSearchBrowserTest, Launch) {
   auto* result = FindResult(web_app::kHelpAppId);
   ASSERT_TRUE(result);
   result->Open(ui::EF_NONE);
-
-  // Wait for app service to see the newly launched app.
-  apps::AppServiceProxyFactory::GetForProfile(profile)
-      ->FlushMojoCallsForTesting();
 
   web_app::WebAppLaunchManager::SetOpenApplicationCallbackForTesting(
       base::BindLambdaForTesting(

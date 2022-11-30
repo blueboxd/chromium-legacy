@@ -288,7 +288,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DevTools.LinearMemoryInspector.RevealedFrom"
-    enum="DevToolsLinearMemoryInspectorRevealedFrom" expires_after="2023-01-15">
+    enum="DevToolsLinearMemoryInspectorRevealedFrom" expires_after="2023-03-19">
   <owner>yangguo@chromium.org</owner>
   <owner>kimanh@chromium.org</owner>
   <summary>
@@ -297,7 +297,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DevTools.LinearMemoryInspector.Target"
-    enum="DevToolsLinearMemoryInspectorTarget" expires_after="2023-01-15">
+    enum="DevToolsLinearMemoryInspectorTarget" expires_after="2023-03-19">
   <owner>yangguo@chromium.org</owner>
   <owner>kimanh@chromium.org</owner>
   <summary>
@@ -346,7 +346,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DevTools.PanelShown" enum="DevToolsPanel"
-    expires_after="2023-02-05">
+    expires_after="2023-04-09">
   <owner>yangguo@chromium.org</owner>
   <owner>bmeurer@chromium.org</owner>
   <summary>Specified DevTools panel was shown.</summary>
@@ -407,7 +407,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DevTools.SidebarPaneShown" enum="DevToolsSidebarPane"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>changhaohan@chromium.org</owner>
   <owner>yangguo@chromium.org</owner>
   <owner>bmeurer@chromium.org</owner>

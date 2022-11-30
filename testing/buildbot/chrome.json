@@ -1334,8 +1334,8 @@
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 10
         },
-        "test": "chrome_all_tast_tests",
-        "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/",
+        "test": "chrome_all_tast_tests_with_lacros",
+        "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests_with_lacros/",
         "trigger_script": {
           "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
         }
@@ -1620,36 +1620,6 @@
         }
       },
       {
-        "experiment_percentage": 100,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_type": "octopus",
-              "os": "ChromeOS",
-              "pool": "chrome.tests"
-            }
-          ],
-          "idempotent": false,
-          "io_timeout": 3600,
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 10
-        },
-        "test": "chrome_all_tast_tests",
-        "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/",
-        "trigger_script": {
-          "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
-        }
-      },
-      {
         "args": [
           "--strip-chrome"
         ],
@@ -1769,6 +1739,28 @@
       }
     ]
   },
+  "chromeos-trogdor64-chrome-skylab": {
+    "additional_compile_targets": [
+      "chrome",
+      "linux_symbols",
+      "symupload"
+    ],
+    "skylab_tests": [
+      {
+        "args": [],
+        "autotest_name": "tast.chrome-from-tls",
+        "cros_board": "trogdor",
+        "cros_img": "trogdor64-release/R108-15130.0.0",
+        "name": "chrome_all_tast_tests TROGDOR64_RELEASE_LKGM",
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !informational)",
+        "test": "chrome_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/",
+        "timeout_sec": 21600,
+        "variant_id": "TROGDOR64_RELEASE_LKGM"
+      }
+    ]
+  },
   "lacros-amd64-generic-chrome": {
     "additional_compile_targets": [
       "chrome",
@@ -1880,7 +1872,55 @@
       {
         "args": [],
         "cros_board": "atlas",
-        "cros_img": "atlas-release/R107-15117.87.0",
+        "cros_img": "atlas-release/R107-15113.0.0",
+        "name": "lacros_all_tast_tests ATLAS_RELEASE_LKGM",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "ATLAS_RELEASE_LKGM"
+      },
+      {
+        "args": [],
+        "cros_board": "atlas",
+        "cros_img": "atlas-release/R107-15099.0.0",
+        "name": "lacros_all_tast_tests ATLAS_RELEASE_DEV",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "ATLAS_RELEASE_DEV"
+      },
+      {
+        "args": [],
+        "cros_board": "atlas",
+        "cros_img": "atlas-release/R106-15054.50.0",
+        "name": "lacros_all_tast_tests ATLAS_RELEASE_BETA",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "ATLAS_RELEASE_BETA"
+      },
+      {
+        "args": [],
+        "cros_board": "atlas",
+        "cros_img": "atlas-release/R105-14989.85.0",
         "name": "lacros_all_tast_tests ATLAS_RELEASE_STABLE",
         "resultdb": {
           "enable": true,
@@ -1896,7 +1936,55 @@
       {
         "args": [],
         "cros_board": "eve",
-        "cros_img": "eve-release/R107-15117.87.0",
+        "cros_img": "eve-release/R107-15113.0.0",
+        "name": "lacros_all_tast_tests EVE_RELEASE_LKGM",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "EVE_RELEASE_LKGM"
+      },
+      {
+        "args": [],
+        "cros_board": "eve",
+        "cros_img": "eve-release/R107-15099.0.0",
+        "name": "lacros_all_tast_tests EVE_RELEASE_DEV",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "EVE_RELEASE_DEV"
+      },
+      {
+        "args": [],
+        "cros_board": "eve",
+        "cros_img": "eve-release/R106-15054.50.0",
+        "name": "lacros_all_tast_tests EVE_RELEASE_BETA",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "EVE_RELEASE_BETA"
+      },
+      {
+        "args": [],
+        "cros_board": "eve",
+        "cros_img": "eve-release/R105-14989.85.0",
         "name": "lacros_all_tast_tests EVE_RELEASE_STABLE",
         "resultdb": {
           "enable": true,
@@ -1917,6 +2005,42 @@
       "linux_symbols",
       "symupload",
       "strip_chrome_binary"
+    ],
+    "gtest_tests": [
+      {
+        "args": [
+          "--board=jacuzzi",
+          "--flash"
+        ],
+        "experiment_percentage": 100,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "lacros_all_tast_tests jacuzzi",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "jacuzzi",
+              "os": "ChromeOS",
+              "pool": "chrome.tests"
+            }
+          ],
+          "idempotent": false,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "trigger_script": {
+          "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
+        },
+        "variant_id": "jacuzzi"
+      }
     ],
     "isolated_scripts": [
       {
@@ -1955,7 +2079,55 @@
       {
         "args": [],
         "cros_board": "jacuzzi",
-        "cros_img": "jacuzzi-release/R107-15117.86.0",
+        "cros_img": "jacuzzi-release/R107-15113.0.0",
+        "name": "lacros_all_tast_tests JACUZZI_RELEASE_LKGM",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "JACUZZI_RELEASE_LKGM"
+      },
+      {
+        "args": [],
+        "cros_board": "jacuzzi",
+        "cros_img": "jacuzzi-release/R107-15098.0.0",
+        "name": "lacros_all_tast_tests JACUZZI_RELEASE_DEV",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "JACUZZI_RELEASE_DEV"
+      },
+      {
+        "args": [],
+        "cros_board": "jacuzzi",
+        "cros_img": "jacuzzi-release/R106-15054.50.0",
+        "name": "lacros_all_tast_tests JACUZZI_RELEASE_BETA",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "JACUZZI_RELEASE_BETA"
+      },
+      {
+        "args": [],
+        "cros_board": "jacuzzi",
+        "cros_img": "jacuzzi-release/R105-14989.85.0",
         "name": "lacros_all_tast_tests JACUZZI_RELEASE_STABLE",
         "resultdb": {
           "enable": true,
@@ -2008,7 +2180,24 @@
       "symupload",
       "strip_chrome_binary"
     ],
-    "skylab_tests": []
+    "skylab_tests": [
+      {
+        "args": [],
+        "cros_board": "herobrine",
+        "cros_img": "herobrine-release/R107-15110.0.0",
+        "name": "lacros_fyi_tast_tests HEROBRINE_RELEASE_LKGM",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros_unstable\" && !informational)",
+        "test": "lacros_fyi_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_fyi_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "HEROBRINE_RELEASE_LKGM"
+      }
+    ]
   },
   "linux-chrome": {
     "additional_compile_targets": [

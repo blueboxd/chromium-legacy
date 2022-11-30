@@ -31,6 +31,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
@@ -38,6 +39,7 @@
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_manager/open_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/trash_common_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
@@ -541,10 +543,10 @@ file_manager_private::MountCompletedStatus MountErrorToMountCompletedStatus(
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_IN_PROGRESS;
     case ash::MountError::kCancelled:
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_CANCELLED;
-    // Not a real error.
-    case ash::MountError::kCount:
-      NOTREACHED();
+    case ash::MountError::kBusy:
+      return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_BUSY;
   }
+
   NOTREACHED();
   return file_manager_private::MOUNT_COMPLETED_STATUS_NONE;
 }
@@ -697,6 +699,7 @@ void EventRouter::ObserveEvents() {
   pref_change_registrar_->Add(drive::prefs::kDisableDriveOverCellular,
                               callback);
   pref_change_registrar_->Add(drive::prefs::kDisableDrive, callback);
+  pref_change_registrar_->Add(ash::prefs::kFilesAppTrashEnabled, callback);
   pref_change_registrar_->Add(prefs::kSearchSuggestEnabled, callback);
   pref_change_registrar_->Add(prefs::kUse24HourClock, callback);
   pref_change_registrar_->Add(
@@ -1382,13 +1385,7 @@ void EventRouter::OnIOTaskStatus(const io_task::ProgressStatus& status) {
     }
   }
 
-  if (status.sources.size() > 0) {
-    event_status.source_name =
-        util::GetDisplayablePath(profile_, status.sources.front().url)
-            .value_or(base::FilePath())
-            .BaseName()
-            .value();
-  }
+  event_status.source_name = status.GetSourceName(profile_);
   event_status.bytes_transferred = status.bytes_transferred;
   event_status.total_bytes = status.total_bytes;
 

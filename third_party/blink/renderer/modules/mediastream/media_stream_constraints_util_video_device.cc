@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -421,7 +421,7 @@ bool FacingModeSatisfiesConstraint(mojom::blink::FacingMode value,
                                    const StringConstraint& constraint) {
   WebString string_value = ToWebString(value);
   if (string_value.IsNull())
-    return constraint.Exact().IsEmpty();
+    return constraint.Exact().empty();
 
   return constraint.Matches(string_value);
 }
@@ -718,8 +718,9 @@ VideoDeviceCaptureCapabilities& VideoDeviceCaptureCapabilities::operator=(
 // Enables debug logging of capabilities processing when picking a video.
 // TODO(crbug.com/1275617): Remove this and calls once investigation is
 // complete.
-const base::Feature kMediaStreamCapabilitiesDebugLogging{
-    "MediaStreamCapabilitiesDebugLogging", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kMediaStreamCapabilitiesDebugLogging,
+             "MediaStreamCapabilitiesDebugLogging",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // TODO(crbug.com/1275617): Remove this and calls once investigation is
 // complete.

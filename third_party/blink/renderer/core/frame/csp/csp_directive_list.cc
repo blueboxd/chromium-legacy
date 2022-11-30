@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,13 +80,13 @@ network::mojom::blink::CSPHashAlgorithm ConvertHashAlgorithmToCSPHashAlgorithm(
 // IntegrityMetadata (from SRI) has base64-encoded digest values, but CSP uses
 // binary format. This converts from the former to the latter.
 bool ParseBase64Digest(String base64, Vector<uint8_t>& hash) {
-  DCHECK(hash.IsEmpty());
+  DCHECK(hash.empty());
 
   // We accept base64url-encoded data here by normalizing it to base64.
   Vector<char> out;
   if (!Base64Decode(NormalizeToBase64(base64), out))
     return false;
-  if (out.IsEmpty() || out.size() > kMaxDigestSize)
+  if (out.empty() || out.size() > kMaxDigestSize)
     return false;
   for (char el : out)
     hash.push_back(el);
@@ -321,7 +321,7 @@ bool IsMatchingNoncePresent(
 bool AreAllMatchingHashesPresent(
     const network::mojom::blink::CSPSourceList* directive,
     const IntegrityMetadataSet& hashes) {
-  if (!directive || hashes.IsEmpty())
+  if (!directive || hashes.empty())
     return false;
   for (const std::pair<String, IntegrityAlgorithm>& hash : hashes) {
     // Convert the hash from integrity metadata format to CSP format.

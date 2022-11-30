@@ -8,11 +8,12 @@ import {CommandHandlerRemote} from 'chrome://resources/js/browser_command/browse
 import {BrowserCommandProxy} from 'chrome://resources/js/browser_command/browser_command_proxy.js';
 import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
-import {eventToPromise, flushTasks} from 'chrome://webui-test/test_util.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
 import {WhatsNewProxy, WhatsNewProxyImpl} from 'chrome://whats-new/whats_new_proxy.js';
 
-const whatsNewURL = 'chrome://test/whats_new/test.html';
+const whatsNewURL = 'chrome://webui-test/whats_new/test.html';
 
 class TestWhatsNewProxy extends TestBrowserProxy implements WhatsNewProxy {
   private url_: string;
@@ -36,10 +37,11 @@ class TestWhatsNewProxy extends TestBrowserProxy implements WhatsNewProxy {
 
 suite('WhatsNewAppTest', function() {
   const whatsNewWithCommandURL =
-      'chrome://test/whats_new/test_with_command_3.html';
+      'chrome://webui-test/whats_new/test_with_command_3.html';
 
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
   });
 
   test('with query parameters', async () => {

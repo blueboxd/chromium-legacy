@@ -6,7 +6,7 @@
 import 'chrome://extensions/extensions.js';
 
 import {ExtensionsCodeSectionElement} from 'chrome://extensions/extensions.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {isChildVisible} from 'chrome://webui-test/test_util.js';
 
@@ -28,7 +28,8 @@ suite(extension_code_section_tests.suiteName, function() {
 
   // Initialize an extension item before each test.
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     codeSection = document.createElement('extensions-code-section');
     codeSection.couldNotDisplayCode = couldNotDisplayCode;
     document.body.appendChild(codeSection);

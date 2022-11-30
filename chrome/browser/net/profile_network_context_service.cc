@@ -30,7 +30,6 @@
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/first_party_sets/first_party_sets_policy_service.h"
 #include "chrome/browser/first_party_sets/first_party_sets_policy_service_factory.h"
-#include "chrome/browser/first_party_sets/first_party_sets_pref_names.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/prefetch/pref_names.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
@@ -52,6 +51,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -427,6 +427,14 @@ void ProfileNetworkContextService::OnTrustTokenBlockingChanged(
             block_trust_tokens);
       },
       block_trust_tokens));
+}
+
+void ProfileNetworkContextService::OnFirstPartySetsEnabledChanged(
+    bool enabled) {
+  // Update all FPS Access Delegates on the FPS service to be `enabled`.
+  first_party_sets::FirstPartySetsPolicyServiceFactory::GetForBrowserContext(
+      profile_)
+      ->OnFirstPartySetsEnabledChanged(enabled);
 }
 
 std::string ProfileNetworkContextService::ComputeAcceptLanguage() const {
@@ -893,10 +901,6 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   cert_verifier::mojom::CertVerifierServiceParamsPtr
       cert_verifier_configuration = GetChromeCertVerifierServiceParams();
   DCHECK(cert_verifier_configuration);
-#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
-  is_trial_comparison_supported &=
-      !cert_verifier_configuration->use_builtin_cert_verifier;
-#endif
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
   is_trial_comparison_supported &=
       !cert_verifier_configuration->use_chrome_root_store;
@@ -1012,7 +1016,7 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
       network::mojom::FirstPartySetsAccessDelegateParams::New();
   network_context_params->first_party_sets_access_delegate_params->enabled =
       profile_->GetPrefs()->GetBoolean(
-          first_party_sets::kFirstPartySetsEnabled);
+          prefs::kPrivacySandboxFirstPartySetsEnabled);
 
   mojo::Remote<network::mojom::FirstPartySetsAccessDelegate>
       fps_access_delegate_remote;

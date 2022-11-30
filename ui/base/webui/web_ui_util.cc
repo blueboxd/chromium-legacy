@@ -7,26 +7,22 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "third_party/modp_b64/modp_b64.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/base/window_open_disposition_utils.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/resources/grit/webui_generated_resources.h"
 #include "ui/strings/grit/app_locale_settings.h"
 #include "url/gurl.h"
@@ -37,6 +33,10 @@
 
 namespace webui {
 namespace {
+
+// Generous cap to guard against out-of-memory issues.
+constexpr float kMaxScaleFactor = 1000.0f;
+
 std::string GetWebUiCssTextDefaults(const std::string& css_template) {
   ui::TemplateReplacements placeholders;
   placeholders["textDirection"] = GetTextDirection();
@@ -44,6 +44,7 @@ std::string GetWebUiCssTextDefaults(const std::string& css_template) {
   placeholders["fontSize"] = GetFontSize();
   return ui::ReplaceTemplateExpressions(css_template, placeholders);
 }
+
 }  // namespace
 
 std::string GetBitmapDataUrl(const SkBitmap& bitmap) {
@@ -55,19 +56,8 @@ std::string GetBitmapDataUrl(const SkBitmap& bitmap) {
 }
 
 std::string GetPngDataUrl(const unsigned char* data, size_t size) {
-  constexpr char kPrefix[] = "data:image/png;base64,";
-  constexpr size_t kPrefixLen = std::size(kPrefix) - 1;
-  // Includes room for trailing null byte.
-  size_t max_encode_len = modp_b64_encode_len(size);
-  std::string output;
-  // This initializes the characters in the string, but there's no good way to
-  // avoid that and maintain a std::string API.
-  output.resize(kPrefixLen + max_encode_len);
-  memcpy(&output[0], kPrefix, kPrefixLen);
-  // |max_encode_len| is >= 1, so &output[kPrefixLen] is valid.
-  size_t actual_encode_len = modp_b64_encode(
-      &output[kPrefixLen], reinterpret_cast<const char*>(data), size);
-  output.resize(kPrefixLen + actual_encode_len);
+  std::string output = "data:image/png;base64,";
+  base::Base64EncodeAppend(base::make_span(data, size), &output);
   return output;
 }
 
@@ -87,19 +77,27 @@ bool ParseScaleFactor(const base::StringPiece& identifier,
                       float* scale_factor) {
   *scale_factor = 1.0f;
   if (identifier.empty()) {
-    LOG(WARNING) << "Invalid scale factor format: " << identifier;
+    DLOG(WARNING) << "Invalid scale factor format: " << identifier;
     return false;
   }
 
   if (*identifier.rbegin() != 'x') {
-    LOG(WARNING) << "Invalid scale factor format: " << identifier;
+    DLOG(WARNING) << "Invalid scale factor format: " << identifier;
     return false;
   }
 
   double scale = 0;
   std::string stripped(identifier.substr(0, identifier.length() - 1));
   if (!base::StringToDouble(stripped, &scale)) {
-    LOG(WARNING) << "Invalid scale factor format: " << identifier;
+    DLOG(WARNING) << "Invalid scale factor format: " << identifier;
+    return false;
+  }
+  if (scale <= 0) {
+    DLOG(WARNING) << "Invalid non-positive scale factor: " << identifier;
+    return false;
+  }
+  if (scale > kMaxScaleFactor) {
+    DLOG(WARNING) << "Invalid scale factor, too large: " << identifier;
     return false;
   }
   *scale_factor = static_cast<float>(scale);
@@ -110,19 +108,19 @@ bool ParseScaleFactor(const base::StringPiece& identifier,
 bool ParseFrameIndex(const base::StringPiece& identifier, int* frame_index) {
   *frame_index = -1;
   if (identifier.empty()) {
-    LOG(WARNING) << "Invalid frame index format: " << identifier;
+    DLOG(WARNING) << "Invalid frame index format: " << identifier;
     return false;
   }
 
   if (*identifier.rbegin() != ']') {
-    LOG(WARNING) << "Invalid frame index format: " << identifier;
+    DLOG(WARNING) << "Invalid frame index format: " << identifier;
     return false;
   }
 
   unsigned frame = 0;
   if (!base::StringToUint(identifier.substr(0, identifier.length() - 1),
                           &frame)) {
-    LOG(WARNING) << "Invalid frame index format: " << identifier;
+    DLOG(WARNING) << "Invalid frame index format: " << identifier;
     return false;
   }
   *frame_index = static_cast<int>(frame);

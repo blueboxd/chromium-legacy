@@ -27,6 +27,7 @@
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
@@ -99,6 +100,8 @@
 #include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
 #include "chrome/browser/badging/badge_manager_factory.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
+#include "chrome/browser/web_applications/chromeos_web_app_experiments.h"
+#include "chrome/common/chrome_features.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -367,6 +370,23 @@ void UninstallImpl(WebAppProvider* provider,
     web_app_dialog_manager.UninstallWebApp(app_id, webapp_uninstall_source,
                                            parent_window, base::DoNothing());
   }
+}
+
+RunOnOsLoginMode ConvertOsLoginModeToWebAppConstants(
+    apps::mojom::RunOnOsLoginMode login_mode) {
+  RunOnOsLoginMode web_app_constant_login_mode = RunOnOsLoginMode::kMinValue;
+  switch (login_mode) {
+    case apps::mojom::RunOnOsLoginMode::kWindowed:
+      web_app_constant_login_mode = RunOnOsLoginMode::kWindowed;
+      break;
+    case apps::mojom::RunOnOsLoginMode::kNotRun:
+      web_app_constant_login_mode = RunOnOsLoginMode::kNotRun;
+      break;
+    case apps::mojom::RunOnOsLoginMode::kUnknown:
+      web_app_constant_login_mode = RunOnOsLoginMode::kNotRun;
+      break;
+  }
+  return web_app_constant_login_mode;
 }
 
 WebAppPublisherHelper::Delegate::Delegate() = default;
@@ -642,6 +662,17 @@ apps::IntentFilters WebAppPublisherHelper::CreateIntentFiltersForWebApp(
         apps_util::CreateIntentFilterForUrlScope(app_scope)));
   }
 
+#if BUILDFLAG(IS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(
+          features::kMicrosoftOfficeWebAppExperiment)) {
+    for (const char* scope_extension :
+         ChromeOsWebAppExperiments::GetScopeExtensions(app_id)) {
+      filters.push_back(apps::ConvertMojomIntentFilterToIntentFilter(
+          apps_util::CreateIntentFilterForUrlScope(GURL(scope_extension))));
+    }
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
   if (app_share_target) {
     base::Extend(filters,
                  CreateShareIntentFiltersFromShareTarget(*app_share_target));
@@ -705,7 +736,7 @@ apps::AppPtr WebAppPublisherHelper::CreateWebApp(const WebApp* web_app) {
   DCHECK_EQ(web_app->IsSystemApp(),
             app->install_reason == apps::InstallReason::kSystem);
 
-  app->policy_id = GetPolicyId(*web_app);
+  app->policy_ids = GetPolicyIds(*web_app);
 
   app->permissions = CreatePermissions(web_app);
 
@@ -966,6 +997,7 @@ content::WebContents* WebAppPublisherHelper::Launch(
     case apps::LaunchSource::kFromOsLogin:
     case apps::LaunchSource::kFromProtocolHandler:
     case apps::LaunchSource::kFromUrlHandler:
+    case apps::LaunchSource::kFromLockScreen:
       break;
   }
 
@@ -1071,8 +1103,9 @@ content::WebContents* WebAppPublisherHelper::LaunchAppWithParams(
   }
 
   apps::AppLaunchParams params_for_restore(
-      params.app_id, params.container, params.disposition, params.launch_source,
-      params.display_id, params.launch_files, params.intent);
+      params.app_id, params.container, params.disposition, params.override_url,
+      params.launch_source, params.display_id, params.launch_files,
+      params.intent);
 
   // Create the FullRestoreSaveHandler instance before launching the app to
   // observe the browser window.
@@ -1097,6 +1130,19 @@ content::WebContents* WebAppPublisherHelper::LaunchAppWithParams(
               params_for_restore.display_id,
               std::move(params_for_restore.launch_files),
               std::move(params_for_restore.intent));
+
+      // TODO(crbug.com/1368285): Determine whether override URL can be restored
+      // for all SWAs.
+      DCHECK(swa_manager_);
+      auto system_app_type =
+          swa_manager_->GetSystemAppTypeForAppId(params_for_restore.app_id);
+      if (system_app_type.has_value()) {
+        auto* system_app = swa_manager_->GetSystemApp(*system_app_type);
+        DCHECK(system_app);
+        if (system_app->ShouldRestoreOverrideUrl())
+          launch_info->override_url = params_for_restore.override_url;
+      }
+
       full_restore::SaveAppLaunchInfo(profile()->GetPath(),
                                       std::move(launch_info));
     }
@@ -1229,23 +1275,6 @@ void WebAppPublisherHelper::SetRunOnOsLoginMode(
           &provider_->sync_bridge(), app_id,
           ConvertOsLoginModeToWebAppConstants(run_on_os_login_mode),
           base::DoNothing()));
-}
-
-RunOnOsLoginMode WebAppPublisherHelper::ConvertOsLoginModeToWebAppConstants(
-    apps::mojom::RunOnOsLoginMode login_mode) {
-  RunOnOsLoginMode web_app_constant_login_mode = RunOnOsLoginMode::kMinValue;
-  switch (login_mode) {
-    case apps::mojom::RunOnOsLoginMode::kWindowed:
-      web_app_constant_login_mode = RunOnOsLoginMode::kWindowed;
-      break;
-    case apps::mojom::RunOnOsLoginMode::kNotRun:
-      web_app_constant_login_mode = RunOnOsLoginMode::kNotRun;
-      break;
-    case apps::mojom::RunOnOsLoginMode::kUnknown:
-      web_app_constant_login_mode = RunOnOsLoginMode::kNotRun;
-      break;
-  }
-  return web_app_constant_login_mode;
 }
 
 apps::WindowMode WebAppPublisherHelper::ConvertDisplayModeToWindowMode(
@@ -1702,26 +1731,36 @@ void WebAppPublisherHelper::LaunchAppWithIntentImpl(
   std::move(callback).Run({LaunchAppWithParams(std::move(params))});
 }
 
-std::string WebAppPublisherHelper::GetPolicyId(const WebApp& web_app) {
+std::vector<std::string> WebAppPublisherHelper::GetPolicyIds(
+    const WebApp& web_app) const {
+  const auto& app_id = web_app.app_id();
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // File Manager SWA uses File Manager Extension's ID for policy.
-  if (web_app.app_id() == file_manager::kFileManagerSwaAppId) {
-    return file_manager::kFileManagerAppId;
+  if (app_id == file_manager::kFileManagerSwaAppId) {
+    return {file_manager::kFileManagerAppId};
   }
 #endif
 
-  GURL install_url;
-  if (registrar().HasExternalAppWithInstallSource(
-          web_app.app_id(), ExternalInstallSource::kExternalPolicy)) {
-    base::flat_map<AppId, base::flat_set<GURL>> installed_apps =
-        registrar().GetExternallyInstalledApps(
-            ExternalInstallSource::kExternalPolicy);
-    if (base::Contains(installed_apps, web_app.app_id())) {
-      DCHECK(installed_apps[web_app.app_id()].size() > 0);
-      install_url = *installed_apps[web_app.app_id()].begin();
-    }
+  if (!registrar().HasExternalAppWithInstallSource(
+          app_id, ExternalInstallSource::kExternalPolicy)) {
+    return {};
   }
-  return install_url.spec();
+
+  base::flat_map<AppId, base::flat_set<GURL>> installed_apps =
+      registrar().GetExternallyInstalledApps(
+          ExternalInstallSource::kExternalPolicy);
+  if (auto it = installed_apps.find(app_id); it != installed_apps.end()) {
+    const auto& install_urls = it->second;
+    DCHECK(!install_urls.empty());
+
+    std::vector<std::string> policy_ids;
+    base::ranges::transform(install_urls, std::back_inserter(policy_ids),
+                            &GURL::spec);
+    return policy_ids;
+  }
+
+  return {};
 }
 
 #if BUILDFLAG(IS_CHROMEOS)

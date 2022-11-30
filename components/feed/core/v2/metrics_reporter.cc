@@ -5,9 +5,11 @@
 
 #include <algorithm>
 #include <cmath>
+#include <ratio>
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
@@ -23,6 +25,7 @@
 #include "components/feed/core/v2/public/feed_api.h"
 #include "components/feed/core/v2/public/stream_type.h"
 #include "components/feed/core/v2/public/web_feed_subscriptions.h"
+#include "components/feed/feed_feature_list.h"
 
 // Define a VVLOG macro for verbose logging. We want logging on release builds
 // so that instrumentation tests can enable logs here. For official builds, use
@@ -35,7 +38,9 @@
 
 namespace feed {
 namespace {
-const StreamType kStreamTypes[] = {kForYouStream, kWebFeedStream};
+StreamKind kStreamKinds[] = {StreamKind::kForYou, StreamKind::kFollowing,
+                             StreamKind::kChannel};
+// TODO(crbug.com/1369777) Add kChannel streams to metrics reporting below
 using feed::FeedEngagementType;
 using feed::FeedUserActionType;
 const int kMaxSuggestionsTotal = 50;
@@ -52,9 +57,6 @@ constexpr base::TimeDelta kOpenTimeout = base::Seconds(20);
 // timeout.
 constexpr base::TimeDelta kTimeSpentInFeedInteractionTimeout =
     base::Seconds(30);
-// The maximum time between sequential interactions with the feed that are
-// considered as a single visit.
-constexpr base::TimeDelta kVisitTimeout = base::Minutes(5);
 
 void ReportEngagementTypeHistogram(const StreamType& stream_type,
                                    FeedEngagementType engagement_type) {
@@ -114,6 +116,17 @@ base::StringPiece ContentOrderToString(ContentOrder content_order) {
       return "Grouped";
     case ContentOrder::kReverseChron:
       return "ReverseChron";
+  }
+}
+
+FeedSortType GetSortTypeFromContentOrder(ContentOrder content_order) {
+  switch (content_order) {
+    case ContentOrder::kUnspecified:
+      return FeedSortType::kUnspecifiedSortType;
+    case ContentOrder::kGrouped:
+      return FeedSortType::kGroupedByPublisher;
+    case ContentOrder::kReverseChron:
+      return FeedSortType::kSortedByLatest;
   }
 }
 
@@ -231,6 +244,21 @@ void ReportCombinedSubscriptionCountAtEngagementTime(int subscription_count) {
       subscription_count);
 }
 
+bool IsGoodExplicitInteraction(FeedUserActionType action) {
+  switch (action) {
+    case FeedUserActionType::kAddedToReadLater:
+    case FeedUserActionType::kTappedCrowButton:
+    case FeedUserActionType::kTappedFollowButton:
+    case FeedUserActionType::kShare:
+    case FeedUserActionType::kTappedAddToReadingList:
+    case FeedUserActionType::kTappedDownload:
+    case FeedUserActionType::kTappedOpenInNewIncognitoTab:
+      return true;
+    default:
+      return false;
+  }
+}
+
 }  // namespace
 
 MetricsReporter::SurfaceWaiting::SurfaceWaiting() = default;
@@ -249,7 +277,10 @@ MetricsReporter::SurfaceWaiting& MetricsReporter::SurfaceWaiting::operator=(
     SurfaceWaiting&&) = default;
 
 MetricsReporter::MetricsReporter(PrefService* profile_prefs)
-    : profile_prefs_(profile_prefs) {
+    : profile_prefs_(profile_prefs),
+      good_visit_state_(base::FeatureList::IsEnabled(kClientGoodVisits)
+                            ? absl::make_optional<GoodVisitState>()
+                            : absl::nullopt) {
   persistent_data_ = prefs::GetPersistentMetricsData(*profile_prefs_);
   ReportPersistentDataIfDayIsDone();
 }
@@ -322,8 +353,8 @@ void MetricsReporter::TrackTimeSpentInFeed(bool interacted_or_scrolled) {
 
 void MetricsReporter::FinalizeVisit() {
   bool has_engagement = false;
-  for (const StreamType& stream_type : kStreamTypes) {
-    StreamStats& data = ForStream(stream_type);
+  for (const StreamKind& stream_type : kStreamKinds) {
+    StreamStats& data = ForStream(StreamType(stream_type));
     if (!data.engaged_simple_reported)
       continue;
     has_engagement = true;
@@ -344,7 +375,7 @@ void MetricsReporter::RecordEngagement(const StreamType& stream_type,
   scroll_distance_dp = std::abs(scroll_distance_dp);
   // Determine if this interaction is part of a new feed 'visit'.
   base::TimeTicks now = base::TimeTicks::Now();
-  if (now - visit_start_time_ > kVisitTimeout) {
+  if (now - visit_start_time_ > kVisitTimeout.Get()) {
     FinalizeVisit();
   }
   // Reset the last active time for visit measurement.
@@ -387,11 +418,20 @@ void MetricsReporter::RecordEngagement(const StreamType& stream_type,
             ReportCombinedSubscriptionCountAtEngagementTime(sc);
           },
           stream_type));
+
       combined_stats_.engaged_reported = true;
     } else {
       // Reports subscription count for the specific feed only.
       delegate_->SubscribedWebFeedCount(base::BindOnce(
           &ReportSubscriptionCountAtEngagementTime, stream_type));
+    }
+
+    // Record sorting order for web feed when engaged.
+    if (stream_type.IsWebFeed()) {
+      FeedSortType sort_type =
+          GetSortTypeFromContentOrder(delegate_->GetContentOrder(stream_type));
+      base::UmaHistogramEnumeration(
+          "ContentSuggestions.Feed.WebFeed.SortTypeWhenEngaged", sort_type);
     }
   }
 }
@@ -417,6 +457,9 @@ void MetricsReporter::StreamScrolled(const StreamType& stream_type,
       combined_stats_.scrolled_reported = true;
     }
   }
+
+  if (good_visit_state_)
+    good_visit_state_->OnScroll();
 }
 
 void MetricsReporter::ContentSliceViewed(const StreamType& stream_type,
@@ -462,6 +505,8 @@ void MetricsReporter::FeedViewed(SurfaceId surface_id) {
     load_latencies_ = nullptr;
   }
   ReportOpenFeedIfNeeded(surface_id, true);
+  if (good_visit_state_)
+    good_visit_state_->ExtendOrStartNewVisit();
 }
 
 void MetricsReporter::OpenAction(const StreamType& stream_type,
@@ -487,11 +532,16 @@ void MetricsReporter::OpenAction(const StreamType& stream_type,
   }
   ReportContentSuggestionsOpened(stream_type, index_in_stream);
   RecordInteraction(stream_type);
+  if (good_visit_state_)
+    good_visit_state_->ExtendOrStartNewVisit();
 }
 
 void MetricsReporter::OpenVisitComplete(base::TimeDelta visit_time) {
   base::UmaHistogramLongTimes("ContentSuggestions.Feed.VisitDuration",
                               visit_time);
+
+  if (good_visit_state_)
+    good_visit_state_->OnOpenComplete(visit_time);
 }
 
 void MetricsReporter::PageLoaded() {
@@ -501,6 +551,9 @@ void MetricsReporter::PageLoaded() {
 void MetricsReporter::OtherUserAction(const StreamType& stream_type,
                                       FeedUserActionType action_type) {
   VVLOG << "Feed OtherUserAction " << stream_type << " id=" << action_type;
+
+  if (good_visit_state_ && IsGoodExplicitInteraction(action_type))
+    good_visit_state_->OnGoodExplicitInteraction();
 
   ReportUserActionHistogram(action_type);
   switch (action_type) {
@@ -588,11 +641,13 @@ void MetricsReporter::OtherUserAction(const StreamType& stream_type,
           "ContentSuggestions.Feed.CardAction.ManageHidden"));
       RecordInteraction(stream_type);
       break;
+    case FeedUserActionType::kAddedToReadLater:
+    case FeedUserActionType::kTappedCrowButton:
+    case FeedUserActionType::kTappedFollowButton:
     case FeedUserActionType::kEphemeralChange:
     case FeedUserActionType::kEphemeralChangeRejected:
     case FeedUserActionType::kTappedTurnOn:
     case FeedUserActionType::kTappedTurnOff:
-    case FeedUserActionType::kAddedToReadLater:
     case FeedUserActionType::kClosedContextMenu:
     case FeedUserActionType::kEphemeralChangeCommited:
     case FeedUserActionType::kOpenedDialog:
@@ -614,7 +669,6 @@ void MetricsReporter::OtherUserAction(const StreamType& stream_type,
     case FeedUserActionType::kTappedDismissPostFollowActiveHelp:
     case FeedUserActionType::kTappedDiscoverFeedPreview:
     case FeedUserActionType::kOpenedAutoplaySettings:
-    case FeedUserActionType::kTappedFollowButton:
     case FeedUserActionType::kDiscoverFeedSelected:
     case FeedUserActionType::kFollowingFeedSelected:
     case FeedUserActionType::kTappedUnfollowButton:
@@ -623,7 +677,6 @@ void MetricsReporter::OtherUserAction(const StreamType& stream_type,
     case FeedUserActionType::kShowUnfollowSucceedSnackbar:
     case FeedUserActionType::kShowUnfollowFailedSnackbar:
     case FeedUserActionType::kTappedGoToFeedOnSnackbar:
-    case FeedUserActionType::kTappedCrowButton:
     case FeedUserActionType::kFirstFollowSheetShown:
     case FeedUserActionType::kFirstFollowSheetTappedGoToFeed:
     case FeedUserActionType::kFirstFollowSheetTappedGotIt:
@@ -635,6 +688,12 @@ void MetricsReporter::OtherUserAction(const StreamType& stream_type,
 
       break;
   }
+}
+
+void MetricsReporter::ReportStableContentSliceVisibilityTime(
+    base::TimeDelta delta) {
+  if (good_visit_state_)
+    good_visit_state_->AddTimeInFeed(delta);
 }
 
 void MetricsReporter::SurfaceOpened(const StreamType& stream_type,
@@ -948,7 +1007,9 @@ MetricsReporter::StreamStats& MetricsReporter::ForStream(
     const StreamType& stream_type) {
   if (stream_type.IsForYou())
     return for_you_stats_;
-  DCHECK(stream_type.IsWebFeed());
+  if (stream_type.IsWebFeed())
+    return web_feed_stats_;
+  DCHECK(stream_type.IsChannelFeed());
   return web_feed_stats_;
 }
 
@@ -1052,6 +1113,57 @@ void MetricsReporter::OnInfoCardStateReset(const StreamType& stream_type,
                                            int info_card_type) {
   base::UmaHistogramSparse(InfoCardActionUmaName(stream_type, "Reset"),
                            info_card_type);
+}
+
+void MetricsReporter::GoodVisitState::OnScroll() {
+  ExtendOrStartNewVisit();
+  did_scroll_ = true;
+  if (time_in_feed_ >= kGoodTimeInFeed.Get())
+    MaybeReportGoodVisit();
+}
+
+void MetricsReporter::GoodVisitState::OnGoodExplicitInteraction() {
+  ExtendOrStartNewVisit();
+  MaybeReportGoodVisit();
+}
+
+void MetricsReporter::GoodVisitState::OnOpenComplete(
+    base::TimeDelta open_duration) {
+  if (open_duration >= kLongOpenTime.Get())
+    MaybeReportGoodVisit();
+}
+
+void MetricsReporter::GoodVisitState::ExtendOrStartNewVisit() {
+  const base::Time now = base::Time::Now();
+
+  // Reset visit state if enough time has passed since visit_end_.
+  if (now - visit_end_ >= kVisitTimeout.Get())
+    *this = {};
+
+  if (visit_start_ == base::Time())
+    visit_start_ = now;
+  visit_end_ = now;
+}
+
+void MetricsReporter::GoodVisitState::AddTimeInFeed(base::TimeDelta time) {
+  if (time < kMinStableContentSliceVisibilityTime.Get())
+    return;
+
+  if (time > kMaxStableContentSliceVisibilityTime.Get())
+    time = kMaxStableContentSliceVisibilityTime.Get();
+
+  ExtendOrStartNewVisit();
+
+  time_in_feed_ += time;
+  if (did_scroll_ && time_in_feed_ >= kGoodTimeInFeed.Get())
+    MaybeReportGoodVisit();
+}
+
+void MetricsReporter::GoodVisitState::MaybeReportGoodVisit() {
+  if (did_report_good_visit_)
+    return;
+  ReportCombinedEngagementTypeHistogram(FeedEngagementType::kGoodVisit);
+  did_report_good_visit_ = true;
 }
 
 }  // namespace feed

@@ -105,7 +105,7 @@ FormControlState FormControlState::Deserialize(
   if (index + value_size > state_vector.size())
     return FormControlState(kTypeFailure);
   FormControlState state;
-  state.values_.ReserveCapacity(value_size);
+  state.values_.reserve(value_size);
   for (unsigned i = 0; i < value_size; ++i)
     state.Append(state_vector[index++]);
   return state;
@@ -217,7 +217,7 @@ class SavedFormState {
   static std::unique_ptr<SavedFormState> Deserialize(const Vector<String>&,
                                                      wtf_size_t& index);
   void SerializeTo(Vector<String>&) const;
-  bool IsEmpty() const { return state_for_new_controls_.IsEmpty(); }
+  bool IsEmpty() const { return state_for_new_controls_.empty(); }
   void AppendControlState(const AtomicString& name,
                           const AtomicString& type,
                           const FormControlState&);
@@ -256,7 +256,7 @@ std::unique_ptr<SavedFormState> SavedFormState::Deserialize(
     String name = state_vector[index++];
     String type = state_vector[index++];
     FormControlState state = FormControlState::Deserialize(state_vector, index);
-    if (type.IsEmpty() ||
+    if (type.empty() ||
         (type.Find(IsNotFormControlTypeCharacter) != kNotFound &&
          !CustomElement::IsValidName(AtomicString(type))) ||
         state.IsFailure())
@@ -297,7 +297,7 @@ void SavedFormState::AppendControlState(const AtomicString& name,
 
 FormControlState SavedFormState::TakeControlState(const AtomicString& name,
                                                   const AtomicString& type) {
-  if (state_for_new_controls_.IsEmpty())
+  if (state_for_new_controls_.empty())
     return FormControlState();
   ControlStateMap::iterator it =
       state_for_new_controls_.find(ControlKey(name.Impl(), type.Impl()));
@@ -367,7 +367,7 @@ static inline void RecordFormStructure(const HTMLFormElement& form,
     if (!OwnerFormForState(control))
       continue;
     AtomicString name = control.GetName();
-    if (name.IsEmpty())
+    if (name.empty())
       continue;
     named_controls++;
     builder.Append(name);
@@ -514,12 +514,12 @@ void FormController::SetStateForNewControls(
 }
 
 bool FormController::HasControlStates() const {
-  return !saved_form_state_map_.IsEmpty();
+  return !saved_form_state_map_.empty();
 }
 
 FormControlState FormController::TakeStateForControl(
     const ListedElement& control) {
-  if (saved_form_state_map_.IsEmpty())
+  if (saved_form_state_map_.empty())
     return FormControlState();
   if (!form_key_generator_)
     form_key_generator_ = MakeGarbageCollected<FormKeyGenerator>();
@@ -616,9 +616,10 @@ void FormController::RestoreControlStateOnUpgrade(ListedElement& control) {
 
 void FormController::ScheduleRestore() {
   document_->GetTaskRunner(TaskType::kInternalLoading)
-      ->PostTask(FROM_HERE,
-                 WTF::Bind(&FormController::RestoreAllControlsInDocumentOrder,
-                           WrapPersistent(this)));
+      ->PostTask(
+          FROM_HERE,
+          WTF::BindOnce(&FormController::RestoreAllControlsInDocumentOrder,
+                        WrapPersistent(this)));
 }
 
 void FormController::RestoreImmediately() {

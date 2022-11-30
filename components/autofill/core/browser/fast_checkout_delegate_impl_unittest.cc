@@ -51,8 +51,30 @@ class MockAutofillClient : public TestAutofillClient {
               ShowFastCheckout,
               (base::WeakPtr<FastCheckoutDelegate>),
               (override));
+  MOCK_METHOD(bool,
+              FastCheckoutScriptSupportsConsentlessExecution,
+              (const url::Origin& origin),
+              (override));
+  MOCK_METHOD(bool,
+              FastCheckoutClientSupportsConsentlessExecution,
+              (),
+              (override));
   MOCK_METHOD(void, HideFastCheckout, (), (override));
   MOCK_METHOD(void, HideAutofillPopup, (PopupHidingReason reason), (override));
+
+  void ExpectDelegateWeakPtrFromShowInvalidatedOnHide() {
+    EXPECT_CALL(*this, ShowFastCheckout)
+        .WillOnce([this](base::WeakPtr<FastCheckoutDelegate> delegate) {
+          captured_delegate_ = delegate;
+          return true;
+        });
+    EXPECT_CALL(*this, HideFastCheckout).WillOnce([this]() {
+      EXPECT_FALSE(captured_delegate_);
+    });
+  }
+
+ private:
+  base::WeakPtr<FastCheckoutDelegate> captured_delegate_;
 };
 
 }  // namespace
@@ -65,14 +87,22 @@ class FastCheckoutDelegateImplTest : public testing::Test {
     browser_autofill_manager_ = std::make_unique<TestBrowserAutofillManager>(
         autofill_driver_.get(), &autofill_client_);
 
-    fast_checkout_delegate_ = std::make_unique<FastCheckoutDelegateImpl>(
+    auto fast_checkout_delegate = std::make_unique<FastCheckoutDelegateImpl>(
         browser_autofill_manager_.get());
+    fast_checkout_delegate_ = fast_checkout_delegate.get();
+
+    browser_autofill_manager_->SetFastCheckoutDelegateForTest(
+        std::move(fast_checkout_delegate));
 
     field_.is_focusable = true;
     ON_CALL(autofill_client_, IsFastCheckoutSupported)
         .WillByDefault(Return(true));
     ON_CALL(autofill_client_, IsFastCheckoutTriggerForm)
         .WillByDefault(Return(true));
+    ON_CALL(autofill_client_, FastCheckoutScriptSupportsConsentlessExecution)
+        .WillByDefault(Return(false));
+    ON_CALL(autofill_client_, FastCheckoutClientSupportsConsentlessExecution)
+        .WillByDefault(Return(false));
     ON_CALL(autofill_client_, ShowFastCheckout).WillByDefault(Return(true));
     ON_CALL(*autofill_driver_, CanShowAutofillUi).WillByDefault(Return(true));
   }
@@ -96,7 +126,7 @@ class FastCheckoutDelegateImplTest : public testing::Test {
   NiceMock<MockAutofillClient> autofill_client_;
   std::unique_ptr<NiceMock<MockAutofillDriver>> autofill_driver_;
   std::unique_ptr<TestBrowserAutofillManager> browser_autofill_manager_;
-  std::unique_ptr<FastCheckoutDelegateImpl> fast_checkout_delegate_;
+  raw_ptr<FastCheckoutDelegateImpl> fast_checkout_delegate_;
 };
 
 TEST_F(FastCheckoutDelegateImplTest, TryToShowFastCheckoutSucceeds) {
@@ -127,6 +157,16 @@ TEST_F(FastCheckoutDelegateImplTest,
 
   // Events are only logged if Fast Checkout is supported and there is a script.
   histogram_tester_.ExpectTotalCount(kUmaKeyFastCheckoutTriggerOutcome, 0u);
+}
+
+TEST_F(FastCheckoutDelegateImplTest,
+       TryToShowFastCheckoutFailsIfConsentlessClientAndScriptRequiresConsent) {
+  ASSERT_FALSE(fast_checkout_delegate_->IsShowingFastCheckoutUI());
+  EXPECT_CALL(autofill_client_, FastCheckoutScriptSupportsConsentlessExecution)
+      .WillOnce(Return(false));
+  EXPECT_CALL(autofill_client_, FastCheckoutClientSupportsConsentlessExecution)
+      .WillOnce(Return(true));
+  TryToShowFastCheckout(/*expected_success=*/false);
 }
 
 TEST_F(FastCheckoutDelegateImplTest,
@@ -230,6 +270,12 @@ TEST_F(FastCheckoutDelegateImplTest, ResetAllowsShowingFastCheckoutAgain) {
 
   fast_checkout_delegate_->Reset();
   TryToShowFastCheckout(/*expected_success=*/true);
+}
+
+TEST_F(FastCheckoutDelegateImplTest, SafelyHideFastCheckoutInDtor) {
+  autofill_client_.ExpectDelegateWeakPtrFromShowInvalidatedOnHide();
+  TryToShowFastCheckout(/*expected_success=*/true);
+  browser_autofill_manager_.reset();
 }
 
 }  // namespace autofill

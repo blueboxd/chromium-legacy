@@ -174,6 +174,10 @@ bool FakeSamlIdpMixin::IsLastChallengeResponseExists() const {
   return challenge_response_.has_value();
 }
 
+int FakeSamlIdpMixin::GetChallengeResponseCount() const {
+  return challenge_response_count_;
+}
+
 void FakeSamlIdpMixin::AssertChallengeResponseMatchesTpmResponse() const {
   ASSERT_EQ(challenge_response_.value(), GetTpmResponseBase64());
 }
@@ -331,12 +335,15 @@ FakeSamlIdpMixin::BuildResponseForLoginWithDeviceTrust(
   device_trust_header_recieved_ =
       base::Contains(request.headers, kDeviceTrustHeader);
 
-  GURL redirect_url =
-      net::AppendQueryParameter(GetSamlPageUrl(), kRelayState, relay_state);
+  GURL redirect_url = GetSamlWithCheckDeviceAnswerUrl();
+  redirect_url =
+      net::AppendQueryParameter(redirect_url, kRelayState, relay_state);
 
   auto http_response = std::make_unique<BasicHttpResponse>();
   http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
   http_response->AddCustomHeader("Location", redirect_url.spec());
+  http_response->AddCustomHeader(kSamlVerifiedAccessChallengeHeader,
+                                 GetTpmChallengeBase64());
   return http_response;
 }
 
@@ -383,6 +390,7 @@ FakeSamlIdpMixin::BuildHTMLResponse(const std::string& html_template,
 void FakeSamlIdpMixin::SaveChallengeResponse(const std::string& response) {
   EXPECT_EQ(challenge_response_, absl::nullopt);
   challenge_response_ = response;
+  challenge_response_count_++;
 }
 
 void FakeSamlIdpMixin::ClearChallengeResponse() {

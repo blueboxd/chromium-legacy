@@ -9,6 +9,7 @@
 #include "android_webview/browser/gfx/render_thread_manager.h"
 #include "base/android/android_hardware_buffer_compat.h"
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
+#include "gpu/command_buffer/service/ahardwarebuffer_utils.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/ipc/common/android/android_image_reader_utils.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
@@ -24,7 +25,6 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context_egl.h"
-#include "ui/gl/gl_image_ahardwarebuffer.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/init/gl_factory.h"
 
@@ -193,8 +193,8 @@ void VulkanGLInterop::DrawVk(sk_sp<GrVkSecondaryCBDrawContext> draw_context,
   }
 
   // If prev buffer is wrong size, just re-allocate.
-  if (pending_draw && pending_draw->ahb_image->GetSize() !=
-                          gfx::Size(params.width, params.height)) {
+  if (pending_draw &&
+      pending_draw->image_size != gfx::Size(params.width, params.height)) {
     pending_draw.reset();
   }
 
@@ -219,24 +219,22 @@ void VulkanGLInterop::DrawVk(sk_sp<GrVkSecondaryCBDrawContext> draw_context,
       LOG(ERROR) << "Failed to allocate AHardwareBuffer for WebView rendering.";
       return;
     }
-    auto scoped_buffer =
+    pending_draw->scoped_buffer =
         base::android::ScopedHardwareBufferHandle::Adopt(buffer);
+    pending_draw->image_size = gfx::Size(params.width, params.height);
 
-    pending_draw->ahb_image = base::MakeRefCounted<gl::GLImageAHardwareBuffer>(
-        gfx::Size(params.width, params.height));
-    if (!pending_draw->ahb_image->Initialize(scoped_buffer.get(),
-                                             false /* preserved */)) {
-      LOG(ERROR) << "Failed to initialize GLImage for AHardwareBuffer.";
+    // Create an EGLImage for the buffer.
+    pending_draw->egl_image = gpu::CreateEGLImageFromAHardwareBuffer(
+        pending_draw->scoped_buffer.get());
+    if (!pending_draw->egl_image.is_valid()) {
+      LOG(ERROR) << "Failed to initialize EGLImage for AHardwareBuffer";
       return;
     }
 
     glGenTextures(1, static_cast<GLuint*>(&pending_draw->texture_id));
     GLenum target = GL_TEXTURE_2D;
     glBindTexture(target, pending_draw->texture_id);
-    if (!pending_draw->ahb_image->BindTexImage(target)) {
-      LOG(ERROR) << "Failed to bind GLImage for AHardwareBuffer.";
-      return;
-    }
+    glEGLImageTargetTexture2DOES(target, pending_draw->egl_image.get());
     glBindTexture(target, 0);
     glGenFramebuffersEXT(1, &pending_draw->framebuffer_id);
     glBindFramebufferEXT(GL_FRAMEBUFFER, pending_draw->framebuffer_id);
@@ -296,7 +294,7 @@ void VulkanGLInterop::DrawVk(sk_sp<GrVkSecondaryCBDrawContext> draw_context,
   // Create a VkImage and import AHB.
   if (!pending_draw->vulkan_image) {
     auto handle = base::android::ScopedHardwareBufferHandle::Create(
-        pending_draw->ahb_image->GetAHardwareBuffer()->buffer());
+        pending_draw->scoped_buffer.get());
     gfx::GpuMemoryBufferHandle gmb_handle(std::move(handle));
     auto* device_queue = vulkan_context_provider_->GetDeviceQueue();
     auto vulkan_image = gpu::VulkanImage::CreateFromGpuMemoryBufferHandle(

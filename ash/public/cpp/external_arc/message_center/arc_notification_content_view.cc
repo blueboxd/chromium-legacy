@@ -12,6 +12,7 @@
 #include "ash/public/cpp/external_arc/message_center/arc_notification_view.h"
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/system/message_center/ash_notification_control_button_factory.h"
 #include "ash/system/message_center/message_center_constants.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
@@ -129,9 +130,9 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
              event->type() == ui::ET_GESTURE_SCROLL_UPDATE ||
              event->type() == ui::ET_GESTURE_SCROLL_END ||
              event->type() == ui::ET_GESTURE_SWIPE)) {
-          gfx::RectF rect(owner_->item_->GetSwipeInputRect());
-          owner_->surface_->GetContentWindow()->transform().TransformRect(
-              &rect);
+          gfx::RectF rect =
+              owner_->surface_->GetContentWindow()->transform().MapRect(
+                  gfx::RectF(owner_->item_->GetSwipeInputRect()));
           gfx::Point location = located_event->location();
           views::View::ConvertPointFromWidget(owner_, &location);
           bool contains = rect.Contains(gfx::PointF(location));
@@ -270,6 +271,8 @@ ArcNotificationContentView::ArcNotificationContentView(
       control_buttons_view_(message_view),
       notification_width_(GetNotificationContentViewWidth()) {
   DCHECK(message_view);
+  control_buttons_view_.SetNotificationControlButtonFactory(
+      std::make_unique<AshNotificationControlButtonFactory>());
 
   // |notification_width_| must be 360 (or 344 for refreshed notifications),
   // since this value is separately defined in ArcNotificationWrapperView class
@@ -829,7 +832,7 @@ void ArcNotificationContentView::GetAccessibleNodeData(
         l10n_util::GetStringUTF8(
             IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
   }
-  node_data->SetName(accessible_name_);
+  node_data->SetNameChecked(accessible_name_);
 }
 
 void ArcNotificationContentView::OnAccessibilityEvent(ax::mojom::Event event) {

@@ -1,11 +1,9 @@
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import json5_generator
 import template_expander
-from collections import defaultdict
-from make_runtime_features_utilities import origin_trials
 
 
 class PublicPermissionsPolicyFeatureWriter(json5_generator.Writer):

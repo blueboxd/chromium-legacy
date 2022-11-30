@@ -54,7 +54,7 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) AddressPoolManager {
   AddressPoolManager& operator=(const AddressPoolManager&) = delete;
 
 #if defined(PA_HAS_64_BITS_POINTERS)
-  pool_handle Add(uintptr_t address, size_t length);
+  void Add(pool_handle handle, uintptr_t address, size_t length);
   void Remove(pool_handle handle);
 
   // Populate a |used| bitset of superpages currently in use.
@@ -65,12 +65,12 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) AddressPoolManager {
   uintptr_t GetPoolBaseAddress(pool_handle handle);
 #endif
 
-  // Reserves address space from GigaCage.
+  // Reserves address space from the pool.
   uintptr_t Reserve(pool_handle handle,
                     uintptr_t requested_address,
                     size_t length);
 
-  // Frees address space back to GigaCage and decommits underlying system pages.
+  // Frees address space back to the pool and decommits underlying system pages.
   void UnreserveAndDecommit(pool_handle handle,
                             uintptr_t address,
                             size_t length);
@@ -158,21 +158,8 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) AddressPoolManager {
 
 #endif  // defined(PA_HAS_64_BITS_POINTERS)
 
-  static AddressPoolManager singleton_;
+  static PA_CONSTINIT AddressPoolManager singleton_;
 };
-
-PA_ALWAYS_INLINE pool_handle GetRegularPool() {
-  return kRegularPoolHandle;
-}
-
-PA_ALWAYS_INLINE pool_handle GetBRPPool() {
-  return kBRPPoolHandle;
-}
-
-PA_ALWAYS_INLINE pool_handle GetConfigurablePool() {
-  PA_DCHECK(IsConfigurablePoolAvailable());
-  return kConfigurablePoolHandle;
-}
 
 }  // namespace partition_alloc::internal
 

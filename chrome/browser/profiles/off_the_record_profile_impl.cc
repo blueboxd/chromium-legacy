@@ -35,8 +35,10 @@
 #include "chrome/browser/file_system_access/chrome_file_system_access_permission_context.h"
 #include "chrome/browser/file_system_access/file_system_access_permission_context_factory.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
+#include "chrome/browser/k_anonymity_service/k_anonymity_service_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
+#include "chrome/browser/origin_trials/origin_trials_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -71,7 +73,6 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
-#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/zoom/zoom_event_manager.h"
@@ -117,11 +118,6 @@
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
-#endif
-
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-#include "chrome/browser/accessibility/ax_screen_ai_annotator_factory.h"
-#include "ui/accessibility/accessibility_features.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -238,12 +234,6 @@ void OffTheRecordProfileImpl::Init() {
     profile::MaybeRecordGuestChildCreation(this);
   }
 #endif
-
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  // TODO(https://crbug.com/1278249): Implement settings to replace flag.
-  if (features::IsPdfOcrEnabled())
-    screen_ai::AXScreenAIAnnotatorFactory::GetForBrowserContext(this);
-#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 }
 
 OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
@@ -715,4 +705,9 @@ OffTheRecordProfileImpl::GetFederatedIdentitySharingPermissionContext() {
 content::FederatedIdentityApiPermissionContextDelegate*
 OffTheRecordProfileImpl::GetFederatedIdentityApiPermissionContext() {
   return FederatedIdentityApiPermissionContextFactory::GetForProfile(this);
+}
+
+content::KAnonymityServiceDelegate*
+OffTheRecordProfileImpl::GetKAnonymityServiceDelegate() {
+  return KAnonymityServiceFactory::GetForProfile(this);
 }

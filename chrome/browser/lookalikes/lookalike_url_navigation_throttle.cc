@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -49,14 +50,14 @@ bool IsInterstitialReload(const GURL& current_url,
          stored_redirect_chain[stored_redirect_chain.size() - 1] == current_url;
 }
 
-const base::Feature kOptimizeLookalikeUrlNavigationThrottle{
-    "OptimizeLookalikeUrlNavigationThrottle",
+BASE_FEATURE(kOptimizeLookalikeUrlNavigationThrottle,
+             "OptimizeLookalikeUrlNavigationThrottle",
 #if BUILDFLAG(IS_ANDROID)
-    base::FEATURE_ENABLED_BY_DEFAULT
+             base::FEATURE_ENABLED_BY_DEFAULT
 #else
-    base::FEATURE_DISABLED_BY_DEFAULT
+             base::FEATURE_DISABLED_BY_DEFAULT
 #endif
-};
+);
 
 // Records latency histograms for an invocation of PerformChecks() just before
 // it will return a value of PROCEED.
@@ -485,13 +486,8 @@ bool LookalikeUrlNavigationThrottle::IsLookalikeUrl(
   // ignores the scheme which is okay since it's more conservative: If the user
   // is engaged with http://domain.test, not showing the warning on
   // https://domain.test is acceptable.
-  const auto already_engaged =
-      std::find_if(engaged_sites.begin(), engaged_sites.end(),
-                   [navigated_domain](const DomainInfo& engaged_domain) {
-                     return (navigated_domain.domain_and_registry ==
-                             engaged_domain.domain_and_registry);
-                   });
-  if (already_engaged != engaged_sites.end()) {
+  if (base::Contains(engaged_sites, navigated_domain.domain_and_registry,
+                     &DomainInfo::domain_and_registry)) {
     return false;
   }
 

@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/components/multidevice/logging/logging.h"
 #include "ash/constants/ash_features.h"
 #include "ash/services/device_sync/async_execution_time_metrics_logger.h"
 #include "ash/services/device_sync/attestation_certificates_syncer.h"
@@ -26,6 +25,7 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "chromeos/ash/components/multidevice/logging/logging.h"
 
 namespace ash {
 
@@ -234,7 +234,7 @@ void CryptAuthDeviceSyncerImpl::AttemptNextStep() {
       GetBluetoothAddress();
       return;
     case State::kWaitingForBluetoothAddress:
-      if (features::IsEcheSWAEnabled()) {
+      if (features::IsCrossDeviceAttestationCertificateGenerationEnabled()) {
         GetAttestationCertificates();
         return;
       }
@@ -758,7 +758,7 @@ void CryptAuthDeviceSyncerImpl::FinishAttempt(
   if (result_type == CryptAuthDeviceSyncResult::ResultType::kSuccess) {
     synced_bluetooth_address_tracker_->SetLastSyncedBluetoothAddress(
         local_better_together_device_metadata_.bluetooth_public_address());
-    if (features::IsEcheSWAEnabled()) {
+    if (features::IsCrossDeviceAttestationCertificateGenerationEnabled()) {
       if (are_attestation_certs_valid_) {
         attestation_certificates_syncer_->SetLastSyncTimestamp();
       }

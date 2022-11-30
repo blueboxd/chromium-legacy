@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -690,8 +690,10 @@ TEST_P(PaintPropertyTreeUpdateTest, PerspectiveOriginUpdatesOnSizeChanges) {
   )HTML");
 
   auto* perspective = GetLayoutObjectByElementId("perspective");
+  TransformationMatrix matrix;
+  matrix.ApplyPerspectiveDepth(100);
   EXPECT_EQ(
-      TransformationMatrix().ApplyPerspective(100),
+      matrix,
       perspective->FirstFragment().PaintProperties()->Perspective()->Matrix());
   EXPECT_EQ(
       gfx::Point3F(50, 0, 0),
@@ -701,7 +703,7 @@ TEST_P(PaintPropertyTreeUpdateTest, PerspectiveOriginUpdatesOnSizeChanges) {
   contents->setAttribute(html_names::kStyleAttr, "height: 200px;");
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(
-      TransformationMatrix().ApplyPerspective(100),
+      matrix,
       perspective->FirstFragment().PaintProperties()->Perspective()->Matrix());
   EXPECT_EQ(
       gfx::Point3F(50, 100, 0),
@@ -837,8 +839,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ViewportAddRemoveDeviceEmulationNode) {
   }
 
   // These emulate WebViewImpl::SetDeviceEmulationTransform().
-  GetChromeClient().SetDeviceEmulationTransform(
-      TransformationMatrix().Scale(2));
+  GetChromeClient().SetDeviceEmulationTransform(MakeScaleMatrix(2));
   visual_viewport.SetNeedsPaintPropertyUpdate();
 
   UpdateAllLifecyclePhasesForTest();
@@ -1379,7 +1380,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ForwardReferencedSVGElementUpdate) {
   ASSERT_NE(nullptr, rect_properties->Transform());
   EXPECT_EQ(svg2_properties->Perspective(),
             rect_properties->Transform()->Parent());
-  EXPECT_EQ(TransformationMatrix().Translate(1, 0),
+  EXPECT_EQ(MakeTranslationMatrix(1, 0),
             GeometryMapper::SourceToDestinationProjection(
                 *rect_properties->Transform(),
                 *svg2_properties->PaintOffsetTranslation())
@@ -1401,7 +1402,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ForwardReferencedSVGElementUpdate) {
             rect_properties->Transform()->Parent());
 
   // Ensure that GeometryMapper's cache is properly invalidated and updated.
-  EXPECT_EQ(TransformationMatrix().Translate(3, 0),
+  EXPECT_EQ(MakeTranslationMatrix(3, 0),
             GeometryMapper::SourceToDestinationProjection(
                 *rect_properties->Transform(),
                 *svg2_properties->PaintOffsetTranslation())
@@ -1675,10 +1676,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
   style->SetTransformOrigin(TransformOrigin(Length(70, Length::kFixed),
                                             Length(30, Length::kFixed), 0));
   target->SetStyle(std::move(style));
-  if (base::FeatureList::IsEnabled(features::kFastPathPaintPropertyUpdates))
-    EXPECT_FALSE(target->NeedsPaintPropertyUpdate());
-  else
-    EXPECT_TRUE(target->NeedsPaintPropertyUpdate());
+  EXPECT_TRUE(target->NeedsPaintPropertyUpdate());
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
   {
 #if DCHECK_IS_ON()
@@ -1692,7 +1690,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
   ASSERT_EQ(transform_node,
             target->FirstFragment().PaintProperties()->Transform());
   EXPECT_TRUE(transform_node->HasActiveTransformAnimation());
-  EXPECT_EQ(TransformationMatrix().Rotate(10), transform_node->Matrix());
+  EXPECT_EQ(MakeRotationMatrix(10), transform_node->Matrix());
   EXPECT_EQ(gfx::Point3F(70, 30, 0), transform_node->Origin());
   EXPECT_TRUE(transform_node->BackfaceVisibilitySameAsParent());
   // Changing only transform or transform-origin values during a composited
@@ -1711,7 +1709,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
   ASSERT_EQ(transform_node,
             target->FirstFragment().PaintProperties()->Transform());
   EXPECT_TRUE(transform_node->HasActiveTransformAnimation());
-  EXPECT_EQ(TransformationMatrix().Rotate(10), transform_node->Matrix());
+  EXPECT_EQ(MakeRotationMatrix(10), transform_node->Matrix());
   EXPECT_EQ(gfx::Point3F(70, 30, 0), transform_node->Origin());
   EXPECT_FALSE(transform_node->BackfaceVisibilitySameAsParent());
   // Only transform and transform-origin value changes during composited
@@ -1956,8 +1954,6 @@ TEST_P(PaintPropertyTreeUpdateTest, LocalBorderBoxPropertiesChange) {
 // running the blink property tree builder.
 TEST_P(PaintPropertyTreeUpdateTest,
        DirectTransformUpdateSkipsPropertyTreeBuilder) {
-  if (!base::FeatureList::IsEnabled(features::kFastPathPaintPropertyUpdates))
-    return;
   SetBodyInnerHTML(R"HTML(
       <div id='div' style="transform:translateX(100px)"></div>
   )HTML");
@@ -1975,6 +1971,33 @@ TEST_P(PaintPropertyTreeUpdateTest,
 
   UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_EQ(200, div_properties->Transform()->Translation2D().x());
+}
+
+TEST_P(PaintPropertyTreeUpdateTest, ChangeMaskOutputClip) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="container" style="width: 100px; height: 10px; overflow: hidden">
+      <div id="masked"
+           style="height: 100px; background: red; -webkit-mask: url()"></div>
+    </div>
+  )HTML");
+
+  auto* container_properties = PaintPropertiesForElement("container");
+  ASSERT_TRUE(container_properties);
+  auto* masked_properties = PaintPropertiesForElement("masked");
+  ASSERT_TRUE(masked_properties);
+  ASSERT_TRUE(masked_properties->Mask());
+  EXPECT_EQ(container_properties->OverflowClip(),
+            masked_properties->Mask()->OutputClip());
+
+  GetDocument()
+      .getElementById("container")
+      ->setAttribute(html_names::kStyleAttr, "width: 100px; height: 100px");
+  UpdateAllLifecyclePhasesExceptPaint();
+
+  EXPECT_FALSE(PaintPropertiesForElement("container"));
+  EXPECT_EQ(masked_properties, PaintPropertiesForElement("masked"));
+  EXPECT_EQ(DocContentClip(), masked_properties->Mask()->OutputClip());
+  EXPECT_TRUE(GetPaintLayerByElementId("masked")->SelfNeedsRepaint());
 }
 
 }  // namespace blink

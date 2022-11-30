@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ v8::Local<v8::Value> BuildDetails(
     return result->Wrap(script_state).ToLocalChecked();
   }
 
-  if (json.IsEmpty()) {
+  if (json.empty()) {
     return V8ObjectBuilder(script_state).V8Value();
   }
 

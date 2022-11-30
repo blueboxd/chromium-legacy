@@ -15,28 +15,30 @@
 #include "chromeos/ash/components/local_search_service/public/cpp/local_search_service_proxy.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace chromeos {
-namespace settings {
+namespace ash::settings {
+
+namespace mojom {
+using ::chromeos::settings::mojom::Section;
+using ::chromeos::settings::mojom::Setting;
+using ::chromeos::settings::mojom::Subpage;
+}  // namespace mojom
 
 namespace {
 
-// TODO(https://crbug.com/1164001): remove after migrating this file to ns ash.
-namespace local_search_service = ::ash::local_search_service;
-
 bool ContainsSectionResult(const std::vector<mojom::SearchResultPtr>& results,
                            mojom::Section section) {
-  return base::ranges::find_if(results, [section](const auto& result) {
-           return result->type == mojom::SearchResultType::kSection &&
-                  section == result->id->get_section();
-         }) != results.end();
+  return base::ranges::any_of(results, [section](const auto& result) {
+    return result->type == mojom::SearchResultType::kSection &&
+           section == result->id->get_section();
+  });
 }
 
 bool ContainsSubpageResult(const std::vector<mojom::SearchResultPtr>& results,
                            mojom::Subpage subpage) {
-  return base::ranges::find_if(results, [subpage](const auto& result) {
-           return result->type == mojom::SearchResultType::kSubpage &&
-                  subpage == result->id->get_subpage();
-         }) != results.end();
+  return base::ranges::any_of(results, [subpage](const auto& result) {
+    return result->type == mojom::SearchResultType::kSubpage &&
+           subpage == result->id->get_subpage();
+  });
 }
 
 }  // namespace
@@ -337,5 +339,4 @@ bool SearchHandler::CompareSearchResults(const mojom::SearchResultPtr& first,
   return static_cast<int32_t>(first->type) < static_cast<int32_t>(second->type);
 }
 
-}  // namespace settings
-}  // namespace chromeos
+}  // namespace ash::settings

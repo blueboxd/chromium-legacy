@@ -18,6 +18,7 @@
 #include "ash/constants/ash_constants.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/curtain/security_curtain_widget_controller.h"
 #include "ash/focus_cycler.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/keyboard/arc/arc_virtual_keyboard_container_layout_manager.h"
@@ -81,6 +82,7 @@
 #include "base/command_line.h"
 #include "base/cxx17_backports.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
@@ -161,7 +163,7 @@ bool IsWindowAboveContainer(aura::Window* window,
     aura::Window* common_parent = target->parent();
     DCHECK_EQ(common_parent, blocking->parent());
     const aura::Window::Windows& windows = common_parent->children();
-    auto blocking_iter = std::find(windows.begin(), windows.end(), blocking);
+    auto blocking_iter = base::ranges::find(windows, blocking);
     // If the target window is above blocking window, the window can handle
     // events.
     return std::find(blocking_iter, windows.end(), target) != windows.end();
@@ -494,9 +496,8 @@ RootWindowController::~RootWindowController() {
   // The CaptureClient needs to be around for as long as the RootWindow is
   // valid.
   capture_client_.reset();
-  root_window_controllers_->erase(std::find(root_window_controllers_->begin(),
-                                            root_window_controllers_->end(),
-                                            this));
+  root_window_controllers_->erase(
+      base::ranges::find(*root_window_controllers_, this));
 }
 
 RootWindowController* RootWindowController::CreateForPrimaryDisplay(
@@ -662,6 +663,7 @@ void RootWindowController::Shutdown() {
     ash_host_->PrepareForShutdown();
 
   system_wallpaper_.reset();
+  security_curtain_widget_controller_.reset();
   lock_screen_action_background_controller_.reset();
   aura::client::SetScreenPositionClient(root_window, nullptr);
 
@@ -824,21 +826,19 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
                                        ui::kColorAshSystemUIMenuIcon));
 
     // Append the "Show all suggestions" / "Hide all suggestions" item.
-    if (features::IsLauncherHideContinueSectionEnabled()) {
-      menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
-      if (app_list_controller->ShouldHideContinueSection()) {
-        menu_model->AddItemWithIcon(
-            ShelfContextMenuModel::MENU_SHOW_CONTINUE_SECTION,
-            l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_SHOW_CONTINUE_SECTION),
-            ui::ImageModel::FromVectorIcon(kLauncherShowContinueSectionIcon,
-                                           ui::kColorAshSystemUIMenuIcon));
-      } else {
-        menu_model->AddItemWithIcon(
-            ShelfContextMenuModel::MENU_HIDE_CONTINUE_SECTION,
-            l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_HIDE_CONTINUE_SECTION),
-            ui::ImageModel::FromVectorIcon(kLauncherHideContinueSectionIcon,
-                                           ui::kColorAshSystemUIMenuIcon));
-      }
+    menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+    if (app_list_controller->ShouldHideContinueSection()) {
+      menu_model->AddItemWithIcon(
+          ShelfContextMenuModel::MENU_SHOW_CONTINUE_SECTION,
+          l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_SHOW_CONTINUE_SECTION),
+          ui::ImageModel::FromVectorIcon(kLauncherShowContinueSectionIcon,
+                                         ui::kColorAshSystemUIMenuIcon));
+    } else {
+      menu_model->AddItemWithIcon(
+          ShelfContextMenuModel::MENU_HIDE_CONTINUE_SECTION,
+          l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_HIDE_CONTINUE_SECTION),
+          ui::ImageModel::FromVectorIcon(kLauncherHideContinueSectionIcon,
+                                         ui::kColorAshSystemUIMenuIcon));
     }
   }
 
@@ -908,6 +908,21 @@ RootWindowController::GetAccessibilityPanelLayoutManagerForTest() {
   return GetAccessibilityPanelLayoutManager();
 }
 
+void RootWindowController::SetSecurityCurtainWidgetController(
+    std::unique_ptr<curtain::SecurityCurtainWidgetController> controller) {
+  DCHECK(!security_curtain_widget_controller_);
+  security_curtain_widget_controller_ = std::move(controller);
+}
+
+void RootWindowController::ClearSecurityCurtainWidgetController() {
+  security_curtain_widget_controller_ = nullptr;
+}
+
+curtain::SecurityCurtainWidgetController*
+RootWindowController::security_curtain_widget_controller() {
+  return security_curtain_widget_controller_.get();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowController, private:
 
@@ -944,10 +959,14 @@ void RootWindowController::Init(RootWindowType root_window_type) {
       root_window->SetEventTargeter(std::make_unique<RootWindowTargeter>());
   DCHECK(!old_targeter);
 
+  std::unique_ptr<RootWindowLayoutManager> root_window_layout_manager =
+      std::make_unique<RootWindowLayoutManager>(root_window);
+  root_window_layout_manager_ = root_window_layout_manager.get();
+
   CreateContainers();
   CreateSystemWallpaper(root_window_type);
 
-  InitLayoutManagers();
+  InitLayoutManagers(std::move(root_window_layout_manager));
   InitTouchHuds();
 
   // `shelf_` was created in the constructor.
@@ -990,14 +1009,15 @@ void RootWindowController::Init(RootWindowType root_window_type) {
   }
 }
 
-void RootWindowController::InitLayoutManagers() {
+void RootWindowController::InitLayoutManagers(
+    std::unique_ptr<RootWindowLayoutManager> root_window_layout_manager) {
   // Create the shelf and status area widgets. Creates the ShelfLayoutManager
   // as a side-effect.
   DCHECK(!shelf_->shelf_widget());
   aura::Window* root = GetRootWindow();
   shelf_->CreateShelfWidget(root);
 
-  root->SetLayoutManager(root_window_layout_manager_);
+  root->SetLayoutManager(std::move(root_window_layout_manager));
 
   for (auto* container : desks_util::GetDesksContainers(root)) {
     // Installs WorkspaceLayoutManager on the container.
@@ -1007,13 +1027,14 @@ void RootWindowController::InitLayoutManagers() {
   aura::Window* modal_container =
       GetContainer(kShellWindowId_SystemModalContainer);
   modal_container->SetLayoutManager(
-      new SystemModalContainerLayoutManager(modal_container));
+      std::make_unique<SystemModalContainerLayoutManager>(modal_container));
 
   aura::Window* lock_modal_container =
       GetContainer(kShellWindowId_LockSystemModalContainer);
   DCHECK(lock_modal_container);
   lock_modal_container->SetLayoutManager(
-      new SystemModalContainerLayoutManager(lock_modal_container));
+      std::make_unique<SystemModalContainerLayoutManager>(
+          lock_modal_container));
 
   aura::Window* lock_action_handler_container =
       GetContainer(kShellWindowId_LockActionHandlerContainer);
@@ -1021,7 +1042,7 @@ void RootWindowController::InitLayoutManagers() {
   lock_screen_action_background_controller_->SetParentWindow(
       lock_action_handler_container);
   lock_action_handler_container->SetLayoutManager(
-      new LockActionHandlerLayoutManager(
+      std::make_unique<LockActionHandlerLayoutManager>(
           lock_action_handler_container, shelf_.get(),
           lock_screen_action_background_controller_.get()));
 
@@ -1029,7 +1050,7 @@ void RootWindowController::InitLayoutManagers() {
       GetContainer(kShellWindowId_LockScreenContainer);
   DCHECK(lock_container);
   lock_container->SetLayoutManager(
-      new LockLayoutManager(lock_container, shelf_.get()));
+      std::make_unique<LockLayoutManager>(lock_container, shelf_.get()));
 
   aura::Window* always_on_top_container =
       GetContainer(kShellWindowId_AlwaysOnTopContainer);
@@ -1047,8 +1068,10 @@ void RootWindowController::InitLayoutManagers() {
 }
 
 void RootWindowController::CreateContainers() {
+  // CreateContainer() depends on root_window_layout_manager_.
+  DCHECK(root_window_layout_manager_);
+
   aura::Window* root = GetRootWindow();
-  root_window_layout_manager_ = new RootWindowLayoutManager(root);
 
   // Add a NOT_DRAWN layer in between the root_window's layer and its current
   // children so that we only need to initiate two LayerAnimationSequences for
@@ -1085,7 +1108,7 @@ void RootWindowController::CreateContainers() {
                       magnified_container);
   ::wm::SetChildWindowVisibilityChangesAnimated(wallpaper_container);
   wallpaper_container->SetLayoutManager(
-      new FillLayoutManager(wallpaper_container));
+      std::make_unique<FillLayoutManager>(wallpaper_container));
 
   if (features::AreGlanceablesEnabled()) {
     aura::Window* glanceables_container =
@@ -1093,7 +1116,7 @@ void RootWindowController::CreateContainers() {
                         "GlanceablesContainer", magnified_container);
     glanceables_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
     glanceables_container->SetLayoutManager(
-        new FillLayoutManager(glanceables_container));  // Takes ownership.
+        std::make_unique<FillLayoutManager>(glanceables_container));
   }
 
   aura::Window* non_lock_screen_containers =
@@ -1108,7 +1131,7 @@ void RootWindowController::CreateContainers() {
                       "LockScreenWallpaperContainer", magnified_container);
   ::wm::SetChildWindowVisibilityChangesAnimated(lock_wallpaper_container);
   lock_wallpaper_container->SetLayoutManager(
-      new FillLayoutManager(lock_wallpaper_container));
+      std::make_unique<FillLayoutManager>(lock_wallpaper_container));
 
   aura::Window* lock_screen_containers =
       CreateContainer(kShellWindowId_LockScreenContainersContainer,
@@ -1167,7 +1190,8 @@ void RootWindowController::CreateContainers() {
       non_lock_screen_containers);
   arc_ime_parent_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
   arc_ime_parent_container->SetLayoutManager(
-      new ArcVirtualKeyboardContainerLayoutManager(arc_ime_parent_container));
+      std::make_unique<ArcVirtualKeyboardContainerLayoutManager>(
+          arc_ime_parent_container));
   aura::Window* arc_vk_container =
       CreateContainer(kShellWindowId_ArcVirtualKeyboardContainer,
                       "ArcVirtualKeyboardContainer", arc_ime_parent_container);
@@ -1229,7 +1253,7 @@ void RootWindowController::CreateContainers() {
   virtual_keyboard_parent_container->SetProperty(
       ::wm::kUsesScreenCoordinatesKey, true);
   virtual_keyboard_parent_container->SetLayoutManager(
-      new VirtualKeyboardContainerLayoutManager(
+      std::make_unique<VirtualKeyboardContainerLayoutManager>(
           virtual_keyboard_parent_container));
   aura::Window* virtual_keyboard_container = CreateContainer(
       kShellWindowId_VirtualKeyboardContainer, "VirtualKeyboardContainer",
@@ -1237,7 +1261,7 @@ void RootWindowController::CreateContainers() {
   virtual_keyboard_container->SetProperty(::wm::kUsesScreenCoordinatesKey,
                                           true);
   virtual_keyboard_container->SetLayoutManager(
-      new keyboard::KeyboardLayoutManager(
+      std::make_unique<keyboard::KeyboardLayoutManager>(
           keyboard::KeyboardUIController::Get()));
 
   aura::Window* accessibility_panel_container = CreateContainer(
@@ -1248,7 +1272,7 @@ void RootWindowController::CreateContainers() {
                                              true);
   accessibility_panel_container->SetProperty(kLockedToRootKey, true);
   accessibility_panel_container->SetLayoutManager(
-      new AccessibilityPanelLayoutManager());
+      std::make_unique<AccessibilityPanelLayoutManager>());
 
   aura::Window* menu_container =
       CreateContainer(kShellWindowId_MenuContainer, "MenuContainer",
@@ -1273,7 +1297,7 @@ void RootWindowController::CreateContainers() {
                       lock_screen_related_containers);
   overlay_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
   overlay_container->SetLayoutManager(
-      new OverlayLayoutManager(overlay_container));  // Takes ownership.
+      std::make_unique<OverlayLayoutManager>(overlay_container));
 
   if (chromeos::features::IsAmbientModeEnabled()) {
     aura::Window* ambient_container =
@@ -1282,7 +1306,7 @@ void RootWindowController::CreateContainers() {
     ::wm::SetChildWindowVisibilityChangesAnimated(ambient_container);
     ambient_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
     ambient_container->SetLayoutManager(
-        new FillLayoutManager(ambient_container));  // Takes ownership.
+        std::make_unique<FillLayoutManager>(ambient_container));
   }
 
   aura::Window* mouse_cursor_container =
@@ -1294,7 +1318,7 @@ void RootWindowController::CreateContainers() {
       CreateContainer(kShellWindowId_AlwaysOnTopWallpaperContainer,
                       "AlwaysOnTopWallpaperContainer", magnified_container);
   always_on_top_wallpaper_container->SetLayoutManager(
-      new FillLayoutManager(always_on_top_wallpaper_container));
+      std::make_unique<FillLayoutManager>(always_on_top_wallpaper_container));
 
   CreateContainer(kShellWindowId_PowerButtonAnimationContainer,
                   "PowerButtonAnimationContainer", magnified_container);

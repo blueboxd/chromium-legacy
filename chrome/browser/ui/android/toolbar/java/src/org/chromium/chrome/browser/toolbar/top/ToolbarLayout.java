@@ -28,6 +28,8 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.lifetime.DestroyChecker;
+import org.chromium.base.lifetime.Destroyable;
 import org.chromium.base.supplier.BooleanSupplier;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
@@ -58,6 +60,7 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ViewUtils;
+import org.chromium.url.GURL;
 
 /**
  * Layout class that contains the base shared logic for manipulating the toolbar component. For
@@ -65,7 +68,7 @@ import org.chromium.ui.base.ViewUtils;
  * through {@link Toolbar} rather than using this class directly.
  */
 public abstract class ToolbarLayout
-        extends FrameLayout implements TintObserver, ThemeColorObserver {
+        extends FrameLayout implements Destroyable, TintObserver, ThemeColorObserver {
     private Callback<Runnable> mInvalidator;
 
     protected final ObserverList<UrlExpansionObserver> mUrlExpansionObservers =
@@ -95,12 +98,15 @@ public abstract class ToolbarLayout
 
     private TopToolbarOverlayCoordinator mOverlayCoordinator;
 
+    protected final DestroyChecker mDestroyChecker;
+
     /**
      * Basic constructor for {@link ToolbarLayout}.
      */
     public ToolbarLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
         mDefaultTint = ThemeUtils.getThemedToolbarIconTint(getContext(), false);
+        mDestroyChecker = new DestroyChecker();
 
         addOnLayoutChangeListener(new OnLayoutChangeListener() {
             @Override
@@ -165,10 +171,11 @@ public abstract class ToolbarLayout
     // BrowsingModeToolbarCoordinator.
     public void setLocationBarCoordinator(LocationBarCoordinator locationBarCoordinator) {}
 
-    /**
-     * Cleans up any code as necessary.
-     */
-    void destroy() {
+    /** Cleans up any code as necessary. */
+    @Override
+    public void destroy() {
+        mDestroyChecker.destroy();
+
         if (mThemeColorProvider != null) {
             mThemeColorProvider.removeTintObserver(this);
             mThemeColorProvider.removeThemeColorObserver(this);
@@ -270,6 +277,11 @@ public abstract class ToolbarLayout
             @Override
             public String getCurrentUrl() {
                 return "";
+            }
+
+            @Override
+            public GURL getCurrentGurl() {
+                return GURL.emptyGURL();
             }
 
             @Override

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,8 @@ void StubSpeculationHost::BindUnsafe(mojo::ScopedMessagePipeHandle handle) {
 void StubSpeculationHost::Bind(
     mojo::PendingReceiver<SpeculationHost> receiver) {
   receiver_.Bind(std::move(receiver));
-  receiver_.set_disconnect_handler(
-      WTF::Bind(&StubSpeculationHost::OnConnectionLost, WTF::Unretained(this)));
+  receiver_.set_disconnect_handler(WTF::BindOnce(
+      &StubSpeculationHost::OnConnectionLost, WTF::Unretained(this)));
 }
 
 void StubSpeculationHost::UpdateSpeculationCandidates(Candidates candidates) {

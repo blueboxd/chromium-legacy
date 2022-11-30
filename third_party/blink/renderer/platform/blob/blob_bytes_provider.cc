@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,27 +98,6 @@ class BlobBytesStreamer {
   SEQUENCE_CHECKER(sequence_checker_);
 };
 
-// This keeps the process alive while blobs are being transferred.
-void IncreaseChildProcessRefCount() {
-  if (!WTF::IsMainThread()) {
-    PostCrossThreadTask(*Thread::MainThread()->GetDeprecatedTaskRunner(),
-                        FROM_HERE,
-                        CrossThreadBindOnce(&IncreaseChildProcessRefCount));
-    return;
-  }
-  Platform::Current()->SuddenTerminationChanged(false);
-}
-
-void DecreaseChildProcessRefCount() {
-  if (!WTF::IsMainThread()) {
-    PostCrossThreadTask(*Thread::MainThread()->GetDeprecatedTaskRunner(),
-                        FROM_HERE,
-                        CrossThreadBindOnce(&DecreaseChildProcessRefCount));
-    return;
-  }
-  Platform::Current()->SuddenTerminationChanged(true);
-}
-
 }  // namespace
 
 constexpr size_t BlobBytesProvider::kMaxConsolidatedItemSizeInBytes;
@@ -134,8 +113,8 @@ BlobBytesProvider::~BlobBytesProvider() {
 void BlobBytesProvider::AppendData(scoped_refptr<RawData> data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!data_.IsEmpty()) {
-    uint64_t last_offset = offsets_.IsEmpty() ? 0 : offsets_.back();
+  if (!data_.empty()) {
+    uint64_t last_offset = offsets_.empty() ? 0 : offsets_.back();
     offsets_.push_back(last_offset + data_.back()->length());
   }
   data_.push_back(std::move(data));
@@ -144,7 +123,7 @@ void BlobBytesProvider::AppendData(scoped_refptr<RawData> data) {
 void BlobBytesProvider::AppendData(base::span<const char> data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (data_.IsEmpty() ||
+  if (data_.empty() ||
       data_.back()->length() + data.size() > kMaxConsolidatedItemSizeInBytes) {
     AppendData(RawData::Create());
   }
@@ -262,6 +241,29 @@ void BlobBytesProvider::RequestAsFile(uint64_t source_offset,
     return;
   }
   std::move(callback).Run(info.last_modified);
+}
+
+// This keeps the process alive while blobs are being transferred.
+void BlobBytesProvider::IncreaseChildProcessRefCount() {
+  if (!WTF::IsMainThread()) {
+    PostCrossThreadTask(
+        *Thread::MainThread()->GetTaskRunner(MainThreadTaskRunnerRestricted()),
+        FROM_HERE,
+        CrossThreadBindOnce(&BlobBytesProvider::IncreaseChildProcessRefCount));
+    return;
+  }
+  Platform::Current()->SuddenTerminationChanged(false);
+}
+
+void BlobBytesProvider::DecreaseChildProcessRefCount() {
+  if (!WTF::IsMainThread()) {
+    PostCrossThreadTask(
+        *Thread::MainThread()->GetTaskRunner(MainThreadTaskRunnerRestricted()),
+        FROM_HERE,
+        CrossThreadBindOnce(&BlobBytesProvider::DecreaseChildProcessRefCount));
+    return;
+  }
+  Platform::Current()->SuddenTerminationChanged(true);
 }
 
 }  // namespace blink

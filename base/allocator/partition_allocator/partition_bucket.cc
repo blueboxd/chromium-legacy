@@ -45,6 +45,17 @@ namespace partition_alloc::internal {
 
 namespace {
 
+#if defined(PA_ENABLE_SHADOW_METADATA)
+PA_ALWAYS_INLINE uintptr_t ShadowMetadataStart(uintptr_t super_page,
+                                               pool_handle pool) {
+  uintptr_t shadow_metadata_start =
+      super_page + SystemPageSize() + ShadowPoolOffset(pool);
+  PA_DCHECK(!PartitionAddressSpace::IsInRegularPool(shadow_metadata_start));
+  PA_DCHECK(!PartitionAddressSpace::IsInBRPPool(shadow_metadata_start));
+  return shadow_metadata_start;
+}
+#endif
+
 template <bool thread_safe>
 [[noreturn]] PA_NOINLINE void PartitionOutOfMemoryMappingFailure(
     PartitionRoot<thread_safe>* root,
@@ -86,8 +97,8 @@ bool AreAllowedSuperPagesForBRPPool(uintptr_t start, uintptr_t end) {
 #endif  // !defined(PA_HAS_64_BITS_POINTERS) &&
         // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
-// Reserves |requested_size| worth of super pages from the specified pool of the
-// GigaCage. If BRP pool is requested this function will honor BRP block list.
+// Reserves |requested_size| worth of super pages from the specified pool.
+// If BRP pool is requested this function will honor BRP block list.
 //
 // The returned address will be aligned to kSuperPageSize, and so
 // |requested_address| should be. |requested_size| doesn't have to be, however.
@@ -103,9 +114,9 @@ bool AreAllowedSuperPagesForBRPPool(uintptr_t start, uintptr_t end) {
 //   AreAllowedSuperPagesForBRPPool.
 // - IsAllowedSuperPageForBRPPool (used by AreAllowedSuperPagesForBRPPool) is
 //   designed to not need locking.
-uintptr_t ReserveMemoryFromGigaCage(pool_handle pool,
-                                    uintptr_t requested_address,
-                                    size_t requested_size) {
+uintptr_t ReserveMemoryFromPool(pool_handle pool,
+                                uintptr_t requested_address,
+                                size_t requested_size) {
   PA_DCHECK(!(requested_address % kSuperPageSize));
 
   uintptr_t reserved_address = AddressPoolManager::GetInstance().Reserve(
@@ -115,7 +126,7 @@ uintptr_t ReserveMemoryFromGigaCage(pool_handle pool,
   // allocation honors the block list. Find a better address otherwise.
 #if !defined(PA_HAS_64_BITS_POINTERS) && \
     BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
-  if (pool == GetBRPPool()) {
+  if (pool == kBRPPoolHandle) {
     constexpr int kMaxRandomAddressTries = 10;
     for (int i = 0; i < kMaxRandomAddressTries; ++i) {
       if (!reserved_address ||
@@ -224,16 +235,16 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
   PartitionDirectMapExtent<thread_safe>* map_extent = nullptr;
   PartitionPage<thread_safe>* page = nullptr;
 
-#if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+#if defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
   const PartitionTag tag = root->GetNewPartitionTag();
-#endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+#endif  // defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
   {
     // Getting memory for direct-mapped allocations doesn't interact with the
     // rest of the allocator, but takes a long time, as it involves several
-    // system calls. With GigaCage, no mmap() (or equivalent) call is made on 64
-    // bit systems, but page permissions are changed with mprotect(), which is a
-    // syscall.
+    // system calls. Although no mmap() (or equivalent) calls are made on
+    // 64 bit systems, page permissions are changed with mprotect(), which is
+    // a syscall.
     //
     // These calls are almost always slow (at least a couple us per syscall on a
     // desktop Linux machine), and they also have a very long latency tail,
@@ -266,17 +277,15 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
     PA_DCHECK(slot_size <= available_reservation_size);
 #endif
 
-    // Allocate from GigaCage. Route to the appropriate GigaCage pool based on
-    // BackupRefPtr support.
     pool_handle pool = root->ChoosePool();
     uintptr_t reservation_start;
     {
-      // Reserving memory from the GigaCage is actually not a syscall on 64 bit
+      // Reserving memory from the pool is actually not a syscall on 64 bit
       // platforms.
 #if !defined(PA_HAS_64_BITS_POINTERS)
       ScopedSyscallTimer timer{root};
 #endif
-      reservation_start = ReserveMemoryFromGigaCage(pool, 0, reservation_size);
+      reservation_start = ReserveMemoryFromPool(pool, 0, reservation_size);
     }
     if (PA_UNLIKELY(!reservation_start)) {
       if (return_null)
@@ -294,23 +303,41 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
 
     {
       ScopedSyscallTimer timer{root};
-      RecommitSystemPages(
-          reservation_start + SystemPageSize(),
-#if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
-          // If PUT_REF_COUNT_IN_PREVIOUS_SLOT is on, and if the BRP pool is
-          // used, allocate 2 SystemPages, one for SuperPage metadata and the
-          // other for RefCount "bitmap" (only one of its elements will be
-          // used).
-          (pool == GetBRPPool()) ? SystemPageSize() * 2 : SystemPageSize(),
+      RecommitSystemPages(reservation_start + SystemPageSize(),
+                          SystemPageSize(),
+#if defined(PA_ENABLE_SHADOW_METADATA)
+                          PageAccessibilityConfiguration::kRead,
 #else
-          SystemPageSize(),
+                          PageAccessibilityConfiguration::kReadWrite,
 #endif
-          PageAccessibilityConfiguration::kReadWrite,
-          PageAccessibilityDisposition::kRequireUpdate);
+                          PageAccessibilityDisposition::kRequireUpdate);
     }
 
+#if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
+    // If PUT_REF_COUNT_IN_PREVIOUS_SLOT is on, and if the BRP pool is
+    // used, allocate a SystemPage for RefCount "bitmap" (only one of its
+    // elements will be used).
+    if (pool == kBRPPoolHandle) {
+      ScopedSyscallTimer timer{root};
+      RecommitSystemPages(reservation_start + SystemPageSize() * 2,
+                          SystemPageSize(),
+                          PageAccessibilityConfiguration::kReadWrite,
+                          PageAccessibilityDisposition::kRequireUpdate);
+    }
+#endif
+
+#if defined(PA_ENABLE_SHADOW_METADATA)
+    {
+      ScopedSyscallTimer timer{root};
+      RecommitSystemPages(ShadowMetadataStart(reservation_start, pool),
+                          SystemPageSize(),
+                          PageAccessibilityConfiguration::kReadWrite,
+                          PageAccessibilityDisposition::kRequireUpdate);
+    }
+#endif
+
     // No need to hold root->lock_. Now that memory is reserved, no other
-    // overlapping region can be allocated (because of how GigaCage works),
+    // overlapping region can be allocated (because of how pools work),
     // so no other thread can update the same offset table entries at the
     // same time. Furthermore, nobody will be ready these offsets until this
     // function returns.
@@ -382,7 +409,7 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
         SlotSpanMetadata<thread_safe>(&metadata->bucket);
 
     // It is typically possible to map a large range of inaccessible pages, and
-    // this is leveraged in multiple places, including the GigaCage. However,
+    // this is leveraged in multiple places, including the pools. However,
     // this doesn't mean that we can commit all this memory.  For the vast
     // majority of allocations, this just means that we crash in a slightly
     // different place, but for callers ready to handle failures, we have to
@@ -422,9 +449,9 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
     map_extent->padding_for_alignment = padding_for_alignment;
     map_extent->bucket = &metadata->bucket;
 
-#if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+#if defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
     DirectMapPartitionTagSetValue(slot_start, tag);
-#endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+#endif  // defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
   }
 
   root->lock_.AssertAcquired();
@@ -574,7 +601,7 @@ void PartitionBucket<thread_safe>::Init(uint32_t new_slot_size) {
   slot_size = new_slot_size;
   slot_size_reciprocal = kReciprocalMask / new_slot_size + 1;
   active_slot_spans_head =
-      SlotSpanMetadata<thread_safe>::get_sentinel_slot_span();
+      SlotSpanMetadata<thread_safe>::get_sentinel_slot_span_non_const();
   empty_slot_spans_head = nullptr;
   decommitted_slot_spans_head = nullptr;
   num_full_slot_spans = 0;
@@ -702,10 +729,8 @@ uintptr_t PartitionBucket<thread_safe>::AllocNewSuperPageSpan(
   // page table bloat and not fragmenting address spaces in 32 bit
   // architectures.
   uintptr_t requested_address = root->next_super_page;
-  // Allocate from GigaCage. Route to the appropriate GigaCage pool based on
-  // BackupRefPtr support.
   pool_handle pool = root->ChoosePool();
-  uintptr_t super_page_span_start = ReserveMemoryFromGigaCage(
+  uintptr_t super_page_span_start = ReserveMemoryFromPool(
       pool, requested_address, super_page_count * kSuperPageSize);
   if (PA_UNLIKELY(!super_page_span_start)) {
     if (flags & AllocFlags::kReturnNull)
@@ -780,20 +805,35 @@ PA_ALWAYS_INLINE uintptr_t PartitionBucket<thread_safe>::InitializeSuperPage(
   // also a tiny amount of extent metadata.
   {
     ScopedSyscallTimer timer{root};
-    RecommitSystemPages(super_page + SystemPageSize(),
-#if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
-                        // If PUT_REF_COUNT_IN_PREVIOUS_SLOT is on, and if the
-                        // BRP pool is used, allocate 2 SystemPages, one for
-                        // SuperPage metadata and the other for RefCount bitmap.
-                        (root->ChoosePool() == GetBRPPool())
-                            ? SystemPageSize() * 2
-                            : SystemPageSize(),
+    RecommitSystemPages(super_page + SystemPageSize(), SystemPageSize(),
+#if defined(PA_ENABLE_SHADOW_METADATA)
+                        PageAccessibilityConfiguration::kRead,
 #else
-                        SystemPageSize(),
+                        PageAccessibilityConfiguration::kReadWrite,
 #endif
+                        PageAccessibilityDisposition::kRequireUpdate);
+  }
+
+#if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
+  // If PUT_REF_COUNT_IN_PREVIOUS_SLOT is on, and if the BRP pool is
+  // used, allocate a SystemPage for RefCount bitmap.
+  if (root->ChoosePool() == kBRPPoolHandle) {
+    ScopedSyscallTimer timer{root};
+    RecommitSystemPages(super_page + SystemPageSize() * 2, SystemPageSize(),
                         PageAccessibilityConfiguration::kReadWrite,
                         PageAccessibilityDisposition::kRequireUpdate);
   }
+#endif
+
+#if defined(PA_ENABLE_SHADOW_METADATA)
+  {
+    ScopedSyscallTimer timer{root};
+    RecommitSystemPages(ShadowMetadataStart(super_page, root->ChoosePool()),
+                        SystemPageSize(),
+                        PageAccessibilityConfiguration::kReadWrite,
+                        PageAccessibilityDisposition::kRequireUpdate);
+  }
+#endif
 
   // If we were after a specific address, but didn't get it, assume that
   // the system chose a lousy address. Here most OS'es have a default
@@ -962,10 +1002,10 @@ PartitionBucket<thread_safe>::ProvisionMoreSlotsAndAllocOne(
     // Ensure the MTE-tag of the memory pointed by |return_slot| is unguessable.
     TagMemoryRangeRandomly(return_slot, slot_size);
   }
-#if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+#if defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
   NormalBucketPartitionTagSetValue(return_slot, slot_size,
                                    root->GetNewPartitionTag());
-#endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+#endif  // defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
   // Add all slots that fit within so far committed pages to the free list.
   PartitionFreelistEntry* prev_entry = nullptr;
@@ -982,10 +1022,10 @@ PartitionBucket<thread_safe>::ProvisionMoreSlotsAndAllocOne(
       // No MTE-tagging for larger slots, just cast.
       next_slot_ptr = reinterpret_cast<void*>(next_slot);
     }
-#if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+#if defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
     NormalBucketPartitionTagSetValue(next_slot, slot_size,
                                      root->GetNewPartitionTag());
-#endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+#endif  // defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
     auto* entry = PartitionFreelistEntry::EmplaceAndInitNull(next_slot_ptr);
     if (!slot_span->get_freelist_head()) {
       PA_DCHECK(!prev_entry);
@@ -1104,8 +1144,7 @@ bool PartitionBucket<thread_safe>::SetNewActiveSlotSpan() {
       ++num_full_slot_spans;
       // Overflow. Most likely a correctness issue in the code.  It is in theory
       // possible that the number of full slot spans really reaches (1 << 24),
-      // but this is very unlikely (and not possible with most GigaCage
-      // settings).
+      // but this is very unlikely (and not possible with most pool settings).
       PA_CHECK(num_full_slot_spans);
       // Not necessary but might help stop accidents.
       slot_span->next_slot_span = nullptr;
@@ -1131,7 +1170,7 @@ bool PartitionBucket<thread_safe>::SetNewActiveSlotSpan() {
   } else {
     // Active list is now empty.
     active_slot_spans_head =
-        SlotSpanMetadata<thread_safe>::get_sentinel_slot_span();
+        SlotSpanMetadata<thread_safe>::get_sentinel_slot_span_non_const();
   }
 
   return usable_active_list_head;
@@ -1179,7 +1218,7 @@ void PartitionBucket<thread_safe>::MaintainActiveList() {
 
   if (!new_active_slot_spans_head) {
     new_active_slot_spans_head =
-        SlotSpanMetadata<thread_safe>::get_sentinel_slot_span();
+        SlotSpanMetadata<thread_safe>::get_sentinel_slot_span_non_const();
   }
   active_slot_spans_head = new_active_slot_spans_head;
 }
@@ -1278,7 +1317,13 @@ void PartitionBucket<thread_safe>::SortActiveSlotSpans() {
 
   // Reverse order, since we insert at the head of the list.
   for (int i = index - 1; i >= 0; i--) {
-    active_spans_array[i]->next_slot_span = active_slot_spans_head;
+    if (active_spans_array[i] ==
+        SlotSpanMetadata<thread_safe>::get_sentinel_slot_span()) {
+      // The sentinel is const, don't try to write to it.
+      PA_DCHECK(active_slot_spans_head == nullptr);
+    } else {
+      active_spans_array[i]->next_slot_span = active_slot_spans_head;
+    }
     active_slot_spans_head = active_spans_array[i];
   }
 }

@@ -1,4 +1,4 @@
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,9 +9,9 @@ import unittest
 
 from blinkpy.common import path_finder
 from blinkpy.common.host_mock import MockHost
+from blinkpy.common.system.filesystem_mock import MockFileSystem
 from blinkpy.web_tests.controllers import web_test_finder
 from blinkpy.web_tests.models import test_expectations
-from blinkpy.web_tests.port.test import add_manifest_to_mock_filesystem
 
 import mock
 
@@ -99,47 +99,6 @@ class WebTestFinderTests(unittest.TestCase):
         finder._options.no_expectations = True
         tests = finder.skip_tests([], all_tests, None)
         self.assertEqual(tests, set())
-
-    def test_skip_print_reftests(self):
-        """Tests that print reftests are skipped, see https://crbug.com/1090628."""
-        host = MockHost()
-        port = host.port_factory.get('test-win-win7', None)
-        add_manifest_to_mock_filesystem(port)
-
-        non_print_reftest = 'external/wpt/dir1/dir2/foo.html'
-        print_reftest_1 = 'external/wpt/foo/bar/test-print.html'
-        print_reftest_2 = 'external/wpt/foo/print/test.html'
-        all_tests = [non_print_reftest, print_reftest_1, print_reftest_2]
-
-        port.tests = lambda paths: paths or all_tests
-        options = optparse.Values({
-            'no_expectations': False,
-            'enable_sanitizer': False,
-            'skipped': 'default',
-            'skip_timeouts': False,
-            'skip_failing_tests': False,
-        })
-        finder = web_test_finder.WebTestFinder(port, options)
-
-        # Default case; print reftests should be skipped
-        expectations = test_expectations.TestExpectations(port)
-        tests = finder.skip_tests([], all_tests, expectations)
-        self.assertEqual(tests, set([print_reftest_1, print_reftest_2]))
-        self.assertTrue(
-            expectations.get_expectations(non_print_reftest).is_default_pass)
-        for test in [print_reftest_1, print_reftest_2]:
-            self.assertEquals(
-                expectations.get_expectations(test).results, {'SKIP'})
-
-        # If a print reftest is added explicitly, it should not be skipped
-        expectations = test_expectations.TestExpectations(port)
-        tests = finder.skip_tests([print_reftest_1], all_tests, expectations)
-        self.assertEqual(tests, set([print_reftest_2]))
-        self.assertTrue(
-            expectations.get_expectations(non_print_reftest).is_default_pass)
-        for test in [print_reftest_1, print_reftest_2]:
-            self.assertEquals(
-                expectations.get_expectations(test).results, {'SKIP'})
 
     def test_skip_tests_idlharness(self):
         """Tests that idlharness tests are skipped on MSAN/ASAN runs.
@@ -329,6 +288,28 @@ class WebTestFinderTests(unittest.TestCase):
         self.assertEqual(['5', '6'], split(tests, 1, 3))
         self.assertEqual(['3'], split(tests, 2, 3))
 
+    def test_test_list_find_tests(self):
+        host = MockHost()
+        port = host.port_factory.get('test-win-win7', None)
+        mock_files = {'test-list.txt': \
+            'path/test.html\n'\
+            'virtual/path/test.html'}
+        host.filesystem = MockFileSystem(files=mock_files)
+
+        port_tests = [
+            'path/test.html',
+            'not/in/test/list.html',
+        ]
+
+        port.tests = lambda paths: paths or port_tests
+
+        finder = web_test_finder.WebTestFinder(port, {})
+
+        tests = finder.find_tests(args=[], test_lists=['test-list.txt'])
+        self.assertEqual(
+            set(tests[1]),
+            set(['path/test.html','virtual/path/test.html',]))
+
 
 class FilterTestsTests(unittest.TestCase):
     simple_test_list = ['a/a1.html', 'a/a2.html', 'b/b1.html']
@@ -348,12 +329,22 @@ class FilterTestsTests(unittest.TestCase):
 
     def test_one_all_positive_filter(self):
         self.check(self.simple_test_list, [['a*']], ['a/a1.html', 'a/a2.html'])
+        self.check(self.simple_test_list, [['+a*']],
+                   ['a/a1.html', 'a/a2.html'])
 
         self.check(self.simple_test_list, [['a*', 'b*']],
                    self.simple_test_list)
 
+    def test_one_exact_positive_filter(self):
+        self.check(self.simple_test_list, [['a/a1.html']], ['a/a1.html'])
+        self.check(self.simple_test_list, [['+a/a1.html']], ['a/a1.html'])
+
     def test_one_all_negative_filter(self):
         self.check(self.simple_test_list, [['-c*']], self.simple_test_list)
+
+    def test_one_exact_negative_filter(self):
+        self.check(self.simple_test_list, [['-a/a1.html']],
+                   ['a/a2.html', 'b/b1.html'])
 
     def test_one_mixed_filter(self):
         self.check(self.simple_test_list, [['a*', '-c*']],
@@ -385,9 +376,8 @@ class FilterTestsTests(unittest.TestCase):
         # would be run by every filter individually).
         self.check(self.simple_test_list, [['-a/a*'], ['a/a2*']], [])
 
-    def test_only_trailing_globs_work(self):
+    def test_only_trailing_unescaped_globs_work(self):
         self.check(self.simple_test_list, [['a*']], ['a/a1.html', 'a/a2.html'])
-
         # These test that if you have a glob that contains a "*" that isn't
         # at the end, it is rejected; only globs at the end should work.
         self.assertRaises(ValueError, self.check, self.simple_test_list,
@@ -395,18 +385,6 @@ class FilterTestsTests(unittest.TestCase):
         self.assertRaises(ValueError, self.check, self.simple_test_list,
                           [['a*.html']], [])
 
-
-class NegativeFilterTestsNoGlobTests(unittest.TestCase):
-    simple_test_list = ['a/a1.html', 'a/a2.html', 'b/b1.html']
-
-    def check(self, tests, filters, expected_tests):
-        self.assertEqual(
-            expected_tests,
-            web_test_finder.filter_out_exact_negative_matches(tests, filters))
-
-    def test_no_filters(self):
-        self.check(self.simple_test_list, [], self.simple_test_list)
-
-    def test_one_all_negative_filter(self):
-        self.check(self.simple_test_list, ['-' + self.simple_test_list[0]],
-                   self.simple_test_list[1:])
+    def test_escaped_globs_allowed(self):
+        self.check(self.simple_test_list + ['a\\*1'], [['-a\\*1']],
+                   self.simple_test_list)

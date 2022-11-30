@@ -25,6 +25,10 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence.h"
 
+#if BUILDFLAG(IS_WIN)
+#include "ui/gl/dcomp_surface_proxy.h"
+#endif
+
 #if BUILDFLAG(IS_ANDROID)
 extern "C" typedef struct AHardwareBuffer AHardwareBuffer;
 #endif
@@ -77,7 +81,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentation {
                             MemoryTypeTracker* tracker);
   virtual ~SharedImageRepresentation();
 
-  viz::ResourceFormat format() const { return backing_->format(); }
+  viz::SharedImageFormat format() const { return backing_->format(); }
   const gfx::Size& size() const { return backing_->size(); }
   const gfx::ColorSpace& color_space() const { return backing_->color_space(); }
   GrSurfaceOrigin surface_origin() const { return backing_->surface_origin(); }
@@ -188,7 +192,11 @@ class GPU_GLES2_EXPORT GLTextureImageRepresentationBase
       GLenum mode,
       AllowUnclearedAccess allow_uncleared);
 
-  virtual gpu::TextureBase* GetTextureBase() = 0;
+  // Gets the texture associated with the `plane_index` for SharedImageFormat.
+  virtual gpu::TextureBase* GetTextureBase(int plane_index) = 0;
+  // Calls GetTextureBase with `plane_index` = 0 for single planar formats eg.
+  // RGB.
+  gpu::TextureBase* GetTextureBase();
 
  protected:
   friend class SkiaGLImageRepresentation;
@@ -217,9 +225,12 @@ class GPU_GLES2_EXPORT GLTextureImageRepresentation
       : GLTextureImageRepresentationBase(manager, backing, tracker) {}
 
   // TODO(ericrk): Move this to the ScopedAccess object. crbug.com/1003686
-  virtual gles2::Texture* GetTexture() = 0;
+  // Gets the texture associated with the `plane_index` for SharedImageFormat.
+  virtual gles2::Texture* GetTexture(int plane_index) = 0;
+  // Calls GetTexture with `plane_index` = 0 for single planar formats eg. RGB.
+  gles2::Texture* GetTexture();
 
-  gpu::TextureBase* GetTextureBase() override;
+  gpu::TextureBase* GetTextureBase(int plane_index) override;
 
  protected:
   friend class WrappedGLTextureCompoundImageRepresentation;
@@ -237,10 +248,15 @@ class GPU_GLES2_EXPORT GLTexturePassthroughImageRepresentation
       : GLTextureImageRepresentationBase(manager, backing, tracker) {}
 
   // TODO(ericrk): Move this to the ScopedAccess object. crbug.com/1003686
-  virtual const scoped_refptr<gles2::TexturePassthrough>&
-  GetTexturePassthrough() = 0;
+  // Gets the passthrough texture associated with the `plane_index` for
+  // SharedImageFormat.
+  virtual const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough(
+      int plane_index) = 0;
+  // Calls GetTexturePassthrough with `plane_index` = 0 for single planar
+  // formats eg. RGB.
+  const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough();
 
-  gpu::TextureBase* GetTextureBase() override;
+  gpu::TextureBase* GetTextureBase(int plane_index) override;
 
  private:
   friend class WrappedGLTexturePassthroughCompoundImageRepresentation;
@@ -439,6 +455,10 @@ class GPU_GLES2_EXPORT OverlayImageRepresentation
     scoped_refptr<gfx::NativePixmap> GetNativePixmap() {
       return representation()->GetNativePixmap();
     }
+#elif BUILDFLAG(IS_WIN)
+    scoped_refptr<gl::DCOMPSurfaceProxy> GetDCOMPSurfaceProxy() {
+      return representation()->GetDCOMPSurfaceProxy();
+    }
 #endif
 
     gfx::GpuFenceHandle TakeAcquireFence() { return std::move(acquire_fence_); }
@@ -478,6 +498,8 @@ class GPU_GLES2_EXPORT OverlayImageRepresentation
   virtual AHardwareBuffer* GetAHardwareBuffer();
 #elif defined(USE_OZONE)
   scoped_refptr<gfx::NativePixmap> GetNativePixmap();
+#elif BUILDFLAG(IS_WIN)
+  virtual scoped_refptr<gl::DCOMPSurfaceProxy> GetDCOMPSurfaceProxy();
 #endif
 
   // TODO(penghuang): Refactor it to not depend on GL.

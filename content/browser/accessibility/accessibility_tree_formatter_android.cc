@@ -96,10 +96,10 @@ AccessibilityTreeFormatterAndroid::AccessibilityTreeFormatterAndroid() {}
 
 AccessibilityTreeFormatterAndroid::~AccessibilityTreeFormatterAndroid() {}
 
-base::Value AccessibilityTreeFormatterAndroid::BuildTree(
+base::Value::Dict AccessibilityTreeFormatterAndroid::BuildTree(
     ui::AXPlatformNodeDelegate* root) const {
   if (!root) {
-    return base::Value(base::Value::Type::DICTIONARY);
+    return base::Value::Dict();
   }
 
   BrowserAccessibility* root_internal =
@@ -108,21 +108,21 @@ base::Value AccessibilityTreeFormatterAndroid::BuildTree(
   // XXX: Android formatter should walk native Android tree (not internal one).
   base::Value::Dict dict;
   RecursiveBuildTree(*root_internal, &dict);
-  return base::Value(std::move(dict));
+  return dict;
 }
 
-base::Value AccessibilityTreeFormatterAndroid::BuildTreeForSelector(
+base::Value::Dict AccessibilityTreeFormatterAndroid::BuildTreeForSelector(
     const AXTreeSelector& selector) const {
   NOTREACHED();
-  return base::Value(base::Value::Type::DICTIONARY);
+  return base::Value::Dict();
 }
 
-base::Value AccessibilityTreeFormatterAndroid::BuildNode(
+base::Value::Dict AccessibilityTreeFormatterAndroid::BuildNode(
     ui::AXPlatformNodeDelegate* node) const {
   CHECK(node);
   base::Value::Dict dict;
   AddProperties(*BrowserAccessibility::FromAXPlatformNodeDelegate(node), &dict);
-  return base::Value(std::move(dict));
+  return dict;
 }
 
 void AccessibilityTreeFormatterAndroid::AddDefaultFilters(
@@ -232,57 +232,52 @@ void AccessibilityTreeFormatterAndroid::AddProperties(
 }
 
 std::string AccessibilityTreeFormatterAndroid::ProcessTreeForOutput(
-    const base::DictionaryValue& dict) const {
-  std::string error_value;
-  if (dict.GetString("error", &error_value))
-    return error_value;
+    const base::Value::Dict& dict) const {
+  const std::string* error_value = dict.FindString("error");
+  if (error_value)
+    return *error_value;
 
   std::string line;
   if (show_ids()) {
-    int id_value = dict.FindIntKey("id").value_or(0);
+    int id_value = dict.FindInt("id").value_or(0);
     WriteAttribute(true, base::NumberToString(id_value), &line);
   }
 
-  std::string class_value;
-  dict.GetString("class", &class_value);
-  WriteAttribute(true, class_value, &line);
+  const std::string* class_value = dict.FindString("class");
+  if (class_value) {
+    WriteAttribute(true, *class_value, &line);
+  }
 
-  std::string role_description;
-  dict.GetString("role_description", &role_description);
-  if (!role_description.empty()) {
+  const std::string* role_description = dict.FindString("role_description");
+  if (role_description && !role_description->empty()) {
     WriteAttribute(
-        true, StringPrintf("role_description='%s'", role_description.c_str()),
+        true, StringPrintf("role_description='%s'", role_description->c_str()),
         &line);
   }
 
-  for (unsigned i = 0; i < std::size(BOOL_ATTRIBUTES); i++) {
-    const char* attribute_name = BOOL_ATTRIBUTES[i];
-    absl::optional<bool> value = dict.FindBoolPath(attribute_name);
+  for (const char* attribute_name : BOOL_ATTRIBUTES) {
+    absl::optional<bool> value = dict.FindBool(attribute_name);
     if (value && *value)
       WriteAttribute(true, attribute_name, &line);
   }
 
-  for (unsigned i = 0; i < std::size(STRING_ATTRIBUTES); i++) {
-    const char* attribute_name = STRING_ATTRIBUTES[i];
-    std::string value;
-    if (!dict.GetString(attribute_name, &value) || value.empty())
+  for (const char* attribute_name : STRING_ATTRIBUTES) {
+    const std::string* value = dict.FindString(attribute_name);
+    if (!value || value->empty())
       continue;
-    WriteAttribute(true, StringPrintf("%s='%s'", attribute_name, value.c_str()),
-                   &line);
+    WriteAttribute(
+        true, StringPrintf("%s='%s'", attribute_name, value->c_str()), &line);
   }
 
-  for (unsigned i = 0; i < std::size(INT_ATTRIBUTES); i++) {
-    const char* attribute_name = INT_ATTRIBUTES[i];
-    int value = dict.FindIntKey(attribute_name).value_or(0);
+  for (const char* attribute_name : INT_ATTRIBUTES) {
+    int value = dict.FindInt(attribute_name).value_or(0);
     if (value == 0)
       continue;
     WriteAttribute(true, StringPrintf("%s=%d", attribute_name, value), &line);
   }
 
-  for (unsigned i = 0; i < std::size(ACTION_ATTRIBUTES); i++) {
-    const char* attribute_name = ACTION_ATTRIBUTES[i];
-    absl::optional<bool> value = dict.FindBoolPath(attribute_name);
-    if (value && *value) {
+  for (const char* attribute_name : ACTION_ATTRIBUTES) {
+    if (dict.FindBool(attribute_name).value_or(false)) {
       WriteAttribute(false /* Exclude actions by default */, attribute_name,
                      &line);
     }

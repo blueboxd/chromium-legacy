@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,10 +29,10 @@
 
 namespace blink {
 
+class CachedMetadataHandler;
 class FetchContext;
 class FetchParameters;
 class ResourceLoadInfoNotifierWrapper;
-class SingleCachedMetadataHandler;
 class WorkerMainScriptLoaderClient;
 struct ResourceLoaderOptions;
 
@@ -79,7 +79,7 @@ class PLATFORM_EXPORT WorkerMainScriptLoader final
   // Gets the raw data of the main script.
   SharedBuffer* Data() const { return data_.get(); }
   WTF::TextEncoding GetScriptEncoding() { return script_encoding_; }
-  SingleCachedMetadataHandler* CreateCachedMetadataHandler();
+  CachedMetadataHandler* CreateCachedMetadataHandler();
 
   virtual void Trace(Visitor*) const;
 

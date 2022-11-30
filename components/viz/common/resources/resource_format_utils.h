@@ -7,6 +7,7 @@
 
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
+#include "components/viz/common/resources/shared_image_format.h"
 #include "components/viz/common/viz_resource_format_export.h"
 #include "gpu/vulkan/buildflags.h"
 #include "skia/buildflags.h"
@@ -24,12 +25,11 @@ namespace viz {
 
 VIZ_RESOURCE_FORMAT_EXPORT SkColorType
 ResourceFormatToClosestSkColorType(bool gpu_compositing, ResourceFormat format);
+
 VIZ_RESOURCE_FORMAT_EXPORT int BitsPerPixel(ResourceFormat format);
 VIZ_RESOURCE_FORMAT_EXPORT bool HasAlpha(ResourceFormat format);
 VIZ_RESOURCE_FORMAT_EXPORT ResourceFormat
 SkColorTypeToResourceFormat(SkColorType color_type);
-
-VIZ_RESOURCE_FORMAT_EXPORT const char* ResourceFormatToString(ResourceFormat);
 
 // The following functions use unsigned int instead of GLenum, since including
 // third_party/khronos/GLES2/gl2.h causes redefinition errors as
@@ -81,6 +81,53 @@ ToWGPUFormat(ResourceFormat format);
 
 #if BUILDFLAG(IS_APPLE)
 VIZ_RESOURCE_FORMAT_EXPORT unsigned int ToMTLPixelFormat(ResourceFormat format);
+#endif
+
+// Overload all above functions with SharedImageFormat in place of
+// ResourceFormat.
+// WARNING: The `format` must be single planar.
+// TODO(hitawala): Add multiplanar format support. Also, move util functions
+// that are not needed by clients to SharedImageFormat.
+
+VIZ_RESOURCE_FORMAT_EXPORT SkColorType
+ResourceFormatToClosestSkColorType(bool gpu_compositing,
+                                   SharedImageFormat format);
+
+VIZ_RESOURCE_FORMAT_EXPORT int BitsPerPixel(SharedImageFormat format);
+VIZ_RESOURCE_FORMAT_EXPORT bool HasAlpha(SharedImageFormat format);
+
+VIZ_RESOURCE_FORMAT_EXPORT unsigned int GLDataType(SharedImageFormat format);
+VIZ_RESOURCE_FORMAT_EXPORT unsigned int GLDataFormat(SharedImageFormat format);
+VIZ_RESOURCE_FORMAT_EXPORT unsigned int GLInternalFormat(
+    SharedImageFormat format);
+
+VIZ_RESOURCE_FORMAT_EXPORT gfx::BufferFormat BufferFormat(
+    SharedImageFormat format);
+VIZ_RESOURCE_FORMAT_EXPORT bool IsResourceFormatCompressed(
+    SharedImageFormat format);
+
+VIZ_RESOURCE_FORMAT_EXPORT unsigned int TextureStorageFormat(
+    SharedImageFormat format,
+    bool use_angle_rgbx_format);
+
+VIZ_RESOURCE_FORMAT_EXPORT bool IsGpuMemoryBufferFormatSupported(
+    SharedImageFormat format);
+
+VIZ_RESOURCE_FORMAT_EXPORT bool GLSupportsFormat(SharedImageFormat format);
+
+#if BUILDFLAG(ENABLE_VULKAN)
+VIZ_RESOURCE_FORMAT_EXPORT bool HasVkFormat(SharedImageFormat format);
+VIZ_RESOURCE_FORMAT_EXPORT VkFormat ToVkFormat(SharedImageFormat format);
+#endif
+
+VIZ_RESOURCE_FORMAT_EXPORT wgpu::TextureFormat ToDawnFormat(
+    SharedImageFormat format);
+VIZ_RESOURCE_FORMAT_EXPORT WGPUTextureFormat
+ToWGPUFormat(SharedImageFormat format);
+
+#if BUILDFLAG(IS_APPLE)
+VIZ_RESOURCE_FORMAT_EXPORT unsigned int ToMTLPixelFormat(
+    SharedImageFormat format);
 #endif
 
 }  // namespace viz

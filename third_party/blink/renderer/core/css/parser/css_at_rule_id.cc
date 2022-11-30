@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,8 +66,6 @@ CSSAtRuleID CssAtRuleID(StringView name) {
       return CSSAtRuleID::kCSSAtRuleTry;
     return CSSAtRuleID::kCSSAtRuleInvalid;
   }
-  if (EqualIgnoringASCIICase(name, "viewport"))
-    return CSSAtRuleID::kCSSAtRuleViewport;
   if (EqualIgnoringASCIICase(name, "-webkit-keyframes"))
     return CSSAtRuleID::kCSSAtRuleWebkitKeyframes;
   return CSSAtRuleID::kCSSAtRuleInvalid;
@@ -107,8 +105,6 @@ absl::optional<WebFeature> AtRuleFeature(CSSAtRuleID rule_id) {
       return WebFeature::kCSSAtRuleScrollTimeline;
     case CSSAtRuleID::kCSSAtRuleSupports:
       return WebFeature::kCSSAtRuleSupports;
-    case CSSAtRuleID::kCSSAtRuleViewport:
-      return WebFeature::kCSSAtRuleViewport;
     case CSSAtRuleID::kCSSAtRulePositionFallback:
     case CSSAtRuleID::kCSSAtRuleTry:
       // TODO(crbug.com/1309178): Add use counter.

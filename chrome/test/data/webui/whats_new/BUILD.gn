@@ -20,13 +20,22 @@ ts_library("build_ts") {
                     target_gen_dir),
   ]
   in_files = [ "whats_new_app_test.ts" ]
-  deps = [ "//chrome/browser/resources/whats_new:build_ts" ]
-  extra_deps = [ "..:generate_definitions" ]
+  deps = [
+    "..:build_ts",
+    "//chrome/browser/resources/whats_new:build_ts",
+  ]
 }
 
 generate_grd("build_grdp") {
   grd_prefix = "webui_whats_new"
   out_grd = "$target_gen_dir/resources.grdp"
+
+  input_files_base_dir = rebase_path(".", "//")
+  input_files = [
+    "test.html",
+    "test_with_command_3.html",
+    "test_with_command_3.js",
+  ]
 
   deps = [ ":build_ts" ]
   manifest_files =

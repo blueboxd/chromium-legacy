@@ -14,8 +14,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "content/browser/accessibility/browser_accessibility_auralinux.h"
-#include "content/public/browser/ax_inspect_factory.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 #include "ui/accessibility/platform/inspect/ax_call_statement_invoker_auralinux.h"
 #include "ui/accessibility/platform/inspect/ax_inspect_scenario.h"
@@ -54,16 +52,16 @@ AccessibilityTreeFormatterAuraLinux::AccessibilityTreeFormatterAuraLinux() = def
 
 AccessibilityTreeFormatterAuraLinux::~AccessibilityTreeFormatterAuraLinux() {}
 
-base::Value AccessibilityTreeFormatterAuraLinux::BuildTreeForSelector(
+base::Value::Dict AccessibilityTreeFormatterAuraLinux::BuildTreeForSelector(
     const AXTreeSelector& selector) const {
   AtspiAccessible* node = FindAccessible(selector);
   if (!node) {
-    return base::Value(base::Value::Type::DICTIONARY);
+    return base::Value::Dict();
   }
 
   base::Value::Dict dict;
   RecursiveBuildTree(node, &dict);
-  return base::Value(std::move(dict));
+  return dict;
 }
 
 std::string AccessibilityTreeFormatterAuraLinux::EvaluateScript(
@@ -112,32 +110,24 @@ std::string AccessibilityTreeFormatterAuraLinux::EvaluateScript(
 AtkObject* GetAtkObject(ui::AXPlatformNodeDelegate* node) {
   DCHECK(node);
 
-  BrowserAccessibility* node_internal =
-      BrowserAccessibility::FromAXPlatformNodeDelegate(node);
-  DCHECK(node_internal);
-
-  BrowserAccessibilityAuraLinux* platform_node =
-      ToBrowserAccessibilityAuraLinux(node_internal);
-  DCHECK(platform_node);
-
-  AtkObject* atk_node = platform_node->GetNativeViewAccessible();
+  AtkObject* atk_node = node->GetNativeViewAccessible();
   DCHECK(atk_node);
 
   return atk_node;
 }
 
-base::Value AccessibilityTreeFormatterAuraLinux::BuildTree(
+base::Value::Dict AccessibilityTreeFormatterAuraLinux::BuildTree(
     ui::AXPlatformNodeDelegate* root) const {
   base::Value::Dict dict;
   RecursiveBuildTree(GetAtkObject(root), &dict);
-  return base::Value(std::move(dict));
+  return dict;
 }
 
-base::Value AccessibilityTreeFormatterAuraLinux::BuildNode(
+base::Value::Dict AccessibilityTreeFormatterAuraLinux::BuildNode(
     ui::AXPlatformNodeDelegate* node) const {
   base::Value::Dict dict;
   AddProperties(GetAtkObject(node), &dict);
-  return base::Value(std::move(dict));
+  return dict;
 }
 
 void AccessibilityTreeFormatterAuraLinux::RecursiveBuildTree(
@@ -147,8 +137,7 @@ void AccessibilityTreeFormatterAuraLinux::RecursiveBuildTree(
       ui::AXPlatformNodeAuraLinux::FromAtkObject(atk_node);
   DCHECK(platform_node);
 
-  BrowserAccessibility* node = BrowserAccessibility::FromAXPlatformNodeDelegate(
-      platform_node->GetDelegate());
+  ui::AXPlatformNodeDelegate* node = platform_node->GetDelegate();
   DCHECK(node);
 
   if (!ShouldDumpNode(*node))
@@ -495,8 +484,7 @@ void AccessibilityTreeFormatterAuraLinux::AddProperties(
       ui::AXPlatformNodeAuraLinux::FromAtkObject(atk_object);
   DCHECK(platform_node);
 
-  BrowserAccessibility* node = BrowserAccessibility::FromAXPlatformNodeDelegate(
-      platform_node->GetDelegate());
+  ui::AXPlatformNodeDelegate* node = platform_node->GetDelegate();
   DCHECK(node);
 
   dict->Set("id", node->GetId());
@@ -654,42 +642,45 @@ const char* const ATK_OBJECT_ATTRIBUTES[] = {
 };
 
 std::string AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
-    const base::DictionaryValue& node) const {
-  std::string error_value;
-  if (node.GetString("error", &error_value))
-    return error_value;
+    const base::Value::Dict& node) const {
+  const std::string* error_value = node.FindString("error");
+  if (error_value)
+    return *error_value;
 
   std::string line;
-  std::string role_value;
-  node.GetString("role", &role_value);
-  if (!role_value.empty()) {
-    WriteAttribute(true, base::StringPrintf("[%s]", role_value.c_str()), &line);
+  const std::string* role_value = node.FindString("role");
+  if (role_value && !role_value->empty()) {
+    WriteAttribute(true, base::StringPrintf("[%s]", role_value->c_str()),
+                   &line);
   }
 
-  std::string name_value;
-  if (node.GetString("name", &name_value))
-    WriteAttribute(true, base::StringPrintf("name='%s'", name_value.c_str()),
+  const std::string* name_value = node.FindString("name");
+  if (name_value) {
+    WriteAttribute(true, base::StringPrintf("name='%s'", name_value->c_str()),
                    &line);
+  }
 
-  std::string description_value;
-  node.GetString("description", &description_value);
-  WriteAttribute(
-      false, base::StringPrintf("description='%s'", description_value.c_str()),
-      &line);
+  const std::string* description_value = node.FindString("description");
+  if (description_value) {
+    WriteAttribute(
+        false,
+        base::StringPrintf("description='%s'", description_value->c_str()),
+        &line);
+  }
 
-  const base::ListValue* states_value;
-  if (node.GetList("states", &states_value)) {
-    for (const auto& entry : states_value->GetList()) {
+  const base::Value::List* states_value = node.FindList("states");
+  if (states_value) {
+    for (const auto& entry : *states_value) {
       const std::string* state_value = entry.GetIfString();
       if (state_value)
         WriteAttribute(false, *state_value, &line);
     }
   }
 
-  const base::ListValue* action_names_list;
-  std::vector<std::string> action_names;
-  if (node.GetList("actions", &action_names_list)) {
-    for (const auto& entry : action_names_list->GetList()) {
+  const base::Value::List* action_names_list = node.FindList("actions");
+  if (action_names_list) {
+    std::vector<std::string> action_names;
+    for (const auto& entry : *action_names_list) {
       const std::string* action_name = entry.GetIfString();
       if (action_name)
         action_names.push_back(*action_name);
@@ -702,9 +693,9 @@ std::string AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
     }
   }
 
-  const base::ListValue* relations_value;
-  if (node.GetList("relations", &relations_value)) {
-    for (const auto& entry : relations_value->GetList()) {
+  const base::Value::List* relations_value = node.FindList("relations");
+  if (relations_value) {
+    for (const auto& entry : *relations_value) {
       const std::string* relation_value = entry.GetIfString();
       if (relation_value) {
         // By default, exclude embedded-by because that should appear on every
@@ -717,57 +708,57 @@ std::string AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
   }
 
   for (const char* attribute_name : ATK_OBJECT_ATTRIBUTES) {
-    std::string attribute_value;
+    const std::string* attribute_value =
+        node.FindString(std::string(kObjectAttributePrefix) + attribute_name);
     // ATK object attributes are stored with a prefix, in order to disambiguate
     // from other properties with the same name (e.g. description).
-    if (node.GetString(std::string(kObjectAttributePrefix) + attribute_name,
-                       &attribute_value)) {
+    if (attribute_value) {
       WriteAttribute(
           false,
-          base::StringPrintf("%s:%s", attribute_name, attribute_value.c_str()),
+          base::StringPrintf("%s:%s", attribute_name, attribute_value->c_str()),
           &line);
     }
   }
 
-  const base::ListValue* value_info;
-  if (node.GetList("value", &value_info)) {
-    for (const auto& entry : value_info->GetList()) {
+  const base::Value::List* value_info = node.FindList("value");
+  if (value_info) {
+    for (const auto& entry : *value_info) {
       const std::string* value_property = entry.GetIfString();
       if (value_property)
         WriteAttribute(true, *value_property, &line);
     }
   }
 
-  const base::ListValue* table_info;
-  if (node.GetList("table", &table_info)) {
-    for (const auto& entry : table_info->GetList()) {
+  const base::Value::List* table_info = node.FindList("table");
+  if (table_info) {
+    for (const auto& entry : *table_info) {
       const std::string* table_property = entry.GetIfString();
       if (table_property)
         WriteAttribute(true, *table_property, &line);
     }
   }
 
-  const base::ListValue* cell_info;
-  if (node.GetList("cell", &cell_info)) {
-    for (const auto& entry : cell_info->GetList()) {
+  const base::Value::List* cell_info = node.FindList("cell");
+  if (cell_info) {
+    for (const auto& entry : *cell_info) {
       const std::string* cell_property = entry.GetIfString();
       if (cell_property)
         WriteAttribute(true, *cell_property, &line);
     }
   }
 
-  const base::ListValue* text_info;
-  if (node.GetList("text", &text_info)) {
-    for (const auto& entry : text_info->GetList()) {
+  const base::Value::List* text_info = node.FindList("text");
+  if (text_info) {
+    for (const auto& entry : *text_info) {
       const std::string* text_property = entry.GetIfString();
       if (text_property)
         WriteAttribute(false, *text_property, &line);
     }
   }
 
-  const base::ListValue* hypertext_info;
-  if (node.GetList("hypertext", &hypertext_info)) {
-    for (const auto& entry : hypertext_info->GetList()) {
+  const base::Value::List* hypertext_info = node.FindList("hypertext");
+  if (hypertext_info) {
+    for (const auto& entry : *hypertext_info) {
       const std::string* hypertext_property = entry.GetIfString();
       if (hypertext_property)
         WriteAttribute(false, *hypertext_property, &line);

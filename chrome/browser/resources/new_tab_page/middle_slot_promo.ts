@@ -96,6 +96,7 @@ export async function renderPromo(promo: Promo):
     if (image) {
       el = new CrAutoImgElement();
       el.autoSrc = image.imageUrl.url;
+      el.staticEncode = true;
       if (image.target) {
         const anchor = createAnchor(image.target);
         if (anchor) {
@@ -112,9 +113,6 @@ export async function renderPromo(promo: Promo):
     const linkOrText = link || text;
     if (el && linkOrText) {
       el.innerText = linkOrText.text;
-      if (linkOrText.color) {
-        el.style.color = linkOrText.color;
-      }
     }
     if (el) {
       hasContent = true;

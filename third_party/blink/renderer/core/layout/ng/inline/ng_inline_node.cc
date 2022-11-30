@@ -1,13 +1,13 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 
-#include <algorithm>
 #include <memory>
 #include <numeric>
 
+#include "base/ranges/algorithm.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -72,87 +72,6 @@ float CalculateWidthForTextCombine(const NGInlineItemsData& data) {
       });
 }
 
-bool IsLeftAligned(const ComputedStyle& style) {
-  switch (style.GetTextAlign()) {
-    case ETextAlign::kStart:
-      return IsLtr(style.Direction());
-    case ETextAlign::kEnd:
-      return IsRtl(style.Direction());
-    case ETextAlign::kLeft:
-    case ETextAlign::kWebkitLeft:
-      return true;
-    case ETextAlign::kCenter:
-    case ETextAlign::kWebkitCenter:
-    case ETextAlign::kJustify:
-    case ETextAlign::kRight:
-    case ETextAlign::kWebkitRight:
-      return false;
-  }
-  NOTREACHED();
-  return false;
-}
-
-bool HasLetterSpacingWorkAround(const LayoutObject* layout_object,
-                                bool first_line,
-                                const LayoutBlockFlow* block_flow) {
-  // All we need to know is whether it computes to 0 or not, so any
-  // |maxmimum_value| can work.
-  const LayoutUnit maximum_value(100);
-  if (MinimumValueForLength(block_flow->StyleRef(first_line).TextIndent(),
-                            maximum_value))
-    return true;
-
-  // Margin/padding maybe applied to <span> or to the containing block. Sum up
-  // to the containing block. ex.:
-  //   <div style="letter-spacing: 1em">
-  //     <span style="margin-left: 1em>text</span>
-  //   </div>
-  LayoutUnit margin_padding_start;
-  LayoutUnit margin_padding_end;
-  DCHECK(!layout_object->IsText());
-  for (;; layout_object = layout_object->Parent()) {
-    const ComputedStyle& style = layout_object->StyleRef(first_line);
-    if (style.MayHavePadding() || style.MayHaveMargin()) {
-      margin_padding_start +=
-          MinimumValueForLength(style.MarginStart(), maximum_value) +
-          MinimumValueForLength(style.PaddingStart(), maximum_value);
-      margin_padding_end +=
-          MinimumValueForLength(style.MarginEnd(), maximum_value) +
-          MinimumValueForLength(style.PaddingEnd(), maximum_value);
-    }
-    if (layout_object == block_flow)
-      break;
-  }
-  return margin_padding_start != margin_padding_end;
-}
-
-bool ShouldReportLetterSpacingUseCounter(const LayoutObject* layout_object,
-                                         bool first_line,
-                                         const LayoutBlockFlow* block_flow) {
-  DCHECK(layout_object->IsText());
-  layout_object = layout_object->Parent();
-  const ComputedStyle& style = layout_object->StyleRef(first_line);
-  DCHECK(style.GetFont().GetFontDescription().LetterSpacing());
-
-  // Count only when the containing block has `letter-spacing`. For now, we
-  // don't count cases like:
-  //   <div><span style="letter-spacing: 1em">text</span></div>
-  const ComputedStyle& block_style = block_flow->StyleRef(first_line);
-  if (layout_object != block_flow &&
-      !block_style.GetFont().GetFontDescription().LetterSpacing())
-    return false;
-
-  if (((layout_object->HasBoxDecorationBackground() ||
-        block_flow->HasBoxDecorationBackground() ||
-        !IsLeftAligned(block_style)) &&
-       HasLetterSpacingWorkAround(layout_object, first_line, block_flow)) ||
-      // Workaround for `text-decoration` is complicated, just include all.
-      !style.AppliedTextDecorations().IsEmpty())
-    return true;
-
-  return false;
-}
-
 // Estimate the number of NGInlineItem to minimize the vector expansions.
 unsigned EstimateInlineItemsCount(const LayoutBlockFlow& block) {
   unsigned count = 0;
@@ -200,7 +119,7 @@ class ReusingTextShaper final {
     const Vector<const ShapeResult*> reusable_shape_results =
         CollectReusableShapeResults(start_offset, end_offset,
                                     start_item.Direction());
-    if (reusable_shape_results.IsEmpty())
+    if (reusable_shape_results.empty())
       return Reshape(start_item, font, start_offset, end_offset);
 
     const scoped_refptr<ShapeResult> shape_result =
@@ -541,7 +460,7 @@ void NGInlineNode::ShapeTextOrDefer(const NGConstraintSpace& space) const {
   if (ds_controller.AllowDeferredShaping() &&
       !GetLayoutBox()->IsInsideFlowThread() &&
       Style().IsContentVisibilityVisible() &&
-      Style().PageTransitionTag().IsEmpty()) {
+      Style().PageTransitionTag().empty()) {
     DCHECK(IsHorizontalWritingMode(Style().GetWritingMode()));
     const LayoutUnit viewport_bottom = ds_controller.CurrentViewportBottom();
     DCHECK_NE(viewport_bottom, kIndefiniteSize) << GetLayoutBox();
@@ -634,7 +553,7 @@ class NGInlineNodeDataEditor final {
         block_flow_->GetDocument().NeedsLayoutTreeUpdate() ||
         !block_flow_->GetNGInlineNodeData() ||
         block_flow_->GetNGInlineNodeData()->text_content.IsNull() ||
-        block_flow_->GetNGInlineNodeData()->items.IsEmpty())
+        block_flow_->GetNGInlineNodeData()->items.empty())
       return nullptr;
 
     // For "text-combine-upright:all", we choose font to fit layout result in
@@ -748,7 +667,7 @@ class NGInlineNodeDataEditor final {
       break;
     }
 
-    if (items.IsEmpty()) {
+    if (items.empty()) {
       items.push_back(NGInlineItem(data_->items.front(), 0,
                                    new_data.text_content.length(), nullptr));
     } else if (items.back().end_offset_ < new_data.text_content.length()) {
@@ -774,8 +693,8 @@ class NGInlineNodeDataEditor final {
   static unsigned ConvertDOMOffsetToTextContent(
       base::span<const NGOffsetMappingUnit> units,
       unsigned offset) {
-    auto it = std::find_if(
-        units.begin(), units.end(), [offset](const NGOffsetMappingUnit& unit) {
+    auto it =
+        base::ranges::find_if(units, [offset](const NGOffsetMappingUnit& unit) {
           return unit.DOMStart() <= offset && offset <= unit.DOMEnd();
         });
     DCHECK(it != units.end());
@@ -931,7 +850,7 @@ class NGInlineNodeDataEditor final {
 
   void VerifyItems(const HeapVector<NGInlineItem>& items) const {
 #if DCHECK_IS_ON()
-    if (items.IsEmpty())
+    if (items.empty())
       return;
     unsigned last_offset = items.front().start_offset_;
     for (const NGInlineItem& item : items) {
@@ -985,7 +904,7 @@ bool NGInlineNode::SetTextWithOffset(LayoutText* layout_text,
 
   NGInlineNode node(editor.GetLayoutBlockFlow());
   NGInlineNodeData* data = node.MutableData();
-  data->items.ReserveCapacity(previous_data->items.size());
+  data->items.reserve(previous_data->items.size());
   NGInlineItemsBuilder builder(editor.GetLayoutBlockFlow(), &data->items);
   // TODO(yosin): We should reuse before/after |layout_text| during collecting
   // inline items.
@@ -1043,7 +962,7 @@ void NGInlineNode::ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
   // |builder| not construct items and text content.
   HeapVector<NGInlineItem> items;
   ClearCollectionScope<HeapVector<NGInlineItem>> clear_scope(&items);
-  items.ReserveCapacity(EstimateInlineItemsCount(*layout_block_flow));
+  items.reserve(EstimateInlineItemsCount(*layout_block_flow));
   NGInlineItemsBuilderForOffsetMapping builder(layout_block_flow, &items,
                                                chunk_offsets);
   builder.GetOffsetMappingBuilder().ReserveCapacity(
@@ -1105,7 +1024,7 @@ const NGOffsetMapping* NGInlineNode::GetOffsetMapping(
 void NGInlineNode::CollectInlines(NGInlineNodeData* data,
                                   NGInlineNodeData* previous_data) const {
   DCHECK(data->text_content.IsNull());
-  DCHECK(data->items.IsEmpty());
+  DCHECK(data->items.empty());
   LayoutBlockFlow* block = GetLayoutBlockFlow();
   block->WillCollectInlines();
 
@@ -1125,7 +1044,7 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data,
       chunk_offsets = FindSvgTextChunks(*block, *data);
   }
 
-  data->items.ReserveCapacity(EstimateInlineItemsCount(*block));
+  data->items.reserve(EstimateInlineItemsCount(*block));
   NGInlineItemsBuilder builder(block, &data->items, chunk_offsets);
   CollectInlinesInternal(&builder, previous_data);
   if (block->IsNGSVGText() && !data->svg_node_data_) {
@@ -1148,7 +1067,7 @@ const SvgTextChunkOffsets* NGInlineNode::FindSvgTextChunks(
   // be different from final ones.
   HeapVector<NGInlineItem> items;
   ClearCollectionScope<HeapVector<NGInlineItem>> clear_scope(&items);
-  items.ReserveCapacity(EstimateInlineItemsCount(block));
+  items.reserve(EstimateInlineItemsCount(block));
   NGInlineItemsBuilderForOffsetMapping items_builder(&block, &items);
   NGOffsetMappingBuilder& mapping_builder =
       items_builder.GetOffsetMappingBuilder();
@@ -1209,7 +1128,7 @@ void NGInlineNode::SegmentText(NGInlineNodeData* data) const {
 // Segment NGInlineItem by script, Emoji, and orientation using RunSegmenter.
 void NGInlineNode::SegmentScriptRuns(NGInlineNodeData* data) const {
   String& text_content = data->text_content;
-  if (text_content.IsEmpty()) {
+  if (text_content.empty()) {
     data->segments = nullptr;
     return;
   }
@@ -1254,7 +1173,7 @@ void NGInlineNode::SegmentFontOrientation(NGInlineNodeData* data) const {
     return;
 
   HeapVector<NGInlineItem>& items = data->items;
-  if (items.IsEmpty())
+  if (items.empty())
     return;
   String& text_content = data->text_content;
   text_content.Ensure16Bit();
@@ -1477,14 +1396,6 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
     if (UNLIKELY(spacing.SetSpacing(font.GetFontDescription()))) {
       DCHECK(!IsTextCombine()) << GetLayoutBlockFlow();
       shape_result->ApplySpacing(spacing);
-      if (spacing.LetterSpacing() &&
-          ShouldReportLetterSpacingUseCounter(
-              start_item.GetLayoutObject(),
-              start_item.StyleVariant() == NGStyleVariant::kFirstLine,
-              GetLayoutBlockFlow())) {
-        UseCounter::Count(GetDocument(),
-                          WebFeature::kLastLetterSpacingAffectsRendering);
-      }
     }
 
     // If the text is from one item, use the ShapeResult as is.
@@ -1736,7 +1647,7 @@ static LayoutUnit ComputeContentSize(
 
     LayoutUnit ComputeMaxSizeForLine(LayoutUnit line_inline_size,
                                      LayoutUnit max_inline_size) {
-      if (floating_objects_.IsEmpty())
+      if (floating_objects_.empty())
         return std::max(max_inline_size, line_inline_size);
 
       EFloat previous_float_type = EFloat::kNone;
@@ -1901,7 +1812,7 @@ static LayoutUnit ComputeContentSize(
   do {
     NGLineInfo line_info;
     line_breaker.NextLine(&line_info);
-    if (line_info.Results().IsEmpty())
+    if (line_info.Results().empty())
       break;
 
     LayoutUnit inline_size = line_info.Width();
@@ -2041,14 +1952,6 @@ void NGInlineNode::CheckConsistency() const {
            item.Style() == item.GetLayoutObject()->Style());
   }
 #endif
-}
-
-bool NGInlineNode::ShouldReportLetterSpacingUseCounterForTesting(
-    const LayoutObject* layout_object,
-    bool first_line,
-    const LayoutBlockFlow* block_flow) {
-  return ShouldReportLetterSpacingUseCounter(layout_object, first_line,
-                                             block_flow);
 }
 
 const Vector<std::pair<unsigned, NGSvgCharacterData>>&

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ void CSSToggleMap::Trace(Visitor* visitor) const {
 
 void CSSToggleMap::CreateToggles(const ToggleRootList* toggle_roots) {
   const auto& roots = toggle_roots->Roots();
-  DCHECK(!roots.IsEmpty());
+  DCHECK(!roots.empty());
   DCHECK(OwnerElement());
 
   auto& toggles = Toggles();

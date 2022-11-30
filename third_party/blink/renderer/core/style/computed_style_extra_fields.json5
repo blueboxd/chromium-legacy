@@ -213,6 +213,13 @@
       default_value: "false",
       custom_compare: true,
     },
+    {
+      name: "HasLineHeightRelativeUnits",
+      field_group: "*",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      custom_compare: true,
+    },
     // True if this ComputedStyle is the result of CustomStyleForLayoutObject()
     // that uses font metrics in its calculation.
     {
@@ -422,33 +429,6 @@
       type_name: "bool",
       default_value: "false",
       field_group: "*",
-    },
-    {
-      name: "HyphenationLimitBefore",
-      inherited: true,
-      field_template: "primitive",
-      type_name: "short",
-      default_value: "-1",
-      field_group: "*",
-      computed_style_custom_functions: ["getter", "setter"],
-    },
-    {
-      name: "HyphenationLimitAfter",
-      inherited: true,
-      field_template: "primitive",
-      type_name: "short",
-      default_value: "-1",
-      field_group: "*",
-      computed_style_custom_functions: ["getter", "setter"],
-    },
-    {
-      name: "HyphenationLimitLines",
-      inherited: true,
-      field_template: "primitive",
-      type_name: "short",
-      default_value: "-1",
-      field_group: "*",
-      computed_style_custom_functions: ["getter", "setter"],
     },
     {
       name: "EffectiveTouchAction",

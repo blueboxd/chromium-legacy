@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -340,10 +340,9 @@ WebGestureEvent::CoalesceScrollAndPinch(
 
   gfx::Transform combined_scroll_pinch = GetTransformForEvent(last_event);
   if (second_last_event) {
-    combined_scroll_pinch.PreconcatTransform(
-        GetTransformForEvent(*second_last_event));
+    combined_scroll_pinch.PreConcat(GetTransformForEvent(*second_last_event));
   }
-  combined_scroll_pinch.ConcatTransform(GetTransformForEvent(new_event));
+  combined_scroll_pinch.PostConcat(GetTransformForEvent(new_event));
 
   float combined_scale = SkScalarToFloat(combined_scroll_pinch.rc(0, 0));
   float combined_scroll_pinch_x =

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,10 +16,11 @@ NGGridNamedLineCollection::NGGridNamedLineCollection(
     const String& named_line,
     GridTrackSizingDirection track_direction,
     const NamedGridLinesMap& implicit_grid_line_names,
+    const NamedGridLinesMap& explicit_grid_line_names,
     const ComputedGridTrackList& computed_grid_track_list,
     wtf_size_t last_line,
     wtf_size_t auto_repeat_tracks_count,
-    bool is_parent_grid_container)
+    bool is_subgridded_to_parent)
     : last_line_(last_line),
       auto_repeat_total_tracks_(auto_repeat_tracks_count) {
   is_standalone_grid_ =
@@ -30,25 +31,24 @@ NGGridNamedLineCollection::NGGridNamedLineCollection(
   // https://www.w3.org/TR/css-grid-2/#subgrid-listing
   bool are_named_lines_valid = true;
   if (RuntimeEnabledFeatures::LayoutNGSubgridEnabled())
-    are_named_lines_valid = is_parent_grid_container || is_standalone_grid_;
+    are_named_lines_valid = is_subgridded_to_parent || is_standalone_grid_;
 
-  const NamedGridLinesMap& grid_line_names =
-      computed_grid_track_list.named_grid_lines;
   const NamedGridLinesMap& auto_repeat_grid_line_names =
       computed_grid_track_list.auto_repeat_named_grid_lines;
 
-  if (!grid_line_names.IsEmpty() && are_named_lines_valid) {
-    auto it = grid_line_names.find(named_line);
-    named_lines_indexes_ = it == grid_line_names.end() ? nullptr : &it->value;
+  if (!explicit_grid_line_names.empty() && are_named_lines_valid) {
+    auto it = explicit_grid_line_names.find(named_line);
+    named_lines_indexes_ =
+        (it == explicit_grid_line_names.end()) ? nullptr : &it->value;
   }
 
-  if (!auto_repeat_grid_line_names.IsEmpty() && are_named_lines_valid) {
+  if (!auto_repeat_grid_line_names.empty() && are_named_lines_valid) {
     auto it = auto_repeat_grid_line_names.find(named_line);
     auto_repeat_named_lines_indexes_ =
         it == auto_repeat_grid_line_names.end() ? nullptr : &it->value;
   }
 
-  if (!implicit_grid_line_names.IsEmpty()) {
+  if (!implicit_grid_line_names.empty()) {
     auto it = implicit_grid_line_names.find(named_line);
     implicit_named_lines_indexes_ =
         it == implicit_grid_line_names.end() ? nullptr : &it->value;

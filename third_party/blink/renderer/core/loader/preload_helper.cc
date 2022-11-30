@@ -1,10 +1,10 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 
-#include "services/network/public/cpp/features.h"
+#include "net/http/structured_headers.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -38,12 +38,17 @@
 #include "third_party/blink/renderer/core/loader/resource/image_resource.h"
 #include "third_party/blink/renderer/core/loader/resource/link_prefetch_resource.h"
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
+#include "third_party/blink/renderer/core/loader/resource/speculation_rules_resource.h"
+#include "third_party/blink/renderer/core/loader/speculation_rule_loader.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
+#include "third_party/blink/renderer/core/speculation_rules/document_speculation_rules.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/json/json_parser.h"
+#include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -72,7 +77,7 @@ void SendMessageToConsoleForPossiblyNullDocument(
 }
 
 bool IsSupportedType(ResourceType resource_type, const String& mime_type) {
-  if (mime_type.IsEmpty())
+  if (mime_type.empty())
     return true;
   switch (resource_type) {
     case ResourceType::kImage:
@@ -270,7 +275,7 @@ void PreloadHelper::PreloadIfNeeded(
 
   MediaValuesCached* media_values = nullptr;
   KURL url;
-  if (resource_type == ResourceType::kImage && !params.image_srcset.IsEmpty()) {
+  if (resource_type == ResourceType::kImage && !params.image_srcset.empty()) {
     UseCounter::Count(document, WebFeature::kLinkRelPreloadImageSrcset);
     media_values = CreateMediaValues(document, viewport_description);
     url = GetBestFitImageURL(document, base_url, media_values, params.href,
@@ -290,7 +295,7 @@ void PreloadHelper::PreloadIfNeeded(
 
   bool media_matches = true;
 
-  if (!params.media.IsEmpty()) {
+  if (!params.media.empty()) {
     if (!media_values)
       media_values = CreateMediaValues(document, viewport_description);
     media_matches = MediaMatches(params.media, media_values,
@@ -370,7 +375,7 @@ void PreloadHelper::PreloadIfNeeded(
   if (resource_type == ResourceType::kScript ||
       resource_type == ResourceType::kCSSStyleSheet ||
       resource_type == ResourceType::kFont) {
-    if (!integrity_attr.IsEmpty()) {
+    if (!integrity_attr.empty()) {
       IntegrityMetadataSet metadata_set;
       SubresourceIntegrity::ParseIntegrityAttribute(
           integrity_attr,
@@ -382,7 +387,7 @@ void PreloadHelper::PreloadIfNeeded(
           integrity_attr);
     }
   } else {
-    if (!integrity_attr.IsEmpty()) {
+    if (!integrity_attr.empty()) {
       document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kOther,
           mojom::ConsoleMessageLevel::kWarning,
@@ -458,7 +463,7 @@ void PreloadHelper::ModulePreloadIfNeeded(
   // networking task source to fire an event named error at the link element,
   // and return." [spec text]
   // Currently we only support as="script".
-  if (!params.as.IsEmpty() && params.as != "script") {
+  if (!params.as.empty() && params.as != "script") {
     document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kOther,
         mojom::ConsoleMessageLevel::kWarning,
@@ -468,8 +473,9 @@ void PreloadHelper::ModulePreloadIfNeeded(
     // the error event.
     if (client) {
       modulator->TaskRunner()->PostTask(
-          FROM_HERE, WTF::Bind(&SingleModuleClient::NotifyModuleLoadFinished,
-                               WrapPersistent(client), nullptr));
+          FROM_HERE,
+          WTF::BindOnce(&SingleModuleClient::NotifyModuleLoadFinished,
+                        WrapPersistent(client), nullptr));
     }
     return;
   }
@@ -493,7 +499,7 @@ void PreloadHelper::ModulePreloadIfNeeded(
 
   // Preload only if media matches.
   // https://html.spec.whatwg.org/C/#processing-the-media-attribute
-  if (!params.media.IsEmpty()) {
+  if (!params.media.empty()) {
     MediaValuesCached* media_values =
         CreateMediaValues(document, viewport_description);
     if (!MediaMatches(params.media, media_values,
@@ -513,7 +519,7 @@ void PreloadHelper::ModulePreloadIfNeeded(
   // Step 8. "Let integrity metadata be the value of the integrity attribute, if
   // it is specified, or the empty string otherwise." [spec text]
   IntegrityMetadataSet integrity_metadata;
-  if (!params.integrity.IsEmpty()) {
+  if (!params.integrity.empty()) {
     SubresourceIntegrity::IntegrityFeatures integrity_features =
         SubresourceIntegrityHelper::GetFeatures(document.GetExecutionContext());
     SubresourceIntegrity::ReportInfo report_info;
@@ -628,6 +634,83 @@ void PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
     pending_preload->AddResource(resource);
 }
 
+void PreloadHelper::LoadSpeculationRuleLinkFromHeader(
+    const String& header_value,
+    Document* document,
+    LocalFrame& frame) {
+  DCHECK(document);
+  if (header_value.empty())
+    return;
+
+  auto parsed_header = net::structured_headers::ParseList(header_value.Utf8());
+  if (!parsed_header.has_value()) {
+    SendMessageToConsoleForPossiblyNullDocument(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kOther,
+            mojom::blink::ConsoleMessageLevel::kWarning,
+            String("Cannot parse Speculation-Rules header value.")),
+        document, &frame);
+    return;
+  }
+
+  for (auto const& parsed_item : parsed_header.value()) {
+    // Only strings are valid list members.
+    if (parsed_item.member.size() != 1u ||
+        !parsed_item.member[0].item.is_string()) {
+      SendMessageToConsoleForPossiblyNullDocument(
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::blink::ConsoleMessageSource::kOther,
+              mojom::blink::ConsoleMessageLevel::kWarning,
+              String("Only strings are valid in Speculation-Rules header value "
+                     "and inner lists are ignored.")),
+          document, &frame);
+      continue;
+    }
+    const auto& url_str = String(parsed_item.member[0].item.GetString());
+    KURL speculation_rule_url(document->BaseURL(), url_str);
+    if (url_str.empty() || !speculation_rule_url.IsValid()) {
+      SendMessageToConsoleForPossiblyNullDocument(
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::blink::ConsoleMessageSource::kOther,
+              mojom::blink::ConsoleMessageLevel::kWarning,
+              String("URL \"" + url_str +
+                     "\" found in Speculation-Rules header is invalid.")),
+          document, &frame);
+      continue;
+    }
+
+    ResourceRequest resource_request(speculation_rule_url);
+
+    resource_request.SetPrefetchMaybeForTopLevelNavigation(false);
+    resource_request.SetFetchPriorityHint(
+        mojom::blink::FetchPriorityHint::kLow);
+
+    // Always use CORS. Adopt new best practices for subresources: CORS requests
+    // with same-origin credentials only.
+    auto* origin = document->GetExecutionContext()->GetSecurityOrigin();
+    resource_request.SetMode(network::mojom::RequestMode::kCors);
+    resource_request.SetCredentialsMode(
+        network::mojom::CredentialsMode::kSameOrigin);
+    resource_request.RemoveUserAndPassFromURL();
+    resource_request.SetRequestorOrigin(origin);
+    resource_request.SetHTTPOrigin(origin);
+
+    ResourceLoaderOptions options(
+        document->GetExecutionContext()->GetCurrentWorld());
+    options.initiator_info.name = fetch_initiator_type_names::kOther;
+
+    FetchParameters speculation_rule_params(std::move(resource_request),
+                                            options);
+
+    SpeculationRulesResource* resource = SpeculationRulesResource::Fetch(
+        speculation_rule_params, document->Fetcher());
+
+    SpeculationRuleLoader* speculation_rule_loader =
+        MakeGarbageCollected<SpeculationRuleLoader>(*document);
+    speculation_rule_loader->LoadResource(resource, speculation_rule_url);
+  }
+}
+
 void PreloadHelper::LoadLinksFromHeader(
     const String& header_value,
     const KURL& base_url,
@@ -639,11 +722,11 @@ void PreloadHelper::LoadLinksFromHeader(
     std::unique_ptr<AlternateSignedExchangeResourceInfo>
         alternate_resource_info,
     const base::UnguessableToken* recursive_prefetch_token) {
-  if (header_value.IsEmpty())
+  if (header_value.empty())
     return;
   LinkHeaderSet header_set(header_value);
   for (auto& header : header_set) {
-    if (!header.Valid() || header.Url().IsEmpty() || header.Rel().IsEmpty())
+    if (!header.Valid() || header.Url().empty() || header.Rel().empty())
       continue;
 
     if (media_policy == kOnlyLoadMedia && !header.IsViewportDependent())
@@ -668,7 +751,7 @@ void PreloadHelper::LoadLinksFromHeader(
       absl::optional<ResourceType> resource_type =
           PreloadHelper::GetResourceTypeFromAsAttribute(params.as);
       if (resource_type == ResourceType::kImage &&
-          !params.image_srcset.IsEmpty()) {
+          !params.image_srcset.empty()) {
         // |media_values| is created based on the viewport dimensions of the
         // current page that prefetched SXGs, not on the viewport of the SXG
         // content.

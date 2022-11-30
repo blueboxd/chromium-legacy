@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_processor_definition.h"
 #include "third_party/blink/renderer/modules/webaudio/cross_thread_audio_worklet_processor_info.h"
 #include "third_party/blink/renderer/platform/bindings/callback_method_retriever.h"
+#include "third_party/blink/renderer/platform/scheduler/common/features.h"
 
 namespace blink {
 
@@ -30,7 +31,10 @@ AudioWorkletGlobalScope::AudioWorkletGlobalScope(
     WorkerThread* thread)
     : WorkletGlobalScope(std::move(creation_params),
                          thread->GetWorkerReportingProxy(),
-                         thread) {
+                         thread,
+                         /*create_microtask_queue=*/
+                         base::FeatureList::IsEnabled(
+                             scheduler::kMicrotaskQueuePerAudioWorklet)) {
   // Audio is prone to jank introduced by e.g. the garbage collector. Workers
   // are generally put in a background mode (as they are non-visible). Audio is
   // an exception here, requiring low-latency behavior similar to any visible
@@ -54,7 +58,7 @@ void AudioWorkletGlobalScope::registerProcessor(
   DCHECK(IsContextThread());
 
   // 1. If name is an empty string, throw a NotSupportedError.
-  if (name.IsEmpty()) {
+  if (name.empty()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "The processor name cannot be empty.");
     return;

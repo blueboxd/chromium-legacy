@@ -13,7 +13,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_install_manager.h"
-#include "chrome/browser/ash/system_extensions/system_extensions_persistence_manager.h"
+#include "chrome/browser/ash/system_extensions/system_extensions_persistent_storage.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_profile_utils.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_provider.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_provider_factory.h"
@@ -30,6 +30,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/page_type.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/test_launcher.h"
 
 namespace ash {
 
@@ -42,23 +43,32 @@ constexpr char kTestSystemExtensionManifest[] = R"({
    "name": "Sample System Web Extension",
    "service_worker_url": "/sw.js",
    "short_name": "Sample SWX",
-   "type": "echo"
+   "type": "window-management"
 }
 )";
 
 constexpr char kTestSystemExtensionIndexURL[] =
-    "chrome-untrusted://system-extension-echo-01020304/html/index.html";
+    "chrome-untrusted://system-extension-window-management-01020304/html/"
+    "index.html";
 
 constexpr char kTestSystemExtensionWrongURL[] =
-    "chrome-untrusted://system-extension-echo-01020304/html/wrong.html";
+    "chrome-untrusted://system-extension-window-management-01020304/html/"
+    "wrong.html";
 
 constexpr char kTestSystemExtensionEmptyPathURL[] =
-    "chrome-untrusted://system-extension-echo-01020304/";
+    "chrome-untrusted://system-extension-window-management-01020304/";
 
 base::FilePath GetBasicSystemExtensionDir() {
   base::FilePath test_dir;
   base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
   return test_dir.Append("system_extensions").Append("basic_system_extension");
+}
+
+base::FilePath GetOemDiagnosticsAndControlExtensionDir() {
+  base::FilePath test_dir;
+  base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
+  return test_dir.Append("system_extensions")
+      .Append("oem_diagnostics_and_control_extension");
 }
 
 // Wrapper around base::OneShotEvent that allows callers to signal with
@@ -227,8 +237,8 @@ class SystemExtensionsBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(registry.GetById(kTestSystemExtensionId));
 
     // Test we persisted the System Extension.
-    absl::optional<SystemExtensionPersistenceInfo> persistence_info =
-        provider.persistence_manager().Get(kTestSystemExtensionId);
+    absl::optional<SystemExtensionPersistedInfo> persistence_info =
+        provider.persistent_storage().Get(kTestSystemExtensionId);
     ASSERT_TRUE(persistence_info);
     EXPECT_EQ(kTestSystemExtensionManifest,
               persistence_info->manifest.DebugString());
@@ -265,8 +275,8 @@ class SystemExtensionsBrowserTest : public InProcessBrowserTest {
     EXPECT_FALSE(registry.GetById(kTestSystemExtensionId));
 
     // Tests that the System Extension is no longer in persistent storage.
-    absl::optional<SystemExtensionPersistenceInfo> persistence_info =
-        provider.persistence_manager().Get(kTestSystemExtensionId);
+    absl::optional<SystemExtensionPersistedInfo> persistence_info =
+        provider.persistent_storage().Get(kTestSystemExtensionId);
     EXPECT_FALSE(persistence_info);
 
     // Test that navigating to the System Extension's resources fails.
@@ -319,6 +329,23 @@ class SystemExtensionsSwitchBrowserTest : public SystemExtensionsBrowserTest {
     command_line->AppendSwitchPath(ash::switches::kInstallSystemExtension,
                                    GetBasicSystemExtensionDir());
   }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+class SystemExtensionsBrowserTestWithOemFeaturePreTest
+    : public SystemExtensionsBrowserTest {
+ public:
+  SystemExtensionsBrowserTestWithOemFeaturePreTest() {
+    // Only enable the feature flag if this is the pre-test.
+    if (content::IsPreTest()) {
+      feature_list_.InitAndEnableFeature(
+          features::kSystemExtensionsOemDiagnosticsAndControl);
+    }
+  }
+
+  ~SystemExtensionsBrowserTestWithOemFeaturePreTest() override = default;
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -510,6 +537,41 @@ IN_PROC_BROWSER_TEST_F(SystemExtensionsSwitchBrowserTest, ExtensionInstalled) {
       FROM_HERE, run_loop.QuitClosure());
   run_loop.Run();
   TestInstalledTestExtensionWorks();
+}
+
+IN_PROC_BROWSER_TEST_F(SystemExtensionsBrowserTestWithOemFeaturePreTest,
+                       PRE_SystemExtensionsOemDiagnosticsAndControl) {
+  auto& provider = SystemExtensionsProvider::Get(browser()->profile());
+  auto& install_manager = provider.install_manager();
+
+  TestInstallationEventsWaiter waiter(provider);
+
+  {
+    // Install and wait for the service worker to be registered.
+    base::RunLoop run_loop;
+    install_manager.InstallUnpackedExtensionFromDir(
+        GetOemDiagnosticsAndControlExtensionDir(),
+        base::BindLambdaForTesting(
+            [&](InstallStatusOrSystemExtensionId result) { run_loop.Quit(); }));
+    run_loop.Run();
+    waiter.WaitForServiceWorkerRegistered();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(SystemExtensionsBrowserTestWithOemFeaturePreTest,
+                       SystemExtensionsOemDiagnosticsAndControl) {
+  auto& provider = SystemExtensionsProvider::Get(browser()->profile());
+  auto& install_manager = provider.install_manager();
+
+  // Wait for previously persisted System Extensions to be registered.
+  base::RunLoop run_loop;
+  install_manager.on_register_previously_persisted_finished().Post(
+      FROM_HERE, run_loop.QuitClosure());
+  run_loop.Run();
+
+  auto& registry = provider.registry();
+  EXPECT_TRUE(registry.GetIds().empty());
+  EXPECT_FALSE(registry.GetById(kTestSystemExtensionId));
 }
 
 }  // namespace ash

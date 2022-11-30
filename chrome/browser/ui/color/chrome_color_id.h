@@ -123,7 +123,6 @@
   E_CPONLY(kColorLocationBarClearAllButtonIconDisabled) \
   /* Media router colors. */ \
   E_CPONLY(kColorMediaRouterIconActive) \
-  E_CPONLY(kColorMediaRouterIconError) \
   E_CPONLY(kColorMediaRouterIconWarning) \
   /* New tab button colors. */ \
   E_CPONLY(kColorNewTabButtonBackgroundFrameActive) \
@@ -135,6 +134,7 @@
   E_CPONLY(kColorNewTabPageActionButtonBorder) \
   E_CPONLY(kColorNewTabPageActionButtonBorderHovered) \
   E_CPONLY(kColorNewTabPageActiveBackground) \
+  E_CPONLY(kColorNewTabPageAttributionForeground) \
   E_CPONLY(kColorNewTabPageBackground) \
   E_CPONLY(kColorNewTabPageBackgroundOverride) \
   E_CPONLY(kColorNewTabPageBorder) \
@@ -152,6 +152,7 @@
   E_CPONLY(kColorNewTabPageLogoUnthemedLight) \
   E_CPONLY(kColorNewTabPageMicBorderColor) \
   E_CPONLY(kColorNewTabPageMicIconColor) \
+  E_CPONLY(kColorNewTabPageMostVisitedForeground) \
   E_CPONLY(kColorNewTabPageMostVisitedTileBackground) \
   E_CPONLY(kColorNewTabPageMostVisitedTileBackgroundUnthemed) \
   E_CPONLY(kColorNewTabPageModuleIconContainerBackground) \

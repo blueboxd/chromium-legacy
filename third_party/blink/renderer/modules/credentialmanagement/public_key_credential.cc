@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ PublicKeyCredential::PublicKeyCredential(
     mojom::blink::AuthenticatorAttachment authenticator_attachment,
     const AuthenticationExtensionsClientOutputs* extension_outputs,
     const String& type)
-    : Credential(id, type.IsEmpty() ? kPublicKeyCredentialType : type),
+    : Credential(id, type.empty() ? kPublicKeyCredentialType : type),
       raw_id_(raw_id),
       response_(response),
       authenticator_attachment_(
@@ -78,8 +78,8 @@ PublicKeyCredential::isUserVerifyingPlatformAuthenticatorAvailable(
   auto* authenticator =
       CredentialManagerProxy::From(script_state)->Authenticator();
   authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(
-      WTF::Bind(&OnIsUserVerifyingComplete,
-                std::make_unique<ScopedPromiseResolver>(resolver)));
+      WTF::BindOnce(&OnIsUserVerifyingComplete,
+                    std::make_unique<ScopedPromiseResolver>(resolver)));
   return promise;
 }
 
@@ -107,10 +107,11 @@ ScriptPromise PublicKeyCredential::isConditionalMediationAvailable(
       WebFeature::kCredentialManagerIsConditionalMediationAvailable);
   auto* authenticator =
       CredentialManagerProxy::From(script_state)->Authenticator();
-  authenticator->IsConditionalMediationAvailable(
-      WTF::Bind([](std::unique_ptr<ScopedPromiseResolver> resolver,
-                   bool available) { resolver->Release()->Resolve(available); },
-                std::make_unique<ScopedPromiseResolver>(resolver)));
+  authenticator->IsConditionalMediationAvailable(WTF::BindOnce(
+      [](std::unique_ptr<ScopedPromiseResolver> resolver, bool available) {
+        resolver->Release()->Resolve(available);
+      },
+      std::make_unique<ScopedPromiseResolver>(resolver)));
   return promise;
 }
 

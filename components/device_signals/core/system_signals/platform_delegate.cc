@@ -29,13 +29,18 @@ PlatformDelegate::ProductMetadata& PlatformDelegate::ProductMetadata::operator=(
 
 PlatformDelegate::ProductMetadata::~ProductMetadata() = default;
 
+bool PlatformDelegate::ProductMetadata::operator==(
+    const ProductMetadata& other) const {
+  return name == other.name && version == other.version;
+}
+
 absl::optional<PlatformDelegate::ProductMetadata>
 PlatformDelegate::GetProductMetadata(const base::FilePath& file_path) {
   return absl::nullopt;
 }
 
-absl::optional<std::string>
-PlatformDelegate::GetSigningCertificatePublicKeyHash(
+absl::optional<std::vector<std::string>>
+PlatformDelegate::GetSigningCertificatesPublicKeyHashes(
     const base::FilePath& file_path) {
   return absl::nullopt;
 }

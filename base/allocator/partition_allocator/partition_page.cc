@@ -73,7 +73,7 @@ PA_ALWAYS_INLINE void PartitionDirectUnmap(
   // This can create a fake "address space exhaustion" OOM, in the case where
   // e.g. a large allocation is freed on a thread, and another large one is made
   // from another *before* UnmapNow() has finished running. In this case the
-  // second one may not find enough space in the GigaCage, and fail. This is
+  // second one may not find enough space in the pool, and fail. This is
   // expected to be very rare though, and likely preferable to holding the lock
   // while releasing the address space.
   ScopedUnlockGuard unlock{root->lock_};
@@ -137,14 +137,21 @@ PA_ALWAYS_INLINE void SlotSpanMetadata<thread_safe>::RegisterEmpty() {
 }
 // static
 template <bool thread_safe>
-SlotSpanMetadata<thread_safe>
+const SlotSpanMetadata<thread_safe>
     SlotSpanMetadata<thread_safe>::sentinel_slot_span_;
 
 // static
 template <bool thread_safe>
-SlotSpanMetadata<thread_safe>*
+const SlotSpanMetadata<thread_safe>*
 SlotSpanMetadata<thread_safe>::get_sentinel_slot_span() {
   return &sentinel_slot_span_;
+}
+
+// static
+template <bool thread_safe>
+SlotSpanMetadata<thread_safe>*
+SlotSpanMetadata<thread_safe>::get_sentinel_slot_span_non_const() {
+  return const_cast<SlotSpanMetadata<thread_safe>*>(&sentinel_slot_span_);
 }
 
 template <bool thread_safe>
@@ -312,7 +319,7 @@ void UnmapNow(uintptr_t reservation_start,
 #if BUILDFLAG(PA_DCHECK_IS_ON)
   // When ENABLE_BACKUP_REF_PTR_SUPPORT is off, BRP pool isn't used.
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
-  if (pool == GetBRPPool()) {
+  if (pool == kBRPPoolHandle) {
     // In 32-bit mode, the beginning of a reservation may be excluded from the
     // BRP pool, so shift the pointer. Other pools don't have this logic.
     PA_DCHECK(IsManagedByPartitionAllocBRPPool(
@@ -327,8 +334,8 @@ void UnmapNow(uintptr_t reservation_start,
   } else
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
   {
-    PA_DCHECK(pool == GetRegularPool() ||
-              (IsConfigurablePoolAvailable() && pool == GetConfigurablePool()));
+    PA_DCHECK(pool == kRegularPoolHandle || (IsConfigurablePoolAvailable() &&
+                                             pool == kConfigurablePoolHandle));
     // Non-BRP pools don't need adjustment that BRP needs in 32-bit mode.
     PA_DCHECK(IsManagedByPartitionAllocRegularPool(reservation_start) ||
               IsManagedByPartitionAllocConfigurablePool(reservation_start));

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -596,7 +596,7 @@ VideoTrackAdapter::VideoTrackAdapter(
 }
 
 VideoTrackAdapter::~VideoTrackAdapter() {
-  DCHECK(adapters_.IsEmpty());
+  DCHECK(adapters_.empty());
   DCHECK(!monitoring_frame_rate_timer_);
 }
 
@@ -866,7 +866,7 @@ void VideoTrackAdapter::DeliverFrameOnIO(
       video_frame->natural_size().height() == source_frame_size_->width()) {
     is_device_rotated = true;
   }
-  if (adapters_.IsEmpty()) {
+  if (adapters_.empty()) {
     PostCrossThreadTask(
         *renderer_task_runner_, FROM_HERE,
         CrossThreadBindOnce(&MediaStreamVideoSource::OnFrameDropped,

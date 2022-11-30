@@ -8,6 +8,7 @@
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
 
 #include "base/logging.h"
+#include "base/ranges/algorithm.h"
 #include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_factory.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
@@ -28,7 +29,8 @@ void WaylandZwpLinuxDmabuf::Instantiate(WaylandConnection* connection,
                                         uint32_t name,
                                         const std::string& interface,
                                         uint32_t version) {
-  DCHECK_EQ(interface, kInterfaceName);
+  CHECK_EQ(interface, kInterfaceName) << "Expected \"" << kInterfaceName
+                                      << "\" but got \"" << interface << "\"";
   auto* buffer_factory = connection->wayland_buffer_factory();
   if (buffer_factory->wayland_zwp_dmabuf_ ||
       !wl::CanBind(interface, version, kMinVersion, kMaxVersion)) {
@@ -139,9 +141,9 @@ void WaylandZwpLinuxDmabuf::AddSupportedFourCCFormatAndModifier(
 void WaylandZwpLinuxDmabuf::NotifyRequestCreateBufferDone(
     struct zwp_linux_buffer_params_v1* params,
     struct wl_buffer* new_buffer) {
-  auto it = std::find_if(
-      pending_params_.begin(), pending_params_.end(),
-      [params](const auto& item) { return item.first.get() == params; });
+  auto it = base::ranges::find(pending_params_, params, [](const auto& item) {
+    return item.first.get();
+  });
   DCHECK(it != pending_params_.end());
 
   std::move(it->second).Run(wl::Object<struct wl_buffer>(new_buffer));

@@ -3,19 +3,21 @@
 // found in the LICENSE file.
 
 import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
-import {MojoInterfaceProviderImpl} from 'chrome://resources/cr_components/chromeos/network/mojo_interface_provider.js';
-import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.js';
+import {MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
+import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.js';
+import {CrosNetworkConfigRemote} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
+import {NetworkType, OncSource} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {FakeNetworkConfig} from 'chrome://test/chromeos/fake_network_config_mojom.js';
-import {waitAfterNextRender} from 'chrome://test/test_util.js';
+import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
 suite('InternetKnownNetworksPage', function() {
   /** @type {?SettingsInternetKnownNetworksPageElement} */
   let internetKnownNetworksPage = null;
 
-  /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
+  /** @type {?CrosNetworkConfigRemote} */
   let mojoApi_ = null;
 
   suiteSetup(function() {
@@ -67,15 +69,14 @@ suite('InternetKnownNetworksPage', function() {
 
   suite('KnownNetworksPage', function() {
     test('WiFi', async () => {
-      const mojom = chromeos.networkConfig.mojom;
-      internetKnownNetworksPage.networkType = mojom.NetworkType.kWiFi;
-      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
+      internetKnownNetworksPage.networkType = NetworkType.kWiFi;
+      mojoApi_.setNetworkTypeEnabledState(NetworkType.kWiFi, true);
       const preferredWifi =
-          OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi2');
+          OncMojo.getDefaultNetworkState(NetworkType.kWiFi, 'wifi2');
       preferredWifi.priority = 1;
       const notPreferredWifi =
-          OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi1');
-      setNetworksForTest(mojom.NetworkType.kWiFi, [
+          OncMojo.getDefaultNetworkState(NetworkType.kWiFi, 'wifi1');
+      setNetworksForTest(NetworkType.kWiFi, [
         notPreferredWifi,
         preferredWifi,
       ]);
@@ -104,17 +105,16 @@ suite('InternetKnownNetworksPage', function() {
     });
 
     test('Known networks policy icon and menu button a11y', async () => {
-      const mojom = chromeos.networkConfig.mojom;
-      internetKnownNetworksPage.networkType = mojom.NetworkType.kWiFi;
-      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
+      internetKnownNetworksPage.networkType = NetworkType.kWiFi;
+      mojoApi_.setNetworkTypeEnabledState(NetworkType.kWiFi, true);
       const preferredWifi =
-          OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi2');
+          OncMojo.getDefaultNetworkState(NetworkType.kWiFi, 'wifi2');
       preferredWifi.priority = 1;
-      preferredWifi.source = mojom.OncSource.kDevicePolicy;
+      preferredWifi.source = OncSource.kDevicePolicy;
       const notPreferredWifi =
-          OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi1');
-      notPreferredWifi.source = mojom.OncSource.kDevicePolicy;
-      setNetworksForTest(mojom.NetworkType.kWiFi, [
+          OncMojo.getDefaultNetworkState(NetworkType.kWiFi, 'wifi1');
+      notPreferredWifi.source = OncSource.kDevicePolicy;
+      setNetworksForTest(NetworkType.kWiFi, [
         notPreferredWifi,
         preferredWifi,
       ]);

@@ -507,7 +507,7 @@ class ComputedStyle : public ComputedStyleBase,
   // will-change: backdrop-filter.
   bool HasBackdropFilter() const {
     DCHECK(BackdropFilterInternal().Get());
-    return !BackdropFilterInternal()->operations_.Operations().IsEmpty();
+    return !BackdropFilterInternal()->operations_.Operations().empty();
   }
   void SetBackdropFilter(const FilterOperations& ops) {
     DCHECK(BackdropFilterInternal().Get());
@@ -532,7 +532,7 @@ class ComputedStyle : public ComputedStyleBase,
   // will-change: filter.
   bool HasFilter() const {
     DCHECK(FilterInternal().Get());
-    return !FilterInternal()->operations_.Operations().IsEmpty();
+    return !FilterInternal()->operations_.Operations().empty();
   }
   void SetFilter(const FilterOperations& v) {
     DCHECK(FilterInternal().Get());
@@ -800,96 +800,34 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Scroll properties.
+
+  PhysicalToLogicalGetter<const Length&, ComputedStyle>
+  PhysicalScrollPaddingToLogicalGetter() const {
+    return PhysicalToLogicalGetter<const Length&, ComputedStyle>(
+        GetWritingDirection(), *this, &ComputedStyleBase::ScrollPaddingTop,
+        &ComputedStyleBase::ScrollPaddingRight,
+        &ComputedStyleBase::ScrollPaddingBottom,
+        &ComputedStyleBase::ScrollPaddingLeft);
+  }
+
   // scroll-padding-block-start
   const Length& ScrollPaddingBlockStart() const {
-    return IsHorizontalWritingMode() ? ScrollPaddingTop() : ScrollPaddingLeft();
-  }
-  void SetScrollPaddingBlockStart(const Length& v) {
-    if (IsHorizontalWritingMode())
-      SetScrollPaddingTop(v);
-    else
-      SetScrollPaddingLeft(v);
+    return PhysicalScrollPaddingToLogicalGetter().BlockStart();
   }
 
   // scroll-padding-block-end
   const Length& ScrollPaddingBlockEnd() const {
-    return IsHorizontalWritingMode() ? ScrollPaddingBottom()
-                                     : ScrollPaddingRight();
-  }
-  void SetScrollPaddingBlockEnd(const Length& v) {
-    if (IsHorizontalWritingMode())
-      SetScrollPaddingBottom(v);
-    else
-      SetScrollPaddingRight(v);
+    return PhysicalScrollPaddingToLogicalGetter().BlockEnd();
   }
 
   // scroll-padding-inline-start
   const Length& ScrollPaddingInlineStart() const {
-    return IsHorizontalWritingMode() ? ScrollPaddingLeft() : ScrollPaddingTop();
-  }
-  void SetScrollPaddingInlineStart(const Length& v) {
-    if (IsHorizontalWritingMode())
-      SetScrollPaddingLeft(v);
-    else
-      SetScrollPaddingTop(v);
+    return PhysicalScrollPaddingToLogicalGetter().InlineStart();
   }
 
   // scroll-padding-inline-end
   const Length& ScrollPaddingInlineEnd() const {
-    return IsHorizontalWritingMode() ? ScrollPaddingRight()
-                                     : ScrollPaddingBottom();
-  }
-  void SetScrollPaddingInlineEnd(const Length& v) {
-    if (IsHorizontalWritingMode())
-      SetScrollPaddingRight(v);
-    else
-      SetScrollPaddingBottom(v);
-  }
-
-  // scroll-margin-block-start
-  float ScrollMarginBlockStart() const {
-    return IsHorizontalWritingMode() ? ScrollMarginTop() : ScrollMarginLeft();
-  }
-  void SetScrollMarginBlockStart(float v) {
-    if (IsHorizontalWritingMode())
-      SetScrollMarginTop(v);
-    else
-      SetScrollMarginLeft(v);
-  }
-
-  // scroll-margin-block-end
-  float ScrollMarginBlockEnd() const {
-    return IsHorizontalWritingMode() ? ScrollMarginBottom()
-                                     : ScrollMarginRight();
-  }
-  void SetScrollMarginBlockEnd(float v) {
-    if (IsHorizontalWritingMode())
-      SetScrollMarginBottom(v);
-    else
-      SetScrollMarginRight(v);
-  }
-
-  // scroll-margin-inline-start
-  float ScrollMarginInlineStart() const {
-    return IsHorizontalWritingMode() ? ScrollMarginLeft() : ScrollMarginTop();
-  }
-  void SetScrollMarginInlineStart(float v) {
-    if (IsHorizontalWritingMode())
-      SetScrollMarginLeft(v);
-    else
-      SetScrollMarginTop(v);
-  }
-
-  // scroll-margin-inline-end
-  float ScrollMarginInlineEnd() const {
-    return IsHorizontalWritingMode() ? ScrollMarginRight()
-                                     : ScrollMarginBottom();
-  }
-  void SetScrollMarginInlineEnd(float v) {
-    if (IsHorizontalWritingMode())
-      SetScrollMarginRight(v);
-    else
-      SetScrollMarginBottom(v);
+    return PhysicalScrollPaddingToLogicalGetter().InlineEnd();
   }
 
   // scrollbar-gutter
@@ -1159,7 +1097,7 @@ class ComputedStyle : public ComputedStyleBase,
     return StrokePaint().HasCurrentColor() ||
            InternalVisitedStrokePaint().HasCurrentColor();
   }
-  bool HasDashArray() const { return !StrokeDashArray()->data.IsEmpty(); }
+  bool HasDashArray() const { return !StrokeDashArray()->data.empty(); }
   bool StrokeDashArrayDataEquivalent(const ComputedStyle&) const;
 
   // accent-color
@@ -2182,6 +2120,9 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   bool IsDisplayTableType() const { return IsDisplayTableType(Display()); }
+  bool IsDisplayTableInternalType() const {
+    return IsDisplayTableInternalType(Display());
+  }
 
   bool IsDisplayMathType() const { return IsDisplayMathBox(Display()); }
 
@@ -2387,19 +2328,21 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Animation utility functions.
+  bool HasCurrentTransformRelatedAnimation() const {
+    return HasCurrentTransformAnimation() || HasCurrentScaleAnimation() ||
+           HasCurrentRotateAnimation() || HasCurrentTranslateAnimation();
+  }
   bool HasCurrentCompositableAnimation() const {
-    return HasCurrentOpacityAnimation() || HasCurrentTransformAnimation() ||
-           HasCurrentScaleAnimation() || HasCurrentRotateAnimation() ||
-           HasCurrentTranslateAnimation() || HasCurrentFilterAnimation() ||
-           HasCurrentBackdropFilterAnimation() ||
+    return HasCurrentOpacityAnimation() ||
+           HasCurrentTransformRelatedAnimation() ||
+           HasCurrentFilterAnimation() || HasCurrentBackdropFilterAnimation() ||
            (RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled() &&
             HasCurrentBackgroundColorAnimation());
   }
   bool ShouldCompositeForCurrentAnimations() const {
-    return HasCurrentOpacityAnimation() || HasCurrentTransformAnimation() ||
-           HasCurrentScaleAnimation() || HasCurrentRotateAnimation() ||
-           HasCurrentTranslateAnimation() || HasCurrentFilterAnimation() ||
-           HasCurrentBackdropFilterAnimation();
+    return HasCurrentOpacityAnimation() ||
+           HasCurrentTransformRelatedAnimation() ||
+           HasCurrentFilterAnimation() || HasCurrentBackdropFilterAnimation();
   }
   bool RequiresPropertyNodeForAnimation() const {
     return IsRunningOpacityAnimationOnCompositor() ||
@@ -2441,12 +2384,11 @@ class ComputedStyle : public ComputedStyleBase,
   }
   bool HasTransform() const {
     return HasTransformOperations() || HasOffset() ||
-           HasCurrentTransformAnimation() || HasCurrentScaleAnimation() ||
-           HasCurrentRotateAnimation() || HasCurrentTranslateAnimation() ||
-           Translate() || Rotate() || Scale();
+           HasCurrentTransformRelatedAnimation() || Translate() || Rotate() ||
+           Scale();
   }
   bool HasTransformOperations() const {
-    return !Transform().Operations().IsEmpty();
+    return !Transform().Operations().empty();
   }
   ETransformStyle3D UsedTransformStyle3D() const {
     return HasGroupingPropertyForUsedTransformStyle3D()
@@ -2968,6 +2910,14 @@ class ComputedStyle : public ComputedStyleBase,
            display == EDisplay::kTableColumn ||
            display == EDisplay::kTableCell ||
            display == EDisplay::kTableCaption;
+  }
+  static bool IsDisplayTableInternalType(EDisplay display) {
+    return display == EDisplay::kTableRowGroup ||
+           display == EDisplay::kTableHeaderGroup ||
+           display == EDisplay::kTableFooterGroup ||
+           display == EDisplay::kTableRow ||
+           display == EDisplay::kTableColumnGroup ||
+           display == EDisplay::kTableColumn;
   }
 
   // Color accessors are all private to make sure callers use

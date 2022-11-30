@@ -49,6 +49,10 @@ class CompoundTabContainer : public TabContainer {
   void OnGroupEditorOpened(const tab_groups::TabGroupId& group) override;
   void OnGroupMoved(const tab_groups::TabGroupId& group) override;
   void OnGroupContentsChanged(const tab_groups::TabGroupId& group) override;
+  void OnGroupVisualsChanged(
+      const tab_groups::TabGroupId& group,
+      const tab_groups::TabGroupVisualData* old_visuals,
+      const tab_groups::TabGroupVisualData* new_visuals) override;
   void OnGroupClosed(const tab_groups::TabGroupId& group) override;
   void UpdateTabGroupVisuals(tab_groups::TabGroupId group_id) override;
   void NotifyTabGroupEditorBubbleOpened() override;
@@ -61,10 +65,9 @@ class CompoundTabContainer : public TabContainer {
       Tab* tab,
       TabSlotController::HoverCardUpdateType update_type) override;
   void HandleLongTap(ui::GestureEvent* event) override;
-  bool IsRectInWindowCaption(const gfx::Rect& rect) override;
+  bool IsRectInContentArea(const gfx::Rect& rect) override;
   void OnTabSlotAnimationProgressed(TabSlotView* view) override;
   void OnTabCloseAnimationCompleted(Tab* tab) override;
-  void StartBasicAnimation() override;
   void InvalidateIdealBounds() override;
   bool IsAnimating() const override;
   void CancelAnimation() override;
@@ -75,8 +78,9 @@ class CompoundTabContainer : public TabContainer {
   void ExitTabClosingMode() override;
   void SetTabSlotVisibility() override;
   bool InTabClose() override;
-  std::map<tab_groups::TabGroupId, std::unique_ptr<TabGroupViews>>&
-  GetGroupViews() override;
+  TabGroupViews* GetGroupViews(tab_groups::TabGroupId group_id) const override;
+  const std::map<tab_groups::TabGroupId, std::unique_ptr<TabGroupViews>>&
+  get_group_views_for_testing() const override;
   int GetActiveTabWidth() const override;
   int GetInactiveTabWidth() const override;
   gfx::Rect GetIdealBounds(int model_index) const override;
@@ -85,8 +89,7 @@ class CompoundTabContainer : public TabContainer {
   // views::View
   void Layout() override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
-  gfx::Size GetMinimumSize() const override;
-  gfx::Size CalculatePreferredSize() const override;
+  void ChildPreferredSizeChanged(views::View* child) override;
 
   // BrowserRootView::DropTarget:
   BrowserRootView::DropIndex GetDropIndex(
@@ -101,10 +104,20 @@ class CompoundTabContainer : public TabContainer {
  private:
   int NumPinnedTabs() const;
 
+  // Returns true iff `index` is a valid index in the joint viewmodel index
+  // space of the two TabContainers, i.e. if there's a Tab view that corresponds
+  // to `index`. These index spaces are different when the model has added or
+  // removed a tab but we haven't finished processing that change ourselves.
+  bool IsValidViewModelIndex(int index) const;
+
   // Moves the tab at `from_model_index` from whichever TabContainer currently
   // holds it into the other TabContainer, inserting it into that container at
   // the index that corresponds to `to_model_index`.
   void TransferTabBetweenContainers(int from_model_index, int to_model_index);
+
+  // Returns the child TabContainer that should contain `view`. NB this can be
+  // different from `view->parent()` e.g. while `view` is being dragged.
+  raw_ref<TabContainer> GetTabContainerFor(TabSlotView* view);
 
   TabContainer* GetTabContainerAt(gfx::Point point_in_local_coords);
 

@@ -16,16 +16,17 @@
 namespace base {
 
 #if BUILDFLAG(IS_APPLE)
-extern const BASE_EXPORT Feature kOptimizedRealtimeThreadingMac;
+BASE_EXPORT BASE_DECLARE_FEATURE(kOptimizedRealtimeThreadingMac);
 extern const BASE_EXPORT FeatureParam<bool>
     kOptimizedRealtimeThreadingMacPreemptible;
 extern const BASE_EXPORT FeatureParam<double>
     kOptimizedRealtimeThreadingMacBusy;
 extern const BASE_EXPORT FeatureParam<double>
     kOptimizedRealtimeThreadingMacBusyLimit;
+extern const BASE_EXPORT Feature kUseThreadQoSMac;
 #endif
 
-extern const BASE_EXPORT Feature kEnableHangWatcher;
+BASE_EXPORT BASE_DECLARE_FEATURE(kEnableHangWatcher);
 
 }  // namespace base
 

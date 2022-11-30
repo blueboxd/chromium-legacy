@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -220,8 +220,8 @@ void AuditsIssue::ReportNavigatorUserAgentAccess(
 
   // Try to get only the script name quickly.
   std::unique_ptr<SourceLocation> location;
-  String script_url = GetCurrentScriptUrl();
-  if (!script_url.IsEmpty()) {
+  String script_url = GetCurrentScriptUrl(execution_context->GetIsolate());
+  if (!script_url.empty()) {
     location =
         std::make_unique<SourceLocation>(script_url, String(), 1, 0, nullptr);
   } else {
@@ -503,10 +503,6 @@ void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
       type = protocol::Audits::DeprecationIssueTypeEnum::
           InsecurePrivateNetworkSubresourceRequest;
       break;
-    case DeprecationIssueType::kLegacyConstraintGoogIPv6:
-      type =
-          protocol::Audits::DeprecationIssueTypeEnum::LegacyConstraintGoogIPv6;
-      break;
     case DeprecationIssueType::kLocalCSSFileExtensionRejected:
       type = protocol::Audits::DeprecationIssueTypeEnum::
           LocalCSSFileExtensionRejected;
@@ -517,14 +513,6 @@ void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
     case DeprecationIssueType::kMediaSourceDurationTruncatingBuffered:
       type = protocol::Audits::DeprecationIssueTypeEnum::
           MediaSourceDurationTruncatingBuffered;
-      break;
-    case DeprecationIssueType::kNavigateEventRestoreScroll:
-      type = protocol::Audits::DeprecationIssueTypeEnum::
-          NavigateEventRestoreScroll;
-      break;
-    case DeprecationIssueType::kNavigateEventTransitionWhile:
-      type = protocol::Audits::DeprecationIssueTypeEnum::
-          NavigateEventTransitionWhile;
       break;
     case DeprecationIssueType::kNoSysexWebMIDIWithoutPermission:
       type = protocol::Audits::DeprecationIssueTypeEnum::
@@ -552,6 +540,13 @@ void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
     case DeprecationIssueType::kOverflowVisibleOnReplacedElement:
       type = protocol::Audits::DeprecationIssueTypeEnum::
           OverflowVisibleOnReplacedElement;
+      break;
+    case DeprecationIssueType::kPaymentInstruments:
+      type = protocol::Audits::DeprecationIssueTypeEnum::PaymentInstruments;
+      break;
+    case DeprecationIssueType::kPaymentRequestCSPViolation:
+      type = protocol::Audits::DeprecationIssueTypeEnum::
+          PaymentRequestCSPViolation;
       break;
     case DeprecationIssueType::kPersistentQuotaType:
       type = protocol::Audits::DeprecationIssueTypeEnum::PersistentQuotaType;

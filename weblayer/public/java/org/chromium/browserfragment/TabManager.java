@@ -1,9 +1,11 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.browserfragment;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.os.RemoteException;
 
 import androidx.annotation.NonNull;
@@ -50,7 +52,9 @@ public class TabManager {
         @Override
         public void onResult(@Nullable ITabParams tabParams) {
             if (tabParams != null) {
-                mCompleter.set(TabRegistry.getInstance().getOrCreateTab(tabParams));
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    mCompleter.set(TabRegistry.getInstance().getOrCreateTab(tabParams));
+                });
                 return;
             }
             mCompleter.set(null);

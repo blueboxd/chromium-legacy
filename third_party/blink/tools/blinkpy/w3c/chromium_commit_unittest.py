@@ -1,11 +1,10 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import unittest
 
 from blinkpy.common.host_mock import MockHost
-from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
 from blinkpy.common.path_finder import RELATIVE_WPT_TESTS
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.executive_mock import MockExecutive, mock_git_commands

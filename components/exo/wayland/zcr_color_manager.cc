@@ -170,14 +170,39 @@ class ColorManagerObserver : public WaylandDisplayObserver {
                        wl_resource* output_resource)
       : wayland_display_handler_(wayland_display_handler),
         color_management_output_resource_(color_management_output_resource),
-        output_resource_(output_resource) {}
+        output_resource_(output_resource) {
+    wayland_display_handler->AddObserver(this);
+  }
 
   ColorManagerObserver(const ColorManagerObserver&) = delete;
   ColorManagerObserver& operator=(const ColorManagerObserver&) = delete;
 
-  ~ColorManagerObserver() = default;
+  ~ColorManagerObserver() {
+    if (wayland_display_handler_)
+      wayland_display_handler_->RemoveObserver(this);
+  }
 
-  // Overridden from WaylandDisplayObserver:
+  gfx::ColorSpace GetColorSpace() const {
+    // Snapshot ColorSpace is only valid for ScreenAsh.
+    return ash::Shell::Get()
+        ->display_manager()
+        ->GetDisplayInfo(wayland_display_handler_->id())
+        .GetSnapshotColorSpace();
+  }
+
+  WaylandDisplayHandler* wayland_display_handler() {
+    return wayland_display_handler_;
+  }
+
+  wl_resource* GetOutputResource() { return output_resource_; }
+
+  // Overriden from WaylandDisplayObserver.
+  void OnOutputDestroyed() override {
+    wayland_display_handler_->RemoveObserver(this);
+    wayland_display_handler_ = nullptr;
+  }
+
+  // Overridden from WaylandDisplayObserver.
   bool SendDisplayMetrics(const display::Display& display,
                           uint32_t changed_metrics) override {
     if (!(changed_metrics &
@@ -189,24 +214,6 @@ class ColorManagerObserver : public WaylandDisplayObserver {
         color_management_output_resource_);
     return true;
   }
-
-  gfx::ColorSpace GetColorSpace() const {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    // Snapshot ColorSpace is only valid for ScreenAsh.
-    return ash::Shell::Get()
-        ->display_manager()
-        ->GetDisplayInfo(wayland_display_handler_->id())
-        .GetSnapshotColorSpace();
-#else
-    return gfx::ColorSpace::CreateSRGB();
-#endif
-  }
-
-  WaylandDisplayHandler* wayland_display_handler() {
-    return wayland_display_handler_;
-  }
-
-  wl_resource* GetOutputResource() { return output_resource_; }
 
  private:
   WaylandDisplayHandler* wayland_display_handler_;
@@ -475,7 +482,6 @@ void color_manager_get_color_management_output(
       std::make_unique<ColorManagerObserver>(
           display_handler, color_management_output_resource, output);
 
-  display_handler->AddObserver(color_management_output_observer.get());
   SetImplementation(color_management_output_resource,
                     &color_management_output_v1_implementation,
                     std::move(color_management_output_observer));

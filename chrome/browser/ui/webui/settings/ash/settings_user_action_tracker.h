@@ -14,8 +14,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
-namespace chromeos {
-namespace settings {
+namespace ash::settings {
 
 class Hierarchy;
 class OsSettingsSections;
@@ -59,7 +58,7 @@ class SettingsUserActionTracker : public mojom::UserActionRecorder {
   void RecordSearch() override;
   void RecordSettingChange() override;
   void RecordSettingChangeWithDetails(
-      mojom::Setting setting,
+      chromeos::settings::mojom::Setting setting,
       mojom::SettingChangeValuePtr value) override;
 
   void EndCurrentSession();
@@ -72,7 +71,6 @@ class SettingsUserActionTracker : public mojom::UserActionRecorder {
   mojo::Receiver<mojom::UserActionRecorder> receiver_{this};
 };
 
-}  // namespace settings
-}  // namespace chromeos
+}  // namespace ash::settings
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SETTINGS_ASH_SETTINGS_USER_ACTION_TRACKER_H_

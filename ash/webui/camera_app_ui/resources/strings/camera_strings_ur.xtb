@@ -9,7 +9,7 @@
 <translation id="1300209025925956156">اپنی دستاویز اسکین کریں</translation>
 <translation id="1309250603447638106">دستاویز سکیننگ کے لیے اپ ڈیٹس ڈاؤن لوڈ کی جا رہی ہیں</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />۔ رسائی حاصل کرنے کے لیے تلاش پلس بائیں تیر کا نشان۔</translation>
-<translation id="1393338179284529051">Quad HD</translation>
+<translation id="1417314334557041815">صفحہ <ph name="INDEX" /> میں ترمیم کریں</translation>
 <translation id="1430915738399379752">پرنٹ کریں</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> ان پلگ ہے۔</translation>
 <translation id="1473110567575736769">3 سیکنڈ کا ٹائمر</translation>
@@ -20,8 +20,8 @@
 <translation id="1620510694547887537">کیمرا</translation>
 <translation id="1627744224761163218">‎4 x 4</translation>
 <translation id="1664224225747386870">کچھ بھی ریکارڈ نہیں ہوا</translation>
-<translation id="169335673490251151">اضافی صفحات کو اسکین کریں</translation>
 <translation id="1838104802459806957">اوپر کی طرف جھکائیں</translation>
+<translation id="1843105061469674856">اضافی صفحہ اسکین کریں</translation>
 <translation id="1851169887664797861">کیمرا کے اضافی کنٹرولز دستیاب ہیں</translation>
 <translation id="1851616744363735765">موقوف</translation>
 <translation id="1862930711583847113"><ph name="FILE" /> کو برآمد کرنے سے قاصر</translation>
@@ -46,7 +46,6 @@
 <translation id="2599796128805996109">پیچھے کا کیمرہ</translation>
 <translation id="2759905922487820242"><ph name="CURRENT" /> / <ph name="MAXIMAL" />سیکنڈ</translation>
 <translation id="2761536921376153655">اسکین کی قسم</translation>
-<translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">دو طرفہ مطابقت پذیر بنانے کا پیش منظر</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> پلگ ان ہے</translation>
 <translation id="2904654629665923749">دستاویز کا اسکین دستیاب ہے</translation>
@@ -80,6 +79,7 @@
 <translation id="414641094616694804">یہ کیمرا ریزولوشن تبدیل نہیں کر سکتا</translation>
 <translation id="4269820728363426813">لنک کا پتہ کاپی کریں</translation>
 <translation id="4281620174117014503">متوسط ریزولیوشن</translation>
+<translation id="428234092390943511">صفحہ کا تھمب نیل</translation>
 <translation id="4329152592498422850">مربع تصویر لینے کی وضع پر سوئچ کریں</translation>
 <translation id="4340659173795395806">‏اب آپ متعدد صفحات کا PDF بنا سکتے ہیں</translation>
 <translation id="4383571725254449280">کارکردگی کے لاگز پرنٹ کریں</translation>
@@ -114,7 +114,6 @@
 <translation id="5916664084637901428">آن</translation>
 <translation id="5975083100439434680">زوم آؤٹ کریں</translation>
 <translation id="5976160379964388480">دیگر</translation>
-<translation id="603973421174355542">‏مکمل HD</translation>
 <translation id="6073451960410192870">ریکارڈنگ روکیں</translation>
 <translation id="6197807149213783179">میٹا ڈیٹا محفوظ کریں</translation>
 <translation id="6233780560267770709">3 ضرب 3</translation>
@@ -137,7 +136,6 @@
 <translation id="698156982839284926">3 سیکنڈ</translation>
 <translation id="712848772518857951">کیا آپ واقعی <ph name="COUNT" /> آئٹمز ہٹانا چاہتے ہیں؟</translation>
 <translation id="7134221860976209830">10 سیکنڈ کا ٹائمر</translation>
-<translation id="7150591439198955032">4K</translation>
 <translation id="7191890674911603392">ریکارڈ کی قسم</translation>
 <translation id="7243947652761655814">ویڈیو ریزولیوشن</translation>
 <translation id="7337660886763914220">فائل سسٹم کی خرابیاں۔</translation>
@@ -162,7 +160,6 @@
 <translation id="8167081290930651932">بطور تصویر محفوظ کریں</translation>
 <translation id="8239780215768881278">ویڈیو اسنیپ شاٹ لیں</translation>
 <translation id="8261506727792406068">حذف کریں</translation>
-<translation id="839162370397157884">صفحہ منتخب کریں</translation>
 <translation id="8425673304802773841">نیچے کی طرف جھکائیں</translation>
 <translation id="8428213095426709021">ترتیبات</translation>
 <translation id="8629662593426079630">360p</translation>

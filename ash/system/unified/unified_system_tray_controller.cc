@@ -21,8 +21,6 @@
 #include "ash/system/audio/unified_volume_slider_controller.h"
 #include "ash/system/bluetooth/bluetooth_detailed_view_controller.h"
 #include "ash/system/bluetooth/bluetooth_feature_pod_controller.h"
-#include "ash/system/bluetooth/bluetooth_feature_pod_controller_legacy.h"
-#include "ash/system/bluetooth/unified_bluetooth_detailed_view_controller.h"
 #include "ash/system/brightness/unified_brightness_slider_controller.h"
 #include "ash/system/camera/autozoom_feature_pod_controller.h"
 #include "ash/system/cast/cast_feature_pod_controller.h"
@@ -50,13 +48,13 @@
 #include "ash/system/rotation/rotation_lock_feature_pod_controller.h"
 #include "ash/system/time/calendar_metrics.h"
 #include "ash/system/time/unified_calendar_view_controller.h"
-#include "ash/system/tray/system_tray_item_uma_type.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/deferred_update_dialog.h"
 #include "ash/system/unified/detailed_view_controller.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "ash/system/unified/feature_pods_container_view.h"
+#include "ash/system/unified/quick_settings_metrics_util.h"
 #include "ash/system/unified/quick_settings_view.h"
 #include "ash/system/unified/quiet_mode_feature_pod_controller.h"
 #include "ash/system/unified/unified_notifier_settings_controller.h"
@@ -425,8 +423,7 @@ void UnifiedSystemTrayController::ShowNetworkDetailedView(bool force) {
 
   base::RecordAction(base::UserMetricsAction("StatusArea_Network_Detailed"));
 
-  if (ash::features::IsQuickSettingsNetworkRevampEnabled() &&
-      ash::features::IsBluetoothRevampEnabled()) {
+  if (ash::features::IsQuickSettingsNetworkRevampEnabled()) {
     ShowDetailedView(std::make_unique<NetworkDetailedViewController>(this));
   } else {
     ShowDetailedView(
@@ -439,12 +436,7 @@ void UnifiedSystemTrayController::ShowBluetoothDetailedView() {
     return;
 
   base::RecordAction(base::UserMetricsAction("StatusArea_Bluetooth_Detailed"));
-  if (ash::features::IsBluetoothRevampEnabled()) {
-    ShowDetailedView(std::make_unique<BluetoothDetailedViewController>(this));
-  } else {
-    ShowDetailedView(
-        std::make_unique<UnifiedBluetoothDetailedViewController>(this));
-  }
+  ShowDetailedView(std::make_unique<BluetoothDetailedViewController>(this));
 }
 
 void UnifiedSystemTrayController::ShowCastDetailedView() {
@@ -512,7 +504,12 @@ void UnifiedSystemTrayController::TransitionToMainView(bool restore_focus) {
   }
 
   showing_audio_detailed_view_ = false;
-  detailed_view_controller_.reset();
+
+  // Transfer `detailed_view_controller_` to a scoped object, which will be
+  // destroyed once it's out of this method's scope (after resetting
+  // `quick_settings_view_`'s `detailed_view_`). Because the detailed view has a
+  // reference to its `detailed_view_controller_` which is used in shutdown.
+  auto scoped_detailed_view_controller = std::move(detailed_view_controller_);
 
   if (features::IsQsRevampEnabled()) {
     quick_settings_view_->ResetDetailedView();
@@ -548,11 +545,15 @@ void UnifiedSystemTrayController::EnsureCollapsed() {
 void UnifiedSystemTrayController::EnsureExpanded() {
   if (detailed_view_controller_) {
     showing_audio_detailed_view_ = false;
-    detailed_view_controller_.reset();
     if (features::IsQsRevampEnabled())
       quick_settings_view_->ResetDetailedView();
     else
       unified_view_->ResetDetailedView();
+
+    // Destroy `detailed_view_controller_` after resetting
+    // `quick_settings_view_`'s `detailed_view_` because the detailed view has a
+    // reference to its `detailed_view_controller_` which is used in shutdown.
+    detailed_view_controller_.reset();
   }
   StartAnimation(true /*expand*/);
 
@@ -608,18 +609,18 @@ void UnifiedSystemTrayController::LoadIsExpandedPref() {
 }
 
 void UnifiedSystemTrayController::InitFeaturePods() {
+  // TODO(crbug/1368717): use FeatureTiles.
+  if (ash::features::IsQsRevampEnabled())
+    return;
+
   if (ash::features::IsQuickSettingsNetworkRevampEnabled()) {
     AddFeaturePodItem(std::make_unique<NetworkFeaturePodController>(this));
   } else {
     AddFeaturePodItem(
         std::make_unique<NetworkFeaturePodControllerLegacy>(this));
   }
-  if (ash::features::IsBluetoothRevampEnabled()) {
-    AddFeaturePodItem(std::make_unique<BluetoothFeaturePodController>(this));
-  } else {
-    AddFeaturePodItem(
-        std::make_unique<BluetoothFeaturePodControllerLegacy>(this));
-  }
+
+  AddFeaturePodItem(std::make_unique<BluetoothFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<AccessibilityFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<QuietModeFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<RotationLockFeaturePodController>());
@@ -635,31 +636,13 @@ void UnifiedSystemTrayController::InitFeaturePods() {
     AddFeaturePodItem(std::make_unique<DarkModeFeaturePodController>(this));
   if (base::FeatureList::IsEnabled(features::kShelfParty))
     AddFeaturePodItem(std::make_unique<ShelfPartyFeaturePodController>());
-
   if (media::ShouldEnableAutoFraming())
     AddFeaturePodItem(std::make_unique<AutozoomFeaturePodController>());
-
   // If you want to add a new feature pod item, add here.
-  if (features::IsQsRevampEnabled()) {
-    if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
-      UMA_HISTOGRAM_COUNTS_100(
-          "ChromeOS.SystemTray.Tablet.FeaturePodCountOnOpen",
-          quick_settings_view_->GetVisibleFeaturePodCount());
-    } else {
-      UMA_HISTOGRAM_COUNTS_100(
-          "ChromeOS.SystemTray.FeaturePodCountOnOpen",
-          quick_settings_view_->GetVisibleFeaturePodCount());
-    }
-    return;
-  }
 
-  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
-    UMA_HISTOGRAM_COUNTS_100("ChromeOS.SystemTray.Tablet.FeaturePodCountOnOpen",
-                             unified_view_->GetVisibleFeaturePodCount());
-  } else {
-    UMA_HISTOGRAM_COUNTS_100("ChromeOS.SystemTray.FeaturePodCountOnOpen",
-                             unified_view_->GetVisibleFeaturePodCount());
-  }
+  quick_settings_metrics_util::RecordQsFeaturePodCount(
+      unified_view_->GetVisibleFeaturePodCount(),
+      Shell::Get()->tablet_mode_controller()->InTabletMode());
 }
 
 void UnifiedSystemTrayController::AddFeaturePodItem(
@@ -669,17 +652,12 @@ void UnifiedSystemTrayController::AddFeaturePodItem(
   button->SetExpandedAmount(IsExpanded() ? 1.0 : 0.0,
                             false /* fade_icon_button */);
 
-  // Record DefaultView.VisibleRows UMA.
-  SystemTrayItemUmaType uma_type = controller->GetUmaType();
-  if (uma_type != SystemTrayItemUmaType::UMA_NOT_RECORDED &&
-      button->visible_preferred()) {
-    UMA_HISTOGRAM_ENUMERATION("Ash.SystemMenu.DefaultView.VisibleRows",
-                              uma_type, SystemTrayItemUmaType::UMA_COUNT);
+  // Records visible pods.
+  if (button->visible_preferred()) {
+    quick_settings_metrics_util::RecordVisibleQsFeature(
+        controller->GetCatalogName());
   }
-  if (features::IsQsRevampEnabled())
-    quick_settings_view_->AddFeaturePodButton(button);
-  else
-    unified_view_->AddFeaturePodButton(button);
+  unified_view_->AddFeaturePodButton(button);
 
   feature_pod_controllers_.push_back(std::move(controller));
 }

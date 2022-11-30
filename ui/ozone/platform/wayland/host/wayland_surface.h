@@ -6,12 +6,14 @@
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_SURFACE_H_
 
 #include <cstdint>
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
@@ -22,6 +24,7 @@
 #include "ui/gfx/overlay_priority_hint.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
+#include "ui/ozone/platform/wayland/host/wayland_zcr_color_space.h"
 
 struct wp_content_type_v1;
 struct zwp_keyboard_shortcuts_inhibitor_v1;
@@ -34,6 +37,7 @@ class WaylandConnection;
 class WaylandOutput;
 class WaylandWindow;
 class WaylandBufferHandle;
+class WaylandZcrColorManagementSurface;
 
 // Wrapper of a wl_surface, owned by a WaylandWindow or a WlSubsurface.
 class WaylandSurface {
@@ -67,10 +71,11 @@ class WaylandSurface {
   void RequestExplicitRelease(ExplicitReleaseCallback callback);
 
   // Returns an id that identifies the |wl_surface_|.
-  uint32_t GetSurfaceId() const;
+  uint32_t get_surface_id() const { return surface_ ? surface_.id() : 0u; }
+
   // Returns a gfx::AcceleratedWidget that identifies the WaylandWindow that
   // this WaylandSurface belongs to.
-  gfx::AcceleratedWidget GetWidget() const;
+  gfx::AcceleratedWidget get_widget() const;
 
   // Initializes the WaylandSurface and returns true iff success.
   // This may return false if a wl_surface could not be created, for example.
@@ -81,10 +86,6 @@ class WaylandSurface {
   // (e.g: window/tab dragging sessions).
   void UnsetRootWindow();
 
-  // Sets a non-null in-fence, must be combined with an AttachBuffer() and a
-  // Commit().
-  void SetAcquireFence(gfx::GpuFenceHandle acquire_fence);
-
   // Attaches the given wl_buffer to the underlying wl_surface at (0, 0).
   // Returns true if wl_surface.attach will be called in ApplyPendingStates().
   bool AttachBuffer(WaylandBufferHandle* buffer_handle);
@@ -93,22 +94,31 @@ class WaylandSurface {
   // |buffer_pending_damage_region|, which should be in buffer coordinates (px).
   void UpdateBufferDamageRegion(const gfx::Rect& damage_px);
 
+  // Sets a non-null in-fence, must be combined with an AttachBuffer() and a
+  // Commit().
+  void set_acquire_fence(gfx::GpuFenceHandle acquire_fence);
+
   // Sets an optional transformation for how the Wayland compositor interprets
   // the contents of the buffer attached to this surface.
-  void SetBufferTransform(gfx::OverlayTransform transform);
+  void set_buffer_transform(gfx::OverlayTransform transform) {
+    DCHECK(!apply_state_immediately_);
+    DCHECK(transform != gfx::OVERLAY_TRANSFORM_INVALID);
+    pending_state_.buffer_transform = transform;
+    return;
+  }
 
   // Sets the |buffer_scale| (with respect to the scale factor used by the GPU
   // process) for the next submitted buffer. This helps Wayland compositor to
   // determine buffer size in dip (GPU operates in pixels. So, when buffers are
   // created, their requested size is in pixels).
-  void SetSurfaceBufferScale(float scale);
+  void set_surface_buffer_scale(float scale);
 
   // Sets the region that is opaque on this surface in physical pixels. This is
   // expected to be called whenever the region that the surface span changes or
   // the opacity changes. Rects in |region_px| are specified surface-local, in
   // physical pixels.  If |region_px| is nullptr or empty, the opaque region is
   // reset to empty.
-  void SetOpaqueRegion(const std::vector<gfx::Rect>* region_px);
+  void set_opaque_region(const std::vector<gfx::Rect>* region_px);
 
   // Sets the input region on this surface in physical pixels.
   // The input region indicates which parts of the surface accept pointer and
@@ -116,29 +126,71 @@ class WaylandSurface {
   // whenever the region that the surface span changes or window state changes
   // when custom frame is used.  If |region_px| is nullptr, the input region is
   // reset to cover the entire wl_surface.
-  void SetInputRegion(const gfx::Rect* region_px);
+  void set_input_region(const gfx::Rect* region_px);
 
-  // Set the source rectangle of the associated wl_surface.
+  // Set the crop uv of the attached wl_buffer.
+  // Unlike wp_viewport.set_source, this crops the buffer prior to
+  // |buffer_transform| being applied to the buffer, it will be transformed s.t.
+  // wp_viewport.source is called with correct params.
   // See:
   // https://cgit.freedesktop.org/wayland/wayland-protocols/tree/stable/viewporter/viewporter.xml
-  // If |src_rect| is empty, the source rectangle is unset.
+  // If |crop| is empty, the source rectangle is unset.
   // Note this method does not send corresponding wayland requests until
   // attaching the next buffer.
-  void SetViewportSource(const gfx::RectF& src_rect);
+  void set_buffer_crop(const gfx::RectF& crop) {
+    DCHECK(!apply_state_immediately_);
+    pending_state_.crop = crop == gfx::RectF{1.f, 1.f} ? gfx::RectF() : crop;
+  }
 
   // Sets the opacity of the wl_surface using zcr_blending_v1_set_alpha.
   // See: alpha-compositing-unstable-v1.xml
-  void SetOpacity(const float opacity);
+  void set_opacity(const float opacity) {
+    DCHECK(!apply_state_immediately_);
+    if (blending())
+      pending_state_.opacity = opacity;
+  }
 
   // Sets the blending equation of the wl_surface using
   // zcr_blending_v1_set_blending. See: alpha-compositing-unstable-v1.xml
-  void SetBlending(const bool use_blending);
+  void set_blending(const bool use_blending) {
+    DCHECK(!apply_state_immediately_);
+    if (blending())
+      pending_state_.use_blending = use_blending;
+  }
 
   // Set the destination size of the associated wl_surface according to
   // |dest_size_px|, which should be in physical pixels.
   // Note this method sends corresponding wayland requests immediately because
   // it does not need a new buffer attach to take effect.
-  void SetViewportDestination(const gfx::SizeF& dest_size_px);
+  void set_viewport_destination(const gfx::SizeF& dest_size_px) {
+    DCHECK(!apply_state_immediately_);
+    pending_state_.viewport_px = dest_size_px;
+  }
+
+  // Sets the priority hint for the overlay that is committed via this surface.
+  void set_overlay_priority(gfx::OverlayPriorityHint priority_hint) {
+    if (overlay_priority_surface())
+      pending_state_.priority_hint = priority_hint;
+  }
+
+  // Sets the rounded clip bounds for this surface.
+  void set_rounded_clip_bounds(const gfx::RRectF& rounded_clip_bounds) {
+    if (get_augmented_surface())
+      pending_state_.rounded_clip_bounds = rounded_clip_bounds;
+  }
+
+  // Sets the background color for this surface, which will be blended with the
+  // wl_buffer contents during the compositing step on the Wayland compositor
+  // side.
+  void set_background_color(absl::optional<SkColor4f> background_color) {
+    if (get_augmented_surface())
+      pending_state_.background_color = background_color;
+  }
+
+  // Sets whether this surface contains a video.
+  void set_contains_video(bool contains_video) {
+    pending_state_.contains_video = contains_video;
+  }
 
   // Creates a wl_subsurface relating this surface and a parent surface,
   // |parent|. Callers take ownership of the wl_subsurface.
@@ -148,19 +200,8 @@ class WaylandSurface {
   // be removed.
   void RemoveEnteredOutput(uint32_t id);
 
-  // Sets the priority hint for the overlay that is committed via this surface.
-  void SetOverlayPriority(gfx::OverlayPriorityHint priority_hint);
-
-  // Sets the rounded clip bounds for this surface.
-  void SetRoundedClipBounds(const gfx::RRectF& rounded_clip_bounds);
-
-  // Sets the background color for this surface, which will be blended with the
-  // wl_buffer contents during the compositing step on the Wayland compositor
-  // side.
-  void SetBackgroundColor(absl::optional<SkColor4f> background_color);
-
-  // Sets whether this surface contains a video.
-  void SetContainsVideo(bool contains_video);
+  // Set surface ColorSpace
+  void set_color_space(gfx::ColorSpace color_space);
 
   // Validates the |pending_state_| and generates the corresponding requests.
   // Then copy |pending_states_| to |states_|.
@@ -173,7 +214,7 @@ class WaylandSurface {
   // Workaround used by GLSurfaceWayland when libgbm is not available. Causes
   // SetSurfaceBufferScale() SetOpaqueRegion(), and SetInputRegion() to take
   // effect immediately.
-  void SetApplyStateImmediately();
+  void ForceImmediateStateApplication();
 
   // Requests to wayland compositor to send key events even if it matches
   // with the compositor's accelerator keys.
@@ -212,6 +253,9 @@ class WaylandSurface {
     std::vector<gfx::Rect> damage_px;
     std::vector<gfx::Rect> opaque_region_px;
     absl::optional<gfx::Rect> input_region_px = absl::nullopt;
+
+    // The current color space of the surface.
+    scoped_refptr<WaylandZcrColorSpace> color_space = nullptr;
 
     // The acquire gpu fence to associate with the surface buffer.
     gfx::GpuFenceHandle acquire_fence;
@@ -286,8 +330,10 @@ class WaylandSurface {
 
   // Creates (if not created) the synchronization surface and returns a pointer
   // to it.
-  zwp_linux_surface_synchronization_v1* GetSurfaceSync();
-  augmented_surface* GetAugmentedSurface();
+  zwp_linux_surface_synchronization_v1* GetOrCreateSurfaceSync();
+  augmented_surface* get_augmented_surface() {
+    return augmented_surface_.get();
+  }
 
   const raw_ptr<WaylandConnection> connection_;
   raw_ptr<WaylandWindow> root_window_ = nullptr;
@@ -300,6 +346,8 @@ class WaylandSurface {
   wl::Object<overlay_prioritized_surface> overlay_priority_surface_;
   wl::Object<augmented_surface> augmented_surface_;
   wl::Object<wp_content_type_v1> content_type_;
+  std::unique_ptr<WaylandZcrColorManagementSurface>
+      zcr_color_management_surface_;
   base::flat_map<zwp_linux_buffer_release_v1*, ExplicitReleaseInfo>
       linux_buffer_releases_;
   ExplicitReleaseCallback next_explicit_release_request_;

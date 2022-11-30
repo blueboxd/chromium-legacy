@@ -431,7 +431,7 @@ MediaKeySession::MediaKeySession(ScriptState* script_state,
   // From https://w3c.github.io/encrypted-media/#createSession:
   // MediaKeys::createSession(), step 3.
   // 3.1 Let the sessionId attribute be the empty string.
-  DCHECK(session_id_.IsEmpty());
+  DCHECK(session_id_.empty());
 
   // 3.2 Let the expiration attribute be NaN.
   DCHECK(std::isnan(expiration_));
@@ -511,7 +511,7 @@ ScriptPromise MediaKeySession::generateRequest(
 
   // 4. If initDataType is the empty string, return a promise rejected
   //    with a newly created TypeError.
-  if (init_data_type_string.IsEmpty()) {
+  if (init_data_type_string.empty()) {
     exception_state.ThrowTypeError("The initDataType parameter is empty.");
     return ScriptPromise();
   }
@@ -588,7 +588,7 @@ void MediaKeySession::FinishGenerateRequest() {
   //         (Done by CDM calling result.completeWithError() as appropriate.)
   // 10.10.2 Set the sessionId attribute to session id.
   session_id_ = session_->SessionId();
-  DCHECK(!session_id_.IsEmpty());
+  DCHECK(!session_id_.empty());
 
   // 10.10.3 Let this object's callable be true.
   is_callable_ = true;
@@ -626,7 +626,7 @@ ScriptPromise MediaKeySession::load(ScriptState* script_state,
 
   // 4. If sessionId is the empty string, return a promise rejected with
   //    a newly created TypeError.
-  if (session_id.IsEmpty()) {
+  if (session_id.empty()) {
     exception_state.ThrowTypeError("The sessionId parameter is empty.");
     return ScriptPromise();
   }
@@ -705,7 +705,7 @@ void MediaKeySession::FinishLoad() {
 
   // 8.9.2 Set the sessionId attribute to sanitized session ID.
   session_id_ = session_->SessionId();
-  DCHECK(!session_id_.IsEmpty());
+  DCHECK(!session_id_.empty());
 
   // 8.9.3 Let this object's callable be true.
   is_callable_ = true;
@@ -896,7 +896,7 @@ void MediaKeySession::ActionTimerFired(TimerBase*) {
   HeapDeque<Member<PendingAction>> pending_actions;
   pending_actions.Swap(pending_actions_);
 
-  while (!pending_actions.IsEmpty()) {
+  while (!pending_actions.empty()) {
     PendingAction* action = pending_actions.TakeFirst();
     switch (action->GetType()) {
       case PendingAction::Type::kGenerateRequest:
@@ -999,7 +999,7 @@ void MediaKeySession::OnSessionClosed(media::CdmSessionClosedReason reason) {
 
   // Fail any pending events, except if it's a close request.
   action_timer_.Stop();
-  while (!pending_actions_.IsEmpty()) {
+  while (!pending_actions_.empty()) {
     PendingAction* action = pending_actions_.TakeFirst();
     if (action->GetType() == PendingAction::Type::kClose) {
       action->Result()->Complete();
@@ -1097,14 +1097,14 @@ bool MediaKeySession::HasPendingActivity() const {
   // and we're not closed.
   DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL)
       << __func__ << "(" << this << ")"
-      << (!pending_actions_.IsEmpty() ? " !pending_actions_.IsEmpty()" : "")
+      << (!pending_actions_.empty() ? " !pending_actions_.IsEmpty()" : "")
       << (async_event_queue_->HasPendingEvents()
               ? " async_event_queue_->HasPendingEvents()"
               : "")
       << ((media_keys_ && !is_closed_) ? " media_keys_ && !is_closed_" : "");
 
-  return !pending_actions_.IsEmpty() ||
-         async_event_queue_->HasPendingEvents() || (media_keys_ && !is_closed_);
+  return !pending_actions_.empty() || async_event_queue_->HasPendingEvents() ||
+         (media_keys_ && !is_closed_);
 }
 
 void MediaKeySession::ContextDestroyed() {

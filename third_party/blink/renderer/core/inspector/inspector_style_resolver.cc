@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,7 @@ InspectorStyleResolver::InspectorStyleResolver(
       element_->IsDocumentElement() && !element_->GetDocument()
                                             .GetStyleEngine()
                                             .DocumentTransitionTags()
-                                            .IsEmpty();
+                                            .empty();
   for (PseudoId pseudo_id = kFirstPublicPseudoId;
        pseudo_id < kAfterLastInternalPseudoId;
        pseudo_id = static_cast<PseudoId>(pseudo_id + 1)) {

@@ -25,7 +25,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -395,7 +395,7 @@ ClipboardCommands::GetFragmentFromClipboard(LocalFrame& frame) {
   }
 
   const String text = frame.GetSystemClipboard()->ReadPlainText();
-  if (text.IsEmpty())
+  if (text.empty())
     return std::make_pair(fragment, false);
 
   // TODO(editing-dev): Use of UpdateStyleAndLayout

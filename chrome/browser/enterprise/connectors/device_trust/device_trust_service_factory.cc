@@ -18,7 +18,6 @@
 #include "chrome/browser/enterprise/connectors/device_trust/signals/signals_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/policy/content/policy_blocklist_service.h"
 #include "components/policy/core/common/management/management_service.h"
 #include "content/public/browser/browser_context.h"
 
@@ -26,6 +25,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/desktop/desktop_attestation_service.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
+#include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 #include "components/enterprise/browser/controller/chrome_browser_cloud_management_controller.h"
 #include "components/enterprise/browser/device_trust/device_trust_key_manager.h"
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
@@ -33,6 +33,14 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/ash/ash_attestation_service.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+namespace {
+bool IsProfileManaged(Profile* profile) {
+  auto* management_service =
+      policy::ManagementServiceFactory::GetForProfile(profile);
+  return management_service && management_service->IsManaged();
+}
+}  // namespace
 
 namespace enterprise_connectors {
 
@@ -43,6 +51,18 @@ DeviceTrustServiceFactory* DeviceTrustServiceFactory::GetInstance() {
 
 // static
 DeviceTrustService* DeviceTrustServiceFactory::GetForProfile(Profile* profile) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // This blocks the factory from associating nullptr with the current context
+  // before enrollment. Management checks will be removed completely when the
+  // BYOD case is implemented.
+  // Checking for a testing profile is needed to block unit tests without a
+  // proper setup from checking the management service as this can lead to
+  // crashes
+  if (profile->AsTestingProfile() || !IsProfileManaged(profile))
+    // Return nullptr since the current management configuration isn't
+    // supported.
+    return nullptr;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   return static_cast<DeviceTrustService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
@@ -52,8 +72,11 @@ DeviceTrustServiceFactory::DeviceTrustServiceFactory()
           "DeviceTrustService",
           ProfileSelections::BuildForRegularAndIncognitoNonExperimental()) {
   DependsOn(DeviceTrustConnectorServiceFactory::GetInstance());
-  DependsOn(PolicyBlocklistFactory::GetInstance());
   DependsOn(policy::ManagementServiceFactory::GetInstance());
+}
+
+bool DeviceTrustServiceFactory::ServiceIsNULLWhileTesting() const {
+  return true;
 }
 
 DeviceTrustServiceFactory::~DeviceTrustServiceFactory() = default;
@@ -62,13 +85,10 @@ KeyedService* DeviceTrustServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   auto* profile = Profile::FromBrowserContext(context);
 
-  auto* management_service =
-      policy::ManagementServiceFactory::GetForProfile(profile);
-  if (!management_service || !management_service->IsManaged()) {
+  if (!IsProfileManaged(profile))
     // Return nullptr since the current management configuration isn't
     // supported.
     return nullptr;
-  }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<AttestationService> attestation_service =
@@ -90,12 +110,11 @@ KeyedService* DeviceTrustServiceFactory::BuildServiceInstanceFor(
   }
 
   std::unique_ptr<AttestationService> attestation_service =
-      std::make_unique<DesktopAttestationService>(key_manager);
+      std::make_unique<DesktopAttestationService>(
+          policy::BrowserDMTokenStorage::Get(), key_manager);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-  auto signals_service = CreateSignalsService(
-      profile, PolicyBlocklistFactory::GetForBrowserContext(context),
-      management_service);
+  auto signals_service = CreateSignalsService(profile);
 
   if (!signals_service) {
     return nullptr;

@@ -5,11 +5,7 @@
 #ifndef CHROME_BROWSER_ASH_ARC_WINDOW_PREDICTOR_WINDOW_PREDICTOR_UTILS_H_
 #define CHROME_BROWSER_ASH_ARC_WINDOW_PREDICTOR_WINDOW_PREDICTOR_UTILS_H_
 
-#include "ash/components/arc/metrics/arc_metrics_constants.h"
 #include "ash/components/arc/mojom/app.mojom.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-
-class Profile;
 
 namespace app_restore {
 struct AppRestoreData;
@@ -17,14 +13,19 @@ struct AppRestoreData;
 
 namespace arc {
 
-// Create ARC app ghost window and add the corresponding to the launching list,
-// it will be launched after ARC ready.
-bool LaunchArcAppWithGhostWindow(Profile* profile,
-                                 const std::string& app_id,
-                                 const ArcAppListPrefs::AppInfo& app_info,
-                                 int event_flags,
-                                 arc::UserInteractionType user_interaction_type,
-                                 const arc::mojom::WindowInfoPtr& window_info);
+// This is use for indecating the launch source of ghost window.
+enum class GhostWindowType {
+  // App Restore.
+  kFullRestore = 0,
+  // User launch action (e.g. user launch app).
+  kAppLaunch = 1,
+  // launch ARC app which need fixup.
+  kFixup = 2,
+
+  // Add any new values above this one, and update kMaxValue to the highest
+  // enumerator value.
+  kMaxValue = kFixup,
+};
 
 // Is the the window info provide enough data to create corresponding ARC ghost
 // window.

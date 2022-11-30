@@ -30,6 +30,7 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if !BUILDFLAG(IS_IOS)
 #include "components/webauthn/core/browser/internal_authenticator.h"
@@ -372,9 +373,11 @@ class AutofillClient : public RiskDataLoader {
   // platforms).
   virtual AutofillOfferManager* GetAutofillOfferManager();
 
-  // Gets the virtual URL of the last committed page of this client's
-  // associated WebContents.
-  virtual const GURL& GetLastCommittedURL() const = 0;
+  // Returns the last committed url of the primary main frame.
+  virtual const GURL& GetLastCommittedPrimaryMainFrameURL() const = 0;
+
+  // Returns the last committed origin of the primary main frame.
+  virtual url::Origin GetLastCommittedPrimaryMainFrameOrigin() const = 0;
 
   // Gets the security level used for recording histograms for the current
   // context if possible, SECURITY_LEVEL_COUNT otherwise.
@@ -602,6 +605,13 @@ class AutofillClient : public RiskDataLoader {
   // the domain. Should be called before `ShowFastCheckout`.
   virtual bool IsFastCheckoutTriggerForm(const FormData& form,
                                          const FormFieldData& field) = 0;
+
+  // Returns true if the script for `origin` supports consentless execution.
+  virtual bool FastCheckoutScriptSupportsConsentlessExecution(
+      const url::Origin& origin) = 0;
+
+  // Returns true if --fast-checkout flag is set to consentless-only execution.
+  virtual bool FastCheckoutClientSupportsConsentlessExecution() = 0;
 
   // Shows the FastCheckout surface (for autofilling information during the
   // checkout flow) and returns `true` on success. `delegate` will be notified

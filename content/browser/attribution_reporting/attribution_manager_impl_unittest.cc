@@ -44,6 +44,7 @@
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
@@ -525,6 +526,9 @@ TEST_F(AttributionManagerImplTest,
 
   // kFailed = 1.
   histograms.ExpectUniqueSample("Conversions.ReportSendOutcome3", 1, 1);
+
+  histograms.ExpectTotalCount(
+      "Conversions.TimeFromTriggerToReportSentSuccessfully", 0);
 }
 
 TEST_F(AttributionManagerImplTest, RetryLogicOverridesGetReportTimer) {
@@ -592,6 +596,9 @@ TEST_F(AttributionManagerImplTest,
 
   // kFailed = 1.
   histograms.ExpectUniqueSample("Conversions.ReportSendOutcome3", 1, 1);
+
+  histograms.ExpectTotalCount(
+      "Conversions.TimeFromTriggerToReportSentSuccessfully", 0);
 }
 
 TEST_F(AttributionManagerImplTest, QueuedReportAlwaysFails_StopsSending) {
@@ -636,6 +643,9 @@ TEST_F(AttributionManagerImplTest, QueuedReportAlwaysFails_StopsSending) {
 
   // kFailed = 1.
   histograms.ExpectUniqueSample("Conversions.ReportSendOutcome3", 1, 1);
+
+  histograms.ExpectTotalCount(
+      "Conversions.TimeFromTriggerToReportSentSuccessfully", 0);
 }
 
 TEST_F(AttributionManagerImplTest, ReportExpiredAtStartup_Sent) {
@@ -835,6 +845,7 @@ TEST_F(AttributionManagerImplTest, ClearData) {
         start, start + base::Minutes(1),
         base::BindLambdaForTesting(
             [match_url](const blink::StorageKey&) { return match_url; }),
+        /*filter_builder=*/nullptr,
         /*delete_rate_limit_data=*/true, run_loop.QuitClosure());
     run_loop.Run();
 
@@ -1113,29 +1124,29 @@ TEST_F(AttributionManagerImplTest, HandleTrigger_NotifiesObservers) {
     for (size_t i = 1; i <= 3; i++) {
       EXPECT_CALL(observer, OnSourcesChanged);
       EXPECT_CALL(observer,
-                  OnReportsChanged(AttributionReport::ReportType::kEventLevel));
-      EXPECT_CALL(observer,
-                  OnReportsChanged(
-                      AttributionReport::ReportType::kAggregatableAttribution));
+                  OnReportsChanged(AttributionReport::Type::kEventLevel));
+      EXPECT_CALL(
+          observer,
+          OnReportsChanged(AttributionReport::Type::kAggregatableAttribution));
     }
 
     EXPECT_CALL(checkpoint, Call(2));
 
     EXPECT_CALL(observer,
-                OnReportsChanged(AttributionReport::ReportType::kEventLevel))
+                OnReportsChanged(AttributionReport::Type::kEventLevel))
         .Times(3);
-    EXPECT_CALL(observer,
-                OnReportsChanged(
-                    AttributionReport::ReportType::kAggregatableAttribution))
+    EXPECT_CALL(
+        observer,
+        OnReportsChanged(AttributionReport::Type::kAggregatableAttribution))
         .Times(3);
     EXPECT_CALL(checkpoint, Call(3));
 
     EXPECT_CALL(observer, OnSourcesChanged);
     EXPECT_CALL(observer,
-                OnReportsChanged(AttributionReport::ReportType::kEventLevel));
-    EXPECT_CALL(observer,
-                OnReportsChanged(
-                    AttributionReport::ReportType::kAggregatableAttribution))
+                OnReportsChanged(AttributionReport::Type::kEventLevel));
+    EXPECT_CALL(
+        observer,
+        OnReportsChanged(AttributionReport::Type::kAggregatableAttribution))
         .Times(0);
   }
 
@@ -1193,6 +1204,7 @@ TEST_F(AttributionManagerImplTest, ClearData_NotifiesObservers) {
   attribution_manager_->ClearData(
       base::Time::Min(), base::Time::Max(),
       base::BindRepeating([](const blink::StorageKey&) { return false; }),
+      /*filter_builder=*/nullptr,
       /*delete_rate_limit_data=*/true, run_loop.QuitClosure());
   run_loop.Run();
 }
@@ -1433,6 +1445,13 @@ TEST_F(AttributionManagerImplTest, TimeFromConversionToReportSendHistogram) {
 
   histograms.ExpectUniqueSample("Conversions.TimeFromConversionToReportSend",
                                 kFirstReportingWindow.InHours(), 1);
+
+  task_environment_.FastForwardBy(base::Hours(1));
+  report_sender_->RunCallback(0, SendResult::Status::kSent);
+
+  histograms.ExpectUniqueSample(
+      "Conversions.TimeFromTriggerToReportSentSuccessfully",
+      kFirstReportingWindow.InHours() + 1, 1);
 }
 
 TEST_F(AttributionManagerImplTest, SendReport_RecordsExtraReportDelay2) {
@@ -1611,9 +1630,11 @@ TEST_F(AttributionManagerImplTest, HandleSource_DebugKey) {
                 ElementsAre(SourceDebugKeyIs(test_case.expected_debug_key)))
         << test_case.name;
 
-    attribution_manager_->ClearData(
-        base::Time::Min(), base::Time::Max(), base::NullCallback(),
-        /*delete_rate_limit_data=*/true, base::DoNothing());
+    attribution_manager_->ClearData(base::Time::Min(), base::Time::Max(),
+                                    /*filter=*/base::NullCallback(),
+                                    /*filter_builder=*/nullptr,
+                                    /*delete_rate_limit_data=*/true,
+                                    base::DoNothing());
   }
 }
 
@@ -1643,9 +1664,11 @@ TEST_F(AttributionManagerImplTest, HandleTrigger_DebugKey) {
                           TriggerDebugKeyIs(test_case.expected_debug_key))))
         << test_case.name;
 
-    attribution_manager_->ClearData(
-        base::Time::Min(), base::Time::Max(), base::NullCallback(),
-        /*delete_rate_limit_data=*/true, base::DoNothing());
+    attribution_manager_->ClearData(base::Time::Min(), base::Time::Max(),
+                                    /*filter=*/base::NullCallback(),
+                                    /*filter_builder=*/nullptr,
+                                    /*delete_rate_limit_data=*/true,
+                                    base::DoNothing());
   }
 }
 
@@ -1724,9 +1747,11 @@ TEST_F(AttributionManagerImplTest, DebugReport_SentImmediately) {
       EXPECT_THAT(report_sender_->debug_calls(), IsEmpty());
     }
 
-    attribution_manager_->ClearData(
-        base::Time::Min(), base::Time::Max(), base::NullCallback(),
-        /*delete_rate_limit_data=*/true, base::DoNothing());
+    attribution_manager_->ClearData(base::Time::Min(), base::Time::Max(),
+                                    /*filter=*/base::NullCallback(),
+                                    /*filter_builder=*/nullptr,
+                                    /*delete_rate_limit_data=*/true,
+                                    base::DoNothing());
 
     ::testing::Mock::VerifyAndClear(&observer);
   }
@@ -1764,14 +1789,14 @@ TEST_F(AttributionManagerImplTest,
 
   EXPECT_CALL(
       observer,
-      OnReportSent(ReportTypeIs(AttributionReport::ReportType::kEventLevel),
+      OnReportSent(ReportTypeIs(AttributionReport::Type::kEventLevel),
                    /*is_debug_report=*/false,
                    Field(&SendResult::status, SendResult::Status::kSent)));
 
   EXPECT_CALL(
       observer,
       OnReportSent(
-          ReportTypeIs(AttributionReport::ReportType::kAggregatableAttribution),
+          ReportTypeIs(AttributionReport::Type::kAggregatableAttribution),
           /*is_debug_report=*/false,
           Field(&SendResult::status, SendResult::Status::kSent)));
 
@@ -1799,15 +1824,20 @@ TEST_F(AttributionManagerImplTest,
 
   // One event-level report, one aggregatable report.
   EXPECT_THAT(report_sender_->calls(), SizeIs(2));
+
+  task_environment_.FastForwardBy(base::Minutes(1));
   report_sender_->RunCallbacksAndReset(
       {SendResult::Status::kSent, SendResult::Status::kSent});
 
   histograms.ExpectUniqueSample(
       "Conversions.AggregatableReport.AssembleReportStatus",
       AssembleAggregatableReportStatus::kSuccess, 1);
-  histograms.ExpectUniqueSample(
-      "Conversions.AggregatableReport.TimeFromTriggerToReportAssembly",
-      kFirstReportingWindow.InMinutes(), 1);
+  histograms.ExpectUniqueTimeSample(
+      "Conversions.AggregatableReport.TimeFromTriggerToReportAssembly2",
+      kFirstReportingWindow, 1);
+  histograms.ExpectUniqueTimeSample(
+      "Conversions.AggregatableReport.TimeFromTriggerToReportSentSuccessfully",
+      kFirstReportingWindow + base::Minutes(1), 1);
   // kSent = 0.
   histograms.ExpectUniqueSample(
       "Conversions.AggregatableReport.ReportSendOutcome2", 0, 1);
@@ -1830,7 +1860,7 @@ TEST_F(AttributionManagerImplTest,
   EXPECT_CALL(
       observer,
       OnReportSent(
-          ReportTypeIs(AttributionReport::ReportType::kAggregatableAttribution),
+          ReportTypeIs(AttributionReport::Type::kAggregatableAttribution),
           /*is_debug_report=*/false,
           Field(&SendResult::status, SendResult::Status::kFailedToAssemble)));
 
@@ -1862,9 +1892,12 @@ TEST_F(AttributionManagerImplTest,
   histograms.ExpectUniqueSample(
       "Conversions.AggregatableReport.AssembleReportStatus",
       AssembleAggregatableReportStatus::kAssembleReportFailed, 1);
-  histograms.ExpectUniqueSample(
-      "Conversions.AggregatableReport.TimeFromTriggerToReportAssembly",
-      kFirstReportingWindow.InMinutes(), 1);
+  histograms.ExpectUniqueTimeSample(
+      "Conversions.AggregatableReport.TimeFromTriggerToReportAssembly2",
+      kFirstReportingWindow, 1);
+  histograms.ExpectTotalCount(
+      "Conversions.AggregatableReport.TimeFromTriggerToReportSentSuccessfully",
+      0);
   // kFailedToAssemble = 3.
   histograms.ExpectUniqueSample(
       "Conversions.AggregatableReport.ReportSendOutcome2", 3, 1);
@@ -1887,9 +1920,12 @@ TEST_F(AttributionManagerImplTest, AggregationServiceDisabled_ReportNotSent) {
   histograms.ExpectUniqueSample(
       "Conversions.AggregatableReport.AssembleReportStatus",
       AssembleAggregatableReportStatus::kAggregationServiceUnavailable, 1);
-  histograms.ExpectUniqueSample(
-      "Conversions.AggregatableReport.TimeFromTriggerToReportAssembly",
-      kFirstReportingWindow.InMinutes(), 1);
+  histograms.ExpectUniqueTimeSample(
+      "Conversions.AggregatableReport.TimeFromTriggerToReportAssembly2",
+      kFirstReportingWindow, 1);
+  histograms.ExpectTotalCount(
+      "Conversions.AggregatableReport.TimeFromTriggerToReportSentSuccessfully",
+      0);
   // kFailedToAssemble = 3.
   histograms.ExpectUniqueSample(
       "Conversions.AggregatableReport.ReportSendOutcome2", 3, 1);

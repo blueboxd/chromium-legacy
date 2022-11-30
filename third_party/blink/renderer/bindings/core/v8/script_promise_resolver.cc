@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -153,8 +153,8 @@ void ScriptPromiseResolver::ResolveOrRejectImmediately() {
 void ScriptPromiseResolver::ScheduleResolveOrReject() {
   deferred_resolve_task_ = PostCancellableTask(
       *GetExecutionContext()->GetTaskRunner(TaskType::kMicrotask), FROM_HERE,
-      WTF::Bind(&ScriptPromiseResolver::ResolveOrRejectDeferred,
-                WrapPersistent(this)));
+      WTF::BindOnce(&ScriptPromiseResolver::ResolveOrRejectDeferred,
+                    WrapPersistent(this)));
 }
 
 void ScriptPromiseResolver::ResolveOrRejectDeferred() {

@@ -8,8 +8,13 @@
 
 #include "chrome/browser/ui/webui/settings/ash/fake_os_settings_section.h"
 
-namespace chromeos {
-namespace settings {
+namespace ash::settings {
+
+namespace mojom {
+using ::chromeos::settings::mojom::Section;
+using ::chromeos::settings::mojom::Setting;
+using ::chromeos::settings::mojom::Subpage;
+}  // namespace mojom
 
 FakeHierarchy::FakeHierarchy(const OsSettingsSections* sections)
     : Hierarchy(sections) {}
@@ -49,5 +54,4 @@ std::string FakeHierarchy::ModifySearchResultUrl(
   return FakeOsSettingsSection::ModifySearchResultUrl(section, url_to_modify);
 }
 
-}  // namespace settings
-}  // namespace chromeos
+}  // namespace ash::settings

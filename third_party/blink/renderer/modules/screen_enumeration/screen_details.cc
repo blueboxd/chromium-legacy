@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ ScreenDetailed* ScreenDetails::currentScreen() const {
   if (!DomWindow())
     return nullptr;
 
-  if (screens_.IsEmpty())
+  if (screens_.empty())
     return nullptr;
 
   auto* it = base::ranges::find(screens_, current_display_id_,

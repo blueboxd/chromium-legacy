@@ -144,6 +144,7 @@ scoped_refptr<DrawingBuffer> DrawingBuffer::Create(
     bool want_depth_buffer,
     bool want_stencil_buffer,
     bool want_antialiasing,
+    bool desynchronized,
     PreserveDrawingBuffer preserve,
     WebGLVersion webgl_version,
     ChromiumImageUsage chromium_image_usage,
@@ -199,10 +200,11 @@ scoped_refptr<DrawingBuffer> DrawingBuffer::Create(
   scoped_refptr<DrawingBuffer> drawing_buffer =
       base::AdoptRef(new DrawingBuffer(
           std::move(context_provider), graphics_info, using_swap_chain,
-          std::move(extensions_util), client, discard_framebuffer_supported,
-          want_alpha_channel, premultiplied_alpha, preserve, webgl_version,
-          want_depth_buffer, want_stencil_buffer, chromium_image_usage,
-          filter_quality, color_space, pixel_format, gpu_preference));
+          desynchronized, std::move(extensions_util), client,
+          discard_framebuffer_supported, want_alpha_channel,
+          premultiplied_alpha, preserve, webgl_version, want_depth_buffer,
+          want_stencil_buffer, chromium_image_usage, filter_quality,
+          color_space, pixel_format, gpu_preference));
   if (!drawing_buffer->Initialize(size, multisample_supported)) {
     drawing_buffer->BeginDestruction();
     return scoped_refptr<DrawingBuffer>();
@@ -214,6 +216,7 @@ DrawingBuffer::DrawingBuffer(
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
     const Platform::GraphicsInfo& graphics_info,
     bool using_swap_chain,
+    bool desynchronized,
     std::unique_ptr<Extensions3DUtil> extensions_util,
     Client* client,
     bool discard_framebuffer_supported,
@@ -240,6 +243,7 @@ DrawingBuffer::DrawingBuffer(
       premultiplied_alpha_(premultiplied_alpha),
       graphics_info_(graphics_info),
       using_swap_chain_(using_swap_chain),
+      low_latency_enabled_(desynchronized),
       want_depth_(want_depth),
       want_stencil_(want_stencil),
       color_space_(PredefinedColorSpaceToGfxColorSpace(color_space)),
@@ -347,7 +351,7 @@ DrawingBuffer::RegisteredBitmap DrawingBuffer::CreateOrRecycleBitmap(
   recycled_bitmaps_.Shrink(
       static_cast<wtf_size_t>(it - recycled_bitmaps_.begin()));
 
-  if (!recycled_bitmaps_.IsEmpty()) {
+  if (!recycled_bitmaps_.empty()) {
     RegisteredBitmap recycled = std::move(recycled_bitmaps_.back());
     recycled_bitmaps_.pop_back();
     DCHECK(recycled.bitmap->size() == size_);
@@ -718,7 +722,7 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage() {
 scoped_refptr<DrawingBuffer::ColorBuffer>
 DrawingBuffer::CreateOrRecycleColorBuffer() {
   DCHECK(state_restorer_);
-  if (!recycled_color_buffer_queue_.IsEmpty()) {
+  if (!recycled_color_buffer_queue_.empty()) {
     scoped_refptr<ColorBuffer> recycled =
         recycled_color_buffer_queue_.TakeLast();
     if (recycled->receive_sync_token.HasData())
@@ -779,7 +783,7 @@ scoped_refptr<CanvasResource> DrawingBuffer::ExportCanvasResource() {
 
   SkImageInfo resource_info = SkImageInfo::MakeN32Premul(
       out_resource.size.width(), out_resource.size.height());
-  switch (out_resource.format) {
+  switch (out_resource.format.resource_format()) {
     case viz::RGBA_8888:
       resource_info = resource_info.makeColorType(kRGBA_8888_SkColorType);
       break;
@@ -1654,6 +1658,9 @@ sk_sp<SkData> DrawingBuffer::PaintRenderingResultsToDataArray(
   if (source_buffer == kFrontBuffer && front_color_buffer_) {
     gl_->GenFramebuffers(1, &fbo);
     gl_->BindFramebuffer(GL_FRAMEBUFFER, fbo);
+    gl_->BeginSharedImageAccessDirectCHROMIUM(
+        front_color_buffer_->texture_id,
+        GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
     gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                               texture_target_, front_color_buffer_->texture_id,
                               0);
@@ -1668,9 +1675,13 @@ sk_sp<SkData> DrawingBuffer::PaintRenderingResultsToDataArray(
   FlipVertically(pixels, num_rows.ValueOrDie(), row_bytes.ValueOrDie());
 
   if (fbo) {
+    // The front buffer was used as the source of the pixels via |fbo|; clean up
+    // |fbo| and release access to the front buffer's SharedImage now that the
+    // readback is finished.
     gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                               texture_target_, 0, 0);
     gl_->DeleteFramebuffers(1, &fbo);
+    gl_->EndSharedImageAccessDirectCHROMIUM(front_color_buffer_->texture_id);
   }
 
   return dst_buffer;
@@ -1799,7 +1810,7 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
   uint32_t usage = gpu::SHARED_IMAGE_USAGE_GLES2 |
                    gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
-                   gpu::SHARED_IMAGE_USAGE_DISPLAY;
+                   gpu::SHARED_IMAGE_USAGE_DISPLAY_READ;
   if (initial_gpu_ == gl::GpuPreference::kHighPerformance)
     usage |= gpu::SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU;
   GrSurfaceOrigin origin = opengl_flip_y_extension_

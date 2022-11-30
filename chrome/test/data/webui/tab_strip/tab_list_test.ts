@@ -4,16 +4,21 @@
 
 import 'chrome://tab-strip.top-chrome/tab_list.js';
 
-import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.js';
+import {FocusOutlineManager} from 'chrome://resources/js/focus_outline_manager.js';
 import {TabElement} from 'chrome://tab-strip.top-chrome/tab.js';
 import {TabGroupElement} from 'chrome://tab-strip.top-chrome/tab_group.js';
 import {setScrollAnimationEnabledForTesting, TabListElement} from 'chrome://tab-strip.top-chrome/tab_list.js';
 import {PageRemote, Tab} from 'chrome://tab-strip.top-chrome/tab_strip.mojom-webui.js';
 import {TabsApiProxyImpl} from 'chrome://tab-strip.top-chrome/tabs_api_proxy.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks} from 'chrome://webui-test/test_util.js';
 
 import {createTab, TestTabsApiProxy} from './test_tabs_api_proxy.js';
+
+function flushTasks() {
+  return new Promise(function(resolve) {
+    window.setTimeout(resolve, 1);
+  });
+}
 
 suite('TabList', () => {
   let tabList: TabListElement;
@@ -87,7 +92,8 @@ suite('TabList', () => {
 
   setup(async () => {
     document.documentElement.dir = 'ltr';
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     document.body.style.margin = '0';
 
     testTabsApiProxy = new TestTabsApiProxy();

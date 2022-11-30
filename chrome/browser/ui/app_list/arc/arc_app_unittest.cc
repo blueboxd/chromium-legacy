@@ -5,7 +5,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <algorithm>
 #include <map>
 #include <memory>
 #include <string>
@@ -29,6 +28,7 @@
 #include "base/files/file_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/task_runner_util.h"
@@ -36,8 +36,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
 #include "base/values.h"
-#include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_icon/arc_icon_once_loader.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -434,12 +432,9 @@ MATCHER_P(ArcPackageInfoIs, package, "") {
 // For testing purposes, we want to pretend there are only ARC apps on the
 // system. This method removes the others.
 void RemoveNonArcApps(Profile* profile,
-                      FakeAppListModelUpdater* model_updater,
-                      bool flush) {
+                      FakeAppListModelUpdater* model_updater) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-  if (flush)
-    proxy->FlushMojoCallsForTesting();
   proxy->AppRegistryCache().ForEachApp(
       [&model_updater](const apps::AppUpdate& update) {
         if (update.AppType() != apps::AppType::kArc) {
@@ -517,8 +512,6 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
     return shelf_controller_.get();
   }
 
-  void DisableFlushForAppService() { should_flush_for_app_service_ = false; }
-
  protected:
   // Notifies that initial preparation is done, profile is ready and it is time
   // to initialize ARC subsystem.
@@ -536,8 +529,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
         AppServiceAppModelBuilder::ScopedAppPositionInitCallbackForTest>(
         builder_.get(), base::BindRepeating(&InitAppPosition));
     builder_->Initialize(nullptr, profile_.get(), model_updater_.get());
-    RemoveNonArcApps(profile_.get(), model_updater_.get(),
-                     should_flush_for_app_service_);
+    RemoveNonArcApps(profile_.get(), model_updater_.get());
   }
 
   void ResetBuilder() {
@@ -689,8 +681,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
     // Process requested apps.
     for (auto& app : apps) {
       const std::string id = ArcAppTest::GetAppId(*app);
-      std::vector<std::string>::iterator it_id =
-          std::find(ids.begin(), ids.end(), id);
+      std::vector<std::string>::iterator it_id = base::ranges::find(ids, id);
       ASSERT_NE(it_id, ids.end());
       ids.erase(it_id);
 
@@ -719,8 +710,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
     // Process requested apps.
     for (auto& shortcut : shortcuts) {
       const std::string id = ArcAppTest::GetAppId(shortcut);
-      std::vector<std::string>::iterator it_id =
-          std::find(ids.begin(), ids.end(), id);
+      std::vector<std::string>::iterator it_id = base::ranges::find(ids, id);
       ASSERT_NE(it_id, ids.end());
       ids.erase(it_id);
 
@@ -779,82 +769,71 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
         std::move(permissions) /* permission states */);
   }
 
-  // Flush mojo calls to allow AppService async callbacks to run.
-  void FlushMojoCallsForAppService() {
-    apps::AppServiceProxyFactory::GetForProfile(profile_.get())
-        ->FlushMojoCallsForTesting();
-  }
-
   void AddPackage(const arc::mojom::ArcPackageInfoPtr& package) {
     arc_test_.AddPackage(package->Clone());
     app_instance()->SendPackageAdded(package->Clone());
-    FlushMojoCallsForAppService();
   }
 
   void UpdatePackage(const arc::mojom::ArcPackageInfoPtr& package) {
     arc_test_.UpdatePackage(package->Clone());
     app_instance()->SendPackageModified(package->Clone());
-    FlushMojoCallsForAppService();
   }
 
   void RemovePackage(const std::string& package_name) {
     arc_test_.RemovePackage(package_name);
     app_instance()->SendPackageUninstalled(package_name);
-    FlushMojoCallsForAppService();
   }
 
   void SendRefreshAppList(const std::vector<arc::mojom::AppInfoPtr>& apps) {
     app_instance()->SendRefreshAppList(apps);
-    FlushMojoCallsForAppService();
   }
 
   void SendInstallShortcuts(
       const std::vector<arc::mojom::ShortcutInfo>& shortcuts) {
     app_instance()->SendInstallShortcuts(shortcuts);
-    FlushMojoCallsForAppService();
   }
 
   void SendInstallShortcut(const arc::mojom::ShortcutInfo& shortcut) {
     app_instance()->SendInstallShortcut(shortcut);
-    FlushMojoCallsForAppService();
   }
 
   void SendInstallationStarted(const std::string& package_name) {
     app_instance()->SendInstallationStarted(package_name);
-    FlushMojoCallsForAppService();
   }
 
   void SendInstallationFinished(const std::string& package_name, bool success) {
     app_instance()->SendInstallationFinished(package_name, success);
-    FlushMojoCallsForAppService();
   }
 
   void SendUninstallShortcut(const std::string& package_name,
                              const std::string& intent_uri) {
     app_instance()->SendUninstallShortcut(package_name, intent_uri);
-    FlushMojoCallsForAppService();
   }
 
   void SendPackageUninstalled(const std::string& package_name) {
     app_instance()->SendPackageUninstalled(package_name);
-    FlushMojoCallsForAppService();
   }
 
   void SendPackageAppListRefreshed(
       const std::string& package_name,
       const std::vector<arc::mojom::AppInfoPtr>& apps) {
     app_instance()->SendPackageAppListRefreshed(package_name, apps);
-    FlushMojoCallsForAppService();
   }
 
   void SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled) {
     arc::SetArcPlayStoreEnabledForProfile(profile, enabled);
-    FlushMojoCallsForAppService();
+    if (!enabled && GetArcState() != ArcState::ARC_WITHOUT_PLAY_STORE) {
+      // Wait for the asynchronous ArcAppListPrefs::RemoveAllAppsAndPackages to
+      // be called.
+      base::RunLoop run_loop;
+      ArcAppListPrefs::Get(profile)->SetRemoveAllCallbackForTesting(
+          run_loop.QuitClosure());
+      run_loop.Run();
+    }
   }
 
   void SimulateDefaultAppAvailabilityTimeoutForTesting(ArcAppListPrefs* prefs) {
     prefs->SimulateDefaultAppAvailabilityTimeoutForTesting();
-    FlushMojoCallsForAppService();
   }
 
   AppListControllerDelegate* controller() { return controller_.get(); }
@@ -897,7 +876,6 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
       scoped_callback_;
   std::unique_ptr<ChromeShelfController> shelf_controller_;
   std::unique_ptr<ash::ShelfModel> model_;
-  bool should_flush_for_app_service_ = true;
 };
 
 class ArcAppModelBuilderRecreate : public ArcAppModelBuilderTest {
@@ -923,7 +901,6 @@ class ArcAppModelBuilderRecreate : public ArcAppModelBuilderTest {
   }
 
   void StopArc() {
-    FlushMojoCallsForAppService();
     apps::ArcAppsFactory::GetInstance()->ShutDownForTesting(profile_.get());
     arc_test()->TearDown();
     RemoveArcApps(profile_.get(), model_updater());
@@ -1084,7 +1061,6 @@ class ArcAppModelIconTest : public ArcAppModelBuilderRecreate,
 
       // Trigger icon loading. This is needed because icon loading is triggered
       // when AppServiceAppItem is added to UI but there is no UI in unit tests.
-      FlushMojoCallsForAppService();
       model_updater()->LoadAppIcon(app_id);
 
       // Wait AppServiceAppItem to finish loading icon.
@@ -1128,7 +1104,6 @@ class ArcAppModelIconTest : public ArcAppModelBuilderRecreate,
 
       // Trigger icon loading. This is needed because icon loading is triggered
       // when AppServiceAppItem is added to UI but there is no UI in unit tests.
-      FlushMojoCallsForAppService();
       model_updater()->LoadAppIcon(app_id);
 
       icon_loader.FetchImage(app_id);
@@ -1357,10 +1332,7 @@ class ArcAppLauncherForDefaultAppTest : public ArcDefaultAppTest {
       const ArcAppLauncherForDefaultAppTest&) = delete;
   ~ArcAppLauncherForDefaultAppTest() override = default;
 
-  void SetUp() override {
-    DisableFlushForAppService();
-    ArcDefaultAppTest::SetUp();
-  }
+  void SetUp() override { ArcDefaultAppTest::SetUp(); }
 
  protected:
   // ArcDefaultAppTest:
@@ -1750,7 +1722,6 @@ TEST_P(ArcAppModelBuilderTest, LaunchApps) {
 
   const std::vector<std::unique_ptr<arc::FakeAppInstance::Request>>&
       launch_requests = app_instance()->launch_requests();
-  FlushMojoCallsForAppService();
   ASSERT_EQ(3u, launch_requests.size());
   EXPECT_TRUE(launch_requests[0]->IsForApp(*apps[0]));
   EXPECT_TRUE(launch_requests[1]->IsForApp(*apps[1]));
@@ -1789,7 +1760,6 @@ TEST_P(ArcAppModelBuilderTest, LaunchShortcuts) {
 
   const std::vector<std::string>& launch_intents =
       app_instance()->launch_intents();
-  FlushMojoCallsForAppService();
   ASSERT_EQ(3u, launch_intents.size());
   EXPECT_EQ(app_first.intent_uri, launch_intents[0]);
   EXPECT_EQ(app_last.intent_uri, launch_intents[1]);
@@ -1983,7 +1953,6 @@ TEST_P(ArcAppModelBuilderTest, InstallIcon) {
       prefs->GetIconPath(app_id, GetAppListIconDescriptor(scale_factor));
   EXPECT_FALSE(IsIconCreated(prefs, app_id, scale_factor));
 
-  FlushMojoCallsForAppService();
   const AppServiceAppItem* app_item = FindArcItem(app_id);
   EXPECT_NE(nullptr, app_item);
   // This initiates async loading.
@@ -2642,9 +2611,7 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderForShelfGroup) {
 }
 
 // Test that icon is correctly updated for suspended/non-suspended app.
-//
-// TODO(https://crbug.com/1211227): The test is flaky.
-TEST_P(ArcAppModelBuilderTest, DISABLED_IconLoaderForSuspendedApps) {
+TEST_P(ArcAppModelBuilderTest, IconLoaderForSuspendedApps) {
   std::vector<arc::mojom::AppInfoPtr> apps;
   apps.emplace_back(fake_apps()[0]->Clone());
   const std::string app_id = ArcAppTest::GetAppId(*apps[0]);
@@ -2671,8 +2638,7 @@ TEST_P(ArcAppModelBuilderTest, DISABLED_IconLoaderForSuspendedApps) {
   // is loaded and we only apply gray effect.
   apps[0]->suspended = true;
   SendPackageAppListRefreshed(apps[0]->package_name, apps);
-  EXPECT_EQ(update_count + 1, delegate.update_image_count());
-  // No futher updates.
+  // One more update as suspended app icon turned grey.
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(update_count + 1, delegate.update_image_count());
 
@@ -2777,10 +2743,6 @@ TEST_P(ArcAppModelBuilderTest, IconLoader) {
 
   app_instance()->SendRefreshAppList(apps);
 
-  // Ensure AppServiceAppItem is created then trigger an app icon loading. This
-  // is needed because icon loading is triggered when AppServiceAppItem is added
-  // to UI but there is no UI in unit tests.
-  FlushMojoCallsForAppService();
   model_updater()->LoadAppIcon(app_id);
 
   // Wait AppServiceAppItem to finish loading icon, otherwise, the test result
@@ -2934,9 +2896,6 @@ TEST_P(ArcAppModelIconTest, DISABLED_IconInvalidation) {
   // Send new apps for the package. This should invalidate package icons.
   UpdatePackage(2 /* package_version */);
 
-  // Trigger icon loading. This is needed because icon loading is triggered when
-  // AppServiceAppItem is added to UI but there is no UI in unit tests.
-  FlushMojoCallsForAppService();
   model_updater()->LoadAppIcon(app_id);
   WaitForIconUpdate();
 
@@ -2950,7 +2909,8 @@ TEST_P(ArcAppModelIconTest, DISABLED_IconInvalidation) {
   EXPECT_TRUE(app_instance()->icon_requests().empty());
 }
 
-TEST_P(ArcAppModelIconTest, IconInvalidationOnFrameworkUpdate) {
+// TODO(crbug.com/1345154): Flaky.
+TEST_P(ArcAppModelIconTest, DISABLED_IconInvalidationOnFrameworkUpdate) {
   ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_TRUE(prefs);
 
@@ -2993,9 +2953,6 @@ TEST_P(ArcAppModelIconTest, IconInvalidationOnFrameworkUpdate) {
       CreatePackageWithVersion(kFrameworkPackageName, kFrameworkPiVersion));
   app_instance()->SendRefreshPackageList(std::move(packages));
 
-  // Trigger icon loading. This is needed because icon loading is triggered
-  // when AppServiceAppItem is added to UI but there is no UI in unit tests.
-  FlushMojoCallsForAppService();
   model_updater()->LoadAppIcon(app_id);
   content::RunAllTasksUntilIdle();
 
@@ -3005,7 +2962,8 @@ TEST_P(ArcAppModelIconTest, IconInvalidationOnFrameworkUpdate) {
 
 // This verifies that app icons are invalidated in case icon version was
 // changed which means ARC sends icons using updated processing.
-TEST_P(ArcAppModelIconTest, IconInvalidationOnIconVersionUpdate) {
+// TODO(crbug.com/1364812): Flaky.
+TEST_P(ArcAppModelIconTest, DISABLED_IconInvalidationOnIconVersionUpdate) {
   ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_TRUE(prefs);
 
@@ -3022,9 +2980,6 @@ TEST_P(ArcAppModelIconTest, IconInvalidationOnIconVersionUpdate) {
   ArcAppListPrefs::UprevCurrentIconsVersionForTesting();
   StartApp(1 /* package_version */);
 
-  // Trigger icon loading. This is needed because icon loading is triggered
-  // when AppServiceAppItem is added to UI but there is no UI in unit tests.
-  FlushMojoCallsForAppService();
   model_updater()->LoadAppIcon(app_id);
   WaitForIconUpdate();
 
@@ -3040,12 +2995,7 @@ TEST_P(ArcAppModelIconTest, IconInvalidationOnIconVersionUpdate) {
 }
 
 // TODO(crbug.com/1005069) Disabled on Chrome OS due to flake
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#define MAYBE_IconLoadNonSupportedScales DISABLED_IconLoadNonSupportedScales
-#else
-#define MAYBE_IconLoadNonSupportedScales IconLoadNonSupportedScales
-#endif
-TEST_P(ArcAppModelIconTest, MAYBE_IconLoadNonSupportedScales) {
+TEST_P(ArcAppModelIconTest, DISABLED_IconLoadNonSupportedScales) {
   ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_TRUE(prefs);
 
@@ -3165,7 +3115,6 @@ TEST_P(ArcAppModelBuilderTest, AppLauncher) {
     EXPECT_FALSE(prefs->HasObserver(&launcher2));
   }
 
-  FlushMojoCallsForAppService();
   EXPECT_EQ(1u, app_instance()->launch_requests().size());
   ASSERT_EQ(1u, app_instance()->launch_intents().size());
   EXPECT_EQ(app_instance()->launch_intents()[0], launch_intent2_str);
@@ -3599,7 +3548,6 @@ TEST_P(ArcAppLauncherForDefaultAppTest, AppLauncherForDefaultApps) {
   EXPECT_FALSE(launcher1.app_launched());
 
   arc_test()->WaitForDefaultApps();
-  FlushMojoCallsForAppService();
 
   // Only second app is expected to be launched.
   EXPECT_FALSE(launcher1.app_launched());

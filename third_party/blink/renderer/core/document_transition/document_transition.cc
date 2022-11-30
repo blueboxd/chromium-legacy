@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "cc/document_transition/document_transition_request.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/paint_holding_reason.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/capture_source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -33,6 +34,7 @@
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
+#include "third_party/blink/renderer/platform/heap/cross_thread_persistent.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -527,6 +529,20 @@ void DocumentTransition::WillCommitCompositorFrame() {
     PauseRendering();
 }
 
+gfx::Rect DocumentTransition::GetSnapshotViewportRect() const {
+  if (!style_tracker_)
+    return gfx::Rect();
+
+  return style_tracker_->GetSnapshotViewportRect();
+}
+
+gfx::Vector2d DocumentTransition::GetRootSnapshotPaintOffset() const {
+  if (!style_tracker_)
+    return gfx::Vector2d();
+
+  return style_tracker_->GetRootSnapshotPaintOffset();
+}
+
 void DocumentTransition::PauseRendering() {
   DCHECK(!rendering_paused_scope_);
 
@@ -538,15 +554,22 @@ void DocumentTransition::PauseRendering() {
   DCHECK(rendering_paused_scope_);
   client.UnregisterFromCommitObservation(this);
 
-  // Based on the viz side timeout to hold snapshots for 5 seconds.
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("blink",
                                     "DocumentTransition::PauseRendering", this);
-  constexpr base::TimeDelta kTimeout = base::Seconds(4);
+  const base::TimeDelta kTimeout = [this]() {
+    if (auto* settings = document_->GetFrame()->GetContentSettingsClient();
+        settings &&
+        settings->IncreaseSharedElementTransitionCallbackTimeout()) {
+      return base::Seconds(15);
+    } else {
+      return base::Seconds(4);
+    }
+  }();
   document_->GetTaskRunner(TaskType::kInternalFrameLifecycleControl)
       ->PostDelayedTask(
           FROM_HERE,
-          WTF::Bind(&DocumentTransition::OnRenderingPausedTimeout,
-                    WrapWeakPersistent(this), last_prepare_sequence_id_),
+          WTF::BindOnce(&DocumentTransition::OnRenderingPausedTimeout,
+                        WrapWeakPersistent(this), last_prepare_sequence_id_),
           kTimeout);
 }
 

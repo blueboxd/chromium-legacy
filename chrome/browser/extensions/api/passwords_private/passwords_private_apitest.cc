@@ -62,8 +62,9 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
 
  protected:
   bool RunPasswordsSubtest(const std::string& subtest) {
-    const std::string page_url = "main.html?" + subtest;
-    return RunExtensionTest("passwords_private", {.page_url = page_url.c_str()},
+    const std::string extension_url = "main.html?" + subtest;
+    return RunExtensionTest("passwords_private",
+                            {.extension_url = extension_url.c_str()},
                             {.load_as_component = true});
   }
 
@@ -252,12 +253,8 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, IsOptedInForAccountStorage) {
   EXPECT_TRUE(RunPasswordsSubtest("isOptedInForAccountStorage")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetCompromisedCredentials) {
-  EXPECT_TRUE(RunPasswordsSubtest("getCompromisedCredentials")) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetWeakCredentials) {
-  EXPECT_TRUE(RunPasswordsSubtest("getWeakCredentials")) << message_;
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetInsecureCredentials) {
+  EXPECT_TRUE(RunPasswordsSubtest("getInsecureCredentials")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, OptInForAccountStorage) {
@@ -358,4 +355,15 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, ExtendAuthValidity) {
   EXPECT_TRUE(RunPasswordsSubtest("extendAuthValidity")) << message_;
   EXPECT_TRUE(get_authenticator_interaction_status());
 }
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       SwitchBiometricAuthBeforeFillingState) {
+  EXPECT_FALSE(get_authenticator_interaction_status());
+  EXPECT_TRUE(RunPasswordsSubtest("switchBiometricAuthBeforeFillingState"))
+      << message_;
+  EXPECT_TRUE(get_authenticator_interaction_status());
+}
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+
 }  // namespace extensions

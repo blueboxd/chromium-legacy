@@ -28,6 +28,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -130,6 +131,7 @@
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/accessibility/live_caption_controller_factory.h"
+#include "chrome/browser/lifetime/application_lifetime_desktop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -171,6 +173,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/contact_center_insights/contact_center_insights_extension_manager.h"
+#include "chrome/browser/chromeos/extensions/desk_api/desk_api_extension_manager.h"
 #endif
 
 using base::UserMetricsAction;
@@ -290,8 +293,8 @@ void MarkProfileDirectoryForDeletion(const base::FilePath& path) {
   ProfilesToDelete()[path] = ProfileDeletionStage::MARKED;
   // Remember that this profile was deleted and files should have been deleted
   // on shutdown. In case of a crash remaining files are removed on next start.
-  ListPrefUpdate deleted_profiles(g_browser_process->local_state(),
-                                  prefs::kProfilesDeleted);
+  ScopedListPrefUpdate deleted_profiles(g_browser_process->local_state(),
+                                        prefs::kProfilesDeleted);
   deleted_profiles->Append(base::FilePathToValue(path));
 }
 
@@ -366,9 +369,9 @@ void NukeProfileFromDisk(const base::FilePath& profile_path,
 
 // Called after a deleted profile was checked and cleaned up.
 void ProfileCleanedUp(base::Value profile_path_value) {
-  ListPrefUpdate deleted_profiles(g_browser_process->local_state(),
-                                  prefs::kProfilesDeleted);
-  deleted_profiles->GetList().EraseValue(profile_path_value);
+  ScopedListPrefUpdate deleted_profiles(g_browser_process->local_state(),
+                                        prefs::kProfilesDeleted);
+  deleted_profiles->EraseValue(profile_path_value);
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -408,23 +411,21 @@ void OnProfileInitialized(ProfileManager::ProfileLoadedCallback client_callback,
                      : profile);
 }
 
-#if !BUILDFLAG(IS_ANDROID)
-// Helper function for `ScheduleEphemeralProfileForDeletion()`.
+// Helper function for `ProfileManager` to identify if a profile is ephemeral.
 bool IsRegisteredAsEphemeral(ProfileAttributesStorage* storage,
                              const base::FilePath& profile_dir) {
   ProfileAttributesEntry* entry =
       storage->GetProfileAttributesWithPath(profile_dir);
   return entry && entry->IsEphemeral();
 }
-#endif
 
 // Helper function that deletes entries from the kProfilesLastActive pref list.
 // It is called when every ephemeral profile is handled.
 void RemoveFromLastActiveProfilesPrefList(base::FilePath path) {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
-  ListPrefUpdate update(local_state, prefs::kProfilesLastActive);
-  base::Value::List& profile_list = update->GetList();
+  ScopedListPrefUpdate update(local_state, prefs::kProfilesLastActive);
+  base::Value::List& profile_list = update.Get();
   base::Value entry_value = base::Value(path.BaseName().AsUTF8Unsafe());
   profile_list.EraseValue(entry_value);
 }
@@ -436,7 +437,7 @@ bool IsLoggedIn() {
 }
 #endif
 
-bool IsEphemeral(Profile* profile) {
+bool IsForceEphemeralProfilesEnabled(Profile* profile) {
   return profile->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles);
 }
 
@@ -602,6 +603,8 @@ void ProfileManager::NukeDeletedProfilesFromDisk() {
 // static
 Profile* ProfileManager::GetLastUsedProfile() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+#if BUILDFLAG(IS_CHROMEOS)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Use default login profile if user has not logged in yet.
   if (!IsLoggedIn())
@@ -609,15 +612,20 @@ Profile* ProfileManager::GetLastUsedProfile() {
 
   // CrOS multi-profiles implementation is different so GetLastUsedProfile()
   // has custom implementation too.
-  base::FilePath profile_dir;
   // In case of multi-profiles we ignore "last used profile" preference
   // since it may refer to profile that has been in use in previous session.
   // That profile dir may not be mounted in this session so instead return
   // active profile from current session.
-  profile_dir = ash::ProfileHelper::Get()->GetActiveUserProfileDir();
-
+  base::FilePath profile_dir =
+      ash::ProfileHelper::Get()->GetActiveUserProfileDir();
   Profile* profile = profile_manager->GetProfileByPath(
       profile_manager->user_data_dir().Append(profile_dir));
+#else
+  // TODO(crbug.com/1363933): Once Lacros is launched pre-login, we should
+  // probably do something analogous to the !IsLoggedIn() check above.
+  Profile* profile =
+      profile_manager->GetProfile(profile_manager->GetLastUsedProfileDir());
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Accessing a user profile before it is loaded may lead to policy exploit.
   // See http://crbug.com/689206.
@@ -629,7 +637,7 @@ Profile* ProfileManager::GetLastUsedProfile() {
              : profile;
 #else
   return profile_manager->GetProfile(profile_manager->GetLastUsedProfileDir());
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS)
 }
 
 // static
@@ -1177,7 +1185,6 @@ void ProfileManager::ScheduleEphemeralProfileForDeletion(
     const base::FilePath& profile_dir) {
   DCHECK_EQ(0u, chrome::GetBrowserCount(GetProfileByPath(profile_dir)));
   DCHECK(IsRegisteredAsEphemeral(&GetProfileAttributesStorage(), profile_dir));
-
   absl::optional<base::FilePath> new_active_profile_dir =
       FindLastActiveProfile(base::BindRepeating(
           [](const base::FilePath& profile_dir, ProfileAttributesEntry* entry) {
@@ -1497,8 +1504,8 @@ void ProfileManager::AddKeepAlive(const Profile* profile,
                                   ProfileKeepAliveOrigin origin) {
   DCHECK_NE(ProfileKeepAliveOrigin::kWaitingForFirstBrowserWindow, origin);
 
-  DCHECK(profile);
-  DCHECK(!profile->IsOffTheRecord());
+  CHECK(profile);
+  CHECK(!profile->IsOffTheRecord());
 
   ProfileInfo* info = GetProfileInfoByPath(profile->GetPath());
   if (!info) {
@@ -1533,8 +1540,8 @@ void ProfileManager::RemoveKeepAlive(const Profile* profile,
                                      ProfileKeepAliveOrigin origin) {
   DCHECK_NE(ProfileKeepAliveOrigin::kWaitingForFirstBrowserWindow, origin);
 
-  DCHECK(profile);
-  DCHECK(!profile->IsOffTheRecord());
+  CHECK(profile);
+  CHECK(!profile->IsOffTheRecord());
 
   ProfileInfo* info = GetProfileInfoByPath(profile->GetPath());
   if (!info) {
@@ -1559,8 +1566,8 @@ void ProfileManager::RemoveKeepAlive(const Profile* profile,
 }
 
 void ProfileManager::ClearFirstBrowserWindowKeepAlive(const Profile* profile) {
-  DCHECK(profile);
-  DCHECK(!profile->IsOffTheRecord());
+  CHECK(profile);
+  CHECK(!profile->IsOffTheRecord());
 
   ProfileInfo* info = GetProfileInfoByPath(profile->GetPath());
   DCHECK(info);
@@ -1692,6 +1699,8 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   // components and we can maintain said order.
   if (extensions_enabled) {
     ::chromeos::ContactCenterInsightsExtensionManager::GetForProfile(profile);
+
+    ::chromeos::DeskApiExtensionManager::GetForProfile(profile);
   }
 #endif
 
@@ -1725,7 +1734,10 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   signin_util::SigninWithCredentialProviderIfPossible(profile);
 #endif
 
-  AccessibilityLabelsServiceFactory::GetForProfile(profile)->Init();
+  auto* accessibility_service =
+      AccessibilityLabelsServiceFactory::GetForProfile(profile);
+  if (accessibility_service)
+    accessibility_service->Init();
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::AccountManagerPolicyControllerFactory::GetForBrowserContext(profile);
@@ -1867,8 +1879,8 @@ void ProfileManager::RemoveProfile(const base::FilePath& profile_dir) {
 
   DCHECK(base::Contains(profiles_info_, profile_dir));
 
-  Profile* profile = GetProfileByPath(profile_dir);
-  bool ephemeral = IsEphemeral(profile);
+  bool ephemeral =
+      IsRegisteredAsEphemeral(&GetProfileAttributesStorage(), profile_dir);
   bool marked_for_deletion = IsProfileDirectoryMarkedForDeletion(profile_dir);
 
   // Remove from |profiles_info_|, eventually causing the Profile object's
@@ -2310,7 +2322,7 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
   init_params.user_name = username;
   init_params.is_consented_primary_account = is_consented_primary_account;
 
-  init_params.is_ephemeral = IsEphemeral(profile);
+  init_params.is_ephemeral = IsForceEphemeralProfilesEnabled(profile);
   init_params.is_signed_in_with_credential_provider =
       profile->GetPrefs()->GetBoolean(prefs::kSignedInWithCredentialProvider);
 
@@ -2337,8 +2349,8 @@ bool ProfileManager::ShouldGoOffTheRecord(Profile* profile) {
 void ProfileManager::SaveActiveProfiles() {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
-  ListPrefUpdate update(local_state, prefs::kProfilesLastActive);
-  base::Value::List& profile_list = update->GetList();
+  ScopedListPrefUpdate update(local_state, prefs::kProfilesLastActive);
+  base::Value::List& profile_list = update.Get();
 
   profile_list.clear();
 
@@ -2363,7 +2375,8 @@ void ProfileManager::SaveActiveProfiles() {
     // Some profiles might become ephemeral after they are created.
     // Don't persist the System Profile as one of the last actives, it should
     // never get a browser.
-    if (!IsEphemeral(*it) &&
+    if (!IsRegisteredAsEphemeral(&GetProfileAttributesStorage(),
+                                 (*it)->GetPath()) &&
         profile_paths.find(profile_path) == profile_paths.end() &&
         profile_path != base::FilePath(chrome::kSystemProfileDir)) {
       profile_paths.insert(profile_path);
@@ -2383,7 +2396,9 @@ void ProfileManager::OnBrowserOpened(Browser* browser) {
   DCHECK(!ShouldOpenPrimaryProfileFirstRun(profile));
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
-  if (!profile->IsOffTheRecord() && !IsEphemeral(profile) &&
+  if (!profile->IsOffTheRecord() &&
+      !IsRegisteredAsEphemeral(&GetProfileAttributesStorage(),
+                               profile->GetPath()) &&
       !browser->is_type_app() && ++browser_counts_[profile] == 1) {
     active_profiles_.push_back(profile);
     SaveActiveProfiles();
@@ -2400,8 +2415,7 @@ void ProfileManager::OnBrowserClosed(Browser* browser) {
   DCHECK(profile);
   if (!profile->IsOffTheRecord() && !browser->is_type_app() &&
       --browser_counts_[profile] == 0) {
-    active_profiles_.erase(
-        std::find(active_profiles_.begin(), active_profiles_.end(), profile));
+    active_profiles_.erase(base::ranges::find(active_profiles_, profile));
     if (!closing_all_browsers_)
       SaveActiveProfiles();
   }
@@ -2423,16 +2437,15 @@ void ProfileManager::OnBrowserClosed(Browser* browser) {
   }
 
   base::FilePath path = profile->GetPath();
+  ProfileInfo* info = GetProfileInfoByPath(path);
   if (IsProfileDirectoryMarkedForDeletion(path)) {
     // Do nothing if the profile is already being deleted.
-  } else if (IsEphemeral(profile)) {
-    // Avoid scheduling deletion if it's a testing profile that is not
-    // registered with profile manager.
-    if (profile->AsTestingProfile() &&
-        !IsRegisteredAsEphemeral(&GetProfileAttributesStorage(), path)) {
-      return;
-    }
-    // Delete if the profile is an ephemeral profile.
+  } else if (IsRegisteredAsEphemeral(&GetProfileAttributesStorage(), path) &&
+             info->keep_alives[ProfileKeepAliveOrigin::kProfileCreationFlow] ==
+                 0) {
+    // Delete if the profile is an ephemeral profile and it is not in the
+    // profile creation flow.
+    // TODO(crbug.com/1369535): Delete the profile when there is no keep alive.
     ScheduleEphemeralProfileForDeletion(path);
   } else if (!profile->IsOffTheRecord()) {
     auto* browsing_data_lifetime_manager =
@@ -2502,7 +2515,8 @@ void ProfileManager::BrowserListObserver::OnBrowserSetLastActive(
 
   // Don't remember ephemeral profiles as last because they are not going to
   // persist after restart.
-  if (IsEphemeral(last_active))
+  if (IsRegisteredAsEphemeral(&profile_manager_->GetProfileAttributesStorage(),
+                              last_active->GetPath()))
     return;
 
   profile_manager_->UpdateLastUser(last_active);

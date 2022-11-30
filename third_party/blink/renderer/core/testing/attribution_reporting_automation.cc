@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,7 @@ ScriptPromise AttributionReportingAutomation::resetAttributionReporting(
   test::mojom::blink::AttributionReportingAutomation* raw_automation =
       automation.get();
 
-  raw_automation->Reset(WTF::Bind(
+  raw_automation->Reset(WTF::BindOnce(
       [](ScriptPromiseResolver* resolver,
          mojo::Remote<test::mojom::blink::AttributionReportingAutomation>,
          bool success) {

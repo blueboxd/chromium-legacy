@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,7 +64,7 @@ class CORE_EXPORT Grid : public GarbageCollected<Grid> {
   }
 
   // Note that out of flow children are not grid items.
-  bool HasGridItems() const { return !grid_item_area_.IsEmpty(); }
+  bool HasGridItems() const { return !grid_item_area_.empty(); }
 
   GridArea GridItemArea(const LayoutBox&) const;
   void SetGridItemArea(const LayoutBox&, GridArea);

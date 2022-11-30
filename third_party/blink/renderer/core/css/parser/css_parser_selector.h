@@ -32,25 +32,19 @@
 namespace blink {
 
 class CSSParserContext;
-template <bool UseArena>
 class CSSParserSelector;
 
 // See css_selector_parser.h.
-template <bool UseArena>
-using CSSSelectorVector =
-    Vector<MaybeArenaUniquePtr<CSSParserSelector<UseArena>, UseArena>>;
+using CSSSelectorVector = Vector<ArenaUniquePtr<CSSParserSelector>>;
 
-template <bool UseArena>
 class CORE_EXPORT CSSParserSelector {
   USING_FAST_MALLOC(CSSParserSelector);
 
  public:
-  using MaybeArena = std::conditional_t<UseArena, Arena&, int>;  // Dummy int.
-
-  explicit CSSParserSelector(MaybeArena);
-  explicit CSSParserSelector(MaybeArena,
-                             const QualifiedName&,
-                             bool is_implicit = false);
+  CSSParserSelector() = default;
+  explicit CSSParserSelector(CSSSelector selector)
+      : selector_(std::move(selector)) {}
+  explicit CSSParserSelector(const QualifiedName&, bool is_implicit = false);
   CSSParserSelector(const CSSParserSelector&) = delete;
   CSSParserSelector& operator=(const CSSParserSelector&) = delete;
   ~CSSParserSelector();
@@ -58,45 +52,43 @@ class CORE_EXPORT CSSParserSelector {
   // Note that on ReleaseSelector() or GetSelector(), you get that single
   // selector only, not its entire tag history (so TagHistory() will not
   // make sense until it's put into a CSSSelectorVector).
-  MaybeArenaUniquePtr<CSSSelector, UseArena> ReleaseSelector() {
-    return std::move(selector_);
-  }
-  const CSSSelector* GetSelector() const { return selector_.get(); }
+  CSSSelector&& ReleaseSelector() { return std::move(selector_); }
+  const CSSSelector* GetSelector() const { return &selector_; }
 
-  CSSSelector::RelationType Relation() const { return selector_->Relation(); }
+  CSSSelector::RelationType Relation() const { return selector_.Relation(); }
   void SetValue(const AtomicString& value, bool match_lower_case = false) {
-    selector_->SetValue(value, match_lower_case);
+    selector_.SetValue(value, match_lower_case);
   }
   void SetAttribute(const QualifiedName& value,
                     CSSSelector::AttributeMatchType match_type) {
-    selector_->SetAttribute(value, match_type);
+    selector_.SetAttribute(value, match_type);
   }
-  void SetArgument(const AtomicString& value) { selector_->SetArgument(value); }
+  void SetArgument(const AtomicString& value) { selector_.SetArgument(value); }
   void SetPartNames(std::unique_ptr<Vector<AtomicString>> part_names) {
-    selector_->SetPartNames(std::move(part_names));
+    selector_.SetPartNames(std::move(part_names));
   }
-  void SetNth(int a, int b) { selector_->SetNth(a, b); }
-  void SetMatch(CSSSelector::MatchType value) { selector_->SetMatch(value); }
+  void SetNth(int a, int b) { selector_.SetNth(a, b); }
+  void SetMatch(CSSSelector::MatchType value) { selector_.SetMatch(value); }
   void SetRelation(CSSSelector::RelationType value) {
-    selector_->SetRelation(value);
+    selector_.SetRelation(value);
   }
-  void SetForPage() { selector_->SetForPage(); }
+  void SetForPage() { selector_.SetForPage(); }
   void SetToggle(const AtomicString& name,
                  std::unique_ptr<ToggleRoot::State>&& value) {
-    selector_->SetToggle(name, std::move(value));
+    selector_.SetToggle(name, std::move(value));
   }
 
   void UpdatePseudoType(const AtomicString& value,
                         const CSSParserContext& context,
                         bool has_arguments,
-                        CSSParserMode mode) const {
-    selector_->UpdatePseudoType(value, context, has_arguments, mode);
+                        CSSParserMode mode) {
+    selector_.UpdatePseudoType(value, context, has_arguments, mode);
   }
   void UpdatePseudoPage(const AtomicString& value, const Document* document) {
-    selector_->UpdatePseudoPage(value, document);
+    selector_.UpdatePseudoPage(value, document);
   }
 
-  void AdoptSelectorVector(CSSSelectorVector<UseArena>& selector_vector);
+  void AdoptSelectorVector(CSSSelectorVector& selector_vector);
   void SetSelectorList(std::unique_ptr<CSSSelectorList>);
   void SetAtomics(std::unique_ptr<CSSSelectorList>);
   void SetContainsPseudoInsideHasPseudoClass();
@@ -104,16 +96,16 @@ class CORE_EXPORT CSSParserSelector {
 
   bool IsHostPseudoSelector() const;
 
-  CSSSelector::MatchType Match() const { return selector_->Match(); }
+  CSSSelector::MatchType Match() const { return selector_.Match(); }
   CSSSelector::PseudoType GetPseudoType() const {
-    return selector_->GetPseudoType();
+    return selector_.GetPseudoType();
   }
   bool IsTreeAbidingPseudoElement() const {
-    return selector_->IsTreeAbidingPseudoElement();
+    return selector_.IsTreeAbidingPseudoElement();
   }
-  bool IsAllowedAfterPart() const { return selector_->IsAllowedAfterPart(); }
+  bool IsAllowedAfterPart() const { return selector_.IsAllowedAfterPart(); }
   const CSSSelectorList* SelectorList() const {
-    return selector_->SelectorList();
+    return selector_.SelectorList();
   }
 
   // Some pseudo elements behave as if they have an implicit combinator to their
@@ -124,21 +116,19 @@ class CORE_EXPORT CSSParserSelector {
   bool NeedsImplicitShadowCombinatorForMatching() const;
 
   CSSParserSelector* TagHistory() const { return tag_history_.get(); }
-  void SetTagHistory(
-      MaybeArenaUniquePtr<CSSParserSelector, UseArena> selector) {
+  void SetTagHistory(ArenaUniquePtr<CSSParserSelector> selector) {
     tag_history_ = std::move(selector);
   }
-  void ClearTagHistory() { tag_history_.reset(); }
   void AppendTagHistory(CSSSelector::RelationType,
-                        MaybeArenaUniquePtr<CSSParserSelector, UseArena>);
-  MaybeArenaUniquePtr<CSSParserSelector, UseArena> ReleaseTagHistory();
+                        ArenaUniquePtr<CSSParserSelector>);
+  ArenaUniquePtr<CSSParserSelector> ReleaseTagHistory();
   void PrependTagSelector(Arena&,
                           const QualifiedName&,
                           bool tag_is_implicit = false);
 
  private:
-  MaybeArenaUniquePtr<CSSSelector, UseArena> selector_;
-  MaybeArenaUniquePtr<CSSParserSelector, UseArena> tag_history_;
+  CSSSelector selector_;
+  ArenaUniquePtr<CSSParserSelector> tag_history_;
 };
 
 }  // namespace blink

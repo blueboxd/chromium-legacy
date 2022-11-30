@@ -29,6 +29,8 @@
 #include "components/autofill_assistant/browser/service/simple_url_loader_factory.h"
 #include "components/autofill_assistant/browser/starter_heuristic_configs/finch_configs.h"
 #include "components/autofill_assistant/browser/starter_heuristic_configs/finch_starter_heuristic_config.h"
+#include "components/autofill_assistant/browser/starter_heuristic_configs/launched_configs.h"
+#include "components/autofill_assistant/browser/starter_heuristic_configs/launched_starter_heuristic_config.h"
 #include "components/autofill_assistant/browser/switches.h"
 #include "components/autofill_assistant/browser/trigger_scripts/dynamic_trigger_conditions.h"
 #include "components/autofill_assistant/browser/trigger_scripts/static_trigger_conditions.h"
@@ -170,12 +172,18 @@ Starter::Starter(content::WebContents* web_contents,
       runtime_manager_(runtime_manager),
       starter_heuristic_(base::MakeRefCounted<StarterHeuristic>()),
       tick_clock_(tick_clock) {
-  heuristic_configs_.emplace_back(finch_configs::GetOrCreateLegacyConfig());
+  heuristic_configs_.emplace_back(
+      launched_configs::GetOrCreateShoppingConfig());
+  heuristic_configs_.emplace_back(launched_configs::GetOrCreateCouponsConfig());
   heuristic_configs_.emplace_back(finch_configs::GetOrCreateUrlHeuristic1());
   heuristic_configs_.emplace_back(finch_configs::GetOrCreateUrlHeuristic2());
   heuristic_configs_.emplace_back(finch_configs::GetOrCreateUrlHeuristic3());
   heuristic_configs_.emplace_back(finch_configs::GetOrCreateUrlHeuristic4());
   heuristic_configs_.emplace_back(finch_configs::GetOrCreateUrlHeuristic5());
+  heuristic_configs_.emplace_back(finch_configs::GetOrCreateUrlHeuristic6());
+  heuristic_configs_.emplace_back(finch_configs::GetOrCreateUrlHeuristic7());
+  heuristic_configs_.emplace_back(finch_configs::GetOrCreateUrlHeuristic8());
+  heuristic_configs_.emplace_back(finch_configs::GetOrCreateUrlHeuristic9());
 }
 
 Starter::~Starter() = default;
@@ -201,7 +209,10 @@ void Starter::PrimaryPageChanged(content::Page& page) {
       // Ignore; navigations to the target domain during startup are allowed.
       return;
     }
-    RecordNavigatedAwayMetrics(rfh.GetPageUkmSourceId(), rfh.IsErrorDocument());
+    RecordNavigatedAwayMetrics(rfh.GetPageUkmSourceId(), rfh.IsErrorDocument(),
+                               GetPendingTriggerContext()
+                                   ->GetScriptParameters()
+                                   .GetRequestsTriggerScript());
     // Note: do not early-return here. While the previous startup has failed, we
     // may have navigated to a new supported domain and may need to start
     // implicitly.
@@ -240,7 +251,10 @@ void Starter::DidFinishNavigation(
       return;
     }
     RecordNavigatedAwayMetrics(rfh->GetPageUkmSourceId(),
-                               rfh->IsErrorDocument());
+                               rfh->IsErrorDocument(),
+                               GetPendingTriggerContext()
+                                   ->GetScriptParameters()
+                                   .GetRequestsTriggerScript());
     // Note: do not early-return here. While the previous startup has failed, we
     // may have navigated to a new supported domain and may need to start
     // implicitly.
@@ -254,24 +268,23 @@ void Starter::DidFinishNavigation(
 }
 
 void Starter::RecordNavigatedAwayMetrics(ukm::SourceId source_id,
-                                         bool is_error_document) const {
-  if (GetPendingTriggerContext()
-          ->GetScriptParameters()
-          .GetRequestsTriggerScript()) {
+                                         bool is_error_document,
+                                         bool is_trigger_script) const {
+  if (is_trigger_script) {
     // Note: this will record for the current domain, not the target domain.
     // There seems to be no way to avoid this.
     Metrics::RecordTriggerScriptStarted(
         ukm_recorder_, source_id,
         is_error_document ? Metrics::TriggerScriptStarted::NAVIGATION_ERROR
                           : Metrics::TriggerScriptStarted::NAVIGATED_AWAY);
-  } else {
-    // Regular startup was interrupted (most likely during the onboarding).
-    Metrics::RecordDropOut(
-        waiting_for_onboarding_ ? Metrics::DropOutReason::ONBOARDING_NAVIGATION
-                                : Metrics::DropOutReason::NAVIGATION,
-        GetPendingTriggerContext()->GetScriptParameters().GetIntent().value_or(
-            std::string()));
+    return;
   }
+  // Regular startup was interrupted (most likely during the onboarding).
+  Metrics::RecordDropOut(
+      waiting_for_onboarding_ ? Metrics::DropOutReason::ONBOARDING_NAVIGATION
+                              : Metrics::DropOutReason::NAVIGATION,
+      GetPendingTriggerContext()->GetScriptParameters().GetIntent().value_or(
+          std::string()));
 }
 
 void Starter::MaybeStartImplicitlyForUrl(const GURL& url,
@@ -462,6 +475,7 @@ void Starter::OnDependenciesInvalidated() {
 void Starter::CanStart(
     std::unique_ptr<TriggerContext> trigger_context,
     base::OnceCallback<void(bool success,
+                            const OnboardingState& onboarding_state,
                             absl::optional<GURL> url,
                             std::unique_ptr<TriggerContext> trigger_contexts)>
         preconditions_checked_callback) {
@@ -534,8 +548,8 @@ void Starter::Start(std::unique_ptr<TriggerContext> trigger_context) {
     return;
   }
 
-  // Record startup metrics for trigger scripts as soon as possible to establish
-  // a baseline.
+  // Record startup metrics for trigger scripts as soon as possible to
+  // establish a baseline.
   if (IsTriggerScriptContext(*pending_trigger_context_)) {
     Metrics::RecordTriggerScriptStarted(
         ukm_recorder_, current_ukm_source_id_, startup_mode,
@@ -741,7 +755,10 @@ void Starter::MaybeShowOnboarding(
     Metrics::RecordRegularScriptOnboarding(ukm_recorder_,
                                            current_ukm_source_id_,
                                            Metrics::Onboarding::OB_EXTERNAL);
-    OnStartDone(/* start_script = */ true, trigger_script);
+    OnStartDone(/* start_script = */ true, trigger_script,
+                {.onboarding_shown = false,
+                 .onboarding_skipped = true,
+                 .onboarding_result = absl::nullopt});
     return;
   }
 
@@ -751,9 +768,9 @@ void Starter::MaybeShowOnboarding(
     return;
   }
 
-  // Always use bottom sheet onboarding here. Trigger scripts may show a dialog
-  // onboarding, but if we have reached this part, we're already starting the
-  // regular script, where we don't offer dialog onboarding.
+  // Always use bottom sheet onboarding here. Trigger scripts may show a
+  // dialog onboarding, but if we have reached this part, we're already
+  // starting the regular script, where we don't offer dialog onboarding.
   runtime_manager_->SetUIState(UIState::kShown);
   waiting_for_onboarding_ = true;
   platform_delegate_->ShowOnboarding(
@@ -816,22 +833,29 @@ void Starter::OnOnboardingFinished(
 
   if (result != OnboardingResult::ACCEPTED) {
     runtime_manager_->SetUIState(UIState::kNotShown);
-    OnStartDone(/* start_script = */ false);
+    OnStartDone(/* start_script = */ false, trigger_script,
+                {.onboarding_shown = shown,
+                 .onboarding_skipped = false,
+                 .onboarding_result = result});
     return;
   }
 
   // Onboarding is the last step before regular startup.
   platform_delegate_->SetOnboardingAccepted(true);
   pending_trigger_context_->SetOnboardingShown(shown);
-  OnStartDone(/* start_script = */ true, trigger_script);
+  OnStartDone(/* start_script = */ true, trigger_script,
+              {.onboarding_shown = shown,
+               .onboarding_skipped = false,
+               .onboarding_result = result});
 }
 
 void Starter::OnStartDone(bool start_script,
-                          absl::optional<TriggerScriptProto> trigger_script) {
+                          absl::optional<TriggerScriptProto> trigger_script,
+                          OnboardingState onboarding_state) {
   // If a callback is present, we notify that the checks are done instead of
   // directly starting the script with the default UI.
   if (preconditions_checked_callback_) {
-    ReportPreconditionsChecked(start_script);
+    ReportPreconditionsChecked(start_script, onboarding_state);
     return;
   }
 
@@ -853,11 +877,13 @@ void Starter::OnStartDone(bool start_script,
       *startup_url, std::move(pending_trigger_context_), trigger_script);
 }
 
-void Starter::ReportPreconditionsChecked(bool start_script) {
+void Starter::ReportPreconditionsChecked(bool start_script,
+                                         OnboardingState onboarding_state) {
   auto startup_url =
       StartupUtil().ChooseStartupUrlForIntent(*pending_trigger_context_);
   std::move(preconditions_checked_callback_)
-      .Run(start_script, startup_url, std::move(pending_trigger_context_));
+      .Run(start_script, onboarding_state, startup_url,
+           std::move(pending_trigger_context_));
 }
 
 void Starter::DeleteTriggerScriptCoordinator() {

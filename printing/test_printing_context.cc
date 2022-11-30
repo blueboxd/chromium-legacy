@@ -147,6 +147,9 @@ mojom::ResultCode TestPrintingContext::NewDocument(
     const std::u16string& document_name) {
   DCHECK(!in_print_job_);
 
+  if (!new_document_called_.is_null())
+    new_document_called_.Run();
+
   abort_printing_ = false;
   in_print_job_ = true;
 
@@ -167,6 +170,11 @@ mojom::ResultCode TestPrintingContext::RenderPage(const PrintedPage& page,
 
   if (render_page_blocked_by_permissions_)
     return mojom::ResultCode::kAccessDenied;
+
+  if (render_page_fail_for_page_number_.has_value() &&
+      *render_page_fail_for_page_number_ == page.page_number()) {
+    return mojom::ResultCode::kFailed;
+  }
 
   // No-op.
   return mojom::ResultCode::kSuccess;

@@ -9,7 +9,7 @@
 <translation id="1300209025925956156">Escanear tu documento</translation>
 <translation id="1309250603447638106">Descargando actualizaciones para la función de escanear documentos</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Pulsa la tecla de búsqueda y la flecha hacia la izquierda para acceder a ellos.</translation>
-<translation id="1393338179284529051">Quad HD</translation>
+<translation id="1417314334557041815">Editar página <ph name="INDEX" /></translation>
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> está desenchufada.</translation>
 <translation id="1473110567575736769">Temporizador de 3 segundos</translation>
@@ -20,8 +20,8 @@
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="1627744224761163218">4x4</translation>
 <translation id="1664224225747386870">No se ha grabado nada</translation>
-<translation id="169335673490251151">Escanear más páginas</translation>
 <translation id="1838104802459806957">Inclinar hacia arriba</translation>
+<translation id="1843105061469674856">Escanear otra página más</translation>
 <translation id="1851169887664797861">Controles de cámara adicionales disponibles</translation>
 <translation id="1851616744363735765">EN PAUSA</translation>
 <translation id="1862930711583847113">No se puede exportar <ph name="FILE" /></translation>
@@ -46,7 +46,6 @@
 <translation id="2599796128805996109">Cámara trasera</translation>
 <translation id="2759905922487820242"><ph name="CURRENT" />/<ph name="MAXIMAL" /> s</translation>
 <translation id="2761536921376153655">Tipo de búsqueda</translation>
-<translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">Vista previa de efecto espejo</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> está enchufada.</translation>
 <translation id="2904654629665923749">La función de escanear documentos está disponible</translation>
@@ -80,6 +79,7 @@
 <translation id="414641094616694804">Esta cámara no puede cambiar de resolución</translation>
 <translation id="4269820728363426813">Copiar la dirección del enlace</translation>
 <translation id="4281620174117014503">Resolución media</translation>
+<translation id="428234092390943511">Miniatura de la página</translation>
 <translation id="4329152592498422850">Cambiar para hacer una foto cuadrada</translation>
 <translation id="4340659173795395806">Ahora puedes crear PDFs de varias páginas</translation>
 <translation id="4383571725254449280">Imprimir registros de rendimiento</translation>
@@ -114,7 +114,6 @@
 <translation id="5916664084637901428">Activado</translation>
 <translation id="5975083100439434680">Reducir</translation>
 <translation id="5976160379964388480">Otros</translation>
-<translation id="603973421174355542">Full HD</translation>
 <translation id="6073451960410192870">Detener grabación</translation>
 <translation id="6197807149213783179">Guardar metadatos</translation>
 <translation id="6233780560267770709">Tres por tres</translation>
@@ -137,7 +136,6 @@ Si tu comentario está relacionado con la calidad de imagen o de vídeo, adjunta
 <translation id="698156982839284926">3 segundos</translation>
 <translation id="712848772518857951">¿Seguro que quieres eliminar estos <ph name="COUNT" /> elementos?</translation>
 <translation id="7134221860976209830">Temporizador de 10 segundos</translation>
-<translation id="7150591439198955032">4K</translation>
 <translation id="7191890674911603392">Tipo de grabación</translation>
 <translation id="7243947652761655814">Resolución de vídeo</translation>
 <translation id="7337660886763914220">Errores del sistema de archivos.</translation>
@@ -162,7 +160,6 @@ Si tu comentario está relacionado con la calidad de imagen o de vídeo, adjunta
 <translation id="8167081290930651932">Guardar como foto</translation>
 <translation id="8239780215768881278">Hacer una captura de vídeo</translation>
 <translation id="8261506727792406068">Eliminar</translation>
-<translation id="839162370397157884">Seleccionar página</translation>
 <translation id="8425673304802773841">Inclinar hacia abajo</translation>
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8629662593426079630">360p</translation>

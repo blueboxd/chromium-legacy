@@ -139,13 +139,13 @@ void TextResourceDecoder::AddToBuffer(const char* data,
                                       wtf_size_t data_length) {
   // Explicitly reserve capacity in the Vector to avoid triggering the growth
   // heuristic (== no excess capacity).
-  buffer_.ReserveCapacity(buffer_.size() + data_length);
+  buffer_.reserve(buffer_.size() + data_length);
   buffer_.Append(data, data_length);
 }
 
 void TextResourceDecoder::AddToBufferIfEmpty(const char* data,
                                              wtf_size_t data_length) {
-  if (buffer_.IsEmpty())
+  if (buffer_.empty())
     buffer_.Append(data, data_length);
 }
 
@@ -398,7 +398,7 @@ String TextResourceDecoder::Decode(const char* data, size_t data_len) {
   // and use the buffered content. Any case that depends on buffering (== return
   // the empty string) should call AddToBufferIfEmpty() if it needs more data to
   // make sure that the first data segment is buffered.
-  if (!buffer_.IsEmpty()) {
+  if (!buffer_.empty()) {
     AddToBuffer(data, len);
     data = buffer_.data();
     len = buffer_.size();
@@ -485,6 +485,13 @@ String TextResourceDecoder::Flush() {
   codec_.reset();
   checked_for_bom_ = false;  // Skip BOM again when re-decoding.
   return result;
+}
+
+WebEncodingData TextResourceDecoder::GetEncodingData() const {
+  return WebEncodingData{
+      .encoding = String(encoding_.GetName()),
+      .was_detected_heuristically = EncodingWasDetectedHeuristically(),
+      .saw_decoding_error = SawError()};
 }
 
 }  // namespace blink

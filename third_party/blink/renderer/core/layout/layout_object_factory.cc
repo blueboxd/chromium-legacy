@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -119,8 +119,11 @@ LayoutBlockFlow* LayoutObjectFactory::CreateBlockFlow(
     Node& node,
     const ComputedStyle& style,
     LegacyLayout legacy) {
-  if (style.Display() == EDisplay::kListItem) {
-    // Create a LayoutBlockFlow with a list marker
+  if (style.Display() == EDisplay::kListItem &&
+      node.GetPseudoId() != kPseudoIdBackdrop) {
+    // Create a LayoutBlockFlow with a ListItemOrdinal and maybe a ::marker.
+    // ::backdrop is excluded since it's not tree-abiding, and ListItemOrdinal
+    // needs to traverse the tree.
     return CreateObject<LayoutBlockFlow, LayoutNGListItem, LayoutListItem>(
         node, legacy);
   }
@@ -140,12 +143,7 @@ LayoutBlock* LayoutObjectFactory::CreateBlockForLineClamp(
 
 LayoutView* LayoutObjectFactory::CreateView(Document& document,
                                             const ComputedStyle& style) {
-  bool disable_ng_for_type =
-      !RuntimeEnabledFeatures::LayoutNGViewEnabled() ||
-      (LayoutView::ShouldUsePrintingLayout(document) &&
-       !RuntimeEnabledFeatures::LayoutNGPrintingEnabled());
-
-  if (disable_ng_for_type || !RuntimeEnabledFeatures::LayoutNGEnabled())
+  if (!RuntimeEnabledFeatures::LayoutNGPrintingEnabled())
     return MakeGarbageCollected<LayoutView>(&document);
   return MakeGarbageCollected<LayoutNGView>(&document);
 }

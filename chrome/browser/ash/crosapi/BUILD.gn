@@ -172,6 +172,8 @@ source_set("crosapi") {
     "networking_attributes_ash.h",
     "networking_private_ash.cc",
     "networking_private_ash.h",
+    "parent_access_ash.cc",
+    "parent_access_ash.h",
     "policy_service_ash.cc",
     "policy_service_ash.h",
     "prefs_ash.cc",
@@ -242,8 +244,6 @@ source_set("crosapi") {
     "//ash/components/arc:arc_base_utils",
     "//ash/components/arc/mojom",
     "//ash/components/arc/session",
-    "//ash/components/settings:settings",
-    "//ash/components/tpm",
     "//ash/constants",
     "//ash/webui/camera_app_ui",
     "//ash/webui/connectivity_diagnostics",
@@ -280,6 +280,8 @@ source_set("crosapi") {
     "//chromeos/ash/components/install_attributes",
     "//chromeos/ash/components/login/auth",
     "//chromeos/ash/components/network",
+    "//chromeos/ash/components/settings",
+    "//chromeos/ash/components/tpm",
     "//chromeos/components/cdm_factory_daemon:cdm_factory_daemon_browser",
     "//chromeos/components/certificate_provider:certificate_provider",
     "//chromeos/components/quick_answers/public/cpp:prefs",
@@ -358,6 +360,8 @@ source_set("test_support") {
   sources = [
     "ash_requires_lacros_browsertestbase.cc",
     "ash_requires_lacros_browsertestbase.h",
+    "ash_requires_lacros_extension_apitest.cc",
+    "ash_requires_lacros_extension_apitest.h",
     "fake_browser_manager.cc",
     "fake_browser_manager.h",
     "input_method_test_interface_ash.cc",
@@ -371,6 +375,7 @@ source_set("test_support") {
   deps = [
     ":crosapi",
     "//ash",
+    "//ash/app_list:app_list",
     "//chrome/browser/chromeos:test_support",
     "//chrome/test:test_support",
     "//chromeos/ash/components/dbus/shill",
@@ -419,6 +424,7 @@ source_set("unit_tests") {
     "test_local_printer_ash.cc",
     "test_local_printer_ash.h",
     "test_mojo_connection_manager_unittest.cc",
+    "wallpaper_ash_unittest.cc",
   ]
 
   if (use_cups) {

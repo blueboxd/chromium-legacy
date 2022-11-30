@@ -42,9 +42,8 @@ class UpdateServiceProxy : public UpdateService {
   void GetVersion(
       base::OnceCallback<void(const base::Version&)> callback) override;
   void FetchPolicies(base::OnceCallback<void(int)> callback) override;
-  void RegisterApp(
-      const RegistrationRequest& request,
-      base::OnceCallback<void(const RegistrationResponse&)> callback) override;
+  void RegisterApp(const RegistrationRequest& request,
+                   base::OnceCallback<void(int)> callback) override;
   void GetAppStates(
       base::OnceCallback<void(const std::vector<UpdateService::AppState>&)>)
       override;
@@ -57,6 +56,7 @@ class UpdateServiceProxy : public UpdateService {
               StateChangeCallback state_update,
               Callback callback) override;
   void Install(const RegistrationRequest& registration,
+               const std::string& client_install_data,
                const std::string& install_data_index,
                Priority priority,
                StateChangeCallback state_update,

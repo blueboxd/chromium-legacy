@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -191,7 +191,7 @@ StructTraits<blink::mojom::IDBValueDataView, std::unique_ptr<blink::IDBValue>>::
     }
     blob_info->size = info.size();
     blob_info->uuid = info.Uuid();
-    DCHECK(!blob_info->uuid.IsEmpty());
+    DCHECK(!blob_info->uuid.empty());
     String mime_type = info.GetType();
     if (mime_type.IsNull())
       mime_type = g_empty_string;
@@ -218,7 +218,7 @@ bool StructTraits<blink::mojom::IDBValueDataView,
   if (!data.ReadBits(&value_bits))
     return false;
 
-  if (value_bits.IsEmpty()) {
+  if (value_bits.empty()) {
     *out = std::make_unique<blink::IDBValue>(scoped_refptr<SharedBuffer>(),
                                              Vector<blink::WebBlobInfo>());
     return true;

@@ -14,8 +14,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 namespace {
 
@@ -142,5 +141,4 @@ TEST_F(AssistantSpeechRecognitionObserverTest,
       RecognitionState::FINAL_RESULT, recognition_result);
   observer_mock().FlushForTesting();
 }
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant

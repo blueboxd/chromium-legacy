@@ -3570,17 +3570,12 @@ TEST_P(PartitionAllocTest, Bookkeeping) {
   EXPECT_EQ(expected_super_pages_size, root.total_size_of_super_pages);
 
   // Single-slot slot spans...
-  size_t big_size = kMaxBucketed - SystemPageSize();
+  //
   // When the system page size is larger than 4KiB, we don't necessarily have
   // enough space in the superpage to store two of the largest bucketed
-  // allocations, particularly when we reserve extra space for e.g. bitmaps. In
-  // this case, use a smaller size.
-  //
-  // TODO(lizeb): Fix it, perhaps by lowering the maximum order for bucketed
-  // allocations.
-  if (SystemPageSize() > (1 << 12)) {
-    big_size -= 4 * SystemPageSize();
-  }
+  // allocations, particularly when we reserve extra space for e.g. bitmaps.
+  // To avoid this, we use something just below kMaxBucketed.
+  size_t big_size = kMaxBucketed * 4 / 5 - SystemPageSize();
 
   ASSERT_GT(big_size, MaxRegularSlotSpanSize());
   ASSERT_LE(big_size, kMaxBucketed);
@@ -3851,6 +3846,71 @@ TEST_P(PartitionAllocTest, RefCountRealloc) {
   }
 }
 
+int g_unretained_dangling_raw_ptr_detected_count = 0;
+
+class UnretainedDanglingRawPtrTest : public PartitionAllocTest {
+ public:
+  void SetUp() override {
+    PartitionAllocTest::SetUp();
+    g_unretained_dangling_raw_ptr_detected_count = 0;
+    old_detected_fn_ = partition_alloc::GetUnretainedDanglingRawPtrDetectedFn();
+
+    partition_alloc::SetUnretainedDanglingRawPtrDetectedFn(
+        &UnretainedDanglingRawPtrTest::DanglingRawPtrDetected);
+    old_unretained_dangling_ptr_enabled_ =
+        partition_alloc::SetUnretainedDanglingRawPtrCheckEnabled(true);
+  }
+  void TearDown() override {
+    partition_alloc::SetUnretainedDanglingRawPtrDetectedFn(old_detected_fn_);
+    partition_alloc::SetUnretainedDanglingRawPtrCheckEnabled(
+        old_unretained_dangling_ptr_enabled_);
+    PartitionAllocTest::TearDown();
+  }
+
+ private:
+  static void DanglingRawPtrDetected(uintptr_t) {
+    g_unretained_dangling_raw_ptr_detected_count++;
+  }
+
+  partition_alloc::DanglingRawPtrDetectedFn* old_detected_fn_;
+  bool old_unretained_dangling_ptr_enabled_;
+};
+
+INSTANTIATE_TEST_SUITE_P(AlternateBucketDistribution,
+                         UnretainedDanglingRawPtrTest,
+                         testing::Values(false, true));
+
+TEST_P(UnretainedDanglingRawPtrTest, UnretainedDanglingPtrNoReport) {
+  void* ptr = allocator.root()->Alloc(kTestAllocSize, type_name);
+  EXPECT_TRUE(ptr);
+  auto* ref_count =
+      PartitionRefCountPointer(allocator.root()->ObjectToSlotStart(ptr));
+  ref_count->Acquire();
+  EXPECT_TRUE(ref_count->IsAlive());
+  // Allocation is still live, so calling ReportIfDangling() should not result
+  // in any detections.
+  ref_count->ReportIfDangling();
+  EXPECT_EQ(g_unretained_dangling_raw_ptr_detected_count, 0);
+  EXPECT_FALSE(ref_count->Release());
+  allocator.root()->Free(ptr);
+}
+
+TEST_P(UnretainedDanglingRawPtrTest, UnretainedDanglingPtrShouldReport) {
+  void* ptr = allocator.root()->Alloc(kTestAllocSize, type_name);
+  EXPECT_TRUE(ptr);
+  auto* ref_count =
+      PartitionRefCountPointer(allocator.root()->ObjectToSlotStart(ptr));
+  ref_count->Acquire();
+  EXPECT_TRUE(ref_count->IsAlive());
+  allocator.root()->Free(ptr);
+  // At this point, memory shouldn't be alive...
+  EXPECT_FALSE(ref_count->IsAlive());
+  // ...and we should report the ptr as dangling.
+  ref_count->ReportIfDangling();
+  EXPECT_EQ(g_unretained_dangling_raw_ptr_detected_count, 1);
+  EXPECT_TRUE(ref_count->Release());
+}
+
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
 #if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS)
@@ -4097,6 +4157,9 @@ TEST_P(PartitionAllocTest, RawPtrReleasedBeforeFree) {
 }
 
 #if defined(PA_HAS_DEATH_TESTS)
+// DCHECK message are stripped in official build. It causes death tests with
+// matchers to fail.
+#if !defined(OFFICIAL_BUILD) || !defined(NDEBUG)
 
 // Acquire() once, Release() twice => CRASH
 TEST_P(PartitionAllocDeathTest, ReleaseUnderflowRawPtr) {
@@ -4120,6 +4183,7 @@ TEST_P(PartitionAllocDeathTest, ReleaseUnderflowDanglingPtr) {
   allocator.root()->Free(ptr);
 }
 
+#endif  //! defined(OFFICIAL_BUILD) || !defined(NDEBUG)
 #endif  // defined(PA_HAS_DEATH_TESTS)
 #endif  // BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS)
 
@@ -4323,14 +4387,13 @@ TEST_P(PartitionAllocTest, FastPathOrReturnNull) {
 }
 
 #if defined(PA_HAS_DEATH_TESTS)
+// DCHECK message are stripped in official build. It causes death tests with
+// matchers to fail.
 #if !defined(OFFICIAL_BUILD) || !defined(NDEBUG)
 
 TEST_P(PartitionAllocDeathTest, CheckTriggered) {
-  using ::testing::ContainsRegex;
-#if BUILDFLAG(PA_DCHECK_IS_ON)
-  EXPECT_DEATH(PA_CHECK(5 == 7), ContainsRegex("Check failed.*5 == 7"));
-#endif
-  EXPECT_DEATH(PA_CHECK(5 == 7), ContainsRegex("Check failed.*5 == 7"));
+  EXPECT_DCHECK_DEATH_WITH(PA_CHECK(5 == 7), "Check failed.*5 == 7");
+  EXPECT_DEATH(PA_CHECK(5 == 7), "Check failed.*5 == 7");
 }
 
 #endif  // !defined(OFFICIAL_BUILD) && !defined(NDEBUG)

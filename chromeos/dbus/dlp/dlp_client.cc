@@ -98,7 +98,7 @@ class DlpClientImpl : public DlpClient {
   }
 
   void GetFilesSources(const dlp::GetFilesSourcesRequest request,
-                       GetFilesSourcesCallback callback) const override {
+                       GetFilesSourcesCallback callback) override {
     dbus::MethodCall method_call(dlp::kDlpInterface,
                                  dlp::kGetFilesSourcesMethod);
     dbus::MessageWriter writer(&method_call);
@@ -119,7 +119,7 @@ class DlpClientImpl : public DlpClient {
   }
 
   void CheckFilesTransfer(const dlp::CheckFilesTransferRequest request,
-                          CheckFilesTransferCallback callback) const override {
+                          CheckFilesTransferCallback callback) override {
     dbus::MethodCall method_call(dlp::kDlpInterface,
                                  dlp::kCheckFilesTransferMethod);
     dbus::MessageWriter writer(&method_call);
@@ -134,7 +134,7 @@ class DlpClientImpl : public DlpClient {
     }
 
     proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, /*5 minutes*/ 300000,
         base::BindOnce(&DlpClientImpl::HandleCheckFilesTransferResponse,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
   }

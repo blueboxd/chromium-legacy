@@ -6,10 +6,16 @@
 
 #import <UIKit/UIKit.h>
 
+#import "components/google/core/common/google_util.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/application_context/application_context.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/passwords/ios_chrome_affiliation_service_factory.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -20,8 +26,10 @@
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings/scoped_password_settings_reauth_module_override.h"
+#import "ios/chrome/browser/ui/settings/password/passwords_in_other_apps/passwords_in_other_apps_coordinator.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
+#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -79,6 +87,7 @@
     ExportActivityViewControllerDelegate,
     PasswordExportHandler,
     PasswordSettingsPresentationDelegate,
+    PasswordsInOtherAppsCoordinatorDelegate,
     PopoverLabelViewControllerDelegate,
     SettingsNavigationControllerDelegate> {
   // Service which gives us a view on users' saved passwords.
@@ -108,6 +117,10 @@
 // Module handling reauthentication before accessing sensitive data.
 @property(nonatomic, strong) ReauthenticationModule* reauthModule;
 
+// Coordinator for the "Passwords in Other Apps" screen.
+@property(nonatomic, strong)
+    PasswordsInOtherAppsCoordinator* passwordsInOtherAppsCoordinator;
+
 @end
 
 @implementation PasswordSettingsCoordinator
@@ -121,6 +134,8 @@
 #pragma mark - ChromeCoordinator
 
 - (void)start {
+  ChromeBrowserState* browserState = self.browser->GetBrowserState();
+
   self.reauthModule =
       ScopedPasswordSettingsReauthModuleOverride::instance
           ? ScopedPasswordSettingsReauthModuleOverride::instance->module
@@ -128,14 +143,20 @@
 
   _savedPasswordsPresenter =
       std::make_unique<password_manager::SavedPasswordsPresenter>(
+          IOSChromeAffiliationServiceFactory::GetForBrowserState(
+              self.browser->GetBrowserState()),
           IOSChromePasswordStoreFactory::GetForBrowserState(
-              self.browser->GetBrowserState(),
-              ServiceAccessType::EXPLICIT_ACCESS));
+              browserState, ServiceAccessType::EXPLICIT_ACCESS));
 
   self.mediator = [[PasswordSettingsMediator alloc]
       initWithReauthenticationModule:self.reauthModule
              savedPasswordsPresenter:_savedPasswordsPresenter.get()
-                       exportHandler:self];
+                       exportHandler:self
+                         prefService:browserState->GetPrefs()
+                     identityManager:IdentityManagerFactory::GetForBrowserState(
+                                         browserState)
+                         syncService:SyncServiceFactory::GetForBrowserState(
+                                         browserState)];
 
   self.dispatcher = static_cast<id<ApplicationCommands>>(
       self.browser->GetCommandDispatcher());
@@ -151,6 +172,7 @@
                         delegate:self];
 
   self.mediator.consumer = self.passwordSettingsViewController;
+  self.passwordSettingsViewController.delegate = self.mediator;
 
   [self.baseViewController
       presentViewController:self.settingsNavigationController
@@ -167,9 +189,15 @@
     [self.baseViewController dismissViewControllerAnimated:NO completion:nil];
   }
 
+  [self.passwordsInOtherAppsCoordinator stop];
+  self.passwordsInOtherAppsCoordinator.delegate = nil;
+  self.passwordsInOtherAppsCoordinator = nil;
+
   self.passwordSettingsViewController = nil;
   self.settingsNavigationController = nil;
   _preparingPasswordsAlert = nil;
+
+  [self.mediator disconnect];
 }
 
 #pragma mark - PasswordSettingsPresentationDelegate
@@ -234,6 +262,28 @@
       presentViewController:bubbleViewController
                    animated:YES
                  completion:nil];
+}
+
+- (void)showPasswordsInOtherAppsScreen {
+  DCHECK(!self.passwordsInOtherAppsCoordinator);
+  self.passwordsInOtherAppsCoordinator =
+      [[PasswordsInOtherAppsCoordinator alloc]
+          initWithBaseNavigationController:self.settingsNavigationController
+                                   browser:self.browser];
+  self.passwordsInOtherAppsCoordinator.delegate = self;
+  [self.passwordsInOtherAppsCoordinator start];
+}
+
+- (void)showOnDeviceEncryptionSetUp {
+  GURL url = google_util::AppendGoogleLocaleParam(
+      GURL(kOnDeviceEncryptionOptInURL),
+      GetApplicationContext()->GetApplicationLocale());
+  BlockToOpenURL(self.passwordSettingsViewController, self.dispatcher)(url);
+}
+
+- (void)showOnDeviceEncryptionHelp {
+  GURL url = GURL(kOnDeviceEncryptionLearnMoreURL);
+  BlockToOpenURL(self.passwordSettingsViewController, self.dispatcher)(url);
 }
 
 #pragma mark - PopoverLabelViewControllerDelegate
@@ -351,6 +401,16 @@
 
 - (void)resetExport {
   [self.mediator userDidCompleteExportFlow];
+}
+
+#pragma mark - PasswordsInOtherAppsCoordinatorDelegate
+
+- (void)passwordsInOtherAppsCoordinatorDidRemove:
+    (PasswordsInOtherAppsCoordinator*)coordinator {
+  DCHECK_EQ(self.passwordsInOtherAppsCoordinator, coordinator);
+  [self.passwordsInOtherAppsCoordinator stop];
+  self.passwordsInOtherAppsCoordinator.delegate = nil;
+  self.passwordsInOtherAppsCoordinator = nil;
 }
 
 #pragma mark - SettingsNavigationControllerDelegate

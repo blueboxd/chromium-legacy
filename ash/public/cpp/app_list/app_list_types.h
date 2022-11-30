@@ -186,7 +186,13 @@ enum class AppListSortOrder {
   // by the light vibrant color extracted from the icon.
   kColor,
 
-  kMaxValue = kColor,
+  // Ephemeral apps and folders are sorted first, in alphabetical order,
+  // followed by the non-ephemeral apps and folders in alphabetical order.
+  // Note that folders are also sorted by their name and not automatically added
+  // to the front.
+  kAlphabeticalEphemeralAppFirst,
+
+  kMaxValue = kAlphabeticalEphemeralAppFirst,
 };
 
 // All the events that affect the app list sort order (including the pref order
@@ -289,17 +295,10 @@ ASH_PUBLIC_EXPORT std::ostream& operator<<(std::ostream& os,
 enum class AppListViewState {
   // Closes |app_list_main_view_| and dismisses the delegate.
   kClosed,
-  // The initial state for the app list when neither maximize or side shelf
-  // modes are active. If set, the widget will peek over the shelf by
-  // kPeekingAppListHeight DIPs.
-  kPeeking,
-  // Entered when text is entered into the search box from peeking mode.
-  kHalf,
   // Default app list state in maximize and side shelf modes. Entered from an
   // upward swipe from |PEEKING| or from clicking the chevron.
   kFullscreenAllApps,
-  // Entered from an upward swipe from |HALF| or by entering text in the
-  // search box from |FULLSCREEN_ALL_APPS|.
+  // Entered by entering text in the search box from |FULLSCREEN_ALL_APPS|.
   kFullscreenSearch
 };
 
@@ -429,7 +428,7 @@ enum class AppListSearchResultCategory {
 //
 // TODO(https://crbug.com/1258415): kChip can be deprecated once
 // ProductivityLauncher is launched.
-enum SearchResultDisplayType {
+enum class SearchResultDisplayType {
   kNone = 0,
   kList = 1,  // Displays in search list
   kTile = 2,  // Displays in search tiles
@@ -638,6 +637,12 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
 
   // The details of the result, supports embedded icons.
   std::vector<SearchResultTextItem> details_vector;
+
+  // Whether or not the title field can be split over multiple lines. UI
+  // implementation does not support multiline if the title vector has more
+  // than one text item, so if multiline_title is set then title_vector
+  // cannot have more than one element.
+  bool multiline_title = false;
 
   // Whether or not the details field can be split over multiple lines. UI
   // implementation does not support multiline if the details vector has more

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,10 +47,10 @@ HtmlAudioElementCapturerSource::~HtmlAudioElementCapturerSource() {
 bool HtmlAudioElementCapturerSource::EnsureSourceIsStarted() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (audio_source_ && !is_started_) {
-    // TODO(crbug.com/964463): Use per-frame task runner.
-    Thread::Current()->GetDeprecatedTaskRunner()->PostTask(
-        FROM_HERE, WTF::Bind(&HtmlAudioElementCapturerSource::SetAudioCallback,
-                             weak_factory_.GetWeakPtr()));
+    GetTaskRunner()->PostTask(
+        FROM_HERE,
+        WTF::BindOnce(&HtmlAudioElementCapturerSource::SetAudioCallback,
+                      weak_factory_.GetWeakPtr()));
     is_started_ = true;
   }
   return is_started_;

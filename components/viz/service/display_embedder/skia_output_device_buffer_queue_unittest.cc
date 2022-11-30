@@ -123,7 +123,7 @@ class TestOnGpu : public ::testing::Test {
   void ScheduleGpuTask(base::OnceClosure callback) {
     auto wrap = base::BindOnce(&TestOnGpu::CallOnGpuAndUnblockMain,
                                base::Unretained(this), std::move(callback));
-    gpu_service_holder_->ScheduleGpuTask(std::move(wrap));
+    gpu_service_holder_->ScheduleCompositorGpuTask(std::move(wrap));
     wait_.Wait();
   }
 
@@ -147,7 +147,7 @@ class TestImageBackingFactory : public gpu::SharedImageBackingFactory {
   // gpu::SharedImageBackingFactory implementation.
   std::unique_ptr<gpu::SharedImageBacking> CreateSharedImage(
       const gpu::Mailbox& mailbox,
-      ResourceFormat format,
+      SharedImageFormat format,
       gpu::SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
@@ -163,7 +163,7 @@ class TestImageBackingFactory : public gpu::SharedImageBackingFactory {
   }
   std::unique_ptr<gpu::SharedImageBacking> CreateSharedImage(
       const gpu::Mailbox& mailbox,
-      ResourceFormat format,
+      SharedImageFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
@@ -190,7 +190,7 @@ class TestImageBackingFactory : public gpu::SharedImageBackingFactory {
     return nullptr;
   }
   bool IsSupported(uint32_t usage,
-                   ResourceFormat format,
+                   SharedImageFormat format,
                    const gfx::Size& size,
                    bool thread_safe,
                    gfx::GpuMemoryBufferType gmb_type,
@@ -205,14 +205,15 @@ class MockGLSurfaceAsync : public gl::GLSurfaceStub {
   bool SupportsAsyncSwap() override { return true; }
 
   void SwapBuffersAsync(SwapCompletionCallback completion_callback,
-                        PresentationCallback presentation_callback) override {
+                        PresentationCallback presentation_callback,
+                        gl::FrameData data) override {
     swap_completion_callbacks_.push_back(std::move(completion_callback));
     presentation_callbacks_.push_back(std::move(presentation_callback));
   }
 
-  void CommitOverlayPlanesAsync(
-      SwapCompletionCallback completion_callback,
-      PresentationCallback presentation_callback) override {
+  void CommitOverlayPlanesAsync(SwapCompletionCallback completion_callback,
+                                PresentationCallback presentation_callback,
+                                gl::FrameData data) override {
     swap_completion_callbacks_.push_back(std::move(completion_callback));
     presentation_callbacks_.push_back(std::move(presentation_callback));
   }
@@ -463,8 +464,10 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
 
   gpu::Mailbox MakeOverlayMailbox() {
     gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
+    SharedImageFormat si_format =
+        SharedImageFormat::SinglePlane(ResourceFormat::RGBA_8888);
     bool success = shared_image_factory_->CreateSharedImage(
-        mailbox, ResourceFormat::RGBA_8888, gfx::Size(1000, 1000),
+        mailbox, si_format, gfx::Size(1000, 1000),
         gfx::ColorSpace::CreateSRGB(),
         GrSurfaceOrigin::kTopLeft_GrSurfaceOrigin,
         SkAlphaType::kPremul_SkAlphaType, gpu::kNullSurfaceHandle,

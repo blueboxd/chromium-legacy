@@ -19,6 +19,8 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/site_for_cookies.h"
+#include "net/first_party_sets/first_party_set_metadata.h"
+#include "net/first_party_sets/first_party_sets_cache_filter.h"
 #include "net/first_party_sets/same_party_context.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -45,6 +47,7 @@ class CookieOptions;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
 class IPEndPoint;
+class SchemefulSite;
 class URLRequest;
 
 class NET_EXPORT NetworkDelegate {
@@ -78,6 +81,7 @@ class NET_EXPORT NetworkDelegate {
   void NotifyPACScriptError(int line_number, const std::u16string& error);
   bool AnnotateAndMoveUserBlockedCookies(
       const URLRequest& request,
+      const net::FirstPartySetMetadata& first_party_set_metadata,
       CookieAccessResultList& maybe_included_cookies,
       CookieAccessResultList& excluded_cookies);
   bool CanSetCookie(const URLRequest& request,
@@ -118,6 +122,20 @@ class NET_EXPORT NetworkDelegate {
                              const GURL& endpoint) const;
   bool CanUseReportingClient(const url::Origin& origin,
                              const GURL& endpoint) const;
+
+  // Gets the First-Party Sets cache filter info, which is used to mark the
+  // cache and determine if the previously stored cache of `request_site` can be
+  // accessed.
+  //
+  // The result may be returned synchronously, or `callback` may be invoked
+  // asynchronously with the result. The callback will be invoked iff the return
+  // value is nullopt; i.e. a result will be provided via return value or
+  // callback, but not both, and not neither.
+  absl::optional<FirstPartySetsCacheFilter::MatchInfo>
+  GetFirstPartySetsCacheFilterMatchInfoMaybeAsync(
+      const SchemefulSite& request_site,
+      base::OnceCallback<void(FirstPartySetsCacheFilter::MatchInfo)> callback)
+      const;
 
  protected:
   // Adds the given ExclusionReason to all cookies in
@@ -246,6 +264,7 @@ class NET_EXPORT NetworkDelegate {
   // otherwise.
   virtual bool OnAnnotateAndMoveUserBlockedCookies(
       const URLRequest& request,
+      const net::FirstPartySetMetadata& first_party_set_metadata,
       net::CookieAccessResultList& maybe_included_cookies,
       net::CookieAccessResultList& excluded_cookies) = 0;
 
@@ -284,6 +303,12 @@ class NET_EXPORT NetworkDelegate {
 
   virtual bool OnCanUseReportingClient(const url::Origin& origin,
                                        const GURL& endpoint) const = 0;
+
+  virtual absl::optional<FirstPartySetsCacheFilter::MatchInfo>
+  OnGetFirstPartySetsCacheFilterMatchInfoMaybeAsync(
+      const SchemefulSite& request_site,
+      base::OnceCallback<void(FirstPartySetsCacheFilter::MatchInfo)> callback)
+      const = 0;
 };
 
 }  // namespace net

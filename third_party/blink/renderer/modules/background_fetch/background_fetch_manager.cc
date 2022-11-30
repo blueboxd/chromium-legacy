@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,7 +82,7 @@ bool ShouldBlockCredentials(ExecutionContext* execution_context,
   // "A URL includes credentials if its username or password is not the empty
   // string."
   // https://url.spec.whatwg.org/#include-credentials
-  return !request_url.User().IsEmpty() || !request_url.Pass().IsEmpty();
+  return !request_url.User().empty() || !request_url.Pass().empty();
 }
 
 bool ShouldBlockScheme(const KURL& request_url) {
@@ -239,9 +239,10 @@ ScriptPromise BackgroundFetchManager::fetch(
     loaders_.push_back(loader);
     loader->Start(
         bridge_.Get(), execution_context, options->icons(),
-        WTF::Bind(&BackgroundFetchManager::DidLoadIcons, WrapPersistent(this),
-                  id, std::move(fetch_api_requests), std::move(options_ptr),
-                  WrapPersistent(resolver), WrapWeakPersistent(loader)));
+        WTF::BindOnce(&BackgroundFetchManager::DidLoadIcons,
+                      WrapPersistent(this), id, std::move(fetch_api_requests),
+                      std::move(options_ptr), WrapPersistent(resolver),
+                      WrapWeakPersistent(loader)));
     return promise;
   }
 
@@ -266,8 +267,8 @@ void BackgroundFetchManager::DidLoadIcons(
   ukm_data->ideal_to_chosen_icon_size = ideal_to_chosen_icon_size;
   bridge_->Fetch(
       id, std::move(requests), std::move(options), icon, std::move(ukm_data),
-      WTF::Bind(&BackgroundFetchManager::DidFetch, WrapPersistent(this),
-                WrapPersistent(resolver), base::Time::Now()));
+      WTF::BindOnce(&BackgroundFetchManager::DidFetch, WrapPersistent(this),
+                    WrapPersistent(resolver), base::Time::Now()));
 }
 
 void BackgroundFetchManager::DidFetch(
@@ -344,7 +345,7 @@ ScriptPromise BackgroundFetchManager::get(ScriptState* script_state,
 
   ScriptState::Scope scope(script_state);
 
-  if (id.IsEmpty()) {
+  if (id.empty()) {
     exception_state.ThrowTypeError("The provided id is invalid.");
     return ScriptPromise();
   }
@@ -353,9 +354,9 @@ ScriptPromise BackgroundFetchManager::get(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   bridge_->GetRegistration(
-      id, WTF::Bind(&BackgroundFetchManager::DidGetRegistration,
-                    WrapPersistent(this), WrapPersistent(resolver),
-                    base::Time::Now()));
+      id, WTF::BindOnce(&BackgroundFetchManager::DidGetRegistration,
+                        WrapPersistent(this), WrapPersistent(resolver),
+                        base::Time::Now()));
 
   return promise;
 }
@@ -380,12 +381,12 @@ BackgroundFetchManager::CreateFetchAPIRequestVector(
           requests->GetAsRequestOrUSVStringSequence();
 
       // Throw a TypeError when the developer has passed an empty sequence.
-      if (request_vector.IsEmpty()) {
+      if (request_vector.empty()) {
         exception_state.ThrowTypeError(kEmptyRequestSequenceErrorMessage);
         return {};
       }
 
-      fetch_api_requests.ReserveCapacity(request_vector.size());
+      fetch_api_requests.reserve(request_vector.size());
       for (const auto& request_info : request_vector) {
         Request* request = nullptr;
         switch (request_info->GetContentType()) {
@@ -499,7 +500,7 @@ ScriptPromise BackgroundFetchManager::getIds(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  bridge_->GetDeveloperIds(WTF::Bind(
+  bridge_->GetDeveloperIds(WTF::BindOnce(
       &BackgroundFetchManager::DidGetDeveloperIds, WrapPersistent(this),
       WrapPersistent(resolver), base::Time::Now()));
 
@@ -521,7 +522,7 @@ void BackgroundFetchManager::DidGetDeveloperIds(
       resolver->Resolve(developer_ids);
       return;
     case mojom::blink::BackgroundFetchError::STORAGE_ERROR:
-      DCHECK(developer_ids.IsEmpty());
+      DCHECK(developer_ids.empty());
       resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kAbortError,
           "Failed to get registration IDs due to I/O error."));

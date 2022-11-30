@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {CrIconButtonElement, LanguageHelper, LanguagesBrowserProxyImpl, SettingsAddLanguagesDialogElement, SettingsTranslatePageElement} from 'chrome://settings/lazy_load.js';
 import {CrSettingsPrefs, loadTimeData} from 'chrome://settings/settings.js';
 import {assertDeepEquals, assertEquals, assertTrue, assertFalse} from 'chrome://webui-test/chai_assert.js';
-import {eventToPromise, fakeDataBind} from 'chrome://webui-test/test_util.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
+import {fakeDataBind} from 'chrome://webui-test/polymer_test_util.js';
 
 import {FakeLanguageSettingsPrivate, getFakeLanguagePrefs} from './fake_language_settings_private.js';
 import {FakeSettingsPrivate} from './fake_settings_private.js';
@@ -39,7 +40,8 @@ suite('translate page settings', function() {
     loadTimeData.overrideValues({
       enableDesktopDetailedLanguageSettings: true,
     });
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     CrSettingsPrefs.deferInitialization = true;
   });
 
@@ -85,7 +87,8 @@ suite('translate page settings', function() {
   });
 
   teardown(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
   });
 
   suite(translate_page_tests.TestNames.TranslateSettings, function() {

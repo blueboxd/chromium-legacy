@@ -12,12 +12,13 @@
 #include "base/cxx17_backports.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/angle_conversions.h"
+#include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/quad_f.h"
-#include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/geometry/test/geometry_util.h"
 #include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector3d_f.h"
@@ -71,9 +72,12 @@ namespace {
   EXPECT_NEAR((c), (transform).rc(2, 2), (errorThreshold));     \
   EXPECT_NEAR((d), (transform).rc(2, 3), (errorThreshold));
 
+bool PointsAreNearlyEqual(const PointF& lhs, const PointF& rhs) {
+  return lhs.IsWithinDistance(rhs, 0.01f);
+}
+
 bool PointsAreNearlyEqual(const Point3F& lhs, const Point3F& rhs) {
-  float epsilon = 0.0001f;
-  return lhs.SquaredDistanceTo(rhs) < epsilon;
+  return lhs.SquaredDistanceTo(rhs) < 0.0001f;
 }
 
 bool MatricesAreNearlyEqual(const Transform& lhs, const Transform& rhs) {
@@ -167,7 +171,8 @@ void InitializeApproxIdentityMatrix(Transform* transform) {
 
 TEST(XFormTest, Equality) {
   Transform lhs, interpolated;
-  Transform rhs(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+  auto rhs = Transform::RowMajor(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
+                                 15, 16);
   interpolated = lhs;
   for (int i = 0; i <= 100; ++i) {
     for (int row = 0; row < 4; ++row) {
@@ -197,6 +202,27 @@ TEST(XFormTest, Equality) {
   }
 }
 
+// This test is to make it easier to understand the order of operations.
+TEST(XFormTest, PrePostOperations) {
+  auto m1 = Transform::AffineForTesting(1, 2, 3, 4, 5, 6);
+  auto m2 = m1;
+  m1.Translate(10, 20);
+  m2.PreConcat(Transform::MakeTranslation(10, 20));
+  EXPECT_EQ(m1, m2);
+
+  m1.PostTranslate(11, 22);
+  m2.PostConcat(Transform::MakeTranslation(11, 22));
+  EXPECT_EQ(m1, m2);
+
+  m1.Scale(3, 4);
+  m2.PreConcat(Transform::MakeScale(3, 4));
+  EXPECT_EQ(m1, m2);
+
+  m1.PostScale(5, 6);
+  m2.PostConcat(Transform::MakeScale(5, 6));
+  EXPECT_EQ(m1, m2);
+}
+
 TEST(XFormTest, ConcatTranslate) {
   static const struct TestCase {
     int x1;
@@ -218,9 +244,8 @@ TEST(XFormTest, ConcatTranslate) {
     Transform translation;
     translation.Translate(value.tx, value.ty);
     xform = translation * xform;
-    Point3F p1(value.x1, value.y1, 0);
+    Point3F p1 = xform.MapPoint(Point3F(value.x1, value.y1, 0));
     Point3F p2(value.x2, value.y2, 0);
-    xform.TransformPoint(&p1);
     if (value.tx == value.tx && value.ty == value.ty) {
       EXPECT_TRUE(PointsAreNearlyEqual(p1, p2));
     }
@@ -243,9 +268,8 @@ TEST(XFormTest, ConcatScale) {
     Transform scale;
     scale.Scale(value.scale, value.scale);
     xform = scale * xform;
-    Point3F p1(value.before, value.before, 0);
+    Point3F p1 = xform.MapPoint(Point3F(value.before, value.before, 0));
     Point3F p2(value.after, value.after, 0);
-    xform.TransformPoint(&p1);
     if (value.scale == value.scale) {
       EXPECT_TRUE(PointsAreNearlyEqual(p1, p2));
     }
@@ -271,9 +295,8 @@ TEST(XFormTest, ConcatRotate) {
     Transform rotation;
     rotation.Rotate(value.degrees);
     xform = rotation * xform;
-    Point3F p1(value.x1, value.y1, 0);
+    Point3F p1 = xform.MapPoint(Point3F(value.x1, value.y1, 0));
     Point3F p2(value.x2, value.y2, 0);
-    xform.TransformPoint(&p1);
     if (value.degrees == value.degrees) {
       EXPECT_TRUE(PointsAreNearlyEqual(p1, p2));
     }
@@ -316,11 +339,13 @@ TEST(XFormTest, SetTranslate) {
           break;
       }
       p0 = p1;
-      xform.TransformPoint(&p1);
+      p1 = xform.MapPoint(p1);
       if (value.tx == value.tx && value.ty == value.ty) {
         EXPECT_TRUE(PointsAreNearlyEqual(p1, p2));
-        xform.TransformPointReverse(&p1);
-        EXPECT_TRUE(PointsAreNearlyEqual(p1, p0));
+        const absl::optional<Point3F> transformed_p1 =
+            xform.InverseMapPoint(p1);
+        ASSERT_TRUE(transformed_p1.has_value());
+        EXPECT_TRUE(PointsAreNearlyEqual(transformed_p1.value(), p0));
       }
     }
   }
@@ -361,12 +386,14 @@ TEST(XFormTest, SetScale) {
           break;
       }
       p0 = p1;
-      xform.TransformPoint(&p1);
+      p1 = xform.MapPoint(p1);
       if (value.s == value.s) {
         EXPECT_TRUE(PointsAreNearlyEqual(p1, p2));
         if (value.s != 0.0f) {
-          xform.TransformPointReverse(&p1);
-          EXPECT_TRUE(PointsAreNearlyEqual(p1, p0));
+          const absl::optional<Point3F> transformed_p1 =
+              xform.InverseMapPoint(p1);
+          ASSERT_TRUE(transformed_p1.has_value());
+          EXPECT_TRUE(PointsAreNearlyEqual(transformed_p1.value(), p0));
         }
       }
     }
@@ -398,10 +425,11 @@ TEST(XFormTest, SetRotate) {
     xform.Rotate(value.degree);
     // just want to make sure that we don't crash in the case of NaN.
     if (value.degree == value.degree) {
-      xform.TransformPoint(&p1);
+      p1 = xform.MapPoint(p1);
       EXPECT_TRUE(PointsAreNearlyEqual(p1, p2));
-      xform.TransformPointReverse(&p1);
-      EXPECT_TRUE(PointsAreNearlyEqual(p1, p0));
+      const absl::optional<Point3F> transformed_p1 = xform.InverseMapPoint(p1);
+      ASSERT_TRUE(transformed_p1.has_value());
+      EXPECT_TRUE(PointsAreNearlyEqual(transformed_p1.value(), p0));
     }
   }
 }
@@ -426,9 +454,8 @@ TEST(XFormTest, ConcatTranslate2D) {
     Transform translation;
     translation.Translate(value.tx, value.ty);
     xform = translation * xform;
-    Point p1(value.x1, value.y1);
+    Point p1 = xform.MapPoint(Point(value.x1, value.y1));
     Point p2(value.x2, value.y2);
-    xform.TransformPoint(&p1);
     if (value.tx == value.tx && value.ty == value.ty) {
       EXPECT_EQ(p1.x(), p2.x());
       EXPECT_EQ(p1.y(), p2.y());
@@ -453,9 +480,8 @@ TEST(XFormTest, ConcatScale2D) {
     Transform scale;
     scale.Scale(value.scale, value.scale);
     xform = scale * xform;
-    Point p1(value.before, value.before);
+    Point p1 = xform.MapPoint(Point(value.before, value.before));
     Point p2(value.after, value.after);
-    xform.TransformPoint(&p1);
     if (value.scale == value.scale) {
       EXPECT_EQ(p1.x(), p2.x());
       EXPECT_EQ(p1.y(), p2.y());
@@ -480,9 +506,8 @@ TEST(XFormTest, ConcatRotate2D) {
     Transform rotation;
     rotation.Rotate(value.degrees);
     xform = rotation * xform;
-    Point p1(value.x1, value.y1);
+    Point p1 = xform.MapPoint(Point(value.x1, value.y1));
     Point p2(value.x2, value.y2);
-    xform.TransformPoint(&p1);
     if (value.degrees == value.degrees) {
       EXPECT_EQ(p1.x(), p2.x());
       EXPECT_EQ(p1.y(), p2.y());
@@ -528,13 +553,15 @@ TEST(XFormTest, SetTranslate2D) {
             break;
         }
         p0 = p1;
-        xform.TransformPoint(&p1);
+        p1 = xform.MapPoint(p1);
         if (value.tx == value.tx && value.ty == value.ty) {
           EXPECT_EQ(p1.x(), p2.x());
           EXPECT_EQ(p1.y(), p2.y());
-          xform.TransformPointReverse(&p1);
-          EXPECT_EQ(p1.x(), p0.x());
-          EXPECT_EQ(p1.y(), p0.y());
+          const absl::optional<Point> transformed_p1 =
+              xform.InverseMapPoint(p1);
+          ASSERT_TRUE(transformed_p1.has_value());
+          EXPECT_EQ(transformed_p1->x(), p0.x());
+          EXPECT_EQ(transformed_p1->y(), p0.y());
         }
       }
     }
@@ -577,14 +604,16 @@ TEST(XFormTest, SetScale2D) {
             break;
         }
         p0 = p1;
-        xform.TransformPoint(&p1);
+        p1 = xform.MapPoint(p1);
         if (value.s == value.s) {
           EXPECT_EQ(p1.x(), p2.x());
           EXPECT_EQ(p1.y(), p2.y());
           if (value.s != 0.0f) {
-            xform.TransformPointReverse(&p1);
-            EXPECT_EQ(p1.x(), p0.x());
-            EXPECT_EQ(p1.y(), p0.y());
+            const absl::optional<Point> transformed_p1 =
+                xform.InverseMapPoint(p1);
+            ASSERT_TRUE(transformed_p1.has_value());
+            EXPECT_EQ(transformed_p1->x(), p0.x());
+            EXPECT_EQ(transformed_p1->y(), p0.y());
           }
         }
       }
@@ -617,29 +646,28 @@ TEST(XFormTest, SetRotate2D) {
       xform.Rotate(value.degree + j * epsilon);
       // just want to make sure that we don't crash in the case of NaN.
       if (value.degree == value.degree) {
-        xform.TransformPoint(&pt);
+        pt = xform.MapPoint(pt);
         EXPECT_EQ(value.xprime, pt.x());
         EXPECT_EQ(value.yprime, pt.y());
-        xform.TransformPointReverse(&pt);
-        EXPECT_EQ(pt.x(), value.x);
-        EXPECT_EQ(pt.y(), value.y);
+        const absl::optional<Point> transformed_pt = xform.InverseMapPoint(pt);
+        ASSERT_TRUE(transformed_pt.has_value());
+        EXPECT_EQ(transformed_pt->x(), value.x);
+        EXPECT_EQ(transformed_pt->y(), value.y);
       }
     }
   }
 }
 
-TEST(XFormTest, TransformPointWithExtremePerspective) {
+TEST(XFormTest, MapPointWithExtremePerspective) {
   Point3F point(1.f, 1.f, 1.f);
   Transform perspective;
   perspective.ApplyPerspectiveDepth(1.f);
-  Point3F transformed = point;
-  perspective.TransformPoint(&transformed);
+  Point3F transformed = perspective.MapPoint(point);
   EXPECT_EQ(point.ToString(), transformed.ToString());
 
-  transformed = point;
   perspective.MakeIdentity();
   perspective.ApplyPerspectiveDepth(1.1f);
-  perspective.TransformPoint(&transformed);
+  transformed = perspective.MapPoint(point);
   EXPECT_FLOAT_EQ(11.f, transformed.x());
   EXPECT_FLOAT_EQ(11.f, transformed.y());
   EXPECT_FLOAT_EQ(11.f, transformed.z());
@@ -1128,7 +1156,7 @@ TEST(XFormTest, VerifyBlendForCompositeTransform) {
       2.0, 2.0, SkDoubleToScalar(1 / expectedEndOfAnimation.rc(3.0, 3.0)));
   normalizationMatrix.set_rc(
       3.0, 3.0, SkDoubleToScalar(1 / expectedEndOfAnimation.rc(3.0, 3.0)));
-  normalizedExpectedEndOfAnimation.PreconcatTransform(normalizationMatrix);
+  normalizedExpectedEndOfAnimation.PreConcat(normalizationMatrix);
 
   EXPECT_TRUE(MatricesAreNearlyEqual(normalizedExpectedEndOfAnimation, to));
 }
@@ -1372,8 +1400,9 @@ TEST(XFormTest, verifyCopyConstructor) {
 }
 
 TEST(XFormTest, verifyConstructorFor16Elements) {
-  Transform transform(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0,
-                      12.0, 13.0, 14.0, 15.0, 16.0);
+  auto transform =
+      Transform::RowMajor(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0,
+                          11.0, 12.0, 13.0, 14.0, 15.0, 16.0);
 
   EXPECT_ROW1_EQ(1.0f, 2.0f, 3.0f, 4.0f, transform);
   EXPECT_ROW2_EQ(5.0f, 6.0f, 7.0f, 8.0f, transform);
@@ -1382,7 +1411,8 @@ TEST(XFormTest, verifyConstructorFor16Elements) {
 }
 
 TEST(XFormTest, verifyConstructorFor2dElements) {
-  Transform transform(1.0, 2.0, 3.0, 4.0, 5.0, 6.0);
+  Transform transform =
+      Transform::AffineForTesting(1.0, 2.0, 3.0, 4.0, 5.0, 6.0);
 
   EXPECT_ROW1_EQ(1.0f, 2.0f, 0.0f, 5.0f, transform);
   EXPECT_ROW2_EQ(3.0f, 4.0f, 0.0f, 6.0f, transform);
@@ -1559,7 +1589,7 @@ TEST(XFormTest, verifyMatrixMultiplication) {
   Transform B;
   InitializeTestMatrix2(&B);
 
-  A.PreconcatTransform(B);
+  A.PreConcat(B);
   EXPECT_ROW1_EQ(2036.0f, 2292.0f, 2548.0f, 2804.0f, A);
   EXPECT_ROW2_EQ(2162.0f, 2434.0f, 2706.0f, 2978.0f, A);
   EXPECT_ROW3_EQ(2288.0f, 2576.0f, 2864.0f, 3152.0f, A);
@@ -2455,10 +2485,10 @@ static bool EmpiricallyPreserves2dAxisAlignment(const Transform& transform) {
                   PointF(p3.x(), p3.y()), PointF(p4.x(), p4.y()));
   EXPECT_TRUE(test_quad.IsRectilinear());
 
-  transform.TransformPoint(&p1);
-  transform.TransformPoint(&p2);
-  transform.TransformPoint(&p3);
-  transform.TransformPoint(&p4);
+  p1 = transform.MapPoint(p1);
+  p2 = transform.MapPoint(p2);
+  p3 = transform.MapPoint(p3);
+  p4 = transform.MapPoint(p4);
 
   QuadF transformedQuad(PointF(p1.x(), p1.y()), PointF(p2.x(), p2.y()),
                         PointF(p3.x(), p3.y()), PointF(p4.x(), p4.y()));
@@ -2690,20 +2720,20 @@ TEST(XFormTest, Preserves2dAxisAlignment) {
   // be positive.
 
   // clang-format off
-  transform = Transform(1.0, 0.0, 0.0, 0.0,
-                        0.0, 1.0, 0.0, 0.0,
-                        0.0, 0.0, 1.0, 0.0,
-                        0.0, 0.0, 0.0, -1.0);
+  transform = Transform::RowMajor(1.0, 0.0, 0.0, 0.0,
+                                  0.0, 1.0, 0.0, 0.0,
+                                  0.0, 0.0, 1.0, 0.0,
+                                  0.0, 0.0, 0.0, -1.0);
   // clang-format on
   EXPECT_TRUE(EmpiricallyPreserves2dAxisAlignment(transform));
   EXPECT_TRUE(transform.Preserves2dAxisAlignment());
   EXPECT_FALSE(transform.NonDegeneratePreserves2dAxisAlignment());
 
   // clang-format off
-  transform = Transform(2.0, 0.0, 0.0, 0.0,
-                        0.0, 5.0, 0.0, 0.0,
-                        0.0, 0.0, 1.0, 0.0,
-                        0.0, 0.0, 0.0, 0.0);
+  transform = Transform::RowMajor(2.0, 0.0, 0.0, 0.0,
+                                  0.0, 5.0, 0.0, 0.0,
+                                  0.0, 0.0, 1.0, 0.0,
+                                  0.0, 0.0, 0.0, 0.0);
   // clang-format on
   EXPECT_TRUE(EmpiricallyPreserves2dAxisAlignment(transform));
   EXPECT_TRUE(transform.Preserves2dAxisAlignment());
@@ -2720,83 +2750,57 @@ TEST(XFormTest, To2dTranslation) {
   EXPECT_EQ(translation.ToString(), transform.To2dTranslation().ToString());
 }
 
-TEST(XFormTest, TransformRect) {
-  Transform translation;
-  translation.Translate(3.f, 7.f);
-  RectF rect(1.f, 2.f, 3.f, 4.f);
-  RectF expected(4.f, 9.f, 3.f, 4.f);
-  translation.TransformRect(&rect);
-  EXPECT_EQ(expected.ToString(), rect.ToString());
+TEST(XFormTest, MapRect) {
+  Transform translation = Transform::MakeTranslation(3.25f, 7.75f);
+  RectF rect(1.25f, 2.5f, 3.75f, 4.f);
+  RectF expected(4.5f, 10.25f, 3.75f, 4.f);
+  EXPECT_EQ(expected, translation.MapRect(rect));
+
+  EXPECT_EQ(rect, Transform().MapRect(rect));
+
+  auto singular = Transform::MakeScale(0.f);
+  EXPECT_EQ(RectF(0, 0, 0, 0), singular.MapRect(rect));
+}
+
+TEST(XFormTest, MapIntRect) {
+  auto translation = Transform::MakeTranslation(3.25f, 7.75f);
+  EXPECT_EQ(Rect(4, 9, 4, 5), translation.MapRect(Rect(1, 2, 3, 4)));
+
+  EXPECT_EQ(Rect(1, 2, 3, 4), Transform().MapRect(Rect(1, 2, 3, 4)));
+
+  auto singular = Transform::MakeScale(0.f);
+  EXPECT_EQ(Rect(0, 0, 0, 0), singular.MapRect(Rect(1, 2, 3, 4)));
 }
 
 TEST(XFormTest, TransformRectReverse) {
-  Transform translation;
-  translation.Translate(3.f, 7.f);
-  RectF rect(1.f, 2.f, 3.f, 4.f);
-  RectF expected(-2.f, -5.f, 3.f, 4.f);
-  EXPECT_TRUE(translation.TransformRectReverse(&rect));
-  EXPECT_EQ(expected.ToString(), rect.ToString());
+  auto translation = Transform::MakeTranslation(3.25f, 7.75f);
+  RectF rect(1.25f, 2.5f, 3.75f, 4.f);
+  RectF expected(-2.f, -5.25f, 3.75f, 4.f);
+  EXPECT_EQ(expected, translation.InverseMapRect(rect));
 
-  Transform singular;
-  singular.Scale3d(0.f, 0.f, 0.f);
-  EXPECT_FALSE(singular.TransformRectReverse(&rect));
+  EXPECT_EQ(rect, Transform().InverseMapRect(rect));
+
+  auto singular = Transform::MakeScale(0.f);
+  EXPECT_FALSE(singular.InverseMapRect(rect));
 }
 
-TEST(XFormTest, TransformRRectF) {
-  Transform translation;
-  translation.Translate(-3.f, -7.f);
-  RRectF rrect(1.f, 2.f, 20.f, 25.f, 5.f);
-  RRectF expected(-2.f, -5.f, 20.f, 25.f, 5.f);
-  EXPECT_TRUE(translation.TransformRRectF(&rrect));
-  EXPECT_EQ(expected.ToString(), rrect.ToString());
+TEST(XFormTest, InverseMapIntRect) {
+  auto translation = Transform::MakeTranslation(3.25f, 7.75f);
+  EXPECT_EQ(Rect(-3, -6, 4, 5), translation.InverseMapRect(Rect(1, 2, 3, 4)));
 
-  Transform rotation_90_Clock = Transform::RotationAboutZAxisSinCos(1, 0);
+  EXPECT_EQ(Rect(1, 2, 3, 4), Transform().InverseMapRect(Rect(1, 2, 3, 4)));
 
-  rrect = RRectF(gfx::RectF(0, 0, 20.f, 25.f),
-                 gfx::RoundedCornersF(1.f, 2.f, 3.f, 4.f));
-  expected = RRectF(gfx::RectF(-25.f, 0, 25.f, 20.f),
-                    gfx::RoundedCornersF(4.f, 1.f, 2.f, 3.f));
-  EXPECT_TRUE(rotation_90_Clock.TransformRRectF(&rrect));
-  EXPECT_EQ(expected.ToString(), rrect.ToString());
-
-  Transform rotation_90_unrounded;
-  rotation_90_unrounded.Rotate(90.0);
-  rrect = RRectF(gfx::RectF(0, 0, 20.f, 25.f),
-                 gfx::RoundedCornersF(1.f, 2.f, 3.f, 4.f));
-  EXPECT_TRUE(rotation_90_unrounded.Preserves2dAxisAlignment());
-  EXPECT_TRUE(rotation_90_unrounded.TransformRRectF(&rrect));
-  EXPECT_EQ(expected.ToString(), rrect.ToString());
-
-  Transform scale;
-  scale.Scale(2.f, 2.f);
-  rrect = RRectF(gfx::RectF(0, 0, 20.f, 25.f),
-                 gfx::RoundedCornersF(1.f, 2.f, 3.f, 4.f));
-  expected = RRectF(gfx::RectF(0, 0, 40.f, 50.f),
-                    gfx::RoundedCornersF(2.f, 4.f, 6.f, 8.f));
-  EXPECT_TRUE(scale.TransformRRectF(&rrect));
-  EXPECT_EQ(expected.ToString(), rrect.ToString());
+  auto singular = Transform::MakeScale(0.f);
+  EXPECT_FALSE(singular.InverseMapRect(Rect(1, 2, 3, 4)));
 }
 
-TEST(XFormTest, TransformBox) {
+TEST(XFormTest, MapBox) {
   Transform translation;
   translation.Translate3d(3.f, 7.f, 6.f);
   BoxF box(1.f, 2.f, 3.f, 4.f, 5.f, 6.f);
   BoxF expected(4.f, 9.f, 9.f, 4.f, 5.f, 6.f);
-  translation.TransformBox(&box);
-  EXPECT_EQ(expected.ToString(), box.ToString());
-}
-
-TEST(XFormTest, TransformBoxReverse) {
-  Transform translation;
-  translation.Translate3d(3.f, 7.f, 6.f);
-  BoxF box(1.f, 2.f, 3.f, 4.f, 5.f, 6.f);
-  BoxF expected(-2.f, -5.f, -3.f, 4.f, 5.f, 6.f);
-  EXPECT_TRUE(translation.TransformBoxReverse(&box));
-  EXPECT_EQ(expected.ToString(), box.ToString());
-
-  Transform singular;
-  singular.Scale3d(0.f, 0.f, 0.f);
-  EXPECT_FALSE(singular.TransformBoxReverse(&box));
+  BoxF transformed = translation.MapBox(box);
+  EXPECT_EQ(expected, transformed);
 }
 
 TEST(XFormTest, RoundTranslationComponents) {
@@ -2860,19 +2864,211 @@ TEST(XFormTest, TransformVector4) {
   EXPECT_EQ(244.75f, v[3]);
 }
 
-TEST(XFormTest, RotationSinCos) {
-  EXPECT_TRANSFORM_EQ(Transform::RotationUnitSinCos(1, 0, 0, -1, 0),
-                      Transform::RotationAboutXAxisSinCos(-1, 0));
-  EXPECT_TRANSFORM_EQ(Transform::RotationUnitSinCos(1, 0, 0, 0, 1),
-                      Transform::RotationAboutXAxisSinCos(0, 1));
-  EXPECT_TRANSFORM_EQ(Transform::RotationUnitSinCos(0, 1, 0, -1, 0),
-                      Transform::RotationAboutYAxisSinCos(-1, 0));
-  EXPECT_TRANSFORM_EQ(Transform::RotationUnitSinCos(0, 1, 0, 0, 1),
-                      Transform::RotationAboutYAxisSinCos(0, 1));
-  EXPECT_TRANSFORM_EQ(Transform::RotationUnitSinCos(0, 0, 1, -1, 0),
-                      Transform::RotationAboutZAxisSinCos(-1, 0));
-  EXPECT_TRANSFORM_EQ(Transform::RotationUnitSinCos(0, 0, 1, 0, 1),
-                      Transform::RotationAboutZAxisSinCos(0, 1));
+TEST(XFormTest, Make90NRotation) {
+  auto t1 = Transform::Make90degRotation();
+  EXPECT_EQ(gfx::PointF(-50, 100), t1.MapPoint(gfx::PointF(100, 50)));
+
+  auto t2 = Transform::Make180degRotation();
+  EXPECT_EQ(Transform::MakeScale(-1), t2);
+  EXPECT_EQ(gfx::PointF(-100, -50), t2.MapPoint(gfx::PointF(100, 50)));
+
+  auto t3 = Transform::Make270degRotation();
+  EXPECT_EQ(gfx::PointF(50, -100), t3.MapPoint(gfx::PointF(100, 50)));
+
+  auto t4 = t1 * t1;
+  EXPECT_EQ(t2, t4);
+  t4.PreConcat(t1);
+  EXPECT_EQ(t3, t4);
+  t4.PreConcat(t1);
+  EXPECT_TRUE(t4.IsIdentity());
+  t2.PreConcat(t2);
+  EXPECT_TRUE(t2.IsIdentity());
+}
+
+TEST(XFormTest, MapPoint) {
+  Transform transform;
+  transform.Translate3d(1.25f, 2.75f, 3.875f);
+  transform.Scale3d(3, 4, 5);
+  EXPECT_EQ(PointF(38.75f, 140.75f), transform.MapPoint(PointF(12.5f, 34.5f)));
+  EXPECT_EQ(Point3F(38.75f, 140.75f, 286.375),
+            transform.MapPoint(Point3F(12.5f, 34.5f, 56.5f)));
+
+  transform.MakeIdentity();
+  transform.set_rc(3, 0, 0.5);
+  transform.set_rc(3, 1, 2);
+  transform.set_rc(3, 2, 0.75);
+  EXPECT_POINTF_EQ(PointF(0.2, 0.4), transform.MapPoint(PointF(2, 4)));
+  EXPECT_POINT3F_EQ(Point3F(0.18181818f, 0.27272727f, 0.36363636f),
+                    transform.MapPoint(Point3F(2, 3, 4)));
+
+  // 0 in all perspectives should be ignored.
+  transform.MakeIdentity();
+  transform.Translate3d(10, 20, 30);
+  transform.set_rc(3, 3, 0);
+  EXPECT_EQ(PointF(12, 24), transform.MapPoint(PointF(2, 4)));
+  EXPECT_EQ(Point3F(12, 23, 34), transform.MapPoint(Point3F(2, 3, 4)));
+
+  // NaN in perspective should be ignored.
+  transform.set_rc(3, 3, std::numeric_limits<float>::quiet_NaN());
+  EXPECT_EQ(PointF(12, 24), transform.MapPoint(PointF(2, 4)));
+  EXPECT_EQ(Point3F(12, 23, 34), transform.MapPoint(Point3F(2, 3, 4)));
+}
+
+TEST(XFormTest, InverseMapPoint) {
+  Transform transform;
+  transform.Translate(1, 2);
+  transform.Rotate(70);
+  transform.Scale(3, 4);
+  transform.Skew(30, 70);
+
+  const PointF point_f(12.34f, 56.78f);
+  PointF transformed_point_f = transform.MapPoint(point_f);
+  const absl::optional<PointF> reverted_point_f =
+      transform.InverseMapPoint(transformed_point_f);
+  ASSERT_TRUE(reverted_point_f.has_value());
+  EXPECT_TRUE(PointsAreNearlyEqual(reverted_point_f.value(), point_f));
+
+  const Point point(12, 13);
+  Point transformed_point = transform.MapPoint(point);
+  EXPECT_EQ(point, transform.InverseMapPoint(transformed_point));
+
+  Transform transform3d;
+  transform3d.Translate3d(1, 2, 3);
+  transform3d.RotateAbout(Vector3dF(4, 5, 6), 70);
+  transform3d.Scale3d(7, 8, 9);
+  transform3d.Skew(30, 70);
+
+  const Point3F point_3f(14, 15, 16);
+  Point3F transformed_point_3f = transform3d.MapPoint(point_3f);
+  const absl::optional<Point3F> reverted_point_3f =
+      transform3d.InverseMapPoint(transformed_point_3f);
+  ASSERT_TRUE(reverted_point_3f.has_value());
+  EXPECT_TRUE(PointsAreNearlyEqual(reverted_point_3f.value(), point_3f));
+}
+
+TEST(XFormTest, MapVector) {
+  Transform transform;
+  transform.Scale3d(3, 4, 5);
+  Vector3dF vector(12.5f, 34.5f, 56.5f);
+  Vector3dF expected(37.5f, 138.0f, 282.5f);
+  EXPECT_EQ(expected, transform.MapVector(vector));
+
+  // The translation components should be ignored.
+  transform.Translate3d(1.25f, 2.75f, 3.875f);
+  EXPECT_EQ(expected, transform.MapVector(vector));
+
+  // The perspective components should be ignored.
+  transform.set_rc(3, 0, 0.5f);
+  transform.set_rc(3, 1, 2.5f);
+  transform.set_rc(3, 2, 4.5f);
+  transform.set_rc(3, 3, 8.5f);
+  EXPECT_EQ(expected, transform.MapVector(vector));
+}
+
+TEST(XFormTest, PreConcatAxisTransform2d) {
+  auto t = Transform::RowMajor(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+                               16, 17);
+  auto axis = AxisTransform2d::FromScaleAndTranslation(Vector2dF(10, 20),
+                                                       Vector2dF(100, 200));
+  auto axis_full =
+      Transform::MakeTranslation(100, 200) * Transform::MakeScale(10, 20);
+  auto t1 = t;
+  t.PreConcat(axis);
+  t1.PreConcat(axis_full);
+  EXPECT_EQ(t, t1);
+}
+
+TEST(XFormTest, PostConcatAxisTransform2d) {
+  auto t = Transform::RowMajor(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+                               16, 17);
+  auto axis = AxisTransform2d::FromScaleAndTranslation(Vector2dF(10, 20),
+                                                       Vector2dF(100, 200));
+  auto axis_full =
+      Transform::MakeTranslation(100, 200) * Transform::MakeScale(10, 20);
+  auto t1 = t;
+  t.PostConcat(axis);
+  t1.PostConcat(axis_full);
+  EXPECT_EQ(t, t1);
+}
+
+TEST(TransformationMatrixTest, ClampOutput) {
+  double entries[][2] = {
+      // The first entry is used to initialize the transform.
+      // The second entry is used to initialize the object to be mapped.
+      {std::numeric_limits<float>::max(),
+       std::numeric_limits<float>::infinity()},
+      {1, std::numeric_limits<float>::infinity()},
+      {-1, std::numeric_limits<float>::infinity()},
+      {1, -std::numeric_limits<float>::infinity()},
+      {
+          std::numeric_limits<float>::max(),
+          std::numeric_limits<float>::max(),
+      },
+      {
+          std::numeric_limits<float>::lowest(),
+          -std::numeric_limits<float>::infinity(),
+      },
+  };
+
+  for (double* entry : entries) {
+    const float mv = entry[0];
+    const float factor = entry[1];
+
+    auto is_valid_point = [&](const PointF& p) -> bool {
+      return std::isfinite(p.x()) && std::isfinite(p.y());
+    };
+    auto is_valid_point3 = [&](const Point3F& p) -> bool {
+      return std::isfinite(p.x()) && std::isfinite(p.y()) &&
+             std::isfinite(p.z());
+    };
+    auto is_valid_vector2 = [&](const Vector2dF& v) -> bool {
+      return std::isfinite(v.x()) && std::isfinite(v.y());
+    };
+    auto is_valid_vector3 = [&](const Vector3dF& v) -> bool {
+      return std::isfinite(v.x()) && std::isfinite(v.y()) &&
+             std::isfinite(v.z());
+    };
+    auto is_valid_rect = [&](const RectF& r) -> bool {
+      return is_valid_point(r.origin()) && std::isfinite(r.width()) &&
+             std::isfinite(r.height());
+    };
+    auto is_valid_array = [&](const float* a, size_t size) -> bool {
+      for (size_t i = 0; i < size; i++) {
+        if (!std::isfinite(a[i]))
+          return false;
+      }
+      return true;
+    };
+
+    auto test = [&](const Transform& m) {
+      SCOPED_TRACE(base::StringPrintf("m: %s factor: %lg", m.ToString().c_str(),
+                                      factor));
+      auto p = m.MapPoint(PointF(factor, factor));
+      EXPECT_TRUE(is_valid_point(p)) << p.ToString();
+
+      auto p3 = m.MapPoint(Point3F(factor, factor, factor));
+      EXPECT_TRUE(is_valid_point3(p3)) << p3.ToString();
+
+      auto r = m.MapRect(RectF(factor, factor, factor, factor));
+      EXPECT_TRUE(is_valid_rect(r)) << r.ToString();
+
+      auto v3 = m.MapVector(Vector3dF(factor, factor, factor));
+      EXPECT_TRUE(is_valid_vector3(v3)) << v3.ToString();
+
+      float v4[4] = {factor, factor, factor, factor};
+      m.TransformVector4(v4);
+      EXPECT_TRUE(is_valid_array(v4, 4));
+
+      auto v2 = m.To2dTranslation();
+      EXPECT_TRUE(is_valid_vector2(v2)) << v2.ToString();
+      v2 = m.To2dScale();
+      EXPECT_TRUE(is_valid_vector2(v2)) << v2.ToString();
+    };
+
+    test(Transform::ColMajor(mv, mv, mv, mv, mv, mv, mv, mv, mv, mv, mv, mv, mv,
+                             mv, mv, mv));
+    test(Transform::MakeTranslation(mv, mv));
+  }
 }
 
 }  // namespace

@@ -71,6 +71,7 @@ TestRenderFrameHost::TestRenderFrameHost(
     int32_t routing_id,
     mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
     const blink::LocalFrameToken& frame_token,
+    const blink::DocumentToken& document_token,
     RenderFrameHostImpl::LifecycleStateImpl lifecycle_state,
     scoped_refptr<BrowsingContextState> browsing_context_state)
     : RenderFrameHostImpl(site_instance,
@@ -81,10 +82,13 @@ TestRenderFrameHost::TestRenderFrameHost(
                           routing_id,
                           std::move(frame_remote),
                           frame_token,
+                          document_token,
                           /*renderer_initiated_creation_of_main_frame=*/false,
                           lifecycle_state,
                           browsing_context_state,
-                          frame_tree_node->frame_owner_element_type()),
+                          frame_tree_node->frame_owner_element_type(),
+                          frame_tree_node->parent(),
+                          frame_tree_node->fenced_frame_status()),
       child_creation_observer_(
           WebContents::FromRenderViewHost(render_view_host.get())),
       simulate_history_list_was_cleared_(false),
@@ -178,6 +182,7 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChildWithPolicy(
       CreateStubAssociatedInterfaceProviderReceiver(),
       blink::mojom::TreeScopeType::kDocument, frame_name, frame_unique_name,
       false, blink::LocalFrameToken(), base::UnguessableToken::Create(),
+      blink::DocumentToken(),
       blink::FramePolicy({network::mojom::WebSandboxFlags::kNone, allow, {}}),
       blink::mojom::FrameOwnerProperties(),
       blink::FrameOwnerElementType::kIframe);
@@ -588,6 +593,7 @@ void TestRenderFrameHost::SendCommitNavigation(
         prefetch_loader_factory,
     const absl::optional<blink::ParsedPermissionsPolicy>& permissions_policy,
     blink::mojom::PolicyContainerPtr policy_container,
+    const blink::DocumentToken& document_token,
     const base::UnguessableToken& devtools_navigation_token) {
   CHECK(navigation_client);
   commit_callback_[navigation_request] =
@@ -605,6 +611,7 @@ void TestRenderFrameHost::SendCommitFailedNavigation(
     const absl::optional<std::string>& error_page_content,
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories,
+    const blink::DocumentToken& document_token,
     blink::mojom::PolicyContainerPtr policy_container) {
   CHECK(navigation_client);
   commit_failed_callback_[navigation_request] =

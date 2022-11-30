@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ void ObjectPainter::PaintOutline(const PaintInfo& paint_info,
   auto outline_rects = layout_object_.OutlineRects(
       &info, paint_offset,
       style_to_use.OutlineRectsShouldIncludeBlockVisualOverflow());
-  if (outline_rects.IsEmpty())
+  if (outline_rects.empty())
     return;
 
   OutlinePainter::PaintOutlineRects(paint_info, layout_object_, outline_rects,

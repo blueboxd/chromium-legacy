@@ -12,12 +12,14 @@
 #import "components/sync_preferences/pref_service_mock_factory.h"
 #import "components/sync_preferences/pref_service_syncable.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/consent_auditor/consent_auditor_factory.h"
+#import "ios/chrome/browser/consent_auditor/consent_auditor_test_utils.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/sync/consent_auditor_factory.h"
+#import "ios/chrome/browser/sync/mock_sync_service_utils.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_mock.h"
@@ -39,18 +41,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-std::unique_ptr<KeyedService> CreateMockSyncService(
-    web::BrowserState* context) {
-  return std::make_unique<syncer::MockSyncService>();
-}
-
-std::unique_ptr<KeyedService> CreateFakeConsentAuditor(
-    web::BrowserState* context) {
-  return std::make_unique<consent_auditor::FakeConsentAuditor>();
-}
-}  // namespace
-
 class UserSigninMediatorTest : public PlatformTest {
  public:
   UserSigninMediatorTest() : consent_string_ids_(ExpectedConsentStringIds()) {}
@@ -68,7 +58,7 @@ class UserSigninMediatorTest : public PlatformTest {
         base::BindRepeating(
             &AuthenticationServiceFake::CreateAuthenticationService));
     builder.AddTestingFactory(ConsentAuditorFactory::GetInstance(),
-                              base::BindRepeating(&CreateFakeConsentAuditor));
+                              base::BindRepeating(&BuildFakeConsentAuditor));
     builder.AddTestingFactory(SyncServiceFactory::GetInstance(),
                               base::BindRepeating(&CreateMockSyncService));
     builder.AddTestingFactory(

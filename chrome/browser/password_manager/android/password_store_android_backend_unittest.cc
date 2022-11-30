@@ -215,7 +215,7 @@ class PasswordStoreAndroidBackendTest : public testing::Test {
   FakePasswordManagerLifecycleHelper* lifecycle_helper() {
     return lifecycle_helper_;
   }
-  syncer::SyncService* sync_service() { return &sync_service_; }
+  syncer::TestSyncService* sync_service() { return &sync_service_; }
   PasswordSyncControllerDelegateAndroid* sync_controller_delegate() {
     return sync_controller_delegate_;
   }
@@ -234,11 +234,7 @@ class PasswordStoreAndroidBackendTest : public testing::Test {
     sync_service_.GetUserSettings()->SetSelectedTypes(
         /*sync_everything=*/false, /*types=*/{});
   }
-  
-  void SetSyncAuthError(GoogleServiceAuthError error) {
-    sync_service_.SetAuthError(error);
-  }
-  
+
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::UI,
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
@@ -1259,10 +1255,7 @@ TEST_F(PasswordStoreAndroidBackendTest,
                         base::RepeatingClosure(), base::DoNothing());
   backend().OnSyncServiceInitialized(sync_service());
 
-  GoogleServiceAuthError transient_error(
-      GoogleServiceAuthError::CONNECTION_FAILED);
-  ASSERT_TRUE(transient_error.IsTransientError());
-  SetSyncAuthError(transient_error);
+  sync_service()->SetTransientAuthError();
 
   base::MockCallback<LoginsOrErrorReply> mock_reply;
   EXPECT_CALL(*bridge(), GetAllLogins).WillOnce(Return(kJobId));
@@ -1293,10 +1286,7 @@ TEST_F(PasswordStoreAndroidBackendTest,
                         base::RepeatingClosure(), base::DoNothing());
   backend().OnSyncServiceInitialized(sync_service());
 
-  GoogleServiceAuthError persistent_error(
-      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  ASSERT_TRUE(persistent_error.IsPersistentError());
-  SetSyncAuthError(persistent_error);
+  sync_service()->SetPersistentAuthErrorOtherThanWebSignout();
 
   base::MockCallback<LoginsOrErrorReply> mock_reply;
   EXPECT_CALL(*bridge(), GetAllLogins).WillOnce(Return(kJobId));

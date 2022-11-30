@@ -8,9 +8,11 @@
 #include "base/feature_list.h"
 #include "base/time/time.h"
 
-extern const base::Feature kSearchPrefetchServicePrefetching;
+BASE_DECLARE_FEATURE(kSearchPrefetchServicePrefetching);
 
-extern const base::Feature kSearchPrefetchBlockBeforeHeaders;
+BASE_DECLARE_FEATURE(kSearchPrefetchBlockBeforeHeaders);
+
+BASE_DECLARE_FEATURE(kSearchPrefetchSkipsCancel);
 
 // Whether matching prefetches can block navigation until they are determined to
 // be serve-able or not based on headers.
@@ -38,10 +40,29 @@ size_t SearchPrefetchMaxCacheEntries();
 // eligible to be served.
 base::TimeDelta SearchPrefetchBlockHeadStart();
 
-extern const base::Feature kSearchNavigationPrefetch;
+BASE_DECLARE_FEATURE(kSearchNavigationPrefetch);
 
-// An experimental feature to measure if starting search prefetches at
-// navigation start provides benefit over the typical navigation flow.
+// An experimental feature to measure if starting search prefetches during
+// navigation events provides benefit over the typical navigation flow.
 bool IsSearchNavigationPrefetchEnabled();
+
+// An experimental feature that skips the cancellation logic in search prefetch
+// service.
+bool SearchPrefetchSkipsCancel();
+
+// A flavor of navigation prefetch that triggers when the user changes the
+// selected index in omnibox to a search suggestion via arrow buttons.
+bool IsUpOrDownArrowPrefetchEnabled();
+
+// A flavor of navigation prefetch that triggers when the user pushes the mouse
+// down on a Search suggestion.
+bool IsSearchMouseDownPrefetchEnabled();
+
+// Allows the top selection to be prefetched by navigation prefetch strategies.
+bool AllowTopNavigationPrefetch();
+
+// Allows search history suggestions to be prefetched by navigation prefetch
+// strategies.
+bool PrefetchSearchHistorySuggestions();
 
 #endif  // CHROME_BROWSER_PRELOADING_PREFETCH_SEARCH_PREFETCH_FIELD_TRIAL_SETTINGS_H_

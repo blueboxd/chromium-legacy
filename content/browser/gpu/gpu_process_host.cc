@@ -42,6 +42,10 @@
 #include "content/browser/gpu/gpu_disk_cache_factory.h"
 #include "content/browser/gpu/gpu_main_thread_factory.h"
 #include "content/browser/gpu/gpu_memory_buffer_manager_singleton.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "content/browser/storage_partition_impl.h"
+#include "content/browser/worker_host/dedicated_worker_host.h"
+#include "content/browser/worker_host/dedicated_worker_service_impl.h"
 #include "content/common/child_process.mojom.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/in_process_child_thread_params.h"
@@ -71,9 +75,11 @@
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "net/base/network_isolation_key.h"
 #include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "sandbox/policy/sandbox_type.h"
 #include "sandbox/policy/switches.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
@@ -402,14 +408,21 @@ class GpuSandboxedProcessLauncherDelegate
 
     if (UseOpenGLRenderer()) {
       // Open GL path.
-      config->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
-                            sandbox::USER_LIMITED);
-      sandbox::policy::SandboxWin::SetJobLevel(sandbox::mojom::Sandbox::kGpu,
-                                               sandbox::JobLevel::kUnprotected,
-                                               0, config);
+      sandbox::ResultCode result = config->SetTokenLevel(
+          sandbox::USER_RESTRICTED_SAME_ACCESS, sandbox::USER_LIMITED);
+      if (result != sandbox::SBOX_ALL_OK)
+        return false;
+
+      result = sandbox::policy::SandboxWin::SetJobLevel(
+          sandbox::mojom::Sandbox::kGpu, sandbox::JobLevel::kUnprotected, 0,
+          config);
+      if (result != sandbox::SBOX_ALL_OK)
+        return false;
     } else {
-      config->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
-                            sandbox::USER_LIMITED);
+      sandbox::ResultCode result = config->SetTokenLevel(
+          sandbox::USER_RESTRICTED_SAME_ACCESS, sandbox::USER_LIMITED);
+      if (result != sandbox::SBOX_ALL_OK)
+        return false;
 
       // UI restrictions break when we access Windows from outside our job.
       // However, we don't want a proxy window in this process because it can
@@ -417,12 +430,14 @@ class GpuSandboxedProcessLauncherDelegate
       // turn blocks on the browser UI thread. So, instead we forgo a window
       // message pump entirely and just add job restrictions to prevent child
       // processes.
-      sandbox::policy::SandboxWin::SetJobLevel(
+      result = sandbox::policy::SandboxWin::SetJobLevel(
           sandbox::mojom::Sandbox::kGpu, sandbox::JobLevel::kLimitedUser,
           JOB_OBJECT_UILIMIT_SYSTEMPARAMETERS | JOB_OBJECT_UILIMIT_DESKTOP |
               JOB_OBJECT_UILIMIT_EXITWINDOWS |
               JOB_OBJECT_UILIMIT_DISPLAYSETTINGS,
           config);
+      if (result != sandbox::SBOX_ALL_OK)
+        return false;
     }
 
     // Check if we are running on the winlogon desktop and set a delayed
@@ -432,10 +447,14 @@ class GpuSandboxedProcessLauncherDelegate
     // winlogon desktop normally). So instead, let the gpu process start with
     // the normal integrity and delay the switch to low integrity until after
     // the gpu process has started and has access to the desktop.
-    if (ShouldSetDelayedIntegrity())
+    if (ShouldSetDelayedIntegrity()) {
       config->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
-    else
-      config->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+    } else {
+      sandbox::ResultCode result =
+          config->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+      if (result != sandbox::SBOX_ALL_OK)
+        return false;
+    }
 
     // Block this DLL even if it is not loaded by the browser process.
     config->AddDllToUnload(L"cmsetac.dll");
@@ -1053,6 +1072,51 @@ void GpuProcessHost::DidUpdateDXGIInfo(gfx::mojom::DXGIInfoPtr dxgi_info) {
   GpuDataManagerImpl::GetInstance()->UpdateDXGIInfo(std::move(dxgi_info));
 }
 #endif
+
+std::string GpuProcessHost::GetIsolationKey(
+    int32_t process_id,
+    const blink::WebGPUExecutionContextToken& token) {
+  if (token.Is<blink::DocumentToken>()) {
+    // Return an empty isolation key if the frame host is gone. This could
+    // happen if the frame is destroyed (or being destroyed) in between when we
+    // are trying to get the isolation key.
+    RenderFrameHostImpl* frame_host = RenderFrameHostImpl::FromDocumentToken(
+        process_id, token.GetAs<blink::DocumentToken>());
+    if (!frame_host) {
+      return "";
+    }
+
+    auto isolation_key =
+        frame_host->GetNetworkIsolationKey().ToCacheKeyString();
+    return isolation_key ? *isolation_key : "";
+  } else if (token.Is<blink::DedicatedWorkerToken>()) {
+    // Return an empty isolation key if the process host or the worker host is
+    // gone. This may happen if the worker is destroyed (or being destroyed) in
+    // between when we are trying to get the isolation key.
+    RenderProcessHost* render_process_host =
+        RenderProcessHost::FromID(process_id);
+    if (!render_process_host ||
+        !render_process_host->IsInitializedAndNotDead()) {
+      return "";
+    }
+    DedicatedWorkerHost* dedicated_worker_host =
+        static_cast<StoragePartitionImpl*>(
+            render_process_host->GetStoragePartition())
+            ->GetDedicatedWorkerService()
+            ->GetDedicatedWorkerHostFromToken(
+                token.GetAs<blink::DedicatedWorkerToken>());
+    if (!dedicated_worker_host) {
+      return "";
+    }
+
+    auto isolation_key =
+        dedicated_worker_host->GetNetworkIsolationKey().ToCacheKeyString();
+    return isolation_key ? *isolation_key : "";
+  }
+
+  NOTREACHED();
+  return "";
+}
 
 void GpuProcessHost::BlockDomainsFrom3DAPIs(const std::set<GURL>& urls,
                                             gpu::DomainGuilt guilt) {

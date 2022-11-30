@@ -20,6 +20,7 @@
 #include "base/notreached.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -76,7 +77,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_image_stub.h"
 #include "url/gurl.h"
 
 using testing::InSequence;
@@ -112,12 +112,9 @@ uint64_t GetMemoryDumpByteSize(
     const base::trace_event::MemoryAllocatorDump* dump,
     const std::string& entry_name) {
   DCHECK(dump);
-  auto entry_it = std::find_if(
-      dump->entries().cbegin(), dump->entries().cend(),
-      [&entry_name](
-          const base::trace_event::MemoryAllocatorDump::Entry& entry) {
-        return entry.name == entry_name;
-      });
+  auto entry_it =
+      base::ranges::find(dump->entries(), entry_name,
+                         &base::trace_event::MemoryAllocatorDump::Entry::name);
   if (entry_it != dump->entries().cend()) {
     EXPECT_EQ(std::string(base::trace_event::MemoryAllocatorDump::kUnitsBytes),
               entry_it->units);
@@ -144,7 +141,7 @@ class TestSharedImageBackingFactory : public SharedImageBackingFactory {
   // SharedImageBackingFactory implementation.
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
-      viz::ResourceFormat format,
+      viz::SharedImageFormat format,
       SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
@@ -157,7 +154,7 @@ class TestSharedImageBackingFactory : public SharedImageBackingFactory {
   }
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
-      viz::ResourceFormat format,
+      viz::SharedImageFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
@@ -180,8 +177,9 @@ class TestSharedImageBackingFactory : public SharedImageBackingFactory {
       SkAlphaType alpha_type,
       uint32_t usage) override {
     auto test_image_backing = std::make_unique<TestImageBacking>(
-        mailbox, viz::GetResourceFormat(format), size, color_space,
-        surface_origin, alpha_type, usage, 0);
+        mailbox,
+        viz::SharedImageFormat::SinglePlane(viz::GetResourceFormat(format)),
+        size, color_space, surface_origin, alpha_type, usage, 0);
 
     // If the backing is not cleared, SkiaImageRepresentation errors out
     // when trying to create the scoped read access.
@@ -190,7 +188,7 @@ class TestSharedImageBackingFactory : public SharedImageBackingFactory {
     return std::move(test_image_backing);
   }
   bool IsSupported(uint32_t usage,
-                   viz::ResourceFormat format,
+                   viz::SharedImageFormat format,
                    const gfx::Size& size,
                    bool thread_safe,
                    gfx::GpuMemoryBufferType gmb_type,
@@ -228,9 +226,8 @@ class MockImageDecodeAcceleratorWorker : public ImageDecodeAcceleratorWorker {
     pending_decodes_.pop();
     if (success) {
       // We give out a dummy GpuMemoryBufferHandle as the result: since we mock
-      // the ImageFactory and the gl::GLImage in these tests, the only
-      // requirement is that the NativePixmapHandle has the right number of
-      // planes.
+      // the SharedImage backing in these tests, the only requirement is that
+      // the NativePixmapHandle has the right number of planes.
       auto decode_result = std::make_unique<DecodeResult>();
       decode_result->handle.type = gfx::GpuMemoryBufferType::NATIVE_PIXMAP;
       for (size_t plane = 0; plane < gfx::NumberOfPlanesForLinearBufferFormat(

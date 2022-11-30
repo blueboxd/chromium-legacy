@@ -7,7 +7,9 @@ import("//build/config/ui.gni")
 import("//components/vector_icons/vector_icons.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//third_party/protobuf/proto_library.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -220,8 +222,8 @@ static_library("browser") {
     "shortcuts_provider.h",
     "suggestion_answer.cc",
     "suggestion_answer.h",
-    "suggestion_group.cc",
-    "suggestion_group.h",
+    "suggestion_group_util.cc",
+    "suggestion_group_util.h",
     "tab_matcher.cc",
     "tab_matcher.h",
     "tailored_word_break_iterator.cc",
@@ -236,8 +238,8 @@ static_library("browser") {
     "verbatim_match.h",
     "voice_suggest_provider.cc",
     "voice_suggest_provider.h",
-    "zero_suggest_prefetcher.cc",
-    "zero_suggest_prefetcher.h",
+    "zero_suggest_cache_service.cc",
+    "zero_suggest_cache_service.h",
     "zero_suggest_provider.cc",
     "zero_suggest_provider.h",
     "zero_suggest_verbatim_match_provider.cc",
@@ -247,12 +249,12 @@ static_library("browser") {
   public_deps = [
     ":buildflags",
     ":location_bar",
+    ":omnibox",
     "//base",
     "//base:i18n",
     "//components/history/core/browser",
     "//components/omnibox/common",
     "//components/omnibox/resources:omnibox_pedal_synonyms",
-    "//components/omnibox/resources:omnibox_resources",
     "//components/security_state/core",
     "//third_party/metrics_proto",
     "//third_party/omnibox_proto",
@@ -446,12 +448,15 @@ if (is_android) {
       "//components/query_tiles:query_tile_java",
       "//components/security_state/core:security_state_enums_java",
       "//content/public/android:content_java",
+      "//third_party/android_deps:protobuf_lite_runtime_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_collection_collection_java",
       "//third_party/androidx:androidx_core_core_java",
       "//ui/android:ui_full_java",
       "//url:gurl_java",
     ]
+
+    public_deps = [ "//third_party/omnibox_proto:omnibox_proto_java" ]
 
     srcjar_deps = [ ":browser_java_enums_srcjar" ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -464,6 +469,7 @@ if (is_android) {
       ":junit_test_support",
       "//base:base_java_test_support",
       "//base:base_junit_test_support",
+      "//third_party/android_deps:protobuf_lite_runtime_java",
       "//third_party/androidx:androidx_test_runner_java",
       "//third_party/junit:junit",
       "//url:gurl_junit_shadows",
@@ -472,10 +478,14 @@ if (is_android) {
 
   android_library("junit_test_support") {
     testonly = true
-    sources = [ "//components/omnibox/browser/android/java/src/org/chromium/components/omnibox/AutocompleteMatchBuilder.java" ]
+    sources = [
+      "//components/omnibox/browser/android/java/src/org/chromium/components/omnibox/AutocompleteMatchBuilder.java",
+      "//components/omnibox/browser/android/java/src/org/chromium/components/omnibox/GroupConfigTestSupport.java",
+    ]
     deps = [
       "//components/omnibox/browser:browser_java",
       "//components/query_tiles:query_tile_java",
+      "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_collection_collection_java",
       "//url:gurl_java",
       "//url:gurl_junit_test_support",
@@ -620,6 +630,7 @@ source_set("unit_tests") {
     "omnibox_controller_unittest.cc",
     "omnibox_edit_model_unittest.cc",
     "omnibox_field_trial_unittest.cc",
+    "omnibox_metrics_provider_unittest.cc",
     "omnibox_prefs_unittest.cc",
     "omnibox_triggered_feature_service_unittest.cc",
     "omnibox_view_unittest.cc",
@@ -633,10 +644,12 @@ source_set("unit_tests") {
     "shortcuts_database_unittest.cc",
     "shortcuts_provider_unittest.cc",
     "suggestion_answer_unittest.cc",
+    "suggestion_group_unittest.cc",
     "tailored_word_break_iterator_unittest.cc",
     "titled_url_match_utils_unittest.cc",
     "url_prefix_unittest.cc",
     "voice_suggest_provider_unittest.cc",
+    "zero_suggest_cache_service_unittest.cc",
     "zero_suggest_provider_unittest.cc",
     "zero_suggest_verbatim_match_provider_unittest.cc",
   ]
@@ -728,4 +741,9 @@ fuzzer_test("search_suggestion_parser_fuzzer") {
     "//third_party/metrics_proto:metrics_proto",
   ]
   seed_corpus = "fuzz_corpus_suggest"
+}
+
+mojom("omnibox") {
+  sources = [ "omnibox.mojom" ]
+  webui_module_path = "/"
 }

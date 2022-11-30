@@ -676,6 +676,7 @@ void TemplateURLService::SetIsActiveTemplateURL(TemplateURL* url,
   std::string histogram_name = kKeywordModeUsageByEngineTypeHistogramName;
   if (is_active) {
     data.is_active = TemplateURLData::ActiveStatus::kTrue;
+    data.safe_for_autoreplace = false;
     histogram_name.append(".Activated");
   } else {
     data.is_active = TemplateURLData::ActiveStatus::kFalse;
@@ -815,6 +816,14 @@ bool TemplateURLService::IsSearchResultsPageFromDefaultSearchProvider(
   const TemplateURL* default_provider = GetDefaultSearchProvider();
   return default_provider &&
       default_provider->IsSearchURL(url, search_terms_data());
+}
+
+GURL TemplateURLService::GenerateSearchURLForDefaultSearchProvider(
+    const std::u16string& search_terms) const {
+  const TemplateURL* default_provider = GetDefaultSearchProvider();
+  return default_provider ? default_provider->GenerateSearchURL(
+                                search_terms_data(), search_terms)
+                          : GURL();
 }
 
 bool TemplateURLService::IsSideSearchSupportedForDefaultSearchProvider() const {
@@ -1060,8 +1069,8 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   }
 
   if (default_search_provider_) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Search.DefaultSearchProviderType",
+    base::UmaHistogramEnumeration(
+        "Search.DefaultSearchProviderType2",
         default_search_provider_->GetEngineType(search_terms_data()),
         SEARCH_ENGINE_MAX);
   }
@@ -1904,9 +1913,6 @@ void TemplateURLService::ApplyDefaultSearchChange(
   if (!ApplyDefaultSearchChangeNoMetrics(data, source))
     return;
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "Search.DefaultSearchChangeOrigin", dsp_change_origin_, DSP_CHANGE_MAX);
-
   if (GetDefaultSearchProvider() &&
       GetDefaultSearchProvider()->HasGoogleBaseURLs(search_terms_data()) &&
       !dsp_change_callback_.is_null())
@@ -2312,6 +2318,7 @@ void TemplateURLService::MaybeSetIsActiveSearchEngines(
     if (turl->is_active() == TemplateURLData::ActiveStatus::kUnspecified &&
         (!turl->safe_for_autoreplace() || turl->usage_count() > 0)) {
       turl->data_.is_active = TemplateURLData::ActiveStatus::kTrue;
+      turl->data_.safe_for_autoreplace = false;
       if (web_data_service_)
         web_data_service_->UpdateKeyword(turl->data());
     }

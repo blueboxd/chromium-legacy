@@ -9,6 +9,7 @@
 #import "base/feature_list.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
+#import "base/test/scoped_feature_list.h"
 #import "components/infobars/core/infobar.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "ios/chrome/browser/infobars/infobar_ios.h"
@@ -17,7 +18,10 @@
 #import "ios/chrome/browser/overlays/public/overlay_response.h"
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
 #import "ios/chrome/browser/passwords/test/mock_ios_chrome_save_passwords_infobar_delegate.h"
+#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
+#import "ios/chrome/browser/ui/icons/infobar_icon.h"
 #import "ios/chrome/browser/ui/infobars/banners/test/fake_infobar_banner_consumer.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "testing/gtest_mac.h"
 #import "testing/platform_test.h"
@@ -73,6 +77,32 @@ TEST_F(UpdatePasswordInfobarBannerOverlayMediatorTest, SetUpConsumer) {
   EXPECT_NSEQ(title, consumer.titleText);
   EXPECT_NSEQ(subtitle, consumer.subtitleText);
 
+  EXPECT_TRUE(consumer.presentsModal);
+}
+
+// Tests that a UpdatePasswordInfobarBannerOverlayMediator correctly sets up its
+// consumer's icon with legacy assets.
+TEST_F(UpdatePasswordInfobarBannerOverlayMediatorTest,
+       SetUpConsumerIconsNotUseSymbols) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(kUseSFSymbols);
+
+  // Create an InfoBarIOS with a IOSChromeSavePasswordInfoBarDelegate.
+  std::unique_ptr<IOSChromeSavePasswordInfoBarDelegate> passed_delegate =
+      MockIOSChromeSavePasswordInfoBarDelegate::Create(kUsername, kPassword);
+  InfoBarIOS infobar(InfobarType::kInfobarTypePasswordUpdate,
+                     std::move(passed_delegate));
+  // Package the infobar into an OverlayRequest, then create a mediator that
+  // uses this request in order to set up a fake consumer.
+  std::unique_ptr<OverlayRequest> request = OverlayRequest::CreateWithConfig<
+      UpdatePasswordInfobarBannerOverlayRequestConfig>(&infobar);
+  UpdatePasswordInfobarBannerOverlayMediator* mediator =
+      [[UpdatePasswordInfobarBannerOverlayMediator alloc]
+          initWithRequest:request.get()];
+  FakeInfobarBannerConsumer* consumer =
+      [[FakeInfobarBannerConsumer alloc] init];
+  mediator.consumer = consumer;
+
   if (base::FeatureList::IsEnabled(
           password_manager::features::
               kIOSEnablePasswordManagerBrandingUpdate)) {
@@ -81,6 +111,31 @@ TEST_F(UpdatePasswordInfobarBannerOverlayMediatorTest, SetUpConsumer) {
     EXPECT_NSEQ([UIImage imageNamed:@"legacy_password_key"],
                 consumer.iconImage);
   }
+}
 
-  EXPECT_TRUE(consumer.presentsModal);
+// Tests that a UpdatePasswordInfobarBannerOverlayMediator correctly sets up its
+// consumer's icon with SF symbol.
+TEST_F(UpdatePasswordInfobarBannerOverlayMediatorTest,
+       SetUpConsumerIconsUseSymbols) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kUseSFSymbols);
+
+  // Create an InfoBarIOS with a IOSChromeSavePasswordInfoBarDelegate.
+  std::unique_ptr<IOSChromeSavePasswordInfoBarDelegate> passed_delegate =
+      MockIOSChromeSavePasswordInfoBarDelegate::Create(kUsername, kPassword);
+  InfoBarIOS infobar(InfobarType::kInfobarTypePasswordUpdate,
+                     std::move(passed_delegate));
+  // Package the infobar into an OverlayRequest, then create a mediator that
+  // uses this request in order to set up a fake consumer.
+  std::unique_ptr<OverlayRequest> request = OverlayRequest::CreateWithConfig<
+      UpdatePasswordInfobarBannerOverlayRequestConfig>(&infobar);
+  UpdatePasswordInfobarBannerOverlayMediator* mediator =
+      [[UpdatePasswordInfobarBannerOverlayMediator alloc]
+          initWithRequest:request.get()];
+  FakeInfobarBannerConsumer* consumer =
+      [[FakeInfobarBannerConsumer alloc] init];
+  mediator.consumer = consumer;
+
+  EXPECT_NSEQ(CustomSymbolWithPointSize(kPasswordSymbol, kSymbolImagePointSize),
+              consumer.iconImage);
 }

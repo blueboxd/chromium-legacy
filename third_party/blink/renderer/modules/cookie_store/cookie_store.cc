@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,12 +71,12 @@ std::unique_ptr<net::CanonicalCookie> ToCanonicalCookie(
     net::CookieInclusionStatus& status_out) {
   const String& name = options->name();
   const String& value = options->value();
-  if (name.IsEmpty() && value.Contains('=')) {
+  if (name.empty() && value.Contains('=')) {
     exception_state.ThrowTypeError(
         "Cookie value cannot contain '=' if the name is empty");
     return nullptr;
   }
-  if (name.IsEmpty() && value.IsEmpty()) {
+  if (name.empty() && value.empty()) {
     exception_state.ThrowTypeError(
         "Cookie name and value both cannot be empty");
     return nullptr;
@@ -112,7 +112,7 @@ std::unique_ptr<net::CanonicalCookie> ToCanonicalCookie(
   }
 
   String path = options->path();
-  if (!path.IsEmpty()) {
+  if (!path.empty()) {
     if (name.StartsWith("__Host-") && path != "/") {
       exception_state.ThrowTypeError(
           "Cookies with \"__Host-\" prefix cannot have a non-\"/\" path");
@@ -386,7 +386,7 @@ void CookieStore::OnCookieChange(
     network::mojom::blink::CookieChangeInfoPtr change) {
   HeapVector<Member<CookieListItem>> changed, deleted;
   CookieChangeEvent::ToEventInfo(change, changed, deleted);
-  if (changed.IsEmpty() && deleted.IsEmpty()) {
+  if (changed.empty() && deleted.empty()) {
     // The backend only reported OVERWRITE events, which are dropped.
     return;
   }
@@ -443,7 +443,7 @@ ScriptPromise CookieStore::DoRead(
       cookie_url, default_site_for_cookies_, default_top_frame_origin_,
       std::move(backend_options),
       RuntimeEnabledFeatures::PartitionedCookiesEnabled(GetExecutionContext()),
-      WTF::Bind(backend_result_converter, WrapPersistent(resolver)));
+      WTF::BindOnce(backend_result_converter, WrapPersistent(resolver)));
   return resolver->Promise();
 }
 
@@ -479,7 +479,7 @@ void CookieStore::GetAllForUrlToGetResult(
     return;
   ScriptState::Scope scope(script_state);
 
-  if (backend_cookies.IsEmpty()) {
+  if (backend_cookies.empty()) {
     resolver->Resolve(v8::Null(script_state->GetIsolate()));
     return;
   }
@@ -526,8 +526,8 @@ ScriptPromise CookieStore::DoWrite(ScriptState* script_state,
   backend_->SetCanonicalCookie(
       *std::move(canonical_cookie), default_cookie_url_,
       default_site_for_cookies_, default_top_frame_origin_, status,
-      WTF::Bind(&CookieStore::OnSetCanonicalCookieResult,
-                WrapPersistent(resolver)));
+      WTF::BindOnce(&CookieStore::OnSetCanonicalCookieResult,
+                    WrapPersistent(resolver)));
   return resolver->Promise();
 }
 

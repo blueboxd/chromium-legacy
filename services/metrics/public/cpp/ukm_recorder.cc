@@ -13,7 +13,7 @@
 
 namespace ukm {
 
-const base::Feature kUkmFeature = {"Ukm", base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kUkmFeature, "Ukm", base::FEATURE_ENABLED_BY_DEFAULT);
 
 UkmRecorder::UkmRecorder() = default;
 
@@ -74,7 +74,7 @@ ukm::SourceId UkmRecorder::GetSourceIdForWebIdentityFromScope(
 
 // static
 ukm::SourceId UkmRecorder::GetSourceIdForRedirectUrl(
-    base::PassKey<DIPSBounceDetector>,
+    base::PassKey<DIPSNavigationHandle>,
     const GURL& redirect_url) {
   return UkmRecorder::GetSourceIdFromScopeImpl(redirect_url,
                                                SourceIdType::REDIRECT_ID);

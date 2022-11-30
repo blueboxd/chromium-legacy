@@ -150,23 +150,6 @@ class MockDlpRulesManager : public DlpRulesManagerImpl {
   MOCK_CONST_METHOD0(GetDlpFilesController, DlpFilesController*());
 };
 
-void SetClipboardText(std::u16string text,
-                      std::unique_ptr<ui::DataTransferEndpoint> source) {
-  ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste,
-                                   source ? std::move(source) : nullptr);
-  writer.WriteText(text);
-}
-
-// On Widget Closing, a task for NativeWidgetAura::CloseNow() gets posted. This
-// task runs after the widget is destroyed which leads to a crash, that's why
-// we need to flush the message loop.
-void FlushMessageLoop() {
-  base::RunLoop run_loop;
-  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                   run_loop.QuitClosure());
-  run_loop.Run();
-}
-
 }  // namespace
 
 class DataTransferDlpAshBrowserTest : public InProcessBrowserTest {
@@ -245,8 +228,8 @@ class DataTransferDlpAshBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(DataTransferDlpAshBrowserTest, MAYBE_BlockComponent) {
   SetupCrostini();
   {
-    ListPrefUpdate update(g_browser_process->local_state(),
-                          policy_prefs::kDlpRulesList);
+    ScopedListPrefUpdate update(g_browser_process->local_state(),
+                                policy_prefs::kDlpRulesList);
 
     base::Value src_urls(base::Value::Type::LIST);
     src_urls.Append(kMailUrl);
@@ -307,8 +290,8 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpAshBrowserTest, MAYBE_WarnComponent) {
   SetupCrostini();
 
   {
-    ListPrefUpdate update(g_browser_process->local_state(),
-                          policy_prefs::kDlpRulesList);
+    ScopedListPrefUpdate update(g_browser_process->local_state(),
+                                policy_prefs::kDlpRulesList);
     base::Value rule(base::Value::Type::DICTIONARY);
     base::Value src_urls(base::Value::Type::DICTIONARY);
     base::Value src_urls_list(base::Value::Type::LIST);

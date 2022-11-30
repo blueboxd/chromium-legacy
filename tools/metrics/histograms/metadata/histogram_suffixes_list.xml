@@ -875,6 +875,8 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Blink.HitTestDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.ImplCompositorCommit.UpdateTime"/>
   <affected-histogram name="Blink.IntersectionObservation.UpdateTime"/>
+  <affected-histogram name="Blink.IntersectionObservationInternalCount.UpdateTime"/>
+  <affected-histogram name="Blink.IntersectionObservationJavascriptCount.UpdateTime"/>
   <affected-histogram name="Blink.JavascriptDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.JavascriptIntersectionObserver.UpdateTime"/>
   <affected-histogram name="Blink.Layout.UpdateTime"/>
@@ -908,6 +910,8 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Blink.HitTestDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.ImplCompositorCommit.UpdateTime"/>
   <affected-histogram name="Blink.IntersectionObservation.UpdateTime"/>
+  <affected-histogram name="Blink.IntersectionObservationInternalCount.UpdateTime"/>
+  <affected-histogram name="Blink.IntersectionObservationJavascriptCount.UpdateTime"/>
   <affected-histogram name="Blink.JavascriptDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.JavascriptIntersectionObserver.UpdateTime"/>
   <affected-histogram name="Blink.Layout.UpdateTime"/>
@@ -941,6 +945,8 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Blink.HitTestDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.ImplCompositorCommit.UpdateTime"/>
   <affected-histogram name="Blink.IntersectionObservation.UpdateTime"/>
+  <affected-histogram name="Blink.IntersectionObservationInternalCount.UpdateTime"/>
+  <affected-histogram name="Blink.IntersectionObservationJavascriptCount.UpdateTime"/>
   <affected-histogram name="Blink.JavascriptDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.JavascriptIntersectionObserver.UpdateTime"/>
   <affected-histogram name="Blink.Layout.UpdateTime"/>
@@ -1150,14 +1156,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="LiveForegroundSameSequence"
       label="Foreground same-sequence task was not canceled."/>
   <affected-histogram name="Scheduler.CancelableTaskTracker.TaskDuration2"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="CdmFileIOTimes" separator=".">
-  <suffix name="Incognito" label="Used from an incognito window."/>
-  <suffix name="Normal" label="Used from a non-incognito window."/>
-  <affected-histogram name="Media.EME.CdmFileIO.TimeTo.DeleteFile"/>
-  <affected-histogram name="Media.EME.CdmFileIO.TimeTo.ReadFile"/>
-  <affected-histogram name="Media.EME.CdmFileIO.TimeTo.WriteFile"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="CertificateTypeAlgorithms" separator=".">
@@ -1469,16 +1467,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="Undo" label="Action was undone"/>
   <affected-histogram name="NewTabPage.ContentSuggestions.DismissedUnvisited"/>
   <affected-histogram name="NewTabPage.ContentSuggestions.DismissedVisited"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="ContextMenuLinkPerformanceClass" separator=".">
-  <suffix name="PerformanceClassFast"
-      label="The context menu was shown for a link with a fast
-             PerformanceClass."/>
-  <affected-histogram name="ContextMenu.SelectedOptionAndroid.ImageLink"/>
-  <affected-histogram name="ContextMenu.SelectedOptionAndroid.Link"/>
-  <affected-histogram name="ContextMenu.TimeToTakeAction.Abandoned"/>
-  <affected-histogram name="ContextMenu.TimeToTakeAction.SelectedItem"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ContextMenuShoppingDomain" separator=".">
@@ -2616,13 +2604,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="TrialSecondary" label=""/>
   <affected-histogram name="Net.CertVerifier_First_Job_Latency"/>
   <affected-histogram name="Net.CertVerifier_Job_Latency"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="EmeTimeToHandleFileOperation" separator=".">
-  <suffix base="true" name="DeleteFile" label="Delete File operations only."/>
-  <suffix base="true" name="ReadFile" label="Read File operations only."/>
-  <suffix base="true" name="WriteFile" label="Write File operations only."/>
-  <affected-histogram name="Media.EME.CdmFileIO.TimeTo"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="EncryptionLevel" separator=".">
@@ -4425,16 +4406,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Net.HttpJob.TotalTimeSuccess"/>
   <affected-histogram name="ResourceScheduler.PeakObservedQueueingDelay"/>
   <affected-histogram name="ResourceScheduler.RequestQueuingDuration"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="Net_QuicClientHelloRejectReasons_QuicIsSecureOrNot"
-    separator=".">
-  <owner>dschinazi@chromium.org</owner>
-  <owner>src/net/quic/OWNERS</owner>
-  <suffix name="Secure" label="for secure QUIC."/>
-  <suffix name="TooMany"
-      label="for secure QUIC when there were too many rejects."/>
-  <affected-histogram name="Net.QuicClientHelloRejectReasons"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Net_QuicSession_21CumulativePackets" separator="_">
@@ -7213,21 +7184,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="PasswordManager.FillingAssistance"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="PerformanceHintsSource" separator=".">
-  <suffix name="FastHostHint" label="From the fast host bloom filter."/>
-  <suffix name="LinkHint" label="From the link hints of the current page."/>
-  <suffix name="PageHint"
-      label="From the OptimizationGuide metadata of the given URL."/>
-  <affected-histogram name="PerformanceHints.Observer.SourceLookupStatus"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="PerformanceHintsURLRewritten" separator=".">
-  <suffix name="Rewritten"
-      label="The URL matched one of the rewrite patterns and was extracted
-             before lookups"/>
-  <affected-histogram name="PerformanceHints.Observer.HintForURLResult"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="PermissionRequestGesture" separator=".">
   <suffix name="Gesture" label="With user gesture"/>
   <suffix name="NoGesture" label="Without user gesture"/>
@@ -9037,7 +8993,6 @@ chromium-metrics-reviews@google.com.
 <histogram_suffixes name="ScrollUpdateHandledThread" separator="_">
   <suffix name="Impl" label="ScrollUpdate handled on impl thread"/>
   <suffix name="Main" label="ScrollUpdate handled on main thread"/>
-  <affected-histogram name="Event.Latency.Scroll.Wheel.TimeToHandled2"/>
   <affected-histogram
       name="Event.Latency.ScrollBegin.Scrollbar.HandledToRendererSwap2"/>
   <affected-histogram
@@ -9551,7 +9506,6 @@ chromium-metrics-reviews@google.com.
 <histogram_suffixes name="SharingClickToCallUi" separator=".">
   <suffix name="ContextMenu" label="Context menu"/>
   <suffix name="Dialog" label="Dialog"/>
-  <affected-histogram name="Sharing.ClickToCallAppsToShow"/>
   <affected-histogram name="Sharing.ClickToCallDevicesToShow"/>
   <affected-histogram name="Sharing.ClickToCallSelectedAppIndex"/>
   <affected-histogram name="Sharing.ClickToCallSelectedDeviceIndex"/>

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,8 +69,9 @@ ScriptPromise KeyboardLock::lock(ScriptState* state,
   request_keylock_resolver_ =
       MakeGarbageCollected<ScriptPromiseResolver>(state);
   service_->RequestKeyboardLock(
-      keycodes, request_keylock_resolver_->WrapCallbackInScriptScope(WTF::Bind(
-                    &KeyboardLock::LockRequestFinished, WrapPersistent(this))));
+      keycodes,
+      request_keylock_resolver_->WrapCallbackInScriptScope(WTF::BindOnce(
+          &KeyboardLock::LockRequestFinished, WrapPersistent(this))));
   return request_keylock_resolver_->Promise();
 }
 

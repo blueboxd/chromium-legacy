@@ -8,12 +8,15 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.FeedServiceBridge;
 import org.chromium.chrome.browser.feed.R;
+import org.chromium.chrome.browser.feed.StreamKind;
 import org.chromium.chrome.browser.feed.v2.ContentOrder;
+import org.chromium.chrome.browser.feed.v2.FeedUserActionType;
 import org.chromium.components.browser_ui.widget.chips.ChipProperties;
 import org.chromium.components.browser_ui.widget.chips.ChipView;
 import org.chromium.components.browser_ui.widget.chips.ChipViewBinder;
@@ -28,6 +31,12 @@ import java.util.List;
  * A coordinator for the feed options panel.
  */
 public class FeedOptionsCoordinator {
+    /** Listener for change in options selection. */
+    public interface OptionChangedListener {
+        /** Listener for when a feed option selection changes. */
+        void onOptionChanged();
+    }
+
     /** Method for translating between model changes and corresponding view updates. */
     static void bind(PropertyModel model, FeedOptionsView view, PropertyKey key) {
         if (key == FeedOptionsProperties.VISIBILITY_KEY) {
@@ -39,6 +48,8 @@ public class FeedOptionsCoordinator {
     private final Context mContext;
     private List<PropertyModel> mChipModels;
     private PropertyModel mModel;
+    @Nullable
+    private OptionChangedListener mOptionsListener;
 
     public FeedOptionsCoordinator(Context context) {
         // We don't use ChipsCoordinator here because RecyclerView does not play
@@ -58,6 +69,11 @@ public class FeedOptionsCoordinator {
                          .with(FeedOptionsProperties.VISIBILITY_KEY, false)
                          .build();
         PropertyModelChangeProcessor.create(mModel, mView, FeedOptionsCoordinator::bind);
+    }
+
+    /** Sets listener for feed options. */
+    public void setOptionsListener(OptionChangedListener mOptionsListener) {
+        this.mOptionsListener = mOptionsListener;
     }
 
     /** Returns the view that this coordinator manages. */
@@ -80,6 +96,11 @@ public class FeedOptionsCoordinator {
         mModel.set(FeedOptionsProperties.VISIBILITY_KEY, false);
     }
 
+    /** Returns Id of selection option. */
+    public @ContentOrder int getSelectedOptionId() {
+        return FeedServiceBridge.getContentOrderForWebFeed();
+    }
+
     @VisibleForTesting
     void onOptionSelected(PropertyModel selectedOption) {
         for (PropertyModel model : mChipModels) {
@@ -87,9 +108,25 @@ public class FeedOptionsCoordinator {
                 model.set(ChipProperties.SELECTED, false);
             }
         }
-
         selectedOption.set(ChipProperties.SELECTED, true);
         FeedServiceBridge.setContentOrderForWebFeed(selectedOption.get(ChipProperties.ID));
+        if (mOptionsListener != null) {
+            mOptionsListener.onOptionChanged();
+        }
+        @FeedUserActionType
+        int feedUserActionType;
+        switch (selectedOption.get(ChipProperties.ID)) {
+            case ContentOrder.GROUPED:
+                feedUserActionType = FeedUserActionType.FOLLOWING_FEED_SELECTED_GROUP_BY_PUBLISHER;
+                break;
+            case ContentOrder.REVERSE_CHRON:
+                feedUserActionType = FeedUserActionType.FOLLOWING_FEED_SELECTED_SORT_BY_LATEST;
+                break;
+            default:
+                // Should not happen.
+                feedUserActionType = FeedUserActionType.MAX_VALUE;
+        }
+        FeedServiceBridge.reportOtherUserAction(StreamKind.FOLLOWING, feedUserActionType);
     }
 
     private PropertyModel createChipModel(@ContentOrder int id, @StringRes int textId,
@@ -106,7 +143,7 @@ public class FeedOptionsCoordinator {
 
     private List<PropertyModel> createAndBindChips() {
         @ContentOrder
-        int currentSort = FeedServiceBridge.getContentOrderForWebFeed();
+        int currentSort = getSelectedOptionId();
         List<PropertyModel> chipModels = new ArrayList<>();
         chipModels.add(createChipModel(ContentOrder.GROUPED, R.string.feed_sort_publisher,
                 currentSort == ContentOrder.GROUPED, R.string.feed_options_sort_by_grouped));

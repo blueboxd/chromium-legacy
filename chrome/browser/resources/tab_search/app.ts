@@ -19,7 +19,7 @@ import './strings.m.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {MetricsReporter, MetricsReporterImpl} from 'chrome://resources/js/metrics_reporter/metrics_reporter.js';
-import {listenOnce} from 'chrome://resources/js/util.m.js';
+import {listenOnce} from 'chrome://resources/js/util.js';
 import {Token} from 'chrome://resources/mojo/mojo/public/mojom/base/token.mojom-webui.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
 import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -283,7 +283,9 @@ export class TabSearchAppElement extends PolymerElement {
             .then(
                 e => this.metricsReporter.umaReportTime(
                     'Tabs.TabSearch.WebUI.TabListDataReceived2', e))
-            .then(() => this.metricsReporter.clearMark('TabListDataReceived'));
+            .then(() => this.metricsReporter.clearMark('TabListDataReceived'))
+            // Ignore silently if mark 'TabListDataReceived' is missing.
+            .catch(() => {});
       }
       // The infinite-list produces viewport-filled events whenever a data or
       // scroll position change triggers the the viewport fill logic.
@@ -293,7 +295,12 @@ export class TabSearchAppElement extends PolymerElement {
         setTimeout(() => this.apiProxy_.showUI(), 0);
       });
 
-      this.availableHeight_ = profileData.windows.find((t) => t.active)!.height;
+      // TODO(crbug.com/c/1349350): Determine why no active window is reported
+      // in some cases on ChromeOS and Linux.
+      const activeWindow = profileData.windows.find((t) => t.active);
+      this.availableHeight_ =
+          activeWindow ? activeWindow!.height : profileData.windows[0]!.height;
+
       this.tabsChanged_(profileData);
     });
   }
@@ -324,7 +331,9 @@ export class TabSearchAppElement extends PolymerElement {
           .then(
               e => this.metricsReporter.umaReportTime(
                   'Tabs.TabSearch.Mojo.TabUpdated', e))
-          .then(() => this.metricsReporter.clearMark('TabUpdated'));
+          .then(() => this.metricsReporter.clearMark('TabUpdated'))
+          // Ignore silently if mark 'TabUpdated' is missing.
+          .catch(() => {});
     }
   }
 
@@ -751,6 +760,10 @@ export class TabSearchAppElement extends PolymerElement {
 
   getSearchTextForTesting(): string {
     return this.searchText_;
+  }
+
+  getAvailableHeightForTesting(): number {
+    return this.availableHeight_;
   }
 
   static get template() {

@@ -530,7 +530,7 @@ TEST_F(NetworkServiceTest, AuthEnableNegotiatePort) {
 TEST_F(NetworkServiceTest, DnsClientEnableDisable) {
   // Create valid DnsConfig.
   net::DnsConfig config;
-  config.nameservers.push_back(net::IPEndPoint());
+  config.nameservers.emplace_back();
   auto dns_client = std::make_unique<net::MockDnsClient>(
       std::move(config), net::MockDnsClientRuleList());
   dns_client->set_ignore_system_config_changes(true);
@@ -602,7 +602,7 @@ TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
 
   // Create valid DnsConfig.
   net::DnsConfig config;
-  config.nameservers.push_back(net::IPEndPoint());
+  config.nameservers.emplace_back();
   auto dns_client = std::make_unique<net::MockDnsClient>(
       std::move(config), net::MockDnsClientRuleList());
   dns_client->set_ignore_system_config_changes(true);
@@ -632,7 +632,8 @@ TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
 }
 
 TEST_F(NetworkServiceTest, DisableDohUpgradeProviders) {
-  auto FindProviderFeature = [](base::StringPiece provider) -> base::Feature {
+  auto FindProviderFeature =
+      [](base::StringPiece provider) -> base::test::FeatureRef {
     const auto it =
         base::ranges::find(net::DohProviderEntry::GetList(), provider,
                            &net::DohProviderEntry::provider);
@@ -693,7 +694,7 @@ TEST_F(NetworkServiceTest, DohProbe) {
                                   std::move(context_params));
 
   net::DnsConfig config;
-  config.nameservers.push_back(net::IPEndPoint());
+  config.nameservers.emplace_back();
   config.doh_config =
       *net::DnsOverHttpsConfig::FromString("https://example.com/");
   auto dns_client = std::make_unique<net::MockDnsClient>(
@@ -716,7 +717,7 @@ TEST_F(NetworkServiceTest, DohProbe_MultipleContexts) {
                                   std::move(context_params1));
 
   net::DnsConfig config;
-  config.nameservers.push_back(net::IPEndPoint());
+  config.nameservers.emplace_back();
   config.doh_config =
       *net::DnsOverHttpsConfig::FromString("https://example.com/");
   auto dns_client = std::make_unique<net::MockDnsClient>(
@@ -746,7 +747,7 @@ TEST_F(NetworkServiceTest, DohProbe_MultipleContexts) {
 
 TEST_F(NetworkServiceTest, DohProbe_ContextAddedBeforeTimeout) {
   net::DnsConfig config;
-  config.nameservers.push_back(net::IPEndPoint());
+  config.nameservers.emplace_back();
   config.doh_config =
       *net::DnsOverHttpsConfig::FromString("https://example.com/");
   auto dns_client = std::make_unique<net::MockDnsClient>(
@@ -771,7 +772,7 @@ TEST_F(NetworkServiceTest, DohProbe_ContextAddedBeforeTimeout) {
 
 TEST_F(NetworkServiceTest, DohProbe_ContextAddedAfterTimeout) {
   net::DnsConfig config;
-  config.nameservers.push_back(net::IPEndPoint());
+  config.nameservers.emplace_back();
   config.doh_config =
       *net::DnsOverHttpsConfig::FromString("https://example.com/");
   auto dns_client = std::make_unique<net::MockDnsClient>(
@@ -801,7 +802,7 @@ TEST_F(NetworkServiceTest, DohProbe_ContextRemovedBeforeTimeout) {
                                   std::move(context_params));
 
   net::DnsConfig config;
-  config.nameservers.push_back(net::IPEndPoint());
+  config.nameservers.emplace_back();
   config.doh_config =
       *net::DnsOverHttpsConfig::FromString("https://example.com/");
   auto dns_client = std::make_unique<net::MockDnsClient>(
@@ -828,7 +829,7 @@ TEST_F(NetworkServiceTest, DohProbe_ContextRemovedAfterTimeout) {
                                   std::move(context_params));
 
   net::DnsConfig config;
-  config.nameservers.push_back(net::IPEndPoint());
+  config.nameservers.emplace_back();
   config.doh_config =
       *net::DnsOverHttpsConfig::FromString("https://example.com/");
   auto dns_client = std::make_unique<net::MockDnsClient>(

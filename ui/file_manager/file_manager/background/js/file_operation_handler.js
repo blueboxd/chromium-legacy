@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 
 import {startIOTask} from '../../common/js/api.js';
 import {FileOperationProgressEvent} from '../../common/js/file_operation_common.js';
@@ -441,7 +441,7 @@ export class FileOperationHandler {
           return strf('DELETE_FILE_NAME', name);
         case util.FileOperationType.RESTORE:
         case util.FileOperationType.RESTORE_TO_DESTINATION:
-          return strf('RESTORE_FROM_TRASH_FILE_NAME', name);
+          return strf('RESTORING_FROM_TRASH_FILE_NAME', name);
         default:
           console.warn(
               `Unexpected operation type: ${event.status.operationType}`);
@@ -460,7 +460,7 @@ export class FileOperationHandler {
           return strf('DELETE_ITEMS_REMAINING', remainNumber);
         case util.FileOperationType.RESTORE:
         case util.FileOperationType.RESTORE_TO_DESTINATION:
-          return strf('RESTORE_FROM_TRASH_ITEMS_REMAINING', remainNumber);
+          return strf('RESTORING_FROM_TRASH_ITEMS_REMAINING', remainNumber);
         default:
           console.warn(
               `Unexpected operation type: ${event.status.operationType}`);

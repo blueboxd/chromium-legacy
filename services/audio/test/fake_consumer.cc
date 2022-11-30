@@ -79,9 +79,9 @@ int FakeConsumer::FindEndOfSilence(int channel, int begin_frame) const {
     return begin_frame;
   }
   const float value = samples[begin_frame];
-  const float* at = std::find_if(samples.data() + begin_frame + 1,
-                                 samples.data() + GetRecordedFrameCount(),
-                                 [&value](float f) { return f != value; });
+  const float* at = std::find_if_not(samples.data() + begin_frame + 1,
+                                     samples.data() + GetRecordedFrameCount(),
+                                     [&value](float f) { return f == value; });
   return at - samples.data();
 }
 
@@ -131,18 +131,16 @@ void FakeConsumer::SaveToFile(const base::FilePath& path) const {
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
       media::ChannelLayoutConfig::Guess(recorded_channel_data_.size()),
       sample_rate_, recorded_channel_data_[0].size());
-  media::AudioDebugFileWriter writer(params);
   base::File file(path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_READ |
                             base::File::FLAG_WRITE);
   CHECK(file.IsValid());
-  writer.Start(std::move(file));
+  auto writer = media::AudioDebugFileWriter::Create(params, std::move(file));
   auto bus = media::AudioBus::Create(params);
   for (int i = 0; i < params.channels(); ++i) {
     memcpy(bus->channel(i), recorded_channel_data_[i].data(),
            sizeof(float) * recorded_channel_data_[i].size());
   }
-  writer.Write(std::move(bus));
-  writer.Stop();
+  writer->Write(*bus);
 }
 
 }  // namespace audio

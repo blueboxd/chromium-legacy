@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 import {CrSettingsPrefs, Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
-import {LockScreenProgress} from 'chrome://resources/cr_components/chromeos/quick_unlock/lock_screen_constants.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {LockScreenProgress} from 'chrome://resources/ash/common/quick_unlock/lock_screen_constants.js';
+import {assert} from 'chrome://resources/js/assert.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {FakeSettingsPrivate} from 'chrome://test/settings/chromeos/fake_settings_private.js';
+import {waitAfterNextRender, waitBeforeNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
-import {eventToPromise, isVisible as testUtilIsVisible, waitAfterNextRender, waitBeforeNextRender} from '../../../test_util.js';
+import {eventToPromise, isVisible as testUtilIsVisible} from '../../../test_util.js';
 import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
 
 import {FakeQuickUnlockPrivate} from './fake_quick_unlock_private.js';

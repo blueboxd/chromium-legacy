@@ -170,9 +170,12 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       key.custom_theme &&
       key.custom_theme->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON,
                                  &color);
-  mixer[kColorBookmarkFavicon] =
-      custom_icon_color ? ui::ColorTransform(kColorToolbarButtonIcon)
-                        : ui::ColorTransform(SK_ColorTRANSPARENT);
+  if (custom_icon_color) {
+    mixer[kColorBookmarkFavicon] = ui::ColorTransform(kColorToolbarButtonIcon);
+  } else {
+    mixer[kColorBookmarkFavicon] = ui::PickGoogleColor(
+        gfx::kGoogleGrey500, kColorBookmarkBarBackground, 6.0f);
+  }
   const bool custom_text_color =
       key.custom_theme &&
       key.custom_theme->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT, &color);
@@ -293,7 +296,6 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorLocationBarBorderOpaque] =
       ui::GetResultingPaintColor(kColorLocationBarBorder, kColorToolbar);
   mixer[kColorMediaRouterIconActive] = {ui::kColorAccent};
-  mixer[kColorMediaRouterIconError] = {ui::kColorAlertHighSeverity};
   mixer[kColorMediaRouterIconWarning] = {ui::kColorAlertMediumSeverity};
   {
     int result = 0;

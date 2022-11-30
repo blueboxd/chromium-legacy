@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,7 +120,7 @@ ScriptPromise ServiceWorkerClients::get(ScriptState* script_state,
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   global_scope->GetServiceWorkerHost()->GetClient(
-      id, WTF::Bind(&DidGetClient, WrapPersistent(resolver)));
+      id, WTF::BindOnce(&DidGetClient, WrapPersistent(resolver)));
   return resolver->Promise();
 }
 
@@ -137,7 +137,7 @@ ScriptPromise ServiceWorkerClients::matchAll(
   global_scope->GetServiceWorkerHost()->GetClients(
       mojom::blink::ServiceWorkerClientQueryOptions::New(
           options->includeUncontrolled(), GetClientType(options->type())),
-      WTF::Bind(&DidGetClients, WrapPersistent(resolver)));
+      WTF::BindOnce(&DidGetClients, WrapPersistent(resolver)));
   return resolver->Promise();
 }
 
@@ -151,7 +151,7 @@ ScriptPromise ServiceWorkerClients::claim(ScriptState* script_state) {
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   global_scope->GetServiceWorkerHost()->ClaimClients(
-      WTF::Bind(&DidClaim, WrapPersistent(resolver)));
+      WTF::BindOnce(&DidClaim, WrapPersistent(resolver)));
   return resolver->Promise();
 }
 

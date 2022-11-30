@@ -8,6 +8,11 @@
  * #import=./signin_vars.css.js
  * #css_wrapper_metadata_end */
 
+:host {
+  --scrollbar-background: var(--google-grey-100);
+  --scrollbar-width: 4px;
+}
+
 a {
   color: var(--cr-link-color);
   text-decoration: none;
@@ -34,9 +39,30 @@ a {
   padding: var(--action-container-padding);
 }
 
+.custom-scrollbar::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+}
+
+/* Track */
+.custom-scrollbar::-webkit-scrollbar-track {
+  border-radius: var(--scrollbar-width);
+}
+
+/* Handle */
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-background);
+  border-radius: var(--scrollbar-width);
+}
+
 <if expr="is_macosx or is_linux or is_chromeos">
 .action-container {
   flex-flow: row-reverse;
   justify-content: flex-start;
 }
 </if>
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --scrollbar-background: var(--google-grey-800);
+  }
+}

@@ -16,14 +16,13 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 namespace {
 
 using LibassistantPlaybackState = assistant_client::MediaStatus::PlaybackState;
 using ProtoAndroidAppInfo = chromeos::assistant::shared::AndroidAppInfo;
-using AndroidAppInfo = chromeos::assistant::AndroidAppInfo;
+using assistant::AndroidAppInfo;
 using chromeos::assistant::shared::PlayMediaArgs;
 using mojom::PlaybackState;
 
@@ -366,5 +365,4 @@ TEST_F(AssistantMediaControllerTest, ShouldIgnoreInvalidUrls) {
                            play_media_args.SerializeAsString());
   FlushMojomPipes();
 }
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant

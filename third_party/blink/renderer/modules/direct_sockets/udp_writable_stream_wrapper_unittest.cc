@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,7 +74,8 @@ class StreamCreator : public GarbageCollected<StreamCreator> {
     auto* script_state = scope.GetScriptState();
     stream_wrapper_ = MakeGarbageCollected<UDPWritableStreamWrapper>(
         script_state,
-        WTF::Bind(&StreamCreator::Close, WrapWeakPersistent(this)), udp_socket);
+        WTF::BindOnce(&StreamCreator::Close, WrapWeakPersistent(this)),
+        udp_socket);
     return stream_wrapper_;
   }
 

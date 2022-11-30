@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,10 @@ class StyleOverflowClipMargin {
   enum class ReferenceBox { kBorderBox, kPaddingBox, kContentBox };
   StyleOverflowClipMargin(ReferenceBox reference_box, LayoutUnit margin)
       : reference_box_(reference_box), margin_(margin) {}
+
+  static StyleOverflowClipMargin CreateContent() {
+    return StyleOverflowClipMargin(ReferenceBox::kContentBox, LayoutUnit());
+  }
 
   StyleOverflowClipMargin() = default;
 

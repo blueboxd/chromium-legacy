@@ -8,6 +8,7 @@
 #include "base/strings/escape.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/history_clusters/history_clusters_metrics_logger.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -17,6 +18,8 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_web_ui_view.h"
 #include "chrome/browser/ui/webui/side_panel/history_clusters/history_clusters_side_panel_ui.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/history_clusters/core/url_constants.h"
+#include "components/omnibox/browser/actions/history_clusters_action.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/image_model.h"
@@ -37,6 +40,9 @@ void HistoryClustersSidePanelCoordinator::CreateAndRegisterEntry(
                                      /*icon_size=*/16),
       base::BindRepeating(
           &HistoryClustersSidePanelCoordinator::CreateHistoryClustersWebView,
+          base::Unretained(this)),
+      base::BindRepeating(
+          &HistoryClustersSidePanelCoordinator::GetOpenInNewTabURL,
           base::Unretained(this))));
 }
 
@@ -47,6 +53,13 @@ HistoryClustersSidePanelCoordinator::CreateHistoryClustersWebView() {
   std::string query_string = base::StringPrintf(
       "initial_query=%s",
       base::EscapeQueryParamValue(initial_query_, /*use_plus=*/false).c_str());
+
+  // Side Panel WebViews created from the omnibox have a non-empty query, and
+  // ones created from the toolbar have an empty query.
+  const auto created_from_omnibox = !initial_query_.empty();
+
+  // Clear the initial query, because this is a singleton, and we want to
+  // "consume" the initial query after we create a side panel with it.
   initial_query_.clear();
 
   GURL::Replacements replacements;
@@ -65,6 +78,13 @@ HistoryClustersSidePanelCoordinator::CreateHistoryClustersWebView() {
 
   history_clusters_ui_ =
       side_panel_ui->contents_wrapper()->GetWebUIController()->GetWeakPtr();
+  if (history_clusters_ui_) {
+    history_clusters_ui_->set_metrics_initial_state(
+        created_from_omnibox ? history_clusters::HistoryClustersInitialState::
+                                   kSidePanelFromOmnibox
+                             : history_clusters::HistoryClustersInitialState::
+                                   kSidePanelFromToolbarButton);
+  }
 
   return std::move(side_panel_ui);
 }
@@ -87,6 +107,15 @@ bool HistoryClustersSidePanelCoordinator::Show(const std::string& query) {
   }
 
   return true;
+}
+
+GURL HistoryClustersSidePanelCoordinator::GetOpenInNewTabURL() const {
+  std::string query;
+  if (history_clusters_ui_)
+    query = history_clusters_ui_->GetLastQueryIssued();
+
+  return query.empty() ? GURL(history_clusters::kChromeUIHistoryClustersURL)
+                       : history_clusters::GetFullJourneysUrlForQuery(query);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(HistoryClustersSidePanelCoordinator);

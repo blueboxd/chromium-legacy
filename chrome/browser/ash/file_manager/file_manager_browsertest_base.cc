@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -17,9 +16,8 @@
 #include "ash/components/arc/test/arc_util_test_support.h"
 #include "ash/components/arc/test/connection_holder_util.h"
 #include "ash/components/arc/test/fake_file_system_instance.h"
-#include "ash/components/smbfs/smbfs_host.h"
-#include "ash/components/smbfs/smbfs_mounter.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #include "ash/public/cpp/test/shell_test_api.h"
@@ -108,6 +106,8 @@
 #include "chromeos/ash/components/drivefs/drivefs_host.h"
 #include "chromeos/ash/components/drivefs/fake_drivefs.h"
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
+#include "chromeos/ash/components/smbfs/smbfs_host.h"
+#include "chromeos/ash/components/smbfs/smbfs_mounter.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -392,18 +392,18 @@ struct AddEntriesMessage {
   // ui/file_manager/integration_tests/test_util.js, which generates the message
   // that contains this object.
   struct TestEntryInfo {
-    TestEntryInfo() : type(FILE), shared_option(NONE) {}
+    TestEntryInfo() : entry_type(FILE), shared_option(NONE) {}
 
-    TestEntryInfo(EntryType type,
+    TestEntryInfo(EntryType entry_type,
                   const std::string& source_file_name,
                   const std::string& target_path)
-        : type(type),
+        : entry_type(entry_type),
           shared_option(NONE),
           source_file_name(source_file_name),
           target_path(target_path),
           last_modified_time(base::Time::Now()) {}
 
-    EntryType type;                   // Entry type: file or directory.
+    EntryType entry_type;             // Entry type: file or directory.
     SharedOption shared_option;       // File entry sharing option.
     std::string source_file_name;     // Source file name prototype.
     std::string thumbnail_file_name;  // DocumentsProvider thumbnail file name.
@@ -416,7 +416,8 @@ struct AddEntriesMessage {
     EntryCapabilities capabilities;   // Entry permissions.
     EntryFolderFeature folder_feature;  // Entry folder feature.
     bool pinned = false;                // Whether the file should be pinned.
-    std::string alternate_url;          // Entry's alternate URL on Drive.
+    bool available_offline = false;  // Whether the file is available_offline.
+    std::string alternate_url;       // Entry's alternate URL on Drive.
 
     TestEntryInfo& SetSharedOption(SharedOption option) {
       shared_option = option;
@@ -465,6 +466,11 @@ struct AddEntriesMessage {
       return *this;
     }
 
+    TestEntryInfo& SetAvailableOffline(bool is_available_offline) {
+      available_offline = is_available_offline;
+      return *this;
+    }
+
     TestEntryInfo& SetAlternateUrl(const std::string& new_alternate_url) {
       alternate_url = new_alternate_url;
       return *this;
@@ -473,7 +479,7 @@ struct AddEntriesMessage {
     // Registers the member information to the given converter.
     static void RegisterJSONConverter(
         base::JSONValueConverter<TestEntryInfo>* converter) {
-      converter->RegisterCustomField("type", &TestEntryInfo::type,
+      converter->RegisterCustomField("type", &TestEntryInfo::entry_type,
                                      &MapStringToEntryType);
       converter->RegisterStringField("sourceFileName",
                                      &TestEntryInfo::source_file_name);
@@ -497,6 +503,8 @@ struct AddEntriesMessage {
       converter->RegisterNestedField("folderFeature",
                                      &TestEntryInfo::folder_feature);
       converter->RegisterBoolField("pinned", &TestEntryInfo::pinned);
+      converter->RegisterBoolField("availableOffline",
+                                   &TestEntryInfo::available_offline);
       converter->RegisterStringField("alternateUrl",
                                      &TestEntryInfo::alternate_url);
     }
@@ -908,7 +916,7 @@ class LocalTestVolume : public TestVolume {
   void CreateEntryImpl(const AddEntriesMessage::TestEntryInfo& entry,
                        const base::FilePath& target_path) {
     entries_.insert(std::make_pair(target_path, entry));
-    switch (entry.type) {
+    switch (entry.entry_type) {
       case AddEntriesMessage::FILE: {
         const base::FilePath source_path =
             TestVolume::GetTestDataFilePath(entry.source_file_name);
@@ -1239,7 +1247,7 @@ class DriveFsTestVolume : public TestVolume {
     entries_.insert(std::make_pair(target_path, entry));
     auto relative_path = GetRelativeDrivePathForTestEntry(entry);
     auto original_name = relative_path.BaseName();
-    switch (entry.type) {
+    switch (entry.entry_type) {
       case AddEntriesMessage::FILE: {
         original_name = base::FilePath(entry.target_path).BaseName();
         if (entry.source_file_name.empty()) {
@@ -1275,6 +1283,7 @@ class DriveFsTestVolume : public TestVolume {
     }
     fake_drivefs_helper_->fake_drivefs().SetMetadata(
         relative_path, entry.mime_type, original_name.value(), entry.pinned,
+        entry.available_offline,
         entry.shared_option == AddEntriesMessage::SharedOption::SHARED ||
             entry.shared_option ==
                 AddEntriesMessage::SharedOption::SHARED_WITH_ME,
@@ -1293,6 +1302,19 @@ class DriveFsTestVolume : public TestVolume {
     fake_drivefs_helper_->fake_drivefs().DisplayConfirmDialog(
         std::move(reason), base::BindOnce(&DriveFsTestVolume::OnDialogResult,
                                           base::Unretained(this)));
+  }
+
+  void SetFileSyncStatus(const std::string* path,
+                         const drivefs::mojom::ItemEvent::State sync_status) {
+    drivefs::mojom::SyncingStatus syncing_status;
+    syncing_status.item_events.emplace_back(
+        absl::in_place, /* stable_id */ 1, /* group_id */ 1, *path, sync_status,
+        /* bytes_transferred */ 50, /* bytes_to_transfer */ 100,
+        drivefs::mojom::ItemEventReason::kTransfer);
+
+    auto& drivefs_delegate = fake_drivefs_helper_->fake_drivefs().delegate();
+    drivefs_delegate->OnSyncingStatusUpdate(syncing_status.Clone());
+    drivefs_delegate.FlushForTesting();
   }
 
   absl::optional<drivefs::mojom::DialogResult> last_dialog_result() {
@@ -1451,7 +1473,7 @@ class DocumentsProviderTestVolume : public TestVolume {
         !entry.thumbnail_file_name.empty());
     file_system_instance_->AddDocument(document);
 
-    if (entry.type != AddEntriesMessage::FILE)
+    if (entry.entry_type != AddEntriesMessage::FILE)
       return;
 
     // arc::FakeFileSystemInstance has a dedicated method AddRecentDocument(),
@@ -1498,7 +1520,7 @@ class DocumentsProviderTestVolume : public TestVolume {
 
  private:
   int64_t GetFileSize(const AddEntriesMessage::TestEntryInfo& entry) {
-    if (entry.type != AddEntriesMessage::FILE)
+    if (entry.entry_type != AddEntriesMessage::FILE)
       return 0;
 
     int64_t file_size = 0;
@@ -1509,7 +1531,7 @@ class DocumentsProviderTestVolume : public TestVolume {
   }
 
   std::string GetMimeType(const AddEntriesMessage::TestEntryInfo& entry) {
-    return entry.type == AddEntriesMessage::FILE
+    return entry.entry_type == AddEntriesMessage::FILE
                ? entry.mime_type
                : arc::kAndroidDirectoryMimeType;
   }
@@ -1885,8 +1907,8 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     command_line->AppendSwitchASCII(chromeos::switches::kShillStub, "clear=1");
   }
 
-  std::vector<base::Feature> enabled_features;
-  std::vector<base::Feature> disabled_features;
+  std::vector<base::test::FeatureRef> enabled_features;
+  std::vector<base::test::FeatureRef> disabled_features;
 
   // Make sure to run the ARC storage UI toast tests.
   enabled_features.push_back(arc::kUsbStorageUIFeature);
@@ -1931,16 +1953,16 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.push_back(features::kDataLeakPreventionFilesRestriction);
   }
 
-  if (options.enable_web_drive_office) {
-    enabled_features.push_back(chromeos::features::kFilesWebDriveOffice);
-  } else {
-    disabled_features.push_back(chromeos::features::kFilesWebDriveOffice);
-  }
-
   if (options.enable_mirrorsync) {
     enabled_features.push_back(chromeos::features::kDriveFsMirroring);
   } else {
     disabled_features.push_back(chromeos::features::kDriveFsMirroring);
+  }
+
+  if (options.enable_inline_status_sync) {
+    enabled_features.push_back(chromeos::features::kFilesInlineSyncStatus);
+  } else {
+    disabled_features.push_back(chromeos::features::kFilesInlineSyncStatus);
   }
 
   if (options.enable_upload_office_to_cloud) {
@@ -2831,6 +2853,14 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (name == "setTrashEnabled") {
+    absl::optional<bool> enabled = value.FindBool("enabled");
+    ASSERT_TRUE(enabled.has_value());
+    profile()->GetPrefs()->SetBoolean(ash::prefs::kFilesAppTrashEnabled,
+                                      enabled.value());
+    return;
+  }
+
   if (name == "setPdfPreviewEnabled") {
     absl::optional<bool> enabled = value.FindBool("enabled");
     ASSERT_TRUE(enabled.has_value());
@@ -3012,6 +3042,11 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (name == "isInlineStatusSyncEnabled") {
+    *output = options.enable_inline_status_sync ? "true" : "false";
+    return;
+  }
+
   if (name == "switchLanguage") {
     const std::string* language = value.FindString("language");
     ASSERT_TRUE(language);
@@ -3127,6 +3162,22 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     drive_volume_->DisplayConfirmDialog(drivefs::mojom::DialogReason::New(
         drivefs::mojom::DialogReason::Type::kEnableDocsOffline,
         base::FilePath()));
+    return;
+  }
+
+  if (name == "setDriveFileSyncStatus") {
+    auto* sync_status = value.FindString("syncStatus");
+    auto* path = value.FindString("path");
+    ASSERT_TRUE(sync_status);
+    ASSERT_TRUE(path);
+    drive_volume_->SetFileSyncStatus(
+        path, *sync_status == "in_progress"
+                  ? drivefs::mojom::ItemEvent::State::kInProgress
+              : *sync_status == "queued"
+                  ? drivefs::mojom::ItemEvent::State::kQueued
+              : *sync_status == "completed"
+                  ? drivefs::mojom::ItemEvent::State::kCompleted
+                  : drivefs::mojom::ItemEvent::State::kFailed);
     return;
   }
 
@@ -3339,13 +3390,8 @@ FileManagerBrowserTestBase::GetLastOpenWindowWebContents() {
       }
 
       // Ignore known WebContents.
-      bool found =
-          std::find_if(swa_web_contents_.begin(), swa_web_contents_.end(),
-                       [web_contents](const auto& pair) {
-                         return pair.second == web_contents;
-                       }) != swa_web_contents_.end();
-
-      if (!found) {
+      if (!base::Contains(swa_web_contents_, web_contents,
+                          &IdToWebContents::value_type::second)) {
         return web_contents;
       }
     }

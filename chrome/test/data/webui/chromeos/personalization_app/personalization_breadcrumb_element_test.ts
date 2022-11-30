@@ -10,7 +10,7 @@ import 'chrome://webui-test/mojo_webui_test_support.js';
 import {GooglePhotosAlbum, Paths, PersonalizationBreadcrumb, PersonalizationRouter, TopicSource} from 'chrome://personalization/js/personalization_app.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertDeepEquals, assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/test_util.js';
+import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
 import {baseSetup, initElement} from './personalization_app_test_utils.js';
 import {TestPersonalizationStore} from './test_personalization_store.js';
@@ -66,7 +66,6 @@ suite('PersonalizationBreadcrumbTest', function() {
   });
 
   test('show label when wallpaper subpage is loaded', async () => {
-    loadTimeData.overrideValues({isPersonalizationHubEnabled: true});
     breadcrumbElement =
         initElement(PersonalizationBreadcrumb, {'path': Paths.COLLECTIONS});
 
@@ -92,8 +91,6 @@ suite('PersonalizationBreadcrumbTest', function() {
   });
 
   test('click home button goes back to root page', async () => {
-    loadTimeData.overrideValues({isPersonalizationHubEnabled: true});
-
     breadcrumbElement =
         initElement(PersonalizationBreadcrumb, {'path': Paths.COLLECTIONS});
     await waitAfterNextRender(breadcrumbElement);
@@ -120,19 +117,6 @@ suite('PersonalizationBreadcrumbTest', function() {
   });
 
   test('back button hidden if personalization hub feature is on', async () => {
-    loadTimeData.overrideValues({isPersonalizationHubEnabled: false});
-
-    breadcrumbElement = initElement(
-        PersonalizationBreadcrumb, {'path': Paths.COLLECTION_IMAGES});
-    await waitAfterNextRender(breadcrumbElement);
-
-    assertTrue(
-        !!breadcrumbElement!.shadowRoot!.getElementById('backButton'),
-        'back button should be visible');
-
-    // Recreate the element with the hub feature on.
-    loadTimeData.overrideValues({isPersonalizationHubEnabled: true});
-    breadcrumbElement.remove();
     breadcrumbElement =
         initElement(PersonalizationBreadcrumb, {'path': Paths.COLLECTIONS});
     await waitAfterNextRender(breadcrumbElement);
@@ -420,19 +404,4 @@ suite('PersonalizationBreadcrumbTest', function() {
         assertEquals(Paths.AMBIENT, path);
         assertDeepEquals({}, queryParams);
       });
-
-  test('back button aria label is set', async () => {
-    // Back button is hidden when personalization hub is enabled.
-    loadTimeData.overrideValues({isPersonalizationHubEnabled: false});
-
-    breadcrumbElement = initElement(
-        PersonalizationBreadcrumb, {'path': Paths.COLLECTION_IMAGES});
-    await waitAfterNextRender(breadcrumbElement);
-
-    assertEquals(
-        'Back to Wallpaper',
-        breadcrumbElement.shadowRoot?.getElementById('backButton')
-            ?.getAttribute('aria-label'),
-        'back button aria label is set');
-  });
 });

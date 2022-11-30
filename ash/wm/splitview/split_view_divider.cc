@@ -21,6 +21,7 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/containers/contains.h"
+#include "base/ranges/algorithm.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/scoped_window_targeter.h"
@@ -272,8 +273,8 @@ SplitViewDivider::SplitViewDivider(SplitViewController* controller)
                                    divider_widget_->GetNativeWindow()));
 
   // Observe currently snapped windows.
-  for (auto snap_pos : {SplitViewController::SnapPosition::LEFT,
-                        SplitViewController::SnapPosition::RIGHT}) {
+  for (auto snap_pos : {SplitViewController::SnapPosition::kPrimary,
+                        SplitViewController::SnapPosition::kSecondary}) {
     auto* window = controller_->GetSnappedWindow(snap_pos);
     if (window)
       AddObservedWindow(window);
@@ -389,8 +390,7 @@ void SplitViewDivider::AddObservedWindow(aura::Window* window) {
 }
 
 void SplitViewDivider::RemoveObservedWindow(aura::Window* window) {
-  auto iter =
-      std::find(observed_windows_.begin(), observed_windows_.end(), window);
+  auto iter = base::ranges::find(observed_windows_, window);
   if (iter != observed_windows_.end()) {
     window->RemoveObserver(this);
     observed_windows_.erase(iter);

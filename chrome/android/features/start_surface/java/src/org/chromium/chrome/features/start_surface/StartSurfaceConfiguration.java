@@ -28,9 +28,6 @@ public class StartSurfaceConfiguration {
     public static final StringCachedFieldTrialParameter START_SURFACE_VARIATION =
             new StringCachedFieldTrialParameter(
                     ChromeFeatureList.START_SURFACE_ANDROID, "start_surface_variation", "single");
-    public static final BooleanCachedFieldTrialParameter START_SURFACE_EXCLUDE_MV_TILES =
-            new BooleanCachedFieldTrialParameter(
-                    ChromeFeatureList.START_SURFACE_ANDROID, "exclude_mv_tiles", false);
     public static final BooleanCachedFieldTrialParameter
             START_SURFACE_HIDE_INCOGNITO_SWITCH_NO_TAB =
                     new BooleanCachedFieldTrialParameter(ChromeFeatureList.START_SURFACE_ANDROID,
@@ -62,12 +59,6 @@ public class StartSurfaceConfiguration {
     public static final BooleanCachedFieldTrialParameter SUPPORT_ACCESSIBILITY =
             new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.START_SURFACE_ANDROID, SUPPORT_ACCESSIBILITY_PARAM, true);
-
-    private static final String CHECK_SYNC_BEFORE_SHOW_START_AT_STARTUP_PARAM =
-            "check_sync_before_show_start_at_startup";
-    public static final BooleanCachedFieldTrialParameter CHECK_SYNC_BEFORE_SHOW_START_AT_STARTUP =
-            new BooleanCachedFieldTrialParameter(ChromeFeatureList.START_SURFACE_ANDROID,
-                    CHECK_SYNC_BEFORE_SHOW_START_AT_STARTUP_PARAM, false);
 
     private static final String BEHAVIOURAL_TARGETING_PARAM = "behavioural_targeting";
     public static final StringCachedFieldTrialParameter BEHAVIOURAL_TARGETING =
@@ -113,12 +104,6 @@ public class StartSurfaceConfiguration {
     public static final BooleanCachedFieldTrialParameter IS_DOODLE_SUPPORTED =
             new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.START_SURFACE_ANDROID, IS_DOODLE_SUPPORTED_PARAM, false);
-
-    private static final String HIDE_START_WHEN_LAST_VISITED_TAB_IS_SRP_PARAM =
-            "hide_start_when_last_visited_tab_is_srp";
-    public static final BooleanCachedFieldTrialParameter HIDE_START_WHEN_LAST_VISITED_TAB_IS_SRP =
-            new BooleanCachedFieldTrialParameter(ChromeFeatureList.START_SURFACE_ANDROID,
-                    HIDE_START_WHEN_LAST_VISITED_TAB_IS_SRP_PARAM, false);
 
     private static final String STARTUP_UMA_PREFIX = "Startup.Android.";
     private static final String INSTANT_START_SUBFIX = ".Instant";

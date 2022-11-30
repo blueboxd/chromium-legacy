@@ -22,17 +22,25 @@
 class PasswordFeatureManagerImplTest : public ::testing::Test {
  public:
   PasswordFeatureManagerImplTest()
-      : password_feature_manager_(&pref_service_, &sync_service_) {
+      : password_feature_manager_(&pref_service_,
+                                  &pref_service_,
+                                  &sync_service_) {
     pref_service_.registry()->RegisterDictionaryPref(
         password_manager::prefs::kAccountStoragePerAccountSettings);
     account_.email = "account@gmail.com";
     account_.gaia = "account";
     account_.account_id = CoreAccountId::FromGaiaId(account_.gaia);
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#if !BUILDFLAG(IS_IOS)
     pref_service_.registry()->RegisterBooleanPref(
         autofill_assistant::prefs::kAutofillAssistantEnabled, true);
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#endif  // !BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+    pref_service_.registry()->RegisterBooleanPref(
+        password_manager::prefs::kBiometricAuthenticationBeforeFilling, false);
+    pref_service_.registry()->RegisterBooleanPref(
+        password_manager::prefs::kHadBiometricsAvailable, false);
+#endif
   }
 
   ~PasswordFeatureManagerImplTest() override = default;
@@ -73,7 +81,9 @@ TEST_F(PasswordFeatureManagerImplTest,
   sync_service_.SetHasSyncConsent(false);
   sync_service_.SetDisableReasons({});
   sync_service_.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
-  sync_service_.SetActiveDataTypes({});
+  sync_service_.GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*types=*/syncer::UserSelectableTypeSet());
 
   ASSERT_EQ(password_manager_util::GetPasswordSyncState(&sync_service_),
             password_manager::SyncState::kNotSyncing);
@@ -95,7 +105,9 @@ TEST_F(PasswordFeatureManagerImplTest,
   sync_service_.SetHasSyncConsent(false);
   sync_service_.SetDisableReasons({});
   sync_service_.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
-  sync_service_.SetActiveDataTypes({});
+  sync_service_.GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*types=*/syncer::UserSelectableTypeSet());
 
   ASSERT_EQ(password_manager_util::GetPasswordSyncState(&sync_service_),
             password_manager::SyncState::kNotSyncing);
@@ -106,12 +118,45 @@ TEST_F(PasswordFeatureManagerImplTest,
 }
 
 TEST_F(PasswordFeatureManagerImplTest,
+       GenerationDisabledIfSyncPausedWithWebSignout) {
+  sync_service_.SetAccountInfo(account_);
+  sync_service_.SetHasSyncConsent(true);
+  sync_service_.SetDisableReasons({});
+  sync_service_.SetPersistentAuthErrorWithWebSignout();
+
+  ASSERT_EQ(sync_service_.GetTransportState(),
+            syncer::SyncService::TransportState::PAUSED);
+  ASSERT_EQ(password_manager_util::GetPasswordSyncState(&sync_service_),
+            password_manager::SyncState::kNotSyncing);
+
+  EXPECT_FALSE(password_feature_manager_.IsGenerationEnabled());
+}
+
+TEST_F(PasswordFeatureManagerImplTest,
+       GenerationEnabledDespiteSyncAuthErrorOtherThanWebSignout) {
+  sync_service_.SetAccountInfo(account_);
+  sync_service_.SetHasSyncConsent(true);
+  sync_service_.SetDisableReasons({});
+  sync_service_.SetPersistentAuthErrorOtherThanWebSignout();
+
+  ASSERT_NE(sync_service_.GetTransportState(),
+            syncer::SyncService::TransportState::PAUSED);
+  ASSERT_EQ(password_manager_util::GetPasswordSyncState(&sync_service_),
+            password_manager::SyncState::kSyncingNormalEncryption);
+
+  EXPECT_TRUE(password_feature_manager_.IsGenerationEnabled());
+}
+
+TEST_F(PasswordFeatureManagerImplTest,
        RequirementsForAutomatedPasswordChangeMetForSyncingUser) {
   sync_service_.SetAccountInfo(account_);
   sync_service_.SetHasSyncConsent(true);
   sync_service_.SetDisableReasons({});
   sync_service_.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
-  sync_service_.SetActiveDataTypes(syncer::ModelTypeSet(syncer::PASSWORDS));
+  sync_service_.GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*types=*/syncer::UserSelectableTypeSet(
+          syncer::UserSelectableType::kPasswords));
 
   ASSERT_EQ(password_manager_util::GetPasswordSyncState(&sync_service_),
             password_manager::SyncState::kSyncingNormalEncryption);
@@ -127,7 +172,9 @@ TEST_F(PasswordFeatureManagerImplTest,
   sync_service_.SetDisableReasons(
       {syncer::SyncService::DisableReason::DISABLE_REASON_USER_CHOICE});
   sync_service_.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
-  sync_service_.SetActiveDataTypes({});
+  sync_service_.GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*types=*/syncer::UserSelectableTypeSet());
 
   ASSERT_EQ(password_manager_util::GetPasswordSyncState(&sync_service_),
             password_manager::SyncState::kNotSyncing);
@@ -158,14 +205,17 @@ TEST_F(PasswordFeatureManagerImplTest,
                    .AreRequirementsForAutomatedPasswordChangeFulfilled());
 }
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#if !BUILDFLAG(IS_IOS)
 TEST_F(PasswordFeatureManagerImplTest,
        RequirementsForAutomatedPasswordChangeRespectAssistantPref) {
   sync_service_.SetAccountInfo(account_);
   sync_service_.SetHasSyncConsent(true);
   sync_service_.SetDisableReasons({});
   sync_service_.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
-  sync_service_.SetActiveDataTypes(syncer::ModelTypeSet(syncer::PASSWORDS));
+  sync_service_.GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*types=*/syncer::UserSelectableTypeSet(
+          syncer::UserSelectableType::kPasswords));
 
   EXPECT_TRUE(password_feature_manager_
                   .AreRequirementsForAutomatedPasswordChangeFulfilled());
@@ -176,4 +226,68 @@ TEST_F(PasswordFeatureManagerImplTest,
   EXPECT_FALSE(password_feature_manager_
                    .AreRequirementsForAutomatedPasswordChangeFulfilled());
 }
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#endif  // !BUILDFLAG(IS_IOS)
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+
+struct TestCase {
+  const char* description;
+  bool had_biometrics;
+  bool feature_flag;
+  bool pref_value;
+};
+
+class PasswordFeatureManagerImplTestBiometricAuthenticationTest
+    : public PasswordFeatureManagerImplTest,
+      public testing::WithParamInterface<TestCase> {};
+
+TEST_P(PasswordFeatureManagerImplTestBiometricAuthenticationTest,
+       IsBiometricAuthenticationBeforeFillingEnabled) {
+  TestCase test_case = GetParam();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatureState(
+      password_manager::features::kBiometricAuthenticationForFilling,
+      test_case.had_biometrics);
+
+  SCOPED_TRACE(test_case.description);
+
+  pref_service_.SetBoolean(password_manager::prefs::kHadBiometricsAvailable,
+                           test_case.feature_flag);
+  pref_service_.SetBoolean(
+      password_manager::prefs::kBiometricAuthenticationBeforeFilling,
+      test_case.pref_value);
+  EXPECT_EQ(test_case.had_biometrics && test_case.feature_flag &&
+                test_case.pref_value,
+            password_feature_manager_
+                .IsBiometricAuthenticationBeforeFillingEnabled());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    PasswordFeatureManagerImplTestBiometricAuthenticationTest,
+    ::testing::Values(
+        TestCase{
+            .description = "Did not have biometric",
+            .had_biometrics = false,
+            .feature_flag = false,
+            .pref_value = false,
+        },
+        TestCase{
+            .description = "Had biometric, but feature disabled",
+            .had_biometrics = true,
+            .feature_flag = false,
+            .pref_value = false,
+        },
+        TestCase{
+            .description = "Had biometric, feature enabled but didn't opt in",
+            .had_biometrics = true,
+            .feature_flag = true,
+            .pref_value = false,
+        },
+        TestCase{
+            .description = "Had biometric, feature enabled, opted in",
+            .had_biometrics = true,
+            .feature_flag = true,
+            .pref_value = true,
+        }));
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)

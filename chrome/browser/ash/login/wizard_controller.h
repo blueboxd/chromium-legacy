@@ -26,6 +26,7 @@
 #include "chrome/browser/ash/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/ash/login/screens/assistant_optin_flow_screen.h"
 #include "chrome/browser/ash/login/screens/consolidated_consent_screen.h"
+#include "chrome/browser/ash/login/screens/cryptohome_recovery_screen.h"
 #include "chrome/browser/ash/login/screens/demo_preferences_screen.h"
 #include "chrome/browser/ash/login/screens/demo_setup_screen.h"
 #include "chrome/browser/ash/login/screens/edu_coexistence_login_screen.h"
@@ -64,7 +65,6 @@
 #include "chrome/browser/ash/login/screens/welcome_screen.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/chromeos/login/theme_selection_screen_handler.h"
 #include "components/account_id/account_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -79,10 +79,6 @@ class SimpleGeolocationProvider;
 class TimeZoneProvider;
 struct TimeZoneResponseData;
 enum class KioskAppType;
-
-namespace login {
-class NetworkStateHelper;
-}
 
 // Class that manages control flow between wizard screens. Wizard controller
 // interacts with screen controllers to move the user between screens.
@@ -229,10 +225,13 @@ class WizardController : public OobeUI::Observer {
 
   // Configure and show the signin fatal error screen.
   void ShowSignInFatalErrorScreen(SignInFatalErrorScreen::Error error,
-                                  const base::Value* params);
+                                  base::Value::Dict params);
 
   // Show Family Link notice screen.
   void ShowFamilyLinkNoticeScreen();
+
+  // Show Cryptohome recovery screen.
+  void ShowCryptohomeRecoveryScreen(const AccountId& account_id);
 
   // Set pref value for first run.
   void PrepareFirstRunPrefs();
@@ -250,6 +249,10 @@ class WizardController : public OobeUI::Observer {
   // OobeUI::Observer
   void OnCurrentScreenChanged(OobeScreenId, OobeScreenId) override {}
   void OnDestroyingOobeUI() override;
+
+  // Sets the current screen to nullptr so the next time WizardController
+  // will be started it will call `Show()` on the first screen.
+  void HideCurrentScreen();
 
  private:
   // Create BaseScreen instances. These are owned by `screen_manager_`.
@@ -378,6 +381,7 @@ class WizardController : public OobeUI::Observer {
   void OnSmartPrivacyProtectionScreenExit(
       SmartPrivacyProtectionScreen::Result result);
   void OnThemeSelectionScreenExit(ThemeSelectionScreen::Result result);
+  void OnCryptohomeRecoveryScreenExit();
 
   // Callback invoked once it has been determined whether the device is disabled
   // or not.
@@ -393,9 +397,11 @@ class WizardController : public OobeUI::Observer {
   // Retrieve filtered OOBE configuration and apply relevant values.
   void UpdateOobeConfiguration();
 
-  // Actions that should be done right after EULA is accepted,
-  // before update check.
-  void PerformPostEulaActions();
+  // Actions that should be done right after Network Screen if
+  // OobeConsolidatedConsent is enabled, and should be done right after EULA is
+  // accepted if OobeConsolidatedConsent is disabled. These actions should be
+  // done before the update check.
+  void PerformPostNetworkScreenActions();
 
   // Actions that should be done right after update stage is finished.
   void PerformOOBECompletedActions();
@@ -530,9 +536,6 @@ class WizardController : public OobeUI::Observer {
 
   std::unique_ptr<SimpleGeolocationProvider> geolocation_provider_;
   std::unique_ptr<TimeZoneProvider> timezone_provider_;
-
-  // Helper for network realted operations.
-  std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
 
   // Controller of the demo mode setup. It has the lifetime of the single demo
   // mode setup flow.

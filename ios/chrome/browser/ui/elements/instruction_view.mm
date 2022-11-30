@@ -61,16 +61,17 @@ constexpr CGFloat kIconLabelWidth = 30;
     stackView.axis = UILayoutConstraintAxisVertical;
     UIView* firstBulletPoint = useIcon ? [self createIconView:icons[0]]
                                        : [self createStepNumberView:1];
-    [stackView
-        addArrangedSubview:[self createLineInstruction:instructionList[0]
-                                       bulletPointView:firstBulletPoint]];
+    [stackView addArrangedSubview:[self createLineInstruction:instructionList[0]
+                                              bulletPointView:firstBulletPoint
+                                                        index:0]];
     for (NSUInteger i = 1; i < [instructionList count]; i++) {
       UIView* bulletPoint = useIcon ? [self createIconView:icons[i]]
                                     : [self createStepNumberView:i + 1];
       [stackView addArrangedSubview:[self createLineSeparator]];
       [stackView
           addArrangedSubview:[self createLineInstruction:instructionList[i]
-                                         bulletPointView:bulletPoint]];
+                                         bulletPointView:bulletPoint
+                                                   index:i]];
     }
     [self addSubview:stackView];
     AddSameConstraints(self, stackView);
@@ -80,7 +81,7 @@ constexpr CGFloat kIconLabelWidth = 30;
             [UIColor colorNamed:kGroupedSecondaryBackgroundColor];
         break;
       case InstructionViewStyleDefault:
-        self.backgroundColor = [UIColor colorNamed:kGrey100Color];
+        self.backgroundColor = [UIColor colorNamed:kSecondaryBackgroundColor];
         break;
     }
     self.layer.cornerRadius = kCornerRadius;
@@ -133,7 +134,8 @@ constexpr CGFloat kIconLabelWidth = 30;
 // Creates an instruction line with a bullet point view followed by
 // instructions.
 - (UIView*)createLineInstruction:(NSString*)instruction
-                 bulletPointView:(UIView*)bulletPointView {
+                 bulletPointView:(UIView*)bulletPointView
+                           index:(NSInteger)index {
   UILabel* instructionLabel = [[UILabel alloc] init];
   instructionLabel.textColor = [UIColor colorNamed:kGrey800Color];
   instructionLabel.font =
@@ -149,6 +151,24 @@ constexpr CGFloat kIconLabelWidth = 30;
   [line addSubview:bulletPointView];
   [line addSubview:instructionLabel];
 
+  // Add constraints for bulletPointView and instructionLabel vertical margins
+  // to make sure that they are as small as possible.
+  NSLayoutConstraint* minimunBulletPointTopMargin =
+      [bulletPointView.topAnchor constraintEqualToAnchor:line.topAnchor
+                                                constant:kVerticalMargin];
+  minimunBulletPointTopMargin.priority = UILayoutPriorityDefaultHigh;
+  NSLayoutConstraint* minimumBulletPointBottomMargin =
+      [bulletPointView.bottomAnchor constraintEqualToAnchor:line.bottomAnchor
+                                                   constant:-kVerticalMargin];
+  minimumBulletPointBottomMargin.priority = UILayoutPriorityDefaultHigh;
+  NSLayoutConstraint* minimunLabelTopMargin =
+      [instructionLabel.topAnchor constraintEqualToAnchor:line.topAnchor
+                                                 constant:kVerticalMargin];
+  minimunLabelTopMargin.priority = UILayoutPriorityDefaultHigh;
+  NSLayoutConstraint* minimumLabelBottomMargin =
+      [instructionLabel.bottomAnchor constraintEqualToAnchor:line.bottomAnchor
+                                                    constant:-kVerticalMargin];
+  minimumLabelBottomMargin.priority = UILayoutPriorityDefaultHigh;
   [NSLayoutConstraint activateConstraints:@[
     [bulletPointView.leadingAnchor constraintEqualToAnchor:line.leadingAnchor
                                                   constant:kLeadingMargin],
@@ -157,14 +177,33 @@ constexpr CGFloat kIconLabelWidth = 30;
         constraintEqualToAnchor:bulletPointView.trailingAnchor
                        constant:kSpacing],
     [instructionLabel.centerYAnchor constraintEqualToAnchor:line.centerYAnchor],
-    [instructionLabel.bottomAnchor constraintEqualToAnchor:line.bottomAnchor
-                                                  constant:-kVerticalMargin],
-    [instructionLabel.topAnchor constraintEqualToAnchor:line.topAnchor
-                                               constant:kVerticalMargin],
+    minimunBulletPointTopMargin, minimumBulletPointBottomMargin,
+    minimunLabelTopMargin, minimumLabelBottomMargin,
+    [bulletPointView.bottomAnchor
+        constraintLessThanOrEqualToAnchor:line.bottomAnchor
+                                 constant:-kVerticalMargin],
+    [bulletPointView.topAnchor
+        constraintGreaterThanOrEqualToAnchor:line.topAnchor
+                                    constant:kVerticalMargin],
+    [instructionLabel.bottomAnchor
+        constraintLessThanOrEqualToAnchor:line.bottomAnchor
+                                 constant:-kVerticalMargin],
+    [instructionLabel.topAnchor
+        constraintGreaterThanOrEqualToAnchor:line.topAnchor
+                                    constant:kVerticalMargin],
     [instructionLabel.trailingAnchor constraintEqualToAnchor:line.trailingAnchor
                                                     constant:-kTrailingMargin]
   ]];
 
+  line.tag = index;
+  [line
+      addGestureRecognizer:[[UITapGestureRecognizer alloc]
+                               initWithTarget:self
+                                       action:@selector
+                                       (tappedOnALineWithGestureRecognizer:)]];
+  // Don't set the accessibility traits indicating that it is tappable as we do
+  // not actually expect any action, instead, we just want to measure how many
+  // people believe it’s tappable.
   return line;
 }
 
@@ -204,7 +243,7 @@ constexpr CGFloat kIconLabelWidth = 30;
 
     [labelContainer.widthAnchor constraintEqualToConstant:kIconLabelWidth],
     [labelContainer.heightAnchor
-        constraintEqualToAnchor:labelContainer.widthAnchor],
+        constraintEqualToAnchor:stepNumberLabel.heightAnchor],
   ]];
 
   return labelContainer;
@@ -232,6 +271,11 @@ constexpr CGFloat kIconLabelWidth = 30;
           [UIColor colorNamed:kPrimaryBackgroundColor].CGColor;
       break;
   }
+}
+
+- (void)tappedOnALineWithGestureRecognizer:
+    (UITapGestureRecognizer*)gestureRecognizer {
+  [self.tapListener tappedOnLineNumber:gestureRecognizer.view.tag];
 }
 
 @end

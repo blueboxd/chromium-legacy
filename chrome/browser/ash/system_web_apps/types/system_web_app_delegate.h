@@ -26,6 +26,10 @@ namespace apps {
 struct AppLaunchParams;
 }
 
+namespace gfx {
+class Rect;
+}
+
 namespace web_app {
 class WebAppProvider;
 }
@@ -160,6 +164,11 @@ class SystemWebAppDelegate {
   // Returns whether the specified Tab Context Menu shortcut should be shown.
   virtual bool ShouldShowTabContextMenuShortcut(Profile* profile,
                                                 int command_id) const;
+
+  // Returns whether the override URL specified in AppLaunchParams should be
+  // used when performing a full restore.
+  virtual bool ShouldRestoreOverrideUrl() const;
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Control the launch of an SWA. The default takes into account single vs.
   // multiple windows, make sure multiple windows don't open directly above
@@ -187,6 +196,13 @@ class SystemWebAppDelegate {
   // Whether it is preferred to resolve background color from the manifest,
   // as opposed to resolving background color from web contents.
   virtual bool PreferManifestBackgroundColor() const;
+
+  // Whether theme color should be inferred from ChromeOS system theme. If
+  // true, theme_color is the first available from:
+  //   1. System theme color (if kJelly is on).
+  //   2. Manifest color (if defined).
+  //   3. Default color.
+  virtual bool UseSystemThemeColor() const;
 
 #if BUILDFLAG(IS_CHROMEOS)
   // Returns whether theme changes should be animated.

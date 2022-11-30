@@ -12,7 +12,7 @@
 #include "base/ranges/algorithm.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
-#include "components/cast_channel/enum_table.h"
+#include "components/media_router/common/providers/cast/channel/enum_table.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
@@ -94,8 +94,9 @@ void AppActivity::SendSetVolumeRequestToReceiver(
       cast_message.client_id(), std::move(callback));
 }
 
-void AppActivity::SendMediaStatusToClients(const base::Value& media_status,
-                                           absl::optional<int> request_id) {
+void AppActivity::SendMediaStatusToClients(
+    const base::Value::Dict& media_status,
+    absl::optional<int> request_id) {
   CastActivity::SendMediaStatusToClients(media_status, request_id);
   if (media_controller_)
     media_controller_->SetMediaStatus(media_status);
@@ -111,11 +112,11 @@ void AppActivity::CreateMediaController(
     CastSession* session = GetSession();
     if (session) {
       media_controller_->SetSession(*session);
-      base::Value status_request(base::Value::Type::DICTIONARY);
-      status_request.SetStringKey(
-          "type", cast_util::EnumToString<
-                      cast_channel::V2MessageType,
-                      cast_channel::V2MessageType::kMediaGetStatus>());
+      base::Value::Dict status_request;
+      status_request.Set("type",
+                         cast_util::EnumToString<
+                             cast_channel::V2MessageType,
+                             cast_channel::V2MessageType::kMediaGetStatus>());
       message_handler_->SendMediaRequest(cast_channel_id(), status_request,
                                          media_controller_->sender_id(),
                                          session->destination_id());

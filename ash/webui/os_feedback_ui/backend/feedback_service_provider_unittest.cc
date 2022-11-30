@@ -33,6 +33,7 @@ constexpr char kFeedbackAppPostSubmitAction[] =
 bool kUseInternalUserEmail = false;
 constexpr bool kIsInternalEmail = true;
 constexpr bool kIsNotInternalEmail = false;
+constexpr int kPerformanceTraceId = 1;
 const std::vector<uint8_t> kFakePngData = {42, 22, 26, 13, 7, 16, 8, 2};
 
 using FeedbackAppPostSubmitAction =
@@ -63,6 +64,8 @@ class TestOsFeedbackDelegate : public OsFeedbackDelegate {
                                  : kSignedInUserEmail;
   }
 
+  int GetPerformanceTraceId() override { return kPerformanceTraceId; }
+
   void GetScreenshotPng(GetScreenshotPngCallback callback) override {
     std::move(callback).Run(kFakePngData);
   }
@@ -79,8 +82,6 @@ class TestOsFeedbackDelegate : public OsFeedbackDelegate {
   void OpenMetricsDialog() override {}
 
   void OpenSystemInfoDialog() override {}
-
-  void OpenBluetoothLogsInfoDialog() override {}
 };
 
 class FeedbackServiceProviderTest : public testing::Test {
@@ -138,6 +139,7 @@ TEST_F(FeedbackServiceProviderTest, GetFeedbackContext) {
             internal_feedback_context->email.value());
   EXPECT_EQ(kPageUrl, internal_feedback_context->page_url.value().spec());
   EXPECT_EQ(kIsInternalEmail, internal_feedback_context->is_internal_account);
+  EXPECT_EQ(kPerformanceTraceId, internal_feedback_context->trace_id);
 
   kUseInternalUserEmail = false;
   auto feedback_context = GetFeedbackContextAndWait();
@@ -145,6 +147,7 @@ TEST_F(FeedbackServiceProviderTest, GetFeedbackContext) {
   EXPECT_EQ(kSignedInUserEmail, feedback_context->email.value());
   EXPECT_EQ(kPageUrl, feedback_context->page_url.value().spec());
   EXPECT_EQ(kIsNotInternalEmail, feedback_context->is_internal_account);
+  EXPECT_EQ(kPerformanceTraceId, feedback_context->trace_id);
 }
 
 // Test that GetScreenshotPng returns a response with correct status.

@@ -6,13 +6,9 @@ module network.mojom;
 
 import "mojo/public/mojom/base/byte_string.mojom";
 import "mojo/public/mojom/base/file.mojom";
-import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/memory_pressure_level.mojom";
 import "mojo/public/mojom/base/read_only_buffer.mojom";
-import "mojo/public/mojom/base/read_only_file.mojom";
-import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "sandbox/policy/mojom/context.mojom";
 import "sandbox/policy/mojom/sandbox.mojom";
@@ -33,7 +29,6 @@ import "services/network/public/mojom/schemeful_site.mojom";
 import "services/network/public/mojom/trust_tokens.mojom";
 import "services/network/public/mojom/parsed_headers.mojom";
 import "services/network/public/mojom/url_loader_network_service_observer.mojom";
-import "services/network/public/mojom/url_request.mojom";
 import "services/network/public/mojom/url_response_head.mojom";
 import "services/network/public/mojom/client_security_state.mojom";
 import "url/mojom/origin.mojom";
@@ -348,17 +343,11 @@ interface NetworkService {
   // environments.
   BindTestInterface(pending_receiver<NetworkServiceTest> receiver);
 
-  // Sets the First-Party Sets data. First-Party Sets are a collection of set
-  // declarations defined in the document:
-  // https://github.com/privacycg/first-party-sets. Each set is indicated by the
-  // primary site, and member sites. |sets| contains the mapping of site ->
-  // entry, where keys are sites in the sets, and values are entries containing
-  // site metadata (such as the primary site in the set). Primary sites are
-  // included as keys of the map.
+  // Sets the global First-Party Sets data.
   //
   // Only the first call can have any effect, subsequent invocations are
   // ignored.
-  SetFirstPartySets(PublicFirstPartySets sets);
+  SetFirstPartySets(GlobalFirstPartySets sets);
 
   // Sets the list of ports which will be permitted even if they normally would
   // be restricted.

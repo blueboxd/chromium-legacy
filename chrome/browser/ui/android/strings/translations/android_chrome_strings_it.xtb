@@ -29,7 +29,7 @@
 <translation id="1145536944570833626">Elimina i dati esistenti.</translation>
 <translation id="1146678959555564648">Entra nella VR</translation>
 <translation id="1149401351239820326">Mese di scadenza</translation>
-<translation id="1150263420752757504"><ph name="APP_NAME" /> si aprirà in Chrome. Se continui, accetti i <ph name="BEGIN_LINK1" />Termini di servizio di Google<ph name="END_LINK1" /> e i <ph name="BEGIN_LINK2" />Termini di servizio aggiuntivi di Google Chrome e ChromeOS<ph name="END_LINK2" />.</translation>
+<translation id="1150263420752757504"><ph name="APP_NAME" /> si aprirà in Chrome. Se continui, accetti i <ph name="BEGIN_LINK1" />Termini di servizio di Google<ph name="END_LINK1" /> e i <ph name="BEGIN_LINK2" />Termini di servizio aggiuntivi di Google Chrome e Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="1154704303112745282">Pagina non disponibile offline: <ph name="VIOLATED_URL" /></translation>
 <translation id="1171770572613082465">Scopri i siti web più visitati toccando il pulsante "Siti principali"</translation>
 <translation id="1173894706177603556">Rinomina</translation>
@@ -101,7 +101,6 @@ Quando elimini la cronologia di navigazione (l'intera cronologia o soltanto quel
 <translation id="1448440926884431741">Organizza i tuoi prodotti monitorati in Segnalibri</translation>
 <translation id="1450753235335490080">Impossibile condividere <ph name="CONTENT_TYPE" /></translation>
 <translation id="1466383950273130737">Seleziona la lingua di Chrome</translation>
-<translation id="147113415845704694">Prova "Che tempo fa oggi?"</translation>
 <translation id="1474893630593443211">Maggiore controllo sugli annunci che ti vengono mostrati</translation>
 <translation id="1477626028522505441">Download di <ph name="FILE_NAME" /> non riuscito a causa di problemi del server.</translation>
 <translation id="148482509007564431">Flusso di salvataggio dei preferiti</translation>
@@ -213,7 +212,7 @@ Quando elimini la cronologia di navigazione (l'intera cronologia o soltanto quel
 <translation id="2122601567107267586">Impossibile aprire l'app</translation>
 <translation id="2132122640199389833">Rimuovi tutti i dispositivi collegati</translation>
 <translation id="213279576345780926">La scheda <ph name="TAB_TITLE" /> è stata chiusa</translation>
-<translation id="2134927169889348449">Se utilizzi Chrome, accetti i <ph name="BEGIN_TOS_LINK" />Termini di servizio di Google<ph name="END_TOS_LINK" /> e i <ph name="BEGIN_ATOS_LINK" />Termini di servizio aggiuntivi di Google Chrome e ChromeOS<ph name="END_ATOS_LINK" />.</translation>
+<translation id="2134927169889348449">Se utilizzi Chrome, accetti i <ph name="BEGIN_TOS_LINK" />Termini di servizio di Google<ph name="END_TOS_LINK" /> e i <ph name="BEGIN_ATOS_LINK" />Termini di servizio aggiuntivi di Google Chrome e Chrome OS<ph name="END_ATOS_LINK" />.</translation>
 <translation id="2139186145475833000">Aggiungi a schermata Home</translation>
 <translation id="2141396931810938595">In base al tuo utilizzo</translation>
 <translation id="214888715418183969">Scegli quali dati condividere con Chrome. Le metriche che condividi verranno utilizzate per contribuire a migliorare le funzionalità, le prestazioni e la stabilità di Chrome.</translation>
@@ -340,6 +339,7 @@ Quando elimini la cronologia di navigazione (l'intera cronologia o soltanto quel
 <translation id="2861923151411510142">Alcune funzionalità di Chrome non saranno più disponibili</translation>
 <translation id="2870560284913253234">Sito</translation>
 <translation id="2871733351037274014">Precarica le pagine</translation>
+<translation id="2876136027428473467"><ph name="CHILD_NAME" /> ha chiesto la tua approvazione per il seguente sito web:</translation>
 <translation id="2886836735871983413">Qui verrà visualizzato un elenco di siti quando navighi sul Web</translation>
 <translation id="2888126860611144412">Informazioni su Chrome</translation>
 <translation id="2891154217021530873">Interrompe il caricamento della pagina</translation>
@@ -355,6 +355,7 @@ Quando elimini la cronologia di navigazione (l'intera cronologia o soltanto quel
 <translation id="2932150158123903946">Spazio di archiviazione di Google <ph name="APP_NAME" /></translation>
 <translation id="2932222164150889403">La tua tastiera resterà invariata</translation>
 <translation id="2936980480904111527">Le notifiche di Chrome semplificano le cose</translation>
+<translation id="2940075786175545812">Opzione per approvare o meno un sito web</translation>
 <translation id="2942036813789421260">La scheda di anteprima è chiusa</translation>
 <translation id="2946420957526726953">Aggiornamento di Chrome per la connessione ad altri dispositivi</translation>
 <translation id="2951071800649516099">Aggiungi pagine al tuo Elenco di lettura per consultarle in un secondo momento</translation>
@@ -378,7 +379,6 @@ Quando elimini la cronologia di navigazione (l'intera cronologia o soltanto quel
 <translation id="3029276696788198026">Nessun precaricamento</translation>
 <translation id="3029704984691124060">Le passphrase non corrispondono</translation>
 <translation id="3031225630520268969">Interfaccia utente per il consenso all'utilizzo dell'assistente per la ricerca vocale</translation>
-<translation id="3034163383943672781">Il download inizierà il giorno <ph name="DATE" />.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Richiedi assistenza<ph name="END_LINK" /></translation>
 <translation id="3037177537145227281">Monitoraggio del prezzo</translation>
 <translation id="3037517125981011456">Vengono mostrate richieste di accesso a Chrome</translation>
@@ -390,7 +390,7 @@ Quando elimini la cronologia di navigazione (l'intera cronologia o soltanto quel
 <translation id="3062802207422175757">Articoli relativi ai tuoi interessi su Chrome</translation>
 <translation id="3066573403916685335">Sposta giù</translation>
 <translation id="3070005020161560471">Traduci automaticamente</translation>
-<translation id="3072980200212375806"><ph name="APP_NAME" /> si aprirà in Chrome. Se continui, accetti i <ph name="BEGIN_LINK1" />Termini di servizio di Google<ph name="END_LINK1" /> e i <ph name="BEGIN_LINK2" />Termini di servizio aggiuntivi di Google Chrome e ChromeOS<ph name="END_LINK2" />. Si applicano anche le <ph name="BEGIN_LINK3" />Norme sulla privacy<ph name="END_LINK3" />.</translation>
+<translation id="3072980200212375806"><ph name="APP_NAME" /> si aprirà in Chrome. Se continui, accetti i <ph name="BEGIN_LINK1" />Termini di servizio di Google<ph name="END_LINK1" /> e i <ph name="BEGIN_LINK2" />Termini di servizio aggiuntivi di Google Chrome e Chrome OS<ph name="END_LINK2" />. Si applicano anche le <ph name="BEGIN_LINK3" />Norme sulla privacy<ph name="END_LINK3" />.</translation>
 <translation id="3091010850649238832">Mostra contenuti degli appunti</translation>
 <translation id="3098745985164956033">Alcune immagini vengono inviate a Google per migliorare le descrizioni</translation>
 <translation id="3114507951000454849">Leggi le notizie di oggi <ph name="NEWS_ICON" /></translation>
@@ -423,6 +423,7 @@ Quando elimini la cronologia di navigazione (l'intera cronologia o soltanto quel
 <translation id="3259831549858767975">Rimpicciolisci i contenuti della pagina</translation>
 <translation id="3264124641674805320">Come scaricare contenuti da usare in un secondo momento</translation>
 <translation id="3264259168916048410">Il computer chiede di usare questo dispositivo per accedere a un sito</translation>
+<translation id="3265093782546847662">Tutte le pagine di <ph name="DOMAIN" /></translation>
 <translation id="3265534588625245297">Gestisci i siti che segui</translation>
 <translation id="3269093882174072735">Carica immagine</translation>
 <translation id="3280562213547448728">Ricerca vocale</translation>
@@ -455,7 +456,6 @@ Quando elimini la cronologia di navigazione (l'intera cronologia o soltanto quel
 <translation id="3443221991560634068">Ricarica la pagina corrente</translation>
 <translation id="3444179773590444986">Vuoi condividere un feedback sul tema scuro per i siti?</translation>
 <translation id="3452832259067974318">Per proteggere la tua privacy, Chrome non compilerà automaticamente questo campo con la tua password.</translation>
-<translation id="3469665409713263828">{FILE_COUNT,plural, =1{1 download programmato}other{# download programmati}}</translation>
 <translation id="3474624961160222204">Continua come <ph name="NAME" /></translation>
 <translation id="3478363558367712427">Puoi scegliere il motore di ricerca</translation>
 <translation id="3479552764303398839">Non adesso</translation>
@@ -596,7 +596,7 @@ Quando elimini la cronologia di navigazione (l'intera cronologia o soltanto quel
 <translation id="4269820728363426813">Copia indirizzo link</translation>
 <translation id="4283102315569707115">Richiedere siti desktop per impostazione predefinita?</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Attiva il blocco schermo nelle impostazioni di Android<ph name="END_LINK" /></translation>
-<translation id="4293476595220860475">Se utilizzi Chrome, accetti i <ph name="BEGIN_TOS_LINK" />Termini di servizio di Google<ph name="END_TOS_LINK" /> e i <ph name="BEGIN_ATOS_LINK" />Termini di servizio aggiuntivi di Google Chrome e ChromeOS<ph name="END_ATOS_LINK" />. Si applicano anche le <ph name="BEGIN_PRIVACY_LINK" />Norme sulla privacy<ph name="END_PRIVACY_LINK" />.</translation>
+<translation id="4293476595220860475">Se utilizzi Chrome, accetti i <ph name="BEGIN_TOS_LINK" />Termini di servizio di Google<ph name="END_TOS_LINK" /> e i <ph name="BEGIN_ATOS_LINK" />Termini di servizio aggiuntivi di Google Chrome e Chrome OS<ph name="END_ATOS_LINK" />. Si applicano anche le <ph name="BEGIN_PRIVACY_LINK" />Norme sulla privacy<ph name="END_PRIVACY_LINK" />.</translation>
 <translation id="4296252229500326964">Nuova scheda in incognito</translation>
 <translation id="4298388696830689168">Siti collegati</translation>
 <translation id="4303044213806199882">chrome_screenshot_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
@@ -722,7 +722,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="4925120120285606924">Screenshot <ph name="CURRENT_DATE_ISO" /></translation>
 <translation id="49268022542405662">Le tue password verranno esportate e scaricate in un file di testo. Saranno visibili a qualsiasi persona e app con accesso alla cartella di destinazione.</translation>
 <translation id="4932247056774066048">Poiché stai uscendo da un account gestito da <ph name="DOMAIN_NAME" />, i tuoi dati di Chrome verranno eliminati da questo dispositivo. Rimarranno memorizzati nel tuo Account Google.</translation>
-<translation id="4941179133499732445">Tocca il microfono per cercare tramite comandi vocali</translation>
 <translation id="4943703118917034429">Realtà virtuale</translation>
 <translation id="4943872375798546930">Nessun risultato</translation>
 <translation id="4950924971025849764">Quando hai eseguito l'accesso allo stesso Account Google, gli altri dispositivi possono utilizzare questo telefono come token di sicurezza.</translation>
@@ -733,6 +732,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="4985248278475639481">Informazioni sulla personalizzazione degli annunci</translation>
 <translation id="4987271110129728827">Impossibile trovare la pagina. Controlla l'ortografia o prova a effettuare una ricerca web.</translation>
 <translation id="4988526792673242964">Pagine</translation>
+<translation id="4991110219272367918">Opzione per approvare o meno un sito web chiuso</translation>
 <translation id="499724277181351974">Vai: <ph name="WEBSITE_TITLE" />: <ph name="WEBSITE_URL" /></translation>
 <translation id="5001388021414335527">Segui questo sito qui</translation>
 <translation id="500351648694011114">Naviga più facilmente</translation>
@@ -745,7 +745,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5039804452771397117">Consenti</translation>
 <translation id="504456571576643789">Aspetti da considerare</translation>
 <translation id="5054455334322721892"><ph name="BEGIN_LINK1" />Altri tipi di attività<ph name="END_LINK1" /> potrebbero essere salvati nel tuo Account Google se hai eseguito l'accesso. Puoi eliminarli in qualsiasi momento.</translation>
-<translation id="5061533557687621530">Per controllare le condizioni meteo, tocca il microfono e di' "Che tempo fa oggi?"</translation>
 <translation id="506254248375231072">Nessuna scheda</translation>
 <translation id="5091199029769593641">A breve vedrai storie di <ph name="SITE_NAME" /> quando aprirai una nuova scheda. I siti che segui vengono salvati nel tuo Account Google. Puoi gestirli nelle impostazioni di Discover.</translation>
 <translation id="5091249083535528968">Dati completi sull'utilizzo</translation>
@@ -766,7 +765,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5171045022955879922">Cerca o digita un URL</translation>
 <translation id="517734441743343109">Se continui, accetti i <ph name="BEGIN_TOS_LINK" />Termini di servizio<ph name="END_TOS_LINK" /> e le <ph name="BEGIN_PRIVACY_LINK" />Norme\u00A0sulla privacy<ph name="END_PRIVACY_LINK" />.</translation>
 <translation id="5184329579814168207">Apri in Chrome</translation>
-<translation id="5188992787241350004">Esegui una ricerca vocale</translation>
 <translation id="5191251636205085390">Scopri e gestisci le nuove tecnologie che mirano a sostituire i cookie di terze parti</translation>
 <translation id="5193988420012215838">Copiata nei tuoi appunti</translation>
 <translation id="5199929503336119739">Profilo di lavoro</translation>
@@ -948,10 +946,10 @@ Le prove di Privacy Sandbox sono ancora in fase di sviluppo attivo e sono dispon
 <translation id="6162892189396105610">Precarica le pagine che Chrome ritiene tu possa visitare.</translation>
 <translation id="6186394685773237175">Non sono state trovate password compromesse</translation>
 <translation id="6192907950379606605">Recupera descriz. immagini</translation>
+<translation id="6193448654517602979">Seleziona schede</translation>
 <translation id="6196315980958524839">Le password vengono salvate in Gestore delle password di Google su questo dispositivo</translation>
 <translation id="620197886010707372">Aprire l'app per <ph name="APPNAME" /> con Google Play?</translation>
 <translation id="6202812185118613467">Accedi di nuovo per avviare la sincronizzazione</translation>
-<translation id="6203593061661911168">Il download inizierà quando è attiva la connessione Wi-Fi</translation>
 <translation id="6210748933810148297">Non sei <ph name="EMAIL" />?</translation>
 <translation id="6211386937064921208">Visualizzazione dell'anteprima della pagina</translation>
 <translation id="6221633008163990886">Sblocca per esportare le tue password</translation>
@@ -1078,7 +1076,7 @@ I token attendibili migliorano la privacy sul Web e non possono essere usati per
 <translation id="6767294960381293877">Elenco di dispositivi con cui condividere una scheda aperto nella parte inferiore dello schermo.</translation>
 <translation id="6770042910635026163">Siti visitati che definiscono i tuoi interessi</translation>
 <translation id="6770602306803890733">Aumenta la sicurezza per te e per tutti gli utenti del Web</translation>
-<translation id="6785476624617658922">Termini di servizio aggiuntivi di Chrome e ChromeOS</translation>
+<translation id="6785476624617658922">Termini di servizio aggiuntivi di Chrome e Chrome OS</translation>
 <translation id="6795633245022906657">Apri rapidamente una nuova scheda. Per modificare questa scorciatoia, vai a Impostazioni.</translation>
 <translation id="6802555630140434547">La finestra verrà chiusa</translation>
 <translation id="6811034713472274749">La pagina è pronta per essere visualizzata</translation>
@@ -1107,6 +1105,7 @@ I token attendibili migliorano la privacy sul Web e non possono essere usati per
 <translation id="6896758677409633944">Copia</translation>
 <translation id="6900532703269623216">Protezione avanzata</translation>
 <translation id="6903907808598579934">Attiva la sincronizzazione</translation>
+<translation id="6908998565271542516">Opzione per approvare o meno un sito web aperto a schermo intero</translation>
 <translation id="6909589135458168665">Precarica le pagine</translation>
 <translation id="6942665639005891494">Modifica in qualsiasi momento il percorso di download predefinito utilizzando l'opzione del menu Impostazioni</translation>
 <translation id="694267552845942083">Stai personalizzando le impostazioni di sincronizzazione. Per terminare l'attivazione della sincronizzazione, tocca il pulsante Conferma nella parte inferiore dello schermo. Torna indietro</translation>
@@ -1114,6 +1113,7 @@ I token attendibili migliorano la privacy sul Web e non possono essere usati per
 <translation id="6955535239952325894">Questa impostazione è disattivata sui browser gestiti</translation>
 <translation id="6963766334940102469">Elimina Preferiti</translation>
 <translation id="696447261358045621">Esci dalla modalità di navigazione in incognito</translation>
+<translation id="6971862865055170158">Non approvare</translation>
 <translation id="6979737339423435258">Dall'inizio</translation>
 <translation id="6987047470128880212">La modalità in incognito non è disponibile su questo dispositivo.</translation>
 <translation id="6995899638241819463">Ricevi un avviso se le password vengono esposte a causa di una violazione dei dati</translation>
@@ -1191,7 +1191,6 @@ I token attendibili migliorano la privacy sul Web e non possono essere usati per
 <translation id="7435356471928173109">Disattivata dall'amministratore</translation>
 <translation id="7437998757836447326">Esci da Chrome</translation>
 <translation id="7443901082822119557">Con la modalità di navigazione in incognito, i siti non possono utilizzare i cookie per conoscere la tua attività di navigazione su siti diversi, ad esempio per personalizzare gli annunci. Le funzionalità su alcuni siti potrebbero non essere disponibili.</translation>
-<translation id="7444811645081526538">Altre categorie</translation>
 <translation id="7453467225369441013">Verrai disconnesso dalla maggior parte dei siti, ma non dal tuo Account Google.</translation>
 <translation id="7454641608352164238">Spazio insufficiente</translation>
 <translation id="7456774706094330779">Precaricamento esteso</translation>
@@ -1214,7 +1213,6 @@ I token attendibili migliorano la privacy sul Web e non possono essere usati per
 <translation id="751961395872307827">Impossibile connettersi al sito</translation>
 <translation id="752220631458524187">Scollegati quando hai finito</translation>
 <translation id="7523960634226602883">Cerca con la fotocamera usando Google Lens</translation>
-<translation id="753225086557513863">Programmato più tardi</translation>
 <translation id="7562080006725997899">Cancellazione dei dati di navigazione in corso</translation>
 <translation id="756809126120519699">Dati di Chrome cancellati</translation>
 <translation id="7577900504646297215">Gestisci interessi</translation>
@@ -1273,7 +1271,6 @@ I token attendibili migliorano la privacy sul Web e non possono essere usati per
 <translation id="784934925303690534">Intervallo di tempo</translation>
 <translation id="7851858861565204677">Altri dispositivi</translation>
 <translation id="7853202427316060426">Attività</translation>
-<translation id="7857691613771368249">Chiedi quando salvare i file</translation>
 <translation id="7859988229622350291">Non tradurre mai</translation>
 <translation id="7866213166286285359">Traduci le pagine qui</translation>
 <translation id="78707286264420418"><ph name="PRODUCT_NAME" /> richiede l'autorizzazione Dispositivi nelle vicinanze per potersi connettere al tuo dispositivo</translation>
@@ -1310,6 +1307,7 @@ I token attendibili migliorano la privacy sul Web e non possono essere usati per
 <translation id="8015452622527143194">Ripristina le dimensioni predefinite della pagina</translation>
 <translation id="8026334261755873520">Cancella dati di navigazione</translation>
 <translation id="8027863900915310177">Scegli dove effettuare il download</translation>
+<translation id="8030852056903932865">Approva</translation>
 <translation id="8032569120109842252">Seguito</translation>
 <translation id="8035133914807600019">Nuova cartella…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> giorni rimanenti</translation>
@@ -1351,7 +1349,6 @@ I token attendibili migliorano la privacy sul Web e non possono essere usati per
 <translation id="8200772114523450471">Riprendi</translation>
 <translation id="8209050860603202033">Apri immagine</translation>
 <translation id="8216351761227087153">Guarda</translation>
-<translation id="8218052821161047641">Pagina veloce</translation>
 <translation id="8218622182176210845">Gestisci il tuo account</translation>
 <translation id="8221656072740924283">Continua</translation>
 <translation id="8223642481677794647">Menu scheda feed</translation>
@@ -1516,7 +1513,6 @@ I token attendibili migliorano la privacy sul Web e non possono essere usati per
 <translation id="9065203028668620118">Modifica</translation>
 <translation id="9065383040763568503">I dati memorizzati che Chrome non ritiene importanti (ad esempio siti senza impostazioni salvate o che non visiti spesso)</translation>
 <translation id="906781307897697745">in <ph name="PRODUCT_NAME" /></translation>
-<translation id="9069543557624799859">Il download inizierà alle ore <ph name="TIME" />.</translation>
 <translation id="9069999660519089861">Nessuna pagina da leggere</translation>
 <translation id="9070377983101773829">Avvia la ricerca vocale</translation>
 <translation id="9074336505530349563">Per ricevere contenuti suggeriti appositamente per te da Google, accedi e attiva la sincronizzazione</translation>

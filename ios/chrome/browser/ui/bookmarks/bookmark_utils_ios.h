@@ -47,9 +47,6 @@ const bookmarks::BookmarkNode* FindFolderById(bookmarks::BookmarkModel* model,
 // to display a slighly different wording for the default folders.
 NSString* TitleForBookmarkNode(const bookmarks::BookmarkNode* node);
 
-// Returns the subtitle relevant to the bookmark navigation ui.
-NSString* subtitleForBookmarkNode(const bookmarks::BookmarkNode* node);
-
 #pragma mark - Updating Bookmarks
 
 // Creates the bookmark if `node` is NULL. Otherwise updates `node`.
@@ -117,38 +114,6 @@ bool MoveBookmarks(const std::set<const bookmarks::BookmarkNode*>& bookmarks,
 // Category name for all bookmarks related snackbars.
 extern NSString* const kBookmarksSnackbarCategory;
 
-// Returns the parent, if all the bookmarks are siblings.
-// Otherwise returns the mobile_node.
-const bookmarks::BookmarkNode* defaultMoveFolder(
-    const std::set<const bookmarks::BookmarkNode*>& bookmarks,
-    bookmarks::BookmarkModel* model);
-
-#pragma mark - Segregation of nodes by time.
-
-// A container for nodes which have been aggregated by some time property.
-// e.g. (creation date) or (last access date).
-class NodesSection {
- public:
-  NodesSection();
-  virtual ~NodesSection();
-
-  // `vector` is sorted by the relevant time property.
-  NodeVector vector;
-  // A representative time of all nodes in vector.
-  base::Time time;
-  // A string representation of `time`.
-  // e.g. (March 2014) or (4 March 2014).
-  std::string timeRepresentation;
-};
-
-// Given the nodes in `vector`, segregates them by some time property into
-// NodesSections.
-// Automatically clears, populates and sorts `nodesSectionVector`.
-// This method is not thread safe - it should only be called from the ui thread.
-void segregateNodes(
-    const NodeVector& vector,
-    std::vector<std::unique_ptr<NodesSection>>& nodesSectionVector);
-
 #pragma mark - Useful bookmark manipulation.
 
 // Sorts a vector full of folders by title.
@@ -175,7 +140,7 @@ std::vector<NodeVector::size_type> MissingNodesIndices(
 // Creates bookmark path for `folderId` passed in. For eg: for folderId = 76,
 // Root node(0) --> MobileBookmarks (3) --> Test1(76) will be returned as [0, 3,
 // 76].
-NSArray* CreateBookmarkPath(bookmarks::BookmarkModel* model, int64_t folderId);
+NSArray* CreateBookmarkPath(bookmarks::BookmarkModel* model, int64_t folder_id);
 
 }  // namespace bookmark_utils_ios
 

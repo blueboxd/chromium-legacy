@@ -11,7 +11,7 @@ import {AppManagementUserAction} from 'chrome://resources/cr_components/app_mana
 import {AppManagementPermissionItemElement} from 'chrome://resources/cr_components/app_management/permission_item.js';
 import {getPermissionValueBool} from 'chrome://resources/cr_components/app_management/util.js';
 import {assertEquals, assertFalse} from 'chrome://webui-test/chai_assert.js';
-import {waitAfterNextRender} from 'chrome://webui-test/test_util.js';
+import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
 import {createTestApp, TestAppManagementBrowserProxy} from './app_management_test_support.js';
 
@@ -20,7 +20,8 @@ suite('AppManagementPermissionItemTest', function() {
   let testProxy: TestAppManagementBrowserProxy;
 
   setup(async function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     const app = createTestApp();
     testProxy = new TestAppManagementBrowserProxy();
     BrowserProxy.setInstance(testProxy);

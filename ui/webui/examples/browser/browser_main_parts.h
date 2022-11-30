@@ -10,13 +10,18 @@
 #include "base/files/scoped_temp_dir.h"
 #include "content/public/browser/browser_main_parts.h"
 
+class GURL;
+
 namespace content {
 class BrowserContext;
 }  // namespace content
 
 namespace webui_examples {
 
+class AuraContext;
 class BrowserContext;
+class ContentWindow;
+class WebUIControllerFactory;
 
 class BrowserMainParts : public content::BrowserMainParts {
  public:
@@ -32,8 +37,22 @@ class BrowserMainParts : public content::BrowserMainParts {
       std::unique_ptr<base::RunLoop>& run_loop) override;
   void PostMainMessageLoopRun() override;
 
+  // ContentWindow is alive until the window is closed.
+  ContentWindow* CreateAndShowContentWindow(GURL url,
+                                            const std::u16string& title);
+  void OnWindowClosed(std::unique_ptr<ContentWindow> content_window);
+  void QuitMessageLoop();
+
   base::ScopedTempDir temp_dir_;
+  std::unique_ptr<WebUIControllerFactory> web_ui_controller_factory_;
   std::unique_ptr<content::BrowserContext> browser_context_;
+
+  std::unique_ptr<AuraContext> aura_context_;
+  int content_windows_outstanding_ = 0;
+
+  base::RepeatingClosure quit_run_loop_;
+
+  base::WeakPtrFactory<BrowserMainParts> weak_factory_{this};
 };
 
 }  // namespace webui_examples

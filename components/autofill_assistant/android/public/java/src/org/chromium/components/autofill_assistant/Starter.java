@@ -221,35 +221,9 @@ public class Starter implements AssistantTabObserver, UserData {
     }
 
     @CalledByNative
-    private static boolean getIsFirstTimeUser() {
-        return AutofillAssistantPreferencesUtil.isAutofillAssistantFirstTimeTriggerScriptUser();
-    }
-
-    @CalledByNative
-    private static void setIsFirstTimeUser(boolean firstTimeUser) {
-        AutofillAssistantPreferencesUtil.setFirstTimeTriggerScriptUserPreference(firstTimeUser);
-    }
-
-    @CalledByNative
-    private static boolean getOnboardingAccepted() {
-        return !AutofillAssistantPreferencesUtil.getShowOnboarding();
-    }
-
-    @CalledByNative
-    private static void setOnboardingAccepted(boolean accepted) {
-        AutofillAssistantPreferencesUtil.setInitialPreferences(accepted);
-    }
-
-    @CalledByNative
     private void showOnboarding(AssistantOnboardingHelper onboardingHelper,
             boolean useDialogOnboarding, String experimentIds, String[] parameterKeys,
             String[] parameterValues, boolean hideBottomSheetOnOnboardingAccepted) {
-        if (!AutofillAssistantPreferencesUtil.getShowOnboarding()) {
-            safeNativeOnOnboardingFinished(
-                    /* shown = */ false, 3 /* AssistantOnboardingResult.ACCEPTED*/);
-            return;
-        }
-
         assert parameterKeys.length == parameterValues.length;
         Map<String, String> parameters = new HashMap<>();
         for (int i = 0; i < parameterKeys.length; i++) {
@@ -270,16 +244,6 @@ public class Starter implements AssistantTabObserver, UserData {
             return;
         }
         StarterJni.get().onOnboardingFinished(mNativeStarter, Starter.this, shown, result);
-    }
-
-    @CalledByNative
-    static boolean getProactiveHelpSettingEnabled() {
-        return AutofillAssistantPreferencesUtil.isProactiveHelpOn();
-    }
-
-    @CalledByNative
-    private static void setProactiveHelpSettingEnabled(boolean enabled) {
-        AutofillAssistantPreferencesUtil.setProactiveHelpPreference(enabled);
     }
 
     private AutofillAssistantModuleEntry getModuleOrThrow() {

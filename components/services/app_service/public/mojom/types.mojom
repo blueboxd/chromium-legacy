@@ -49,9 +49,9 @@ struct App {
   // store, etc.
   InstallSource install_source;
 
-  // An optional ID used for policy to identify the app.
-  // For web apps, it contains the install URL.
-  string? policy_id;
+  // IDs used for policy to identify the app.
+  // For web apps, it contains the install URL(s).
+  array<string> policy_ids;
 
   // Whether the app is an extensions::Extensions where is_platform_app()
   // returns true.
@@ -295,6 +295,7 @@ enum LaunchSource {
   kFromOsLogin = 29,                  // Run on OS login.
   kFromProtocolHandler = 30,          // Protocol handler.
   kFromUrlHandler = 31,               // Url handler.
+  kFromLockScreen = 32,               // Lock screen app launcher.
 };
 
 enum TriState {
@@ -464,19 +465,6 @@ struct Intent {
   string? data;  // URI
   OptionalBool ui_bypassed; // Whether or not the user saw the UI.
   map<string, string>? extras; // Optional string extras.
-};
-
-// Represents a group of |app_ids| that is no longer preferred app of their
-// corresponding |intent_filters|.
-struct ReplacedAppPreferences {
-  map<string, array<IntentFilter>> replaced_preference;
-};
-
-// Represents changes which have been made to the preferred apps list, both
-// adding new filters and removing existing filters.
-struct PreferredAppChanges {
-  map<string, array<IntentFilter>> added_filters;
-  map<string, array<IntentFilter>> removed_filters;
 };
 
 // The preferred app represents by |app_id| for |intent_fitler|.

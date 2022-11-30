@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,9 +35,7 @@ class CORE_EXPORT ElementIntersectionObserverData final
   void AddObserver(IntersectionObserver&);
   void RemoveObservation(IntersectionObservation&);
   void RemoveObserver(IntersectionObserver&);
-  bool IsEmpty() const {
-    return observations_.IsEmpty() && observers_.IsEmpty();
-  }
+  bool IsEmpty() const { return observations_.empty() && observers_.empty(); }
   void TrackWithController(IntersectionObserverController&);
   void StopTrackingWithController(IntersectionObserverController&);
 

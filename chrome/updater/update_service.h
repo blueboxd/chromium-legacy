@@ -19,7 +19,6 @@
 namespace updater {
 
 struct RegistrationRequest;
-struct RegistrationResponse;
 
 enum class UpdaterScope;
 
@@ -203,8 +202,6 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
 
   using Callback = base::OnceCallback<void(Result)>;
   using StateChangeCallback = base::RepeatingCallback<void(const UpdateState&)>;
-  using RegisterAppCallback =
-      base::OnceCallback<void(const RegistrationResponse&)>;
   using InstallerResult = update_client::CrxInstaller::Result;
 
   // Returns the version of the active updater. The version object is invalid
@@ -216,7 +213,7 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
 
   // Registers given request to the updater.
   virtual void RegisterApp(const RegistrationRequest& request,
-                           RegisterAppCallback callback) = 0;
+                           base::OnceCallback<void(int)> callback) = 0;
 
   // Gets state of all registered apps.
   virtual void GetAppStates(
@@ -262,7 +259,9 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
   //
   // Args:
   //   `registration`: Registration data about the app.
-  //   `install_data_index`: Index of the server install data.
+  //   `client_install_data`: User provided install data.
+  //   `install_data_index`: Index of the server install data. Effective only
+  //     when `client_install_data` is not set.
   //   `priority`: Priority for processing this update.
   //   `state_update`: The callback will be invoked every time the update
   //     changes state when the engine starts. It will be called on the
@@ -277,6 +276,7 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
   //   `callback` arg:
   //     Result: the final result from the update engine.
   virtual void Install(const RegistrationRequest& registration,
+                       const std::string& client_install_data,
                        const std::string& install_data_index,
                        Priority priority,
                        StateChangeCallback state_update,

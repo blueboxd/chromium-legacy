@@ -6,9 +6,8 @@
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {CookieDetails, cookieInfo, LocalDataBrowserProxyImpl, SiteDataDetailsSubpageElement} from 'chrome://settings/lazy_load.js';
 import {MetricsBrowserProxyImpl, PrivacyElementInteractions, Router,routes} from 'chrome://settings/settings.js';
-
 import {assertEquals} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks} from 'chrome://webui-test/test_util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {TestLocalDataBrowserProxy} from './test_local_data_browser_proxy.js';
 import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
@@ -48,7 +47,8 @@ suite('SiteDataDetailsSubpage', function() {
     LocalDataBrowserProxyImpl.setInstance(browserProxy);
     testMetricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.setInstance(testMetricsBrowserProxy);
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     page = document.createElement('site-data-details-subpage');
     Router.getInstance().navigateTo(
         routes.SITE_SETTINGS_DATA_DETAILS, new URLSearchParams('site=' + site));

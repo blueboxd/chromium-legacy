@@ -220,6 +220,10 @@ views::ImageView* HoldingSpaceTestApi::GetSuggestionsSectionChevronIcon() {
              : nullptr;
 }
 
+views::View* HoldingSpaceTestApi::GetBubble() {
+  return holding_space_tray_->GetBubbleView();
+}
+
 views::View* HoldingSpaceTestApi::GetPinnedFilesBubble() {
   if (!holding_space_tray_->GetBubbleView())
     return nullptr;
@@ -236,6 +240,13 @@ bool HoldingSpaceTestApi::PinnedFilesBubbleShown() const {
   return bubble && bubble->GetVisible();
 }
 
+views::View* HoldingSpaceTestApi::GetRecentFilesBubble() {
+  if (!holding_space_tray_->GetBubbleView())
+    return nullptr;
+  return holding_space_tray_->GetBubbleView()->GetViewByID(
+      kHoldingSpaceRecentFilesBubbleId);
+}
+
 bool HoldingSpaceTestApi::RecentFilesBubbleShown() const {
   if (!holding_space_tray_->GetBubbleView())
     return false;
@@ -243,6 +254,15 @@ bool HoldingSpaceTestApi::RecentFilesBubbleShown() const {
   views::View* bubble = holding_space_tray_->GetBubbleView()->GetViewByID(
       kHoldingSpaceRecentFilesBubbleId);
   return bubble && bubble->GetVisible();
+}
+
+bool HoldingSpaceTestApi::RecentFilesPlaceholderShown() const {
+  if (!holding_space_tray_->GetBubbleView())
+    return false;
+
+  views::View* placeholder = holding_space_tray_->GetBubbleView()->GetViewByID(
+      kHoldingSpaceRecentFilesPlaceholderId);
+  return placeholder && placeholder->GetVisible();
 }
 
 }  // namespace ash

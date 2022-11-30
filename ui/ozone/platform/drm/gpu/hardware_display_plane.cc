@@ -12,6 +12,7 @@
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/traced_value.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
@@ -58,26 +59,25 @@ bool HardwareDisplayPlane::CanUseForCrtcId(uint32_t crtc_id) const {
   return possible_crtc_ids_.contains(crtc_id);
 }
 
-void HardwareDisplayPlane::AsValueInto(
-    base::trace_event::TracedValue* value) const {
-  value->SetInteger("plane_id", id_);
-  value->SetInteger("owning_crtc", owning_crtc_);
-  value->SetBoolean("in_use", in_use_);
-  {
-    auto scoped_array = value->BeginArrayScoped("possible_crtc_ids");
-    for (auto id : possible_crtc_ids_)
-      value->AppendInteger(id);
-  }
+void HardwareDisplayPlane::WriteIntoTrace(perfetto::TracedValue context) const {
+  auto dict = std::move(context).WriteDictionary();
 
+  dict.Add("plane_id", id_);
+  dict.Add("owning_crtc", owning_crtc_);
+  dict.Add("in_use", in_use_);
+
+  dict.Add("possible_crtc_ids", possible_crtc_ids_);
+
+  auto type = dict.AddItem("type");
   switch (properties_.type.value) {
     case DRM_PLANE_TYPE_OVERLAY:
-      value->SetString("type", "DRM_PLANE_TYPE_OVERLAY");
+      std::move(type).WriteString("DRM_PLANE_TYPE_OVERLAY");
       break;
     case DRM_PLANE_TYPE_PRIMARY:
-      value->SetString("type", "DRM_PLANE_TYPE_PRIMARY");
+      std::move(type).WriteString("DRM_PLANE_TYPE_PRIMARY");
       break;
     case DRM_PLANE_TYPE_CURSOR:
-      value->SetString("type", "DRM_PLANE_TYPE_CURSOR");
+      std::move(type).WriteString("DRM_PLANE_TYPE_CURSOR");
       break;
     default:
       NOTREACHED();

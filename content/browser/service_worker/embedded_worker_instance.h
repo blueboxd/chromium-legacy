@@ -19,6 +19,7 @@
 #include "base/observer_list.h"
 #include "base/threading/sequence_bound.h"
 #include "base/unguessable_token.h"
+#include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
@@ -37,6 +38,7 @@
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
+#include "third_party/blink/public/mojom/usb/web_usb_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom.h"
 #include "url/gurl.h"
 
@@ -228,12 +230,17 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresource_bundle);
 
   void BindCacheStorage(
-      mojo::PendingReceiver<blink::mojom::CacheStorage> receiver);
+      mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
+      const storage::BucketLocator& bucket_locator);
 
 #if !BUILDFLAG(IS_ANDROID)
   void BindHidService(const url::Origin& origin,
                       mojo::PendingReceiver<blink::mojom::HidService> receiver);
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+  void BindUsbService(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::WebUsbService> receiver);
 
   base::WeakPtr<EmbeddedWorkerInstance> AsWeakPtr();
 
@@ -264,7 +271,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   typedef base::ObserverList<Listener>::Unchecked ListenerList;
   struct StartInfo;
   class WorkerProcessHandle;
-  friend class EmbeddedWorkerInstanceTest;
+  friend class EmbeddedWorkerInstanceTestHarness;
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, StartAndStop);
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, DetachDuringStart);
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, StopDuringStart);
@@ -381,10 +388,20 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   mojo::Remote<blink::mojom::SubresourceLoaderUpdater>
       subresource_loader_updater_;
 
+  struct CacheStorageRequest {
+    CacheStorageRequest(
+        mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
+        storage::BucketLocator bucket);
+    CacheStorageRequest(CacheStorageRequest&& other);
+    ~CacheStorageRequest();
+
+    mojo::PendingReceiver<blink::mojom::CacheStorage> receiver;
+    storage::BucketLocator bucket;
+  };
+
   // Hold in-flight CacheStorage requests. They will be bound when the
   // ServiceWorker COEP header will be known.
-  std::vector<mojo::PendingReceiver<blink::mojom::CacheStorage>>
-      pending_cache_storage_receivers_;
+  std::vector<CacheStorageRequest> pending_cache_storage_requests_;
 
   // COEP Reporter connected to the URLLoaderFactories that handles subresource
   // requests initiated from the service worker. The impl lives on the UI

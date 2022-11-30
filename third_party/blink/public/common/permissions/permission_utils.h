@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,6 +62,9 @@ enum class PermissionType {
 // PermissionStatus.
 BLINK_COMMON_EXPORT mojom::PermissionStatus ToPermissionStatus(
     const std::string& status);
+
+// Converts `PermissionType` into a string.
+BLINK_COMMON_EXPORT std::string GetPermissionString(PermissionType permission);
 
 // Get a list of all permission types.
 BLINK_COMMON_EXPORT const std::vector<PermissionType>& GetAllPermissionTypes();

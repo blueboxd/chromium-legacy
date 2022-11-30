@@ -41,6 +41,11 @@ SVGElementResourceClient* SVGResources::GetClient(const LayoutObject& object) {
   return To<SVGElement>(object.GetNode())->GetSVGResourceClient();
 }
 
+SVGElementResourceClient& SVGResources::EnsureClient(
+    const LayoutObject& object) {
+  return To<SVGElement>(object.GetNode())->EnsureSVGResourceClient();
+}
+
 gfx::RectF SVGResources::ReferenceBoxForEffects(
     const LayoutObject& layout_object) {
   // For SVG foreign objects, remove the position part of the bounding box. The
@@ -62,66 +67,80 @@ gfx::RectF SVGResources::ReferenceBoxForEffects(
   return obb_layout_object->ObjectBoundingBox();
 }
 
-void SVGResources::UpdateClipPathFilterMask(SVGElement& element,
-                                            const ComputedStyle* old_style,
-                                            const ComputedStyle& style) {
-  const bool had_client = element.GetSVGResourceClient();
+void SVGResources::UpdateEffects(LayoutObject& object,
+                                 StyleDifference diff,
+                                 const ComputedStyle* old_style) {
+  const bool had_client = GetClient(object);
+  const ComputedStyle& style = object.StyleRef();
   if (auto* reference_clip =
-          DynamicTo<ReferenceClipPathOperation>(style.ClipPath()))
-    reference_clip->AddClient(element.EnsureSVGResourceClient());
-  if (style.HasFilter()) {
-    SVGElementResourceClient& client = element.EnsureSVGResourceClient();
-    style.Filter().AddClient(client);
-    LayoutObject* layout_object = element.GetLayoutObject();
-    // This is called from StyleDidChange so we should have a LayoutObject.
-    DCHECK(layout_object);
-    // TODO(fs): Reorganise the code so that we don't need to invalidate this
-    // again in SVGResourcesCache::ClientStyleChanged (and potentially avoid
-    // redundant invalidations).
-    layout_object->SetNeedsPaintPropertyUpdate();
-    client.MarkFilterDataDirty();
+          DynamicTo<ReferenceClipPathOperation>(style.ClipPath())) {
+    reference_clip->AddClient(EnsureClient(object));
   }
+  if (style.HasFilter())
+    style.Filter().AddClient(EnsureClient(object));
   if (StyleSVGResource* masker_resource = style.MaskerResource())
-    masker_resource->AddClient(element.EnsureSVGResourceClient());
-  if (had_client)
-    ClearClipPathFilterMask(element, old_style);
+    masker_resource->AddClient(EnsureClient(object));
+  // FilterChanged() includes changes from more than just the 'filter'
+  // property, so explicitly check that a filter existed or exists.
+  if (diff.FilterChanged() &&
+      (style.HasFilter() || (old_style && old_style->HasFilter()))) {
+    // We either created one above, or had one already.
+    DCHECK(GetClient(object));
+    object.SetNeedsPaintPropertyUpdate();
+    GetClient(object)->MarkFilterDataDirty();
+  }
+  if (!old_style || !had_client)
+    return;
+  SVGElementResourceClient* client = GetClient(object);
+  if (auto* old_reference_clip =
+          DynamicTo<ReferenceClipPathOperation>(old_style->ClipPath())) {
+    old_reference_clip->RemoveClient(*client);
+  }
+  if (old_style->HasFilter())
+    old_style->Filter().RemoveClient(*client);
+  if (StyleSVGResource* masker_resource = old_style->MaskerResource())
+    masker_resource->RemoveClient(*client);
 }
 
-void SVGResources::ClearClipPathFilterMask(SVGElement& element,
-                                           const ComputedStyle* style) {
+void SVGResources::ClearEffects(const LayoutObject& object) {
+  const ComputedStyle* style = object.Style();
   if (!style)
     return;
-  SVGElementResourceClient* client = element.GetSVGResourceClient();
+  SVGElementResourceClient* client = GetClient(object);
   if (!client)
     return;
   if (auto* old_reference_clip =
-          DynamicTo<ReferenceClipPathOperation>(style->ClipPath()))
+          DynamicTo<ReferenceClipPathOperation>(style->ClipPath())) {
     old_reference_clip->RemoveClient(*client);
+  }
   if (style->HasFilter()) {
     style->Filter().RemoveClient(*client);
+    // TODO(fs): We need to invalidate filter data here because the resource
+    // client is owned by the Element - thus staying alive with it even when
+    // the LayoutObject is detached. Move ownership to the LayoutObject.
     client->InvalidateFilterData();
   }
   if (StyleSVGResource* masker_resource = style->MaskerResource())
     masker_resource->RemoveClient(*client);
 }
 
-void SVGResources::UpdatePaints(SVGElement& element,
+void SVGResources::UpdatePaints(const LayoutObject& object,
                                 const ComputedStyle* old_style,
                                 const ComputedStyle& style) {
-  const bool had_client = element.GetSVGResourceClient();
+  const bool had_client = GetClient(object);
   if (StyleSVGResource* paint_resource = style.FillPaint().Resource())
-    paint_resource->AddClient(element.EnsureSVGResourceClient());
+    paint_resource->AddClient(EnsureClient(object));
   if (StyleSVGResource* paint_resource = style.StrokePaint().Resource())
-    paint_resource->AddClient(element.EnsureSVGResourceClient());
+    paint_resource->AddClient(EnsureClient(object));
   if (had_client)
-    ClearPaints(element, old_style);
+    ClearPaints(object, old_style);
 }
 
-void SVGResources::ClearPaints(SVGElement& element,
+void SVGResources::ClearPaints(const LayoutObject& object,
                                const ComputedStyle* style) {
   if (!style)
     return;
-  SVGResourceClient* client = element.GetSVGResourceClient();
+  SVGResourceClient* client = GetClient(object);
   if (!client)
     return;
   if (StyleSVGResource* paint_resource = style->FillPaint().Resource())
@@ -130,25 +149,25 @@ void SVGResources::ClearPaints(SVGElement& element,
     paint_resource->RemoveClient(*client);
 }
 
-void SVGResources::UpdateMarkers(SVGElement& element,
-                                 const ComputedStyle* old_style,
-                                 const ComputedStyle& style) {
-  const bool had_client = element.GetSVGResourceClient();
+void SVGResources::UpdateMarkers(const LayoutObject& object,
+                                 const ComputedStyle* old_style) {
+  const bool had_client = GetClient(object);
+  const ComputedStyle& style = object.StyleRef();
   if (StyleSVGResource* marker_resource = style.MarkerStartResource())
-    marker_resource->AddClient(element.EnsureSVGResourceClient());
+    marker_resource->AddClient(EnsureClient(object));
   if (StyleSVGResource* marker_resource = style.MarkerMidResource())
-    marker_resource->AddClient(element.EnsureSVGResourceClient());
+    marker_resource->AddClient(EnsureClient(object));
   if (StyleSVGResource* marker_resource = style.MarkerEndResource())
-    marker_resource->AddClient(element.EnsureSVGResourceClient());
+    marker_resource->AddClient(EnsureClient(object));
   if (had_client)
-    ClearMarkers(element, old_style);
+    ClearMarkers(object, old_style);
 }
 
-void SVGResources::ClearMarkers(SVGElement& element,
+void SVGResources::ClearMarkers(const LayoutObject& object,
                                 const ComputedStyle* style) {
   if (!style)
     return;
-  SVGResourceClient* client = element.GetSVGResourceClient();
+  SVGResourceClient* client = GetClient(object);
   if (!client)
     return;
   if (StyleSVGResource* marker_resource = style->MarkerStartResource())

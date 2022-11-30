@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert, assertInstanceof} from 'chrome://resources/js/assert.m.js';
+import {assert, assertInstanceof} from 'chrome://resources/js/assert.js';
 import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
 
 import {AsyncUtil} from '../../../common/js/async_util.js';
@@ -271,6 +271,7 @@ export function renderHeader_(table) {
   container.classList.add('table-label-container');
 
   const textElement = table.ownerDocument.createElement('span');
+  textElement.setAttribute('id', `column-${column.id}`);
   textElement.textContent = column.name;
   const dm = table.dataModel;
 
@@ -972,6 +973,7 @@ export class FileTable extends Table {
                   'isExternalMedia',
                   'hosted',
                   'pinned',
+                  'syncStatus',
                 ])[0],
             util.isTeamDriveRoot(entry));
       });
@@ -989,12 +991,14 @@ export class FileTable extends Table {
     const item = baseRenderFunction(entry, this);
     const nameId = item.id + '-entry-name';
     const sizeId = item.id + '-size';
+    const typeId = item.id + '-type';
     const dateId = item.id + '-date';
     const dlpId = item.id + '-dlp-managed-icon';
     filelist.decorateListItem(item, entry, assert(this.metadataModel_));
     item.setAttribute('file-name', entry.name);
     item.querySelector('.detail-name').setAttribute('id', nameId);
     item.querySelector('.size').setAttribute('id', sizeId);
+    item.querySelector('.type').setAttribute('id', typeId);
     item.querySelector('.date').setAttribute('id', dateId);
     const dlpManagedIcon = item.querySelector('.dlp-managed-icon');
     if (dlpManagedIcon) {
@@ -1004,7 +1008,10 @@ export class FileTable extends Table {
           .addTargets(item.querySelectorAll('.dlp-managed-icon'));
     }
 
-    item.setAttribute('aria-labelledby', nameId);
+    item.setAttribute(
+        'aria-labelledby',
+        `${nameId} column-size ${sizeId} column-type ${
+            typeId} column-modificationTime ${dateId}`);
     return item;
   }
 

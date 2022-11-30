@@ -65,8 +65,9 @@ namespace {
 // A feature to control whether or not the profile icons are sent over mojo.
 // This is used to debug crashes that are only seen in release builds.
 // https://crbug.com/1274236
-const base::Feature kAppShimProfileMenuIcons{"AppShimProfileMenuIcons",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kAppShimProfileMenuIcons,
+             "AppShimProfileMenuIcons",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // A crash key that is used when dumping because of errors when building and
 // verifying the app shim requirement.
@@ -1146,6 +1147,8 @@ void AppShimManager::OnBrowserSetLastActive(Browser* browser) {
   // Update the application dock menu for the current profile.
   const std::string app_id =
       web_app::GetAppIdFromApplicationName(browser->app_name());
+  if (!delegate_->AppUsesRemoteCocoa(browser->profile(), app_id))
+    return;
   auto* profile_state = GetOrCreateProfileState(browser->profile(), app_id);
   if (profile_state)
     UpdateApplicationDockMenu(browser->profile(), profile_state);

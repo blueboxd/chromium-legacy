@@ -44,7 +44,7 @@ class EGLImageBacking::TextureHolder : public base::RefCounted<TextureHolder> {
       texture_->RemoveLightweightRef(!context_lost_);
   }
 
-  const raw_ptr<gles2::Texture> texture_ = nullptr;
+  const raw_ptr<gles2::Texture, DanglingUntriaged> texture_ = nullptr;
   const scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
   bool context_lost_ = false;
 };
@@ -130,7 +130,8 @@ class EGLImageBacking::GLTextureEGLImageRepresentation
 
   void EndAccess() override { shared_.EndAccess(); }
 
-  gles2::Texture* GetTexture() override {
+  gles2::Texture* GetTexture(int plane_index) override {
+    DCHECK_EQ(plane_index, 0);
     return shared_.texture_holder()->texture();
   }
 
@@ -162,8 +163,9 @@ class EGLImageBacking::GLTexturePassthroughEGLImageRepresentation
 
   void EndAccess() override { shared_.EndAccess(); }
 
-  const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough()
-      override {
+  const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough(
+      int plane_index) override {
+    DCHECK_EQ(plane_index, 0);
     // TODO(https://crbug.com/1172769): Remove this CHECK.
     CHECK(shared_.texture_holder()->texture_passthrough());
     return shared_.texture_holder()->texture_passthrough();
@@ -177,14 +179,14 @@ class EGLImageBacking::GLTexturePassthroughEGLImageRepresentation
 
 EGLImageBacking::EGLImageBacking(
     const Mailbox& mailbox,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
     uint32_t usage,
     size_t estimated_size,
-    const GLCommonImageBackingFactory::FormatInfo format_info,
+    const GLCommonImageBackingFactory::FormatInfo& format_info,
     const GpuDriverBugWorkarounds& workarounds,
     bool use_passthrough,
     base::span<const uint8_t> pixel_data)
@@ -397,21 +399,19 @@ EGLImageBacking::GenEGLImageSibling(base::span<const uint8_t> pixel_data) {
                                  size().width(), size().height());
 
         if (!pixel_data.empty()) {
-          GLTextureImageBackingHelper::ScopedResetAndRestoreUnpackState
-              scoped_unpack_state(/*uploading_data=*/true);
+          ScopedUnpackState scoped_unpack_state(
+              /*uploading_data=*/true);
           api->glTexSubImage2DFn(target, 0, 0, 0, size().width(),
                                  size().height(), format_info_.adjusted_format,
                                  format_info_.gl_type, pixel_data.data());
         }
       } else if (format_info_.is_compressed) {
-        GLTextureImageBackingHelper::ScopedResetAndRestoreUnpackState
-            scoped_unpack_state(!pixel_data.empty());
+        ScopedUnpackState scoped_unpack_state(!pixel_data.empty());
         api->glCompressedTexImage2DFn(
             target, 0, format_info_.image_internal_format, size().width(),
             size().height(), 0, pixel_data.size(), pixel_data.data());
       } else {
-        GLTextureImageBackingHelper::ScopedResetAndRestoreUnpackState
-            scoped_unpack_state(!pixel_data.empty());
+        ScopedUnpackState scoped_unpack_state(!pixel_data.empty());
 
         api->glTexImage2DFn(target, 0, format_info_.image_internal_format,
                             size().width(), size().height(), 0,

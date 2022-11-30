@@ -2095,6 +2095,29 @@
       }
     ]
   },
+  "SyncTypesListDisabled.OSTypes": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "SyncTypesListDisabled": [
+            "apps",
+            "preferences"
+          ]
+        },
+        "prefs": {
+          "sync.os_apps": {
+            "value": false
+          },
+          "sync.os_preferences": {
+            "value": false
+          }
+        }
+      }
+    ]
+  },
   "SigninAllowed": {
     "os": [
       "win",
@@ -3290,44 +3313,7 @@
     "reason_for_missing_test": "Policy was removed"
   },
   "DisplayCapturePermissionsPolicyEnabled": {
-    "os": [
-      "win",
-      "linux",
-      "mac",
-      "chromeos_lacros",
-      "chromeos_ash",
-      "fuchsia"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {
-          "DisplayCapturePermissionsPolicyEnabled": false
-        },
-        "prefs": {
-          "display_capture_permissions_policy_enabled": {
-            "value": false
-          }
-        }
-      },
-      {
-        "policies": {
-          "DisplayCapturePermissionsPolicyEnabled": true
-        },
-        "prefs": {
-          "display_capture_permissions_policy_enabled": {
-            "value": true
-          }
-        }
-      },
-      {
-        "policies": {},
-        "prefs": {
-          "display_capture_permissions_policy_enabled": {
-            "default_value": true
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
   "WebDriverOverridesIncompatiblePolicies": {
     "reason_for_missing_test": "Policy was removed"
@@ -8746,6 +8732,41 @@
       }
     ]
   },
+  "TrashEnabled": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "ash.filesapp.trash_enabled": {
+            "default_value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "TrashEnabled": false
+        },
+        "prefs": {
+          "ash.filesapp.trash_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "TrashEnabled": true
+        },
+        "prefs": {
+          "ash.filesapp.trash_enabled": {
+            "value": true
+          }
+        }
+      }
+    ]
+  },
   "PinnedLauncherApps": {
     "os": [
       "chromeos_ash"
@@ -12391,6 +12412,9 @@
   "ReportDeviceSignalStrengthEventDrivenTelemetry": {
     "reason_for_missing_test": "Maps into CrosSettings"
   },
+  "DeviceReportXDREvents": {
+    "reason_for_missing_test": "Maps into CrosSettings"
+  },
   "DeviceAllowNewUsers": {
     "reason_for_missing_test": "Maps into CrosSettings"
   },
@@ -14133,6 +14157,40 @@
         },
         "prefs": {
           "profile.web_app.install.forcelist": {}
+        }
+      }
+    ]
+  },
+  "IsolatedWebAppInstallForceList": {
+    "os": [
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "No isolated web apps force installing.",
+        "prefs": {
+          "profile.isolated_web_app.install.forcelist": {
+            "default_value": []
+          }
+        }
+      },
+      {
+        "note": "The policy is set",
+        "policies": {
+          "IsolatedWebAppInstallForceList": [
+            {
+              "update_manifest_url": "https://example.com/isolated_web_app/update_manifest.json",
+              "web_bundle_id": "aerugqztij5biqquuk3mfwpsaibuegaqcitgfchwuosuofdjabzqaaic"
+            },
+            {
+              "update_manifest_url": "https://example.com/another_isolated_web_app/update_manifest.json",
+              "web_bundle_id": "bbceqaztij5biqquuksfawpsaibuegqqcirgfcgwuosuofdjabzqaaic"
+            }
+          ]
+        },
+        "prefs": {
+          "profile.isolated_web_app.install.forcelist": {}
         }
       }
     ]
@@ -17293,6 +17351,10 @@
                 {
                   "class": "SCREEN_SHARE",
                   "level": "BLOCK"
+                },
+                {
+                  "class": "FILES",
+                  "level": "WARN"
                 }
               ]
             }
@@ -18928,7 +18990,7 @@
       {
         "note": "Check default values (no policies set)",
         "prefs": {
-          "first_party_sets.enabled": {
+          "privacy_sandbox.first_party_sets_enabled": {
             "location": "user_profile",
             "default_value": true
           }
@@ -18940,7 +19002,7 @@
           "FirstPartySetsEnabled": true
         },
         "prefs": {
-          "first_party_sets.enabled": {
+          "privacy_sandbox.first_party_sets_enabled": {
             "location": "user_profile",
             "value": true
           }
@@ -18952,7 +19014,7 @@
           "FirstPartySetsEnabled": false
         },
         "prefs": {
-          "first_party_sets.enabled": {
+          "privacy_sandbox.first_party_sets_enabled": {
             "location": "user_profile",
             "value": false
           }
@@ -19558,6 +19620,39 @@
       }
     ]
   },
+  "CalendarIntegrationEnabled": {
+    "os": ["chromeos_ash"],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "ash.calendar_integration_enabled": {
+            "value": false
+        }
+      }
+    },
+    {
+      "policies": {
+        "CalendarIntegrationEnabled": false
+      },
+      "prefs": {
+        "ash.calendar_integration_enabled": {
+          "value": false
+        }
+      }
+    },
+    {
+      "policies": {
+        "CalendarIntegrationEnabled": true
+      },
+      "prefs": {
+        "ash.calendar_integration_enabled": {
+          "value": true
+        }
+      }
+    }
+  ]
+  },
   "OsColorMode": {
     "os": [
       "chromeos_ash"
@@ -19943,6 +20038,199 @@
           "ash.recovery.recovery_factor_behavior": {
             "location": "user_profile",
             "value": false
+          }
+        }
+      }
+    ]
+  },
+  "ShoppingListEnabled": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "android",
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "ShoppingListEnabled": false
+        },
+        "prefs": {
+          "shopping_list_enabled": {}
+        }
+      }
+    ]
+  },
+  "DeskAPIThirdPartyAccessEnabled": {
+    "os": [
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "DeskAPIThirdPartyAccessEnabled": true
+        },
+        "prefs": {
+          "desk_api.third_party_access_enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeskAPIThirdPartyAccessEnabled": false
+        },
+        "prefs": {
+          "desk_api.third_party_access_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "desk_api.third_party_access_enabled": {
+            "default_value": false
+          }
+        }
+      }
+    ]
+  },
+  "DeskAPIThirdPartyAllowlist": {
+    "os": [
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "DeskAPIThirdPartyAllowlist": [
+            "https://*.example.org/*",
+            "https://*.google.com/*"
+          ]
+        },
+        "prefs": {
+          "desk_api.third_party_allowlist": {
+            "value": [
+              "https://*.example.org/*",
+              "https://*.google.com/*"
+            ]
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "desk_api.third_party_allowlist": {
+            "default_value": []
+          }
+        }
+      }
+    ]
+  },
+  "FileSystemSyncAccessHandleAsyncInterfaceEnabled": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "policy.file_system_sync_access_handle_async_interface_enabled": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "FileSystemSyncAccessHandleAsyncInterfaceEnabled": false
+        },
+        "prefs": {
+          "policy.file_system_sync_access_handle_async_interface_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": { "FileSystemSyncAccessHandleAsyncInterfaceEnabled": true },
+        "prefs": {
+          "policy.file_system_sync_access_handle_async_interface_enabled": {
+            "value": true
+          }
+        }
+      }
+    ]
+  },
+  "DefaultHandlersForFileExtensions": {
+    "os": ["chromeos_ash"],
+    "can_be_recommended": true,
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "filebrowser.default_handlers_for_file_extensions": {
+            "default_value": {}
+          }
+        }
+      },
+      {
+        "policies": {
+          "DefaultHandlersForFileExtensions": [{
+            "policy_id": "https://google.com/maps",
+            "file_extensions": ["maps"]
+          }, {
+            "policy_id": "pnomlkjighijklmnopabcdefghijklff",
+            "file_extensions": ["docx", "pdf"]
+          }]
+        },
+        "prefs": {
+          "filebrowser.default_handlers_for_file_extensions": {
+            "value": {
+              ".maps": "https://google.com/maps",
+              ".docx": "pnomlkjighijklmnopabcdefghijklff",
+              ".pdf": "pnomlkjighijklmnopabcdefghijklff"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "VirtualKeyboardResizesLayoutByDefault": {
+    "os": ["android"],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "VirtualKeyboardResizesLayoutByDefault": true
+        },
+        "prefs": {
+          "virtual_keyboard_resizes_layout_by_default": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "VirtualKeyboardResizesLayoutByDefault": false
+        },
+        "prefs": {
+          "virtual_keyboard_resizes_layout_by_default": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "virtual_keyboard_resizes_layout_by_default": {
+            "default_value": false
           }
         }
       }

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,7 +81,7 @@ class CORE_EXPORT ScriptPromiseResolver
   template <class ScriptPromiseResolver, typename... Args>
   base::OnceCallback<void(Args...)> WrapCallbackInScriptScope(
       base::OnceCallback<void(ScriptPromiseResolver*, Args...)> callback) {
-    return WTF::Bind(
+    return WTF::BindOnce(
         [](ScriptPromiseResolver* resolver,
            base::OnceCallback<void(ScriptPromiseResolver*, Args...)> callback,
            Args... args) {
@@ -179,7 +179,8 @@ class CORE_EXPORT ScriptPromiseResolver
       ScriptForbiddenScope::AllowUserAgentScript allow_script;
       v8::Isolate* isolate = script_state_->GetIsolate();
       v8::MicrotasksScope microtasks_scope(
-          isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+          isolate, ToMicrotaskQueue(script_state_),
+          v8::MicrotasksScope::kDoNotRunMicrotasks);
       value_.Reset(isolate, ToV8(value, script_state_->GetContext()->Global(),
                                  script_state_->GetIsolate()));
     }

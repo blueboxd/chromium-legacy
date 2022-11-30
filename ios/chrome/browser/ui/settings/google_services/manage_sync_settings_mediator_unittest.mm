@@ -15,6 +15,7 @@
 #import "components/sync/test/mock_sync_service.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/main/test_browser.h"
+#import "ios/chrome/browser/sync/mock_sync_service_utils.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_mock.h"
@@ -23,6 +24,7 @@
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_consumer.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_table_view_controller.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
@@ -48,10 +50,6 @@ using ::testing::NiceMock;
 using ::testing::Return;
 
 namespace {
-std::unique_ptr<KeyedService> CreateMockSyncService(
-    web::BrowserState* context) {
-  return std::make_unique<NiceMock<syncer::MockSyncService>>();
-}
 
 PrefService* SetPrefService() {
   TestingPrefServiceSimple* prefs = new TestingPrefServiceSimple();
@@ -116,8 +114,8 @@ class ManageSyncSettingsMediatorTest : public PlatformTest {
         .WillByDefault(Return(true));
     ON_CALL(*sync_setup_service_mock_, IsSyncingAllDataTypes())
         .WillByDefault(Return(true));
-    ON_CALL(*sync_setup_service_mock_, HasFinishedInitialSetup())
-        .WillByDefault(Return(true));
+    ON_CALL(*sync_setup_service_mock_, IsInitialSetupOngoing())
+        .WillByDefault(Return(false));
     ON_CALL(*sync_service_mock_, GetTransportState())
         .WillByDefault(Return(syncer::SyncService::TransportState::ACTIVE));
   }
@@ -131,7 +129,7 @@ class ManageSyncSettingsMediatorTest : public PlatformTest {
         .WillByDefault(Return(false));
     ON_CALL(*sync_setup_service_mock_, IsSyncingAllDataTypes())
         .WillByDefault(Return(true));
-    ON_CALL(*sync_setup_service_mock_, HasFinishedInitialSetup())
+    ON_CALL(*sync_setup_service_mock_, IsInitialSetupOngoing())
         .WillByDefault(Return(true));
     ON_CALL(*sync_service_mock_, GetTransportState())
         .WillByDefault(Return(syncer::SyncService::TransportState::DISABLED));
@@ -144,7 +142,7 @@ class ManageSyncSettingsMediatorTest : public PlatformTest {
         .WillByDefault(Return(false));
     ON_CALL(*sync_setup_service_mock_, IsSyncingAllDataTypes())
         .WillByDefault(Return(true));
-    ON_CALL(*sync_setup_service_mock_, HasFinishedInitialSetup())
+    ON_CALL(*sync_setup_service_mock_, IsInitialSetupOngoing())
         .WillByDefault(Return(false));
     ON_CALL(*sync_service_mock_, GetTransportState())
         .WillByDefault(Return(syncer::SyncService::TransportState::DISABLED));
@@ -333,8 +331,8 @@ TEST_F(ManageSyncSettingsMediatorTest, SyncServiceMultipleErrors) {
       itemsInSectionWithIdentifier:SyncSettingsSectionIdentifier::
                                        SyncErrorsSectionIdentifier];
   ASSERT_EQ(1UL, error_items.count);
-  SettingsImageDetailTextItem* error_item =
-      base::mac::ObjCCastStrict<SettingsImageDetailTextItem>(error_items[0]);
+  TableViewDetailIconItem* error_item =
+      base::mac::ObjCCastStrict<TableViewDetailIconItem>(error_items[0]);
   EXPECT_NSEQ(
       error_item.detailText,
       l10n_util::GetNSString(

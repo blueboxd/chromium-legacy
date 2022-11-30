@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/forms/menu_list_inner_element.h"
@@ -321,7 +322,23 @@ void MenuListSelectType::ShowPopup(PopupMenu::ShowEventType type) {
     return;
   if (!select_->GetLayoutObject())
     return;
-  if (select_->VisibleBoundsInVisualViewport().IsEmpty())
+
+  gfx::Rect local_root_rect = select_->VisibleBoundsInLocalRoot();
+
+  if (!document.GetFrame()->LocalFrameRoot().IsOutermostMainFrame()) {
+    // TODO(bokan): If we're in a remote frame, we cannot access the active
+    // visual viewport. VisibleBoundsInLocalRoot will clip to the outermost
+    // main frame but if the user is pinch-zoomed this won't be accurate.
+    if (local_root_rect.IsEmpty())
+      return;
+  }
+
+  gfx::Rect visual_viewport_rect =
+      document.GetPage()->GetVisualViewport().RootFrameToViewport(
+          local_root_rect);
+  visual_viewport_rect.Intersect(
+      gfx::Rect(document.GetPage()->GetVisualViewport().Size()));
+  if (visual_viewport_rect.IsEmpty())
     return;
 
   if (!popup_) {
@@ -768,7 +785,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
       }
     }
     // Mousedown didn't happen in this element.
-    if (last_on_change_selection_.IsEmpty())
+    if (last_on_change_selection_.empty())
       return false;
 
     if (HTMLOptionElement* option = EventTargetOption(*mouse_event)) {
@@ -1062,8 +1079,9 @@ void ListBoxSelectType::ScrollToOption(HTMLOptionElement* option) {
   if (!has_pending_task) {
     select_->GetDocument()
         .GetTaskRunner(TaskType::kUserInteraction)
-        ->PostTask(FROM_HERE, WTF::Bind(&ListBoxSelectType::ScrollToOptionTask,
-                                        WrapPersistent(this)));
+        ->PostTask(FROM_HERE,
+                   WTF::BindOnce(&ListBoxSelectType::ScrollToOptionTask,
+                                 WrapPersistent(this)));
   }
 }
 
@@ -1243,7 +1261,7 @@ void ListBoxSelectType::SaveListboxActiveSelection() {
 
 void ListBoxSelectType::HandleMouseRelease() {
   // We didn't start this click/drag on any options.
-  if (last_on_change_selection_.IsEmpty())
+  if (last_on_change_selection_.empty())
     return;
   ListBoxOnChange();
 }
@@ -1254,7 +1272,7 @@ void ListBoxSelectType::ListBoxOnChange() {
   // If the cached selection list is empty, or the size has changed, then fire
   // 'change' event, and return early.
   // FIXME: Why? This looks unreasonable.
-  if (last_on_change_selection_.IsEmpty() ||
+  if (last_on_change_selection_.empty() ||
       last_on_change_selection_.size() != items.size()) {
     select_->DispatchChangeEvent();
     return;

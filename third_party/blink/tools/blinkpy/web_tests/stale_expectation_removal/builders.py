@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Web test-specific impl of the unexpected passes' builders module."""
@@ -40,9 +40,6 @@ class WebTestBuilders(builders.Builders):
         if self._fake_ci_builders is None:
             fake_try_builders = {
                 # chromium.fyi
-                'linux-blink-optional-highdpi-rel-dummy': {
-                    'linux-blink-optional-highdpi-rel',
-                },
                 'linux-blink-rel-dummy': {
                     'linux-blink-rel',
                     'v8_linux_blink_rel',

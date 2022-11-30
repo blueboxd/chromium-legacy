@@ -347,7 +347,7 @@ void ListedElement::UpdateWillValidateCache() {
 }
 
 bool ListedElement::CustomError() const {
-  return !custom_validation_message_.IsEmpty();
+  return !custom_validation_message_.empty();
 }
 
 bool ListedElement::HasBadInput() const {
@@ -423,7 +423,7 @@ void ListedElement::FindCustomValidationMessageTextDirection(
     String& sub_message,
     TextDirection& sub_message_dir) {
   message_dir = DetermineDirectionality(message);
-  if (!sub_message.IsEmpty()) {
+  if (!sub_message.empty()) {
     sub_message_dir = ToHTMLElement().GetLayoutObject()->Style()->Direction();
   }
 }
@@ -445,7 +445,7 @@ void ListedElement::UpdateVisibleValidationMessage() {
   TextDirection message_dir = TextDirection::kLtr;
   TextDirection sub_message_dir = TextDirection::kLtr;
   String sub_message = ValidationSubMessage().StripWhiteSpace();
-  if (message.IsEmpty()) {
+  if (message.empty()) {
     client->HideValidationMessage(element);
   } else {
     FindCustomValidationMessageTextDirection(message, message_dir, sub_message,
@@ -520,7 +520,7 @@ void ListedElement::ShowValidationMessage() {
 bool ListedElement::reportValidity() {
   List unhandled_invalid_controls;
   bool is_valid = checkValidity(&unhandled_invalid_controls);
-  if (is_valid || unhandled_invalid_controls.IsEmpty())
+  if (is_valid || unhandled_invalid_controls.empty())
     return is_valid;
   DCHECK_EQ(unhandled_invalid_controls.size(), 1u);
   DCHECK_EQ(unhandled_invalid_controls[0].Get(), this);
@@ -563,8 +563,8 @@ void ListedElement::SetNeedsValidityCheck() {
     element.GetDocument()
         .GetTaskRunner(TaskType::kDOMManipulation)
         ->PostTask(FROM_HERE,
-                   WTF::Bind(&ListedElement::UpdateVisibleValidationMessage,
-                             WrapPersistent(this)));
+                   WTF::BindOnce(&ListedElement::UpdateVisibleValidationMessage,
+                                 WrapPersistent(this)));
   }
 }
 

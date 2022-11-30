@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -193,15 +193,15 @@ void MediaCustomControlsFullscreenDetector::UpdateDominantAndFullscreenStatus(
   VideoElement()
       .GetDocument()
       .GetTaskRunner(TaskType::kInternalMedia)
-      ->PostTask(
-          FROM_HERE,
-          WTF::Bind(update_dominant_and_fullscreen, WrapWeakPersistent(this),
-                    is_dominant_visible_content, is_effectively_fullscreen));
+      ->PostTask(FROM_HERE, WTF::BindOnce(update_dominant_and_fullscreen,
+                                          WrapWeakPersistent(this),
+                                          is_dominant_visible_content,
+                                          is_effectively_fullscreen));
 }
 
 void MediaCustomControlsFullscreenDetector::OnIntersectionChanged(
     const HeapVector<Member<IntersectionObserverEntry>>& entries) {
-  if (!viewport_intersection_observer_ || entries.IsEmpty())
+  if (!viewport_intersection_observer_ || entries.empty())
     return;
 
   auto* layout = VideoElement().GetLayoutObject();

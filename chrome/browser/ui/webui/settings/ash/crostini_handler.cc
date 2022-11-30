@@ -24,7 +24,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader_dialog.h"
+#include "chrome/browser/ui/webui/ash/crostini_upgrader/crostini_upgrader_dialog.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
@@ -33,8 +33,7 @@
 #include "content/public/browser/web_ui.h"
 #include "ui/display/screen.h"
 
-namespace chromeos {
-namespace settings {
+namespace ash::settings {
 
 namespace {
 
@@ -195,8 +194,8 @@ void CrostiniHandler::OnJavascriptAllowed() {
 
   // Observe ADB sideloading device policy and react to its changes
   adb_sideloading_device_policy_subscription_ =
-      chromeos::CrosSettings::Get()->AddSettingsObserver(
-          chromeos::kDeviceCrostiniArcAdbSideloadingAllowed,
+      CrosSettings::Get()->AddSettingsObserver(
+          kDeviceCrostiniArcAdbSideloadingAllowed,
           base::BindRepeating(&CrostiniHandler::FetchCanChangeAdbSideloading,
                               handler_weak_ptr_factory_.GetWeakPtr()));
 
@@ -416,7 +415,7 @@ void CrostiniHandler::LaunchTerminal(apps::IntentPtr intent) {
 void CrostiniHandler::HandleRequestContainerUpgradeView(
     const base::Value::List& args) {
   CHECK_EQ(0U, args.size());
-  chromeos::CrostiniUpgraderDialog::Show(
+  CrostiniUpgraderDialog::Show(
       profile_,
       base::BindOnce(&CrostiniHandler::LaunchTerminal,
                      handler_weak_ptr_factory_.GetWeakPtr(),
@@ -437,8 +436,7 @@ void CrostiniHandler::HandleQueryArcAdbRequest(const base::Value::List& args) {
   AllowJavascript();
   CHECK_EQ(0U, args.size());
 
-  chromeos::SessionManagerClient* client =
-      chromeos::SessionManagerClient::Get();
+  SessionManagerClient* client = SessionManagerClient::Get();
   client->QueryAdbSideload(
       base::BindOnce(&CrostiniHandler::OnQueryAdbSideload,
                      handler_weak_ptr_factory_.GetWeakPtr()));
@@ -859,5 +857,4 @@ void CrostiniHandler::OnContainerFileSelected(const std::string& callback_id,
   ResolveJavascriptCallback(base::Value(callback_id), filePath);
 }
 
-}  // namespace settings
-}  // namespace chromeos
+}  // namespace ash::settings

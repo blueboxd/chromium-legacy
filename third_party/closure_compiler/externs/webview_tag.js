@@ -1,9 +1,14 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // TODO(crbug.com/1085633): Inline enums need to be cleaned up in the source
 // specification before we can autogenerate this.
+
+/**
+ * @fileoverview Externs generated from namespace: webview
+ * @externs
+ */
 
 /**
  * @typedef {{

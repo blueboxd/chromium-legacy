@@ -108,7 +108,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Permissions.API.CreatedPermissionStatusObjects" units="units"
-    expires_after="2023-01-01">
+    expires_after="2023-03-19">
   <owner>andypaicu@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -240,6 +240,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Permissions.ConfirmationChip.PageInfoDialogAccessType"
+    enum="PageInfoDialogAccessType" expires_after="2023-10-31">
+  <owner>fjacky@chromium.org</owner>
+  <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
+  <summary>
+    Record each time the page info bubble is opened through either the lock icon
+    or the confirmation chip, how it was opened and how the opening related to
+    the confirmation chip.
+  </summary>
+</histogram>
+
 <histogram name="Permissions.CrowdDeny.DidHoldbackQuietUi" enum="Boolean"
     expires_after="2022-12-11">
   <owner>andypaicu@chromium.org</owner>
@@ -271,7 +282,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Permissions.CrowdDeny.PreloadData.NotificationUxQuality"
-    enum="CrowdDenyNotificationUxQuality" expires_after="2023-01-15">
+    enum="CrowdDenyNotificationUxQuality" expires_after="2023-03-19">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -282,7 +293,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Permissions.CrowdDeny.PreloadData.VersionAtAbuseCheckTime"
-    units="date" expires_after="2023-01-29">
+    units="date" expires_after="2023-04-02">
   <owner>elklm@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -327,7 +338,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Permissions.DSE.AutoPermissionRevertTransition"
-    enum="AutoDSEPermissionRevertTransition" expires_after="2023-01-15">
+    enum="AutoDSEPermissionRevertTransition" expires_after="2023-03-19">
   <owner>andypaicu@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -339,7 +350,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Permissions.DSE.EffectiveSetting" enum="ContentSetting"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>andypaicu@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -433,7 +444,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Permissions.Engagement.Dismissed" units="%"
-    expires_after="2022-08-25">
+    expires_after="2023-03-05">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -510,7 +521,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Permissions.PredictionService.PredictionSource"
-    enum="PermissionPredictionSource" expires_after="2023-01-15">
+    enum="PermissionPredictionSource" expires_after="2023-03-19">
   <owner>ravjit@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -710,7 +721,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Permissions.Prompt.Infobar.DetailsExpanded" enum="Boolean"
-    expires_after="2022-10-31">
+    expires_after="2023-10-31">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -744,10 +755,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Permissions.Prompt.TimeToDecision.{RequestAction}" units="ms"
-    expires_after="2022-10-31">
-  <owner>bsep@chromium.org</owner>
-  <owner>engedy@chromium.org</owner>
-  <owner>olesiamarukhno@google.com</owner>
+    expires_after="2023-05-30">
+  <owner>elklm@chromium.org</owner>
+  <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
     Records how long it takes for the user to make a decision about permission
     request when prompt request UI is shown, from when permission prompt is
@@ -925,7 +935,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Permissions.QuietNotificationPrompts.DidEnableAdapativelyInPrefs"
-    enum="Boolean" expires_after="2023-01-01">
+    enum="Boolean" expires_after="2023-03-26">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -938,7 +948,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Permissions.QuietNotificationPrompts.EnabledStateInPrefsChangedTo"
-    enum="BooleanEnabled" expires_after="2023-01-01">
+    enum="BooleanEnabled" expires_after="2023-03-26">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -963,7 +973,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Permissions.Revocation.ElapsedTimeSinceGrant"
-    units="seconds" expires_after="2023-01-15">
+    units="seconds" expires_after="2023-03-19">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -1047,7 +1057,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SiteEngagementService.EngagementType"
-    enum="SiteEngagementServiceEngagementType" expires_after="2023-01-29">
+    enum="SiteEngagementServiceEngagementType" expires_after="2023-04-02">
   <owner>calamity@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <summary>
@@ -1206,6 +1216,19 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the amount of time the store icon is shown in the omnibox before the
     user clicks into page info.
+  </summary>
+</histogram>
+
+<histogram name="WebsiteSettings.GetAllSitesLoadTime" units="ms"
+    expires_after="M111">
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <summary>
+    Records the load time of the &quot;All sites&quot; settings page. The load
+    time is the time between the &quot;GetAllSites&quot; request start and the
+    time when the storage is fetched and the full information is returned to the
+    UI.
   </summary>
 </histogram>
 

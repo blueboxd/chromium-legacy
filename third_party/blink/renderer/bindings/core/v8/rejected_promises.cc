@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -215,9 +215,10 @@ void RejectedPromises::HandlerAdded(v8::PromiseRejectMessage data) {
       // a separate statement.
       ExecutionContext* context = message->GetContext();
       context->GetTaskRunner(TaskType::kDOMManipulation)
-          ->PostTask(FROM_HERE, WTF::Bind(&RejectedPromises::RevokeNow,
-                                          scoped_refptr<RejectedPromises>(this),
-                                          std::move(message)));
+          ->PostTask(FROM_HERE,
+                     WTF::BindOnce(&RejectedPromises::RevokeNow,
+                                   scoped_refptr<RejectedPromises>(this),
+                                   std::move(message)));
       reported_as_errors_.EraseAt(i);
       return;
     }
@@ -225,7 +226,7 @@ void RejectedPromises::HandlerAdded(v8::PromiseRejectMessage data) {
 }
 
 void RejectedPromises::Dispose() {
-  if (queue_.IsEmpty())
+  if (queue_.empty())
     return;
 
   ProcessQueueNow(std::move(queue_));
@@ -233,7 +234,7 @@ void RejectedPromises::Dispose() {
 }
 
 void RejectedPromises::ProcessQueue() {
-  if (queue_.IsEmpty())
+  if (queue_.empty())
     return;
 
   HeapHashMap<Member<ExecutionContext>, MessageQueue> queues;
@@ -245,9 +246,10 @@ void RejectedPromises::ProcessQueue() {
 
   for (auto& kv : queues) {
     kv.key->GetTaskRunner(blink::TaskType::kDOMManipulation)
-        ->PostTask(FROM_HERE, WTF::Bind(&RejectedPromises::ProcessQueueNow,
-                                        scoped_refptr<RejectedPromises>(this),
-                                        std::move(kv.value)));
+        ->PostTask(FROM_HERE,
+                   WTF::BindOnce(&RejectedPromises::ProcessQueueNow,
+                                 scoped_refptr<RejectedPromises>(this),
+                                 std::move(kv.value)));
   }
 }
 

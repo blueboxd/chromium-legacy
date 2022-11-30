@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,7 +65,7 @@ bool CSPSourceListAllows(
   if (source_list.allow_star) {
     if (url.ProtocolIsInHTTPFamily() || url.ProtocolIs("ftp") ||
         url.ProtocolIs("ws") || url.ProtocolIs("wss") ||
-        (!url.Protocol().IsEmpty() &&
+        (!url.Protocol().empty() &&
          EqualIgnoringASCIICase(url.Protocol(), self_source.scheme)))
       return true;
 
@@ -121,7 +121,7 @@ bool CSPSourceListIsSelf(
 
 bool CSPSourceListIsHashOrNoncePresent(
     const network::mojom::blink::CSPSourceList& source_list) {
-  return !source_list.nonces.IsEmpty() || !source_list.hashes.IsEmpty();
+  return !source_list.nonces.empty() || !source_list.hashes.empty();
 }
 
 bool CSPSourceListAllowsURLBasedMatching(

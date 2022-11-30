@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,7 @@ DOMNodeId PaintArtifact::ClientOwnerNodeId(
 String PaintArtifact::IdAsString(const DisplayItem::Id& id) const {
 #if DCHECK_IS_ON()
   String debug_name = ClientDebugName(id.client_id);
-  if (!debug_name.IsEmpty()) {
+  if (!debug_name.empty()) {
     return String::Format(
         "%p:%s:%s:%d", reinterpret_cast<void*>(id.client_id),
         ClientDebugName(id.client_id).Utf8().c_str(),

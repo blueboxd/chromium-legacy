@@ -147,9 +147,6 @@ bool SwapGoogleUpdate(UpdaterScope scope,
                       WorkItemList* list) {
   DCHECK(list);
 
-  // TODO(crbug.com/1290496) Do we need to set the shutdown event and wait or
-  // kill any running GoogleUpdate.exe instances? If so, is waiting a good idea
-  // during the swap?
   const absl::optional<base::FilePath> target_path =
       GetGoogleUpdateExePath(scope);
   if (!target_path)
@@ -276,6 +273,10 @@ bool ComServerApp::SwapInNewVersion() {
   } else {
     AddComServerWorkItems(updater_path, false, list.get());
   }
+
+  const base::ScopedClosureRunner reset_shutdown_event(
+      SignalShutdownEvent(updater_scope()));
+  StopGoogleUpdateProcesses(updater_scope());
 
   if (list->Do()) {
     CheckComInterfaceTypeLib(updater_scope(), true);

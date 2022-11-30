@@ -5,7 +5,7 @@
 
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "goma", "os")
+load("//lib/builders.star", "goma", "os", "reclient")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 load("//project.star", "settings")
@@ -22,6 +22,9 @@ try_.defaults.set(
     os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 consoles.list_view(
@@ -61,7 +64,7 @@ try_.orchestrator_builder(
     # branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(
-        experiment_percentage = 100,
+        experiment_percentage = 60,
     ),
 )
 
@@ -78,9 +81,6 @@ try_.builder(
         "ci/Android x64 Builder (dbg)",
         "ci/android-12l-x64-dbg-tests",
     ],
-    tryjob = try_.job(
-        experiment_percentage = 2,
-    ),
 )
 
 try_.builder(
@@ -120,10 +120,6 @@ try_.builder(
             ],
         },
     },
-    experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-    },
     tryjob = try_.job(),
     ssd = True,
 )
@@ -136,12 +132,14 @@ try_.builder(
     ],
     main_list_view = "try",
     tryjob = try_.job(
-        location_filters = [
-            "components/cronet/.+",
-            "components/grpc_support/.+",
-            "build/android/.+",
-            "build/config/android/.+",
-            cq.location_filter(path_regexp = "components/cronet/ios/.+", exclude = True),
+        location_regexp = [
+            ".+/[+]/components/cronet/.+",
+            ".+/[+]/components/grpc_support/.+",
+            ".+/[+]/build/android/.+",
+            ".+/[+]/build/config/android/.+",
+        ],
+        location_regexp_exclude = [
+            ".+/[+]/components/cronet/ios/.+",
         ],
     ),
 )
@@ -179,12 +177,14 @@ try_.builder(
     check_for_flakiness = True,
     main_list_view = "try",
     tryjob = try_.job(
-        location_filters = [
-            "components/cronet/.+",
-            "components/grpc_support/.+",
-            "build/android/.+",
-            "build/config/android/.+",
-            cq.location_filter(path_regexp = "components/cronet/ios/.+", exclude = True),
+        location_regexp = [
+            ".+/[+]/components/cronet/.+",
+            ".+/[+]/components/grpc_support/.+",
+            ".+/[+]/build/android/.+",
+            ".+/[+]/build/config/android/.+",
+        ],
+        location_regexp_exclude = [
+            ".+/[+]/components/cronet/ios/.+",
         ],
     ),
 )
@@ -255,10 +255,7 @@ try_.orchestrator_builder(
     main_list_view = "try",
     tryjob = try_.job(),
     experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
         "remove_src_checkout_experiment": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
     },
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
@@ -272,8 +269,34 @@ try_.compilator_builder(
     main_list_view = "try",
 )
 
-try_.builder(
-    name = "android-opus-arm-rel",
+# b/236070074: Experimental builder to test reclient migration
+try_.orchestrator_builder(
+    name = "android-nougat-x86-rel-reclient",
+    mirrors = [
+        "ci/android-nougat-x86-rel",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
+    description_html = "Experimental shadow builder to test reclient migration. <br/>The bot is shadowing <a href=\"https://ci.chromium.org/p/chromium/builders/try/android-nougat-x86-rel\">android-nougat-x86-rel</a>.",
+    check_for_flakiness = True,
+    compilator = "android-nougat-x86-rel-reclient-compilator",
+    main_list_view = "try",
+    use_java_coverage = True,
+    coverage_test_types = ["unit", "overall"],
+    tryjob = try_.job(
+        experiment_percentage = 5,
+    ),
+)
+
+try_.compilator_builder(
+    name = "android-nougat-x86-rel-reclient-compilator",
+    check_for_flakiness = True,
+    main_list_view = "try",
+    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -290,6 +313,13 @@ try_.builder(
 )
 
 try_.builder(
+    name = "android-perfetto-rel",
+    mirrors = [
+        "ci/android-perfetto-rel",
+    ],
+)
+
+try_.builder(
     name = "android-pie-arm64-dbg",
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = False,
@@ -298,17 +328,17 @@ try_.builder(
     goma_jobs = goma.jobs.J300,
     main_list_view = "try",
     tryjob = try_.job(
-        location_filters = [
-            "chrome/android/features/vr/.+",
-            "chrome/android/java/src/org/chromium/chrome/browser/vr/.+",
-            "chrome/android/javatests/src/org/chromium/chrome/browser/vr/.+",
-            "chrome/browser/android/vr/.+",
-            "chrome/browser/vr/.+",
-            "content/browser/xr/.+",
-            "device/vr/android/.+",
-            "third_party/gvr-android-sdk/.+",
-            "third_party/arcore-android-sdk/.+",
-            "third_party/arcore-android-sdk-client/.+",
+        location_regexp = [
+            ".+/[+]/chrome/android/features/vr/.+",
+            ".+/[+]/chrome/android/java/src/org/chromium/chrome/browser/vr/.+",
+            ".+/[+]/chrome/android/javatests/src/org/chromium/chrome/browser/vr/.+",
+            ".+/[+]/chrome/browser/android/vr/.+",
+            ".+/[+]/chrome/browser/vr/.+",
+            ".+/[+]/content/browser/xr/.+",
+            ".+/[+]/device/vr/android/.+",
+            ".+/[+]/third_party/gvr-android-sdk/.+",
+            ".+/[+]/third_party/arcore-android-sdk/.+",
+            ".+/[+]/third_party/arcore-android-sdk-client/.+",
         ],
     ),
     mirrors = [
@@ -347,10 +377,11 @@ try_.orchestrator_builder(
     main_list_view = "try",
     tryjob = try_.job(),
     experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-        "remove_src_checkout_experiment": 20,
+        "remove_src_checkout_experiment": 100,
     },
+    # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
+    # are addressed
+    # use_orchestrator_pool = True,
 )
 
 try_.compilator_builder(
@@ -399,30 +430,6 @@ try_.builder(
 
 try_.builder(
     name = "android-chrome-pie-x86-wpt-fyi-rel",
-)
-
-try_.builder(
-    name = "android-weblayer-10-x86-rel-tests",
-    mirrors = [
-        "ci/android-weblayer-with-aosp-webview-x86-rel",
-        "ci/android-weblayer-10-x86-rel-tests",
-    ],
-)
-
-try_.builder(
-    name = "android-weblayer-marshmallow-x86-rel-tests",
-    mirrors = [
-        "ci/android-weblayer-with-aosp-webview-x86-rel",
-        "ci/android-weblayer-marshmallow-x86-rel-tests",
-    ],
-)
-
-try_.builder(
-    name = "android-weblayer-pie-x86-rel-tests",
-    mirrors = [
-        "ci/android-weblayer-x86-rel",
-        "ci/android-weblayer-pie-x86-rel-tests",
-    ],
 )
 
 try_.builder(
@@ -513,6 +520,17 @@ try_.builder(
 )
 
 try_.builder(
+    name = "android-x64-cast",
+    branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Cast Android (dbg)",
+    ],
+    builderless = not settings.is_main,
+    main_list_view = "try",
+    tryjob = try_.job(),
+)
+
+try_.builder(
     name = "android_compile_dbg",
     branch_selector = branches.STANDARD_MILESTONE,
     mirrors = [
@@ -545,15 +563,15 @@ try_.builder(
     ssd = True,
     main_list_view = "try",
     tryjob = try_.job(
-        location_filters = [
-            "chrome/android/java/src/org/chromium/chrome/browser/vr/.+",
-            "chrome/browser/vr/.+",
-            "content/browser/xr/.+",
-            "sandbox/linux/seccomp-bpf/.+",
-            "sandbox/linux/seccomp-bpf-helpers/.+",
-            "sandbox/linux/system_headers/.+",
-            "sandbox/linux/tests/.+",
-            "third_party/gvr-android-sdk/.+",
+        location_regexp = [
+            ".+/[+]/chrome/android/java/src/org/chromium/chrome/browser/vr/.+",
+            ".+/[+]/chrome/browser/vr/.+",
+            ".+/[+]/content/browser/xr/.+",
+            ".+/[+]/sandbox/linux/seccomp-bpf/.+",
+            ".+/[+]/sandbox/linux/seccomp-bpf-helpers/.+",
+            ".+/[+]/sandbox/linux/system_headers/.+",
+            ".+/[+]/sandbox/linux/tests/.+",
+            ".+/[+]/third_party/gvr-android-sdk/.+",
         ],
     ),
 )
@@ -572,15 +590,15 @@ try_.builder(
     ssd = True,
     main_list_view = "try",
     tryjob = try_.job(
-        location_filters = [
-            "chrome/android/java/src/org/chromium/chrome/browser/vr/.+",
-            "chrome/browser/vr/.+",
-            "content/browser/xr/.+",
-            "sandbox/linux/seccomp-bpf/.+",
-            "sandbox/linux/seccomp-bpf-helpers/.+",
-            "sandbox/linux/system_headers/.+",
-            "sandbox/linux/tests/.+",
-            "third_party/gvr-android-sdk/.+",
+        location_regexp = [
+            ".+/[+]/chrome/android/java/src/org/chromium/chrome/browser/vr/.+",
+            ".+/[+]/chrome/browser/vr/.+",
+            ".+/[+]/content/browser/xr/.+",
+            ".+/[+]/sandbox/linux/seccomp-bpf/.+",
+            ".+/[+]/sandbox/linux/seccomp-bpf-helpers/.+",
+            ".+/[+]/sandbox/linux/system_headers/.+",
+            ".+/[+]/sandbox/linux/tests/.+",
+            ".+/[+]/third_party/gvr-android-sdk/.+",
         ],
     ),
 )
@@ -597,10 +615,6 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
-    experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-    },
 )
 
 try_.builder(
@@ -617,21 +631,6 @@ try_.builder(
         "ci/Android arm64 Builder (dbg)",
         "ci/Android WebView N (dbg)",
     ],
-)
-
-try_.builder(
-    name = "cast_shell_android",
-    branch_selector = branches.STANDARD_MILESTONE,
-    mirrors = [
-        "ci/Cast Android (dbg)",
-    ],
-    builderless = not settings.is_main,
-    main_list_view = "try",
-    tryjob = try_.job(),
-    experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-    },
 )
 
 try_.builder(
@@ -673,31 +672,31 @@ try_.gpu.optional_tests_builder(
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
     tryjob = try_.job(
-        location_filters = [
-            "cc/.+",
-            "chrome/browser/vr/.+",
-            "content/browser/xr/.+",
-            "components/viz/.+",
-            "content/test/gpu/.+",
-            "gpu/.+",
-            "media/audio/.+",
-            "media/base/.+",
-            "media/capture/.+",
-            "media/filters/.+",
-            "media/gpu/.+",
-            "media/mojo/.+",
-            "media/renderers/.+",
-            "media/video/.+",
-            "services/viz/.+",
-            "testing/buildbot/tryserver.chromium.android.json",
-            "testing/trigger_scripts/.+",
-            "third_party/blink/renderer/modules/mediastream/.+",
-            "third_party/blink/renderer/modules/webcodecs/.+",
-            "third_party/blink/renderer/modules/webgl/.+",
-            "third_party/blink/renderer/platform/graphics/gpu/.+",
-            "tools/clang/scripts/update.py",
-            "tools/mb/mb_config_expectations/tryserver.chromium.android.json",
-            "ui/gl/.+",
+        location_regexp = [
+            ".+/[+]/cc/.+",
+            ".+/[+]/chrome/browser/vr/.+",
+            ".+/[+]/content/browser/xr/.+",
+            ".+/[+]/components/viz/.+",
+            ".+/[+]/content/test/gpu/.+",
+            ".+/[+]/gpu/.+",
+            ".+/[+]/media/audio/.+",
+            ".+/[+]/media/base/.+",
+            ".+/[+]/media/capture/.+",
+            ".+/[+]/media/filters/.+",
+            ".+/[+]/media/gpu/.+",
+            ".+/[+]/media/mojo/.+",
+            ".+/[+]/media/renderers/.+",
+            ".+/[+]/media/video/.+",
+            ".+/[+]/services/viz/.+",
+            ".+/[+]/testing/buildbot/tryserver.chromium.android.json",
+            ".+/[+]/testing/trigger_scripts/.+",
+            ".+/[+]/third_party/blink/renderer/modules/mediastream/.+",
+            ".+/[+]/third_party/blink/renderer/modules/webcodecs/.+",
+            ".+/[+]/third_party/blink/renderer/modules/webgl/.+",
+            ".+/[+]/third_party/blink/renderer/platform/graphics/gpu/.+",
+            ".+/[+]/tools/clang/scripts/update.py",
+            ".+/[+]/tools/mb/mb_config_expectations/tryserver.chromium.android.json",
+            ".+/[+]/ui/gl/.+",
         ],
     ),
 )

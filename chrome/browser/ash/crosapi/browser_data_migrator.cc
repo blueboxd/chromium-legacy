@@ -176,11 +176,12 @@ bool BrowserDataMigratorImpl::MaybeRestartToMigrateInternal(
   if (step != MigrationStep::kCheckStep) {
     switch (step) {
       case MigrationStep::kRestartCalled:
-        LOG(ERROR) << "RestartToMigrate() was called but Migrate() was not. "
-                      "This indicates that eitehr "
-                      "SessionManagerClient::RequestBrowserDataMigration() "
-                      "failed or ash crashed before reaching Migrate(). Check "
-                      "the previous chrome log and the one before.";
+        LOG(ERROR)
+            << "RestartToMigrate() was called but Migrate() was not. "
+               "This indicates that either "
+               "SessionManagerClient::BlockingRequestBrowserDataMigration() "
+               "failed or ash crashed before reaching Migrate(). Check "
+               "the previous chrome log and the one before.";
         break;
       case MigrationStep::kStarted:
         LOG(ERROR) << "Migrate() was called but "
@@ -336,12 +337,14 @@ bool BrowserDataMigratorImpl::RestartToMigrate(
   // TODO(crbug.com/1277848): Once `BrowserDataMigrator` stabilises, remove
   // this log message.
   LOG(WARNING) << "Making a dbus method call to session_manager";
-  bool success = SessionManagerClient::Get()->RequestBrowserDataMigration(
-      cryptohome::CreateAccountIdentifierFromAccountId(account_id), mode);
+  bool success =
+      SessionManagerClient::Get()->BlockingRequestBrowserDataMigration(
+          cryptohome::CreateAccountIdentifierFromAccountId(account_id), mode);
 
   // TODO(crbug.com/1261730): Add an UMA.
   if (!success) {
-    LOG(ERROR) << "SessionManagerClient::RequestBrowserDataMigration() failed.";
+    LOG(ERROR) << "SessionManagerClient::BlockingRequestBrowserDataMigration() "
+                  "failed.";
     return false;
   }
 
@@ -481,9 +484,9 @@ void BrowserDataMigratorImpl::UpdateMigrationAttemptCountForUser(
     const std::string& user_id_hash) {
   int count = GetMigrationAttemptCountForUser(local_state, user_id_hash);
   count += 1;
-  DictionaryPrefUpdate update(local_state, kMigrationAttemptCountPref);
-  base::Value* dict = update.Get();
-  dict->SetIntKey(user_id_hash, count);
+  ScopedDictPrefUpdate update(local_state, kMigrationAttemptCountPref);
+  base::Value::Dict& dict = update.Get();
+  dict.Set(user_id_hash, count);
 }
 
 // static
@@ -499,9 +502,9 @@ int BrowserDataMigratorImpl::GetMigrationAttemptCountForUser(
 void BrowserDataMigratorImpl::ClearMigrationAttemptCountForUser(
     PrefService* local_state,
     const std::string& user_id_hash) {
-  DictionaryPrefUpdate update(local_state, kMigrationAttemptCountPref);
-  base::Value* dict = update.Get();
-  dict->RemoveKey(user_id_hash);
+  ScopedDictPrefUpdate update(local_state, kMigrationAttemptCountPref);
+  base::Value::Dict& dict = update.Get();
+  dict.Remove(user_id_hash);
 }
 
 }  // namespace ash

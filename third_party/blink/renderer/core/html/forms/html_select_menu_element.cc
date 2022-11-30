@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -631,7 +631,7 @@ void HTMLSelectMenuElement::QueueCheckForMissingParts() {
 
 void HTMLSelectMenuElement::ResetOptionParts() {
   // Remove part status from all current option parts
-  while (!option_parts_.IsEmpty()) {
+  while (!option_parts_.empty()) {
     OptionPartRemoved(option_parts_.back());
   }
 
@@ -942,7 +942,7 @@ bool HTMLSelectMenuElement::MayTriggerVirtualKeyboard() const {
 }
 
 void HTMLSelectMenuElement::AppendToFormData(FormData& form_data) {
-  if (!GetName().IsEmpty())
+  if (!GetName().empty())
     form_data.AppendFromElement(GetName(), value());
 }
 
@@ -975,7 +975,7 @@ bool HTMLSelectMenuElement::ValueMissing() const {
     // If a non-placeholder label option is selected, it's not value-missing.
     // https://html.spec.whatwg.org/multipage/form-elements.html#placeholder-label-option
     return selected_option == FirstOptionPart() &&
-           selected_option->value().IsEmpty();
+           selected_option->value().empty();
   }
 
   return true;

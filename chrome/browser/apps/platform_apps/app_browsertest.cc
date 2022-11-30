@@ -70,6 +70,7 @@
 #include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "printing/buildflags/buildflags.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -521,6 +522,19 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_Iframes) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("platform_apps/iframes",
+                               {.launch_as_platform_app = true}))
+      << message_;
+}
+
+// Tests that platform apps can perform filesystem: URL navigations.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AllowFileSystemURLNavigation) {
+  // TODO(https://crbug.com/1332598): Remove this test when removing filesystem:
+  // navigation for good.
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kFileSystemUrlNavigationForChromeAppsOnly)) {
+    GTEST_SKIP();
+  }
+  ASSERT_TRUE(RunExtensionTest("platform_apps/filesystem_url",
                                {.launch_as_platform_app = true}))
       << message_;
 }
@@ -1136,12 +1150,11 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, PRE_ComponentAppBackgroundPage) {
   extensions::EventRouter::Get(browser()->profile())
       ->ClearRegisteredEventsForTest(extension->id());
 
-  DictionaryPrefUpdate update(extension_prefs->pref_service(),
+  ScopedDictPrefUpdate update(extension_prefs->pref_service(),
                               extensions::pref_names::kExtensions);
-  base::Value* dict = update.Get();
   std::string key(extension->id());
   key += ".manifest.version";
-  dict->SetStringPath(key, "1");
+  update->SetByDottedPath(key, "1");
 }
 
 // Component App Test 3 of 3: simulate a component extension upgrade that

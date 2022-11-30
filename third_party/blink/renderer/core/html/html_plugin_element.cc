@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
 
 #include "base/feature_list.h"
+#include "base/ranges/algorithm.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
@@ -99,17 +100,14 @@ void PluginParameters::AppendNameWithValue(const String& name,
 }
 
 void PluginParameters::MapDataParamToSrc() {
-  auto* src = std::find_if(names_.begin(), names_.end(), [](auto name) {
-    return EqualIgnoringASCIICase(name, "src");
-  });
-
-  if (src != names_.end()) {
+  if (base::ranges::any_of(names_, [](auto name) {
+        return EqualIgnoringASCIICase(name, "src");
+      })) {
     return;
   }
 
-  auto* data = std::find_if(names_.begin(), names_.end(), [](auto name) {
-    return EqualIgnoringASCIICase(name, "data");
-  });
+  auto* data = base::ranges::find_if(
+      names_, [](auto name) { return EqualIgnoringASCIICase(name, "data"); });
 
   if (data != names_.end()) {
     AppendNameWithValue(
@@ -128,14 +126,6 @@ HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tag_name,
       // simpler to make both classes share the same codepath in this class.
       needs_plugin_update_(!flags.IsCreatedByParser()) {
   SetHasCustomStyleCallbacks();
-  if (!base::FeatureList::IsEnabled(
-          features::kBackForwardCacheEnabledForNonPluginEmbed)) {
-    if (auto* context = doc.GetExecutionContext()) {
-      context->GetScheduler()->RegisterStickyFeature(
-          SchedulingPolicy::Feature::kContainsPlugins,
-          {SchedulingPolicy::DisableBackForwardCache()});
-    }
-  }
 }
 
 HTMLPlugInElement::~HTMLPlugInElement() {
@@ -546,10 +536,10 @@ HTMLPlugInElement::ObjectContentType HTMLPlugInElement::GetObjectContentType()
     const {
   String mime_type = service_type_;
   KURL url = GetDocument().CompleteURL(url_);
-  if (mime_type.IsEmpty()) {
+  if (mime_type.empty()) {
     // Try to guess the MIME type based off the extension.
     mime_type = GetMIMETypeFromURL(url);
-    if (mime_type.IsEmpty())
+    if (mime_type.empty())
       return ObjectContentType::kFrame;
   }
 
@@ -596,14 +586,13 @@ bool HTMLPlugInElement::AllowedToLoadFrameURL(const String& url) {
 }
 
 bool HTMLPlugInElement::RequestObject(const PluginParameters& plugin_params) {
-  if (url_.IsEmpty() && service_type_.IsEmpty())
+  if (url_.empty() && service_type_.empty())
     return false;
 
   if (ProtocolIsJavaScript(url_))
     return false;
 
-  KURL completed_url =
-      url_.IsEmpty() ? KURL() : GetDocument().CompleteURL(url_);
+  KURL completed_url = url_.empty() ? KURL() : GetDocument().CompleteURL(url_);
   if (!AllowedToLoadObject(completed_url, service_type_))
     return false;
 
@@ -613,8 +602,8 @@ bool HTMLPlugInElement::RequestObject(const PluginParameters& plugin_params) {
       AllowedToLoadPlugin(completed_url, service_type_) &&
       GetDocument().GetFrame()->Client()->IsPluginHandledExternally(
           *this, completed_url,
-          service_type_.IsEmpty() ? GetMIMETypeFromURL(completed_url)
-                                  : service_type_);
+          service_type_.empty() ? GetMIMETypeFromURL(completed_url)
+                                : service_type_);
   if (handled_externally)
     ResetInstance();
   if (object_type == ObjectContentType::kFrame ||
@@ -700,16 +689,13 @@ bool HTMLPlugInElement::LoadPlugin(const KURL& url,
     layout_object->GetFrameView()->AddPlugin(plugin);
   }
 
-  if (base::FeatureList::IsEnabled(
-          features::kBackForwardCacheEnabledForNonPluginEmbed)) {
-    // Disable back/forward cache when a document uses a plugin. This is not
-    // done in the constructor since |HTMLPlugInElement| is a base class for
-    // HTMLObjectElement and HTMLEmbedElement which can host child browsing
-    // contexts instead.
-    GetExecutionContext()->GetScheduler()->RegisterStickyFeature(
-        SchedulingPolicy::Feature::kContainsPlugins,
-        {SchedulingPolicy::DisableBackForwardCache()});
-  }
+  // Disable back/forward cache when a document uses a plugin. This is not
+  // done in the constructor since `HTMLPlugInElement` is a base class for
+  // HTMLObjectElement and HTMLEmbedElement which can host child browsing
+  // contexts instead.
+  GetExecutionContext()->GetScheduler()->RegisterStickyFeature(
+      SchedulingPolicy::Feature::kContainsPlugins,
+      {SchedulingPolicy::DisableBackForwardCache()});
 
   GetDocument().SetContainsPlugins();
   // TODO(esprehn): WebPluginContainerImpl::SetCcLayer() also schedules a
@@ -731,7 +717,7 @@ void HTMLPlugInElement::DispatchErrorEvent() {
 
 bool HTMLPlugInElement::AllowedToLoadObject(const KURL& url,
                                             const String& mime_type) {
-  if (url.IsEmpty() && mime_type.IsEmpty())
+  if (url.IsEmpty() && mime_type.empty())
     return false;
 
   LocalFrame* frame = GetDocument().GetFrame();
@@ -754,7 +740,7 @@ bool HTMLPlugInElement::AllowedToLoadObject(const KURL& url,
   }
   // If the URL is empty, a plugin could still be instantiated if a MIME-type
   // is specified.
-  return (!mime_type.IsEmpty() && url.IsEmpty()) ||
+  return (!mime_type.empty() && url.IsEmpty()) ||
          !MixedContentChecker::ShouldBlockFetch(
              frame, mojom::blink::RequestContextType::OBJECT,
              network::mojom::blink::IPAddressSpace::kUnknown, url,
@@ -828,7 +814,7 @@ void HTMLPlugInElement::ReattachOnPluginChangeIfNeeded() {
 }
 
 void HTMLPlugInElement::UpdateServiceTypeIfEmpty() {
-  if (service_type_.IsEmpty() && ProtocolIs(url_, "data")) {
+  if (service_type_.empty() && ProtocolIs(url_, "data")) {
     service_type_ = MimeTypeFromDataURL(url_);
   }
 }

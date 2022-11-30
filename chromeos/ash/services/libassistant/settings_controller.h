@@ -14,8 +14,7 @@
 #include "chromeos/ash/services/libassistant/public/mojom/settings_controller.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 class SettingsController : public AssistantClientObserver,
                            public mojom::SettingsController {
@@ -84,7 +83,6 @@ class SettingsController : public AssistantClientObserver,
   mojo::Receiver<mojom::SettingsController> receiver_{this};
 };
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant
 
 #endif  // CHROMEOS_ASH_SERVICES_LIBASSISTANT_SETTINGS_CONTROLLER_H_

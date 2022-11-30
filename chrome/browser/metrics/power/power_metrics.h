@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/power_monitor/power_monitor_buildflags.h"
+#include "base/power_monitor/battery_level_provider.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/power/process_monitor.h"
@@ -16,10 +16,6 @@
 #if BUILDFLAG(IS_MAC)
 #include "chrome/browser/metrics/power/coalition_resource_usage_provider_mac.h"
 #include "components/power_metrics/resource_coalition_mac.h"
-#endif
-
-#if BUILDFLAG(HAS_BATTERY_LEVEL_PROVIDER_IMPL)
-#include "base/power_monitor/battery_level_provider.h"
 #endif
 
 // Report aggregated process metrics to histograms with |suffixes|.
@@ -46,11 +42,12 @@ enum class BatteryDischargeMode {
 
 struct BatteryDischarge {
   BatteryDischargeMode mode;
-  // Discharge rate in 1/10000 of full capacity per minute.
-  absl::optional<int64_t> rate;
+  // Discharge rate in milliwatts.
+  absl::optional<int64_t> rate_milliwatts;
+  // Discharge rate in hundredth of a percent per minute.
+  absl::optional<int64_t> rate_relative;
 };
 
-#if BUILDFLAG(HAS_BATTERY_LEVEL_PROVIDER_IMPL)
 // Computes and returns the battery discharge mode and rate during the interval.
 // If the discharge rate isn't valid, the returned rate is nullopt and the
 // reason is indicated per BatteryDischargeMode.
@@ -61,11 +58,19 @@ BatteryDischarge GetBatteryDischargeDuringInterval(
         new_battery_state,
     base::TimeDelta interval_duration);
 
-// Report battery metrics to histograms with |suffixes|.
+// Report battery metrics to histograms with |scenario_suffixes|.
 void ReportBatteryHistograms(base::TimeDelta interval_duration,
                              BatteryDischarge battery_discharge,
-                             const std::vector<const char*>& suffixes);
-#endif  // BUILDFLAG(HAS_BATTERY_LEVEL_PROVIDER_IMPL)
+                             const std::vector<const char*>& scenario_suffixes);
+
+// Report battery metrics to histograms with |scenario_suffixes|. The difference
+// with the above version is that when possible, the intervals are aligned with
+// battery discharge notifications from the OS (MacOS only for now).
+void ReportAlignedBatteryHistograms(
+    base::TimeDelta interval_duration,
+    BatteryDischarge battery_discharge,
+    bool is_initial_interval,
+    const std::vector<const char*>& scenario_suffixes);
 
 #if BUILDFLAG(IS_MAC)
 void ReportShortIntervalHistograms(

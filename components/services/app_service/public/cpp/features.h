@@ -10,22 +10,17 @@
 
 namespace apps {
 
+COMPONENT_EXPORT(APP_TYPES) BASE_DECLARE_FEATURE(kAppServiceLaunchWithoutMojom);
 COMPONENT_EXPORT(APP_TYPES)
-extern const base::Feature kAppServicePreferredAppsWithoutMojom;
+BASE_DECLARE_FEATURE(kAppServiceSetPermissionWithoutMojom);
 COMPONENT_EXPORT(APP_TYPES)
-extern const base::Feature kAppServiceLaunchWithoutMojom;
+BASE_DECLARE_FEATURE(kAppServiceUninstallWithoutMojom);
+COMPONENT_EXPORT(APP_TYPES) BASE_DECLARE_FEATURE(kAppServiceWithoutMojom);
 COMPONENT_EXPORT(APP_TYPES)
-extern const base::Feature kAppServiceSetPermissionWithoutMojom;
+BASE_DECLARE_FEATURE(kAppServiceGetMenuWithoutMojom);
 COMPONENT_EXPORT(APP_TYPES)
-extern const base::Feature kAppServiceUninstallWithoutMojom;
-COMPONENT_EXPORT(APP_TYPES)
-extern const base::Feature kAppServiceWithoutMojom;
-COMPONENT_EXPORT(APP_TYPES)
-extern const base::Feature kAppServiceGetMenuWithoutMojom;
-COMPONENT_EXPORT(APP_TYPES)
-extern const base::Feature kAppServiceCapabilityAccessWithoutMojom;
-COMPONENT_EXPORT(APP_TYPES)
-extern const base::Feature kStopMojomAppService;
+BASE_DECLARE_FEATURE(kAppServiceCapabilityAccessWithoutMojom);
+COMPONENT_EXPORT(APP_TYPES) BASE_DECLARE_FEATURE(kStopMojomAppService);
 
 }  // namespace apps
 

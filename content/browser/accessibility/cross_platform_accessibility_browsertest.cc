@@ -91,8 +91,9 @@ class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
 
  protected:
   // Choose which feature flags to enable or disable.
-  virtual void ChooseFeatures(std::vector<base::Feature>* enabled_features,
-                              std::vector<base::Feature>* disabled_features);
+  virtual void ChooseFeatures(
+      std::vector<base::test::FeatureRef>* enabled_features,
+      std::vector<base::test::FeatureRef>* disabled_features);
 
   void ExecuteScript(const char* script) {
     shell()->web_contents()->GetPrimaryMainFrame()->ExecuteJavaScriptForTests(
@@ -218,8 +219,8 @@ class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
 };
 
 void CrossPlatformAccessibilityBrowserTest::SetUp() {
-  std::vector<base::Feature> enabled_features;
-  std::vector<base::Feature> disabled_features;
+  std::vector<base::test::FeatureRef> enabled_features;
+  std::vector<base::test::FeatureRef> disabled_features;
   ChooseFeatures(&enabled_features, &disabled_features);
 
   scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
@@ -233,8 +234,8 @@ void CrossPlatformAccessibilityBrowserTest::SetUp() {
 }
 
 void CrossPlatformAccessibilityBrowserTest::ChooseFeatures(
-    std::vector<base::Feature>* enabled_features,
-    std::vector<base::Feature>* disabled_features) {
+    std::vector<base::test::FeatureRef>* enabled_features,
+    std::vector<base::test::FeatureRef>* disabled_features) {
   enabled_features->emplace_back(
       features::kEnableAccessibilityExposeHTMLElement);
 }
@@ -1917,7 +1918,8 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 #endif
 
 #if defined(IS_FAST_BUILD)  // Avoid flakiness on slower debug/sanitizer builds.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+// TODO(crbug.com/1179057): Test is flaky on multiple platforms.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
 #define MAYBE_DocumentSelectionChangesAreNotBatched \
   DISABLED_DocumentSelectionChangesAreNotBatched
 #else

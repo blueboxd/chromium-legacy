@@ -187,17 +187,18 @@ class MockFileSystem(object):
     def glob(self, glob_string):
         # FIXME: This handles '*', but not '?', '[', or ']'.
         glob_string = re.escape(glob_string)
-        glob_string = glob_string.replace('\\*', '[^\\/]*') + '$'
+        glob_string = glob_string.replace('\\*\\*', '.*')
+        glob_string = glob_string.replace('\\*', '[^\\/]*')
         glob_string = glob_string.replace('\\/', '/')
-        path_filter = lambda path: re.match(glob_string, path)
+        path_filter = lambda path: re.fullmatch(glob_string, path)
 
         # We could use fnmatch.fnmatch, but that might not do the right thing on Windows.
         existing_files = [
             path for path, contents in self.files.items()
             if contents is not None
         ]
-        return list(filter(path_filter, existing_files)) + list(
-            filter(path_filter, self.dirs))
+        yield from filter(path_filter, existing_files)
+        yield from filter(path_filter, self.dirs)
 
     def isabs(self, path):
         return path.startswith(self.sep)
@@ -208,8 +209,9 @@ class MockFileSystem(object):
     def isdir(self, path):
         return self.normpath(path) in self.dirs
 
-    def _slow_but_correct_join(self, *comps):
-        return re.sub(re.escape(os.path.sep), self.sep, os.path.join(*comps))
+    def _slow_but_correct_join(self, comp, *comps):
+        return re.sub(re.escape(os.path.sep), self.sep,
+                      os.path.join(comp, *comps))
 
     def join(self, *comps):
         # The real `os.path.join` accepts both strings and bytes:

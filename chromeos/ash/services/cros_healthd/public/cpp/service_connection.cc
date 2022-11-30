@@ -17,8 +17,8 @@
 #include "base/sequence_checker.h"
 #include "chromeos/ash/components/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/ash/components/dbus/cros_healthd/fake_cros_healthd_client.h"
+#include "chromeos/ash/components/mojo_service_manager/connection.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
-#include "chromeos/components/mojo_service_manager/connection.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/cros_system_api/mojo/service_constants.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
@@ -848,21 +848,9 @@ void ServiceConnectionImpl::BindCrosHealthdProbeServiceIfNeeded() {
       &ServiceConnectionImpl::OnDisconnect, weak_factory_.GetWeakPtr()));
 }
 
-bool UseServiceManager() {
-  auto* command_line = base::CommandLine::ForCurrentProcess();
-  bool has_service_manager =
-      command_line->HasSwitch(ash::switches::kAshUseCrOSMojoServiceManager);
-  bool healthd_use_service_manager =
-      command_line->HasSwitch(ash::switches::kCrosHealthdUsesServiceManager);
-  DCHECK(!healthd_use_service_manager ||
-         (healthd_use_service_manager && has_service_manager))
-      << "Healthd try to use chromeos mojo service manager but it is not "
-         "enabled.";
-  return has_service_manager && healthd_use_service_manager;
-}
-
 ServiceConnectionImpl::ServiceConnectionImpl()
-    : use_service_manager_(UseServiceManager()) {
+    : use_service_manager_(
+          chromeos::mojo_service_manager::IsServiceManagerBound()) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 #if !defined(USE_REAL_DBUS_CLIENTS)
   // Creates the fake mojo service if need. This is for browser test to do the

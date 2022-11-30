@@ -7,7 +7,6 @@
 
 #include "content/browser/renderer_host/render_process_host_impl.h"
 
-#include <algorithm>
 #include <limits>
 #include <map>
 #include <memory>
@@ -15,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -50,6 +50,7 @@
 #include "base/observer_list.h"
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/system/sys_info.h"
@@ -1533,22 +1534,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   gpu_client_.reset(
       new viz::GpuClient(std::make_unique<BrowserGpuClientDelegate>(), id,
                          tracing_id, GetUIThreadTaskRunner({})));
-
-  // Set cache information after the GpuClient has been initialized. Note that
-  // we also check if the factory is initialized because in tests the factory
-  // may never have been initialized properly.
-  if (!GetBrowserContext()->IsOffTheRecord() &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableGpuShaderDiskCache)) {
-    if (auto* cache_factory = GetGpuDiskCacheFactorySingleton()) {
-      for (const gpu::GpuDiskCacheType type : gpu::kGpuDiskCacheTypes) {
-        auto handle = cache_factory->GetCacheHandle(
-            type, storage_partition_impl_->GetPath().Append(
-                      gpu::GetGpuDiskCacheSubdir(type)));
-        gpu_client_->SetDiskCacheHandle(handle);
-      }
-    }
-  }
 }
 
 // static
@@ -1676,6 +1661,22 @@ bool RenderProcessHostImpl::Init() {
   sent_render_process_ready_ = false;
 
   gpu_client_->PreEstablishGpuChannel();
+
+  // Set cache information after establishing a channel since the handles are
+  // stored on the channels. Note that we also check if the factory is
+  // initialized because in tests the factory may never have been initialized.
+  if (!GetBrowserContext()->IsOffTheRecord() &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuShaderDiskCache)) {
+    if (auto* cache_factory = GetGpuDiskCacheFactorySingleton()) {
+      for (const gpu::GpuDiskCacheType type : gpu::kGpuDiskCacheTypes) {
+        auto handle = cache_factory->GetCacheHandle(
+            type, storage_partition_impl_->GetPath().Append(
+                      gpu::GetGpuDiskCacheSubdir(type)));
+        gpu_client_->SetDiskCacheHandle(handle);
+      }
+    }
+  }
 
   // We may reach Init() during process death notification (e.g.
   // RenderProcessExited on some observer). In this case the Channel may be
@@ -1897,13 +1898,13 @@ void RenderProcessHostImpl::BindCacheStorage(
     const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
         coep_reporter_remote,
-    const blink::StorageKey& storage_key,
+    const storage::BucketLocator& bucket_locator,
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   storage_partition_impl_->GetCacheStorageControl()->AddReceiver(
       cross_origin_embedder_policy, std::move(coep_reporter_remote),
-      storage_key, storage::mojom::CacheStorageOwner::kCacheAPI,
+      bucket_locator, storage::mojom::CacheStorageOwner::kCacheAPI,
       std::move(receiver));
 }
 
@@ -2796,9 +2797,10 @@ void RenderProcessHostImpl::RemoveRoute(int32_t routing_id) {
 bool RenderProcessHostImpl::TakeFrameTokensForFrameRoutingID(
     int32_t new_routing_id,
     blink::LocalFrameToken& frame_token,
-    base::UnguessableToken& devtools_frame_token) {
+    base::UnguessableToken& devtools_frame_token,
+    blink::DocumentToken& document_token) {
   return widget_helper_->TakeFrameTokensForFrameRoutingID(
-      new_routing_id, frame_token, devtools_frame_token);
+      new_routing_id, frame_token, devtools_frame_token, document_token);
 }
 
 void RenderProcessHostImpl::AddObserver(RenderProcessHostObserver* observer) {
@@ -3186,6 +3188,15 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
   if (IsJitDisabled())
     command_line->AppendSwitchASCII(blink::switches::kJavaScriptFlags,
                                     "--jitless");
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kTouchTextEditingRedesign)) {
+    command_line->AppendSwitchASCII(
+        blink::switches::kTouchTextSelectionStrategy,
+        blink::switches::kTouchTextSelectionStrategy_Direction);
+  }
+#endif
 
 #if BUILDFLAG(IS_WIN)
   command_line->AppendSwitchASCII(
@@ -4104,8 +4115,7 @@ void RenderProcessHostImpl::RegisterCreationObserver(
 void RenderProcessHostImpl::UnregisterCreationObserver(
     RenderProcessHostCreationObserver* observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto iter = std::find(GetAllCreationObservers().begin(),
-                        GetAllCreationObservers().end(), observer);
+  auto iter = base::ranges::find(GetAllCreationObservers(), observer);
   DCHECK(iter != GetAllCreationObservers().end());
   GetAllCreationObservers().erase(iter);
 }

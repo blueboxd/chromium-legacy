@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,6 @@ namespace blink {
 
 class NGBlockNode;
 class NGBlockBreakToken;
-class NGBoxFragment;
 struct DevtoolsFlexInfo;
 struct NGFlexItem;
 
@@ -34,10 +33,15 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
 
  private:
   const NGLayoutResult* RelayoutIgnoringChildScrollbarChanges();
+  const NGLayoutResult* RelayoutAndBreakEarlierForFlex(
+      const NGLayoutResult* previous_result);
   const NGLayoutResult* LayoutInternal();
 
-  void PlaceFlexItems(HeapVector<NGFlexLine>* flex_line_outputs,
-                      HeapVector<Member<LayoutBox>>* oof_children);
+  void PlaceFlexItems(
+      HeapVector<NGFlexLine>* flex_line_outputs,
+      HeapVector<Member<LayoutBox>>* oof_children,
+      bool is_computing_multiline_column_intrinsic_size = false);
+
   void CalculateTotalIntrinsicBlockSize(bool use_empty_line_block_size);
 
   Length GetUsedFlexBasis(const NGBlockNode& child) const;
@@ -67,7 +71,8 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
       const NGBlockNode& flex_item) const;
   NGConstraintSpace BuildSpaceForFlexBasis(const NGBlockNode& flex_item) const;
   NGConstraintSpace BuildSpaceForIntrinsicBlockSize(
-      const NGBlockNode& flex_item) const;
+      const NGBlockNode& flex_item,
+      absl::optional<LayoutUnit> override_inline_size = absl::nullopt) const;
   // |line_cross_size_for_stretch| should only be set when running the final
   // layout pass for stretch, when the line cross size is definite.
   // |block_offset_for_fragmentation| should only be set when running the final
@@ -75,11 +80,14 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   NGConstraintSpace BuildSpaceForLayout(
       const NGBlockNode& flex_item_node,
       LayoutUnit item_main_axis_final_size,
+      absl::optional<LayoutUnit> override_inline_size = absl::nullopt,
       absl::optional<LayoutUnit> line_cross_size_for_stretch = absl::nullopt,
       absl::optional<LayoutUnit> block_offset_for_fragmentation = absl::nullopt,
       bool min_block_size_should_encompass_intrinsic_size = false) const;
+
+  enum class Phase { kLayout, kRowIntrinsicSize, kColumnWrapIntrinsicSize };
   void ConstructAndAppendFlexItems(
-      bool is_computing_intrinsic_size = false,
+      Phase phase,
       HeapVector<Member<LayoutBox>>* oof_children = nullptr);
   void ApplyFinalAlignmentAndReversals(
       HeapVector<NGFlexLine>* flex_line_outputs);
@@ -102,16 +110,9 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   LayoutUnit MainAxisContentExtent(LayoutUnit sum_hypothetical_main_size) const;
 
   void HandleOutOfFlowPositionedItems(
-      const HeapVector<Member<LayoutBox>>& oof_children);
+      HeapVector<Member<LayoutBox>>& oof_children);
 
   void AdjustButtonBaseline(LayoutUnit final_content_cross_size);
-
-  // Propagates the baseline from the given flex-item if needed.
-  void PropagateBaselineFromChild(
-      const ComputedStyle&,
-      const NGBoxFragment&,
-      LayoutUnit block_offset,
-      absl::optional<LayoutUnit>* fallback_baseline);
 
   MinMaxSizesResult ComputeMinMaxSizeOfRowContainer();
   MinMaxSizesResult ComputeMinMaxSizeOfMultilineColumnContainer();
@@ -181,12 +182,9 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   void CheckFlexLines(HeapVector<NGFlexLine>& flex_line_outputs) const;
 #endif
 
-  // These are used when determining the max-content width of a column-wrap flex
-  // container. Note: |item_inline_available_size_override_| has to be
-  // initialized before is_cross_size_definite_, and probably before some other
-  // data members too.
-  LogicalSize ChildAvailableSize() const;
-  absl::optional<LayoutUnit> item_inline_available_size_override_;
+  // Used when determining the max-content width of a column-wrap flex
+  // container.
+  LayoutUnit largest_min_content_contribution_;
 
   const bool is_column_;
   const bool is_horizontal_flow_;

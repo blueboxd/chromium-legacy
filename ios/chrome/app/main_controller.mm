@@ -58,6 +58,7 @@
 #import "ios/chrome/app/startup/setup_debugging.h"
 #import "ios/chrome/app/startup_tasks.h"
 #import "ios/chrome/app/tests_hook.h"
+#import "ios/chrome/app/variations_app_state_agent.h"
 #import "ios/chrome/browser/accessibility/window_accessibility_change_notifier_app_agent.h"
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -150,8 +151,9 @@ namespace {
 
 #if BUILDFLAG(FAST_APP_TERMINATE_ENABLED)
 // Skip chromeMain.reset() on shutdown, see crbug.com/1328891 for details.
-const base::Feature kFastApplicationWillTerminate{
-    "FastApplicationWillTerminate", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kFastApplicationWillTerminate,
+             "FastApplicationWillTerminate",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(FAST_APP_TERMINATE_ENABLED)
 
 // Constants for deferring resetting the startup attempt count (to give the app
@@ -321,7 +323,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // Handles collecting metrics on user triggered screenshots
 @property(nonatomic, strong)
     ScreenshotMetricsRecorder* screenshotMetricsRecorder;
-
 // Returns whether the restore infobar should be displayed.
 - (bool)mustShowRestoreInfobar;
 // Cleanup snapshots on disk.
@@ -502,6 +503,16 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       ChromeWebUIIOSControllerFactory::GetInstance());
 
   [NSURLCache setSharedURLCache:[EmptyNSURLCache emptyNSURLCache]];
+
+  [self.appState
+      addAgent:[[PostRestoreAppAgent alloc]
+                   initWithPromosManager:GetApplicationContext()
+                                             ->GetPromosManager()
+                   authenticationService:AuthenticationServiceFactory::
+                                             GetForBrowserState(
+                                                 self.appState.mainBrowserState)
+                              localState:GetApplicationContext()
+                                             ->GetLocalState()]];
 }
 
 // This initialization must happen before any windows are created.
@@ -671,6 +682,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     case InitStageSafeMode:
       [self addPostSafeModeAgents];
       break;
+    case InitStageVariationsSeed:
+      break;
     case InitStageBrowserObjectsForBackgroundHandlers:
       [self startUpBrowserBackgroundInitialization];
       [appState queueTransitionToNextInitStage];
@@ -701,7 +714,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 #if BUILDFLAG(IOS_CREDENTIAL_PROVIDER_ENABLED)
   [self.appState addAgent:[[CredentialProviderAppAgent alloc] init]];
 #endif
-  [self.appState addAgent:[[PostRestoreAppAgent alloc] init]];
 }
 
 #pragma mark - SceneStateObserver
@@ -731,6 +743,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [appState addAgent:[[AppMetricsAppStateAgent alloc] init]];
   [appState addAgent:[[SafeModeAppAgent alloc] init]];
   [appState addAgent:[[FeedAppAgent alloc] init]];
+  [appState addAgent:[[VariationsAppStateAgent alloc] init]];
 
   // Create the window accessibility agent only when multiple windows are
   // possible.
@@ -782,23 +795,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [_spotlightManager shutdown];
   _spotlightManager = nil;
 
-  if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
-    if (self.appState.mainBrowserState->HasOffTheRecordChromeBrowserState()) {
-      breadcrumbs::BreadcrumbManagerKeyedService* service =
-          BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
-              self.appState.mainBrowserState
-                  ->GetOffTheRecordChromeBrowserState());
-      service->StopPersisting();
-      breakpad::StopMonitoringBreadcrumbManagerService(service);
-    }
-
-    breadcrumbs::BreadcrumbManagerKeyedService* service =
-        BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
-            self.appState.mainBrowserState);
-    service->StopPersisting();
-    breakpad::StopMonitoringBreadcrumbManagerService(service);
-  }
-
   _extensionSearchEngineDataUpdater = nullptr;
 
   // _localStatePrefChangeRegistrar is observing the PrefService, which is owned
@@ -818,8 +814,14 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // _chromeMain.reset() is a blocking call that regularly causes
   // applicationWillTerminate to fail after a 5s delay. Experiment with skipping
   // this shutdown call. See: crbug.com/1328891
-  if (base::FeatureList::IsEnabled(kFastApplicationWillTerminate))
+  if (base::FeatureList::IsEnabled(kFastApplicationWillTerminate)) {
+    metrics::MetricsService* metrics =
+        GetApplicationContext()->GetMetricsService();
+    if (metrics) {
+      metrics->Stop();
+    }
     return;
+  }
 #endif  // BUILDFLAG(FAST_APP_TERMINATE_ENABLED)
 
   _chromeMain.reset();
@@ -1039,13 +1041,15 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                   }];
 }
 
-// Schedule a call to `saveFieldTrialValuesForExtensions` for deferred
-// execution.
-- (void)scheduleSaveFieldTrialValuesForExtensions {
+// Schedule a call to `scheduleSaveFieldTrialValuesForExternals` for deferred
+// execution. Externals can be extensions or 1st party apps.
+- (void)scheduleSaveFieldTrialValuesForExternals {
+  __weak __typeof(self) weakSelf = self;
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kSaveFieldTrialValues
                   block:^{
-                    [self saveFieldTrialValuesForExtensions];
+                    [weakSelf saveFieldTrialValuesForExtensions];
+                    [weakSelf saveFieldTrialValuesForGroupApp];
                   }];
 }
 
@@ -1130,18 +1134,13 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)startLoggingBreadcrumbs {
-  breadcrumbs::BreadcrumbManagerKeyedService* breadcrumbService =
-      BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
-          self.appState.mainBrowserState);
-  breakpad::MonitorBreadcrumbManagerService(breadcrumbService);
+  BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
+      self.appState.mainBrowserState);
 
+  // Get stored persistent breadcrumbs from last run to set on crash reports.
   breadcrumbs::BreadcrumbPersistentStorageManager* persistentStorageManager =
       GetApplicationContext()->GetBreadcrumbPersistentStorageManager();
   DCHECK(persistentStorageManager);
-
-  breadcrumbService->StartPersisting(persistentStorageManager);
-
-  // Get stored persistent breadcrumbs from last run to set on crash reports.
   persistentStorageManager->GetStoredEvents(
       base::BindOnce(^(std::vector<std::string> events) {
         breakpad::SetPreviousSessionEvents(events);
@@ -1172,7 +1171,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self startFreeMemoryMonitoring];
   [self scheduleAppDistributionPings];
   [self initializeMailtoHandling];
-  [self scheduleSaveFieldTrialValuesForExtensions];
+  [self scheduleSaveFieldTrialValuesForExternals];
   [self scheduleEnterpriseManagedDeviceCheck];
   [self scheduleFaviconsCleanup];
 }

@@ -1356,7 +1356,7 @@
     "cos",
     // "tan" - already declared for color value
     "asin",
-    // "atan",
+    "atan",
     // "atan2",
     "acos",
 
@@ -1480,8 +1480,7 @@
     // (device-posture) media feature
     "continuous",
     "folded",
-    "folded-over",
-
+    
     // scrollbar-gutter
     // auto
     "stable",
@@ -1541,6 +1540,9 @@
     "next",
     "set",
 
+    // toggle-visibility
+    "toggle",
+
     // color-contrast()
     "color-contrast",
     "vs",
@@ -1548,6 +1550,10 @@
     "AA-large",
     "AAA",
     "AAA-large",
+
+    // initial-letter
+    "drop",
+    "raise",
 
     // basic-shape functions.
     "xywh",
@@ -1570,6 +1576,12 @@
     // inline,
     "self-block",
     "self-inline",
+
+    // animation-[end-]delay
+    // contain
+    // cover
+    "enter",
+    "exit",
 
     // scroll()
     "root",

@@ -9,6 +9,7 @@
 #include "content/browser/devtools/protocol/target_handler.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/portal/portal.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 
 namespace content {
@@ -47,13 +48,25 @@ class WebContentsDevToolsAgentHost::AutoAttacher
   void PortalActivated(const Portal& portal) {
     if (web_contents_ == portal.GetPortalHostContents())
       web_contents_ = portal.GetPortalContents();
-    if (auto_attach())
-      UpdateAssociatedPages();
+    UpdateChildFrameTrees(/* update_target_info= */ true);
   }
 
-  void PortalUpdated() {
-    if (auto_attach())
-      UpdateAssociatedPages();
+  void UpdateChildFrameTrees(bool update_target_info) {
+    if (!auto_attach())
+      return;
+    base::flat_set<scoped_refptr<DevToolsAgentHost>> pages =
+        UpdateAssociatedPages();
+    if (update_target_info) {
+      for (auto& page : pages)
+        DispatchTargetInfoChanged(page.get());
+    }
+  }
+
+  void WillInitiatePrerender(FrameTreeNode* ftn) {
+    if (!auto_attach())
+      return;
+    auto host = RenderFrameDevToolsAgentHost::GetOrCreateFor(ftn);
+    DispatchAutoAttach(host.get(), wait_for_debugger_on_start());
   }
 
  private:
@@ -62,7 +75,7 @@ class WebContentsDevToolsAgentHost::AutoAttacher
     protocol::TargetAutoAttacher::UpdateAutoAttach(std::move(callback));
   }
 
-  void UpdateAssociatedPages() {
+  base::flat_set<scoped_refptr<DevToolsAgentHost>> UpdateAssociatedPages() {
     base::flat_set<scoped_refptr<DevToolsAgentHost>> hosts;
     if (auto_attach()) {
       auto* rfh = static_cast<RenderFrameHostImpl*>(
@@ -78,14 +91,14 @@ class WebContentsDevToolsAgentHost::AutoAttacher
             wc->GetPrimaryFrameTree().root()));
       }
       web_contents_->ForEachRenderFrameHost(
-          [&hosts](RenderFrameHost* rfh) { AddFrameAndPortals(hosts, rfh); });
+          [&hosts](RenderFrameHost* rfh) { AddFrame(hosts, rfh); });
     }
     DispatchSetAttachedTargetsOfType(hosts, DevToolsAgentHost::kTypePage);
+    return hosts;
   }
 
-  static void AddFrameAndPortals(
-      base::flat_set<scoped_refptr<DevToolsAgentHost>>& hosts,
-      RenderFrameHost* rfh) {
+  static void AddFrame(base::flat_set<scoped_refptr<DevToolsAgentHost>>& hosts,
+                       RenderFrameHost* rfh) {
     RenderFrameHostImpl* rfhi = static_cast<RenderFrameHostImpl*>(rfh);
     // We do not expose cached hosts as separate targets for now.
     if (rfhi->IsInBackForwardCache())
@@ -153,13 +166,19 @@ void WebContentsDevToolsAgentHost::PortalActivated(const Portal& portal) {
     g_agent_host_instances.Get()[new_wc] = this;
     Observe(portal.GetPortalContents());
   }
-  if (auto_attacher_)
-    auto_attacher_->PortalActivated(portal);
+  DCHECK(auto_attacher_);
+  auto_attacher_->PortalActivated(portal);
 }
 
-void WebContentsDevToolsAgentHost::PortalUpdated() {
-  if (auto_attacher_)
-    auto_attacher_->PortalUpdated();
+void WebContentsDevToolsAgentHost::WillInitiatePrerender(FrameTreeNode* ftn) {
+  DCHECK(auto_attacher_);
+  auto_attacher_->WillInitiatePrerender(ftn);
+}
+
+void WebContentsDevToolsAgentHost::UpdateChildFrameTrees(
+    bool update_target_info) {
+  DCHECK(auto_attacher_);
+  auto_attacher_->UpdateChildFrameTrees(update_target_info);
 }
 
 WebContentsDevToolsAgentHost::~WebContentsDevToolsAgentHost() {

@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -75,6 +75,7 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/breakout_box/video_track_generator.idl",
           "//third_party/blink/renderer/modules/broadcastchannel/broadcast_channel.idl",
           "//third_party/blink/renderer/modules/browsing_topics/browsing_topic.idl",
+          "//third_party/blink/renderer/modules/browsing_topics/browsing_topics_options.idl",
           "//third_party/blink/renderer/modules/browsing_topics/browsing_topics_document_supplement.idl",
           "//third_party/blink/renderer/modules/buckets/navigator_storage_buckets.idl",
           "//third_party/blink/renderer/modules/buckets/storage_bucket.idl",
@@ -209,9 +210,9 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/device_posture/device_posture.idl",
           "//third_party/blink/renderer/modules/device_posture/navigator_device_posture.idl",
           "//third_party/blink/renderer/modules/document_picture_in_picture/document_picture_in_picture.idl",
+          "//third_party/blink/renderer/modules/document_picture_in_picture/document_picture_in_picture_options.idl",
           "//third_party/blink/renderer/modules/document_picture_in_picture/document_picture_in_picture_session.idl",
           "//third_party/blink/renderer/modules/document_picture_in_picture/navigator_document_picture_in_picture.idl",
-          "//third_party/blink/renderer/modules/document_picture_in_picture/window_picture_in_picture.idl",
           "//third_party/blink/renderer/modules/donottrack/navigator_do_not_track.idl",
           "//third_party/blink/renderer/modules/encoding/text_decode_options.idl",
           "//third_party/blink/renderer/modules/encoding/text_decoder.idl",
@@ -456,6 +457,7 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/ml/ml_tensor.idl",
           "//third_party/blink/renderer/modules/ml/ml_tensor_info.idl",
           "//third_party/blink/renderer/modules/ml/navigator_ml.idl",
+          "//third_party/blink/renderer/modules/ml/webnn/ml_graph.idl",
           "//third_party/blink/renderer/modules/ml/webnn/ml_graph_builder.idl",
           "//third_party/blink/renderer/modules/ml/webnn/ml_operand_descriptor.idl",
           "//third_party/blink/renderer/modules/ml/webnn/ml_operand.idl",
@@ -609,7 +611,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_event.idl",
           "//third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_event_init.idl",
           "//third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.idl",
-          "//third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window_options.idl",
           "//third_party/blink/renderer/modules/picture_in_picture/shadow_root_picture_in_picture.idl",
           "//third_party/blink/renderer/modules/plugins/mime_type.idl",
           "//third_party/blink/renderer/modules/plugins/mime_type_array.idl",
@@ -984,6 +985,7 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/webgpu/gpu_compilation_message.idl",
           "//third_party/blink/renderer/modules/webgpu/gpu_compute_pass_descriptor.idl",
           "//third_party/blink/renderer/modules/webgpu/gpu_compute_pass_encoder.idl",
+          "//third_party/blink/renderer/modules/webgpu/gpu_compute_pass_timestamp_write.idl",
           "//third_party/blink/renderer/modules/webgpu/gpu_compute_pipeline.idl",
           "//third_party/blink/renderer/modules/webgpu/gpu_compute_pipeline_descriptor.idl",
           "//third_party/blink/renderer/modules/webgpu/gpu_depth_stencil_state.idl",
@@ -1033,6 +1035,7 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/webgpu/gpu_render_pass_descriptor.idl",
           "//third_party/blink/renderer/modules/webgpu/gpu_render_pass_encoder.idl",
           "//third_party/blink/renderer/modules/webgpu/gpu_render_pass_layout.idl",
+          "//third_party/blink/renderer/modules/webgpu/gpu_render_pass_timestamp_write.idl",
           "//third_party/blink/renderer/modules/webgpu/gpu_render_pipeline.idl",
           "//third_party/blink/renderer/modules/webgpu/gpu_render_pipeline_descriptor.idl",
           "//third_party/blink/renderer/modules/webgpu/gpu_request_adapter_options.idl",

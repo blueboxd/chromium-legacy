@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/autofill_wallet_usage_data.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
 #include "components/autofill/core/browser/data_model/iban.h"
@@ -19,6 +20,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 
 class PrefService;
 
@@ -128,6 +130,9 @@ inline FieldGlobalId MakeFieldGlobalId(
 
 // Returns a copy of `form` with cleared values.
 FormData WithoutValues(FormData form);
+
+// Returns a copy of `form` with `is_autofilled` set as specified.
+FormData AsAutofilled(FormData form, bool is_autofilled = true);
 
 // Helper function to set values and verification statuses to a form group.
 void SetFormGroupValues(FormGroup& form_group,
@@ -319,6 +324,10 @@ AutofillOfferData GetPromoCodeOfferData(
     bool is_expired = false,
     int64_t offer_id = 333);
 
+// Return an Autofill Wallet Usage Data with dummy info specifically for a
+// Virtual Card.
+AutofillWalletUsageData GetAutofillWalletUsageDataForVirtualCard();
+
 // A unit testing utility that is common to a number of the Autofill unit
 // tests.  |SetProfileInfo| provides a quick way to populate a profile with
 // c-strings.
@@ -462,22 +471,38 @@ std::string LastYear();
 std::string NextYear();
 std::string TenYearsFromNow();
 
-void AddFieldSuggestionToForm(
+// Creates a `FieldPrediction` instance.
+::autofill::AutofillQueryResponse::FormSuggestion::FieldSuggestion::
+    FieldPrediction
+    CreateFieldPrediction(ServerFieldType type,
+                          ::autofill::AutofillQueryResponse::FormSuggestion::
+                              FieldSuggestion::FieldPrediction::Source source);
+
+// Creates a `FieldPrediction` instance, with a plausible value for `source()`.
+::autofill::AutofillQueryResponse::FormSuggestion::FieldSuggestion::
+    FieldPrediction
+    CreateFieldPrediction(ServerFieldType type);
+
+void AddFieldPredictionToForm(
     const autofill::FormFieldData& field_data,
     ServerFieldType field_type,
-    ::autofill::AutofillQueryResponse_FormSuggestion* form_suggestion);
-
-// Adds |field_types| predictions of |field_data| to |form_suggestion| query
-// response. Assumes int type can be cast to ServerFieldType.
-void AddFieldPredictionsToForm(
-    const autofill::FormFieldData& field_data,
-    const std::vector<int>& field_types,
     ::autofill::AutofillQueryResponse_FormSuggestion* form_suggestion);
 
 void AddFieldPredictionsToForm(
     const autofill::FormFieldData& field_data,
     const std::vector<ServerFieldType>& field_types,
     ::autofill::AutofillQueryResponse_FormSuggestion* form_suggestion);
+
+void AddFieldPredictionsToForm(
+    const autofill::FormFieldData& field_data,
+    const std::vector<::autofill::AutofillQueryResponse::FormSuggestion::
+                          FieldSuggestion::FieldPrediction>& field_predictions,
+    ::autofill::AutofillQueryResponse_FormSuggestion* form_suggestion);
+
+Suggestion CreateAutofillSuggestion(
+    int frontend_id = 0,
+    const std::u16string& main_text_value = std::u16string(),
+    const Suggestion::Payload& payload = Suggestion::Payload());
 
 }  // namespace test
 }  // namespace autofill

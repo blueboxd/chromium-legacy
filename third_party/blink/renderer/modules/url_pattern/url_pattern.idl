@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,10 +12,10 @@ enum URLPatternComponent { "protocol", "username", "password", "hostname",
   Exposed=(Window,Worker)
 ] interface URLPattern {
   [RaisesException, Measure]
-  constructor(optional URLPatternInput input = {}, optional USVString baseURL, optional URLPatternOptions options = {});
+  constructor(URLPatternInput input, USVString baseURL, optional URLPatternOptions options = {});
 
   [RaisesException, Measure]
-  constructor(URLPatternInput input, URLPatternOptions options);
+  constructor(optional URLPatternInput input = {}, optional URLPatternOptions options = {});
 
   [RaisesException, CallWith=ScriptState, Measure]
   boolean test(optional URLPatternInput input = {}, optional USVString baseURL);

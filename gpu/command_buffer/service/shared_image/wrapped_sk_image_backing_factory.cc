@@ -52,17 +52,11 @@ class WrappedSkImageBackingFactory;
 
 namespace {
 
-size_t EstimatedSize(viz::ResourceFormat format, const gfx::Size& size) {
-  size_t estimated_size = 0;
-  viz::ResourceSizes::MaybeSizeInBytes(size, format, &estimated_size);
-  return estimated_size;
-}
-
 class WrappedSkImage : public ClearTrackingSharedImageBacking {
  public:
   WrappedSkImage(base::PassKey<WrappedSkImageBackingFactory>,
                  const Mailbox& mailbox,
-                 viz::ResourceFormat format,
+                 viz::SharedImageFormat format,
                  const gfx::Size& size,
                  const gfx::ColorSpace& color_space,
                  GrSurfaceOrigin surface_origin,
@@ -239,7 +233,7 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
       return false;
     context_state_->set_need_context_state_reset(true);
 
-    DCHECK_NE(format(), viz::ResourceFormat::ETC1);
+    DCHECK(!viz::IsResourceFormatCompressed(format()));
     auto mipmap = usage() & SHARED_IMAGE_USAGE_MIPMAP ? GrMipMapped::kYes
                                                       : GrMipMapped::kNo;
     const std::string label = "WrappedSkImageBackingFactory_Initialize" +
@@ -287,7 +281,7 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
       return false;
     context_state_->set_need_context_state_reset(true);
 
-    if (format() == viz::ResourceFormat::ETC1) {
+    if (viz::IsResourceFormatCompressed(format())) {
       backend_texture_ =
           context_state_->gr_context()->createCompressedBackendTexture(
               size().width(), size().height(), SkImage::kETC1_CompressionType,
@@ -425,7 +419,7 @@ WrappedSkImageBackingFactory::~WrappedSkImageBackingFactory() = default;
 std::unique_ptr<SharedImageBacking>
 WrappedSkImageBackingFactory::CreateSharedImage(
     const Mailbox& mailbox,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
@@ -442,7 +436,8 @@ WrappedSkImageBackingFactory::CreateSharedImage(
   // That should be fine for now since we do not have/use any locks in backing.
   DCHECK(!is_thread_safe ||
          (context_state_->GrContextIsVulkan() && is_drdc_enabled_));
-  size_t estimated_size = EstimatedSize(format, size);
+  size_t estimated_size =
+      viz::ResourceSizes::UncheckedSizeInBytes<size_t>(size, format);
   auto texture = std::make_unique<WrappedSkImage>(
       base::PassKey<WrappedSkImageBackingFactory>(), mailbox, format, size,
       color_space, surface_origin, alpha_type, usage, estimated_size,
@@ -457,14 +452,15 @@ WrappedSkImageBackingFactory::CreateSharedImage(
 std::unique_ptr<SharedImageBacking>
 WrappedSkImageBackingFactory::CreateSharedImage(
     const Mailbox& mailbox,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
     uint32_t usage,
     base::span<const uint8_t> data) {
-  size_t estimated_size = EstimatedSize(format, size);
+  size_t estimated_size =
+      viz::ResourceSizes::UncheckedSizeInBytes<size_t>(size, format);
   auto texture = std::make_unique<WrappedSkImage>(
       base::PassKey<WrappedSkImageBackingFactory>(), mailbox, format, size,
       color_space, surface_origin, alpha_type, usage, estimated_size,
@@ -498,14 +494,15 @@ bool WrappedSkImageBackingFactory::CanUseWrappedSkImage(
   // Ignore for mipmap usage.
   usage &= ~SHARED_IMAGE_USAGE_MIPMAP;
   auto kWrappedSkImageUsage =
-      SHARED_IMAGE_USAGE_DISPLAY | SHARED_IMAGE_USAGE_RASTER |
-      SHARED_IMAGE_USAGE_OOP_RASTERIZATION | SHARED_IMAGE_USAGE_CPU_UPLOAD;
+      SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_DISPLAY_WRITE |
+      SHARED_IMAGE_USAGE_RASTER | SHARED_IMAGE_USAGE_OOP_RASTERIZATION |
+      SHARED_IMAGE_USAGE_CPU_UPLOAD;
   return (usage & kWrappedSkImageUsage) && !(usage & ~kWrappedSkImageUsage);
 }
 
 bool WrappedSkImageBackingFactory::IsSupported(
     uint32_t usage,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     const gfx::Size& size,
     bool thread_safe,
     gfx::GpuMemoryBufferType gmb_type,
@@ -527,7 +524,7 @@ bool WrappedSkImageBackingFactory::IsSupported(
   // Currently, WrappedSkImage does not support LUMINANCE_8 format and this
   // format is used for single channel planes. See https://crbug.com/1252502 for
   // more details.
-  if (format == viz::LUMINANCE_8) {
+  if (format.resource_format() == viz::LUMINANCE_8) {
     return false;
   }
 

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,7 +135,7 @@ ScriptPromise FragmentDirective::createSelectorDirective(
   auto* generator = MakeGarbageCollected<TextFragmentSelectorGenerator>(frame);
   generator->Generate(
       *range_in_flat_tree,
-      WTF::Bind(
+      WTF::BindOnce(
           [](ScriptPromiseResolver* resolver,
              TextFragmentSelectorGenerator* generator,
              const RangeInFlatTree* range, const TextFragmentSelector& selector,
@@ -166,7 +166,7 @@ void FragmentDirective::ParseDirectives(const String& fragment_directive) {
   for (String& directive_string : directive_strings) {
     if (directive_string.StartsWith("text=")) {
       String value = directive_string.Right(directive_string.length() - 5);
-      if (value.IsEmpty())
+      if (value.empty())
         continue;
 
       if (TextDirective* text_directive = TextDirective::Create(value))

@@ -82,4 +82,9 @@ try_.builder(
 try_.builder(
     name = "gen-win-try",
     os = os.WINDOWS_10,
+    properties = {
+        "recipe_properties": {
+            "platform": "win",
+        },
+    },
 )

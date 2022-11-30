@@ -54,7 +54,7 @@ def ReadPowerMetricsData(scenario_dir, browser_identifier: str):
       coalition_keys = [
           "energy_impact", "gputime_ms", "diskio_byteswritten",
           "diskio_bytesread", "idle_wakeups", "intr_wakeups",
-          "cputime_sample_ms", "cputime_ms"
+          "cputime_sample_ms_per_s", "cputime_ns"
       ]
       coalitions_data = parsed_sample['coalitions']
       if browser_identifier is not None:
@@ -64,6 +64,14 @@ def ReadPowerMetricsData(scenario_dir, browser_identifier: str):
                                                   coalition_keys)
       out_sample['all'] = GetDictionaryKeys(parsed_sample['all_tasks'],
                                             coalition_keys)
+
+      # Add information for coalitions that could be of interest since they
+      # might execute code on behalf of the browser.
+      out_sample['window_server'] = GetDictionaryKeys(
+          GetCoalition(coalitions_data, "com.apple.WindowServer"),
+          coalition_keys)
+      out_sample['kernel_coalition'] = GetDictionaryKeys(
+          GetCoalition(coalitions_data, "kernel_coalition"), coalition_keys)
 
       # Processing output of the 'cpu_power' sampler.
       # Expected processor fields on Intel.
@@ -141,20 +149,8 @@ def main():
         power_dataframe['sample_time'])
     power_dataframe.set_index('sample_time', inplace=True)
 
-    with open(os.path.join(subdir,
-                           "power_sampler_battery.json")) as battery_file:
-      battery_data = json.load(battery_file)
-    battery_dataframe = pd.DataFrame.from_records(
-        battery_data['data_rows'],
-        columns=[key
-                 for key in battery_data['column_labels']] + ["sample_time"])
-    battery_dataframe['sample_time'] = NormalizeMicrosecondsSampleTime(
-        battery_dataframe['sample_time'])
-    battery_dataframe.set_index('sample_time', inplace=True)
-
     # Join all data sources by sample_time.
-    scenario_data = powermetrics_dataframe.join(
-        power_dataframe, how='outer').join(battery_dataframe, how='outer')
+    scenario_data = powermetrics_dataframe.join(power_dataframe, how='outer')
 
     summary_path = os.path.join(subdir, 'summary.csv')
     logging.info(f'Outputing results in {os.path.abspath(summary_path)}')

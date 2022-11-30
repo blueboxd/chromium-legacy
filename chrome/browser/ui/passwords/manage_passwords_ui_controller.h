@@ -18,6 +18,7 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/browser/ui/post_save_compromised_helper.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -37,6 +38,10 @@ class PasswordFeatureManager;
 class PasswordFormManagerForUI;
 class PostSaveCompromisedHelper;
 }  // namespace password_manager
+
+namespace {
+constexpr int kMaxNumberOfTimesBiometricAuthForFillingPromoWillBeShown = 3;
+}
 
 class AccountChooserPrompt;
 struct AccountInfo;
@@ -103,6 +108,8 @@ class ManagePasswordsUIController
   void OnShowMoveToAccountBubble(
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_move)
       override;
+  void OnBiometricAuthenticationForFilling(PrefService* prefs) override;
+  void ShowBiometricActivationConfirmation() override;
 
   virtual void NotifyUnsyncedCredentialsWillBeDeleted(
       std::vector<password_manager::PasswordForm> unsynced_credentials);
@@ -170,7 +177,11 @@ class ManagePasswordsUIController
       password_manager::ManagePasswordsReferrer referrer) override;
   void EnableSync(const AccountInfo& account) override;
   void OnDialogHidden() override;
+  // TODO(crbug.com/1353344): Replace AuthenticateUser with
+  // AuthenticateUserWithMessage
   bool AuthenticateUser() override;
+  void AuthenticateUserWithMessage(const std::u16string& message,
+                                   AvailabilityCallback callback) override;
   void AuthenticateUserForAccountStoreOptInAndSavePassword(
       const std::u16string& username,
       const std::u16string& password) override;
@@ -227,6 +238,8 @@ class ManagePasswordsUIController
 
  private:
   friend class content::WebContentsUserData<ManagePasswordsUIController>;
+
+  void OnReauthCompleted();
 
   // PasswordsLeakDialogDelegate:
   void NavigateToPasswordCheckup(
@@ -317,6 +330,9 @@ class ManagePasswordsUIController
           password_manager::MovePasswordToAccountStoreHelper>>::iterator
           done_helper_it);
 
+  // Cancels current authentication and releases |biometric_authenticator_|.
+  void CancelAnyOngoingBiometricAuth();
+
   // Timeout in seconds for the manual fallback for saving.
   static int save_fallback_timeout_in_seconds_;
 
@@ -345,6 +361,12 @@ class ManagePasswordsUIController
   // always contain either 0 or 1 items.
   std::list<std::unique_ptr<password_manager::MovePasswordToAccountStoreHelper>>
       move_to_account_store_helpers_;
+
+  scoped_refptr<device_reauth::BiometricAuthenticator> biometric_authenticator_;
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  bool was_biometric_authentication_for_filling_promo_shown_ = false;
+#endif
 
   // The bubbles of different types can pop up unpredictably superseding each
   // other. However, closing the bubble may affect the state of

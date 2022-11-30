@@ -414,8 +414,8 @@ void ScopedFeatureList::InitFromCommandLine(
 }
 
 void ScopedFeatureList::InitWithFeatures(
-    const std::vector<Feature>& enabled_features,
-    const std::vector<Feature>& disabled_features) {
+    const std::vector<FeatureRef>& enabled_features,
+    const std::vector<FeatureRef>& disabled_features) {
   InitWithFeaturesImpl(enabled_features, {}, disabled_features);
 }
 
@@ -437,9 +437,9 @@ void ScopedFeatureList::InitWithFeatureState(const Feature& feature,
 }
 
 void ScopedFeatureList::InitWithFeaturesImpl(
-    const std::vector<Feature>& enabled_features,
+    const std::vector<FeatureRef>& enabled_features,
     const std::vector<FeatureAndParams>& enabled_features_and_params,
-    const std::vector<Feature>& disabled_features,
+    const std::vector<FeatureRef>& disabled_features,
     bool keep_existing_states) {
   DCHECK(!init_called_);
   DCHECK(enabled_features.empty() || enabled_features_and_params.empty());
@@ -469,10 +469,10 @@ void ScopedFeatureList::InitWithFeaturesImpl(
     create_associated_field_trials = true;
   } else {
     for (const auto& feature : enabled_features)
-      merged_features.enabled_feature_list.emplace_back(feature.name);
+      merged_features.enabled_feature_list.emplace_back(feature->name);
   }
   for (const auto& feature : disabled_features)
-    merged_features.disabled_feature_list.emplace_back(feature.name);
+    merged_features.disabled_feature_list.emplace_back(feature->name);
 
   InitWithMergedFeatures(std::move(merged_features),
                          create_associated_field_trials, keep_existing_states);
@@ -486,7 +486,7 @@ void ScopedFeatureList::InitAndEnableFeatureWithParameters(
 
 void ScopedFeatureList::InitWithFeaturesAndParameters(
     const std::vector<FeatureAndParams>& enabled_features,
-    const std::vector<Feature>& disabled_features) {
+    const std::vector<FeatureRef>& disabled_features) {
   InitWithFeaturesImpl({}, enabled_features, disabled_features);
 }
 
@@ -521,8 +521,7 @@ void ScopedFeatureList::InitWithMergedFeatures(
   // Create a field trial list, to which we'll add trials corresponding to the
   // features that have params, before restoring the field trial state from the
   // previous instance, further down in this function.
-  field_trial_list_ =
-      std::make_unique<FieldTrialList>(std::make_unique<MockEntropyProvider>());
+  field_trial_list_ = std::make_unique<FieldTrialList>();
 
   auto* field_trial_param_associator = FieldTrialParamAssociator::GetInstance();
   for (const auto& feature : merged_features.enabled_feature_list) {

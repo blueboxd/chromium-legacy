@@ -5,7 +5,7 @@
 import 'chrome://resources/cr_elements/cr_grid/cr_grid.js';
 
 import {CrGridElement} from 'chrome://resources/cr_elements/cr_grid/cr_grid.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.js';
 import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 
 import {assertEquals} from 'chrome://webui-test/chai_assert.js';
@@ -37,7 +37,8 @@ suite('CrElementsGridFocusTest', () => {
   }
 
   setup(() => {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
   });
 
   test('right focuses right item', () => {

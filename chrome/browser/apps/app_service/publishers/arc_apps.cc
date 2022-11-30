@@ -338,7 +338,6 @@ void AddPreferredApp(const std::string& app_id,
 }
 
 void ResetVerifiedLinks(
-    const apps::IntentFilterPtr& intent_filter,
     const apps::ReplacedAppPreferences& replaced_app_preferences,
     arc::ArcServiceManager* arc_service_manager,
     ArcAppListPrefs* prefs) {
@@ -412,7 +411,7 @@ arc::mojom::OpenUrlsRequestPtr ConstructOpenUrlsRequest(
   request->action_type = GetArcActionType(intent->action);
   request->activity_name = activity.Clone();
   DCHECK_EQ(content_urls.size(), intent->files.size());
-  for (int i = 0; i < content_urls.size(); i++) {
+  for (size_t i = 0; i < content_urls.size(); i++) {
     auto content_url = content_urls[i];
     arc::mojom::ContentUrlWithMimeTypePtr url_with_type =
         arc::mojom::ContentUrlWithMimeType::New();
@@ -966,16 +965,27 @@ void ArcApps::LaunchAppWithParams(AppLaunchParams&& params,
                                   LaunchCallback callback) {
   auto event_flags = apps::GetEventFlags(params.disposition,
                                          /*prefer_container=*/false);
-  auto window_info = apps::MakeWindowInfo(params.display_id);
   if (params.intent) {
-    LaunchAppWithIntent(
-        params.app_id, event_flags, ConvertIntentToMojomIntent(params.intent),
-        ConvertLaunchSourceToMojomLaunchSource(params.launch_source),
-        std::move(window_info), base::DoNothing());
+    if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
+      LaunchAppWithIntent(params.app_id, event_flags, std::move(params.intent),
+                          params.launch_source,
+                          std::make_unique<WindowInfo>(params.display_id),
+                          base::DoNothing());
+    } else {
+      LaunchAppWithIntent(
+          params.app_id, event_flags, ConvertIntentToMojomIntent(params.intent),
+          ConvertLaunchSourceToMojomLaunchSource(params.launch_source),
+          apps::MakeWindowInfo(params.display_id), base::DoNothing());
+    }
   } else {
-    Launch(params.app_id, event_flags,
-           ConvertLaunchSourceToMojomLaunchSource(params.launch_source),
-           std::move(window_info));
+    if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
+      Launch(params.app_id, event_flags, params.launch_source,
+             std::make_unique<WindowInfo>(params.display_id));
+    } else {
+      Launch(params.app_id, event_flags,
+             ConvertLaunchSourceToMojomLaunchSource(params.launch_source),
+             apps::MakeWindowInfo(params.display_id));
+    }
   }
   // TODO(crbug.com/1244506): Add launch return value.
   std::move(callback).Run(LaunchResult());
@@ -1098,8 +1108,7 @@ void ArcApps::OnPreferredAppSet(
   }
   AddPreferredApp(app_id, intent_filter, std::move(intent), arc_service_manager,
                   prefs);
-  ResetVerifiedLinks(intent_filter, replaced_app_preferences,
-                     arc_service_manager, prefs);
+  ResetVerifiedLinks(replaced_app_preferences, arc_service_manager, prefs);
 }
 
 void ArcApps::SetResizeLocked(const std::string& app_id, bool locked) {
@@ -1422,26 +1431,6 @@ void ArcApps::OpenNativeSettings(const std::string& app_id) {
   arc::ShowPackageInfo(app_info->package_name,
                        arc::mojom::ShowPackageInfoPage::MAIN,
                        display::Screen::GetScreen()->GetPrimaryDisplay().id());
-}
-
-void ArcApps::OnPreferredAppSet(
-    const std::string& app_id,
-    apps::mojom::IntentFilterPtr intent_filter,
-    apps::mojom::IntentPtr intent,
-    apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) {
-  auto* arc_service_manager = arc::ArcServiceManager::Get();
-
-  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
-  if (!prefs) {
-    return;
-  }
-  AddPreferredApp(app_id, ConvertMojomIntentFilterToIntentFilter(intent_filter),
-                  ConvertMojomIntentToIntent(intent), arc_service_manager,
-                  prefs);
-  ResetVerifiedLinks(ConvertMojomIntentFilterToIntentFilter(intent_filter),
-                     ConvertMojomReplacedAppPreferencesToReplacedAppPreferences(
-                         replaced_app_preferences),
-                     arc_service_manager, prefs);
 }
 
 void ArcApps::OnSupportedLinksPreferenceChanged(const std::string& app_id,
@@ -1894,6 +1883,7 @@ AppPtr ArcApps::CreateApp(ArcAppListPrefs* prefs,
                                                : InstallSource::kPlayStore);
 
   app->publisher_id = app_info.package_name;
+  app->policy_ids = {app_info.package_name};
 
   if (update_icon) {
     app->icon_key = std::move(

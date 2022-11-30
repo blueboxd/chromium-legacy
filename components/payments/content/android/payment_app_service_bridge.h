@@ -49,6 +49,7 @@ class PaymentAppServiceBridge : public PaymentAppFactory::Delegate {
       const std::string& twa_package_name,
       scoped_refptr<PaymentManifestWebDataService> web_data_service,
       bool is_off_the_record,
+      base::WeakPtr<CSPChecker> csp_checker,
       CanMakePaymentCalculatedCallback can_make_payment_calculated_callback,
       PaymentAppCreatedCallback payment_app_created_callback,
       PaymentAppCreationErrorCallback payment_app_creation_error_callback,
@@ -92,6 +93,7 @@ class PaymentAppServiceBridge : public PaymentAppFactory::Delegate {
   bool SkipCreatingNativePaymentApps() const override;
   void OnDoneCreatingPaymentApps() override;
   void SetCanMakePaymentEvenWithoutApps() override;
+  base::WeakPtr<CSPChecker> GetCSPChecker() override;
 
  private:
   // Prevents direct instantiation. Callers should use Create() instead. The
@@ -104,6 +106,7 @@ class PaymentAppServiceBridge : public PaymentAppFactory::Delegate {
       const std::string& twa_package_name,
       scoped_refptr<PaymentManifestWebDataService> web_data_service,
       bool is_off_the_record,
+      base::WeakPtr<CSPChecker> csp_checker,
       CanMakePaymentCalculatedCallback can_make_payment_calculated_callback,
       PaymentAppCreatedCallback payment_app_created_callback,
       PaymentAppCreationErrorCallback payment_app_creation_error_callback,
@@ -121,6 +124,7 @@ class PaymentAppServiceBridge : public PaymentAppFactory::Delegate {
       payment_manifest_web_data_service_;
   bool is_off_the_record_;
   std::vector<autofill::AutofillProfile*> dummy_profiles_;
+  base::WeakPtr<CSPChecker> csp_checker_;
 
   CanMakePaymentCalculatedCallback can_make_payment_calculated_callback_;
   PaymentAppCreatedCallback payment_app_created_callback_;

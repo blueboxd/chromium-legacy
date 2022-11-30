@@ -1,4 +1,4 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Presubmit script for changes affecting Source/platform.
@@ -22,6 +22,7 @@ LACROS_STATUS = "ChromeOS_Lacros"
 # TODO(erikchen): This list doesn't match what in the .json5 file.
 ASH_LACROS_FEATURE_STATUS_PARITY_IGNORE_LIST = [
     'DigitalGoods',  # crbug.com/1235859
+    'DocumentPictureInPictureAPI',  # crbug.com/1373334
     'NetInfoDownlinkMax',  # crbug.com/1235864
     'WebBluetooth',  # crbug.com/1235867
 ]

@@ -23,7 +23,6 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfSyncNotAllowed) {
   service.GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/true,
       /*types=*/UserSelectableTypeSet::All());
-  service.SetActiveDataTypes(ProtocolTypes());
 
   EXPECT_EQ(UploadState::NOT_ACTIVE,
             GetUploadToGoogleState(&service, syncer::BOOKMARKS));
@@ -47,7 +46,6 @@ TEST(SyncServiceUtilsTest,
   service.GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/true,
       /*types=*/UserSelectableTypeSet::All());
-  service.SetActiveDataTypes(ProtocolTypes());
   service.SetEmptyLastCycleSnapshot();
 
   // By default, if sync isn't disabled, we should be INITIALIZING.
@@ -75,7 +73,6 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledForModelType) {
   service.GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/false,
       /*types=*/{syncer::UserSelectableType::kBookmarks});
-  service.SetActiveDataTypes(ModelTypeSet(syncer::BOOKMARKS));
 
   // Sanity check: Upload is ACTIVE for this model type.
   ASSERT_EQ(UploadState::ACTIVE,
@@ -103,7 +100,7 @@ TEST(SyncServiceUtilsTest,
                  syncer::UserSelectableType::kPreferences});
 
   // But one of them fails to actually start up!
-  service.SetActiveDataTypes(ModelTypeSet(syncer::BOOKMARKS));
+  service.SetFailedDataTypes(ModelTypeSet(syncer::PREFERENCES));
 
   // Sanity check: Upload is ACTIVE for the model type that did start up.
   ASSERT_EQ(UploadState::ACTIVE,
@@ -120,7 +117,6 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfLocalSyncEnabled) {
   service.GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/true,
       /*types=*/UserSelectableTypeSet::All());
-  service.SetActiveDataTypes(ProtocolTypes());
   service.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
   service.SetNonEmptyLastCycleSnapshot();
 
@@ -142,7 +138,6 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledOnPersistentAuthError) {
   service.GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/true,
       /*types=*/UserSelectableTypeSet::All());
-  service.SetActiveDataTypes(ProtocolTypes());
   service.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
   service.SetNonEmptyLastCycleSnapshot();
 
@@ -151,27 +146,21 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledOnPersistentAuthError) {
             GetUploadToGoogleState(&service, syncer::BOOKMARKS));
 
   // On a transient error, uploading goes back to INITIALIZING.
-  GoogleServiceAuthError transient_error(
-      GoogleServiceAuthError::CONNECTION_FAILED);
-  ASSERT_TRUE(transient_error.IsTransientError());
-  service.SetAuthError(transient_error);
+  service.SetTransientAuthError();
 
   EXPECT_EQ(UploadState::INITIALIZING,
             GetUploadToGoogleState(&service, syncer::BOOKMARKS));
 
   // On a persistent error, uploading is not considered active anymore (even
   // though Sync may still be considered active).
-  GoogleServiceAuthError persistent_error(
-      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  ASSERT_TRUE(persistent_error.IsPersistentError());
-  service.SetAuthError(persistent_error);
+  service.SetPersistentAuthErrorOtherThanWebSignout();
 
   EXPECT_EQ(UploadState::NOT_ACTIVE,
             GetUploadToGoogleState(&service, syncer::BOOKMARKS));
 
   // Once the auth error is resolved (e.g. user re-authenticated), uploading is
   // active again.
-  service.SetAuthError(GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+  service.ClearAuthError();
   service.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
 
   EXPECT_EQ(UploadState::ACTIVE,
@@ -184,7 +173,6 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfCustomPassphraseInUse) {
   service.GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/true,
       /*types=*/UserSelectableTypeSet::All());
-  service.SetActiveDataTypes(ProtocolTypes());
   service.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
   service.SetNonEmptyLastCycleSnapshot();
 
@@ -216,7 +204,6 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledForSecondaryAccount) {
   service.GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/true,
       /*types=*/UserSelectableTypeSet::All());
-  service.SetActiveDataTypes(ProtocolTypes());
   service.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
   service.SetNonEmptyLastCycleSnapshot();
 

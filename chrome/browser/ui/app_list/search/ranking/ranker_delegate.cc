@@ -6,6 +6,9 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/metrics/field_trial_params.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/search/files/file_suggest_keyed_service.h"
+#include "chrome/browser/ui/app_list/search/files/file_suggest_keyed_service_factory.h"
 #include "chrome/browser/ui/app_list/search/ranking/answer_ranker.h"
 #include "chrome/browser/ui/app_list/search/ranking/best_match_ranker.h"
 #include "chrome/browser/ui/app_list/search/ranking/continue_ranker.h"
@@ -28,9 +31,6 @@ namespace {
 // search.
 constexpr base::TimeDelta kStandardWriteDelay = base::Seconds(3);
 
-// No write delay for protos with time-sensitive writes.
-constexpr base::TimeDelta kNoWriteDelay = base::Seconds(0);
-
 }  // namespace
 
 RankerDelegate::RankerDelegate(Profile* profile, SearchController* controller) {
@@ -50,8 +50,8 @@ RankerDelegate::RankerDelegate(Profile* profile, SearchController* controller) {
   ftrl_result_params.num_experts = 2u;
 
   MrfuCache::Params mrfu_result_params;
-  mrfu_result_params.half_life = 20.0f;
-  mrfu_result_params.boost_factor = 2.9f;
+  mrfu_result_params.half_life = 30.0f;
+  mrfu_result_params.boost_factor = 2.5f;
   mrfu_result_params.max_items = 200u;
 
   // Category ranking parameters.
@@ -73,9 +73,7 @@ RankerDelegate::RankerDelegate(Profile* profile, SearchController* controller) {
   AddRanker(std::make_unique<QueryHighlighter>());
   AddRanker(std::make_unique<ContinueRanker>());
   AddRanker(std::make_unique<FilteringRanker>());
-  AddRanker(std::make_unique<RemovedResultsRanker>(
-      PersistentProto<RemovedResultsProto>(
-          state_dir.AppendASCII("removed_results.pb"), kNoWriteDelay)));
+  AddRanker(std::make_unique<RemovedResultsRanker>(profile));
 
   // 2. Score normalization, a precursor to other ranking.
   AddRanker(std::make_unique<ScoreNormalizingRanker>(

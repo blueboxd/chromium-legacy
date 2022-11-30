@@ -55,7 +55,7 @@
 <translation id="1442433966118452622">ပုံရင်းမြစ်</translation>
 <translation id="1451536289672181509">ကိရိယာသည် ကီးဘုတ်ဖြစ်သည်။</translation>
 <translation id="1459693405370120464">မိုးလေဝသ</translation>
-<translation id="1468664791493211953">အထူးဈေးနှုန်း</translation>
+<translation id="1468664791493211953">ကမ်းလှမ်းချက်များ</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> က စီမံခန့်ခွဲသည့်အတွက် သင်၏လုပ်ဆောင်ချက်ကို စောင့်ကြည့်နိုင်ပါသည်။</translation>
 <translation id="1478594628797167447">စကင်ဖတ်စနစ်</translation>
 <translation id="1483493594462132177">ပို့ရန်</translation>
@@ -250,6 +250,7 @@
 <translation id="3484914941826596830">ဖားမ်ဝဲအပ်ဒိတ်လုပ်နေစဉ် ဤပြင်ပကိရိယာကို ပလတ်မဖြုတ်ပါနှင့် (သို့) သင်၏ကွန်ပျူတာကို အပြီးမပိတ်ပါနှင့်။ ဤဝင်းဒိုးကို ချုံ့နိုင်သည်။ ယခုအပ်ဒိတ်သည် မိနစ်အနည်းငယ်ကြာနိုင်ပြီး ဤအချိန်အတွင်း သင်၏ပြင်ပကိရိယာ အလုပ်လုပ်နိုင်မည်မဟုတ်ပါ။</translation>
 <translation id="3486220673238053218">အဓိပ္ပါယ် ဖွင့်ဆိုချက်</translation>
 <translation id="3488065109653206955">တစ်စိတ်တစ်ဒေသ ဖွင့်သုံးနေ</translation>
+<translation id="3510890413042482857"><ph name="BEGIN_LINK1" />စွမ်းဆောင်ရည် မှတ်တမ်းဒေတာ<ph name="END_LINK1" /> ပို့ရန်</translation>
 <translation id="3517001332549868749">ChromeOS အပ်ဒိတ်</translation>
 <translation id="3527036260304016759">မအောင်မြင်ပါ - အမည်မသိ အမှား</translation>
 <translation id="3532980081107202182"><ph name="MIN_REMAINING" /> မိနစ်ခန့် ကျန်သည်</translation>

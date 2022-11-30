@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 #include "v8/include/v8-forward.h"
 #include "v8/include/v8-microtask-queue.h"
 
@@ -21,6 +22,7 @@ class EventLoop;
 }
 
 class ExecutionContext;
+class RejectedPromises;
 
 // Corresponding spec concept is:
 // https://html.spec.whatwg.org/C#integration-with-the-javascript-agent-formalism
@@ -30,7 +32,8 @@ class ExecutionContext;
 // Worklets have their own agent.
 // While an WindowAgentFactory is shared across a group of reachable frames,
 // Agent is shared across a group of reachable and same-site frames.
-class CORE_EXPORT Agent : public GarbageCollected<Agent> {
+class CORE_EXPORT Agent : public GarbageCollected<Agent>,
+                          public Supplementable<Agent> {
  public:
   // Do not create the instance directly.
   // Use MakeGarbageCollected<Agent>() or
@@ -44,7 +47,7 @@ class CORE_EXPORT Agent : public GarbageCollected<Agent> {
     return event_loop_;
   }
 
-  virtual void Trace(Visitor*) const;
+  void Trace(Visitor*) const override;
 
   void AttachContext(ExecutionContext*);
   void DetachContext(ExecutionContext*);
@@ -103,6 +106,14 @@ class CORE_EXPORT Agent : public GarbageCollected<Agent> {
   // for cases where the origin-keyed should be inherited from parent documents.
   void ForceOriginKeyedBecauseOfInheritance();
 
+  // Returns if this is a Window Agent or not.
+  virtual bool IsWindowAgent() const;
+
+  virtual void Dispose();
+  virtual void PerformMicrotaskCheckpoint();
+
+  RejectedPromises& GetRejectedPromises();
+
  protected:
   Agent(v8::Isolate* isolate,
         const base::UnguessableToken& cluster_id,
@@ -111,6 +122,7 @@ class CORE_EXPORT Agent : public GarbageCollected<Agent> {
         bool origin_agent_cluster_left_as_default);
 
  private:
+  scoped_refptr<RejectedPromises> rejected_promises_;
   scoped_refptr<scheduler::EventLoop> event_loop_;
   const base::UnguessableToken cluster_id_;
   bool origin_keyed_because_of_inheritance_;

@@ -21,6 +21,9 @@ try_.defaults.set(
     os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 consoles.list_view(
@@ -43,9 +46,9 @@ try_.builder(
     ],
     main_list_view = "try",
     tryjob = try_.job(
-        location_filters = [
-            "content/gpu/.+",
-            "media/.+",
+        location_regexp = [
+            ".+/[+]/content/gpu/.+",
+            ".+/[+]/media/.+",
         ],
     ),
 )
@@ -58,10 +61,7 @@ try_.orchestrator_builder(
     main_list_view = "try",
     tryjob = try_.job(),
     experiments = {
-        "chromium_swarming.expose_merge_script_failures": 0,
         "remove_src_checkout_experiment": 100,
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
     },
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
@@ -89,10 +89,6 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
-    experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-    },
 )
 
 try_.builder(
@@ -110,10 +106,29 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
+)
+
+try_.orchestrator_builder(
+    name = "lacros-amd64-generic-rel-orchestrator",
+    branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/lacros-amd64-generic-rel",
+    ],
+    compilator = "lacros-amd64-generic-rel-compilator",
+    main_list_view = "try",
     experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
+        "remove_src_checkout_experiment": 100,
     },
+    use_orchestrator_pool = True,
+)
+
+try_.compilator_builder(
+    name = "lacros-amd64-generic-rel-compilator",
+    branch_selector = branches.STANDARD_MILESTONE,
+    main_list_view = "try",
+    # TODO (crbug.com/1287228): Set correct values once bots are set up
+    ssd = None,
+    cores = None,
 )
 
 try_.builder(
@@ -164,10 +179,6 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
-    experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-    },
 )
 
 try_.builder(
@@ -231,10 +242,10 @@ try_.builder(
     ],
     main_list_view = "try",
     tryjob = try_.job(
-        location_filters = [
-            "build/chromeos/.+",
-            "build/config/chromeos/.*",
-            "chromeos/CHROMEOS_LKGM",
+        location_regexp = [
+            ".+/[+]/build/chromeos/.+",
+            ".+/[+]/build/config/chromeos/.*",
+            ".+/[+]/chromeos/CHROMEOS_LKGM",
         ],
     ),
 )
@@ -266,8 +277,6 @@ try_.orchestrator_builder(
     tryjob = try_.job(),
     experiments = {
         "remove_src_checkout_experiment": 100,
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
     },
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
@@ -282,12 +291,6 @@ try_.compilator_builder(
 )
 
 try_.builder(
-    name = "linux-chromeos-js-code-coverage",
-    use_clang_coverage = True,
-    use_javascript_coverage = True,
-)
-
-try_.builder(
     name = "linux-lacros-dbg",
     # TODO(crbug.com/1233247) Adds the CI tester when it's available.
     mirrors = [
@@ -295,26 +298,33 @@ try_.builder(
     ],
 )
 
-try_.builder(
+try_.orchestrator_builder(
     name = "linux-lacros-rel",
     mirrors = [
         "ci/linux-lacros-builder-rel",
         "ci/linux-lacros-tester-rel",
     ],
     branch_selector = branches.STANDARD_MILESTONE,
-    builderless = not settings.is_main,
-    # TODO(sshrimp): Re-enable when there's less traffic on the test bots
-    check_for_flakiness = False,
-    cores = 16,
-    ssd = True,
-    goma_jobs = goma.jobs.J300,
+    compilator = "linux-lacros-rel-compilator",
+    check_for_flakiness = True,
     main_list_view = "try",
     tryjob = try_.job(),
     experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-        "weetbix.enable_weetbix_exonerations": 50,
+        "remove_src_checkout_experiment": 100,
     },
+    # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
+    # are addressed
+    # use_orchestrator_pool = True,
+)
+
+try_.compilator_builder(
+    name = "linux-lacros-rel-compilator",
+    branch_selector = branches.STANDARD_MILESTONE,
+    main_list_view = "try",
+    goma_jobs = goma.jobs.J300,
+    # TODO (crbug.com/1287228): Set correct values once bots are set up
+    ssd = None,
+    cores = None,
 )
 
 try_.builder(
@@ -337,14 +347,14 @@ try_.builder(
         "ci/linux-cfm-rel",
     ],
     tryjob = try_.job(
-        location_filters = [
-            "chromeos/ash/components/chromebox_for_meetings/.+",
-            "chromeos/ash/components/dbus/chromebox_for_meetings/.+",
-            "chromeos/ash/services/chromebox_for_meetings/.+",
-            "chrome/browser/ash/chromebox_for_meetings/.+",
-            "chrome/browser/resources/chromeos/chromebox_for_meetings/.+",
-            "chrome/browser/ui/webui/chromeos/chromebox_for_meetings/.+",
-            "chrome/test/data/webui/chromeos/chromebox_for_meetings/.+",
+        location_regexp = [
+            ".+/[+]/chromeos/ash/components/chromebox_for_meetings/.+",
+            ".+/[+]/chromeos/ash/components/dbus/chromebox_for_meetings/.+",
+            ".+/[+]/chromeos/ash/services/chromebox_for_meetings/.+",
+            ".+/[+]/chrome/browser/ash/chromebox_for_meetings/.+",
+            ".+/[+]/chrome/browser/resources/chromeos/chromebox_for_meetings/.+",
+            ".+/[+]/chrome/browser/ui/webui/ash/chromebox_for_meetings/.+",
+            ".+/[+]/chrome/test/data/webui/chromeos/chromebox_for_meetings/.+",
         ],
     ),
 )

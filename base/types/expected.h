@@ -71,6 +71,16 @@ namespace base {
 // * Since Chromium does not support exceptions, there is no bad_expected_access
 //   exception and the program will just terminate when the exception would have
 //   been thrown. Furthermore, all member functions are marked noexcept.
+// * C++23 allows an implicit conversion from U to expected<T, E> if U is
+//   implicitly convertible to T; the Chromium version only allows an implicit
+//   conversion if U is implicitly convertible to T *and* U is *not* implicitly
+//   convertible to E, to guard against bug-prone patterns such as:
+//     // creates an expected value containing true, not an unexpected value
+//     // containing 123L.
+//     expected<bool, long> e = 123L;
+// * Because of the above restriction, the Chromium version also introduces
+//   `base::ok` as a complement to `base::unexpected` to simplify returning
+//   success values when the implicit conversion above is disallowed.
 // * Calling operator* or operator-> on an unexpected value results in program
 //   termination, and not UB.
 // * There is no operator bool due to bug-prone usage when the value type is
@@ -83,6 +93,71 @@ namespace base {
 // * Since equality operators can not be defaulted in C++17, equality and
 //   inequality operators are specified explicitly.
 
+// Class template used as a type hint for constructing a `base::expected`
+// containing a value (i.e. success). Useful when implicit conversion
+// construction of `base::expected` is disallowed, e.g. due to ambiguity.
+// Example usage:
+//
+//   base::expected<std::string, std::string> RunOp() {
+//     std::string error;
+//     std::string result = RunOpImpl(..., &error);
+//     if (!error.empty()) {
+//       return base::unexpected(std::move(error));
+//
+//     // The C++23 std::expected proposal allows this to be simply written as
+//     //   return result;
+//     //
+//     // However, the Chromium version disallows this if E implicitly converts
+//     // to T, so without base::ok(), this would have to be written as:
+//     //   return base::expected<std::string, std::string>(std::move(result));
+//
+//     return base::ok(std::move(result));
+//   }
+template <typename T>
+class ok {
+ public:
+  template <typename U = T, internal::EnableIfOkValueConstruction<T, U> = 0>
+  constexpr explicit ok(U&& val) noexcept : value_(std::forward<U>(val)) {}
+
+  template <typename... Args>
+  constexpr explicit ok(absl::in_place_t, Args&&... args) noexcept
+      : value_(std::forward<Args>(args)...) {}
+
+  template <typename U, typename... Args>
+  constexpr explicit ok(absl::in_place_t,
+                        std::initializer_list<U> il,
+                        Args&&... args) noexcept
+      : value_(il, std::forward<Args>(args)...) {}
+
+  constexpr T& value() & noexcept { return value_; }
+  constexpr const T& value() const& noexcept { return value_; }
+  constexpr T&& value() && noexcept { return std::move(value()); }
+  constexpr const T&& value() const&& noexcept { return std::move(value()); }
+
+  constexpr void swap(ok& other) noexcept {
+    using std::swap;
+    swap(value(), other.value());
+  }
+
+  friend constexpr void swap(ok& x, ok& y) noexcept { x.swap(y); }
+
+ private:
+  T value_;
+};
+
+template <typename T, typename U>
+constexpr bool operator==(const ok<T>& lhs, const ok<U>& rhs) noexcept {
+  return lhs.value() == rhs.value();
+}
+
+template <typename T, typename U>
+constexpr bool operator!=(const ok<T>& lhs, const ok<U>& rhs) noexcept {
+  return !(lhs == rhs);
+}
+
+template <typename T>
+ok(T) -> ok<T>;
+
 // [expected.un.object], class template unexpected
 // https://eel.is/c++draft/expected#un.object
 template <typename E>
@@ -92,28 +167,28 @@ class unexpected {
   template <typename Err = E,
             internal::EnableIfUnexpectedValueConstruction<E, Err> = 0>
   constexpr explicit unexpected(Err&& err) noexcept
-      : value_(std::forward<Err>(err)) {}
+      : error_(std::forward<Err>(err)) {}
 
   template <typename... Args>
   constexpr explicit unexpected(absl::in_place_t, Args&&... args) noexcept
-      : value_(std::forward<Args>(args)...) {}
+      : error_(std::forward<Args>(args)...) {}
 
   template <typename U, typename... Args>
   constexpr explicit unexpected(absl::in_place_t,
                                 std::initializer_list<U> il,
                                 Args&&... args) noexcept
-      : value_(il, std::forward<Args>(args)...) {}
+      : error_(il, std::forward<Args>(args)...) {}
 
   // [expected.un.obs] Observers
-  constexpr E& value() & noexcept { return value_; }
-  constexpr const E& value() const& noexcept { return value_; }
-  constexpr E&& value() && noexcept { return std::move(value()); }
-  constexpr const E&& value() const&& noexcept { return std::move(value()); }
+  constexpr E& error() & noexcept { return error_; }
+  constexpr const E& error() const& noexcept { return error_; }
+  constexpr E&& error() && noexcept { return std::move(error()); }
+  constexpr const E&& error() const&& noexcept { return std::move(error()); }
 
   // [expected.un.swap] Swap
   constexpr void swap(unexpected& other) noexcept {
     using std::swap;
-    swap(value(), other.value());
+    swap(error(), other.error());
   }
 
   friend constexpr void swap(unexpected& x, unexpected& y) noexcept {
@@ -121,14 +196,14 @@ class unexpected {
   }
 
  private:
-  E value_;
+  E error_;
 };
 
 // [expected.un.eq] Equality operator
 template <typename E, typename G>
 constexpr bool operator==(const unexpected<E>& lhs,
                           const unexpected<G>& rhs) noexcept {
-  return lhs.value() == rhs.value();
+  return lhs.error() == rhs.error();
 }
 
 template <typename E, typename G>
@@ -198,6 +273,9 @@ class expected<T, E, /* is_void_v<T> = */ false> {
   /* implicit */ constexpr expected(expected<U, G>&& rhs) noexcept
       : impl_(std::move(rhs.impl_)) {}
 
+  // Deviation from the Standard, which allows implicit conversions as long as U
+  // is implicitly convertible to T: Chromium additionally requires that U is
+  // not implicitly convertible to E.
   template <typename U = T,
             internal::EnableIfExplicitValueConstruction<T, E, U> = 0>
   explicit constexpr expected(U&& v) noexcept
@@ -209,27 +287,41 @@ class expected<T, E, /* is_void_v<T> = */ false> {
   /* implicit */ constexpr expected(U&& v) noexcept
       : impl_(kValTag, std::forward<U>(v)) {}
 
-  template <typename G,
-            internal::EnableIfExplicitUnexpectedConstruction<E, const G&> = 0>
-  explicit constexpr expected(const unexpected<G>& e) noexcept
-      : impl_(kErrTag, e.value()) {}
+  template <typename U, internal::EnableIfExplicitConstruction<T, const U&> = 0>
+  explicit constexpr expected(const ok<U>& o) noexcept
+      : impl_(kValTag, o.value()) {}
 
-  template <typename G,
-            internal::EnableIfImplicitUnexpectedConstruction<E, const G&> = 0>
+  template <typename U, internal::EnableIfImplicitConstruction<T, const U&> = 0>
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  /* implicit */ constexpr expected(const ok<U>& o) noexcept
+      : impl_(kValTag, o.value()) {}
+
+  template <typename U, internal::EnableIfExplicitConstruction<T, U> = 0>
+  explicit constexpr expected(ok<U>&& o) noexcept
+      : impl_(kValTag, std::move(o.value())) {}
+
+  template <typename U, internal::EnableIfImplicitConstruction<T, U> = 0>
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  /* implicit */ constexpr expected(ok<U>&& o) noexcept
+      : impl_(kValTag, std::move(o.value())) {}
+
+  template <typename G, internal::EnableIfExplicitConstruction<E, const G&> = 0>
+  explicit constexpr expected(const unexpected<G>& e) noexcept
+      : impl_(kErrTag, e.error()) {}
+
+  template <typename G, internal::EnableIfImplicitConstruction<E, const G&> = 0>
   // NOLINTNEXTLINE(google-explicit-constructor)
   /* implicit */ constexpr expected(const unexpected<G>& e) noexcept
-      : impl_(kErrTag, e.value()) {}
+      : impl_(kErrTag, e.error()) {}
 
-  template <typename G,
-            internal::EnableIfExplicitUnexpectedConstruction<E, G> = 0>
+  template <typename G, internal::EnableIfExplicitConstruction<E, G> = 0>
   explicit constexpr expected(unexpected<G>&& e) noexcept
-      : impl_(kErrTag, std::move(e.value())) {}
+      : impl_(kErrTag, std::move(e.error())) {}
 
-  template <typename G,
-            internal::EnableIfImplicitUnexpectedConstruction<E, G> = 0>
+  template <typename G, internal::EnableIfImplicitConstruction<E, G> = 0>
   // NOLINTNEXTLINE(google-explicit-constructor)
   /* implicit */ constexpr expected(unexpected<G>&& e) noexcept
-      : impl_(kErrTag, std::move(e.value())) {}
+      : impl_(kErrTag, std::move(e.error())) {}
 
   template <typename... Args>
   constexpr explicit expected(absl::in_place_t, Args&&... args) noexcept
@@ -258,15 +350,27 @@ class expected<T, E, /* is_void_v<T> = */ false> {
     return *this;
   }
 
+  template <typename U>
+  constexpr expected& operator=(const ok<U>& o) noexcept {
+    emplace(o.value());
+    return *this;
+  }
+
+  template <typename U>
+  constexpr expected& operator=(ok<U>&& o) noexcept {
+    emplace(std::move(o.value()));
+    return *this;
+  }
+
   template <typename G>
   constexpr expected& operator=(const unexpected<G>& e) noexcept {
-    impl_.emplace_error(e.value());
+    impl_.emplace_error(e.error());
     return *this;
   }
 
   template <typename G>
   constexpr expected& operator=(unexpected<G>&& e) noexcept {
-    impl_.emplace_error(std::move(e.value()));
+    impl_.emplace_error(std::move(e.error()));
     return *this;
   }
 
@@ -389,27 +493,23 @@ class expected<T, E, /* is_void_v<T> = */ true> {
   constexpr /* implicit */ expected(expected<U, G>&& rhs) noexcept
       : impl_(std::move(rhs.impl_)) {}
 
-  template <typename G,
-            internal::EnableIfExplicitUnexpectedConstruction<E, const G&> = 0>
+  template <typename G, internal::EnableIfExplicitConstruction<E, const G&> = 0>
   explicit constexpr expected(const unexpected<G>& e) noexcept
-      : impl_(kErrTag, e.value()) {}
+      : impl_(kErrTag, e.error()) {}
 
-  template <typename G,
-            internal::EnableIfImplicitUnexpectedConstruction<E, const G&> = 0>
+  template <typename G, internal::EnableIfImplicitConstruction<E, const G&> = 0>
   // NOLINTNEXTLINE(google-explicit-constructor)
   /* implicit */ constexpr expected(const unexpected<G>& e) noexcept
-      : impl_(kErrTag, e.value()) {}
+      : impl_(kErrTag, e.error()) {}
 
-  template <typename G,
-            internal::EnableIfExplicitUnexpectedConstruction<E, G> = 0>
+  template <typename G, internal::EnableIfExplicitConstruction<E, G> = 0>
   explicit constexpr expected(unexpected<G>&& e) noexcept
-      : impl_(kErrTag, std::move(e.value())) {}
+      : impl_(kErrTag, std::move(e.error())) {}
 
-  template <typename G,
-            internal::EnableIfImplicitUnexpectedConstruction<E, G> = 0>
+  template <typename G, internal::EnableIfImplicitConstruction<E, G> = 0>
   // NOLINTNEXTLINE(google-explicit-constructor)
   /* implicit */ constexpr expected(unexpected<G>&& e) noexcept
-      : impl_(kErrTag, std::move(e.value())) {}
+      : impl_(kErrTag, std::move(e.error())) {}
 
   constexpr explicit expected(absl::in_place_t) noexcept {}
 
@@ -426,13 +526,13 @@ class expected<T, E, /* is_void_v<T> = */ true> {
   // [expected.void.assign], assignment
   template <typename G>
   constexpr expected& operator=(const unexpected<G>& e) noexcept {
-    impl_.emplace_error(e.value());
+    impl_.emplace_error(e.error());
     return *this;
   }
 
   template <typename G>
   constexpr expected& operator=(unexpected<G>&& e) noexcept {
-    impl_.emplace_error(std::move(e.value()));
+    impl_.emplace_error(std::move(e.error()));
     return *this;
   }
 
@@ -491,10 +591,20 @@ constexpr bool operator==(const U& v, const expected<T, E>& x) noexcept {
   return x == v;
 }
 
+template <typename T, typename E, typename U, internal::EnableIfNotVoid<T> = 0>
+constexpr bool operator==(const expected<T, E>& x, const ok<U>& o) noexcept {
+  return x.has_value() && x.value() == o.value();
+}
+
+template <typename T, typename E, typename U, internal::EnableIfNotVoid<T> = 0>
+constexpr bool operator==(const ok<U>& o, const expected<T, E>& x) noexcept {
+  return x == o;
+}
+
 template <typename T, typename E, typename G>
 constexpr bool operator==(const expected<T, E>& x,
                           const unexpected<G>& e) noexcept {
-  return !x.has_value() && x.error() == e.value();
+  return !x.has_value() && x.error() == e.error();
 }
 
 template <typename T, typename E, typename G>
@@ -517,6 +627,16 @@ constexpr bool operator!=(const expected<T, E>& x, const U& v) noexcept {
 template <typename T, typename E, typename U, internal::EnableIfNotVoid<T> = 0>
 constexpr bool operator!=(const U& v, const expected<T, E>& x) noexcept {
   return !(v == x);
+}
+
+template <typename T, typename E, typename U, internal::EnableIfNotVoid<T> = 0>
+constexpr bool operator!=(const expected<T, E>& x, const ok<U>& o) noexcept {
+  return !(x == o);
+}
+
+template <typename T, typename E, typename U, internal::EnableIfNotVoid<T> = 0>
+constexpr bool operator!=(const ok<U>& o, const expected<T, E>& x) noexcept {
+  return !(o == x);
 }
 
 template <typename T, typename E, typename G>

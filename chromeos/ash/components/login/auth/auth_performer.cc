@@ -16,10 +16,12 @@
 #include "chromeos/ash/components/cryptohome/cryptohome_util.h"
 #include "chromeos/ash/components/cryptohome/system_salt_getter.h"
 #include "chromeos/ash/components/cryptohome/userdataauth_util.h"
+#include "chromeos/ash/components/dbus/constants/cryptohome_key_delegate_constants.h"
 #include "chromeos/ash/components/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/ash/components/dbus/cryptohome/auth_factor.pb.h"
 #include "chromeos/ash/components/dbus/cryptohome/key.pb.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
+#include "chromeos/ash/components/login/auth/challenge_response/key_label_utils.h"
 #include "chromeos/ash/components/login/auth/cryptohome_parameter_utils.h"
 #include "chromeos/ash/components/login/auth/public/auth_session_intent.h"
 #include "chromeos/ash/components/login/auth/public/auth_session_status.h"
@@ -39,13 +41,27 @@ bool IsKioskUserType(user_manager::UserType type) {
          type == user_manager::USER_TYPE_WEB_KIOSK_APP;
 }
 
-user_data_auth::AuthIntent AuthIntentToProto(AuthSessionIntent intent) {
+user_data_auth::AuthIntent SerializeIntent(AuthSessionIntent intent) {
   switch (intent) {
     case AuthSessionIntent::kDecrypt:
       return user_data_auth::AUTH_INTENT_DECRYPT;
     case AuthSessionIntent::kVerifyOnly:
       return user_data_auth::AUTH_INTENT_VERIFY_ONLY;
   }
+}
+
+absl::optional<AuthSessionIntent> DeserializeIntent(
+    user_data_auth::AuthIntent intent) {
+  switch (intent) {
+    case user_data_auth::AUTH_INTENT_DECRYPT:
+      return AuthSessionIntent::kDecrypt;
+    case user_data_auth::AUTH_INTENT_VERIFY_ONLY:
+      return AuthSessionIntent::kVerifyOnly;
+    default:
+      NOTIMPLEMENTED() << "Other intents not implemented yet, intent: "
+                       << intent;
+  }
+  return absl::nullopt;
 }
 
 }  // namespace
@@ -87,7 +103,7 @@ void AuthPerformer::OnServiceRunning(std::unique_ptr<UserContext> context,
   user_data_auth::StartAuthSessionRequest request;
   *request.mutable_account_id() =
       cryptohome::CreateAccountIdentifierFromAccountId(context->GetAccountId());
-  request.set_intent(AuthIntentToProto(intent));
+  request.set_intent(SerializeIntent(intent));
 
   if (ephemeral) {
     request.set_flags(user_data_auth::AUTH_SESSION_FLAGS_EPHEMERAL_USER);
@@ -97,6 +113,19 @@ void AuthPerformer::OnServiceRunning(std::unique_ptr<UserContext> context,
 
   client_->StartAuthSession(
       request, base::BindOnce(&AuthPerformer::OnStartAuthSession,
+                              weak_factory_.GetWeakPtr(), std::move(context),
+                              std::move(callback)));
+}
+
+void AuthPerformer::InvalidateAuthSession(std::unique_ptr<UserContext> context,
+                                          AuthOperationCallback callback) {
+  CHECK(!context->GetAuthSessionId().empty());
+
+  user_data_auth::InvalidateAuthSessionRequest request;
+  request.set_auth_session_id(context->GetAuthSessionId());
+
+  client_->InvalidateAuthSession(
+      request, base::BindOnce(&AuthPerformer::OnInvalidateAuthSession,
                               weak_factory_.GetWeakPtr(), std::move(context),
                               std::move(callback)));
 }
@@ -215,8 +244,25 @@ void AuthPerformer::AuthenticateUsingChallengeResponseKey(
   LOGIN_LOG(EVENT) << "Authenticating using challenge-response";
 
   if (features::IsUseAuthFactorsEnabled()) {
-    NOTIMPLEMENTED()
-        << "SmartCard keys are not implemented in AuthFactors yet.";
+    user_data_auth::AuthenticateAuthFactorRequest request;
+    request.set_auth_session_id(context->GetAuthSessionId());
+
+    DCHECK_EQ(context->GetChallengeResponseKeys().size(), 1ull);
+
+    auto label =
+        GenerateChallengeResponseKeyLabel(context->GetChallengeResponseKeys());
+    cryptohome::AuthFactorRef ref{cryptohome::AuthFactorType::kSmartCard,
+                                  cryptohome::KeyLabel{label}};
+    cryptohome::AuthFactorInput input(cryptohome::AuthFactorInput::SmartCard{
+        context->GetChallengeResponseKeys()[0].signature_algorithms(),
+        cryptohome::kCryptohomeKeyDelegateServiceName,
+    });
+    cryptohome::SerializeAuthInput(ref, input, request.mutable_auth_input());
+    request.set_auth_factor_label(ref.label().value());
+    client_->AuthenticateAuthFactor(
+        request, base::BindOnce(&AuthPerformer::OnAuthenticateAuthFactor,
+                                weak_factory_.GetWeakPtr(), std::move(context),
+                                std::move(callback)));
   } else {
     user_data_auth::AuthenticateAuthSessionRequest request;
     request.set_auth_session_id(context->GetAuthSessionId());
@@ -242,7 +288,7 @@ void AuthPerformer::AuthenticateWithPassword(
   if (context->GetAuthSessionId().empty())
     NOTREACHED() << "Auth session should exist";
 
-  const AuthFactorsData& auth_factors = context->GetAuthFactorsData();
+  const SessionAuthFactors& auth_factors = context->GetAuthFactorsData();
   if (features::IsUseAuthFactorsEnabled()) {
     if (auth_factors.FindPasswordFactor(cryptohome::KeyLabel{key_label}) ==
         nullptr) {
@@ -320,6 +366,8 @@ void AuthPerformer::AuthenticateWithPin(const std::string& pin,
   }
 
   key.Transform(Key::KEY_TYPE_SALTED_PBKDF2_AES256_1234, pin_salt);
+  context->SetKey(std::move(key));
+  context->SetIsUsingPin(true);
   AuthenticateUsingKnowledgeKey(std::move(context), std::move(callback));
 }
 
@@ -421,8 +469,8 @@ void AuthPerformer::OnStartAuthSession(
           cryptohome::DeserializeAuthFactor(factor_proto, fallback_type));
     }
 
-    AuthFactorsData auth_factors_data(std::move(next_factors));
-    context->SetAuthFactorsData(std::move(auth_factors_data));
+    SessionAuthFactors auth_factors_data(std::move(next_factors));
+    context->SetSessionAuthFactors(std::move(auth_factors_data));
   } else {
     // Remember key metadata
     std::vector<cryptohome::KeyDefinition> key_definitions;
@@ -446,12 +494,31 @@ void AuthPerformer::OnStartAuthSession(
       }
       key_definitions.push_back(KeyDataToKeyDefinition(data));
     }
-    AuthFactorsData auth_factors_data(std::move(key_definitions));
-    context->SetAuthFactorsData(std::move(auth_factors_data));
+    SessionAuthFactors auth_factors_data(std::move(key_definitions));
+    context->SetSessionAuthFactors(std::move(auth_factors_data));
   }
 
   std::move(callback).Run(reply->user_exists(), std::move(context),
                           absl::nullopt);
+}
+
+void AuthPerformer::OnInvalidateAuthSession(
+    std::unique_ptr<UserContext> context,
+    AuthOperationCallback callback,
+    absl::optional<user_data_auth::InvalidateAuthSessionReply> reply) {
+  // The auth session is useless even if we failed to invalidate it.
+  context->SetAuthSessionId("");
+
+  auto error = user_data_auth::ReplyToCryptohomeError(reply);
+  if (error != user_data_auth::CRYPTOHOME_ERROR_NOT_SET &&
+      error != user_data_auth::CRYPTOHOME_INVALID_AUTH_SESSION_TOKEN) {
+    LOGIN_LOG(ERROR) << "Could not invalidate authsession " << error;
+    std::move(callback).Run(std::move(context), AuthenticationError{error});
+    return;
+  }
+
+  context->SetAuthSessionId("");
+  std::move(callback).Run(std::move(context), absl::nullopt);
 }
 
 void AuthPerformer::OnAuthenticateAuthSession(
@@ -485,7 +552,14 @@ void AuthPerformer::OnAuthenticateAuthFactor(
     return;
   }
   CHECK(reply.has_value());
-  DCHECK(reply->authenticated());
+  DCHECK(reply->authorized_for_size() > 0);
+  for (auto& authorized_for : reply->authorized_for()) {
+    auto intent = DeserializeIntent(
+        static_cast<user_data_auth::AuthIntent>(authorized_for));
+    if (intent.has_value()) {
+      context->AddAuthorizedIntent(intent.value());
+    }
+  }
   LOGIN_LOG(EVENT) << "Authenticated successfully";
   std::move(callback).Run(std::move(context), absl::nullopt);
 }

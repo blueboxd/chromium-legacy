@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -13,11 +14,13 @@ import androidx.annotation.Px;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.answer.AnswerSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor.BookmarkState;
 import org.chromium.chrome.browser.omnibox.suggestions.clipboard.ClipboardSuggestionProcessor;
+import org.chromium.chrome.browser.omnibox.suggestions.dividerline.DividerLineProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.header.HeaderProcessor;
@@ -35,7 +38,6 @@ import org.chromium.components.image_fetcher.ImageFetcherConfig;
 import org.chromium.components.image_fetcher.ImageFetcherFactory;
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteResult;
-import org.chromium.components.omnibox.AutocompleteResult.GroupDetails;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
@@ -52,6 +54,7 @@ class DropdownItemViewInfoListBuilder {
     private final @NonNull Supplier<Tab> mActivityTabSupplier;
     private final @NonNull OmniboxPedalDelegate mOmniboxPedalDelegate;
 
+    private @Nullable DividerLineProcessor mDividerLineProcessor;
     private @Nullable HeaderProcessor mHeaderProcessor;
     private @Nullable Supplier<ShareDelegate> mShareDelegateSupplier;
     private @Nullable ImageFetcher mImageFetcher;
@@ -90,6 +93,12 @@ class DropdownItemViewInfoListBuilder {
 
         mFaviconFetcher = new FaviconFetcher(context, iconBridgeSupplier);
 
+        if (OmniboxFeatures.shouldShowModernizeVisualUpdate(context)
+                && !OmniboxFeatures.shouldShowActiveColorOnOmnibox()) {
+            // Only create DividerLineProcessor when feature is enabled.
+            // Feature is enabled on non-tablet devices.
+            mDividerLineProcessor = new DividerLineProcessor(context);
+        }
         mHeaderProcessor = new HeaderProcessor(context, host, delegate);
         registerSuggestionProcessor(new EditUrlSuggestionProcessor(
                 context, host, delegate, mFaviconFetcher, mActivityTabSupplier, shareSupplier));
@@ -137,6 +146,15 @@ class DropdownItemViewInfoListBuilder {
      */
     void setHeaderProcessorForTest(HeaderProcessor processor) {
         mHeaderProcessor = processor;
+    }
+
+    /**
+     * Specify instance of the DividerLineProcessor that will be used to run tests.
+     *
+     * @param processor divider line processor used to build the suggestion divider line.
+     */
+    void setDividerLineProcessorForTest(DividerLineProcessor processor) {
+        mDividerLineProcessor = processor;
     }
 
     /**
@@ -236,6 +254,7 @@ class DropdownItemViewInfoListBuilder {
         }
 
         final int suggestionsCount = autocompleteResult.getSuggestionsList().size();
+        var groupConfigs = autocompleteResult.getGroupsInfo().getGroupConfigsMap();
 
         // When Adaptive Suggestions are set, perform partial grouping by search vs url.
         // Take action only if we have more suggestions to offer than just a default match and
@@ -251,12 +270,10 @@ class DropdownItemViewInfoListBuilder {
                 autocompleteResult.groupSuggestionsBySearchVsURL(
                         1, Math.min(numVisibleSuggestions, firstSuggestionWithHeader));
             }
+            mBuiltListHasFullyConcealedElements = (numVisibleSuggestions < suggestionsCount);
             if (numVisibleSuggestions < firstSuggestionWithHeader) {
-                mBuiltListHasFullyConcealedElements = true;
                 autocompleteResult.groupSuggestionsBySearchVsURL(
                         numVisibleSuggestions, firstSuggestionWithHeader);
-            } else {
-                mBuiltListHasFullyConcealedElements = false;
             }
         }
 
@@ -275,23 +292,31 @@ class DropdownItemViewInfoListBuilder {
 
         // Build ViewInfo structures.
         int currentGroup = AutocompleteMatch.INVALID_GROUP;
+
+        // Add the divider line on top if the suggestion list is not empty.
+        if (mDividerLineProcessor != null && newSuggestionsCount > 0) {
+            final PropertyModel model = mDividerLineProcessor.createModel();
+            viewInfoList.add(new DropdownItemViewInfo(mDividerLineProcessor, model, currentGroup));
+        }
         for (int index = 0; index < newSuggestionsCount; index++) {
             final Pair<AutocompleteMatch, SuggestionProcessor> suggestionAndProcessorPair =
                     suggestionsPairedWithProcessors.get(index);
             final AutocompleteMatch suggestion = suggestionAndProcessorPair.first;
             final SuggestionProcessor processor = suggestionAndProcessorPair.second;
 
+            // Note: with suggestion grouping in place, the condition below also
+            // determines rounding boundaries of suggestion group.
             if (currentGroup != suggestion.getGroupId()) {
                 currentGroup = suggestion.getGroupId();
-                final GroupDetails details =
-                        autocompleteResult.getGroupsDetails().get(currentGroup);
+                final var details = groupConfigs.get(currentGroup);
 
                 // Only add the Header Group when both ID and details are specified.
                 // Note that despite GroupsDetails map not holding <null> values,
-                // a group definition for specific ID may be unavailable.
-                if (details != null) {
+                // a group definition for specific ID may be unavailable, or the group
+                // header text may be empty.
+                if (details != null && !TextUtils.isEmpty(details.getHeaderText())) {
                     final PropertyModel model = mHeaderProcessor.createModel();
-                    mHeaderProcessor.populateModel(model, currentGroup, details.title);
+                    mHeaderProcessor.populateModel(model, currentGroup, details.getHeaderText());
                     viewInfoList.add(
                             new DropdownItemViewInfo(mHeaderProcessor, model, currentGroup));
                 }

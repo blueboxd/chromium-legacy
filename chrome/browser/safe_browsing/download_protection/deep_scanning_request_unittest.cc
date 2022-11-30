@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/raw_ptr.h"
@@ -140,9 +141,7 @@ class FakeBinaryUploadService : public BinaryUploadService {
   void MaybeAcknowledge(std::unique_ptr<Ack> ack) override {
     EXPECT_EQ(final_action_, ack->ack().final_action());
     ++num_acks_;
-    ASSERT_NE(requests_tokens_.end(),
-              std::find(requests_tokens_.begin(), requests_tokens_.end(),
-                        ack->ack().request_token()));
+    ASSERT_TRUE(base::Contains(requests_tokens_, ack->ack().request_token()));
   }
 
   void SetResponse(const base::FilePath& path,
@@ -281,26 +280,23 @@ class DeepScanningRequestTest : public testing::Test {
   }
 
   void AddUrlToProfilePrefList(const char* pref_name, const GURL& url) {
-    ListPrefUpdate(profile_->GetPrefs(), pref_name)->Append(url.host());
+    ScopedListPrefUpdate(profile_->GetPrefs(), pref_name)->Append(url.host());
   }
 
-  void SetFeatures(const std::vector<base::Feature>& enabled,
-                   const std::vector<base::Feature>& disabled) {
+  void SetFeatures(const std::vector<base::test::FeatureRef>& enabled,
+                   const std::vector<base::test::FeatureRef>& disabled) {
     scoped_feature_list_.Reset();
     scoped_feature_list_.InitWithFeatures(enabled, disabled);
   }
 
   void EnableAllFeatures() {
     SetFeatures({enterprise_connectors::kEnterpriseConnectorsEnabled},
-                {extensions::SafeBrowsingPrivateEventRouter::
-                     kRealtimeReportingFeature});
+                {enterprise_connectors::kSafeBrowsingRealtimeReporting});
   }
 
   void DisableAllFeatures() {
-    SetFeatures(
-        {},
-        {extensions::SafeBrowsingPrivateEventRouter::kRealtimeReportingFeature,
-         enterprise_connectors::kEnterpriseConnectorsEnabled});
+    SetFeatures({}, {enterprise_connectors::kSafeBrowsingRealtimeReporting,
+                     enterprise_connectors::kEnterpriseConnectorsEnabled});
   }
 
   void ValidateDefaultSettings(

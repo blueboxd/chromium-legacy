@@ -18,6 +18,7 @@
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/floss/exported_callback_manager.h"
 #include "device/bluetooth/floss/floss_dbus_client.h"
+#include "device/bluetooth/floss/floss_gatt_client.h"
 
 namespace dbus {
 class ObjectPath;
@@ -30,16 +31,34 @@ const char kScannerCallbackInterfaceName[] =
     "org.chromium.bluetooth.ScannerCallback";
 
 // TODO(b/217274013): Update structs to support filtering
-class RSSISettings {};
-
 class ScanSettings {};
+
+class ScanFilterPattern {};
+
+enum ScanFilterCondition {};
 
 class ScanFilter {};
 
-struct ScanResult {
+struct DEVICE_BLUETOOTH_EXPORT ScanResult {
+  std::string name;
   std::string address;
   uint8_t addr_type;
-  // TODO(b/217274013): add rest of fields
+  uint16_t event_type;
+  uint8_t primary_phy;
+  uint8_t secondary_phy;
+  uint8_t advertising_sid;
+  int8_t tx_power;
+  int8_t rssi;
+  uint16_t periodic_adv_int;
+  uint8_t flags;
+  std::vector<device::BluetoothUUID> service_uuids;
+  std::map<std::string, std::vector<uint8_t>> service_data;
+  std::map<uint16_t, std::vector<uint8_t>> manufacturer_data;
+  std::vector<uint8_t> adv_data;
+
+  ScanResult();
+  ScanResult(const ScanResult&);
+  ~ScanResult();
 };
 
 class ScannerClientObserver : public base::CheckedObserver {
@@ -50,7 +69,7 @@ class ScannerClientObserver : public base::CheckedObserver {
   // A scanner has been registered
   virtual void ScannerRegistered(device::BluetoothUUID uuid,
                                  uint8_t scanner_id,
-                                 uint8_t status) {}
+                                 GattStatus status) {}
 
   // A scan result has been received
   virtual void ScanResultReceived(ScanResult scan_result) {}
@@ -85,17 +104,18 @@ class DEVICE_BLUETOOTH_EXPORT FlossLEScanClient : public FlossDBusClient,
       ResponseCallback<device::BluetoothUUID> callback);
   virtual void UnregisterScanner(ResponseCallback<bool> callback,
                                  uint8_t scanner_id);
-  virtual void StartScan(ResponseCallback<Void> callback,
+  virtual void StartScan(ResponseCallback<BtifStatus> callback,
                          uint8_t scanner_id,
                          const ScanSettings& scan_settings,
-                         const std::vector<ScanFilter>& filters);
-  virtual void StopScan(ResponseCallback<Void> callback, uint8_t scanner_id);
+                         const ScanFilter& filter);
+  virtual void StopScan(ResponseCallback<BtifStatus> callback,
+                        uint8_t scanner_id);
 
  protected:
   // ScannerClientObserver overrides
   void ScannerRegistered(device::BluetoothUUID uuid,
                          uint8_t scanner_id,
-                         uint8_t status) override;
+                         GattStatus status) override;
   void ScanResultReceived(ScanResult scan_result) override;
 
   // Managed by FlossDBusManager - we keep local pointer to access object proxy.

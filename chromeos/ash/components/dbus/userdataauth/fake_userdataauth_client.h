@@ -10,6 +10,7 @@
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 
 #include "base/component_export.h"
+#include "base/containers/enum_set.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/observer_list.h"
@@ -22,6 +23,9 @@ namespace ash {
 
 class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
     : public UserDataAuthClient {
+ private:
+  struct UserCryptohomeState;
+
  public:
   // The method by which a user's home directory can be encrypted.
   enum class HomeEncryptionMethod {
@@ -29,16 +33,11 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
     kEcryptfs,
   };
 
+  // The TestAPI of FakeUserDataAuth. Prefer to use `ash::CryptohomeMixin`,
+  // which exposes all the methods here and some additional ones.
   class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) TestApi {
    public:
-    ~TestApi() = default;
-
-    // Not copyable or movable.
-    TestApi(const TestApi&) = delete;
-    TestApi& operator=(const TestApi&) = delete;
-    TestApi(TestApi&&) = delete;
-    TestApi& operator=(TestApi&&) = delete;
-
+    // Legacy method for tests that do not use `CryptohomeMixin`.
     static TestApi* Get();
 
     // Sets whether dircrypto migration update should be run automatically.
@@ -46,19 +45,20 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
     // progress updates on its own - a test that sets this will have to call
     // NotifyDircryptoMigrationProgress() for the progress to update.
     void set_run_default_dircrypto_migration(bool value) {
-      run_default_dircrypto_migration_ = value;
+      FakeUserDataAuthClient::Get()->run_default_dircrypto_migration_ = value;
     }
 
     // If set, next call to GetSupportedKeyPolicies() will tell caller that low
     // entropy credentials are supported.
     void set_supports_low_entropy_credentials(bool supports) {
-      supports_low_entropy_credentials_ = supports;
+      FakeUserDataAuthClient::Get()->supports_low_entropy_credentials_ =
+          supports;
     }
 
     // If enable_auth_check is true, then authentication requests actually check
     // the key.
     void set_enable_auth_check(bool enable_auth_check) {
-      enable_auth_check_ = enable_auth_check;
+      FakeUserDataAuthClient::Get()->enable_auth_check_ = enable_auth_check;
     }
 
     // Sets whether the Mount() call should fail when the |create| field is not
@@ -66,7 +66,8 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
     // This allows to simulate the behavior during the new user profile
     // creation.
     void set_mount_create_required(bool mount_create_required) {
-      mount_create_required_ = mount_create_required;
+      FakeUserDataAuthClient::Get()->mount_create_required_ =
+          mount_create_required;
     }
 
     // Changes the behavior of WaitForServiceToBeAvailable(). This method runs
@@ -105,41 +106,23 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
     void AddKey(const cryptohome::AccountIdentifier& account_id,
                 const cryptohome::Key& key);
 
+    void AddRecoveryFactor(const cryptohome::AccountIdentifier& account_id);
+    bool HasRecoveryFactor(const cryptohome::AccountIdentifier& account_id);
+
+    std::string AddSession(const cryptohome::AccountIdentifier& account_id,
+                           bool authenticated);
+
    private:
-    friend class FakeUserDataAuthClient;
-
-    explicit TestApi(base::raw_ptr<FakeUserDataAuthClient> client);
-
-    // The singleton instance
-    static base::raw_ptr<FakeUserDataAuthClient::TestApi> instance_;
-
-    // Do we run the dircrypto migration, as in, emit signals, when
-    // StartMigrateToDircrypto() is called?
-    bool run_default_dircrypto_migration_ = true;
-
-    // If low entropy credentials are supported for the key. This is the value
-    // that GetSupportedKeyPolicies() returns.
-    bool supports_low_entropy_credentials_ = false;
-
-    // If true, authentication requests actually check the key.
-    bool enable_auth_check_ = false;
-
-    // If true, fails if |create| field is not provided
-    bool mount_create_required_ = false;
-
-    // If set, we tell callers that service is available.
-    bool service_is_available_ = true;
-
-    // If set, WaitForServiceToBeAvailable will run the callback, even if
-    // service is not available (instead of adding the callback to pending
-    // callback list).
-    bool service_reported_not_available_ = false;
-
-    base::raw_ptr<FakeUserDataAuthClient> client_;
+    FakeUserDataAuthClient::UserCryptohomeState& GetUserState(
+        const cryptohome::AccountIdentifier& account_id);
   };
 
   // Represents the ongoing AuthSessions.
   struct AuthSessionData {
+    explicit AuthSessionData();
+    AuthSessionData(const AuthSessionData& other);
+    AuthSessionData& operator=(const AuthSessionData&);
+    ~AuthSessionData();
     // AuthSession id.
     std::string id;
     // Whether the `AUTH_SESSION_FLAGS_EPHEMERAL_USER` flag was passed on
@@ -149,6 +132,16 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
     cryptohome::AccountIdentifier account;
     // True if session is authenticated.
     bool authenticated = false;
+    // The requested AuthIntent.
+    user_data_auth::AuthIntent requested_auth_session_intent =
+        user_data_auth::AUTH_INTENT_DECRYPT;
+
+    using AuthProtoIntents =
+        base::EnumSet<user_data_auth::AuthIntent,
+                      user_data_auth::AuthIntent::AUTH_INTENT_UNSPECIFIED,
+                      user_data_auth::AuthIntent::AUTH_INTENT_WEBAUTHN>;
+    // List of Authorized AuthIntents.
+    AuthProtoIntents authorized_auth_session_intent;
   };
 
   FakeUserDataAuthClient();
@@ -249,7 +242,7 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
       const ::user_data_auth::RemoveAuthFactorRequest& request,
       RemoveAuthFactorCallback callback) override;
   void ListAuthFactors(const ::user_data_auth::ListAuthFactorsRequest& request,
-                       ListAuthFactorsCallback callback);
+                       ListAuthFactorsCallback callback) override;
   void GetRecoveryRequest(
       const ::user_data_auth::GetRecoveryRequestRequest& request,
       GetRecoveryRequestCallback callback) override;
@@ -313,6 +306,11 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
     return last_add_credentials_request_.authorization();
   }
 
+  const ::user_data_auth::AddAuthFactorRequest&
+  get_last_add_authfactor_request() const {
+    return last_add_auth_factor_request_;
+  }
+
   const ::user_data_auth::AuthenticateAuthFactorRequest&
   get_last_authenticate_auth_factor_request() const {
     return last_authenticate_auth_factor_request_;
@@ -332,8 +330,6 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   void SetUserDataDir(base::FilePath path);
 
  private:
-  struct UserCryptohomeState;
-
   enum class AuthResult {
     kAuthSuccess,
     kUserNotFound,
@@ -413,6 +409,9 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   ::user_data_auth::AuthenticateAuthFactorRequest
       last_authenticate_auth_factor_request_;
 
+  // The AddAuthFactorRequest passed in for the last AddAuthFactor() call.
+  ::user_data_auth::AddAuthFactorRequest last_add_auth_factor_request_;
+
   // The auth sessions on file.
   base::flat_map<std::string, AuthSessionData> auth_sessions_;
 
@@ -431,6 +430,28 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
 
   // List of observers.
   base::ObserverList<Observer> observer_list_;
+
+  // Do we run the dircrypto migration, as in, emit signals, when
+  // StartMigrateToDircrypto() is called?
+  bool run_default_dircrypto_migration_ = true;
+
+  // If low entropy credentials are supported for the key. This is the value
+  // that GetSupportedKeyPolicies() returns.
+  bool supports_low_entropy_credentials_ = false;
+
+  // If true, authentication requests actually check the key.
+  bool enable_auth_check_ = false;
+
+  // If true, fails if |create| field is not provided
+  bool mount_create_required_ = false;
+
+  // If set, we tell callers that service is available.
+  bool service_is_available_ = true;
+
+  // If set, WaitForServiceToBeAvailable will run the callback, even if
+  // service is not available (instead of adding the callback to pending
+  // callback list).
+  bool service_reported_not_available_ = false;
 };
 
 }  // namespace ash

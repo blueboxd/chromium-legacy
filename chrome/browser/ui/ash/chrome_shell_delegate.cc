@@ -9,6 +9,7 @@
 
 #include "ash/constants/app_types.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/services/multidevice_setup/multidevice_setup_service.h"
@@ -207,11 +208,6 @@ int ChromeShellDelegate::GetBrowserWebUITabStripHeight() {
   return TabStripUILayout::GetContainerHeight();
 }
 
-void ChromeShellDelegate::BindBluetoothSystemFactory(
-    mojo::PendingReceiver<device::mojom::BluetoothSystemFactory> receiver) {
-  content::GetDeviceService().BindBluetoothSystemFactory(std::move(receiver));
-}
-
 void ChromeShellDelegate::BindFingerprint(
     mojo::PendingReceiver<device::mojom::Fingerprint> receiver) {
   content::GetDeviceService().BindFingerprint(std::move(receiver));
@@ -359,6 +355,11 @@ const GURL& ChromeShellDelegate::GetLastCommittedURLForWindowIfAny(
 }
 
 version_info::Channel ChromeShellDelegate::GetChannel() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kForceShowReleaseTrack)) {
+    // Simulate a non-stable channel so the release track UI is visible.
+    return version_info::Channel::BETA;
+  }
   return chrome::GetChannel();
 }
 

@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 import {MarginsType, PrintPreviewMarginsSettingsElement, PrintPreviewModelElement, State} from 'chrome://print/print_preview.js';
-
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {eventToPromise, fakeDataBind} from 'chrome://webui-test/test_util.js';
+import {fakeDataBind} from 'chrome://webui-test/polymer_test_util.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
 import {selectOption} from './print_preview_test_utils.js';
 
@@ -15,7 +15,8 @@ suite('MarginsSettingsTest', function() {
   let model: PrintPreviewModelElement;
 
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     model = document.createElement('print-preview-model');
     document.body.appendChild(model);
 

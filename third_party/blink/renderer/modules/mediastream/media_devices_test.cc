@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -32,6 +33,7 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
+using base::HistogramTester;
 using blink::mojom::blink::MediaDeviceInfoPtr;
 using ::testing::_;
 
@@ -47,6 +49,9 @@ const char kFakeCommonGroupId2[] = "fake_group 2";
 const char kFakeVideoInputGroupId2[] = "fake_video_input_group 2";
 const char kFakeAudioOutputDeviceId1[] = "fake_audio_output 1";
 const char kFakeAudioOutputDeviceId2[] = "fake_audio_output 2";
+
+constexpr char kEnumerateDevicesLatencyHistogram[] =
+    "WebRTC.EnumerateDevices.Latency";
 
 String MaxLengthCaptureHandle() {
   String maxHandle = "0123456789abcdef";  // 16 characters.
@@ -360,9 +365,10 @@ TEST_F(MediaDevicesTest, GetUserMediaCanBeCalled) {
 
 TEST_F(MediaDevicesTest, EnumerateDevices) {
   V8TestingScope scope;
+  HistogramTester histogram_tester;
   auto* media_devices = GetMediaDevices(*GetDocument().domWindow());
-  media_devices->SetEnumerateDevicesCallbackForTesting(
-      WTF::Bind(&MediaDevicesTest::DevicesEnumerated, WTF::Unretained(this)));
+  media_devices->SetEnumerateDevicesCallbackForTesting(WTF::BindOnce(
+      &MediaDevicesTest::DevicesEnumerated, WTF::Unretained(this)));
   ScriptPromise promise = media_devices->enumerateDevices(
       scope.GetScriptState(), scope.GetExceptionState());
   platform()->RunUntilIdle();
@@ -371,53 +377,55 @@ TEST_F(MediaDevicesTest, EnumerateDevices) {
   EXPECT_TRUE(devices_enumerated());
   EXPECT_EQ(7u, device_infos().size());
 
+  histogram_tester.ExpectTotalCount(kEnumerateDevicesLatencyHistogram, 1);
+
   // Audio input device with matched output ID.
   Member<MediaDeviceInfo> device = device_infos()[0];
-  EXPECT_FALSE(device->deviceId().IsEmpty());
+  EXPECT_FALSE(device->deviceId().empty());
   EXPECT_EQ("audioinput", device->kind());
-  EXPECT_FALSE(device->label().IsEmpty());
-  EXPECT_FALSE(device->groupId().IsEmpty());
+  EXPECT_FALSE(device->label().empty());
+  EXPECT_FALSE(device->groupId().empty());
 
   // Audio input device with Airpods label.
   device = device_infos()[1];
-  EXPECT_FALSE(device->deviceId().IsEmpty());
+  EXPECT_FALSE(device->deviceId().empty());
   EXPECT_EQ("audioinput", device->kind());
-  EXPECT_FALSE(device->label().IsEmpty());
-  EXPECT_FALSE(device->groupId().IsEmpty());
+  EXPECT_FALSE(device->label().empty());
+  EXPECT_FALSE(device->groupId().empty());
 
   // Audio input device without matched output ID.
   device = device_infos()[2];
-  EXPECT_FALSE(device->deviceId().IsEmpty());
+  EXPECT_FALSE(device->deviceId().empty());
   EXPECT_EQ("audioinput", device->kind());
-  EXPECT_FALSE(device->label().IsEmpty());
-  EXPECT_FALSE(device->groupId().IsEmpty());
+  EXPECT_FALSE(device->label().empty());
+  EXPECT_FALSE(device->groupId().empty());
 
   // Video input devices.
   device = device_infos()[3];
-  EXPECT_FALSE(device->deviceId().IsEmpty());
+  EXPECT_FALSE(device->deviceId().empty());
   EXPECT_EQ("videoinput", device->kind());
-  EXPECT_FALSE(device->label().IsEmpty());
-  EXPECT_FALSE(device->groupId().IsEmpty());
+  EXPECT_FALSE(device->label().empty());
+  EXPECT_FALSE(device->groupId().empty());
 
   device = device_infos()[4];
-  EXPECT_FALSE(device->deviceId().IsEmpty());
+  EXPECT_FALSE(device->deviceId().empty());
   EXPECT_EQ("videoinput", device->kind());
-  EXPECT_FALSE(device->label().IsEmpty());
-  EXPECT_FALSE(device->groupId().IsEmpty());
+  EXPECT_FALSE(device->label().empty());
+  EXPECT_FALSE(device->groupId().empty());
 
   // Audio output device.
   device = device_infos()[5];
-  EXPECT_FALSE(device->deviceId().IsEmpty());
+  EXPECT_FALSE(device->deviceId().empty());
   EXPECT_EQ("audiooutput", device->kind());
-  EXPECT_FALSE(device->label().IsEmpty());
-  EXPECT_FALSE(device->groupId().IsEmpty());
+  EXPECT_FALSE(device->label().empty());
+  EXPECT_FALSE(device->groupId().empty());
 
   // Audio output device with Airpods label.
   device = device_infos()[6];
-  EXPECT_FALSE(device->deviceId().IsEmpty());
+  EXPECT_FALSE(device->deviceId().empty());
   EXPECT_EQ("audiooutput", device->kind());
-  EXPECT_FALSE(device->label().IsEmpty());
-  EXPECT_FALSE(device->groupId().IsEmpty());
+  EXPECT_FALSE(device->label().empty());
+  EXPECT_FALSE(device->groupId().empty());
 
   // Verify group IDs.
   EXPECT_EQ(device_infos()[0]->groupId(), device_infos()[3]->groupId());
@@ -435,12 +443,13 @@ TEST_F(MediaDevicesTest, EnumerateDevices) {
 
 TEST_F(MediaDevicesTest, EnumerateDevicesAfterConnectionError) {
   V8TestingScope scope;
+  HistogramTester histogram_tester;
   auto* media_devices = GetMediaDevices(*GetDocument().domWindow());
-  media_devices->SetEnumerateDevicesCallbackForTesting(
-      WTF::Bind(&MediaDevicesTest::DevicesEnumerated, WTF::Unretained(this)));
+  media_devices->SetEnumerateDevicesCallbackForTesting(WTF::BindOnce(
+      &MediaDevicesTest::DevicesEnumerated, WTF::Unretained(this)));
   media_devices->SetConnectionErrorCallbackForTesting(
-      WTF::Bind(&MediaDevicesTest::OnDispatcherHostConnectionError,
-                WTF::Unretained(this)));
+      WTF::BindOnce(&MediaDevicesTest::OnDispatcherHostConnectionError,
+                    WTF::Unretained(this)));
   EXPECT_FALSE(dispatcher_host_connection_error());
 
   // Simulate a connection error by closing the binding.
@@ -453,6 +462,8 @@ TEST_F(MediaDevicesTest, EnumerateDevicesAfterConnectionError) {
   ASSERT_FALSE(promise.IsEmpty());
   EXPECT_TRUE(dispatcher_host_connection_error());
   EXPECT_FALSE(devices_enumerated());
+
+  histogram_tester.ExpectTotalCount(kEnumerateDevicesLatencyHistogram, 1);
 }
 
 TEST_F(MediaDevicesTest, SetCaptureHandleConfigAfterConnectionError) {
@@ -460,8 +471,8 @@ TEST_F(MediaDevicesTest, SetCaptureHandleConfigAfterConnectionError) {
   auto* media_devices = GetMediaDevices(*GetDocument().domWindow());
 
   media_devices->SetConnectionErrorCallbackForTesting(
-      WTF::Bind(&MediaDevicesTest::OnDispatcherHostConnectionError,
-                WTF::Unretained(this)));
+      WTF::BindOnce(&MediaDevicesTest::OnDispatcherHostConnectionError,
+                    WTF::Unretained(this)));
   ASSERT_FALSE(dispatcher_host_connection_error());
 
   // Simulate a connection error by closing the binding.
@@ -480,11 +491,11 @@ TEST_F(MediaDevicesTest, SetCaptureHandleConfigAfterConnectionError) {
 TEST_F(MediaDevicesTest, EnumerateDevicesBeforeConnectionError) {
   V8TestingScope scope;
   auto* media_devices = GetMediaDevices(*GetDocument().domWindow());
-  media_devices->SetEnumerateDevicesCallbackForTesting(
-      WTF::Bind(&MediaDevicesTest::DevicesEnumerated, WTF::Unretained(this)));
+  media_devices->SetEnumerateDevicesCallbackForTesting(WTF::BindOnce(
+      &MediaDevicesTest::DevicesEnumerated, WTF::Unretained(this)));
   media_devices->SetConnectionErrorCallbackForTesting(
-      WTF::Bind(&MediaDevicesTest::OnDispatcherHostConnectionError,
-                WTF::Unretained(this)));
+      WTF::BindOnce(&MediaDevicesTest::OnDispatcherHostConnectionError,
+                    WTF::Unretained(this)));
   EXPECT_FALSE(dispatcher_host_connection_error());
 
   ScriptPromise promise = media_devices->enumerateDevices(
@@ -502,15 +513,15 @@ TEST_F(MediaDevicesTest, EnumerateDevicesBeforeConnectionError) {
 TEST_F(MediaDevicesTest, ObserveDeviceChangeEvent) {
   V8TestingScope scope;
   auto* media_devices = GetMediaDevices(*GetDocument().domWindow());
-  media_devices->SetDeviceChangeCallbackForTesting(
-      WTF::Bind(&MediaDevicesTest::OnDevicesChanged, WTF::Unretained(this)));
+  media_devices->SetDeviceChangeCallbackForTesting(WTF::BindOnce(
+      &MediaDevicesTest::OnDevicesChanged, WTF::Unretained(this)));
   EXPECT_FALSE(listener());
 
   // Subscribe for device change event.
   media_devices->StartObserving();
   platform()->RunUntilIdle();
   EXPECT_TRUE(listener());
-  listener().set_disconnect_handler(WTF::Bind(
+  listener().set_disconnect_handler(WTF::BindOnce(
       &MediaDevicesTest::OnListenerConnectionError, WTF::Unretained(this)));
 
   // Simulate a device change.

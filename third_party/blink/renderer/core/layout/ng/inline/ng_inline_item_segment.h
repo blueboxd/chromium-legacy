@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,15 +74,13 @@ class CORE_EXPORT NGInlineItemSegments {
 
  public:
   unsigned size() const { return segments_.size(); }
-  bool IsEmpty() const { return segments_.IsEmpty(); }
+  bool IsEmpty() const { return segments_.empty(); }
 
   // Start/end offset of each segment/entire segments.
   unsigned OffsetForSegment(const NGInlineItemSegment& segment) const;
   unsigned EndOffset() const { return segments_.back().EndOffset(); }
 
-  void ReserveCapacity(unsigned capacity) {
-    segments_.ReserveCapacity(capacity);
-  }
+  void ReserveCapacity(unsigned capacity) { segments_.reserve(capacity); }
 
   // Append a |NGInlineItemSegment| using one of its constructors.
   template <class... Args>

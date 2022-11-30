@@ -221,6 +221,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   // Returns true if audio output is muted for the system by policy.
   bool IsOutputMutedByPolicy();
 
+  // Returns true if audio output is muted for the system by security curtain.
+  bool IsOutputMutedBySecurityCurtain();
+
   // Returns true if audio input is muted.
   bool IsInputMuted();
 
@@ -319,6 +322,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
   // Mutes or unmutes audio output device.
   void SetOutputMute(bool mute_on);
+
+  // Mutes or unmutes audio output device by security curtain
+  void SetOutputMuteLockedBySecurityCurtain(bool mute_on);
 
   // Mutes or unmutes audio input device.
   void SetInputMute(bool mute_on);
@@ -517,6 +523,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   // change notification is received.
   void ApplyAudioPolicy();
 
+  // Helper method to apply the conditional audio mute change.
+  void UpdateAudioMute();
+
   // Sets output volume of |node_id| to |volume|.
   void SetOutputNodeVolume(uint64_t node_id, int volume);
 
@@ -590,6 +599,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   bool hdmi_rediscovering() const { return hdmi_rediscovering_; }
 
   void SetHDMIRediscoverGracePeriodForTesting(int duration_in_ms);
+  bool ShouldSwitchToHotPlugDevice(const AudioDevice& hotplug_device) const;
 
   enum DeviceStatus {
     OLD_DEVICE,
@@ -630,6 +640,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   void HandleHotPlugDevice(
       const AudioDevice& hotplug_device,
       const AudioDevicePriorityQueue& device_priority_queue);
+
+  // Handles the regular user hotplug case with user priority.
+  void HandleHotPlugDeviceByUserPriority(const AudioDevice& hotplug_device);
 
   void SwitchToTopPriorityDevice(bool is_input);
 
@@ -747,7 +760,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   bool has_alternative_input_ = false;
   bool has_alternative_output_ = false;
 
-  bool output_mute_locked_ = false;
+  bool output_mute_forced_by_policy_ = false;
+  bool output_mute_forced_by_security_curtain_ = false;
 
   // Audio output channel counts.
   int32_t output_channels_ = 2;

@@ -19,8 +19,8 @@ import {BrowserProxy, BrowserProxyImpl, DataCollectorItem, IssueDetails, PIIData
 import {DataExportResult, SupportToolElement, SupportToolPageIndex} from 'chrome://support-tool/support_tool.js';
 import {UrlGeneratorElement} from 'chrome://support-tool/url_generator.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
-import {waitAfterNextRender} from 'chrome://webui-test/test_util.js';
 
 const EMAIL_ADDRESSES: string[] =
     ['testemail1@test.com', 'testemail2@test.com'];
@@ -152,7 +152,8 @@ suite('SupportToolTest', function() {
 
   setup(async function() {
     loadTimeData.overrideValues(strings);
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     browserProxy = new TestSupportToolBrowserProxy();
     BrowserProxyImpl.setInstance(browserProxy);
     supportTool = document.createElement('support-tool');
@@ -270,7 +271,8 @@ suite('UrlGeneratorTest', function() {
   let browserProxy: TestSupportToolBrowserProxy;
 
   setup(async function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     browserProxy = new TestSupportToolBrowserProxy();
     BrowserProxyImpl.setInstance(browserProxy);
     urlGenerator = document.createElement('url-generator');

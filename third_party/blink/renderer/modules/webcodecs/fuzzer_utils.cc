@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -56,7 +55,7 @@ constexpr uint32_t kMaxVideoFrameDimension = 1024;
 }  // namespace
 
 base::ScopedClosureRunner MakeScopedGarbageCollectionRequest() {
-  return base::ScopedClosureRunner(WTF::Bind([]() {
+  return base::ScopedClosureRunner(WTF::BindOnce([]() {
     // Request a V8 GC. Oilpan will be invoked by the GC epilogue.
     //
     // Multiple GCs may be required to ensure everything is collected (due to

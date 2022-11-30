@@ -61,7 +61,7 @@ class AppsGridRowChangeAnimator;
 class GhostImageView;
 class AppsGridViewTest;
 class ScrollableAppsGridViewTest;
-class PagedAppsGridViewTestBase;
+class PagedAppsGridViewTest;
 
 // AppsGridView displays a grid of app icons. It is used for:
 // - The main grid of apps in the launcher
@@ -88,10 +88,6 @@ class ASH_EXPORT AppsGridView : public views::View,
   AppsGridView(const AppsGridView&) = delete;
   AppsGridView& operator=(const AppsGridView&) = delete;
   ~AppsGridView() override;
-
-  // Initializes the class. Calls virtual methods, so its code cannot be in the
-  // constructor.
-  void Init();
 
   // Sets the `AppListConfig` that should be used to configure app list item
   // size within the grid. This will cause all items views to be updated to
@@ -186,10 +182,8 @@ class ASH_EXPORT AppsGridView : public views::View,
   bool CanDrop(const OSExchangeData& data) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
 
-  // Updates the visibility of app list items according to |app_list_state| and
-  // |is_in_drag|.
-  void UpdateControlVisibility(AppListViewState app_list_state,
-                               bool is_in_drag);
+  // Updates the visibility of app list items according to |app_list_state|.
+  void UpdateControlVisibility(AppListViewState app_list_state);
 
   // Returns true if a touch or click lies between two occupied tiles.
   bool EventIsBetweenOccupiedTiles(const ui::LocatedEvent* event);
@@ -416,16 +410,9 @@ class ASH_EXPORT AppsGridView : public views::View,
   // Returns the current selected page, or zero if the grid does not use pages.
   virtual int GetSelectedPage() const = 0;
 
-  // Returns true if scrolling is vertical (the common case). Folders may scroll
-  // horizontally.
-  virtual bool IsScrollAxisVertical() const = 0;
-
   // Records the different ways to move an app in app list's apps grid for UMA
   // histograms.
   virtual void RecordAppMovingTypeMetrics(AppListAppMovingType type) = 0;
-
-  // Updates or creates a border for this view.
-  virtual void UpdateBorder() {}
 
   // Starts the "cardified" state if the subclass supports it.
   virtual void MaybeStartCardifiedView() {}
@@ -533,7 +520,6 @@ class ASH_EXPORT AppsGridView : public views::View,
   }
   const gfx::Point& last_drag_point() const { return last_drag_point_; }
   void set_last_drag_point(const gfx::Point& p) { last_drag_point_ = p; }
-  bool handling_keyboard_move() const { return handling_keyboard_move_; }
 
   AppListViewDelegate* app_list_view_delegate() const {
     return app_list_view_delegate_;
@@ -598,7 +584,7 @@ class ASH_EXPORT AppsGridView : public views::View,
   friend class PagedAppsGridView;
   friend class PagedViewStructure;
   friend class AppsGridRowChangeAnimator;
-  friend class PagedAppsGridViewTestBase;
+  friend class PagedAppsGridViewTest;
 
   enum DropTargetRegion {
     NO_TARGET,
@@ -692,16 +678,6 @@ class ASH_EXPORT AppsGridView : public views::View,
   // Dispatch the drag and drop update event to the dnd host (if needed).
   void DispatchDragEventToDragAndDropHost(
       const gfx::Point& location_in_screen_coordinates);
-
-  // Returns whether the target grid index for item move operation is on a new
-  // apps grid page - i.e. if the move operation will create a new apps grid
-  // page. Used to determine whether a new page break should be created after
-  // app list item move.
-  bool IsMoveTargetOnNewPage(const GridIndex& target) const;
-
-  // Creates a page break just before the item in top level item list if the
-  // item is not already preceded by a page break.
-  void EnsurePageBreakBeforeItem(const std::string& item_id);
 
   // Updates `model_` to move `item` to `target` slot.
   void MoveItemInModel(AppListItem* item, const GridIndex& target);

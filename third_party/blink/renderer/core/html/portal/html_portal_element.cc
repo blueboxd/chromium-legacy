@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -147,13 +147,13 @@ void HTMLPortalElement::ActivateDefault() {
   BlinkTransferableMessage data;
   data.message = SerializedScriptValue::UndefinedValue();
   data.message->UnregisterMemoryAllocatedWithCurrentScriptContext();
-  data.sender_origin =
-      GetExecutionContext()->GetSecurityOrigin()->IsolatedCopy();
+  data.sender_origin = context->GetSecurityOrigin()->IsolatedCopy();
   if (ThreadDebugger* debugger =
           ThreadDebugger::From(V8PerIsolateData::MainThreadIsolate())) {
     data.sender_stack_trace_id =
         debugger->StoreCurrentStackTrace("activate (implicit)");
   }
+  data.sender_agent_cluster_id = context->GetAgentClusterID();
 
   PortalContents* portal = std::exchange(portal_, nullptr);
   portal->Activate(std::move(data),
@@ -282,6 +282,7 @@ BlinkTransferableMessage ActivateDataAsMessage(
     return {};
 
   msg.sender_origin = execution_context->GetSecurityOrigin()->IsolatedCopy();
+  msg.sender_agent_cluster_id = execution_context->GetAgentClusterID();
 
   // msg.user_activation is left out; we will probably handle user activation
   // explicitly for activate data.
@@ -534,8 +535,8 @@ bool HTMLPortalElement::IsPortalCreationOrAdoptionAllowed(
 void HTMLPortalElement::CreatePortalAndNavigate(const ContainerNode* node) {
   if (GetDocument().IsPrerendering()) {
     GetDocument().AddPostPrerenderingActivationStep(
-        WTF::Bind(&HTMLPortalElement::CreatePortalAndNavigate,
-                  WrapWeakPersistent(this), WrapWeakPersistent(node)));
+        WTF::BindOnce(&HTMLPortalElement::CreatePortalAndNavigate,
+                      WrapWeakPersistent(this), WrapWeakPersistent(node)));
     return;
   }
 

@@ -30,15 +30,6 @@ AnnotationsTextManager::~AnnotationsTextManager() {
   web_state_ = nullptr;
 }
 
-// static
-void AnnotationsTextManager::CreateForWebState(WebState* web_state) {
-  DCHECK(web_state);
-  if (!FromWebState(web_state)) {
-    web_state->SetUserData(UserDataKey(),
-                           std::make_unique<AnnotationsTextManager>(web_state));
-  }
-}
-
 void AnnotationsTextManager::AddObserver(AnnotationsTextObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -79,18 +70,6 @@ void AnnotationsTextManager::PageLoaded(
     web::PageLoadCompletionStatus load_completion_status) {
   DCHECK_EQ(web_state_, web_state);
   if (load_completion_status == web::PageLoadCompletionStatus::SUCCESS) {
-    StartExtractingText();
-  }
-}
-
-void AnnotationsTextManager::DidFinishNavigation(
-    WebState* web_state,
-    NavigationContext* navigation_context) {
-  DCHECK(web_state_ == web_state);
-  // PageLoaded isn't called for same document navigation.
-  // TODO(crbug.com/1350973): investigate if text should be extracted at all in
-  // this case? Why navigating in the same page would require it?
-  if (navigation_context->IsSameDocument()) {
     StartExtractingText();
   }
 }

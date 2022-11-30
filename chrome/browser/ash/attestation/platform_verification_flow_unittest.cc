@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/components/settings/cros_settings_names.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ash/attestation/platform_verification_flow.h"
@@ -21,6 +20,7 @@
 #include "chromeos/ash/components/dbus/attestation/attestation.pb.h"
 #include "chromeos/ash/components/dbus/attestation/fake_attestation_client.h"
 #include "chromeos/ash/components/dbus/attestation/interface.pb.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -100,8 +100,8 @@ class PlatformVerificationFlowTest : public ::testing::Test {
     // Configure the mock AttestationFlow to call FakeGetCertificate.
     EXPECT_CALL(mock_attestation_flow_,
                 GetCertificate(PROFILE_CONTENT_PROTECTION_CERTIFICATE,
-                               account_id, kTestID, _, _, _))
-        .WillRepeatedly(WithArgs<5>(
+                               account_id, kTestID, _, _, _, _))
+        .WillRepeatedly(WithArgs<6>(
             Invoke(this, &PlatformVerificationFlowTest::FakeGetCertificate)));
 
     const std::string expected_key_name =

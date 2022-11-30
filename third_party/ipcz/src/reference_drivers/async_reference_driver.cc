@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -306,6 +306,14 @@ AsyncTransportPair CreateAsyncTransportPair() {
       .broker = Object::ReleaseAsHandle(std::move(transports.first)),
       .non_broker = Object::ReleaseAsHandle(std::move(transports.second)),
   };
+}
+
+std::pair<IpczDriverHandle, IpczDriverHandle>
+CreateAsyncTransportPairForBrokers() {
+  AsyncTransport::Pair transports = AsyncTransport::CreatePair(
+      AsyncTransport::NodeType::kBroker, AsyncTransport::NodeType::kBroker);
+  return {Object::ReleaseAsHandle(std::move(transports.first)),
+          Object::ReleaseAsHandle(std::move(transports.second))};
 }
 
 }  // namespace ipcz::reference_drivers

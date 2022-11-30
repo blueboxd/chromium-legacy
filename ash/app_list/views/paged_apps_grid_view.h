@@ -68,7 +68,6 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
 
   PagedAppsGridView(ContentsView* contents_view,
                     AppListA11yAnnouncer* a11y_announcer,
-                    AppsGridViewFolderDelegate* folder_delegate,
                     AppListFolderController* folder_controller,
                     ContainerDelegate* container_delegate,
                     AppListKeyboardController* keyboard_controller);
@@ -78,16 +77,6 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
 
   // Called when tablet mode starts and ends.
   void OnTabletModeChanged(bool started);
-
-  // Updates the opacity of all the items in the grid when the grid itself is
-  // being dragged. The app icons fade out as the launcher slides off the bottom
-  // of the screen.
-  // `apps_opacity_change_start` and `apps_opacity_change_end` define the range
-  // of height of centerline above screen bottom in which apps should change
-  // opacity (from 0 to 1).
-  void UpdateOpacity(bool restore_opacity,
-                     float apps_opacity_change_start,
-                     float apps_opacity_change_end);
 
   // Sets the number of max rows and columns in grid pages. Special-cases the
   // first page, which may allow smaller number of rows in certain cases (to
@@ -115,8 +104,6 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   gfx::Size GetTileGridSize() const override;
   int GetTotalPages() const override;
   int GetSelectedPage() const override;
-  bool IsScrollAxisVertical() const override;
-  void UpdateBorder() override;
   void MaybeStartCardifiedView() override;
   void MaybeEndCardifiedView() override;
   void MaybeStartPageFlip() override;
@@ -139,7 +126,6 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   base::ScopedClosureRunner LockAppsGridOpacity() override;
 
   // PaginationModelObserver:
-  void TotalPagesChanged(int previous_page_count, int new_page_count) override;
   void SelectedPageChanged(int old_selected, int new_selected) override;
   void TransitionStarting() override;
   void TransitionStarted() override;
@@ -351,9 +337,6 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   // Layer array for apps grid background cards. Used to display the background
   // card during cardified state.
   std::vector<std::unique_ptr<BackgroundCardLayer>> background_cards_;
-
-  // Whether the feature ProductivityLauncher is enabled.
-  const bool is_productivity_launcher_enabled_;
 
   // Maximum number of rows on the first grid page.
   int max_rows_on_first_page_ = 0;

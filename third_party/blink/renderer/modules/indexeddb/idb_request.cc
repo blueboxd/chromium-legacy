@@ -326,8 +326,8 @@ void IDBRequest::HandleResponse(DOMException* error) {
     return EnqueueResponse(error);
   transaction_->EnqueueResult(std::make_unique<IDBRequestQueueItem>(
       this, error,
-      WTF::Bind(&IDBTransaction::OnResultReady,
-                WrapPersistent(transaction_.Get()))));
+      WTF::BindOnce(&IDBTransaction::OnResultReady,
+                    WrapPersistent(transaction_.Get()))));
 }
 
 void IDBRequest::HandleResponse(std::unique_ptr<IDBKey> key) {
@@ -337,18 +337,18 @@ void IDBRequest::HandleResponse(std::unique_ptr<IDBKey> key) {
     return EnqueueResponse(std::move(key));
   transaction_->EnqueueResult(std::make_unique<IDBRequestQueueItem>(
       this, std::move(key),
-      WTF::Bind(&IDBTransaction::OnResultReady,
-                WrapPersistent(transaction_.Get()))));
+      WTF::BindOnce(&IDBTransaction::OnResultReady,
+                    WrapPersistent(transaction_.Get()))));
 }
 
 void IDBRequest::HandleResponse(int64_t value_or_old_version) {
-  DCHECK(transit_blob_handles_.IsEmpty());
+  DCHECK(transit_blob_handles_.empty());
   if (!transaction_ || !transaction_->HasQueuedResults())
     return EnqueueResponse(value_or_old_version);
   transaction_->EnqueueResult(std::make_unique<IDBRequestQueueItem>(
       this, value_or_old_version,
-      WTF::Bind(&IDBTransaction::OnResultReady,
-                WrapPersistent(transaction_.Get()))));
+      WTF::BindOnce(&IDBTransaction::OnResultReady,
+                    WrapPersistent(transaction_.Get()))));
 }
 
 void IDBRequest::HandleResponse() {
@@ -356,15 +356,15 @@ void IDBRequest::HandleResponse() {
   if (!transaction_ || !transaction_->HasQueuedResults())
     return EnqueueResponse();
   transaction_->EnqueueResult(std::make_unique<IDBRequestQueueItem>(
-      this, WTF::Bind(&IDBTransaction::OnResultReady,
-                      WrapPersistent(transaction_.Get()))));
+      this, WTF::BindOnce(&IDBTransaction::OnResultReady,
+                          WrapPersistent(transaction_.Get()))));
 }
 
 void IDBRequest::HandleResponse(std::unique_ptr<WebIDBCursor> backend,
                                 std::unique_ptr<IDBKey> key,
                                 std::unique_ptr<IDBKey> primary_key,
                                 std::unique_ptr<IDBValue> value) {
-  DCHECK(transit_blob_handles_.IsEmpty());
+  DCHECK(transit_blob_handles_.empty());
   DCHECK(transaction_);
   bool is_wrapped = IDBValueUnwrapper::IsWrapped(value.get());
   if (!transaction_->HasQueuedResults() && !is_wrapped) {
@@ -374,37 +374,37 @@ void IDBRequest::HandleResponse(std::unique_ptr<WebIDBCursor> backend,
   transaction_->EnqueueResult(std::make_unique<IDBRequestQueueItem>(
       this, std::move(backend), std::move(key), std::move(primary_key),
       std::move(value), is_wrapped,
-      WTF::Bind(&IDBTransaction::OnResultReady,
-                WrapPersistent(transaction_.Get()))));
+      WTF::BindOnce(&IDBTransaction::OnResultReady,
+                    WrapPersistent(transaction_.Get()))));
 }
 
 void IDBRequest::HandleResponse(std::unique_ptr<IDBValue> value) {
-  DCHECK(transit_blob_handles_.IsEmpty());
+  DCHECK(transit_blob_handles_.empty());
   DCHECK(transaction_);
   bool is_wrapped = IDBValueUnwrapper::IsWrapped(value.get());
   if (!transaction_->HasQueuedResults() && !is_wrapped)
     return EnqueueResponse(std::move(value));
   transaction_->EnqueueResult(std::make_unique<IDBRequestQueueItem>(
       this, std::move(value), is_wrapped,
-      WTF::Bind(&IDBTransaction::OnResultReady,
-                WrapPersistent(transaction_.Get()))));
+      WTF::BindOnce(&IDBTransaction::OnResultReady,
+                    WrapPersistent(transaction_.Get()))));
 }
 
 void IDBRequest::HandleResponse(Vector<std::unique_ptr<IDBValue>> values) {
-  DCHECK(transit_blob_handles_.IsEmpty());
+  DCHECK(transit_blob_handles_.empty());
   DCHECK(transaction_);
   bool is_wrapped = IDBValueUnwrapper::IsWrapped(values);
   if (!transaction_->HasQueuedResults() && !is_wrapped)
     return EnqueueResponse(std::move(values));
   transaction_->EnqueueResult(std::make_unique<IDBRequestQueueItem>(
       this, std::move(values), is_wrapped,
-      WTF::Bind(&IDBTransaction::OnResultReady,
-                WrapPersistent(transaction_.Get()))));
+      WTF::BindOnce(&IDBTransaction::OnResultReady,
+                    WrapPersistent(transaction_.Get()))));
 }
 
 void IDBRequest::HandleResponse(
     Vector<Vector<std::unique_ptr<IDBValue>>> all_values) {
-  DCHECK(transit_blob_handles_.IsEmpty());
+  DCHECK(transit_blob_handles_.empty());
   DCHECK(transaction_);
 
   bool is_wrapped = IDBValueUnwrapper::IsWrapped(all_values);
@@ -412,14 +412,14 @@ void IDBRequest::HandleResponse(
     return EnqueueResponse(std::move(all_values));
   transaction_->EnqueueResult(std::make_unique<IDBRequestQueueItem>(
       this, std::move(all_values), is_wrapped,
-      WTF::Bind(&IDBTransaction::OnResultReady,
-                WrapPersistent(transaction_.Get()))));
+      WTF::BindOnce(&IDBTransaction::OnResultReady,
+                    WrapPersistent(transaction_.Get()))));
 }
 
 void IDBRequest::HandleResponse(std::unique_ptr<IDBKey> key,
                                 std::unique_ptr<IDBKey> primary_key,
                                 std::unique_ptr<IDBValue> value) {
-  DCHECK(transit_blob_handles_.IsEmpty());
+  DCHECK(transit_blob_handles_.empty());
   DCHECK(transaction_);
   bool is_wrapped = IDBValueUnwrapper::IsWrapped(value.get());
   if (!transaction_->HasQueuedResults() && !is_wrapped) {
@@ -430,19 +430,19 @@ void IDBRequest::HandleResponse(std::unique_ptr<IDBKey> key,
   transaction_->EnqueueResult(std::make_unique<IDBRequestQueueItem>(
       this, std::move(key), std::move(primary_key), std::move(value),
       is_wrapped,
-      WTF::Bind(&IDBTransaction::OnResultReady,
-                WrapPersistent(transaction_.Get()))));
+      WTF::BindOnce(&IDBTransaction::OnResultReady,
+                    WrapPersistent(transaction_.Get()))));
 }
 
 void IDBRequest::HandleResponse(
     bool key_only,
     mojo::PendingReceiver<mojom::blink::IDBDatabaseGetAllResultSink> receiver) {
-  DCHECK(transit_blob_handles_.IsEmpty());
+  DCHECK(transit_blob_handles_.empty());
   DCHECK(transaction_);
   transaction_->EnqueueResult(std::make_unique<IDBRequestQueueItem>(
       this, key_only, std::move(receiver),
-      WTF::Bind(&IDBTransaction::OnResultReady,
-                WrapPersistent(transaction_.Get()))));
+      WTF::BindOnce(&IDBTransaction::OnResultReady,
+                    WrapPersistent(transaction_.Get()))));
 }
 
 void IDBRequest::EnqueueResponse(DOMException* error) {
@@ -624,7 +624,7 @@ void IDBRequest::EnqueueResponse() {
 void IDBRequest::EnqueueResultInternal(IDBAny* result) {
   DCHECK(GetExecutionContext());
   DCHECK(!pending_cursor_);
-  DCHECK(transit_blob_handles_.IsEmpty());
+  DCHECK(transit_blob_handles_.empty());
   SetResult(result);
   EnqueueEvent(Event::Create(event_type_names::kSuccess));
 }

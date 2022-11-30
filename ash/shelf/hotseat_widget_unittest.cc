@@ -86,8 +86,8 @@ class HotseatWidgetTest
     if (is_assistant_enabled_)
       assistant_test_api_ = AssistantTestApi::Create();
 
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
 
     if (navigation_buttons_shown_in_tablet_mode_) {
       disabled_features.push_back(features::kHideShelfControlsInTabletMode);
@@ -831,8 +831,10 @@ TEST_P(HotseatWidgetTest, SwipeUpOnShelfShowsHotseatInSplitView) {
   EnterOverview();
   SplitViewController* split_view_controller =
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
-  split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
-  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+  split_view_controller->SnapWindow(
+      window.get(), SplitViewController::SnapPosition::kPrimary);
+  split_view_controller->SnapWindow(
+      window2.get(), SplitViewController::SnapPosition::kSecondary);
   EXPECT_TRUE(split_view_controller->BothSnapped());
 
   // We should still be able to drag up the hotseat.
@@ -1800,16 +1802,16 @@ TEST_P(HotseatWidgetTest, ExitingOverviewHidesHotseat) {
   StartScroll(bottom_shelf_bounds.CenterPoint());
   // Ensure swipe goes past the top of the hotseat first to activate the window
   // drag controller.
-  UpdateScroll(
-      -GetPrimaryShelf()->hotseat_widget()->GetHotseatFullDragAmount());
+  UpdateScroll(gfx::Vector2d(
+      0, -GetPrimaryShelf()->hotseat_widget()->GetHotseatFullDragAmount()));
   // Drag upward, to the center of the screen, and release (this should enter
   // the overview).
   const gfx::Rect display_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
-  UpdateScroll(display_bounds.CenterPoint().y() -
-               bottom_shelf_bounds.CenterPoint().y());
+  UpdateScroll(gfx::Vector2d(0, display_bounds.CenterPoint().y() -
+                                    bottom_shelf_bounds.CenterPoint().y()));
   // Small scroll update, to simulate the user holding the pointer.
-  UpdateScroll(2);
+  UpdateScroll(gfx::Vector2d(0, 2));
   DragWindowFromShelfController* window_drag_controller =
       GetShelfLayoutManager()->window_drag_controller_for_testing();
   ASSERT_TRUE(window_drag_controller);
@@ -1862,11 +1864,13 @@ TEST_P(HotseatWidgetTest, FailingOverviewDragResultsInExtendedHotseat) {
     // Drag upward, a bit below the hotseat extended height, to ensure that the
     // bottom of the dragged window doesn't go past the top of the hotseat, so
     // that it doesn't go into overview.
-    UpdateScroll(-extended_hotseat_distance_from_top_of_shelf + 20);
+    UpdateScroll(
+        gfx::Vector2d(0, -extended_hotseat_distance_from_top_of_shelf + 20));
   } else {
     // Drag upward, a bit past the hotseat extended height so that the window
     // drag controller is activated, but not enough to go to overview.
-    UpdateScroll(-extended_hotseat_distance_from_top_of_shelf - 30);
+    UpdateScroll(
+        gfx::Vector2d(0, -extended_hotseat_distance_from_top_of_shelf - 30));
   }
   EndScroll(/*is_fling=*/false, 0.f);
 
@@ -1939,7 +1943,8 @@ TEST_P(HotseatWidgetTest, SwipeOnHotseatInSplitViewWithOverview) {
 
   SplitViewController* split_view_controller =
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
-  split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
+  split_view_controller->SnapWindow(
+      window.get(), SplitViewController::SnapPosition::kPrimary);
 
   SwipeUpOnShelf();
 
@@ -1991,8 +1996,10 @@ TEST_P(HotseatWidgetTest, SwipeOnHotseatInSplitView) {
 
   SplitViewController* split_view_controller =
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
-  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
-  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+  split_view_controller->SnapWindow(
+      window1.get(), SplitViewController::SnapPosition::kPrimary);
+  split_view_controller->SnapWindow(
+      window2.get(), SplitViewController::SnapPosition::kSecondary);
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
 
   SwipeUpOnShelf();
@@ -2293,7 +2300,8 @@ TEST_P(HotseatWidgetTest, AnimationAfterDrag) {
             .GetViewAt(0)
             ->GetBoundsInScreen()
             .origin();
-    hotseat_widget->GetLayer()->transform().TransformPoint(&app_views_position);
+    app_views_position =
+        hotseat_widget->GetLayer()->transform().MapPoint(app_views_position);
     const bool position_changed = app_views_position != last_app_views_position;
     last_app_views_position = app_views_position;
     return position_changed;
@@ -2394,7 +2402,8 @@ TEST_P(HotseatWidgetTest, InitialAnimationPositionWithNonIdentityTransform) {
             .GetViewAt(0)
             ->GetBoundsInScreen()
             .origin();
-    hotseat_widget->GetLayer()->transform().TransformPoint(&app_views_position);
+    app_views_position =
+        hotseat_widget->GetLayer()->transform().MapPoint(app_views_position);
     const bool position_changed = app_views_position != last_app_views_position;
     last_app_views_position = app_views_position;
     return position_changed;

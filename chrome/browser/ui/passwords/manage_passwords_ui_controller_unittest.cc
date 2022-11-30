@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/device_reauth/biometric_authenticator.h"
 #include "components/password_manager/core/browser/mock_password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/mock_password_store_interface.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
@@ -46,6 +47,10 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+#include "components/device_reauth/mock_biometric_authenticator.h"
+#endif
 
 using password_manager::MockPasswordFormManagerForUI;
 using password_manager::MockPasswordStoreInterface;
@@ -121,12 +126,27 @@ class TestPasswordManagerClient
                base::OnceCallback<void(ReauthSucceeded)>),
               (override));
 
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  scoped_refptr<device_reauth::BiometricAuthenticator>
+  GetBiometricAuthenticator() override {
+    return mock_authenticator_.get();
+  }
+
+  void SetAuthenticator(scoped_refptr<device_reauth::MockBiometricAuthenticator>
+                            mock_authenticator) {
+    mock_authenticator_ = mock_authenticator;
+  }
+#endif
+
   MockPasswordStoreInterface* GetProfilePasswordStore() const override {
     return mock_profile_store_.get();
   }
 
  private:
   scoped_refptr<MockPasswordStoreInterface> mock_profile_store_;
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  scoped_refptr<device_reauth::MockBiometricAuthenticator> mock_authenticator_;
+#endif
 };
 
 // This subclass is used to disable some code paths which are not essential for
@@ -143,14 +163,20 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
     return are_passwords_revealed_in_opened_bubble_;
   }
 
-  MOCK_METHOD1(CreateAccountChooser,
-               AccountChooserPrompt*(CredentialManagerDialogController*));
-  MOCK_METHOD1(CreateAutoSigninPrompt,
-               AutoSigninFirstRunPrompt*(CredentialManagerDialogController*));
-  MOCK_METHOD1(CreateCredentialLeakPrompt,
-               CredentialLeakPrompt*(CredentialLeakDialogController*));
-  MOCK_CONST_METHOD0(HasBrowserWindow, bool());
-  MOCK_METHOD0(OnUpdateBubbleAndIconVisibility, void());
+  MOCK_METHOD(AccountChooserPrompt*,
+              CreateAccountChooser,
+              (CredentialManagerDialogController*),
+              (override));
+  MOCK_METHOD(AutoSigninFirstRunPrompt*,
+              CreateAutoSigninPrompt,
+              (CredentialManagerDialogController*),
+              (override));
+  MOCK_METHOD(CredentialLeakPrompt*,
+              CreateCredentialLeakPrompt,
+              (CredentialLeakDialogController*),
+              (override));
+  MOCK_METHOD(bool, HasBrowserWindow, (), (override, const));
+  MOCK_METHOD(void, OnUpdateBubbleAndIconVisibility, (), ());
 
  private:
   void UpdateBubbleAndIconVisibility() override;
@@ -1719,3 +1745,183 @@ TEST_F(ManagePasswordsUIControllerTest, ReauthenticateFailsBeforeMove) {
   ExpectIconAndControllerStateIs(
       password_manager::ui::CAN_MOVE_PASSWORD_TO_ACCOUNT_STATE);
 }
+
+TEST_F(ManagePasswordsUIControllerTest, IsBiometricAuthenticatorObtained) {
+  base::MockCallback<base::OnceCallback<void(bool)>> result_callback;
+#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_WIN)
+  EXPECT_CALL(result_callback, Run(/*success=*/true));
+#else
+  scoped_refptr<device_reauth::MockBiometricAuthenticator> mock_authenticator =
+      base::MakeRefCounted<device_reauth::MockBiometricAuthenticator>();
+  client().SetAuthenticator(mock_authenticator);
+  EXPECT_CALL(*mock_authenticator.get(), AuthenticateWithMessage);
+#endif
+  controller()->AuthenticateUserWithMessage(
+      /*message=*/u"Do you want to enable this feature", result_callback.Get());
+}
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+TEST_F(ManagePasswordsUIControllerTest,
+       ShouldShowBiometricAuthenticationForFillingPromo) {
+  std::vector<const PasswordForm*> best_matches;
+  auto test_form_manager = CreateFormManagerWithBestMatches(&best_matches);
+  controller()->OnPasswordSubmitted(std::move(test_form_manager));
+
+  profile()->GetPrefs()->SetBoolean(
+      password_manager::prefs::kHasUserInteractedWithBiometricAuthPromo, false);
+  profile()->GetPrefs()->SetInteger(
+      password_manager::prefs::kBiometricAuthBeforeFillingPromoShownCounter, 0);
+  profile()->GetPrefs()->SetBoolean(
+      password_manager::prefs::kBiometricAuthenticationBeforeFilling, false);
+
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->OnBiometricAuthenticationForFilling(profile()->GetPrefs());
+  EXPECT_EQ(1, profile()->GetPrefs()->GetInteger(
+                   password_manager::prefs::
+                       kBiometricAuthBeforeFillingPromoShownCounter));
+  ExpectIconAndControllerStateIs(
+      password_manager::ui::BIOMETRIC_AUTHENTICATION_FOR_FILLING_STATE);
+}
+
+// Test if BiometricAuthForFilling promo is not shown if user interacted with
+// the promo earlier.
+TEST_F(ManagePasswordsUIControllerTest,
+       ShouldNotShowBiometricAuthenticationForFillingPromoUserInteracted) {
+  profile()->GetPrefs()->SetBoolean(
+      password_manager::prefs::kHasUserInteractedWithBiometricAuthPromo, true);
+  profile()->GetPrefs()->SetInteger(
+      password_manager::prefs::kBiometricAuthBeforeFillingPromoShownCounter, 1);
+  profile()->GetPrefs()->SetBoolean(
+      password_manager::prefs::kBiometricAuthenticationBeforeFilling, false);
+
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility()).Times(0);
+  controller()->OnBiometricAuthenticationForFilling(profile()->GetPrefs());
+  EXPECT_EQ(1, profile()->GetPrefs()->GetInteger(
+                   password_manager::prefs::
+                       kBiometricAuthBeforeFillingPromoShownCounter));
+}
+
+// Test if BiometricAuthForFilling promo is not shown if User turned on the
+// feature manually in settings.
+TEST_F(ManagePasswordsUIControllerTest,
+       ShouldNotShowBiometricAuthenticationForFillingPromoUserTurnedOnManualy) {
+  profile()->GetPrefs()->SetBoolean(
+      password_manager::prefs::kHasUserInteractedWithBiometricAuthPromo, false);
+  profile()->GetPrefs()->SetInteger(
+      password_manager::prefs::kBiometricAuthBeforeFillingPromoShownCounter, 0);
+  profile()->GetPrefs()->SetBoolean(
+      password_manager::prefs::kBiometricAuthenticationBeforeFilling, true);
+
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility()).Times(0);
+  controller()->OnBiometricAuthenticationForFilling(profile()->GetPrefs());
+  EXPECT_EQ(0, profile()->GetPrefs()->GetInteger(
+                   password_manager::prefs::
+                       kBiometricAuthBeforeFillingPromoShownCounter));
+}
+
+// Test if BiometricAuthForFilling promo is not shown if User turned on the
+// feature through promo.
+TEST_F(
+    ManagePasswordsUIControllerTest,
+    ShouldNotShowBiometricAuthenticationForFillingPromoUserTurnedOnViaPromo) {
+  profile()->GetPrefs()->SetBoolean(
+      password_manager::prefs::kHasUserInteractedWithBiometricAuthPromo, true);
+  profile()->GetPrefs()->SetInteger(
+      password_manager::prefs::kBiometricAuthBeforeFillingPromoShownCounter, 1);
+  profile()->GetPrefs()->SetBoolean(
+      password_manager::prefs::kBiometricAuthenticationBeforeFilling, true);
+
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility()).Times(0);
+  controller()->OnBiometricAuthenticationForFilling(profile()->GetPrefs());
+  EXPECT_EQ(1, profile()->GetPrefs()->GetInteger(
+                   password_manager::prefs::
+                       kBiometricAuthBeforeFillingPromoShownCounter));
+}
+
+// Test if BiometricAuthForFilling promo is not shown if User have seen promo
+// more than
+// `kMaxNumberOfTimesBiometricAuthForFillingPromoWillBeShown` times.
+TEST_F(ManagePasswordsUIControllerTest,
+       ShouldNotShowBiometricAuthenticationForFillingPromoCounterLimit) {
+  profile()->GetPrefs()->SetBoolean(
+      password_manager::prefs::kHasUserInteractedWithBiometricAuthPromo, false);
+  profile()->GetPrefs()->SetInteger(
+      password_manager::prefs::kBiometricAuthBeforeFillingPromoShownCounter,
+      kMaxNumberOfTimesBiometricAuthForFillingPromoWillBeShown + 1);
+  profile()->GetPrefs()->SetBoolean(
+      password_manager::prefs::kBiometricAuthenticationBeforeFilling, false);
+
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility()).Times(0);
+  controller()->OnBiometricAuthenticationForFilling(profile()->GetPrefs());
+  EXPECT_EQ(kMaxNumberOfTimesBiometricAuthForFillingPromoWillBeShown + 1,
+            profile()->GetPrefs()->GetInteger(
+                password_manager::prefs::
+                    kBiometricAuthBeforeFillingPromoShownCounter));
+}
+
+// On one specific tab BiometricAuthForFilling promo should be shown no more
+// than once.
+TEST_F(ManagePasswordsUIControllerTest,
+       ShouldNotShowBiometricAuthenticationForFillingPromoTwiceOnTheSameTab) {
+  std::vector<const PasswordForm*> best_matches;
+  auto test_form_manager = CreateFormManagerWithBestMatches(&best_matches);
+  controller()->OnPasswordSubmitted(std::move(test_form_manager));
+
+  profile()->GetPrefs()->SetBoolean(
+      password_manager::prefs::kHasUserInteractedWithBiometricAuthPromo, false);
+  profile()->GetPrefs()->SetInteger(
+      password_manager::prefs::kBiometricAuthBeforeFillingPromoShownCounter, 0);
+  profile()->GetPrefs()->SetBoolean(
+      password_manager::prefs::kBiometricAuthenticationBeforeFilling, false);
+
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->OnBiometricAuthenticationForFilling(profile()->GetPrefs());
+  ExpectIconAndControllerStateIs(
+      password_manager::ui::BIOMETRIC_AUTHENTICATION_FOR_FILLING_STATE);
+
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility()).Times(0);
+  controller()->OnBiometricAuthenticationForFilling(profile()->GetPrefs());
+}
+
+TEST_F(ManagePasswordsUIControllerTest, BiometricActivationConfirmation) {
+  std::vector<const PasswordForm*> best_matches;
+  auto test_form_manager = CreateFormManagerWithBestMatches(&best_matches);
+  controller()->OnPasswordSubmitted(std::move(test_form_manager));
+  controller()->ShowBiometricActivationConfirmation();
+  EXPECT_EQ(password_manager::ui::BIOMETRIC_AUTHENTICATION_CONFIRMATION_STATE,
+            controller()->GetState());
+
+  // After closing buble state switches automatically to MANAGE_STATE.
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->OnBubbleHidden();
+  ExpectIconAndControllerStateIs(password_manager::ui::MANAGE_STATE);
+}
+
+TEST_F(ManagePasswordsUIControllerTest,
+       AuthenticateWithMessageTwiceCancelsFirstCall) {
+  scoped_refptr<device_reauth::MockBiometricAuthenticator> mock_authenticator =
+      base::MakeRefCounted<device_reauth::MockBiometricAuthenticator>();
+  client().SetAuthenticator(mock_authenticator);
+  EXPECT_CALL(*mock_authenticator.get(), AuthenticateWithMessage);
+  controller()->AuthenticateUserWithMessage(/*message=*/u"", base::DoNothing());
+
+  EXPECT_CALL(*mock_authenticator.get(), Cancel);
+  EXPECT_CALL(*mock_authenticator.get(), AuthenticateWithMessage);
+  controller()->AuthenticateUserWithMessage(/*message=*/u"", base::DoNothing());
+}
+
+TEST_F(ManagePasswordsUIControllerTest, AuthenticationCancledOnPageChange) {
+  base::MockCallback<base::OnceCallback<void(bool)>> result_callback;
+  scoped_refptr<device_reauth::MockBiometricAuthenticator> mock_authenticator =
+      base::MakeRefCounted<device_reauth::MockBiometricAuthenticator>();
+  client().SetAuthenticator(mock_authenticator);
+  EXPECT_CALL(*mock_authenticator.get(), AuthenticateWithMessage);
+  controller()->AuthenticateUserWithMessage(/*message=*/u"", base::DoNothing());
+
+  EXPECT_CALL(*mock_authenticator.get(), Cancel);
+
+  static_cast<content::WebContentsObserver*>(controller())
+      ->PrimaryPageChanged(controller()->GetWebContents()->GetPrimaryPage());
+}
+
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)

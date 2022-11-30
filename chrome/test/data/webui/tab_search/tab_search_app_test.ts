@@ -9,7 +9,7 @@ import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-
 import {ProfileData, RecentlyClosedTab, Tab, TabGroupColor, TabSearchApiProxyImpl, TabSearchAppElement, TabSearchItem} from 'chrome://tab-search.top-chrome/tab_search.js';
 import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {MockedMetricsReporter} from 'chrome://webui-test/metrics_reporter/mocked_metrics_reporter.js';
-import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/test_util.js';
+import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
 import {createProfileData, createTab, generateSampleDataFromSiteNames, generateSampleRecentlyClosedTabs, generateSampleRecentlyClosedTabsFromSiteNames, generateSampleTabsFromSiteNames, SAMPLE_RECENTLY_CLOSED_DATA, SAMPLE_WINDOW_HEIGHT, sampleToken} from './tab_search_test_data.js';
 import {initLoadTimeDataWithDefaults} from './tab_search_test_helper.js';
@@ -52,7 +52,8 @@ suite('TabSearchAppTest', () => {
 
     tabSearchApp = document.createElement('tab-search-app');
 
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     document.body.appendChild(tabSearchApp);
     await flushTasks();
   }
@@ -719,4 +720,30 @@ suite('TabSearchAppTest', () => {
     assertEquals(3, queryRows().length);
   });
 
+  [true, false].forEach((windowActive) => {
+    test(
+        `Available height set correctly when the window's active state is ${
+            windowActive}`,
+        async () => {
+          await setupTest(
+              createProfileData({
+                windows: [{
+                  active: windowActive,
+                  height: SAMPLE_WINDOW_HEIGHT,
+                  tabs: generateSampleTabsFromSiteNames(['OpenTab1'], true),
+                }],
+                recentlyClosedTabs:
+                    generateSampleRecentlyClosedTabsFromSiteNames(
+                        ['RecentlyClosedTab1', 'RecentlyClosedTab2']),
+                recentlyClosedSectionExpanded: true,
+              }),
+              {
+                recentlyClosedDefaultItemDisplayCount: 1,
+              });
+
+          assertEquals(
+              SAMPLE_WINDOW_HEIGHT,
+              tabSearchApp.getAvailableHeightForTesting());
+        });
+  });
 });

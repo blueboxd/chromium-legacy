@@ -59,6 +59,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/resource_path.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/base/window_open_disposition_utils.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/resources/grit/webui_generated_resources.h"
 
@@ -119,15 +120,15 @@ constexpr char kShareIconResourceName[] = "realbox/icons/share.svg";
 #endif
 
 base::flat_map<int32_t, realbox::mojom::SuggestionGroupPtr>
-CreateSuggestionGroupsMap(const AutocompleteResult& result,
-                          PrefService* prefs,
-                          const SuggestionGroupsMap& suggestion_groups_map) {
+CreateSuggestionGroupsMap(
+    const AutocompleteResult& result,
+    PrefService* prefs,
+    const omnibox::GroupConfigMap& suggestion_groups_map) {
   base::flat_map<int32_t, realbox::mojom::SuggestionGroupPtr> result_map;
   for (const auto& pair : suggestion_groups_map) {
     realbox::mojom::SuggestionGroupPtr suggestion_group =
         realbox::mojom::SuggestionGroup::New();
-    suggestion_group->header =
-        base::UTF8ToUTF16(pair.second.group_config_info.header_text());
+    suggestion_group->header = base::UTF8ToUTF16(pair.second.header_text());
     suggestion_group->hidden =
         result.IsSuggestionGroupHidden(prefs, pair.first);
     suggestion_group->show_group_a11y_label = l10n_util::GetStringFUTF16(
@@ -212,7 +213,7 @@ std::vector<realbox::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
     }
     mojom_match->destination_url = match.destination_url;
     mojom_match->suggestion_group_id =
-        match.suggestion_group_id.value_or(omnibox::GroupId::INVALID);
+        match.suggestion_group_id.value_or(omnibox::GROUP_INVALID);
     const bool is_bookmarked =
         bookmark_model->IsBookmarked(match.destination_url);
     mojom_match->icon_url =
@@ -227,8 +228,7 @@ std::vector<realbox::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
         match.swap_contents_and_description;
     mojom_match->type = AutocompleteMatchType::ToString(match.type);
     mojom_match->supports_deletion = match.SupportsDeletion();
-    if (match.answer.has_value() &&
-        base::FeatureList::IsEnabled(omnibox::kNtpRealboxSuggestionAnswers)) {
+    if (match.answer.has_value()) {
       const auto& additional_text =
           GetAdditionalText(match.answer->first_line());
       mojom_match->answer = realbox::mojom::SuggestionAnswer::New(
@@ -241,8 +241,7 @@ std::vector<realbox::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
     mojom_match->is_rich_suggestion =
         !mojom_match->image_url.empty() ||
         match.type == AutocompleteMatchType::CALCULATOR ||
-        (match.answer.has_value() &&
-         base::FeatureList::IsEnabled(omnibox::kNtpRealboxSuggestionAnswers));
+        (match.answer.has_value());
     const bool has_action = match.action && base::FeatureList::IsEnabled(
                                                 omnibox::kNtpRealboxPedals);
     if (has_action) {
@@ -308,11 +307,8 @@ void RealboxHandler::SetupWebUIDataSource(content::WebUIDataSource* source) {
       "realboxMatchSearchboxTheme",
       base::FeatureList::IsEnabled(ntp_features::kRealboxMatchSearchboxTheme));
 
-  source->AddBoolean(
-      "roundCorners",
-      base::GetFieldTrialParamByFeatureAsInt(
-          ntp_features::kRealboxMatchSearchboxTheme,
-          ntp_features::kRealboxMatchSearchboxThemeParam, 0) == 1);
+  source->AddBoolean("roundCorners", base::FeatureList::IsEnabled(
+                                         ntp_features::kRealboxRoundedCorners));
 
   source->AddString(
       "realboxDefaultIcon",
@@ -321,6 +317,9 @@ void RealboxHandler::SetupWebUIDataSource(content::WebUIDataSource* source) {
           : kSearchIconResourceName);
   source->AddString("realboxHint", l10n_util::GetStringUTF8(
                                        IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD));
+  source->AddBoolean(
+      "realboxLensSearch",
+      base::FeatureList::IsEnabled(ntp_features::kNtpRealboxLensSearch));
 }
 
 // static
@@ -332,10 +331,7 @@ std::string RealboxHandler::AutocompleteMatchVectorIconToResourceName(
       omnibox::kAnswerSunriseIcon.name,    omnibox::kAnswerTranslationIcon.name,
       omnibox::kAnswerWhenIsIcon.name,     omnibox::kAnswerWhenIsIcon.name};
 
-  if (!base::FeatureList::IsEnabled(omnibox::kNtpRealboxSuggestionAnswers) &&
-      base::Contains(answerNames, icon.name)) {
-    return kSearchIconResourceName;
-  } else if (icon.name == omnibox::kAnswerCurrencyIcon.name) {
+  if (icon.name == omnibox::kAnswerCurrencyIcon.name) {
     return kAnswerCurrencyIconResourceName;
   } else if (icon.name == omnibox::kAnswerDefaultIcon.name) {
     return kAnswerDefaultIconResourceName;
@@ -648,12 +644,27 @@ void RealboxHandler::OpenAutocompleteMatch(
 
   OmniboxEventGlobalTracker::GetInstance()->OnURLOpened(&log);
 
+  if (auto* search_prefetch_service =
+          SearchPrefetchServiceFactory::GetForProfile(profile_)) {
+    search_prefetch_service->OnURLOpenedFromOmnibox(&log, web_contents_);
+  }
   predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_)
       ->OnOmniboxOpenedUrl(log);
 
   web_contents_->OpenURL(
       content::OpenURLParams(match.destination_url, content::Referrer(),
                              disposition, match.transition, false));
+}
+
+void RealboxHandler::OnNavigationLikely(
+    uint8_t line,
+    omnibox::mojom::NavigationPredictor navigation_predictor) {
+  if (auto* search_prefetch_service =
+          SearchPrefetchServiceFactory::GetForProfile(profile_)) {
+    AutocompleteMatch match(autocomplete_controller_->result().match_at(line));
+    search_prefetch_service->OnNavigationLikely(
+        line, match, navigation_predictor, web_contents_);
+  }
 }
 
 void RealboxHandler::OpenURL(const GURL& destination_url,
@@ -690,8 +701,8 @@ void RealboxHandler::ToggleSuggestionGroupIdVisibility(
     return;
   }
 
-  const auto& group_id = GroupIdForNumber(suggestion_group_id);
-  DCHECK_NE(omnibox::GroupId::INVALID, group_id);
+  const auto& group_id = omnibox::GroupIdForNumber(suggestion_group_id);
+  DCHECK_NE(omnibox::GROUP_INVALID, group_id);
   const bool current_visibility =
       autocomplete_controller_->result().IsSuggestionGroupHidden(
           profile_->GetPrefs(), group_id);
@@ -739,9 +750,7 @@ void RealboxHandler::OnResultChanged(AutocompleteController* controller,
   DCHECK(controller == autocomplete_controller_.get());
 
   // Prepend missing tail suggestion prefixes in results, if present.
-  if (base::FeatureList::IsEnabled(omnibox::kNtpRealboxTailSuggest)) {
-    autocomplete_controller_->SetTailSuggestCommonPrefixes();
-  }
+  autocomplete_controller_->SetTailSuggestCommonPrefixes();
 
   page_->AutocompleteResultChanged(CreateAutocompleteResult(
       autocomplete_controller_->input().text(),

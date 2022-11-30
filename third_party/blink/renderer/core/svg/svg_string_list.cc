@@ -70,7 +70,7 @@ SVGParsingError SVGStringListBase::SetValueAsStringWithDelimiter(
   // FIXME: Add more error checking and reporting.
   values_.clear();
 
-  if (data.IsEmpty())
+  if (data.empty())
     return SVGParseStatus::kNoError;
 
   WTF::VisitCharacters(data, [&](const auto* chars, unsigned length) {
@@ -81,7 +81,7 @@ SVGParsingError SVGStringListBase::SetValueAsStringWithDelimiter(
 
 String SVGStringListBase::ValueAsStringWithDelimiter(
     char list_delimiter) const {
-  if (values_.IsEmpty())
+  if (values_.empty())
     return String();
 
   StringBuilder builder;

@@ -14,7 +14,6 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
 #import "components/version_info/version_info.h"
-#import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/first_run/fre_field_trial.h"
@@ -27,6 +26,7 @@
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/terms_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/common/channel_info.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/grit/ios_chromium_strings.h"
@@ -152,7 +152,9 @@ const CGFloat kDefaultHeight = 70;
     case ItemTypeLinksTerms:
       switch (fre_field_trial::GetNewMobileIdentityConsistencyFRE()) {
         case NewMobileIdentityConsistencyFRE::kTwoSteps:
-        case NewMobileIdentityConsistencyFRE::kThreeSteps:
+        case NewMobileIdentityConsistencyFRE::kTangibleSyncA:
+        case NewMobileIdentityConsistencyFRE::kTangibleSyncB:
+        case NewMobileIdentityConsistencyFRE::kTangibleSyncC:
         case NewMobileIdentityConsistencyFRE::kUMADialog:
           [self openURL:GetUnifiedTermsOfServiceURL(false)];
           break;

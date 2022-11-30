@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,8 @@ class CORE_EXPORT CSSNumericLiteralValue : public CSSPrimitiveValue {
   bool IsFontRelativeLength() const {
     return GetType() == UnitType::kQuirkyEms || GetType() == UnitType::kEms ||
            GetType() == UnitType::kExs || GetType() == UnitType::kRems ||
-           GetType() == UnitType::kChs || GetType() == UnitType::kIcs;
+           GetType() == UnitType::kChs || GetType() == UnitType::kIcs ||
+           GetType() == UnitType::kLhs;
   }
   bool IsQuirkyEms() const { return GetType() == UnitType::kQuirkyEms; }
   bool IsViewportPercentageLength() const {

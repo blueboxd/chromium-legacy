@@ -1,12 +1,11 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/extensions/chromeos/system_extensions/window_management/cros_accelerator_event.h"
 
 #include "third_party/blink/renderer/bindings/extensions_chromeos/v8/v8_cros_accelerator_event_init.h"
-#include "third_party/blink/renderer/extensions/chromeos/event_chromeos.h"
-#include "third_party/blink/renderer/extensions/chromeos/event_type_chromeos_names.h"
+#include "third_party/blink/renderer/extensions/chromeos/event_interface_chromeos_names.h"
 
 namespace blink {
 

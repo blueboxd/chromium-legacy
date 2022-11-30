@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -159,7 +159,7 @@ bool IDBValueWrapper::WrapIfBiggerThan(unsigned max_bytes) {
   wire_data_ = base::make_span(
       reinterpret_cast<const uint8_t*>(wire_data_buffer_.data()),
       wire_data_buffer_.size());
-  DCHECK(!wire_data_buffer_.IsEmpty());
+  DCHECK(!wire_data_buffer_.empty());
   return true;
 }
 
@@ -170,7 +170,7 @@ scoped_refptr<SharedBuffer> IDBValueWrapper::TakeWireBytes() {
   owns_wire_bytes_ = false;
 #endif  // DCHECK_IS_ON()
 
-  if (wire_data_buffer_.IsEmpty()) {
+  if (wire_data_buffer_.empty()) {
     // The wire bytes are coming directly from the SSV's GetWireData() call.
     DCHECK_EQ(wire_data_.data(), serialized_value_->GetWireData().data());
     DCHECK_EQ(wire_data_.size(), serialized_value_->GetWireData().size());

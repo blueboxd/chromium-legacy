@@ -90,6 +90,16 @@ TEST(TelemetryExtensionDiagnosticsApiConvertersUnitTest,
     EXPECT_EQ(out, RoutineType::ROUTINE_TYPE_DISK_READ);
   }
   {
+    RoutineType out = RoutineType::ROUTINE_TYPE_NONE;
+    EXPECT_TRUE(ConvertMojoRoutine(MojoRoutineType::kDnsResolution, &out));
+    EXPECT_EQ(out, RoutineType::ROUTINE_TYPE_DNS_RESOLUTION);
+  }
+  {
+    RoutineType out = RoutineType::ROUTINE_TYPE_NONE;
+    EXPECT_TRUE(ConvertMojoRoutine(MojoRoutineType::kDnsResolverPresent, &out));
+    EXPECT_EQ(out, RoutineType::ROUTINE_TYPE_DNS_RESOLVER_PRESENT);
+  }
+  {
     RoutineType out;
     EXPECT_TRUE(ConvertMojoRoutine(MojoRoutineType::kMemory, &out));
     EXPECT_EQ(out, RoutineType::ROUTINE_TYPE_MEMORY);
@@ -98,6 +108,16 @@ TEST(TelemetryExtensionDiagnosticsApiConvertersUnitTest,
     RoutineType out = RoutineType::ROUTINE_TYPE_NONE;
     EXPECT_TRUE(ConvertMojoRoutine(MojoRoutineType::kNvmeWearLevel, &out));
     EXPECT_EQ(out, RoutineType::ROUTINE_TYPE_NVME_WEAR_LEVEL);
+  }
+  {
+    RoutineType out = RoutineType::ROUTINE_TYPE_NONE;
+    EXPECT_TRUE(ConvertMojoRoutine(MojoRoutineType::kSignalStrength, &out));
+    EXPECT_EQ(out, RoutineType::ROUTINE_TYPE_SIGNAL_STRENGTH);
+  }
+  {
+    RoutineType out = RoutineType::ROUTINE_TYPE_NONE;
+    EXPECT_TRUE(ConvertMojoRoutine(MojoRoutineType::kGatewayCanBePinged, &out));
+    EXPECT_EQ(out, RoutineType::ROUTINE_TYPE_GATEWAY_CAN_BE_PINGED);
   }
   {
     RoutineType out = RoutineType::ROUTINE_TYPE_NONE;

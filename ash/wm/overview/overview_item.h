@@ -12,6 +12,7 @@
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/scoped_overview_transform_window.h"
 #include "ash/wm/window_state_observer.h"
+#include "base/cancelable_callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -258,10 +259,7 @@ class ASH_EXPORT OverviewItem : public aura::WindowObserver,
     should_restack_on_animation_end_ = val;
   }
 
-  void set_animating_to_close(bool val) { animating_to_close_ = val; }
   bool animating_to_close() const { return animating_to_close_; }
-
-  void set_disable_mask(bool disable) { disable_mask_ = disable; }
 
   void set_unclipped_size(absl::optional<gfx::Size> unclipped_size) {
     unclipped_size_ = unclipped_size;
@@ -278,8 +276,12 @@ class ASH_EXPORT OverviewItem : public aura::WindowObserver,
   RoundedLabelWidget* cannot_snap_widget_for_testing() {
     return cannot_snap_widget_.get();
   }
+
   void set_target_bounds_for_testing(const gfx::RectF& target_bounds) {
     target_bounds_ = target_bounds;
+  }
+  void set_animating_to_close_for_testing(bool val) {
+    animating_to_close_ = val;
   }
 
  private:
@@ -349,6 +351,9 @@ class ASH_EXPORT OverviewItem : public aura::WindowObserver,
   void HandleTapEvent();
   void HandleGestureEndEvent();
 
+  void HideWindowInOverview();
+  void ShowWindowInOverview();
+
   // Returns the list of windows that we want to slide up or down when swiping
   // on the shelf in tablet mode.
   aura::Window::Windows GetWindowsForHomeGesture();
@@ -358,6 +363,11 @@ class ASH_EXPORT OverviewItem : public aura::WindowObserver,
 
   // The contained Window's wrapper.
   ScopedOverviewTransformWindow transform_window_;
+
+  // Used to block events from reaching the item widget when the overview item
+  // has been hidden.
+  std::unique_ptr<aura::ScopedWindowEventTargetingBlocker>
+      item_widget_event_blocker_;
 
   // The target bounds this overview item is fit within. When in splitview,
   // |item_widget_| is fit within these bounds, but the window itself is
@@ -423,9 +433,6 @@ class ASH_EXPORT OverviewItem : public aura::WindowObserver,
   // True if this overview item is currently being dragged around.
   bool is_being_dragged_ = false;
 
-  // True to always disable mask regardless of the state.
-  bool disable_mask_ = false;
-
   bool prepared_for_overview_ = false;
 
   // This has a value when there is a snapped window, or a window about to be
@@ -446,14 +453,13 @@ class ASH_EXPORT OverviewItem : public aura::WindowObserver,
   // on each scroll update. Will be nullopt unless a grid scroll is underway.
   absl::optional<gfx::RectF> scrolling_bounds_ = absl::nullopt;
 
-  // Used to block events from reaching the item widget when the overview item
-  // has been hidden.
-  std::unique_ptr<aura::ScopedWindowEventTargetingBlocker>
-      item_widget_event_blocker_;
-
   // Disable animations on the contained window while it is being managed by the
   // overview item.
   ScopedAnimationDisabler animation_disabler_;
+
+  // Cancellable callback to ensure that we are not going to hide the window
+  // after reverting the hide.
+  base::CancelableOnceClosure hide_window_in_overview_callback_;
 
   base::WeakPtrFactory<OverviewItem> weak_ptr_factory_{this};
 };

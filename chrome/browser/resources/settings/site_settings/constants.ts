@@ -40,7 +40,7 @@ export enum ContentSettingsTypes {
   SOUND = 'sound',
   USB_DEVICES = 'usb-devices',
   VR = 'vr',
-  WINDOW_PLACEMENT = 'window-placement',
+  WINDOW_MANAGEMENT = 'window-placement',
   ZOOM_LEVELS = 'zoom-levels',
 
   // The following item is not in the C++ kContentSettingsTypeGroupNames, but it
@@ -136,6 +136,8 @@ export enum AllSitesAction2 {
   REMOVE_SITE_GROUP = 7,
   REMOVE_ORIGIN = 8,
   REMOVE_ORIGIN_PARTITIONED = 9,
+  FILTER_BY_FPS_OWNER = 10,
+  DELETE_FOR_ENTIRE_FPS = 11,
 }
 
 /**

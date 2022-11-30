@@ -18,6 +18,7 @@
 #import "ios/chrome/common/ui/util/image_util.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #import "ios/chrome/common/ui/util/text_view_util.h"
+#import "ios/chrome/common/ui/util/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -26,6 +27,9 @@
 namespace {
 
 constexpr CGFloat kDefaultMargin = 16;
+// Top margin for AvatarFullImageView in percentage of the dialog size.
+constexpr CGFloat kAvatarFullImageViewTopMarginPercentage = 0.04;
+constexpr CGFloat kFullAvatarImagerBottomMargin = 5;
 constexpr CGFloat kTitleHorizontalMargin = 18;
 constexpr CGFloat kActionsBottomMargin = 10;
 constexpr CGFloat kTallBannerMultiplier = 0.35;
@@ -36,6 +40,8 @@ constexpr CGFloat kMoreArrowMargin = 4;
 constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
 constexpr CGFloat kSeparatorHeight = 1;
 constexpr CGFloat kLearnMoreButtonSide = 40;
+constexpr CGFloat kAvatarImageSize = 48;
+constexpr CGFloat kFullAvatarImageSize = 100;
 
 }  // namespace
 
@@ -48,12 +54,19 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
 @property(nonatomic, strong) UIImageView* imageView;
 // UIView that wraps the scrollable content.
 @property(nonatomic, strong) UIView* scrollContentView;
+// This view contains the avatar image with a shadow background image behind.
+@property(nonatomic, strong) UIView* fullAvatarImageView;
+// This view contains only the avatar image.
+@property(nonatomic, strong) UIImageView* avatarImageView;
 @property(nonatomic, strong) UILabel* subtitleLabel;
 @property(nonatomic, strong) UITextView* disclaimerView;
 @property(nonatomic, strong) UIStackView* actionStackView;
 @property(nonatomic, strong) HighlightButton* primaryActionButton;
 @property(nonatomic, strong) UIButton* secondaryActionButton;
 @property(nonatomic, strong) UIButton* tertiaryActionButton;
+
+// Layout constraint for `fullAvatarImageView` top margin.
+@property(nonatomic, strong) NSLayoutConstraint* avatarFullImageViewTopMargin;
 
 @property(nonatomic, strong) UIView* separator;
 @property(nonatomic, assign) CGFloat scrollViewBottomOffsetY;
@@ -97,6 +110,8 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
   return self;
 }
 
+#pragma mark - UIViewController
+
 - (void)viewDidLoad {
   [super viewDidLoad];
 
@@ -117,6 +132,10 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
   self.scrollContentView = [[UIView alloc] init];
   self.scrollContentView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.scrollContentView addSubview:self.imageView];
+  if (self.hasAvatarImage) {
+    [self.scrollContentView addSubview:self.fullAvatarImageView];
+    [self.fullAvatarImageView addSubview:self.avatarImageView];
+  }
   [self.scrollContentView addSubview:self.titleLabel];
   [self.scrollContentView addSubview:self.subtitleLabel];
   [self.view addLayoutGuide:subtitleMarginLayoutGuide];
@@ -215,8 +234,6 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
 
     // Labels contraints. Attach them to the top of the scroll content view, and
     // center them horizontally.
-    [self.titleLabel.topAnchor
-        constraintEqualToAnchor:self.imageView.bottomAnchor],
     [self.titleLabel.centerXAnchor
         constraintEqualToAnchor:self.scrollContentView.centerXAnchor],
     [self.titleLabel.widthAnchor
@@ -251,6 +268,36 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
     [self.actionStackView.trailingAnchor
         constraintEqualToAnchor:widthLayoutGuide.trailingAnchor],
   ]];
+
+  if (self.hasAvatarImage) {
+    self.avatarFullImageViewTopMargin = [self.fullAvatarImageView.topAnchor
+        constraintEqualToAnchor:self.imageView.bottomAnchor];
+    [NSLayoutConstraint activateConstraints:@[
+      self.avatarFullImageViewTopMargin,
+      [self.titleLabel.topAnchor
+          constraintEqualToAnchor:self.fullAvatarImageView.bottomAnchor
+                         constant:kFullAvatarImagerBottomMargin],
+      [self.fullAvatarImageView.centerXAnchor
+          constraintEqualToAnchor:self.scrollContentView.centerXAnchor],
+      [self.fullAvatarImageView.centerXAnchor
+          constraintEqualToAnchor:self.avatarImageView.centerXAnchor],
+      [self.fullAvatarImageView.centerYAnchor
+          constraintEqualToAnchor:self.avatarImageView.centerYAnchor],
+      [self.fullAvatarImageView.widthAnchor
+          constraintEqualToConstant:kFullAvatarImageSize],
+      [self.fullAvatarImageView.heightAnchor
+          constraintEqualToConstant:kFullAvatarImageSize],
+      [self.avatarImageView.widthAnchor
+          constraintEqualToConstant:kAvatarImageSize],
+      [self.avatarImageView.heightAnchor
+          constraintEqualToConstant:kAvatarImageSize],
+    ]];
+  } else {
+    [NSLayoutConstraint activateConstraints:@[
+      [self.titleLabel.topAnchor
+          constraintEqualToAnchor:self.imageView.bottomAnchor],
+    ]];
+  }
 
   [self setupBannerConstraints];
 
@@ -376,6 +423,14 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
   [coordinator animateAlongsideTransition:transition completion:nil];
 }
 
+- (void)viewWillLayoutSubviews {
+  [super viewWillLayoutSubviews];
+  self.avatarFullImageViewTopMargin.constant = AlignValueToPixel(
+      self.view.bounds.size.height * kAvatarFullImageViewTopMarginPercentage);
+}
+
+#pragma mark - UITraitEnvironment
+
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
 
@@ -442,6 +497,46 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
     _imageView.translatesAutoresizingMaskIntoConstraints = NO;
   }
   return _imageView;
+}
+
+- (UIView*)fullAvatarImageView {
+  if (!_fullAvatarImageView) {
+    DCHECK(self.hasAvatarImage);
+    UIImage* circleImage = [UIImage imageNamed:@"promo_style_avatar_circle"];
+    DCHECK(circleImage);
+    _fullAvatarImageView = [[UIImageView alloc] initWithImage:circleImage];
+    _fullAvatarImageView.translatesAutoresizingMaskIntoConstraints = NO;
+  }
+  return _fullAvatarImageView;
+}
+
+- (UIImageView*)avatarImageView {
+  if (!_avatarImageView) {
+    DCHECK(self.hasAvatarImage);
+    _avatarImageView = [[UIImageView alloc] initWithImage:self.avatarImage];
+    _avatarImageView.clipsToBounds = YES;
+    _avatarImageView.translatesAutoresizingMaskIntoConstraints = NO;
+    _avatarImageView.layer.cornerRadius = kAvatarImageSize / 2.;
+  }
+  return _avatarImageView;
+}
+
+- (void)setAvatarImage:(UIImage*)avatarImage {
+  _avatarImage = avatarImage;
+  if (self.hasAvatarImage) {
+    DCHECK_EQ(avatarImage.size.width, kAvatarImageSize);
+    DCHECK_EQ(avatarImage.size.height, kAvatarImageSize);
+    self.avatarImageView.image = avatarImage;
+  }
+}
+
+- (void)setavatarAccessibilityLabel:(NSString*)avatarAccessibilityLabel {
+  _avatarAccessibilityLabel = avatarAccessibilityLabel;
+  if (self.hasAvatarImage) {
+    self.avatarImageView.accessibilityLabel = avatarAccessibilityLabel;
+    self.avatarImageView.isAccessibilityElement =
+        avatarAccessibilityLabel != nil;
+  }
 }
 
 - (UILabel*)titleLabel {
@@ -668,6 +763,9 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
 }
 
 - (UIImage*)bannerImage {
+  if (self.shouldHideBanner && !self.bannerName) {
+    return [[UIImage alloc] init];
+  }
   return [UIImage imageNamed:self.bannerName];
 }
 

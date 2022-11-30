@@ -68,6 +68,7 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill_assistant/browser/features.h"
+#include "components/autofill_assistant/browser/public/prefs.h"
 #include "components/autofill_assistant/browser/public/runtime_manager.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -84,6 +85,7 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/translate/core/browser/translate_manager.h"
+#include "components/unified_consent/pref_names.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/variations/service/variations_service.h"
 #include "components/webauthn/content/browser/internal_authenticator_impl.h"
@@ -93,6 +95,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
+#include "url/origin.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/android/preferences/autofill/autofill_profile_bridge.h"
@@ -195,7 +198,7 @@ CreditCardOtpAuthenticator* ChromeAutofillClient::GetOtpAuthenticator() {
 }
 
 PrefService* ChromeAutofillClient::GetPrefs() {
-  return const_cast<PrefService*>(base::as_const(*this).GetPrefs());
+  return const_cast<PrefService*>(std::as_const(*this).GetPrefs());
 }
 
 const PrefService* ChromeAutofillClient::GetPrefs() const {
@@ -250,8 +253,13 @@ AutofillOfferManager* ChromeAutofillClient::GetAutofillOfferManager() {
       web_contents()->GetBrowserContext());
 }
 
-const GURL& ChromeAutofillClient::GetLastCommittedURL() const {
-  return web_contents()->GetLastCommittedURL();
+const GURL& ChromeAutofillClient::GetLastCommittedPrimaryMainFrameURL() const {
+  return web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL();
+}
+
+url::Origin ChromeAutofillClient::GetLastCommittedPrimaryMainFrameOrigin()
+    const {
+  return web_contents()->GetPrimaryMainFrame()->GetLastCommittedOrigin();
 }
 
 security_state::SecurityLevel
@@ -697,7 +705,16 @@ void ChromeAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {
 
 bool ChromeAutofillClient::IsFastCheckoutSupported() {
 #if BUILDFLAG(IS_ANDROID)
-  if (!base::FeatureList::IsEnabled(::features::kFastCheckout)) {
+  if (!base::FeatureList::IsEnabled(::features::kFastCheckout) ||
+      !base::FeatureList::IsEnabled(
+          autofill_assistant::features::kAutofillAssistant)) {
+    return false;
+  }
+
+  // Not supported if MakeSearchesAndBrowsingBetter is not enabled. This has
+  // been done to allow for consequent hash dances during consent-less flows.
+  if (!GetPrefs()->GetBoolean(
+          unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled)) {
     return false;
   }
 
@@ -712,11 +729,16 @@ bool ChromeAutofillClient::IsFastCheckoutSupported() {
     return false;
   }
 
-  // TODO(crbug.com/1334642): Check that the assistant settings flag is on.
+  // Require that the assistant settings flag is on for users with consent. If
+  // a user supports consentless flows, then there is no Assistant UI at any
+  // point in time and turning it off should not affect FC.
+  if (!::features::kFastCheckoutConsentlessExecutionParam.Get() &&
+      !GetPrefs()->GetBoolean(
+          autofill_assistant::prefs::kAutofillAssistantEnabled)) {
+    return false;
+  }
 
-  return base::FeatureList::IsEnabled(
-      autofill_assistant::features::kAutofillAssistant);
-
+  return true;
 #else
   return false;
 #endif
@@ -745,6 +767,31 @@ bool ChromeAutofillClient::IsFastCheckoutTriggerForm(
 #endif
 }
 
+bool ChromeAutofillClient::FastCheckoutScriptSupportsConsentlessExecution(
+    const url::Origin& origin) {
+#if BUILDFLAG(IS_ANDROID)
+  FastCheckoutCapabilitiesFetcher* fetcher =
+      FastCheckoutCapabilitiesFetcherFactory::GetForBrowserContext(
+          GetProfile());
+  if (!fetcher) {
+    return false;
+  }
+  return fetcher->SupportsConsentlessExecution(origin);
+#else
+  NOTREACHED();
+  return false;
+#endif
+}
+
+bool ChromeAutofillClient::FastCheckoutClientSupportsConsentlessExecution() {
+#if BUILDFLAG(IS_ANDROID)
+  return ::features::kFastCheckoutConsentlessExecutionParam.Get();
+#else
+  NOTREACHED();
+  return false;
+#endif
+}
+
 bool ChromeAutofillClient::ShowFastCheckout(
     base::WeakPtr<FastCheckoutDelegate> delegate) {
 #if BUILDFLAG(IS_ANDROID)
@@ -756,8 +803,11 @@ bool ChromeAutofillClient::ShowFastCheckout(
   if (IsAutofillAssistantShowing())
     return false;
 
+  const GURL& url = web_contents()->GetLastCommittedURL();
   return FastCheckoutClient::GetOrCreateForWebContents(web_contents())
-      ->Start(delegate, web_contents()->GetLastCommittedURL());
+      ->Start(delegate, url,
+              FastCheckoutScriptSupportsConsentlessExecution(
+                  url::Origin::Create(url)));
 #else
   NOTREACHED();
   return false;

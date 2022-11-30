@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -401,7 +401,7 @@ void NodeHighlightTool::DrawNode() {
 }
 
 void NodeHighlightTool::DrawMatchingSelector() {
-  if (selector_list_.IsEmpty() || !node_)
+  if (selector_list_.empty() || !node_)
     return;
   DummyExceptionStateForTesting exception_state;
   ContainerNode* query_base = node_->ContainingShadowRoot();

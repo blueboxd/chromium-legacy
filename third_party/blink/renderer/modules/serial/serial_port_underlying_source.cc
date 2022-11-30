@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,8 +68,8 @@ ScriptPromise SerialPortUnderlyingSource::Cancel(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state_);
   serial_port_->Flush(
       device::mojom::blink::SerialPortFlushMode::kReceive,
-      WTF::Bind(&SerialPortUnderlyingSource::OnFlush, WrapPersistent(this),
-                WrapPersistent(resolver)));
+      WTF::BindOnce(&SerialPortUnderlyingSource::OnFlush, WrapPersistent(this),
+                    WrapPersistent(resolver)));
   return resolver->Promise();
 }
 

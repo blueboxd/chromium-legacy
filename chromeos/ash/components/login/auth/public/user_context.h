@@ -8,10 +8,14 @@
 #include <string>
 
 #include "base/component_export.h"
-#include "chromeos/ash/components/login/auth/public/auth_factors_data.h"
+#include "base/containers/enum_set.h"
+
+#include "chromeos/ash/components/login/auth/public/auth_factors_configuration.h"
+#include "chromeos/ash/components/login/auth/public/auth_session_intent.h"
 #include "chromeos/ash/components/login/auth/public/challenge_response_key.h"
 #include "chromeos/ash/components/login/auth/public/key.h"
 #include "chromeos/ash/components/login/auth/public/saml_password_attributes.h"
+#include "chromeos/ash/components/login/auth/public/session_auth_factors.h"
 #include "chromeos/ash/components/login/auth/public/sync_trusted_vault_keys.h"
 #include "components/account_id/account_id.h"
 #include "components/password_manager/core/browser/password_hash_data.h"
@@ -76,7 +80,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH_PUBLIC) UserContext {
   const std::vector<ChallengeResponseKey>& GetChallengeResponseKeys() const;
   std::vector<ChallengeResponseKey>* GetMutableChallengeResponseKeys();
 
-  const AuthFactorsData& GetAuthFactorsData() const;
+  // TODO(b/241259026): rename this method.
+  const SessionAuthFactors& GetAuthFactorsData() const;
+  // May only be called if AuthFactorsConfiguration has been set.
+  const AuthFactorsConfiguration& GetAuthFactorsConfiguration();
 
   const std::string& GetAuthCode() const;
   const std::string& GetRefreshToken() const;
@@ -157,7 +164,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH_PUBLIC) UserContext {
       const SyncTrustedVaultKeys& sync_trusted_vault_keys);
   void SetIsUnderAdvancedProtection(bool is_under_advanced_protection);
   void SetCanLockManagedGuestSession(bool can_lock_managed_guest_session);
-  void SetAuthFactorsData(AuthFactorsData keys);
+  void SetSessionAuthFactors(SessionAuthFactors keys);
+  void SetAuthFactorsConfiguration(AuthFactorsConfiguration auth_factors);
+  void ClearAuthFactorsConfiguration();
   // We need to pull input method used to log in into the user session to make
   // it consistent. This method will remember given input method to be used
   // when session starts.
@@ -167,6 +176,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH_PUBLIC) UserContext {
   void ResetAuthSessionId();
   const std::string& GetAuthSessionId() const;
 
+  void AddAuthorizedIntent(AuthSessionIntent auth_intent);
+
   void ClearSecrets();
 
  private:
@@ -174,7 +185,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH_PUBLIC) UserContext {
   Key key_;
   Key password_key_;
   absl::optional<Key> replacement_key_ = absl::nullopt;
-  AuthFactorsData auth_factors_data_;
+  SessionAuthFactors session_auth_factors_;
+  absl::optional<AuthFactorsConfiguration> auth_factors_configuration_;
   std::vector<ChallengeResponseKey> challenge_response_keys_;
   std::string auth_code_;
   std::string refresh_token_;
@@ -197,6 +209,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH_PUBLIC) UserContext {
   // i.e. user used some input method to log in.
   std::string login_input_method_id_used_;
   std::string authsession_id_;
+  AuthSessionIntents authorized_for_;
 
   // For password reuse detection use.
   absl::optional<password_manager::PasswordHashData> sync_password_data_;

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,6 +63,7 @@ class FileSystemFileHandle final : public FileSystemHandle {
       mojo::PendingRemote<mojom::blink::FileSystemAccessTransferToken> other,
       base::OnceCallback<void(mojom::blink::FileSystemAccessErrorPtr, bool)>)
       override;
+  void GetUniqueIdImpl(base::OnceCallback<void(const WTF::String&)>) override;
 
   HeapMojoRemote<mojom::blink::FileSystemAccessFileHandle> mojo_ptr_;
 };

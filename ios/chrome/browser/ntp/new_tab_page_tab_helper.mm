@@ -11,9 +11,9 @@
 #import "base/strings/string_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
+#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/web/common/features.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_item.h"
@@ -44,14 +44,6 @@ NewTabPageTabHelper::NewTabPageTabHelper(web::WebState* web_state)
 
 #pragma mark - Static
 
-void NewTabPageTabHelper::CreateForWebState(web::WebState* web_state) {
-  DCHECK(web_state);
-  if (!FromWebState(web_state)) {
-    web_state->SetUserData(
-        UserDataKey(), base::WrapUnique(new NewTabPageTabHelper(web_state)));
-  }
-}
-
 void NewTabPageTabHelper::UpdateItem(web::NavigationItem* item) {
   if (item && item->GetURL() == GURL(kChromeUIAboutNewTabURL)) {
     item->SetVirtualURL(GURL(kChromeUINewTabURL));
@@ -71,7 +63,6 @@ void NewTabPageTabHelper::SetDelegate(
   active_ = IsNTPURL(web_state_->GetVisibleURL());
   if (active_) {
     UpdateItem(web_state_->GetNavigationManager()->GetPendingItem());
-    [delegate_ newTabPageHelperDidChangeVisibility:this forWebState:web_state_];
   }
 }
 

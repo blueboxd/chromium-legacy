@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -147,7 +147,7 @@ const CSSValue* AnchorName::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  if (style.AnchorName().IsEmpty())
+  if (style.AnchorName().empty())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   return MakeGarbageCollected<CSSCustomIdentValue>(style.AnchorName());
 }
@@ -166,7 +166,7 @@ const CSSValue* AnchorScroll::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  if (style.AnchorScroll().IsEmpty())
+  if (style.AnchorScroll().empty())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   return MakeGarbageCollected<CSSCustomIdentValue>(style.AnchorScroll());
 }
@@ -1693,7 +1693,7 @@ const CSSValue* ColorScheme::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  if (style.ColorScheme().IsEmpty())
+  if (style.ColorScheme().empty())
     return CSSIdentifierValue::Create(CSSValueID::kNormal);
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   for (auto ident : style.ColorScheme()) {
@@ -1724,10 +1724,9 @@ void ApplyColorSchemeValue(StyleResolverState& state,
 
   state.StyleRef().SetColorScheme(std::move(color_schemes));
 
-  Settings* settings = document.GetSettings();
-  bool force_dark = settings ? settings->GetForceDarkModeEnabled() : false;
   state.StyleRef().SetUsedColorScheme(
-      flags, document.GetStyleEngine().GetPreferredColorScheme(), force_dark);
+      flags, document.GetStyleEngine().GetPreferredColorScheme(),
+      document.GetStyleEngine().GetForceDarkModeEnabled());
 
   if (flags & static_cast<ColorSchemeFlags>(ColorSchemeFlag::kDark)) {
     // Record kColorSchemeDarkSupportedOnRoot if dark is present (though dark
@@ -2017,7 +2016,7 @@ const CSSValue* ContainerName::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  if (style.ContainerName().IsEmpty())
+  if (style.ContainerName().empty())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
@@ -3678,6 +3677,34 @@ const CSSValue* ImageRendering::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.ImageRendering());
+}
+
+const CSSValue* InitialLetter::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  const StyleInitialLetter initial_letter = style.InitialLetter();
+  if (initial_letter.IsNormal())
+    return CSSIdentifierValue::Create(CSSValueID::kNormal);
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*CSSNumericLiteralValue::Create(
+      initial_letter.Size(), CSSPrimitiveValue::UnitType::kNumber));
+  if (initial_letter.IsIntegerSink()) {
+    list->Append(*CSSNumericLiteralValue::Create(
+        initial_letter.Sink(), CSSPrimitiveValue::UnitType::kInteger));
+  } else if (initial_letter.IsDrop()) {
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kDrop));
+  } else if (initial_letter.IsRaise()) {
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kRaise));
+  }
+  return list;
+}
+
+const CSSValue* InitialLetter::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  return css_parsing_utils::ConsumeInitialLetter(range, context);
 }
 
 const CSSValue* InlineSize::ParseSingleValue(
@@ -5887,7 +5914,7 @@ const CSSValue* PositionFallback::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  if (style.PositionFallback().IsEmpty())
+  if (style.PositionFallback().empty())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   return MakeGarbageCollected<CSSCustomIdentValue>(style.PositionFallback());
 }
@@ -6560,7 +6587,7 @@ const CSSValue* ScrollTimelineName::CSSValueFromComputedStyleInternal(
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
   const AtomicString& ident = style.ScrollTimelineName();
-  if (ident.IsEmpty())
+  if (ident.empty())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   return MakeGarbageCollected<CSSCustomIdentValue>(ident);
 }
@@ -7800,7 +7827,7 @@ const CSSValue* ViewTimelineAxis::CSSValueFromComputedStyleInternal(
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
   const Vector<TimelineAxis>& vector = style.ViewTimelineAxis();
-  if (vector.IsEmpty())
+  if (vector.empty())
     return InitialValue();
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   for (TimelineAxis axis : vector) {
@@ -7829,7 +7856,7 @@ const CSSValue* ViewTimelineInset::CSSValueFromComputedStyleInternal(
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
   const Vector<TimelineInset>& vector = style.ViewTimelineInset();
-  if (vector.IsEmpty())
+  if (vector.empty())
     return InitialValue();
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   for (const TimelineInset& inset : vector) {
@@ -7864,7 +7891,7 @@ const CSSValue* ViewTimelineName::CSSValueFromComputedStyleInternal(
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
   const Vector<AtomicString>& vector = style.ViewTimelineName();
-  if (vector.IsEmpty())
+  if (vector.empty())
     return InitialValue();
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   for (const AtomicString& name : vector) {
@@ -9058,6 +9085,40 @@ const CSSValue* WebkitTransformOriginX::ParseSingleValue(
   return css_parsing_utils::ConsumePositionLonghand<CSSValueID::kLeft,
                                                     CSSValueID::kRight>(
       range, context);
+}
+
+const CSSValue* ToggleVisibility::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  CSSIdentifierValue* ident =
+      css_parsing_utils::ConsumeIdent<CSSValueID::kNormal, CSSValueID::kToggle>(
+          range);
+  if (!ident || ident->GetValueID() == CSSValueID::kNormal)
+    return ident;
+
+  CSSValueList* result_list = CSSValueList::CreateSpaceSeparated();
+  result_list->Append(*ident);
+  CSSValue* name = css_parsing_utils::ConsumeCustomIdent(range, context);
+  if (!name)
+    return nullptr;
+  result_list->Append(*name);
+  return result_list;
+}
+
+const CSSValue* ToggleVisibility::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  const AtomicString& toggle_visibility = style.ToggleVisibility();
+  if (toggle_visibility.IsNull())
+    return CSSIdentifierValue::Create(CSSValueID::kNormal);
+
+  CSSValueList* result_list = CSSValueList::CreateSpaceSeparated();
+  result_list->Append(*CSSIdentifierValue::Create(CSSValueID::kToggle));
+  result_list->Append(
+      *MakeGarbageCollected<CSSCustomIdentValue>(toggle_visibility));
+  return result_list;
 }
 
 const CSSValue* WebkitTransformOriginY::ParseSingleValue(

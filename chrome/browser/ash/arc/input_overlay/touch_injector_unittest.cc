@@ -242,6 +242,16 @@ class TouchInjectorTest : public views::ViewsTestBase {
     return injector_->ConvertToProto();
   }
 
+  const std::vector<std::unique_ptr<Action>>& GetPendingAddActions() const {
+    return injector_->pending_add_actions_;
+  }
+
+  const std::vector<std::unique_ptr<Action>>& GetPendingDeleteActions() const {
+    return injector_->pending_delete_actions_;
+  }
+
+  int GetNextActionID() { return injector_->next_action_id_; }
+
   aura::TestScreen* test_screen() {
     return aura::test::AuraTestHelper::GetInstance()->GetTestScreen();
   }
@@ -823,8 +833,7 @@ TEST_F(TouchInjectorTest, TestProtoConversion) {
   auto new_pos = std::make_unique<Position>(PositionType::kDefault);
   new_pos->Normalize(gfx::Point(20, 20), gfx::RectF(100, 100));
   auto expected_pos = *new_pos;
-  injector_->OnPositionBingingChange(&*injector_->actions()[0],
-                                     std::move(new_pos));
+  injector_->actions()[0]->PrepareToBindPosition(std::move(new_pos));
   injector_->OnApplyPendingBinding();
   auto proto = ConvertToProto();
   // Check whether the actions[1] with new input binding is converted to proto
@@ -850,12 +859,99 @@ TEST_F(TouchInjectorTest, TestProtoConversion) {
   injector->ParseActions(*json_value);
   injector->OnProtoDataAvailable(*proto);
   EXPECT_EQ(injector_->actions().size(), injector->actions().size());
-  for (int i = 0; i < injector_->actions().size(); i++) {
+  for (size_t i = 0; i < injector_->actions().size(); i++) {
     const auto* action_a = injector_->actions()[i].get();
     const auto* action_b = injector->actions()[i].get();
     EXPECT_EQ(*action_a->current_input(), *action_b->current_input());
     EXPECT_EQ(action_a->current_positions(), action_b->current_positions());
   }
+}
+
+TEST_F(TouchInjectorTest, TestAddAction) {
+  auto json_value =
+      base::JSONReader::ReadAndReturnValueWithError(kValidJsonActionTapKey);
+  injector_->ParseActions(*json_value);
+  EXPECT_EQ(2u, injector_->actions().size());
+
+  // Add->Save.
+  injector_->AddNewAction(ActionType::MOVE);
+  EXPECT_EQ(1u, GetPendingAddActions().size());
+  injector_->OnBindingSave();
+  EXPECT_EQ(3u, injector_->actions().size());
+  EXPECT_EQ(0u, GetPendingAddActions().size());
+  EXPECT_EQ(kMaxDefaultActionID + 1, injector_->actions().back()->id());
+  EXPECT_EQ(kMaxDefaultActionID + 2, GetNextActionID());
+
+  // Add->Save->Restore->Save. Final result only has default actions.
+  injector_->AddNewAction(ActionType::TAP);
+  injector_->AddNewAction(ActionType::MOVE);
+  EXPECT_EQ(2u, GetPendingAddActions().size());
+  injector_->OnBindingSave();
+  EXPECT_EQ(0u, GetPendingAddActions().size());
+  EXPECT_EQ(5u, injector_->actions().size());
+  EXPECT_EQ(kMaxDefaultActionID + 2,
+            (injector_->actions().rbegin() + 1)->get()->id());
+  EXPECT_EQ(kMaxDefaultActionID + 3, injector_->actions().back()->id());
+  EXPECT_EQ(kMaxDefaultActionID + 4, GetNextActionID());
+  injector_->OnBindingRestore();
+  EXPECT_EQ(2u, injector_->actions().size());
+  EXPECT_EQ(0u, GetPendingAddActions().size());
+  EXPECT_EQ(kMaxDefaultActionID + 1, GetNextActionID());
+  injector_->OnBindingSave();
+  EXPECT_EQ(2u, injector_->actions().size());
+
+  // Add->Cancel. Nothing is added.
+  injector_->AddNewAction(ActionType::TAP);
+  injector_->AddNewAction(ActionType::MOVE);
+  EXPECT_EQ(2u, GetPendingAddActions().size());
+  injector_->OnBindingCancel();
+  EXPECT_EQ(0u, GetPendingAddActions().size());
+  EXPECT_EQ(2u, injector_->actions().size());
+  EXPECT_EQ(kMaxDefaultActionID + 1, GetNextActionID());
+
+  // Add->Cancel->Add->Save. Second "add" is saved.
+  injector_->AddNewAction(ActionType::MOVE);
+  injector_->AddNewAction(ActionType::TAP);
+  EXPECT_EQ(kMaxDefaultActionID + 1,
+            (GetPendingAddActions().rbegin() + 1)->get()->id());
+  EXPECT_EQ(kMaxDefaultActionID + 2, GetPendingAddActions().back()->id());
+  EXPECT_EQ(2u, GetPendingAddActions().size());
+  injector_->OnBindingCancel();
+  EXPECT_EQ(kMaxDefaultActionID + 1, GetNextActionID());
+  EXPECT_EQ(2u, injector_->actions().size());
+  EXPECT_EQ(0u, GetPendingAddActions().size());
+  injector_->AddNewAction(ActionType::MOVE);
+  EXPECT_EQ(1u, GetPendingAddActions().size());
+  injector_->OnBindingSave();
+  EXPECT_EQ(3u, injector_->actions().size());
+  EXPECT_EQ(kMaxDefaultActionID + 1, injector_->actions().back()->id());
+  EXPECT_EQ(kMaxDefaultActionID + 2, GetNextActionID());
+  // Reset.
+  injector_->OnBindingRestore();
+  injector_->OnBindingSave();
+
+  // Add->Save->Restore->Cancel. "Restore" is not applied at the end.
+  injector_->AddNewAction(ActionType::MOVE);
+  injector_->AddNewAction(ActionType::TAP);
+  injector_->OnBindingSave();
+  EXPECT_EQ(4u, injector_->actions().size());
+  EXPECT_EQ(0u, GetPendingAddActions().size());
+  EXPECT_EQ(kMaxDefaultActionID + 1,
+            (injector_->actions().rbegin() + 1)->get()->id());
+  EXPECT_EQ(kMaxDefaultActionID + 2, injector_->actions().back()->id());
+  EXPECT_EQ(kMaxDefaultActionID + 3, GetNextActionID());
+  injector_->OnBindingRestore();
+  EXPECT_EQ(2u, injector_->actions().size());
+  EXPECT_EQ(2u, GetPendingDeleteActions().size());
+  EXPECT_EQ(kMaxDefaultActionID + 1, GetNextActionID());
+  injector_->OnBindingCancel();
+  EXPECT_EQ(4u, injector_->actions().size());
+  EXPECT_EQ(0u, GetPendingAddActions().size());
+  EXPECT_EQ(0u, GetPendingDeleteActions().size());
+  EXPECT_EQ(kMaxDefaultActionID + 1,
+            (injector_->actions().rbegin() + 1)->get()->id());
+  EXPECT_EQ(kMaxDefaultActionID + 2, injector_->actions().back()->id());
+  EXPECT_EQ(kMaxDefaultActionID + 3, GetNextActionID());
 }
 
 }  // namespace input_overlay

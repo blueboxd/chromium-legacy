@@ -17,7 +17,6 @@
 #import "components/history/core/browser/history_types.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/chrome_url_util.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/follow/follow_action_state.h"
@@ -28,9 +27,7 @@
 #import "ios/chrome/browser/follow/follow_service_factory.h"
 #import "ios/chrome/browser/follow/follow_util.h"
 #import "ios/chrome/browser/history/history_service_factory.h"
-#import "ios/chrome/browser/ntp/features.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/url/url_util.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/js_messaging/web_frame_util.h"
@@ -63,15 +60,6 @@ constexpr base::TimeDelta kShowFollowIPHAfterLoaded = base::Seconds(3);
 
 FollowTabHelper::~FollowTabHelper() {
   DCHECK(!web_state_);
-}
-
-// static
-void FollowTabHelper::CreateForWebState(web::WebState* web_state) {
-  DCHECK(web_state);
-  if (!FromWebState(web_state)) {
-    web_state->SetUserData(UserDataKey(),
-                           base::WrapUnique(new FollowTabHelper(web_state)));
-  }
 }
 
 FollowTabHelper::FollowTabHelper(web::WebState* web_state)
@@ -116,23 +104,9 @@ void FollowTabHelper::DidRedirectNavigation(
 void FollowTabHelper::PageLoaded(
     web::WebState* web_state,
     web::PageLoadCompletionStatus load_completion_status) {
-  // Do not show follow IPH if the user is not signed in.
-  ChromeBrowserState* browserState =
-      ChromeBrowserState::FromBrowserState(web_state->GetBrowserState());
-  AuthenticationService* authenticationService =
-      AuthenticationServiceFactory::GetForBrowserState(browserState);
-  if (!authenticationService || !authenticationService->GetPrimaryIdentity(
-                                    signin::ConsentLevel::kSignin)) {
-    return;
-  }
-
-  // Do not show Follow IPH if it is disabled.
-  if (!base::FeatureList::IsEnabled(
-          feature_engagement::kIPHFollowWhileBrowsingFeature)) {
-    return;
-  }
-
-  DCHECK(IsWebChannelsEnabled());
+  // TODO(crbug.com/1340154): move the checking to `follow_iph_presenter_`
+  // (FollowIPHCoordinator), so this class won't need to access browser_state
+  // anymore, which brings convinience to testing.
 
   // Record when the page was successfully loaded. Computing whether the
   // IPH needs to be displayed is done asynchronously and the time used
@@ -140,8 +114,8 @@ void FollowTabHelper::PageLoaded(
   // displayed.
   const base::Time page_load_time = base::Time::Now();
 
-  // Do not show IPH when browsing non http, https URLs and Chrome URLs, such as
-  // NTP, flags, version, sad tab, etc.
+  // Do not update follow menu option and do not show IPH when browsing non
+  // http,https URLs and Chrome URLs, such as NTP, flags, version, sad tab, etc.
   const GURL& url = web_state->GetVisibleURL();
   if (UrlHasChromeScheme(url) || !url.SchemeIsHTTPOrHTTPS()) {
     return;
@@ -171,6 +145,13 @@ void FollowTabHelper::OnSuccessfulPageLoad(const GURL& url,
                                            base::Time page_load_time,
                                            WebPageURLs* web_page_urls) {
   DCHECK(web_state_);
+
+  // Update follow menu option if needed.
+  if (follow_menu_updater_ && should_update_follow_item_) {
+    UpdateFollowMenuItemWithURL(web_page_urls);
+  }
+
+  // Show follow in-product help (IPH) if eligible.
 
   // Don't show follow in-product help (IPH) if there's no presenter. Ex.
   // follow_iph_presenter_ is nil when link preview page is loaded.

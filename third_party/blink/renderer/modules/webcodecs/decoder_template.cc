@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -253,16 +253,18 @@ void DecoderTemplate<Traits>::ProcessRequests() {
   DVLOG(3) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!IsClosed());
-  while (!pending_request_ && !requests_.IsEmpty()) {
+  while (!pending_request_ && !requests_.empty()) {
     Request* request = requests_.front();
 
     // Skip processing for requests that are canceled by a recent reset().
     if (request->reset_generation != reset_generation_) {
       if (request->resolver) {
-        // TODO(crbug.com/1229313): We might be in a Shutdown(), in which case
-        // this may actually be due to an error or close().
         request->resolver.Release()->Reject(MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kAbortError, "Aborted due to reset()"));
+            DOMExceptionCode::kAbortError,
+            shutting_down_
+                ? (shutting_down_due_to_error_ ? "Aborted due to error"
+                                               : "Aborted due to close()")
+                : "Aborted due to reset()"));
       }
       requests_.pop_front();
       continue;
@@ -357,7 +359,8 @@ void DecoderTemplate<Traits>::ContinueConfigureWithGpuFactories(
     initializing_sync_ = true;
     Traits::InitializeDecoder(
         *decoder(), request->low_delay.value(), *request->media_config,
-        WTF::Bind(&DecoderTemplate::OnInitializeDone, WrapWeakPersistent(this)),
+        WTF::BindOnce(&DecoderTemplate::OnInitializeDone,
+                      WrapWeakPersistent(this)),
         WTF::BindRepeating(&DecoderTemplate::OnOutput, WrapWeakPersistent(this),
                            reset_generation_));
     initializing_sync_ = false;
@@ -367,7 +370,7 @@ void DecoderTemplate<Traits>::ContinueConfigureWithGpuFactories(
   // Processing continues in OnFlushDone().
   decoder()->Decode(
       media::DecoderBuffer::CreateEOSBuffer(),
-      WTF::Bind(&DecoderTemplate::OnFlushDone, WrapWeakPersistent(this)));
+      WTF::BindOnce(&DecoderTemplate::OnFlushDone, WrapWeakPersistent(this)));
 }
 
 template <typename Traits>
@@ -421,9 +424,10 @@ bool DecoderTemplate<Traits>::ProcessDecodeRequest(Request* request) {
         GetTraceNames()->decode.c_str(), *request->decoder_buffer);
   }
 
-  decoder()->Decode(std::move(request->decoder_buffer),
-                    WTF::Bind(&DecoderTemplate::OnDecodeDone,
-                              WrapWeakPersistent(this), pending_decode_id_));
+  decoder()->Decode(
+      std::move(request->decoder_buffer),
+      WTF::BindOnce(&DecoderTemplate::OnDecodeDone, WrapWeakPersistent(this),
+                    pending_decode_id_));
   return true;
 }
 
@@ -452,7 +456,7 @@ bool DecoderTemplate<Traits>::ProcessFlushRequest(Request* request) {
 
   decoder()->Decode(
       media::DecoderBuffer::CreateEOSBuffer(),
-      WTF::Bind(&DecoderTemplate::OnFlushDone, WrapWeakPersistent(this)));
+      WTF::BindOnce(&DecoderTemplate::OnFlushDone, WrapWeakPersistent(this)));
   return true;
 }
 
@@ -473,7 +477,7 @@ bool DecoderTemplate<Traits>::ProcessResetRequest(Request* request) {
 
     // Processing continues in OnResetDone().
     decoder()->Reset(
-        WTF::Bind(&DecoderTemplate::OnResetDone, WrapWeakPersistent(this)));
+        WTF::BindOnce(&DecoderTemplate::OnResetDone, WrapWeakPersistent(this)));
   }
 
   return true;
@@ -488,6 +492,9 @@ void DecoderTemplate<Traits>::Shutdown(DOMException* exception) {
 
   TRACE_EVENT1(kCategory, GetTraceNames()->shutdown.c_str(), "has_exception",
                !!exception);
+
+  shutting_down_ = true;
+  shutting_down_due_to_error_ = !!exception;
 
   // Abort pending work (otherwise it will never complete)
   if (pending_request_) {
@@ -615,7 +622,8 @@ void DecoderTemplate<Traits>::OnFlushDone(media::DecoderStatus status) {
   Traits::InitializeDecoder(
       *decoder(), is_flush ? low_delay_ : pending_request_->low_delay.value(),
       is_flush ? *active_config_ : *pending_request_->media_config,
-      WTF::Bind(&DecoderTemplate::OnInitializeDone, WrapWeakPersistent(this)),
+      WTF::BindOnce(&DecoderTemplate::OnInitializeDone,
+                    WrapWeakPersistent(this)),
       WTF::BindRepeating(&DecoderTemplate::OnOutput, WrapWeakPersistent(this),
                          reset_generation_));
 }
@@ -779,8 +787,9 @@ void DecoderTemplate<Traits>::ScheduleDequeueEvent() {
   event->async_task_context()->Schedule(GetExecutionContext(), event->type());
 
   main_thread_task_runner_->PostTask(
-      FROM_HERE, WTF::Bind(&DecoderTemplate<Traits>::DispatchDequeueEvent,
-                           WrapWeakPersistent(this), WrapPersistent(event)));
+      FROM_HERE,
+      WTF::BindOnce(&DecoderTemplate<Traits>::DispatchDequeueEvent,
+                    WrapWeakPersistent(this), WrapPersistent(event)));
 }
 
 template <typename Traits>
@@ -831,7 +840,7 @@ void DecoderTemplate<Traits>::OnCodecReclaimed(DOMException* exception) {
 template <typename Traits>
 bool DecoderTemplate<Traits>::HasPendingActivity() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return pending_request_ || !requests_.IsEmpty();
+  return pending_request_ || !requests_.empty();
 }
 
 template <typename Traits>

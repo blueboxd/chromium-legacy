@@ -6,8 +6,11 @@
 
 #include <sys/xattr.h>
 
+#include "ash/metrics/histogram_macros.h"
 #include "base/callback.h"
+#include "base/containers/adapters.h"
 #include "base/files/file_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/system/sys_info.h"
 #include "base/task/bind_post_task.h"
@@ -83,10 +86,19 @@ bool SetTrashDirectoryPermissions(const base::FilePath& trash_directory) {
                            base::FILE_PERMISSION_EXECUTE_BY_OTHERS);
 }
 
+void RecordDirectorySetupMetric(trash::DirectorySetupUmaType type) {
+  UMA_HISTOGRAM_ENUMERATION(trash::kDirectorySetupHistogramName, type);
+}
+
+void RecordFailedTrashingMetric(trash::FailedTrashingUmaType type) {
+  UMA_HISTOGRAM_ENUMERATION(trash::kFailedTrashingHistogramName, type);
+}
+
 base::File::Error SetTrackedExtendedAttribute(const base::FilePath& path) {
   auto tracked_name = base::StrCat({"trash_", path.BaseName().value()});
   if (lsetxattr(path.value().c_str(), trash::kTrackedDirectoryName,
                 tracked_name.c_str(), tracked_name.size(), 0) < 0) {
+    RecordDirectorySetupMetric(trash::DirectorySetupUmaType::FAILED_XATTR);
     PLOG(ERROR) << "Failed to set the xattr";
     return base::File::FILE_ERROR_FAILED;
   }
@@ -176,10 +188,10 @@ void TrashIOTask::UpdateTrashEntry(size_t source_idx) {
   // however in the case of nested directories, reverse lexicographical order is
   // preferred to ensure the closer parent path by depth is chosen.
   const trash::TrashPathsMap::reverse_iterator& trash_parent_path_it =
-      std::find_if(free_space_map_.rbegin(), free_space_map_.rend(),
-                   [&source_path](const auto& it) -> bool {
-                     return it.first.IsParent(source_path);
-                   });
+      base::ranges::find_if(base::Reversed(free_space_map_),
+                            [&source_path](const auto& it) {
+                              return it.first.IsParent(source_path);
+                            });
 
   if (trash_parent_path_it == free_space_map_.rend()) {
     // The `source_path` is not parented at a supported Trash location, bail
@@ -217,7 +229,7 @@ void TrashIOTask::UpdateTrashEntry(size_t source_idx) {
 void TrashIOTask::ValidateAndDecrementFreeSpace(
     size_t source_idx,
     const trash::TrashPathsMap::reverse_iterator& it) {
-  size_t trash_contents_size =
+  int trash_contents_size =
       trash_entries_[source_idx].trash_info_contents.size();
   progress_.total_bytes += trash_contents_size;
 
@@ -386,6 +398,13 @@ void TrashIOTask::OnSetupSubDirectory(
     const storage::FileSystemURL trash_subdirectory,
     base::File::Error error) {
   if (error != base::File::FILE_OK) {
+    auto failed_directory_uma_type =
+        (trash_subdirectory == it->second.trash_files)
+            ? trash::DirectorySetupUmaType::FAILED_FILES_FOLDER
+            : trash::DirectorySetupUmaType::FAILED_INFO_FOLDER;
+    RecordDirectorySetupMetric(failed_directory_uma_type);
+    LOG(ERROR) << "Failed setting up a trash subfolder: "
+               << static_cast<int>(failed_directory_uma_type);
     // TODO(b/231830211): We can potentially continue if one .Trash directory
     // fails to create, but we should also rollback if the files directory
     // succeeds but info fails.
@@ -417,6 +436,8 @@ void TrashIOTask::OnSetDirectoryPermissions(
     trash::TrashPathsMap::const_iterator& it,
     bool set_permissions_success) {
   if (!set_permissions_success) {
+    RecordDirectorySetupMetric(
+        trash::DirectorySetupUmaType::FAILED_PARENT_FOLDER_PERMISSIONS);
     LOG(ERROR) << "Failed setting directory permissions";
     Complete(State::kError);
     return;
@@ -456,7 +477,7 @@ void TrashIOTask::WriteMetadata(
     size_t output_idx,
     const storage::FileSystemURL& files_folder_location,
     base::FileErrorOr<storage::FileSystemURL> destination_result) {
-  if (destination_result.is_error()) {
+  if (!destination_result.has_value()) {
     progress_.outputs.emplace_back(files_folder_location, absl::nullopt);
     TrashComplete(source_idx, output_idx, destination_result.error());
     return;
@@ -487,6 +508,8 @@ void TrashIOTask::OnWriteMetadata(size_t source_idx,
                                   const storage::FileSystemURL& destination_url,
                                   bool success) {
   if (!success) {
+    RecordFailedTrashingMetric(
+        trash::FailedTrashingUmaType::FAILED_WRITING_METADATA);
     TrashComplete(source_idx, output_idx, base::File::FILE_ERROR_FAILED);
     return;
   }
@@ -514,7 +537,7 @@ void TrashIOTask::TrashFile(size_t source_idx,
 
   auto complete_callback =
       base::BindPostTask(base::SequencedTaskRunnerHandle::Get(),
-                         base::BindOnce(&TrashIOTask::TrashComplete,
+                         base::BindOnce(&TrashIOTask::OnMoveComplete,
                                         weak_ptr_factory_.GetWeakPtr(),
                                         source_idx, output_idx + 1));
 
@@ -536,6 +559,8 @@ void TrashIOTask::OnMoveComplete(size_t source_idx,
   DCHECK(output_idx < progress_.outputs.size());
   if (error != base::File::FILE_OK) {
     LOG(ERROR) << "Failed to move the file to trash folder: " << error;
+    RecordFailedTrashingMetric(
+        trash::FailedTrashingUmaType::FAILED_MOVING_FILE);
     auto complete_callback = base::BindPostTask(
         base::SequencedTaskRunnerHandle::Get(),
         base::BindOnce(&TrashIOTask::TrashComplete,

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,9 +40,8 @@ TEST(StorageKeyTest, ConstructionValidity) {
   url::Origin valid_origin = url::Origin::Create(GURL("https://example.com"));
   StorageKey valid = StorageKey(valid_origin);
   EXPECT_FALSE(IsOpaque(valid));
-  // TODO(https://crbug.com/1287130): Change or remove this expectation once the
-  // full ancestor tree has been properly searched to determine AncestorChainBit
-  // value.
+  // Since the same origin is used for both `origin` and `top_level_site`, it is
+  // by definition same-site.
   EXPECT_EQ(valid.ancestor_chain_bit(), mojom::AncestorChainBit::kSameSite);
 
   url::Origin invalid_origin =

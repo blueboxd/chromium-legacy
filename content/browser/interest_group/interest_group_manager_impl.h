@@ -67,7 +67,7 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
       bool in_memory,
       ProcessMode process_mode,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      std::unique_ptr<KAnonymityServiceDelegate> k_anonymity_service);
+      KAnonymityServiceDelegate* k_anonymity_service);
   ~InterestGroupManagerImpl() override;
   InterestGroupManagerImpl(const InterestGroupManagerImpl& other) = delete;
   InterestGroupManagerImpl& operator=(const InterestGroupManagerImpl& other) =
@@ -184,10 +184,14 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
   void GetInterestGroupsForOwner(
       const url::Origin& owner,
       base::OnceCallback<void(std::vector<StorageInterestGroup>)> callback);
-  // Clear out storage for the matching owning storage key. If the callback is
+  // Clear out storage for the matching owning storage key. If the matcher is
   // empty then apply to all storage keys.
   void DeleteInterestGroupData(
-      StoragePartition::StorageKeyMatcherFunction storage_key_matcher);
+      StoragePartition::StorageKeyMatcherFunction storage_key_matcher,
+      base::OnceClosure completion_callback);
+  // Completely delete all interest group data, including k-anonymity data that
+  // is not cleared by DeleteInterestGroupData.
+  void DeleteAllInterestGroupData(base::OnceClosure completion_callback);
   // Get the last maintenance time from the underlying InterestGroupStorage.
   void GetLastMaintenanceTimeForTesting(
       base::RepeatingCallback<void(base::Time)> callback) const;

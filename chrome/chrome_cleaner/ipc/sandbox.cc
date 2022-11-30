@@ -70,9 +70,7 @@ std::unique_ptr<sandbox::TargetPolicy> GetSandboxPolicy(
   sandbox_result = config->SetJobLevel(sandbox::JobLevel::kLockdown, 0);
   CHECK_EQ(sandbox::SBOX_ALL_OK, sandbox_result);
 
-  sandbox_result =
-      config->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_UNTRUSTED);
-  CHECK_EQ(sandbox::SBOX_ALL_OK, sandbox_result);
+  config->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_UNTRUSTED);
 
   // This is all the mitigations from security_level.h, except those that need
   // to be enabled later (set in SetDelayedProcessMitigations below).
@@ -134,8 +132,8 @@ sandbox::ResultCode InitializeSandboxBroker(sandbox::BrokerServices* broker) {
   sandbox::ResultCode result = broker->Init();
   if (result != sandbox::SBOX_ALL_OK)
     return result;
-  result = broker->CreatePolicy()->CreateAlternateDesktop(
-      sandbox::Desktop::kAlternateWinstation);
+  result =
+      broker->CreateAlternateDesktop(sandbox::Desktop::kAlternateWinstation);
   // Matches Chrome behavior. Silently ignore failures unless we're
   // in a bad state.
   if (result == sandbox::SBOX_ERROR_FAILED_TO_SWITCH_BACK_WINSTATION)

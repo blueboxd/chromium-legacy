@@ -15,8 +15,7 @@ namespace version_info {
 enum class Channel;
 }  // namespace version_info
 
-namespace ash {
-namespace device_activity {
+namespace ash::device_activity {
 
 // Forward declaration from fresnel_service.proto.
 class ImportDataRequest;
@@ -28,7 +27,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY)
   MonthlyUseCaseImpl(
       const std::string& psm_device_active_secret,
       const ChromeDeviceMetadataParameters& chrome_passed_device_params,
-      PrefService* local_state);
+      PrefService* local_state,
+      std::unique_ptr<PsmDelegateInterface> psm_delegate);
   MonthlyUseCaseImpl(const MonthlyUseCaseImpl&) = delete;
   MonthlyUseCaseImpl& operator=(const MonthlyUseCaseImpl&) = delete;
   ~MonthlyUseCaseImpl() override;
@@ -50,7 +50,6 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY)
   ImportDataRequest GenerateImportRequestBody() override;
 };
 
-}  // namespace device_activity
-}  // namespace ash
+}  // namespace ash::device_activity
 
 #endif  // CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY_MONTHLY_USE_CASE_IMPL_H_

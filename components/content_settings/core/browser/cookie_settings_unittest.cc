@@ -90,8 +90,8 @@ class CookieSettingsTest : public testing::TestWithParam<bool> {
         kHttpsSubdomainSite("https://www.example.com"),
         kHttpsSite8080("https://example.com:8080"),
         kAllHttpsSitesPattern(ContentSettingsPattern::FromString("https://*")) {
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
 #if BUILDFLAG(IS_IOS)
     enabled_features.push_back(kImprovedCookieControls);
 #endif
@@ -549,10 +549,10 @@ TEST_P(CookieSettingsTest, GetCookieSettingSAA) {
 }
 
 // Subdomains of the granted resource url should not gain access if a valid
-// grant exists.
+// grant exists; the grant should also not apply on different schemes.
 TEST_P(CookieSettingsTest, GetCookieSettingSAAResourceWildcards) {
   const GURL top_level_url = GURL(kFirstPartySite);
-  const GURL url = GURL(kHttpSite);
+  const GURL url = GURL(kHttpsSite);
 
   prefs_.SetInteger(prefs::kCookieControlsMode,
                     static_cast<int>(CookieControlsMode::kBlockThirdParty));
@@ -569,12 +569,15 @@ TEST_P(CookieSettingsTest, GetCookieSettingSAAResourceWildcards) {
                                                top_level_url, nullptr,
                                                QueryReason::kCookies),
             CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(cookie_settings_->GetCookieSetting(GURL(kHttpSite), top_level_url,
+                                               nullptr, QueryReason::kCookies),
+            CONTENT_SETTING_BLOCK);
 }
 
 // Subdomains of the granted top level url should not grant access if a valid
-// grant exists.
+// grant exists; the grant should also not apply on different schemes.
 TEST_P(CookieSettingsTest, GetCookieSettingSAATopLevelWildcards) {
-  const GURL top_level_url = GURL(kHttpSite);
+  const GURL top_level_url = GURL(kHttpsSite);
   const GURL url = GURL(kFirstPartySite);
 
   prefs_.SetInteger(prefs::kCookieControlsMode,
@@ -590,6 +593,9 @@ TEST_P(CookieSettingsTest, GetCookieSettingSAATopLevelWildcards) {
             SettingWithStorageAccessGrantOverride());
   EXPECT_EQ(cookie_settings_->GetCookieSetting(url, GURL(kHttpsSubdomainSite),
                                                nullptr, QueryReason::kCookies),
+            CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(cookie_settings_->GetCookieSetting(url, GURL(kHttpSite), nullptr,
+                                               QueryReason::kCookies),
             CONTENT_SETTING_BLOCK);
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,11 +146,11 @@ FetchRequestData* FetchRequestData::Create(
           mojo::Remote<network::mojom::blink::ChunkedDataPipeGetter>>(
           fetch_api_request->body.TakeStreamBody());
       body_remote->set_disconnect_with_reason_handler(
-          WTF::Bind(SignalError, WrapPersistent(completion_notifier)));
+          WTF::BindOnce(SignalError, WrapPersistent(completion_notifier)));
       auto* body_remote_raw = body_remote.get();
       (*body_remote_raw)
-          ->GetSize(WTF::Bind(SignalSize, std::move(body_remote),
-                              WrapPersistent(completion_notifier)));
+          ->GetSize(WTF::BindOnce(SignalSize, std::move(body_remote),
+                                  WrapPersistent(completion_notifier)));
       (*body_remote_raw)->StartReading(std::move(writable));
     } else {
       request->SetBuffer(BodyStreamBuffer::Create(

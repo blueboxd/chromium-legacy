@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash/settings/about_flags.h"
 
-#include "ash/components/settings/cros_settings_names.h"
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/account_id/account_id.h"
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_pref_names.h"
@@ -47,7 +47,7 @@ std::set<std::string> ParseFlagsFromCommandLine(
     return flags;
   }
 
-  for (const auto& flag : flags_list.value().GetListDeprecated()) {
+  for (const auto& flag : flags_list.value().GetList()) {
     if (!flag.is_string()) {
       LOG(WARNING) << "Invalid entry in encoded feature flags";
       continue;

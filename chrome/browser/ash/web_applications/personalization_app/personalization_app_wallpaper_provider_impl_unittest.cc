@@ -56,8 +56,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/webui/web_ui_util.h"
 
-namespace ash {
-namespace personalization_app {
+namespace ash::personalization_app {
 
 namespace {
 
@@ -150,7 +149,7 @@ gfx::ImageSkia CreateSolidImageSkia(int width, int height, SkColor color) {
 base::Value::Dict JsonToDict(base::StringPiece json) {
   absl::optional<base::Value> parsed_json = base::JSONReader::Read(json);
   EXPECT_TRUE(parsed_json.has_value() && parsed_json->is_dict());
-  return std::move(parsed_json->GetDict());
+  return std::move(*parsed_json).TakeDict();
 }
 
 // Returns a non-null pointer to the album in a hypothetical Google Photos
@@ -226,8 +225,8 @@ class PersonalizationAppWallpaperProviderImplTest
   PersonalizationAppWallpaperProviderImplTest()
       : scoped_user_manager_(std::make_unique<ash::FakeChromeUserManager>()),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {
-    std::vector<base::Feature> disabled_features;
-    std::vector<base::Feature> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
+    std::vector<base::test::FeatureRef> enabled_features;
 
     // Conditionally enable/disable Google Photos integration based on test
     // parameterization.
@@ -977,5 +976,4 @@ TEST_P(PersonalizationAppWallpaperProviderImplGooglePhotosTest,
                     ash::WallpaperInfo()));
 }
 
-}  // namespace personalization_app
-}  // namespace ash
+}  // namespace ash::personalization_app

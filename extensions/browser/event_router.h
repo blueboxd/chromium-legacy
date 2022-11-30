@@ -374,6 +374,17 @@ class EventRouter : public KeyedService,
       UserGestureState user_gesture,
       extensions::mojom::EventFilteringInfoPtr info);
 
+  // Gets off-the-record browser context if
+  //     - The extension has incognito mode set to "split"
+  //     - The on-the-record browser context has an off-the-record context
+  //       attached
+  content::BrowserContext* GetIncognitoContextIfAccessible(
+      const std::string& extension_id);
+
+  // Returns the off-the-record context for the BrowserContext associated
+  // with this EventRouter, if any.
+  content::BrowserContext* GetIncognitoContext();
+
   // Adds an extension as an event listener for |event_name|.
   //
   // Note that multiple extensions can share a process due to process
@@ -596,20 +607,20 @@ struct Event {
 };
 
 struct EventListenerInfo {
-  // Constructor for a listener from a non-ServiceWorker context (background
-  // page, popup, tab, etc)
+  // Constructor used by tests, for a listener from a non-ServiceWorker
+  // context (background page, popup, tab, etc).
   EventListenerInfo(const std::string& event_name,
                     const std::string& extension_id,
                     const GURL& listener_url,
                     content::BrowserContext* browser_context);
 
-  // Constructor for a listener from a ServiceWorker context.
   EventListenerInfo(const std::string& event_name,
                     const std::string& extension_id,
                     const GURL& listener_url,
                     content::BrowserContext* browser_context,
                     int worker_thread_id,
-                    int64_t service_worker_version_id);
+                    int64_t service_worker_version_id,
+                    bool is_lazy);
 
   // The event name including any sub-event, e.g. "runtime.onStartup" or
   // "webRequest.onCompleted/123".
@@ -619,6 +630,7 @@ struct EventListenerInfo {
   const raw_ptr<content::BrowserContext> browser_context;
   const int worker_thread_id;
   const int64_t service_worker_version_id;
+  const bool is_lazy;
 };
 
 struct ServiceWorkerIdentifier {

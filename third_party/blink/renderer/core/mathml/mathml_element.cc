@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,13 +31,14 @@ static inline bool IsValidDirAttribute(const AtomicString& value) {
          EqualIgnoringASCIICase(value, "rtl");
 }
 
-// Keywords from MathML3 and CSS font-size are skipped.
+// Keywords from CSS font-size are skipped.
 static inline bool IsDisallowedMathSizeAttribute(const AtomicString& value) {
   return EqualIgnoringASCIICase(value, "medium") ||
          value.EndsWith("large", kTextCaseASCIIInsensitive) ||
          value.EndsWith("small", kTextCaseASCIIInsensitive) ||
          EqualIgnoringASCIICase(value, "smaller") ||
-         EqualIgnoringASCIICase(value, "larger");
+         EqualIgnoringASCIICase(value, "larger") ||
+         EqualIgnoringASCIICase(value, "math");
 }
 
 bool MathMLElement::IsPresentationAttribute(const QualifiedName& name) const {

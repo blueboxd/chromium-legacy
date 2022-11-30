@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,8 +126,8 @@ absl::optional<TransformationMatrix> XRReferenceSpace::MojoFromNative() const {
       }
 
       // local_from_floor-local transform corresponding to the default height.
-      auto local_from_floor = TransformationMatrix().Translate3d(
-          0, kDefaultEmulationHeightMeters, 0);
+      auto local_from_floor = TransformationMatrix::MakeTranslation(
+          0, kDefaultEmulationHeightMeters);
 
       return *mojo_from_local * local_from_floor;
     }
@@ -155,7 +155,7 @@ absl::optional<TransformationMatrix> XRReferenceSpace::NativeFromViewer(
   auto native_from_viewer = NativeFromMojo();
   if (!native_from_viewer)
     return absl::nullopt;
-  native_from_viewer->Multiply(*mojo_from_viewer);
+  native_from_viewer->PreConcat(*mojo_from_viewer);
   return native_from_viewer;
 }
 
@@ -185,8 +185,7 @@ ReferenceSpaceType XRReferenceSpace::GetType() const {
 
 XRReferenceSpace* XRReferenceSpace::getOffsetReferenceSpace(
     XRRigidTransform* additional_offset) const {
-  auto matrix =
-      NativeFromOffsetMatrix().Multiply(additional_offset->TransformMatrix());
+  auto matrix = NativeFromOffsetMatrix() * additional_offset->TransformMatrix();
 
   auto* result_transform = MakeGarbageCollected<XRRigidTransform>(matrix);
   return cloneWithOriginOffset(result_transform);

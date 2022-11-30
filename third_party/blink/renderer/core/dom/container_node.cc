@@ -148,12 +148,12 @@ static inline bool CollectChildrenAndRemoveFromOldParent(
   if (auto* fragment = DynamicTo<DocumentFragment>(node)) {
     GetChildNodes(*fragment, nodes);
     fragment->RemoveChildren();
-    return !nodes.IsEmpty();
+    return !nodes.empty();
   }
   nodes.push_back(&node);
   if (ContainerNode* old_parent = node.parentNode())
     old_parent->RemoveChild(&node, exception_state);
-  return !exception_state.HadException() && !nodes.IsEmpty();
+  return !exception_state.HadException() && !nodes.empty();
 }
 
 void ContainerNode::ParserTakeAllChildrenFrom(ContainerNode& old_parent) {
@@ -1565,8 +1565,8 @@ HTMLCollection* ContainerNode::getElementsByTagNameNS(
     const AtomicString& namespace_uri,
     const AtomicString& local_name) {
   return EnsureCachedCollection<TagCollectionNS>(
-      kTagCollectionNSType,
-      namespace_uri.IsEmpty() ? g_null_atom : namespace_uri, local_name);
+      kTagCollectionNSType, namespace_uri.empty() ? g_null_atom : namespace_uri,
+      local_name);
 }
 
 // Takes an AtomicString in argument because it is common for elements to share
@@ -1596,7 +1596,7 @@ RadioNodeList* ContainerNode::GetRadioNodeList(const AtomicString& name,
 Element* ContainerNode::getElementById(const AtomicString& id) const {
   // According to https://dom.spec.whatwg.org/#concept-id, empty IDs are
   // treated as equivalent to the lack of an id attribute.
-  if (id.IsEmpty()) {
+  if (id.empty()) {
     return nullptr;
   }
 

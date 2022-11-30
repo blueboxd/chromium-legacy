@@ -30,6 +30,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+using autofill_assistant::password_change::FlowType;
 using autofill_assistant::password_change::GenericPasswordChangeSpecification;
 
 ApcExternalActionDelegate::ApcExternalActionDelegate(
@@ -79,6 +80,9 @@ void ApcExternalActionDelegate::OnActionRequested(
       HandleUpdateSidePanel(
           generic_password_change_specification.update_side_panel());
       break;
+    case GenericPasswordChangeSpecification::SpecificationCase::kSetFlowType:
+      HandleSetFlowType(generic_password_change_specification.set_flow_type());
+      break;
     case GenericPasswordChangeSpecification::SpecificationCase::
         SPECIFICATION_NOT_SET:
       DLOG(ERROR) << "unknown password change action";
@@ -109,8 +113,13 @@ void ApcExternalActionDelegate::OnInterruptFinished() {
   // the view is informed about the updates.
   PasswordChangeRunController::Model model = model_before_interrupt_.value();
   SetTopIcon(model.top_icon);
-  SetTitle(model.title);
+  SetTitle(model.title, model.accessibility_title);
   SetDescription(model.description);
+  if (model.progress_bar_animation_is_paused) {
+    PauseProgressBarAnimation();
+  } else {
+    ResumeProgressBarAnimation();
+  }
 
   model_before_interrupt_.reset();
 }
@@ -121,8 +130,13 @@ void ApcExternalActionDelegate::OnTouchableAreaChanged(
     const std::vector<autofill_assistant::RectF>& restricted_areas) {
   if (!touchable_areas.empty()) {
     apc_scrim_manager_->Hide();
+    PauseProgressBarAnimation();
   } else {
+    // When there is no area to be showcasted both show the scrim
+    // and redirect focus (accessibility only) to the password change ui.
     apc_scrim_manager_->Show();
+    ResumeProgressBarAnimation();
+    password_change_run_display_->SetFocus();
   }
 }
 
@@ -134,10 +148,14 @@ void ApcExternalActionDelegate::SetTopIcon(
   password_change_run_display_->SetTopIcon(top_icon);
 }
 
-void ApcExternalActionDelegate::SetTitle(const std::u16string& title) {
+void ApcExternalActionDelegate::SetTitle(
+    const std::u16string& title,
+    const std::u16string& accessibility_title) {
   DCHECK(password_change_run_display_);
   model_.title = title;
-  password_change_run_display_->SetTitle(title);
+  model_.accessibility_title = accessibility_title;
+
+  password_change_run_display_->SetTitle(title, accessibility_title);
 }
 
 void ApcExternalActionDelegate::SetDescription(
@@ -169,7 +187,8 @@ void ApcExternalActionDelegate::ShowBasePrompt(
     base_prompt_return_values_.push_back(choice.tag());
   }
 
-  SetTitle(base::UTF8ToUTF16(base_prompt.title()));
+  SetTitle(base::UTF8ToUTF16(base_prompt.title()),
+           base::UTF8ToUTF16(base_prompt.accessibility_title()));
   if (base_prompt.has_description()) {
     model_.description = base::UTF8ToUTF16(base_prompt.description());
     password_change_run_display_->ShowBasePrompt(
@@ -253,9 +272,9 @@ void ApcExternalActionDelegate::ShowStartingScreen(const GURL& url) {
 }
 
 void ApcExternalActionDelegate::ShowCompletionScreen(
-    base::RepeatingClosure onShowCompletionScreenDoneButtonClicked) {
+    base::RepeatingClosure done_button_callback) {
   password_change_run_display_->ShowCompletionScreen(
-      std::move(onShowCompletionScreenDoneButtonClicked));
+      model_.flow_type, std::move(done_button_callback));
 }
 
 void ApcExternalActionDelegate::OpenPasswordManager() {
@@ -296,8 +315,6 @@ void ApcExternalActionDelegate::HandleBasePrompt(
         specification) {
   base_prompt_should_send_payload_ = specification.has_output_key();
 
-  // TODO(crbug.com/1331202): If this causes flickering, separate prompt
-  // argument extraction and showing the base prompt.
   ShowBasePrompt(specification);
 
   // `this` outlives the script controller, therefore we can pass an unretained
@@ -334,6 +351,13 @@ void ApcExternalActionDelegate::HandleUpdateSidePanel(
   EndAction(true);
 }
 
+void ApcExternalActionDelegate::HandleSetFlowType(
+    const autofill_assistant::password_change::SetFlowTypeSpecification&
+        specification) {
+  model_.flow_type = specification.flow_type();
+  EndAction(/*success=*/true);
+}
+
 void ApcExternalActionDelegate::OnBasePromptDomUpdateReceived(
     const autofill_assistant::external::ElementConditionsUpdate& update) {
   // To ensure predictable behavior, we always choose the condition with the
@@ -357,6 +381,18 @@ void ApcExternalActionDelegate::OnBasePromptDomUpdateReceived(
   if (minimum_satisfied_index < base_prompt_return_values_.size()) {
     OnBasePromptChoiceSelected(minimum_satisfied_index);
   }
+}
+
+void ApcExternalActionDelegate::PauseProgressBarAnimation() {
+  DCHECK(password_change_run_display_);
+  model_.progress_bar_animation_is_paused = true;
+  password_change_run_display_->PauseProgressBarAnimation();
+}
+
+void ApcExternalActionDelegate::ResumeProgressBarAnimation() {
+  DCHECK(password_change_run_display_);
+  model_.progress_bar_animation_is_paused = false;
+  password_change_run_display_->ResumeProgressBarAnimation();
 }
 
 base::WeakPtr<PasswordChangeRunController>

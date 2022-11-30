@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -407,7 +407,7 @@ AtomicStringTable::WeakResult AtomicStringTable::WeakFindSlowForTesting(
 
 AtomicStringTable::WeakResult AtomicStringTable::WeakFindLowercase(
     const AtomicString& string) {
-  DCHECK(!string.IsEmpty());
+  DCHECK(!string.empty());
   DCHECK(!string.IsLowerASCII());
   DCHECK(string.length());
   HashTranslatorLowercaseBuffer buffer(string.Impl());

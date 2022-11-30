@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
+#include "chrome/browser/ui/performance_controls/high_efficiency_iph_controller.h"
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/translate/partial_translate_bubble_model.h"
@@ -153,6 +154,8 @@ class BrowserView : public BrowserWindow,
   // the tabstrip is hidden. Tests can use this function to disable that delay
   // (and hide immediately).
   static void SetDisableRevealerDelayForTesting(bool disable);
+
+  bool IsLoadingAnimationRunningForTesting() const;
 
   // Returns a Browser instance of this view.
   Browser* browser() { return browser_.get(); }
@@ -461,7 +464,7 @@ class BrowserView : public BrowserWindow,
   void BookmarkBarStateChanged(
       BookmarkBar::AnimateChangeType change_type) override;
   void UpdateDevTools() override;
-  void UpdateLoadingAnimations(bool should_animate) override;
+  void UpdateLoadingAnimations(bool is_visible) override;
   void SetStarredState(bool is_starred) override;
   void SetTranslateIconToggled(bool is_lit) override;
   void OnActiveTabChanged(content::WebContents* old_contents,
@@ -687,6 +690,7 @@ class BrowserView : public BrowserWindow,
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
   void OnWidgetBoundsChanged(views::Widget* widget,
                              const gfx::Rect& new_bounds) override;
+  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
 
   // views::ClientView:
   views::CloseRequestResult OnWindowCloseRequested() override;
@@ -790,6 +794,9 @@ class BrowserView : public BrowserWindow,
   bool should_show_window_controls_overlay_toggle() const {
     return should_show_window_controls_overlay_toggle_;
   }
+
+  void SetLoadingAnimationStateChangeClosureForTesting(
+      base::OnceClosure closure);
 
  private:
   // Do not friend BrowserViewLayout. Use the BrowserViewLayoutDelegate
@@ -1138,6 +1145,9 @@ class BrowserView : public BrowserWindow,
   // The timer used to update frames for tab-loading animations.
   base::RepeatingTimer loading_animation_timer_;
 
+  // Closure invoked when the state of the loading animation changes.
+  base::OnceClosure loading_animation_state_change_closure_;
+
   // Start timestamp for all throbbers. Set when |loading_animation_timer_|
   // starts and used for all consecutive tabs (while any are loading) to keep
   // throbbers in sync.
@@ -1202,6 +1212,8 @@ class BrowserView : public BrowserWindow,
       nullptr;
 
   OnLinkOpeningFromGestureCallbackList link_opened_from_gesture_callbacks_;
+
+  std::unique_ptr<HighEfficiencyIPHController> high_efficiency_iph_controller_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // |loading_animation_tracker_| is used to measure animation smoothness for

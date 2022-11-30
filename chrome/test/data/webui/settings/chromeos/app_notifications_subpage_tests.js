@@ -4,9 +4,9 @@
 
 import {createBoolPermission, getBoolPermissionValue, isBoolValue, setAppNotificationProviderForTesting} from 'chrome://os-settings/chromeos/os_settings.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {flushTasks} from 'chrome://test/test_util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 

@@ -5,14 +5,12 @@
 module shared_storage_worklet.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
-import "mojo/public/mojom/base/time.mojom";
 import
 "components/services/storage/shared_storage/public/mojom/shared_storage.mojom";
 import "content/common/private_aggregation_host.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "third_party/blink/public/mojom/shared_storage/shared_storage.mojom";
 import "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom";
-import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
 enum SharedStorageGetStatus {
@@ -62,6 +60,11 @@ interface SharedStorageWorkletServiceClient {
   // Handle sharedStorage.length(): get the number of keys.
   SharedStorageLength()
     => (bool success, string error_message, uint32 length);
+
+  // Handle sharedStorage.remainingBudget(): get the number of bits remaining
+  // in the privacy budget.
+  SharedStorageRemainingBudget()
+    => (bool success, string error_message, double bits);
 
   // Handle console.log(): log the message to the DevTools console.
   ConsoleLog(string message);

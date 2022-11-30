@@ -26,7 +26,7 @@ namespace {
 AssistantOnboardingSuggestionView* CreateSuggestionViewAt(
     int index,
     views::Widget* widget) {
-  chromeos::assistant::AssistantSuggestion assistant_suggestion;
+  assistant::AssistantSuggestion assistant_suggestion;
   return widget->GetContentsView()->AddChildView(
       std::make_unique<AssistantOnboardingSuggestionView>(
           /*delegate=*/nullptr, assistant_suggestion, index));
@@ -133,12 +133,10 @@ TEST_F(AssistantOnboardingSuggestionViewTest, DarkAndLightTheme) {
 }
 
 TEST_F(AssistantOnboardingSuggestionViewTest, DarkAndLightModeFlagOff) {
-  // ProductivityLauncher uses DarkLightMode colors.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       /*enabled_features=*/{}, /*disabled_features=*/{
-          chromeos::features::kDarkLightMode, features::kNotificationsRefresh,
-          features::kProductivityLauncher});
+          chromeos::features::kDarkLightMode, features::kNotificationsRefresh});
 
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
 

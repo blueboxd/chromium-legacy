@@ -37,7 +37,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/infobars/overlays",
     "//ios/chrome/browser/infobars/test",
-    "//ios/chrome/browser/infobars/test",
     "//ios/chrome/browser/overlays",
     "//ios/web/public/test/fakes",
     "//testing/gtest",

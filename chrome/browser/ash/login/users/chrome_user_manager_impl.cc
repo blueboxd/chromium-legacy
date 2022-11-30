@@ -13,8 +13,6 @@
 #include <vector>
 
 #include "ash/components/arc/arc_util.h"
-#include "ash/components/settings/cros_settings_names.h"
-#include "ash/components/timezone/timezone_resolver.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/session/session_controller.h"
@@ -87,6 +85,8 @@
 #include "chromeos/ash/components/dbus/upstart/upstart_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/ash/components/network/proxy/proxy_config_service_impl.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
+#include "chromeos/ash/components/timezone/timezone_resolver.h"
 #include "chromeos/components/onc/certificate_scope.h"
 #include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "components/account_id/account_id.h"
@@ -630,7 +630,8 @@ void ChromeUserManagerImpl::OwnershipStatusChanged() {
 }
 
 void ChromeUserManagerImpl::OnPolicyUpdated(const std::string& user_id) {
-  const AccountId account_id = user_manager::known_user::GetAccountId(
+  user_manager::KnownUser known_user(GetLocalState());
+  const AccountId account_id = known_user.GetAccountId(
       user_id, std::string() /* id */, AccountType::UNKNOWN);
   const user_manager::User* user = FindUser(account_id);
   if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT)
@@ -752,7 +753,8 @@ void ChromeUserManagerImpl::RetrieveTrustedDevicePolicies() {
 
   std::string owner_email;
   cros_settings_->GetString(kDeviceOwner, &owner_email);
-  const AccountId owner_account_id = user_manager::known_user::GetAccountId(
+  user_manager::KnownUser known_user(GetLocalState());
+  const AccountId owner_account_id = known_user.GetAccountId(
       owner_email, std::string() /* id */, AccountType::UNKNOWN);
   SetOwnerId(owner_account_id);
 
@@ -764,9 +766,9 @@ void ChromeUserManagerImpl::RetrieveTrustedDevicePolicies() {
   // If ephemeral users are enabled and we are on the login screen, take this
   // opportunity to clean up by removing all regular users except the owner.
   if (GetEphemeralUsersEnabled() && !IsUserLoggedIn()) {
-    ListPrefUpdate prefs_users_update(GetLocalState(),
-                                      user_manager::kRegularUsersPref);
-    prefs_users_update->ClearList();
+    ScopedListPrefUpdate prefs_users_update(GetLocalState(),
+                                            user_manager::kRegularUsersPref);
+    prefs_users_update->clear();
     for (user_manager::UserList::iterator it = users_.begin();
          it != users_.end();) {
       const AccountId account_id = (*it)->GetAccountId();
@@ -870,11 +872,9 @@ void ChromeUserManagerImpl::KioskAppLoggedIn(user_manager::User* user) {
   // device-local account list here to extract the kiosk_app_id.
   const std::vector<policy::DeviceLocalAccount> device_local_accounts =
       policy::GetDeviceLocalAccounts(cros_settings_);
-  const auto account = base::ranges::find_if(
-      device_local_accounts,
-      [&kiosk_app_account_id](const policy::DeviceLocalAccount& account) {
-        return account.user_id == kiosk_app_account_id.GetUserEmail();
-      });
+  const auto account = base::ranges::find(device_local_accounts,
+                                          kiosk_app_account_id.GetUserEmail(),
+                                          &policy::DeviceLocalAccount::user_id);
   std::string kiosk_app_id;
   if (account != device_local_accounts.end()) {
     kiosk_app_id = account->kiosk_app_id;
@@ -925,10 +925,9 @@ void ChromeUserManagerImpl::RemoveNonCryptohomeData(
   // TODO(tbarzic): Forward data removal request to HammerDeviceHandler,
   // instead of removing the prefs value here.
   if (GetLocalState()->FindPreference(prefs::kDetachableBaseDevices)) {
-    DictionaryPrefUpdate update(GetLocalState(), prefs::kDetachableBaseDevices);
-    update->RemoveKey(account_id.HasAccountIdKey()
-                          ? account_id.GetAccountIdKey()
-                          : account_id.GetUserEmail());
+    ScopedDictPrefUpdate update(GetLocalState(), prefs::kDetachableBaseDevices);
+    update->Remove(account_id.HasAccountIdKey() ? account_id.GetAccountIdKey()
+                                                : account_id.GetUserEmail());
   }
 
   supervised_user_manager_->RemoveNonCryptohomeData(account_id.GetUserEmail());
@@ -1020,9 +1019,9 @@ bool ChromeUserManagerImpl::UpdateAndCleanUpDeviceLocalAccounts(
   // will be loaded in LoadDeviceLocalAccounts() on the next reboot regardless
   // of whether they still exist in kAccountsPrefDeviceLocalAccounts, allowing
   // us to clean up associated data if they disappear from policy.
-  ListPrefUpdate prefs_device_local_accounts_update(
+  ScopedListPrefUpdate prefs_device_local_accounts_update(
       GetLocalState(), kDeviceLocalAccountsWithSavedData);
-  prefs_device_local_accounts_update->ClearList();
+  prefs_device_local_accounts_update->clear();
   for (const auto& account : device_local_accounts)
     prefs_device_local_accounts_update->Append(account.user_id);
 
@@ -1285,18 +1284,17 @@ bool ChromeUserManagerImpl::IsFullManagementDisclosureNeeded(
 }
 
 void ChromeUserManagerImpl::AddReportingUser(const AccountId& account_id) {
-  ListPrefUpdate users_update(GetLocalState(), ::prefs::kReportingUsers);
+  ScopedListPrefUpdate users_update(GetLocalState(), ::prefs::kReportingUsers);
   base::Value email_value(account_id.GetUserEmail());
-  if (!base::Contains(users_update->GetListDeprecated(), email_value))
+  if (!base::Contains(users_update.Get(), email_value))
     users_update->Append(std::move(email_value));
 }
 
 void ChromeUserManagerImpl::RemoveReportingUser(const AccountId& account_id) {
-  ListPrefUpdate users_update(GetLocalState(), ::prefs::kReportingUsers);
-  base::Value::List& update_list = users_update->GetList();
-  auto it =
-      std::find(update_list.begin(), update_list.end(),
-                base::Value(FullyCanonicalize(account_id.GetUserEmail())));
+  ScopedListPrefUpdate users_update(GetLocalState(), ::prefs::kReportingUsers);
+  base::Value::List& update_list = users_update.Get();
+  auto it = base::ranges::find(
+      update_list, base::Value(FullyCanonicalize(account_id.GetUserEmail())));
   if (it == update_list.end())
     return;
   update_list.erase(it);

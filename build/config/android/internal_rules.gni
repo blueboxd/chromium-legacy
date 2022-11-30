@@ -5,7 +5,6 @@
 # Do not add any imports to non-//build directories here.
 # Some projects (e.g. V8) do not have non-build directories DEPS'ed in.
 import("//build/config/android/config.gni")
-import("//build/config/android/copy_ex.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/compute_inputs_for_analyze.gni")
 import("//build/config/coverage/coverage.gni")
@@ -1713,13 +1712,18 @@ if (enable_java_templates) {
           }
         }
         if (_desugar_needs_classpath) {
-          if (defined(invoker.unprocessed_jar_path)) {
-            # Cannot use header jar for the active jar, because it does not
-            # contain anonymous classes. https://crbug.com/1342018#c5
-            # Cannot use processed .jar here because it might have classes
-            # filtered out via jar_excluded_patterns.
-            # Must come first in classpath in order to take precedence over
-            # deps that defined the same classes (via jar_excluded_patterns).
+          # Cannot use header jar for the active jar, because it does not
+          # contain anonymous classes. https://crbug.com/1342018#c5
+          # Cannot use processed .jar here because it might have classes
+          # filtered out via jar_excluded_patterns.
+          # Must come first in classpath in order to take precedence over
+          # deps that defined the same classes (via jar_excluded_patterns).
+          if (defined(invoker.unprocessed_jar_path_filearg)) {
+            args += [
+              "--classpath",
+              invoker.unprocessed_jar_path_filearg,
+            ]
+          } else if (defined(invoker.unprocessed_jar_path)) {
             args += [
               "--classpath",
               rebase_path(invoker.unprocessed_jar_path, root_build_dir),
@@ -1842,6 +1846,7 @@ if (enable_java_templates) {
                              TESTONLY_AND_VISIBILITY + [
                                    "deps",
                                    "data",
+                                   "data_deps",
                                  ])
       inputs = [ invoker.input_jar ]
       if (defined(invoker.inputs)) {
@@ -1885,6 +1890,7 @@ if (enable_java_templates) {
       forward_variables_from(invoker,
                              [
                                "data",
+                               "data_deps",
                                "jar_excluded_patterns",
                                "jar_included_patterns",
                              ])
@@ -3938,6 +3944,14 @@ if (enable_java_templates) {
           # __device targets without the need to create a separate group()
           # target. This trade-off works because process_java_library is fast.
           deps += _java_host_deps
+
+          # Add runtime_deps here since robolectric_binary does not depend on top-level group.
+          if (defined(invoker.data)) {
+            data += invoker.data
+          }
+          if (defined(invoker.data_deps)) {
+            data_deps = invoker.data_deps
+          }
         }
       }
 
@@ -4029,19 +4043,13 @@ if (enable_java_templates) {
           "//third_party/jdk:java_data",
         ]
         if (_is_robolectric) {
-          # An uninstrumented robolectric platform .jar is needed by the test
-          # runner to provide a copy of org.json - we could pull from maven
-          # instead if we wanted. TODO(crbug.com/1351430)
-          # Additionally, we provide an sdk jar, since whenever we start using a
-          # new Android SDK, robolectric doesn't support it, and they often take
-          # a few months to support it. This causes issues when mocking classes
-          # that reference new SDK classes, so providing our normal SDK will
-          # allow these classes to resolve. For an example, see
-          # crbug.com/1350963.
-          extra_classpath_jars = [
-            _robolectric_jar_path,
-            android_sdk_jar,
-          ]
+          # For robolectric tests, we also add the normal sdk jar to the
+          # classpath since whenever we start using a new Android SDK,
+          # robolectric doesn't support it, and they often take a few months to
+          # support it. This causes issues when mocking classes that reference
+          # new SDK classes, so providing our normal SDK will allow these
+          # classes to resolve. For an example, see crbug.com/1350963.
+          extra_classpath_jars = [ android_sdk_jar ]
         }
       }
     }

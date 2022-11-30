@@ -19,6 +19,18 @@ const std::string& StubDevToolsClient::GetId() {
   return id_;
 }
 
+const std::string& StubDevToolsClient::SessionId() const {
+  return session_id_;
+}
+
+const std::string& StubDevToolsClient::TunnelSessionId() const {
+  return tunnel_session_id_;
+}
+
+void StubDevToolsClient::SetTunnelSessionId(const std::string& session_id) {
+  tunnel_session_id_ = session_id;
+}
+
 bool StubDevToolsClient::IsNull() const {
   return false;
 }
@@ -31,36 +43,38 @@ Status StubDevToolsClient::ConnectIfNecessary() {
   return Status(kOk);
 }
 
-Status StubDevToolsClient::SendCommand(
-    const std::string& method,
-    const base::DictionaryValue& params) {
+Status StubDevToolsClient::PostBidiCommand(base::Value::Dict command) {
+  return Status{kOk};
+}
+
+Status StubDevToolsClient::SendCommand(const std::string& method,
+                                       const base::Value::Dict& params) {
   base::Value result;
   return SendCommandAndGetResult(method, params, &result);
 }
 
 Status StubDevToolsClient::SendCommandFromWebSocket(
     const std::string& method,
-    const base::DictionaryValue& params,
+    const base::Value::Dict& params,
     const int client_command_id) {
   return SendCommand(method, params);
 }
 
 Status StubDevToolsClient::SendCommandWithTimeout(
     const std::string& method,
-    const base::DictionaryValue& params,
+    const base::Value::Dict& params,
     const Timeout* timeout) {
   return SendCommand(method, params);
 }
 
-Status StubDevToolsClient::SendAsyncCommand(
-    const std::string& method,
-    const base::DictionaryValue& params) {
+Status StubDevToolsClient::SendAsyncCommand(const std::string& method,
+                                            const base::Value::Dict& params) {
   return SendCommand(method, params);
 }
 
 Status StubDevToolsClient::SendCommandAndGetResult(
     const std::string& method,
-    const base::DictionaryValue& params,
+    const base::Value::Dict& params,
     base::Value* result) {
   *result = base::Value(base::Value::Type::DICTIONARY);
   return Status(kOk);
@@ -68,15 +82,15 @@ Status StubDevToolsClient::SendCommandAndGetResult(
 
 Status StubDevToolsClient::SendCommandAndGetResultWithTimeout(
     const std::string& method,
-    const base::DictionaryValue& params,
+    const base::Value::Dict& params,
     const Timeout* timeout,
     base::Value* result) {
   return SendCommandAndGetResult(method, params, result);
 }
 
 Status StubDevToolsClient::SendCommandAndIgnoreResponse(
-      const std::string& method,
-      const base::DictionaryValue& params) {
+    const std::string& method,
+    const base::Value::Dict& params) {
   return SendCommand(method, params);
 }
 

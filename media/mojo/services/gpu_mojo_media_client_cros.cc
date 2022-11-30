@@ -52,8 +52,8 @@ VideoDecoderType GetPreferredLinuxDecoderImplementation(
   if (!base::FeatureList::IsEnabled(kVaapiVideoDecodeLinux))
     return VideoDecoderType::kUnknown;
 
-  // Regardless of vulkan support, if direct video decoder is disabled, revert
-  // to using the VDA implementation.
+  // If direct video decoder is disabled, revert to using the VDA
+  // implementation.
   if (!base::FeatureList::IsEnabled(kUseChromeOSDirectVideoDecoder))
     return VideoDecoderType::kVda;
   return VideoDecoderType::kVaapi;
@@ -77,8 +77,12 @@ VideoDecoderType GetActualPlatformDecoderImplementation(
                  : VideoDecoderType::kUnknown;
     }
     case VideoDecoderType::kVaapi: {
+      // Allow VaapiVideoDecoder on GL.
+      if (gpu_preferences.gr_context_type == gpu::GrContextType::kGL)
+        return VideoDecoderType::kVaapi;
       if (gpu_preferences.gr_context_type != gpu::GrContextType::kVulkan)
         return VideoDecoderType::kUnknown;
+      // If Vulkan is active, check Vulkan info if VaapiVideoDecoder is allowed.
       if (!gpu_info.vulkan_info.has_value())
         return VideoDecoderType::kUnknown;
       if (gpu_info.vulkan_info->physical_devices.empty())
@@ -125,8 +129,9 @@ std::unique_ptr<VideoDecoder> CreatePlatformVideoDecoder(
         traits.get_command_buffer_stub_cb,
         traits.gpu_preferences.enable_unsafe_webgpu);
     return VideoDecoderPipeline::Create(
-        traits.task_runner, std::move(frame_pool), std::move(frame_converter),
-        traits.media_log->Clone(), std::move(traits.oop_video_decoder));
+        *traits.gpu_workarounds, traits.task_runner, std::move(frame_pool),
+        std::move(frame_converter), traits.media_log->Clone(),
+        std::move(traits.oop_video_decoder));
   }
 
   switch (GetActualPlatformDecoderImplementation(traits.gpu_preferences,
@@ -140,8 +145,9 @@ std::unique_ptr<VideoDecoder> CreatePlatformVideoDecoder(
           traits.gpu_task_runner, traits.get_command_buffer_stub_cb,
           traits.gpu_preferences.enable_unsafe_webgpu);
       return VideoDecoderPipeline::Create(
-          traits.task_runner, std::move(frame_pool), std::move(frame_converter),
-          traits.media_log->Clone(), /*oop_video_decoder=*/{});
+          *traits.gpu_workarounds, traits.task_runner, std::move(frame_pool),
+          std::move(frame_converter), traits.media_log->Clone(),
+          /*oop_video_decoder=*/{});
     }
     case VideoDecoderType::kVda: {
       return VdaVideoDecoder::Create(

@@ -389,10 +389,10 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
   explicit PartitionRoot(PartitionOptions opts) : flags() { Init(opts); }
   ~PartitionRoot();
 
-  // This will unreserve any space in the GigaCage that the PartitionRoot is
+  // This will unreserve any space in the pool that the PartitionRoot is
   // using. This is needed because many tests create and destroy many
   // PartitionRoots over the lifetime of a process, which can exhaust the
-  // GigaCage and cause tests to fail.
+  // pool and cause tests to fail.
   void DestructForTesting();
 
 #if defined(PA_ENABLE_MAC11_MALLOC_SIZE_HACK)
@@ -632,12 +632,14 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
 
   internal::pool_handle ChoosePool() const {
     if (flags.use_configurable_pool) {
-      return internal::GetConfigurablePool();
+      PA_DCHECK(IsConfigurablePoolAvailable());
+      return internal::kConfigurablePoolHandle;
     }
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
-    return brp_enabled() ? internal::GetBRPPool() : internal::GetRegularPool();
+    return brp_enabled() ? internal::kBRPPoolHandle
+                         : internal::kRegularPoolHandle;
 #else
-    return internal::GetRegularPool();
+    return internal::kRegularPoolHandle;
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
   }
 
@@ -1171,8 +1173,8 @@ PA_ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeWithFlags(
 // Returns whether MTE is supported for this partition root. Because MTE stores
 // tagging information in the high bits of the pointer, it causes issues with
 // components like V8's ArrayBuffers which use custom pointer representations.
-// All custom representations encountered so far rely on a caged memory address
-// area / configurable pool, so we use that as a proxy.
+// All custom representations encountered so far rely on an "is in configurable
+// pool?" check, so we use that as a proxy.
 template <bool thread_safe>
 PA_ALWAYS_INLINE bool PartitionRoot<thread_safe>::IsMemoryTaggingEnabled()
     const {
@@ -1195,7 +1197,7 @@ PA_ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooks(void* object) {
   uintptr_t object_addr = internal::ObjectPtr2Addr(object);
 
   // On Android, malloc() interception is more fragile than on other
-  // platforms, as we use wrapped symbols. However, the GigaCage allows us to
+  // platforms, as we use wrapped symbols. However, the pools allow us to
   // quickly tell that a pointer was allocated with PartitionAlloc.
   //
   // This is a crash to detect imperfect symbol interception. However, we can

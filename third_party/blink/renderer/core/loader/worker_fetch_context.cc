@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -158,7 +158,7 @@ bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(
 bool WorkerFetchContext::ShouldBlockFetchAsCredentialedSubresource(
     const ResourceRequest& resource_request,
     const KURL& url) const {
-  if ((!url.User().IsEmpty() || !url.Pass().IsEmpty()) &&
+  if ((!url.User().empty() || !url.Pass().empty()) &&
       resource_request.GetRequestContext() !=
           mojom::blink::RequestContextType::XML_HTTP_REQUEST) {
     if (Url().User() != url.User() || Url().Pass() != url.Pass()) {
@@ -215,8 +215,6 @@ void WorkerFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
   // permissions policies for workers and/or deprecating this inclusion.
   if (save_data_enabled_)
     request.SetHttpHeaderField(http_names::kSaveData, "on");
-
-  AddBackForwardCacheExperimentHTTPHeaderIfNeeded(request);
 }
 
 void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {

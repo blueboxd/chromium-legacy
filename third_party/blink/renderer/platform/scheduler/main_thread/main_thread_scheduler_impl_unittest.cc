@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -395,8 +395,9 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
 
 class MainThreadSchedulerImplTest : public testing::Test {
  public:
-  MainThreadSchedulerImplTest(std::vector<Feature> features_to_enable,
-                              std::vector<Feature> features_to_disable) {
+  MainThreadSchedulerImplTest(
+      const std::vector<base::test::FeatureRef>& features_to_enable,
+      const std::vector<base::test::FeatureRef>& features_to_disable) {
     feature_list_.InitWithFeatures(features_to_enable, features_to_disable);
   }
 
@@ -3493,11 +3494,12 @@ TEST_F(MainThreadSchedulerImplTest, MicrotaskCheckpointTiming) {
   const base::TimeDelta kTaskTime = base::Milliseconds(100);
   const base::TimeDelta kMicrotaskTime = base::Milliseconds(200);
   default_task_runner_->PostTask(
-      FROM_HERE, WTF::Bind(&MainThreadSchedulerImplTest::AdvanceMockTickClockBy,
-                           base::Unretained(this), kTaskTime));
+      FROM_HERE,
+      WTF::BindOnce(&MainThreadSchedulerImplTest::AdvanceMockTickClockBy,
+                    base::Unretained(this), kTaskTime));
   scheduler_->on_microtask_checkpoint_ =
-      WTF::Bind(&MainThreadSchedulerImplTest::AdvanceMockTickClockBy,
-                base::Unretained(this), kMicrotaskTime);
+      WTF::BindOnce(&MainThreadSchedulerImplTest::AdvanceMockTickClockBy,
+                    base::Unretained(this), kMicrotaskTime);
 
   scheduler_->AddTaskTimeObserver(&observer);
   base::RunLoop().RunUntilIdle();

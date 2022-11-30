@@ -6,7 +6,7 @@ import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import './shimless_rma_shared_css.js';
 import './base_page.js';
 
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
@@ -24,6 +24,12 @@ const finalizationStatusTextKeys = {
  * 'wrapup-finalize-page' wait for device finalization and hardware verification
  * to be completed.
  */
+
+/**
+ * The prefix for a `FinalizationError` displayed on the Hardware Error page.
+ * @type {number}
+ */
+export const FINALIZATION_ERROR_CODE_PREFIX = 2000;
 
 /**
  * @constructor
@@ -91,7 +97,10 @@ export class WrapupFinalizePage extends WrapupFinalizePageBase {
       this.dispatchEvent(new CustomEvent('fatal-hardware-error', {
         bubbles: true,
         composed: true,
-        detail: RmadErrorCode.kFinalizationFailed,
+        detail: {
+          rmadErrorCode: RmadErrorCode.kFinalizationFailed,
+          fatalErrorCode: (FINALIZATION_ERROR_CODE_PREFIX + error),
+        },
       }));
     } else {
       this.finalizationMessage_ = this.i18n(finalizationStatusTextKeys[status]);

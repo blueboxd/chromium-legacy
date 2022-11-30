@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -560,7 +560,7 @@
   ];
 
   var timeline = UI.panels.timeline;
-  timeline.setModel(PerformanceTestRunner.createPerformanceModelWithEvents(rawTraceEvents));
+  timeline.setModel(await PerformanceTestRunner.createPerformanceModelWithEvents(rawTraceEvents));
 
   var groupByEnum = Timeline.AggregatedTimelineTreeView.GroupBy;
   for (var grouping of Object.values(groupByEnum)) {

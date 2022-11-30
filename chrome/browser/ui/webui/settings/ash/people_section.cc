@@ -64,6 +64,14 @@
 
 namespace chromeos {
 namespace settings {
+
+// TODO(https://crbug.com/1164001): remove after migrating to ash.
+namespace mojom {
+using ::ash::settings::mojom::SearchResultDefaultRank;
+using ::ash::settings::mojom::SearchResultIcon;
+using ::ash::settings::mojom::SearchResultType;
+}  // namespace mojom
+
 namespace {
 
 using ::ash::IsAccountManagerAvailable;
@@ -105,52 +113,7 @@ const std::vector<SearchConcept>& GetRemoveAccountSearchConcepts() {
   return *tags;
 }
 
-const std::vector<SearchConcept>& GetNonCategorizedSyncSearchConcepts() {
-  static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_OS_SETTINGS_TAG_SYNC_AND_GOOGLE_SERVICES,
-       mojom::kSyncSetupSubpagePath,
-       mojom::SearchResultIcon::kSync,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSubpage,
-       {.subpage = mojom::Subpage::kSyncSetup}},
-      {IDS_OS_SETTINGS_TAG_SYNC_MANAGEMENT,
-       mojom::kSyncDeprecatedAdvancedSubpagePath,
-       mojom::SearchResultIcon::kSync,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSubpage,
-       {.subpage = mojom::Subpage::kSyncDeprecatedAdvanced}},
-      {IDS_OS_SETTINGS_TAG_SYNC_ENCRYPTION_OPTIONS,
-       mojom::kSyncSetupSubpagePath,
-       mojom::SearchResultIcon::kSync,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kNonSplitSyncEncryptionOptions},
-       {IDS_OS_SETTINGS_TAG_SYNC_ENCRYPTION_OPTIONS_ALT1,
-        SearchConcept::kAltTagEnd}},
-      {IDS_OS_SETTINGS_TAG_AUTOCOMPLETE_SEARCHES_AND_URLS,
-       mojom::kSyncSetupSubpagePath,
-       mojom::SearchResultIcon::kSync,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kAutocompleteSearchesAndUrls}},
-      {IDS_OS_SETTINGS_TAG_MAKE_SEARCHES_AND_BROWSER_BETTER,
-       mojom::kSyncSetupSubpagePath,
-       mojom::SearchResultIcon::kSync,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kMakeSearchesAndBrowsingBetter}},
-      {IDS_OS_SETTINGS_TAG_GOOGLE_DRIVE_SEARCH_SUGGESTIONS,
-       mojom::kSyncSetupSubpagePath,
-       mojom::SearchResultIcon::kSync,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kGoogleDriveSearchSuggestions}},
-  });
-  return *tags;
-}
-
 const std::vector<SearchConcept>& GetCategorizedSyncSearchConcepts() {
-  DCHECK(chromeos::features::IsSyncSettingsCategorizationEnabled());
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_SYNC,
        mojom::kSyncSubpagePath,
@@ -499,9 +462,6 @@ void AddSyncControlsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
   html_source->AddBoolean(
-      "syncSettingsCategorizationEnabled",
-      chromeos::features::IsSyncSettingsCategorizationEnabled());
-  html_source->AddBoolean(
       "appsToggleSharingEnabled",
       base::FeatureList::IsEnabled(syncer::kSyncChromeOSAppsToggleSharing) &&
           crosapi::browser_util::IsLacrosEnabled());
@@ -605,11 +565,7 @@ PeopleSection::PeopleSection(Profile* profile,
     FetchAccounts();
   }
 
-  if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
-    updater.AddSearchTags(GetCategorizedSyncSearchConcepts());
-  } else {
-    updater.AddSearchTags(GetNonCategorizedSyncSearchConcepts());
-  }
+  updater.AddSearchTags(GetCategorizedSyncSearchConcepts());
 
   // Parental control search tags are added if necessary and do not update
   // dynamically during a user session.
@@ -708,27 +664,22 @@ void PeopleSection::AddHandlers(content::WebUI* web_ui) {
       std::make_unique<::settings::ProfileInfoHandler>(profile()));
 
   if (account_manager_facade_) {
-    web_ui->AddMessageHandler(
-        std::make_unique<chromeos::settings::AccountManagerUIHandler>(
-            account_manager_, account_manager_facade_, identity_manager_,
-            account_apps_availability_));
+    web_ui->AddMessageHandler(std::make_unique<AccountManagerUIHandler>(
+        account_manager_, account_manager_facade_, identity_manager_,
+        account_apps_availability_));
   }
 
-  if (chromeos::features::IsSyncSettingsCategorizationEnabled())
-    web_ui->AddMessageHandler(std::make_unique<OSSyncHandler>(profile()));
+  web_ui->AddMessageHandler(std::make_unique<OSSyncHandler>(profile()));
 
   web_ui->AddMessageHandler(
-      std::make_unique<chromeos::settings::QuickUnlockHandler>(profile(),
-                                                               pref_service_));
+      std::make_unique<QuickUnlockHandler>(profile(), pref_service_));
 
-  web_ui->AddMessageHandler(
-      std::make_unique<chromeos::settings::FingerprintHandler>(profile()));
+  web_ui->AddMessageHandler(std::make_unique<FingerprintHandler>(profile()));
 
   if (!profile()->IsGuestSession() &&
       features::ShouldShowParentalControlSettings(profile())) {
     web_ui->AddMessageHandler(
-        std::make_unique<chromeos::settings::ParentalControlsHandler>(
-            profile()));
+        std::make_unique<ParentalControlsHandler>(profile()));
   }
 }
 

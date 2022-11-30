@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -357,7 +357,7 @@ EBreakBetween NGBoxFragmentBuilder::JoinedBreakBetweenValue(
 void NGBoxFragmentBuilder::MoveChildrenInBlockDirection(LayoutUnit delta) {
   DCHECK(is_new_fc_);
   DCHECK_NE(FragmentBlockSize(), kIndefiniteSize);
-  DCHECK(oof_positioned_descendants_.IsEmpty());
+  DCHECK(oof_positioned_descendants_.empty());
 
   if (delta == LayoutUnit())
     return;
@@ -407,7 +407,7 @@ void NGBoxFragmentBuilder::PropagateBreakInfo(
     return;
 
   const NGBlockBreakToken* token = child_box_fragment->BreakToken();
-  if (token && !token->IsRepeated()) {
+  if (IsResumingLayout(token)) {
     // Figure out if this child break is in the same flow as this parent. If
     // it's an out-of-flow positioned box, it's not. If it's in a parallel flow,
     // it's also not.
@@ -542,20 +542,26 @@ const NGLayoutResult* NGBoxFragmentBuilder::ToBoxFragment(
         break_token_ = NGBlockBreakToken::Create(this);
     }
 
-    OverflowClipAxes block_axis =
-        GetWritingDirection().IsHorizontal() ? kOverflowClipY : kOverflowClipX;
-    if ((To<NGBlockNode>(node_).GetOverflowClipAxes() & block_axis) ||
-        is_block_size_for_fragmentation_clamped_) {
-      // If block-axis overflow is clipped, ignore child overflow and just use
-      // the border-box size of the fragment itself. Also do this if the node
-      // was forced to stay in the current fragmentainer. We'll ignore overflow
-      // in such cases, because children are allowed to overflow without
-      // affecting fragmentation then.
-      block_size_for_fragmentation_ = FragmentBlockSize();
-    } else {
-      // Include the border-box size of the fragment itself.
-      block_size_for_fragmentation_ =
-          std::max(block_size_for_fragmentation_, FragmentBlockSize());
+    // Make some final adjustments to block-size for fragmentation, unless this
+    // is a fragmentainer (so that we only include the block-size propagated
+    // from children in that case).
+    if (!NGPhysicalFragment::IsFragmentainerBoxType(box_type_)) {
+      OverflowClipAxes block_axis = GetWritingDirection().IsHorizontal()
+                                        ? kOverflowClipY
+                                        : kOverflowClipX;
+      if ((To<NGBlockNode>(node_).GetOverflowClipAxes() & block_axis) ||
+          is_block_size_for_fragmentation_clamped_) {
+        // If block-axis overflow is clipped, ignore child overflow and just use
+        // the border-box size of the fragment itself. Also do this if the node
+        // was forced to stay in the current fragmentainer. We'll ignore
+        // overflow in such cases, because children are allowed to overflow
+        // without affecting fragmentation then.
+        block_size_for_fragmentation_ = FragmentBlockSize();
+      } else {
+        // Include the border-box size of the fragment itself.
+        block_size_for_fragmentation_ =
+            std::max(block_size_for_fragmentation_, FragmentBlockSize());
+      }
     }
   }
 
@@ -605,20 +611,6 @@ LogicalOffset NGBoxFragmentBuilder::GetChildOffset(
   }
   NOTREACHED();
   return LogicalOffset();
-}
-
-void NGBoxFragmentBuilder::SetLastBaselineToBlockEndMarginEdgeIfNeeded() {
-  if (ConstraintSpace().BaselineAlgorithmType() !=
-      NGBaselineAlgorithmType::kInlineBlock)
-    return;
-
-  if (!node_.UseBlockEndMarginEdgeForInlineBlockBaseline())
-    return;
-
-  // When overflow is present (within an atomic-inline baseline context) we
-  // should always use the block-end margin edge as the baseline.
-  NGBoxStrut margins = ComputeMarginsForSelf(ConstraintSpace(), Style());
-  SetLastBaseline(FragmentBlockSize() + margins.block_end);
 }
 
 void NGBoxFragmentBuilder::AdjustFragmentainerDescendant(

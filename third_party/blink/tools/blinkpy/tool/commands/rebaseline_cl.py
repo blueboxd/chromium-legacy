@@ -1,4 +1,4 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """A command to fetch new baselines from try jobs for the current CL."""
@@ -238,7 +238,10 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                     to_remove.add(try_builder)
             try_builders = try_builders - to_remove
 
-        return try_builders
+        return set([
+            builder for builder in try_builders
+            if not self._tool.builders.is_wpt_builder(builder)
+        ])
 
     @property
     def cq_try_bots(self):
@@ -284,7 +287,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             unavailable_step_names = []
             if self._resultdb_fetcher:
                 maybe_results = results_fetcher.fetch_results_from_resultdb_layout_tests(
-                    self._tool, build, True)
+                    build, True)
                 if maybe_results:
                     builds_to_results[build].append(maybe_results)
                 else:

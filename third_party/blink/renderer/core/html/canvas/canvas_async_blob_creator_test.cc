@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,8 +110,9 @@ class MockCanvasAsyncBlobCreatorWithoutComplete
   void ScheduleInitiateEncoding(double quality) override {
     PostDelayedTaskToCurrentThread(
         FROM_HERE,
-        WTF::Bind(&MockCanvasAsyncBlobCreatorWithoutComplete::InitiateEncoding,
-                  WrapPersistent(this), quality, base::TimeTicks::Max()),
+        WTF::BindOnce(
+            &MockCanvasAsyncBlobCreatorWithoutComplete::InitiateEncoding,
+            WrapPersistent(this), quality, base::TimeTicks::Max()),
         /*delay_ms=*/0);
   }
 

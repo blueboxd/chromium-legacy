@@ -4,7 +4,6 @@
 
 #include "extensions/browser/api/content_settings/content_settings_store.h"
 
-#include <algorithm>
 #include <memory>
 #include <set>
 #include <string>
@@ -16,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
@@ -72,7 +72,8 @@ std::unique_ptr<RuleIterator> ContentSettingsStore::GetRuleIterator(
 
   // The individual |RuleIterators| shouldn't lock; pass |lock_| to the
   // |ConcatenationIterator| in a locked state.
-  std::unique_ptr<base::AutoLock> auto_lock(new base::AutoLock(lock_));
+  std::unique_ptr<base::AutoLock> auto_lock =
+      std::make_unique<base::AutoLock>(lock_);
 
   // Iterate the extensions based on install time (most-recently installed
   // items first).
@@ -437,20 +438,13 @@ bool ContentSettingsStore::OnCorrectThread() {
 
 ContentSettingsStore::ExtensionEntry* ContentSettingsStore::FindEntry(
     const std::string& ext_id) const {
-  auto iter =
-      std::find_if(entries_.begin(), entries_.end(),
-                   [ext_id](const std::unique_ptr<ExtensionEntry>& entry) {
-                     return entry->id == ext_id;
-                   });
+  auto iter = base::ranges::find(entries_, ext_id, &ExtensionEntry::id);
   return iter == entries_.end() ? nullptr : iter->get();
 }
 
 ContentSettingsStore::ExtensionEntries::iterator
 ContentSettingsStore::FindIterator(const std::string& ext_id) {
-  return std::find_if(entries_.begin(), entries_.end(),
-                      [ext_id](const std::unique_ptr<ExtensionEntry>& entry) {
-                        return entry->id == ext_id;
-                      });
+  return base::ranges::find(entries_, ext_id, &ExtensionEntry::id);
 }
 
 }  // namespace extensions

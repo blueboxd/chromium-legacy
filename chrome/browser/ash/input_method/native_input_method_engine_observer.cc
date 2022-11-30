@@ -501,31 +501,39 @@ void OverrideXkbLayoutIfNeeded(ImeKeyboard* keyboard,
   }
 }
 
-void MigratePinyinAndZhuyinSettings(PrefService* prefs,
-                                    const std::string& engine_id) {
-  // We are using legacy pref keys for pinyin and zhuyin. To get rid of them, we
-  // need to write existing settings under the correct pref keys as the first
-  // step.
-  // TODO(b/175085612): Remove this function once we have migrated from the
-  // legacy pref keys.
-  if (engine_id != "zh-t-i0-pinyin" && engine_id != "zh-hant-t-i0-und")
+void UpdateCandidatesWindowSync(ime::mojom::CandidatesWindowPtr window) {
+  IMECandidateWindowHandlerInterface* candidate_window_handler =
+      ui::IMEBridge::Get()->GetCandidateWindowHandler();
+  if (!candidate_window_handler) {
     return;
-
-  const base::Value::Dict& all_input_method_pref =
-      prefs->GetDict(::prefs::kLanguageInputMethodSpecificSettings);
-
-  // Check if the settings are already migrated.
-  if (all_input_method_pref.FindDict(engine_id))
-    return;
-
-  const base::Value::Dict* existing_pref_or_null =
-      all_input_method_pref.FindDict(engine_id == "zh-t-i0-pinyin" ? "pinyin"
-                                                                   : "zhuyin");
-  if (existing_pref_or_null) {
-    DictionaryPrefUpdate update(prefs,
-                                ::prefs::kLanguageInputMethodSpecificSettings);
-    update->SetPath(engine_id, base::Value(existing_pref_or_null->Clone()));
   }
+
+  if (!window) {
+    candidate_window_handler->HideLookupTable();
+    return;
+  }
+
+  ui::CandidateWindow candidate_window;
+  for (const auto& candidate : window->candidates) {
+    ui::CandidateWindow::Entry entry;
+    entry.value = base::UTF8ToUTF16(candidate->text);
+    entry.label = base::UTF8ToUTF16(candidate->label.value_or(""));
+    entry.annotation = base::UTF8ToUTF16(candidate->annotation.value_or(""));
+    candidate_window.mutable_candidates()->push_back(entry);
+  }
+
+  ui::CandidateWindow::CandidateWindowProperty property;
+  property.is_cursor_visible = !window->highlighted_candidate.is_null();
+  property.cursor_position =
+      window->highlighted_candidate ? window->highlighted_candidate->index : 0;
+  property.page_size = window->candidates.size();
+  property.is_vertical = true;
+  property.is_auxiliary_text_visible =
+      window->auxiliary_text.value_or("") != "";
+  property.auxiliary_text = window->auxiliary_text.value_or("");
+  candidate_window.SetProperty(property);
+
+  candidate_window_handler->UpdateLookupTable(candidate_window);
 }
 
 }  // namespace
@@ -615,8 +623,6 @@ void NativeInputMethodEngineObserver::ConnectToImeService(
   ime::mojom::InputMethodSettingsPtr settings =
       CreateSettingsFromPrefs(*prefs_, engine_id);
 
-  MigratePinyinAndZhuyinSettings(prefs_, engine_id);
-
   connection_factory_->ConnectToInputMethod(
       engine_id, input_method_.BindNewEndpointAndPassReceiver(),
       std::move(input_method_host), std::move(settings),
@@ -633,7 +639,7 @@ void NativeInputMethodEngineObserver::ActivateTextClient(
 void NativeInputMethodEngineObserver::OnActivate(const std::string& engine_id) {
   // Always hide the candidates window and clear the quick settings menu when
   // switching input methods.
-  UpdateCandidatesWindow(nullptr);
+  UpdateCandidatesWindowSync(nullptr);
   ui::ime::InputMethodMenuManager::GetInstance()
       ->SetCurrentInputMethodMenuItemList({});
   assistive_suggester_->OnActivate(engine_id);
@@ -763,7 +769,7 @@ void NativeInputMethodEngineObserver::OnTouch(
 void NativeInputMethodEngineObserver::OnBlur(const std::string& engine_id,
                                              int context_id) {
   // Always hide the candidates window when there's no focus.
-  UpdateCandidatesWindow(nullptr);
+  UpdateCandidatesWindowSync(nullptr);
 
   text_client_ = absl::nullopt;
 
@@ -1142,41 +1148,9 @@ void NativeInputMethodEngineObserver::DisplaySuggestions(
 
 void NativeInputMethodEngineObserver::UpdateCandidatesWindow(
     mojom::CandidatesWindowPtr window) {
-  if (!IsTextClientActive())
-    return;
-
-  IMECandidateWindowHandlerInterface* candidate_window_handler =
-      ui::IMEBridge::Get()->GetCandidateWindowHandler();
-  if (!candidate_window_handler) {
-    return;
-  }
-
-  if (!window) {
-    candidate_window_handler->HideLookupTable();
-    return;
-  }
-
-  ui::CandidateWindow candidate_window;
-  for (const auto& candidate : window->candidates) {
-    ui::CandidateWindow::Entry entry;
-    entry.value = base::UTF8ToUTF16(candidate->text);
-    entry.label = base::UTF8ToUTF16(candidate->label.value_or(""));
-    entry.annotation = base::UTF8ToUTF16(candidate->annotation.value_or(""));
-    candidate_window.mutable_candidates()->push_back(entry);
-  }
-
-  ui::CandidateWindow::CandidateWindowProperty property;
-  property.is_cursor_visible = !window->highlighted_candidate.is_null();
-  property.cursor_position =
-      window->highlighted_candidate ? window->highlighted_candidate->index : 0;
-  property.page_size = window->candidates.size();
-  property.is_vertical = true;
-  property.is_auxiliary_text_visible =
-      window->auxiliary_text.value_or("") != "";
-  property.auxiliary_text = window->auxiliary_text.value_or("");
-  candidate_window.SetProperty(property);
-
-  candidate_window_handler->UpdateLookupTable(candidate_window);
+  update_candidates_timer_.Start(
+      FROM_HERE, base::Seconds(0),
+      base::BindOnce(UpdateCandidatesWindowSync, std::move(window)));
 }
 
 void NativeInputMethodEngineObserver::RecordUkm(mojom::UkmEntryPtr entry) {

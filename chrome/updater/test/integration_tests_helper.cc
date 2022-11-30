@@ -230,6 +230,7 @@ void AppTestHelper::FirstTaskRun() {
     // then use the With* helper functions to provide its arguments.
     {"clean", WithSystemScope(Wrap(&Clean))},
     {"enter_test_mode", WithSwitch("url", Wrap(&EnterTestMode))},
+    {"exit_test_mode", WithSystemScope(Wrap(&ExitTestMode))},
     {"set_group_policies", WithSwitch("values", Wrap(&SetGroupPolicies))},
     {"expect_active_updater", WithSystemScope(Wrap(&ExpectActiveUpdater))},
     {"expect_registered",
@@ -317,7 +318,9 @@ void AppTestHelper::FirstTaskRun() {
     {"expect_last_checked", WithSystemScope(Wrap(&ExpectLastChecked))},
     {"expect_last_started", WithSystemScope(Wrap(&ExpectLastStarted))},
     {"run_offline_install",
-     WithSwitch("silent", WithSystemScope(Wrap(&RunOfflineInstall)))},
+     WithSwitch("silent",
+                WithSwitch("legacy_install",
+                           WithSystemScope(Wrap(&RunOfflineInstall))))},
   };
 
   const base::CommandLine* command_line =

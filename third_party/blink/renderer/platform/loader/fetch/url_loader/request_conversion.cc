@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,33 +42,6 @@ namespace {
 // content/public/common/content_constants.h.
 constexpr char kCorsExemptPurposeHeaderName[] = "Purpose";
 constexpr char kCorsExemptRequestedWithHeaderName[] = "X-Requested-With";
-
-// This is complementary to ConvertNetPriorityToWebKitPriority, defined in
-// service_worker_context_client.cc.
-net::RequestPriority ConvertWebKitPriorityToNetPriority(
-    WebURLRequest::Priority priority) {
-  switch (priority) {
-    case WebURLRequest::Priority::kVeryHigh:
-      return net::HIGHEST;
-
-    case WebURLRequest::Priority::kHigh:
-      return net::MEDIUM;
-
-    case WebURLRequest::Priority::kMedium:
-      return net::LOW;
-
-    case WebURLRequest::Priority::kLow:
-      return net::LOWEST;
-
-    case WebURLRequest::Priority::kVeryLow:
-      return net::IDLE;
-
-    case WebURLRequest::Priority::kUnresolved:
-    default:
-      NOTREACHED();
-      return net::LOW;
-  }
-}
 
 // TODO(yhirano) Dedupe this and the same-name function in
 // web_url_request_util.cc.
@@ -297,13 +270,13 @@ void PopulateResourceRequest(const ResourceRequestHead& src,
   }
   // Set X-Requested-With header to cors_exempt_headers rather than headers to
   // be exempted from CORS checks.
-  if (!src.GetRequestedWithHeader().IsEmpty()) {
+  if (!src.GetRequestedWithHeader().empty()) {
     dest->cors_exempt_headers.SetHeader(kCorsExemptRequestedWithHeaderName,
                                         src.GetRequestedWithHeader().Utf8());
   }
   // Set Purpose header to cors_exempt_headers rather than headers to be
   // exempted from CORS checks.
-  if (!src.GetPurposeHeader().IsEmpty()) {
+  if (!src.GetPurposeHeader().empty()) {
     dest->cors_exempt_headers.SetHeader(kCorsExemptPurposeHeaderName,
                                         src.GetPurposeHeader().Utf8());
   }
@@ -312,7 +285,7 @@ void PopulateResourceRequest(const ResourceRequestHead& src,
   dest->load_flags = WrappedResourceRequest(ResourceRequest(src))
                          .GetLoadFlagsForWebUrlRequest();
   dest->recursive_prefetch_token = src.RecursivePrefetchToken();
-  dest->priority = ConvertWebKitPriorityToNetPriority(src.Priority());
+  dest->priority = WebURLRequest::ConvertToNetPriority(src.Priority());
   dest->cors_preflight_policy = src.CorsPreflightPolicy();
   dest->skip_service_worker = src.GetSkipServiceWorker();
   dest->mode = src.GetMode();

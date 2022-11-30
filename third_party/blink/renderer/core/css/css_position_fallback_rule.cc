@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ CSSPositionFallbackRule::~CSSPositionFallbackRule() = default;
 
 void CSSPositionFallbackRule::CreateChildRuleWrappers() {
   child_rule_cssom_wrappers_.clear();
-  child_rule_cssom_wrappers_.ReserveCapacity(
+  child_rule_cssom_wrappers_.reserve(
       position_fallback_rule_->TryRules().size());
   for (StyleRuleTry* try_rule : position_fallback_rule_->TryRules()) {
     child_rule_cssom_wrappers_.push_back(

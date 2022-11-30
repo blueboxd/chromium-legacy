@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,8 +24,7 @@ class ImageDecoderCoreTest : public testing::Test {
     DCHECK(data->size()) << "Missing file: " << file_name;
     return std::make_unique<ImageDecoderCore>(
         mime_type, std::move(data),
-        /*data_complete=*/true, ImageDecoder::kAlphaPremultiplied,
-        ColorBehavior::Tag(), SkISize::MakeEmpty(),
+        /*data_complete=*/true, ColorBehavior::Tag(), SkISize::MakeEmpty(),
         ImageDecoder::AnimationOption::kPreferAnimation);
   }
 

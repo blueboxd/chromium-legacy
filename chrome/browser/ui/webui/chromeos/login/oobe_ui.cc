@@ -16,6 +16,7 @@
 #include "ash/public/cpp/network_config_service.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/services/multidevice_setup/multidevice_setup_service.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
@@ -48,6 +49,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/auto_enrollment_check_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/consolidated_consent_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/cryptohome_recovery_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/debug/debug_overlay_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_preferences_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_setup_screen_handler.h"
@@ -138,6 +140,8 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
+#include "ui/display/screen.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/resources/grit/webui_generated_resources.h"
@@ -172,7 +176,6 @@ constexpr char kProductLogoPath[] = "product-logo.png";
 // launched.
 constexpr char kRecommendAppListViewJSPath[] = "recommend_app_list_view.js";
 constexpr char kTestAPIJsMPath[] = "test_api/test_api.m.js";
-constexpr char kWebviewSamlInjectedJSPath[] = "webview_saml_injected.js";
 
 // Components
 constexpr char kOobeCustomVarsCssJsM[] =
@@ -296,6 +299,8 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   const bool is_oobe_flow = display_type == OobeUI::kOobeDisplay;
   source->AddBoolean("isOsInstallAllowed", switches::IsOsInstallAllowed());
   source->AddBoolean("isOobeFlow", is_oobe_flow);
+  source->AddBoolean("isMaterialNext",
+                     ash::features::IsOobeMaterialNextEnabled());
 
   // Configure shared resources
   AddProductLogoResources(source);
@@ -309,8 +314,6 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   AddDebuggerResources(source);
   AddTestAPIResources(source);
 
-  source->AddResourcePath(kWebviewSamlInjectedJSPath,
-                          IDR_GAIA_AUTH_WEBVIEW_SAML_INJECTED_JS);
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
   source->AddResourcePath(kKeyboardUtilsForInjectionModulePath,
                           IDR_KEYBOARD_UTILS_FOR_INJECTION_M_JS);
@@ -339,6 +342,14 @@ std::string GetDisplayType(const GURL& url) {
 }
 
 }  // namespace
+
+struct DisplayScaleFactor {
+  int longest_side;
+  float scale_factor;
+};
+
+const DisplayScaleFactor k4KDisplay = {3840, 1.5f},
+                         kMediumDisplay = {1440, 4.f / 3};
 
 // static
 const char OobeUI::kAppLaunchSplashDisplay[] = "app-launch-splash";
@@ -484,6 +495,8 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<LocalStateErrorScreenHandler>());
 
+  AddScreenHandler(std::make_unique<CryptohomeRecoveryScreenHandler>());
+
   Profile* profile = Profile::FromWebUI(web_ui());
   // Set up the chrome://theme/ source, for Chrome logo.
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
@@ -500,8 +513,35 @@ void OobeUI::ConfigureOobeDisplay() {
   content::WebContents* contents = web_ui()->GetWebContents();
   extensions::TabHelper::CreateForWebContents(contents);
 
+  if (ShouldUpScaleOobe())
+    UpScaleOobe();
+
   if (policy::EnrollmentRequisitionManager::IsRemoraRequisition())
     oobe_display_chooser_ = std::make_unique<OobeDisplayChooser>();
+}
+
+bool OobeUI::ShouldUpScaleOobe() {
+  const int64_t display_id =
+      display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  return upscaled_display_id_ != display_id &&
+         ash::switches::ShouldScaleOobe() &&
+         policy::EnrollmentRequisitionManager::IsMeetDevice();
+}
+
+void OobeUI::UpScaleOobe() {
+  upscaled_display_id_ = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayManager* display_manager =
+      ash::Shell::Get()->display_manager();
+  const gfx::Size size =
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area_size();
+  const int longest_side = std::max(size.width(), size.height());
+  if (longest_side >= k4KDisplay.longest_side) {
+    display_manager->UpdateZoomFactor(upscaled_display_id_,
+                                      k4KDisplay.scale_factor);
+  } else if (longest_side >= kMediumDisplay.longest_side) {
+    display_manager->UpdateZoomFactor(upscaled_display_id_,
+                                      kMediumDisplay.scale_factor);
+  }
 }
 
 void OobeUI::BindInterface(
@@ -707,11 +747,8 @@ void OobeUI::RemoveObserver(Observer* observer) {
 void OobeUI::OnDisplayConfigurationChanged() {
   if (oobe_display_chooser_)
     oobe_display_chooser_->TryToPlaceUiOnTouchDisplay();
-}
-
-void OobeUI::OnSystemTrayBubbleShown() {
-  if (current_screen_ == WelcomeView::kScreenId)
-    GetHandler<WelcomeScreenHandler>()->CancelChromeVoxHintIdleDetection();
+  if (ShouldUpScaleOobe())
+    UpScaleOobe();
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(OobeUI)

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,8 +83,9 @@ class FetchDataLoaderAsBlobHandle final : public FetchDataLoader,
         mime_type_ ? mime_type_ : "", /*content_disposition=*/"",
         /*length_hint=*/0, std::move(handle),
         mojo::PendingAssociatedRemote<mojom::blink::ProgressClient>(),
-        WTF::Bind(&FetchDataLoaderAsBlobHandle::FinishedCreatingFromDataPipe,
-                  WrapWeakPersistent(this)));
+        WTF::BindOnce(
+            &FetchDataLoaderAsBlobHandle::FinishedCreatingFromDataPipe,
+            WrapWeakPersistent(this)));
   }
 
   void DidFetchDataLoadedDataPipe() override {

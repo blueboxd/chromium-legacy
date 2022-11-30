@@ -21,6 +21,7 @@
 #include "device/bluetooth/floss/bluetooth_low_energy_scan_session_floss.h"
 #include "device/bluetooth/floss/floss_adapter_client.h"
 #include "device/bluetooth/floss/floss_dbus_client.h"
+#include "device/bluetooth/floss/floss_gatt_client.h"
 #include "device/bluetooth/floss/floss_lescan_client.h"
 #include "device/bluetooth/floss/floss_manager_client.h"
 
@@ -134,7 +135,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFloss final
   // ScannerClientObserver overrides
   void ScannerRegistered(device::BluetoothUUID uuid,
                          uint8_t scanner_id,
-                         uint8_t status) override;
+                         GattStatus status) override;
   void ScanResultReceived(ScanResult scan_result) override;
 
  protected:
@@ -166,6 +167,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFloss final
                         DBusResult<Void> ret);
   void OnStopDiscovery(DiscoverySessionResultCallback callback,
                        DBusResult<Void> ret);
+  // Called when all device properties have been initialized
+  void OnInitializeDeviceProperties(BluetoothDeviceFloss* device_ptr);
   void OnGetConnectionState(const FlossDeviceId& device_id,
                             DBusResult<uint32_t> ret);
   void OnGetBondState(const FlossDeviceId& device_id, DBusResult<uint32_t> ret);
@@ -223,7 +226,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFloss final
   void OnRegisterScanner(
       base::WeakPtr<BluetoothLowEnergyScanSessionFloss> scan_session,
       DBusResult<device::BluetoothUUID> ret);
-  void OnStartScan(DBusResult<Void> ret);
+  void OnStartScan(device::BluetoothUUID uuid,
+                   uint8_t scanner_id,
+                   DBusResult<FlossDBusClient::BtifStatus> ret);
   void OnLowEnergyScanSessionDestroyed(const std::string& uuid_str);
   void OnUnregisterScanner(uint8_t scanner_id, DBusResult<bool> ret);
 

@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/ash/login/demo_mode/demo_extensions_external_loader.h"
 #include "chrome/browser/component_updater/cros_component_manager.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
@@ -43,7 +44,8 @@ class DemoResources;
 class DemoSession : public session_manager::SessionManagerObserver,
                     public user_manager::UserManager::UserSessionStateObserver,
                     public extensions::AppWindowRegistry::Observer,
-                    public apps::AppRegistryCache::Observer {
+                    public apps::AppRegistryCache::Observer,
+                    public chromeos::PowerManagerClient::Observer {
  public:
   // Type of demo mode configuration.
   // Warning: DemoModeConfig is stored in local state. Existing entries should
@@ -175,10 +177,13 @@ class DemoSession : public session_manager::SessionManagerObserver,
 
   bool started() const { return started_; }
 
-  base::FilePath DemoAppComponentPath() {
-    DCHECK(!demo_app_component_path_.empty());
-    return demo_app_component_path_;
-  }
+  // Returns the Demo App component path, which defines the directory that the
+  // Demo Mode SWA should source its content from.
+  // If the demo-mode-swa-content-directory switch is set, we retrieve the
+  // content from there. Otherwise, the default location at
+  // /run/imageloader/demo-mode-app is used. When copying the directory to a
+  // custom location, make sure the permissions are set to 555.
+  base::FilePath GetDemoAppComponentPath();
 
   const DemoResources* resources() const { return demo_resources_.get(); }
 
@@ -203,8 +208,11 @@ class DemoSession : public session_manager::SessionManagerObserver,
   // launch the app upon installation.
   void InstallAppFromUpdateUrl(const std::string& id);
 
-  // Shows the splash screen after demo mode resources are installed.
-  void ShowSplashScreen();
+  // Find image path then show the splash screen.
+  void ConfigureAndStartSplashScreen();
+
+  // Show, and set the fallback timeout to remove, the splash screen.
+  void ShowSplashScreen(base::FilePath image_path);
 
   // Removes the splash screen.
   void RemoveSplashScreen();
@@ -221,6 +229,11 @@ class DemoSession : public session_manager::SessionManagerObserver,
   void OnAppUpdate(const apps::AppUpdate& update) override;
   void OnAppRegistryCacheWillBeDestroyed(
       apps::AppRegistryCache* cache) override;
+
+  // Once received the keyboard brightness percentage, increase the keyboard
+  // brightness to the max level.
+  void SetKeyboardBrightnessToOneHundredPercentFromCurrentLevel(
+      absl::optional<double> keyboard_brightness_percentage);
 
   // Whether demo session has been started.
   bool started_ = false;
@@ -252,7 +265,7 @@ class DemoSession : public session_manager::SessionManagerObserver,
   bool splash_screen_removed_ = false;
   bool screensaver_activated_ = false;
 
-  base::FilePath demo_app_component_path_;
+  base::FilePath default_demo_app_component_path_;
 
   base::WeakPtrFactory<DemoSession> weak_ptr_factory_{this};
 };

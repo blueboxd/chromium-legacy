@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "components/url_matcher/url_util.h"
 #include "content/public/browser/web_ui.h"
 
 namespace settings {
@@ -17,10 +18,25 @@ PerformanceHandler::~PerformanceHandler() = default;
 
 void PerformanceHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
+      "openBatterySaverFeedbackDialog",
+      base::BindRepeating(
+          &PerformanceHandler::HandleOpenBatterySaverFeedbackDialog,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "openHighEfficiencyFeedbackDialog",
       base::BindRepeating(
           &PerformanceHandler::HandleOpenHighEfficiencyFeedbackDialog,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "validateTabDiscardExceptionRule",
+      base::BindRepeating(
+          &PerformanceHandler::HandleValidateTabDiscardExceptionRule,
+          base::Unretained(this)));
+}
+
+void PerformanceHandler::HandleOpenBatterySaverFeedbackDialog(
+    const base::Value::List& args) {
+  HandleOpenFeedbackDialog("performance_battery");
 }
 
 void PerformanceHandler::HandleOpenHighEfficiencyFeedbackDialog(
@@ -37,6 +53,23 @@ void PerformanceHandler::HandleOpenFeedbackDialog(
   chrome::ShowFeedbackPage(browser,
                            chrome::kFeedbackSourceSettingsPerformancePage,
                            unused, unused, category_tag, unused);
+}
+
+void PerformanceHandler::HandleValidateTabDiscardExceptionRule(
+    const base::Value::List& args) {
+  CHECK_EQ(2U, args.size());
+  const base::Value& callback_id = args[0];
+  const std::string rule = args[1].GetString();
+
+  AllowJavascript();
+
+  url_matcher::util::FilterComponents components;
+
+  bool is_valid = url_matcher::util::FilterToComponents(
+      rule, &components.scheme, &components.host, &components.match_subdomains,
+      &components.port, &components.path, &components.query);
+
+  ResolveJavascriptCallback(callback_id, base::Value(is_valid));
 }
 
 }  // namespace settings

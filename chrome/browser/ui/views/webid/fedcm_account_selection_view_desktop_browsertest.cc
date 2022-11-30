@@ -30,7 +30,7 @@ class FedCmAccountSelectionViewBrowserTest : public DialogBrowserTest {
     std::vector<content::IdentityRequestAccount> accounts = {
         {"id", "email", "name", "given_name", GURL::EmptyGURL()}};
     account_selection_view()->Show(
-        "rp-example.com",
+        "rp-example.com", absl::nullopt,
         {{"idp-example.com", accounts, content::IdentityProviderMetadata(),
           content::ClientIdData(GURL::EmptyGURL(), GURL::EmptyGURL())}},
         Account::SignInMode::kExplicit);
@@ -69,6 +69,9 @@ IN_PROC_BROWSER_TEST_F(FedCmAccountSelectionViewBrowserTest, Hide) {
   // The bubble should be closed after the WebContents is Hidden.
   ASSERT_TRUE(GetBubble());
   EXPECT_FALSE(GetBubble()->IsVisible());
+  // Test workaround for http://crbug.com/1367309 where
+  // NativeWidgetMac::Activate() ignores views::Widget::IsVisible().
+  EXPECT_FALSE(GetBubble()->widget_delegate()->CanActivate());
 }
 
 IN_PROC_BROWSER_TEST_F(FedCmAccountSelectionViewBrowserTest, NavigateAway) {
@@ -93,6 +96,9 @@ IN_PROC_BROWSER_TEST_F(FedCmAccountSelectionViewBrowserTest, ReShow) {
   // The bubble should be reshown after the WebContents is Visible.
   ASSERT_TRUE(GetBubble());
   EXPECT_TRUE(GetBubble()->IsVisible());
+  // Test workaround for http://crbug.com/1367309 where
+  // NativeWidgetMac::Activate() ignores views::Widget::IsVisible().
+  EXPECT_TRUE(GetBubble()->widget_delegate()->CanActivate());
 }
 
 IN_PROC_BROWSER_TEST_F(FedCmAccountSelectionViewBrowserTest, DetachAndDelete) {

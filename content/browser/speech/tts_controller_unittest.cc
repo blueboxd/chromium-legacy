@@ -73,11 +73,10 @@ class MockTtsPlatformImpl : public TtsPlatform {
   void ClearError() override { error_.clear(); }
   void Shutdown() override {}
   void FinalizeVoiceOrdering(std::vector<VoiceData>& voices) override {}
-  void GetVoicesForBrowserContext(
-      content::BrowserContext* browser_context,
-      const GURL& source_url,
-      std::vector<content::VoiceData>* out_voices) override {}
   void RefreshVoices() override {}
+  content::ExternalPlatformDelegate* GetExternalPlatformDelegate() override {
+    return nullptr;
+  }
 
   void SetPlatformImplSupported(bool state) { platform_supported_ = state; }
   void SetPlatformImplInitialized(bool state) { platform_initialized_ = state; }
@@ -297,22 +296,6 @@ class TtsControllerTest : public testing::Test {
 #endif
   MockVoicesChangedDelegate voices_changed_;
 };
-
-TEST_F(TtsControllerTest, TestTtsControllerShutdown) {
-  std::unique_ptr<TtsUtterance> utterance1 = TtsUtterance::Create();
-  utterance1->SetShouldClearQueue(false);
-  utterance1->SetSrcId(1);
-  controller()->SpeakOrEnqueue(std::move(utterance1));
-
-  std::unique_ptr<TtsUtterance> utterance2 = TtsUtterance::Create();
-  utterance2->SetShouldClearQueue(false);
-  utterance2->SetSrcId(2);
-  controller()->SpeakOrEnqueue(std::move(utterance2));
-
-  // Make sure that deleting the controller when there are pending
-  // utterances doesn't cause a crash.
-  ReleaseTtsController();
-}
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(TtsControllerTest, TestBrowserContextRemoved) {
@@ -593,6 +576,28 @@ TEST_F(TtsControllerTest, TestGetMatchingVoice) {
   }
 }
 
+// Note: The following tests are disabled since they do not apply for Lacros
+// build. TtsPlatformImpl is not supported for Lacros when lacros tts support
+// feature is disabled.
+// TODO(crbug.com/1227543): Add new tests for lacros with tts support feature
+// being enabled.
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+TEST_F(TtsControllerTest, TestTtsControllerShutdown) {
+  std::unique_ptr<TtsUtterance> utterance1 = TtsUtterance::Create();
+  utterance1->SetShouldClearQueue(false);
+  utterance1->SetSrcId(1);
+  controller()->SpeakOrEnqueue(std::move(utterance1));
+
+  std::unique_ptr<TtsUtterance> utterance2 = TtsUtterance::Create();
+  utterance2->SetShouldClearQueue(false);
+  utterance2->SetSrcId(2);
+  controller()->SpeakOrEnqueue(std::move(utterance2));
+
+  // Make sure that deleting the controller when there are pending
+  // utterances doesn't cause a crash.
+  ReleaseTtsController();
+}
+
 TEST_F(TtsControllerTest, StopsWhenWebContentsDestroyed) {
   std::unique_ptr<WebContents> web_contents = CreateWebContents();
   std::unique_ptr<TtsUtteranceImpl> utterance =
@@ -715,14 +720,6 @@ TEST_F(TtsControllerTest, SkipsQueuedUtteranceFromHiddenWebContents) {
   controller()->OnTtsEvent(utterance1_id, TTS_EVENT_END, 0, 0, {});
   EXPECT_EQ(nullptr, TtsControllerCurrentUtterance());
   EXPECT_TRUE(IsUtteranceListEmpty());
-}
-
-TEST_F(TtsControllerTest, PauseResumeNoUtterance) {
-  // Pause should not call the platform API when there is no utterance.
-  controller()->Pause();
-  controller()->Resume();
-  EXPECT_EQ(0, platform_impl()->pause_called());
-  EXPECT_EQ(0, platform_impl()->resume_called());
 }
 
 TEST_F(TtsControllerTest, SpeakPauseResume) {
@@ -987,6 +984,15 @@ TEST_F(TtsControllerTest, EngineIdSetNoDelegateSpeakPauseResumeStop) {
   EXPECT_TRUE(IsUtteranceListEmpty());
   EXPECT_FALSE(TtsControllerCurrentUtterance());
   EXPECT_FALSE(controller()->IsSpeaking());
+}
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
+
+TEST_F(TtsControllerTest, PauseResumeNoUtterance) {
+  // Pause should not call the platform API when there is no utterance.
+  controller()->Pause();
+  controller()->Resume();
+  EXPECT_EQ(0, platform_impl()->pause_called());
+  EXPECT_EQ(0, platform_impl()->resume_called());
 }
 
 TEST_F(TtsControllerTest, PlatformNotSupported) {

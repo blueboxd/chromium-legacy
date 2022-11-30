@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,7 +141,7 @@ String TextFragmentGenerationNavigationTest::GenerateSelector(
                    shared_highlighting::LinkGenerationError error) {
     selector = generated_selector.ToString();
   };
-  auto callback = WTF::Bind(lambda, std::ref(selector));
+  auto callback = WTF::BindOnce(lambda, std::ref(selector));
 
   MakeGarbageCollected<TextFragmentSelectorGenerator>(GetDocument().GetFrame())
       ->Generate(selection_range, std::move(callback));
@@ -187,7 +187,7 @@ TextFragmentGenerationNavigationTest::GenerateAndNavigate(
   // Generate text fragment selector.
   String selector = GenerateSelector(*selection_range);
 
-  if (selector.IsEmpty()) {
+  if (selector.empty()) {
     return shared_highlighting::SharedHighlightingDataDrivenTestResults();
   }
 

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -143,13 +143,13 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     space_.rare_data_->fragmentainer_block_size -= space;
   }
 
-  void SetFragmentainerOffsetAtBfc(LayoutUnit offset) {
+  void SetFragmentainerOffset(LayoutUnit offset) {
 #if DCHECK_IS_ON()
-    DCHECK(!is_fragmentainer_offset_at_bfc_set_);
-    is_fragmentainer_offset_at_bfc_set_ = true;
+    DCHECK(!is_fragmentainer_offset_set_);
+    is_fragmentainer_offset_set_ = true;
 #endif
     if (offset != LayoutUnit())
-      space_.EnsureRareData()->fragmentainer_offset_at_bfc = offset;
+      space_.EnsureRareData()->fragmentainer_offset = offset;
   }
 
   void SetIsAtFragmentainerStart() {
@@ -351,6 +351,10 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     space_.EnsureRareData()->SetForcedBfcBlockOffset(forced_bfc_block_offset);
   }
 
+  LayoutUnit ExpectedBfcBlockOffset() const {
+    return space_.ExpectedBfcBlockOffset();
+  }
+
   void SetClearanceOffset(LayoutUnit clearance_offset) {
 #if DCHECK_IS_ON()
     DCHECK(!is_clearance_offset_set_);
@@ -492,6 +496,10 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
       space_.EnsureRareData()->SetLinesUntilClamp(*clamp);
   }
 
+  void SetIsPushedByFloats() {
+    space_.EnsureRareData()->is_pushed_by_floats = true;
+  }
+
   void SetTargetStretchInlineSize(LayoutUnit target_stretch_inline_size) {
     DCHECK_GE(target_stretch_inline_size, LayoutUnit());
     space_.EnsureRareData()->SetTargetStretchInlineSize(
@@ -560,7 +568,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   bool is_available_size_set_ = false;
   bool is_percentage_resolution_size_set_ = false;
   bool is_fragmentainer_block_size_set_ = false;
-  bool is_fragmentainer_offset_at_bfc_set_ = false;
+  bool is_fragmentainer_offset_set_ = false;
   bool is_block_direction_fragmentation_type_set_ = false;
   bool is_margin_strut_set_ = false;
   bool is_optimistic_bfc_block_offset_set_ = false;

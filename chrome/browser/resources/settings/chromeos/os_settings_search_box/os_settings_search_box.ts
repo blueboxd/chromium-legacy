@@ -7,7 +7,7 @@
  * and settings search results.
  */
 import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
-import 'chrome://resources/js/cr/ui/focus_row.js';
+import 'chrome://resources/js/focus_row.js';
 import 'chrome://resources/polymer/v3_0/iron-dropdown/iron-dropdown.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import '../../settings_shared.css.js';
@@ -15,9 +15,8 @@ import './os_search_result_row.js';
 
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {CrToolbarSearchFieldElement} from 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
+import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {String16} from 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-webui.js';
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -25,6 +24,7 @@ import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/p
 import {SearchResultsObserverInterface as PersonalizationSearchResultsObserverInterface, SearchResultsObserverReceiver as PersonalizationSearchResultsObserverReceiver} from '../../mojom-webui/personalization/search.mojom-webui.js';
 import {ParentResultBehavior, SearchResultsObserverInterface, SearchResultsObserverReceiver} from '../../mojom-webui/search/search.mojom-webui.js';
 import {Router} from '../../router.js';
+import {castExists} from '../assert_extras.js';
 import {combinedSearch, SearchResult} from '../combined_search_handler.js';
 import {recordSearch} from '../metrics_recorder.js';
 import {routes} from '../os_route.js';
@@ -67,9 +67,7 @@ interface OsSettingsSearchBoxElement {
   };
 }
 
-const OsSettingsSearchBoxElementBase = I18nMixin(PolymerElement) as {
-  new (): PolymerElement & I18nMixinInterface,
-};
+const OsSettingsSearchBoxElementBase = I18nMixin(PolymerElement);
 
 class OsSettingsSearchBoxElement extends OsSettingsSearchBoxElementBase
     implements SearchResultsObserverInterface,
@@ -237,14 +235,12 @@ class OsSettingsSearchBoxElement extends OsSettingsSearchBoxElementBase
           this.searchRequestCount_);
     });
 
-    if (loadTimeData.getBoolean('isPersonalizationHubEnabled')) {
-      // Observe changes to personalization search results.
-      this.personalizationSearchResultObserverReceiver_ =
-          new PersonalizationSearchResultsObserverReceiver(this);
-      getPersonalizationSearchHandler().addObserver(
-          this.personalizationSearchResultObserverReceiver_.$
-              .bindNewPipeAndPassRemote());
-    }
+    // Observe changes to personalization search results.
+    this.personalizationSearchResultObserverReceiver_ =
+        new PersonalizationSearchResultsObserverReceiver(this);
+    getPersonalizationSearchHandler().addObserver(
+        this.personalizationSearchResultObserverReceiver_.$
+            .bindNewPipeAndPassRemote());
 
     // Observe for availability changes of settings results.
     this.settingsSearchResultObserverReceiver_ =
@@ -257,12 +253,10 @@ class OsSettingsSearchBoxElement extends OsSettingsSearchBoxElementBase
   override disconnectedCallback() {
     super.disconnectedCallback();
 
-    if (loadTimeData.getBoolean('isPersonalizationHubEnabled')) {
-      assert(
-          this.personalizationSearchResultObserverReceiver_,
-          'Personalization search observer should be initialized');
-      this.personalizationSearchResultObserverReceiver_.$.close();
-    }
+    assert(
+        this.personalizationSearchResultObserverReceiver_,
+        'Personalization search observer should be initialized');
+    this.personalizationSearchResultObserverReceiver_.$.close();
 
     assert(
         this.settingsSearchResultObserverReceiver_,
@@ -282,10 +276,10 @@ class OsSettingsSearchBoxElement extends OsSettingsSearchBoxElementBase
    * @return The <os-search-result-row> that is associated with the selectedItem
    */
   private getSelectedOsSearchResultRow_(): OsSearchResultRowElement {
-    const searchResultRowEl =
-        this.$.searchResultList.querySelector('os-search-result-row[selected]');
-    assert(searchResultRowEl, 'No OsSearchResultRow is selected.');
-    return searchResultRowEl as OsSearchResultRowElement;
+    return castExists(
+        this.$.searchResultList.querySelector<OsSearchResultRowElement>(
+            'os-search-result-row[selected]'),
+        'No OsSearchResultRow is selected.');
   }
 
   /**

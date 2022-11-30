@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,11 +75,20 @@ static bool HasCompositeClipPathAnimation(const LayoutObject& layout_object) {
       layout_object.GetFrame()->GetClipPathPaintImageGenerator();
   // TODO(crbug.com/686074): The generator may be null in tests.
   // Fix and remove this test-only branch.
-  if (generator) {
-    const Element* element = To<Element>(layout_object.GetNode());
-    return generator->GetAnimationIfCompositable(element);
+  if (!generator) {
+    return false;
   }
-  return false;
+
+  const Element* element = To<Element>(layout_object.GetNode());
+  const Animation* animation = generator->GetAnimationIfCompositable(element);
+
+  if (!animation) {
+    return false;
+  }
+  // TODO(crbug.com/1248622): Cache this function to avoid this heavy check,
+  // See also: work done for bgcolor animations on crbug.com/1301961
+  return animation->CheckCanStartAnimationOnCompositor(nullptr) ==
+         CompositorAnimations::kNoFailure;
 }
 
 static void PaintWorkletBasedClip(GraphicsContext& context,
@@ -96,19 +105,37 @@ static void PaintWorkletBasedClip(GraphicsContext& context,
   ClipPathPaintImageGenerator* generator =
       clip_path_owner.GetFrame()->GetClipPathPaintImageGenerator();
 
-  scoped_refptr<Image> paint_worklet_image =
-      generator->Paint(zoom, reference_box, *clip_path_owner.GetNode());
-
   // TODO(crbug.com/1248610): Fix bounding box. It should enclose affected area
   // of the animation.
+  // The bounding rect of the clip-path animation, relative to the layout
+  // object.
   absl::optional<gfx::RectF> bounding_box =
       ClipPathClipper::LocalClipPathBoundingBox(clip_path_owner);
   DCHECK(bounding_box);
-  gfx::RectF src_rect = bounding_box.value();
+
+  // Pixel snap bounding rect to allow for the proper painting of partially
+  // opaque pixels
+  *bounding_box = gfx::RectF(gfx::ToEnclosingRect(*bounding_box));
+
+  // The mask image should be the same size as the bounding rect, but will have
+  // an origin of 0,0 as it has its own coordinate space.
+  gfx::RectF src_rect = gfx::RectF(bounding_box.value().size());
+  gfx::RectF dst_rect = bounding_box.value();
+
+  scoped_refptr<Image> paint_worklet_image = generator->Paint(
+      zoom,
+      /* Translate the reference box such that it is relative to the origin of
+         the mask image, and not the origin of the layout object. This ensures
+         the clip path remains within the bounds of the mask image and has the
+         correct translation. */
+      gfx::RectF(reference_box.origin() - dst_rect.origin().OffsetFromOrigin(),
+                 reference_box.size()),
+
+      dst_rect.size(), *clip_path_owner.GetNode());
   // Dark mode should always be disabled for clip mask.
   context.DrawImage(paint_worklet_image.get(), Image::kSyncDecode,
                     ImageAutoDarkMode::Disabled(), ImagePaintTimingInfo(),
-                    src_rect, &src_rect, SkBlendMode::kSrcOver,
+                    dst_rect, &src_rect, SkBlendMode::kSrcOver,
                     kRespectImageOrientation);
 }
 
@@ -178,7 +205,7 @@ static AffineTransform MaskToContentTransform(
     }
   }
 
-  mask_to_content.Multiply(
+  mask_to_content.PreConcat(
       resource_clipper.CalculateClipTransform(reference_box));
   return mask_to_content;
 }
@@ -245,6 +272,7 @@ void ClipPathClipper::PaintClipPathAsMaskImage(
   if (HasCompositeClipPathAnimation(layout_object)) {
     if (!layout_object.GetFrame())
       return;
+
     PaintWorkletBasedClip(context, layout_object, reference_box,
                           uses_zoomed_reference_box);
   } else {
@@ -309,12 +337,19 @@ bool ClipPathClipper::ShouldUseMaskBasedClip(const LayoutObject& object) {
 }
 
 absl::optional<Path> ClipPathClipper::PathBasedClip(
-    const LayoutObject& clip_path_owner) {
+    const LayoutObject& clip_path_owner,
+    const bool is_in_block_fragmentation) {
   // TODO(crbug.com/1248622): Currently HasCompositeClipPathAnimation is called
   // multiple times, which is not efficient. Cache
   // HasCompositeClipPathAnimation value as part of fragment_data, similarly to
   // FragmentData::ClipPathPath().
-  if (HasCompositeClipPathAnimation(clip_path_owner))
+
+  // If not all the fragments of this layout object have been populated yet, it
+  // will be impossible to tell if a composited clip path animation is possible
+  // or not based only on the layout object. Exclude the possibility if we're
+  // fragmented.
+  if (!is_in_block_fragmentation &&
+      HasCompositeClipPathAnimation(clip_path_owner))
     return absl::nullopt;
 
   return PathBasedClipInternal(clip_path_owner,

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,8 +39,8 @@ class NotificationResourcesLoaderTest : public PageTestBase {
  public:
   NotificationResourcesLoaderTest()
       : loader_(MakeGarbageCollected<NotificationResourcesLoader>(
-            Bind(&NotificationResourcesLoaderTest::DidFetchResources,
-                 WTF::Unretained(this)))) {}
+            WTF::BindOnce(&NotificationResourcesLoaderTest::DidFetchResources,
+                          WTF::Unretained(this)))) {}
 
   ~NotificationResourcesLoaderTest() override {
     loader_->Stop();

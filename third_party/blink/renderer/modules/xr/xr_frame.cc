@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,7 +98,7 @@ XRViewerPose* XRFrame::getViewerPose(XRReferenceSpace* reference_space,
 
   TransformationMatrix ref_space_from_mojo =
       reference_space->OffsetFromNativeMatrix();
-  ref_space_from_mojo.Multiply(*native_from_mojo);
+  ref_space_from_mojo.PreConcat(*native_from_mojo);
 
   // Can only update an XRViewerPose's views with an invertible matrix.
   if (!ref_space_from_mojo.IsInvertible()) {

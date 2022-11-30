@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -135,7 +136,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   // Use commandline args to enable the Discover feed for this test case.
   // Disabled elsewhere to account for possible flakiness.
-  AppLaunchConfiguration config;
+  AppLaunchConfiguration config = [super appConfigurationForTestCase];
   config.additional_args.push_back(std::string("--") +
                                    switches::kEnableDiscoverFeed);
   config.features_enabled.push_back(kDiscoverFeedInNtp);
@@ -539,9 +540,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 // Tests that when navigating back to the NTP while having the omnibox focused
 // and moved up, the scroll position restored is the position before the omnibox
 // is selected.
-// Disable the test due to waterfall failure.
-// TODO(crbug.com/1243222): enable the test with fix.
-- (void)DISABLED_testPositionRestoredWithOmniboxFocused {
+- (void)testPositionRestoredWithShiftingOffset {
   [self addMostVisitedTile];
 
   // Add suggestions to be able to scroll on iPad.
@@ -550,7 +549,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
   // Scroll to have a position to restored.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
-      performAction:grey_scrollInDirection(kGREYDirectionDown, 150)];
+      performAction:grey_scrollInDirection(kGREYDirectionDown, 50)];
 
   // Save the position before navigating.
   UICollectionView* collectionView = [NewTabPageAppInterface collectionView];
@@ -572,6 +571,46 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   GREYAssertEqual(
       previousPosition, collectionView.contentOffset.y,
       @"NTP is not at the same position as before tapping the omnibox");
+}
+
+// Tests that when navigating back to the NTP while having the omnibox focused
+// does not consider the shifting offset, since the omnibox was already pinned
+// before focusing.
+// TODO(crbug.com/1364725): Fix small jump when focusing pinned omnibox.
+- (void)DISABLED_testPositionRestoredWithoutShiftingOffset {
+  [self addMostVisitedTile];
+
+  // Add suggestions to be able to scroll on iPad.
+  [NewTabPageAppInterface addNumberOfSuggestions:15
+                        additionalSuggestionsURL:nil];
+
+  // Scroll enough to naturally pin the omnibox to the top.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
+
+  // Save the position before navigating.
+  UICollectionView* collectionView = [NewTabPageAppInterface collectionView];
+  CGFloat previousPosition = collectionView.contentOffset.y;
+
+  // Tap the omnibox to focus it.
+  [self focusFakebox];
+
+  // Ensure that focusing the omnibox doesn't change the scroll position.
+  GREYAssertEqual(previousPosition, collectionView.contentOffset.y,
+                  @"Focusing the omnibox changed the scroll position.");
+
+  // Navigate and come back.
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::StaticTextWithAccessibilityLabel(
+                     base::SysUTF8ToNSString(kPageTitle))]
+      performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString];
+  [ChromeEarlGrey goBack];
+
+  // Check that the new position is the same.
+  collectionView = [NewTabPageAppInterface collectionView];
+  GREYAssertEqual(previousPosition, collectionView.contentOffset.y,
+                  @"NTP is not at the same position");
 }
 
 // Tests that tapping the fake omnibox focuses the real omnibox.
@@ -848,8 +887,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Test to ensure that feed can be collapsed/shown and that feed header changes
 // accordingly.
-// TODO(crbug.com/1311947): Failing simulator.
-- (void)DISABLED_testToggleFeedVisible {
+- (void)testToggleFeedVisible {
   [self
       testNTPInitialPositionAndContent:[NewTabPageAppInterface collectionView]];
 
@@ -874,11 +912,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Test to ensure that feed can be enabled/disabled and that feed header changes
 // accordingly.
-// TODO(crbug.com/1194106): Flaky on ios-simulator-noncq.
-- (void)DISABLED_testToggleFeedEnabled {
-  [self
-      testNTPInitialPositionAndContent:[NewTabPageAppInterface collectionView]];
-
+- (void)testToggleFeedEnabled {
   // Ensure that label is visible with correct text for enabled feed, and that
   // the NTP is scrollable.
   [self checkFeedLabelForFeedVisible:YES];
@@ -886,9 +920,13 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
   // Disable feed.
   [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI
-      tapSettingsMenuButton:grey_accessibilityID(
-                                kSettingsArticleSuggestionsCellId)];
+  [[[EarlGrey selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
+                                           kSettingsArticleSuggestionsCellId,
+                                           /*is_toggled_on=*/YES,
+                                           /*enabled=*/YES)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 350)
+      onElementWithMatcher:chrome_test_util::SettingsCollectionView()]
+      performAction:chrome_test_util::TurnTableViewSwitchOn(NO)];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
       performAction:grey_tap()];
 
@@ -902,9 +940,15 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
   // Re-enable feed.
   [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI
-      tapSettingsMenuButton:grey_accessibilityID(
-                                kSettingsArticleSuggestionsCellId)];
+  // Why do we we not reset the scroll position after bringing back the feed as
+  // the new parent collectionview? on iphone 8 the logo is cut off.
+  [[[EarlGrey selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
+                                           kSettingsArticleSuggestionsCellId,
+                                           /*is_toggled_on=*/NO,
+                                           /*enabled=*/YES)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 350)
+      onElementWithMatcher:chrome_test_util::SettingsCollectionView()]
+      performAction:chrome_test_util::TurnTableViewSwitchOn(YES)];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
       performAction:grey_tap()];
 
@@ -1309,6 +1353,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::NTPFeedMenuEnableButton()]
       performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
   feed_visible =
       [ChromeEarlGrey userBooleanPref:feed::prefs::kArticlesListVisible];
   GREYAssertTrue(feed_visible, @"Expect feed to be visible!");

@@ -22,7 +22,8 @@ namespace settings {
 // since they only apply to specific pages/settings.
 class MainSection : public OsSettingsSection {
  public:
-  MainSection(Profile* profile, SearchTagRegistry* search_tag_registry);
+  MainSection(Profile* profile,
+              ash::settings::SearchTagRegistry* search_tag_registry);
   ~MainSection() override;
 
  private:
@@ -31,7 +32,7 @@ class MainSection : public OsSettingsSection {
   void AddHandlers(content::WebUI* web_ui) override;
   int GetSectionNameMessageId() const override;
   mojom::Section GetSection() const override;
-  mojom::SearchResultIcon GetSectionIcon() const override;
+  ash::settings::mojom::SearchResultIcon GetSectionIcon() const override;
   std::string GetSectionPath() const override;
   bool LogMetric(mojom::Setting setting, base::Value& value) const override;
   void RegisterHierarchy(HierarchyGenerator* generator) const override;
@@ -42,5 +43,10 @@ class MainSection : public OsSettingsSection {
 
 }  // namespace settings
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when it moved to ash.
+namespace ash::settings {
+using ::chromeos::settings::MainSection;
+}
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SETTINGS_ASH_MAIN_SECTION_H_

@@ -25,16 +25,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattService {
   // numeric values should never be reused. This enum should be kept in sync
   // with the BluetoothGattServiceGattErrorCode enum in
   // src/tools/metrics/histograms/enums.xml.
-  enum GattErrorCode {
-    GATT_ERROR_UNKNOWN = 0,
-    GATT_ERROR_FAILED = 1,
-    GATT_ERROR_IN_PROGRESS = 2,
-    GATT_ERROR_INVALID_LENGTH = 3,
-    GATT_ERROR_NOT_PERMITTED = 4,
-    GATT_ERROR_NOT_AUTHORIZED = 5,
-    GATT_ERROR_NOT_PAIRED = 6,
-    GATT_ERROR_NOT_SUPPORTED = 7,
-    kMaxValue = GATT_ERROR_NOT_SUPPORTED,
+  enum class GattErrorCode {
+    kUnknown = 0,
+    kFailed = 1,
+    kInProgress = 2,
+    kInvalidLength = 3,
+    kNotPermitted = 4,
+    kNotAuthorized = 5,
+    kNotPaired = 6,
+    kNotSupported = 7,
+    kMaxValue = kNotSupported,
   };
 
   // The ErrorCallback is used by methods to asynchronously report errors.

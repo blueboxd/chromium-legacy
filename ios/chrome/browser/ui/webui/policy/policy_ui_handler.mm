@@ -119,13 +119,12 @@ void PolicyUIHandler::RegisterMessages() {
             new policy::MachineLevelUserCloudPolicyContext(
                 {dmTokenStorage->RetrieveEnrollmentToken(),
                  dmTokenStorage->RetrieveClientId(), lastCloudReportSent}));
+    machine_status_provider_observation_.Observe(
+        machine_status_provider_.get());
   }
 
   if (!machine_status_provider_)
     machine_status_provider_ = std::make_unique<policy::PolicyStatusProvider>();
-
-  machine_status_provider_->SetStatusChangeCallback(base::BindRepeating(
-      &PolicyUIHandler::SendStatus, base::Unretained(this)));
 
   GetPolicyService()->AddObserver(policy::POLICY_DOMAIN_CHROME, this);
 
@@ -158,7 +157,9 @@ std::string PolicyUIHandler::GetPoliciesAsJson() {
       ChromeBrowserState::FromWebUIIOS(web_ui()));
 
   return policy::GenerateJson(
-      std::move(client), GetStatusValue(),
+      /*policy_values=*/policy::DictionaryPolicyConversions(std::move(client))
+          .ToValueDict(),
+      GetStatusValue(),
       policy::JsonGenerationParams()
           .with_application_name(l10n_util::GetStringUTF8(IDS_IOS_PRODUCT_NAME))
           .with_channel_name(GetChannelString(GetChannel()))
@@ -178,6 +179,10 @@ void PolicyUIHandler::OnPolicyUpdated(const policy::PolicyNamespace& ns,
                                       const policy::PolicyMap& previous,
                                       const policy::PolicyMap& current) {
   SendPolicies();
+}
+
+void PolicyUIHandler::OnPolicyStatusChanged() {
+  SendStatus();
 }
 
 base::Value::Dict PolicyUIHandler::GetPolicyNames() const {
@@ -244,7 +249,7 @@ base::Value::Dict PolicyUIHandler::GetStatusValue() const {
   // Given that it's usual for users to bring their own devices and the fact
   // that device names could expose personal information. We do not show
   // this field in Device Policy Box
-  machine_status.Remove("machine");
+  machine_status.Remove(policy::kMachineKey);
 
   base::Value::Dict status;
   status.Set("machine", std::move(machine_status));

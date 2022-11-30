@@ -1,4 +1,4 @@
-// Copyright 2016 the Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,8 +27,7 @@ class CORE_EXPORT ComputedStylePropertyMap
     : public StylePropertyMapReadOnlyMainThread {
  public:
   ComputedStylePropertyMap(Node* node, const String& pseudo_element = String())
-      : pseudo_id_(
-            CSSSelectorParser<>::ParsePseudoElement(pseudo_element, node)),
+      : pseudo_id_(CSSSelectorParser::ParsePseudoElement(pseudo_element, node)),
         node_(node) {}
   ComputedStylePropertyMap(const ComputedStylePropertyMap&) = delete;
   ComputedStylePropertyMap& operator=(const ComputedStylePropertyMap&) = delete;
@@ -49,7 +48,7 @@ class CORE_EXPORT ComputedStylePropertyMap
  protected:
   const CSSValue* GetProperty(CSSPropertyID) const override;
   const CSSValue* GetCustomProperty(const AtomicString&) const override;
-  void ForEachProperty(const IterationCallback&) override;
+  void ForEachProperty(IterationFunction visitor) override;
 
   String SerializationForShorthand(const CSSProperty&) const final;
 

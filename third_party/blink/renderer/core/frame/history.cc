@@ -51,13 +51,15 @@
 namespace blink {
 
 namespace {
-void ReportURLChange(LocalDOMWindow* window, ScriptState* script_state) {
+void ReportURLChange(LocalDOMWindow* window,
+                     ScriptState* script_state,
+                     const String& url) {
   DCHECK(window);
   DCHECK(window->GetFrame());
   if (window->GetFrame()->IsMainFrame()) {
     SoftNavigationHeuristics* heuristics =
         SoftNavigationHeuristics::From(*window);
-    heuristics->SawURLChange(script_state);
+    heuristics->SawURLChange(script_state, url);
   }
 }
 }  // namespace
@@ -180,38 +182,53 @@ bool History::IsSameAsCurrentState(SerializedScriptValue* state) const {
   return state == StateInternal();
 }
 
-void History::back(ExceptionState& exception_state) {
-  go(-1, exception_state);
+void History::back(ScriptState* script_state, ExceptionState& exception_state) {
+  go(script_state, -1, exception_state);
 }
 
-void History::forward(ExceptionState& exception_state) {
-  go(1, exception_state);
+void History::forward(ScriptState* script_state,
+                      ExceptionState& exception_state) {
+  go(script_state, 1, exception_state);
 }
 
-void History::go(int delta, ExceptionState& exception_state) {
-  if (!DomWindow()) {
+void History::go(ScriptState* script_state,
+                 int delta,
+                 ExceptionState& exception_state) {
+  LocalDOMWindow* window = DomWindow();
+  if (!window) {
     exception_state.ThrowSecurityError(
         "May not use a History object associated with a Document that is not "
         "fully active");
     return;
   }
+  LocalFrame* frame = window->GetFrame();
+  DCHECK(frame);
 
-  if (!DomWindow()->GetFrame()->IsNavigationAllowed())
+  if (!frame->IsNavigationAllowed())
     return;
 
   DCHECK(IsMainThread());
 
-  if (!DomWindow()->GetFrame()->navigation_rate_limiter().CanProceed())
+  if (!frame->navigation_rate_limiter().CanProceed())
     return;
 
   // TODO(crbug.com/1262022): Remove this condition when Fenced Frames
   // transition to MPArch completely.
-  if (DomWindow()->GetFrame()->IsInFencedFrameTree())
+  if (frame->IsInFencedFrameTree())
     return;
 
   if (delta) {
-    if (DomWindow()->GetFrame()->Client()->NavigateBackForward(delta)) {
-      if (Page* page = DomWindow()->GetFrame()->GetPage())
+    // We don't have the URL here, as it is not available in the renderer just
+    // yet. We initially set it to an empty string, to signal to the
+    // SoftNavigationHeuristics class that it's not yet set. We will
+    // asynchronously set the URL at
+    // DocumentLoader::UpdateForSameDocumentNavigation, once the same document
+    // navigation is committed.
+    ReportURLChange(window, script_state,
+                    /*url=*/String(""));
+    DCHECK(frame->Client());
+    if (frame->Client()->NavigateBackForward(delta)) {
+      if (Page* page = frame->GetPage())
         page->HistoryNavigationVirtualTimePauser().PauseVirtualTime();
     }
   } else {
@@ -219,7 +236,7 @@ void History::go(int delta, ExceptionState& exception_state) {
     // Otherwise, navigation happens on the root frame.
     // This behavior is designed in the following spec.
     // https://html.spec.whatwg.org/C/#dom-history-go
-    DomWindow()->GetFrame()->Reload(WebFrameLoadType::kReload);
+    frame->Reload(WebFrameLoadType::kReload);
   }
 }
 
@@ -243,7 +260,6 @@ void History::pushState(ScriptState* script_state,
           /* discard_duplicates */ true);
       load_type = WebFrameLoadType::kReplaceCurrentItem;
     }
-    ReportURLChange(window, script_state);
   }
 
   scoped_refptr<SerializedScriptValue> serialized_data =
@@ -255,7 +271,7 @@ void History::pushState(ScriptState* script_state,
     return;
 
   StateObjectAdded(std::move(serialized_data), title, url, load_type,
-                   exception_state);
+                   script_state, exception_state);
 }
 
 void History::replaceState(ScriptState* script_state,
@@ -272,18 +288,15 @@ void History::replaceState(ScriptState* script_state,
   if (exception_state.HadException())
     return;
 
-  if (LocalDOMWindow* window = DomWindow()) {
-    ReportURLChange(window, script_state);
-  }
-
   StateObjectAdded(std::move(serialized_data), title, url,
-                   WebFrameLoadType::kReplaceCurrentItem, exception_state);
+                   WebFrameLoadType::kReplaceCurrentItem, script_state,
+                   exception_state);
 }
 
 KURL History::UrlForState(const String& url_string) {
   if (url_string.IsNull())
     return DomWindow()->Url();
-  if (url_string.IsEmpty())
+  if (url_string.empty())
     return DomWindow()->BaseURL();
 
   return KURL(DomWindow()->BaseURL(), url_string);
@@ -293,8 +306,10 @@ void History::StateObjectAdded(scoped_refptr<SerializedScriptValue> data,
                                const String& /* title */,
                                const String& url_string,
                                WebFrameLoadType type,
+                               ScriptState* script_state,
                                ExceptionState& exception_state) {
-  if (!DomWindow()) {
+  LocalDOMWindow* window = DomWindow();
+  if (!window) {
     exception_state.ThrowSecurityError(
         "May not use a History object associated with a Document that is not "
         "fully active");
@@ -302,10 +317,11 @@ void History::StateObjectAdded(scoped_refptr<SerializedScriptValue> data,
   }
 
   KURL full_url = UrlForState(url_string);
+  ReportURLChange(window, script_state, full_url);
   bool can_change = CanChangeToUrlForHistoryApi(
-      full_url, DomWindow()->GetSecurityOrigin(), DomWindow()->Url());
+      full_url, window->GetSecurityOrigin(), window->Url());
 
-  if (DomWindow()->GetSecurityOrigin()->IsGrantedUniversalAccess()) {
+  if (window->GetSecurityOrigin()->IsGrantedUniversalAccess()) {
     // Log the case when 'pushState'/'replaceState' is allowed only because
     // of IsGrantedUniversalAccess ie there is no other condition which should
     // allow the change (!can_change).
@@ -322,12 +338,12 @@ void History::StateObjectAdded(scoped_refptr<SerializedScriptValue> data,
     exception_state.ThrowSecurityError(
         "A history state object with URL '" + full_url.ElidedString() +
         "' cannot be created in a document with origin '" +
-        DomWindow()->GetSecurityOrigin()->ToString() + "' and URL '" +
-        DomWindow()->Url().ElidedString() + "'.");
+        window->GetSecurityOrigin()->ToString() + "' and URL '" +
+        window->Url().ElidedString() + "'.");
     return;
   }
 
-  if (!DomWindow()->GetFrame()->navigation_rate_limiter().CanProceed()) {
+  if (!window->GetFrame()->navigation_rate_limiter().CanProceed()) {
     // TODO(769592): Get an API spec change so that we can throw an exception:
     //
     //  exception_state.ThrowDOMException(DOMExceptionCode::kQuotaExceededError,
@@ -338,7 +354,7 @@ void History::StateObjectAdded(scoped_refptr<SerializedScriptValue> data,
     return;
   }
 
-  if (auto* navigation_api = NavigationApi::navigation(*DomWindow())) {
+  if (auto* navigation_api = NavigationApi::navigation(*window)) {
     auto* params = MakeGarbageCollected<NavigateEventDispatchParams>(
         full_url, NavigateEventType::kHistoryApi, type);
     params->state_object = data.get();
@@ -348,7 +364,7 @@ void History::StateObjectAdded(scoped_refptr<SerializedScriptValue> data,
     }
   }
 
-  DomWindow()->document()->Loader()->RunURLAndHistoryUpdateSteps(
+  window->document()->Loader()->RunURLAndHistoryUpdateSteps(
       full_url, nullptr, mojom::blink::SameDocumentNavigationType::kHistoryApi,
       std::move(data), type);
 }

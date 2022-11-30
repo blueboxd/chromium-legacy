@@ -68,7 +68,6 @@
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -655,7 +654,7 @@ void Tab::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
   std::u16string name = controller_->GetAccessibleTabName(this);
   if (!name.empty()) {
-    node_data->SetName(name);
+    node_data->SetNameChecked(name);
   } else {
     // Under some conditions, |GetAccessibleTabName| returns an empty string.
     node_data->SetNameExplicitlyEmpty();

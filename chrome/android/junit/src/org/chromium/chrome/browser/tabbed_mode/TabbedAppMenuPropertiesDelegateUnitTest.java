@@ -38,7 +38,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
+import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.PowerBookmarkUtils;
 import org.chromium.chrome.browser.commerce.ShoppingServiceFactory;
 import org.chromium.chrome.browser.enterprise.util.ManagedBrowserUtils;
@@ -87,7 +87,7 @@ import java.util.List;
 @RunWith(BaseRobolectricTestRunner.class)
 @Features.EnableFeatures({ChromeFeatureList.WEB_FEED, ChromeFeatureList.READ_LATER,
         ChromeFeatureList.BOOKMARKS_REFRESH})
-@Features.DisableFeatures({ChromeFeatureList.SHOPPING_LIST})
+@Features.DisableFeatures({ChromeFeatureList.SHOPPING_LIST, ChromeFeatureList.WEB_APK_UNIQUE_ID})
 public class TabbedAppMenuPropertiesDelegateUnitTest {
     // Costants defining flags that determines multi-window menu items visibility.
     private static final boolean TAB_M = true; // multiple tabs
@@ -171,7 +171,7 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
             new OneshotSupplierImpl<>();
     private OneshotSupplierImpl<IncognitoReauthController> mIncognitoReauthControllerSupplier =
             new OneshotSupplierImpl<>();
-    private ObservableSupplierImpl<BookmarkBridge> mBookmarkBridgeSupplier =
+    private ObservableSupplierImpl<BookmarkModel> mBookmarkModelSupplier =
             new ObservableSupplierImpl<>();
 
     private TabbedAppMenuPropertiesDelegate mTabbedAppMenuPropertiesDelegate;
@@ -221,7 +221,7 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
                 new TabbedAppMenuPropertiesDelegate(ContextUtils.getApplicationContext(),
                         mActivityTabProvider, mMultiWindowModeStateDispatcher, mTabModelSelector,
                         mToolbarManager, mDecorView, mAppMenuDelegate, mLayoutStateProviderSupplier,
-                        null, mBookmarkBridgeSupplier, mFeedLauncher, mDialogManager,
+                        null, mBookmarkModelSupplier, mFeedLauncher, mDialogManager,
                         mSnackbarManager, mIncognitoReauthControllerSupplier));
         SharedPreferencesManager.getInstance().removeKeysWithPrefix(
                 ChromePreferenceKeys.MULTI_INSTANCE_URL);

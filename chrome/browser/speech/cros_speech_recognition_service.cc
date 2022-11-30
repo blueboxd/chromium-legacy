@@ -20,6 +20,9 @@ namespace speech {
 
 namespace {
 
+constexpr char kInvalidSpeechRecogntionOptions[] =
+    "Invalid SpeechRecognitionOptions provided";
+
 void PopulateFilePaths(const std::string* language,
                        base::FilePath& binary_path,
                        base::FilePath& languagepack_path) {
@@ -66,14 +69,22 @@ void CrosSpeechRecognitionService::BindRecognizer(
     mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient> client,
     media::mojom::SpeechRecognitionOptionsPtr options,
     BindRecognizerCallback callback) {
+  // This binding is used by LiveCaption and it can't be server based
+  // recognition.
+  if (options->is_server_based ||
+      options->recognizer_client_type !=
+          media::mojom::RecognizerClientType::kLiveCaption) {
+    mojo::ReportBadMessage(kInvalidSpeechRecogntionOptions);
+    return;
+  }
+
   base::FilePath binary_path, languagepack_path;
   PopulateFilePaths(base::OptionalToPtr(options->language), binary_path,
                     languagepack_path);
 
   CrosSpeechRecognitionRecognizerImpl::Create(
-      std::move(receiver), std::move(client),
-      nullptr /* =SpeechRecognitionService WeakPtr*/, std::move(options),
-      binary_path, languagepack_path);
+      std::move(receiver), std::move(client), std::move(options), binary_path,
+      languagepack_path);
   std::move(callback).Run(
       CrosSpeechRecognitionRecognizerImpl::IsMultichannelSupported());
 }
@@ -83,6 +94,14 @@ void CrosSpeechRecognitionService::BindAudioSourceFetcher(
     mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient> client,
     media::mojom::SpeechRecognitionOptionsPtr options,
     BindRecognizerCallback callback) {
+  if (options->is_server_based) {
+    // TODO(b/245614967): when kInternalServerSideSpeechRecognition
+    // feature flag is enabled, create the appropriate recognition recognizer
+    // here.
+    mojo::ReportBadMessage(kInvalidSpeechRecogntionOptions);
+    return;
+  }
+
   base::FilePath binary_path, languagepack_path;
   PopulateFilePaths(base::OptionalToPtr(options->language), binary_path,
                     languagepack_path);
@@ -113,8 +132,8 @@ void CrosSpeechRecognitionService::CreateAudioSourceFetcherOnIOThread(
   AudioSourceFetcherImpl::Create(
       std::move(fetcher_receiver),
       std::make_unique<CrosSpeechRecognitionRecognizerImpl>(
-          std::move(client), nullptr /* =SpeechRecognitionService WeakPtr*/,
-          std::move(options), binary_path, languagepack_path));
+          std::move(client), std::move(options), binary_path,
+          languagepack_path));
 }
 
 }  // namespace speech

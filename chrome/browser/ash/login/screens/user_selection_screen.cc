@@ -10,9 +10,6 @@
 #include <utility>
 
 #include "ash/components/arc/arc_util.h"
-#include "ash/components/proximity_auth/screenlock_bridge.h"
-#include "ash/components/proximity_auth/smart_lock_metrics_recorder.h"
-#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
@@ -52,6 +49,9 @@
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
+#include "chromeos/ash/components/proximity_auth/screenlock_bridge.h"
+#include "chromeos/ash/components/proximity_auth/smart_lock_metrics_recorder.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "components/account_id/account_id.h"
@@ -103,7 +103,7 @@ bool GetDeviceManager(std::string* out_manager) {
 // `out_selected_locale`: Output value of the initially selected locale.
 // `out_multiple_locales`: Output value indicates whether we have multiple
 // recommended locales.
-std::unique_ptr<base::ListValue> GetPublicSessionLocales(
+base::Value::List GetPublicSessionLocales(
     const std::vector<std::string>* public_session_recommended_locales,
     std::string* out_selected_locale,
     bool* out_multiple_locales) {
@@ -114,14 +114,14 @@ std::unique_ptr<base::ListValue> GetPublicSessionLocales(
 
   // Construct the list of available locales. This list consists of the
   // recommended locales, followed by all others.
-  std::unique_ptr<base::ListValue> available_locales =
+  auto available_locales =
       GetUILanguageList(&recommended_locales, std::string(),
                         input_method::InputMethodManager::Get());
 
   // Select the the first recommended locale that is actually available or the
   // current UI locale if none of them are available.
   *out_selected_locale =
-      FindMostRelevantLocale(recommended_locales, *available_locales.get(),
+      FindMostRelevantLocale(recommended_locales, available_locales,
                              g_browser_process->GetApplicationLocale());
 
   *out_multiple_locales = recommended_locales.size() >= 2;
@@ -144,7 +144,8 @@ bool IsUserAllowedForARC(const AccountId& account_id) {
 AccountId GetOwnerAccountId() {
   std::string owner_email;
   CrosSettings::Get()->GetString(kDeviceOwner, &owner_email);
-  const AccountId owner = user_manager::known_user::GetAccountId(
+  user_manager::KnownUser known_user(g_browser_process->local_state());
+  const AccountId owner = known_user.GetAccountId(
       owner_email, std::string() /* id */, AccountType::UNKNOWN);
   return owner;
 }
@@ -466,7 +467,7 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
   // this might be a leftover from an old version.
   if (has_gaia_account &&
       token_status == user_manager::User::OAUTH2_TOKEN_STATUS_INVALID)
-    RecordReauthReason(user->GetAccountId(), ReauthReason::OTHER);
+    RecordReauthReason(user->GetAccountId(), ReauthReason::kOther);
 
   // We need to force an online signin if the user is marked as requiring it or
   // if there's an invalid OAUTH token that needs to be refreshed.
@@ -520,6 +521,13 @@ UserAvatar UserSelectionScreen::BuildAshUserAvatarForUser(
         resource_id, rb.GetMaxResourceScaleFactor());
     avatar.bytes.assign(avatar_data.begin(), avatar_data.end());
   };
+
+  // After the default avatar images are moved to cloud, the user
+  // should have image bytes when using default images.
+  CHECK(!ash::features::IsAvatarsCloudMigrationEnabled() ||
+        !user.HasDefaultImage() || user.has_image_bytes());
+
+  // After the avatar cloud migration, remove the second if case.
   if (user.has_image_bytes()) {
     avatar.bytes.assign(
         user.image_bytes()->front(),
@@ -693,7 +701,7 @@ void UserSelectionScreen::OnUserStatusChecked(
     const AccountId& account_id,
     TokenHandleUtil::TokenHandleStatus status) {
   if (status == TokenHandleUtil::INVALID) {
-    RecordReauthReason(account_id, ReauthReason::INVALID_TOKEN_HANDLE);
+    RecordReauthReason(account_id, ReauthReason::kInvalidTokenHandle);
     SetAuthType(account_id, proximity_auth::mojom::AuthType::ONLINE_SIGN_IN,
                 std::u16string());
   }
@@ -821,7 +829,7 @@ void UserSelectionScreen::OnSessionStateChanged() {
 
 void UserSelectionScreen::OnInvalidSyncToken(const AccountId& account_id) {
   RecordReauthReason(account_id,
-                     ReauthReason::SAML_PASSWORD_SYNC_TOKEN_VALIDATION_FAILED);
+                     ReauthReason::kSamlPasswordSyncTokenValidationFailed);
   SetAuthType(account_id, proximity_auth::mojom::AuthType::ONLINE_SIGN_IN,
               std::u16string());
 }
@@ -943,10 +951,9 @@ UserSelectionScreen::UpdateAndReturnUserListForAsh() {
               : &public_session_recommended_locales_[account_id];
       std::string selected_locale;
       bool has_multiple_locales;
-      std::unique_ptr<base::ListValue> available_locales =
+      auto available_locales =
           GetPublicSessionLocales(public_session_recommended_locales,
                                   &selected_locale, &has_multiple_locales);
-      DCHECK(available_locales);
       user_info.public_account_info->available_locales =
           lock_screen_utils::FromListValueToLocaleItem(
               std::move(available_locales));

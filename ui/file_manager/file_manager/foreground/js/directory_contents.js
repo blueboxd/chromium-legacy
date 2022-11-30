@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
 
@@ -392,8 +392,8 @@ export class CrostiniMounter extends ContentScanner {
       invalidateCache = false) {
     chrome.fileManagerPrivate.mountCrostini(() => {
       if (chrome.runtime.lastError) {
-        console.error(
-            'mountCrostini error: ', chrome.runtime.lastError.message);
+        console.warn(`Cannot mount Crostini volume: ${
+            chrome.runtime.lastError.message}`);
         errorCallback(util.createDOMError(
             constants.CROSTINI_CONNECT_ERR, chrome.runtime.lastError.message));
         return;

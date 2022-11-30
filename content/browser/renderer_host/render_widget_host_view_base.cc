@@ -30,6 +30,7 @@
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/page_visibility_state.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_types.h"
@@ -929,18 +930,19 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
 
   float device_scale_factor = original_view->GetDeviceScaleFactor();
   DCHECK_GT(device_scale_factor, 0.0f);
-  gfx::Point3F point_in_pixels =
-      gfx::Point3F(gfx::ConvertPointToPixels(point, device_scale_factor));
   // TODO(crbug.com/966995): Optimize so that |point_in_pixels| doesn't need to
   // be in the coordinate space of the root surface in HitTestQuery.
   gfx::Transform transform_root_to_original;
   query->GetTransformToTarget(original_view->GetFrameSinkId(),
                               &transform_root_to_original);
-  if (!transform_root_to_original.TransformPointReverse(&point_in_pixels))
+  const absl::optional<gfx::PointF> point_in_pixels =
+      transform_root_to_original.InverseMapPoint(
+          gfx::ConvertPointToPixels(point, device_scale_factor));
+  if (!point_in_pixels.has_value())
     return false;
   gfx::PointF transformed_point_in_physical_pixels;
   if (!query->TransformLocationForTarget(
-          target_ancestors, point_in_pixels.AsPointF(),
+          target_ancestors, *point_in_pixels,
           &transformed_point_in_physical_pixels)) {
     return false;
   }
@@ -997,10 +999,10 @@ bool RenderWidgetHostViewBase::GetTransformToViewCoordSpace(
   // concatenating an identity matrix, so we don't add those checks here.
   transform->MakeIdentity();
 
-  transform->ConcatTransform(transform_to_pixel);
-  transform->ConcatTransform(transform_this_to_root);
-  transform->ConcatTransform(transform_root_to_target);
-  transform->ConcatTransform(transform_from_pixel);
+  transform->PostConcat(transform_to_pixel);
+  transform->PostConcat(transform_this_to_root);
+  transform->PostConcat(transform_root_to_target);
+  transform->PostConcat(transform_from_pixel);
 
   return true;
 }
@@ -1033,13 +1035,15 @@ ui::Compositor* RenderWidgetHostViewBase::GetCompositor() {
 
 VisibleTimeRequestTrigger*
 RenderWidgetHostViewBase::GetVisibleTimeRequestTrigger() {
-  DCHECK(
-      !visible_time_request_trigger_.is_tab_switch_metrics2_feature_enabled());
-  return &visible_time_request_trigger_;
+  return visible_time_request_trigger_.is_tab_switch_metrics2_feature_enabled()
+             ? nullptr
+             : &visible_time_request_trigger_;
 }
 
-bool RenderWidgetHostViewBase::ShouldVirtualKeyboardOverlayContent() {
-  return false;
+ui::mojom::VirtualKeyboardMode
+RenderWidgetHostViewBase::GetVirtualKeyboardMode() {
+  // Only platforms supporting these APIs will implement this.
+  return ui::mojom::VirtualKeyboardMode::kUnset;
 }
 
 bool RenderWidgetHostViewBase::IsHTMLFormPopup() const {
@@ -1048,12 +1052,14 @@ bool RenderWidgetHostViewBase::IsHTMLFormPopup() const {
 
 void RenderWidgetHostViewBase::OnShowWithPageVisibility(
     PageVisibilityState page_visibility) {
-  if (!host())
-    return;
-
   auto* visible_time_request_trigger = host_->GetVisibleTimeRequestTrigger();
-  // The only way this should be null is if there is no RenderWidgetHostView.
-  DCHECK(visible_time_request_trigger);
+
+  // The trigger can be null in unit tests.
+  if (!visible_time_request_trigger) {
+    if (host_->is_hidden())
+      NotifyHostAndDelegateOnWasShown(nullptr);
+    return;
+  }
 
   // NB: don't call visible_time_request_trigger->TakeRequest() unless the
   // request will be used. If it isn't used here it must be left in the trigger

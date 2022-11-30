@@ -14,8 +14,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
-namespace network {
-namespace corb {
+namespace network::corb {
 
 namespace {
 
@@ -120,10 +119,11 @@ class ComparingAnalyzer : public ResponseAnalyzer {
   }
 
   bool ShouldReportBlockedResponse() const override {
-    if (is_orb_enabled_)
-      return orb_analyzer_->ShouldReportBlockedResponse();
-    else
-      return corb_analyzer_->ShouldReportBlockedResponse();
+    return GetEnabledAnalyzer().ShouldReportBlockedResponse();
+  }
+
+  BlockedResponseHandling ShouldHandleBlockedResponseAs() const override {
+    return GetEnabledAnalyzer().ShouldHandleBlockedResponseAs();
   }
 
  private:
@@ -135,6 +135,13 @@ class ComparingAnalyzer : public ResponseAnalyzer {
     }
 
     return is_orb_enabled_ ? orb_decision_ : corb_decision_;
+  }
+
+  const ResponseAnalyzer& GetEnabledAnalyzer() const {
+    if (is_orb_enabled_)
+      return *orb_analyzer_;
+    else
+      return *corb_analyzer_;
   }
 
   const std::unique_ptr<CrossOriginReadBlocking::CorbResponseAnalyzer>
@@ -162,5 +169,4 @@ void SanitizeBlockedResponseHeaders(network::mojom::URLResponseHead& response) {
     RemoveAllHttpResponseHeaders(response.headers);
 }
 
-}  // namespace corb
-}  // namespace network
+}  // namespace network::corb

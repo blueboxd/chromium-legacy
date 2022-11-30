@@ -4,8 +4,10 @@
 
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_bubble_apps_page.h"
+#include "ash/app_list/views/app_list_bubble_view.h"
 #include "ash/app_list/views/search_box_view.h"
-#include "ash/shell.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/test/ash_pixel_diff_test_helper.h"
 #include "ash/test/ash_pixel_test_init_params.h"
 #include "ash/test/ash_test_base.h"
@@ -19,12 +21,10 @@ class AppListViewPixelRTLTest
       public testing::WithParamInterface<bool /*is_rtl=*/> {
  public:
   AppListViewPixelRTLTest() {
-    PrepareForPixelDiffTest();
-    if (GetParam()) {
-      pixel_test::InitParams init_params;
-      init_params.under_rtl = true;
-      SetPixelTestInitParam(init_params);
-    }
+    pixel_test::InitParams init_params;
+    init_params.under_rtl = GetParam();
+    PrepareForPixelDiffTest(/*screenshot_prefix=*/"app_list_view_pixel",
+                            init_params);
   }
   AppListViewPixelRTLTest(const AppListViewPixelRTLTest&) = delete;
   AppListViewPixelRTLTest& operator=(const AppListViewPixelRTLTest&) = delete;
@@ -43,14 +43,6 @@ class AppListViewPixelRTLTest
     views::TextfieldTestApi(test_helper->GetBubbleSearchBoxView()->search_box())
         .SetCursorLayerOpacity(0.f);
   }
-
-  // AshTestBase:
-  void SetUp() override {
-    AshTestBase::SetUp();
-    pixel_test_helper_.InitSkiaGoldPixelDiff("app_list_view_pixel");
-  }
-
-  AshPixelDiffTestHelper pixel_test_helper_;
 };
 
 INSTANTIATE_TEST_SUITE_P(RTL, AppListViewPixelRTLTest, testing::Bool());
@@ -61,8 +53,10 @@ TEST_P(AppListViewPixelRTLTest, Basics) {
       /*num_apps=*/2, AppListTestHelper::IconColorType::kAlternativeColor,
       /*set_name=*/true);
   ShowAppListAndHideCursor();
-  EXPECT_TRUE(pixel_test_helper_.ComparePrimaryFullScreen(
-      GetParam() ? "bubble_launcher_basics_rtl" : "bubble_launcher_basics"));
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+      GetParam() ? "bubble_launcher_basics_rtl" : "bubble_launcher_basics",
+      GetAppListTestHelper()->GetBubbleView(),
+      GetPrimaryShelf()->navigation_widget()));
 }
 
 // Verifies that the app list gradient zones work as expected.
@@ -79,9 +73,11 @@ TEST_P(AppListViewPixelRTLTest, GradientZone) {
   scroll_view->ScrollToPosition(scroll_view->vertical_scroll_bar(),
                                 /*position=*/20);
 
-  EXPECT_TRUE(pixel_test_helper_.ComparePrimaryFullScreen(
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       GetParam() ? "bubble_launcher_gradient_zone_rtl"
-                 : "bubble_launcher_gradient_zone"));
+                 : "bubble_launcher_gradient_zone",
+      GetAppListTestHelper()->GetBubbleView(),
+      GetPrimaryShelf()->navigation_widget()));
 }
 
 }  // namespace ash

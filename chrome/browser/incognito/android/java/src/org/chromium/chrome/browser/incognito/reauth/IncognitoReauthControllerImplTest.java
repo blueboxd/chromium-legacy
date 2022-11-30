@@ -13,9 +13,11 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Before;
@@ -81,11 +83,15 @@ public class IncognitoReauthControllerImplTest {
     private PrefService mPrefServiceMock;
     @Mock
     private Runnable mBackPressInReauthFullScreenRunnableMock;
+    @Mock
+    private IncognitoReauthManager.IncognitoReauthCallback mIncognitoReauthCallbackMock;
 
     @Captor
     ArgumentCaptor<TabModelSelectorObserver> mTabModelSelectorObserverCaptor;
     @Captor
     ArgumentCaptor<IncognitoTabModelObserver> mIncognitoTabModelObserverCaptor;
+    @Captor
+    ArgumentCaptor<LayoutStateProvider.LayoutStateObserver> mLayoutStateObserverArgumentCaptor;
 
     private IncognitoReauthControllerImpl mIncognitoReauthController;
     private OneshotSupplierImpl<LayoutStateProvider> mLayoutStateProviderOneshotSupplier;
@@ -158,6 +164,9 @@ public class IncognitoReauthControllerImplTest {
                 mActivityLifecycleDispatcherMock, mLayoutStateProviderOneshotSupplier,
                 mProfileObservableSupplier, mIncognitoReauthCoordinatorFactoryMock);
         mProfileObservableSupplier.set(mProfileMock);
+
+        verify(mLayoutStateProviderMock, times(1))
+                .addObserver(mLayoutStateObserverArgumentCaptor.capture());
     }
 
     @After
@@ -328,6 +337,56 @@ public class IncognitoReauthControllerImplTest {
         switchToIncognitoTabModel();
         assertFalse("IncognitoReauthCoordinator should not be created when starting a"
                         + " fresh Incognito session.",
+                mIncognitoReauthController.isReauthPageShowing());
+    }
+
+    @Test
+    @SmallTest
+    public void testAddIncognitoReauthCallback_IsHookedWithMainCallback() {
+        doNothing().when(mIncognitoReauthCallbackMock).onIncognitoReauthSuccess();
+        mIncognitoReauthController.addIncognitoReauthCallback(mIncognitoReauthCallbackMock);
+        mIncognitoReauthController.getIncognitoReauthCallbackForTesting()
+                .onIncognitoReauthSuccess();
+        verify(mIncognitoReauthCallbackMock, times(1)).onIncognitoReauthSuccess();
+    }
+
+    @Test
+    @SmallTest
+    public void testRemoveIncognitoReauthCallback_IsUnHookedWithMainCallback() {
+        doNothing().when(mIncognitoReauthCallbackMock).onIncognitoReauthSuccess();
+        mIncognitoReauthController.addIncognitoReauthCallback(mIncognitoReauthCallbackMock);
+        mIncognitoReauthController.getIncognitoReauthCallbackForTesting()
+                .onIncognitoReauthSuccess();
+        verify(mIncognitoReauthCallbackMock, times(1)).onIncognitoReauthSuccess();
+
+        mIncognitoReauthController.removeIncognitoReauthCallback(mIncognitoReauthCallbackMock);
+        mIncognitoReauthController.getIncognitoReauthCallbackForTesting()
+                .onIncognitoReauthSuccess();
+        verifyNoMoreInteractions(mIncognitoReauthCallbackMock);
+    }
+
+    @Test
+    @SmallTest
+    public void testLayoutStateChange_HidesOrShowsReauthScreen() {
+        doReturn(1).when(mIncognitoTabModelMock).getCount();
+        switchToIncognitoTabModel();
+
+        // Chrome went to background.
+        mIncognitoReauthController.onStopWithNative();
+        // Chrome coming to foregrounded. Re-auth would now be required since there are existing
+        // Incognito tabs.
+        doReturn(true).when(mTabModelSelectorMock).isIncognitoSelected();
+        mIncognitoReauthController.onStartWithNative();
+        assertTrue(mIncognitoReauthController.isReauthPageShowing());
+
+        // Trigger layout state change to indicate tab switcher is hidden.
+        mLayoutStateObserverArgumentCaptor.getValue().onFinishedHiding(LayoutType.TAB_SWITCHER);
+        assertFalse("Re-auth screen shouldn't be shown if we came out of tab switcher.",
+                mIncognitoReauthController.isReauthPageShowing());
+
+        // Trigger layout state change to indicate we are now showing a tab.
+        mLayoutStateObserverArgumentCaptor.getValue().onStartedShowing(LayoutType.BROWSING, false);
+        assertTrue("Re-auth screen should be shown if we are about to show a tab.",
                 mIncognitoReauthController.isReauthPageShowing());
     }
 }

@@ -22,7 +22,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.app.reengagement.ReengagementActivity;
 import org.chromium.chrome.browser.back_press.BackPressManager;
-import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
+import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.TabBookmarker;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -61,6 +61,7 @@ import org.chromium.chrome.browser.ui.system.StatusBarColorController.StatusBarC
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.IntentRequestTracker;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
@@ -85,7 +86,7 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
      * @param shareDelegateSupplier Supplies the {@link ShareDelegate}.
      * @param tabProvider The {@link ActivityTabProvider} to get current tab of the activity.
      * @param profileSupplier Supplier of the currently applicable profile.
-     * @param bookmarkBridgeSupplier Supplier of the bookmark bridge for the current profile.
+     * @param bookmarkModelSupplier Supplier of the bookmark bridge for the current profile.
      * @param tabBookmarkerSupplier Supplier of {@link TabBookmarker} for bookmarking a given tab.
      * @param contextualSearchManagerSupplier Supplier of the {@link ContextualSearchManager}.
      * @param tabModelSelectorSupplier Supplies the {@link TabModelSelector}.
@@ -119,7 +120,7 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
             @NonNull ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             @NonNull ActivityTabProvider tabProvider,
             @NonNull ObservableSupplier<Profile> profileSupplier,
-            @NonNull ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier,
+            @NonNull ObservableSupplier<BookmarkModel> bookmarkModelSupplier,
             @NonNull ObservableSupplier<TabBookmarker> tabBookmarkerSupplier,
             @NonNull Supplier<ContextualSearchManager> contextualSearchManagerSupplier,
             @NonNull ObservableSupplier<TabModelSelector> tabModelSelectorSupplier,
@@ -151,7 +152,7 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
             @NonNull Supplier<CustomTabActivityTabController> tabController) {
         // clang-format off
         super(activity, null, shareDelegateSupplier, tabProvider,
-                profileSupplier, bookmarkBridgeSupplier, tabBookmarkerSupplier,
+                profileSupplier, bookmarkModelSupplier, tabBookmarkerSupplier,
                 contextualSearchManagerSupplier, tabModelSelectorSupplier,
                 new OneshotSupplierImpl<>(), new OneshotSupplierImpl<>(),
                 new OneshotSupplierImpl<>(), new OneshotSupplierImpl<>(), () -> null,
@@ -266,7 +267,8 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                 intentDataProvider.getColorProvider().getNavigationBarDividerColor(),
                 intentDataProvider.isPartialCustomTabFixedHeight(),
                 CustomTabsConnection.getInstance(), intentDataProvider.getSession(),
-                mActivityLifecycleDispatcher, mFullscreenManager);
+                mActivityLifecycleDispatcher, mFullscreenManager,
+                DeviceFormFactor.isWindowOnTablet(mWindowAndroid));
     }
 
     @Override
@@ -309,6 +311,18 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
     @Override
     protected boolean canDrawOutsideScreen() {
         return mCustomTabHeightStrategy.canDrawOutsideScreen();
+    }
+
+    @Override
+    protected void onFindToolbarShown() {
+        super.onFindToolbarShown();
+        mCustomTabHeightStrategy.onFindToolbarShown();
+    }
+
+    @Override
+    protected void onFindToolbarHidden() {
+        super.onFindToolbarHidden();
+        mCustomTabHeightStrategy.onFindToolbarHidden();
     }
 
     @Override

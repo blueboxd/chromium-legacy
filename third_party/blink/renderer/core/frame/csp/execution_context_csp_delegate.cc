@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,7 +108,7 @@ void ExecutionContextCSPDelegate::AddInsecureRequestPolicy(
     // WorkerGlobalScope::Url() before it's ready. https://crbug.com/861564
     // This should be safe, because the insecure navigations set is not used
     // in non-Document contexts.
-    if (window && !Url().Host().IsEmpty()) {
+    if (window && !Url().Host().empty()) {
       uint32_t hash = Url().Host().Impl()->GetHash();
       security_context.AddInsecureNavigationUpgrade(hash);
       if (auto* frame = window->GetFrame()) {
@@ -153,7 +153,7 @@ void ExecutionContextCSPDelegate::DispatchViolationEvent(
   execution_context_->GetTaskRunner(TaskType::kNetworking)
       ->PostTask(
           FROM_HERE,
-          WTF::Bind(
+          WTF::BindOnce(
               &ExecutionContextCSPDelegate::DispatchViolationEventInternal,
               WrapPersistent(this), WrapPersistent(&violation_data),
               WrapPersistent(element)));

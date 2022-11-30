@@ -12,7 +12,7 @@
 
 @protocol SavedPasswordsPresenterObserver
 
-- (void)savedPasswordsDidChange:
+- (void)savedPasswordsDidChanged:
     (password_manager::SavedPasswordsPresenter::SavedPasswordsView)passwords;
 
 @end

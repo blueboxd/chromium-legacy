@@ -6,10 +6,13 @@
 #define CHROME_BROWSER_UI_WEBAUTHN_ACCOUNT_HOVER_LIST_MODEL_H_
 
 #include <stddef.h>
+#include <string>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/webauthn/hover_list_model.h"
+#include "device/fido/discoverable_credential_metadata.h"
 #include "ui/base/models/image_model.h"
 
 namespace device {
@@ -22,11 +25,11 @@ class AccountHoverListModel : public HoverListModel {
   // views that observe the model.
   class Delegate {
    public:
-    virtual void OnItemSelected(int index) = 0;
+    virtual void CredentialSelected(size_t index) = 0;
   };
 
   AccountHoverListModel(
-      const std::vector<device::DiscoverableCredentialMetadata>* creds,
+      base::span<const device::DiscoverableCredentialMetadata> creds,
       Delegate* delegate);
 
   AccountHoverListModel(const AccountHoverListModel&) = delete;
@@ -44,7 +47,20 @@ class AccountHoverListModel : public HoverListModel {
   bool StyleForTwoLines() const override;
 
  private:
-  raw_ptr<const std::vector<device::DiscoverableCredentialMetadata>> creds_;
+  struct Item {
+    Item(std::u16string text, std::u16string description, ui::ImageModel icon);
+    Item(const Item&) = delete;
+    Item(Item&&);
+    Item& operator=(const Item&) = delete;
+    Item& operator=(Item&&);
+    ~Item();
+
+    std::u16string text;
+    std::u16string description;
+    ui::ImageModel icon;
+  };
+
+  std::vector<Item> items_;
   const raw_ptr<Delegate> delegate_;
 };
 

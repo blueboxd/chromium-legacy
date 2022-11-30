@@ -72,7 +72,7 @@ std::string GetLastWord(const std::string& str) {
   DCHECK_EQ(kSpaceChar, str.back());
   size_t last_pos_to_search = str.length() - 2;
 
-  const auto space_before_last_word = str.find_last_of(" ", last_pos_to_search);
+  auto space_before_last_word = str.find_last_of(" \n", last_pos_to_search);
 
   // If not found, return the entire string up to the last position to search
   // else return the last word.
@@ -360,11 +360,11 @@ void EmojiSuggester::SetButtonHighlighted(
 }
 
 int EmojiSuggester::GetPrefValue(const std::string& pref_name) {
-  DictionaryPrefUpdate update(profile_->GetPrefs(),
+  ScopedDictPrefUpdate update(profile_->GetPrefs(),
                               prefs::kAssistiveInputFeatureSettings);
-  auto value = update->FindIntKey(pref_name);
+  auto value = update->FindInt(pref_name);
   if (!value.has_value()) {
-    update->SetIntKey(pref_name, 0);
+    update->Set(pref_name, 0);
     return 0;
   }
   return *value;
@@ -374,9 +374,9 @@ void EmojiSuggester::IncrementPrefValueTilCapped(const std::string& pref_name,
                                                  int max_value) {
   int value = GetPrefValue(pref_name);
   if (value < max_value) {
-    DictionaryPrefUpdate update(profile_->GetPrefs(),
+    ScopedDictPrefUpdate update(profile_->GetPrefs(),
                                 prefs::kAssistiveInputFeatureSettings);
-    update->SetIntKey(pref_name, value + 1);
+    update->Set(pref_name, value + 1);
   }
 }
 

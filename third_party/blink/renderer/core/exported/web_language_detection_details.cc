@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,7 +71,7 @@ String GetLanguageCode(const String& language) {
   // Split function default is not allowed empty entry which cause potentical
   // crash when |langauge_codes| may be empty (for example, if |language| is
   // '-').
-  return language_codes.IsEmpty() ? "" : language_codes[0];
+  return language_codes.empty() ? "" : language_codes[0];
 }
 
 void MatchTargetLanguageWithAcceptLanguages(
@@ -156,7 +156,7 @@ void WebLanguageDetectionDetails::RecordAcceptLanguageAndXmlHtmlLangMetric(
   // Spec: xml:lang takes precedence -- http://www.w3.org/TR/xhtml1/#C_7
   const AtomicString& xml_language = DocumentXmlLanguage(*document);
   if (xml_language) {
-    if (xml_language.IsEmpty()) {
+    if (xml_language.empty()) {
       base::UmaHistogramEnumeration(
           language_histogram_name,
           AcceptLanguageAndXmlHtmlLangUsage::kXmlLangEmpty);
@@ -177,7 +177,7 @@ void WebLanguageDetectionDetails::RecordAcceptLanguageAndXmlHtmlLangMetric(
 
   // We only record html language metric if xml:lang not exists.
   const AtomicString& html_language = DocumentLanguage(*document);
-  if (!html_language || html_language.IsEmpty()) {
+  if (!html_language || html_language.empty()) {
     base::UmaHistogramEnumeration(
         language_histogram_name,
         AcceptLanguageAndXmlHtmlLangUsage::kHtmlLangEmpty);

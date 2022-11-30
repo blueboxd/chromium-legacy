@@ -40,7 +40,7 @@ GLSurfaceWayland::GLSurfaceWayland(gl::GLDisplayEGL* display,
       window_(window) {
   DCHECK(egl_window_);
   DCHECK(window_);
-  window_->root_surface()->SetApplyStateImmediately();
+  window_->root_surface()->ForceImmediateStateApplication();
 }
 
 bool GLSurfaceWayland::Resize(const gfx::Size& size,
@@ -77,7 +77,8 @@ EGLConfig GLSurfaceWayland::GetConfig() {
   return config_;
 }
 
-gfx::SwapResult GLSurfaceWayland::SwapBuffers(PresentationCallback callback) {
+gfx::SwapResult GLSurfaceWayland::SwapBuffers(PresentationCallback callback,
+                                              gl::FrameData data) {
   UpdateVisualSize();
   if (!window_->IsSurfaceConfigured()) {
     // The presentation |callback| must be called after gfx::SwapResult is sent.
@@ -87,15 +88,17 @@ gfx::SwapResult GLSurfaceWayland::SwapBuffers(PresentationCallback callback) {
     scoped_swap_buffers.set_result(gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS);
     return scoped_swap_buffers.result();
   }
-  window_->root_surface()->SetSurfaceBufferScale(scale_factor_);
-  return gl::NativeViewGLSurfaceEGL::SwapBuffers(std::move(callback));
+  window_->root_surface()->set_surface_buffer_scale(scale_factor_);
+  return gl::NativeViewGLSurfaceEGL::SwapBuffers(std::move(callback),
+                                                 std::move(data));
 }
 
 gfx::SwapResult GLSurfaceWayland::PostSubBuffer(int x,
                                                 int y,
                                                 int width,
                                                 int height,
-                                                PresentationCallback callback) {
+                                                PresentationCallback callback,
+                                                gl::FrameData data) {
   UpdateVisualSize();
   if (!window_->IsSurfaceConfigured()) {
     // The presentation |callback| must be called after gfx::SwapResult is sent.
@@ -105,9 +108,9 @@ gfx::SwapResult GLSurfaceWayland::PostSubBuffer(int x,
     scoped_swap_buffers.set_result(gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS);
     return scoped_swap_buffers.result();
   }
-  window_->root_surface()->SetSurfaceBufferScale(scale_factor_);
-  return gl::NativeViewGLSurfaceEGL::PostSubBuffer(x, y, width, height,
-                                                   std::move(callback));
+  window_->root_surface()->set_surface_buffer_scale(scale_factor_);
+  return gl::NativeViewGLSurfaceEGL::PostSubBuffer(
+      x, y, width, height, std::move(callback), std::move(data));
 }
 
 GLSurfaceWayland::~GLSurfaceWayland() {

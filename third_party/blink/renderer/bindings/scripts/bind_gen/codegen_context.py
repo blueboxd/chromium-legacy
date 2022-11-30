@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -6,9 +6,7 @@ import copy
 
 import web_idl
 
-from . import name_style
 from .codegen_format import NonRenderable
-from .path_manager import PathManager
 
 
 class CodeGenContext(object):

@@ -556,16 +556,20 @@ bool AppActivityRegistry::SetAppLimit(
   }
 
   for (auto& entry : activity_registry_) {
-    const AppId& app_id = entry.first;
-    AppDetails& details = entry.second;
-    if (ContributesToWebTimeLimit(app_id, GetAppState(app_id)))
-      details.limit = app_limit;
+    const AppId& app_id_for_entry = entry.first;
+    AppDetails& details_for_entry = entry.second;
+    if (ContributesToWebTimeLimit(app_id_for_entry,
+                                  GetAppState(app_id_for_entry))) {
+      details_for_entry.limit = app_limit;
+    }
   }
 
   for (auto& entry : activity_registry_) {
-    const AppId& app_id = entry.first;
-    if (ContributesToWebTimeLimit(app_id, GetAppState(app_id)))
-      AppLimitUpdated(app_id);
+    const AppId& app_id_for_entry = entry.first;
+    if (ContributesToWebTimeLimit(app_id_for_entry,
+                                  GetAppState(app_id_for_entry))) {
+      AppLimitUpdated(app_id_for_entry);
+    }
   }
 
   return updated;
@@ -626,13 +630,13 @@ void AppActivityRegistry::OnTimeLimitAllowlistChanged(
 
 void AppActivityRegistry::SaveAppActivity() {
   {
-    ListPrefUpdate update(pref_service_, prefs::kPerAppTimeLimitsAppActivities);
-    base::Value* list_value = update.Get();
+    ScopedListPrefUpdate update(pref_service_,
+                                prefs::kPerAppTimeLimitsAppActivities);
+    base::Value::List& list = update.Get();
 
     const base::Time now = base::Time::Now();
 
-    base::Value::ListView list_view = list_value->GetListDeprecated();
-    for (base::Value& entry : list_view) {
+    for (base::Value& entry : list) {
       absl::optional<AppId> app_id = policy::AppIdFromAppInfoDict(entry);
       DCHECK(app_id.has_value());
 
@@ -652,7 +656,7 @@ void AppActivityRegistry::SaveAppActivity() {
       const PersistedAppInfo info = GetPersistedAppInfoForApp(app_id, now);
       base::Value value(base::Value::Type::DICTIONARY);
       info.UpdateAppActivityPreference(&value, /* replace */ false);
-      list_value->Append(std::move(value));
+      list.Append(std::move(value));
     }
     newly_installed_apps_.clear();
   }
@@ -697,11 +701,10 @@ void AppActivityRegistry::OnResetTimeReached(base::Time timestamp) {
 }
 
 void AppActivityRegistry::CleanRegistry(base::Time timestamp) {
-  ListPrefUpdate update(pref_service_, prefs::kPerAppTimeLimitsAppActivities);
+  ScopedListPrefUpdate update(pref_service_,
+                              prefs::kPerAppTimeLimitsAppActivities);
 
-  base::Value* list_value = update.Get();
-
-  base::Value::List& list = list_value->GetList();
+  base::Value::List& list = update.Get();
 
   for (size_t index = 0; index < list.size();) {
     base::Value& entry = list[index];
@@ -830,14 +833,15 @@ void AppActivityRegistry::SetAppInactive(const AppId& app_id,
   if (ContributesToWebTimeLimit(app_id, GetAppState(app_id))) {
     base::TimeDelta active_time = details.activity.RunningActiveTime();
     for (auto& app_info : activity_registry_) {
-      const AppId& app_id = app_info.first;
-      if (!ContributesToWebTimeLimit(app_id, GetAppState(app_id))) {
+      const AppId& app_id_for_info = app_info.first;
+      if (!ContributesToWebTimeLimit(app_id_for_info,
+                                     GetAppState(app_id_for_info))) {
         continue;
       }
 
-      AppDetails& details = app_info.second;
-      if (!details.activity.is_active())
-        details.activity.set_running_active_time(active_time);
+      AppDetails& details_for_info = app_info.second;
+      if (!details_for_info.activity.is_active())
+        details_for_info.activity.set_running_active_time(active_time);
     }
   }
 }

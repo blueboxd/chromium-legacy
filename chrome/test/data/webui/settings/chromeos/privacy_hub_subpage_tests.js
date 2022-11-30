@@ -4,18 +4,19 @@
 
 import '../../chai.js';
 
-import {PrivacyHubBrowserProxyImpl} from 'chrome://os-settings/chromeos/lazy_load.js';
+import {MediaDevicesProxy, PrivacyHubBrowserProxyImpl} from 'chrome://os-settings/chromeos/lazy_load.js';
 import {MetricsConsentBrowserProxyImpl, Router, routes, SecureDnsMode} from 'chrome://os-settings/chromeos/os_settings.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {waitAfterNextRender} from 'chrome://test/test_util.js';
+import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
-import {assertEquals, assertFalse, assertNotReached} from '../../chai_assert.js';
+import {assertEquals, assertFalse, assertNotReached, assertTrue} from '../../chai_assert.js';
 import {TestBrowserProxy} from '../../test_browser_proxy.js';
 
+import {FakeMediaDevices} from './fake_media_devices.js';
 import {DEVICE_METRICS_CONSENT_PREF_NAME, TestMetricsConsentBrowserProxy} from './test_metrics_consent_browser_proxy.js';
 
 const USER_METRICS_CONSENT_PREF_NAME = 'metrics.user_consent';
@@ -94,16 +95,24 @@ async function parametrizedPrivacyHubSubpageTestsuite(privacyHubVersion) {
   /** @type {?TestPrivacyHubBrowserProxy} */
   let privacyHubBrowserProxy = null;
 
+  /** @type {?FakeMediaDevices} */
+  let mediaDevices = null;
+
   setup(async () => {
     loadTimeData.overrideValues(overridedValues(privacyHubVersion));
 
     privacyHubBrowserProxy = new TestPrivacyHubBrowserProxy();
     PrivacyHubBrowserProxyImpl.setInstanceForTesting(privacyHubBrowserProxy);
     privacyHubBrowserProxy.resetResolver('getInitialCameraHardwareToggleState');
+    mediaDevices = new FakeMediaDevices();
+    MediaDevicesProxy.setMediaDevicesForTesting(mediaDevices);
+
 
     PolymerTest.clearBody();
     privacyHubSubpage = document.createElement('settings-privacy-hub-page');
     document.body.appendChild(privacyHubSubpage);
+    await waitAfterNextRender(privacyHubSubpage);
+    flush();
   });
 
   teardown(function() {
@@ -295,6 +304,160 @@ async function parametrizedPrivacyHubSubpageTestsuite(privacyHubVersion) {
       assertEquals(
           deepLinkElement, getDeepActiveElement(),
           'Geolocation toggle should be focused for settingId=1118.');
+    }
+  });
+
+  test('Media device lists in the Privacy Hub subpage', async () => {
+    const getNoCameraText = () =>
+        privacyHubSubpage.shadowRoot.querySelector('#noCamera');
+    const getCameraList = () =>
+        privacyHubSubpage.shadowRoot.querySelector('#cameraList');
+
+    const getNoMicrophoneText = () =>
+        privacyHubSubpage.shadowRoot.querySelector('#noMic');
+    const getMicrophoneList = () =>
+        privacyHubSubpage.shadowRoot.querySelector('#micList');
+
+    const getCameraCrToggle = () =>
+        privacyHubSubpage.shadowRoot.querySelector('#cameraToggle')
+            .shadowRoot.querySelector('cr-toggle');
+
+    // Initially, the lists of media devices should be hidden and `#noMic` and
+    // `#noCamera` should be displayed.
+    assertFalse(!!getCameraList());
+    assertTrue(!!getNoCameraText());
+    assertEquals(
+        getNoCameraText().textContent.trim(),
+        privacyHubSubpage.i18n('noCameraConnectedText'));
+
+    assertFalse(!!getMicrophoneList());
+    assertTrue(!!getNoMicrophoneText());
+    assertEquals(
+        getNoMicrophoneText().textContent.trim(),
+        privacyHubSubpage.i18n('noMicrophoneConnectedText'));
+
+    const tests = [
+      {
+        device: {
+          kind: 'audiooutput',
+          label: 'Fake Speaker 1',
+        },
+        changes: {
+          cam: false,
+          mic: false,
+        },
+      },
+      {
+        device: {
+          kind: 'videoinput',
+          label: 'Fake Camera 1',
+        },
+        changes: {
+          mic: false,
+          cam: true,
+        },
+      },
+      {
+        device: {
+          kind: 'audioinput',
+          label: 'Fake Microphone 1',
+        },
+        changes: {
+          cam: false,
+          mic: true,
+        },
+      },
+      {
+        device: {
+          kind: 'videoinput',
+          label: 'Fake Camera 2',
+        },
+        changes: {
+          cam: true,
+          mic: false,
+        },
+      },
+      {
+        device: {
+          kind: 'audiooutput',
+          label: 'Fake Speaker 2',
+        },
+        changes: {
+          cam: false,
+          mic: false,
+        },
+      },
+      {
+        device: {
+          kind: 'audioinput',
+          label: 'Fake Microphone 2',
+        },
+        changes: {
+          cam: false,
+          mic: true,
+        },
+      },
+    ];
+
+    let cams = 0;
+    let mics = 0;
+
+    // Adding a media device in each iteration.
+    for (const test of tests) {
+      mediaDevices.addDevice(test.device.kind, test.device.label);
+      await waitAfterNextRender(privacyHubSubpage);
+
+      if (test.changes.cam) {
+        cams++;
+      }
+      if (test.changes.mic) {
+        mics++;
+      }
+
+      if (cams) {
+        assertTrue(!!getCameraList());
+        assertEquals(getCameraList().items.length, cams);
+        assertFalse(getCameraCrToggle().disabled);
+      } else {
+        assertFalse(!!getCameraList());
+        assertTrue(getCameraCrToggle().disabled);
+      }
+
+      if (mics) {
+        assertTrue(!!getMicrophoneList());
+        assertEquals(getMicrophoneList().items.length, mics);
+      } else {
+        assertFalse(!!getMicrophoneList());
+      }
+    }
+
+    // Removing the most recently added media device in each iteration.
+    for (const test of tests.reverse()) {
+      mediaDevices.popDevice();
+      await waitAfterNextRender(privacyHubSubpage);
+
+      if (test.changes.cam) {
+        cams--;
+      }
+      if (test.changes.mic) {
+        mics--;
+      }
+
+      if (cams) {
+        assertTrue(!!getCameraList());
+        assertEquals(getCameraList().items.length, cams);
+        assertFalse(getCameraCrToggle().disabled);
+      } else {
+        assertFalse(!!getCameraList());
+        assertTrue(getCameraCrToggle().disabled);
+      }
+
+      if (mics) {
+        assertTrue(!!getMicrophoneList());
+        assertEquals(getMicrophoneList().items.length, mics);
+      } else {
+        assertFalse(!!getMicrophoneList());
+      }
     }
   });
 }

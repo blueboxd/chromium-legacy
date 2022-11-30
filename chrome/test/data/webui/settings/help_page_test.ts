@@ -8,7 +8,7 @@
 import 'chrome://settings/settings.js';
 
 import {assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {waitBeforeNextRender} from 'chrome://webui-test/test_util.js';
+import {waitBeforeNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
 import {getPage, getSection} from './settings_page_test_util.js';
 // clang-format on
@@ -16,7 +16,8 @@ import {getPage, getSection} from './settings_page_test_util.js';
 // Register mocha tests.
 suite('SettingsHelpPage', function() {
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     // The ChromeContentBrowserClient will rewrite chrome://help to
     // chrome://settings/help.
     window.history.pushState('', 'Test', 'chrome://settings/help');

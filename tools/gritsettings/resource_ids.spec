@@ -128,12 +128,16 @@
     "META": {"sizes": {"includes": [5]}},
     "includes": [1345],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/desk_api/resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
+    "includes": [1347],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/gaia_action_buttons/resources.grd": {
     "META": {"sizes": {"includes": [10],}},
     "includes": [1350],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/emoji_picker/resources.grd": {
-    "META": {"sizes": {"includes": [20]}},
+    "META": {"sizes": {"includes": [30]}},
     "includes": [1360],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/launcher_internals/resources.grd": {
@@ -231,10 +235,6 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/new_tab_page_instant/resources.grd": {
     "META": {"sizes": {"includes": [10]}},
     "includes": [1680],
-  },
-   "chrome/browser/resources/webid/webid_resources.grd": {
-    "includes": [1700],
-    "structures": [1720],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/nearby_internals/nearby_internals_resources.grd": {
     "META": {"sizes": {"includes": [20]}},
@@ -334,7 +334,7 @@
     "includes": [2140],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/password_manager/resources.grd": {
-    "META": {"sizes": {"includes": [10]}},
+    "META": {"sizes": {"includes": [50]}},
     "includes": [2150],
   },
   # END chrome/browser section.
@@ -466,6 +466,14 @@
     "META": {"sizes": {"includes": [10]}},
     "includes": [2650],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/inline_login/resources.grd": {
+    "META": {"sizes": {"includes": [20]}},
+    "includes": [2655],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/components/metrics/debug/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [2665],
+  },
   # END chrome/ WebUI resources section
 
   # START chrome/ miscellaneous section.
@@ -526,7 +534,8 @@
     "META": {"sizes": {"includes": [50],}},
     "includes": [2960],
   },
-  "ash/webui/diagnostics_ui/resources/diagnostics_app_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/diagnostics_ui/resources/ash_diagnostics_app_resources.grd": {
+    "META": {"sizes": {"includes": [200],}},
     "includes": [2980],
   },
   "<(SHARED_INTERMEDIATE_DIR)/ash/webui/file_manager/resources/file_manager_swa_resources.grd": {
@@ -537,7 +546,7 @@
     "META": {"sizes": {"includes": [10]}},
     "includes": [3020],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/guest_os_installer/resources/ash_guest_os_installer_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/guest_os_installer/resources/resources.grd": {
     "META": {"sizes": {"includes": [10]}},
     "includes": [3030],
   },
@@ -583,7 +592,7 @@
   "ash/webui/media_app_ui/resources/mock/media_app_bundle_mock_resources.grd": {
     "includes": [3120],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/print_management/resources/ash_print_management_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/print_management/resources/resources.grd": {
     "META": {"join": 2, "sizes": {"includes": [20]}},
     "includes": [3140],
   },
@@ -713,9 +722,6 @@
   },
   "components/omnibox/resources/omnibox_pedal_synonyms.grd": {
     "messages": [3600],
-  },
-  "components/omnibox/resources/omnibox_resources.grd": {
-    "includes": [3620],
   },
   "components/policy/resources/policy_templates.grd": {
     "structures": [3640],
@@ -995,6 +1001,9 @@
   },
   "ui/views/resources/views_resources.grd": {
     "structures": [4840],
+  },
+  "ui/webui/examples/resources/webui_examples_resources.grd": {
+    "messages": [4850],
   },
   "ui/webui/resources/webui_resources.grd": {
     "includes": [4860],

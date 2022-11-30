@@ -18,8 +18,6 @@ import static org.junit.Assert.assertTrue;
 import static org.chromium.chrome.browser.tasks.ReturnToChromeUtil.TAB_SWITCHER_ON_RETURN_MS;
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
-import android.content.Intent;
-
 import androidx.test.espresso.action.GeneralClickAction;
 import androidx.test.espresso.action.GeneralLocation;
 import androidx.test.espresso.action.Press;
@@ -49,7 +47,6 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -94,18 +91,6 @@ public class StartSurfaceNoTabsTest {
         mImmediateReturn = immediateReturn;
     }
 
-    /**
-     * Only launch Chrome without waiting for a current tab.
-     * This test could not use {@link ChromeActivityTestRule#startMainActivityFromLauncher()}
-     * because of its {@link org.chromium.chrome.browser.tab.Tab} dependency.
-     */
-    private void startMainActivityFromLauncher() {
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        mActivityTestRule.prepareUrlIntent(intent, null);
-        mActivityTestRule.launchActivity(intent);
-    }
-
     @Before
     public void setUp() throws IOException {
         if (mImmediateReturn) {
@@ -116,7 +101,7 @@ public class StartSurfaceNoTabsTest {
             assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(-1));
         }
 
-        startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityFromLauncher();
     }
 
     @Test
@@ -155,7 +140,6 @@ public class StartSurfaceNoTabsTest {
     @MediumTest
     @Feature({"StartSurface"})
     // clang-format off
-    @CommandLineFlags.Add({BASE_PARAMS + "exclude_mv_tiles/true"})
     @DisabledTest(message = "https://crbug.com/1263910")
     public void testShow_SingleAsHomepage_SingleTabSwitcher_NoTabs() {
         // clang-format on
@@ -167,7 +151,7 @@ public class StartSurfaceNoTabsTest {
 
         onView(withId(R.id.primary_tasks_surface_view)).check(matches(isDisplayed()));
         onView(withId(R.id.search_box_text)).check(matches(isDisplayed()));
-        onView(withId(R.id.mv_tiles_container)).check(matches(withEffectiveVisibility(GONE)));
+        onView(withId(R.id.mv_tiles_container)).check(matches(isDisplayed()));
         onView(withId(R.id.tab_switcher_title)).check(matches(withEffectiveVisibility(GONE)));
         onView(withId(R.id.carousel_tab_switcher_container))
                 .check(matches(withEffectiveVisibility(GONE)));

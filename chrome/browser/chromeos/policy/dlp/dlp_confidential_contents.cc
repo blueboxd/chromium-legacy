@@ -4,11 +4,11 @@
 
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_contents.h"
 
-#include <algorithm>
 #include <memory>
 #include <vector>
 
 #include "base/containers/cxx20_erase_vector.h"
+#include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
@@ -58,11 +58,6 @@ DlpConfidentialContent::DlpConfidentialContent(aura::Window* window,
     : icon(GetWindowIcon(window)),
       title(window->GetTitle()),
       url(GetWithoutRef(url)) {}
-
-DlpConfidentialContent::DlpConfidentialContent(const gfx::ImageSkia& icon,
-                                               const std::u16string& title,
-                                               const GURL& url)
-    : icon(icon), title(title), url(url) {}
 
 DlpConfidentialContent::DlpConfidentialContent(
     const DlpConfidentialContent& other) = default;
@@ -132,12 +127,6 @@ void DlpConfidentialContents::Add(aura::Window* window, const GURL& url) {
   contents_.insert(DlpConfidentialContent(window, url));
 }
 
-void DlpConfidentialContents::Add(const gfx::ImageSkia& icon,
-                                  const std::u16string& title,
-                                  const GURL& url) {
-  contents_.insert(DlpConfidentialContent(icon, title, url));
-}
-
 void DlpConfidentialContents::ClearAndAdd(content::WebContents* web_contents) {
   contents_.clear();
   Add(web_contents);
@@ -157,12 +146,11 @@ void DlpConfidentialContents::InsertOrUpdate(
     const DlpConfidentialContents& other) {
   contents_.insert(other.contents_.begin(), other.contents_.end());
   for (auto other_content : other.contents_) {
-    auto it =
-        std::find_if(contents_.begin(), contents_.end(),
-                     [&other_content](const DlpConfidentialContent& content) {
-                       return content == other_content &&
-                              content.title != other_content.title;
-                     });
+    auto it = base::ranges::find_if(
+        contents_, [&other_content](const DlpConfidentialContent& content) {
+          return content == other_content &&
+                 content.title != other_content.title;
+        });
     if (it != contents_.end()) {
       *it = other_content;
     }
@@ -197,30 +185,29 @@ void DlpConfidentialContentsCache::Cache(
   if (entries_.size() > cache_size_limit_) {
     entries_.pop_back();
   }
-  DlpConfidentialContentsCountHistogram(dlp::kConfidentialContentsCount,
-                                        entries_.size(), cache_size_limit_);
+  DlpCountHistogram(dlp::kConfidentialContentsCount, entries_.size(),
+                    cache_size_limit_);
 }
 
 bool DlpConfidentialContentsCache::Contains(
     content::WebContents* web_contents,
     DlpRulesManager::Restriction restriction) const {
   const GURL url = web_contents->GetLastCommittedURL();
-  return std::find_if(entries_.begin(), entries_.end(),
-                      [&](const std::unique_ptr<Entry>& entry) {
-                        return entry->restriction == restriction &&
-                               entry->content.url.EqualsIgnoringRef(url);
-                      }) != entries_.end();
+  return base::ranges::any_of(
+      entries_, [&](const std::unique_ptr<Entry>& entry) {
+        return entry->restriction == restriction &&
+               entry->content.url.EqualsIgnoringRef(url);
+      });
 }
 
 bool DlpConfidentialContentsCache::Contains(
     const DlpConfidentialContent& content,
     DlpRulesManager::Restriction restriction) const {
-  return std::find_if(
-             entries_.begin(), entries_.end(),
-             [&](const std::unique_ptr<Entry>& entry) {
-               return entry->restriction == restriction &&
-                      entry->content.url.EqualsIgnoringRef(content.url);
-             }) != entries_.end();
+  return base::ranges::any_of(
+      entries_, [&](const std::unique_ptr<Entry>& entry) {
+        return entry->restriction == restriction &&
+               entry->content.url.EqualsIgnoringRef(content.url);
+      });
 }
 
 size_t DlpConfidentialContentsCache::GetSizeForTesting() const {

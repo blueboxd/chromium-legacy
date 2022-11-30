@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,7 @@ class TransitionPseudoElementData final
 inline bool TransitionPseudoElementData::HasPseudoElements() const {
   return transition_ || transition_outgoing_image_ ||
          transition_incoming_image_ || transition_image_wrapper_ ||
-         !transition_containers_.IsEmpty();
+         !transition_containers_.empty();
 }
 
 inline void TransitionPseudoElementData::ClearPseudoElements() {

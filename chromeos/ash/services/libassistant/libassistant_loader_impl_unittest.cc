@@ -13,8 +13,7 @@
 #include "chromeos/ash/services/assistant/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 class LibassistantLoaderImplTest : public ::testing::Test {
  public:
@@ -52,32 +51,32 @@ TEST_F(LibassistantLoaderImplTest, ShouldRunCallbackWithoutDlcFeature) {
 
 TEST_F(LibassistantLoaderImplTest, ShouldRunCallbackWithDlcFeature) {
   feature_list_.InitAndEnableFeature(
-      chromeos::assistant::features::kEnableLibAssistantDlc);
+      assistant::features::kEnableLibAssistantDlc);
 
   auto* loader = LibassistantLoaderImpl::GetInstance();
   EXPECT_TRUE(loader);
 
   // Should fail without dlcservice client.
-  base::RunLoop run_loop;
+  base::RunLoop run_loop1;
   loader->Load(base::BindOnce(
       [](base::RunLoop* run_loop, bool success) {
         EXPECT_FALSE(success);
         run_loop->Quit();
       },
-      &run_loop));
-  run_loop.Run();
+      &run_loop1));
+  run_loop1.Run();
 
   // Should success with dlcservice client.
+  base::RunLoop run_loop2;
   DlcserviceClient::InitializeFake();
   loader->Load(base::BindOnce(
       [](base::RunLoop* run_loop, bool success) {
         EXPECT_TRUE(success);
         run_loop->Quit();
       },
-      &run_loop));
-  run_loop.Run();
+      &run_loop2));
+  run_loop2.Run();
   DlcserviceClient::Shutdown();
 }
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/containers/contains.h"
 #include "components/viz/common/shared_element_resource_id.h"
 #include "third_party/blink/public/resources/grit/blink_resources.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
@@ -15,9 +16,12 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/document_transition/document_transition_content_element.h"
 #include "third_party/blink/renderer/core/document_transition/document_transition_pseudo_element_base.h"
+#include "third_party/blink/renderer/core/document_transition/document_transition_style_builder.h"
 #include "third_party/blink/renderer/core/document_transition/document_transition_utils.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
+#include "third_party/blink/renderer/core/frame/browser_controls.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -34,6 +38,7 @@
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/size_conversions.h"
 
 namespace blink {
 namespace {
@@ -58,6 +63,27 @@ const String& AnimationUAStyles() {
       String, kAnimationUAStyles,
       (UncompressResourceAsASCIIString(IDR_UASTYLE_TRANSITION_ANIMATIONS_CSS)));
   return kAnimationUAStyles;
+}
+
+absl::optional<String> GetSnapshotViewportOffsetTransform(
+    const gfx::Vector2d& offset,
+    float device_pixel_ratio) {
+  if (!offset.x() && !offset.y())
+    return absl::nullopt;
+
+  // Since we're using the offset in style, convert from physical pixels to CSS
+  // pixels.
+  gfx::Vector2dF css_offset =
+      gfx::ScaleVector2d(offset, 1.f / device_pixel_ratio);
+
+  // The root is translated up and left so that the coordinate space for all
+  // children has its origin at the point that is the top-left when all UI is
+  // hidden. This requires non-root shared elements to be shifted back down and
+  // right.
+  DCHECK_LE(css_offset.x(), 0.f);
+  DCHECK_LE(css_offset.y(), 0.f);
+  return String::Format("transform: translate(%.3fpx, %.3fpx);", css_offset.x(),
+                        css_offset.y());
 }
 
 absl::optional<String> ComputeInsetDifference(PhysicalRect reference_rect,
@@ -85,7 +111,7 @@ absl::optional<String> ComputeInsetDifference(PhysicalRect reference_rect,
       (reference_layout_rect.MaxY() - target_rect.MaxY()).ToFloat();
   float left_offset = (target_rect.X() - reference_layout_rect.X()).ToFloat();
 
-  return String::Format("inset(%.3fpx %.3fpx %.3fpx %.3fpx)", top_offset,
+  return String::Format("inset(%.3fpx %.3fpx %.3fpx %.3fpx);", top_offset,
                         right_offset, bottom_offset, left_offset);
 }
 
@@ -209,12 +235,8 @@ void DocumentTransitionStyleTracker::AddSharedElement(Element* element,
   auto& value = pending_shared_element_tags_
                     .insert(element, HashSet<std::pair<AtomicString, int>>())
                     .stored_value->value;
-  // Find the existing tag if one is there.
-  auto it = std::find_if(
-      value.begin(), value.end(),
-      [&tag](const std::pair<AtomicString, int>& p) { return p.first == tag; });
-  // If it is there, do nothing.
-  if (it != value.end())
+  // Find the existing tag if one is there. If it is there, do nothing.
+  if (base::Contains(value, tag, &std::pair<AtomicString, int>::first))
     return;
   // Otherwise, insert a new sequence id with this tag. We'll use the sequence
   // to sort later.
@@ -326,7 +348,7 @@ bool DocumentTransitionStyleTracker::FlattenAndVerifyElements(
             [](const FlatData* a, const FlatData* b) {
               return a->ordering < b->ordering;
             });
-  DCHECK(!root_data || !root_data->tags.IsEmpty());
+  DCHECK(!root_data || !root_data->tags.empty());
 
   auto have_root_tag = [&root_data](const AtomicString& tag) {
     return root_data && root_data->tags.Contains(tag);
@@ -431,9 +453,13 @@ void DocumentTransitionStyleTracker::CaptureResolved() {
   for (auto& entry : element_data_map_) {
     auto& element_data = entry.value;
     element_data->target_element = nullptr;
-    element_data->cached_border_box_size_in_css_space =
-        element_data->border_box_size_in_css_space;
-    element_data->cached_viewport_matrix = element_data->viewport_matrix;
+
+    // This could be empty if the element was uncontained and was ignored for a
+    // transition.
+    if (!element_data->container_properties.empty()) {
+      element_data->cached_container_properties =
+          element_data->container_properties.back();
+    }
     element_data->cached_visual_overflow_rect_in_layout_space =
         element_data->visual_overflow_rect_in_layout_space;
     element_data->effect_node = nullptr;
@@ -635,11 +661,7 @@ PseudoElement* DocumentTransitionStyleTracker::CreatePseudoElement(
       LayoutSize size;
       viz::SharedElementResourceId snapshot_id;
       if (old_root_data_ && old_root_data_->tags.Contains(document_transition_tag)) {
-        // Always use the the current layout view's size.
-        // TODO(vmpstr): We might want to consider caching the size when we
-        // capture it, in case the layout view sizes change.
-        size = LayoutSize(
-            document_->GetLayoutView()->GetLayoutSize(kIncludeScrollbars));
+        size = LayoutSize(GetSnapshotViewportRect().size());
         snapshot_id = old_root_data_->snapshot_id;
       } else {
         DCHECK(document_transition_tag);
@@ -670,8 +692,7 @@ PseudoElement* DocumentTransitionStyleTracker::CreatePseudoElement(
       LayoutSize size;
       viz::SharedElementResourceId snapshot_id;
       if (new_root_data_ && new_root_data_->tags.Contains(document_transition_tag)) {
-        size = LayoutSize(
-            document_->GetLayoutView()->GetLayoutSize(kIncludeScrollbars));
+        size = LayoutSize(GetSnapshotViewportRect().size());
         snapshot_id = new_root_data_->snapshot_id;
       } else {
         DCHECK(document_transition_tag);
@@ -726,9 +747,15 @@ void DocumentTransitionStyleTracker::RunPostPrePaintSteps() {
                                          ->GetLayoutObject()
                                          ->StyleRef()
                                          .EffectiveZoom();
-    TransformationMatrix viewport_matrix =
+    TransformationMatrix snapshot_matrix =
         layout_object->LocalToAbsoluteTransform();
-    viewport_matrix.Zoom(1.0 / device_pixel_ratio);
+
+    gfx::Vector2d snapshot_to_fixed_offset =
+        -GetSnapshotViewportRect().OffsetFromOrigin();
+    snapshot_matrix.PostTranslate(snapshot_to_fixed_offset.x(),
+                                  snapshot_to_fixed_offset.y());
+
+    snapshot_matrix.Zoom(1.0 / device_pixel_ratio);
 
     // ResizeObserverEntry is created to reuse the logic for parsing object size
     // for different types of LayoutObjects.
@@ -753,17 +780,28 @@ void DocumentTransitionStyleTracker::RunPostPrePaintSteps() {
 
     WritingMode writing_mode = layout_object->StyleRef().GetWritingMode();
 
-    if (viewport_matrix == element_data->viewport_matrix &&
-        border_box_size_in_css_space ==
-            element_data->border_box_size_in_css_space &&
+    ContainerProperties container_properties(border_box_size_in_css_space,
+                                             snapshot_matrix);
+    if (!element_data->container_properties.empty() &&
+        element_data->container_properties.back() == container_properties &&
         visual_overflow_rect_in_layout_space ==
             element_data->visual_overflow_rect_in_layout_space &&
         writing_mode == element_data->container_writing_mode) {
       continue;
     }
 
-    element_data->viewport_matrix = viewport_matrix;
-    element_data->border_box_size_in_css_space = border_box_size_in_css_space;
+    // Only add a new container properties entry if it differs from the last
+    // one.
+    if (element_data->container_properties.empty()) {
+      element_data->container_properties.push_back(container_properties);
+    } else if (element_data->container_properties.back() !=
+               container_properties) {
+      if (state_ == State::kStarted)
+        element_data->container_properties.push_back(container_properties);
+      else
+        element_data->container_properties.back() = container_properties;
+    }
+
     element_data->visual_overflow_rect_in_layout_space =
         visual_overflow_rect_in_layout_space;
     element_data->container_writing_mode = writing_mode;
@@ -941,6 +979,70 @@ DocumentTransitionStyleTracker::StyleRulesToInclude() const {
   return StyleRequest::kAll;
 }
 
+namespace {
+
+// Returns the outsets applied by browser UI on the fixed viewport that will
+// transform it into the snapshot viewport.
+gfx::Outsets GetFixedToSnapshotViewportOutsets(Document& document) {
+  DCHECK(document.View());
+  DCHECK(document.GetPage());
+  DCHECK(document.GetFrame());
+
+  if (!document.GetFrame()->IsOutermostMainFrame())
+    return gfx::Outsets();
+
+  Page& page = *document.GetPage();
+
+  int top = 0;
+  int right = 0;
+  int bottom = 0;
+  int left = 0;
+
+  // TODO(bokan): This assumes any shown ratio implies controls are shown. We
+  // many need to do some synchronization to make this work seamlessly with URL
+  // bar animations.
+  BrowserControls& controls = page.GetBrowserControls();
+  if (page.GetBrowserControls().TopShownRatio()) {
+    top += controls.TopHeight() - controls.TopMinHeight();
+    bottom += controls.BottomHeight() - controls.BottomMinHeight();
+  }
+
+  // TODO(bokan): Account for virtual-keyboard
+
+  // TODO(bokan): Account for scrollbars.
+
+  gfx::Outsets outsets;
+  outsets.set_top(top);
+  outsets.set_right(right);
+  outsets.set_bottom(bottom);
+  outsets.set_left(left);
+  return outsets;
+}
+}  // namespace
+
+gfx::Rect DocumentTransitionStyleTracker::GetSnapshotViewportRect() const {
+  DCHECK(document_->GetLayoutView());
+  DCHECK(document_->View());
+  DCHECK(document_->GetFrame());
+
+  LocalFrameView& view = *document_->View();
+
+  // Start with the full FrameView size, i.e. the position: fixed viewport and
+  // expand the viewport by any insetting UI such as the mobile URL bar,
+  // virtual-keyboard, etc. Note: the FrameView size already includes
+  // scrollbars.
+  gfx::Rect snapshot_viewport_rect(view.Size());
+  snapshot_viewport_rect.Outset(GetFixedToSnapshotViewportOutsets(*document_));
+
+  return snapshot_viewport_rect;
+}
+
+gfx::Vector2d DocumentTransitionStyleTracker::GetRootSnapshotPaintOffset()
+    const {
+  gfx::Outsets outsets = GetFixedToSnapshotViewportOutsets(*document_);
+  return gfx::Vector2d(outsets.left(), outsets.top());
+}
+
 void DocumentTransitionStyleTracker::InvalidateStyle() {
   ua_style_sheet_.reset();
   document_->GetStyleEngine().InvalidateUADocumentTransitionStyle();
@@ -1002,57 +1104,10 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
   // animations.
   const bool add_animations = state_ == State::kStarted;
 
-  StringBuilder builder;
-  builder.Append(StaticUAStyles());
+  DocumentTransitionStyleBuilder builder;
+  builder.AddUAStyle(StaticUAStyles());
   if (add_animations)
-    builder.Append(AnimationUAStyles());
-
-  auto append_selector = [&builder](const String& name, const String& tag) {
-    builder.Append(name);
-    builder.Append("(");
-    builder.Append(tag);
-    builder.Append(")");
-  };
-
-  auto add_plus_lighter = [&builder, &append_selector](const String& tag) {
-    append_selector("html::page-transition-image-wrapper", tag);
-    builder.Append("{ isolation: isolate; }");
-
-    append_selector("html::page-transition-incoming-image", tag);
-    builder.Append("{ mix-blend-mode: plus-lighter; }");
-
-    append_selector("html::page-transition-outgoing-image", tag);
-    builder.Append("{ mix-blend-mode: plus-lighter; }");
-  };
-
-  auto add_animation = [&builder, &append_selector, &add_plus_lighter](
-                           const String& tag,
-                           const TransformationMatrix& source_matrix,
-                           const LayoutSize& source_size) {
-    builder.Append("@keyframes -ua-page-transition-container-anim-");
-    builder.Append(tag);
-    builder.AppendFormat(
-        R"CSS({
-          from {
-           transform: %s;
-           width: %.3fpx;
-           height: %.3fpx;
-          }
-        })CSS",
-        ComputedStyleUtils::ValueForTransformationMatrix(source_matrix, 1,
-                                                         false)
-            ->CssText()
-            .Utf8()
-            .c_str(),
-        source_size.Width().ToFloat(), source_size.Height().ToFloat());
-
-    append_selector("html::page-transition-container", tag);
-    builder.Append("{ animation: -ua-page-transition-container-anim-");
-    builder.Append(tag);
-    builder.Append(" 0.25s both }");
-
-    add_plus_lighter(tag);
-  };
+    builder.AddUAStyle(AnimationUAStyles());
 
   // SUBTLETY AHEAD!
   // There are several situations to consider when creating the styles and
@@ -1082,6 +1137,22 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
   // element only -- no roots involved. Everything is done in the
   // `element_data_map_` loop.
 
+  // Use the document element's effective zoom, since that's what the parent
+  // effective zoom would be.
+  float device_pixel_ratio = document_->documentElement()
+                                 ->GetLayoutObject()
+                                 ->StyleRef()
+                                 .EffectiveZoom();
+
+  // Position the root container behind any viewport insetting widgets (such
+  // as the URL bar) so that it's stable across a transition.
+  absl::optional<String> snapshot_viewport_offset =
+      GetSnapshotViewportOffsetTransform(
+          GetSnapshotViewportRect().OffsetFromOrigin(), device_pixel_ratio);
+  if (snapshot_viewport_offset) {
+    builder.AddRootStyles(*snapshot_viewport_offset);
+  }
+
   for (auto& root_tag : AllRootTags()) {
     // This is case 3 above.
     bool tag_is_old_root =
@@ -1096,28 +1167,24 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
     // changes, but right now we only use the latest layout view size.
     // Note that we don't set the writing-mode since it would inherit from the
     // :root anyway, so there is no reason to put it on the pseudo elements.
-    append_selector("html::page-transition-container", root_tag);
-    builder.Append(
-        R"CSS({
-          right: 0;
-          bottom: 0;
-        })CSS");
+    builder.AddContainerStyles(root_tag, "right: 0; bottom: 0;");
 
     bool tag_is_new_root =
         new_root_data_ && new_root_data_->tags.Contains(root_tag);
     if (tag_is_old_root && tag_is_new_root)
-      add_plus_lighter(root_tag);
+      builder.AddPlusLighter(root_tag);
   }
 
-  // Use the document element's effective zoom, since that's what the parent
-  // effective zoom would be.
-  float device_pixel_ratio = document_->documentElement()
-                                 ->GetLayoutObject()
-                                 ->StyleRef()
-                                 .EffectiveZoom();
   for (auto& entry : element_data_map_) {
     const auto& document_transition_tag = entry.key.GetString();
     auto& element_data = entry.value;
+
+    // TODO(vmpstr): We will run a style resolution before the first time we get
+    // a chance to update our rendering in RunPostPrePaintSteps. There is no
+    // point in adding any styles here, because those will be wrong. The TODO
+    // here is to skip this step earlier, instead of per each element.
+    if (element_data->container_properties.empty())
+      continue;
 
     const bool tag_is_old_root =
         old_root_data_ &&
@@ -1129,45 +1196,24 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
     // `element_data_map_`. This is case 1 above.
     DCHECK(!tag_is_old_root || !tag_is_new_root);
 
-    std::ostringstream writing_mode_stream;
-    writing_mode_stream << element_data->container_writing_mode;
-
     // Skipping this if a tag is a new root. This is case 5 above.
     if (!tag_is_new_root) {
       // ::page-transition-container styles using computed properties for each
       // element.
-      append_selector("html::page-transition-container",
-                      document_transition_tag);
-      builder.AppendFormat(
-          R"CSS({
-            width: %.3fpx;
-            height: %.3fpx;
-            transform: %s;
-            writing-mode: %s;
-          })CSS",
-          element_data->border_box_size_in_css_space.Width().ToFloat(),
-          element_data->border_box_size_in_css_space.Height().ToFloat(),
-          ComputedStyleUtils::ValueForTransformationMatrix(
-              element_data->viewport_matrix, 1, false)
-              ->CssText()
-              .Utf8()
-              .c_str(),
-          writing_mode_stream.str().c_str());
+      builder.AddContainerStyles(document_transition_tag,
+                                 element_data->container_properties.back(),
+                                 element_data->container_writing_mode);
 
       // Incoming inset also only makes sense if the tag is a new shared element
       // (not a new root).
       absl::optional<String> incoming_inset = ComputeInsetDifference(
           element_data->visual_overflow_rect_in_layout_space,
-          LayoutRect(LayoutPoint(), element_data->border_box_size_in_css_space),
+          LayoutRect(LayoutPoint(), element_data->container_properties.back()
+                                        .border_box_size_in_css_space),
           device_pixel_ratio);
       if (incoming_inset) {
-        append_selector("html::page-transition-incoming-image",
-                        document_transition_tag);
-        builder.AppendFormat(
-            R"CSS({
-              object-view-box: %s;
-            })CSS",
-            incoming_inset->Utf8().c_str());
+        builder.AddIncomingObjectViewBox(document_transition_tag,
+                                         *incoming_inset);
       }
     }
 
@@ -1176,17 +1222,12 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
     if (!tag_is_old_root) {
       absl::optional<String> outgoing_inset = ComputeInsetDifference(
           element_data->cached_visual_overflow_rect_in_layout_space,
-          LayoutRect(LayoutPoint(),
-                     element_data->cached_border_box_size_in_css_space),
+          LayoutRect(LayoutPoint(), element_data->cached_container_properties
+                                        .border_box_size_in_css_space),
           device_pixel_ratio);
       if (outgoing_inset) {
-        append_selector("html::page-transition-outgoing-image",
-                        document_transition_tag);
-        builder.AppendFormat(
-            R"CSS({
-              object-view-box: %s;
-            })CSS",
-            outgoing_inset->Utf8().c_str());
+        builder.AddOutgoingObjectViewBox(document_transition_tag,
+                                         *outgoing_inset);
       }
     }
 
@@ -1202,25 +1243,22 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
       // from the old root, rather than from the cached element data.
       if (element_data->old_snapshot_id.IsValid() &&
           (element_data->new_snapshot_id.IsValid() || tag_is_new_root)) {
-        add_animation(document_transition_tag,
-                      element_data->cached_viewport_matrix,
-                      element_data->cached_border_box_size_in_css_space);
+        builder.AddAnimationAndBlending(
+            document_transition_tag, element_data->cached_container_properties);
       } else if (element_data->new_snapshot_id.IsValid() && tag_is_old_root) {
-        // TODO(vmpstr): Update the size to be the cached one, here and when
-        // constructing outgoing pseudos.
-        auto layout_view_size = LayoutSize(
-            document_->GetLayoutView()->GetLayoutSize(kIncludeScrollbars));
+        auto layout_view_size = LayoutSize(GetSnapshotViewportRect().size());
         // Note that we want the size in css space, which means we need to undo
         // the effective zoom.
         layout_view_size.Scale(
             1 / document_->GetLayoutView()->StyleRef().EffectiveZoom());
-        add_animation(document_transition_tag, TransformationMatrix(),
-                      layout_view_size);
+        builder.AddAnimationAndBlending(
+            document_transition_tag,
+            ContainerProperties(layout_view_size, TransformationMatrix()));
       }
     }
   }
 
-  ua_style_sheet_ = builder.ReleaseString();
+  ua_style_sheet_ = builder.Build();
   return *ua_style_sheet_;
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -256,7 +256,7 @@ void RTCRtpTransceiver::setCodecPreferences(
     const HeapVector<Member<RTCRtpCodecCapability>>& codecs,
     ExceptionState& exception_state) {
   Vector<webrtc::RtpCodecCapability> codec_preferences;
-  codec_preferences.ReserveCapacity(codecs.size());
+  codec_preferences.reserve(codecs.size());
   for (const auto& codec : codecs) {
     codec_preferences.emplace_back();
     auto& webrtc_codec = codec_preferences.back();
@@ -322,7 +322,7 @@ void RTCRtpTransceiver::setOfferedRtpHeaderExtensions(
     // Handle invalid requests for mandatory extensions as per
     // https://w3c.github.io/webrtc-extensions/#rtcrtptransceiver-interface
     // Step 2.1 (not handled on the WebRTC level).
-    if (hdr_ext->uri().IsEmpty()) {
+    if (hdr_ext->uri().empty()) {
       exception_state.ThrowTypeError("The extension URL cannot be empty.");
       return;
     }

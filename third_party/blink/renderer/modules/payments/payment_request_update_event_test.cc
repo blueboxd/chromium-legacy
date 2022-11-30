@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,7 +157,7 @@ TEST(PaymentRequestUpdateEventTest, AddressChangeUpdateWithTimeout) {
       ->OnShippingAddressChange(BuildPaymentAddressForTest());
   request->OnUpdatePaymentDetailsTimeoutForTesting();
 
-  v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
+  scope.PerformMicrotaskCheckpoint();
   EXPECT_EQ(
       "AbortError: Timed out waiting for a "
       "PaymentRequestUpdateEvent.updateWith(promise) to resolve.",
@@ -196,7 +196,7 @@ TEST(PaymentRequestUpdateEventTest, OptionChangeUpdateWithTimeout) {
       ->OnShippingAddressChange(BuildPaymentAddressForTest());
   request->OnUpdatePaymentDetailsTimeoutForTesting();
 
-  v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
+  scope.PerformMicrotaskCheckpoint();
   EXPECT_EQ(
       "AbortError: Timed out waiting for a "
       "PaymentRequestUpdateEvent.updateWith(promise) to resolve.",
@@ -241,7 +241,7 @@ TEST(PaymentRequestUpdateEventTest, AddressChangePromiseTimeout) {
 
   request->OnUpdatePaymentDetailsTimeoutForTesting();
 
-  v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
+  scope.PerformMicrotaskCheckpoint();
   EXPECT_EQ(
       "AbortError: Timed out waiting for a "
       "PaymentRequestUpdateEvent.updateWith(promise) to resolve.",
@@ -278,7 +278,7 @@ TEST(PaymentRequestUpdateEventTest, OptionChangePromiseTimeout) {
 
   request->OnUpdatePaymentDetailsTimeoutForTesting();
 
-  v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
+  scope.PerformMicrotaskCheckpoint();
   EXPECT_EQ(
       "AbortError: Timed out waiting for a "
       "PaymentRequestUpdateEvent.updateWith(promise) to resolve.",

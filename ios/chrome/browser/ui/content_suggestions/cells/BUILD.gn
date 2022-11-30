@@ -44,6 +44,7 @@ source_set("cells") {
     "resources:ntp_most_visited_tile",
     "resources:ntp_readinglist_icon",
     "resources:ntp_recent_icon",
+    "resources:ntp_whats_new_icon",
     "//base",
     "//components/ntp_tiles",
     "//ios/chrome/app/strings",
@@ -85,7 +86,7 @@ source_set("constants") {
   ]
 
   deps = [
-    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/content_suggestions:feature_flags",
     "//ios/chrome/browser/ui/icons:symbols",
     "//ui/base:base",
@@ -98,9 +99,7 @@ source_set("unit_tests") {
   deps = [
     ":cells",
     "//base",
-    "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/collection_view",
-    "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui/favicon",
     "//testing/gtest",
     "//third_party/ocmock",

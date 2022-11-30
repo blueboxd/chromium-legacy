@@ -277,12 +277,15 @@ void CredentialProviderService::RemoveCredentials(
   for (const auto& form : forms) {
     NSString* recordID = RecordIdentifierForPasswordForm(*form);
     DCHECK(recordID);
+    // TODO(crbug.com/1370113): Verify if this is the call leading to the error.
+    DCHECK([credential_store_ credentialWithRecordIdentifier:recordID])
+        << "Credential does not exist in the storage, " << recordID;
     [credential_store_ removeCredentialWithRecordIdentifier:recordID];
   }
 }
 
 void CredentialProviderService::UpdateAccountId() {
-  ChromeIdentity* identity = authentication_service_->GetPrimaryIdentity(
+  id<SystemIdentity> identity = authentication_service_->GetPrimaryIdentity(
       signin::ConsentLevel::kSignin);
   if (authentication_service_->HasPrimaryIdentityManaged(
           signin::ConsentLevel::kSignin)) {
@@ -296,15 +299,18 @@ void CredentialProviderService::UpdateAccountId() {
 }
 
 void CredentialProviderService::UpdateUserEmail() {
-  ChromeIdentity* identity =
-      authentication_service_->GetPrimaryIdentity(signin::ConsentLevel::kSync);
-
-  bool sync_enabled = sync_service_->IsSyncFeatureEnabled();
-  bool passwords_sync_enabled =
+  const bool sync_enabled = sync_service_->IsSyncFeatureEnabled();
+  const bool passwords_sync_enabled =
       sync_service_->GetUserSettings()->GetSelectedTypes().Has(
           syncer::UserSelectableType::kPasswords);
-  NSString* user_email =
-      (sync_enabled && passwords_sync_enabled) ? identity.userEmail : nil;
+
+  NSString* user_email = nil;
+  if (sync_enabled && passwords_sync_enabled) {
+    id<SystemIdentity> identity = authentication_service_->GetPrimaryIdentity(
+        signin::ConsentLevel::kSync);
+    user_email = identity.userEmail;
+  }
+
   [app_group::GetGroupUserDefaults()
       setObject:user_email
          forKey:AppGroupUserDefaultsCredentialProviderUserEmail()];

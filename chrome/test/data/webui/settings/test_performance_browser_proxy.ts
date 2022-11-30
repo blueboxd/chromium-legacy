@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,13 +7,30 @@ import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
 export class TestPerformanceBrowserProxy extends TestBrowserProxy implements
     PerformanceBrowserProxy {
+  private validationResult_: boolean = true;
+
   constructor() {
     super([
+      'openBatterySaverFeedbackDialog',
       'openHighEfficiencyFeedbackDialog',
+      'validateTabDiscardExceptionRule',
     ]);
+  }
+
+  openBatterySaverFeedbackDialog() {
+    this.methodCalled('openBatterySaverFeedbackDialog');
   }
 
   openHighEfficiencyFeedbackDialog() {
     this.methodCalled('openHighEfficiencyFeedbackDialog');
+  }
+
+  setValidationResult(result: boolean) {
+    this.validationResult_ = result;
+  }
+
+  validateTabDiscardExceptionRule(rule: string) {
+    this.methodCalled('validateTabDiscardExceptionRule', rule);
+    return Promise.resolve(this.validationResult_);
   }
 }

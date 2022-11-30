@@ -9,7 +9,9 @@
 #include <utility>
 
 #include "android_webview/browser/aw_browser_process.h"
+#include "android_webview/browser/aw_client_hints_controller_delegate.h"
 #include "android_webview/browser/aw_content_browser_client.h"
+#include "android_webview/browser/aw_contents_origin_matcher.h"
 #include "android_webview/browser/aw_download_manager_delegate.h"
 #include "android_webview/browser/aw_form_database_service.h"
 #include "android_webview/browser/aw_permission_manager.h"
@@ -24,6 +26,9 @@
 #include "android_webview/common/aw_features.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/common/crash_reporter/crash_keys.h"
+#include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
 #include "base/base_paths_posix.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -43,6 +48,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/json_pref_store.h"
+#include "components/prefs/pref_name_set.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
@@ -148,7 +154,9 @@ void MigrateProfileData(base::FilePath cache_path,
 
 AwBrowserContext::AwBrowserContext()
     : context_storage_path_(GetContextStoragePath()),
-      simple_factory_key_(GetPath(), IsOffTheRecord()) {
+      simple_factory_key_(GetPath(), IsOffTheRecord()),
+      service_worker_xrw_allowlist_matcher_(
+          base::MakeRefCounted<AwContentsOriginMatcher>()) {
   DCHECK(!g_browser_context);
 
   TRACE_EVENT0("startup", "AwBrowserContext::AwBrowserContext");
@@ -229,6 +237,17 @@ base::FilePath AwBrowserContext::GetCookieStorePath() {
   return GetCookieManager()->GetCookieStorePath();
 }
 
+base::android::ScopedJavaLocalRef<jobjectArray>
+AwBrowserContext::UpdateServiceWorkerXRequestedWithAllowListOriginMatcher(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobjectArray>& jrules) {
+  std::vector<std::string> rules;
+  base::android::AppendJavaStringArrayToStringVector(env, jrules, &rules);
+  std::vector<std::string> bad_rules =
+      service_worker_xrw_allowlist_matcher_->UpdateRuleList(rules);
+  return base::android::ToJavaArrayOfStrings(env, bad_rules);
+}
+
 // static
 base::FilePath AwBrowserContext::GetContextStoragePath() {
   base::FilePath user_data_dir;
@@ -274,7 +293,7 @@ void AwBrowserContext::CreateUserPrefService() {
 
   PrefServiceFactory pref_service_factory;
 
-  std::set<std::string> persistent_prefs;
+  PrefNameSet persistent_prefs;
   // Persisted to avoid having to provision MediaDrm every time the
   // application tries to play protected content after restart.
   persistent_prefs.insert(cdm::prefs::kMediaDrmStorage);
@@ -427,7 +446,15 @@ AwBrowserContext::GetPermissionControllerDelegate() {
 
 content::ClientHintsControllerDelegate*
 AwBrowserContext::GetClientHintsControllerDelegate() {
-  return nullptr;
+  if (!base::FeatureList::IsEnabled(
+          android_webview::features::kWebViewClientHintsControllerDelegate)) {
+    return nullptr;
+  }
+  if (!client_hints_controller_delegate_.get()) {
+    client_hints_controller_delegate_ =
+        std::make_unique<AwClientHintsControllerDelegate>();
+  }
+  return client_hints_controller_delegate_.get();
 }
 
 content::BackgroundFetchDelegate*
@@ -565,6 +592,11 @@ AwBrowserContext::GetJavaBrowserContext() {
 
 jlong AwBrowserContext::GetQuotaManagerBridge(JNIEnv* env) {
   return reinterpret_cast<intptr_t>(GetQuotaManagerBridge());
+}
+
+scoped_refptr<AwContentsOriginMatcher>
+AwBrowserContext::service_worker_xrw_allowlist_matcher() {
+  return service_worker_xrw_allowlist_matcher_;
 }
 
 }  // namespace android_webview

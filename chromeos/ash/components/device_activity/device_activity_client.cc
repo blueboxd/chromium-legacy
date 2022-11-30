@@ -18,8 +18,7 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/private_membership/src/private_membership_rlwe_client.h"
 
-namespace ash {
-namespace device_activity {
+namespace ash::device_activity {
 
 namespace psm_rlwe = private_membership::rlwe;
 
@@ -209,14 +208,12 @@ void DeviceActivityClient::RecordDeviceActivityMethodCalled(
 DeviceActivityClient::DeviceActivityClient(
     NetworkStateHandler* handler,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    std::unique_ptr<PsmDelegate> psm_delegate,
     std::unique_ptr<base::RepeatingTimer> report_timer,
     const std::string& fresnel_base_url,
     const std::string& api_key,
     std::vector<std::unique_ptr<DeviceActiveUseCase>> use_cases)
     : network_state_handler_(handler),
       url_loader_factory_(url_loader_factory),
-      psm_delegate_(std::move(psm_delegate)),
       report_timer_(std::move(report_timer)),
       fresnel_base_url_(fresnel_base_url),
       api_key_(api_key),
@@ -226,7 +223,6 @@ DeviceActivityClient::DeviceActivityClient(
 
   DCHECK(network_state_handler_);
   DCHECK(url_loader_factory_);
-  DCHECK(psm_delegate_);
   DCHECK(report_timer_);
   DCHECK(!use_cases_.empty());
 
@@ -393,8 +389,7 @@ void DeviceActivityClient::CancelUseCases() {
   std::swap(pending_use_cases_, pending_use_cases);
 
   for (auto* use_case : GetUseCases()) {
-    // Setting  the window identifier resets the object to a fresh state.
-    use_case->SetWindowIdentifier(absl::nullopt);
+    use_case->ClearSavedState();
   }
 
   TransitionToIdle(nullptr);
@@ -412,31 +407,16 @@ void DeviceActivityClient::TransitionOutOfIdle(
   // Begin phase one of checking membership if the device has not pinged yet
   // within the given use case window.
   // TODO(https://crbug.com/1262187): Remove hardcoded use case when adding
-  // support for additional use cases (i.e MONTHLY, ALL_TIME, etc.).
+  // support for additional use cases (i.e MONTHLY, FIRST_ACTIVE, etc.).
   if (current_use_case->IsDevicePingRequired(
           last_transition_out_of_idle_time_)) {
-    current_use_case->SetWindowIdentifier(
-        current_use_case->GenerateUTCWindowIdentifier(
-            last_transition_out_of_idle_time_));
-    auto current_psm_id = current_use_case->GetPsmIdentifier();
+    bool success = current_use_case->SetWindowIdentifier(
+        last_transition_out_of_idle_time_);
 
-    // Check if the PSM id is generated.
-    if (!current_psm_id.has_value()) {
+    if (!success) {
       TransitionToIdle(current_use_case);
       return;
     }
-
-    std::vector<psm_rlwe::RlwePlaintextId> psm_rlwe_ids = {
-        current_psm_id.value()};
-    auto status_or_client = psm_delegate_->CreatePsmClient(
-        current_use_case->GetPsmUseCase(), psm_rlwe_ids);
-
-    if (!status_or_client.ok()) {
-      TransitionToIdle(current_use_case);
-      return;
-    }
-
-    current_use_case->SetPsmRlweClient(std::move(status_or_client.value()));
 
     switch (current_use_case->GetPsmUseCase()) {
       case psm_rlwe::RlweUseCase::CROS_FRESNEL_DAILY:
@@ -467,6 +447,27 @@ void DeviceActivityClient::TransitionOutOfIdle(
         // |TransitionToCheckIn| if the local state pref is set.
         if (base::FeatureList::IsEnabled(
                 features::kDeviceActiveClientMonthlyCheckIn)) {
+          // During rollout, we perform CheckIn without CheckMembership for
+          // powerwash, recovery, or RMA devices.
+          TransitionToCheckIn(current_use_case);
+          return;
+        }
+
+        break;
+      case psm_rlwe::RlweUseCase::CROS_FRESNEL_FIRST_ACTIVE:
+        // Check membership continues when the cached local state pref
+        // is not set. The local state pref may not be set if the device is
+        // new, powerwashed, recovered, RMA, or the local state was corrupted.
+        if (base::FeatureList::IsEnabled(
+                features::kDeviceActiveClientFirstActiveCheckMembership) &&
+            !current_use_case->IsLastKnownPingTimestampSet()) {
+          TransitionToCheckMembershipOprf(current_use_case);
+          return;
+        }
+
+        // |TransitionToCheckIn| if the local state pref is set.
+        if (base::FeatureList::IsEnabled(
+                features::kDeviceActiveClientFirstActiveCheckIn)) {
           // During rollout, we perform CheckIn without CheckMembership for
           // powerwash, recovery, or RMA devices.
           TransitionToCheckIn(current_use_case);
@@ -766,6 +767,7 @@ void DeviceActivityClient::OnCheckMembershipQueryDone(
       rlwe_membership_responses.membership_responses(0).membership_response();
 
   bool is_psm_id_member = membership_response.is_member();
+  std::string timestamp_ciphertext = membership_response.value();
 
   // Record the query membership result to UMA histogram.
   RecordQueryMembershipResultBoolean(is_psm_id_member);
@@ -774,15 +776,26 @@ void DeviceActivityClient::OnCheckMembershipQueryDone(
     RecordDurationStateMetric(state_, state_timer_.Elapsed());
     TransitionToCheckIn(current_use_case);
     return;
+  }
+
+  if (current_use_case->GetPsmUseCase() ==
+      psm_rlwe::RlweUseCase::CROS_FRESNEL_FIRST_ACTIVE) {
+    // The first active use case stores the first active ts ciphertext
+    // in the psm serverside.
+    // This allows us to retrieve and decrypt the timestamp since the
+    // membership is true.
+    current_use_case->SetLastKnownPingTimestamp(
+        current_use_case->DecryptPsmValueAsTimestamp(timestamp_ciphertext));
   } else {
     // Update local state to signal ping has already been sent for use case
     // window.
     current_use_case->SetLastKnownPingTimestamp(
         last_transition_out_of_idle_time_);
-    RecordDurationStateMetric(state_, state_timer_.Elapsed());
-    TransitionToIdle(current_use_case);
-    return;
   }
+
+  RecordDurationStateMetric(state_, state_timer_.Elapsed());
+  TransitionToIdle(current_use_case);
+  return;
 }
 
 void DeviceActivityClient::TransitionToCheckIn(
@@ -827,6 +840,17 @@ void DeviceActivityClient::TransitionToCheckIn(
 
   // Report UMA histogram for transitioning state to |kCheckingIn|.
   RecordStateCountMetric(state_);
+
+  if (current_use_case->GetPsmUseCase() ==
+          psm_rlwe::RlweUseCase::CROS_FRESNEL_FIRST_ACTIVE &&
+      !current_use_case->EncryptPsmValueAsCiphertext(
+          last_transition_out_of_idle_time_)) {
+    VLOG(1) << "Failed to encrypt and store psm value as ciphertext for the "
+               "first active use case.";
+    TransitionToIdle(current_use_case);
+    RecordDurationStateMetric(state_, state_timer_.Elapsed());
+    return;
+  }
 
   // Generate Fresnel PSM import request body.
   device_activity::ImportDataRequest import_request =
@@ -886,8 +910,7 @@ void DeviceActivityClient::TransitionToIdle(
   state_ = State::kIdle;
 
   if (current_use_case) {
-    // This will also reset the |current_use_case| psm_id field.
-    current_use_case->SetWindowIdentifier(absl::nullopt);
+    current_use_case->ClearSavedState();
     current_use_case = nullptr;
 
     // Pop the front of the queue since the use case has tried reporting.
@@ -905,5 +928,4 @@ void DeviceActivityClient::TransitionToIdle(
   RecordStateCountMetric(state_);
 }
 
-}  // namespace device_activity
-}  // namespace ash
+}  // namespace ash::device_activity

@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="AppBanners.BeforeInstallEvent"
-    enum="AppBannersBeforeInstallEvent" expires_after="2023-02-05">
+    enum="AppBannersBeforeInstallEvent" expires_after="2023-04-09">
   <owner>dominickn@chromium.org</owner>
   <owner>pjmclachlan@google.com</owner>
   <owner>desktop-pwas-team@google.com</owner>
@@ -38,7 +38,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AppBanners.DismissEvent" enum="AppBannersDismissEvent"
-    expires_after="2023-01-29">
+    expires_after="2023-04-02">
   <owner>pjmclachlan@google.com</owner>
   <owner>pcovell@google.com</owner>
   <summary>
@@ -50,7 +50,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AppBanners.DisplayEvent" enum="AppBannersDisplayEvent"
-    expires_after="2023-01-29">
+    expires_after="2023-04-02">
   <owner>pjmclachlan@google.com</owner>
   <owner>pcovell@google.com</owner>
   <summary>
@@ -62,7 +62,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AppBanners.InstallableStatusCode" enum="InstallableStatusCode"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>dominickn@chromium.org</owner>
   <owner>pjmclachlan@google.com</owner>
   <summary>
@@ -75,7 +75,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AppBanners.InstallEvent" enum="AppBannersInstallEvent"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>dominickn@chromium.org</owner>
   <owner>pjmclachlan@google.com</owner>
   <owner>pcovell@google.com</owner>
@@ -157,7 +157,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.AddToHomescreenDialog.Timeout" units="ms"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>dominickn@chromium.org</owner>
   <owner>peconn@chromium.org</owner>
   <summary>
@@ -196,7 +196,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.AppIdentityDialog.NotShowing"
-    enum="AppIdentityDisplayMetric" expires_after="2023-01-15">
+    enum="AppIdentityDisplayMetric" expires_after="2023-03-19">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -212,7 +212,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.AppIdentityDialog.Showing"
-    enum="AppIdentityDisplayMetric" expires_after="2023-01-15">
+    enum="AppIdentityDisplayMetric" expires_after="2023-03-19">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -229,7 +229,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.AppSettingsPage.EntryPoints"
-    enum="AppSettingsPageEntryPoints" expires_after="2023-01-15">
+    enum="AppSettingsPageEntryPoints" expires_after="2023-03-19">
   <owner>phillis@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -240,7 +240,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.CheckServiceWorker.Status"
-    enum="ServiceWorkerOfflineCapability" expires_after="2022-10-23">
+    enum="ServiceWorkerOfflineCapability" expires_after="2023-02-26">
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -432,6 +432,131 @@ chromium-metrics-reviews@google.com.
     Records whether the user uninstalled preinstalled web app data is migrated
     from the external prefs to the user uninstalled preinstalled prefs. This is
     always measured on startup before the WebAppProvider subsystems initialize.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.FileHandlersRegistration.Result" enum="BooleanSuccess"
+    expires_after="2023-10-10">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the result of file handler registration for PWAs. This is triggered
+    during installations or updates, when set by policy changes in the web app
+    settings policy or when an user modifies the file handling settings from the
+    chrome://app-settings/ page per app.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.FileHandlersUnregistration.Result"
+    enum="BooleanSuccess" expires_after="2023-10-10">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the result of file handler unregistration for PWAs. This is
+    triggered during uninstalls or updates, when set by policy changes in the
+    web app settings policy or when an user modifies the file handling settings
+    from the chrome://app-settings page per app.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.Icon.AppsWithAppServiceFallbackIcon" units="web apps"
+    expires_after="2023-08-01">
+  <owner>alancutter@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the number of web apps that have fallback icons served by app
+    service. This gets recorded at browser profile start up in both the Lacros
+    and Ash processes.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.Icon.AppsWithAppServiceMissingIcon" units="web apps"
+    expires_after="2023-08-01">
+  <owner>alancutter@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the number of web apps that have missing icons served by app
+    service. This gets recorded at browser profile start up in both the Lacros
+    and Ash processes.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.Icon.AppsWithEmptyDownloadedIconSizes" units="web apps"
+    expires_after="2023-08-01">
+  <owner>alancutter@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the number of web apps that have an empty
+    WebApp::downloaded_icon_sizes field. This indicates an icon failure state
+    caused by an installation bug. This gets recorded at browser profile start
+    up in both the Lacros and Ash processes.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.Icon.AppsWithEmptyIconBitmap" units="web apps"
+    expires_after="2023-08-01">
+  <owner>alancutter@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the number of web apps that have missing icon bitmap data. This gets
+    recorded at browser profile start up in both the Lacros and Ash processes.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.Icon.AppsWithEmptyIconFile" units="web apps"
+    expires_after="2023-08-01">
+  <owner>alancutter@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the number of web apps that have empty icon files. This gets
+    recorded at browser profile start up in both the Lacros and Ash processes.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.Icon.AppsWithGeneratedIconBitmap" units="web apps"
+    expires_after="2023-08-01">
+  <owner>alancutter@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the number of web apps that have a generated letter icon bitmap
+    (distinct from the is_generated_icon flag). This gets recorded at browser
+    profile start up in both the Lacros and Ash processes.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.Icon.AppsWithGeneratedIconFlag" units="web apps"
+    expires_after="2023-08-01">
+  <owner>alancutter@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the number of web apps that have their WebApp::is_generated_icon
+    field set. This indicates a letter icon was generated during installation
+    instead of using a real app icon. This gets recorded at browser profile
+    start up in both the Lacros and Ash processes.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.Icon.AppsWithGeneratedIconFlagFalseNegative"
+    units="web apps" expires_after="2023-08-01">
+  <owner>alancutter@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the number of web apps that have their WebApp::is_generated_icon
+    field unset but actually have a generated icon bitmap. This indicates a
+    letter icon was generated during installation instead of using a real app
+    icon and a manifest update clobbered the correct value of is_generated_icon
+    (https://crbug.com/1317922). This gets recorded at browser profile start up
+    in both the Lacros and Ash processes.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.Icon.AppsWithMissingIconFile" units="web apps"
+    expires_after="2023-08-01">
+  <owner>alancutter@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the number of web apps that have missing icon files. This gets
+    recorded at browser profile start up in both the Lacros and Ash processes.
   </summary>
 </histogram>
 
@@ -673,6 +798,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="WebApp.OpenMode" enum="WebAppOpenMode" expires_after="never">
+<!-- expires-never: The dPWA team uses this from time to time to see how web
+      apps are opened. davidbienvenu@ -->
+
+  <owner>davidbienvenu@chromium.org</owner>
+  <owner>dmurph@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Recorded when Chrome is launched to open a Web App; e.g., with --app-id.
+    Metric describes how the web app opened; e.g., in a standalone window or in
+    a tab. Previously recorded in Launch.Modes.
+  </summary>
+</histogram>
+
 <histogram name="WebApp.Preinstalled.AppDuplicationFixApplied" units="apps"
     expires_after="2023-02-12">
   <owner>alancutter@chromium.org</owner>
@@ -784,7 +923,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Preinstalled.EnabledCount" units="apps"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -805,7 +944,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Preinstalled.MigratingWebAppAbsentChromeAppAbsent"
-    units="apps" expires_after="2023-01-15">
+    units="apps" expires_after="2023-03-19">
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -816,7 +955,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Preinstalled.MigratingWebAppAbsentChromeAppPresent"
-    units="apps" expires_after="2023-01-15">
+    units="apps" expires_after="2023-03-19">
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -827,7 +966,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Preinstalled.MigratingWebAppPresentChromeAppAbsent"
-    units="apps" expires_after="2023-01-15">
+    units="apps" expires_after="2023-03-19">
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -838,7 +977,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Preinstalled.MigratingWebAppPresentChromeAppPresent"
-    units="apps" expires_after="2023-01-15">
+    units="apps" expires_after="2023-03-19">
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -937,7 +1076,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.SystemApps.FreshInstallDuration" units="ms"
-    expires_after="2023-01-29">
+    expires_after="2023-04-02">
   <owner>ortuno@chromium.org</owner>
   <owner>qjw@chromium.org</owner>
   <summary>
@@ -1040,7 +1179,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.WebAppUrlLoaderPrepareForLoadResult"
-    enum="WebAppUrlLoaderResult" expires_after="2023-01-29">
+    enum="WebAppUrlLoaderResult" expires_after="2023-04-02">
   <owner>qjw@chromium.org</owner>
   <owner>ortuno@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>

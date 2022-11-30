@@ -120,8 +120,8 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, IsExtensionAppOpen) {
         extension_app->id(),
         apps::GetEventFlags(WindowOpenDisposition::NEW_WINDOW,
                             false /* preferred_containner */),
-        apps::mojom::LaunchSource::kFromTest,
-        apps::MakeWindowInfo(
+        apps::LaunchSource::kFromTest,
+        std::make_unique<apps::WindowInfo>(
             display::Screen::GetScreen()->GetPrimaryDisplay().id()));
     app_loaded_observer.Wait();
   }
@@ -153,10 +153,8 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, UninstallApp) {
   // Bring up the app list.
   EXPECT_FALSE(client->GetAppListWindow());
   client->ShowAppList();
-  if (ash::features::IsProductivityLauncherEnabled()) {
-    ash::AppListTestApi().WaitForBubbleWindow(
-        /*wait_for_opening_animation=*/false);
-  }
+  ash::AppListTestApi().WaitForBubbleWindow(
+      /*wait_for_opening_animation=*/false);
   EXPECT_TRUE(client->GetAppListWindow());
 
   EXPECT_TRUE(wm::GetTransientChildren(client->GetAppListWindow()).empty());
@@ -164,9 +162,6 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, UninstallApp) {
   // Open the uninstall dialog.
   base::RunLoop run_loop;
   client->UninstallApp(profile(), app->id());
-
-  apps::AppServiceProxyFactory::GetForProfile(profile())
-      ->FlushMojoCallsForTesting();
 
   run_loop.RunUntilIdle();
   EXPECT_FALSE(wm::GetTransientChildren(client->GetAppListWindow()).empty());
@@ -379,10 +374,8 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, OpenSearchResult) {
 
   // Show the launcher.
   client->ShowAppList();
-  if (ash::features::IsProductivityLauncherEnabled()) {
-    ash::AppListTestApi().WaitForBubbleWindow(
-        /*wait_for_opening_animation=*/false);
-  }
+  ash::AppListTestApi().WaitForBubbleWindow(
+      /*wait_for_opening_animation=*/false);
 
   AppListModelUpdater* model_updater = test::GetModelUpdater(client);
   ASSERT_TRUE(model_updater);
@@ -581,10 +574,8 @@ IN_PROC_BROWSER_TEST_F(AppListClientSearchResultsBrowserTest,
 
   // Show the app list first, otherwise we won't have a search box to update.
   client->ShowAppList();
-  if (ash::features::IsProductivityLauncherEnabled()) {
-    ash::AppListTestApi().WaitForBubbleWindow(
-        /*wait_for_opening_animation=*/false);
-  }
+  ash::AppListTestApi().WaitForBubbleWindow(
+      /*wait_for_opening_animation=*/false);
 
   // Currently the search box is empty, so we have no result.
   EXPECT_FALSE(search_controller->GetResultByTitleForTest(title));
@@ -717,10 +708,8 @@ class DurationBetweenSeesionActivationAndFirstLauncherShowingBrowserTest
   void ShowAppListAndVerify() {
     auto* client = AppListClientImpl::GetInstance();
     client->ShowAppList();
-    if (ash::features::IsProductivityLauncherEnabled()) {
-      ash::AppListTestApi().WaitForBubbleWindow(
-          /*wait_for_opening_animation=*/false);
-    }
+    ash::AppListTestApi().WaitForBubbleWindow(
+        /*wait_for_opening_animation=*/false);
     ASSERT_TRUE(client->app_list_visible());
   }
 

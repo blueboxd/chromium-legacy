@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {FeedbackEvent, FeedbackUiBrowserProxy, FeedbackUiBrowserProxyImpl, FeedbackUiElement} from 'chrome://cast-feedback/cast_feedback_ui.js';
-import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
@@ -50,7 +50,8 @@ suite('Suite', function() {
   }
 
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     browserProxy = new TestFeedbackUiBrowserProxy();
     FeedbackUiBrowserProxyImpl.setInstance(browserProxy);
     ui = document.createElement('feedback-ui');

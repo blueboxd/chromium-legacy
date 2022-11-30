@@ -31,14 +31,9 @@ class EmptyWebsiteLoginManagerImpl : public WebsiteLoginManager {
   void GetPasswordForLogin(
       const Login& login,
       base::OnceCallback<void(bool, std::string)> callback) override;
-  void DeletePasswordForLogin(const Login& login,
-                              base::OnceCallback<void(bool)> callback) override;
   void GetGetLastTimePasswordUsed(
       const Login& login,
       base::OnceCallback<void(absl::optional<base::Time>)> callback) override;
-  void EditPasswordForLogin(const Login& login,
-                            const std::string& new_password,
-                            base::OnceCallback<void(bool)> callback) override;
   absl::optional<std::string> GeneratePassword(
       content::RenderFrameHost* rfh,
       autofill::FormSignature form_signature,

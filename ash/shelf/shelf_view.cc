@@ -14,12 +14,14 @@
 #include "ash/keyboard/keyboard_util.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/metrics_util.h"
+#include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/hotseat_widget.h"
+#include "ash/shelf/partying_shelf_item.h"
 #include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
@@ -36,6 +38,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/rounded_label.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/utility/haptics_util.h"
 #include "ash/wm/desks/desks_util.h"
@@ -45,9 +48,11 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/check_op.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/cxx17_backports.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -58,7 +63,9 @@
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/menu_source_utils.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_features.h"
@@ -74,6 +81,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/button/button.h"
@@ -355,6 +363,18 @@ ShelfView::ShelfView(ShelfModel* model,
 
   announcement_view_ = new views::View();
   AddChildView(announcement_view_);
+
+  if (base::FeatureList::IsEnabled(features::kShelfParty)) {
+    const int button_size = GetButtonSize();
+    all_pinned_items_are_partying_label_ = new RoundedLabel(
+        button_size / 4, button_size / 8, button_size / 2, button_size,
+        l10n_util::GetStringUTF16(IDS_ASH_SHELF_ALL_PINNED_ITEMS_ARE_PARTYING));
+    all_pinned_items_are_partying_label_->SetSize(
+        all_pinned_items_are_partying_label_->GetPreferredSize(
+            {{/* Unbounded */}, button_size}));
+    all_pinned_items_are_partying_label_->SetVisible(false);
+    AddChildView(all_pinned_items_are_partying_label_);
+  }
 }
 
 ShelfView::~ShelfView() {
@@ -369,13 +389,10 @@ ShelfView::~ShelfView() {
 
 int ShelfView::GetSizeOfAppButtons(int count, int button_size) {
   const int button_spacing = ShelfConfig::Get()->button_spacing();
-
-  if (count == 0)
-    return 0;
-
-  const int app_size = count * button_size;
-  int total_padding = button_spacing * (count - 1);
-  return app_size + total_padding;
+  return button_size * count +
+         (ShouldShowAllPinnedItemsArePartyingLabel()
+              ? AllPinnedItemsArePartyingLabelSpace() + button_spacing * count
+              : button_spacing * std::max(0, count - 1));
 }
 
 void ShelfView::Init(views::FocusSearch* focus_search) {
@@ -933,6 +950,8 @@ void ShelfView::CalculateIdealBounds() {
 
   // The padding is handled in ScrollableShelfView.
 
+  UpdateAllPinnedItemsArePartyingLabel();
+
   const int button_size = GetButtonSize();
   for (size_t i = 0; i < view_model_->view_size(); ++i) {
     if (view_model_->view_at(i)->GetVisible()) {
@@ -1389,25 +1408,33 @@ void ShelfView::AnimateToIdealBounds() {
 }
 
 void ShelfView::UpdateSeparatorBounds(bool animate) {
+  // The `- 1` is because we expect at least one item after the separator.
   if (!separator_index_.has_value() ||
-      separator_index_ >= view_model_->view_size()) {
+      separator_index_ >= view_model_->view_size() - 1) {
     return;
   }
 
+  // The ` + 1` is because we compute the separator position as an offset
+  // leftward from the item just after the separator. This matters because for
+  // an unknown reason, the space between `all_pinned_items_are_partying_label_`
+  // and the first item actually appears smaller than the space between items.
   gfx::Rect icon_bounds_beside_separator =
-      view_model_->ideal_bounds(separator_index_.value());
+      view_model_->ideal_bounds(separator_index_.value() + 1);
 
   // Calculate the position value on the secondary axis.
   int secondary_offset =
       (shelf_->hotseat_widget()->GetHotseatSize() - kSeparatorSize) / 2;
 
-  int separator_x =
-      shelf()->PrimaryAxisValue(icon_bounds_beside_separator.right() +
-                                    ShelfConfig::Get()->button_spacing() / 2,
-                                secondary_offset);
-  int separator_y = shelf()->PrimaryAxisValue(
-      secondary_offset, icon_bounds_beside_separator.bottom() +
-                            ShelfConfig::Get()->button_spacing() / 2);
+  // Because we will be subtracting half the button spacing, round it up to
+  // favor leftward or upward.
+  const int half_button_spacing_rounded_up =
+      (ShelfConfig::Get()->button_spacing() + 1) / 2;
+  const int separator_x = shelf()->PrimaryAxisValue(
+      icon_bounds_beside_separator.x() - half_button_spacing_rounded_up,
+      secondary_offset);
+  const int separator_y = shelf()->PrimaryAxisValue(
+      secondary_offset,
+      icon_bounds_beside_separator.y() - half_button_spacing_rounded_up);
   gfx::Rect separator_bounds(
       separator_x, separator_y,
       shelf()->PrimaryAxisValue(kSeparatorThickness, kSeparatorSize),
@@ -1544,6 +1571,18 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
 }
 
 void ShelfView::MoveDragViewTo(int primary_axis_coordinate) {
+  if (visible_views_indices_.empty()) {
+    DCHECK(model_->in_shelf_party());
+    if (shelf_->IsHorizontalAlignment()) {
+      if (drag_view_->x() != app_icons_layout_offset_)
+        drag_view_->SetX(app_icons_layout_offset_);
+    } else {
+      if (drag_view_->y() != app_icons_layout_offset_)
+        drag_view_->SetY(app_icons_layout_offset_);
+    }
+    return;
+  }
+
   const size_t current_item_index =
       view_model_->GetIndexOfView(drag_view_).value();
   const std::pair<size_t, size_t> indices(GetDragRange(current_item_index));
@@ -1816,6 +1855,11 @@ std::pair<size_t, size_t> ShelfView::GetDragRange(size_t index) {
 bool ShelfView::ShouldUpdateDraggedViewPinStatus(size_t dragged_view_index) {
   if (!features::IsDragUnpinnedAppToPinEnabled())
     return false;
+
+  if (visible_views_indices_.empty()) {
+    DCHECK(model_->in_shelf_party());
+    return false;
+  }
 
   DCHECK(base::Contains(visible_views_indices_, dragged_view_index));
   bool is_moved_item_pinned =
@@ -2592,8 +2636,11 @@ int ShelfView::CalculateAppIconsLayoutOffset() const {
   if (scrollable_shelf_view->ShouldAdaptToRTL())
     return edge_padding_insets.right();
 
-  return shelf_->IsHorizontalAlignment() ? edge_padding_insets.left()
-                                         : edge_padding_insets.top();
+  int result = shelf_->PrimaryAxisValue(edge_padding_insets.left(),
+                                        edge_padding_insets.top());
+  if (ShouldShowAllPinnedItemsArePartyingLabel())
+    result += AllPinnedItemsArePartyingLabelSpace();
+  return result;
 }
 
 gfx::Rect ShelfView::GetChildViewTargetMirroredBounds(
@@ -2606,6 +2653,87 @@ void ShelfView::HandleShelfParty() {
   UpdateShelfItemViewsVisibility();
   PreferredSizeChanged();
   AnimateToIdealBounds();
+
+  if (!model_->in_shelf_party()) {
+    party_.clear();
+    return;
+  }
+
+  // Update `party_` to include the items that should be partying, and not the
+  // items that should not be partying.
+  aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
+  const int icon_size = GetButtonSize();
+  for (const ShelfItem& item : model_->items()) {
+    if (item.status != STATUS_CLOSED) {
+      party_.erase(item.id);
+      continue;
+    }
+    DCHECK(IsItemPinned(item));
+    DCHECK(!IsItemVisible(item));
+    // Add the item if it is not already partying.
+    const auto insertion_results = party_.try_emplace(item.id);
+    if (insertion_results.second) {
+      insertion_results.first->second = std::make_unique<PartyingShelfItem>(
+          root_window, item.image, icon_size);
+    }
+  }
+}
+
+void ShelfView::UpdateAllPinnedItemsArePartyingLabel() {
+  if (!base::FeatureList::IsEnabled(features::kShelfParty))
+    return;
+
+  const bool should_show_all_pinned_items_are_partying_label =
+      ShouldShowAllPinnedItemsArePartyingLabel();
+  all_pinned_items_are_partying_label_->SetVisible(
+      should_show_all_pinned_items_are_partying_label);
+  if (!should_show_all_pinned_items_are_partying_label)
+    return;
+
+  // `target` indicates where the label should appear, but may need adjustment
+  // for `transform`.
+  const int target =
+      app_icons_layout_offset_ - AllPinnedItemsArePartyingLabelSpace();
+  gfx::Point position;
+  gfx::Transform transform;
+  switch (shelf_->alignment()) {
+    case ShelfAlignment::kBottom:
+    case ShelfAlignment::kBottomLocked:
+      position = gfx::Point(
+          target,
+          (height() - all_pinned_items_are_partying_label_->height()) / 2);
+      break;
+    case ShelfAlignment::kLeft:
+      position = gfx::Point(
+          (width() - all_pinned_items_are_partying_label_->height()) / 2,
+          target + all_pinned_items_are_partying_label_->width());
+      transform.Rotate(-90);
+      break;
+    case ShelfAlignment::kRight:
+      position = gfx::Point(
+          all_pinned_items_are_partying_label_->height() +
+              (width() - all_pinned_items_are_partying_label_->height()) / 2,
+          target);
+      transform.Rotate(90);
+      break;
+  }
+  all_pinned_items_are_partying_label_->SetPosition(position);
+  all_pinned_items_are_partying_label_->SetTransform(transform);
+}
+
+bool ShelfView::ShouldShowAllPinnedItemsArePartyingLabel() const {
+  const bool should_show =
+      base::FeatureList::IsEnabled(features::kShelfParty) &&
+      !model_->items().empty() && IsItemPinned(model_->items().front()) &&
+      (visible_views_indices_.empty() ||
+       !IsItemPinned(model_->items()[visible_views_indices_.front()]));
+  DCHECK(!should_show || model_->in_shelf_party());
+  return should_show;
+}
+
+int ShelfView::AllPinnedItemsArePartyingLabelSpace() const {
+  return all_pinned_items_are_partying_label_->width() +
+         ShelfConfig::Get()->button_spacing();
 }
 
 void ShelfView::RemoveGhostView() {

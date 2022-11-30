@@ -28,9 +28,9 @@ base::Time ConvertStudyDateToBaseTime(int64_t date_time) {
 template <typename Collection>
 bool ContainsStringIgnoreCaseASCII(const Collection& collection,
                                    const std::string& value) {
-  return base::ranges::find_if(collection, [&value](const std::string& s) {
-           return base::EqualsCaseInsensitiveASCII(s, value);
-         }) != std::end(collection);
+  return base::ranges::any_of(collection, [&value](const std::string& s) {
+    return base::EqualsCaseInsensitiveASCII(s, value);
+  });
 }
 
 }  // namespace
@@ -249,9 +249,10 @@ const std::string& GetClientCountryForStudy(
   return base::EmptyString();
 }
 
-bool ShouldAddStudy(const Study& study,
+bool ShouldAddStudy(const ProcessedStudy& processed_study,
                     const ClientFilterableState& client_state,
                     const VariationsLayers& layers) {
+  const Study& study = *processed_study.study();
   if (study.has_expiry_date()) {
     DVLOG(1) << "Filtered out study " << study.name()
              << " due to unsupported expiry_date field.";
@@ -266,8 +267,9 @@ bool ShouldAddStudy(const Study& study,
       return false;
     }
 
-    if (VariationsSeedProcessor::ShouldStudyUseLowEntropy(study) &&
-        layers.IsLayerUsingDefaultEntropy(study.layer().layer_id())) {
+    if (processed_study.ShouldStudyUseLowEntropy() &&
+        layers.ActiveLayerMemberDependsOnHighEntropy(
+            study.layer().layer_id())) {
       DVLOG(1) << "Filtered out study " << study.name()
                << " due to requiring a low entropy source yet being a member "
                   "of a layer using the default entropy source.";
@@ -367,11 +369,13 @@ bool ShouldAddStudy(const Study& study,
 
 }  // namespace internal
 
-void FilterAndValidateStudies(const VariationsSeed& seed,
-                              const ClientFilterableState& client_state,
-                              const VariationsLayers& layers,
-                              std::vector<ProcessedStudy>* filtered_studies) {
+std::vector<ProcessedStudy> FilterAndValidateStudies(
+    const VariationsSeed& seed,
+    const ClientFilterableState& client_state,
+    const VariationsLayers& layers) {
   DCHECK(client_state.version.IsValid());
+
+  std::vector<ProcessedStudy> filtered_studies;
 
   // Don't create two studies with the same name.
   std::set<std::string> created_studies;
@@ -382,16 +386,15 @@ void FilterAndValidateStudies(const VariationsSeed& seed,
     if (!processed_study.Init(&study))
       continue;
 
-    if (!internal::ShouldAddStudy(*processed_study.study(), client_state,
-                                  layers)) {
+    if (!internal::ShouldAddStudy(processed_study, client_state, layers))
       continue;
-    }
 
     if (!base::Contains(created_studies, processed_study.study()->name())) {
-      filtered_studies->push_back(processed_study);
+      filtered_studies.push_back(processed_study);
       created_studies.insert(processed_study.study()->name());
     }
   }
+  return filtered_studies;
 }
 
 }  // namespace variations

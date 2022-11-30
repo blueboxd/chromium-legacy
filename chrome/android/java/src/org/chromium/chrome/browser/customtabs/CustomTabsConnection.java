@@ -131,7 +131,9 @@ public class CustomTabsConnection {
     private static final int SPECULATION_STATUS_ON_START_NOT_ALLOWED_NETWORK_PREDICTION_DISABLED =
             7;
     private static final int SPECULATION_STATUS_ON_START_NOT_ALLOWED_DATA_REDUCTION_ENABLED = 8;
-    private static final int SPECULATION_STATUS_ON_START_NOT_ALLOWED_NETWORK_METERED = 9;
+    // Obsolete due to no longer running the experiment
+    // "PredictivePrefetchingAllowedOnAllConnectionTypes".
+    // private static final int SPECULATION_STATUS_ON_START_NOT_ALLOWED_NETWORK_METERED = 9;
     private static final int SPECULATION_STATUS_ON_START_MAX = 10;
 
     // For CustomTabs.SpeculationStatusOnSwap, see tools/metrics/enums.xml. Append only.
@@ -1176,9 +1178,22 @@ public class CustomTabsConnection {
         Bundle args = new Bundle();
         args.putInt(ON_RESIZED_SIZE_EXTRA, size);
 
+        // TODO(crbug.com/1366844): Deprecate the extra callback.
         if (safeExtraCallback(session, ON_RESIZED_CALLBACK, args) && mLogRequests) {
             logCallback("extraCallback(" + ON_RESIZED_CALLBACK + ")", args);
         }
+
+        CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
+        if (callback == null) return;
+        try {
+            callback.onActivityResized(size, args);
+        } catch (Exception e) {
+            // Catching all exceptions is really bad, but we need it here,
+            // because Android exposes us to client bugs by throwing a variety
+            // of exceptions. See crbug.com/517023.
+            return;
+        }
+        logCallback("onActivityResized()", size);
     }
 
     /**
@@ -1543,11 +1558,6 @@ public class CustomTabsConnection {
         ConnectivityManager cm =
                 (ConnectivityManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.CONNECTIVITY_SERVICE);
-        if (cm.isActiveNetworkMetered() && !shouldSpeculateLoadOnCellularForSession(session)
-                && !ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.PREDICTIVE_PREFETCHING_ALLOWED_ON_ALL_CONNECTION_TYPES)) {
-            return SPECULATION_STATUS_ON_START_NOT_ALLOWED_NETWORK_METERED;
-        }
         return SPECULATION_STATUS_ON_START_ALLOWED;
     }
 
@@ -1679,6 +1689,11 @@ public class CustomTabsConnection {
             CustomTabsSessionToken sessionToken, Uri uri, int purpose, Bundle extras) {
         return ChromeApplicationImpl.getComponent().resolveCustomTabsFileProcessor().processFile(
                 sessionToken, uri, purpose, extras);
+    }
+
+    public void setCustomTabIsInForeground(
+            @Nullable CustomTabsSessionToken session, boolean isInForeground) {
+        mClientManager.setCustomTabIsInForeground(session, isInForeground);
     }
 
     @VisibleForTesting

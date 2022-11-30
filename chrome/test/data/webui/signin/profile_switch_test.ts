@@ -5,12 +5,10 @@
 import 'chrome://profile-picker/lazy_load.js';
 
 import {ProfileSwitchElement} from 'chrome://profile-picker/lazy_load.js';
-
 import {ManageProfilesBrowserProxyImpl, ProfileState} from 'chrome://profile-picker/profile_picker.js';
-import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
-
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {waitBeforeNextRender} from 'chrome://webui-test/test_util.js';
+import {waitBeforeNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
 import {TestManageProfilesBrowserProxy} from './test_manage_profiles_browser_proxy.js';
 
@@ -25,7 +23,8 @@ suite('ProfileSwitchTest', function() {
     getSwitchProfilePromiseResolver = new PromiseResolver();
     browserProxy.setGetSwitchProfilePromise(
         getSwitchProfilePromiseResolver.promise);
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     profileSwitchElement = document.createElement('profile-switch');
     document.body.appendChild(profileSwitchElement);
     return waitBeforeNextRender(profileSwitchElement);

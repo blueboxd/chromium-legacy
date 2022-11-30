@@ -20,6 +20,8 @@ source_set("autocomplete") {
     "shortcuts_backend_factory.mm",
     "tab_matcher_impl.h",
     "tab_matcher_impl.mm",
+    "zero_suggest_cache_service_factory.cc",
+    "zero_suggest_cache_service_factory.h",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -33,13 +35,11 @@ source_set("autocomplete") {
     "//components/language/core/browser",
     "//components/omnibox/browser",
     "//components/omnibox/resources:omnibox_pedal_synonyms",
-    "//components/omnibox/resources:omnibox_resources_grit",
     "//components/prefs",
     "//components/signin/public/identity_manager",
-    "//components/strings:components_strings_grit",
+    "//components/strings",
     "//components/sync",
     "//components/unified_consent",
-    "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state",
@@ -48,6 +48,8 @@ source_set("autocomplete") {
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
+    "//ios/chrome/browser/url",
+    "//ios/chrome/browser/url:constants",
     "//ios/chrome/browser/web_state_list",
     "//ios/components/webui:url_constants",
     "//ios/public/provider/chrome/browser",

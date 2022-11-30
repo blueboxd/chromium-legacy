@@ -37,6 +37,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/flex_layout.h"
+#include "ui/views/test/views_test_utils.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
@@ -66,7 +67,7 @@ class TabTest : public ChromeViewsTestBase {
 
   static void EndTitleAnimation(Tab* tab) { tab->title_animation_.End(); }
 
-  static void LayoutTab(Tab* tab) { tab->Layout(); }
+  static void LayoutTab(Tab* tab) { views::test::RunScheduledLayout(tab); }
 
   static int VisibleIconCount(const Tab& tab) {
     return tab.showing_icon_ + tab.showing_alert_indicator_ +
@@ -651,8 +652,8 @@ TEST_F(TabTest, TitleTextHasSufficientContrast) {
 // This test verifies that the tab has its icon state updated when the alert
 // animation fade-out finishes.
 TEST_F(AlertIndicatorButtonTest, ShowsAndHidesAlertIndicator) {
-  controller_->AddPinnedTab(0, false);
-  controller_->AddTab(1, true);
+  controller_->AddTab(0, TabActive::kInactive, TabPinned::kPinned);
+  controller_->AddTab(1, TabActive::kActive);
   Tab* media_tab = tab_strip_->tab_at(0);
 
   // Pinned inactive tab only has an icon.

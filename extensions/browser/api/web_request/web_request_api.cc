@@ -677,7 +677,7 @@ void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {
   // `details`).
   base::OnceClosure remove_listener;
 
-  if (!details.browser_context) {
+  if (details.is_lazy) {
     // This is a removed lazy listener. This happens when an extension uses
     // removeListener() in its lazy context to forceably remove a listener
     // registration (as opposed to when the context is torn down, in which case
@@ -736,7 +736,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
     bool skip_proxy = true;
     // There are a few internal WebUIs that use WebView tag that are allowlisted
     // for webRequest.
-    if (web_contents && WebViewGuest::IsGuest(web_contents)) {
+    if (web_contents && WebViewGuest::IsGuest(frame)) {
       auto* guest_web_contents =
           WebViewGuest::GetTopLevelWebContents(web_contents);
       auto& guest_url = guest_web_contents->GetLastCommittedURL();
@@ -2841,13 +2841,23 @@ WebRequestInternalAddEventListenerFunction::Run() {
       extension ? extension->name() : extension_id_safe();
 
   if (!web_view_instance_id) {
+    auto has_blocking_permission = [&extension, &event_name]() {
+      if (extension->permissions_data()->HasAPIPermission(
+              APIPermissionID::kWebRequestBlocking)) {
+        return true;
+      }
+
+      return event_name == keys::kOnAuthRequiredEvent &&
+             extension->permissions_data()->HasAPIPermission(
+                 APIPermissionID::kWebRequestAuthProvider);
+    };
+
     // We check automatically whether the extension has the 'webRequest'
     // permission. For blocking calls we require the additional permission
-    // 'webRequestBlocking'.
-    if ((extra_info_spec &
-         (ExtraInfoSpec::BLOCKING | ExtraInfoSpec::ASYNC_BLOCKING)) &&
-        !extension->permissions_data()->HasAPIPermission(
-            APIPermissionID::kWebRequestBlocking)) {
+    // 'webRequestBlocking' or 'webRequestAuthProvider'.
+    bool is_blocking = extra_info_spec & (ExtraInfoSpec::BLOCKING |
+                                          ExtraInfoSpec::ASYNC_BLOCKING);
+    if (is_blocking && !has_blocking_permission()) {
       return RespondNow(Error(keys::kBlockingPermissionRequired));
     }
 
@@ -3022,13 +3032,13 @@ WebRequestInternalEventHandledFunction::Run() {
     }
 
     if (auth_credentials_value) {
-      const base::DictionaryValue* credentials_value = nullptr;
-      EXTENSION_FUNCTION_VALIDATE(
-          auth_credentials_value->GetAsDictionary(&credentials_value));
+      const base::Value::Dict* credentials_value =
+          auth_credentials_value->GetIfDict();
+      EXTENSION_FUNCTION_VALIDATE(credentials_value);
       const std::string* username =
-          credentials_value->FindStringKey(keys::kUsernameKey);
+          credentials_value->FindString(keys::kUsernameKey);
       const std::string* password =
-          credentials_value->FindStringKey(keys::kPasswordKey);
+          credentials_value->FindString(keys::kPasswordKey);
       EXTENSION_FUNCTION_VALIDATE(username);
       EXTENSION_FUNCTION_VALIDATE(password);
       response->auth_credentials = net::AuthCredentials(

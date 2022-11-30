@@ -281,7 +281,7 @@ bool InputMethodEngine::SetComposition(int context_id,
   ui::CompositionText composition_text;
   composition_text.text = base::UTF8ToUTF16(text);
   // Check the length of the text.
-  uint32_t utf16_length = GetUtf16Size(composition_text.text);
+  int utf16_length = GetUtf16Size(composition_text.text);
   if (selection_start > utf16_length || selection_end > utf16_length) {
     *error = base::StringPrintf(
         "%s request selection start = %d, selection end = %d, cursor  =  %d",
@@ -652,6 +652,8 @@ void InputMethodEngine::Enable(const std::string& component_id) {
   // engine_id) is enabled.
   candidate_window_property_ = {component_id,
                                 InputMethodEngine::CandidateWindowProperty()};
+
+  is_ready_for_testing_ = false;
 }
 
 bool InputMethodEngine::IsActive() const {
@@ -762,9 +764,7 @@ ui::VirtualKeyboardController* InputMethodEngine::GetVirtualKeyboardController()
 }
 
 bool InputMethodEngine::IsReadyForTesting() {
-  // For extension-based IMEs, we cannot tell if they are ready or not, so just
-  // return false.
-  return false;
+  return is_ready_for_testing_;
 }
 
 void InputMethodEngine::OnSuggestionsChanged(
@@ -1182,6 +1182,10 @@ void InputMethodEngine::MenuItemToProperty(
   }
 
   // TODO(nona): Support item.children.
+}
+
+void InputMethodEngine::NotifyInputMethodExtensionReadyForTesting() {
+  is_ready_for_testing_ = true;
 }
 
 InputMethodEngine::PendingKeyEvent::PendingKeyEvent(

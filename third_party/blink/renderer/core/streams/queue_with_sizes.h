@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ class CORE_EXPORT QueueWithSizes final
   double TotalSize() { return queue_total_size_; }
 
   // Not part of the standard.
-  bool IsEmpty() { return queue_.IsEmpty(); }
+  bool IsEmpty() { return queue_.empty(); }
 
   // https://streams.spec.whatwg.org/#reset-queue
   void ResetQueue();

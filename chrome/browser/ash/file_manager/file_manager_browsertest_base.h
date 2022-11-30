@@ -118,9 +118,6 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
     // feature.
     bool enable_dlp_files_restriction = false;
 
-    // Whether test should run with the Web Drive Office feature.
-    bool enable_web_drive_office = false;
-
     // Whether test should run with the Upload Office to Cloud feature.
     bool enable_upload_office_to_cloud = false;
 
@@ -136,8 +133,14 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
     // Whether test should run with the DriveFsMirroring flag.
     bool enable_mirrorsync = false;
 
+    // Whether test should run with the FilesInlineSyncStatus flag.
+    bool enable_inline_status_sync = false;
+
     // Whether test should enable the file transfer connector.
     bool enable_file_transfer_connector = false;
+
+    // Whether test should use report-only mode for the file transfer connector.
+    bool file_transfer_connector_report_only = false;
   };
 
   FileManagerBrowserTestBase(const FileManagerBrowserTestBase&) = delete;
@@ -178,6 +181,8 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
   void StartTest();
 
  private:
+  using IdToWebContents = std::map<std::string, content::WebContents*>;
+
   class MockFileTasksObserver;
 
   // Launches the test extension with manifest |manifest_name|. The extension
@@ -251,7 +256,7 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
 
   // Maps the app_id to WebContents* for all launched SWA apps. NOTE: if the
   // window is closed in the JS the WebContents* will remain invalid here.
-  std::map<std::string, content::WebContents*> swa_web_contents_;
+  IdToWebContents swa_web_contents_;
 
   std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
   crostini::FakeCrostiniFeatures crostini_features_;

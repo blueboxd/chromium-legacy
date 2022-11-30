@@ -8,7 +8,7 @@
  * which allows finer-grained control over introducing dependencies.
  */
 
-import {assert, assertInstanceof} from 'chrome://resources/js/assert.m.js';
+import {assert, assertInstanceof} from 'chrome://resources/js/assert.js';
 import {decorate} from 'chrome://resources/js/cr/ui.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
@@ -459,10 +459,7 @@ util.getTeamDriveName = entry => {
  * @return {boolean}
  */
 util.isRecentRootType = rootType => {
-  return rootType == VolumeManagerCommon.RootType.RECENT ||
-      rootType == VolumeManagerCommon.RootType.RECENT_AUDIO ||
-      rootType == VolumeManagerCommon.RootType.RECENT_IMAGES ||
-      rootType == VolumeManagerCommon.RootType.RECENT_VIDEOS;
+  return rootType == VolumeManagerCommon.RootType.RECENT;
 };
 
 /**
@@ -1029,12 +1026,6 @@ util.getRootTypeLabel = locationInfo => {
       return str('DRIVE_DIRECTORY_LABEL');
     case VolumeManagerCommon.RootType.RECENT:
       return str('RECENT_ROOT_LABEL');
-    case VolumeManagerCommon.RootType.RECENT_AUDIO:
-      return str('MEDIA_VIEW_AUDIO_ROOT_LABEL');
-    case VolumeManagerCommon.RootType.RECENT_IMAGES:
-      return str('MEDIA_VIEW_IMAGES_ROOT_LABEL');
-    case VolumeManagerCommon.RootType.RECENT_VIDEOS:
-      return str('MEDIA_VIEW_VIDEOS_ROOT_LABEL');
     case VolumeManagerCommon.RootType.CROSTINI:
       return str('LINUX_FILES_ROOT_LABEL');
     case VolumeManagerCommon.RootType.MY_FILES:
@@ -1270,29 +1261,12 @@ util.isCopyImageEnabled = () => {
 };
 
 /**
- * Returns true if filters in Recents view V2 is enabled.
- * @return {boolean}
- */
-util.isRecentsFilterV2Enabled = () => {
-  return loadTimeData.valueExists('FILTERS_IN_RECENTS_V2_ENABLED') &&
-      loadTimeData.getBoolean('FILTERS_IN_RECENTS_V2_ENABLED');
-};
-
-/**
- * Returns true if FilesTrash feature flag is enabled.
+ * Whether the Files app integration with DLP (Data Loss Prevention) is enabled.
  * @returns {boolean}
  */
-util.isTrashEnabled = () => {
-  return loadTimeData.valueExists('FILES_TRASH_ENABLED') &&
-      loadTimeData.getBoolean('FILES_TRASH_ENABLED');
-};
-
-/**
- * Returns true if FilesSinglePartitionFormat flag is enabled.
- * @return {boolean}
- */
-util.isSinglePartitionFormatEnabled = () => {
-  return loadTimeData.getBoolean('FILES_SINGLE_PARTITION_FORMAT_ENABLED');
+util.isDlpEnabled = () => {
+  return loadTimeData.valueExists('DLP_ENABLED') &&
+      loadTimeData.getBoolean('DLP_ENABLED');
 };
 
 /**
@@ -1313,12 +1287,13 @@ util.isFilesAppExperimental = () => {
 };
 
 /**
- * Whether the Files app integration with DLP (Data Loss Prevention) is enabled.
- * @returns {boolean}
+ * Returns true if FuseBoxDebug flag is enabled.
+ * @return {boolean}
  */
-util.isDlpEnabled = () => {
-  return loadTimeData.valueExists('DLP_ENABLED') &&
-      loadTimeData.getBoolean('DLP_ENABLED');
+util.isFuseBoxDebugEnabled = () => {
+  return loadTimeData.isInitialized() &&
+      loadTimeData.valueExists('FUSEBOX_DEBUG') &&
+      loadTimeData.getBoolean('FUSEBOX_DEBUG');
 };
 
 /**
@@ -1327,16 +1302,6 @@ util.isDlpEnabled = () => {
  */
 util.isFuseBoxEnabled = () => {
   return loadTimeData.getBoolean('FUSEBOX');
-};
-
-/**
- * Returns true if FuseBoxDebug flag is enabled.
- * @return {boolean}
- */
-util.isFuseBoxDebugEnabled = () => {
-  return loadTimeData.isInitialized() &&
-      loadTimeData.valueExists('FUSEBOX_DEBUG') &&
-      loadTimeData.getBoolean('FUSEBOX_DEBUG');
 };
 
 /**
@@ -1355,6 +1320,49 @@ util.isMirrorSyncEnabled = () => {
   return loadTimeData.isInitialized() &&
       loadTimeData.valueExists('DRIVEFS_MIRRORING') &&
       loadTimeData.getBoolean('DRIVEFS_MIRRORING');
+};
+
+/**
+ * Returns true if filters in Recents view V2 is enabled.
+ * @return {boolean}
+ */
+util.isRecentsFilterV2Enabled = () => {
+  return loadTimeData.valueExists('FILTERS_IN_RECENTS_V2_ENABLED') &&
+      loadTimeData.getBoolean('FILTERS_IN_RECENTS_V2_ENABLED');
+};
+
+/**
+ * Returns true if search v2 feature flag is enabled.
+ * @return {boolean}
+ */
+util.isSearchV2Enabled = () => {
+  return loadTimeData.getBoolean('FILES_SEARCH_V2');
+};
+
+/**
+ * Returns true if FilesSinglePartitionFormat flag is enabled.
+ * @return {boolean}
+ */
+util.isSinglePartitionFormatEnabled = () => {
+  return loadTimeData.getBoolean('FILES_SINGLE_PARTITION_FORMAT_ENABLED');
+};
+
+/**
+ * Returns true if FilesTrash feature flag is enabled.
+ * @returns {boolean}
+ */
+util.isTrashEnabled = () => {
+  return loadTimeData.valueExists('FILES_TRASH_ENABLED') &&
+      loadTimeData.getBoolean('FILES_TRASH_ENABLED');
+};
+
+/**
+ * Returns true if InlineSyncStatus feature flag is enabled.
+ * @returns {boolean}
+ */
+util.isInlineSyncStatusEnabled = () => {
+  return loadTimeData.valueExists('INLINE_SYNC_STATUS') &&
+      loadTimeData.getBoolean('INLINE_SYNC_STATUS');
 };
 
 /**

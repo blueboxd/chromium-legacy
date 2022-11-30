@@ -4,13 +4,15 @@
 
 #include "chrome/browser/enterprise/connectors/file_system/service_settings.h"
 
+#include "base/containers/contains.h"
 #include "chrome/browser/enterprise/connectors/service_provider_config.h"
 #include "components/url_matcher/url_util.h"
 
 namespace enterprise_connectors {
 
-const base::Feature kFileSystemConnectorEnabled{
-    "FileSystemConnectorsEnabled", base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kFileSystemConnectorEnabled,
+             "FileSystemConnectorsEnabled",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 FileSystemServiceSettings::FileSystemServiceSettings(
     const base::Value& settings_value,
@@ -263,8 +265,7 @@ FileSystemServiceSettings::GetMimeTypesFilterFromUrlMatches(
     if (maybe_pattern_setting.has_value()) {
       const auto& mime_types = maybe_pattern_setting.value().mime_types;
       this_match_has_wildcard_enable =
-          (std::find(mime_types.begin(), mime_types.end(), kWildcardMimeType) !=
-           mime_types.end());
+          base::Contains(mime_types, kWildcardMimeType);
       enable_mime_types.insert(mime_types.begin(), mime_types.end());
     }
 

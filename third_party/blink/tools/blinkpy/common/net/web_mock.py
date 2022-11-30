@@ -27,7 +27,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
-from six.moves.urllib.error import HTTPError
+from requests.exceptions import HTTPError
+from requests import Response
+from requests.structures import CaseInsensitiveDict
 
 from blinkpy.common.net.rpc import RESPONSE_PREFIX
 
@@ -39,7 +41,7 @@ class MockWeb(object):
         self.requests = []
         self.responses = responses or []
 
-    def get_binary(self, url, return_none_on_404=False, retries=0):  # pylint: disable=unused-argument
+    def get_binary(self, url, return_none_on_404=False):  # pylint: disable=unused-argument
         self.urls_fetched.append(url)
         if url in self.urls:
             return self.urls[url]
@@ -50,6 +52,9 @@ class MockWeb(object):
     def request(self, method, url, data=None, headers=None):  # pylint: disable=unused-argument
         self.requests.append((url, data))
         return MockResponse(self.responses.pop(0))
+
+    def request_and_read(self, *args, **kwargs):
+        return self.request(*args, **kwargs).body
 
     def append_prpc_response(self, payload, status_code=200, headers=None):
         headers = headers or {}
@@ -71,36 +76,18 @@ class MockResponse(object):
         self.body = values.get('body', '')
         # The name of the headers (keys) are case-insensitive, and values are stripped.
         headers_raw = values.get('headers', {})
-        self.headers = {
-            key.lower(): value.strip()
-            for key, value in headers_raw.items()
-        }
-        self._info = MockInfo(self.headers)
+        self.headers = CaseInsensitiveDict(headers_raw)
 
         if int(self.status_code) >= 400:
-            raise HTTPError(url=self.url,
-                            code=self.status_code,
-                            msg='Received error status code: {}'.format(
-                                self.status_code),
-                            hdrs={},
-                            fp=None)
+            response = Response()
+            response.status_code = self.status_code
+            response.reason = 'Received error status code: {}'.format(
+                self.status_code)
+            response.url = self.url
+            raise HTTPError(response=response)
 
     def getcode(self):
         return self.status_code
 
-    def getheader(self, header):
-        return self.headers.get(header.lower(), None)
-
-    def read(self):
-        return self.body
-
-    def info(self):
-        return self._info
-
-
-class MockInfo(object):
-    def __init__(self, headers):
-        self._headers = headers
-
-    def getheader(self, header):
-        return self._headers.get(header.lower(), None)
+    def json(self):
+        return json.loads(self.body)

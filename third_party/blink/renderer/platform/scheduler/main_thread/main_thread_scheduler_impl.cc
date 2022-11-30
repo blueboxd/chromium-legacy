@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -161,7 +161,8 @@ const char* OptionalTaskDescriptionToString(
     return TaskTypeNames::TaskTypeToString(desc->task_type);
   if (!desc->queue_type)
     return "detached_tq";
-  return MainThreadTaskQueue::NameForQueueType(desc->queue_type.value());
+  return perfetto::protos::pbzero::SequenceManagerTask::QueueName_Name(
+      MainThreadTaskQueue::NameForQueueType(desc->queue_type.value()));
 }
 
 const char* OptionalTaskPriorityToString(
@@ -829,7 +830,8 @@ MainThreadSchedulerImpl::NewThrottleableTaskQueueForTest(
 scoped_refptr<base::sequence_manager::TaskQueue>
 MainThreadSchedulerImpl::NewTaskQueueForTest() {
   return sequence_manager_->CreateTaskQueue(
-      base::sequence_manager::TaskQueue::Spec("test"));
+      base::sequence_manager::TaskQueue::Spec(
+          base::sequence_manager::QueueName::TEST_TQ));
 }
 
 void MainThreadSchedulerImpl::OnShutdownTaskQueue(
@@ -1106,8 +1108,19 @@ void MainThreadSchedulerImpl::SetHaveSeenABlockingGestureForTesting(
 }
 
 void MainThreadSchedulerImpl::PerformMicrotaskCheckpoint() {
+  // This will fallback to execute the microtask checkpoint for the
+  // default EventLoop for the isolate.
   if (isolate())
     EventLoop::PerformIsolateGlobalMicrotasksCheckpoint(isolate());
+  // Perform a microtask checkpoint for each AgentSchedulingGroup. This
+  // really should only be the ones that are not frozen but AgentSchedulingGroup
+  // does not have that concept yet.
+  // TODO(dtapuska): Move this to EndAgentGroupSchedulerScope so that we only
+  // run the microtask checkpoint for a given AgentGroupScheduler.
+  for (AgentGroupSchedulerImpl* agent_group_scheduler :
+       main_thread_only().agent_group_schedulers) {
+    agent_group_scheduler->PerformMicrotaskCheckpoint();
+  }
 }
 
 // static
@@ -2093,8 +2106,9 @@ MainThreadSchedulerImpl::CreateAgentGroupScheduler() {
 
 void MainThreadSchedulerImpl::RemoveAgentGroupScheduler(
     AgentGroupSchedulerImpl* agent_group_scheduler) {
-  DCHECK(agent_group_schedulers_.Contains(agent_group_scheduler));
-  agent_group_schedulers_.erase(agent_group_scheduler);
+  DCHECK(main_thread_only().agent_group_schedulers.Contains(
+      agent_group_scheduler));
+  main_thread_only().agent_group_schedulers.erase(agent_group_scheduler);
 }
 
 WebAgentGroupScheduler*
@@ -2217,8 +2231,9 @@ base::TimeTicks MainThreadSchedulerImpl::NowTicks() const {
 
 void MainThreadSchedulerImpl::AddAgentGroupScheduler(
     AgentGroupSchedulerImpl* agent_group_scheduler) {
-  bool is_new_entry =
-      agent_group_schedulers_.insert(agent_group_scheduler).is_new_entry;
+  bool is_new_entry = main_thread_only()
+                          .agent_group_schedulers.insert(agent_group_scheduler)
+                          .is_new_entry;
   DCHECK(is_new_entry);
 }
 
@@ -2670,7 +2685,7 @@ MainThreadSchedulerImpl::ComputeCompositorPriorityFromUseCase() const {
 }
 
 bool MainThreadSchedulerImpl::AllPagesFrozen() const {
-  if (main_thread_only().page_schedulers.IsEmpty())
+  if (main_thread_only().page_schedulers.empty())
     return false;
   for (const auto* scheduler : main_thread_only().page_schedulers) {
     if (!scheduler->IsFrozen())

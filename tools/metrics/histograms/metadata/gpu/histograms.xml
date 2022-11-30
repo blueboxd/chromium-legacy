@@ -517,20 +517,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="GPU.DirectComposition.CompositionMode2.MainBuffer.{Damage}"
-    enum="DxgiFramePresentationMode" expires_after="2021-12-31">
-  <owner>zmo@chromium.org</owner>
-  <owner>graphics-dev@chromium.org</owner>
-  <summary>
-    How the Desktop Window Manager presented Chrome's main DirectComposition
-    layer to the screen using {Damage}. Only recorded on Windows.
-  </summary>
-  <token key="Damage">
-    <variant name="FullDamage" summary="full damage"/>
-    <variant name="PartialDamage" summary="partial damage"/>
-  </token>
-</histogram>
-
 <histogram name="GPU.DirectComposition.CompositionMode2.VideoOrCanvas"
     enum="DxgiFramePresentationMode" expires_after="2021-12-31">
   <owner>sunnyps@chromium.org</owner>
@@ -584,7 +570,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="GPU.DirectComposition.DCLayerResult.Video"
-    enum="DCLayerResult" expires_after="2023-01-22">
+    enum="DCLayerResult" expires_after="2023-03-26">
 <!-- Name completed by histogram_suffixes name="GPU.ProtectedVideoType" -->
 
   <owner>magchen@chromium.org</owner>
@@ -791,7 +777,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.EstablishGpuChannelSyncTime" units="ms"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>cduvall@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -845,7 +831,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.GLES2DecoderImplLazyBindingCheck.WasBindNecessary"
-    units="Boolean" expires_after="2023-01-15">
+    units="Boolean" expires_after="2023-03-19">
   <owner>blundell@chromium.org</owner>
   <owner>vasilyt@chromium.org</owner>
   <summary>
@@ -857,7 +843,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="GPU.GLES2DecoderPassthroughImplLazyBindingCheck.WasBindNecessary"
-    units="Boolean" expires_after="2023-01-15">
+    units="Boolean" expires_after="2023-03-19">
   <owner>blundell@chromium.org</owner>
   <owner>vasilyt@chromium.org</owner>
   <summary>
@@ -888,7 +874,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.GPUInitializationTime.V3" units="ms"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>magchen@chromium.org</owner>
   <owner>zmo@chromium.org</owner>
   <summary>
@@ -899,7 +885,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.GPUInitializationTime.V4" units="ms"
-    expires_after="2023-02-01">
+    expires_after="2023-04-09">
   <owner>zmo@chromium.org</owner>
   <owner>spvw@chromium.org</owner>
   <summary>
@@ -968,7 +954,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.HardwareAccelerationModeEnabled" enum="BooleanEnabled"
-    expires_after="2023-01-30">
+    expires_after="2023-04-09">
   <owner>zmo@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -1158,7 +1144,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="GPU.MultipleSwapsDelta" units="%" expires_after="2023-01-15">
+<histogram name="GPU.MultipleSwapsDelta" units="%" expires_after="2023-03-19">
   <owner>jonross@chromium.org</owner>
   <owner>chrome-gpu-metrics@google.com</owner>
   <summary>
@@ -1217,7 +1203,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.PassthroughDoLinkProgramTime" units="ms"
-    expires_after="2023-01-01">
+    expires_after="2023-04-09">
   <owner>jonahr@google.com</owner>
   <owner>angle-team@google.com</owner>
   <summary>
@@ -1313,7 +1299,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Gpu.Rasterization.Raster.MSAASampleCountLog2" units="count"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>penghuang@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -1324,7 +1310,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Gpu.Rasterization.Raster.NumPaintOps" units="count"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>penghuang@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>Number of paint ops in a raster task.</summary>
@@ -1358,6 +1344,24 @@ chromium-metrics-reviews@google.com.
     <variant name="RGBA16F.HALF_FLOAT" summary="RGBA16F/HALF_FLOAT"/>
     <variant name="RGBA32F.FLOAT" summary="RGBA32F/FLOAT"/>
   </token>
+</histogram>
+
+<histogram name="GPU.ReportOnlyModeStatusAtHang" enum="BooleanEnabled"
+    expires_after="2023-02-19">
+  <owner>spvw@chromium.org</owner>
+  <owner>chrome-catan@google.com</owner>
+  <summary>
+    Records whether report only mode is enabled at GPU process watchdog hang
+    time. Currently, we are not seeing any of the hangs/crashes reported by
+    report-only mode, despite the experiment rolling out.
+
+    General Catan investigation: https://crbug.com/1350257
+
+    Report only feature: https://crbug.com/1356196
+
+    Part of a performance investigation that Catan is doing into GPU startup
+    time.
+  </summary>
 </histogram>
 
 <histogram name="GPU.Sandbox.InitializedSuccessfully" enum="BooleanSuccess"
@@ -1423,19 +1427,6 @@ chromium-metrics-reviews@google.com.
     Whether or not the content of a SharedImage is consumed. False indicates the
     content of a SharedImage is never used due to destroying the SharedImage or
     writing new content to it before using it.
-  </summary>
-</histogram>
-
-<histogram name="GPU.SharedImage.DmaBufSupportedType"
-    enum="DmaBufSupportedType" expires_after="2023-02-12">
-  <owner>vasilyt@chromium.org</owner>
-  <owner>hitawala@chromium.org</owner>
-  <summary>
-    Tracks which extensions are supported for creating shared images using DMA
-    buffers. Result is an enum that represents three flags - are native pixmaps
-    supported for the ozone platform, are Vulkan extensions supported and are GL
-    extensions supported. This is logged once per gpu process launch through
-    SharedImageFactory constructor call.
   </summary>
 </histogram>
 

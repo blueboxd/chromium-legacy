@@ -114,6 +114,10 @@
       permissions_policy_name: "ch-prefers-color-scheme",
     },
     {
+      name: "ClientHintPrefersReducedMotion",
+      permissions_policy_name: "ch-prefers-reduced-motion",
+    },
+    {
       name: "ClientHintRTT",
       permissions_policy_name: "ch-rtt",
     },
@@ -231,8 +235,8 @@
       depends_on: ["FreezeFramesOnVisibility"],
     },
     {
-      name: "FederatedCredentials",
-      permissions_policy_name: "federated-credentials",
+      name: "IdentityCredentialsGet",
+      permissions_policy_name: "identity-credentials-get",
       depends_on: ["FedCmIframeSupport"],
     },
     {

@@ -249,7 +249,7 @@ class CC_EXPORT InputHandler : public InputDelegateForCompositor {
     HANDLER_ON_SCROLLING_LAYER
   };
 
-  virtual base::WeakPtr<InputHandler> AsWeakPtr() const;
+  virtual base::WeakPtr<InputHandler> AsWeakPtr();
 
   // Binds a client to this handler to receive notifications. Only one client
   // can be bound to an InputHandler. The client must live at least until the
@@ -486,6 +486,7 @@ class CC_EXPORT InputHandler : public InputDelegateForCompositor {
   void SetPrefersReducedMotion(bool prefers_reduced_motion) override;
   bool IsCurrentlyScrolling() const override;
   ActivelyScrollingType GetActivelyScrollingType() const override;
+  bool IsCurrentScrollMainRepainted() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ScrollUnifiedLayerTreeHostImplTest,

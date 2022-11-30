@@ -24,6 +24,7 @@
 #include "ash/shelf/shelf_tooltip_delegate.h"
 #include "ash/shell_observer.h"
 #include "base/cancelable_callback.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -58,6 +59,7 @@ class Separator;
 
 namespace ash {
 class GhostImageView;
+class PartyingShelfItem;
 class ShelfAppButton;
 class ShelfButton;
 class ShelfModel;
@@ -123,7 +125,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   // Returns the size occupied by |count| app buttons. |button_size| indicates
   // the size of each app button.
-  static int GetSizeOfAppButtons(int count, int button_size);
+  int GetSizeOfAppButtons(int count, int button_size);
 
   // Initializes shelf view elements.
   void Init(views::FocusSearch* focus_search);
@@ -369,8 +371,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Sets the bounds of each view to its ideal bounds.
   void LayoutToIdealBounds();
 
-  void LayoutBackAndHomeButtons();
-
   // Returns the index of the last view whose max primary axis coordinate is
   // less than |max_value|. Returns -1 if nothing fits, or there are no views.
   int IndexOfLastItemThatFitsSize(int max_value) const;
@@ -556,6 +556,17 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // this function causes the items that were partying to reappear on the shelf.
   void HandleShelfParty();
 
+  // Updates the visibility, position, and transform of
+  // `all_pinned_items_are_partying_label_`.
+  void UpdateAllPinnedItemsArePartyingLabel();
+
+  // Returns true if `all_pinned_items_are_partying_label_` should be visible.
+  bool ShouldShowAllPinnedItemsArePartyingLabel() const;
+
+  // Returns the space occupied by `all_pinned_items_are_partying_label_`,
+  // including the gap between that label and the first item, in DIPs.
+  int AllPinnedItemsArePartyingLabelSpace() const;
+
   // Removes and reset |current_ghost_view| and |last_ghost_view|.
   void RemoveGhostView();
 
@@ -686,6 +697,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // alignment or auto-hide state).
   views::View* announcement_view_ = nullptr;  // Owned by ShelfView
 
+  // A view used to indicate that all pinned items are partying.
+  views::View* all_pinned_items_are_partying_label_ =
+      nullptr;  // Owned by ShelfView
+
   // For dragging: -1 if scrolling back, 1 if scrolling forward, 0 if neither.
   int drag_scroll_dir_ = 0;
 
@@ -741,6 +756,9 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   // Called when showing shelf context menu.
   base::RepeatingClosure context_menu_shown_callback_;
+
+  // The shelf party animations.
+  base::flat_map<ShelfID, std::unique_ptr<PartyingShelfItem>> party_;
 
   base::WeakPtrFactory<ShelfView> weak_factory_{this};
 };

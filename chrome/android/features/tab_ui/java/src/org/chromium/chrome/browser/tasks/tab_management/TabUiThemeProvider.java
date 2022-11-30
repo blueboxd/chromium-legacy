@@ -11,7 +11,6 @@ import android.graphics.Color;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.ColorRes;
-import androidx.annotation.DimenRes;
 import androidx.annotation.StyleRes;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.content.ContextCompat;
@@ -161,21 +160,17 @@ public class TabUiThemeProvider {
      *
      * @param context {@link Context} used to retrieve color.
      * @param isIncognito Whether the color is used for incognito mode.
-     * @param allTabsSelected Whether all tabs are selected.
      * @return The {@link ColorInt} for select all icon background.
      */
     public static @ColorInt int getSelectionActionIconBackgroundColor(
-            Context context, boolean isIncognito, boolean allTabsSelected) {
+            Context context, boolean isIncognito) {
         if (isIncognito) {
             return context.getColor(
                     R.color.incognito_tab_selection_editor_selection_action_bg_color);
-        } else {
-            @ColorInt
-            int colorInt = allTabsSelected
-                    ? MaterialColors.getColor(context, org.chromium.chrome.R.attr.colorPrimary, TAG)
-                    : MaterialColors.getColor(context, R.attr.colorOnSurfaceVariant, TAG);
-            return colorInt;
         }
+        @ColorInt
+        int colorInt = MaterialColors.getColor(context, R.attr.colorOnSurface, TAG);
+        return colorInt;
     }
 
     /**
@@ -191,20 +186,8 @@ public class TabUiThemeProvider {
         if (isIncognito) {
             return context.getColor(R.color.incognito_tab_selection_editor_selection_action_check);
         }
-        return MaterialColors.getColor(context, org.chromium.chrome.R.attr.colorOnPrimary, TAG);
-    }
-
-    /**
-     * Returns the divider color for tab grid card based on the incognito mode.
-     *
-     * @param context {@link Context} used to retrieve color.
-     * @param isIncognito Whether the color is used for incognito mode.
-     * @return The divider color for tab grid card.
-     */
-    @ColorInt
-    public static int getDividerColor(Context context, boolean isIncognito) {
-        return isIncognito ? context.getColor(R.color.tab_grid_card_divider_tint_color_incognito)
-                           : SemanticColorUtils.getTabGridCardDividerTintColor(context);
+        return MaterialColors.getColor(
+                context, org.chromium.chrome.R.attr.colorOnSurfaceInverse, TAG);
     }
 
     /**
@@ -627,24 +610,7 @@ public class TabUiThemeProvider {
      * @return The margin between tab cards in float number.
      */
     public static float getTabGridCardMargin(Context context) {
-        int[] attrs = {R.attr.tabGridMargin};
-
-        TypedArray ta = context.obtainStyledAttributes(getThemeOverlayStyleResourceId(), attrs);
-        @DimenRes
-        int marginResourceId = ta.getResourceId(0, -1);
-        ta.recycle();
-
-        return context.getResources().getDimension(marginResourceId);
-    }
-
-    /**
-     * Returns the style resource Id that requires for Tab UI.
-     *
-     * @return The resource Id for the theme overlay used for tab UI.
-     */
-    @StyleRes
-    public static int getThemeOverlayStyleResourceId() {
-        return R.style.ThemeRefactorOverlay_Enabled_TabUi;
+        return context.getResources().getDimension(R.dimen.tab_grid_card_margin);
     }
 
     /**

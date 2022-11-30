@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,20 +17,6 @@ WebAXContext::WebAXContext(WebDocument root_document, const ui::AXMode& mode)
     : private_(new AXContext(*root_document.Unwrap<Document>(), mode)) {}
 
 WebAXContext::~WebAXContext() {}
-
-WebAXObject WebAXContext::Root() const {
-  // It is an error to call AXContext::GetAXObjectCache() if the underlying
-  // document is no longer active, so early return in that case to prevent
-  // crashes that might otherwise happen in some cases (see crbug.com/1094576).
-  if (!private_->HasActiveDocument())
-    return WebAXObject();
-
-  // Make sure that layout is updated before a root ax object is created.
-  WebAXObject::UpdateLayout(WebDocument(private_->GetDocument()));
-
-  return WebAXObject(
-      static_cast<AXObjectCacheImpl*>(&private_->GetAXObjectCache())->Root());
-}
 
 const ui::AXMode& WebAXContext::GetAXMode() const {
   return private_->GetAXMode();
@@ -82,15 +68,54 @@ bool WebAXContext::SerializeEntireTree(bool exclude_offscreen,
                                        ui::AXTreeUpdate* response) {
   if (!private_->HasActiveDocument())
     return false;
+  if (!private_->GetDocument()->ExistingAXObjectCache()) {
+    // TODO(chrishtr): not clear why this can happen.
+    NOTREACHED();
+    return false;
+  }
+
   return private_->GetAXObjectCache().SerializeEntireTree(
       exclude_offscreen, max_node_count, timeout, response);
 }
 
-void WebAXContext::MarkAllImageAXObjectsDirty(
-    ax::mojom::blink::Action event_from_action) {
+void WebAXContext::MarkAllImageAXObjectsDirty() {
   if (!private_->HasActiveDocument())
     return;
-  private_->GetAXObjectCache().MarkAllImageAXObjectsDirty(event_from_action);
+  private_->GetAXObjectCache().MarkAllImageAXObjectsDirty();
+}
+
+void WebAXContext::SerializeDirtyObjectsAndEvents(
+    bool has_plugin_tree_source,
+    std::vector<ui::AXTreeUpdate>& updates,
+    std::vector<ui::AXEvent>& events,
+    bool& had_end_of_test_event,
+    bool& had_load_complete_messages,
+    bool& need_to_send_location_changes) {
+  if (!private_->HasActiveDocument())
+    return;
+  private_->GetAXObjectCache().SerializeDirtyObjectsAndEvents(
+      has_plugin_tree_source, updates, events, had_end_of_test_event,
+      had_load_complete_messages, need_to_send_location_changes);
+}
+
+void WebAXContext::ClearDirtyObjectsAndPendingEvents() {
+  if (!private_->HasActiveDocument())
+    return;
+  private_->GetAXObjectCache().ClearDirtyObjectsAndPendingEvents();
+}
+
+bool WebAXContext::HasDirtyObjects() {
+  if (!private_->HasActiveDocument())
+    return true;
+  return private_->GetAXObjectCache().HasDirtyObjects();
+}
+
+bool WebAXContext::AddPendingEvent(const ui::AXEvent& event,
+                                   bool insert_at_beginning) {
+  if (!private_->HasActiveDocument())
+    return true;
+  return private_->GetAXObjectCache().AddPendingEvent(event,
+                                                      insert_at_beginning);
 }
 
 }  // namespace blink

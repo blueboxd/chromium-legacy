@@ -8,14 +8,19 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/feature_list.h"
+#include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "remoting/host/chromeos/ash_proxy.h"
-#include "remoting/host/chromeos/features.h"
 #include "remoting/host/chromeos/skia_bitmap_desktop_frame.h"
 
 namespace remoting {
 
 namespace {
+
+const char kUmaKeyForCapturerCreated[] =
+    "Enterprise.DeviceRemoteCommand.Crd.Capturer.Aura.Created";
+const char kUmaKeyForCapturerDestroyed[] =
+    "Enterprise.DeviceRemoteCommand.Crd.Capturer.Aura.Destroyed";
 
 std::unique_ptr<webrtc::DesktopFrame>
 ToDesktopFrame(int dpi, gfx::Point origin, absl::optional<SkBitmap> bitmap) {
@@ -36,15 +41,24 @@ ToDesktopFrame(int dpi, gfx::Point origin, absl::optional<SkBitmap> bitmap) {
   return frame;
 }
 
+void SendEventToUma(const char* event_name) {
+  base::UmaHistogramBoolean(event_name, true);
+}
+
 }  // namespace
 
 AuraDesktopCapturer::AuraDesktopCapturer()
     : AuraDesktopCapturer(AshProxy::Get()) {}
 
 AuraDesktopCapturer::AuraDesktopCapturer(AshProxy& ash_proxy)
-    : ash_(ash_proxy) {}
+    : ash_(ash_proxy) {
+  LOG(INFO) << "CRD: Starting aura desktop capturer";
+  SendEventToUma(kUmaKeyForCapturerCreated);
+}
 
-AuraDesktopCapturer::~AuraDesktopCapturer() = default;
+AuraDesktopCapturer::~AuraDesktopCapturer() {
+  SendEventToUma(kUmaKeyForCapturerDestroyed);
+}
 
 void AuraDesktopCapturer::Start(webrtc::DesktopCapturer::Callback* callback) {
   DCHECK(!callback_) << "Start() can only be called once";
@@ -75,6 +89,7 @@ void AuraDesktopCapturer::CaptureFrame() {
 void AuraDesktopCapturer::OnFrameCaptured(
     std::unique_ptr<webrtc::DesktopFrame> frame) {
   if (!frame) {
+    VLOG(3) << "Failed to capture a desktop frame";
     callback_->OnCaptureResult(DesktopCapturer::Result::ERROR_TEMPORARY,
                                nullptr);
     return;
@@ -91,9 +106,6 @@ bool AuraDesktopCapturer::GetSourceList(SourceList* sources) {
 }
 
 bool AuraDesktopCapturer::SelectSource(SourceId id) {
-  if (!base::FeatureList::IsEnabled(features::kEnableMultiMonitorsInCrd))
-    return false;
-
   if (!ash_.GetDisplayForId(id))
     return false;
 

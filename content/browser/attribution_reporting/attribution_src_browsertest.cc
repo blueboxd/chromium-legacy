@@ -6,7 +6,6 @@
 #include <utility>
 
 #include "base/containers/contains.h"
-#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
@@ -75,9 +74,7 @@ MATCHER_P(FilterValuesAre, matcher, "") {
 
 class AttributionSrcBrowserTest : public ContentBrowserTest {
  public:
-  AttributionSrcBrowserTest() {
-    AttributionManagerImpl::RunInMemoryForTesting();
-  }
+  AttributionSrcBrowserTest() = default;
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -91,7 +88,7 @@ class AttributionSrcBrowserTest : public ContentBrowserTest {
     https_server_->ServeFilesFromSourceDirectory("content/test/data");
     ASSERT_TRUE(https_server_->Start());
 
-    mock_attribution_host_ = MockAttributionHost::Override(web_contents());
+    MockAttributionHost::Override(web_contents());
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -105,12 +102,15 @@ class AttributionSrcBrowserTest : public ContentBrowserTest {
   net::EmbeddedTestServer* https_server() { return https_server_.get(); }
 
   MockAttributionHost& mock_attribution_host() {
-    return *mock_attribution_host_;
+    AttributionHost* attribution_host =
+        AttributionHost::FromWebContents(web_contents());
+    return *static_cast<MockAttributionHost*>(attribution_host);
   }
 
  private:
+  AttributionManagerImpl::ScopedUseInMemoryStorageForTesting
+      attribution_manager_in_memory_setting_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
-  base::raw_ptr<MockAttributionHost, DanglingUntriaged> mock_attribution_host_;
 };
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest, SourceRegistered) {
@@ -327,7 +327,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
                                       attributionsrc: ''});)"));
 
   // Wait for the impression to be seen by the observer.
-  blink::Impression last_impression = source_observer.Wait();
+  source_observer.Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
@@ -344,7 +344,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   "attributionsrc=");)"));
 
   // Wait for the impression to be seen by the observer.
-  blink::Impression last_impression = source_observer.Wait();
+  source_observer.Wait();
 }
 
 // See crbug.com/1322450
@@ -922,6 +922,7 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcBasicTriggerBrowserTest,
       IsEmpty());
   EXPECT_THAT(trigger_data.front()->aggregatable_trigger_data, IsEmpty());
   EXPECT_THAT(trigger_data.front()->aggregatable_values, IsEmpty());
+  EXPECT_FALSE(trigger_data.front()->aggregatable_dedup_key);
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
@@ -1004,6 +1005,8 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
 
   EXPECT_THAT(trigger_data.front()->aggregatable_values,
               ElementsAre(Pair("key", 123)));
+  EXPECT_EQ(trigger_data.front()->aggregatable_dedup_key,
+            blink::mojom::AttributionTriggerDedupKey::New(123));
 }
 
 IN_PROC_BROWSER_TEST_F(

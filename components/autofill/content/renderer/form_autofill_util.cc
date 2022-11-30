@@ -499,16 +499,6 @@ std::u16string InferLabelFromPlaceholder(const WebFormControlElement& element) {
   return std::u16string();
 }
 
-// Helper for |InferLabelForElement()| that infers a label, if possible, from
-// the aria-label. e.g. <input aria-label="foo">
-std::u16string InferLabelFromAriaLabel(const WebFormControlElement& element) {
-  static const base::NoDestructor<WebString> kAriaLabel("aria-label");
-  if (element.HasAttribute(*kAriaLabel))
-    return element.GetAttribute(*kAriaLabel).Utf16();
-
-  return std::u16string();
-}
-
 // Helper for |InferLabelForElement()| that infers a label, from
 // the value attribute when it is present and user has not typed in (if
 // element's value attribute is same as the element's value).
@@ -811,7 +801,7 @@ bool InferLabelForElement(const WebFormControlElement& element,
   }
 
   // If we didn't find a placeholder, check for aria-label text.
-  inferred_label = InferLabelFromAriaLabel(element);
+  inferred_label = GetAriaLabel(element.GetDocument(), element);
   if (IsLabelValid(inferred_label)) {
     label_source = FormFieldData::LabelSource::kAriaLabel;
     label = std::move(inferred_label);
@@ -1332,22 +1322,22 @@ FormFieldData* SearchForFormControlByName(
   return it != end ? it->first : nullptr;
 }
 
-// Updates the FormFieldData::label of each field in `field_set` according to
-// the <label> descendant of |form_or_fieldset|, if there is any. The extracted
-// label is label.firstChild().nodeValue() of the label element.
+// Considers all <label> descendents of `root`, looks at their corresponding
+// control and matches them to the fields in `field_set`. The corresponding
+// control is either a descendent of the label or an input specified by id in
+// the label's for-attribute.
+// In case no corresponding control exists, but a for-attribute is specified,
+// we look for fields with matching name as a fallback. Moreover, the ids and
+// names of shadow root ancestors of the fields are considered as a fallback.
 void MatchLabelsAndFields(
-    const WebElement& form_or_fieldset,
+    const WebNode& root,
     const base::flat_set<std::pair<FormFieldData*, ShadowFieldData>,
                          CompareByRendererId>& field_set) {
-  DCHECK(!base::FeatureList::IsEnabled(
-      features::kAutofillImprovedLabelForInference));
-
   static base::NoDestructor<WebString> kLabel("label");
   static base::NoDestructor<WebString> kFor("for");
   static base::NoDestructor<WebString> kHidden("hidden");
 
-  WebElementCollection labels =
-      form_or_fieldset.GetElementsByHTMLTagName(*kLabel);
+  WebElementCollection labels = root.GetElementsByHTMLTagName(*kLabel);
   DCHECK(!labels.IsNull());
 
   for (WebElement item = labels.FirstItem(); !item.IsNull();
@@ -1457,18 +1447,12 @@ bool FormOrFieldsetsToFormData(
     fields_extracted[i] = true;
 
     if (base::FeatureList::IsEnabled(features::kAutofillAcrossIframes)) {
-      // Providing |common_ancestor| speeds up IsDomPredecessor(). If the
-      // |control_element| is part of a form, it is guaranteed that the
-      // |form_element| is a common ancestor, otherwise we fall back to the
-      // Document as a non-ideal but always correct alternative.
-      const blink::WebNode& common_ancestor =
-          form_element ? static_cast<const blink::WebNode&>(*form_element)
-                       : static_cast<const blink::WebNode&>(
-                             control_elements[i].GetDocument());
+      const blink::WebFormElement& ancestor_hint =
+          form_element ? *form_element : blink::WebFormElement();
       // Finds the last frame that precedes |control_element|.
       while (next_iframe < iframe_elements.size() &&
-             !IsDomPredecessor(control_element, iframe_elements[next_iframe],
-                               common_ancestor)) {
+             !IsDOMPredecessor(control_element, iframe_elements[next_iframe],
+                               ancestor_hint)) {
         ++next_iframe;
       }
       // The |next_frame|th frame precedes `control_element` and thus the last
@@ -1489,17 +1473,27 @@ bool FormOrFieldsetsToFormData(
   }
 
   // Extracts field labels from the <label for="..."> tags.
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillImprovedLabelForInference)) {
-    std::vector<std::pair<FormFieldData*, ShadowFieldData>> items;
-    DCHECK_EQ(form->fields.size(), shadow_fields.size());
-    for (size_t i = 0; i < form->fields.size(); i++) {
-      items.emplace_back(&form->fields[i], std::move(shadow_fields[i]));
-    }
-    base::flat_set<std::pair<FormFieldData*, ShadowFieldData>,
-                   CompareByRendererId>
-        field_set(std::move(items));
+  // This is done by iterating through all <label>s and looking them up in the
+  // `field_set` built below.
+  // Iterating through the fields and looking at their `WebElement::Labels()`
+  // unfortunately doesn't scale, as each call corresponds to a DOM traverse.
+  std::vector<std::pair<FormFieldData*, ShadowFieldData>> items;
+  DCHECK_EQ(form->fields.size(), shadow_fields.size());
+  for (size_t i = 0; i < form->fields.size(); i++)
+    items.emplace_back(&form->fields[i], std::move(shadow_fields[i]));
+  base::flat_set<std::pair<FormFieldData*, ShadowFieldData>,
+                 CompareByRendererId>
+      field_set(std::move(items));
 
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillImprovedLabelForInference)) {
+    // All `control_elements` share the same document. By providing it as the
+    // `root` of `MatchLabelsAndFields()` all label tags are considered. This is
+    // necessary to support label-for inference in unowned forms and in owned
+    // forms utilizing the form-attribute.
+    if (!control_elements.empty())
+      MatchLabelsAndFields(control_elements[0].GetDocument(), field_set);
+  } else {
     if (form_element) {
       MatchLabelsAndFields(*form_element, field_set);
     } else {
@@ -1640,22 +1634,6 @@ std::string GetAutocompleteAttribute(const WebElement& element) {
   return autocomplete_attribute;
 }
 
-// Returns the concatenated label text of all labels assigned to the `element`
-// using <label for=`element.GetIdAttribute()`>, separated by a space.
-std::u16string GetAssignedLabel(const WebFormControlElement& element) {
-  std::u16string concatenated_labels;
-  for (const auto& label : element.Labels()) {
-    if (auto label_text = FindChildText(label); !label_text.empty()) {
-      if (!concatenated_labels.empty())
-        concatenated_labels.push_back(' ');
-      concatenated_labels.append(std::move(label_text));
-      base::UmaHistogramEnumeration(kAssignedLabelSourceHistogram,
-                                    AssignedLabelSource::kId);
-    }
-  }
-  return concatenated_labels;
-}
-
 void FindFormElementUpShadowRoots(const WebElement& element,
                                   WebFormElement* found_form_element) {
   // If we are in shadowdom, then look to see if the host(s) are inside a form
@@ -1728,38 +1706,49 @@ WebFormElement GetClosestAncestorFormElement(WebNode n) {
   return WebFormElement();
 }
 
-bool IsDomPredecessor(const blink::WebNode& x,
+bool IsDOMPredecessor(const blink::WebNode& x,
                       const blink::WebNode& y,
-                      const blink::WebNode& common_ancestor) {
+                      const blink::WebNode& ancestor_hint) {
   DCHECK(x.GetDocument() == y.GetDocument());
-  DCHECK(x.GetDocument() == common_ancestor.GetDocument());
+  DCHECK(ancestor_hint.IsNull() ||
+         x.GetDocument() == ancestor_hint.GetDocument());
+  // Extends the `path` up to `end` (exclusive) or the document root.
   // Paths are backwards: the last element is the top-most node.
-  auto BuildPath = [&common_ancestor](blink::WebNode node) {
-    DCHECK(common_ancestor != node);
-    std::vector<WebNode> path;
-    path.reserve(16);
-    while (!node.IsNull() && node != common_ancestor) {
-      path.push_back(node);
-      node = path.back().ParentNode();
-    }
+  auto BuildPath = [](std::vector<blink::WebNode> path,
+                      const blink::WebNode& end) {
     DCHECK(!path.empty());
+    path.reserve(path.size() + 16);
+    blink::WebNode parent;
+    while (!(parent = path.back().ParentNode()).IsNull() && parent != end)
+      path.push_back(parent);
     return path;
   };
-  std::vector<blink::WebNode> x_path = BuildPath(x);
-  std::vector<blink::WebNode> y_path = BuildPath(y);
+  // Returns true iff `lhs` is strictly to the left of `rhs`, provided both
+  // nodes are siblings.
+  auto IsLeftSiblingOf = [](const blink::WebNode& lhs,
+                            const blink::WebNode& rhs) {
+    DCHECK(lhs.ParentNode() == rhs.ParentNode());
+    for (blink::WebNode n = rhs; !n.IsNull(); n = n.NextSibling()) {
+      if (n == lhs)
+        return false;
+    }
+    return true;
+  };
+  // Both paths are successors of either `ancestor_hint` or the document root.
+  // If their parents aren't the same, we extend the paths to the document root.
+  std::vector<blink::WebNode> x_path = BuildPath({x}, ancestor_hint);
+  std::vector<blink::WebNode> y_path = BuildPath({y}, ancestor_hint);
+  if (x_path.back().ParentNode() != y_path.back().ParentNode()) {
+    x_path = BuildPath(std::move(x_path), blink::WebNode());
+    y_path = BuildPath(std::move(y_path), blink::WebNode());
+  }
   auto x_it = x_path.rbegin();
   auto y_it = y_path.rbegin();
   // Find the first different nodes in the paths. If such nodes exist, they are
   // siblings and their sibling order determines |x| and |y|'s relationship.
   while (x_it != x_path.rend() && y_it != y_path.rend()) {
-    if (*x_it != *y_it) {
-      DCHECK(x_it->ParentNode() == y_it->ParentNode());
-      for (blink::WebNode n = *y_it; !n.IsNull(); n = n.NextSibling()) {
-        if (n == *x_it)
-          return false;
-      }
-      return true;
-    }
+    if (*x_it != *y_it)
+      return IsLeftSiblingOf(*x_it, *y_it);
     ++x_it;
     ++y_it;
   }
@@ -1975,12 +1964,6 @@ void WebFormControlElementToFormField(
   field->autocomplete_attribute = GetAutocompleteAttribute(element);
   field->parsed_autocomplete = ParseAutocompleteAttribute(
       field->autocomplete_attribute, field->max_length);
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillImprovedLabelForInference)) {
-    field->label = GetAssignedLabel(element);
-    if (!field->label.empty())
-      field->label_source = FormFieldData::LabelSource::kFor;
-  }
   if (base::EqualsCaseInsensitiveASCII(element.GetAttribute(*kRole).Utf16(),
                                        "presentation")) {
     field->role = FormFieldData::RoleAttribute::kPresentation;

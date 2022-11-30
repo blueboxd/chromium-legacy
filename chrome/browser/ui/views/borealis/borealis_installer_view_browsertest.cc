@@ -98,33 +98,21 @@ class BorealisInstallerViewBrowserTest : public DialogBrowserTest {
     EXPECT_EQ(
         view_->GetPrimaryMessage(),
         l10n_util::GetStringUTF16(IDS_BOREALIS_INSTALLER_CONFIRMATION_TITLE));
+    EXPECT_EQ(view_->GetProgressMessage(), u"");
   }
 
   void ExpectInstallationInProgress() {
     EXPECT_FALSE(HasAcceptButton());
     EXPECT_TRUE(HasCancelButton());
     EXPECT_EQ(view_->GetPrimaryMessage(),
-              l10n_util::GetStringUTF16(
-                  IDS_BOREALIS_INSTALLER_ENVIRONMENT_SETTING_TITLE));
+              l10n_util::GetStringUTF16(IDS_BOREALIS_INSTALLER_ONGOING_TITLE));
+    EXPECT_EQ(
+        view_->GetSecondaryMessage(),
+        l10n_util::GetStringUTF16(IDS_BOREALIS_INSTALLER_ONGOING_MESSAGE));
+    EXPECT_NE(view_->GetProgressMessage(), u"");
   }
 
-  void ExpectInstallationFailedWithRetry() {
-    EXPECT_TRUE(HasAcceptButton());
-    EXPECT_TRUE(HasCancelButton());
-    EXPECT_EQ(view_->GetDialogButtonLabel(ui::DIALOG_BUTTON_OK),
-              l10n_util::GetStringUTF16(IDS_BOREALIS_INSTALLER_RETRY_BUTTON));
-    EXPECT_EQ(view_->GetPrimaryMessage(),
-              l10n_util::GetStringUTF16(IDS_BOREALIS_INSTALLER_ERROR_TITLE));
-  }
-
-  void ExpectInstallationFailedWithRetryCustomTitle() {
-    EXPECT_TRUE(HasAcceptButton());
-    EXPECT_TRUE(HasCancelButton());
-    EXPECT_EQ(view_->GetDialogButtonLabel(ui::DIALOG_BUTTON_OK),
-              l10n_util::GetStringUTF16(IDS_BOREALIS_INSTALLER_RETRY_BUTTON));
-  }
-
-  void ExpectInstallationFailedWithNoRetry() {
+  void ExpectInstallationFailed() {
     EXPECT_FALSE(HasAcceptButton());
     EXPECT_TRUE(HasCancelButton());
   }
@@ -138,6 +126,7 @@ class BorealisInstallerViewBrowserTest : public DialogBrowserTest {
               l10n_util::GetStringUTF16(IDS_APP_CLOSE));
     EXPECT_EQ(view_->GetPrimaryMessage(),
               l10n_util::GetStringUTF16(IDS_BOREALIS_INSTALLER_FINISHED_TITLE));
+    EXPECT_EQ(view_->GetProgressMessage(), u"");
   }
 
   void AcceptInstallation() {
@@ -211,10 +200,7 @@ IN_PROC_BROWSER_TEST_F(BorealisInstallerViewBrowserTest,
   AcceptInstallation();
 
   view_->OnInstallationEnded(error_type, "in progress");
-  ExpectInstallationFailedWithRetry();
-  EXPECT_EQ(view_->GetSecondaryMessage(),
-            l10n_util::GetStringUTF16(
-                IDS_BOREALIS_INSTALLER_IN_PROGRESS_ERROR_MESSAGE));
+  ExpectInstallationFailed();
 
   AcceptInstallation();
 
@@ -232,148 +218,15 @@ IN_PROC_BROWSER_TEST_F(BorealisInstallerViewBrowserTest,
   EXPECT_TRUE(view_->GetWidget()->IsClosed());
 }
 
-IN_PROC_BROWSER_TEST_F(BorealisInstallerViewBrowserTest, InProgressError) {
+IN_PROC_BROWSER_TEST_F(BorealisInstallerViewBrowserTest,
+                       ErrorDuringInstallation) {
   InstallationResult error_type =
       InstallationResult::kBorealisInstallInProgress;
   ShowUi("default");
   AcceptInstallation();
 
   view_->OnInstallationEnded(error_type, "in progress");
-  ExpectInstallationFailedWithRetry();
-  EXPECT_EQ(view_->GetSecondaryMessage(),
-            l10n_util::GetStringUTF16(
-                IDS_BOREALIS_INSTALLER_IN_PROGRESS_ERROR_MESSAGE));
-
-  ClickCancel();
-}
-
-IN_PROC_BROWSER_TEST_F(BorealisInstallerViewBrowserTest, NotAllowedError) {
-  InstallationResult error_type = InstallationResult::kBorealisNotAllowed;
-  ShowUi("default");
-  AcceptInstallation();
-
-  view_->OnInstallationEnded(error_type, "not allowed");
-  ExpectInstallationFailedWithNoRetry();
-  EXPECT_EQ(
-      view_->GetPrimaryMessage(),
-      l10n_util::GetStringUTF16(IDS_BOREALIS_INSTALLER_NOT_ALLOWED_TITLE));
-  EXPECT_EQ(view_->GetSecondaryMessage(),
-            l10n_util::GetStringFUTF16(
-                IDS_BOREALIS_INSTALLER_NOT_ALLOWED_MESSAGE,
-                base::NumberToString16(
-                    static_cast<std::underlying_type_t<InstallationResult>>(
-                        error_type))));
-
-  ClickCancel();
-}
-
-IN_PROC_BROWSER_TEST_F(BorealisInstallerViewBrowserTest, DlcUnsupportedError) {
-  InstallationResult error_type = InstallationResult::kDlcUnsupportedError;
-  ShowUi("default");
-  AcceptInstallation();
-
-  view_->OnInstallationEnded(error_type, "dlc unsupported");
-  ExpectInstallationFailedWithNoRetry();
-  EXPECT_EQ(
-      view_->GetPrimaryMessage(),
-      l10n_util::GetStringUTF16(IDS_BOREALIS_INSTALLER_NOT_ALLOWED_TITLE));
-  EXPECT_EQ(view_->GetSecondaryMessage(),
-            l10n_util::GetStringFUTF16(
-                IDS_BOREALIS_INSTALLER_NOT_ALLOWED_MESSAGE,
-                base::NumberToString16(
-                    static_cast<std::underlying_type_t<InstallationResult>>(
-                        error_type))));
-
-  ClickCancel();
-}
-
-IN_PROC_BROWSER_TEST_F(BorealisInstallerViewBrowserTest, DlcInternalError) {
-  InstallationResult error_type = InstallationResult::kDlcInternalError;
-  ShowUi("default");
-  AcceptInstallation();
-
-  view_->OnInstallationEnded(error_type, "dlc failure");
-  ExpectInstallationFailedWithRetry();
-  EXPECT_EQ(
-      view_->GetSecondaryMessage(),
-      l10n_util::GetStringUTF16(IDS_BOREALIS_DLC_INTERNAL_FAILED_MESSAGE));
-
-  ClickCancel();
-}
-
-IN_PROC_BROWSER_TEST_F(BorealisInstallerViewBrowserTest, DlcBusyError) {
-  InstallationResult error_type = InstallationResult::kDlcBusyError;
-  ShowUi("default");
-  AcceptInstallation();
-
-  view_->OnInstallationEnded(error_type, "dlc failure");
-  ExpectInstallationFailedWithRetry();
-  EXPECT_EQ(view_->GetSecondaryMessage(),
-            l10n_util::GetStringUTF16(IDS_BOREALIS_DLC_BUSY_FAILED_MESSAGE));
-
-  ClickCancel();
-}
-
-IN_PROC_BROWSER_TEST_F(BorealisInstallerViewBrowserTest, DlcNeedRebootError) {
-  InstallationResult error_type = InstallationResult::kDlcNeedRebootError;
-  ShowUi("default");
-  AcceptInstallation();
-
-  view_->OnInstallationEnded(error_type, "dlc failure");
-  ExpectInstallationFailedWithRetry();
-  EXPECT_EQ(
-      view_->GetSecondaryMessage(),
-      l10n_util::GetStringUTF16(IDS_BOREALIS_DLC_NEED_REBOOT_FAILED_MESSAGE));
-
-  ClickCancel();
-}
-
-IN_PROC_BROWSER_TEST_F(BorealisInstallerViewBrowserTest, DlcNeedSpaceError) {
-  InstallationResult error_type = InstallationResult::kDlcNeedSpaceError;
-  ShowUi("default");
-  AcceptInstallation();
-
-  view_->OnInstallationEnded(error_type, "dlc failure");
-  ExpectInstallationFailedWithRetryCustomTitle();
-  EXPECT_EQ(
-      view_->GetPrimaryMessage(),
-      l10n_util::GetStringUTF16(IDS_BOREALIS_INSUFFICIENT_DISK_SPACE_TITLE));
-  EXPECT_EQ(
-      view_->GetSecondaryMessage(),
-      l10n_util::GetStringUTF16(IDS_BOREALIS_INSUFFICIENT_DISK_SPACE_MESSAGE));
-
-  ClickCancel();
-}
-
-IN_PROC_BROWSER_TEST_F(BorealisInstallerViewBrowserTest, DlcNeedUpdateError) {
-  InstallationResult error_type = InstallationResult::kDlcNeedUpdateError;
-  ShowUi("default");
-  AcceptInstallation();
-
-  view_->OnInstallationEnded(error_type, "dlc failure");
-  ExpectInstallationFailedWithNoRetry();
-  EXPECT_EQ(view_->GetPrimaryMessage(),
-            l10n_util::GetStringUTF16(IDS_BOREALIS_INSTALLER_ERROR_TITLE));
-  EXPECT_EQ(
-      view_->GetSecondaryMessage(),
-      l10n_util::GetStringUTF16(IDS_BOREALIS_DLC_NEED_UPDATE_FAILED_MESSAGE));
-
-  ClickCancel();
-}
-
-IN_PROC_BROWSER_TEST_F(BorealisInstallerViewBrowserTest, DlcUnknownError) {
-  InstallationResult error_type = InstallationResult::kDlcUnknownError;
-  ShowUi("default");
-  AcceptInstallation();
-
-  view_->OnInstallationEnded(error_type, "dlc failure");
-  ExpectInstallationFailedWithRetry();
-  EXPECT_EQ(view_->GetSecondaryMessage(),
-            l10n_util::GetStringFUTF16(
-                IDS_BOREALIS_GENERIC_ERROR_MESSAGE,
-                base::NumberToString16(
-                    static_cast<std::underlying_type_t<InstallationResult>>(
-                        error_type))));
+  ExpectInstallationFailed();
 
   ClickCancel();
 }

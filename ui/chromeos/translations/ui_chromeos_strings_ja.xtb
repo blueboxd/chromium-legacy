@@ -23,6 +23,7 @@
 <translation id="117624967391683467"><ph name="FILE_NAME" /> をコピーしています...</translation>
 <translation id="1178581264944972037">一時停止</translation>
 <translation id="1190144681599273207">このファイルを取得すると、約 <ph name="FILE_SIZE" /> のモバイル データを使用します。</translation>
+<translation id="1194390763418645112"><ph name="RESTRICTED_DESTINATIONS" /> によるファイル アクセス</translation>
 <translation id="1201402288615127009">次へ</translation>
 <translation id="1209796539517632982">自動ネーム サーバー</translation>
 <translation id="1210831758834677569">ラオ語</translation>
@@ -61,6 +62,7 @@
 <translation id="1561842594491319104">Chrome デバイス</translation>
 <translation id="1572585716423026576">壁紙に設定</translation>
 <translation id="1576937952766665062">ベンガル語（文字変換）</translation>
+<translation id="1577977504532381335">管理者のポリシーを確認する</translation>
 <translation id="158849752021629804">ホーム ネットワークが必要です</translation>
 <translation id="1589128298353575783"><ph name="NUMBER_OF_PB" /> PB</translation>
 <translation id="1620510694547887537">カメラ</translation>
@@ -78,7 +80,6 @@
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" /> 個のアイテムを圧縮しています...</translation>
 <translation id="1722687688096767818">プロファイルの追加中...</translation>
 <translation id="1726100011689679555">ネームサーバー</translation>
-<translation id="1726600877401297672"><ph name="NUMBER_OF_ITEMS" /> 個のアイテムをゴミ箱に移動しました</translation>
 <translation id="1729953886957086472">ドイツ語（ドイツ）</translation>
 <translation id="1730235522912993863">中国語（倉頡）</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> 件のアイテムをコピーしました</translation>
@@ -112,6 +113,7 @@
 <translation id="1942765061641586207">画像解像度</translation>
 <translation id="1972984168337863910">ファイルのフィードバック パネルを展開します</translation>
 <translation id="1995337122023280937">ファイルの場所へ移動</translation>
+<translation id="1999709132469742660">すべての URL によるファイル アクセス</translation>
 <translation id="2001796770603320721">ドライブで管理</translation>
 <translation id="2009067268969781306">ドライブをフォーマットすると、そのドライブに保存されているすべてのデータが削除されます。この操作は元に戻せません。</translation>
 <translation id="2025955442973426285">チグリヤナ語</translation>
@@ -142,6 +144,7 @@
 <translation id="2239068707900391003">コーヒーを持っている人</translation>
 <translation id="2251368349685848079">ゴミ箱から復元</translation>
 <translation id="2282155092769082568">自動設定 URL:</translation>
+<translation id="2284767815536050991">リムーバブル ストレージ</translation>
 <translation id="2288278176040912387">レコード プレーヤー</translation>
 <translation id="2291538123825441971"><ph name="NUMBER_OF_FILES" /> 個のファイルを開いています。</translation>
 <translation id="2303301624314357662">ファイル <ph name="FILE_NAME" /> を開いています。</translation>
@@ -154,7 +157,7 @@
 <translation id="2377319039870049694">リスト表示に切り替え</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> 個のフォルダが Linux と共有されています</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> 個のファイルを選択</translation>
-<translation id="2387120140441437063">ゴミ箱にあるファイルは開けません。ファイルを開く前に復元してください。</translation>
+<translation id="2383454254762599978">ゴミ箱に移動</translation>
 <translation id="2387458720915042159">プロキシ接続タイプ</translation>
 <translation id="2389832672041313158">ビルマ語 / ミャンマー語</translation>
 <translation id="2392369802118427583">有効にする</translation>
@@ -171,6 +174,7 @@
 <translation id="2500392669976258912">グジャラト語（表音）</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">スキャン</translation>
+<translation id="252641322760726369">ファイルを長押しして <ph name="ICON" /> をタップし、[<ph name="PIN_COMMAND" />] を選択すると、シェルフからファイルに簡単にアクセスできます。</translation>
 <translation id="2534460670861217804">保護された HTTP プロキシ</translation>
 <translation id="2541377937973966830">このフォルダのコンテンツは読み取り専用です。一部の操作は行えません。</translation>
 <translation id="2542049655219295786">Google Table</translation>
@@ -207,7 +211,6 @@
 <translation id="2888807692577297075">&lt;b&gt;「<ph name="SEARCH_STRING" />」&lt;/b&gt;に一致するアイテムはありません</translation>
 <translation id="2894654529758326923">情報</translation>
 <translation id="2902734494705624966">US 拡張</translation>
-<translation id="2906052776158021882"><ph name="NUMBER_OF_ITEMS" /> 個のアイテムをゴミ箱に移動しています</translation>
 <translation id="290843123675549676">マラーティー語</translation>
 <translation id="2923240520113693977">エストニア語</translation>
 <translation id="2938685643439809023">モンゴル語</translation>
@@ -217,13 +220,13 @@
 <translation id="2958458230122209142"><ph name="TOTAL_SPACE" /> の個人用ストレージは残り <ph name="REMAINING_PERCENTAGE" />% と少なくなっています。</translation>
 <translation id="2977940621473452797">このファイルは Macintosh ソフトウェアを使用するパソコン用に作成されています。ご使用のデバイスでは Chrome OS が実行されているため、互換性がありません。Chrome ウェブストアで適切なアプリをお探しください。</translation>
 <translation id="2984337792991268709">今日 <ph name="TODAY_DAYTIME" /></translation>
-<translation id="2994320653639462337"><ph name="COUNT" /> 個のアイテムを復元しています…</translation>
 <translation id="299638574917407533">フランス語（カナダ）</translation>
 <translation id="3003189754374775221"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、<ph name="NETWORK_PROVIDER_NAME" />、信号強度 <ph name="SIGNAL_STRENGTH" />%、接続</translation>
 <translation id="3003633581067744647">サムネイル表示に切り替え</translation>
 <translation id="3016566519832145558">注: これらのファイルは一時的なもので、ディスクの空き容量を増やすために自動的に削除されることがあります。</translation>
 <translation id="3029114385395636667">ドキュメント、スプレッドシート、スライドをオフラインで使用できるようにするには、Google オフライン ドキュメントを有効にしてください。</translation>
 <translation id="303198083543495566">位置情報</translation>
+<translation id="3044404008258011032">これらのアイテムを復元するには、ゴミ箱から新しいフォルダにドラッグしてください。アイテムの元のフォルダ「<ph name="PARENT_FOLDER_NAME" />」は削除されています。</translation>
 <translation id="3047197340186497470">中国語（大易）</translation>
 <translation id="3067790092342515856">Windows ファイル</translation>
 <translation id="3083975830683400843">Chromebit</translation>
@@ -234,6 +237,7 @@
 <translation id="3124404833828281817">空想にふけっている人</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3138624403379688522">無効な PIN です。入力できるのはあと <ph name="RETRIES" /> 回です。</translation>
+<translation id="3157931365184549694">復元</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]（ハードウェアにより保護を強化）</translation>
 <translation id="3188257591659621405">マイファイル</translation>
 <translation id="3194553149358267393">最近使用した音声ファイルはありません</translation>
@@ -271,7 +275,6 @@
 <translation id="3414856743105198592">リムーバブル メディアをフォーマットすると、すべてのデータが消去されます。続行しますか？</translation>
 <translation id="3437801641691368414">作成日時</translation>
 <translation id="343907260260897561">インスタント カメラ</translation>
-<translation id="3452106565701029351">クイック ファイルへの固定を解除</translation>
 <translation id="3455931012307786678">エストニア語</translation>
 <translation id="3475447146579922140">Google スプレッドシート</translation>
 <translation id="3479552764303398839">後で</translation>
@@ -286,6 +289,7 @@
 <translation id="3549797760399244642">drive.google.com にアクセスします...</translation>
 <translation id="3553048479571901246"><ph name="APP_NAME" /> でファイルを開くには、まず [Windows ファイル] フォルダにファイルをコピーしてください。</translation>
 <translation id="3556731189587832921">英語（アメリカ）（インターナショナル PC）キーボード</translation>
+<translation id="3557414470514932909"><ph name="FILE_NAME" /> をゴミ箱に移動しています</translation>
 <translation id="3567221313191587603">ファイルにオフラインでアクセスするには、ファイルを選択し、[<ph name="OFFLINE_CHECKBOX_NAME" />] をオンに切り替えます。</translation>
 <translation id="357479282490346887">リトアニア語</translation>
 <translation id="3587482841069643663">すべて</translation>
@@ -337,12 +341,17 @@
 <translation id="3975895378829046965">ベンガル語（表音）</translation>
 <translation id="4002066346123236978">タイトル</translation>
 <translation id="4017788180641807848">英語（アメリカ）（Workman）キーボード</translation>
+<translation id="4019998208269143058">クイック ファイルに固定</translation>
 <translation id="4040753847560036377">PUK が正しくありません</translation>
 <translation id="4057991113334098539">有効にしています...</translation>
 <translation id="4092890906744441904">アイルランド語</translation>
 <translation id="4124935795427217608">ユニコーン</translation>
+<translation id="4131235941541910880">不要なアイテムはゴミ箱に移動してください</translation>
+<translation id="4153015322587141338">ファイルを右クリックして [<ph name="PIN_COMMAND" />] を選択すると、シェルフからファイルに簡単にアクセスできます。</translation>
+<translation id="4157569377477607576">管理者のポリシーでは、次のことは推奨されていません。</translation>
 <translation id="4159731583141908892"><ph name="FILE_NAME" /> を移動しました。</translation>
 <translation id="4176286497474237543">ゴミ箱を今すぐ空にする</translation>
+<translation id="4179621117429069925">このアイテムはゴミ箱にあります</translation>
 <translation id="4186579485882418952">オフラインを有効にする</translation>
 <translation id="4193154014135846272">Google ドキュメント</translation>
 <translation id="4197674956721858839">zip 圧縮</translation>
@@ -372,6 +381,7 @@
 <translation id="4387004326333427325">認証証明書がリモートで拒否されました</translation>
 <translation id="4394214039309501350">外部リンク</translation>
 <translation id="4394980935660306080">今週</translation>
+<translation id="4398096759193130964">アイテムを復元するか、ゴミ箱から新しいフォルダにドラッグしてください</translation>
 <translation id="4401287888955153199">すべて解凍</translation>
 <translation id="4410695710508688828">抽出操作が失敗しました。<ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">ファイルのショートカットを作成</translation>
@@ -427,6 +437,7 @@
 <translation id="4790766916287588578">ヒンディー語（字母）キーボード</translation>
 <translation id="4801956050125744859">両方を保持</translation>
 <translation id="4804827417948292437">アボカド</translation>
+<translation id="4805966553127040832"><ph name="COUNT" /> 個のアイテムを復元しています</translation>
 <translation id="4823651846660089135">デバイスは読み取り専用です</translation>
 <translation id="4826849268470072925">タミル語（ITRANS）</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> 個のアイテムを選択</translation>
@@ -435,14 +446,17 @@
 <translation id="485316830061041779">ドイツ語</translation>
 <translation id="4867079195717347957">クリックすると、列が降順で並べ替えられます。</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> バイト</translation>
+<translation id="4874569719830985133">完全に削除</translation>
 <translation id="4880214202172289027">音量スライダー</translation>
 <translation id="4881695831933465202">開く</translation>
+<translation id="4891091358278567964">これらのアイテムを復元するには、ゴミ箱から新しいフォルダにドラッグしてください。アイテムの元のフォルダは削除されています。</translation>
 <translation id="4900532980794411603">Parallels Desktop と共有</translation>
 <translation id="4902546322522096650"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、<ph name="SECURITY_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />%、接続</translation>
 <translation id="4906580650526544301"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="PHONE_NAME" />、<ph name="PROVIDER_NAME" />、<ph name="CONNECTION_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />%、電池残量 <ph name="BATTERY_STATUS" />%、詳細</translation>
 <translation id="4935975195727477204">花</translation>
 <translation id="4943368462779413526">フットボール</translation>
 <translation id="4961158930123534723">1 個のフォルダが Parallels Desktop と共有されています</translation>
+<translation id="496656650103537022">「<ph name="FILE_NAME" />」を復元しました</translation>
 <translation id="4969785127455456148">アルバム</translation>
 <translation id="4973523518332075481">名前は <ph name="MAX_LENGTH" /> 文字以内で指定してください</translation>
 <translation id="4973970068702235170">圧縮できませんでした。予期しないエラー: <ph name="ERROR_MESSAGE" /></translation>
@@ -461,7 +475,6 @@
 <translation id="5068919226082848014">ピザ</translation>
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> 分のファイルが削除されます</translation>
 <translation id="508423945471810158"><ph name="NUMBER_OF_ITEMS" /> 個のアイテムを <ph name="FOLDER_NAME" /> に移動しています</translation>
-<translation id="5092200349368278146"><ph name="FILE_NAME" /> をゴミ箱に移動しました</translation>
 <translation id="509429900233858213">エラーが発生しました。</translation>
 <translation id="5098629044894065541">ヘブライ語</translation>
 <translation id="5102922915594634436">同期したフォルダを管理</translation>
@@ -478,7 +491,6 @@
    使用中のデバイスを取り外すと、データが失われる恐れがあります。操作が完了してから、ファイル アプリを使ってデバイスを取り外してください。</translation>
 <translation id="5163869187418756376">共有できませんでした。接続を確認し、しばらくしてからもう一度お試しください。</translation>
 <translation id="516592729076796170">US Programmer Dvorak 配列</translation>
-<translation id="5172749059808361023">制限の詳細</translation>
 <translation id="5177526793333269655">サムネイル ビュー</translation>
 <translation id="5181896909298187506">最近使用したファイルはありません</translation>
 <translation id="5194713942430106590">クリックすると、列が昇順で並べ替えられます。</translation>
@@ -494,19 +506,21 @@
         <ph name="MARKUP_7" />ファイルの作成、共有、共同作業<ph name="MARKUP_8" />
         他のユーザーとの作業をすべて 1 か所で行うことができます。<ph name="MARKUP_9" /></translation>
 <translation id="5275973617553375938">Google ドライブから復元されたファイル</translation>
+<translation id="5278111733643988471">このアイテムを復元するには、ゴミ箱から新しいフォルダにドラッグしてください。このアイテムの元のフォルダ「<ph name="PARENT_FOLDER_NAME" />」は削除されています。</translation>
 <translation id="5286194356314741248">スキャン中</translation>
 <translation id="5288441970121584418">ハンバーガー</translation>
 <translation id="5288481194217812690"><ph name="FILENAME" /></translation>
-<translation id="5299998344490869684">ゴミ箱を空にしてもよろしいですか？</translation>
 <translation id="5305688511332277257">インストールされていません</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5318819489018851358">Linux と共有</translation>
 <translation id="5323213332664049067">ラテン アメリカ</translation>
 <translation id="5330145655348521461">これらのファイルは別のデスクトップで開かれます。表示するには <ph name="USER_NAME" />（<ph name="MAIL_ADDRESS" />）に移動してください。</translation>
 <translation id="5330512191124428349">情報を見る</translation>
+<translation id="5337538975554986899"><ph name="NON_RESTRICTED_DESTINATIONS" /> を除くすべての URL によるファイル アクセス</translation>
 <translation id="535792325654997756">猫と一緒にいる人</translation>
 <translation id="5358764674931277">フレームレート</translation>
 <translation id="5363339716524495120">入力言語は中国語です</translation>
+<translation id="5364067326287025678">ゴミ箱は空です</translation>
 <translation id="5368191757080475556">Linux とのフォルダ共有</translation>
 <translation id="5402367795255837559">点字</translation>
 <translation id="5411472733320185105">以下のホストとドメインにはプロキシ設定を使用しない:</translation>
@@ -528,6 +542,7 @@
 <translation id="5533102081734025921">画像（<ph name="IMAGE_TYPE" />）</translation>
 <translation id="5534520101572674276">サイズを計算しています</translation>
 <translation id="554153475311314364">ギリシア語（文字変換）</translation>
+<translation id="5580591966435005537">仮想マシン</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5583664733673201137">句読点幅は全角です</translation>
 <translation id="5602622065581044566">ブルガリア語（表音）キーボード</translation>
@@ -544,6 +559,7 @@
 <translation id="5691596662111998220"><ph name="FILE_NAME" /> が存在しません。</translation>
 <translation id="5698411045597658393"><ph name="NETWORK_NAME" />、ロックを解除</translation>
 <translation id="5700087501958648444">オーディオ情報</translation>
+<translation id="5720028165859493293"><ph name="FILE_NAME" /> をゴミ箱に移動しました</translation>
 <translation id="5724172041621205163">タイ語（Pattachote）キーボード</translation>
 <translation id="5756666464756035725">ハンガリー語 QWERTY</translation>
 <translation id="5763377084591234761">ドイツ語（スイス）</translation>
@@ -565,7 +581,6 @@
 <translation id="5845721951356578987">看護師</translation>
 <translation id="5861477046012235702">ゲーマー</translation>
 <translation id="5864471791310927901">DHCP を検索できませんでした</translation>
-<translation id="5887342613489958822"><ph name="FILE_NAME" /> をゴミ箱に移動しています</translation>
 <translation id="5896749729057314184">ネットワーク <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />、<ph name="NETWORK_NAME" />、未有効化、電波強度 <ph name="SIGNAL_STRENGTH" />%、詳細</translation>
 <translation id="5911887972742538906">Linux アプリケーションのインストール中にエラーが発生しました。</translation>
 <translation id="5912396950572065471">形式</translation>
@@ -588,6 +603,7 @@
 <translation id="61118516107968648">CSV テキスト</translation>
 <translation id="6129953537138746214">Space</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> を移動しています...</translation>
+<translation id="6133877453787250710">管理者によるモニタリング対象:</translation>
 <translation id="613750717151263950">日本語（US）キーボード</translation>
 <translation id="6138894911715675297"><ph name="NETWORK_TYPE" />、ネットワークなし</translation>
 <translation id="6146563240635539929">動画</translation>
@@ -608,11 +624,13 @@
 <translation id="6287852322318138013">このファイルを開くアプリを選択してください</translation>
 <translation id="6295542640242147836">SIM をロックする</translation>
 <translation id="6296410173147755564">無効な PUK です</translation>
+<translation id="6308243004861726558">このファイルは機密情報として、管理者ポリシーの対象となります。次のファイル アクセスと転送アクションが適用されます。</translation>
 <translation id="6312403991423642364">ネットワークが不明なためエラーが発生しました</translation>
 <translation id="6317608858038767920">カスタム ネームサーバー <ph name="INPUT_INDEX" /></translation>
 <translation id="6320212353742551423"><ph name="ARCHIVE_TYPE" /> アーカイブ</translation>
 <translation id="6321303798550928047">手を振る</translation>
 <translation id="6327785803543103246">ウェブプロキシ自動検出</translation>
+<translation id="6337014272874260727">クイック ファイルへの固定を解除</translation>
 <translation id="6339145975392024142">US インターナショナル（PC）</translation>
 <translation id="6346310558342052870">アクセスが制限されています</translation>
 <translation id="6356685157277930264">ファイルのフィードバック ウィンドウ</translation>
@@ -653,6 +671,7 @@
 <translation id="6751256176799620176">1 個のフォルダを選択しました</translation>
 <translation id="6755827872271341378">ChromeOS Flex デバイス</translation>
 <translation id="6790428901817661496">再生</translation>
+<translation id="6794539005637808366">アイテムを復元するか、ゴミ箱から新しいフォルダにドラッグしてください</translation>
 <translation id="6795884519221689054">パンダ</translation>
 <translation id="6806699711453372963">Linux との共有を管理</translation>
 <translation id="6806796368146926706">英数字（日本語）キーボード</translation>
@@ -675,11 +694,9 @@
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">US Workman</translation>
 <translation id="6930242544192836755">接続時間</translation>
-<translation id="6931302001003657424">クイック ファイルに固定</translation>
 <translation id="6935521024859866267">逆さま</translation>
 <translation id="6943836128787782965">HTTP を取得できませんでした</translation>
 <translation id="6949408524333579394">セルビア語（文字変換）</translation>
-<translation id="6954309393500027528">この場所への貼り付けは管理者によってブロックされています</translation>
 <translation id="6960565108681981554">無効です。ご利用の携帯通信会社にお問い合わせください。</translation>
 <translation id="696203921837389374">モバイルデータとの同期を有効にする</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -690,6 +707,7 @@
 <translation id="6979158407327259162">Google ドライブ</translation>
 <translation id="6989942356279143254">スウェーデン語</translation>
 <translation id="6990081529015358884">空き容量が不足しています</translation>
+<translation id="6993826899923627728">これらのアイテムはゴミ箱に入っています</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> 個のフォルダを選択しました</translation>
 <translation id="7008426324576352165">アップロードを完了するには、組織で追加のストレージが必要です。</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" />（<ph name="ROOT_SUMMARY" />）</translation>
@@ -721,6 +739,7 @@
 <translation id="7248671827512403053">アプリケーション</translation>
 <translation id="7256405249507348194">不明なエラー: <ph name="DESC" /></translation>
 <translation id="7268659760406822741">利用可能なサービス</translation>
+<translation id="7292816689782057017">管理者のポリシー設定により、一部の保存先の使用が制限されています。</translation>
 <translation id="7294063083760278948">テルグ語（文字変換）</translation>
 <translation id="7295662345261934369">他のユーザーと共有</translation>
 <translation id="7297443947353982503">ユーザー名/パスワードが正しくないか、EAP 認証に失敗しました</translation>
@@ -734,6 +753,7 @@
 <translation id="7408870451288633753">チェコ語</translation>
 <translation id="7417453074306512035">エチオピア語キーボード</translation>
 <translation id="7417705661718309329">Google マップ</translation>
+<translation id="7419668828140929293">「<ph name="FILENAME" />」を復元しています</translation>
 <translation id="7458955835361612701">最近使用した画像はありません</translation>
 <translation id="7460898608667578234">ウクライナ語</translation>
 <translation id="7469894403370665791">このネットワークに自動接続する</translation>
@@ -751,7 +771,6 @@
 <translation id="7547811415869834682">オランダ語</translation>
 <translation id="7551643184018910560">シェルフに固定</translation>
 <translation id="7553492409867692754">Linux アプリに対して、<ph name="FOLDER_NAME" /> フォルダのファイルへのアクセスを許可します</translation>
-<translation id="7575645593344061397">「<ph name="FILENAME" />」を復元しています…</translation>
 <translation id="7589661784326793847">少々お待ちください</translation>
 <translation id="7592775719802218421"><ph name="FILE_NAME" /> をオフラインで使用できるようにしています</translation>
 <translation id="7600126690270271294">セルビア語</translation>
@@ -763,6 +782,7 @@
 <translation id="7655441028674523381">Google フォトに簡単アクセス</translation>
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7663224033570512922">ヒンディー語</translation>
+<translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> 個のアイテムをゴミ箱に移動しました</translation>
 <translation id="7693909743393669729">ドライブをフォーマットすると、そのドライブに保存されているすべてのデータが消去され、既存のパーティションは非表示のパーティションを含めすべて削除されます。この操作は元に戻せません。</translation>
 <translation id="7695430100978772476">「<ph name="DRIVE_NAME" />」をフォーマットできませんでした</translation>
 <translation id="76959938259365003">ゴミ箱を空にできませんでした。</translation>
@@ -772,10 +792,12 @@
 <translation id="7711920809702896782">画像情報</translation>
 <translation id="7724603315864178912">切り取り</translation>
 <translation id="7732111077498238432">ネットワークはポリシーによって管理されています</translation>
+<translation id="7736003208887389532">これらのファイルを完全に削除しますか？</translation>
 <translation id="7748626145866214022">アクションバーのオプションが増えました。アクションバーにフォーカスを移動するには Alt+A キーを押してください。</translation>
 <translation id="7760449188139285140">中国語（五筆）</translation>
 <translation id="7765158879357617694">移動</translation>
 <translation id="7774365994322694683">鳥</translation>
+<translation id="7780322752056734036"><ph name="NUMBER_OF_ITEMS" /> 個のアイテムを復元しました</translation>
 <translation id="7781829728241885113">昨日</translation>
 <translation id="7788080748068240085">「<ph name="FILE_NAME" />」をオフラインで保存するには、あと <ph name="TOTAL_FILE_SIZE" /> の空き領域が必要です。次をお試しください:<ph name="MARKUP_1" />
         <ph name="MARKUP_2" />オフライン アクセスが不要になったファイルの固定を解除する<ph name="MARKUP_3" />
@@ -797,6 +819,7 @@
 <translation id="78946041517601018">共有ドライブ</translation>
 <translation id="7903984238293908205">カタカナ</translation>
 <translation id="7908793776359722643">パーティションをフォーマットすると、そのパーティションに保存されているすべてのデータが消去されます。この操作は元に戻せません。</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7925247922861151263">AAA を確認できませんでした</translation>
 <translation id="7925686952655276919">モバイル データを使用して同期しない</translation>
 <translation id="7928710562641958568">デバイスの取り出し</translation>
@@ -832,8 +855,10 @@
 <translation id="8249296373107784235">中止</translation>
 <translation id="8250690786522693009">ラテン文字</translation>
 <translation id="8250920743982581267">ドキュメント</translation>
+<translation id="8255595130163158297">ゴミ箱のすべてのアイテムが削除され、復元できなくなります。</translation>
 <translation id="8261506727792406068">削除</translation>
 <translation id="8261561378965667560">中国語（行列）</translation>
+<translation id="8262872909443689080">管理者ポリシー</translation>
 <translation id="8264024885325823677">この設定は管理者によって管理されています。</translation>
 <translation id="8269755669432358899">ファイルのフィードバック パネルを折りたたみます</translation>
 <translation id="8280151743281770066">アルメニア語（表音）</translation>
@@ -860,7 +885,6 @@
 <translation id="8456681095658380701">名前が無効です</translation>
 <translation id="8457767749626250697">SIM はロックされています</translation>
 <translation id="8459404855768962328">このアイテムをコピーすると、アイテムは共有フォルダ「<ph name="DESTINATION_NAME" />」を閲覧できるすべてのユーザーと共有されます。</translation>
-<translation id="8461467696380332069">ファイルを右クリックして、[シェルフに固定] を選択すると、シェルフからファイルに簡単にアクセスできます。</translation>
 <translation id="8461914792118322307">プロキシ</translation>
 <translation id="8463494891489624050">ベトナム語（VIQR）</translation>
 <translation id="8475647382427415476">Google ドライブでは「<ph name="FILENAME" />」を直ちに同期できませんでした。時間を置いて再試行します。</translation>
@@ -897,18 +921,18 @@
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> を選択しました。</translation>
 <translation id="872537912056138402">クロアチア語</translation>
 <translation id="8743164338060742337"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、<ph name="NETWORK_PROVIDER_NAME" />、信号強度 <ph name="SIGNAL_STRENGTH" />%、管理者によって管理、接続</translation>
-<translation id="8750438273876807512">ファイルを長押しして <ph name="ICON" /> をタップし、[シェルフに固定] を選択すると、シェルフからファイルに簡単にアクセスできます。</translation>
 <translation id="8787254343425541995">共有ネットワークのプロキシを許可する</translation>
 <translation id="8790981080411996443">植物に水をやっている人</translation>
 <translation id="8798099450830957504">既定</translation>
-<translation id="8802459921616481935">ゴミ箱に移動</translation>
 <translation id="8808686172382650546">ネコ</translation>
 <translation id="8810671769985673465">圧縮できませんでした。アイテム「<ph name="FILE_NAME" />」が存在します。</translation>
 <translation id="8813284582615685103">スペイン語（スペイン）</translation>
 <translation id="8834164572807951958">「<ph name="DESTINATION_NAME" />」のメンバーが、これらのアイテムのコピーにアクセスできるようになります。</translation>
+<translation id="8849389110234859568">管理者のポリシー設定により、一部のファイルへのアクセスが制限されています。</translation>
 <translation id="8857149712089373752">ネパール語（表音）キーボード</translation>
 <translation id="8860454412039442620">Excel スプレッドシート</translation>
 <translation id="8866284467018526531">アラビア語（文字変換）</translation>
+<translation id="8873014196523807561">これらのアイテムを復元するには、新しいフォルダにドラッグしてください。アイテムの元のフォルダは一部削除されています。</translation>
 <translation id="8874184842967597500">未接続</translation>
 <translation id="8900820606136623064">ハンガリー語</translation>
 <translation id="8903931173357132290">卒業</translation>
@@ -930,6 +954,7 @@
 <translation id="9100610230175265781">パスフレーズを入力してください</translation>
 <translation id="9110990317705400362">Google では、より安全にウェブを閲覧できる方法を常に追求しています。以前は、どのウェブサイトでも、ブラウザに拡張機能を追加するように指示することができました。Google Chrome の最新バージョンでは、ユーザーのインストールの意思をより明確に確認するため、拡張機能の追加は拡張機能ページで行うこととなりました。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="9111102763498581341">ロック解除</translation>
+<translation id="9116909380156770361"><ph name="RESTRICTED_COMPONENTS" /> へのファイル転送</translation>
 <translation id="912419004897138677">コーデック</translation>
 <translation id="9130775360844693113">「<ph name="DESTINATION_NAME" />」のメンバーがこれらのアイテムにアクセスできるようになります。</translation>
 <translation id="9131598836763251128">1 つ以上のファイルを選択</translation>
@@ -951,7 +976,9 @@
 <translation id="943972244133411984">更新者</translation>
 <translation id="945522503751344254">フィードバックを送信</translation>
 <translation id="947144732524271678"><ph name="ENTRY_COUNT" /> 項目を選択しました。範囲の先頭は <ph name="FROM_ENTRY_NAME" />、末尾は <ph name="TO_ENTRY_NAME" /> です。</translation>
+<translation id="954194396377670556">管理者のポリシーで禁止されていること:</translation>
 <translation id="965477715979482472">英語（南アフリカ）</translation>
+<translation id="976666271385981812"><ph name="NUMBER_OF_ITEMS" /> 個のアイテムをゴミ箱に移動しています</translation>
 <translation id="981121421437150478">オフライン</translation>
 <translation id="988685240266037636">「<ph name="FILE_NAME" />」という名前のファイルはすでに存在します。置き換えますか？</translation>
 <translation id="992401651319295351">入力できるのはあと <ph name="RETRIES" /> 回です。新しい PIN を設定するまでこのネットワークは使用できません。</translation>

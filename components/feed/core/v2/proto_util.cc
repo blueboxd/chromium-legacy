@@ -213,10 +213,10 @@ feedwire::Request CreateFeedQueryRequest(
   // Set the feed entry point based on the stream type.
   feedwire::FeedEntryPointData& entry_point =
       *query.mutable_feed_entry_point_data();
-  if (stream_type == kForYouStream) {
+  if (stream_type.IsForYou()) {
     entry_point.set_feed_entry_point_source_value(
         feedwire::FeedEntryPointSource::CHROME_DISCOVER_FEED);
-  } else if (stream_type == kWebFeedStream) {
+  } else if (stream_type.IsWebFeed()) {
     entry_point.set_feed_entry_point_source_value(
         feedwire::FeedEntryPointSource::CHROME_FOLLOWING_FEED);
   }
@@ -257,6 +257,18 @@ void SetInfoCardTrackingStates(feedwire::Request* request,
         ->add_info_card_tracking_state()
         ->CopyFrom(state);
   }
+}
+
+// Set the chrome_feature_usage.times_followed_from_web_page_menu
+// from the request_metadata.followed_from_web_page_menu_count.
+void SetTimesFollowedFromWebPageMenu(feedwire::Request* request,
+                                     const RequestMetadata& request_metadata) {
+  request->mutable_feed_request()
+      ->mutable_feed_query()
+      ->mutable_chrome_fulfillment_info()
+      ->mutable_chrome_feature_usage()
+      ->set_times_followed_from_web_page_menu(
+          request_metadata.followed_from_web_page_menu_count);
 }
 
 }  // namespace
@@ -355,6 +367,7 @@ feedwire::Request CreateFeedQueryRefreshRequest(
   }
   SetNoticeCardAcknowledged(&request, request_metadata);
   SetInfoCardTrackingStates(&request, request_metadata);
+  SetTimesFollowedFromWebPageMenu(&request, request_metadata);
   return request;
 }
 
@@ -363,8 +376,8 @@ feedwire::Request CreateFeedQueryLoadMoreRequest(
     const std::string& consistency_token,
     const std::string& next_page_token) {
   return CreateFeedQueryRequest(
-      kForYouStream, feedwire::FeedQuery::NEXT_PAGE_SCROLL, request_metadata,
-      consistency_token, next_page_token);
+      StreamType(StreamKind::kForYou), feedwire::FeedQuery::NEXT_PAGE_SCROLL,
+      request_metadata, consistency_token, next_page_token);
 }
 
 }  // namespace feed

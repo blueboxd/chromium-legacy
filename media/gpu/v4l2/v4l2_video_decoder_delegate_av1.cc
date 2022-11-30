@@ -213,6 +213,65 @@ void FillSegmentationParams(struct v4l2_av1_segmentation& v4l2_seg,
   v4l2_seg.last_active_seg_id = seg.last_active_segment_id;
 }
 
+// Section 5.9.15. Tile info syntax
+void FillTileInfo(v4l2_av1_tile_info& v4l2_ti, const libgav1::TileInfo& ti) {
+  if (ti.uniform_spacing)
+    v4l2_ti.flags |= V4L2_AV1_TILE_INFO_FLAG_UNIFORM_TILE_SPACING;
+
+  static_assert(std::size(decltype(v4l2_ti.mi_col_starts){}) ==
+                    (libgav1::kMaxTileColumns + 1),
+                "Size of |mi_col_starts| array in |v4l2_av1_tile_info| struct "
+                "does not match libgav1 expectation");
+
+  for (size_t i = 0; i < libgav1::kMaxTileColumns + 1; i++) {
+    v4l2_ti.mi_col_starts[i] =
+        base::checked_cast<uint32_t>(ti.tile_column_start[i]);
+  }
+  static_assert(std::size(decltype(v4l2_ti.mi_row_starts){}) ==
+                    (libgav1::kMaxTileRows + 1),
+                "Size of |mi_row_starts| array in |v4l2_av1_tile_info| struct "
+                "does not match libgav1 expectation");
+  for (size_t i = 0; i < libgav1::kMaxTileRows + 1; i++) {
+    v4l2_ti.mi_row_starts[i] =
+        base::checked_cast<uint32_t>(ti.tile_row_start[i]);
+  }
+
+  if (!ti.uniform_spacing) {
+    // Confirmed that |kMaxTileColumns| is enough size for
+    // |width_in_sbs_minus_1| and |kMaxTileRows| is enough size for
+    // |height_in_sbs_minus_1|
+    // https://b.corp.google.com/issues/187828854#comment19
+    static_assert(
+        std::size(decltype(v4l2_ti.width_in_sbs_minus_1){}) ==
+            libgav1::kMaxTileColumns,
+        "Size of |width_in_sbs_minus_1| array in |v4l2_av1_tile_info| struct "
+        "does not match libgav1 expectation");
+    for (size_t i = 0; i < libgav1::kMaxTileColumns; i++) {
+      if (ti.tile_column_width_in_superblocks[i] >= 1) {
+        v4l2_ti.width_in_sbs_minus_1[i] = base::checked_cast<uint32_t>(
+            ti.tile_column_width_in_superblocks[i] - 1);
+      }
+    }
+
+    static_assert(
+        std::size(decltype(v4l2_ti.height_in_sbs_minus_1){}) ==
+            libgav1::kMaxTileRows,
+        "Size of |height_in_sbs_minus_1| array in |v4l2_av1_tile_info| struct "
+        "does not match libgav1 expectation");
+    for (size_t i = 0; i < libgav1::kMaxTileRows; i++) {
+      if (ti.tile_row_height_in_superblocks[i] >= 1) {
+        v4l2_ti.height_in_sbs_minus_1[i] = base::checked_cast<uint32_t>(
+            ti.tile_row_height_in_superblocks[i] - 1);
+      }
+    }
+  }
+
+  v4l2_ti.tile_size_bytes = ti.tile_size_bytes;
+  v4l2_ti.context_update_tile_id = ti.context_update_id;
+  v4l2_ti.tile_cols = ti.tile_columns;
+  v4l2_ti.tile_rows = ti.tile_rows;
+}
+
 // Section 5.9.17. Quantizer index delta parameters syntax
 void FillQuantizerIndexDeltaParams(struct v4l2_av1_quantization& v4l2_quant,
                                    const libgav1::ObuSequenceHeader& seq_header,
@@ -232,6 +291,112 @@ void FillQuantizerIndexDeltaParams(struct v4l2_av1_quantization& v4l2_quant,
   // the same struct |Delta| both for quantizer index delta parameters and loop
   // filter delta parameters.
   v4l2_quant.delta_q_res = frm_header.delta_q.scale;
+}
+
+// Section 5.9.18. Loop filter delta parameters syntax.
+// Note that |delta_lf_res| in |v4l2_av1_loop_filter| corresponds to
+// |delta_lf.scale| in the frame header defined in libgav1.
+void FillLoopFilterDeltaParams(struct v4l2_av1_loop_filter& v4l2_lf,
+                               const libgav1::Delta& delta_lf) {
+  if (delta_lf.present)
+    v4l2_lf.flags |= V4L2_AV1_LOOP_FILTER_FLAG_DELTA_LF_PRESENT;
+
+  if (delta_lf.multi)
+    v4l2_lf.flags |= V4L2_AV1_LOOP_FILTER_FLAG_DELTA_LF_MULTI;
+
+  v4l2_lf.delta_lf_res = delta_lf.scale;
+}
+
+// Section 5.9.19. CDEF params syntax
+void FillCdefParams(struct v4l2_av1_cdef& v4l2_cdef,
+                    const libgav1::Cdef& cdef,
+                    uint8_t color_bitdepth) {
+  // Damping value parsed in libgav1 is from the spec + (bitdepth - 8).
+  // All the strength values parsed in libgav1 are from the spec and left
+  // shifted by (bitdepth - 8).
+  CHECK_GE(color_bitdepth, 8u);
+  const uint8_t coeff_shift = color_bitdepth - 8u;
+
+  v4l2_cdef.damping_minus_3 =
+      base::checked_cast<uint8_t>(cdef.damping - coeff_shift - 3u);
+
+  v4l2_cdef.bits = cdef.bits;
+
+  static_assert(std::size(decltype(v4l2_cdef.y_pri_strength){}) ==
+                    libgav1::kMaxCdefStrengths,
+                "Invalid size of cdef y_pri_strength strength");
+
+  static_assert(std::size(decltype(v4l2_cdef.y_sec_strength){}) ==
+                    libgav1::kMaxCdefStrengths,
+                "Invalid size of cdef y_sec_strength strength");
+
+  static_assert(std::size(decltype(v4l2_cdef.uv_pri_strength){}) ==
+                    libgav1::kMaxCdefStrengths,
+                "Invalid size of cdef uv_pri_strength strength");
+
+  static_assert(std::size(decltype(v4l2_cdef.uv_sec_strength){}) ==
+                    libgav1::kMaxCdefStrengths,
+                "Invalid size of cdef uv_sec_strength strength");
+
+  SafeArrayMemcpy(v4l2_cdef.y_pri_strength, cdef.y_primary_strength);
+  SafeArrayMemcpy(v4l2_cdef.y_sec_strength, cdef.y_secondary_strength);
+  SafeArrayMemcpy(v4l2_cdef.uv_pri_strength, cdef.uv_primary_strength);
+  SafeArrayMemcpy(v4l2_cdef.uv_sec_strength, cdef.uv_secondary_strength);
+}
+
+// 5.9.20. Loop restoration params syntax
+void FillLoopRestorationParams(v4l2_av1_loop_restoration& v4l2_lr,
+                               const libgav1::LoopRestoration& lr) {
+  for (size_t i = 0; i < V4L2_AV1_NUM_PLANES_MAX; i++) {
+    switch (lr.type[i]) {
+      case libgav1::LoopRestorationType::kLoopRestorationTypeNone:
+        v4l2_lr.frame_restoration_type[i] = V4L2_AV1_FRAME_RESTORE_NONE;
+        break;
+      case libgav1::LoopRestorationType::kLoopRestorationTypeWiener:
+        v4l2_lr.frame_restoration_type[i] = V4L2_AV1_FRAME_RESTORE_WIENER;
+        break;
+      case libgav1::LoopRestorationType::kLoopRestorationTypeSgrProj:
+        v4l2_lr.frame_restoration_type[i] = V4L2_AV1_FRAME_RESTORE_SGRPROJ;
+        break;
+      case libgav1::LoopRestorationType::kLoopRestorationTypeSwitchable:
+        v4l2_lr.frame_restoration_type[i] = V4L2_AV1_FRAME_RESTORE_SWITCHABLE;
+        break;
+      default:
+        NOTREACHED() << "Invalid loop restoration type";
+    }
+
+    if (v4l2_lr.frame_restoration_type[i] != V4L2_AV1_FRAME_RESTORE_NONE) {
+      if (true)
+        v4l2_lr.flags |= V4L2_AV1_LOOP_RESTORATION_FLAG_USES_LR;
+
+      if (i > 0)
+        v4l2_lr.flags |= V4L2_AV1_LOOP_RESTORATION_FLAG_USES_CHROMA_LR;
+    }
+  }
+
+  const bool use_loop_restoration =
+      std::find_if(std::begin(lr.type),
+                   std::begin(lr.type) + libgav1::kMaxPlanes,
+                   [](const auto type) {
+                     return type != libgav1::kLoopRestorationTypeNone;
+                   }) != (lr.type + libgav1::kMaxPlanes);
+
+  if (!use_loop_restoration)
+    return;
+
+  DCHECK_GE(lr.unit_size_log2[0], lr.unit_size_log2[1]);
+  DCHECK_LE(lr.unit_size_log2[0] - lr.unit_size_log2[1], 1);
+  v4l2_lr.lr_unit_shift = lr.unit_size_log2[0] - 6;
+  v4l2_lr.lr_uv_shift = lr.unit_size_log2[0] - lr.unit_size_log2[1];
+
+  // AV1 spec (p.52) uses this formula with hard coded value 2.
+  // https://aomediacodec.github.io/av1-spec/#loop-restoration-params-syntax
+  v4l2_lr.loop_restoration_size[0] =
+      V4L2_AV1_RESTORATION_TILESIZE_MAX >> (2 - v4l2_lr.lr_unit_shift);
+  v4l2_lr.loop_restoration_size[1] =
+      v4l2_lr.loop_restoration_size[0] >> v4l2_lr.lr_uv_shift;
+  v4l2_lr.loop_restoration_size[2] =
+      v4l2_lr.loop_restoration_size[0] >> v4l2_lr.lr_uv_shift;
 }
 
 V4L2VideoDecoderDelegateAV1::V4L2VideoDecoderDelegateAV1(
@@ -269,6 +434,8 @@ DecodeStatus V4L2VideoDecoderDelegateAV1::SubmitDecode(
   struct v4l2_av1_loop_filter v4l2_lf = {};
   FillLoopFilterParams(v4l2_lf, frame_header.loop_filter);
 
+  FillLoopFilterDeltaParams(v4l2_lf, frame_header.delta_lf);
+
   struct v4l2_av1_quantization v4l2_quant = {};
   FillQuantizationParams(v4l2_quant, frame_header.quantizer);
 
@@ -276,6 +443,165 @@ DecodeStatus V4L2VideoDecoderDelegateAV1::SubmitDecode(
 
   struct v4l2_av1_segmentation v4l2_seg = {};
   FillSegmentationParams(v4l2_seg, frame_header.segmentation);
+
+  const auto color_bitdepth = sequence_header.color_config.bitdepth;
+  struct v4l2_av1_cdef v4l2_cdef = {};
+  FillCdefParams(v4l2_cdef, frame_header.cdef,
+                 base::strict_cast<int8_t>(color_bitdepth));
+
+  struct v4l2_av1_loop_restoration v4l2_lr = {};
+  FillLoopRestorationParams(v4l2_lr, frame_header.loop_restoration);
+
+  struct v4l2_av1_tile_info v4l2_ti = {};
+  FillTileInfo(v4l2_ti, frame_header.tile_info);
+
+  struct v4l2_ctrl_av1_frame v4l2_frame_params = {};
+  if (frame_header.show_frame)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_SHOW_FRAME;
+  if (frame_header.showable_frame)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_SHOWABLE_FRAME;
+  if (frame_header.error_resilient_mode)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_ERROR_RESILIENT_MODE;
+  if (frame_header.enable_cdf_update == false)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_DISABLE_CDF_UPDATE;
+  if (frame_header.allow_screen_content_tools)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_ALLOW_SCREEN_CONTENT_TOOLS;
+  if (frame_header.force_integer_mv)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_FORCE_INTEGER_MV;
+  if (frame_header.allow_intrabc)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_ALLOW_INTRABC;
+  if (frame_header.use_superres)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_USE_SUPERRES;
+  if (frame_header.allow_high_precision_mv)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_ALLOW_HIGH_PRECISION_MV;
+  if (frame_header.is_motion_mode_switchable)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_IS_MOTION_MODE_SWITCHABLE;
+  if (frame_header.use_ref_frame_mvs)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_USE_REF_FRAME_MVS;
+  if (frame_header.enable_frame_end_update_cdf == false)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_DISABLE_FRAME_END_UPDATE_CDF;
+  if (frame_header.tile_info.uniform_spacing)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_UNIFORM_TILE_SPACING;
+  if (frame_header.allow_warped_motion)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_ALLOW_WARPED_MOTION;
+  if (frame_header.reference_mode_select)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_REFERENCE_SELECT;
+  if (frame_header.reduced_tx_set)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_REDUCED_TX_SET;
+  if (frame_header.skip_mode_frame[0] > 0)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_SKIP_MODE_ALLOWED;
+  if (frame_header.skip_mode_present)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_SKIP_MODE_PRESENT;
+  if (frame_header.frame_size_override_flag)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_FRAME_SIZE_OVERRIDE;
+  // libgav1 header doesn't have |buffer_removal_time_present_flag|.
+  if (frame_header.buffer_removal_time[0] > 0)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_BUFFER_REMOVAL_TIME_PRESENT;
+  if (frame_header.frame_refs_short_signaling)
+    v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_FRAME_REFS_SHORT_SIGNALING;
+
+  switch (frame_header.frame_type) {
+    case libgav1::kFrameKey:
+      v4l2_frame_params.frame_type = V4L2_AV1_KEY_FRAME;
+      break;
+    case libgav1::kFrameInter:
+      v4l2_frame_params.frame_type = V4L2_AV1_INTER_FRAME;
+      break;
+    case libgav1::kFrameIntraOnly:
+      v4l2_frame_params.frame_type = V4L2_AV1_INTRA_ONLY_FRAME;
+      break;
+    case libgav1::kFrameSwitch:
+      v4l2_frame_params.frame_type = V4L2_AV1_SWITCH_FRAME;
+      break;
+    default:
+      NOTREACHED() << "Invalid frame type, " << frame_header.frame_type;
+  }
+
+  v4l2_frame_params.order_hint = frame_header.order_hint;
+  v4l2_frame_params.superres_denom = frame_header.superres_scale_denominator;
+  v4l2_frame_params.upscaled_width = frame_header.upscaled_width;
+
+  switch (frame_header.interpolation_filter) {
+    case libgav1::kInterpolationFilterEightTap:
+      v4l2_frame_params.interpolation_filter =
+          V4L2_AV1_INTERPOLATION_FILTER_EIGHTTAP;
+      break;
+    case libgav1::kInterpolationFilterEightTapSmooth:
+      v4l2_frame_params.interpolation_filter =
+          V4L2_AV1_INTERPOLATION_FILTER_EIGHTTAP_SMOOTH;
+      break;
+    case libgav1::kInterpolationFilterEightTapSharp:
+      v4l2_frame_params.interpolation_filter =
+          V4L2_AV1_INTERPOLATION_FILTER_EIGHTTAP_SHARP;
+      break;
+    case libgav1::kInterpolationFilterBilinear:
+      v4l2_frame_params.interpolation_filter =
+          V4L2_AV1_INTERPOLATION_FILTER_BILINEAR;
+      break;
+    case libgav1::kInterpolationFilterSwitchable:
+      v4l2_frame_params.interpolation_filter =
+          V4L2_AV1_INTERPOLATION_FILTER_SWITCHABLE;
+      break;
+    default:
+      NOTREACHED() << "Invalid interpolation filter, "
+                   << frame_header.interpolation_filter;
+  }
+
+  switch (frame_header.tx_mode) {
+    case libgav1::kTxModeOnly4x4:
+      v4l2_frame_params.tx_mode = V4L2_AV1_TX_MODE_ONLY_4X4;
+      break;
+    case libgav1::kTxModeLargest:
+      v4l2_frame_params.tx_mode = V4L2_AV1_TX_MODE_LARGEST;
+      break;
+    case libgav1::kTxModeSelect:
+      v4l2_frame_params.tx_mode = V4L2_AV1_TX_MODE_SELECT;
+      break;
+    default:
+      NOTREACHED() << "Invalid tx mode, " << frame_header.tx_mode;
+  }
+
+  v4l2_frame_params.frame_width_minus_1 = frame_header.width - 1;
+  v4l2_frame_params.frame_height_minus_1 = frame_header.height - 1;
+  v4l2_frame_params.render_width_minus_1 = frame_header.render_width - 1;
+  v4l2_frame_params.render_height_minus_1 = frame_header.render_height - 1;
+
+  v4l2_frame_params.current_frame_id = frame_header.current_frame_id;
+  v4l2_frame_params.primary_ref_frame = frame_header.primary_reference_frame;
+  SafeArrayMemcpy(v4l2_frame_params.buffer_removal_time,
+                  frame_header.buffer_removal_time);
+  v4l2_frame_params.refresh_frame_flags = frame_header.refresh_frame_flags;
+
+  // TODO(b/248602457): Enable code for |order_hints| setup
+  // after |ref_order_hint| maintenance is implemented.
+
+  // These params looks duplicated with |ref_frame_idx|, but they are required
+  // and used when |frame_refs_short_signaling| is set according to the AV1
+  // spec. https://aomediacodec.github.io/av1-spec/#uncompressed-header-syntax
+  v4l2_frame_params.last_frame_idx =
+      frame_header.reference_frame_index[libgav1::kReferenceFrameLast];
+  v4l2_frame_params.gold_frame_idx =
+      frame_header.reference_frame_index[libgav1::kReferenceFrameGolden];
+
+  for (size_t i = 0; i < libgav1::kNumReferenceFrameTypes; ++i) {
+    const auto* v4l2_ref_pic =
+        static_cast<const V4L2AV1Picture*>(ref_frames[i].get());
+
+    v4l2_frame_params.reference_frame_ts[i] =
+        v4l2_ref_pic->dec_surface()->GetReferenceID();
+  }
+
+  static_assert(std::size(decltype(v4l2_frame_params.ref_frame_idx){}) ==
+                    libgav1::kNumInterReferenceFrameTypes,
+                "Invalid size of |ref_frame_idx| array");
+  for (size_t i = 0; i < libgav1::kNumInterReferenceFrameTypes; i++)
+    v4l2_frame_params.ref_frame_idx[i] =
+        base::checked_cast<__u8>(frame_header.reference_frame_index[i]);
+
+  v4l2_frame_params.skip_mode_frame[0] =
+      base::checked_cast<__u8>(frame_header.skip_mode_frame[0]);
+  v4l2_frame_params.skip_mode_frame[1] =
+      base::checked_cast<__u8>(frame_header.skip_mode_frame[1]);
 
   NOTIMPLEMENTED();
 

@@ -183,6 +183,10 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
                                base::CallbackListSubscription>>
       _scriptCommandCallbacks;
   CRWSessionStorage* _cachedSessionStorage;
+
+  // Stores the last NavigationContext::IsSameDocument() value from
+  // |webState:didFinishNavigation:|.
+  BOOL _lastDidFinishNavigationContextIsSameDocument;
 }
 
 // Redefine these properties as readwrite to define setters, which send KVO
@@ -486,6 +490,10 @@ BOOL gChromeContextMenuEnabled = NO;
   // TODO(crbug.com/898357): Remove this once crbug.com/898357 is fixed.
   [self updateVisibleSSLStatus];
 
+  // Store NavigationContext::IsSameDocument() for later use in
+  // |webState:didLoadPageWithSuccess:|.
+  _lastDidFinishNavigationContextIsSameDocument = navigation->IsSameDocument();
+
   if (navigation->HasCommitted() && !navigation->IsSameDocument() &&
       [_navigationDelegate
           respondsToSelector:@selector(webViewDidCommitNavigation:)]) {
@@ -506,11 +514,18 @@ BOOL gChromeContextMenuEnabled = NO;
     return;
   }
 
-  // TODO(crbug.com/1374071): Fragment navigations currently skip calling
-  // `webViewDidStartNavigation:` and `webViewDidCommitNavigation:`, and instead
-  // only calls `webViewDidFinishNavigation:` below. Fix this inconsistency.
+  // We do not want to call -[CWVNavigationDelegate webViewDidFinishNavigation:]
+  // for same document navigations because we also exclude them for others like
+  // -[CWVNavigationDelegate webViewDidStartNavigation:] and
+  // -[CWVNavigationDelegate webViewDidCommitNavigation:].
+  // It is guaranteed that |webState:didLoadPageWithSuccess:| is only called
+  // after |webState:didFinishNavigation:|, so we will always have an up to date
+  // value to use here.
+  // TODO(crbug.com/1196799): Remove this work around once a NavigationContext
+  // is passed in to this method.
   SEL selector = @selector(webViewDidFinishNavigation:);
-  if ([_navigationDelegate respondsToSelector:selector]) {
+  if (!_lastDidFinishNavigationContextIsSameDocument &&
+      [_navigationDelegate respondsToSelector:selector]) {
     [_navigationDelegate webViewDidFinishNavigation:self];
   }
 }

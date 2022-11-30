@@ -21,7 +21,13 @@
 
 #if BUILDFLAG(IS_APPLE)
 #include "base/allocator/partition_allocator/partition_alloc_base/mac/foundation_util.h"
+#if BUILDFLAG(IS_IOS)
+#include "base/allocator/partition_allocator/partition_alloc_base/ios/ios_util.h"
+#elif BUILDFLAG(IS_MAC)
 #include "base/allocator/partition_allocator/partition_alloc_base/mac/mac_util.h"
+#else
+#error "Unknown platform"
+#endif
 #include "base/allocator/partition_allocator/partition_alloc_base/mac/scoped_cftyperef.h"
 
 #include <Availability.h>
@@ -148,15 +154,18 @@ int GetAccessFlags(PageAccessibilityConfiguration accessibility);
 uintptr_t SystemAllocPagesInternal(uintptr_t hint,
                                    size_t length,
                                    PageAccessibilityConfiguration accessibility,
-                                   PageTag page_tag) {
+                                   PageTag page_tag,
+                                   int file_descriptor_for_shared_alloc) {
 #if BUILDFLAG(IS_APPLE)
   // Use a custom tag to make it easier to distinguish Partition Alloc regions
   // in vmmap(1). Tags between 240-255 are supported.
   PA_DCHECK(PageTag::kFirst <= page_tag);
   PA_DCHECK(PageTag::kLast >= page_tag);
-  int fd = VM_MAKE_TAG(static_cast<int>(page_tag));
+  int fd = file_descriptor_for_shared_alloc == -1
+               ? VM_MAKE_TAG(static_cast<int>(page_tag))
+               : file_descriptor_for_shared_alloc;
 #else
-  int fd = -1;
+  int fd = file_descriptor_for_shared_alloc;
 #endif
 
   int access_flag = GetAccessFlags(accessibility);

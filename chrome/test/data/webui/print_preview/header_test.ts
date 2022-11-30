@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 import {Destination, DestinationOrigin, GooglePromotedDestinationId, PrintPreviewHeaderElement, PrintPreviewPluralStringProxyImpl, State} from 'chrome://print/print_preview.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {fakeDataBind} from 'chrome://webui-test/polymer_test_util.js';
 import {TestPluralStringProxy} from 'chrome://webui-test/test_plural_string_proxy.js';
-import {fakeDataBind} from 'chrome://webui-test/test_util.js';
 
 const header_test = {
   suiteName: 'HeaderTest',
@@ -26,7 +26,8 @@ suite(header_test.suiteName, function() {
   let pluralString: TestPluralStringProxy;
 
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
 
     pluralString = new TestPluralStringProxy();
     PrintPreviewPluralStringProxyImpl.setInstance(pluralString);

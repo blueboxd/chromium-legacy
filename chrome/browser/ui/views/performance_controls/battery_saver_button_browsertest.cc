@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/power_monitor/battery_state_sampler.h"
 #include "base/test/bind.h"
+#include "base/test/power_monitor_test_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/performance_controls/battery_saver_bubble_view.h"
 #include "chrome/browser/ui/views/performance_controls/battery_saver_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/user_education/browser_feature_promo_controller.h"
@@ -17,6 +20,7 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "components/performance_manager/public/features.h"
 #include "components/performance_manager/public/user_tuning/prefs.h"
+#include "components/user_education/test/feature_promo_test_util.h"
 #include "components/user_education/views/help_bubble_factory_views.h"
 #include "components/user_education/views/help_bubble_view.h"
 #include "content/public/test/browser_test.h"
@@ -24,6 +28,8 @@
 #include "ui/views/bubble/bubble_dialog_model_host.h"
 #include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/interaction/interaction_test_util_views.h"
+#include "ui/views/test/widget_test.h"
+#include "ui/views/widget/any_widget_observer.h"
 
 namespace {
 
@@ -50,6 +56,8 @@ class BatterySaverHelpPromoTest : public InProcessBrowserTest {
          performance_manager::features::kBatterySaverModeAvailable},
         {});
 
+    SetUpFakeBatterySampler();
+
     InProcessBrowserTest::SetUp();
   }
 
@@ -69,14 +77,32 @@ class BatterySaverHelpPromoTest : public InProcessBrowserTest {
   bool WaitForFeatureTrackerInitialization() {
     feature_engagement::Tracker* tracker =
         GetFeaturePromoController()->feature_engagement_tracker();
-    base::RunLoop loop;
-    tracker->AddOnInitializedCallback(
-        base::BindLambdaForTesting([&loop](bool success) { loop.Quit(); }));
-    loop.Run();
-    return tracker->IsInitialized();
+    return user_education::test::WaitForFeatureEngagementReady(tracker);
+  }
+
+  void SetUpFakeBatterySampler() {
+    auto test_sampling_event_source =
+        std::make_unique<base::test::TestSamplingEventSource>();
+    auto test_battery_level_provider =
+        std::make_unique<base::test::TestBatteryLevelProvider>();
+
+    sampling_source_ = test_sampling_event_source.get();
+    battery_level_provider_ = test_battery_level_provider.get();
+    test_battery_level_provider->SetBatteryState(
+        base::test::TestBatteryLevelProvider::CreateBatteryState());
+
+    battery_state_sampler_ =
+        base::BatteryStateSampler::CreateInstanceForTesting(
+            std::move(test_sampling_event_source),
+            std::move(test_battery_level_provider));
   }
 
  private:
+  raw_ptr<base::test::TestSamplingEventSource> sampling_source_;
+  raw_ptr<base::test::TestBatteryLevelProvider> battery_level_provider_;
+  // Only used on platforms without a battery level provider implementation.
+  std::unique_ptr<base::BatteryStateSampler> battery_state_sampler_;
+
   base::test::ScopedFeatureList feature_list_;
 };
 
@@ -88,24 +114,46 @@ IN_PROC_BROWSER_TEST_F(BatterySaverHelpPromoTest, ShowPromoOnModeActivation) {
   bool initialized = WaitForFeatureTrackerInitialization();
   EXPECT_TRUE(initialized);
 
+  views::NamedWidgetShownWaiter waiter(
+      views::test::AnyWidgetTestPasskey{},
+      user_education::HelpBubbleView::kViewClassName);
   SetBatterySaverModeEnabled(true);
-  base::RunLoop().RunUntilIdle();
+  views::Widget* widget = waiter.WaitIfNeededAndGet();
 
   bool promo_active = GetFeaturePromoController()->IsPromoActive(
       feature_engagement::kIPHBatterySaverModeFeature);
   EXPECT_TRUE(promo_active);
 
-  auto* battery_saver_button_view =
+  views::test::WidgetDestroyedWaiter destroyed_waiter(widget);
+  views::View* const battery_saver_button_view =
       views::ElementTrackerViews::GetInstance()->GetFirstMatchingView(
           kBatterySaverButtonElementId,
           browser()->window()->GetElementContext());
   PressButton(static_cast<views::Button*>(battery_saver_button_view));
+  destroyed_waiter.Wait();
+}
 
-  base::RunLoop().RunUntilIdle();
+// Check if the battery saver in-product help promo is closed if the promo is
+// active when the mode is deactivated.
+IN_PROC_BROWSER_TEST_F(BatterySaverHelpPromoTest, HidePromoOnModeDeactivation) {
+  auto lock = BrowserFeaturePromoController::BlockActiveWindowCheckForTesting();
 
-  promo_active = GetFeaturePromoController()->IsPromoActive(
+  bool initialized = WaitForFeatureTrackerInitialization();
+  EXPECT_TRUE(initialized);
+
+  views::NamedWidgetShownWaiter waiter(
+      views::test::AnyWidgetTestPasskey{},
+      user_education::HelpBubbleView::kViewClassName);
+  SetBatterySaverModeEnabled(true);
+  views::Widget* widget = waiter.WaitIfNeededAndGet();
+
+  bool promo_active = GetFeaturePromoController()->IsPromoActive(
       feature_engagement::kIPHBatterySaverModeFeature);
-  EXPECT_FALSE(promo_active);
+  EXPECT_TRUE(promo_active);
+
+  views::test::WidgetDestroyedWaiter destroyed_waiter(widget);
+  SetBatterySaverModeEnabled(false);
+  destroyed_waiter.Wait();
 }
 
 // Confirm that the navigation to the performance settings page happens when
@@ -117,8 +165,11 @@ IN_PROC_BROWSER_TEST_F(BatterySaverHelpPromoTest, PromoCustomActionClicked) {
   bool initialized = WaitForFeatureTrackerInitialization();
   EXPECT_TRUE(initialized);
 
+  views::NamedWidgetShownWaiter waiter(
+      views::test::AnyWidgetTestPasskey{},
+      user_education::HelpBubbleView::kViewClassName);
   SetBatterySaverModeEnabled(true);
-  base::RunLoop().RunUntilIdle();
+  waiter.WaitIfNeededAndGet();
 
   bool promo_active = promo_controller->IsPromoActive(
       feature_engagement::kIPHBatterySaverModeFeature);
@@ -133,8 +184,8 @@ IN_PROC_BROWSER_TEST_F(BatterySaverHelpPromoTest, PromoCustomActionClicked) {
   PressButton(custom_action_button);
   navigation_observer.Wait();
 
-  GURL expected(chrome::kChromeUIPerformanceSettingsURL);
-  EXPECT_EQ(expected.host(), navigation_observer.last_navigation_url().host());
+  GURL expected_url(chrome::kChromeUIPerformanceSettingsURL);
+  EXPECT_EQ(expected_url, navigation_observer.last_navigation_url());
 }
 
 class BatterySaverBubbleViewTest : public InProcessBrowserTest {
@@ -180,16 +231,20 @@ IN_PROC_BROWSER_TEST_F(BatterySaverBubbleViewTest, DisableModeForSession) {
   bool is_disabled = manager->IsBatterySaverModeDisabledForSession();
   EXPECT_FALSE(is_disabled);
 
-  auto* battery_saver_button = GetBatterySaverButton();
-  PressButton(battery_saver_button);
-  base::RunLoop().RunUntilIdle();
+  views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
+                                       BatterySaverBubbleView::kViewClassName);
 
-  auto* bubble_dialog_host = battery_saver_button->GetBubble();
+  BatterySaverButton* battery_saver_button = GetBatterySaverButton();
+  PressButton(battery_saver_button);
+  views::Widget* widget = waiter.WaitIfNeededAndGet();
+
+  views::BubbleDialogModelHost* const bubble_dialog_host =
+      battery_saver_button->GetBubble();
   EXPECT_TRUE(bubble_dialog_host);
 
-  auto* extra_button_view = bubble_dialog_host->GetExtraView();
-  PressButton(static_cast<views::Button*>(extra_button_view));
-  base::RunLoop().RunUntilIdle();
+  views::test::WidgetDestroyedWaiter destroyed_waiter(widget);
+  bubble_dialog_host->Cancel();
+  destroyed_waiter.Wait();
 
   is_disabled = manager->IsBatterySaverModeDisabledForSession();
   EXPECT_TRUE(is_disabled);

@@ -8,6 +8,7 @@
 
 #include "base/containers/contains.h"
 #include "base/observer_list.h"
+#include "build/chromeos_buildflags.h"
 
 namespace apps {
 
@@ -284,6 +285,22 @@ const std::set<AppType>& AppRegistryCache::InitializedAppTypes() const {
 
 bool AppRegistryCache::IsAppTypeInitialized(apps::AppType app_type) const {
   return base::Contains(initialized_app_types_, app_type);
+}
+
+void AppRegistryCache::ReinitializeForTesting() {
+  mojom_states_.clear();
+  states_.clear();
+  mojom_deltas_in_progress_.clear();
+  mojom_deltas_pending_.clear();
+  deltas_in_progress_.clear();
+  deltas_pending_.clear();
+  in_progress_initialized_app_types_.clear();
+
+  // On most platforms, we can't clear initialized_app_types_ here as observers
+  // expect each type to be initialized only once.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  initialized_app_types_.clear();
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
 void AppRegistryCache::OnAppTypeInitialized() {

@@ -22,6 +22,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/owned_window_anchor.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -1775,6 +1776,10 @@ void MenuController::Accept(MenuItemView* item, int event_flags) {
       views::ElementTrackerViews::GetInstance()->NotifyViewActivated(id, item);
   }
 
+  // EndPopupFocusOverride before closing the menu, the focus should move on
+  // after closing the menu.
+  item->GetViewAccessibility().EndPopupFocusOverride();
+
   // Setting `result_` now means that a future Cancel() call will include that
   // `result_` in its delegate notification, and thus the clicked command will
   // still be executed even if the menu is canceled during the close animation.
@@ -3084,7 +3089,7 @@ void MenuController::SetDropMenuItem(MenuItemView* new_target,
 }
 
 void MenuController::UpdateScrolling(const MenuPart& part) {
-  if (!part.is_scroll() && !scroll_task_.get())
+  if ((!part.is_scroll() && !scroll_task_.get()) || !scroll_buttons_enabled)
     return;
 
   if (!scroll_task_.get())
@@ -3455,6 +3460,15 @@ bool MenuController::CanProcessInputEvents() const {
 #else
   return true;
 #endif
+}
+
+void MenuController::OnMenuEdgeReached() {
+  StopScrolling();
+  SetEnabledScrollButtons(false);
+}
+
+void MenuController::SetEnabledScrollButtons(bool enabled) {
+  scroll_buttons_enabled = enabled;
 }
 
 }  // namespace views

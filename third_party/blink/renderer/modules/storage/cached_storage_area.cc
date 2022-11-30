@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,8 +56,8 @@ base::OnceCallback<void(bool)> MakeSuccessCallback(
           "CachedStorageArea",
           WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
   virtual_time_pauser.PauseVirtualTime();
-  return WTF::Bind([](WebScopedVirtualTimePauser, bool) {},
-                   std::move(virtual_time_pauser));
+  return WTF::BindOnce([](WebScopedVirtualTimePauser, bool) {},
+                       std::move(virtual_time_pauser));
 }
 
 }  // namespace
@@ -156,8 +156,8 @@ void CachedStorageArea::Clear(Source* source) {
     // backend from the exact point at which the impending |DeleteAll()|
     // operation takes place. The first event observed after this will always
     // be a corresponding |AllDeleted()| from |source|.
-    DCHECK(pending_mutations_by_source_.IsEmpty());
-    DCHECK(pending_mutations_by_key_.IsEmpty());
+    DCHECK(pending_mutations_by_source_.empty());
+    DCHECK(pending_mutations_by_key_.empty());
     receiver_.reset();
     new_observer = receiver_.BindNewPipeAndPassRemote();
   }
@@ -537,7 +537,7 @@ CachedStorageArea::PopPendingMutation(const String& source) {
     return nullptr;
 
   OwnedPendingMutationQueue& mutations_for_source = source_queue_iter->value;
-  DCHECK(!mutations_for_source.IsEmpty());
+  DCHECK(!mutations_for_source.empty());
   std::unique_ptr<PendingMutation> mutation =
       std::move(mutations_for_source.front());
   mutations_for_source.pop_front();
@@ -684,7 +684,7 @@ void CachedStorageArea::EnqueueStorageEvent(const String& key,
 // static
 String CachedStorageArea::Uint8VectorToString(const Vector<uint8_t>& input,
                                               FormatOption format_option) {
-  if (input.IsEmpty())
+  if (input.empty())
     return g_empty_string;
   const wtf_size_t input_size = input.size();
   String result;

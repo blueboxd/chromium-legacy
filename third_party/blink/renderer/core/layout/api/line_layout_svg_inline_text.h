@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,7 +66,7 @@ class SVGInlineTextMetricsIterator {
     DCHECK(text_line_layout);
     if (!text_line_layout_ || text_line_layout_ != text_line_layout) {
       Reset(text_line_layout);
-      DCHECK(!MetricsList().IsEmpty());
+      DCHECK(!MetricsList().empty());
     }
 
     if (character_offset_ == start_character_offset)

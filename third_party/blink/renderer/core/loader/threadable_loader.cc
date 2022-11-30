@@ -97,10 +97,10 @@ ThreadableLoader::ThreadableLoader(
     ThreadableLoaderClient* client,
     const ResourceLoaderOptions& resource_loader_options,
     ResourceFetcher* resource_fetcher)
-    : client_(client),
+    : resource_loader_options_(resource_loader_options),
+      client_(client),
       execution_context_(execution_context),
       resource_fetcher_(resource_fetcher),
-      resource_loader_options_(resource_loader_options),
       request_mode_(network::mojom::RequestMode::kSameOrigin),
       timeout_timer_(execution_context_->GetTaskRunner(TaskType::kNetworking),
                      this,
@@ -166,7 +166,7 @@ void ThreadableLoader::Start(ResourceRequest request) {
   }
 }
 
-ThreadableLoader::~ThreadableLoader() {}
+ThreadableLoader::~ThreadableLoader() = default;
 
 void ThreadableLoader::SetTimeout(const base::TimeDelta& timeout) {
   timeout_ = timeout;
@@ -377,6 +377,10 @@ void ThreadableLoader::Trace(Visitor* visitor) const {
   visitor->Trace(resource_fetcher_);
   visitor->Trace(timeout_timer_);
   RawResourceClient::Trace(visitor);
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> ThreadableLoader::GetTaskRunner() {
+  return execution_context_->GetTaskRunner(TaskType::kNetworking);
 }
 
 }  // namespace blink

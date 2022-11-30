@@ -30,6 +30,10 @@ class TestBrowserContext : public BrowserContext {
 
   ~TestBrowserContext() override;
 
+  // Returns the TestBrowserContext corresponding to the given browser context.
+  static TestBrowserContext* FromBrowserContext(
+      BrowserContext* browser_context);
+
   // Takes ownership of the temporary directory so that it's not deleted when
   // this object is destructed.
   base::FilePath TakePath();
@@ -41,6 +45,8 @@ class TestBrowserContext : public BrowserContext {
       std::unique_ptr<PermissionControllerDelegate> delegate);
   void SetPlatformNotificationService(
       std::unique_ptr<PlatformNotificationService> service);
+  void SetOriginTrialsControllerDelegate(
+      OriginTrialsControllerDelegate* delegate);
 
   // Allow clients to make this an incognito context.
   void set_is_off_the_record(bool is_off_the_record) {
@@ -67,6 +73,8 @@ class TestBrowserContext : public BrowserContext {
   BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate() override;
   ReduceAcceptLanguageControllerDelegate*
   GetReduceAcceptLanguageControllerDelegate() override;
+  content::OriginTrialsControllerDelegate* GetOriginTrialsControllerDelegate()
+      override;
 
  private:
   // Hold a reference here because BrowserContext owns lifetime.
@@ -79,6 +87,8 @@ class TestBrowserContext : public BrowserContext {
   std::unique_ptr<PlatformNotificationService> platform_notification_service_;
   std::unique_ptr<MockReduceAcceptLanguageControllerDelegate>
       reduce_accept_language_controller_delegate_;
+  base::raw_ptr<OriginTrialsControllerDelegate>
+      origin_trials_controller_delegate_;
   bool is_off_the_record_ = false;
 };
 

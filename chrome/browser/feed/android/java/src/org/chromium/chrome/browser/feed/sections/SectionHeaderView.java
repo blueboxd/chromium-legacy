@@ -110,8 +110,11 @@ public class SectionHeaderView extends LinearLayout {
         // Null when unread indicator isn't shown.
         @Nullable
         public UnreadIndicator unreadIndicator;
+        // The text to show on the unreadIndicator, if any.
+        public String unreadIndicatorText;
         // The tab's displayed text.
         public String text = "";
+        public boolean shouldAnimateIndicator;
     }
 
     // Views in the header layout that are set during inflate.
@@ -218,12 +221,14 @@ public class SectionHeaderView extends LinearLayout {
      * Set the properties for the header tab at a particular index to text.
      *
      * Does nothing if index is invalid. Make sure to call addTab() beforehand.
-     *
      * @param text Text to set the tab to.
      * @param hasUnreadContent Whether there is unread content.
+     * @param unreadContentText Text to put in the unread content badge.
+     * @param shouldAnimate whether we should animate the unread content transition.
      * @param index Index of the tab to set.
      */
-    void setHeaderAt(String text, boolean hasUnreadContent, int index) {
+    void setHeaderAt(String text, boolean hasUnreadContent, String unreadContentText,
+            boolean shouldAnimate, int index) {
         TabLayout.Tab tab = getTabAt(index);
         if (tab == null) {
             return;
@@ -232,6 +237,8 @@ public class SectionHeaderView extends LinearLayout {
 
         state.text = text;
         state.hasUnreadContent = hasUnreadContent;
+        state.unreadIndicatorText = unreadContentText;
+        state.shouldAnimateIndicator = shouldAnimate;
         applyTabState(tab);
     }
 
@@ -347,6 +354,27 @@ public class SectionHeaderView extends LinearLayout {
             mTabLayout.setEnabled(enabled);
         }
         mTitleView.setEnabled(enabled);
+    }
+
+    /**
+     * If the unread indicator is shown for the header tab at index, then animate the indicator.
+     * Otherwise, ignore and rely on the code for setting the unread indicator to animate.
+     */
+    void startAnimationForHeader(int index) {
+        if (mTabLayout != null) {
+            TabLayout.Tab tab = getTabAt(index);
+            if (tab == null) {
+                return;
+            }
+            TabState state = getTabState(tab);
+            // Skip animating if we don't have anything to animate yet.
+            // Rely on the unread indicator visibility controls to start the animation.
+            if (state.unreadIndicator == null || state.unreadIndicator.mNewBadge == null) {
+                return;
+            }
+            state.unreadIndicator.mNewBadge.startAnimation();
+            state.shouldAnimateIndicator = true;
+        }
     }
 
     /** Shows an IPH on the feed header menu button. */
@@ -504,6 +532,10 @@ public class SectionHeaderView extends LinearLayout {
                     state.unreadIndicator =
                             new UnreadIndicator(tab.view.findViewById(android.R.id.text1));
                 }
+            }
+            state.unreadIndicator.mNewBadge.setText(state.unreadIndicatorText);
+            if (state.shouldAnimateIndicator) {
+                state.unreadIndicator.mNewBadge.startAnimation();
             }
         } else {
             if (state.unreadIndicator != null) {

@@ -22,6 +22,7 @@ source_set("omnibox_popup_shared") {
   sources = [
     "omnibox_constants.h",
     "omnibox_constants.mm",
+    "omnibox_keyboard_delegate.h",
   ]
 }
 
@@ -176,12 +177,14 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/ui/gestures",
     "//ios/chrome/browser/ui/location_bar:constants",
     "//ios/chrome/browser/ui/main:default_browser_scene_agent",
+    "//ios/chrome/browser/ui/main:layout_guide_util",
     "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/ui/omnibox/popup",
     "//ios/chrome/browser/ui/omnibox/popup:popup_ui_protocols",
     "//ios/chrome/browser/ui/orchestrator:orchestrator",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/browser/url:constants",
     "//ios/chrome/browser/url_loading",
     "//ios/chrome/common",
     "//ios/chrome/common/intents",
@@ -262,7 +265,7 @@ source_set("eg2_tests") {
   deps = [
     ":eg_test_support+eg2",
     ":features",
-    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
     "//ios/chrome/browser/ui/omnibox/popup:popup_accessibility_identifier_constants",
@@ -299,6 +302,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/browser/url:constants",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/browser/web_state_list:test_support",
     "//ios/web/common:uikit",

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,15 +102,15 @@ String GetOriginUrl(const Node* node) {
   if (!isolate || !isolate->InContext() || !debugger)
     return String();
   v8::HandleScope handleScope(isolate);
-  String url = GetCurrentScriptUrl();
-  if (!url.IsEmpty())
+  String url = GetCurrentScriptUrl(isolate);
+  if (!url.empty())
     return url;
   // If we did not get anything from the sync stack, let's try the slow
   // way that also checks async stacks.
   auto trace = debugger->GetV8Inspector()->captureStackTrace(true);
   if (trace)
     url = ToCoreString(trace->firstNonEmptySourceURL());
-  if (!url.IsEmpty())
+  if (!url.empty())
     return url;
   // Fall back to document url.
   return node->GetDocument().Url().GetString();
@@ -152,7 +152,7 @@ class DOMTreeIterator {
                                    : FlatTreeTraversal::Parent(*current_);
       path_to_current_node_.pop_back();
     }
-    DCHECK(path_to_current_node_.IsEmpty());
+    DCHECK(path_to_current_node_.empty());
   }
 
   Node* CurrentNode() const { return current_; }
@@ -339,7 +339,7 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
 }
 
 int InspectorDOMSnapshotAgent::AddString(const String& string) {
-  if (string.IsEmpty())
+  if (string.empty())
     return -1;
   auto it = string_table_.find(string);
   int index;
@@ -713,7 +713,7 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(
 
   auto* layout_text = To<LayoutText>(layout_object);
   Vector<LayoutText::TextBoxInfo> text_boxes = layout_text->GetTextBoxInfo();
-  if (text_boxes.IsEmpty())
+  if (text_boxes.empty())
     return layout_index;
 
   for (const auto& text_box : text_boxes) {

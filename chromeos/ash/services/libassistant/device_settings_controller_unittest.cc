@@ -35,8 +35,7 @@ void PrintTo(const DeviceSetting& settings, std::ostream* out) {
 }  // namespace assistant
 }  // namespace chromeos
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 namespace {
 
@@ -279,5 +278,4 @@ TEST_F(AssistantDeviceSettingsControllerTest,
   ModifySetting(args);
 }
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant

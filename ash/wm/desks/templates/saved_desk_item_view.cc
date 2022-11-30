@@ -11,6 +11,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/close_button.h"
 #include "ash/style/pill_button.h"
@@ -140,10 +141,8 @@ SavedDeskItemView::SavedDeskItemView(
       .SetUseDefaultFillLayout(true)
       .SetAccessibleName(template_name)
       .SetCallback(std::move(launch_template_callback))
-      .SetBackground(views::CreateRoundedRectBackground(
-          color_provider->GetBaseLayerColor(
-              AshColorProvider::BaseLayerType::kTransparent80),
-          kCornerRadius))
+      .SetBackground(views::CreateThemedRoundedRectBackground(
+          kColorAshShieldAndBase80, kCornerRadius))
       .SetBorder(std::make_unique<views::HighlightBorder>(
           kCornerRadius, views::HighlightBorder::Type::kHighlightBorder1,
           /*use_light_colors=*/false))
@@ -155,10 +154,8 @@ SavedDeskItemView::SavedDeskItemView(
               // TODO(richui): Consider splitting some of the children into
               // different files and/or classes.
               .AddChildren(
-                  views::Builder<views::BoxLayoutView>()
-                      .SetOrientation(
-                          views::BoxLayout::Orientation::kHorizontal)
-                      .SetBetweenChildSpacing(kManagedStatusIndicatorSpacing)
+                  views::Builder<views::FlexLayoutView>()
+                      .SetOrientation(views::LayoutOrientation::kHorizontal)
                       .SetPreferredSize(gfx::Size(
                           kTemplateNameAndTimePreferredWidth,
                           SavedDeskNameView::kSavedDeskNameViewHeight))
@@ -174,7 +171,23 @@ SavedDeskItemView::SavedDeskItemView(
                               // template is not modifiable.
                               .SetFocusBehavior(desk_template_->IsModifiable()
                                                     ? GetFocusBehavior()
-                                                    : FocusBehavior::NEVER),
+                                                    : FocusBehavior::NEVER)
+                              .SetProperty(
+                                  views::kFlexBehaviorKey,
+                                  views::FlexSpecification(
+                                      views::MinimumFlexSizeRule::kScaleToZero,
+                                      views::MaximumFlexSizeRule::kPreferred)),
+                          // This is a spacer between the name field and the
+                          // "managed-by-admin" admin icon.
+                          views::Builder<views::View>()
+                              .SetPreferredSize(
+                                  gfx::Size(kManagedStatusIndicatorSpacing, 1))
+                              .SetProperty(
+                                  views::kFlexBehaviorKey,
+                                  views::FlexSpecification(
+                                      views::MinimumFlexSizeRule::kPreferred,
+                                      views::MaximumFlexSizeRule::kPreferred))
+                              .SetVisible(is_admin_managed),
                           views::Builder<views::ImageView>()
                               .SetPreferredSize(
                                   gfx::Size(kManagedStatusIndicatorSize,
@@ -185,6 +198,11 @@ SavedDeskItemView::SavedDeskItemView(
                                   color_provider->GetContentLayerColor(
                                       AshColorProvider::ContentLayerType::
                                           kIconColorSecondary)))
+                              .SetProperty(
+                                  views::kFlexBehaviorKey,
+                                  views::FlexSpecification(
+                                      views::MinimumFlexSizeRule::kPreferred,
+                                      views::MaximumFlexSizeRule::kPreferred))
                               .SetVisible(is_admin_managed)),
                   views::Builder<views::Label>()
                       .CopyAddressTo(&time_view_)
@@ -234,12 +252,10 @@ SavedDeskItemView::SavedDeskItemView(
         hover_container_->AddChildView(std::make_unique<CloseButton>(
             base::BindRepeating(&SavedDeskItemView::OnDeleteButtonPressed,
                                 weak_ptr_factory_.GetWeakPtr()),
-            CloseButton::Type::kMedium));
-    delete_button_->SetVectorIcon(kDeleteIcon);
+            CloseButton::Type::kMedium, &kDeleteIcon,
+            kColorAshControlBackgroundColorInactive));
     delete_button_->SetTooltipText(l10n_util::GetStringUTF16(
         IDS_ASH_DESKS_TEMPLATES_DELETE_DIALOG_CONFIRM_BUTTON));
-    delete_button_->SetBackgroundColor(color_provider->GetControlsLayerColor(
-        AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive));
   }
 
   // Use a border to create spacing between `name_view_`s background (set in
@@ -421,8 +437,6 @@ void SavedDeskItemView::Layout() {
 void SavedDeskItemView::OnThemeChanged() {
   views::View::OnThemeChanged();
   auto* color_provider = AshColorProvider::Get();
-  GetBackground()->SetNativeControlColor(color_provider->GetBaseLayerColor(
-      AshColorProvider::BaseLayerType::kTransparent80));
 
   time_view_->SetBackgroundColor(SK_ColorTRANSPARENT);
   time_view_->SetEnabledColor(color_provider->GetContentLayerColor(
@@ -515,8 +529,7 @@ void SavedDeskItemView::OnViewBlurred(views::View* observed_view) {
       if (SavedDeskLibraryView* library_view =
               overview_grid->GetSavedDeskLibraryView()) {
         for (auto* grid_view : library_view->grid_views()) {
-          grid_view->SortTemplateGridItems(
-              /*last_saved_template_uuid=*/base::GUID());
+          grid_view->SortEntries(/*order_first_uuid=*/{});
         }
       }
     }

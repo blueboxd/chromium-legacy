@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 """Definitions of builders in the chromium.angle builder group."""
 
+load("//lib/args.star", "args")
 load("//lib/builders.star", "goma", "reclient", "sheriff_rotations", "xcode")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/ci.star", "ci")
@@ -21,6 +22,9 @@ ci.defaults.set(
     service_account = ci.gpu.SERVICE_ACCOUNT,
     sheriff_rotations = sheriff_rotations.ANGLE,
     thin_tester_cores = 2,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 consoles.console_view(
@@ -53,6 +57,7 @@ ci.thin_tester(
         short_name = "arm64",
     ),
     triggered_by = ["android-angle-chromium-arm64-builder"],
+    sheriff_rotations = args.ignore_default(None),
 )
 
 ci.gpu.linux_builder(
@@ -97,8 +102,6 @@ ci.gpu.mac_builder(
         category = "Mac|Builder|Chromium",
         short_name = "x64",
     ),
-    goma_backend = goma.backend.RBE_PROD,
-    reclient_instance = None,
 )
 
 ci.thin_tester(
@@ -145,8 +148,6 @@ ci.gpu.mac_builder(
         category = "iOS|Builder|ANGLE",
         short_name = "x64",
     ),
-    goma_backend = goma.backend.RBE_PROD,
-    reclient_instance = None,
     xcode = xcode.x14main,
 )
 

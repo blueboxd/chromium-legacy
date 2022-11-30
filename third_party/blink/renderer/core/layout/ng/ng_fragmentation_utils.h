@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,6 +75,14 @@ inline bool InvolvedInBlockFragmentation(const NGBoxFragmentBuilder& builder) {
          IsResumingLayout(builder.PreviousBreakToken());
 }
 
+// Return the fragment index (into the layout results vector in LayoutBox),
+// based on incoming break token.
+inline wtf_size_t FragmentIndex(const NGBlockBreakToken* incoming_break_token) {
+  if (incoming_break_token && !incoming_break_token->IsBreakBefore())
+    return incoming_break_token->SequenceNumber() + 1;
+  return 0;
+}
+
 // Calculate the final "break-between" value at a class A or C breakpoint. This
 // is the combination of all break-before and break-after values that met at the
 // breakpoint.
@@ -143,26 +151,35 @@ inline LayoutUnit FragmentainerCapacity(const NGConstraintSpace& space) {
 }
 
 // Return the block space that was available in the current fragmentainer at the
-// start of the current block formatting context. Note that if the start of the
-// current block formatting context is in a previous fragmentainer, the size of
-// the current fragmentainer is returned instead. If available space is
-// negative, zero is returned. In the case of initial column balancing, the size
-// is unknown, in which case kIndefiniteSize is returned.
-inline LayoutUnit FragmentainerSpaceAtBfcStart(const NGConstraintSpace& space) {
+// start of the current block. Note that if the start of the current block is in
+// a previous fragmentainer, the size of the current fragmentainer is returned
+// instead. If available space is negative, zero is returned. In the case of
+// initial column balancing, the size is unknown, in which case kIndefiniteSize
+// is returned.
+inline LayoutUnit FragmentainerSpaceLeft(const NGConstraintSpace& space) {
   if (!space.HasKnownFragmentainerBlockSize())
     return kIndefiniteSize;
   LayoutUnit available_space =
-      FragmentainerCapacity(space) - space.FragmentainerOffsetAtBfc();
+      FragmentainerCapacity(space) - space.FragmentainerOffset();
   return available_space.ClampNegativeToZero();
 }
 
-// Same as FragmentainerSpaceAtBfcStart(), but not to be called in the initial
+// Return the border edge block-offset from the block-start of the fragmentainer
+// relative to the block-start of the current block formatting context in the
+// current fragmentainer. Note that if the current block formatting context
+// starts in a previous fragmentainer, we'll return the block-offset relative to
+// the current fragmentainer.
+inline LayoutUnit FragmentainerOffsetAtBfc(const NGConstraintSpace& space) {
+  return space.FragmentainerOffset() - space.ExpectedBfcBlockOffset();
+}
+
+// Same as FragmentainerSpaceLeft(), but not to be called in the initial
 // column balancing pass (when fragmentainer block-size is unknown), and without
 // any clamping of negative values.
-inline LayoutUnit UnclampedFragmentainerSpaceAtBfcStart(
+inline LayoutUnit UnclampedFragmentainerSpaceLeft(
     const NGConstraintSpace& space) {
   DCHECK(space.HasKnownFragmentainerBlockSize());
-  return FragmentainerCapacity(space) - space.FragmentainerOffsetAtBfc();
+  return FragmentainerCapacity(space) - space.FragmentainerOffset();
 }
 
 // Adjust margins to take fragmentation into account. Leading/trailing block
@@ -448,15 +465,14 @@ NGBoxFragmentBuilder CreateContainerBuilderForMulticol(
 NGConstraintSpace CreateConstraintSpaceForMulticol(const NGBlockNode& multicol);
 
 // Return the adjusted child margin to be applied at the end of a fragment.
-// Margins should collapse with the fragmentainer boundary. |bfc_block_offset|
-// is the BFC offset where the margin should be applied (i.e. after the
-// block-end border edge of the last child fragment).
+// Margins should collapse with the fragmentainer boundary. |block_offset| is
+// the block-offset where the margin should be applied (i.e. after the block-end
+// border edge of the last child fragment).
 inline LayoutUnit AdjustedMarginAfterFinalChildFragment(
     const NGConstraintSpace& space,
-    LayoutUnit bfc_block_offset,
+    LayoutUnit block_offset,
     LayoutUnit block_end_margin) {
-  LayoutUnit space_left =
-      FragmentainerSpaceAtBfcStart(space) - bfc_block_offset;
+  LayoutUnit space_left = FragmentainerSpaceLeft(space) - block_offset;
   return std::min(block_end_margin, space_left.ClampNegativeToZero());
 }
 

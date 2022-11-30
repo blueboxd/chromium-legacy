@@ -30,6 +30,7 @@
 #include "extensions/common/extension.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
+#include "ui/base/window_open_disposition_utils.h"
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
 
@@ -304,6 +305,8 @@ extensions::AppLaunchSource GetAppLaunchSource(LaunchSource launch_source) {
       return extensions::AppLaunchSource::kSourceProtocolHandler;
     case LaunchSource::kFromUrlHandler:
       return extensions::AppLaunchSource::kSourceUrlHandler;
+    case apps::LaunchSource::kFromLockScreen:
+      return extensions::AppLaunchSource::kSourceUntracked;
   }
 }
 

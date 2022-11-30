@@ -9,7 +9,7 @@ import './elements/viewer-zoom-toolbar.js';
 import './pdf_viewer_shared_style.css.js';
 
 import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
-import {isRTL} from 'chrome://resources/js/util.m.js';
+import {isRTL} from 'chrome://resources/js/util.js';
 
 import {BrowserApi} from './browser_api.js';
 import {ExtendedKeyEvent, FittingType} from './constants.js';
@@ -17,12 +17,12 @@ import {MessageData, PluginController, PrintPreviewParams} from './controller.js
 import {ViewerPageIndicatorElement} from './elements/viewer-page-indicator.js';
 import {ViewerZoomToolbarElement} from './elements/viewer-zoom-toolbar.js';
 import {deserializeKeyEvent, LoadState, serializeKeyEvent} from './pdf_scripting_api.js';
-import {KeyEventData, PDFViewerBaseElement} from './pdf_viewer_base.js';
+import {KeyEventData, PdfViewerBaseElement} from './pdf_viewer_base.js';
 import {getTemplate} from './pdf_viewer_pp.html.js';
 import {DestinationMessageData, DocumentDimensionsMessageData, hasCtrlModifier, shouldIgnoreKeyEvents} from './pdf_viewer_utils.js';
 import {ToolbarManager} from './toolbar_manager.js';
 
-export interface PDFViewerPPElement {
+export interface PdfViewerPpElement {
   $: {
     content: HTMLElement,
     pageIndicator: ViewerPageIndicatorElement,
@@ -31,7 +31,7 @@ export interface PDFViewerPPElement {
   };
 }
 
-export class PDFViewerPPElement extends PDFViewerBaseElement {
+export class PdfViewerPpElement extends PdfViewerBaseElement {
   static get is() {
     return 'pdf-viewer-pp';
   }
@@ -202,7 +202,7 @@ export class PDFViewerPPElement extends PDFViewerBaseElement {
           this.inPrintPreviewMode_ = true;
           this.isUserInitiatedEvent = false;
           this.forceFit(FittingType.FIT_TO_PAGE);
-          this.updateViewportFit(FittingType.FIT_TO_PAGE);
+          this.viewport.setFittingType(FittingType.FIT_TO_PAGE);
           this.isUserInitiatedEvent = true;
         }
 
@@ -350,8 +350,8 @@ const PRINT_PREVIEW_DARK_BACKGROUND_COLOR: number = 0xff5f6368;
 
 declare global {
   interface HTMLElementTagNameMap {
-    'pdf-viewer-pp': PDFViewerPPElement;
+    'pdf-viewer-pp': PdfViewerPpElement;
   }
 }
 
-customElements.define(PDFViewerPPElement.is, PDFViewerPPElement);
+customElements.define(PdfViewerPpElement.is, PdfViewerPpElement);

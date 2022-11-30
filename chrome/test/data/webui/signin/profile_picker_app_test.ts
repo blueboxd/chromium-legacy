@@ -15,7 +15,8 @@ import {ensureLazyLoaded, ManageProfilesBrowserProxyImpl, navigateTo, ProfilePic
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks, waitBeforeNextRender, whenCheck} from 'chrome://webui-test/test_util.js';
+import {whenCheck} from 'chrome://webui-test/test_util.js';
+import {flushTasks, waitBeforeNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
 import {TestManageProfilesBrowserProxy} from './test_manage_profiles_browser_proxy.js';
 
@@ -24,7 +25,8 @@ suite('ProfilePickerAppTest', function() {
   let browserProxy: TestManageProfilesBrowserProxy;
 
   function resetTestElement(route: Routes) {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     navigateTo(route);
     testElement = document.createElement('profile-picker-app');
     document.body.appendChild(testElement);
@@ -146,6 +148,9 @@ suite('ProfilePickerAppTest', function() {
   });
 
   test('ThemeColorConsistentInProfileCreationViews', async function() {
+    loadTimeData.overrideValues({
+      isLocalProfileCreationDialogEnabled: false,
+    });
     await resetTestElement(Routes.NEW_PROFILE);
     await waitForProfileCreationLoad();
     const choice = testElement.shadowRoot!.querySelector('profile-type-choice');

@@ -27,6 +27,7 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/ui/password_undo_helper.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/sync/base/features.h"
 #include "url/gurl.h"
 
 namespace {
@@ -62,7 +63,7 @@ password_manager::PasswordForm GenerateFormFromCredential(
     password_manager::PasswordForm::Type type) {
   password_manager::PasswordForm form;
   form.url = credential.GetURL();
-  form.signon_realm = credential.signon_realm;
+  form.signon_realm = credential.GetFirstSignonRealm();
   form.username_value = credential.username;
   form.password_value = credential.password;
   form.type = type;
@@ -125,13 +126,16 @@ void LogMetricsAddCredential(const password_manager::PasswordForm& form) {
 namespace password_manager {
 
 SavedPasswordsPresenter::SavedPasswordsPresenter(
+    AffiliationService* affiliation_service,
     scoped_refptr<PasswordStoreInterface> profile_store,
     scoped_refptr<PasswordStoreInterface> account_store)
     : profile_store_(std::move(profile_store)),
       account_store_(std::move(account_store)),
+      affiliation_service_(affiliation_service),
       undo_helper_(std::make_unique<PasswordUndoHelper>(profile_store_.get(),
                                                         account_store_.get())) {
   DCHECK(profile_store_);
+  DCHECK(affiliation_service_);
   AddObservers();
 }
 
@@ -140,12 +144,18 @@ SavedPasswordsPresenter::~SavedPasswordsPresenter() {
 }
 
 void SavedPasswordsPresenter::Init() {
+  pending_store_updates++;
   profile_store_->GetAllLoginsWithAffiliationAndBrandingInformation(
       weak_ptr_factory_.GetWeakPtr());
   if (account_store_) {
+    pending_store_updates++;
     account_store_->GetAllLoginsWithAffiliationAndBrandingInformation(
         weak_ptr_factory_.GetWeakPtr());
   }
+}
+
+bool SavedPasswordsPresenter::IsWaitingForPasswordStore() const {
+  return pending_store_updates != 0;
 }
 
 void SavedPasswordsPresenter::RemoveObservers() {
@@ -196,7 +206,7 @@ SavedPasswordsPresenter::GetExpectedAddResult(
 
   auto have_equal_username_and_realm =
       [&credential](const PasswordForm& entry) {
-        return credential.signon_realm == entry.signon_realm &&
+        return credential.GetFirstSignonRealm() == entry.signon_realm &&
                credential.username == entry.username_value;
       };
   auto have_equal_username_and_realm_in_profile_store =
@@ -268,8 +278,8 @@ void SavedPasswordsPresenter::UnblocklistBothStores(
   // Try to unblocklist in both stores anyway because if credentials don't
   // exist, the unblocklist operation is no-op.
   auto form_digest =
-      PasswordFormDigest(PasswordForm::Scheme::kHtml, credential.signon_realm,
-                         credential.GetURL());
+      PasswordFormDigest(PasswordForm::Scheme::kHtml,
+                         credential.GetFirstSignonRealm(), credential.GetURL());
   profile_store_->Unblocklist(form_digest);
   if (account_store_)
     account_store_->Unblocklist(form_digest);
@@ -378,8 +388,7 @@ SavedPasswordsPresenter::EditSavedCredentials(
       new_form.password_issues.clear();
     }
 
-    if (base::FeatureList::IsEnabled(
-            password_manager::features::kPasswordNotes)) {
+    if (base::FeatureList::IsEnabled(syncer::kPasswordNotesWithBackup)) {
       if (note_changed) {
         PasswordNoteAction note_action =
             UpdateNoteInPasswordForm(new_form, updated_credential.note);
@@ -437,6 +446,29 @@ std::vector<CredentialUIEntry> SavedPasswordsPresenter::GetSavedCredentials()
   return credentials;
 }
 
+std::vector<AffiliatedGroup> SavedPasswordsPresenter::GetAffiliatedGroups()
+    const {
+  std::vector<AffiliatedGroup> affiliated_groups;
+  // Key: Group id | Value: map of vectors of password forms.
+  for (auto const& it : map_group_id_to_forms_) {
+    AffiliatedGroup affiliated_group = AffiliatedGroup();
+
+    // Add branding information to the affiliated group.
+    auto it2 = map_group_id_to_branding_info_.find(it.first);
+    if (it2 != map_group_id_to_branding_info_.end()) {
+      affiliated_group.branding_info = it2->second;
+    }
+
+    // Key: Username-password key | Value: vector of password forms.
+    for (auto const& it3 : it.second) {
+      CredentialUIEntry entry = CredentialUIEntry(it3.second);
+      affiliated_group.credential_groups.push_back(std::move(entry));
+    }
+    affiliated_groups.push_back(std::move(affiliated_group));
+  }
+  return affiliated_groups;
+}
+
 std::vector<PasswordForm>
 SavedPasswordsPresenter::GetCorrespondingPasswordForms(
     const CredentialUIEntry& credential) const {
@@ -469,6 +501,7 @@ void SavedPasswordsPresenter::NotifySavedPasswordsChanged() {
 void SavedPasswordsPresenter::OnLoginsChanged(
     PasswordStoreInterface* store,
     const PasswordStoreChangeList& changes) {
+  pending_store_updates++;
   store->GetAllLoginsWithAffiliationAndBrandingInformation(
       weak_ptr_factory_.GetWeakPtr());
 }
@@ -476,6 +509,7 @@ void SavedPasswordsPresenter::OnLoginsChanged(
 void SavedPasswordsPresenter::OnLoginsRetained(
     PasswordStoreInterface* store,
     const std::vector<PasswordForm>& retained_passwords) {
+  pending_store_updates++;
   store->GetAllLoginsWithAffiliationAndBrandingInformation(
       weak_ptr_factory_.GetWeakPtr());
 }
@@ -492,8 +526,12 @@ void SavedPasswordsPresenter::OnGetPasswordStoreResultsFrom(
     PasswordStoreInterface* store,
     std::vector<std::unique_ptr<PasswordForm>> results) {
   bool is_account_store = store == account_store_.get();
+  pending_store_updates--;
+  DCHECK_GE(pending_store_updates, 0);
 
   // Remove cached credentials for current store.
+  // TODO(crbug.com/1359392): Remove unused sort_key_to_password_forms_ when the
+  // feature is completely released.
   base::EraseIf(sort_key_to_password_forms_,
                 [&is_account_store](const auto& pair) {
                   return pair.second.IsUsingAccountStore() == is_account_store;
@@ -514,6 +552,62 @@ void SavedPasswordsPresenter::OnGetPasswordStoreResultsFrom(
       passwords_.push_back(std::move(form));
   });
 
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordsGrouping)) {
+    if (!is_account_store) {
+      // Fetch all groups.
+      AffiliationService::GroupsCallback groups_callback =
+          base::BindOnce(&SavedPasswordsPresenter::OnGetAllGroupsResultsFrom,
+                         weak_ptr_factory_.GetWeakPtr());
+      affiliation_service_->GetAllGroups(std::move(groups_callback));
+    }
+  } else {
+    NotifySavedPasswordsChanged();
+  }
+}
+
+void SavedPasswordsPresenter::OnGetAllGroupsResultsFrom(
+    const std::vector<GroupedFacets>& groups) {
+  // Clear caches.
+  map_group_id_to_branding_info_.clear();
+  map_signon_realm_to_group_id_.clear();
+  map_group_id_to_forms_.clear();
+
+  // Construct map to keep track of facet URI to group id mapping.
+  int group_id_int = 1;
+  std::map<std::string, GroupId> map_facet_to_group_id;
+  for (const GroupedFacets& grouped_facets : groups) {
+    GroupId unique_group_id(group_id_int);
+    for (const Facet& facet : grouped_facets.facets) {
+      map_facet_to_group_id[facet.uri.canonical_spec()] = unique_group_id;
+    }
+
+    // Store branding information for the affiliated group.
+    map_group_id_to_branding_info_[unique_group_id] =
+        grouped_facets.branding_info;
+
+    // Increment so it is a new id for the next group.
+    group_id_int++;
+  }
+
+  // Construct a map to keep track of group id to a map of credential groups
+  // to password form.
+  for (auto const& element : sort_key_to_password_forms_) {
+    PasswordForm form = element.second;
+    FacetURI uri = FacetURI::FromPotentiallyInvalidSpec(form.signon_realm);
+    GroupId group_id = map_facet_to_group_id[uri.canonical_spec()];
+
+    // TODO(crbug.com/1354196): If group_id == 0, the password form is not
+    // part of an affiliated group that has branding information. Add fallback
+    // code here.
+
+    UsernamePasswordKey key(CreateUsernamePasswordSortKey(form));
+    map_group_id_to_forms_[group_id][key].push_back(std::move(form));
+
+    // Store group id for sign-on realm.
+    SignonRealm signon_realm(uri.canonical_spec());
+    map_signon_realm_to_group_id_[signon_realm] = group_id;
+  }
   NotifySavedPasswordsChanged();
 }
 

@@ -298,7 +298,7 @@
     [self.consumer noIdentityAvailable];
   } else {
     UIImage* avatar = self.accountManagerService->GetIdentityAvatarWithIdentity(
-        self.selectedIdentity, IdentityAvatarSize::DefaultLarge);
+        self.selectedIdentity, IdentityAvatarSize::Regular);
     [self.consumer
         setSelectedIdentityUserName:self.selectedIdentity.userFullName
                               email:self.selectedIdentity.userEmail
@@ -316,7 +316,7 @@
   }
 }
 
-- (void)identityChanged:(ChromeIdentity*)identity {
+- (void)identityChanged:(id<SystemIdentity>)identity {
   if ([self.selectedIdentity isEqual:identity]) {
     [self updateConsumerIdentity];
   }

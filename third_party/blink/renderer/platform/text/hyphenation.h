@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ class PLATFORM_EXPORT Hyphenation : public RefCounted<Hyphenation> {
   void Initialize(const AtomicString& locale);
 
   bool ShouldHyphenateWord(const StringView& word) const {
-    if (word.IsEmpty())
+    if (word.empty())
       return false;
     // Avoid hyphenating capitalized words.
     return hyphenate_capitalized_word_ || !WTF::unicode::IsUpper(word[0]);

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -4213,7 +4213,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, NestedUnbalancedInnerAutoHeight) {
             offset:0,0 size:45x20
             offset:0,20 size:45x20
       offset:110,0 size:100x50
-        offset:0,0 size:100x50
+        offset:0,0 size:100x40
           offset:0,0 size:45x50
             offset:0,0 size:45x20
             offset:0,20 size:45x20

@@ -15,6 +15,7 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/controls/contextual_tooltip.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/drag_drop/scoped_drag_drop_observer.h"
@@ -250,8 +251,8 @@ aura::Window* GetWindowForDragToHomeOrOverview(
   } else if (is_in_splitview) {
     // If split view mode is active, use the event location to decide which
     // window should be the dragged window.
-    aura::Window* left_window = split_view_controller->left_window();
-    aura::Window* right_window = split_view_controller->right_window();
+    aura::Window* left_window = split_view_controller->primary_window();
+    aura::Window* right_window = split_view_controller->secondary_window();
     const int divider_position = split_view_controller->divider_position();
     const bool is_landscape = IsCurrentScreenOrientationLandscape();
     const bool is_primary = IsCurrentScreenOrientationPrimary();
@@ -690,10 +691,13 @@ void ShelfLayoutManager::UpdateContextualNudges() {
   }
 
   // Create home to overview nudge controller if home to overview nudge is
-  // allowed by the current shelf state.
+  // allowed by the current shelf state. Also, the nudge is disable in tast
+  // tests to prevent waiting too long for the nudge animation.
   const bool allow_home_to_overview_nudge =
       in_tablet_mode && !in_app_shelf &&
-      !ShelfConfig::Get()->shelf_controls_shown() && !in_overview_mode;
+      !ShelfConfig::Get()->shelf_controls_shown() && !in_overview_mode &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshNoNudges);
   if (allow_home_to_overview_nudge && !home_to_overview_nudge_controller_) {
     home_to_overview_nudge_controller_ =
         std::make_unique<HomeToOverviewNudgeController>(
@@ -889,7 +893,7 @@ void ShelfLayoutManager::ProcessScrollOffset(int offset,
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(shelf_widget_->GetNativeWindow())
           .id(),
-      kScrollFromShelf, event.time_stamp());
+      AppListShowSource::kScrollFromShelf, event.time_stamp());
 }
 
 void ShelfLayoutManager::ProcessScrollEventFromShelf(ui::ScrollEvent* event) {
@@ -938,7 +942,7 @@ bool ShelfLayoutManager::MaybeHandleShelfFling(
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(shelf_widget_->GetNativeWindow())
           .id(),
-      kSwipeFromShelf, event_in_screen.time_stamp());
+      AppListShowSource::kSwipeFromShelf, event_in_screen.time_stamp());
 
   return true;
 }
@@ -1893,118 +1897,89 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
 
   // TODO(https://crbug.com/1002132): Add tests for the hotseat bounds logic.
   CHECK_EQ(kDragInProgress, drag_status_);
-  const bool horizontal = shelf_->IsHorizontalAlignment();
-  const int shelf_size = ShelfConfig::Get()->shelf_size();
 
-  int resistance_free_region = 0;
   bool shelf_hidden_at_start = false;
   if (drag_auto_hide_state_ == SHELF_AUTO_HIDE_HIDDEN &&
       visibility_state() == SHELF_AUTO_HIDE &&
       auto_hide_state() != SHELF_AUTO_HIDE_SHOWN) {
-    // If the shelf was hidden when the drag started (and the state hasn't
-    // changed since then, e.g. because the tray-menu was shown because of the
-    // drag), then allow the drag some resistance-free region at first to make
-    // sure the shelf sticks with the finger until the shelf is visible.
-    resistance_free_region =
-        shelf_size - ShelfConfig::Get()->hidden_shelf_in_screen_portion();
     shelf_hidden_at_start = true;
   }
-
-  float translate = 0.f;
-  if (Shell::Get()->IsInTabletMode()) {
-    // The drag up gesture should not taper off in tablet mode to have a linear
-    // transition to the home launcher gesture.
-    translate = drag_amount_;
-  } else {
-    const bool resist = shelf_->SelectValueForShelfAlignment(
-        drag_amount_<-resistance_free_region, drag_amount_>
-            resistance_free_region,
-        drag_amount_ < -resistance_free_region);
-    if (resist) {
-      float diff = fabsf(drag_amount_) - resistance_free_region;
-      diff = std::min(diff, sqrtf(diff));
-      if (drag_amount_ < 0)
-        translate = -resistance_free_region - diff;
-      else
-        translate = resistance_free_region + diff;
-    } else {
-      translate = drag_amount_;
-    }
-  }
-
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
   const gfx::Rect available_bounds =
       screen_util::GetDisplayBoundsWithShelf(shelf_widget_->GetNativeWindow());
   const int baseline = shelf_->SelectValueForShelfAlignment(
       available_bounds.bottom() - (shelf_hidden_at_start ? 0 : shelf_size),
       available_bounds.x() - (shelf_hidden_at_start ? shelf_size : 0),
       available_bounds.right() - (shelf_hidden_at_start ? 0 : shelf_size));
+  const int shelf_position = baseline + drag_amount_;
 
-  const int shelf_position = baseline + translate;
-  if (horizontal) {
-    if (!Shell::Get()->IsInTabletMode()) {
-      shelf_->shelf_widget()->UpdateTargetBoundsForGesture(shelf_position);
-      shelf_->navigation_widget()->UpdateTargetBoundsForGesture(shelf_position);
-      shelf_->hotseat_widget()->UpdateTargetBoundsForGesture(shelf_position);
-      shelf_->status_area_widget()->UpdateTargetBoundsForGesture(
-          shelf_position);
-      return;
-    }
-
-    const bool move_shelf_with_hotseat =
-        !Shell::Get()->overview_controller()->InOverviewSession() &&
-        visibility_state() == SHELF_AUTO_HIDE;
+  if (!Shell::Get()->IsInTabletMode()) {
     // Do not allow the shelf to be dragged more than |shelf_size| from the
-    // bottom of the display.
-    int adjusted_shelf_position =
-        std::max(available_bounds.bottom() - shelf_size,
-                 static_cast<int>(shelf_position));
-    if (move_shelf_with_hotseat) {
-      // Window drags only happen after the hotseat has been dragged up to its
-      // full height. After the drag moves a window, do not allow the drag to
-      // move the hotseat down.
-      if (IsWindowDragInProgress())
-        adjusted_shelf_position = available_bounds.bottom() - shelf_size;
-      gfx::Rect updated_target_bounds =
-          shelf_->shelf_widget()->GetTargetBounds();
-      updated_target_bounds.set_y(adjusted_shelf_position);
-      shelf_->shelf_widget()->set_target_bounds(updated_target_bounds);
-      shelf_->navigation_widget()->UpdateTargetBoundsForGesture(
-          adjusted_shelf_position);
-      shelf_->status_area_widget()->UpdateTargetBoundsForGesture(
-          adjusted_shelf_position);
-    }
-
-    int hotseat_y = 0;
-    const int hotseat_extended_y =
-        shelf_->hotseat_widget()->GetHotseatSize() +
-        Shell::Get()->shelf_config()->hotseat_bottom_padding();
-    const int hotseat_baseline =
-        (hotseat_target_state == HotseatState::kExtended) ? -hotseat_extended_y
-                                                          : shelf_size;
-    bool use_hotseat_baseline =
-        (hotseat_target_state == HotseatState::kExtended &&
-         visibility_state() == SHELF_AUTO_HIDE) ||
-        (hotseat_target_state == HotseatState::kHidden &&
-         visibility_state() != SHELF_AUTO_HIDE);
-    hotseat_y = std::max(
-        -hotseat_extended_y,
-        static_cast<int>((use_hotseat_baseline ? hotseat_baseline : 0) +
-                         translate));
-    // Window drags only happen after the hotseat has been dragged up to its
-    // full height. After the drag moves a window, do not allow the drag to move
-    // the hotseat down.
-    if (IsWindowDragInProgress())
-      hotseat_y = -hotseat_extended_y;
-    gfx::Rect hotseat_bounds = shelf_->hotseat_widget()->GetTargetBounds();
-    hotseat_bounds.set_y(hotseat_y + adjusted_shelf_position);
-    shelf_->hotseat_widget()->set_target_bounds(hotseat_bounds);
+    // baseline.
+    int shelf_ideal_bound = shelf_->SelectValueForShelfAlignment(
+        available_bounds.bottom() - shelf_size, 0,
+        available_bounds.right() - shelf_size);
+    int adjusted_shelf_position = shelf_->SelectValueForShelfAlignment(
+        std::max(shelf_ideal_bound, static_cast<int>(shelf_position)),
+        std::min(shelf_ideal_bound, static_cast<int>(shelf_position)),
+        std::max(shelf_ideal_bound, static_cast<int>(shelf_position)));
+    shelf_->shelf_widget()->UpdateTargetBoundsForGesture(
+        adjusted_shelf_position);
+    shelf_->hotseat_widget()->UpdateTargetBoundsForGesture(
+        adjusted_shelf_position);
+    shelf_->navigation_widget()->UpdateTargetBoundsForGesture(
+        adjusted_shelf_position);
+    shelf_->status_area_widget()->UpdateTargetBoundsForGesture(
+        adjusted_shelf_position);
     return;
   }
 
-  shelf_->shelf_widget()->UpdateTargetBoundsForGesture(shelf_position);
-  shelf_->hotseat_widget()->UpdateTargetBoundsForGesture(shelf_position);
-  shelf_->navigation_widget()->UpdateTargetBoundsForGesture(shelf_position);
-  shelf_->status_area_widget()->UpdateTargetBoundsForGesture(shelf_position);
+  // Do not allow the shelf to be dragged more than |shelf_size| from the
+  // bottom of the display.
+  int adjusted_shelf_position = std::max(available_bounds.bottom() - shelf_size,
+                                         static_cast<int>(shelf_position));
+  const bool move_shelf_with_hotseat =
+      !Shell::Get()->overview_controller()->InOverviewSession() &&
+      visibility_state() == SHELF_AUTO_HIDE;
+  if (move_shelf_with_hotseat) {
+    // Window drags only happen after the hotseat has been dragged up to its
+    // full height. After the drag moves a window, do not allow the drag to
+    // move the hotseat down.
+    if (IsWindowDragInProgress())
+      adjusted_shelf_position = available_bounds.bottom() - shelf_size;
+    gfx::Rect updated_target_bounds = shelf_->shelf_widget()->GetTargetBounds();
+    updated_target_bounds.set_y(adjusted_shelf_position);
+    shelf_->shelf_widget()->set_target_bounds(updated_target_bounds);
+    shelf_->navigation_widget()->UpdateTargetBoundsForGesture(
+        adjusted_shelf_position);
+    shelf_->status_area_widget()->UpdateTargetBoundsForGesture(
+        adjusted_shelf_position);
+  }
+  const int hotseat_extended_offset =
+      shelf_->hotseat_widget()->GetHotseatSize() +
+      Shell::Get()->shelf_config()->hotseat_bottom_padding();
+  const int hotseat_offset_baseline =
+      (hotseat_target_state == HotseatState::kExtended)
+          ? -hotseat_extended_offset
+          : shelf_size;
+  bool use_hotseat_offset_baseline =
+      (hotseat_target_state == HotseatState::kExtended &&
+       visibility_state() == SHELF_AUTO_HIDE) ||
+      (hotseat_target_state == HotseatState::kHidden &&
+       visibility_state() != SHELF_AUTO_HIDE);
+  int hotseat_offset =
+      std::max(-hotseat_extended_offset,
+               static_cast<int>(
+                   (use_hotseat_offset_baseline ? hotseat_offset_baseline : 0) +
+                   drag_amount_));
+  // Window drags only happen after the hotseat has been dragged up to its
+  // full height. After the drag moves a window, do not allow the drag to move
+  // the hotseat down.
+  if (IsWindowDragInProgress())
+    hotseat_offset = -hotseat_extended_offset;
+  gfx::Rect hotseat_bounds = shelf_->hotseat_widget()->GetTargetBounds();
+  hotseat_bounds.set_y(hotseat_offset + adjusted_shelf_position);
+  shelf_->hotseat_widget()->set_target_bounds(hotseat_bounds);
 }
 
 void ShelfLayoutManager::UpdateAutoHideForDragDrop(

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -159,6 +159,7 @@ class CORE_EXPORT NGConstraintSpace final {
     NGConstraintSpace copy = *this;
     DCHECK(copy.rare_data_);
     copy.rare_data_->block_direction_fragmentation_type = kFragmentNone;
+    copy.rare_data_->is_block_fragmentation_forced_off = true;
     return copy;
   }
 
@@ -385,25 +386,24 @@ class CORE_EXPORT NGConstraintSpace final {
   }
 
   // Return the border edge block-offset from the block-start of the
-  // fragmentainer relative to the block-start of the current block formatting
-  // context in the current fragmentainer. Note that if the current block
-  // formatting context starts in a previous fragmentainer, we'll return the
-  // block-offset relative to the current fragmentainer.
-  LayoutUnit FragmentainerOffsetAtBfc() const {
+  // fragmentainer relative to the block-start of the current block in the
+  // current fragmentainer. Note that if the current block starts in a previous
+  // fragmentainer, we'll return the block-offset relative to the current
+  // fragmentainer.
+  LayoutUnit FragmentainerOffset() const {
     DCHECK(HasBlockFragmentation());
     if (HasRareData())
-      return rare_data_->fragmentainer_offset_at_bfc;
+      return rare_data_->fragmentainer_offset;
     return LayoutUnit();
   }
 
   // Return true if we're at the start of the fragmentainer. In most cases this
-  // will be equal to "FragmentainerOffsetAtBfc() <= LayoutUnit()", but not
+  // will be equal to "FragmentainerOffset() <= LayoutUnit()", but not
   // necessarily for floats, since float margins are unbreakable. If a node is
   // at the start of the fragmentainer, and the node has an untruncated positive
-  // block-start margin, FragmentainerOffsetAtBfc() will be greater than
-  // zero. This normally means that the node *isn't* at the start of the
-  // fragmentainer, but for floats, this should still be considered to be at the
-  // start.
+  // block-start margin, FragmentainerOffset() will be greater than zero. This
+  // normally means that the node *isn't* at the start of the fragmentainer, but
+  // for floats, this should still be considered to be at the start.
   bool IsAtFragmentainerStart() const {
     return HasRareData() && rare_data_->is_at_fragmentainer_start;
   }
@@ -540,6 +540,12 @@ class CORE_EXPORT NGConstraintSpace final {
   // context.
   bool HasBlockFragmentation() const {
     return BlockFragmentationType() != kFragmentNone;
+  }
+
+  // Return true if the node actually participates in block fragmentation, that
+  // was disabled due to clipped overflow.
+  bool IsBlockFragmentationForcedOff() const {
+    return HasRareData() && rare_data_->is_block_fragmentation_forced_off;
   }
 
   // Return true if the document is paginated (for printing).
@@ -729,6 +735,12 @@ class CORE_EXPORT NGConstraintSpace final {
     return HasRareData() ? rare_data_->ClearanceOffset() : LayoutUnit::Min();
   }
 
+  // Return true if the BFC block-offset has been increased by the presence of
+  // floats (e.g. clearance).
+  bool IsPushedByFloats() const {
+    return HasRareData() && rare_data_->is_pushed_by_floats;
+  }
+
   // Return true if this is participating within a -webkit-line-clamp context.
   bool IsLineClampContext() const {
     return HasRareData() && rare_data_->is_line_clamp_context;
@@ -868,10 +880,12 @@ class CORE_EXPORT NGConstraintSpace final {
         : bfc_offset(bfc_offset),
           data_union_type(static_cast<unsigned>(DataUnionType::kNone)),
           is_line_clamp_context(false),
+          is_pushed_by_floats(false),
           is_restricted_block_size_table_cell(false),
           hide_table_cell_if_empty(false),
           block_direction_fragmentation_type(
               static_cast<unsigned>(kFragmentNone)),
+          is_block_fragmentation_forced_off(false),
           requires_content_before_breaking(false),
           is_inside_balanced_columns(false),
           should_ignore_forced_breaks(false),
@@ -892,14 +906,17 @@ class CORE_EXPORT NGConstraintSpace final {
           override_min_max_block_sizes(other.override_min_max_block_sizes),
           page_name(other.page_name),
           fragmentainer_block_size(other.fragmentainer_block_size),
-          fragmentainer_offset_at_bfc(other.fragmentainer_offset_at_bfc),
+          fragmentainer_offset(other.fragmentainer_offset),
           data_union_type(other.data_union_type),
           is_line_clamp_context(other.is_line_clamp_context),
+          is_pushed_by_floats(other.is_pushed_by_floats),
           is_restricted_block_size_table_cell(
               other.is_restricted_block_size_table_cell),
           hide_table_cell_if_empty(other.hide_table_cell_if_empty),
           block_direction_fragmentation_type(
               other.block_direction_fragmentation_type),
+          is_block_fragmentation_forced_off(
+              other.is_block_fragmentation_forced_off),
           requires_content_before_breaking(
               other.requires_content_before_breaking),
           is_inside_balanced_columns(other.is_inside_balanced_columns),
@@ -976,11 +993,14 @@ class CORE_EXPORT NGConstraintSpace final {
     bool MaySkipLayout(const RareData& other) const {
       if (data_union_type != other.data_union_type ||
           is_line_clamp_context != other.is_line_clamp_context ||
+          is_pushed_by_floats != other.is_pushed_by_floats ||
           is_restricted_block_size_table_cell !=
               other.is_restricted_block_size_table_cell ||
           hide_table_cell_if_empty != other.hide_table_cell_if_empty ||
           block_direction_fragmentation_type !=
               other.block_direction_fragmentation_type ||
+          is_block_fragmentation_forced_off !=
+              other.is_block_fragmentation_forced_off ||
           requires_content_before_breaking !=
               other.requires_content_before_breaking ||
           is_inside_balanced_columns != other.is_inside_balanced_columns ||
@@ -1017,9 +1037,11 @@ class CORE_EXPORT NGConstraintSpace final {
     // Must be kept in sync with members checked within |MaySkipLayout|.
     bool IsInitialForMaySkipLayout() const {
       if (page_name || fragmentainer_block_size != kIndefiniteSize ||
-          fragmentainer_offset_at_bfc || is_line_clamp_context ||
-          is_restricted_block_size_table_cell || hide_table_cell_if_empty ||
+          fragmentainer_offset || is_line_clamp_context ||
+          is_pushed_by_floats || is_restricted_block_size_table_cell ||
+          hide_table_cell_if_empty ||
           block_direction_fragmentation_type != kFragmentNone ||
+          is_block_fragmentation_forced_off ||
           requires_content_before_breaking || is_inside_balanced_columns ||
           should_ignore_forced_breaks || is_in_column_bfc ||
           min_break_appeal != kBreakAppealLastResort ||
@@ -1296,16 +1318,18 @@ class CORE_EXPORT NGConstraintSpace final {
 
     AtomicString page_name;
     LayoutUnit fragmentainer_block_size = kIndefiniteSize;
-    LayoutUnit fragmentainer_offset_at_bfc;
+    LayoutUnit fragmentainer_offset;
 
     unsigned data_union_type : 3;
 
     unsigned is_line_clamp_context : 1;
+    unsigned is_pushed_by_floats : 1;
 
     unsigned is_restricted_block_size_table_cell : 1;
     unsigned hide_table_cell_if_empty : 1;
 
     unsigned block_direction_fragmentation_type : 2;
+    unsigned is_block_fragmentation_forced_off : 1;
     unsigned requires_content_before_breaking : 1;
     unsigned is_inside_balanced_columns : 1;
     unsigned should_ignore_forced_breaks : 1;

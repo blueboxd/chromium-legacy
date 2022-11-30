@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 
 namespace blink {
 
-class ExceptionState;
 class MediaSource;
 class MediaSourceHandleImpl;
 class ScriptState;
@@ -27,7 +26,7 @@ class AttachmentCreationPassKeyProvider {
   // create a MediaSourceAttachmentSupplement.
   static PassKey GetPassKey() { return PassKey(); }
   friend String URLMediaSource::createObjectURL(ScriptState*, MediaSource*);
-  friend MediaSourceHandleImpl* MediaSource::handle(ExceptionState&);
+  friend MediaSourceHandleImpl* MediaSource::handle();
 };
 
 }  // namespace blink

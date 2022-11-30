@@ -33,6 +33,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/application_lifetime_desktop.h"
 #include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/navigation_predictor/search_engine_preconnector.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
@@ -306,7 +307,7 @@ void InProcessBrowserTest::Initialize() {
   bundle_swizzler_ = std::make_unique<ScopedBundleSwizzlerMac>();
 #endif
 
-  std::vector<base::Feature> disabled_features;
+  std::vector<base::test::FeatureRef> disabled_features;
 
   // Preconnecting can cause non-deterministic test behavior especially with
   // various test fixtures that mock servers.
@@ -459,10 +460,10 @@ void InProcessBrowserTest::SetUp() {
   // What's New for tests that simulate first run, is unexpected by most tests.
   whats_new::DisableRemoteContentForTests();
 
-  // The Privacy Sandbox service may attempt to show a modal dialog to the
+  // The Privacy Sandbox service may attempt to show a modal prompt to the
   // profile on browser start, which is unexpected by mosts tests. Tests which
-  // expect this can allow the dialog as desired.
-  PrivacySandboxService::SetDialogDisabledForTests(true);
+  // expect this can allow the prompt as desired.
+  PrivacySandboxService::SetPromptDisabledForTests(true);
 
   BrowserTestBase::SetUp();
 }

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/graphics/color_space_gamut.h"
@@ -245,6 +246,15 @@ float MediaValues::CalculateIcSize(LocalFrame* frame) {
   // CSSToLengthConversionData::FontSizes returns pre-zoomed font sizes. Need to
   // scale back to CSS pixels.
   return CSSToLengthConversionData::FontSizes(style, style).Unzoomed().Ic();
+}
+
+float MediaValues::CalculateLineHeight(LocalFrame* frame) {
+  DCHECK(frame);
+  DCHECK(frame->GetDocument());
+  const ComputedStyle* style = frame->GetDocument()->GetComputedStyle();
+  DCHECK(style);
+  return AdjustForAbsoluteZoom::AdjustFloat(style->ComputedLineHeight(),
+                                            *style);
 }
 
 const String MediaValues::CalculateMediaType(LocalFrame* frame) {

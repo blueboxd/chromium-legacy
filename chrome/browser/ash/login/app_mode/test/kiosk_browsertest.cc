@@ -5,7 +5,6 @@
 #include <memory>
 #include <vector>
 
-#include "ash/components/settings/cros_settings_provider.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/accessibility/speech_monitor.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
+#include "chromeos/ash/components/settings/cros_settings_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/test/browser_test.h"
@@ -236,10 +236,10 @@ class KioskAutoLaunchViewsTest : public OobeBaseTest,
   void SetUpLocalState() override {
     // Simulate auto login request from the previous session.
     PrefService* prefs = g_browser_process->local_state();
-    DictionaryPrefUpdate dict_update(prefs,
+    ScopedDictPrefUpdate dict_update(prefs,
                                      KioskAppManager::kKioskDictionaryName);
     // The AutoLoginState is taken from KioskAppManager::AutoLoginState.
-    dict_update->SetIntKey(
+    dict_update->Set(
         KioskAppManager::kKeyAutoLoginState,
         static_cast<int>(KioskAppManager::AutoLoginState::kRequested));
   }

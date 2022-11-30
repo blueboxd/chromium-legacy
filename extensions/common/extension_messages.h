@@ -30,6 +30,7 @@
 #include "extensions/common/draggable_region.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_guid.h"
+#include "extensions/common/extension_param_traits.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/message_bundle.h"
 #include "extensions/common/mojom/css_origin.mojom-shared.h"
@@ -42,7 +43,6 @@
 #include "extensions/common/mojom/run_location.mojom-shared.h"
 #include "extensions/common/permissions/socket_permission_data.h"
 #include "extensions/common/permissions/usb_device_permission_data.h"
-#include "extensions/common/stack_frame.h"
 #include "extensions/common/user_script.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_start.h"
@@ -93,7 +93,7 @@ IPC_STRUCT_BEGIN(ExtensionHostMsg_DOMAction_Params)
   IPC_STRUCT_MEMBER(std::string, api_call)
 
   // List of arguments.
-  IPC_STRUCT_MEMBER(base::ListValue, arguments)
+  IPC_STRUCT_MEMBER(base::Value::List, arguments)
 
   // Type of DOM API call.
   IPC_STRUCT_MEMBER(int, call_type)
@@ -230,13 +230,6 @@ IPC_STRUCT_TRAITS_BEGIN(extensions::SocketPermissionData)
   IPC_STRUCT_TRAITS_MEMBER(entry())
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(extensions::StackFrame)
-  IPC_STRUCT_TRAITS_MEMBER(line_number)
-  IPC_STRUCT_TRAITS_MEMBER(column_number)
-  IPC_STRUCT_TRAITS_MEMBER(source)
-  IPC_STRUCT_TRAITS_MEMBER(function)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(extensions::UsbDevicePermissionData)
   IPC_STRUCT_TRAITS_MEMBER(vendor_id())
   IPC_STRUCT_TRAITS_MEMBER(product_id())
@@ -255,6 +248,15 @@ IPC_STRUCT_TRAITS_BEGIN(extensions::PortId)
   IPC_STRUCT_TRAITS_MEMBER(is_opener)
   IPC_STRUCT_TRAITS_MEMBER(serialization_format)
 IPC_STRUCT_TRAITS_END()
+
+// Struct to work around the maximum number of parameters in the
+// ExtensionMsg_ResponseWorker message.
+IPC_STRUCT_BEGIN(ExtensionMsg_ResponseWorkerData)
+  // Response wrapper, the response data (if any) is the first element in this
+  // list.
+  IPC_STRUCT_MEMBER(base::Value::List, results)
+  IPC_STRUCT_MEMBER(extensions::mojom::ExtraResponseDataPtr, extra_data)
+IPC_STRUCT_END()
 
 // Singly-included section for custom IPC traits.
 #ifndef INTERNAL_EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
@@ -411,14 +413,6 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_WakeEventPage,
                      int /* request_id */,
                      std::string /* extension_id */)
 
-// Tells listeners that a detailed message was reported to the console by
-// WebKit.
-IPC_MESSAGE_ROUTED4(ExtensionHostMsg_DetailedConsoleMessageAdded,
-                    std::u16string /* message */,
-                    std::u16string /* source */,
-                    extensions::StackTrace /* stack trace */,
-                    int32_t /* severity level */)
-
 // Messages related to Extension Service Worker.
 #undef IPC_MESSAGE_START
 #define IPC_MESSAGE_START ExtensionWorkerMsgStart
@@ -429,15 +423,13 @@ IPC_MESSAGE_CONTROL1(ExtensionHostMsg_RequestWorker,
                      extensions::mojom::RequestParams)
 
 // The browser sends this message in response to all service worker extension
-// api calls. The response data (if any) is the first element in the Value::List
-// parameter.
-IPC_MESSAGE_CONTROL5(
-    ExtensionMsg_ResponseWorker,
-    int /* thread_id */,
-    int /* request_id */,
-    bool /* success */,
-    base::Value::List /* response wrapper (see comment above) */,
-    std::string /* error */)
+// api calls.
+IPC_MESSAGE_CONTROL5(ExtensionMsg_ResponseWorker,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     bool /* success */,
+                     ExtensionMsg_ResponseWorkerData /* response */,
+                     std::string /* error */)
 
 // Asks the browser to increment the pending activity count for
 // the worker with version id |service_worker_version_id|.

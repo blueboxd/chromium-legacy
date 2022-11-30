@@ -1,4 +1,4 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,7 +9,7 @@ from blinkpy.common.host_mock import MockHost
 from blinkpy.common.net.git_cl import TryJobStatus
 from blinkpy.common.net.git_cl_mock import MockGitCL
 from blinkpy.common.net.results_fetcher import Build
-from blinkpy.common.net.web_test_results import WebTestResult, WebTestResults
+from blinkpy.common.net.web_test_results import WebTestResults
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.log_testing import LoggingTestCase
 
@@ -20,7 +20,6 @@ from blinkpy.w3c.wpt_manifest import (
 
 from blinkpy.web_tests.builder_list import BuilderList
 from blinkpy.web_tests.models.test_expectations import TestExpectations
-from blinkpy.web_tests.port.android import PRODUCTS_TO_EXPECTATION_FILE_PATHS
 from blinkpy.web_tests.port.factory_mock import MockPortFactory
 from blinkpy.web_tests.port.test import MOCK_WEB_TESTS
 
@@ -104,8 +103,6 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
                 },
             }))
 
-        for path in PRODUCTS_TO_EXPECTATION_FILE_PATHS.values():
-            host.filesystem.write_text_file(path, '')
         return host
 
     def test_run_single_platform_failure(self):
@@ -1320,10 +1317,6 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         fs.write_text_file(fs.join(MOCK_WEB_TESTS, 'new', 'b.html'), '')
         fs.write_text_file(
             fs.join(port.web_tests_dir(), 'some', 'test', 'd.html'), '')
-        # TODO(rmhasan): Remove creation of Android files within
-        # tests.
-        for path in PRODUCTS_TO_EXPECTATION_FILE_PATHS.values():
-            fs.write_text_file(path, '')
 
         updater = WPTExpectationsUpdater(host)
 
@@ -1354,8 +1347,6 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
                             'foo/slow_timeout.html [ Slow ]\n'
                             'bar/slow.html [ Slow ]\n'))
         fs.write_text_file(expectations_path, data)
-        for path in PRODUCTS_TO_EXPECTATION_FILE_PATHS.values():
-            fs.write_text_file(path, '')
 
         newdata = data.replace('foo/slow_timeout.html [ Timeout ]',
                                'foo/slow_timeout.html [ Skip Timeout ]')
@@ -1394,11 +1385,6 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         fs.write_text_file(fs.join(MOCK_WEB_TESTS, 'VirtualTestSuites'), '[]')
         fs.write_text_file(fs.join(MOCK_WEB_TESTS, 'new', 'a.html'), '')
         fs.write_text_file(fs.join(MOCK_WEB_TESTS, 'new', 'b.html'), '')
-
-        # TODO(rmhasan): Remove creation of Android files within
-        # tests.
-        for path in PRODUCTS_TO_EXPECTATION_FILE_PATHS.values():
-            fs.write_text_file(path, '')
 
         updater = WPTExpectationsUpdater(
             host, ['--clean-up-test-expectations-only',

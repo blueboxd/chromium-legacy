@@ -21,7 +21,6 @@
 #include "components/translate/core/browser/mock_translate_driver.h"
 #include "components/translate/core/browser/mock_translate_ranker.h"
 #include "components/translate/core/browser/translate_client.h"
-#include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -198,9 +197,9 @@ TEST_F(TranslateInfoBarDelegateTest, IsTranslatableLanguage) {
       pref_service_.get(), testing::accept_languages_prefs);
   ON_CALL(*(client_.get()), GetAcceptLanguagesService())
       .WillByDefault(Return(&accept_languages));
-  ListPrefUpdate update(pref_service_.get(),
-                        translate::prefs::kBlockedLanguages);
-  base::Value::List& update_list = update->GetList();
+  ScopedListPrefUpdate update(pref_service_.get(),
+                              translate::prefs::kBlockedLanguages);
+  base::Value::List& update_list = update.Get();
   update_list.Append(kSourceLanguage);
   pref_service_->SetString(language::prefs::kAcceptLanguages, kSourceLanguage);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -216,10 +215,10 @@ TEST_F(TranslateInfoBarDelegateTest, IsTranslatableLanguage) {
 }
 
 TEST_F(TranslateInfoBarDelegateTest, ShouldAutoAlwaysTranslate) {
-  DictionaryPrefUpdate update_translate_accepted_count(
+  ScopedDictPrefUpdate update_translate_accepted_count(
       pref_service_.get(), TranslatePrefs::kPrefTranslateAcceptedCount);
   base::Value::Dict& update_translate_accepted_dict =
-      update_translate_accepted_count->GetDict();
+      update_translate_accepted_count.Get();
   update_translate_accepted_dict.Set(kSourceLanguage, kAutoAlwaysThreshold + 1);
 
   const base::Value::Dict* dict =
@@ -247,10 +246,10 @@ TEST_F(TranslateInfoBarDelegateTest, ShouldAutoAlwaysTranslate) {
 }
 
 TEST_F(TranslateInfoBarDelegateTest, ShouldNotAutoAlwaysTranslateUnknown) {
-  DictionaryPrefUpdate update_translate_accepted_count(
+  ScopedDictPrefUpdate update_translate_accepted_count(
       pref_service_.get(), TranslatePrefs::kPrefTranslateAcceptedCount);
   base::Value::Dict& update_translate_accepted_dict =
-      update_translate_accepted_count->GetDict();
+      update_translate_accepted_count.Get();
   // Should not trigger auto always translate for unknown source language.
   update_translate_accepted_dict.Set(kUnknownLanguageCode,
                                      kAutoAlwaysThreshold + 1);
@@ -301,10 +300,10 @@ TEST_F(TranslateInfoBarDelegateTest, ShouldAutoNeverTranslate) {
   ON_CALL(*(client_.get()), GetAcceptLanguagesService())
       .WillByDefault(Return(&accept_languages));
 
-  DictionaryPrefUpdate update_translate_denied_count(
+  ScopedDictPrefUpdate update_translate_denied_count(
       pref_service_.get(), TranslatePrefs::kPrefTranslateDeniedCount);
   base::Value::Dict& update_translate_denied_dict =
-      update_translate_denied_count->GetDict();
+      update_translate_denied_count.Get();
   // 21 = kAutoNeverThreshold + 1
   update_translate_denied_dict.Set(kSourceLanguage, 21);
 

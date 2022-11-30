@@ -7,18 +7,26 @@
 #include <map>
 #include <memory>
 #include <sstream>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/files/file_path.h"
+#include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_future.h"
+#include "base/types/expected.h"
+#include "chrome/browser/web_applications/isolated_web_apps/pending_install_info.h"
+#include "chrome/browser/web_applications/isolation_data.h"
 #include "chrome/browser/web_applications/locks/lock.h"
 #include "chrome/browser/web_applications/test/fake_install_finalizer.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
@@ -36,6 +44,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
 #include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -72,7 +81,14 @@ using ::testing::Pointee;
 using ::testing::Property;
 using ::testing::ResultOf;
 using ::testing::UnorderedElementsAre;
+using ::testing::VariantWith;
 using ::testing::WithArg;
+
+IsolationData CreateDefaultIsolationData(
+    base::StringPiece dev_mode_proxy_url = "http://default-proxy-url.org/") {
+  return IsolationData{IsolationData::DevModeProxy{
+      .proxy_url = std::string(dev_mode_proxy_url)}};
+}
 
 blink::mojom::ManifestPtr CreateDefaultManifest(
     base::StringPiece application_url) {
@@ -137,9 +153,11 @@ class InstallIsolatedAppCommandTest : public ::testing::Test {
     provider->SetDefaultFakeSubsystems();
     provider->SetRunSubsystemStartupTasks(true);
 
-    auto url_loader = std::make_unique<TestWebAppUrlLoader>();
-    url_loader_ = url_loader.get();
-    provider->GetCommandManager().SetUrlLoaderForTesting(std::move(url_loader));
+    auto command_manager_url_loader = std::make_unique<TestWebAppUrlLoader>();
+    command_manager_url_loader->SetPrepareForLoadResultLoaded();
+    provider->GetCommandManager().SetUrlLoaderForTesting(
+        std::move(command_manager_url_loader));
+
     auto install_finalizer = std::make_unique<FakeInstallFinalizer>();
     install_finalizer_ = install_finalizer.get();
     provider->SetInstallFinalizer(std::move(install_finalizer));
@@ -147,72 +165,78 @@ class InstallIsolatedAppCommandTest : public ::testing::Test {
     test::AwaitStartWebAppProviderAndSubsystems(profile());
   }
 
-  void SetPrepareForLoadResultLoaded() {
-    url_loader_->SetPrepareForLoadResultLoaded();
+  WebAppProvider& web_app_provider() {
+    auto* web_app_provider = WebAppProvider::GetForTest(profile());
+    DCHECK(web_app_provider != nullptr);
+    return *web_app_provider;
   }
 
-  std::unique_ptr<InstallIsolatedAppCommand> CreateCommand(
-      base::StringPiece url,
-      base::OnceCallback<void(base::expected<InstallIsolatedAppCommandSuccess,
-                                             InstallIsolatedAppCommandError>)>
-          callback) {
-    return std::make_unique<InstallIsolatedAppCommand>(
-        GURL(url), *url_loader_, *install_finalizer_, std::move(callback));
+  WebAppCommandManager& command_manager() {
+    return web_app_provider().command_manager();
   }
 
   void ScheduleCommand(std::unique_ptr<WebAppCommand> command) {
-    WebAppProvider::GetForTest(profile())->command_manager().ScheduleCommand(
-        std::move(command));
+    command_manager().ScheduleCommand(std::move(command));
   }
 
-  void ExpectLoadedForURL(base::StringPiece url) {
-    DCHECK(GURL{url}.is_valid());
-    url_loader_->SetNextLoadUrlResult(GURL{url},
-                                      WebAppUrlLoader::Result::kUrlLoaded);
-  }
-
-  void ExpectFailureForURL(base::StringPiece url) {
-    DCHECK(GURL{url}.is_valid());
-    url_loader_->SetNextLoadUrlResult(
-        GURL{url}, WebAppUrlLoader::Result::kFailedErrorPageLoaded);
-  }
-
-  void ExpectFailureForURL(base::StringPiece url,
-                           WebAppUrlLoader::Result result) {
-    DCHECK(GURL{url}.is_valid());
-    url_loader_->SetNextLoadUrlResult(GURL{url}, result);
-  }
-
-  WebAppUrlLoader::UrlComparison last_call_url_comparison() const {
-    absl::optional<TestWebAppUrlLoader::LoadUrlCall> last_url_load_call =
-        url_loader_->last_load_url_call();
-    DCHECK(last_url_load_call.has_value());
-    return last_url_load_call->url_comparison;
-  }
+  struct Parameters {
+    std::string url;
+    std::unique_ptr<WebAppUrlLoader> url_loader;
+    std::unique_ptr<content::WebContents> web_contents;
+    absl::optional<IsolationData> isolation_data;
+  };
 
   base::expected<InstallIsolatedAppCommandSuccess,
                  InstallIsolatedAppCommandError>
   ExecuteCommand(
-      base::StringPiece url,
+      Parameters parameters,
       std::unique_ptr<WebAppDataRetriever> data_retriever = nullptr) {
     base::test::TestFuture<base::expected<InstallIsolatedAppCommandSuccess,
                                           InstallIsolatedAppCommandError>>
         test_future;
-    auto command = CreateCommand(url, test_future.GetCallback());
-    command->SetDataRetrieverForTesting(data_retriever != nullptr
-                                            ? std::move(data_retriever)
-                                            : CreateDefaultDataRetriever(url));
+
+    std::unique_ptr<content::WebContents> web_contents =
+        std::move(parameters.web_contents);
+    if (web_contents == nullptr) {
+      web_contents = content::WebContents::Create(
+          content::WebContents::CreateParams(profile()));
+    }
+
+    auto command = CreateCommand(
+        parameters.url, std::move(web_contents),
+        parameters.isolation_data.value_or(
+            CreateDefaultIsolationData(parameters.url)),
+        std::move(parameters.url_loader), test_future.GetCallback());
+    command->SetDataRetrieverForTesting(
+        data_retriever != nullptr ? std::move(data_retriever)
+                                  : CreateDefaultDataRetriever(parameters.url));
     ScheduleCommand(std::move(command));
     return test_future.Get();
+  }
+
+  std::unique_ptr<InstallIsolatedAppCommand> CreateCommand(
+      base::StringPiece url,
+      std::unique_ptr<content::WebContents> web_contents,
+      const IsolationData& isolation_data,
+      std::unique_ptr<WebAppUrlLoader> url_loader,
+      base::OnceCallback<void(base::expected<InstallIsolatedAppCommandSuccess,
+                                             InstallIsolatedAppCommandError>)>
+          callback) {
+    const GURL application_url{url};
+    DCHECK(application_url.is_valid());
+
+    return std::make_unique<InstallIsolatedAppCommand>(
+        application_url, isolation_data, std::move(web_contents),
+        std::move(url_loader), *install_finalizer_, std::move(callback));
   }
 
   base::expected<InstallIsolatedAppCommandSuccess,
                  InstallIsolatedAppCommandError>
   ExecuteCommandWithManifest(base::StringPiece application_url,
                              const blink::mojom::ManifestPtr& manifest) {
-    SetPrepareForLoadResultLoaded();
-
-    ExpectLoadedForURL(application_url);
+    auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+    url_loader->SetNextLoadUrlResult(GURL{application_url},
+                                     WebAppUrlLoader::Result::kUrlLoaded);
 
     std::unique_ptr<MockDataRetriever> fake_data_retriever =
         CreateDefaultDataRetriever(application_url);
@@ -221,7 +245,12 @@ class InstallIsolatedAppCommandTest : public ::testing::Test {
         .WillByDefault(ReturnManifest(
             manifest, CreateDefaultManifestURL(application_url)));
 
-    return ExecuteCommand(application_url, std::move(fake_data_retriever));
+    return ExecuteCommand(
+        {
+            .url = std::string(application_url),
+            .url_loader = std::move(url_loader),
+        },
+        std::move(fake_data_retriever));
   }
 
   TestingProfile* profile() const { return profile_.get(); }
@@ -237,7 +266,6 @@ class InstallIsolatedAppCommandTest : public ::testing::Test {
   // See details in //docs/threading_and_tasks_testing.md.
   content::BrowserTaskEnvironment browser_task_environment_;
 
-  raw_ptr<TestWebAppUrlLoader> url_loader_ = nullptr;
   raw_ptr<FakeInstallFinalizer> install_finalizer_ = nullptr;
 
   std::unique_ptr<TestingProfile> profile_ = []() {
@@ -296,9 +324,9 @@ MATCHER(IsInstallationError, "") {
 
 TEST_F(InstallIsolatedAppCommandTest,
        ServiceWorkerIsNotRequiredForInstallation) {
-  SetPrepareForLoadResultLoaded();
-
-  ExpectLoadedForURL("http://test-url-example.com");
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(GURL{"http://test-url-example.com"},
+                                   WebAppUrlLoader::Result::kUrlLoaded);
 
   std::unique_ptr<MockDataRetriever> fake_data_retriever =
       CreateDefaultDataRetriever("http://test-url-example.com");
@@ -310,128 +338,160 @@ TEST_F(InstallIsolatedAppCommandTest,
           CreateDefaultManifest("http://test-url-example.com"),
           CreateDefaultManifestURL("http://test-url-example.com")));
 
-  EXPECT_THAT(ExecuteCommand("http://test-url-example.com",
-                             std::move(fake_data_retriever)),
+  EXPECT_THAT(ExecuteCommand(
+                  Parameters{
+                      .url = "http://test-url-example.com",
+                      .url_loader = std::move(url_loader),
+                  },
+                  std::move(fake_data_retriever)),
               IsInstallationOk());
 }
 
 TEST_F(InstallIsolatedAppCommandTest, CommandCanBeExecutedSuccesfully) {
-  SetPrepareForLoadResultLoaded();
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(GURL{"http://test-url-example.com"},
+                                   WebAppUrlLoader::Result::kUrlLoaded);
 
-  ExpectLoadedForURL("http://test-url-example.com");
-
-  EXPECT_THAT(ExecuteCommand("http://test-url-example.com"),
+  EXPECT_THAT(ExecuteCommand(Parameters{
+                  .url = "http://test-url-example.com",
+                  .url_loader = std::move(url_loader),
+              }),
               IsInstallationOk());
 }
 
 TEST_F(InstallIsolatedAppCommandTest, PropagateErrorWhenURLLoaderFails) {
-  SetPrepareForLoadResultLoaded();
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(
+      GURL{"http://test-url-example.com"},
+      WebAppUrlLoader::Result::kFailedErrorPageLoaded);
 
-  ExpectFailureForURL("http://test-url-example.com");
-
-  EXPECT_THAT(ExecuteCommand("http://test-url-example.com"),
+  EXPECT_THAT(ExecuteCommand(Parameters{
+                  .url = "http://test-url-example.com",
+                  .url_loader = std::move(url_loader),
+              }),
               IsInstallationError(HasSubstr("Error during URL loading: ")));
 }
 
 TEST_F(InstallIsolatedAppCommandTest,
        PropagateErrorWhenURLLoaderFailsWithDestroyedWebContentsError) {
-  SetPrepareForLoadResultLoaded();
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(
+      GURL{"http://test-url-example.com"},
+      WebAppUrlLoaderResult::kFailedWebContentsDestroyed);
 
-  ExpectFailureForURL("http://test-url-example.com",
-                      WebAppUrlLoaderResult::kFailedWebContentsDestroyed);
-
-  EXPECT_THAT(ExecuteCommand("http://test-url-example.com"),
+  EXPECT_THAT(ExecuteCommand(Parameters{
+                  .url = "http://test-url-example.com",
+                  .url_loader = std::move(url_loader),
+              }),
               IsInstallationError(HasSubstr(
                   "Error during URL loading: FailedWebContentsDestroyed")));
 }
 
 TEST_F(InstallIsolatedAppCommandTest,
        URLLoaderIsCalledWithURLgivenToTheInstallCommand) {
-  SetPrepareForLoadResultLoaded();
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(GURL{"http://another-test-url-example.com"},
+                                   WebAppUrlLoader::Result::kUrlLoaded);
 
-  ExpectLoadedForURL("http://another-test-url-example.com");
-
-  EXPECT_THAT(ExecuteCommand("http://another-test-url-example.com"),
+  EXPECT_THAT(ExecuteCommand(Parameters{
+                  .url = "http://another-test-url-example.com",
+                  .url_loader = std::move(url_loader),
+              }),
               IsInstallationOk());
-}
-
-// It is impossible to pass invalid url to |GenerateAppId| since it DCHECKs.
-// TODO(kuragin): Replace constructor with factory function to make the
-// validation testable.
-TEST_F(InstallIsolatedAppCommandTest, DISABLED_ReportsErrorWhenURLIsInvalid) {
-  SetPrepareForLoadResultLoaded();
-
-  EXPECT_THAT(ExecuteCommand("some definetely invalid url"),
-              IsInstallationError(HasSubstr("Invalid application URL")));
 }
 
 TEST_F(InstallIsolatedAppCommandTest, URLLoaderIgnoresQueryParameters) {
-  SetPrepareForLoadResultLoaded();
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(GURL{"http://test-url-example.com"},
+                                   WebAppUrlLoader::Result::kUrlLoaded);
 
-  ExpectLoadedForURL("http://test-url-example.com");
+  absl::optional<WebAppUrlLoader::UrlComparison> last_url_comparison =
+      absl::nullopt;
+  url_loader->TrackLoadUrlCalls(base::BindLambdaForTesting(
+      [&](const GURL& unused_url, content::WebContents* unused_web_contents,
+          WebAppUrlLoader::UrlComparison url_comparison) {
+        last_url_comparison = url_comparison;
+      }));
 
-  EXPECT_THAT(ExecuteCommand("http://test-url-example.com"),
+  EXPECT_THAT(ExecuteCommand(Parameters{
+                  .url = "http://test-url-example.com",
+                  .url_loader = std::move(url_loader),
+              }),
               IsInstallationOk());
 
-  EXPECT_THAT(last_call_url_comparison(),
-              Eq(WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef));
+  EXPECT_THAT(
+      last_url_comparison,
+      Optional(Eq(WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef)));
 }
 
 TEST_F(InstallIsolatedAppCommandTest,
        InstallationFailsWhenFinalizerReturnNotInstallableError) {
-  SetPrepareForLoadResultLoaded();
-
-  ExpectLoadedForURL("http://test-url-example.com");
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(GURL{"http://test-url-example.com"},
+                                   WebAppUrlLoader::Result::kUrlLoaded);
 
   install_finalizer().SetNextFinalizeInstallResult(
       GenerateAppIdFromUnhashed("http://testing-unused-app-id.com/"),
       webapps::InstallResultCode::kNotInstallable);
 
-  EXPECT_THAT(ExecuteCommand("http://test-url-example.com"),
+  EXPECT_THAT(ExecuteCommand(Parameters{
+                  .url = "http://test-url-example.com",
+                  .url_loader = std::move(url_loader),
+              }),
               IsInstallationError(
                   HasSubstr("Error during finalization: kNotInstallable")));
 }
 
 TEST_F(InstallIsolatedAppCommandTest,
        InstallationFailsWhenFinalizerReturnInstallURLLoadTimeOut) {
-  SetPrepareForLoadResultLoaded();
-
-  ExpectLoadedForURL("http://test-url-example.com");
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(GURL{"http://test-url-example.com"},
+                                   WebAppUrlLoader::Result::kUrlLoaded);
 
   install_finalizer().SetNextFinalizeInstallResult(
       GenerateAppIdFromUnhashed("http://testing-unused-app-id.com/"),
       webapps::InstallResultCode::kInstallURLLoadTimeOut);
 
-  EXPECT_THAT(ExecuteCommand("http://test-url-example.com"),
+  EXPECT_THAT(ExecuteCommand(Parameters{
+                  .url = "http://test-url-example.com",
+                  .url_loader = std::move(url_loader),
+              }),
               IsInstallationError(HasSubstr(
                   "Error during finalization: kInstallURLLoadTimeOut")));
 }
 
 TEST_F(InstallIsolatedAppCommandTest,
        InstallationSucceedesWhenFinalizerReturnSuccessNewInstall) {
-  SetPrepareForLoadResultLoaded();
-
-  ExpectLoadedForURL("http://test-url-example.com");
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(GURL{"http://test-url-example.com"},
+                                   WebAppUrlLoader::Result::kUrlLoaded);
 
   install_finalizer().SetNextFinalizeInstallResult(
       GenerateAppIdFromUnhashed("http://testing-unused-app-id.com/"),
       webapps::InstallResultCode::kSuccessNewInstall);
 
-  EXPECT_THAT(ExecuteCommand("http://test-url-example.com"),
+  EXPECT_THAT(ExecuteCommand(Parameters{
+                  .url = "http://test-url-example.com",
+                  .url_loader = std::move(url_loader),
+              }),
               IsInstallationOk());
 }
 
 TEST_F(InstallIsolatedAppCommandTest,
        InstallationFinalizedWithIsolatedAppDevInstallInstallSource) {
-  SetPrepareForLoadResultLoaded();
-
-  ExpectLoadedForURL("http://test-url-example.com");
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(GURL{"http://test-url-example.com"},
+                                   WebAppUrlLoader::Result::kUrlLoaded);
 
   std::unique_ptr<MockDataRetriever> fake_data_retriever =
       CreateDefaultDataRetriever("http://test-url-example.com");
 
-  EXPECT_THAT(ExecuteCommand("http://test-url-example.com",
-                             std::move(fake_data_retriever)),
+  EXPECT_THAT(ExecuteCommand(
+                  Parameters{
+                      .url = "http://test-url-example.com",
+                      .url_loader = std::move(url_loader),
+                  },
+                  std::move(fake_data_retriever)),
               IsInstallationOk());
 
   using FinalizeOptions = WebAppInstallFinalizer::FinalizeOptions;
@@ -447,9 +507,9 @@ TEST_F(InstallIsolatedAppCommandTest,
 
 TEST_F(InstallIsolatedAppCommandTest,
        InstallationFailsWhenAppIsNotInstallable) {
-  SetPrepareForLoadResultLoaded();
-
-  ExpectLoadedForURL("http://test-url-example.com");
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(GURL{"http://test-url-example.com"},
+                                   WebAppUrlLoader::Result::kUrlLoaded);
 
   std::unique_ptr<MockDataRetriever> fake_data_retriever =
       CreateDefaultDataRetriever("http://test-url-example.com");
@@ -460,8 +520,12 @@ TEST_F(InstallIsolatedAppCommandTest,
                          GURL{"http://test-url-example.com/manifest.json"},
                          /*is_installable=*/false));
 
-  EXPECT_THAT(ExecuteCommand("http://test-url-example.com",
-                             std::move(fake_data_retriever)),
+  EXPECT_THAT(ExecuteCommand(
+                  {
+                      .url = "http://test-url-example.com",
+                      .url_loader = std::move(url_loader),
+                  },
+                  std::move(fake_data_retriever)),
               IsInstallationError(HasSubstr("App is not installable")));
 }
 
@@ -469,10 +533,15 @@ TEST_F(InstallIsolatedAppCommandTest, CommandLocksOnAppIdAndWebContents) {
   base::test::TestFuture<base::expected<InstallIsolatedAppCommandSuccess,
                                         InstallIsolatedAppCommandError>>
       test_future;
-  auto command =
-      CreateCommand("http://test-app-id.com/", test_future.GetCallback());
+
+  auto command = CreateCommand(
+      "http://test-app-id.com/",
+      content::WebContents::Create(
+          content::WebContents::CreateParams(profile())),
+      CreateDefaultIsolationData(), std::make_unique<TestWebAppUrlLoader>(),
+      test_future.GetCallback());
   EXPECT_THAT(command->lock(),
-              AllOf(Property(&Lock::type, Eq(Lock::Type::kAppAndWebContents)),
+              AllOf(Property(&Lock::type, Eq(Lock::Type::kApp)),
                     Property(&Lock::app_ids,
                              UnorderedElementsAre(GenerateAppIdFromUnhashed(
                                  "http://test-app-id.com/")))));
@@ -480,9 +549,9 @@ TEST_F(InstallIsolatedAppCommandTest, CommandLocksOnAppIdAndWebContents) {
 
 TEST_F(InstallIsolatedAppCommandTest,
        InstallationFailsWhenAppIsInstallableButManifestIsNull) {
-  SetPrepareForLoadResultLoaded();
-
-  ExpectLoadedForURL("http://test-url-example.com");
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(GURL{"http://test-url-example.com"},
+                                   WebAppUrlLoader::Result::kUrlLoaded);
 
   std::unique_ptr<MockDataRetriever> fake_data_retriever =
       CreateDefaultDataRetriever("http://test-url-example.com");
@@ -492,24 +561,38 @@ TEST_F(InstallIsolatedAppCommandTest,
           /*manifest=*/nullptr,
           CreateDefaultManifestURL("http://test-url-example.com")));
 
-  EXPECT_THAT(ExecuteCommand("http://test-url-example.com",
-                             std::move(fake_data_retriever)),
+  EXPECT_THAT(ExecuteCommand(
+                  Parameters{
+                      .url = "http://test-url-example.com",
+                      .url_loader = std::move(url_loader),
+                  },
+                  std::move(fake_data_retriever)),
               IsInstallationError(HasSubstr("Manifest is null")));
 }
 
 TEST_F(InstallIsolatedAppCommandTest, IsolationDataSentToFinalizer) {
-  SetPrepareForLoadResultLoaded();
-
   std::string url("http://test-url-example.com/");
-  ExpectLoadedForURL(url);
 
-  EXPECT_THAT(ExecuteCommand(url), IsInstallationOk());
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(GURL{url},
+                                   WebAppUrlLoader::Result::kUrlLoaded);
 
-  EXPECT_THAT(
-      install_finalizer().finalize_options_list(),
-      ElementsAre(Field(
-          &WebAppInstallFinalizer::FinalizeOptions::isolation_data,
-          Eq(IsolationData(IsolationData::DevModeProxy{.proxy_url = url})))));
+  EXPECT_THAT(ExecuteCommand(Parameters{
+                  .url = url,
+                  .url_loader = std::move(url_loader),
+                  .isolation_data = IsolationData{IsolationData::DevModeProxy{
+                      .proxy_url = "http://some-testing-proxy-url.com/"}},
+              }),
+              IsInstallationOk());
+
+  EXPECT_THAT(install_finalizer().finalize_options_list(),
+              ElementsAre(Field(
+                  &WebAppInstallFinalizer::FinalizeOptions::isolation_data,
+                  Optional(Field(
+                      "content", &IsolationData::content,
+                      VariantWith<IsolationData::DevModeProxy>(Field(
+                          "proxy_url", &IsolationData::DevModeProxy::proxy_url,
+                          Eq("http://some-testing-proxy-url.com/"))))))));
 }
 
 using InstallIsolatedAppCommandManifestTest = InstallIsolatedAppCommandTest;
@@ -664,12 +747,7 @@ class InstallIsolatedAppCommandManifestIconsTest
  protected:
   static constexpr base::StringPiece kSomeTestApplicationUrl =
       "http://manifest-test-url.com";
-  void SetUp() override {
-    InstallIsolatedAppCommandManifestTest::SetUp();
-
-    SetPrepareForLoadResultLoaded();
-    ExpectLoadedForURL(kSomeTestApplicationUrl);
-  }
+  void SetUp() override { InstallIsolatedAppCommandManifestTest::SetUp(); }
 
   blink::mojom::ManifestPtr CreateManifest() const {
     return CreateDefaultManifest(kSomeTestApplicationUrl);
@@ -711,6 +789,10 @@ blink::Manifest::ImageResource CreateImageResource(GURL image_src) {
 }
 
 TEST_F(InstallIsolatedAppCommandManifestIconsTest, ManifestIconIsDownloaded) {
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(GURL{kSomeTestApplicationUrl},
+                                   WebAppUrlLoader::Result::kUrlLoaded);
+
   blink::mojom::ManifestPtr manifest = CreateManifest();
 
   manifest->icons = {
@@ -741,9 +823,13 @@ TEST_F(InstallIsolatedAppCommandManifestIconsTest, ManifestIconIsDownloaded) {
       .WillOnce(RunOnceCallback<3>(IconsDownloadedResult::kCompleted,
                                    std::move(icons), http_result));
 
-  EXPECT_THAT(
-      ExecuteCommand(kSomeTestApplicationUrl, std::move(fake_data_retriever)),
-      IsInstallationOk());
+  EXPECT_THAT(ExecuteCommand(
+                  {
+                      .url = std::string(kSomeTestApplicationUrl),
+                      .url_loader = std::move(url_loader),
+                  },
+                  std::move(fake_data_retriever)),
+              IsInstallationOk());
 
   EXPECT_THAT(
       install_finalizer().web_app_info(),
@@ -758,6 +844,10 @@ TEST_F(InstallIsolatedAppCommandManifestIconsTest, ManifestIconIsDownloaded) {
 
 TEST_F(InstallIsolatedAppCommandManifestIconsTest,
        InstallationFailsWhenIconDownloadingFails) {
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(GURL{kSomeTestApplicationUrl},
+                                   WebAppUrlLoader::Result::kUrlLoaded);
+
   blink::mojom::ManifestPtr manifest = CreateManifest();
 
   manifest->icons = {
@@ -779,23 +869,94 @@ TEST_F(InstallIsolatedAppCommandManifestIconsTest,
       .WillOnce(RunOnceCallback<3>(IconsDownloadedResult::kAbortedDueToFailure,
                                    std::move(icons), http_result));
 
+  EXPECT_THAT(ExecuteCommand(
+                  {
+                      .url = std::string(kSomeTestApplicationUrl),
+                      .url_loader = std::move(url_loader),
+                  },
+                  std::move(fake_data_retriever)),
+              IsInstallationError(HasSubstr(
+                  "Error during icon downloading: AbortedDueToFailure")));
+}
+
+TEST_F(InstallIsolatedAppCommandTest, SetDevModeIsolationDataBeforeUrlLoading) {
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(GURL{"http://test-url-example.com"},
+                                   WebAppUrlLoader::Result::kUrlLoaded);
+
+  absl::optional<IsolationData> isolation_data = absl::nullopt;
+  url_loader->TrackLoadUrlCalls(base::BindLambdaForTesting(
+      [&](const GURL& unused_url, content::WebContents* web_contents,
+          WebAppUrlLoader::UrlComparison unused_url_comparison) {
+        isolation_data =
+            IsolatedWebAppPendingInstallInfo::FromWebContents(*web_contents)
+                .isolation_data();
+      }));
+
+  EXPECT_THAT(ExecuteCommand({
+                  .url = "http://test-url-example.com",
+                  .url_loader = std::move(url_loader),
+                  .isolation_data = IsolationData{IsolationData::DevModeProxy{
+                      .proxy_url = "http://some-testing-proxy-url.com/"}},
+              }),
+              IsInstallationOk());
+
   EXPECT_THAT(
-      ExecuteCommand(kSomeTestApplicationUrl, std::move(fake_data_retriever)),
-      IsInstallationError(
-          HasSubstr("Error during icon downloading: AbortedDueToFailure")));
+      isolation_data,
+      Optional(Field("content", &IsolationData::content,
+                     VariantWith<IsolationData::DevModeProxy>(Field(
+                         "proxy_url", &IsolationData::DevModeProxy::proxy_url,
+                         Eq("http://some-testing-proxy-url.com/"))))));
+}
+
+TEST_F(InstallIsolatedAppCommandTest,
+       SetInstalledBundleIsolationDataBeforeUrlLoading) {
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(GURL{"http://test-url-example.com"},
+                                   WebAppUrlLoader::Result::kUrlLoaded);
+
+  absl::optional<IsolationData> isolation_data = absl::nullopt;
+  url_loader->TrackLoadUrlCalls(base::BindLambdaForTesting(
+      [&](const GURL& unused_url, content::WebContents* web_contents,
+          WebAppUrlLoader::UrlComparison unused_url_comparison) {
+        isolation_data =
+            IsolatedWebAppPendingInstallInfo::FromWebContents(*web_contents)
+                .isolation_data();
+      }));
+
+  EXPECT_THAT(
+      ExecuteCommand({
+          .url = "http://test-url-example.com",
+          .url_loader = std::move(url_loader),
+          .isolation_data = IsolationData{IsolationData::InstalledBundle{
+              .path = base::FilePath{FILE_PATH_LITERAL(
+                  "/testing/path/to/a/bundle")}}},
+      }),
+      IsInstallationOk());
+
+  EXPECT_THAT(
+      isolation_data,
+      Optional(Field("content", &IsolationData::content,
+                     VariantWith<IsolationData::InstalledBundle>(Field(
+                         "proxy_url", &IsolationData::InstalledBundle::path,
+                         Eq(base::FilePath{FILE_PATH_LITERAL(
+                             "/testing/path/to/a/bundle")}))))));
 }
 
 using InstallIsolatedAppCommandMetricsTest = InstallIsolatedAppCommandTest;
 
 TEST_F(InstallIsolatedAppCommandMetricsTest,
        ReportSuccessWhenFinishedSuccessfully) {
-  SetPrepareForLoadResultLoaded();
-
-  ExpectLoadedForURL("http://test-url-example.com");
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(GURL{"http://test-url-example.com"},
+                                   WebAppUrlLoader::Result::kUrlLoaded);
 
   base::HistogramTester histogram_tester;
 
-  EXPECT_THAT(ExecuteCommand("http://test-url-example.com"),
+  EXPECT_THAT(ExecuteCommand(Parameters{
+                  .url = "http://test-url-example.com",
+                  .url_loader = std::move(url_loader),
+              }),
               IsInstallationOk());
 
   EXPECT_THAT(histogram_tester.GetAllSamples("WebApp.Install.Result"),
@@ -803,13 +964,17 @@ TEST_F(InstallIsolatedAppCommandMetricsTest,
 }
 
 TEST_F(InstallIsolatedAppCommandMetricsTest, ReportErrorWhenUrlLoaderFails) {
-  SetPrepareForLoadResultLoaded();
-
-  ExpectFailureForURL("http://test-url-example.com");
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(
+      GURL{"http://test-url-example.com"},
+      WebAppUrlLoader::Result::kFailedErrorPageLoaded);
 
   base::HistogramTester histogram_tester;
 
-  EXPECT_THAT(ExecuteCommand("http://test-url-example.com"),
+  EXPECT_THAT(ExecuteCommand(Parameters{
+                  .url = "http://test-url-example.com",
+                  .url_loader = std::move(url_loader),
+              }),
               IsInstallationError());
 
   EXPECT_THAT(histogram_tester.GetAllSamples("WebApp.Install.Result"),
@@ -818,9 +983,9 @@ TEST_F(InstallIsolatedAppCommandMetricsTest, ReportErrorWhenUrlLoaderFails) {
 
 TEST_F(InstallIsolatedAppCommandMetricsTest,
        ReportFailureWhenAppIsNotInstallable) {
-  SetPrepareForLoadResultLoaded();
-
-  ExpectLoadedForURL("http://test-url-example.com");
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(GURL{"http://test-url-example.com"},
+                                   WebAppUrlLoader::Result::kUrlLoaded);
 
   std::unique_ptr<MockDataRetriever> fake_data_retriever =
       CreateDefaultDataRetriever("http://test-url-example.com");
@@ -833,8 +998,12 @@ TEST_F(InstallIsolatedAppCommandMetricsTest,
 
   base::HistogramTester histogram_tester;
 
-  EXPECT_THAT(ExecuteCommand("http://test-url-example.com",
-                             std::move(fake_data_retriever)),
+  EXPECT_THAT(ExecuteCommand(
+                  {
+                      .url = "http://test-url-example.com",
+                      .url_loader = std::move(url_loader),
+                  },
+                  std::move(fake_data_retriever)),
               IsInstallationError());
 
   EXPECT_THAT(histogram_tester.GetAllSamples("WebApp.Install.Result"),
@@ -842,9 +1011,9 @@ TEST_F(InstallIsolatedAppCommandMetricsTest,
 }
 
 TEST_F(InstallIsolatedAppCommandMetricsTest, ReportFailureWhenManifestIsNull) {
-  SetPrepareForLoadResultLoaded();
-
-  ExpectLoadedForURL("http://test-url-example.com");
+  auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+  url_loader->SetNextLoadUrlResult(GURL{"http://test-url-example.com"},
+                                   WebAppUrlLoader::Result::kUrlLoaded);
 
   std::unique_ptr<MockDataRetriever> fake_data_retriever =
       CreateDefaultDataRetriever("http://test-url-example.com");
@@ -857,8 +1026,12 @@ TEST_F(InstallIsolatedAppCommandMetricsTest, ReportFailureWhenManifestIsNull) {
 
   base::HistogramTester histogram_tester;
 
-  EXPECT_THAT(ExecuteCommand("http://test-url-example.com",
-                             std::move(fake_data_retriever)),
+  EXPECT_THAT(ExecuteCommand(
+                  {
+                      .url = "http://test-url-example.com",
+                      .url_loader = std::move(url_loader),
+                  },
+                  std::move(fake_data_retriever)),
               IsInstallationError());
 
   EXPECT_THAT(histogram_tester.GetAllSamples("WebApp.Install.Result"),

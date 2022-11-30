@@ -16,31 +16,12 @@ import {MacroName} from '../macros/macro_names.js';
 import * as RepeatableKeyPressMacro from '../macros/repeatable_key_press_macro.js';
 
 import {ParseStrategy} from './parse_strategy.js';
-// PumpkinAvailability is based on the gn argument enable_pumpkin_for_dictation,
-// and pumpkin_availability.js is copied from either include_pumpkin.js
-// or exclude_pumpkin.js in the BUILD rule.
-import {PumpkinAvailability} from './pumpkin/pumpkin_availability.js';
+
+const PumpkinData = chrome.accessibilityPrivate.PumpkinData;
 
 /** A parsing strategy that utilizes the Pumpkin semantic parser. */
 export class PumpkinParseStrategy extends ParseStrategy {
-  /**
-   * @param {!InputController} inputController
-   * @return {!Promise<!PumpkinParseStrategy>}
-   */
-  static async create(inputController) {
-    const locale = LocaleInfo.locale;
-    const instance = new PumpkinParseStrategy(inputController);
-    if (PumpkinAvailability.usePumpkin(locale)) {
-      await instance.initPumpkin_(PumpkinAvailability.LOCALES[locale]);
-    }
-
-    return instance;
-  }
-
-  /**
-   * @param {!InputController} inputController
-   * @private
-   */
+  /** @param {!InputController} inputController */
   constructor(inputController) {
     super(inputController);
 
@@ -49,6 +30,52 @@ export class PumpkinParseStrategy extends ParseStrategy {
 
     /** @private {?Promise} */
     this.pumpkinLoadingPromise_ = null;
+
+    /**
+     * Whether or not the feature flag gating this object's logic is enabled.
+     * @private {boolean}
+     */
+    this.featureEnabled_ = false;
+
+    this.init_();
+  }
+
+  /** @private */
+  init_() {
+    const pumpkinFeature = chrome.accessibilityPrivate.AccessibilityFeature
+                               .DICTATION_PUMPKIN_PARSING;
+    chrome.accessibilityPrivate.isFeatureEnabled(pumpkinFeature, enabled => {
+      this.featureEnabled_ = enabled;
+      if (!enabled) {
+        return;
+      }
+
+      chrome.accessibilityPrivate.installPumpkinForDictation(data => {
+        this.onPumpkinInstalled_(data);
+      });
+    });
+  }
+
+  /**
+   * @param {PumpkinData} data
+   * @private
+   */
+  onPumpkinInstalled_(data) {
+    if (!this.featureEnabled_ || !data) {
+      console.warn(
+          'Pumpkin installed, but either data is empty or feature ' +
+          'flag is not enabled');
+      return;
+    }
+
+    for (const [key, value] of Object.entries(data)) {
+      if (value.byteLength === 0) {
+        console.warn(`Pumpkin data incomplete, missing data for ${key}`);
+        return;
+      }
+    }
+
+    // TODO(akihiroota): Instantiate a sandboxed iframe for Pumpkin.
   }
 
   /**

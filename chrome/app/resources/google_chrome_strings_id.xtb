@@ -58,7 +58,6 @@
 <translation id="2094648590148273905">Persyaratan ChromeOS Flex</translation>
 <translation id="2094919256425865063">Tetap tutup Chrome?</translation>
 <translation id="2106831557840787829">ChromeOS Flex terwujud karena adanya <ph name="BEGIN_LINK_CROS_OSS" />software open source<ph name="END_LINK_CROS_OSS" /> tambahan, seperti <ph name="BEGIN_LINK_LINUX_OSS" />lingkungan pengembangan Linux<ph name="END_LINK_LINUX_OSS" />.</translation>
-<translation id="2112742052114331084">Jika diaktifkan, Chrome menggunakan kembali memori dari tab yang tidak digunakan secara aktif. Tindakan ini akan membebaskan resource komputer Anda untuk melakukan tugas-tugas lain dan menjaga Chrome tetap cepat. Tab yang tidak aktif tampak kosong dan otomatis dimuat ulang saat Anda mengkliknya. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /> atau <ph name="BEGIN_LINK_2" />kirim masukan<ph name="END_LINK_2" /></translation>
 <translation id="2120620239521071941">Tindakan ini akan menghapus <ph name="ITEMS_COUNT" /> item dari perangkat ini. Untuk mengambil data nanti, login ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="2121284319307530122">Luncurkan kembali untuk Mengupdate &amp;Chrome</translation>
 <translation id="2123055963409958220">Bantu Chrome jadi lebih baik dengan melaporkan <ph name="BEGIN_LINK" />setelan saat ini<ph name="END_LINK" /></translation>
@@ -130,6 +129,7 @@
 <translation id="3360895254066713204">Pembantu Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome akan diluncurkan ulang sekarang}=1{Chrome akan diluncurkan ulang dalam 1 detik}other{Chrome akan diluncurkan ulang dalam # detik}}</translation>
 <translation id="3396977131400919238">Terjadi error pada sistem operasi saat penginstalan berlangsung. Download kembali Google Chrome.</translation>
+<translation id="3426646014273736870">Penghemat Memori Membuat Chrome Lebih Cepat</translation>
 <translation id="3428747202529429621">Memastikan Anda tetap aman di Chrome dan dapat digunakan untuk menyempurnakan keamanan Anda di aplikasi Google lainnya saat login</translation>
 <translation id="3434246496373299699">Chrome dapat memeriksa sandi saat Anda login dengan Akun Google</translation>
 <translation id="3451115285585441894">Menambahkan ke Chrome...</translation>
@@ -227,6 +227,7 @@
 <translation id="5412485296464121825">Situs dapat menyimpan informasi tentang minat Anda ke Chrome. Misalnya, jika Anda mengunjungi suatu situs untuk membeli sepatu maraton, situs tersebut dapat menetapkan minat Anda sebagai lari maraton. Kemudian, jika Anda mengunjungi situs lain untuk mendaftar lomba lari, situs tersebut dapat menampilkan iklan sepatu lari berdasarkan minat Anda.</translation>
 <translation id="5430073640787465221">File preferensi Anda rusak atau tidak valid. Google Chrome tidak dapat memulihkan setelan Anda.</translation>
 <translation id="5524761631371622910">Jika uji coba diaktifkan dan Chrome secara acak menempatkan Anda dalam uji coba aktif, histori penjelajahan Anda akan memengaruhi iklan yang Anda lihat dan minat seperti yang diperkirakan di bawah. Untuk melindungi privasi Anda, Chrome menghapus minat Anda secara berkala setiap bulan.</translation>
+<translation id="5530733413481476019">Buat Chrome Lebih Cepat</translation>
 <translation id="556024056938947818">Google Chrome mencoba menampilkan sandi.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> mungkin berbahaya, sehingga Chrome memblokirnya.</translation>
@@ -253,6 +254,7 @@
 <translation id="608006075545470555">Tambahkan Profil Kerja ke browser ini</translation>
 <translation id="6113794647360055231">Chrome menjadi lebih baik</translation>
 <translation id="6145313976051292476">Buka PDF di Chrome</translation>
+<translation id="6155960517327665396">Penghemat Memori membuat Chrome lebih cepat</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome Beta</translation>
 <translation id="6235018212288296708">Inbound rule untuk Google Chrome guna mengizinkan lalu lintas mDNS.</translation>
@@ -260,6 +262,7 @@
 <translation id="6273793429163604305">Bersiap-siap...</translation>
 <translation id="6291089322031436445">Aplikasi Chrome Dev</translation>
 <translation id="6291549208091401781">Google Chrome sudah terpasang untuk semua pengguna di komputer Anda.</translation>
+<translation id="6326175484149238433">Hapus dari Chrome</translation>
 <translation id="6327105987658262776">Tidak ada update yang tersedia.</translation>
 <translation id="6412673304250309937">Memeriksa kesesuaian URL dengan daftar situs tidak aman yang disimpan di Chrome. Jika situs berusaha mencuri sandi Anda, atau jika Anda mendownload file berbahaya, Chrome mungkin juga mengirim URL, termasuk bit konten halaman, ke Safe Browsing.</translation>
 <translation id="6418662306461808273">Beralih ke profil Chrome yang sudah ada?</translation>
@@ -270,10 +273,10 @@
 <translation id="6676384891291319759">Akses Internet</translation>
 <translation id="6679975945624592337">Jalankan Google Chrome di Background</translation>
 <translation id="6696915334902295848">Chrome memerlukan izin mikrofon untuk situs ini</translation>
+<translation id="6718739135284199302">Buat Chrome lebih cepat</translation>
 <translation id="6735387454586646204">Sistem ChromeOS Flex</translation>
 <translation id="6739177684496155661">Lanjutkan di profil Chrome baru?</translation>
 <translation id="6750954913813541382">Untuk memperbaiki kesalahan ejaan, Chrome mengirim teks yang Anda ketikkan di browser ke Google</translation>
-<translation id="6756581345161130259">Sesuai kebutuhan, Chrome menggunakan kembali memori dari tab yang tidak digunakan secara aktif. Anda dapat mengubahnya kapan saja di setelan.</translation>
 <translation id="677276454032249905">Tetap tutup Chrome?</translation>
 <translation id="6785872064505734160">Asisten Google di Chrome dapat menyelesaikan tindakan di seluruh situs untuk Anda</translation>
 <translation id="683440813066116847">Inbound rule untuk Google Chrome Canary guna mengizinkan lalu lintas mDNS.</translation>
@@ -352,6 +355,7 @@ Izin yang telah Anda berikan ke situs dan aplikasi dapat berlaku untuk akun ini.
 <translation id="8286862437124483331">Google Chrome mencoba menampilkan sandi. Ketik sandi Windows Anda untuk mengizinkannya.</translation>
 <translation id="828798499196665338">Orang tuamu telah menonaktifkan "Izin untuk situs, aplikasi, dan ekstensi" untuk Chrome. Tindakan mengaktifkan <ph name="EXTENSION_TYPE_PARAMETER" /> ini tidak diizinkan.</translation>
 <translation id="8290100596633877290">Aduh! Google Chrome ngadat. Luncurkan ulang sekarang?</translation>
+<translation id="8341646175450781745">Jika diaktifkan, Chrome akan membebaskan memori dari tab yang tidak aktif. Tindakan ini akan memberikan lebih banyak resource komputer untuk tab aktif dan aplikasi lainnya, serta menjaga Chrome tetap cepat. Tab yang tidak aktif akan otomatis menjadi aktif lagi saat Anda kembali ke tab tersebut. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /> atau <ph name="BEGIN_LINK_2" />kirim masukan<ph name="END_LINK_2" /></translation>
 <translation id="8342675569599923794">File ini berbahaya, jadi Chrome telah memblokirnya.</translation>
 <translation id="8349795646647783032"><ph name="BEGIN_BOLD" />Cara kami menggunakan data ini:<ph name="END_BOLD" /> Situs dapat menyimpan informasi tentang minat Anda ke Chrome. Misalnya, jika Anda mengunjungi suatu situs untuk membeli sepatu maraton, situs tersebut dapat menetapkan minat Anda sebagai lari maraton. Kemudian, jika Anda mengunjungi situs lain untuk mendaftar lomba lari, situs tersebut dapat menampilkan iklan sepatu lari berdasarkan minat Anda.</translation>
 <translation id="8370517070665726704">Hak cipta <ph name="YEAR" /> Google LLC. Semua hak dilindungi undang-undang.</translation>
@@ -393,6 +397,7 @@ Izin yang telah Anda berikan ke situs dan aplikasi dapat berlaku untuk akun ini.
 <translation id="8986207147630327271">Anda menambahkan profil kerja ke browser ini dan memberikan kontrol kepada administrator hanya untuk profil kerja.</translation>
 <translation id="8989968390305463310">Histori penjelajahan Anda memengaruhi iklan yang Anda lihat dan minat yang diperkirakan di bawah. Untuk melindungi privasi Anda, Chrome otomatis menghapus minat Anda secara berkala setiap bulan. Minat dapat diperbarui kecuali jika Anda menghapusnya.</translation>
 <translation id="8999208279178790196">{0,plural, =0{Update Chrome tersedia}=1{Update Chrome tersedia}other{Update Chrome telah tersedia selama # hari}}</translation>
+<translation id="9003498785844995646">Jika diaktifkan, Chrome akan menghemat daya baterai dengan membatasi aktivitas latar belakang dan efek visual, seperti scroll yang lancar dan kecepatan frame video. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /> atau <ph name="BEGIN_LINK_2" />kirim masukan<ph name="END_LINK_2" /></translation>
 <translation id="9053892488859122171">Sistem ChromeOS Flex</translation>
 <translation id="9067395829937117663">Google Chrome memerlukan Windows 7 atau lebih tinggi.</translation>
 <translation id="911206726377975832">Hapus juga data browsing Anda?</translation>

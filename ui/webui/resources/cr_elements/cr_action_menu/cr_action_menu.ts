@@ -6,12 +6,12 @@ import '../cr_shared_vars.css.js';
 
 import {FlattenedNodesObserver, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {assert} from '../../js/assert.m.js';
+import {assert} from '../../js/assert.js';
 import {isMac, isWindows} from '../../js/cr.m.js';
-import {FocusOutlineManager} from '../../js/cr/ui/focus_outline_manager.js';
-import {FocusRow} from '../../js/cr/ui/focus_row.js';
-import {focusWithoutInk} from '../../js/cr/ui/focus_without_ink.js';
-import {getDeepActiveElement} from '../../js/util.m.js';
+import {FocusOutlineManager} from '../../js/focus_outline_manager.js';
+import {FocusRow} from '../../js/focus_row.js';
+import {focusWithoutInk} from '../../js/focus_without_ink.js';
+import {getDeepActiveElement} from '../../js/util.js';
 
 import {getTemplate} from './cr_action_menu.html.js';
 

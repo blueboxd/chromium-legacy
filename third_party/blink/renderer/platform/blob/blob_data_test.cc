@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -159,7 +159,7 @@ class BlobDataHandleTest : public testing::Test {
         Vector<uint8_t> received_bytes;
         mojo::Remote<mojom::blink::BytesProvider> actual_data(
             std::move(actual->get_bytes()->data));
-        actual_data->RequestAsReply(WTF::Bind(
+        actual_data->RequestAsReply(WTF::BindOnce(
             [](base::RepeatingClosure quit_closure, Vector<uint8_t>* bytes_out,
                const Vector<uint8_t>& bytes) {
               *bytes_out = bytes;

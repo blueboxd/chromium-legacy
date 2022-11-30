@@ -6,13 +6,13 @@
 
 #include <string>
 
-#include "ash/components/settings/cros_settings_names.h"
-#include "ash/components/settings/cros_settings_provider.h"
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/ash/net/system_proxy_manager.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chromeos/ash/components/network/network_event_log.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
+#include "chromeos/ash/components/settings/cros_settings_provider.h"
 
 namespace {
 const char kSystemProxyService[] = "system-proxy-service";
@@ -61,7 +61,7 @@ void SystemProxyHandler::OnSystemProxySettingsPolicyChanged() {
 
   std::vector<std::string> system_services_auth_schemes;
   if (auth_schemes) {
-    for (const auto& auth_scheme : auth_schemes->GetListDeprecated())
+    for (const auto& auth_scheme : auth_schemes->GetList())
       system_services_auth_schemes.push_back(auth_scheme.GetString());
   }
 

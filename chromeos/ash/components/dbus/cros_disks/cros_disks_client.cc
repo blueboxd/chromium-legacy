@@ -115,22 +115,24 @@ MountError CrosDisksMountErrorToChromeMountError(
       return MountError::kUnsupportedFilesystem;
     case cros_disks::MOUNT_ERROR_INVALID_ARCHIVE:
       return MountError::kInvalidArchive;
-    case cros_disks::MOUNT_ERROR_UNSUPPORTED_ARCHIVE:
-      // TODO(amistry): Add MOUNT_ERROR_UNSUPPORTED_ARCHIVE.
-      return MountError::kUnknown;
     case cros_disks::MOUNT_ERROR_NEED_PASSWORD:
+    case cros_disks::MOUNT_ERROR_NEED_PASSWORD_EX:
       return MountError::kNeedPassword;
     case cros_disks::MOUNT_ERROR_IN_PROGRESS:
+    case cros_disks::MOUNT_ERROR_IN_PROGRESS_EX:
       return MountError::kInProgress;
     case cros_disks::MOUNT_ERROR_CANCELLED:
+    case cros_disks::MOUNT_ERROR_CANCELLED_EX:
       return MountError::kCancelled;
+    case cros_disks::MOUNT_ERROR_BUSY:
+      return MountError::kBusy;
     default:
       LOG(ERROR) << "Unrecognised mount error code " << mount_error;
       return MountError::kUnknown;
   }
 }
 
-bool ReadMountEntryFromDbus(dbus::MessageReader* reader, MountEntry* entry) {
+bool ReadMountEntryFromDbus(dbus::MessageReader* reader, MountPoint* entry) {
   DCHECK(reader);
   DCHECK(entry);
 
@@ -140,10 +142,15 @@ bool ReadMountEntryFromDbus(dbus::MessageReader* reader, MountEntry* entry) {
       !reader->PopString(&entry->source_path) ||
       !reader->PopUint32(&mount_type) ||
       !reader->PopString(&entry->mount_path)) {
+    LOG(ERROR) << "Cannot parse MountEntry from DBus";
     return false;
   }
 
-  entry->error_code = CrosDisksMountErrorToChromeMountError(
+  if (!reader->PopBool(&entry->read_only)) {
+    LOG(WARNING) << "Cannot get MountEntry's read-only flag from DBus";
+  }
+
+  entry->mount_error = CrosDisksMountErrorToChromeMountError(
       static_cast<cros_disks::MountErrorType>(error_code));
   entry->mount_type = static_cast<MountType>(mount_type);
   entry->progress_percent = 100;
@@ -151,7 +158,7 @@ bool ReadMountEntryFromDbus(dbus::MessageReader* reader, MountEntry* entry) {
   return true;
 }
 
-bool ReadMountProgressFromDbus(dbus::MessageReader* reader, MountEntry* entry) {
+bool ReadMountProgressFromDbus(dbus::MessageReader* reader, MountPoint* entry) {
   DCHECK(reader);
   DCHECK(entry);
 
@@ -161,13 +168,20 @@ bool ReadMountProgressFromDbus(dbus::MessageReader* reader, MountEntry* entry) {
       !reader->PopString(&entry->source_path) ||
       !reader->PopUint32(&mount_type) ||
       !reader->PopString(&entry->mount_path)) {
+    LOG(ERROR) << "Cannot parse MountEntry from DBus";
     return false;
   }
 
-  if (!(progress_percent >= 0 && progress_percent <= 100))
-    return false;
+  if (!reader->PopBool(&entry->read_only)) {
+    LOG(WARNING) << "Cannot get MountEntry's read-only flag from DBus";
+  }
 
-  entry->error_code = MountError::kInProgress;
+  if (!(progress_percent >= 0 && progress_percent <= 100)) {
+    LOG(ERROR) << "Invalid progress percentage: " << progress_percent;
+    progress_percent = 0;
+  }
+
+  entry->mount_error = MountError::kInProgress;
   entry->mount_type = static_cast<MountType>(mount_type);
   entry->progress_percent = progress_percent;
 
@@ -411,8 +425,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
     const char kUnmountHistogramName[] = "CrosDisksClient.UnmountError";
     if (!response) {
-      UMA_HISTOGRAM_ENUMERATION(kUnmountHistogramName, MountError::kUnknown,
-                                MountError::kCount);
+      UMA_HISTOGRAM_ENUMERATION(kUnmountHistogramName, MountError::kUnknown);
       std::move(callback).Run(MountError::kUnknown);
       return;
     }
@@ -427,8 +440,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
       LOG(ERROR) << "Invalid response: " << response->ToString();
       mount_error = MountError::kUnknown;
     }
-    UMA_HISTOGRAM_ENUMERATION(kUnmountHistogramName, mount_error,
-                              MountError::kCount);
+    UMA_HISTOGRAM_ENUMERATION(kUnmountHistogramName, mount_error);
     std::move(callback).Run(mount_error);
   }
 
@@ -469,9 +481,9 @@ class CrosDisksClientImpl : public CrosDisksClient {
       return;
     }
 
-    std::vector<MountEntry> entries;
+    std::vector<MountPoint> entries;
     while (array_reader.HasMoreData()) {
-      MountEntry entry;
+      MountPoint entry;
       dbus::MessageReader sub_reader(nullptr);
       if (!array_reader.PopStruct(&sub_reader) ||
           !ReadMountEntryFromDbus(&sub_reader, &entry)) {
@@ -514,23 +526,23 @@ class CrosDisksClientImpl : public CrosDisksClient {
   // Handles MountCompleted signal and notifies observers.
   void OnMountCompleted(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
-    MountEntry entry;
+    MountPoint entry;
     if (!ReadMountEntryFromDbus(&reader, &entry)) {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
     }
 
     UMA_HISTOGRAM_ENUMERATION("CrosDisksClient.MountCompletedError",
-                              entry.error_code, MountError::kCount);
+                              entry.mount_error);
     // Flatten MountType and MountError into a single dimension.
     constexpr int kMaxMountErrors = 100;
     static_assert(
-        static_cast<int>(MountError::kCount) <= kMaxMountErrors,
+        static_cast<int>(MountError::kMaxValue) < kMaxMountErrors,
         "CrosDisksClient.MountErrorMountType histogram must be updated");
     base::UmaHistogramSparse(
         "CrosDisksClient.MountErrorMountType",
         static_cast<int>(entry.mount_type) * kMaxMountErrors +
-            static_cast<int>(entry.error_code));
+            static_cast<int>(entry.mount_error));
 
     // Notify observers.
     for (Observer& observer : observer_list_)
@@ -540,7 +552,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
   // Handles MountProgress signal and notifies observers.
   void OnMountProgress(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
-    MountEntry entry;
+    MountPoint entry;
     if (!ReadMountProgressFromDbus(&reader, &entry)) {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
@@ -569,8 +581,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
     }
 
     base::UmaHistogramEnumeration("CrosDisksClient.FormatCompletedError",
-                                  static_cast<FormatError>(error_code),
-                                  FormatError::kCount);
+                                  static_cast<FormatError>(error_code));
 
     for (Observer& observer : observer_list_) {
       observer.OnFormatCompleted(static_cast<FormatError>(error_code),
@@ -689,7 +700,7 @@ std::ostream& operator<<(std::ostream& out, const MountError error) {
     PRINT_ERROR(kNeedPassword)
     PRINT_ERROR(kInProgress)
     PRINT_ERROR(kCancelled)
-    PRINT_ERROR(kCount)
+    PRINT_ERROR(kBusy)
 #undef PRINT_ERROR
   }
 
@@ -735,7 +746,6 @@ std::ostream& operator<<(std::ostream& out, const FormatError error) {
     PRINT_ERROR(kInvalidOptions)
     PRINT_ERROR(kLongName)
     PRINT_ERROR(kInvalidCharacter)
-    PRINT_ERROR(kCount)
 #undef PRINT_ERROR
   }
 
@@ -761,12 +771,50 @@ std::ostream& operator<<(std::ostream& out, const PartitionError error) {
   return out << std::underlying_type_t<PartitionError>(error);
 }
 
-std::ostream& operator<<(std::ostream& out, const MountEntry& entry) {
-  return out << "error_code = " << entry.error_code << ", source_path = '"
+std::ostream& operator<<(std::ostream& out, const MountEventType event) {
+  switch (event) {
+#define PRINT_ERROR(s)    \
+  case MountEventType::s: \
+    return out << #s;
+    PRINT_ERROR(kDiskAdded)
+    PRINT_ERROR(kDiskRemoved)
+    PRINT_ERROR(kDiskChanged)
+    PRINT_ERROR(kDeviceAdded)
+    PRINT_ERROR(kDeviceRemoved)
+    PRINT_ERROR(kDeviceScanned)
+#undef PRINT_ERROR
+  }
+
+  return out << std::underlying_type_t<MountEventType>(event);
+}
+
+std::ostream& operator<<(std::ostream& out, const MountPoint& entry) {
+  return out << "mount_error = " << entry.mount_error << ", source_path = '"
              << entry.source_path << "', mount_type = " << entry.mount_type
              << ", mount_path = '" << entry.mount_path
-             << "', progress_percent = " << entry.progress_percent;
+             << "', read_only = " << entry.read_only
+             << ", progress_percent = " << entry.progress_percent;
 }
+
+MountPoint::MountPoint(const MountPoint&) = default;
+MountPoint& MountPoint::operator=(const MountPoint&) = default;
+
+MountPoint::MountPoint(MountPoint&&) = default;
+MountPoint& MountPoint::operator=(MountPoint&&) = default;
+
+MountPoint::MountPoint() = default;
+MountPoint::MountPoint(const base::StringPiece source_path,
+                       const base::StringPiece mount_path,
+                       const MountType mount_type,
+                       const MountError mount_error,
+                       const int progress_percent,
+                       const bool read_only)
+    : source_path(source_path),
+      mount_path(mount_path),
+      mount_type(mount_type),
+      mount_error(mount_error),
+      progress_percent(progress_percent),
+      read_only(read_only) {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // DiskInfo

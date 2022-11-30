@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/ranges/algorithm.h"
 #include "base/threading/thread_local.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
@@ -163,21 +164,14 @@ bool Session::BidiMapperIsLaunched() const {
   return bidi_mapper_is_launched_;
 }
 
-void Session::OnBidiResponse(const std::string& payload) {
-  absl::optional<base::Value> payload_parsed =
-      base::JSONReader::Read(payload, base::JSON_PARSE_CHROMIUM_EXTENSIONS);
-  if (!payload_parsed || !payload_parsed->is_dict()) {
-    LOG(WARNING) << "BiDi response is not a map: " << payload;
-    return;
-  }
-
-  if (payload_parsed->GetDict().FindBool("launched").value_or(false)) {
+void Session::OnBidiResponse(base::Value::Dict payload) {
+  if (payload.FindBool("launched").value_or(false)) {
     bidi_mapper_is_launched_ = true;
     return;
   }
 
   // If there is no active bidi connections the events will be accumulated.
-  bidi_response_queue_.push(std::move(*payload_parsed));
+  bidi_response_queue_.push(std::move(payload));
   for (; bidi_response_queue_.size() > kBidiQueueCapacity;
        bidi_response_queue_.pop()) {
     LOG(WARNING) << "BiDi response queue overflow, dropping the message: "
@@ -197,10 +191,8 @@ void Session::AddBidiConnection(int connection_id,
 void Session::RemoveBidiConnection(int connection_id) {
   // Reallistically we will not have many connections, therefore linear search
   // is optimal.
-  auto it = std::find_if(bidi_connections_.begin(), bidi_connections_.end(),
-                         [connection_id](const auto& conn) {
-                           return conn.connection_id == connection_id;
-                         });
+  auto it = base::ranges::find(bidi_connections_, connection_id,
+                               &BidiConnection::connection_id);
   if (it != bidi_connections_.end()) {
     bidi_connections_.erase(it);
   }
@@ -217,7 +209,7 @@ void Session::ProcessBidiResponseQueue() {
     // connections. The payload will have to be parsed and routed to the
     // appropriate connection. The events will have to be delivered to all
     // connections.
-    base::Value response_parsed = std::move(bidi_response_queue_.front());
+    base::Value::Dict response_parsed = std::move(bidi_response_queue_.front());
     std::string response;
     if (!base::JSONWriter::Write(response_parsed, &response)) {
       LOG(WARNING) << "unable to serialize a BiDi response";
@@ -228,7 +220,7 @@ void Session::ProcessBidiResponseQueue() {
       // broken we simply ignore this fact as the message cannot be delivered
       // over that connection anyway.
       conn.send_response.Run(response);
-      absl::optional<int> response_id = response_parsed.GetDict().FindInt("id");
+      absl::optional<int> response_id = response_parsed.FindInt("id");
       if (response_id && *response_id == awaited_bidi_response_id) {
         awaited_bidi_response_id = -1;
         // No "id" means that we are dealing with an event

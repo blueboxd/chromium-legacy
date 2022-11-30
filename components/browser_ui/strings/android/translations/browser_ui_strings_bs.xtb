@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bs">
+<translation id="1005794457625275818">Kolačići su dozvoljeni za web lokacije (njih <ph name="FPS_MEMBERS_COUNT" />) u grupi <ph name="FPS_OWNER" />, uključujući <ph name="FPS_MEMBER" /></translation>
 <translation id="1006017844123154345">Otvori na mreži</translation>
 <translation id="1044891598689252897">Web lokacije će normalno funkcionirati</translation>
 <translation id="1124090076051167250">Ovim će se obrisati <ph name="DATASIZE" /> podataka i kolačića koje su pohranile web lokacije ili aplikacije na početnom ekranu.</translation>
@@ -21,6 +22,7 @@
 <translation id="1426410128494586442">Da</translation>
 <translation id="1446450296470737166">Puna kontrola MIDI uređaja</translation>
 <translation id="1620510694547887537">Kamera</translation>
+<translation id="1633720957382884102">Srodne web lokacije</translation>
 <translation id="1644574205037202324">Historija</translation>
 <translation id="1647582022260550163">Jeste li sigurni da želite poništiti odobrenja i obrisati kolačiće i podatke web lokacije?</translation>
 <translation id="1660204651932907780">Dozvolite web lokacijama da reproduciraju zvuk (preporučeno)</translation>
@@ -115,6 +117,7 @@
 <translation id="3333961966071413176">Svi kontakti</translation>
 <translation id="3362437373201486687">Skeniranje Bluetooth uređaja</translation>
 <translation id="3386292677130313581">Web lokacije moraju tražiti dozvolu za pristup lokaciji (preporučeno)</translation>
+<translation id="3521663503435878242">Web lokacije pod domenom <ph name="DOMAIN" /></translation>
 <translation id="3538390592868664640">Web lokacijama je blokirano kreiranje 3D mape vašeg okruženja ili praćenje položaja kamere</translation>
 <translation id="3551268116566418498">Napustiti anonimni načina rada?</translation>
 <translation id="3586500876634962664">Korištenje kamere i mikrofona</translation>
@@ -260,6 +263,7 @@
 <translation id="6554732001434021288">Posljednji put je posjećeno prije <ph name="NUM_DAYS" /> dan(a)</translation>
 <translation id="6561560012278703671">Koristi tiše poruke (blokira upite s obavještenjima da vas ne prekidaju)</translation>
 <translation id="6593061639179217415">Web lokacija za računar</translation>
+<translation id="6608211702542341247">Ova web lokacija je u grupi web lokacija na <ph name="FPS_OWNER" /> koje mogu vidjeti vašu aktivnost u grupi</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Zaštićeni sadržaj</translation>
 <translation id="662080504995468778">Ostani</translation>
@@ -348,7 +352,6 @@
 <translation id="8380167699614421159">Ova web lokacija prikazuje ometajuće ili obmanjujuće oglase</translation>
 <translation id="8394832520002899662">Dodirnite da se vratite na web lokaciju</translation>
 <translation id="8409345997656833551">Primajte obavještenja kada se članak može prikazati u pojednostavljenom prikazu</translation>
-<translation id="8425213833346101688">Izmijeni</translation>
 <translation id="8428213095426709021">Postavke</translation>
 <translation id="8441146129660941386">Pomicanje unazad</translation>
 <translation id="8444433999583714703">Da dozvolite da <ph name="APP_NAME" /> pristupa vašoj lokaciji, također uključite lokaciju u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
@@ -372,6 +375,7 @@
 <translation id="8751914237388039244">Odaberite sliku</translation>
 <translation id="8801436777607969138">Blokiranje JavaScripta za određenu web lokaciju.</translation>
 <translation id="8816026460808729765">Blokiranje web lokacijama pristup senzorima</translation>
+<translation id="8823559166155093873">Blokiraj kolačiće</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8903921497873541725">Uvećaj</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>

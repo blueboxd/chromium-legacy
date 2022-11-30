@@ -55,6 +55,7 @@
 #include "extensions/common/switches.h"
 #include "net/base/url_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/window_open_disposition_utils.h"
 #include "url/url_constants.h"
 
 // TODO(crbug.com/826982): life cycle events. Extensions can be installed and
@@ -120,6 +121,7 @@ ash::ShelfLaunchSource ConvertLaunchSource(apps::LaunchSource launch_source) {
     case apps::LaunchSource::kFromOsLogin:
     case apps::LaunchSource::kFromProtocolHandler:
     case apps::LaunchSource::kFromUrlHandler:
+    case apps::LaunchSource::kFromLockScreen:
       return ash::LAUNCH_FROM_UNKNOWN;
   }
 }
@@ -229,6 +231,7 @@ AppPtr ExtensionAppsBase::CreateAppImpl(const extensions::Extension* extension,
   app->short_name = extension->short_name();
   app->description = extension->description();
   app->version = extension->GetVersionForDisplay();
+  app->policy_ids = {extension->id()};
 
   if (profile_) {
     auto* prefs = extensions::ExtensionPrefs::Get(profile_);
@@ -263,6 +266,7 @@ apps::mojom::AppPtr ExtensionAppsBase::ConvertImpl(
   app->short_name = extension->short_name();
   app->description = extension->description();
   app->version = extension->GetVersionForDisplay();
+  app->policy_ids = {extension->id()};
 
   if (profile_) {
     auto* prefs = extensions::ExtensionPrefs::Get(profile_);
@@ -476,6 +480,7 @@ void ExtensionAppsBase::Launch(const std::string& app_id,
     case apps::LaunchSource::kFromOsLogin:
     case apps::LaunchSource::kFromProtocolHandler:
     case apps::LaunchSource::kFromUrlHandler:
+    case apps::LaunchSource::kFromLockScreen:
       break;
   }
 
@@ -674,6 +679,7 @@ void ExtensionAppsBase::Launch(const std::string& app_id,
     case apps::mojom::LaunchSource::kFromOsLogin:
     case apps::mojom::LaunchSource::kFromProtocolHandler:
     case apps::mojom::LaunchSource::kFromUrlHandler:
+    case apps::mojom::LaunchSource::kFromLockScreen:
       break;
   }
 

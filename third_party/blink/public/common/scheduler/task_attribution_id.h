@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_SCHEDULER_TASK_ATTRIBUTION_ID_H_
 
 #include <cstdint>
-#include "base/types/strong_alias.h"
 
 namespace blink::scheduler {
 
@@ -17,6 +16,7 @@ using TaskAttributionIdType = uint32_t;
 // while abstracting the underlying value from callers.
 class TaskAttributionId {
  public:
+  TaskAttributionId() = default;
   explicit TaskAttributionId(TaskAttributionIdType value) : value_(value) {}
   TaskAttributionId(const TaskAttributionId&) = default;
   TaskAttributionId& operator=(const TaskAttributionId&) = default;
@@ -34,7 +34,7 @@ class TaskAttributionId {
   TaskAttributionId NextId() const { return TaskAttributionId(value_ + 1); }
 
  private:
-  TaskAttributionIdType value_;
+  TaskAttributionIdType value_ = {0};
 };
 
 }  // namespace blink::scheduler

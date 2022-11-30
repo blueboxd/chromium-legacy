@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ ClipboardItem::ClipboardItem(
   DCHECK(items.size());
   for (const auto& item : items) {
     String web_custom_format = Clipboard::ParseWebCustomFormat(item.first);
-    if (!web_custom_format.IsEmpty()) {
+    if (!web_custom_format.empty()) {
       // Types with "web " prefix are special, so we do some level of MIME type
       // parsing here to get a valid web custom format type.
       // We want to ensure that the string after removing the "web " prefix is

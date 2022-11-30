@@ -16,11 +16,13 @@
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "components/file_access/file_access_copy_or_move_delegate_factory.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/file_system/copy_or_move_file_validator.h"
 #include "storage/browser/file_system/copy_or_move_hook_delegate.h"
+#include "storage/browser/file_system/copy_or_move_hook_delegate_composite.h"
 #include "storage/browser/file_system/file_observers.h"
 #include "storage/browser/file_system/file_stream_reader.h"
 #include "storage/browser/file_system/file_stream_writer.h"
@@ -356,8 +358,6 @@ class SnapshotCopyOrMoveImpl
 
   void RunAfterTouchFile(CopyOrMoveOperationDelegate::StatusCallback callback,
                          base::File::Error error) {
-    // Even if TouchFile is failed, just ignore it.
-
     if (cancel_requested_) {
       DidEndCopy(std::move(callback), base::File::FILE_ERROR_ABORT);
       return;
@@ -366,7 +366,8 @@ class SnapshotCopyOrMoveImpl
     // |validator_| is nullptr when the destination filesystem does not do
     // validation.
     if (!validator_) {
-      // No validation is needed.
+      // No validation is needed. If TouchFile failed to restore the "last
+      // modified" time, just ignore the error.
       RunAfterPostWriteValidation(std::move(callback), base::File::FILE_OK);
       return;
     }
@@ -690,14 +691,14 @@ class StreamCopyOrMoveImpl
 
   void RunAfterTouchFile(CopyOrMoveOperationDelegate::StatusCallback callback,
                          base::File::Error error) {
-    // Even if TouchFile is failed, just ignore it.
     if (cancel_requested_) {
       DidEndCopy(std::move(callback), base::File::FILE_ERROR_ABORT);
       return;
     }
 
-    if (error != base::File::FILE_OK ||
-        operation_type_ == CopyOrMoveOperationDelegate::OPERATION_COPY) {
+    // If TouchFile failed to restore the "last modified" time, just ignore the
+    // error.
+    if (operation_type_ == CopyOrMoveOperationDelegate::OPERATION_COPY) {
       DidEndCopy(std::move(callback), base::File::FILE_OK);
       return;
     }
@@ -889,6 +890,12 @@ CopyOrMoveOperationDelegate::CopyOrMoveOperationDelegate(
       copy_or_move_hook_delegate_(std::move(copy_or_move_hook_delegate)),
       callback_(std::move(callback)) {
   DCHECK(copy_or_move_hook_delegate_);
+  if (file_access::FileAccessCopyOrMoveDelegateFactory::HasInstance()) {
+    copy_or_move_hook_delegate_ = CopyOrMoveHookDelegateComposite::CreateOrAdd(
+        std::move(copy_or_move_hook_delegate_),
+        file_access::FileAccessCopyOrMoveDelegateFactory::Get()->MakeHook());
+  }
+
   // Force same_file_system_ = false if options include kForceCrossFilesystem.
   same_file_system_ =
       !options.Has(

@@ -31,8 +31,13 @@ enum class NewDefaultBrowserPromoFRE {
 enum class NewMobileIdentityConsistencyFRE {
   // Old FRE with UMA dialog.
   kUMADialog = 0,
-  // New MICE FRE with 3 steps (welcome + sign-in + sync screens).
-  kThreeSteps,
+  // New MICE FRE with tangible sync (welcome with sign-in + tangible sync
+  // screens).
+  // Strings in TangibleSyncViewController are set according to the A, B or C
+  // variants.
+  kTangibleSyncA,
+  kTangibleSyncB,
+  kTangibleSyncC,
   // New MICE FRE with 2 steps (welcome with sign-in + sync screens).
   kTwoSteps,
   // Old FRE.

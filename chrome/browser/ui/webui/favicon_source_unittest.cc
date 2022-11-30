@@ -210,6 +210,33 @@ TEST_F(FaviconSourceTestWithLegacyFormat,
                            extensions::Manifest::TYPE_EXTENSION, 0);
 }
 
+TEST_F(FaviconSourceTestWithLegacyFormat, ShouldNotQueryIfDesiredSizeTooLarge) {
+  EXPECT_CALL(*mock_history_ui_favicon_request_handler_,
+              GetRawFaviconForPageURL)
+      .Times(0);
+  EXPECT_CALL(*mock_favicon_service_, GetRawFavicon).Times(0);
+  EXPECT_CALL(*mock_favicon_service_, GetRawFaviconForPageURL).Times(0);
+
+  // 1000x scale factor runs into the max cap.
+  source()->StartDataRequest(
+      GURL(
+          base::StrCat({kDummyPrefix, "size/16@1000x/https://www.google.com"})),
+      test_web_contents_getter_, base::DoNothing());
+}
+
+TEST_F(FaviconSourceTestWithLegacyFormat, ShouldNotQueryIfInvalidScaleFactor) {
+  EXPECT_CALL(*mock_history_ui_favicon_request_handler_,
+              GetRawFaviconForPageURL)
+      .Times(0);
+  EXPECT_CALL(*mock_favicon_service_, GetRawFavicon).Times(0);
+  EXPECT_CALL(*mock_favicon_service_, GetRawFaviconForPageURL).Times(0);
+
+  // A negative scale factor cannot be parsed.
+  source()->StartDataRequest(
+      GURL(base::StrCat({kDummyPrefix, "size/16@-2x/https://www.google.com"})),
+      test_web_contents_getter_, base::DoNothing());
+}
+
 TEST_F(FaviconSourceTestWithLegacyFormat,
        ShouldRecordFaviconResourceHistogram_ExtensionOrigin) {
   scoped_refptr<const extensions::Extension> extension =
@@ -252,6 +279,16 @@ TEST_F(FaviconSourceTestWithFavicon2Format, LightDefault) {
                              base::DoNothing());
 }
 
+TEST_F(FaviconSourceTestWithFavicon2Format, LightOverride) {
+  SetDarkMode(true);
+  EXPECT_CALL(*source(), LoadIconBytes(_, IDR_DEFAULT_FAVICON));
+  source()->StartDataRequest(
+      GURL(base::StrCat({kDummyPrefix,
+                         "?pageUrl=https%3A%2F%2Fwww.google.com"
+                         "&forceLightMode"})),
+      test_web_contents_getter_, base::DoNothing());
+}
+
 TEST_F(FaviconSourceTestWithFavicon2Format,
        ShouldNotQueryHistoryUiFaviconRequestHandlerIfNotAllowed) {
   content::WebContentsTester::For(test_web_contents_.get())
@@ -264,7 +301,7 @@ TEST_F(FaviconSourceTestWithFavicon2Format,
   source()->StartDataRequest(
       GURL(base::StrCat(
           {kDummyPrefix,
-           "?size=16&scale_factor=1x&pageUrl=https%3A%2F%2Fwww.google."
+           "?size=16&scaleFactor=1x&pageUrl=https%3A%2F%2Fwww.google."
            "com&allowGoogleServerFallback=0"})),
       test_web_contents_getter_, base::DoNothing());
 }
@@ -281,7 +318,7 @@ TEST_F(FaviconSourceTestWithFavicon2Format,
   source()->StartDataRequest(
       GURL(base::StrCat(
           {kDummyPrefix,
-           "?size=16&scale_factor=1x&pageUrl=https%3A%2F%2Fwww.google."
+           "?size=16&scaleFactor=1x&pageUrl=https%3A%2F%2Fwww.google."
            "com&allowGoogleServerFallback=1"})),
       test_web_contents_getter_, base::DoNothing());
 }
@@ -299,7 +336,7 @@ TEST_F(
   source()->StartDataRequest(
       GURL(base::StrCat(
           {kDummyPrefix,
-           "?size=16&scale_factor=1x&pageUrl=https%3A%2F%2Fwww.google."
+           "?size=16&scaleFactor=1x&pageUrl=https%3A%2F%2Fwww.google."
            "com&allowGoogleServerFallback=1"})),
       test_web_contents_getter_, base::DoNothing());
 }
@@ -312,8 +349,26 @@ TEST_F(FaviconSourceTestWithFavicon2Format,
   EXPECT_CALL(*mock_favicon_service_, GetRawFavicon).Times(0);
   EXPECT_CALL(*mock_favicon_service_, GetRawFaviconForPageURL).Times(0);
 
-  // 100x scale factor runs into the max cap.
+  // 1000x scale factor runs into the max cap.
   source()->StartDataRequest(
-      GURL(base::StrCat({kDummyPrefix, "size/16@100x/https://www.google.com"})),
+      GURL(base::StrCat(
+          {kDummyPrefix,
+           "?size=16&scaleFactor=1000x&pageUrl=https%3A%2F%2Fwww.google.com"})),
+      test_web_contents_getter_, base::DoNothing());
+}
+
+TEST_F(FaviconSourceTestWithFavicon2Format,
+       ShouldNotQueryIfInvalidScaleFactor) {
+  EXPECT_CALL(*mock_history_ui_favicon_request_handler_,
+              GetRawFaviconForPageURL)
+      .Times(0);
+  EXPECT_CALL(*mock_favicon_service_, GetRawFavicon).Times(0);
+  EXPECT_CALL(*mock_favicon_service_, GetRawFaviconForPageURL).Times(0);
+
+  // A negative scale factor cannot be parsed.
+  source()->StartDataRequest(
+      GURL(base::StrCat(
+          {kDummyPrefix,
+           "?size=16&scaleFactor=-2x&pageUrl=https%3A%2F%2Fwww.google.com"})),
       test_web_contents_getter_, base::DoNothing());
 }

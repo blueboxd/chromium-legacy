@@ -2,15 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 import {FakeShimlessRmaService} from 'chrome://shimless-rma/fake_shimless_rma_service.js';
 import {HardwareErrorPage} from 'chrome://shimless-rma/hardware_error_page.js';
 import {setShimlessRmaServiceForTesting} from 'chrome://shimless-rma/mojo_interface_provider.js';
 import {ShimlessRma} from 'chrome://shimless-rma/shimless_rma.js';
 import {ShutdownMethod} from 'chrome://shimless-rma/shimless_rma_types.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.js';
+
+/** @type {number} */
+const ERROR_CODE = 1004;
 
 export function hardwareErrorPageTest() {
   /**
@@ -18,7 +22,7 @@ export function hardwareErrorPageTest() {
    * shutdown button.
    * @type {?ShimlessRma}
    */
-  let shimless_rma_component = null;
+  let shimlessRmaComponent = null;
 
   /** @type {?HardwareErrorPage} */
   let component = null;
@@ -35,8 +39,8 @@ export function hardwareErrorPageTest() {
   teardown(() => {
     component.remove();
     component = null;
-    shimless_rma_component.remove();
-    shimless_rma_component = null;
+    shimlessRmaComponent.remove();
+    shimlessRmaComponent = null;
     service.reset();
   });
 
@@ -46,13 +50,14 @@ export function hardwareErrorPageTest() {
   function initializeHardwareErrorPage() {
     assertFalse(!!component);
 
-    shimless_rma_component =
+    shimlessRmaComponent =
         /** @type {!ShimlessRma} */ (document.createElement('shimless-rma'));
-    assertTrue(!!shimless_rma_component);
-    document.body.appendChild(shimless_rma_component);
+    assertTrue(!!shimlessRmaComponent);
+    document.body.appendChild(shimlessRmaComponent);
 
     component = /** @type {!HardwareErrorPage} */ (
         document.createElement('hardware-error-page'));
+    component.errorCode = ERROR_CODE;
     assertTrue(!!component);
     document.body.appendChild(component);
 
@@ -92,5 +97,13 @@ export function hardwareErrorPageTest() {
     await flushTasks();
 
     assertEquals(1, callCount);
+  });
+
+  test('ErrorCodeDisplayed', async () => {
+    await initializeHardwareErrorPage();
+
+    assertEquals(
+        loadTimeData.getStringF('hardwareErrorCode', ERROR_CODE),
+        component.shadowRoot.querySelector('#errorCode').textContent.trim());
   });
 }

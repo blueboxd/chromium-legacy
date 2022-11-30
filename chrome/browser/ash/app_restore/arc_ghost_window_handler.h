@@ -16,6 +16,10 @@ namespace app_restore {
 struct AppRestoreData;
 }  // namespace app_restore
 
+namespace arc {
+enum class GhostWindowType;
+}  // namespace arc
+
 namespace ash::full_restore {
 
 // The ArcGhostWindowHandler class provides control for ARC ghost window.
@@ -51,6 +55,11 @@ class ArcGhostWindowHandler : public exo::WMHelper::LifetimeManager::Observer {
     // Observer for ghost window close event.
     virtual void OnWindowCloseRequested(int window_id) {}
 
+    // Observer for ARC App specific state updates.
+    virtual void OnAppStatesUpdate(const std::string& app_id,
+                                   bool ready,
+                                   bool need_fixup) {}
+
    protected:
     ~Observer() override = default;
   };
@@ -72,6 +81,9 @@ class ArcGhostWindowHandler : public exo::WMHelper::LifetimeManager::Observer {
                             int32_t session_id,
                             ::app_restore::AppRestoreData* restore_data);
 
+  bool UpdateArcGhostWindowType(int32_t session_id,
+                                arc::GhostWindowType window_type);
+
   void CloseWindow(int session_id);
 
   void AddObserver(Observer* observer);
@@ -79,6 +91,8 @@ class ArcGhostWindowHandler : public exo::WMHelper::LifetimeManager::Observer {
   bool HasObserver(Observer* observer);
 
   void OnAppInstanceConnected();
+
+  void OnAppStatesUpdate(std::string app_id, bool ready, bool need_fixup);
 
   void OnWindowInfoUpdated(int window_id,
                            int state,

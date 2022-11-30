@@ -7,8 +7,7 @@
 
 #include "base/component_export.h"
 
-namespace ash {
-namespace prefs {
+namespace ash::prefs {
 
 // ---------------------------------------------------------------------------
 // Prefs related to ChromeOS device active pings.
@@ -19,9 +18,8 @@ extern const char kDeviceActiveLastKnownDailyPingTimestamp[];
 COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY)
 extern const char kDeviceActiveLastKnownMonthlyPingTimestamp[];
 COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY)
-extern const char kDeviceActiveLastKnownAllTimePingTimestamp[];
+extern const char kDeviceActiveLastKnownFirstActivePingTimestamp[];
 
-}  // namespace prefs
-}  // namespace ash
+}  // namespace ash::prefs
 
 #endif  // CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY_FRESNEL_PREF_NAMES_H_

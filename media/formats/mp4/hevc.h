@@ -13,6 +13,7 @@
 
 #include "media/base/media_export.h"
 #include "media/base/video_codecs.h"
+#include "media/base/video_decoder_config.h"
 #include "media/formats/mp4/bitstream_converter.h"
 #include "media/formats/mp4/box_definitions.h"
 
@@ -64,15 +65,20 @@ struct MEDIA_EXPORT HEVCDecoderConfigurationRecord : Box {
   VideoCodecProfile GetVideoProfile() const;
 #if BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
   VideoColorSpace GetColorSpace();
+  gfx::HDRMetadata GetHDRMetadata();
+  VideoDecoderConfig::AlphaMode GetAlphaMode();
 #endif  // BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
 
  private:
   bool ParseInternal(BufferReader* reader, MediaLog* media_log);
+  VideoColorSpace color_space;
+  gfx::HDRMetadata hdr_metadata;
+  VideoDecoderConfig::AlphaMode alpha_mode;
 };
 
 class MEDIA_EXPORT HEVC {
  public:
-  static bool ConvertConfigToAnnexB(
+  static void ConvertConfigToAnnexB(
       const HEVCDecoderConfigurationRecord& hevc_config,
       std::vector<uint8_t>* buffer);
 

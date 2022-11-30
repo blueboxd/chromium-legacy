@@ -4,6 +4,7 @@
 
 #include "components/breadcrumbs/core/breadcrumb_manager_keyed_service.h"
 
+#include "components/breadcrumbs/core/breadcrumb_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -20,7 +21,10 @@ TEST_F(BreadcrumbManagerKeyedServiceTest, EventsLabeledWithBrowserState) {
           /*is_off_the_record=*/false);
   breadcrumb_manager_service->AddEvent("event");
 
-  const std::string event = breadcrumb_manager_service->GetEvents().front();
+  const std::string event =
+      BreadcrumbManager::GetInstance().GetEvents().front();
+
+  BreadcrumbManager::GetInstance().ResetForTesting();
 
   std::unique_ptr<BreadcrumbManagerKeyedService>
       otr_breadcrumb_manager_service =
@@ -29,7 +33,7 @@ TEST_F(BreadcrumbManagerKeyedServiceTest, EventsLabeledWithBrowserState) {
   otr_breadcrumb_manager_service->AddEvent("event");
 
   const std::string off_the_record_event =
-      otr_breadcrumb_manager_service->GetEvents().front();
+      BreadcrumbManager::GetInstance().GetEvents().front();
   // Event should indicate it was logged from an off-the-record "Incognito"
   // browser state.
   EXPECT_NE(std::string::npos, off_the_record_event.find(" I "));

@@ -36,8 +36,8 @@ int HttpAuthHandlerNTLM::Factory::CreateAuthHandler(
   auto tmp_handler = std::make_unique<HttpAuthHandlerNTLM>(
       sspi_library_.get(), http_auth_preferences());
   if (!tmp_handler->InitFromChallenge(challenge, target, ssl_info,
-                                      network_anonymization_key,
-                                      scheme_host_port, net_log))
+                                      network_anonymization_key, scheme_host_port,
+                                      net_log))
     return ERR_INVALID_RESPONSE;
   *handler = std::move(tmp_handler);
   return OK;

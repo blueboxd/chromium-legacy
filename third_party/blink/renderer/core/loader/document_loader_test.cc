@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_encoding_data.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -31,6 +32,76 @@
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 
 namespace blink {
+namespace {
+
+// Forwards calls from BodyDataReceived() to DecodedBodyDataReceived().
+class DecodedBodyLoader : public StaticDataNavigationBodyLoader {
+ public:
+  void StartLoadingBody(Client* client) override {
+    client_ = std::make_unique<DecodedDataPassthroughClient>(client);
+    StaticDataNavigationBodyLoader::StartLoadingBody(client_.get());
+  }
+
+ private:
+  class DecodedDataPassthroughClient : public WebNavigationBodyLoader::Client {
+   public:
+    explicit DecodedDataPassthroughClient(Client* client) : client_(client) {}
+
+    void BodyDataReceived(base::span<const char> data) override {
+      client_->DecodedBodyDataReceived(
+          String(data.data(), data.size()).UpperASCII(),
+          WebEncodingData{.encoding = "utf-8"}, data);
+    }
+
+    void DecodedBodyDataReceived(const WebString& data,
+                                 const WebEncodingData& encoding_data,
+                                 base::span<const char> encoded_data) override {
+      client_->DecodedBodyDataReceived(data, encoding_data, encoded_data);
+    }
+
+    void BodyLoadingFinished(
+        base::TimeTicks completion_time,
+        int64_t total_encoded_data_length,
+        int64_t total_encoded_body_length,
+        int64_t total_decoded_body_length,
+        bool should_report_corb_blocking,
+        const absl::optional<WebURLError>& error) override {
+      client_->BodyLoadingFinished(
+          completion_time, total_encoded_data_length, total_encoded_body_length,
+          total_decoded_body_length, should_report_corb_blocking, error);
+    }
+
+   private:
+    Client* client_;
+  };
+
+  std::unique_ptr<DecodedDataPassthroughClient> client_;
+};
+
+class BodyLoaderTestDelegate : public WebURLLoaderTestDelegate {
+ public:
+  explicit BodyLoaderTestDelegate(
+      std::unique_ptr<StaticDataNavigationBodyLoader> body_loader)
+      : body_loader_(std::move(body_loader)),
+        body_loader_raw_(body_loader_.get()) {}
+
+  // WebURLLoaderTestDelegate overrides:
+  bool FillNavigationParamsResponse(WebNavigationParams* params) override {
+    params->response = WebURLResponse(params->url);
+    params->response.SetMimeType("text/html");
+    params->response.SetHttpStatusCode(200);
+    params->body_loader = std::move(body_loader_);
+    return true;
+  }
+
+  void Write(const char* data) { body_loader_raw_->Write(data, strlen(data)); }
+
+  void Finish() { body_loader_raw_->Finish(); }
+
+ private:
+  std::unique_ptr<StaticDataNavigationBodyLoader> body_loader_;
+  StaticDataNavigationBodyLoader* body_loader_raw_;
+};
 
 class DocumentLoaderTest : public testing::TestWithParam<bool> {
  protected:
@@ -169,8 +240,8 @@ TEST_P(DocumentLoaderTest, MultiChunkWithReentrancy) {
       }
 
       // Serve the remaining bytes to complete the load.
-      EXPECT_FALSE(data_.IsEmpty());
-      while (!data_.IsEmpty())
+      EXPECT_FALSE(data_.empty());
+      while (!data_.empty())
         DispatchOneByte();
 
       body_loader_->Finish();
@@ -681,4 +752,46 @@ TEST_F(DocumentLoaderSimTest, PrivateNonSecureChildFrameNotCounted) {
       WebFeature::kMainFrameNonSecurePrivateAddressSpace));
 }
 
+TEST_P(DocumentLoaderTest, DecodedBodyData) {
+  BodyLoaderTestDelegate delegate(std::make_unique<DecodedBodyLoader>());
+
+  ScopedLoaderDelegate loader_delegate(&delegate);
+  frame_test_helpers::LoadFrameDontWait(
+      MainFrame(), url_test_helpers::ToKURL("https://example.com/foo.html"));
+
+  delegate.Write("<html>");
+  delegate.Write("<body>fo");
+  delegate.Write("o</body>");
+  delegate.Write("</html>");
+  delegate.Finish();
+
+  frame_test_helpers::PumpPendingRequestsForFrameToLoad(MainFrame());
+
+  // DecodedBodyLoader uppercases all data.
+  EXPECT_EQ(MainFrame()->GetDocument().Body().TextContent(), "FOO");
+}
+
+TEST_P(DocumentLoaderTest, DecodedBodyDataWithBlockedParser) {
+  BodyLoaderTestDelegate delegate(std::make_unique<DecodedBodyLoader>());
+
+  ScopedLoaderDelegate loader_delegate(&delegate);
+  frame_test_helpers::LoadFrameDontWait(
+      MainFrame(), url_test_helpers::ToKURL("https://example.com/foo.html"));
+
+  delegate.Write("<html>");
+  // Blocking the parser tests whether we buffer decoded data correctly.
+  MainFrame()->GetDocumentLoader()->BlockParser();
+  delegate.Write("<body>fo");
+  delegate.Write("o</body>");
+  MainFrame()->GetDocumentLoader()->ResumeParser();
+  delegate.Write("</html>");
+  delegate.Finish();
+
+  frame_test_helpers::PumpPendingRequestsForFrameToLoad(MainFrame());
+
+  // DecodedBodyLoader uppercases all data.
+  EXPECT_EQ(MainFrame()->GetDocument().Body().TextContent(), "FOO");
+}
+
+}  // namespace
 }  // namespace blink

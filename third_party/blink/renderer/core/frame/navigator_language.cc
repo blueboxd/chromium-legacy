@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ Vector<String> ParseAndSanitize(const String& accept_languages) {
       token.replace(2, 1, "-");
   }
 
-  if (languages.IsEmpty())
+  if (languages.empty())
     languages.push_back(DefaultLanguage());
 
   return languages;

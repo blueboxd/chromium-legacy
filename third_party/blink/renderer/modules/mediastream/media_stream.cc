@@ -133,7 +133,7 @@ MediaStream::MediaStream(ExecutionContext* context,
   descriptor_->SetClient(this);
 
   uint32_t number_of_audio_tracks = descriptor_->NumberOfAudioComponents();
-  audio_tracks_.ReserveCapacity(number_of_audio_tracks);
+  audio_tracks_.reserve(number_of_audio_tracks);
   for (uint32_t i = 0; i < number_of_audio_tracks; i++) {
     auto* new_track = MakeGarbageCollected<MediaStreamTrackImpl>(
         context, descriptor_->AudioComponent(i));
@@ -146,18 +146,23 @@ MediaStream::MediaStream(ExecutionContext* context,
   }
 
   uint32_t number_of_video_tracks = descriptor_->NumberOfVideoComponents();
-  video_tracks_.ReserveCapacity(number_of_video_tracks);
+  video_tracks_.reserve(number_of_video_tracks);
   for (uint32_t i = 0; i < number_of_video_tracks; i++) {
     MediaStreamTrack* const new_track = MediaStreamTrackImpl::Create(
         context, descriptor_->VideoComponent(i),
-        WTF::Bind(&MediaStream::OnMediaStreamTrackInitialized,
-                  WrapPersistent(this)),
+        WTF::BindOnce(&MediaStream::OnMediaStreamTrackInitialized,
+                      WrapPersistent(this)),
         descriptor_->Id());
     new_track->RegisterMediaStream(this);
     video_tracks_.push_back(new_track);
     if (transferred_track) {
       DCHECK(!transferred_track->HasImplementation());
       transferred_track->SetImplementation(new_track);
+#if !BUILDFLAG(IS_ANDROID)
+      // The window of opportunity for focus is closed for all transferred
+      // tracks.
+      new_track->CloseFocusWindowOfOpportunity();
+#endif
     }
   }
 
@@ -168,8 +173,8 @@ MediaStream::MediaStream(ExecutionContext* context,
   if (number_of_video_tracks == 0) {
     context->GetTaskRunner(TaskType::kInternalMedia)
         ->PostTask(FROM_HERE,
-                   WTF::Bind(std::move(media_stream_initialized_callback_),
-                             WrapPersistent(this)));
+                   WTF::BindOnce(std::move(media_stream_initialized_callback_),
+                                 WrapPersistent(this)));
   }
 }
 
@@ -192,13 +197,13 @@ MediaStream::MediaStream(ExecutionContext* context,
           &MediaStream::ScheduledEventTimerFired) {
   descriptor_->SetClient(this);
 
-  audio_tracks_.ReserveCapacity(audio_tracks.size());
+  audio_tracks_.reserve(audio_tracks.size());
   for (MediaStreamTrack* audio_track : audio_tracks) {
     DCHECK_EQ("audio", audio_track->kind());
     audio_track->RegisterMediaStream(this);
     audio_tracks_.push_back(audio_track);
   }
-  video_tracks_.ReserveCapacity(video_tracks.size());
+  video_tracks_.reserve(video_tracks.size());
   for (MediaStreamTrack* video_track : video_tracks) {
     DCHECK_EQ("video", video_track->kind());
     video_track->RegisterMediaStream(this);
@@ -246,7 +251,7 @@ MediaStream::MediaStream(ExecutionContext* context,
 MediaStream::~MediaStream() = default;
 
 bool MediaStream::HasPendingActivity() const {
-  return !scheduled_events_.IsEmpty();
+  return !scheduled_events_.empty();
 }
 
 bool MediaStream::EmptyOrOnlyEndedTracks() {

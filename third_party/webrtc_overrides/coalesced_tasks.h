@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,6 +52,12 @@ class RTC_EXPORT CoalescedTasks {
   // them.
   void Clear();
 
+  // Returns true if there are no stored tasks.
+  bool Empty() const {
+    base::AutoLock lock(lock_);
+    return delayed_tasks_.empty();
+  }
+
  private:
   // The (time_ticks, unique_id) pair allows multiple tasks to be scheduled on
   // the same `time_ticks`.
@@ -65,7 +71,7 @@ class RTC_EXPORT CoalescedTasks {
     uint64_t unique_id;
   };
 
-  base::Lock lock_;
+  mutable base::Lock lock_;
   std::set<base::TimeTicks> scheduled_ticks_ GUARDED_BY(lock_);
   uint64_t next_unique_id_ GUARDED_BY(lock_) = 0;
   std::map<UniqueTimeTicks, absl::AnyInvocable<void() &&>> delayed_tasks_

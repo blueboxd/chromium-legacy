@@ -7,6 +7,7 @@
 #import "base/ios/block_types.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
+#import "base/time/time.h"
 #import "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/icons/infobar_icon.h"
@@ -32,8 +33,10 @@ const CGFloat kBannerViewShadowOpacity = 0.23;
 // Banner View selected constants.
 const CGFloat kTappedBannerViewScale = 0.98;
 const CGFloat kSelectedBannerViewScale = 1.02;
-const CGFloat kSelectBannerAnimationDurationInSeconds = 0.2;
-const CGFloat kTappedBannerAnimationDurationInSeconds = 0.05;
+constexpr base::TimeDelta kSelectBannerAnimationDuration =
+    base::Milliseconds(200);
+constexpr base::TimeDelta kTappedBannerAnimationDuration =
+    base::Milliseconds(50);
 const CGFloat kSelectedBannerViewYShadowOffset = 8.0;
 
 // Button constants.
@@ -53,7 +56,7 @@ const CGFloat kIconCornerRadius = 5.0;
 
 // Gesture constants.
 const CGFloat kChangeInPositionForDismissal = -15.0;
-const CGFloat kLongPressTimeDurationInSeconds = 0.4;
+constexpr base::TimeDelta kLongPressTimeDuration = base::Milliseconds(400);
 }  // namespace
 
 @interface InfobarBannerViewController ()
@@ -66,6 +69,8 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 @property(nonatomic, copy) NSString* titleText;
 @property(nonatomic, copy) NSString* subtitleText;
 @property(nonatomic, assign) BOOL useIconBackgroundTint;
+@property(nonatomic, strong) UIColor* iconImageTintColor;
+@property(nonatomic, strong) UIColor* iconBackgroundColor;
 @property(nonatomic, assign) BOOL restrictSubtitleTextToSingleLine;
 
 // The original position of this InfobarVC view in the parent's view coordinate
@@ -90,8 +95,8 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 @property(nonatomic, strong) UILabel* subTitleLabel;
 // Used to build and record metrics.
 @property(nonatomic, strong) InfobarMetricsRecorder* metricsRecorder;
-// The NSTimeInterval in which the Banner appeared on screen.
-@property(nonatomic, assign) NSTimeInterval bannerAppearedTime;
+// The time in which the Banner appeared on screen.
+@property(nonatomic, assign) base::TimeTicks bannerAppearedTime;
 // YES if the banner on screen time metric has already been recorded for this
 // banner.
 @property(nonatomic, assign) BOOL bannerOnScreenTimeWasRecorded;
@@ -152,12 +157,15 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
         [[UIImageView alloc] initWithImage:self.iconImage];
     iconImageView.contentMode = UIViewContentModeScaleAspectFit;
     iconImageView.translatesAutoresizingMaskIntoConstraints = NO;
+    iconImageView.tintColor = self.iconImageTintColor;
 
     UIView* backgroundIconView =
         [[UIView alloc] initWithFrame:iconImageView.frame];
     backgroundIconView.layer.cornerRadius = kIconCornerRadius;
     if (self.useIconBackgroundTint) {
-      backgroundIconView.backgroundColor = [UIColor colorNamed:kBlueHaloColor];
+      backgroundIconView.backgroundColor =
+          self.iconBackgroundColor ? self.iconBackgroundColor
+                                   : [UIColor colorNamed:kBlueHaloColor];
     }
     backgroundIconView.translatesAutoresizingMaskIntoConstraints = NO;
 
@@ -256,10 +264,10 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   [containerStack addArrangedSubview:labelsStackView];
     // Open Modal Button setup.
   self.openModalButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  UIImage* gearImage =
-      UseSymbols()
-          ? DefaultSymbolWithPointSize(kGearShapeSymbol, kSymbolImagePointSize)
-          : [UIImage imageNamed:@"infobar_settings_icon"];
+  UIImage* gearImage = UseSymbols()
+                           ? DefaultSymbolWithPointSize(kSettingsFilledSymbol,
+                                                        kSymbolImagePointSize)
+                           : [UIImage imageNamed:@"infobar_settings_icon"];
   gearImage =
       [gearImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 
@@ -338,14 +346,14 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
       [[UILongPressGestureRecognizer alloc] init];
   [longPressGestureRecognizer addTarget:self action:@selector(handleGestures:)];
   longPressGestureRecognizer.minimumPressDuration =
-      kLongPressTimeDurationInSeconds;
+      kLongPressTimeDuration.InSecondsF();
   [self.view addGestureRecognizer:longPressGestureRecognizer];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
   [self.metricsRecorder recordBannerEvent:MobileMessagesBannerEvent::Presented];
-  self.bannerAppearedTime = [NSDate timeIntervalSinceReferenceDate];
+  self.bannerAppearedTime = base::TimeTicks::Now();
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -415,8 +423,16 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   self.view.accessibilityCustomActions = [self accessibilityActions];
 }
 
+- (void)setIconImageTintColor:(UIColor*)iconImageTintColor {
+  _iconImageTintColor = iconImageTintColor;
+}
+
 - (void)setUseIconBackgroundTint:(BOOL)useIconBackgroundTint {
   _useIconBackgroundTint = useIconBackgroundTint;
+}
+
+- (void)setIconBackgroundColor:(UIColor*)iconBackgroundColor {
+  _iconBackgroundColor = iconBackgroundColor;
 }
 
 - (void)setRestrictSubtitleTextToSingleLine:
@@ -452,9 +468,9 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   }
 
   if (gesture.state == UIGestureRecognizerStateEnded) {
-    [self animateBannerToOriginalStateWithDuration:
-              kSelectBannerAnimationDurationInSeconds
-                                        completion:nil];
+    [self
+        animateBannerToOriginalStateWithDuration:kSelectBannerAnimationDuration
+                                      completion:nil];
     // If dragged up by more than kChangeInPositionForDismissal at the time
     // the gesture ended, OR `self.shouldDismissAfterTouchesEnded` is YES.
     // Dismiss the banner.
@@ -486,7 +502,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 
 // Animate the Banner being selected by scaling it up.
 - (void)animateBannerToScaleUpState {
-  [UIView animateWithDuration:kSelectBannerAnimationDurationInSeconds
+  [UIView animateWithDuration:kSelectBannerAnimationDuration.InSecondsF()
                    animations:^{
                      self.view.superview.transform = CGAffineTransformMakeScale(
                          kSelectedBannerViewScale, kSelectedBannerViewScale);
@@ -499,9 +515,9 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 }
 
 // Animate the Banner back to its original size and styling.
-- (void)animateBannerToOriginalStateWithDuration:(NSTimeInterval)duration
+- (void)animateBannerToOriginalStateWithDuration:(base::TimeDelta)duration
                                       completion:(ProceduralBlock)completion {
-  [UIView animateWithDuration:duration
+  [UIView animateWithDuration:duration.InSecondsF()
       animations:^{
         self.view.superview.transform = CGAffineTransformIdentity;
         [self.view.layer
@@ -515,7 +531,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 
 // Animate the banner back to its original position.
 - (void)animateBannerToOriginalPosition {
-  [UIView animateWithDuration:kSelectBannerAnimationDurationInSeconds
+  [UIView animateWithDuration:kSelectBannerAnimationDuration.InSecondsF()
                    animations:^{
                      self.view.center = self.originalCenter;
                    }
@@ -530,7 +546,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   // TODO(crbug.com/961343): Interrupt this animation in case the Banner needs
   // to be dismissed mid tap (Currently it will be dismmissed after the
   // animation).
-  [UIView animateWithDuration:kTappedBannerAnimationDurationInSeconds
+  [UIView animateWithDuration:kTappedBannerAnimationDuration.InSecondsF()
       animations:^{
         self.view.superview.transform = CGAffineTransformMakeScale(
             kTappedBannerViewScale, kTappedBannerViewScale);
@@ -540,7 +556,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
       completion:^(BOOL finished) {
         [self
             animateBannerToOriginalStateWithDuration:
-                kTappedBannerAnimationDurationInSeconds
+                kTappedBannerAnimationDuration
                                           completion:^{
                                             [self presentInfobarModalAfterTap];
                                           }];
@@ -562,8 +578,8 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 // doesn't call viewWillDissapear.
 - (void)recordBannerOnScreenTime {
   if (!self.bannerOnScreenTimeWasRecorded) {
-    double duration =
-        [NSDate timeIntervalSinceReferenceDate] - self.bannerAppearedTime;
+    const base::TimeDelta duration =
+        base::TimeTicks::Now() - self.bannerAppearedTime;
     [self.metricsRecorder recordBannerOnScreenDuration:duration];
     self.bannerOnScreenTimeWasRecorded = YES;
   }

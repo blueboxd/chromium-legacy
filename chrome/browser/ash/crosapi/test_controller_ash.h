@@ -57,9 +57,11 @@ class TestControllerAsh : public mojom::TestController,
       GetMinimizeOnBackKeyWindowPropertyCallback cb) override;
   void GetWindowPositionInScreen(const std::string& window_id,
                                  GetWindowPositionInScreenCallback cb) override;
+  void LaunchAppFromAppList(const std::string& app_id) override;
   void PinOrUnpinItemInShelf(const std::string& item_id,
                              bool pin,
                              PinOrUnpinItemInShelfCallback cb) override;
+  void ReinitializeAppService(ReinitializeAppServiceCallback callback) override;
   void SelectContextMenuForShelfItem(
       const std::string& item_id,
       uint32_t index,

@@ -5,13 +5,14 @@
 #include "chrome/browser/ui/views/bubble_anchor_util_views.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/ui/bubble_anchor_util.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/picture_in_picture_browser_frame_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "components/permissions/features.h"
+#include "ui/views/bubble/bubble_border.h"
 
 // This file contains the bubble_anchor_util implementation for a Views
 // browser window (BrowserView).
@@ -21,18 +22,27 @@ namespace bubble_anchor_util {
 AnchorConfiguration GetPageInfoAnchorConfiguration(Browser* browser,
                                                    Anchor anchor) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  if (anchor == kLocationBar &&
+      browser_view->GetLocationBarView()->ShouldHideContentSettingImage()) {
+    return {browser_view->GetLocationBarView()->chip_controller()->chip(),
+            browser_view->GetLocationBarView()->chip_controller()->chip(),
+            views::BubbleBorder::TOP_LEFT};
+  }
 
   if (anchor == kLocationBar && browser_view->GetLocationBarView()->IsDrawn())
     return {browser_view->GetLocationBarView(),
             browser_view->GetLocationBarView()->location_icon_view(),
             views::BubbleBorder::TOP_LEFT};
 
+// TODO(https://crbug.com/1346734): Enable this on all platforms.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   if (anchor == kLocationBar && browser_view->GetIsPictureInPictureType()) {
     auto* frame_view = static_cast<PictureInPictureBrowserFrameView*>(
         browser_view->frame()->GetFrameView());
     return {frame_view->GetLocationIconView(),
             frame_view->GetLocationIconView(), views::BubbleBorder::TOP_LEFT};
   }
+#endif
 
   if (anchor == kCustomTabBar && browser_view->toolbar()->custom_tab_bar())
     return {browser_view->toolbar()->custom_tab_bar(),

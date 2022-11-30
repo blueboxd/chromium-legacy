@@ -17,6 +17,7 @@ from typing import Iterable, Optional
 from common import get_host_arch, run_ffx_command, run_continuous_ffx_command, \
                    SDK_ROOT
 
+_EMU_COMMAND_RETRIES = 3
 RUN_SUMMARY_SCHEMA = \
     'https://fuchsia.dev/schema/ffx_test/run_summary-8d1dd964.json'
 
@@ -106,6 +107,16 @@ class FfxEmulator(AbstractContextManager):
         self._scoped_pb_storage = ScopedFfxConfig(
             'pbms.storage.path', os.path.join(SDK_ROOT, os.pardir, 'images'))
 
+        override_file = os.path.join(os.path.dirname(__file__), os.pardir,
+                                     'sdk_override.txt')
+        self._scoped_pb_metadata = None
+        if os.path.exists(override_file):
+            with open(override_file) as f:
+                pb_metadata = f.read().split('\n')
+                pb_metadata.append('{sdk.root}/*.json')
+                self._scoped_pb_metadata = ScopedFfxConfig(
+                    'pbms.metadata', json.dumps((pb_metadata)))
+
     @staticmethod
     def _check_ssh_config_file() -> None:
         """Checks for ssh keys and generates them if they are missing."""
@@ -140,6 +151,8 @@ class FfxEmulator(AbstractContextManager):
         """
 
         self._scoped_pb_storage.__enter__()
+        if self._scoped_pb_metadata:
+            self._scoped_pb_metadata.__enter__()
         self._check_ssh_config_file()
         self._download_product_bundle_if_necessary()
         emu_command = [
@@ -194,7 +207,12 @@ class FfxEmulator(AbstractContextManager):
                 json.dump(ast.literal_eval(qemu_arm64_meta), f)
             emu_command.extend(['--engine', 'qemu'])
 
-        run_ffx_command(emu_command)
+        for retry_num in range(_EMU_COMMAND_RETRIES):
+            if retry_num == _EMU_COMMAND_RETRIES - 1:
+                run_ffx_command(emu_command)
+            else:
+                if run_ffx_command(emu_command, check=False).returncode == 0:
+                    break
         return self._node_name
 
     def __exit__(self, exc_type, exc_value, traceback) -> bool:
@@ -204,6 +222,8 @@ class FfxEmulator(AbstractContextManager):
         # might fail.
         run_ffx_command(('emu', 'stop', self._node_name), check=False)
 
+        if self._scoped_pb_metadata:
+            self._scoped_pb_metadata.__exit__(exc_type, exc_value, traceback)
         self._scoped_pb_storage.__exit__(exc_type, exc_value, traceback)
 
         # Do not suppress exceptions.
@@ -260,8 +280,8 @@ class FfxTestRunner(AbstractContextManager):
             A subprocess.Popen object.
         """
         command = [
-            '--config', 'test.experimental_structured_output=false', 'test',
-            'run', '--output-directory', self._results_dir, component_uri
+            'test', 'run', '--output-directory', self._results_dir,
+            component_uri
         ]
         if test_args:
             command.append('--')

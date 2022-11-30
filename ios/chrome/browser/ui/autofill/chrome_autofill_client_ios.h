@@ -68,7 +68,8 @@ class ChromeAutofillClientIOS : public AutofillClient {
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
-  const GURL& GetLastCommittedURL() const override;
+  const GURL& GetLastCommittedPrimaryMainFrameURL() const override;
+  url::Origin GetLastCommittedPrimaryMainFrameOrigin() const override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
   const translate::LanguageState* GetLanguageState() override;
   translate::TranslateDriver* GetTranslateDriver() override;
@@ -107,6 +108,9 @@ class ChromeAutofillClientIOS : public AutofillClient {
   bool IsFastCheckoutSupported() override;
   bool IsFastCheckoutTriggerForm(const FormData& form,
                                  const FormFieldData& field) override;
+  bool FastCheckoutScriptSupportsConsentlessExecution(
+      const url::Origin& origin) override;
+  bool FastCheckoutClientSupportsConsentlessExecution() override;
   bool ShowFastCheckout(base::WeakPtr<FastCheckoutDelegate> delegate) override;
   void HideFastCheckout() override;
   bool IsTouchToFillCreditCardSupported() override;

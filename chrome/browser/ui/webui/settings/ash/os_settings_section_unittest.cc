@@ -7,8 +7,13 @@
 #include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
-namespace settings {
+namespace ash::settings {
+
+namespace mojom {
+using ::chromeos::settings::mojom::Section;
+using ::chromeos::settings::mojom::Setting;
+using ::chromeos::settings::mojom::Subpage;
+}  // namespace mojom
 
 TEST(OsSettingsSectionTest, Section) {
   // Sections should not incur modification.
@@ -45,5 +50,4 @@ TEST(OsSettingsSectionTest, SettingExistingQuery) {
                 /*url_to_modify=*/"networks?type=WiFi"));
 }
 
-}  // namespace settings
-}  // namespace chromeos
+}  // namespace ash::settings

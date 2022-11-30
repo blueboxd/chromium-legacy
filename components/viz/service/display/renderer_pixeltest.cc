@@ -59,6 +59,7 @@
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
 #include "ui/gfx/color_transform.h"
 #include "ui/gfx/geometry/mask_filter_info.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/test/icc_profiles.h"
 #include "ui/gfx/video_types.h"
 
@@ -112,7 +113,7 @@ ResourceId CreateGpuResource(scoped_refptr<ContextProvider> context_provider,
   DCHECK(sii);
   gpu::Mailbox mailbox = sii->CreateSharedImage(
       format, size, color_space, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
-      gpu::SHARED_IMAGE_USAGE_DISPLAY, pixels);
+      gpu::SHARED_IMAGE_USAGE_DISPLAY_READ, pixels);
   gpu::SyncToken sync_token = sii->GenUnverifiedSyncToken();
 
   TransferableResource gl_resource = TransferableResource::MakeGpu(
@@ -3142,7 +3143,7 @@ TEST_P(GPURendererPixelTest, AntiAliasingPerspective) {
   auto pass = CreateTestRootRenderPass(AggregatedRenderPassId{1}, rect);
 
   gfx::Rect red_rect(0, 0, 180, 500);
-  gfx::Transform red_quad_to_target_transform(
+  auto red_quad_to_target_transform = gfx::Transform::RowMajor(
       1.0f, 2.4520f, 10.6206f, 19.0f, 0.0f, 0.3528f, 5.9737f, 9.5f, 0.0f,
       -0.2250f, -0.9744f, 0.0f, 0.0f, 0.0225f, 0.0974f, 1.0f);
   SharedQuadState* red_shared_state = CreateTestSharedQuadState(
@@ -3431,7 +3432,7 @@ TEST_P(GPURendererPixelTest, TrilinearFiltering) {
   blue->SetNew(blue_shared_state, child_pass_rect, child_pass_rect,
                SkColors::kBlue, false);
 
-  gfx::Transform child_to_root_transform(SkMatrix::RectToRect(
+  auto child_to_root_transform = gfx::SkMatrixToTransform(SkMatrix::RectToRect(
       RectToSkRect(child_pass_rect), RectToSkRect(viewport_rect)));
   SharedQuadState* child_pass_shared_state = CreateTestSharedQuadState(
       child_to_root_transform, child_pass_rect, root_pass.get(), gfx::MaskFilterInfo());
@@ -4574,7 +4575,7 @@ TEST_P(GPURendererPixelTest, LinearGradientOnRenderPass) {
 
   gfx::RRectF rounded_corner_bounds(gfx::RectF(pass_rect), kCornerRadius);
   gfx::LinearGradient gradient_mask(330);
-  gradient_mask.AddStep(/*percent=*/0, /*alpha=*/0);
+  gradient_mask.AddStep(/*fraction=*/0, /*alpha=*/0);
   gradient_mask.AddStep(.5, 255);
   gradient_mask.AddStep(1, 255);
   SharedQuadState* pass_shared_state = CreateTestSharedQuadState(
@@ -4621,7 +4622,7 @@ TEST_P(GPURendererPixelTest, MultiLinearGradientOnRenderPass) {
   gfx::RRectF blue_rrect(gfx::RectF(blue_rect), kBlueCornerRadius);
   blue_rrect.Offset(blue_offset_from_target);
   gfx::LinearGradient blue_gradient(0);
-  blue_gradient.AddStep(/*percent=*/0, /*alpha=*/255);
+  blue_gradient.AddStep(/*fraction=*/0, /*alpha=*/255);
   blue_gradient.AddStep(1, 0);
 
   gfx::Transform quad_to_target_transform;
@@ -4643,7 +4644,7 @@ TEST_P(GPURendererPixelTest, MultiLinearGradientOnRenderPass) {
 
   gfx::RRectF rounded_corner_bounds(gfx::RectF(pass_rect), kCornerRadius);
   gfx::LinearGradient gradient_mask(-30);
-  gradient_mask.AddStep(/*percent=*/0, /*alpha=*/0);
+  gradient_mask.AddStep(/*fraction=*/0, /*alpha=*/0);
   gradient_mask.AddStep(.5, 255);
   gradient_mask.AddStep(1, 255);
   SharedQuadState* pass_shared_state = CreateTestSharedQuadState(

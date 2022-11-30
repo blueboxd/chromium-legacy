@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/api/settings_private/generated_prefs.h"
 #include "chrome/browser/extensions/api/settings_private/generated_prefs_factory.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"
-#include "chrome/browser/first_party_sets/first_party_sets_pref_names.h"
 #include "chrome/browser/metrics/profile_pref_names.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/password_manager/generated_password_leak_detection_pref.h"
@@ -62,7 +61,6 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/arc/arc_prefs.h"
-#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_pref_names.h"  // nogncheck
 #include "ash/public/cpp/ambient/ambient_prefs.h"
@@ -79,6 +77,7 @@
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "components/account_manager_core/pref_names.h"
@@ -296,11 +295,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Privacy Sandbox page
-  (*s_allowlist)[::prefs::kPrivacySandboxApisEnabled] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::prefs::kPrivacySandboxApisEnabledV2] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[::prefs::kPrivacySandboxManuallyControlled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::prefs::kPrivacySandboxManuallyControlledV2] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
@@ -328,7 +323,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::prefs::kCookieControlsMode] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
-  (*s_allowlist)[::first_party_sets::kFirstPartySetsEnabled] =
+  (*s_allowlist)[::prefs::kPrivacySandboxFirstPartySetsEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Sync and personalization page.
@@ -927,6 +922,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)
       [performance_manager::user_tuning::prefs::kHighEfficiencyModeEnabled] =
           settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)
+      [performance_manager::user_tuning::prefs::kBatterySaverModeState] =
+          settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_allowlist)
+      [performance_manager::user_tuning::prefs::kTabDiscardingExceptions] =
+          settings_api::PrefType::PREF_TYPE_LIST;
 
   return *s_allowlist;
 }

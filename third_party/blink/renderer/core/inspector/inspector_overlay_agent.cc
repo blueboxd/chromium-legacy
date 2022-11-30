@@ -1234,7 +1234,8 @@ void InspectorOverlayAgent::LoadOverlayPageResource() {
       FrameInsertType::kInsertInConstructor, LocalFrameToken(), nullptr,
       nullptr);
   frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
-  frame->Init(/*opener=*/nullptr, /*policy_container=*/nullptr, StorageKey());
+  frame->Init(/*opener=*/nullptr, DocumentToken(), /*policy_container=*/nullptr,
+              StorageKey());
   frame->View()->SetCanHaveScrollbars(false);
   frame->View()->SetBaseBackgroundColor(Color::kTransparent);
 
@@ -1251,7 +1252,8 @@ void InspectorOverlayAgent::LoadOverlayPageResource() {
   DCHECK(script_state);
   ScriptState::Scope scope(script_state);
   v8::MicrotasksScope microtasks_scope(
-      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+      isolate, ToMicrotaskQueue(script_state),
+      v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::Local<v8::Object> global = script_state->GetContext()->Global();
   v8::Local<v8::Value> overlay_host_obj =
       ToV8(overlay_host_.Get(), global, isolate);
@@ -1410,7 +1412,7 @@ void InspectorOverlayAgent::PageLayoutInvalidated(bool resized) {
     resize_timer_active_ = false;
     // Handle the resize in the next cycle to decouple overlay page rebuild from
     // the main page layout to avoid document lifecycle issues caused by
-    // Microtask::PerformCheckpoint() called when we rebuild the overlay page.
+    // EventLoop::PerformCheckpoint() called when we rebuild the overlay page.
     resize_timer_.Stop();
     resize_timer_.StartOneShot(base::Seconds(0), FROM_HERE);
     return;

@@ -70,7 +70,6 @@
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -365,10 +364,9 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
       [[TableViewImageItem alloc] initWithType:ItemTypeShowFullHistory];
   historyItem.title = l10n_util::GetNSString(IDS_HISTORY_SHOWFULLHISTORY_LINK);
 
-  historyItem.image = UseSymbols()
-                          ? DefaultSymbolWithPointSize(kClockArrowSymbol,
-                                                       kSymbolActionPointSize)
-                          : [UIImage imageNamed:@"show_history"];
+  historyItem.image = UseSymbols() ? DefaultSymbolWithPointSize(
+                                         kHistorySymbol, kSymbolActionPointSize)
+                                   : [UIImage imageNamed:@"show_history"];
   if (self.styler.tintColor) {
     historyItem.textColor = self.styler.tintColor;
   } else {
@@ -1158,7 +1156,11 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
         base::mac::ObjCCastStrict<TableViewSigninPromoCell>(cell);
     signinPromoCell.signinPromoView.imageView.hidden = YES;
     signinPromoCell.signinPromoView.textLabel.hidden = YES;
+    // Disable animations when setting the background color to prevent flash on
+    // rotation.
+    [UIView setAnimationsEnabled:NO];
     signinPromoCell.backgroundColor = nil;
+    [UIView setAnimationsEnabled:YES];
   }
   // Retrieve favicons for closed tabs and remote sessions.
   if (itemTypeSelected == ItemTypeRecentlyClosed ||

@@ -16,11 +16,13 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/barrier_callback.h"
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
@@ -56,6 +58,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_stream_md5_digester.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/select_file_dialog_extension_user_data.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
@@ -69,6 +72,7 @@
 #include "chromeos/ash/components/disks/disk_mount_manager.h"
 #include "components/drive/event_logger.h"
 #include "components/drive/file_system_core_util.h"
+#include "components/prefs/pref_service.h"
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -106,6 +110,17 @@ using storage::FileSystemURL;
 
 namespace extensions {
 namespace {
+
+using file_manager::Volume;
+using file_manager::VolumeManager;
+
+std::string Redact(const base::StringPiece s) {
+  return LOG_IS_ON(INFO) ? base::StrCat({"'", s, "'"}) : "(redacted)";
+}
+
+std::string Redact(const base::FilePath& path) {
+  return Redact(path.value());
+}
 
 const char kRootPath[] = "/";
 
@@ -455,20 +470,20 @@ extensions::api::file_manager_private::DlpLevel DlpRulesManagerLevelToApiEnum(
 extensions::api::file_manager_private::VolumeType
 DlpRulesManagerComponentToApiEnum(
     policy::DlpRulesManager::Component component) {
-  using extensions::api::file_manager_private::VolumeType;
-  using Component = policy::DlpRulesManager::Component;
+  using ::extensions::api::file_manager_private::VolumeType;
+  using Component = ::policy::DlpRulesManager::Component;
   switch (component) {
-    case policy::DlpRulesManager::Component::kArc:
+    case Component::kArc:
       return VolumeType::VOLUME_TYPE_ANDROID_FILES;
-    case policy::DlpRulesManager::Component::kCrostini:
+    case Component::kCrostini:
       return VolumeType::VOLUME_TYPE_CROSTINI;
-    case policy::DlpRulesManager::Component::kPluginVm:
+    case Component::kPluginVm:
       return VolumeType::VOLUME_TYPE_GUEST_OS;
-    case policy::DlpRulesManager::Component::kUsb:
+    case Component::kUsb:
       return VolumeType::VOLUME_TYPE_REMOVABLE;
-    case policy::DlpRulesManager::Component::kDrive:
+    case Component::kDrive:
       return VolumeType::VOLUME_TYPE_DRIVE;
-    case policy::DlpRulesManager::Component::kUnknownComponent:
+    case Component::kUnknownComponent:
       NOTREACHED() << "DLP component not set.";
       return {};
   }
@@ -581,17 +596,22 @@ ExtensionFunction::ResponseAction FileWatchFunctionBase::Run() {
     return RespondNow(Error("Invalid URL"));
   }
 
-  file_manager::VolumeManager* const volume_manager =
-      file_manager::VolumeManager::Get(profile);
-  if (!volume_manager)
-    return RespondNow(Error("Can't find VolumeManager"));
-  base::WeakPtr<file_manager::Volume> volume =
-      volume_manager->FindVolumeFromPath(file_system_url.path());
-  if (!volume)
-    return RespondNow(Error("Can't find volume"));
+  // For removeFileWatch() we can't validate the volume because it might have
+  // been unmounted.
+  if (IsAddWatch()) {
+    VolumeManager* const volume_manager = VolumeManager::Get(profile);
+    if (!volume_manager)
+      return RespondNow(Error("Cannot find VolumeManager"));
 
-  if (!volume->watchable())
-    return RespondNow(Error("Volume is not watchable"));
+    const base::WeakPtr<Volume> volume =
+        volume_manager->FindVolumeFromPath(file_system_url.path());
+    if (!volume)
+      return RespondNow(
+          Error("Cannot find volume *", Redact(file_system_url.path())));
+
+    if (!volume->watchable())
+      return RespondNow(Error("Volume is not watchable"));
+  }
 
   file_manager::EventRouter* const event_router =
       file_manager::EventRouterFactory::GetForProfile(profile);
@@ -692,24 +712,29 @@ void FileManagerPrivateInternalRemoveFileWatchFunction::
   RespondWith(true);
 }
 
+bool FileManagerPrivateInternalAddFileWatchFunction::IsAddWatch() {
+  return true;
+}
+
+bool FileManagerPrivateInternalRemoveFileWatchFunction::IsAddWatch() {
+  return false;
+}
+
 ExtensionFunction::ResponseAction
 FileManagerPrivateGetSizeStatsFunction::Run() {
   using extensions::api::file_manager_private::GetSizeStats::Params;
   const std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  using file_manager::Volume;
-  using file_manager::VolumeManager;
   VolumeManager* const volume_manager =
       VolumeManager::Get(Profile::FromBrowserContext(browser_context()));
   if (!volume_manager)
-    return RespondNow(Error("Invalid state"));
+    return RespondNow(Error("Cannot find VolumeManager"));
 
   base::WeakPtr<Volume> volume =
       volume_manager->FindVolumeById(params->volume_id);
   if (!volume.get())
-    return RespondNow(
-        Error("GetSizeStats: volume with ID * not found", params->volume_id));
+    return RespondNow(Error("Cannot find volume with ID *", params->volume_id));
 
   // For fusebox volumes, get the underlying (aka regular) volume.
   const auto fusebox = base::StringPiece(file_manager::util::kFuseBox);
@@ -727,8 +752,7 @@ FileManagerPrivateGetSizeStatsFunction::Run() {
 
     volume = volume_manager->FindVolumeById(volume_id);
     if (!volume.get()) {
-      return RespondNow(
-          Error("GetSizeStats: volume with ID * not found", volume_id));
+      return RespondNow(Error("Cannot find volume with ID *", volume_id));
     }
   }
 
@@ -918,18 +942,15 @@ FileManagerPrivateFormatVolumeFunction::Run() {
   const std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  using file_manager::Volume;
-  using file_manager::VolumeManager;
   VolumeManager* const volume_manager =
       VolumeManager::Get(Profile::FromBrowserContext(browser_context()));
   if (!volume_manager)
-    return RespondNow(Error("Invalid state"));
+    return RespondNow(Error("Cannot find VolumeManager"));
 
-  base::WeakPtr<Volume> volume =
+  const base::WeakPtr<Volume> volume =
       volume_manager->FindVolumeById(params->volume_id);
   if (!volume)
-    return RespondNow(
-        Error("FormatVolume: volume with ID * not found", params->volume_id));
+    return RespondNow(Error("Cannot find volume with ID *", params->volume_id));
 
   DiskMountManager::GetInstance()->FormatMountedDevice(
       volume->mount_path().AsUTF8Unsafe(),
@@ -979,18 +1000,15 @@ FileManagerPrivateRenameVolumeFunction::Run() {
   const std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  using file_manager::Volume;
-  using file_manager::VolumeManager;
   VolumeManager* const volume_manager =
       VolumeManager::Get(Profile::FromBrowserContext(browser_context()));
   if (!volume_manager)
-    return RespondNow(Error("Invalid state"));
+    return RespondNow(Error("Cannot find VolumeManager"));
 
-  base::WeakPtr<Volume> volume =
+  const base::WeakPtr<Volume> volume =
       volume_manager->FindVolumeById(params->volume_id);
   if (!volume)
-    return RespondNow(
-        Error("RenameVolume: volume with ID * not found", params->volume_id));
+    return RespondNow(Error("Cannot find volume with ID *", params->volume_id));
 
   DiskMountManager::GetInstance()->RenameMountedDevice(
       volume->mount_path().AsUTF8Unsafe(), params->new_name);
@@ -1268,6 +1286,25 @@ FileManagerPrivateGetDlpBlockedComponentsFunction::Run() {
   return RespondNow(ArgumentList(
       api::file_manager_private::GetDlpBlockedComponents::Results::Create(
           converted_list)));
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateGetDialogCallerFunction::Run() {
+  absl::optional<policy::DlpFilesController::DlpFileDestination> caller =
+      SelectFileDialogExtensionUserData::GetDialogCallerForWebContents(
+          GetSenderWebContents());
+  base::Value::Dict info;
+  if (caller.has_value()) {
+    if (caller->url_or_path.has_value()) {
+      info.Set("url", caller->url_or_path.value());
+    }
+    if (caller->component.has_value()) {
+      info.Set("component",
+               DlpRulesManagerComponentToApiEnum(caller->component.value()));
+    }
+  }
+
+  return RespondNow(WithArguments(std::move(info)));
 }
 
 FileManagerPrivateInternalStartCopyFunction::
@@ -1800,18 +1837,17 @@ FileManagerPrivateInternalStartIOTaskFunction::Run() {
       file_manager::util::GetFileSystemContextForRenderFrameHost(
           profile, render_frame_host());
 
-  auto* const volume_manager = file_manager::VolumeManager::Get(
-      Profile::FromBrowserContext(browser_context()));
-  if (!volume_manager || !volume_manager->io_task_controller()) {
-    return RespondNow(Error("Invalid state"));
-  }
+  VolumeManager* const volume_manager =
+      VolumeManager::Get(Profile::FromBrowserContext(browser_context()));
+  if (!volume_manager || !volume_manager->io_task_controller())
+    return RespondNow(Error("Cannot find VolumeManager"));
 
   std::vector<storage::FileSystemURL> source_urls;
   for (const std::string& url : params->urls) {
     storage::FileSystemURL cracked_url =
         file_system_context->CrackURLInFirstPartyContext(GURL(url));
     if (!cracked_url.is_valid()) {
-      return RespondNow(Error("Invalid source url."));
+      return RespondNow(Error("Invalid source URL *", Redact(url)));
     }
     source_urls.push_back(std::move(cracked_url));
   }
@@ -1834,6 +1870,15 @@ FileManagerPrivateInternalStartIOTaskFunction::Run() {
   // default to true.
   bool show_notification = params->params.show_notification.value_or(true);
 
+  // Check if Trash is enabled, this pref is mainly used by enterprise policy to
+  // disable trash on a per profile basis.
+  bool is_trash_enabled = false;
+  if (base::FeatureList::IsEnabled(chromeos::features::kFilesTrash) &&
+      profile && profile->GetPrefs()) {
+    is_trash_enabled =
+        profile->GetPrefs()->GetBoolean(ash::prefs::kFilesAppTrashEnabled);
+  }
+
   std::unique_ptr<file_manager::io_task::IOTask> task;
   switch (type.value()) {
     case file_manager::io_task::OperationType::kCopy:
@@ -1853,7 +1898,7 @@ FileManagerPrivateInternalStartIOTaskFunction::Run() {
           std::move(source_urls), file_system_context, show_notification);
       break;
     case file_manager::io_task::OperationType::kEmptyTrash:
-      if (base::FeatureList::IsEnabled(chromeos::features::kFilesTrash)) {
+      if (is_trash_enabled) {
         task = std::make_unique<file_manager::io_task::EmptyTrashIOTask>(
             blink::StorageKey(render_frame_host()->GetLastCommittedOrigin()),
             profile, file_system_context,
@@ -1861,14 +1906,14 @@ FileManagerPrivateInternalStartIOTaskFunction::Run() {
       }
       break;
     case file_manager::io_task::OperationType::kRestore:
-      if (base::FeatureList::IsEnabled(chromeos::features::kFilesTrash)) {
+      if (is_trash_enabled) {
         task = std::make_unique<file_manager::io_task::RestoreIOTask>(
             std::move(source_urls), profile, file_system_context,
             /*base_path=*/base::FilePath(), show_notification);
       }
       break;
     case file_manager::io_task::OperationType::kRestoreToDestination:
-      if (base::FeatureList::IsEnabled(chromeos::features::kFilesTrash)) {
+      if (is_trash_enabled) {
         task =
             std::make_unique<file_manager::io_task::RestoreToDestinationIOTask>(
                 std::move(source_urls), std::move(destination_folder_url),
@@ -1877,7 +1922,7 @@ FileManagerPrivateInternalStartIOTaskFunction::Run() {
       }
       break;
     case file_manager::io_task::OperationType::kTrash:
-      if (base::FeatureList::IsEnabled(chromeos::features::kFilesTrash)) {
+      if (is_trash_enabled) {
         task = std::make_unique<file_manager::io_task::TrashIOTask>(
             std::move(source_urls), profile, file_system_context,
             /*base_path=*/base::FilePath(), show_notification);
@@ -1914,11 +1959,10 @@ FileManagerPrivateCancelIOTaskFunction::Run() {
   const std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  auto* const volume_manager = file_manager::VolumeManager::Get(
-      Profile::FromBrowserContext(browser_context()));
-  if (!volume_manager || !volume_manager->io_task_controller()) {
-    return RespondNow(Error("Invalid state"));
-  }
+  VolumeManager* const volume_manager =
+      VolumeManager::Get(Profile::FromBrowserContext(browser_context()));
+  if (!volume_manager || !volume_manager->io_task_controller())
+    return RespondNow(Error("Cannot find VolumeManager"));
 
   if (params->task_id <= 0) {
     return RespondNow(Error("Invalid task id"));
@@ -1994,7 +2038,7 @@ void FileManagerPrivateInternalParseTrashInfoFilesFunction::
   url::Origin origin = render_frame_host()->GetLastCommittedOrigin();
 
   for (auto& trash_info_data : parsed_data) {
-    if (trash_info_data.is_error()) {
+    if (!trash_info_data.has_value()) {
       LOG(ERROR) << "Failed parsing trashinfo file: "
                  << trash_info_data.error();
       continue;
@@ -2028,7 +2072,7 @@ void FileManagerPrivateInternalParseTrashInfoFilesFunction::
   DCHECK_EQ(parsed_data.size(), entry_definition_list->size());
   std::vector<api::file_manager_private_internal::ParsedTrashInfoFile> results;
 
-  for (int i = 0; i < parsed_data.size(); ++i) {
+  for (size_t i = 0; i < parsed_data.size(); ++i) {
     const auto& [trash_info_path, trashed_file_path, absolute_restore_path,
                  deletion_date] = parsed_data[i];
     api::file_manager_private_internal::ParsedTrashInfoFile info;

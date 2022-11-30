@@ -151,7 +151,7 @@ void LayoutBlock::RemoveFromGlobalMaps() {
   if (HasPositionedObjects()) {
     TrackedLayoutBoxLinkedHashSet* descendants =
         GetPositionedDescendantsMap().Take(this);
-    DCHECK(!descendants->IsEmpty());
+    DCHECK(!descendants->empty());
     for (LayoutBox* descendant : *descendants) {
       DCHECK_EQ(GetPositionedContainerMap().at(descendant), this);
       GetPositionedContainerMap().erase(descendant);
@@ -160,7 +160,7 @@ void LayoutBlock::RemoveFromGlobalMaps() {
   if (HasPercentHeightDescendants()) {
     TrackedLayoutBoxLinkedHashSet* descendants =
         GetPercentHeightDescendantsMap().Take(this);
-    DCHECK(!descendants->IsEmpty());
+    DCHECK(!descendants->empty());
     for (LayoutBox* descendant : *descendants) {
       DCHECK_EQ(descendant->PercentHeightContainer(), this);
       descendant->SetPercentHeightContainer(nullptr);
@@ -216,6 +216,17 @@ static bool BorderOrPaddingLogicalDimensionChanged(
          old_style.PaddingBottom() != new_style.PaddingBottom();
 }
 
+// Compute a local version of the "font size scale factor" used by SVG
+// <text>. Squared to avoid computing the square root. See
+// SVGLayoutSupport::CalculateScreenFontSizeScalingFactor().
+static double ComputeSquaredLocalFontSizeScalingFactor(
+    const TransformationMatrix* transform) {
+  if (!transform)
+    return 1;
+  const auto affine = transform->ToAffineTransform();
+  return affine.XScaleSquared() + affine.YScaleSquared();
+}
+
 void LayoutBlock::StyleDidChange(StyleDifference diff,
                                  const ComputedStyle* old_style) {
   NOT_DESTROYED();
@@ -223,10 +234,8 @@ void LayoutBlock::StyleDidChange(StyleDifference diff,
   // updates Layer()->Transform().
   double old_squared_scale = 1;
   if (Layer() && diff.TransformChanged() && has_svg_text_descendants_) {
-    if (TransformationMatrix* old_transform = Layer()->Transform()) {
-      const auto transform = old_transform->ToAffineTransform();
-      old_squared_scale = transform.XScaleSquared() + transform.YScaleSquared();
-    }
+    old_squared_scale =
+        ComputeSquaredLocalFontSizeScalingFactor(Layer()->Transform());
   }
 
   LayoutBox::StyleDidChange(diff, old_style);
@@ -278,14 +287,10 @@ void LayoutBlock::StyleDidChange(StyleDifference diff,
                                              kLogicalHeight);
 
   if (diff.TransformChanged() && has_svg_text_descendants_) {
-    const TransformationMatrix* new_transform =
-        Layer() ? Layer()->Transform() : nullptr;
-    const auto new_affine_transform =
-        new_transform ? new_transform->ToAffineTransform() : AffineTransform();
-    // Compare XScaleSquared()+YScaleSquared().
-    // See SVGLayoutSupport::CalculateScreenFontSizeScalingFactor().
-    if (old_squared_scale != new_affine_transform.XScaleSquared() +
-                                 new_affine_transform.YScaleSquared()) {
+    const double new_squared_scale = ComputeSquaredLocalFontSizeScalingFactor(
+        Layer() ? Layer()->Transform() : nullptr);
+    // Compare local scale before and after.
+    if (old_squared_scale != new_squared_scale) {
       for (LayoutBox* box : *View()->SvgTextDescendantsMap().at(this))
         To<LayoutNGSVGText>(box)->SetNeedsTextMetricsUpdate();
     }
@@ -1059,7 +1064,7 @@ void LayoutBlock::RemovePositionedObject(LayoutBox* o) {
   DCHECK(positioned_descendants);
   DCHECK(positioned_descendants->Contains(o));
   positioned_descendants->erase(o);
-  if (positioned_descendants->IsEmpty()) {
+  if (positioned_descendants->empty()) {
     GetPositionedDescendantsMap().erase(container);
     container->has_positioned_objects_ = false;
   }
@@ -1163,7 +1168,7 @@ void LayoutBlock::RemovePositionedObjects(
     positioned_descendants->erase(object);
     GetPositionedContainerMap().erase(object);
   }
-  if (positioned_descendants->IsEmpty()) {
+  if (positioned_descendants->empty()) {
     GetPositionedDescendantsMap().erase(this);
     has_positioned_objects_ = false;
   }
@@ -1216,7 +1221,7 @@ void LayoutBlock::RemovePercentHeightDescendant(LayoutBox* descendant) {
   if (TrackedLayoutBoxLinkedHashSet* descendants = PercentHeightDescendants()) {
     descendants->erase(descendant);
     descendant->SetPercentHeightContainer(nullptr);
-    if (descendants->IsEmpty()) {
+    if (descendants->empty()) {
       GetPercentHeightDescendantsMap().erase(this);
       has_percent_height_descendants_ = false;
     }
@@ -1244,7 +1249,7 @@ void LayoutBlock::RemoveSvgTextDescendant(LayoutBox& svg_text) {
     return;
   TrackedLayoutBoxLinkedHashSet* descendants = &*it->value;
   descendants->erase(&svg_text);
-  if (descendants->IsEmpty()) {
+  if (descendants->empty()) {
     map.erase(this);
     has_svg_text_descendants_ = false;
   }

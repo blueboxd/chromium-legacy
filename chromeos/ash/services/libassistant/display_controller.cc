@@ -16,8 +16,7 @@
 #include "chromeos/assistant/internal/libassistant/shared_headers.h"
 #include "chromeos/assistant/internal/proto/shared/proto/v2/internal_options.pb.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 namespace {
 // A macro which ensures we are running on the main thread.
@@ -88,7 +87,7 @@ void DisplayController::SetRelatedInfoEnabled(bool enabled) {
 }
 
 void DisplayController::SetAndroidAppList(
-    const std::vector<::chromeos::assistant::AndroidAppInfo>& apps) {
+    const std::vector<assistant::AndroidAppInfo>& apps) {
   display_connection_->OnAndroidAppListRefreshed(apps);
 }
 
@@ -109,21 +108,21 @@ void DisplayController::OnDestroyingAssistantClient(
 
 // Called from Libassistant thread.
 void DisplayController::OnVerifyAndroidApp(
-    const std::vector<chromeos::assistant::AndroidAppInfo>& apps_info,
+    const std::vector<assistant::AndroidAppInfo>& apps_info,
     const chromeos::assistant::InteractionInfo& interaction) {
   ENSURE_MOJOM_THREAD(&DisplayController::OnVerifyAndroidApp, apps_info,
                       interaction);
 
-  std::vector<chromeos::assistant::AndroidAppInfo> result_apps_info;
+  std::vector<assistant::AndroidAppInfo> result_apps_info;
   for (auto& app_info : apps_info) {
-    chromeos::assistant::AndroidAppInfo result_app_info(app_info);
+    assistant::AndroidAppInfo result_app_info(app_info);
     auto app_status = GetAndroidAppStatus(app_info.package_name);
     result_app_info.status = app_status;
     result_apps_info.emplace_back(result_app_info);
   }
 
   auto interaction_proto =
-      chromeos::libassistant::CreateVerifyProviderResponseInteraction(
+      ash::libassistant::CreateVerifyProviderResponseInteraction(
           interaction.interaction_id, result_apps_info);
 
   ::assistant::api::VoicelessOptions options;
@@ -137,7 +136,7 @@ void DisplayController::OnVerifyAndroidApp(
       base::DoNothing());
 }
 
-chromeos::assistant::AppStatus DisplayController::GetAndroidAppStatus(
+assistant::AppStatus DisplayController::GetAndroidAppStatus(
     const std::string& package_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -152,5 +151,4 @@ chromeos::assistant::AppStatus DisplayController::GetAndroidAppStatus(
   return assistant::AppStatus::kUnavailable;
 }
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant

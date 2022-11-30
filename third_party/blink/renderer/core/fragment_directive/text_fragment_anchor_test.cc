@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,7 @@ class TextFragmentAnchorTest : public SimTest {
     // When the beforematch event is not scheduled, a DCHECK will fail on
     // BeginFrame() because no event was scheduled, so we schedule an empty task
     // here.
-    GetDocument().EnqueueAnimationFrameTask(WTF::Bind([]() {}));
+    GetDocument().EnqueueAnimationFrameTask(WTF::BindOnce([]() {}));
     Compositor().BeginFrame();
   }
 
@@ -220,7 +220,7 @@ TEST_F(TextFragmentAnchorTest, EmptyText) {
 
   EXPECT_EQ(nullptr, GetDocument().CssTarget());
   EXPECT_FALSE(GetDocument().View()->GetFragmentAnchor());
-  EXPECT_TRUE(GetDocument().Markers().Markers().IsEmpty());
+  EXPECT_TRUE(GetDocument().Markers().Markers().empty());
 }
 
 // Make sure a non-matching string doesn't cause scroll and the fragment is
@@ -256,7 +256,7 @@ TEST_F(TextFragmentAnchorTest, NonMatchingString) {
   Compositor().BeginFrame();
 
   EXPECT_EQ(nullptr, GetDocument().CssTarget());
-  EXPECT_TRUE(GetDocument().Markers().Markers().IsEmpty());
+  EXPECT_TRUE(GetDocument().Markers().Markers().empty());
 }
 
 // Ensure multiple matches will scroll the first into view.
@@ -483,7 +483,7 @@ TEST_F(TextFragmentAnchorTest, MultipleNonMatchingStrings) {
   Compositor().BeginFrame();
 
   EXPECT_EQ(nullptr, GetDocument().CssTarget());
-  EXPECT_TRUE(GetDocument().Markers().Markers().IsEmpty());
+  EXPECT_TRUE(GetDocument().Markers().Markers().empty());
 }
 
 // Test matching a text range within the same element
@@ -1470,7 +1470,7 @@ TEST_F(TextFragmentAnchorTest, CheckForWordBoundary) {
 
   EXPECT_EQ(nullptr, GetDocument().CssTarget());
   EXPECT_EQ(ScrollOffset(), LayoutViewport()->GetScrollOffset());
-  EXPECT_TRUE(GetDocument().Markers().Markers().IsEmpty());
+  EXPECT_TRUE(GetDocument().Markers().Markers().empty());
 }
 
 // Test that we don't match partial words with context
@@ -1495,7 +1495,7 @@ TEST_F(TextFragmentAnchorTest, CheckForWordBoundaryWithContext) {
 
   EXPECT_EQ(nullptr, GetDocument().CssTarget());
   EXPECT_EQ(ScrollOffset(), LayoutViewport()->GetScrollOffset());
-  EXPECT_TRUE(GetDocument().Markers().Markers().IsEmpty());
+  EXPECT_TRUE(GetDocument().Markers().Markers().empty());
 }
 
 // Test that we correctly match a whole word when it appears as a partial word
@@ -2349,7 +2349,7 @@ TEST_F(TextFragmentAnchorTest, OpenedFromHighlightDoesNotSelectAdditionalText) {
 
   // No additional text should be selected.
   FrameSelection& selection = GetDocument().GetFrame()->Selection();
-  EXPECT_TRUE(selection.SelectedText().IsEmpty());
+  EXPECT_TRUE(selection.SelectedText().empty());
 
   // Create a mouse event at the center of <p> four.
   const DOMRect* last_rect = last_element->getBoundingClientRect();
@@ -2370,7 +2370,7 @@ TEST_F(TextFragmentAnchorTest, OpenedFromHighlightDoesNotSelectAdditionalText) {
       WebCoalescedInputEvent(last_mouse_up_event, ui::LatencyInfo()));
 
   // The text underneath the cursor should be selected.
-  EXPECT_FALSE(selection.SelectedText().IsEmpty());
+  EXPECT_FALSE(selection.SelectedText().empty());
 }
 
 // Test that on Android, a user can display a context menu by tapping on

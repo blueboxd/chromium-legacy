@@ -166,7 +166,7 @@ TEST_F(SkiaOutputSurfaceImplTest, EndPaint) {
       base::BindOnce(&SkiaOutputSurfaceImplTest::CopyRequestCallbackOnGpuThread,
                      base::Unretained(this), output_rect, color_space));
   request->set_result_task_runner(
-      TestGpuServiceHolder::GetInstance()->gpu_thread_task_runner());
+      TestGpuServiceHolder::GetInstance()->gpu_main_thread_task_runner());
   copy_output::RenderPassGeometry geometry;
   geometry.result_bounds = output_rect;
   geometry.result_selection = output_rect;
@@ -186,10 +186,11 @@ TEST_F(SkiaOutputSurfaceImplTest, EndPaint) {
 
   output_surface_->ScheduleGpuTaskForTesting(std::move(closure), {sync_token});
   BlockMainThread();
-  EXPECT_TRUE(on_finished_called);
 
   // Let the cb to come back.
   base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(on_finished_called);
   EXPECT_TRUE(on_return_release_fence_called);
 }
 
@@ -240,7 +241,7 @@ TEST_F(SkiaOutputSurfaceImplTest, CopyOutputBitmapSupportedColorSpace) {
           },
           &result, run_loop.QuitClosure()));
   request->set_result_task_runner(
-      TestGpuServiceHolder::GetInstance()->gpu_thread_task_runner());
+      TestGpuServiceHolder::GetInstance()->gpu_main_thread_task_runner());
   copy_output::RenderPassGeometry geometry;
   geometry.result_bounds = output_rect;
   geometry.result_selection = output_rect;
@@ -281,7 +282,7 @@ TEST_F(SkiaOutputSurfaceImplTest, CopyOutputBitmapUnsupportedColorSpace) {
           },
           &result, run_loop.QuitClosure()));
   request->set_result_task_runner(
-      TestGpuServiceHolder::GetInstance()->gpu_thread_task_runner());
+      TestGpuServiceHolder::GetInstance()->gpu_main_thread_task_runner());
   copy_output::RenderPassGeometry geometry;
   geometry.result_bounds = output_rect;
   geometry.result_selection = output_rect;

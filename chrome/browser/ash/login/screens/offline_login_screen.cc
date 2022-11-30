@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/login/screens/offline_login_screen.h"
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -114,10 +115,10 @@ void OfflineLoginScreen::OnUserAction(const base::Value::List& args) {
   if (action_id == kUserActionCancel) {
     exit_callback_.Run(Result::BACK);
   } else if (action_id == kUserActionEmailSubmitted) {
-    CHECK_EQ(args.size(), 2);
+    CHECK_EQ(args.size(), 2u);
     HandleEmailSubmitted(args[1].GetString());
   } else if (action_id == kUserActionCompleteAuthentication) {
-    CHECK_EQ(args.size(), 3);
+    CHECK_EQ(args.size(), 3u);
     HandleCompleteAuth(args[1].GetString(), args[2].GetString());
   } else {
     BaseScreen::OnUserAction(args);
@@ -131,7 +132,8 @@ void OfflineLoginScreen::HandleTryLoadOnlineLogin() {
 void OfflineLoginScreen::HandleCompleteAuth(const std::string& email,
                                             const std::string& password) {
   const std::string sanitized_email = gaia::SanitizeEmail(email);
-  const AccountId account_id = user_manager::known_user::GetAccountId(
+  user_manager::KnownUser known_user(g_browser_process->local_state());
+  const AccountId account_id = known_user.GetAccountId(
       sanitized_email, std::string() /* id */, AccountType::UNKNOWN);
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(account_id);

@@ -15,6 +15,7 @@
 #include "crypto/crypto_buildflags.h"
 #include "net/base/hash_value.h"
 #include "net/base/net_export.h"
+#include "net/net_buildflags.h"
 
 namespace net {
 
@@ -87,9 +88,16 @@ class NET_EXPORT CertVerifyProc
       scoped_refptr<CertNetFetcher> cert_net_fetcher);
 #endif
 
-#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(USE_NSS_CERTS) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(USE_NSS_CERTS)
   // Creates and returns a CertVerifyProcBuiltin using the SSL SystemTrustStore.
   static scoped_refptr<CertVerifyProc> CreateBuiltinVerifyProc(
+      scoped_refptr<CertNetFetcher> cert_net_fetcher);
+#endif
+
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+  // Creates and returns a CertVerifyProcBuiltin using the Chrome Root Store
+  // SystemTrustStore.
+  static scoped_refptr<CertVerifyProc> CreateBuiltinWithChromeRootStore(
       scoped_refptr<CertNetFetcher> cert_net_fetcher);
 #endif
 

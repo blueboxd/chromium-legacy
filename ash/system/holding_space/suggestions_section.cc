@@ -9,6 +9,7 @@
 #include "ash/bubble/bubble_utils.h"
 #include "ash/bubble/simple_grid_layout.h"
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
+#include "ash/public/cpp/holding_space/holding_space_metrics.h"
 #include "ash/public/cpp/holding_space/holding_space_prefs.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -16,6 +17,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/holding_space/holding_space_item_chip_view.h"
+#include "ash/system/holding_space/holding_space_ui.h"
 #include "ash/system/holding_space/holding_space_util.h"
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
@@ -24,9 +26,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/rrect_f.h"
-#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/focus_ring.h"
@@ -57,11 +57,8 @@ class Header : public views::Button {
         .SetCallback(
             base::BindRepeating(&Header::OnPressed, base::Unretained(this)))
         .AddChildren(
-            views::Builder<views::Label>(
-                bubble_utils::CreateLabel(
-                    bubble_utils::LabelStyle::kSubheader,
-                    l10n_util::GetStringUTF16(
-                        IDS_ASH_HOLDING_SPACE_SUGGESTIONS_TITLE)))
+            holding_space_ui::CreateSuggestionsSectionHeaderLabel(
+                IDS_ASH_HOLDING_SPACE_SUGGESTIONS_TITLE)
                 .CopyAddressTo(&label)
                 .SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT),
             views::Builder<views::ImageView>().CopyAddressTo(&chevron_).SetID(
@@ -107,29 +104,26 @@ class Header : public views::Button {
   }
 
   void OnPressed() {
-    // TODO(crbug/1358547): Record toggling the suggestions section's expanded
-    // state in a histogram.
     auto* prefs = Shell::Get()->session_controller()->GetActivePrefService();
-    holding_space_prefs::SetSuggestionsExpanded(
-        prefs, !holding_space_prefs::IsSuggestionsExpanded(prefs));
+    bool expanded = holding_space_prefs::IsSuggestionsExpanded(prefs);
+    holding_space_prefs::SetSuggestionsExpanded(prefs, !expanded);
+
+    holding_space_metrics::RecordSuggestionsAction(
+        expanded ? holding_space_metrics::SuggestionsAction::kCollapse
+                 : holding_space_metrics::SuggestionsAction::kExpand);
   }
 
   // Sets the header's `chevron_` icon to the correct color (based on theme) and
   // orientation (based on whether the `section_` is `expanded_`).
   void UpdateChevron() {
     auto* prefs = Shell::Get()->session_controller()->GetActivePrefService();
-    chevron_->SetImage(gfx::ImageSkiaOperations::CreateRotatedImage(
-        gfx::CreateVectorIcon(
-            kChevronRightIcon, kHoldingSpaceSectionChevronIconSize,
-            AshColorProvider::Get()->GetContentLayerColor(
-                AshColorProvider::ContentLayerType::kIconColorSecondary)),
-        // Rotate `kChevronRightIcon` to the correct orientation rather than use
-        // `kChevronUpIcon` or `kChevronDownIcon`, which both have different
-        // internal padding and therefore appear as a different size than the
-        // downloads section's chevron.
+    chevron_->SetImage(gfx::CreateVectorIcon(
         holding_space_prefs::IsSuggestionsExpanded(prefs)
-            ? SkBitmapOperations::ROTATION_270_CW
-            : SkBitmapOperations::ROTATION_90_CW));
+            ? kChevronUpSmallIcon
+            : kChevronDownSmallIcon,
+        kHoldingSpaceSectionChevronIconSize,
+        AshColorProvider::Get()->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kIconColorSecondary)));
   }
 
   // Owned by view hierarchy.
@@ -147,10 +141,7 @@ class Header : public views::Button {
 
 SuggestionsSection::SuggestionsSection(HoldingSpaceViewDelegate* delegate)
     : HoldingSpaceItemViewsSection(delegate,
-                                   /*supported_types=*/
-                                   {HoldingSpaceItem::Type::kDriveSuggestion,
-                                    HoldingSpaceItem::Type::kLocalSuggestion},
-                                   /*max_count=*/kMaxSuggestions) {
+                                   HoldingSpaceSectionId::kSuggestions) {
   SetID(kHoldingSpaceSuggestionsSectionId);
 
   auto* prefs = Shell::Get()->session_controller()->GetActivePrefService();

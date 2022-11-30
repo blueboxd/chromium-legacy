@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ash/login/wizard_controller.h"
 
-#include "ash/components/settings/timezone_settings.h"
-#include "ash/components/timezone/timezone_request.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
@@ -24,6 +22,7 @@
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/base/locale_util.h"
 #include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
+#include "chrome/browser/ash/login/demo_mode/demo_setup_test_utils.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper.h"
@@ -65,12 +64,14 @@
 #include "chrome/browser/ash/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/ash/net/rollback_network_config/fake_rollback_network_config.h"
 #include "chrome/browser/ash/net/rollback_network_config/rollback_network_config_service.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_client.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_type_checker.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
 #include "chrome/browser/ash/policy/enrollment/fake_auto_enrollment_client.h"
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_device_state.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/lifetime/termination_notification.h"
@@ -96,6 +97,8 @@
 #include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/settings/timezone_settings.h"
+#include "chromeos/ash/components/timezone/timezone_request.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -574,7 +577,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     mock_eula_view_ = std::make_unique<MockEulaView>();
     mock_eula_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockEulaScreen>(
-            mock_eula_view_.get(),
+            mock_eula_view_.get()->AsWeakPtr(),
             base::BindRepeating(&WizardController::OnEulaScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -666,7 +669,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     WizardControllerTest::TearDownOnMainThread();
   }
 
-  void InitTimezoneResolver() {
+  void InitNetworkPortalDetector() {
     network_portal_detector_ = new NetworkPortalDetectorTestImpl();
     network_portal_detector::InitializeForTesting(network_portal_detector_);
 
@@ -730,18 +733,15 @@ class WizardControllerFlowTest : public WizardControllerTest {
     CheckCurrentScreen(NetworkScreenView::kScreenId);
     EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
 
-    // Enable TimeZone resolve
-    InitTimezoneResolver();
+    InitNetworkPortalDetector();
 
     EXPECT_CALL(*mock_update_screen_, ShowImpl()).Times(1);
     if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
       // EULA screen is skipped when OobeConsolidatedConsent is enabled.
-      mock_network_screen_->ExitScreen(
-          NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT);
+      mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
     } else {
       EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
-      mock_network_screen_->ExitScreen(
-          NetworkScreen::Result::CONNECTED_REGULAR);
+      mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
       CheckCurrentScreen(EulaView::kScreenId);
       // Login shelf should still be visible.
@@ -853,11 +853,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
 
   if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
     // EULA screen is skipped when OobeConsolidatedConsent is enabled.
-    mock_network_screen_->ExitScreen(
-        NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
   } else {
     EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
-    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
     CheckCurrentScreen(EulaView::kScreenId);
     EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -897,11 +896,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
 
   if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
     // EULA screen is skipped when OobeConsolidatedConsent is enabled.
-    mock_network_screen_->ExitScreen(
-        NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
   } else {
     EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
-    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
     CheckCurrentScreen(EulaView::kScreenId);
     EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -923,6 +921,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowSkipUpdateEnroll) {
+  InitNetworkPortalDetector();
+
   CheckCurrentScreen(WelcomeView::kScreenId);
   EXPECT_CALL(*mock_update_screen_, ShowImpl()).Times(0);
   EXPECT_CALL(*mock_network_screen_, ShowImpl()).Times(1);
@@ -944,11 +944,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowSkipUpdateEnroll) {
         .Times(1);
     EXPECT_CALL(*mock_auto_enrollment_check_screen_, ShowImpl()).Times(0);
     EXPECT_CALL(*mock_enrollment_screen_, ShowImpl()).Times(1);
-    mock_network_screen_->ExitScreen(
-        NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
   } else {
     EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
-    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
     CheckCurrentScreen(EulaView::kScreenId);
     EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -991,7 +990,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowEulaDeclined) {
   EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
   EXPECT_CALL(*mock_update_screen_, ShowImpl()).Times(0);
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
   CheckCurrentScreen(EulaView::kScreenId);
   EXPECT_CALL(*mock_network_screen_, ShowImpl()).Times(1);
@@ -1100,11 +1099,10 @@ IN_PROC_BROWSER_TEST_P(WizardControllerUpdateAfterCompletedOobeTest,
 
   if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
     // EULA screen is skipped when OobeConsolidatedConsent is enabled.
-    mock_network_screen_->ExitScreen(
-        NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
   } else {
     EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
-    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
     CheckCurrentScreen(EulaView::kScreenId);
 
@@ -1223,11 +1221,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
 
   if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
     // EULA screen is skipped when OobeConsolidatedConsent is enabled.
-    mock_network_screen_->ExitScreen(
-        NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
   } else {
     EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
-    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
     CheckCurrentScreen(EulaView::kScreenId);
     EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -1263,15 +1260,18 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
                                             std::move(device_state));
 
   EXPECT_CALL(*mock_network_screen_, ShowImpl()).Times(1);
-  EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
+  if (!chromeos::features::IsOobeConsolidatedConsentEnabled())
+    EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_update_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_enrollment_screen_, ShowImpl()).Times(1);
 
   mock_welcome_screen_->ExitScreen(WelcomeScreen::Result::NEXT);
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
-  mock_eula_screen_->ExitScreen(
-      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+  if (!chromeos::features::IsOobeConsolidatedConsentEnabled()) {
+    mock_eula_screen_->ExitScreen(
+        EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
+  }
   base::RunLoop().RunUntilIdle();
   mock_update_screen_->RunExit(UpdateScreen::Result::UPDATE_NOT_REQUIRED);
   mock_auto_enrollment_check_screen_->ExitScreen();
@@ -1302,11 +1302,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
 
   if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
     // EULA screen is skipped when OobeConsolidatedConsent is enabled.
-    mock_network_screen_->ExitScreen(
-        NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
   } else {
     EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
-    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
     CheckCurrentScreen(EulaView::kScreenId);
     EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -1405,11 +1404,10 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
 
   if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
     // EULA screen is skipped when OobeConsolidatedConsent is enabled.
-    mock_network_screen_->ExitScreen(
-        NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
   } else {
     EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
-    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
     CheckCurrentScreen(EulaView::kScreenId);
     EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -1498,11 +1496,10 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
 
   if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
     // EULA screen is skipped when OobeConsolidatedConsent is enabled.
-    mock_network_screen_->ExitScreen(
-        NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
   } else {
     EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
-    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
     CheckCurrentScreen(EulaView::kScreenId);
     EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -1649,12 +1646,10 @@ class WizardControllerDeviceStateWithInitialEnrollmentTest
 
     if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
       // EULA screen is skipped when OobeConsolidatedConsent is enabled.
-      mock_network_screen_->ExitScreen(
-          NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT);
+      mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
     } else {
       EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
-      mock_network_screen_->ExitScreen(
-          NetworkScreen::Result::CONNECTED_REGULAR);
+      mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
       CheckCurrentScreen(EulaView::kScreenId);
       EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -1764,11 +1759,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
   if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
     // EULA screen is skipped when OobeConsolidatedConsent is enabled.
-    mock_network_screen_->ExitScreen(
-        NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
   } else {
     EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
-    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
     CheckCurrentScreen(EulaView::kScreenId);
     EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -1856,11 +1850,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
   if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
     // EULA screen is skipped when OobeConsolidatedConsent is enabled.
-    mock_network_screen_->ExitScreen(
-        NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
   } else {
     EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
-    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
     CheckCurrentScreen(EulaView::kScreenId);
     EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -1901,11 +1894,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
   if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
     // EULA screen is skipped when OobeConsolidatedConsent is enabled.
-    mock_network_screen_->ExitScreen(
-        NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
   } else {
     EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
-    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
     CheckCurrentScreen(EulaView::kScreenId);
     EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -1960,11 +1952,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
   if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
     // EULA screen is skipped when OobeConsolidatedConsent is enabled.
-    mock_network_screen_->ExitScreen(
-        NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
   } else {
     EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
-    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
     CheckCurrentScreen(EulaView::kScreenId);
     EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -2020,11 +2011,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
   if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
     // EULA screen is skipped when OobeConsolidatedConsent is enabled.
-    mock_network_screen_->ExitScreen(
-        NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
   } else {
     EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
-    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
     CheckCurrentScreen(EulaView::kScreenId);
     EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -2304,11 +2294,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
 
   if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
     // EULA screen is skipped when OobeConsolidatedConsent is enabled.
-    mock_network_screen_->ExitScreen(
-        NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
   } else {
     EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
-    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
     CheckCurrentScreen(EulaView::kScreenId);
     EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -2354,11 +2343,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
 
   if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
     // EULA screen is skipped when OobeConsolidatedConsent is enabled.
-    mock_network_screen_->ExitScreen(
-        NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
   } else {
     EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
-    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
     CheckCurrentScreen(EulaView::kScreenId);
     EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -2536,7 +2524,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
   EXPECT_CALL(*mock_demo_preferences_screen_, ShowImpl()).Times(1);
 
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_DEMO);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
   CheckCurrentScreen(DemoPreferencesScreenView::kScreenId);
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
@@ -2607,6 +2595,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
   CheckCurrentScreen(DemoSetupScreenView::kScreenId);
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
 
+  test::LockDemoDeviceInstallAttributes();
   mock_demo_setup_screen_->ExitScreen(DemoSetupScreen::Result::COMPLETED);
 
   EXPECT_TRUE(StartupUtils::IsOobeCompleted());
@@ -2629,7 +2618,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoSetupCanceled) {
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
   EXPECT_CALL(*mock_demo_preferences_screen_, ShowImpl()).Times(1);
 
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_DEMO);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
   CheckCurrentScreen(DemoPreferencesScreenView::kScreenId);
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
@@ -2731,7 +2720,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoPreferencesCanceled) {
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
   EXPECT_CALL(*mock_welcome_screen_, ShowImpl()).Times(1);
 
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::BACK_DEMO);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::BACK);
 
   EXPECT_FALSE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
 }
@@ -2747,7 +2736,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, NetworkBackPressed) {
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
   EXPECT_CALL(*mock_welcome_screen_, ShowImpl()).Times(1);
 
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::BACK_DEMO);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::BACK);
 
   CheckCurrentScreen(WelcomeView::kScreenId);
   EXPECT_FALSE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
@@ -2862,7 +2851,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupDeviceDisabledTest,
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
   EXPECT_CALL(*mock_demo_preferences_screen_, ShowImpl()).Times(1);
 
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_DEMO);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
 
   CheckCurrentScreen(DemoPreferencesScreenView::kScreenId);
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
@@ -3208,7 +3197,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerRollbackFlowTest,
   ASSERT_TRUE(network_list);
   ASSERT_TRUE(network_list->is_list());
 
-  const base::Value& network = network_list->GetListDeprecated()[0];
+  const base::Value& network = network_list->GetList()[0];
   ASSERT_TRUE(network.is_dict());
 
   const std::string* guid = network.FindStringKey("GUID");

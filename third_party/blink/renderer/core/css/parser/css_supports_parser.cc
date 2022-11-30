@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -174,7 +174,7 @@ CSSSupportsParser::Result CSSSupportsParser::ConsumeSupportsSelectorFn(
     CSSParserTokenStream& stream) {
   DCHECK(IsSupportsSelectorFn(first_token, stream.Peek()));
   auto block = stream.ConsumeUntilPeekedTypeIs<kRightParenthesisToken>();
-  if (CSSSelectorParser<>::SupportsComplexSelector(block, parser_.GetContext()))
+  if (CSSSelectorParser::SupportsComplexSelector(block, parser_.GetContext()))
     return Result::kSupported;
   return Result::kUnsupported;
 }

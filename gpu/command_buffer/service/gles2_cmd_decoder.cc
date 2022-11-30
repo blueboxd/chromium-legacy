@@ -9,7 +9,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include <algorithm>
 #include <cmath>
 #include <limits>
 #include <list>
@@ -34,6 +33,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -98,8 +98,6 @@
 #include "ui/gfx/overlay_plane_data.h"
 #include "ui/gfx/overlay_priority_hint.h"
 #include "ui/gfx/video_types.h"
-#include "ui/gl/ca_renderer_layer_params.h"
-#include "ui/gl/dc_renderer_layer_params.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_enums.h"
@@ -274,8 +272,7 @@ static bool CharacterIsValidForGLES(unsigned char c) {
 
 static bool StringIsValidForGLES(const std::string& str) {
   return str.length() == 0 ||
-         std::find_if_not(str.begin(), str.end(), CharacterIsValidForGLES) ==
-             str.end();
+         base::ranges::all_of(str, CharacterIsValidForGLES);
 }
 
 DisallowedFeatures::DisallowedFeatures() = default;
@@ -2671,7 +2668,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   scoped_refptr<ShaderTranslatorInterface> fragment_translator_;
 
   // Cached from ContextGroup
-  raw_ptr<const Validators> validators_;
+  raw_ptr<const Validators, DanglingUntriaged> validators_;
   scoped_refptr<FeatureInfo> feature_info_;
 
   int frame_number_;
@@ -16681,10 +16678,11 @@ void GLES2DecoderImpl::DoSwapBuffers(uint64_t swap_id, GLbitfield flags) {
     surface_->SwapBuffersAsync(
         base::BindOnce(&GLES2DecoderImpl::FinishAsyncSwapBuffers,
                        weak_ptr_factory_.GetWeakPtr(), swap_id),
-        base::DoNothing());
+        base::DoNothing(), gl::FrameData());
   } else {
     client()->OnSwapBuffers(swap_id, flags);
-    FinishSwapBuffers(surface_->SwapBuffers(base::DoNothing()));
+    FinishSwapBuffers(
+        surface_->SwapBuffers(base::DoNothing(), gl::FrameData()));
   }
 
   // This may be a slow command.  Exit command processing to allow for

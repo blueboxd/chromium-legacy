@@ -9,8 +9,6 @@
 #include <vector>
 
 #include "ash/components/peripheral_notification/peripheral_notification_manager.h"
-#include "ash/components/settings/cros_settings_names.h"
-#include "ash/components/timezone/timezone_resolver.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
@@ -51,6 +49,8 @@
 #include "chromeos/ash/components/dbus/pciguard/pciguard_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine.pb.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
+#include "chromeos/ash/components/timezone/timezone_resolver.h"
 #include "chromeos/components/disks/disks_prefs.h"
 #include "chromeos/system/devicemode.h"
 #include "chromeos/system/statistics_provider.h"
@@ -446,6 +446,10 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterInt64Pref(::prefs::kHatsCameraAppSurveyCycleEndTs, 0);
 
   registry->RegisterBooleanPref(::prefs::kHatsCameraAppDeviceIsSelected, false);
+
+  registry->RegisterInt64Pref(::prefs::kHatsGeneralCameraSurveyCycleEndTs, 0);
+
+  registry->RegisterBooleanPref(::prefs::kHatsGeneralCameraIsSelected, false);
 
   // Personalization HaTS survey prefs for avatar, screensaver, and wallpaper
   // features.
@@ -1145,9 +1149,7 @@ void Preferences::OnIsSyncingChanged() {
 void Preferences::ForceNaturalScrollDefault() {
   DVLOG(1) << "ForceNaturalScrollDefault";
   // Natural scroll is a priority pref.
-  bool is_syncing = features::IsSyncSettingsCategorizationEnabled()
-                        ? prefs_->AreOsPriorityPrefsSyncing()
-                        : prefs_->IsPrioritySyncing();
+  bool is_syncing = prefs_->AreOsPriorityPrefsSyncing();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNaturalScrollDefault) &&
       is_syncing && !prefs_->GetUserPrefValue(prefs::kNaturalScroll)) {

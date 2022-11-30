@@ -26,8 +26,6 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/overlay_plane_data.h"
 #include "ui/gfx/overlay_priority_hint.h"
-#include "ui/gl/ca_renderer_layer_params.h"
-#include "ui/gl/dc_renderer_layer_params.h"
 #include "ui/gl/gl_utils.h"
 #include "ui/gl/gl_version_info.h"
 
@@ -3845,11 +3843,12 @@ error::Error GLES2DecoderPassthroughImpl::DoSwapBuffers(uint64_t swap_id,
         base::BindOnce(
             &GLES2DecoderPassthroughImpl::CheckSwapBuffersAsyncResult,
             weak_ptr_factory_.GetWeakPtr(), "SwapBuffers", swap_id),
-        base::DoNothing());
+        base::DoNothing(), gl::FrameData());
     return error::kNoError;
   } else {
-    return CheckSwapBuffersResult(surface_->SwapBuffers(base::DoNothing()),
-                                  "SwapBuffers");
+    return CheckSwapBuffersResult(
+        surface_->SwapBuffers(base::DoNothing(), gl::FrameData()),
+        "SwapBuffers");
   }
 }
 

@@ -90,33 +90,33 @@ blink::mojom::WebBluetoothResult TranslateGATTErrorAndRecord(
     GattErrorCode error_code,
     UMAGATTOperation operation) {
   switch (error_code) {
-    case device::BluetoothRemoteGattService::GATT_ERROR_UNKNOWN:
+    case device::BluetoothRemoteGattService::GattErrorCode::kUnknown:
       RecordGATTOperationOutcome(operation, UMAGATTOperationOutcome::kUnknown);
       return blink::mojom::WebBluetoothResult::GATT_UNKNOWN_ERROR;
-    case device::BluetoothRemoteGattService::GATT_ERROR_FAILED:
+    case device::BluetoothRemoteGattService::GattErrorCode::kFailed:
       RecordGATTOperationOutcome(operation, UMAGATTOperationOutcome::kFailed);
       return blink::mojom::WebBluetoothResult::GATT_UNKNOWN_FAILURE;
-    case device::BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS:
+    case device::BluetoothRemoteGattService::GattErrorCode::kInProgress:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::kInProgress);
       return blink::mojom::WebBluetoothResult::GATT_OPERATION_IN_PROGRESS;
-    case device::BluetoothRemoteGattService::GATT_ERROR_INVALID_LENGTH:
+    case device::BluetoothRemoteGattService::GattErrorCode::kInvalidLength:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::kInvalidLength);
       return blink::mojom::WebBluetoothResult::GATT_INVALID_ATTRIBUTE_LENGTH;
-    case device::BluetoothRemoteGattService::GATT_ERROR_NOT_PERMITTED:
+    case device::BluetoothRemoteGattService::GattErrorCode::kNotPermitted:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::kNotPermitted);
       return blink::mojom::WebBluetoothResult::GATT_NOT_PERMITTED;
-    case device::BluetoothRemoteGattService::GATT_ERROR_NOT_AUTHORIZED:
+    case device::BluetoothRemoteGattService::GattErrorCode::kNotAuthorized:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::kNotAuthorized);
       return blink::mojom::WebBluetoothResult::GATT_NOT_AUTHORIZED;
-    case device::BluetoothRemoteGattService::GATT_ERROR_NOT_PAIRED:
+    case device::BluetoothRemoteGattService::GattErrorCode::kNotPaired:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::kNotPaired);
       return blink::mojom::WebBluetoothResult::GATT_NOT_PAIRED;
-    case device::BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED:
+    case device::BluetoothRemoteGattService::GattErrorCode::kNotSupported:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::kNotSupported);
       return blink::mojom::WebBluetoothResult::GATT_NOT_SUPPORTED;
@@ -395,12 +395,11 @@ class WebBluetoothServiceImpl::ScanningClient
 
       // Check to see if there is a service uuid match
       if (filter->services.has_value()) {
-        auto it = base::ranges::find_if(
-            filter->services.value(),
-            [&filtered_event](const BluetoothUUID& filter_uuid) {
-              return base::Contains(filtered_event->uuids, filter_uuid);
-            });
-        if (it == filter->services.value().end())
+        if (base::ranges::none_of(
+                filter->services.value(),
+                [&filtered_event](const BluetoothUUID& filter_uuid) {
+                  return base::Contains(filtered_event->uuids, filter_uuid);
+                }))
           continue;
       }
 
@@ -589,9 +588,6 @@ WebBluetoothServiceImpl::GetBluetoothAllowed() {
   const url::Origin& requesting_origin = origin();
   const url::Origin& embedding_origin =
       render_frame_host().GetMainFrame()->GetLastCommittedOrigin();
-
-  // IsSameOriginWith() no longer excludes opaque origins.
-  // TODO(https://crbug.com/994454): Exclude opaque origins explicitly.
 
   // Some embedders that don't support Web Bluetooth indicate this by not
   // returning a chooser.
@@ -2055,8 +2051,8 @@ void WebBluetoothServiceImpl::OnCharacteristicReadValue(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error_code.has_value()) {
 #if PAIR_BLUETOOTH_ON_DEMAND()
-    if (error_code.value() == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED ||
-        error_code.value() == GattErrorCode::GATT_ERROR_NOT_PAIRED) {
+    if (error_code.value() == GattErrorCode::kNotAuthorized ||
+        error_code.value() == GattErrorCode::kNotPaired) {
       BluetoothDevice* device = GetCachedDevice(
           GetCharacteristicDeviceID(characteristic_instance_id));
       if (device && !device->IsPaired()) {
@@ -2094,7 +2090,7 @@ void WebBluetoothServiceImpl::OnCharacteristicWriteValueFailed(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if PAIR_BLUETOOTH_ON_DEMAND()
-  if (error_code == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED) {
+  if (error_code == GattErrorCode::kNotAuthorized) {
     BluetoothDevice* device =
         GetCachedDevice(GetCharacteristicDeviceID(characteristic_instance_id));
     if (device && !device->IsPaired()) {
@@ -2154,7 +2150,7 @@ void WebBluetoothServiceImpl::OnStartNotifySessionFailed(
   }
 
 #if PAIR_BLUETOOTH_ON_DEMAND()
-  if (error_code == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED && client) {
+  if (error_code == GattErrorCode::kNotAuthorized && client) {
     BluetoothDevice* device =
         GetCachedDevice(GetCharacteristicDeviceID(characteristic_instance_id));
     if (device && !device->IsPaired()) {
@@ -2203,7 +2199,7 @@ void WebBluetoothServiceImpl::OnDescriptorReadValue(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error_code.has_value()) {
 #if PAIR_BLUETOOTH_ON_DEMAND()
-    if (error_code.value() == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED) {
+    if (error_code.value() == GattErrorCode::kNotAuthorized) {
       BluetoothDevice* device =
           GetCachedDevice(GetDescriptorDeviceId(descriptor_instance_id));
       if (device && !device->IsPaired()) {
@@ -2238,7 +2234,7 @@ void WebBluetoothServiceImpl::OnDescriptorWriteValueFailed(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if PAIR_BLUETOOTH_ON_DEMAND()
-  if (error_code == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED) {
+  if (error_code == GattErrorCode::kNotAuthorized) {
     BluetoothDevice* device =
         GetCachedDevice(GetDescriptorDeviceId(descriptor_instance_id));
     if (device && !device->IsPaired()) {

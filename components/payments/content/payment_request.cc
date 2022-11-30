@@ -200,7 +200,8 @@ void PaymentRequest::Init(
       frame_security_origin_, spec(),
       /*delegate=*/weak_ptr_factory_.GetWeakPtr(),
       delegate_->GetApplicationLocale(), delegate_->GetPersonalDataManager(),
-      delegate_->GetContentWeakPtr(), journey_logger_.GetWeakPtr());
+      delegate_->GetContentWeakPtr(), journey_logger_.GetWeakPtr(),
+      /*csp_checker=*/weak_ptr_factory_.GetWeakPtr());
 
   journey_logger_.SetRequestedInformation(
       spec_->request_shipping(), spec_->request_payer_email(),
@@ -210,12 +211,6 @@ void PaymentRequest::Init(
   GURL google_pay_url(methods::kGooglePay);
   GURL android_pay_url(methods::kAndroidPay);
   GURL google_play_billing_url(methods::kGooglePlayBilling);
-  // Looking for payment methods that are NOT google-related payment methods.
-  auto non_google_it = base::ranges::find_if(
-      spec_->url_payment_method_identifiers(), [&](const GURL& url) {
-        return url != google_pay_url && url != android_pay_url &&
-               url != google_play_billing_url;
-      });
   std::vector<JourneyLogger::PaymentMethodCategory> method_categories;
   if (base::Contains(spec_->url_payment_method_identifiers(), google_pay_url) ||
       base::Contains(spec_->url_payment_method_identifiers(),
@@ -231,7 +226,11 @@ void PaymentRequest::Init(
     method_categories.push_back(
         JourneyLogger::PaymentMethodCategory::kSecurePaymentConfirmation);
   }
-  if (non_google_it != spec_->url_payment_method_identifiers().end()) {
+  if (base::ranges::any_of(
+          spec_->url_payment_method_identifiers(), [&](const GURL& url) {
+            return url != google_pay_url && url != android_pay_url &&
+                   url != google_play_billing_url;
+          })) {
     method_categories.push_back(JourneyLogger::PaymentMethodCategory::kOther);
   }
   journey_logger_.SetRequestedPaymentMethods(method_categories);
@@ -674,6 +673,23 @@ void PaymentRequest::AreRequestedMethodsSupportedCallback(
 
 base::WeakPtr<PaymentRequest> PaymentRequest::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void PaymentRequest::AllowConnectToSource(
+    const GURL& url,
+    const GURL& url_before_redirects,
+    bool did_follow_redirect,
+    base::OnceCallback<void(bool)> result_callback) {
+  if (!client_) {
+    std::move(result_callback).Run(false);
+    return;
+  }
+
+  // Round-trip to the renderer, even if the CSP will be bypassed due to a
+  // feature flag, so the renderer can print a deprecation warning about CSP
+  // bypass.
+  client_->AllowConnectToSource(url, url_before_redirects, did_follow_redirect,
+                                std::move(result_callback));
 }
 
 void PaymentRequest::OnInitialized(InitializationTask* initialization_task) {

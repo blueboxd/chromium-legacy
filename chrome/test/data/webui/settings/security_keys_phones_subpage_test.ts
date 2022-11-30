@@ -8,8 +8,8 @@
 
 import {CrInputElement, SecurityKeysPhone, SecurityKeysPhonesBrowserProxy, SecurityKeysPhonesBrowserProxyImpl, SecurityKeysPhonesList, SecurityKeysPhonesSubpageElement} from 'chrome://settings/lazy_load.js';
 import {assertDeepEquals, assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
-import {flushTasks} from 'chrome://webui-test/test_util.js';
 
 class TestSecurityKeysPhonesBrowserProxy extends TestBrowserProxy implements
     SecurityKeysPhonesBrowserProxy {
@@ -137,7 +137,8 @@ suite('SecurityKeysPhonesSubpage', function() {
   setup(async function() {
     browserProxy = new TestSecurityKeysPhonesBrowserProxy();
     SecurityKeysPhonesBrowserProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     page = document.createElement('security-keys-phones-subpage');
 
     browserProxy.setNextPhonesList(initialSynced, initialLinked);

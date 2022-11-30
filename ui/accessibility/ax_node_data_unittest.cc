@@ -401,6 +401,10 @@ TEST(AXNodeDataTest, SetName) {
   EXPECT_EQ("baz", data.GetStringAttribute(ax::mojom::StringAttribute::kName));
   EXPECT_EQ(data.GetNameFrom(), ax::mojom::NameFrom::kContents);
 
+  // Setting the name to the empty string should not be done by
+  // `SetNameChecked`, which enforces that expectation with a DCHECK.
+  EXPECT_DCHECK_DEATH(data.SetNameChecked(""));
+
   data.SetNameExplicitlyEmpty();
   EXPECT_EQ("", data.GetStringAttribute(ax::mojom::StringAttribute::kName));
   EXPECT_EQ(data.GetNameFrom(), ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
@@ -408,6 +412,44 @@ TEST(AXNodeDataTest, SetName) {
   data.SetName("foo");
   EXPECT_EQ("foo", data.GetStringAttribute(ax::mojom::StringAttribute::kName));
   EXPECT_EQ(data.GetNameFrom(), ax::mojom::NameFrom::kContents);
+}
+
+TEST(AXNodeDataTest, SetDescription) {
+  AXNodeData data;
+  data.role = ax::mojom::Role::kButton;
+
+  // Initially there is no description and no DescriptionFrom.
+  EXPECT_EQ("",
+            data.GetStringAttribute(ax::mojom::StringAttribute::kDescription));
+  EXPECT_EQ(data.GetDescriptionFrom(), ax::mojom::DescriptionFrom::kNone);
+
+  // When the DescriptionFrom is not specified it defaults to kAriaDescription.
+  data.SetDescription("foo");
+  EXPECT_EQ("foo",
+            data.GetStringAttribute(ax::mojom::StringAttribute::kDescription));
+  EXPECT_EQ(data.GetDescriptionFrom(),
+            ax::mojom::DescriptionFrom::kAriaDescription);
+
+  // Setting the description explicitly empty should both clear the string
+  // and update the DescriptionFrom.
+  data.SetDescriptionExplicitlyEmpty();
+  EXPECT_EQ("",
+            data.GetStringAttribute(ax::mojom::StringAttribute::kDescription));
+  EXPECT_EQ(data.GetDescriptionFrom(),
+            ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty);
+
+  // We currently do not enforce that the description gets set prior to the
+  // DescriptionFrom. As a result it is possible to have a DescriptionFrom
+  // value other than kNone and kAttributeExplicitlyEmpty while the description
+  // is an empty string.
+  data.SetDescriptionFrom(ax::mojom::DescriptionFrom::kTitle);
+  EXPECT_EQ("",
+            data.GetStringAttribute(ax::mojom::StringAttribute::kDescription));
+  EXPECT_EQ(data.GetDescriptionFrom(), ax::mojom::DescriptionFrom::kTitle);
+
+  // Setting the description to the empty string should not be done by
+  // SetDescription, which enforces that expectation with a DCHECK.
+  EXPECT_DCHECK_DEATH(data.SetDescription(""));
 }
 
 TEST(AXNodeDataTest, BitFieldsSanityCheck) {

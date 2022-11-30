@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,8 +34,7 @@ class LinkHeader {
   const absl::optional<String>& Anchor() const { return anchor_; }
   bool Valid() const { return is_valid_; }
   bool IsViewportDependent() const {
-    return !Media().IsEmpty() || !ImageSrcset().IsEmpty() ||
-           !ImageSizes().IsEmpty();
+    return !Media().empty() || !ImageSrcset().empty() || !ImageSizes().empty();
   }
 
   enum LinkParameterName {

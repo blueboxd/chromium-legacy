@@ -90,6 +90,7 @@ static constexpr char const* kRendererSwitchesToCopy[] = {
     switches::kEnableCastStreamingReceiver,
     switches::kEnableProtectedVideoBuffers,
     switches::kUseOverlaysForVideo,
+    switches::kMinVideoDecoderOutputBufferSize,
 
     // TODO(crbug/1013412): Delete these two switches when fixed.
     switches::kEnableWidevine,
@@ -204,8 +205,8 @@ void WebEngineContentBrowserClient::
 }
 
 bool WebEngineContentBrowserClient::ShouldEnableStrictSiteIsolation() {
-  constexpr base::Feature kSitePerProcess{"site-per-process",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
+  static BASE_FEATURE(kSitePerProcess, "site-per-process",
+                      base::FEATURE_ENABLED_BY_DEFAULT);
   static bool enable_strict_isolation =
       base::FeatureList::IsEnabled(kSitePerProcess);
   return enable_strict_isolation;

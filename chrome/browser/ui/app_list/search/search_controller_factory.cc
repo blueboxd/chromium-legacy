@@ -16,6 +16,8 @@
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager_factory.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
@@ -38,6 +40,7 @@
 #include "chrome/browser/ui/app_list/search/search_controller_impl.h"
 #include "chrome/browser/ui/app_list/search/search_controller_impl_new.h"
 #include "chrome/browser/ui/app_list/search/search_features.h"
+#include "chrome/browser/ui/webui/settings/ash/os_settings_manager_factory.h"
 #include "components/session_manager/core/session_manager.h"
 
 namespace app_list {
@@ -164,8 +167,11 @@ std::unique_ptr<SearchController> CreateSearchController(
   }
 
   size_t os_settings_search_group_id = controller->AddGroup(kGenericMaxResults);
-  controller->AddProvider(os_settings_search_group_id,
-                          std::make_unique<OsSettingsProvider>(profile));
+  controller->AddProvider(
+      os_settings_search_group_id,
+      std::make_unique<OsSettingsProvider>(
+          profile,
+          ash::settings::OsSettingsManagerFactory::GetForProfile(profile)));
 
   if (ash::features::IsProductivityLauncherEnabled() &&
       base::GetFieldTrialParamByFeatureAsBool(
@@ -192,13 +198,19 @@ std::unique_ptr<SearchController> CreateSearchController(
                                                 profile, list_controller));
   }
 
-  if (ash::features::IsPersonalizationHubEnabled() &&
-      ash::personalization_app::CanSeeWallpaperOrPersonalizationApp(profile)) {
-    size_t personalization_app_group_id =
-        controller->AddGroup(kGenericMaxResults);
+  if (ash::personalization_app::CanSeeWallpaperOrPersonalizationApp(profile)) {
+    auto* personalization_app_manager = ash::personalization_app::
+        PersonalizationAppManagerFactory::GetForBrowserContext(profile);
+    DCHECK(personalization_app_manager);
 
-    controller->AddProvider(personalization_app_group_id,
-                            std::make_unique<PersonalizationProvider>(profile));
+    if (personalization_app_manager) {
+      size_t personalization_app_group_id =
+          controller->AddGroup(kGenericMaxResults);
+      controller->AddProvider(
+          personalization_app_group_id,
+          std::make_unique<PersonalizationProvider>(
+              profile, personalization_app_manager->search_handler()));
+    }
   }
 
   return controller;

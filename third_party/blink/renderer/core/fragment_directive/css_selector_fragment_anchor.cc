@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,12 +31,12 @@ CssSelectorFragmentAnchor* CssSelectorFragmentAnchor::TryCreate(
           ->fragmentDirective()
           .GetDirectives<CssSelectorDirective>();
 
-  if (css_selector_directives.IsEmpty())
+  if (css_selector_directives.empty())
     return nullptr;
 
   Element* anchor_node = nullptr;
   for (CssSelectorDirective* directive : css_selector_directives) {
-    if (!directive->value().IsEmpty() && !directive->IsConsumed()) {
+    if (!directive->value().empty() && !directive->IsConsumed()) {
       anchor_node = doc.RootNode().QuerySelector(directive->value());
 
       // TODO(crbug.com/1265721): this will ignore directives after the first

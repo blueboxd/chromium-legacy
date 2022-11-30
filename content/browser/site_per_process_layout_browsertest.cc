@@ -23,6 +23,7 @@
 #include "content/test/render_document_feature.h"
 #include "content/test/render_widget_host_visibility_observer.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/window_tree_host.h"
@@ -756,8 +757,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   EvalJsResult iframe_b_result =
       EvalJsAfterLifecycleUpdate(root->current_frame_host(), "", script);
   base::Value iframe_b_offset = iframe_b_result.ExtractList();
-  int iframe_b_offset_left = iframe_b_offset.GetListDeprecated()[0].GetInt();
-  int iframe_b_offset_top = iframe_b_offset.GetListDeprecated()[1].GetInt();
+  int iframe_b_offset_left = iframe_b_offset.GetList()[0].GetInt();
+  int iframe_b_offset_top = iframe_b_offset.GetList()[1].GetInt();
 
   // Make sure a new IPC is sent after dirty-ing layout.
   filter->Clear();
@@ -772,23 +773,25 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   EvalJsResult iframe_c_result = EvalJsAfterLifecycleUpdate(
       root->child_at(0)->current_frame_host(), raf_script, script);
   base::Value iframe_c_offset = iframe_c_result.ExtractList();
-  int iframe_c_offset_left = iframe_c_offset.GetListDeprecated()[0].GetInt();
-  int iframe_c_offset_top = iframe_c_offset.GetListDeprecated()[1].GetInt();
+  int iframe_c_offset_left = iframe_c_offset.GetList()[0].GetInt();
+  int iframe_c_offset_top = iframe_c_offset.GetList()[1].GetInt();
 
   // The IPC should already have been sent
   EXPECT_TRUE(filter->MessageReceived());
 
   // +4 for a 2px border on each iframe.
-  gfx::PointF expected(iframe_b_offset_left + iframe_c_offset_left + 4,
-                       iframe_b_offset_top + iframe_c_offset_top + 4);
+  gfx::Vector2dF expected(iframe_b_offset_left + iframe_c_offset_left + 4,
+                          iframe_b_offset_top + iframe_c_offset_top + 4);
   const float device_scale_factor =
       root->render_manager()->GetRenderWidgetHostView()->GetDeviceScaleFactor();
   // Convert from CSS to physical pixels
   expected.Scale(device_scale_factor);
   gfx::Transform actual = filter->GetIntersectionState()->main_frame_transform;
-  gfx::Point viewport_offset;
-  EXPECT_TRUE(actual.TransformPointReverse(&viewport_offset));
-  viewport_offset = gfx::Point(-viewport_offset.x(), -viewport_offset.y());
+  const absl::optional<gfx::PointF> viewport_offset_source_point =
+      actual.InverseMapPoint(gfx::PointF());
+  ASSERT_TRUE(viewport_offset_source_point.has_value());
+  const gfx::Vector2dF viewport_offset =
+      gfx::PointF() - viewport_offset_source_point.value();
   float tolerance = ceilf(device_scale_factor);
   EXPECT_NEAR(expected.x(), viewport_offset.x(), tolerance);
   EXPECT_NEAR(expected.y(), viewport_offset.y(), tolerance);
@@ -1694,7 +1697,13 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 // This test verifies that changing the CSS visibility of a cross-origin
 // <iframe> is forwarded to its corresponding RenderWidgetHost and all other
 // RenderWidgetHosts corresponding to the nested cross-origin frame.
-IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, CSSVisibilityChanged) {
+// TODO(crbug.com/1363740): Flaky on mac, linux-lacros, android.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_CSSVisibilityChanged DISABLED_CSSVisibilityChanged
+#else
+#define MAYBE_CSSVisibilityChanged CSSVisibilityChanged
+#endif
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, MAYBE_CSSVisibilityChanged) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(b(c(d(d(a))))))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -2001,8 +2010,16 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, VisibilityChange) {
 
 // This test verifies that the main-frame's page scale factor propagates to
 // the compositor layertrees in each of the child processes.
+// Flaky on Android emulator bots: https://crbug.com/1116774
+#if BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_X86_FAMILY)
+#define MAYBE_PageScaleFactorPropagatesToOOPIFs \
+  DISABLED_PageScaleFactorPropagatesToOOPIFs
+#else
+#define MAYBE_PageScaleFactorPropagatesToOOPIFs \
+  PageScaleFactorPropagatesToOOPIFs
+#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
-                       PageScaleFactorPropagatesToOOPIFs) {
+                       MAYBE_PageScaleFactorPropagatesToOOPIFs) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c),d)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

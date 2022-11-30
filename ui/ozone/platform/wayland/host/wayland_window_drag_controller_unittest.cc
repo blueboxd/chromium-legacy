@@ -53,7 +53,7 @@ class WaylandWindowDragControllerTest : public WaylandDragDropTest {
 
   void SetUp() override {
     WaylandDragDropTest::SetUp();
-    drag_controller()->SetExtendedDragAvailableForTesting(true);
+    drag_controller()->set_extended_drag_available_for_testing(true);
 
     EXPECT_FALSE(window_->HasPointerFocus());
     EXPECT_EQ(State::kIdle, drag_controller()->state());
@@ -175,7 +175,7 @@ TEST_P(WaylandWindowDragControllerTest, DragInsideWindowAndDrop) {
   EXPECT_EQ(State::kAttached, drag_controller()->state());
 
   auto* move_loop_handler = GetWmMoveLoopHandler(*window_);
-  DCHECK(move_loop_handler);
+  ASSERT_TRUE(move_loop_handler);
 
   enum { kStarted, kDragging, kDropping, kDone } test_step = kStarted;
 
@@ -412,7 +412,7 @@ TEST_P(WaylandWindowDragControllerTest, DragExitWindowAndDrop) {
   EXPECT_EQ(State::kAttached, drag_controller()->state());
 
   auto* move_loop_handler = GetWmMoveLoopHandler(*window_);
-  DCHECK(move_loop_handler);
+  ASSERT_TRUE(move_loop_handler);
 
   enum { kStarted, kDragging, kExitedDropping, kDone } test_step = kStarted;
 
@@ -521,7 +521,7 @@ TEST_P(WaylandWindowDragControllerTest, DragToOtherWindowSnapDragDrop) {
   EXPECT_EQ(State::kAttached, drag_controller()->state());
 
   auto* move_loop_handler = GetWmMoveLoopHandler(*window_);
-  DCHECK(move_loop_handler);
+  ASSERT_TRUE(move_loop_handler);
 
   enum {
     kStarted,
@@ -936,7 +936,7 @@ TEST_P(WaylandWindowDragControllerTest, IgnorePointerEventsUntilDrop) {
   EXPECT_EQ(State::kAttached, drag_controller()->state());
 
   auto* move_loop_handler = GetWmMoveLoopHandler(*window_);
-  DCHECK(move_loop_handler);
+  ASSERT_TRUE(move_loop_handler);
 
   enum { kStarted, kDragging, kDropping, kDone } test_step = kStarted;
 
@@ -1145,7 +1145,7 @@ TEST_P(WaylandWindowDragControllerTest, CursorPositionIsUpdatedOnMotion) {
 
       // Send the window to |output|.
       wl::MockSurface* surface = server->GetObject<wl::MockSurface>(
-          window->root_surface()->GetSurfaceId());
+          window->root_surface()->get_surface_id());
       ASSERT_TRUE(surface);
       wl_surface_send_enter(surface->resource(), output->resource());
       self->Sync();
@@ -1325,7 +1325,7 @@ TEST_P(WaylandWindowDragControllerTest,
 TEST_P(WaylandWindowDragControllerTest, ExtendedDragUnavailable) {
   ASSERT_TRUE(GetWmMoveLoopHandler(*window_));
   ASSERT_TRUE(GetWaylandExtension(*window_));
-  drag_controller()->SetExtendedDragAvailableForTesting(false);
+  drag_controller()->set_extended_drag_available_for_testing(false);
 
   SendPointerEnter(window_.get(), &delegate_);
   SendPointerPress(window_.get(), &delegate_, BTN_LEFT);

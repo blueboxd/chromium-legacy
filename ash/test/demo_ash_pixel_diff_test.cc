@@ -10,24 +10,22 @@ namespace ash {
 
 class DemoAshPixelDiffTest : public AshTestBase {
  public:
-  DemoAshPixelDiffTest() { PrepareForPixelDiffTest(); }
+  DemoAshPixelDiffTest() {
+    PrepareForPixelDiffTest(/*screenshot_prefix=*/"ash_demo_test",
+                            pixel_test::InitParams());
+  }
   DemoAshPixelDiffTest(const DemoAshPixelDiffTest&) = delete;
   DemoAshPixelDiffTest& operator=(const DemoAshPixelDiffTest&) = delete;
   ~DemoAshPixelDiffTest() override = default;
 
-  // AshTestBase:
-  void SetUp() override {
-    AshTestBase::SetUp();
-    pixel_test_helper_.InitSkiaGoldPixelDiff(
-        /*screenshot_prefix=*/"ash_demo_test");
+  bool ComparePrimaryFullScreen(const std::string& screenshot_name) {
+    return GetPixelDiffer()->ComparePrimaryFullScreen(screenshot_name);
   }
-
-  AshPixelDiffTestHelper pixel_test_helper_;
 };
 
 // Verifies the primary display UI right after the ash pixel test sets up.
 TEST_F(DemoAshPixelDiffTest, VerifyDefaultPrimaryDisplay) {
-  EXPECT_TRUE(pixel_test_helper_.ComparePrimaryFullScreen("primary_display"));
+  EXPECT_TRUE(ComparePrimaryFullScreen("primary_display"));
 }
 
 }  // namespace ash

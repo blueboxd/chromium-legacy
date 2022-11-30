@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -250,12 +250,12 @@ class VideoCaptureImplTest : public ::testing::Test {
 
   void GetDeviceSupportedFormats() {
     video_capture_impl_->GetDeviceSupportedFormats(
-        WTF::Bind(&VideoCaptureImplTest::OnDeviceSupportedFormats,
-                  base::Unretained(this)));
+        WTF::BindOnce(&VideoCaptureImplTest::OnDeviceSupportedFormats,
+                      base::Unretained(this)));
   }
 
   void GetDeviceFormatsInUse() {
-    video_capture_impl_->GetDeviceFormatsInUse(WTF::Bind(
+    video_capture_impl_->GetDeviceFormatsInUse(WTF::BindOnce(
         &VideoCaptureImplTest::OnDeviceFormatsInUse, base::Unretained(this)));
   }
 

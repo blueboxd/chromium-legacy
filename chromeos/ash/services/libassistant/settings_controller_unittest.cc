@@ -13,8 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 namespace {
 
@@ -32,9 +31,10 @@ std::vector<mojom::AuthenticationTokenPtr> ToVector(
 
 class AssistantClientMock : public FakeAssistantClient {
  public:
-  AssistantClientMock(
-      std::unique_ptr<assistant::FakeAssistantManager> assistant_manager,
-      assistant::FakeAssistantManagerInternal* assistant_manager_internal)
+  AssistantClientMock(std::unique_ptr<chromeos::assistant::FakeAssistantManager>
+                          assistant_manager,
+                      chromeos::assistant::FakeAssistantManagerInternal*
+                          assistant_manager_internal)
       : FakeAssistantClient(std::move(assistant_manager),
                             assistant_manager_internal) {}
   ~AssistantClientMock() override = default;
@@ -101,9 +101,9 @@ class AssistantSettingsControllerTest : public testing::Test {
     assistant_manager_internal_ = nullptr;
 
     auto assistant_manager =
-        std::make_unique<assistant::FakeAssistantManager>();
-    assistant_manager_internal_ = std::make_unique<
-        testing::StrictMock<assistant::FakeAssistantManagerInternal>>();
+        std::make_unique<chromeos::assistant::FakeAssistantManager>();
+    assistant_manager_internal_ = std::make_unique<testing::StrictMock<
+        chromeos::assistant::FakeAssistantManagerInternal>>();
     assistant_client_ = std::make_unique<AssistantClientMock>(
         std::move(assistant_manager), assistant_manager_internal_.get());
   }
@@ -114,7 +114,7 @@ class AssistantSettingsControllerTest : public testing::Test {
   base::test::SingleThreadTaskEnvironment environment_;
 
   SettingsController controller_;
-  std::unique_ptr<assistant::FakeAssistantManagerInternal>
+  std::unique_ptr<chromeos::assistant::FakeAssistantManagerInternal>
       assistant_manager_internal_;
   std::unique_ptr<AssistantClientMock> assistant_client_;
 };
@@ -431,5 +431,4 @@ TEST_F(AssistantSettingsControllerTest,
   DestroyLibassistant();
 }
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant

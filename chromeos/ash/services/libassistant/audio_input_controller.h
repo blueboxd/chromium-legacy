@@ -12,8 +12,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 // Implementation of |mojom::AudioInputController| that will forward all calls
 // to a Libassistant V1 |assistant_client::AudioInputProvider| implementation.
@@ -53,7 +52,6 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) AudioInputController
   AudioInputProviderImpl audio_input_provider_;
 };
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant
 
 #endif  // CHROMEOS_ASH_SERVICES_LIBASSISTANT_AUDIO_INPUT_CONTROLLER_H_

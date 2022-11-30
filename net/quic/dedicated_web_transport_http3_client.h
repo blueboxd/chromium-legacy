@@ -107,6 +107,7 @@ class NET_EXPORT DedicatedWebTransportHttp3Client
     CONNECT_STATE_RESOLVE_HOST,
     CONNECT_STATE_RESOLVE_HOST_COMPLETE,
     CONNECT_STATE_CONNECT,
+    CONNECT_STATE_CONNECT_CONFIGURE,
     CONNECT_STATE_CONNECT_COMPLETE,
     CONNECT_STATE_SEND_REQUEST,
     CONNECT_STATE_CONFIRM_CONNECTION,
@@ -126,6 +127,7 @@ class NET_EXPORT DedicatedWebTransportHttp3Client
   int DoResolveHostComplete(int rv);
   // Establishes the QUIC connection.
   int DoConnect();
+  int DoConnectConfigure(int rv);
   int DoConnectComplete();
   void CreateConnection();
   // Sends the CONNECT request to establish a WebTransport session.
@@ -173,9 +175,8 @@ class NET_EXPORT DedicatedWebTransportHttp3Client
   std::unique_ptr<HostResolver::ResolveHostRequest> resolve_host_request_;
 
   std::unique_ptr<DatagramClientSocket> socket_;
-  raw_ptr<quic::QuicConnection, DanglingUntriaged>
-      connection_;  // owned by |session_|
   std::unique_ptr<quic::QuicSpdyClientSession> session_;
+  raw_ptr<quic::QuicConnection> connection_;  // owned by |session_|
   raw_ptr<quic::QuicSpdyStream> connect_stream_ = nullptr;
   raw_ptr<quic::WebTransportSession> web_transport_session_ = nullptr;
   std::unique_ptr<QuicChromiumPacketReader> packet_reader_;

@@ -62,6 +62,7 @@
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
+#include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
@@ -108,7 +109,6 @@
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
@@ -241,7 +241,8 @@ void FrameLoader::Trace(Visitor* visitor) const {
   visitor->Trace(document_loader_);
 }
 
-void FrameLoader::Init(std::unique_ptr<PolicyContainer> policy_container,
+void FrameLoader::Init(const DocumentToken& document_token,
+                       std::unique_ptr<PolicyContainer> policy_container,
                        const StorageKey& storage_key) {
   DCHECK(policy_container);
   ScriptForbiddenScope forbid_scripts;
@@ -249,9 +250,10 @@ void FrameLoader::Init(std::unique_ptr<PolicyContainer> policy_container,
   // Load the initial empty document:
   auto navigation_params = std::make_unique<WebNavigationParams>();
   navigation_params->url = KURL(g_empty_string);
+  navigation_params->storage_key = storage_key;
+  navigation_params->document_token = document_token;
   navigation_params->frame_policy =
       frame_->Owner() ? frame_->Owner()->GetFramePolicy() : FramePolicy();
-  navigation_params->storage_key = storage_key;
 
   DocumentLoader* new_document_loader = MakeGarbageCollected<DocumentLoader>(
       frame_, kWebNavigationTypeOther, std::move(navigation_params),
@@ -537,19 +539,12 @@ bool FrameLoader::AllowRequestForThisFrame(const FrameLoadRequest& request) {
 
   const KURL& url = request.GetResourceRequest().Url();
   if (url.ProtocolIsJavaScript()) {
-    // Check the CSP of the caller (the "source browsing context") if required,
-    // as per https://html.spec.whatwg.org/C/#javascript-protocol.
-    bool javascript_url_is_allowed =
-        request.GetOriginWindow()
-            ->GetContentSecurityPolicyForWorld(request.JavascriptWorld().get())
-            ->AllowInline(ContentSecurityPolicy::InlineType::kNavigation,
-                          frame_->DeprecatedLocalOwner(), url.GetString(),
-                          String() /* nonce */,
-                          request.GetOriginWindow()->Url(),
-                          OrdinalNumber::First());
-
-    if (!javascript_url_is_allowed)
+    if (request.GetOriginWindow()
+            ->CheckAndGetJavascriptUrl(request.JavascriptWorld().get(), url,
+                                       frame_->DeprecatedLocalOwner())
+            .empty()) {
       return false;
+    }
 
     if (frame_->Owner() && ((frame_->Owner()->GetFramePolicy().sandbox_flags &
                              network::mojom::blink::WebSandboxFlags::kOrigin) !=
@@ -576,8 +571,11 @@ static WebNavigationType DetermineNavigationType(
   bool is_reload = IsReloadLoadType(frame_load_type);
   bool is_back_forward = IsBackForwardLoadType(frame_load_type);
   if (is_form_submission) {
-    return (is_reload || is_back_forward) ? kWebNavigationTypeFormResubmitted
-                                          : kWebNavigationTypeFormSubmitted;
+    if (is_reload)
+      return kWebNavigationTypeFormResubmittedReload;
+    if (is_back_forward)
+      return kWebNavigationTypeFormResubmittedBackForward;
+    return kWebNavigationTypeFormSubmitted;
   }
   if (have_event)
     return kWebNavigationTypeLinkClicked;
@@ -598,7 +596,8 @@ DetermineRequestContextFromNavigationType(
     case kWebNavigationTypeOther:
       return mojom::blink::RequestContextType::LOCATION;
 
-    case kWebNavigationTypeFormResubmitted:
+    case kWebNavigationTypeFormResubmittedBackForward:
+    case kWebNavigationTypeFormResubmittedReload:
     case kWebNavigationTypeFormSubmitted:
       return mojom::blink::RequestContextType::FORM;
 
@@ -616,7 +615,8 @@ DetermineRequestDestinationFromNavigationType(
   switch (navigation_type) {
     case kWebNavigationTypeLinkClicked:
     case kWebNavigationTypeOther:
-    case kWebNavigationTypeFormResubmitted:
+    case kWebNavigationTypeFormResubmittedBackForward:
+    case kWebNavigationTypeFormResubmittedReload:
     case kWebNavigationTypeFormSubmitted:
       return network::mojom::RequestDestination::kDocument;
     case kWebNavigationTypeBackForward:
@@ -650,8 +650,10 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   if (!AllowRequestForThisFrame(request))
     return;
 
-  // Block renderer-initiated loads of filesystem: URLs.
-  if (url.ProtocolIs("filesystem") &&
+  // Block renderer-initiated loads of filesystem: URLs not in a Chrome App.
+  if (!base::FeatureList::IsEnabled(
+          features::kFileSystemUrlNavigationForChromeAppsOnly) &&
+      url.ProtocolIs("filesystem") &&
       !base::FeatureList::IsEnabled(features::kFileSystemUrlNavigation)) {
     frame_->GetDocument()->AddConsoleMessage(
         MakeGarbageCollected<ConsoleMessage>(
@@ -937,7 +939,7 @@ static void FillStaticResponseIfNeeded(WebNavigationParams* params,
     return;
 
   PluginData* plugin_data = frame->GetPluginData();
-  if (!mime_type.IsEmpty() && plugin_data &&
+  if (!mime_type.empty() && plugin_data &&
       plugin_data->SupportsMimeType(mime_type)) {
     return;
   }
@@ -1000,7 +1002,6 @@ void FrameLoader::CommitNavigation(
   DCHECK(document_loader_);
   DCHECK(frame_->GetDocument());
   DCHECK(Client()->HasWebView());
-
   if (!frame_->IsNavigationAllowed() ||
       frame_->GetDocument()->PageDismissalEventBeingDispatched() !=
           Document::kNoDismissal) {
@@ -1011,6 +1012,20 @@ void FrameLoader::CommitNavigation(
     // TODO(https://crbug.com/862088): we should probably ignore print()
     // call in this case instead.
     return;
+  }
+
+  // The encoding may be inherited from the parent frame if the security context
+  // allows it, but we don't have the frame's security context set up yet. In
+  // this case avoid starting the body load since it requires the correct
+  // encoding. We'll try again after the security context is set up in
+  // DocumentLoader::CommitNavigation().
+  const ResourceResponse& response =
+      navigation_params->response.ToResourceResponse();
+  if (!response.TextEncodingName().empty() ||
+      !IsA<LocalFrame>(frame_->Tree().Parent())) {
+    DocumentLoader::MaybeStartLoadingBodyInBackground(
+        navigation_params->body_loader.get(), frame_, navigation_params->url,
+        response);
   }
 
   // TODO(dgozman): figure out the better place for this check
@@ -1403,12 +1418,11 @@ String FrameLoader::ApplyUserAgentOverrideAndLog(
   probe::ApplyUserAgentOverride(probe::ToCoreProbeSink(frame_->GetDocument()),
                                 &user_agent_override);
 
-  if (Client()->UserAgentOverride().IsEmpty() &&
-      user_agent_override.IsEmpty()) {
+  if (Client()->UserAgentOverride().empty() && user_agent_override.empty()) {
     return user_agent;
   }
 
-  if (user_agent_override.IsEmpty()) {
+  if (user_agent_override.empty()) {
     user_agent_override = user_agent;
   }
 

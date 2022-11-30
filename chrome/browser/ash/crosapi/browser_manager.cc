@@ -104,60 +104,6 @@ namespace crosapi {
 
 namespace {
 
-// The actual Lacros launch mode.
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class LacrosLaunchMode {
-  // Indicates that Lacros is disabled.
-  kLacrosDisabled = 0,
-  // Indicates that Lacros and Ash are both enabled and accessible by the user.
-  kSideBySide = 1,
-  // Similar to kSideBySide but Lacros is the primary browser.
-  kLacrosPrimary = 2,
-  // Lacros is the only browser and Ash is disabled.
-  kLacrosOnly = 3,
-  kMaxValue = kLacrosOnly
-};
-
-// The actual Lacros launch mode.
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class LacrosLaunchModeAndSource {
-  // Either set by user or system/flags, indicates that Lacros is disabled.
-  kPossiblySetByUserLacrosDisabled = 0,
-  // Either set by user or system/flags, indicates that Lacros and Ash are both
-  // enabled and accessible by the user.
-  kPossiblySetByUserSideBySide = 1,
-  // Either set by user or system/flags, indicates that Lacros is the primary
-  // (but not only) browser.
-  kPossiblySetByUserLacrosPrimary = 2,
-  // Either set by user or system/flags, Lacros is the only browser and Ash is
-  // disabled.
-  kPossiblySetByUserLacrosOnly = 3,
-  // Enforced by the user, indicates that Lacros is disabled.
-  kForcedByUserLacrosDisabled = 4 + kPossiblySetByUserLacrosDisabled,
-  // Enforced by the user, indicates that Lacros and Ash are both enabled and
-  // accessible by the user.
-  kForcedByUserSideBySide = 4 + kPossiblySetByUserSideBySide,
-  // Enforced by the user, indicates that Lacros is the primary (but not only)
-  // browser.
-  kForcedByUserLacrosPrimary = 4 + kPossiblySetByUserLacrosPrimary,
-  // Enforced by the user, Lacros is the only browser and Ash is disabled.
-  kForcedByUserLacrosOnly = 4 + kPossiblySetByUserLacrosOnly,
-  // Enforced by policy, indicates that Lacros is disabled.
-  kForcedByPolicyLacrosDisabled = 8 + kPossiblySetByUserLacrosDisabled,
-  // Enforced by policy, indicates that Lacros and Ash are both enabled and
-  // accessible by the user.
-  kForcedByPolicySideBySide = 8 + kPossiblySetByUserSideBySide,
-  // Enforced by policy, indicates that Lacros is the primary (but not only)
-  // browser.
-  kForcedByPolicyLacrosPrimary = 8 + kPossiblySetByUserLacrosPrimary,
-  // Enforced by policy, Lacros is the only browser and Ash is disabled.
-  kForcedByPolicyLacrosOnly = 8 + kPossiblySetByUserLacrosOnly,
-
-  kMaxValue = kForcedByPolicyLacrosOnly
-};
-
 // Resources file sharing mode.
 enum class ResourcesFileSharingMode {
   kDefault = 0,
@@ -165,10 +111,23 @@ enum class ResourcesFileSharingMode {
   kError = 1,
 };
 
+// The names of the UMA metrics to track Daily LaunchMode changes.
+const char kLacrosLaunchModeDaily[] = "Ash.Lacros.Launch.Mode.Daily";
+const char kLacrosLaunchModeAndSourceDaily[] =
+    "Ash.Lacros.Launch.ModeAndSource.Daily";
+
+// The interval at which the daily UMA reporting function should be
+// called. De-duping of events will be happening on the server side.
+constexpr base::TimeDelta kDailyLaunchModeTimeDelta = base::Minutes(30);
+
 using LaunchParamsFromBackground = BrowserManager::LaunchParamsFromBackground;
 
 // Pointer to the global instance of BrowserManager.
 BrowserManager* g_instance = nullptr;
+
+// Global flag to disable most of BrowserManager for testing.
+// Read by the BrowserManager constructor.
+bool g_disabled_for_testing = false;
 
 constexpr char kLacrosCannotLaunchNotificationID[] =
     "lacros_cannot_launch_notification_id";
@@ -411,7 +370,8 @@ BrowserManager::BrowserManager(
     component_updater::ComponentUpdateService* update_service)
     : browser_loader_(std::move(browser_loader)),
       component_update_service_(update_service),
-      environment_provider_(std::make_unique<EnvironmentProvider>()) {
+      environment_provider_(std::make_unique<EnvironmentProvider>()),
+      disabled_for_testing_(g_disabled_for_testing) {
   DCHECK(!g_instance);
   g_instance = this;
 
@@ -500,6 +460,10 @@ void BrowserManager::NewGuestWindow() {
 
 void BrowserManager::NewTab(bool should_trigger_session_restore) {
   PerformOrEnqueue(BrowserAction::NewTab(should_trigger_session_restore));
+}
+
+void BrowserManager::Launch() {
+  PerformOrEnqueue(BrowserAction::Launch());
 }
 
 void BrowserManager::OpenUrl(
@@ -655,9 +619,10 @@ void BrowserManager::Shutdown() {
     // Synchronously post a shutdown blocking task that waits for lacros-chrome
     // to cleanly exit. Terminate() will eventually result in a callback into
     // OnMojoDisconnected(), however this resolves asynchronously and there is a
-    // risk that ash exits before this is called. The 3s timeout aligns with the
-    // timeout set by session_manager.
-    HandleLacrosChromeTermination(base::Seconds(3));
+    // risk that ash exits before this is called.
+    // The 2.5s wait for a successful lacros exit stays below the 3s timeout
+    // after which ash is forcefully terminated by the session_manager.
+    HandleLacrosChromeTermination(base::Milliseconds(2500));
   }
 }
 
@@ -1057,6 +1022,14 @@ void BrowserManager::OnLacrosChromeTerminated() {
 }
 
 void BrowserManager::OnSessionStateChanged() {
+  if (disabled_for_testing_) {
+    CHECK_IS_TEST();
+    LOG(WARNING)
+        << "BrowserManager disabled for testing, entering UNAVAILABLE state";
+    SetState(State::UNAVAILABLE);
+    return;
+  }
+
   // Wait for session to become active.
   auto* session_manager = session_manager::SessionManager::Get();
   if (session_manager->session_state() !=
@@ -1334,9 +1307,8 @@ void BrowserManager::RecordLacrosLaunchMode() {
   crosapi::browser_util::LacrosLaunchSwitchSource source =
       crosapi::browser_util::GetLacrosLaunchSwitchSource();
 
-  // Unit tests can come here before the source is known.
-  if (source == crosapi::browser_util::LacrosLaunchSwitchSource::kUnknown)
-    return;
+  // Make sure we have always the policy loaded before we get here.
+  DCHECK(source != crosapi::browser_util::LacrosLaunchSwitchSource::kUnknown);
 
   LacrosLaunchModeAndSource source_offset;
   if (source ==
@@ -1358,6 +1330,21 @@ void BrowserManager::RecordLacrosLaunchMode() {
 
   UMA_HISTOGRAM_ENUMERATION("Ash.Lacros.Launch.ModeAndSource",
                             lacros_mode_and_source);
+  if (!lacros_mode_.has_value() || !lacros_mode_and_source_.has_value() ||
+      lacros_mode != *lacros_mode_ ||
+      lacros_mode_and_source != *lacros_mode_and_source_) {
+    // Remember new values.
+    lacros_mode_ = lacros_mode;
+    lacros_mode_and_source_ = lacros_mode_and_source;
+
+    // Call our Daily launch mode reporting once now to make sure we have an
+    // event. If it's a dupe, the server will de-dupe.
+    OnDailyLaunchModeTimer();
+    if (!daily_event_timer_.IsRunning()) {
+      daily_event_timer_.Start(FROM_HERE, kDailyLaunchModeTimeDelta, this,
+                               &BrowserManager::OnDailyLaunchModeTimer);
+    }
+  }
 }
 
 void BrowserManager::PerformOrEnqueue(std::unique_ptr<BrowserAction> action) {
@@ -1405,6 +1392,19 @@ void BrowserManager::PerformOrEnqueue(std::unique_ptr<BrowserAction> action) {
           {browser_service_->service, browser_service_->interface_version});
       return;
   }
+}
+
+// Callback called when the daily event happens.
+void BrowserManager::OnDailyLaunchModeTimer() {
+  UMA_HISTOGRAM_ENUMERATION(kLacrosLaunchModeDaily, *lacros_mode_);
+  UMA_HISTOGRAM_ENUMERATION(kLacrosLaunchModeAndSourceDaily,
+                            *lacros_mode_and_source_);
+}
+
+// static
+void BrowserManager::DisableForTesting() {
+  CHECK_IS_TEST();
+  g_disabled_for_testing = true;
 }
 
 }  // namespace crosapi

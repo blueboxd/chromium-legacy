@@ -17,10 +17,10 @@
 #import "components/reading_list/core/reading_list_entry.h"
 #import "components/reading_list/core/reading_list_model.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/reading_list/offline_url_utils.h"
 #import "ios/chrome/browser/reading_list/reading_list_download_service.h"
 #import "ios/chrome/browser/reading_list/reading_list_download_service_factory.h"
+#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/web/common/features.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_item.h"
@@ -81,16 +81,6 @@ std::string GetOfflineData(base::FilePath offline_root,
   }
   return content;
 }
-}
-
-// static
-void OfflinePageTabHelper::CreateForWebState(web::WebState* web_state,
-                                             ReadingListModel* model) {
-  if (!FromWebState(web_state)) {
-    web_state->SetUserData(
-        UserDataKey(),
-        base::WrapUnique(new OfflinePageTabHelper(web_state, model)));
-  }
 }
 
 OfflinePageTabHelper::OfflinePageTabHelper(web::WebState* web_state,

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,13 +44,13 @@ MediaStreamSet::MediaStreamSet(
     return;
   }
 
-  if (stream_descriptors.IsEmpty()) {
+  if (stream_descriptors.empty()) {
     // No streams -> all streams are initialized, meaning the set
     // itself is fully initialized.
     context->GetTaskRunner(TaskType::kInternalMedia)
         ->PostTask(FROM_HERE,
-                   WTF::Bind(&MediaStreamSet::OnMediaStreamSetInitialized,
-                             WrapPersistent(this)));
+                   WTF::BindOnce(&MediaStreamSet::OnMediaStreamSetInitialized,
+                                 WrapPersistent(this)));
     return;
   }
 
@@ -61,8 +61,8 @@ MediaStreamSet::MediaStreamSet(
        stream_index < stream_descriptors.size(); ++stream_index) {
     MediaStream::Create(context, stream_descriptors[stream_index],
                         /*track=*/nullptr,
-                        WTF::Bind(&MediaStreamSet::OnMediaStreamInitialized,
-                                  WrapPersistent(this)));
+                        WTF::BindOnce(&MediaStreamSet::OnMediaStreamInitialized,
+                                      WrapPersistent(this)));
   }
 }
 
@@ -104,8 +104,8 @@ void MediaStreamSet::InitializeGetDisplayMediaSetStreams(
   }
   context->GetTaskRunner(TaskType::kInternalMedia)
       ->PostTask(FROM_HERE,
-                 WTF::Bind(&MediaStreamSet::OnMediaStreamSetInitialized,
-                           WrapPersistent(this)));
+                 WTF::BindOnce(&MediaStreamSet::OnMediaStreamSetInitialized,
+                               WrapPersistent(this)));
 }
 
 void MediaStreamSet::OnMediaStreamSetInitialized() {

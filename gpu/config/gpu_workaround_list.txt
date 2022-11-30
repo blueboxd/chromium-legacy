@@ -1,5 +1,4 @@
 add_and_true_to_loop_condition
-add_fence_for_same_gl_context
 adjust_src_dst_region_for_blitframebuffer
 avoid_one_component_egl_images
 avoid_stencil_buffers
@@ -80,7 +79,6 @@ exit_on_context_lost
 flush_on_framebuffer_change
 force_cube_complete
 force_cube_map_positive_x_allocation
-force_direct_composition_full_damage_always
 force_enable_color_buffer_float
 force_enable_color_buffer_float_except_rgb32f
 force_gl_flush_on_swap_buffers

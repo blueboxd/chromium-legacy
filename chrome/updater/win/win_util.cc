@@ -28,6 +28,7 @@
 #include "base/logging.h"
 #include "base/memory/free_deleter.h"
 #include "base/path_service.h"
+#include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/process/process_iterator.h"
 #include "base/ranges/algorithm.h"
@@ -36,9 +37,15 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/time/time.h"
 #include "base/win/atl.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_bstr.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/scoped_process_information.h"
+#include "base/win/scoped_variant.h"
+#include "base/win/startup_information.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
@@ -51,22 +58,22 @@
 namespace updater {
 namespace {
 
-HRESULT IsUserRunningSplitToken(bool& is_split_token) {
+HResultOr<bool> IsUserRunningSplitToken() {
   HANDLE token = NULL;
   if (!::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY, &token))
-    return HRESULTFromLastError();
+    return base::unexpected(HRESULTFromLastError());
   base::win::ScopedHandle token_holder(token);
   TOKEN_ELEVATION_TYPE elevation_type = TokenElevationTypeDefault;
   DWORD size_returned = 0;
   if (!::GetTokenInformation(token_holder.Get(), TokenElevationType,
                              &elevation_type, sizeof(elevation_type),
                              &size_returned)) {
-    return HRESULTFromLastError();
+    return base::unexpected(HRESULTFromLastError());
   }
-  is_split_token = elevation_type == TokenElevationTypeFull ||
-                   elevation_type == TokenElevationTypeLimited;
+  bool is_split_token = elevation_type == TokenElevationTypeFull ||
+                        elevation_type == TokenElevationTypeLimited;
   DCHECK(is_split_token || elevation_type == TokenElevationTypeDefault);
-  return S_OK;
+  return base::ok(is_split_token);
 }
 
 HRESULT GetSidIntegrityLevel(PSID sid, MANDATORY_LEVEL* level) {
@@ -181,7 +188,9 @@ bool CompareOSVersionsInternal(const OSVERSIONINFOEX& os,
 
 }  // namespace
 
-NamedObjectAttributes::NamedObjectAttributes() = default;
+NamedObjectAttributes::NamedObjectAttributes(const std::wstring& name,
+                                             const CSecurityDesc& sd)
+    : name(name), sa(CSecurityAttributes(sd)) {}
 NamedObjectAttributes::~NamedObjectAttributes() = default;
 
 HRESULT HRESULTFromLastError() {
@@ -297,8 +306,8 @@ HRESULT CreateUniqueEventInEnvironment(const std::wstring& var_name,
   DCHECK(unique_event);
 
   const std::wstring event_name = base::ASCIIToWide(base::GenerateGUID());
-  NamedObjectAttributes attr;
-  GetNamedObjectAttributes(event_name.c_str(), scope, &attr);
+  NamedObjectAttributes attr =
+      GetNamedObjectAttributes(event_name.c_str(), scope);
 
   HRESULT hr = CreateEvent(&attr, unique_event);
   if (FAILED(hr))
@@ -321,8 +330,7 @@ HRESULT OpenUniqueEventFromEnvironment(const std::wstring& var_name,
     return HRESULTFromLastError();
   }
 
-  NamedObjectAttributes attr;
-  GetNamedObjectAttributes(event_name, scope, &attr);
+  NamedObjectAttributes attr = GetNamedObjectAttributes(event_name, scope);
   *unique_event = ::OpenEvent(EVENT_ALL_ACCESS, false, attr.name.c_str());
 
   if (!*unique_event)
@@ -346,85 +354,68 @@ HRESULT CreateEvent(NamedObjectAttributes* event_attr, HANDLE* event_handle) {
   return S_OK;
 }
 
-void GetNamedObjectAttributes(const wchar_t* base_name,
-                              UpdaterScope scope,
-                              NamedObjectAttributes* attr) {
+NamedObjectAttributes GetNamedObjectAttributes(const wchar_t* base_name,
+                                               UpdaterScope scope) {
   DCHECK(base_name);
-  DCHECK(attr);
-
-  attr->name = kGlobalPrefix;
 
   switch (scope) {
     case UpdaterScope::kUser: {
       std::wstring user_sid;
       GetProcessUser(nullptr, nullptr, &user_sid);
-      attr->name += user_sid;
-      GetCurrentUserDefaultSecurityAttributes(&attr->sa);
-      break;
+      return {
+          base::StrCat({kGlobalPrefix, base_name, user_sid}),
+          GetCurrentUserDefaultSecurityDescriptor().value_or(CSecurityDesc())};
     }
     case UpdaterScope::kSystem:
       // Grant access to administrators and system.
-      GetAdminDaclSecurityAttributes(&attr->sa, GENERIC_ALL);
-      break;
+      return {base::StrCat({kGlobalPrefix, base_name}),
+              GetAdminDaclSecurityDescriptor(GENERIC_ALL)};
   }
-
-  attr->name += base_name;
 }
 
-bool GetCurrentUserDefaultSecurityAttributes(CSecurityAttributes* sec_attr) {
-  DCHECK(sec_attr);
-
+absl::optional<CSecurityDesc> GetCurrentUserDefaultSecurityDescriptor() {
   CAccessToken token;
   if (!token.GetProcessToken(TOKEN_QUERY))
-    return false;
+    return absl::nullopt;
 
   CSecurityDesc security_desc;
   CSid sid_owner;
   if (!token.GetOwner(&sid_owner))
-    return false;
+    return absl::nullopt;
 
   security_desc.SetOwner(sid_owner);
   CSid sid_group;
   if (!token.GetPrimaryGroup(&sid_group))
-    return false;
+    return absl::nullopt;
 
   security_desc.SetGroup(sid_group);
 
   CDacl dacl;
   if (!token.GetDefaultDacl(&dacl))
-    return false;
+    return absl::nullopt;
 
   CSid sid_user;
   if (!token.GetUser(&sid_user))
-    return false;
+    return absl::nullopt;
   if (!dacl.AddAllowedAce(sid_user, GENERIC_ALL))
-    return false;
+    return absl::nullopt;
 
   security_desc.SetDacl(dacl);
-  sec_attr->Set(security_desc);
 
-  return true;
+  return security_desc;
 }
 
-void GetAdminDaclSecurityDescriptor(CSecurityDesc* sd, ACCESS_MASK accessmask) {
-  DCHECK(sd);
-
+CSecurityDesc GetAdminDaclSecurityDescriptor(ACCESS_MASK accessmask) {
+  CSecurityDesc sd;
   CDacl dacl;
   dacl.AddAllowedAce(Sids::System(), accessmask);
   dacl.AddAllowedAce(Sids::Admins(), accessmask);
 
-  sd->SetOwner(Sids::Admins());
-  sd->SetGroup(Sids::Admins());
-  sd->SetDacl(dacl);
-  sd->MakeAbsolute();
-}
-
-void GetAdminDaclSecurityAttributes(CSecurityAttributes* sec_attr,
-                                    ACCESS_MASK accessmask) {
-  DCHECK(sec_attr);
-  CSecurityDesc sd;
-  GetAdminDaclSecurityDescriptor(&sd, accessmask);
-  sec_attr->Set(sd);
+  sd.SetOwner(Sids::Admins());
+  sd.SetGroup(Sids::Admins());
+  sd.SetDacl(dacl);
+  sd.MakeAbsolute();
+  return sd;
 }
 
 std::wstring GetAppClientsKey(const std::string& app_id) {
@@ -497,33 +488,32 @@ bool PathOwnedByUser(const base::FilePath& path) {
   return true;
 }
 
-HRESULT IsTokenAdmin(HANDLE token, bool& is_token_admin) {
+HResultOr<bool> IsTokenAdmin(HANDLE token) {
   SID_IDENTIFIER_AUTHORITY nt_authority = SECURITY_NT_AUTHORITY;
   PSID administrators_group = nullptr;
   if (!::AllocateAndInitializeSid(&nt_authority, 2, SECURITY_BUILTIN_DOMAIN_RID,
                                   DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0,
                                   &administrators_group)) {
-    return HRESULTFromLastError();
+    return base::unexpected(HRESULTFromLastError());
   }
   base::ScopedClosureRunner free_sid(
       base::BindOnce([](PSID sid) { ::FreeSid(sid); }, administrators_group));
   BOOL is_member = false;
   if (!::CheckTokenMembership(token, administrators_group, &is_member))
-    return HRESULTFromLastError();
-  is_token_admin = is_member;
-  return S_OK;
+    return base::unexpected(HRESULTFromLastError());
+  return base::ok(is_member);
 }
 
 // TODO(crbug.com/1212187): maybe handle filtered tokens.
-HRESULT IsUserAdmin(bool& is_user_admin) {
-  return IsTokenAdmin(NULL, is_user_admin);
+HResultOr<bool> IsUserAdmin() {
+  return IsTokenAdmin(NULL);
 }
 
-HRESULT IsUserNonElevatedAdmin(bool& is_user_non_elevated_admin) {
+HResultOr<bool> IsUserNonElevatedAdmin() {
   HANDLE token = NULL;
   if (!::OpenProcessToken(::GetCurrentProcess(), TOKEN_READ, &token))
-    return HRESULTFromLastError();
-  is_user_non_elevated_admin = false;
+    return base::unexpected(HRESULTFromLastError());
+  bool is_user_non_elevated_admin = false;
   base::win::ScopedHandle token_holder(token);
   TOKEN_ELEVATION_TYPE elevation_type = TokenElevationTypeDefault;
   DWORD size_returned = 0;
@@ -534,22 +524,21 @@ HRESULT IsUserNonElevatedAdmin(bool& is_user_non_elevated_admin) {
       is_user_non_elevated_admin = true;
     }
   }
-  return S_OK;
+  return base::ok(is_user_non_elevated_admin);
 }
 
-HRESULT IsCOMCallerAdmin(bool& is_com_caller_admin) {
+HResultOr<bool> IsCOMCallerAdmin() {
   ScopedKernelHANDLE token;
 
   {
     HRESULT hr = ::CoImpersonateClient();
     if (hr == RPC_E_CALL_COMPLETE) {
       // RPC_E_CALL_COMPLETE indicates that the caller is in-proc.
-      is_com_caller_admin = ::IsUserAnAdmin();
-      return S_OK;
+      return base::ok(::IsUserAnAdmin());
     }
 
     if (FAILED(hr)) {
-      return hr;
+      return base::unexpected(hr);
     }
 
     base::ScopedClosureRunner co_revert_to_self(
@@ -560,61 +549,51 @@ HRESULT IsCOMCallerAdmin(bool& is_com_caller_admin) {
       hr = HRESULTFromLastError();
       LOG(ERROR) << __func__ << ": ::OpenThreadToken failed: " << std::hex
                  << hr;
-      return hr;
+      return base::unexpected(hr);
     }
   }
 
-  if (HRESULT hr = IsTokenAdmin(token.get(), is_com_caller_admin); FAILED(hr)) {
+  HResultOr<bool> result = IsTokenAdmin(token.get());
+  if (!result.has_value()) {
+    HRESULT hr = result.error();
+    DCHECK(FAILED(hr));
     LOG(ERROR) << __func__ << ": IsTokenAdmin failed: " << std::hex << hr;
-    return hr;
   }
-
-  return S_OK;
+  return result;
 }
 
-HRESULT IsUACOn(bool& is_uac_on) {
+bool IsUACOn() {
   // The presence of a split token definitively indicates that UAC is on. But
   // the absence of the token does not necessarily indicate that UAC is off.
-  bool is_split_token = false;
-  if (SUCCEEDED(IsUserRunningSplitToken(is_split_token)) && is_split_token) {
-    is_uac_on = true;
-    return S_OK;
-  }
+  HResultOr<bool> is_split_token = IsUserRunningSplitToken();
+  if (is_split_token.has_value() && is_split_token.value())
+    return true;
 
-  is_uac_on = IsExplorerRunningAtMediumOrLower();
-  return S_OK;
+  return IsExplorerRunningAtMediumOrLower();
 }
 
-HRESULT IsElevatedWithUACOn(bool& is_elevated_with_uac_on) {
-  bool is_user_admin = false;
-  if (SUCCEEDED(IsUserAdmin(is_user_admin)) && !is_user_admin) {
-    is_elevated_with_uac_on = false;
-    return S_OK;
-  }
-  return IsUACOn(is_elevated_with_uac_on);
+bool IsElevatedWithUACOn() {
+  HResultOr<bool> is_user_admin = IsUserAdmin();
+  if (is_user_admin.has_value() && !is_user_admin.value())
+    return false;
+
+  return IsUACOn();
 }
 
 std::string GetUACState() {
   std::string s;
 
-  bool is_user_admin = false;
-  if (SUCCEEDED(IsUserAdmin(is_user_admin)))
-    base::StringAppendF(&s, "IsUserAdmin: %d, ", is_user_admin);
+  HResultOr<bool> is_user_admin = IsUserAdmin();
+  if (is_user_admin.has_value())
+    base::StringAppendF(&s, "IsUserAdmin: %d, ", is_user_admin.value());
 
-  bool is_user_non_elevated_admin = false;
-  if (SUCCEEDED(IsUserNonElevatedAdmin(is_user_non_elevated_admin))) {
+  HResultOr<bool> is_user_non_elevated_admin = IsUserNonElevatedAdmin();
+  if (is_user_non_elevated_admin.has_value())
     base::StringAppendF(&s, "IsUserNonElevatedAdmin: %d, ",
-                        is_user_non_elevated_admin);
-  }
+                        is_user_non_elevated_admin.value());
 
-  bool is_uac_on = false;
-  if (SUCCEEDED(IsUACOn(is_uac_on)))
-    base::StringAppendF(&s, "IsUACOn: %d, ", is_uac_on);
-
-  bool is_elevated_with_uac_on = false;
-  if (SUCCEEDED(IsElevatedWithUACOn(is_elevated_with_uac_on))) {
-    base::StringAppendF(&s, "IsElevatedWithUACOn: %d", is_elevated_with_uac_on);
-  }
+  base::StringAppendF(&s, "IsUACOn: %d, ", IsUACOn());
+  base::StringAppendF(&s, "IsElevatedWithUACOn: %d", IsElevatedWithUACOn());
 
   return s;
 }
@@ -639,14 +618,12 @@ REGSAM Wow6432(REGSAM access) {
   return KEY_WOW64_32KEY | access;
 }
 
-HRESULT ShellExecuteAndWait(const base::FilePath& file_path,
-                            const std::wstring& parameters,
-                            const std::wstring& verb,
-                            DWORD* exit_code) {
+HResultOr<DWORD> ShellExecuteAndWait(const base::FilePath& file_path,
+                                     const std::wstring& parameters,
+                                     const std::wstring& verb) {
   VLOG(1) << __func__ << ": path: " << file_path
           << ", parameters:" << parameters << ", verb:" << verb;
   DCHECK(!file_path.empty());
-  DCHECK(exit_code);
 
   const HWND hwnd = CreateForegroundParentWindowForUAC();
   const base::ScopedClosureRunner destroy_window(base::BindOnce(
@@ -672,12 +649,12 @@ HRESULT ShellExecuteAndWait(const base::FilePath& file_path,
   if (!::ShellExecuteEx(&shell_execute_info)) {
     const HRESULT hr = HRESULTFromLastError();
     VLOG(1) << __func__ << ": ::ShellExecuteEx failed: " << std::hex << hr;
-    return hr;
+    return base::unexpected(hr);
   }
 
   if (!shell_execute_info.hProcess) {
     VLOG(1) << __func__ << ": Started process, PID unknown";
-    return S_OK;
+    return base::ok(0);
   }
 
   const base::Process process(shell_execute_info.hProcess);
@@ -692,16 +669,71 @@ HRESULT ShellExecuteAndWait(const base::FilePath& file_path,
 
   int ret_val = 0;
   if (!process.WaitForExit(&ret_val))
-    return HRESULTFromLastError();
+    return base::unexpected(HRESULTFromLastError());
 
-  *exit_code = ret_val;
-  return S_OK;
+  return base::ok(static_cast<DWORD>(ret_val));
 }
 
-HRESULT RunElevated(const base::FilePath& file_path,
-                    const std::wstring& parameters,
-                    DWORD* exit_code) {
-  return ShellExecuteAndWait(file_path, parameters, L"runas", exit_code);
+HResultOr<DWORD> RunElevated(const base::FilePath& file_path,
+                             const std::wstring& parameters) {
+  return ShellExecuteAndWait(file_path, parameters, L"runas");
+}
+
+HRESULT RunDeElevated(const std::wstring& path,
+                      const std::wstring& parameters) {
+  Microsoft::WRL::ComPtr<IShellWindows> shell;
+  HRESULT hr = ::CoCreateInstance(CLSID_ShellWindows, nullptr,
+                                  CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&shell));
+  if (FAILED(hr))
+    return hr;
+
+  long hwnd = 0;
+  Microsoft::WRL::ComPtr<IDispatch> dispatch;
+  hr = shell->FindWindowSW(base::win::ScopedVariant(CSIDL_DESKTOP).AsInput(),
+                           base::win::ScopedVariant().AsInput(), SWC_DESKTOP,
+                           &hwnd, SWFO_NEEDDISPATCH, &dispatch);
+  if (FAILED(hr))
+    return hr;
+
+  Microsoft::WRL::ComPtr<IServiceProvider> service;
+  hr = dispatch.As(&service);
+  if (FAILED(hr))
+    return hr;
+
+  Microsoft::WRL::ComPtr<IShellBrowser> browser;
+  hr = service->QueryService(SID_STopLevelBrowser, IID_PPV_ARGS(&browser));
+  if (FAILED(hr))
+    return hr;
+
+  Microsoft::WRL::ComPtr<IShellView> view;
+  hr = browser->QueryActiveShellView(&view);
+  if (FAILED(hr))
+    return hr;
+
+  hr = view->GetItemObject(SVGIO_BACKGROUND, IID_PPV_ARGS(&dispatch));
+  if (FAILED(hr))
+    return hr;
+
+  Microsoft::WRL::ComPtr<IShellFolderViewDual> folder;
+  hr = dispatch.As(&folder);
+  if (FAILED(hr))
+    return hr;
+
+  hr = folder->get_Application(&dispatch);
+  if (FAILED(hr))
+    return hr;
+
+  Microsoft::WRL::ComPtr<IShellDispatch2> shell_dispatch;
+  hr = dispatch.As(&shell_dispatch);
+  if (FAILED(hr))
+    return hr;
+
+  return shell_dispatch->ShellExecute(
+      base::win::ScopedBstr(path).Get(),
+      base::win::ScopedVariant(parameters.c_str()),
+      base::win::ScopedVariant::kEmptyVariant,
+      base::win::ScopedVariant::kEmptyVariant,
+      base::win::ScopedVariant::kEmptyVariant);
 }
 
 absl::optional<base::FilePath> GetGoogleUpdateExePath(UpdaterScope scope) {
@@ -722,7 +754,7 @@ absl::optional<base::FilePath> GetGoogleUpdateExePath(UpdaterScope scope) {
     return absl::nullopt;
   }
 
-  return goopdate_dir.AppendASCII("GoogleUpdate.exe");
+  return goopdate_dir.AppendASCII(base::WideToASCII(kLegacyExeName));
 }
 
 HRESULT DisableCOMExceptionHandling() {
@@ -887,6 +919,74 @@ absl::optional<base::ScopedTempDir> CreateSecureTempDir() {
   }
 
   return temp_path;
+}
+
+base::ScopedClosureRunner SignalShutdownEvent(UpdaterScope scope) {
+  NamedObjectAttributes attr = GetNamedObjectAttributes(kShutdownEvent, scope);
+
+  base::win::ScopedHandle shutdown_event_handle(
+      ::CreateEvent(&attr.sa, true, false, attr.name.c_str()));
+  if (!shutdown_event_handle.IsValid()) {
+    VLOG(1) << __func__ << "Could not create the shutdown event: " << std::hex
+            << HRESULTFromLastError();
+    return {};
+  }
+
+  auto shutdown_event =
+      std::make_unique<base::WaitableEvent>(std::move(shutdown_event_handle));
+  shutdown_event->Signal();
+  return base::ScopedClosureRunner(
+      base::BindOnce(&base::WaitableEvent::Reset, std::move(shutdown_event)));
+}
+
+bool IsShutdownEventSignaled(UpdaterScope scope) {
+  NamedObjectAttributes attr = GetNamedObjectAttributes(kShutdownEvent, scope);
+
+  base::win::ScopedHandle event_handle(
+      ::OpenEvent(EVENT_ALL_ACCESS, false, attr.name.c_str()));
+  if (!event_handle.IsValid())
+    return false;
+
+  base::WaitableEvent event(std::move(event_handle));
+  return event.IsSignaled();
+}
+
+bool StopGoogleUpdateProcesses(UpdaterScope scope) {
+  // Filters processes running under `path_prefix`.
+  class PathPrefixProcessFilter : public base::ProcessFilter {
+   public:
+    explicit PathPrefixProcessFilter(const base::FilePath& path_prefix)
+        : path_prefix_(path_prefix) {}
+
+    bool Includes(const base::ProcessEntry& entry) const override {
+      base::Process process(::OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION,
+                                          false, entry.th32ProcessID));
+      if (!process.IsValid())
+        return false;
+
+      DWORD path_len = MAX_PATH;
+      wchar_t path_string[MAX_PATH];
+      if (!::QueryFullProcessImageName(process.Handle(), 0, path_string,
+                                       &path_len)) {
+        return false;
+      }
+
+      return path_prefix_.IsParent(base::FilePath(path_string));
+    }
+
+   private:
+    const base::FilePath path_prefix_;
+  };
+
+  constexpr base::TimeDelta kShutdownWaitSeconds = base::Seconds(45);
+
+  absl::optional<base::FilePath> target = GetGoogleUpdateExePath(scope);
+  if (!target)
+    return false;
+
+  PathPrefixProcessFilter path_prefix_filter(target->DirName());
+  return base::CleanupProcesses(kLegacyExeName, kShutdownWaitSeconds, -1,
+                                &path_prefix_filter);
 }
 
 }  // namespace updater

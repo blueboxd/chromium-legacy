@@ -8,6 +8,7 @@
 
 #include "ash/shell.h"
 #include "base/containers/contains.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/json/values_util.h"
 #include "base/rand_util.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics_utils.h"
@@ -225,10 +226,7 @@ void WebsiteMetrics::OnURLsDeleted(history::HistoryService* history_service,
   webcontents_to_ukm_key_.clear();
   url_infos_.clear();
 
-  DictionaryPrefUpdate usage_time_update(profile_->GetPrefs(),
-                                         kWebsiteUsageTime);
-  auto& dict = usage_time_update->GetDict();
-  dict.clear();
+  profile_->GetPrefs()->SetDict(kWebsiteUsageTime, base::Value::Dict());
 }
 
 void WebsiteMetrics::OnWindowDestroying(aura::Window* window) {
@@ -259,7 +257,6 @@ void WebsiteMetrics::OnFiveMinutes() {
 }
 
 void WebsiteMetrics::OnTwoHours() {
-  SaveUsageTime();
   RecordUsageTime();
 
   std::map<GURL, UrlInfo> url_infos;
@@ -402,6 +399,11 @@ void WebsiteMetrics::OnWebContentsUpdated(content::WebContents* web_contents) {
   // contents::WebContentsObserver::PrimaryPageChanged(), set the visible url as
   // default value for the ukm key url.
   webcontents_to_ukm_key_[web_contents] = web_contents->GetVisibleURL();
+
+  if (web_contents->GetVisibleURL().is_empty()) {
+    return;
+  }
+
   auto it = window_to_web_contents_.find(window);
   bool is_activated = wm::IsActiveWindow(window) &&
                       it != window_to_web_contents_.end() &&
@@ -533,10 +535,7 @@ void WebsiteMetrics::SetTabInActivated(content::WebContents* web_contents) {
 }
 
 void WebsiteMetrics::SaveUsageTime() {
-  DictionaryPrefUpdate usage_time_update(profile_->GetPrefs(),
-                                         kWebsiteUsageTime);
-  auto& dict = usage_time_update->GetDict();
-  dict.clear();
+  base::Value::Dict dict;
   for (auto& it : url_infos_) {
     if (it.second.is_activated) {
       auto current_time = base::TimeTicks::Now();
@@ -556,6 +555,8 @@ void WebsiteMetrics::SaveUsageTime() {
       dict.Set(it.first.spec(), it.second.ConvertToValue());
     }
   }
+
+  profile_->GetPrefs()->SetDict(kWebsiteUsageTime, std::move(dict));
 }
 
 void WebsiteMetrics::RecordUsageTime() {
@@ -570,19 +571,14 @@ void WebsiteMetrics::RecordUsageTime() {
 
   // The app usage time AppKMs have been recorded, so clear the saved usage time
   // in the user pref.
-  DictionaryPrefUpdate usage_time_update(profile_->GetPrefs(),
-                                         kWebsiteUsageTime);
-  usage_time_update->GetDict().clear();
+  profile_->GetPrefs()->SetDict(kWebsiteUsageTime, base::Value::Dict());
 }
 
 void WebsiteMetrics::RecordUsageTimeFromPref() {
-  DictionaryPrefUpdate usage_time_update(profile_->GetPrefs(),
-                                         kWebsiteUsageTime);
-  if (!usage_time_update->is_dict()) {
-    return;
-  }
+  const base::Value::Dict& usage_time =
+      profile_->GetPrefs()->GetDict(kWebsiteUsageTime);
 
-  for (const auto [url, url_info_value] : usage_time_update->GetDict()) {
+  for (const auto [url, url_info_value] : usage_time) {
     auto url_info = std::make_unique<UrlInfo>(url_info_value);
     if (!url_info->running_time_in_two_hours.is_zero()) {
       EmitUkm(GURL(url), url_info->running_time_in_two_hours.InMilliseconds(),
@@ -599,6 +595,15 @@ void WebsiteMetrics::EmitUkm(const GURL& url,
                              bool is_from_last_login) {
   auto source_id = ukm::UkmRecorder::GetSourceIdForWebsiteUrl(
       base::PassKey<WebsiteMetrics>(), url);
+  if (url.is_empty() || ukm::SourceIdObj::FromInt64(source_id).GetType() !=
+                            ukm::SourceIdType::DESKTOP_WEB_APP_ID) {
+    LOG(ERROR) << "WebsiteMetrics::EmitUkm url is " << url.spec()
+               << ", source id type is "
+               << (int)ukm::SourceIdObj::FromInt64(source_id).GetType();
+    base::debug::DumpWithoutCrashing();
+    return;
+  }
+
   if (source_id != ukm::kInvalidSourceId) {
     ukm::builders::ChromeOS_WebsiteUsageTime builder(source_id);
     builder.SetDuration(usage_time)

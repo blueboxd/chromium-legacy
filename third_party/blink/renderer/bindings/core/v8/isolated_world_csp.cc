@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -189,7 +189,7 @@ ContentSecurityPolicy* IsolatedWorldCSP::CreateIsolatedWorldCSP(
   IsolatedWorldCSPDelegate* delegate =
       MakeGarbageCollected<IsolatedWorldCSPDelegate>(
           window, self_origin, world_id,
-          policy.IsEmpty() ? CSPType::kEmpty : CSPType::kNonEmpty);
+          policy.empty() ? CSPType::kEmpty : CSPType::kNonEmpty);
   csp->BindToDelegate(*delegate);
   csp->AddPolicies(ParseContentSecurityPolicies(
       policy, network::mojom::blink::ContentSecurityPolicyType::kEnforce,

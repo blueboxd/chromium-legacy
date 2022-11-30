@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -336,8 +336,8 @@ class AudioWorkletThreadPriorityTest
       public testing::WithParamInterface<ThreadPriorityTestParam> {
  public:
   void InitWithRealtimePrioritySettings(bool is_enabled_by_finch) {
-    std::vector<base::Feature> enabled;
-    std::vector<base::Feature> disabled;
+    std::vector<base::test::FeatureRef> enabled;
+    std::vector<base::test::FeatureRef> disabled;
     if (is_enabled_by_finch) {
       enabled.push_back(features::kAudioWorkletThreadRealtimePriority);
     } else {

@@ -5,7 +5,6 @@
 import {FocusHandler} from './focus_handler.js';
 import {InputController} from './input_controller.js';
 import {LocaleInfo} from './locale_info.js';
-import {HiddenMacroManager} from './macros/hidden_macro_manager.js';
 import {Macro} from './macros/macro.js';
 import {MacroName} from './macros/macro_names.js';
 import {MetricsUtils} from './metrics_utils.js';
@@ -32,9 +31,6 @@ export class Dictation {
 
     /** @private {SpeechParser} */
     this.speechParser_ = null;
-
-    /** @private {HiddenMacroManager} */
-    this.hiddenMacroManager_ = null;
 
     /**
      * Whether or not Dictation is active.
@@ -68,9 +64,6 @@ export class Dictation {
 
     /** @private {?MetricsUtils} */
     this.metricsUtils_ = null;
-
-    /** @private {boolean} */
-    this.isPumpkinEnabled_ = false;
 
     /** @private {?FocusHandler} */
     this.focusHandler_ = null;
@@ -106,7 +99,6 @@ export class Dictation {
     this.uiController_ = new UIController();
     this.speechParser_ = new SpeechParser(this.inputController_);
     this.speechParser_.refresh();
-    this.hiddenMacroManager_ = new HiddenMacroManager(this.inputController_);
 
     // Set default speech recognition properties. Locale will be updated when
     // `updateFromPrefs_` is called.
@@ -140,8 +132,6 @@ export class Dictation {
     // Browser process.
     chrome.accessibilityPrivate.onToggleDictation.addListener(
         this.onToggleDictationListener_);
-
-    this.maybeInstallPumpkin_();
   }
 
   /**
@@ -170,20 +160,6 @@ export class Dictation {
     if (this.inputController_) {
       this.inputController_.removeListeners();
     }
-  }
-
-  /** @private */
-  maybeInstallPumpkin_() {
-    const pumpkinFeature = chrome.accessibilityPrivate.AccessibilityFeature
-                               .DICTATION_PUMPKIN_PARSING;
-    chrome.accessibilityPrivate.isFeatureEnabled(pumpkinFeature, enabled => {
-      this.isPumpkinEnabled_ = enabled;
-      if (enabled) {
-        chrome.accessibilityPrivate.installPumpkinForDictation(success => {
-          this.onPumpkinInstalled_(success);
-        });
-      }
-    });
   }
 
   /**
@@ -536,42 +512,6 @@ export class Dictation {
   }
 
   /**
-   * @param {boolean} success
-   * @private
-   */
-  onPumpkinInstalled_(success) {
-    if (!this.isPumpkinEnabled_) {
-      return;
-    }
-
-    // TODO(akihiroota): Either instantiate a new Web Worker or sandboxed
-    // iframe to execute Pumpkin code.
-  }
-
-  /** @param {!MacroName} name The macro to run. */
-  runHiddenMacroForTesting(name) {
-    this.hiddenMacroManager_.runMacroForTesting(name);
-  }
-
-  /**
-   * @param {!MacroName} name The macro to run.
-   * @param {string} arg
-   */
-  runHiddenMacroWithStringArgForTesting(name, arg) {
-    this.hiddenMacroManager_.runMacroWithStringArgForTesting(name, arg);
-  }
-
-  /**
-   * @param {!MacroName} name The macro to run.
-   * @param {string} arg1
-   * @param {string} arg2
-   */
-  runHiddenMacroWithTwoStringArgsForTesting(name, arg1, arg2) {
-    this.hiddenMacroManager_.runMacroWithTwoStringArgsForTesting(
-        name, arg1, arg2);
-  }
-
-  /**
    * Used to increase the NO_FOCUSED_IME_MS timeout to reduce the flakiness of
    * Dictation tests on slower builds. For testing purposes only.
    * @private
@@ -603,5 +543,5 @@ Dictation.Timeouts = {
   NO_SPEECH_NETWORK_MS: 10 * 1000,
   NO_SPEECH_ONDEVICE_MS: 20 * 1000,
   NO_NEW_SPEECH_MS: 5 * 1000,
-  NO_FOCUSED_IME_MS: 500,
+  NO_FOCUSED_IME_MS: 1000,
 };

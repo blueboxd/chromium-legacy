@@ -138,6 +138,7 @@ class CONTENT_EXPORT CompositorImpl
       bool,
       cc::PaintHoldingReason,
       absl::optional<cc::PaintHoldingCommitTrigger>) override {}
+  void OnPauseRenderingChanged(bool) override {}
   void BeginMainFrameNotExpectedSoon() override {}
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override {}
   void UpdateLayerTreeHost() override;
@@ -191,8 +192,6 @@ class CONTENT_EXPORT CompositorImpl
   void OnUpdateOverlayTransform() override;
   std::unique_ptr<ui::CompositorLock> GetCompositorLock(
       base::TimeDelta timeout) override;
-  void PostRequestPresentationTimeForNextFrame(
-      PresentationTimeCallback callback) override;
 
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;

@@ -20,7 +20,7 @@ import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_butto
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
-import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
+import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {flush, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
@@ -86,7 +86,7 @@ export class SettingsAddressEditDialogElement extends
   private title_: string;
   private countries_: chrome.autofillPrivate.CountryEntry[];
   private countryCode_: string|undefined;
-  private addressWrapper_: AddressComponentUI[][];
+  private addressWrapper_: AddressComponentUi[][];
   private phoneNumber_: string;
   private email_: string;
   private canSave_: boolean;
@@ -137,7 +137,7 @@ export class SettingsAddressEditDialogElement extends
   /**
    * @return A CSS class to denote how long this entry is.
    */
-  private long_(setting: AddressComponentUI): string {
+  private long_(setting: AddressComponentUi): string {
     return setting.component.isLongField ? 'long' : '';
   }
 
@@ -156,9 +156,9 @@ export class SettingsAddressEditDialogElement extends
                 chrome.autofillPrivate.AddressField.FULL_NAME &&
             this.showHonorific_;
         const row = component.row.map(
-            component => new AddressComponentUI(this.address, component));
+            component => new AddressComponentUi(this.address, component));
         return addHonorific ?
-            [[this.createHonorificAddressComponentUI(this.address)], row] :
+            [[this.createHonorificAddressComponentUi(this.address)], row] :
             [row];
       });
 
@@ -242,9 +242,9 @@ export class SettingsAddressEditDialogElement extends
     this.countryCode_ = countrySelect!.value;
   }
 
-  createHonorificAddressComponentUI(
-      address: chrome.autofillPrivate.AddressEntry): AddressComponentUI {
-    return new AddressComponentUI(address, {
+  createHonorificAddressComponentUi(
+      address: chrome.autofillPrivate.AddressEntry): AddressComponentUi {
+    return new AddressComponentUi(address, {
       field: chrome.autofillPrivate.AddressField.HONORIFIC,
       fieldName: this.i18n('honorificLabel'),
       isLongField: true,
@@ -265,7 +265,7 @@ customElements.define(
 /**
  * Creates a wrapper against a single data member for an address.
  */
-class AddressComponentUI {
+class AddressComponentUi {
   private address_: chrome.autofillPrivate.AddressEntry;
   component: chrome.autofillPrivate.AddressComponent;
   isTextArea: boolean;

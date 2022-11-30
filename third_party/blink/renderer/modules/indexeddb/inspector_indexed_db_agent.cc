@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_idb_transaction_options.h"
 #include "third_party/blink/renderer/core/dom/dom_string_list.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -64,6 +65,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -274,7 +276,7 @@ class OpenDatabaseCallback final : public NativeEventListener {
 
     IDBDatabase* idb_database = request_result->IdbDatabase();
     executable_with_database_->Execute(idb_database, script_state_);
-    V8PerIsolateData::From(script_state_->GetIsolate())->RunEndOfScopeTasks();
+    context->GetAgent()->event_loop()->RunEndOfMicrotaskCheckpointTasks();
     idb_database->close();
   }
 
@@ -666,7 +668,7 @@ class DataLoader final : public ExecutableWithDatabase<RequestDataCallback> {
     }
 
     IDBRequest* idb_request;
-    if (!index_name_.IsEmpty()) {
+    if (!index_name_.empty()) {
       IDBIndex* idb_index = IndexForObjectStore(idb_object_store, index_name_);
       if (!idb_index) {
         request_callback_->sendFailure(

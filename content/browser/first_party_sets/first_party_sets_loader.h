@@ -13,7 +13,7 @@
 #include "content/browser/first_party_sets/first_party_set_parser.h"
 #include "content/browser/first_party_sets/local_set_declaration.h"
 #include "content/common/content_export.h"
-#include "net/first_party_sets/public_sets.h"
+#include "net/first_party_sets/global_first_party_sets.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
@@ -25,9 +25,8 @@ namespace content {
 // `SetManuallySpecifiedSet`.
 class CONTENT_EXPORT FirstPartySetsLoader {
  public:
-  using LoadCompleteOnceCallback = base::OnceCallback<void(net::PublicSets)>;
-  using FlattenedSets = FirstPartySetParser::SetsMap;
-  using SingleSet = FirstPartySetParser::SingleSet;
+  using LoadCompleteOnceCallback =
+      base::OnceCallback<void(net::GlobalFirstPartySets)>;
 
   explicit FirstPartySetsLoader(LoadCompleteOnceCallback on_load_complete);
 
@@ -56,21 +55,13 @@ class CONTENT_EXPORT FirstPartySetsLoader {
   // declarations, and stores the result.
   void OnReadSetsFile(const std::string& raw_sets);
 
-  // Modifies `public_sets_` to include the CLI-provided set, if any. Must not
-  // be called until the loader has received the CLI flag value via
-  // `SetManuallySpecifiedSet`, and the public sets via `SetComponentSets`.
-  void ApplyManuallySpecifiedSet();
-
   // Checks the required inputs have been received, and if so, invokes the
   // callback `on_load_complete_`, after merging sets appropriately.
   void MaybeFinishLoading();
 
-  // Returns true if all sources are present (Component Updater sets, CLI set).
-  bool HasAllInputs() const;
-
-  // Holds the public First-Party Sets. This is nullopt until received from
+  // Holds the global First-Party Sets. This is nullopt until received from
   // Component Updater. It may be modified based on the manually-specified set.
-  absl::optional<net::PublicSets> public_sets_
+  absl::optional<net::GlobalFirstPartySets> sets_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Holds the set that was provided on the command line (if any). This is

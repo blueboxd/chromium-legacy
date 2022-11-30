@@ -43,11 +43,12 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.app.omnibox.OmniboxPedalDelegateImpl;
 import org.chromium.chrome.browser.app.tab_activity_glue.TabReparentingController;
 import org.chromium.chrome.browser.back_press.BackPressManager;
-import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
+import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.PowerBookmarkUtils;
 import org.chromium.chrome.browser.bookmarks.TabBookmarker;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.commerce.ShoppingFeatures;
+import org.chromium.chrome.browser.commerce.ShoppingServiceFactory;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
@@ -253,7 +254,7 @@ public class RootUiCoordinator
     private final ObservableSupplierImpl<MerchantTrustSignalsCoordinator>
             mMerchantTrustSignalsCoordinatorSupplier = new ObservableSupplierImpl<>();
     protected final ObservableSupplier<Profile> mProfileSupplier;
-    private final ObservableSupplier<BookmarkBridge> mBookmarkBridgeSupplier;
+    private final ObservableSupplier<BookmarkModel> mBookmarkModelSupplier;
     private final ObservableSupplier<TabBookmarker> mTabBookmarkerSupplier;
     private final OneshotSupplierImpl<AppMenuCoordinator> mAppMenuSupplier;
     private BottomSheetObserver mBottomSheetObserver;
@@ -319,7 +320,7 @@ public class RootUiCoordinator
      * @param shareDelegateSupplier Supplies the {@link ShareDelegate}.
      * @param tabProvider The {@link ActivityTabProvider} to get current tab of the activity.
      * @param profileSupplier Supplier of the currently applicable profile.
-     * @param bookmarkBridgeSupplier Supplier of the bookmark bridge for the current profile.
+     * @param bookmarkModelSupplier Supplier of the bookmark bridge for the current profile.
      * @param tabBookmarkerSupplier Supplier of {@link TabBookmarker} for bookmarking a given tab.
      * @param contextualSearchManagerSupplier Supplier of the {@link ContextualSearchManager}.
      * @param tabModelSelectorSupplier Supplies the {@link TabModelSelector}.
@@ -360,7 +361,7 @@ public class RootUiCoordinator
             @NonNull ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             @NonNull ActivityTabProvider tabProvider,
             @NonNull ObservableSupplier<Profile> profileSupplier,
-            @NonNull ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier,
+            @NonNull ObservableSupplier<BookmarkModel> bookmarkModelSupplier,
             @NonNull ObservableSupplier<TabBookmarker> tabBookmarkerSupplier,
             @NonNull Supplier<ContextualSearchManager> contextualSearchManagerSupplier,
             @NonNull ObservableSupplier<TabModelSelector> tabModelSelectorSupplier,
@@ -452,7 +453,7 @@ public class RootUiCoordinator
             mAutofillSessionLifetimeController = null;
         }
         mProfileSupplier = profileSupplier;
-        mBookmarkBridgeSupplier = bookmarkBridgeSupplier;
+        mBookmarkModelSupplier = bookmarkModelSupplier;
         mTabBookmarkerSupplier = tabBookmarkerSupplier;
         mAppMenuSupplier = new OneshotSupplierImpl<>();
         mContextualSearchManagerSupplier = contextualSearchManagerSupplier;
@@ -786,7 +787,7 @@ public class RootUiCoordinator
         // TODO(1293885): Remove this validator once we have an API on the backend that sends
         //                success/failure information back.
         if (ShoppingFeatures.isShoppingListEnabled()) {
-            mBookmarkBridgeSupplier.addObserver((bridge) -> {
+            mBookmarkModelSupplier.addObserver((bridge) -> {
                 PowerBookmarkUtils.validateBookmarkedCommerceSubscriptions(bridge,
                         new CommerceSubscriptionsServiceFactory()
                                 .getForLastUsedProfile()
@@ -1108,13 +1109,16 @@ public class RootUiCoordinator
             mIdentityDiscController = new IdentityDiscController(
                     mActivity, mActivityLifecycleDispatcher, mProfileSupplier);
             PriceTrackingButtonController priceTrackingButtonController =
-                    new PriceTrackingButtonController(
-                            mActivity, mActivityTabProvider, mTabBookmarkerSupplier);
-            ShareButtonController shareButtonController = new ShareButtonController(mActivity,
+                    new PriceTrackingButtonController(mActivityTabProvider,
+                            mModalDialogManagerSupplier.get(),
+                            AppCompatResources.getDrawable(
+                                    mActivity, R.drawable.price_tracking_disabled),
+                            mTabBookmarkerSupplier);
+            ShareButtonController shareButtonController = new ShareButtonController(
                     AppCompatResources.getDrawable(
                             mActivity, R.drawable.ic_toolbar_share_offset_24dp),
                     mActivityTabProvider, mShareDelegateSupplier, trackerSupplier, new ShareUtils(),
-                    mActivityLifecycleDispatcher, mModalDialogManagerSupplier.get(),
+                    mModalDialogManagerSupplier.get(),
                     () -> mToolbarManager.setUrlBarFocus(false, OmniboxFocusReason.UNFOCUS));
             VoiceToolbarButtonController.VoiceSearchDelegate voiceSearchDelegate =
                     new VoiceToolbarButtonController.VoiceSearchDelegate() {
@@ -1136,15 +1140,15 @@ public class RootUiCoordinator
                         }
                     };
             VoiceToolbarButtonController voiceToolbarButtonController =
-                    new VoiceToolbarButtonController(mActivity,
+                    new VoiceToolbarButtonController(
                             AppCompatResources.getDrawable(mActivity, R.drawable.btn_mic),
-                            mActivityTabProvider, trackerSupplier, mActivityLifecycleDispatcher,
+                            mActivityTabProvider, trackerSupplier,
                             mModalDialogManagerSupplier.get(), voiceSearchDelegate);
             OptionalNewTabButtonController newTabButtonController =
                     new OptionalNewTabButtonController(mActivity,
                             AppCompatResources.getDrawable(mActivity, R.drawable.new_tab_icon),
                             mActivityLifecycleDispatcher, mTabCreatorManagerSupplier,
-                            mTabModelSelectorSupplier, trackerSupplier);
+                            mActivityTabProvider, trackerSupplier);
             AdaptiveToolbarButtonController adaptiveToolbarButtonController =
                     new AdaptiveToolbarButtonController(mActivity, new SettingsLauncherImpl(),
                             mActivityLifecycleDispatcher, new AdaptiveButtonActionMenuCoordinator(),
@@ -1158,8 +1162,10 @@ public class RootUiCoordinator
             adaptiveToolbarButtonController.addButtonVariant(
                     AdaptiveToolbarButtonVariant.PRICE_TRACKING, priceTrackingButtonController);
             mContextualPageActionController = new ContextualPageActionController(mProfileSupplier,
-                    mActivityTabProvider, mActivityLifecycleDispatcher, mActivity.getResources(),
-                    adaptiveToolbarButtonController);
+                    mActivityTabProvider, adaptiveToolbarButtonController,
+                    ()
+                            -> ShoppingServiceFactory.getForProfile(mProfileSupplier.get()),
+                    mBookmarkModelSupplier);
             mButtonDataProviders =
                     Arrays.asList(mIdentityDiscController, adaptiveToolbarButtonController);
 
@@ -1169,7 +1175,7 @@ public class RootUiCoordinator
                     mTabObscuringHandlerSupplier.get(), mShareDelegateSupplier,
                     mIdentityDiscController, mButtonDataProviders, mActivityTabProvider,
                     mScrimCoordinator, mActionModeControllerCallback, mFindToolbarManager,
-                    mProfileSupplier, mBookmarkBridgeSupplier, mCanAnimateBrowserControls,
+                    mProfileSupplier, mBookmarkModelSupplier, mCanAnimateBrowserControls,
                     mLayoutStateProviderOneShotSupplier, mAppMenuSupplier,
                     shouldShowMenuUpdateBadge(), mTabModelSelectorSupplier, mStartSurfaceSupplier,
                     mOmniboxFocusStateSupplier, mIntentMetadataOneshotSupplier,
@@ -1359,7 +1365,9 @@ public class RootUiCoordinator
             }
 
             @Override
-            public void onFindToolbarHidden() {}
+            public void onFindToolbarHidden() {
+                RootUiCoordinator.this.onFindToolbarHidden();
+            }
         };
 
         mFindToolbarManager.addObserver(mFindToolbarObserver);
@@ -1375,6 +1383,12 @@ public class RootUiCoordinator
                     OverlayPanel.StateChangeReason.UNKNOWN);
         }
     }
+
+    /**
+     * Called when the find in page toolbar is shown. Sub-classes may override to manage
+     * cross-feature interaction, e.g. hide other features when this feature is shown.
+     */
+    protected void onFindToolbarHidden() {}
 
     /**
      * @return Whether the "update available" badge should be displayed on menu button(s) in the
@@ -1466,6 +1480,14 @@ public class RootUiCoordinator
      */
     public Supplier<EphemeralTabCoordinator> getEphemeralTabCoordinatorSupplier() {
         return mEphemeralTabCoordinatorSupplier;
+    }
+
+    /**
+     * @return The {@link FindToolbarManager} controlling find toolbar.
+     */
+    @Nullable
+    public FindToolbarManager getFindToolbarManager() {
+        return mFindToolbarManager;
     }
 
     /**

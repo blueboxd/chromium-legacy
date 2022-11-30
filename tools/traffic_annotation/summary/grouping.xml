@@ -29,8 +29,6 @@ after discussions on the right group.
       <annotation id="download_bitmap"/>
       <annotation id="download_manager_service_retry"/>
       <annotation id="explore_sites"/>
-      <annotation id="explore_sites_catalog_fetcher"/>
-      <annotation id="explore_sites_image_fetcher"/>
       <annotation id="family_info"/>
       <annotation id="gstatic_change_password_scripts"/>
       <annotation id="gstatic_onboarding_definition"/>
@@ -100,6 +98,7 @@ after discussions on the right group.
       <annotation id="wallpaper_google_photos_albums"/>
       <annotation id="wallpaper_google_photos_enabled"/>
       <annotation id="wallpaper_google_photos_photos"/>
+      <annotation id="search_and_assistant_enabled_checker"/>
     </sender>
     <sender name="ChromeOS Recovery">
       <annotation id="cros_recovery_image_download"/>
@@ -117,6 +116,9 @@ after discussions on the right group.
       <annotation id="device_activity_client_health_check"/>
       <annotation id="device_activity_client_check_membership"/>
       <annotation id="device_activity_client_check_in"/>
+    </sender>
+    <sender name="Enhanced Network TTS">
+      <annotation id="enhanced_network_tts"/>
     </sender>
   </group>
   <group name="Unsorted" hidden="true">
@@ -257,6 +259,13 @@ after discussions on the right group.
       <annotation id="shopping_list_ui_image_fetcher"/>
       <annotation id="chrome_commerce_price_email_pref_fetcher"/>
       <annotation id="chrome_commerce_price_email_pref_sender"/>
+      <annotation id="receive_messages_express"/>
+      <annotation id="send_message_express"/>
+      <annotation id="cryptohome_recovery_fetch_epoch"/>
+      <annotation id="cryptohome_recovery_fetch_recovery_response"/>
+      <annotation id="supervised_user_favicon_request"/>
+      <annotation id="app_preload_service"/>
+      <annotation id="user_image_downloader"/>
     </sender>
   </group>
   <group name="Admin Features" hidden="true">
@@ -346,7 +355,6 @@ after discussions on the right group.
       <annotation id="gaia_auth_fetch_for_uber"/>
       <annotation id="gaia_auth_list_accounts"/>
       <annotation id="gaia_auth_log_out"/>
-      <annotation id="gaia_auth_login"/>
       <annotation id="gaia_auth_merge_sessions"/>
       <annotation id="gaia_auth_revoke_token"/>
       <annotation id="gaia_auth_multilogin"/>

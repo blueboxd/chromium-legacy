@@ -12,10 +12,12 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
+#include "base/types/expected.h"
 #include "base/types/optional_util.h"
 #include "base/values.h"
 #include "content/browser/attribution_reporting/attribution_aggregation_keys.h"
 #include "content/browser/attribution_reporting/attribution_filter_data.h"
+#include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
@@ -30,6 +32,8 @@
 namespace content {
 namespace {
 
+using ::attribution_reporting::mojom::SourceRegistrationError;
+
 TEST(AttributionRegistrationParsingTest, ParseAggregationKeys) {
   const struct {
     const char* description;
@@ -39,6 +43,8 @@ TEST(AttributionRegistrationParsingTest, ParseAggregationKeys) {
       {"Null", absl::nullopt, AttributionAggregationKeys()},
       {"Not a dictionary", base::Value(base::Value::List()), absl::nullopt},
       {"key not a string", base::test::ParseJson(R"({"key":123})"),
+       absl::nullopt},
+      {"key doesn't start with 0x", base::test::ParseJson(R"({"key":"159"})"),
        absl::nullopt},
       {"Invalid key", base::test::ParseJson(R"({"key":"0xG59"})"),
        absl::nullopt},
@@ -268,7 +274,7 @@ TEST(AttributionRegistrationParsingTest, ParseSourceRegistration) {
   const struct {
     const char* desc;
     const char* json;
-    absl::optional<StorableSource> expected;
+    base::expected<StorableSource, SourceRegistrationError> expected;
   } kTestCases[] = {
       {
           "required_fields_only",
@@ -309,12 +315,17 @@ TEST(AttributionRegistrationParsingTest, ParseSourceRegistration) {
       {
           "destination_missing",
           R"json({})json",
-          absl::nullopt,
+          base::unexpected(SourceRegistrationError::kDestinationMissing),
       },
       {
           "destination_wrong_type",
           R"json({"destination":0})json",
-          absl::nullopt,
+          base::unexpected(SourceRegistrationError::kDestinationWrongType),
+      },
+      {
+          "destination_untrustworthy",
+          R"json({"destination":"http://d.example"})json",
+          base::unexpected(SourceRegistrationError::kDestinationUntrustworthy),
       },
       {
           "priority_valid",
@@ -421,7 +432,7 @@ TEST(AttributionRegistrationParsingTest, ParseSourceRegistration) {
       {
           "filter_data_wrong_type",
           R"json({"filter_data":5,"destination":"https://d.example"})json",
-          absl::nullopt,
+          base::unexpected(SourceRegistrationError::kFilterDataInvalid),
       },
       {
           "aggregation_keys_valid",
@@ -437,7 +448,7 @@ TEST(AttributionRegistrationParsingTest, ParseSourceRegistration) {
       {
           "aggregation_keys_wrong_type",
           R"json({"aggregation_keys":5,"destination":"https://d.example"})json",
-          absl::nullopt,
+          base::unexpected(SourceRegistrationError::kAggregationKeysInvalid),
       },
   };
 

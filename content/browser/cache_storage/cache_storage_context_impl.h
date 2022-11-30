@@ -34,6 +34,7 @@ class SequencedTaskRunner;
 }
 
 namespace storage {
+struct BucketLocator;
 struct BucketInfo;
 }
 
@@ -71,7 +72,7 @@ class CONTENT_EXPORT CacheStorageContextImpl
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
           coep_reporter_remote,
-      const blink::StorageKey& storage_key,
+      const storage::BucketLocator& bucket,
       storage::mojom::CacheStorageOwner owner,
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) override;
   void DeleteForStorageKey(const blink::StorageKey& storage_key) override;
@@ -86,11 +87,6 @@ class CONTENT_EXPORT CacheStorageContextImpl
   scoped_refptr<CacheStorageManager> cache_manager() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return cache_manager_;
-  }
-
-  const scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return quota_manager_proxy_;
   }
 
   bool is_incognito() const { return is_incognito_; }

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,7 +84,7 @@
     }
   ];
 
-  var model = PerformanceTestRunner.createPerformanceModelWithEvents(testData);
+  var model = await PerformanceTestRunner.createPerformanceModelWithEvents(testData);
   const tabbedPane = UI.panels.timeline.flameChart.detailsView.tabbedPane;
   tabbedPane.selectTab(Timeline.TimelineDetailsView.Tab.BottomUp);
   const view = tabbedPane.visibleView;

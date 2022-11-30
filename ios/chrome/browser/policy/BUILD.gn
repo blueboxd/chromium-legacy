@@ -56,12 +56,14 @@ source_set("policy") {
   ]
 
   deps = [
+    ":constants",
     ":policy_util",
     "//base",
     "//components/account_id",
     "//components/autofill/core/browser",
     "//components/bookmarks/common",
     "//components/bookmarks/managed",
+    "//components/commerce/core:pref_names",
     "//components/component_updater",
     "//components/enterprise",
     "//components/history/core/common",
@@ -76,7 +78,7 @@ source_set("policy") {
     "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/search_engines",
     "//components/security_interstitials/core",
-    "//components/strings:components_strings_grit",
+    "//components/strings",
     "//components/translate/core/browser:translate_pref_names",
     "//components/unified_consent:unified_consent",
     "//components/variations",
@@ -114,6 +116,15 @@ source_set("policy_util") {
     "//components/prefs",
     "//ios/chrome/browser/prefs:pref_names",
   ]
+}
+
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "cloud/user_policy_constants.h",
+    "cloud/user_policy_constants.mm",
+  ]
+  deps = [ "//base" ]
 }
 
 source_set("test_support") {
@@ -180,6 +191,7 @@ source_set("unit_tests") {
     "restrict_accounts_policy_handler_unittest.cc",
   ]
   deps = [
+    ":constants",
     ":policy",
     ":policy_util",
     ":test_resources",
@@ -239,6 +251,7 @@ source_set("eg2_tests") {
   ]
 
   deps = [
+    ":constants",
     ":eg_test_support+eg2",
     ":test_resources",
     "//base",
@@ -254,8 +267,6 @@ source_set("eg2_tests") {
     "//components/strings",
     "//google_apis",
     "//ios/chrome/app/strings",
-    "//ios/chrome/app/strings:ios_strings_grit",
-    "//ios/chrome/browser:chrome_url_constants",
     "//ios/chrome/browser:utils",
     "//ios/chrome/browser/policy:eg_test_support+eg2",
     "//ios/chrome/browser/prefs:pref_names",
@@ -273,6 +284,7 @@ source_set("eg2_tests") {
     "//ios/chrome/browser/ui/settings/password:password_constants",
     "//ios/chrome/browser/ui/settings/privacy:privacy_constants",
     "//ios/chrome/browser/ui/toolbar/public:constants",
+    "//ios/chrome/browser/url:constants",
     "//ios/chrome/common/ui/table_view:cells_constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/chrome/test/earl_grey:switches",

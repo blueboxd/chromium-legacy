@@ -9,14 +9,6 @@
 
 namespace ash {
 
-SkColor TestAppListColorProvider::GetAppListBackgroundColor(
-    bool is_tablet_mode,
-    SkColor default_color,
-    const views::Widget* widget) const {
-  return SkColorSetA(default_color,
-                     is_tablet_mode ? 0x66 /*40%*/ : 0xCD /*80%*/);
-}
-
 SkColor TestAppListColorProvider::GetSearchBoxBackgroundColor(
     const views::Widget* widget) const {
   return gfx::kGoogleGrey900;
@@ -43,16 +35,6 @@ SkColor TestAppListColorProvider::GetSearchBoxSuggestionTextColor(
     SkColor default_color,
     const views::Widget* widget) const {
   return gfx::kGoogleGrey600;
-}
-
-SkColor TestAppListColorProvider::GetSuggestionChipBackgroundColor(
-    const views::Widget* app_list_widget) const {
-  return SkColorSetA(SK_ColorWHITE, 0x1A);
-}
-
-SkColor TestAppListColorProvider::GetSuggestionChipTextColor(
-    const views::Widget* app_list_widget) const {
-  return gfx::kGoogleGrey200;
 }
 
 SkColor TestAppListColorProvider::GetAppListItemTextColor(

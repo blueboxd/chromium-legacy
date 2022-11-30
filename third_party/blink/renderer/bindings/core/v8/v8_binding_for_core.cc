@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/core/xml/xpath_ns_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
@@ -535,7 +536,7 @@ double ToRestrictedDouble(v8::Isolate* isolate,
 static bool HasUnmatchedSurrogates(const String& string) {
   // By definition, 8-bit strings are confined to the Latin-1 code page and
   // have no surrogates, matched or otherwise.
-  if (string.IsEmpty() || string.Is8Bit())
+  if (string.empty() || string.Is8Bit())
     return false;
 
   const UChar* characters = string.Characters16();
@@ -950,6 +951,15 @@ v8::MicrotaskQueue* ToMicrotaskQueue(ExecutionContext* execution_context) {
 
 v8::MicrotaskQueue* ToMicrotaskQueue(ScriptState* script_state) {
   return ToMicrotaskQueue(ExecutionContext::From(script_state));
+}
+
+scheduler::EventLoop& ToEventLoop(ExecutionContext* execution_context) {
+  DCHECK(execution_context);
+  return *execution_context->GetAgent()->event_loop().get();
+}
+
+scheduler::EventLoop& ToEventLoop(ScriptState* script_state) {
+  return ToEventLoop(ExecutionContext::From(script_state));
 }
 
 bool IsInParallelAlgorithmRunnable(ExecutionContext* execution_context,

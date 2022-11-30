@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,6 +117,11 @@ dependencies {
     compile 'com.android.tools:desugar_jdk_libs:1.1.5'
     compile 'com.android.tools:desugar_jdk_libs_configuration:1.1.5'
 
+    compile 'io.grpc:grpc-binder:1.49.0'
+    compile 'io.grpc:grpc-protobuf-lite:1.49.0'
+    compile 'io.grpc:grpc-stub:1.49.0'
+    compile 'io.grpc:grpc-api:1.49.0'
+
     // Needed by androidx and by doubledown targets.
     // Note: These have version overrides set in ChromiumDepGraph.groovy.
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1"
@@ -144,7 +149,8 @@ dependencies {
 
     // Used by downstream targets.
     compile "com.google.errorprone:error_prone_annotations:${errorproneVersion}"
-    compile 'org.checkerframework:checker-compat-qual:2.5.3'
+    compile 'org.checkerframework:checker-compat-qual:2.5.5'
+    compile 'org.checkerframework:checker-util:3.25.0'
     compile 'org.codehaus.mojo:animal-sniffer-annotations:1.17'
 
     // Dedicated configuration to avoid using higher version number. The 9999 version is empty.
@@ -173,7 +179,7 @@ dependencies {
     buildCompileNoDeps "com.android.tools:sdk-common:${androidToolsVersion}"
     buildCompileNoDeps "com.android.tools:common:${androidToolsVersion}"
     buildCompileNoDeps "com.android.tools.layoutlib:layoutlib-api:${androidToolsVersion}"
-    buildCompile 'org.jetbrains.kotlin:kotlin-stdlib:1.4.32'
+    buildCompile 'org.jetbrains.kotlin:kotlin-stdlib:1.7.10'
 
     androidTestCompile 'com.google.android.apps.common.testing.accessibility.framework:accessibility-test-framework:4.0.0'
     // accessibility-test-framework:3.1.2 depends on jsoup 1.12, which has a security
@@ -184,6 +190,8 @@ dependencies {
     androidTestCompile 'org.ccil.cowan.tagsoup:tagsoup:1.2.1'
 
     androidTestCompile "org.mockito:mockito-core:4.7.0"
+    // Depended on by downstream guava_java rewrite.
+    androidTestCompile "org.checkerframework:checker-qual:3.25.0"
 
     String robolectricVersion = '4.8.1'
     // Use testCompile to avoid having support_android = true set on

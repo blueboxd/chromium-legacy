@@ -54,16 +54,6 @@ struct FirstPartySetMetadata {
 };
 
 // This struct must match the class fields defined in
-// //net/first_party_sets/public_sets.h.
-struct PublicFirstPartySets {
-  // The mapping from site to FPS entry.
-  map<SchemefulSite, FirstPartySetEntry> sets;
-
-  // The mapping from site alias to canonical site.
-  map<SchemefulSite, SchemefulSite> aliases;
-};
-
-// This struct must match the class fields defined in
 // //net/first_party_sets/first_party_sets_context_config.h.
 struct FirstPartySetsContextConfig {
   // This map must be computed against the public First-Party Sets, where the
@@ -73,3 +63,31 @@ struct FirstPartySetsContextConfig {
   // from the existing First-Party Sets, for the given context.
   map<SchemefulSite, FirstPartySetEntry?> customizations;
 };
+
+// This struct must match the class fields defined in
+// //net/first_party_sets/first_party_sets_cache_filter.h.
+struct FirstPartySetsCacheFilter {
+  // The filter used to bypass cache. The key is site may be bypassed for
+  // cache access, the value indicates the browser run of which the site
+  // was marked to be cleared.
+  map<SchemefulSite, int64> filter;
+
+  // The id of the current browser run, to mark the cache entry when persisting.
+  // The cache filter should be no-op if this is 0.
+  // TODO(crbug.com/657632): Make this optional.
+  int64 browser_run_id = 0;
+};
+
+// This struct must match the class fields defined in
+// //net/first_party_sets/global_first_party_sets.h.
+struct GlobalFirstPartySets {
+  // The mapping from site to FPS entry.
+  map<SchemefulSite, FirstPartySetEntry> sets;
+
+  // The mapping from site alias to canonical site.
+  map<SchemefulSite, SchemefulSite> aliases;
+
+  // The config induced by the manually-supplied set.
+  FirstPartySetsContextConfig manual_config;
+};
+

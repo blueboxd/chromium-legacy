@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,7 +87,7 @@ underlying_sink)JS";
   // Run the message loop to allow messages to be delivered.
   test::RunPendingTasks();
   // Allow Promises to resolve.
-  v8::MicrotasksScope::PerformCheckpoint(isolate);
+  scope.PerformMicrotaskCheckpoint();
 
   v8::Local<v8::Value> result;
   auto context = script_state->GetContext();

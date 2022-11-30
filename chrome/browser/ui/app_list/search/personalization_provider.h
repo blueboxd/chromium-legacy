@@ -22,13 +22,11 @@
 
 class Profile;
 
-namespace ash {
-namespace personalization_app {
+namespace ash::personalization_app {
 
 class SearchHandler;
 
-}  // namespace personalization_app
-}  // namespace ash
+}  // namespace ash::personalization_app
 
 namespace app_list {
 
@@ -59,7 +57,9 @@ class PersonalizationProvider
       public ::ash::personalization_app::mojom::SearchResultsObserver,
       public ::apps::AppRegistryCache::Observer {
  public:
-  explicit PersonalizationProvider(Profile* profile);
+  PersonalizationProvider(
+      Profile* profile,
+      ::ash::personalization_app::SearchHandler* search_handler);
   ~PersonalizationProvider() override;
 
   PersonalizationProvider(const PersonalizationProvider&) = delete;

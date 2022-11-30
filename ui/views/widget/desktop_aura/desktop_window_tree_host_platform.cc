@@ -20,6 +20,7 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/owned_window_anchor.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -951,16 +952,14 @@ void DesktopWindowTreeHostPlatform::OnWorkspaceChanged() {
 
 gfx::Rect DesktopWindowTreeHostPlatform::ToDIPRect(
     const gfx::Rect& rect_in_pixels) const {
-  gfx::RectF rect_in_dip = gfx::RectF(rect_in_pixels);
-  GetRootTransform().TransformRectReverse(&rect_in_dip);
-  return gfx::ToEnclosingRect(rect_in_dip);
+  return GetRootTransform()
+      .InverseMapRect(rect_in_pixels)
+      .value_or(rect_in_pixels);
 }
 
 gfx::Rect DesktopWindowTreeHostPlatform::ToPixelRect(
     const gfx::Rect& rect_in_dip) const {
-  gfx::RectF rect_in_pixels = gfx::RectF(rect_in_dip);
-  GetRootTransform().TransformRect(&rect_in_pixels);
-  return gfx::ToEnclosingRect(rect_in_pixels);
+  return GetRootTransform().MapRect(rect_in_dip);
 }
 
 Widget* DesktopWindowTreeHostPlatform::GetWidget() {

@@ -900,8 +900,7 @@ class EarlyWorkerMessageSender : public EventRouter::Observer {
       return;
     }
 
-    const bool is_lazy_listener = details.browser_context == nullptr;
-    if (is_lazy_listener) {
+    if (details.is_lazy) {
       // Wait for the non-lazy listener as we want to exercise the code to
       // dispatch the event right after the Service Worker registration is
       // completing.
@@ -1496,17 +1495,17 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest,
   // should fail.
   // Note that this also tests that service workers can be registered from tabs.
   EXPECT_TRUE(RunExtensionTest("service_worker/no_background",
-                               {.page_url = "page.html"}));
+                               {.extension_url = "page.html"}));
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, NotificationAPI) {
   EXPECT_TRUE(RunExtensionTest("service_worker/notifications/has_permission",
-                               {.page_url = "page.html"}));
+                               {.extension_url = "page.html"}));
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WebAccessibleResourcesFetch) {
   EXPECT_TRUE(RunExtensionTest("service_worker/web_accessible_resources/fetch/",
-                               {.page_url = "page.html"}));
+                               {.extension_url = "page.html"}));
 }
 
 // Tests that updating a packed extension with modified scripts works

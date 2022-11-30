@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,9 +84,9 @@ void SubresourceFilter::ReportLoadAsync(
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       execution_context_->GetTaskRunner(TaskType::kNetworking);
   DCHECK(task_runner->RunsTasksInCurrentSequence());
-  task_runner->PostTask(
-      FROM_HERE, WTF::Bind(&SubresourceFilter::ReportLoad, WrapPersistent(this),
-                           resource_url, load_policy));
+  task_runner->PostTask(FROM_HERE, WTF::BindOnce(&SubresourceFilter::ReportLoad,
+                                                 WrapPersistent(this),
+                                                 resource_url, load_policy));
 }
 
 bool SubresourceFilter::AllowWebSocketConnection(const KURL& url) {

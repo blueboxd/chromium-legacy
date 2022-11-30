@@ -35,8 +35,19 @@ class AX_EXPORT AXTreeManager : public AXTreeObserver {
 
   ~AXTreeManager() override;
 
+  enum class RetargetEventType {
+    RetargetEventTypeGenerated = 0,
+    RetargetEventTypeBlinkGeneral,
+    RetargetEventTypeBlinkHover,
+  };
+
   // Subclasses override these methods to send native event notifications.
   virtual void FireFocusEvent(AXNode* node);
+  // Return |node| by default, but some platforms want to update the target node
+  // based on the event type.
+  virtual AXNode* RetargetForEvents(AXNode* node, RetargetEventType type) const;
+  virtual void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
+                                  const ui::AXNode* node) {}
 
   // Returns the AXNode with the given |node_id| from the tree that has the
   // given |tree_id|. This allows for callers to access nodes outside of their
@@ -52,12 +63,21 @@ class AX_EXPORT AXTreeManager : public AXTreeObserver {
   // Returns the tree id of the tree managed by this AXTreeManager.
   AXTreeID GetTreeID() const;
 
+  // Returns the AXTreeData for the tree managed by this AXTreeManager.
+  const AXTreeData& GetTreeData() const;
+
   // Returns the tree id of the parent tree.
   // Returns AXTreeIDUnknown if this tree doesn't have a parent tree.
   virtual AXTreeID GetParentTreeID() const;
 
   // Returns the AXNode that is at the root of the current tree.
   AXNode* GetRoot() const;
+
+  bool IsRoot() const;
+
+  // Returns the root AXTreeManager by walking up the tree to any parent trees.
+  // If there is a parent tree that is not yet connected, returns nullptr.
+  AXTreeManager* GetRootManager() const;
 
   // If this tree has a parent tree, returns the node in the parent tree that
   // hosts the current tree. Returns nullptr if this tree doesn't have a parent
@@ -80,7 +100,7 @@ class AX_EXPORT AXTreeManager : public AXTreeObserver {
   void OnTreeDataChanged(AXTree* tree,
                          const AXTreeData& old_data,
                          const AXTreeData& new_data) override;
-  void OnNodeWillBeDeleted(AXTree* tree, AXNode* node) override {}
+  void OnNodeWillBeDeleted(AXTree* tree, AXNode* node) override;
   void OnSubtreeWillBeDeleted(AXTree* tree, AXNode* node) override {}
   void OnNodeCreated(AXTree* tree, AXNode* node) override {}
   void OnNodeDeleted(AXTree* tree, int32_t node_id) override {}
@@ -105,6 +125,8 @@ class AX_EXPORT AXTreeManager : public AXTreeObserver {
   // before calling `BrowserAccessibilityManager::ParentConnectionChanged`, so
   // the default removal of the manager in `~AXTreeManager` occurs too late.
   void RemoveFromMap();
+
+  virtual AXTreeManager* GetParentManager() const;
 
   // Return the last node that had focus, no searching.
   static AXNode* GetLastFocusedNode();

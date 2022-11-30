@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CrPolicyIndicatorType} from '//resources/cr_elements/policy/cr_policy_indicator_behavior.js';
+import {CrPolicyIndicatorType} from '//resources/ash/common/cr_policy_indicator_behavior.js';
 import {AboutPageBrowserProxyImpl, BrowserChannel, DeviceNameBrowserProxyImpl, DeviceNameState, LifetimeBrowserProxyImpl, Router, routes, SetDeviceNameResult, UpdateStatus} from 'chrome://os-settings/chromeos/os_settings.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
-import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {eventToPromise, flushTasks, waitAfterNextRender} from 'chrome://test/test_util.js';
+import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
 import {TestAboutPageBrowserProxyChromeOS} from './test_about_page_browser_proxy_chromeos.js';
 import {TestDeviceNameBrowserProxy} from './test_device_name_browser_proxy.js';
@@ -611,15 +612,15 @@ suite('AboutPageTest', function() {
   test('Managed user auto update toggle in build info page', async () => {
     loadTimeData.overrideValues({
       isManaged: true,
-      // Set this to true to catch UI bugs.
-      showConsumerAutoUpdateToggle: true,
     });
 
-    async function checkManagedAutoUpdateToggle(isToggleEnabled) {
+    async function checkManagedAutoUpdateToggle(isToggleEnabled, showToggle) {
       // Create the page.
       await initNewPage();
       // Set overrides + response values.
       aboutBrowserProxy.setManagedAutoUpdate(isToggleEnabled);
+
+      loadTimeData.overrideValues({showAutoUpdateToggle: showToggle});
       // Go to the build info page.
       const buildInfoPage = getBuildInfoPage();
       // Wait for overrides + response values.
@@ -627,17 +628,25 @@ suite('AboutPageTest', function() {
 
       const mau_toggle =
           buildInfoPage.shadowRoot.querySelector('#managedAutoUpdateToggle');
-      assertTrue(!!mau_toggle);
-      // Managed auto update toggle should always be disabled to toggle.
-      assertTrue(!!mau_toggle.hasAttribute('disabled'));
-      assertEquals(isToggleEnabled, mau_toggle.checked);
-      // Consumer auto update toggle should not exist.
-      assertFalse(!!buildInfoPage.shadowRoot.querySelector(
-          '#consumerAutoUpdateToggle'));
+
+      if (showToggle) {
+        assertTrue(!!mau_toggle);
+        // Managed auto update toggle should always be disabled to toggle.
+        assertTrue(!!mau_toggle.hasAttribute('disabled'));
+        assertEquals(isToggleEnabled, mau_toggle.checked);
+        // Consumer auto update toggle should not exist.
+        assertFalse(!!buildInfoPage.shadowRoot.querySelector(
+            '#consumerAutoUpdateToggle'));
+      } else {
+        assertFalse(!!mau_toggle);
+      }
     }
 
-    await checkManagedAutoUpdateToggle(true);
-    await checkManagedAutoUpdateToggle(false);
+    for (let i = 0; i < (1 << 2); i++) {
+      await checkManagedAutoUpdateToggle(
+          /*isToggleEnabled=*/ (i & 1) > 0,
+          /*showToggle=*/ (i & 2) > 0);
+    }
   });
 
   test('Consumer user auto update toggle in build info page', async () => {
@@ -652,7 +661,7 @@ suite('AboutPageTest', function() {
       // Set overrides + response values.
       loadTimeData.overrideValues({
         isConsumerAutoUpdateTogglingAllowed: isTogglingAllowed,
-        showConsumerAutoUpdateToggle: showToggle,
+        showAutoUpdateToggle: showToggle,
       });
       aboutBrowserProxy.resetConsumerAutoUpdate(isEnabled);
       const prefs = {

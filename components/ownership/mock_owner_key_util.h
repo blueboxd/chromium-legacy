@@ -30,7 +30,8 @@ class OWNERSHIP_EXPORT MockOwnerKeyUtil : public OwnerKeyUtil {
   MockOwnerKeyUtil& operator=(const MockOwnerKeyUtil&) = delete;
 
   // OwnerKeyUtil implementation:
-  bool ImportPublicKey(std::vector<uint8_t>* output) override;
+  scoped_refptr<PublicKey> ImportPublicKey() override;
+  crypto::ScopedSECKEYPrivateKey GenerateKeyPair(PK11SlotInfo* slot) override;
   crypto::ScopedSECKEYPrivateKey FindPrivateKeyInSlot(
       const std::vector<uint8_t>& key,
       PK11SlotInfo* slot) override;
@@ -52,9 +53,14 @@ class OWNERSHIP_EXPORT MockOwnerKeyUtil : public OwnerKeyUtil {
   void ImportPrivateKeyAndSetPublicKey(
       std::unique_ptr<crypto::RSAPrivateKey> key);
 
+  // Makes next `fail_times` number of calls to OwnerKeyUtil::GenerateKeyPair
+  // fail.
+  void SimulateGenerateKeyFailure(int fail_times);
+
  private:
   ~MockOwnerKeyUtil() override;
 
+  int generate_key_fail_times_ = 0;
   std::vector<uint8_t> public_key_;
   crypto::ScopedSECKEYPrivateKey private_key_;
 };

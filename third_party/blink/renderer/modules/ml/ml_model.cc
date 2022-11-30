@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,8 +141,8 @@ ScriptPromise MLModel::compute(
 
   remote_model_->Compute(
       std::move(input_mojo),
-      WTF::Bind(&MLModel::OnComputeResult, WrapPersistent(this),
-                WrapPersistent(script_state), WrapPersistent(resolver)));
+      WTF::BindOnce(&MLModel::OnComputeResult, WrapPersistent(this),
+                    WrapPersistent(script_state), WrapPersistent(resolver)));
 
   return promise;
 }

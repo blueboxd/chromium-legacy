@@ -14,7 +14,7 @@ import '../i18n_setup.js';
 
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
-import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
+import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './security_keys_pin_field.html.js';
@@ -24,7 +24,7 @@ import {getTemplate} from './security_keys_pin_field.html.js';
  * resolves with null if the PIN was correct, or with the number of retries
  * remaining otherwise.
  */
-type PINFieldSubmitFunc = (pin: string) => Promise<number|null>;
+type PinFieldSubmitFunc = (pin: string) => Promise<number|null>;
 
 export interface SettingsSecurityKeysPinFieldElement {
   $: {
@@ -93,7 +93,7 @@ export class SettingsSecurityKeysPinFieldElement extends
    * to show an error if the PIN was incorrect.
    * @return A Promise that resolves if the PIN was correct, else rejects.
    */
-  trySubmit(submitFunc: PINFieldSubmitFunc): Promise<void> {
+  trySubmit(submitFunc: PinFieldSubmitFunc): Promise<void> {
     if (!this.validate_()) {
       this.focus();
       return Promise.reject();

@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/raw_ptr.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/supervised_user/supervised_user_error_page/supervised_user_error_page.h"
 #include "url/gurl.h"
 
@@ -18,6 +19,10 @@ class WebContents;
 }  // namespace content
 
 class Profile;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+class SupervisedUserFaviconRequestHandler;
+#endif
 
 // This class is used by SupervisedUserNavigationObserver to handle requests
 // from supervised user error page. The error page is shown when a page is
@@ -85,6 +90,10 @@ class SupervisedUserInterstitial {
 
   // The Navigation ID of the navigation that last triggered the interstitial.
   int64_t interstitial_navigation_id_;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  std::unique_ptr<SupervisedUserFaviconRequestHandler> favicon_handler_;
+#endif
 };
 
 #endif  // CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_INTERSTITIAL_H_

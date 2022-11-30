@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,6 +65,21 @@ TEST_F(AccessibilityTest, IsARIAWidget) {
       *root->getElementById("focusable")));
   EXPECT_TRUE(AXObjectCache::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("focusable-parent")));
+}
+
+TEST_F(AccessibilityTest, RemoveAXID) {
+  auto& cache = GetAXObjectCache();
+  SetBodyInnerHTML(R"HTML(
+      <div id="f" style="position:fixed">aaa</div>
+      <h2 id="h">Heading</h2>)HTML");
+  AXObject* fixed = GetAXObjectByElementId("f");
+  // GetBoundsInFrameCoordinates() updates fixed_or_sticky_node_ids_.
+  fixed->GetBoundsInFrameCoordinates();
+  EXPECT_EQ(1u, cache.fixed_or_sticky_node_ids_.size());
+
+  // RemoveAXID() should not clear fixed_or_sticky_node_ids_.
+  cache.RemoveAXID(GetAXObjectByElementId("h"));
+  EXPECT_EQ(1u, cache.fixed_or_sticky_node_ids_.size());
 }
 
 class MockAXObject : public AXObject {

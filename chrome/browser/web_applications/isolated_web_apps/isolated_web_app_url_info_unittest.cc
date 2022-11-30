@@ -5,7 +5,10 @@
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include <utility>
 
+#include "chrome/test/base/testing_profile.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
+#include "content/public/browser/storage_partition_config.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -56,6 +59,16 @@ TEST_F(IsolatedWebAppUrlInfoTest, CreateFailsWithInvalidUrl) {
   EXPECT_THAT(url_info.error(), Eq("Invalid URL"));
 }
 
+TEST_F(IsolatedWebAppUrlInfoTest,
+       CreateFromSignedWebBundleIdSucceedsWithRandomId) {
+  web_package::SignedWebBundleId random_id =
+      web_package::SignedWebBundleId::CreateRandomForDevelopment();
+  base::expected<IsolatedWebAppUrlInfo, std::string> url_info =
+      IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(random_id);
+
+  EXPECT_THAT(url_info.has_value(), IsTrue());
+}
+
 TEST_F(IsolatedWebAppUrlInfoTest, ParseSignedWebBundleIdSucceedWithValidUrl) {
   base::expected<IsolatedWebAppUrlInfo, std::string> url_info =
       IsolatedWebAppUrlInfo::Create(GURL(kValidIsolatedAppUrl));
@@ -67,6 +80,21 @@ TEST_F(IsolatedWebAppUrlInfoTest, ParseSignedWebBundleIdSucceedWithValidUrl) {
               Eq(web_package::SignedWebBundleId::Type::kEd25519PublicKey));
   EXPECT_THAT(bundle_id->id(),
               Eq("aerugqztij5biqquuk3mfwpsaibuegaqcitgfchwuosuofdjabzqaaic"));
+}
+
+TEST_F(IsolatedWebAppUrlInfoTest, ParseSignedWebBundleIdFailsWithSubdomain) {
+  GURL gurl(
+      "isolated-app://"
+      "foo.aerugqztij5biqquuk3mfwpsaibuegaqcitgfchwuosuofdjabzqaaic/");
+
+  base::expected<IsolatedWebAppUrlInfo, std::string> url_info =
+      IsolatedWebAppUrlInfo::Create(gurl);
+  base::expected<web_package::SignedWebBundleId, std::string> bundle_id =
+      url_info->ParseSignedWebBundleId();
+
+  EXPECT_THAT(bundle_id.has_value(), IsFalse());
+  EXPECT_THAT(bundle_id.error(),
+              StartsWith("The host of isolated-app:// URLs must be a valid"));
 }
 
 TEST_F(IsolatedWebAppUrlInfoTest, ParseSignedWebBundleIdFailsWithBadHostname) {
@@ -100,13 +128,30 @@ TEST_F(IsolatedWebAppUrlInfoTest, AppIdIsHashedOrigin) {
   EXPECT_THAT(url_info->app_id(), Eq("ckmbeioemjmabdoddhjadagkjknpeigi"));
 }
 
+TEST_F(IsolatedWebAppUrlInfoTest, StoragePartitionConfigUsesOrigin) {
+  content::BrowserTaskEnvironment task_environment;
+  TestingProfile testing_profile;
+
+  base::expected<IsolatedWebAppUrlInfo, std::string> url_info =
+      IsolatedWebAppUrlInfo::Create(GURL(kValidIsolatedAppUrl));
+
+  auto expected_config = content::StoragePartitionConfig::Create(
+      &testing_profile,
+      /*partition_domain=*/
+      "iwa-aerugqztij5biqquuk3mfwpsaibuegaqcitgfchwuosuofdjabzqaaic",
+      /*partition_name=*/"",
+      /*in_memory=*/false);
+  EXPECT_THAT(url_info->storage_partition_config(&testing_profile),
+              Eq(expected_config));
+}
+
 class IsolatedWebAppGURLConversionTest
     : public ::testing::TestWithParam<std::pair<std::string, std::string>> {};
 
 TEST_P(IsolatedWebAppGURLConversionTest, RemovesInvalidPartsFromUrls) {
   // GURL automatically removes port and credentials, and converts
   // `isolated-app:foo` to `isolated-app://foo`. This test is here to verify
-  // that and therefore make sure that the `CHECK` inside
+  // that and therefore make sure that the `DCHECK` inside
   // `ParseSignedWebBundleId` will never actually trigger as long as this test
   // succeeds.
   GURL gurl(GetParam().first);

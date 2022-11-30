@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -404,7 +405,10 @@ TEST_F(ChromePasswordManagerClientTest, LogEntryNotifyRenderer) {
 }
 
 TEST_F(ChromePasswordManagerClientTest, GetPasswordSyncState) {
-  sync_service_->SetActiveDataTypes(syncer::ModelTypeSet(syncer::PASSWORDS));
+  sync_service_->GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*types=*/syncer::UserSelectableTypeSet(
+          syncer::UserSelectableType::kPasswords));
   sync_service_->SetIsUsingExplicitPassphrase(false);
 
   ChromePasswordManagerClient* client = GetClient();
@@ -413,14 +417,28 @@ TEST_F(ChromePasswordManagerClientTest, GetPasswordSyncState) {
   EXPECT_EQ(password_manager::SyncState::kSyncingNormalEncryption,
             client->GetPasswordSyncState());
 
+  // Persistent auth error other than web signout (sync continues active).
+  sync_service_->SetPersistentAuthErrorOtherThanWebSignout();
+  EXPECT_EQ(password_manager::SyncState::kSyncingNormalEncryption,
+            client->GetPasswordSyncState());
+
+  // Sync paused due to web signout.
+  sync_service_->SetPersistentAuthErrorWithWebSignout();
+  EXPECT_EQ(password_manager::SyncState::kNotSyncing,
+            client->GetPasswordSyncState());
+
   // Again, using a custom passphrase.
+  sync_service_->ClearAuthError();
   sync_service_->SetIsUsingExplicitPassphrase(true);
 
   EXPECT_EQ(password_manager::SyncState::kSyncingWithCustomPassphrase,
             client->GetPasswordSyncState());
 
   // Report correctly if we aren't syncing passwords.
-  sync_service_->SetActiveDataTypes(syncer::ModelTypeSet(syncer::BOOKMARKS));
+  sync_service_->GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*types=*/syncer::UserSelectableTypeSet(
+          syncer::UserSelectableType::kBookmarks));
 
   EXPECT_EQ(password_manager::SyncState::kNotSyncing,
             client->GetPasswordSyncState());
@@ -660,9 +678,9 @@ TEST_P(ChromePasswordManagerClientSchemeTest,
   EXPECT_EQ(url::Origin::Create(url).GetURL(),
             GetClient()->GetLastCommittedOrigin().GetURL());
 
-  auto* it = std::find_if(
-      std::begin(kSchemeTestCases), std::end(kSchemeTestCases),
-      [](auto test_case) { return strcmp(test_case.scheme, GetParam()) == 0; });
+  auto* it = base::ranges::find_if(kSchemeTestCases, [](auto test_case) {
+    return strcmp(test_case.scheme, GetParam()) == 0;
+  });
   // If saving isn't allowed it shouldn't be due to the setting, so make
   // sure that is enabled.
   MockPasswordManagerSettingsService* settings_service =
@@ -1050,7 +1068,9 @@ void ChromePasswordManagerClientAndroidTest::SetUpGenerationPreconditions(
 
   // Password sync needs to be enabled for generation
   sync_service()->SetIsUsingExplicitPassphrase(false);
-  sync_service()->SetActiveDataTypes(syncer::ModelTypeSet(syncer::PASSWORDS));
+  sync_service()->GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*types=*/{syncer::UserSelectableType::kPasswords});
 
   // Make sure the main frame is focused, so that a focus event on the password
   // field later is considered valid.

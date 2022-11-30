@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/k_anonymity_service/k_anonymity_service_client.h"
-
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/run_loop.h"
@@ -15,6 +14,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "content/public/browser/k_anonymity_service_delegate.h"
 #include "content/public/test/browser_task_environment.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
@@ -128,6 +128,10 @@ class KAnonymityServiceClientTest : public testing::Test {
 
   Profile* profile() { return profile_.get(); }
 
+  int GetNumPendingURLRequests() {
+    return test_url_loader_factory_.NumPending();
+  }
+
  private:
   base::test::ScopedFeatureList feature_list_;
   content::BrowserTaskEnvironment task_environment_;
@@ -139,6 +143,7 @@ class KAnonymityServiceClientTest : public testing::Test {
 TEST_F(KAnonymityServiceClientTest, TryJoinSetFetchTokenFails) {
   InitializeIdentity(false);
   KAnonymityServiceClient k_service(profile());
+
   base::HistogramTester hist;
   base::RunLoop run_loop;
   k_service.JoinSet("1",
@@ -148,6 +153,7 @@ TEST_F(KAnonymityServiceClientTest, TryJoinSetFetchTokenFails) {
                           run_loop.Quit();
                         })));
   run_loop.Run();
+  EXPECT_EQ(0, GetNumPendingURLRequests());
   CheckJoinSetHistogramActions(
       hist, {{KAnonymityServiceJoinSetAction::kJoinSet, 1},
              {KAnonymityServiceJoinSetAction::kJoinSetRequestFailed, 1}});
@@ -168,6 +174,7 @@ TEST_F(KAnonymityServiceClientTest, TryJoinSetSuccess) {
   RespondWithTrustTokenKeys(2);
   RespondWithTrustTokenIssued(2);
   run_loop.Run();
+  EXPECT_EQ(0, GetNumPendingURLRequests());
   CheckJoinSetHistogramActions(
       hist, {{KAnonymityServiceJoinSetAction::kJoinSet, 1},
              {KAnonymityServiceJoinSetAction::kJoinSetSuccess, 1}});
@@ -179,7 +186,7 @@ TEST_F(KAnonymityServiceClientTest, TryJoinSetRepeatedly) {
   base::HistogramTester hist;
   base::RunLoop run_loop;
   int callback_count = 0;
-  for (size_t i = 0; i < 10; i++) {
+  for (int i = 0; i < 10; i++) {
     k_service.JoinSet("1",
                       base::OnceCallback<void(bool)>(base::BindLambdaForTesting(
                           [&callback_count, &run_loop, i](bool result) {
@@ -225,6 +232,7 @@ TEST_F(KAnonymityServiceClientTest, TryJoinSetOneAtATime) {
     RespondWithTrustTokenIssued(2);
     run_loop.Run();
   }
+  EXPECT_EQ(0, GetNumPendingURLRequests());
   EXPECT_EQ(10, callback_count);
   CheckJoinSetHistogramActions(
       hist, {{KAnonymityServiceJoinSetAction::kJoinSet, 10},
@@ -242,6 +250,7 @@ TEST_F(KAnonymityServiceClientTest, TryJoinSetFailureDropsAllRequests) {
                       base::OnceCallback<void(bool)>(base::BindLambdaForTesting(
                           [&callback_count, &run_loop, i](bool result) {
                             EXPECT_FALSE(result) << "iteration " << i;
+                            EXPECT_EQ(i, callback_count);
                             callback_count++;
                             if (callback_count == 10)
                               run_loop.Quit();
@@ -251,14 +260,57 @@ TEST_F(KAnonymityServiceClientTest, TryJoinSetFailureDropsAllRequests) {
       "https://chromekanonymityauth-pa.googleapis.com/v1/"
       "generateShortIdentifier");
   run_loop.Run();
+  EXPECT_EQ(0, GetNumPendingURLRequests());
   EXPECT_EQ(10, callback_count);
   CheckJoinSetHistogramActions(
       hist, {{KAnonymityServiceJoinSetAction::kJoinSet, 10},
              {KAnonymityServiceJoinSetAction::kJoinSetRequestFailed, 10}});
 }
 
+TEST_F(KAnonymityServiceClientTest, TryJoinSetOverflowQueue) {
+  InitializeIdentity(true);
+  KAnonymityServiceClient k_service(profile());
+  base::HistogramTester hist;
+  base::RunLoop run_loop;
+  int callback_count = 0;
+  for (int i = 0; i < 100; i++) {
+    k_service.JoinSet("1",
+                      base::OnceCallback<void(bool)>(base::BindLambdaForTesting(
+                          [&callback_count, &run_loop, i](bool result) {
+                            EXPECT_TRUE(result) << "iteration " << i;
+                            EXPECT_EQ(i + 1, callback_count);
+                            callback_count++;
+                            if (callback_count == 101)
+                              run_loop.Quit();
+                          })));
+  }
+  // Queue should be full, so the next request should fail (asynchronously, but
+  // before any successes).
+  k_service.JoinSet(
+      "Full", base::OnceCallback<void(bool)>(
+                  base::BindLambdaForTesting([&callback_count](bool result) {
+                    EXPECT_FALSE(result);
+                    EXPECT_EQ(0, callback_count);
+                    callback_count++;
+                  })));
+  RespondWithTrustTokenNonUniqueUserID(2);
+  RespondWithTrustTokenKeys(2);
+  // The network layer doesn't actually get a token, so the fetcher requests one
+  // every time.
+  for (int i = 0; i < 100; i++)
+    RespondWithTrustTokenIssued(2);
+  run_loop.Run();
+  EXPECT_EQ(0, GetNumPendingURLRequests());
+  EXPECT_EQ(101, callback_count);
+  CheckJoinSetHistogramActions(
+      hist, {{KAnonymityServiceJoinSetAction::kJoinSet, 101},
+             {KAnonymityServiceJoinSetAction::kJoinSetSuccess, 100},
+             {KAnonymityServiceJoinSetAction::kJoinSetQueueFull, 1}});
+}
+
 TEST_F(KAnonymityServiceClientTest, TryQuerySetAllNotKAnon) {
   KAnonymityServiceClient k_service(profile());
+
   base::HistogramTester hist;
   base::RunLoop run_loop;
   std::vector<std::string> sets;
@@ -274,6 +326,7 @@ TEST_F(KAnonymityServiceClientTest, TryQuerySetAllNotKAnon) {
             run_loop.Quit();
           })));
   run_loop.Run();
+  EXPECT_EQ(0, GetNumPendingURLRequests());
   CheckQuerySetHistogramActions(
       hist, {{KAnonymityServiceQuerySetAction::kQuerySet, 1}});
   hist.ExpectUniqueSample("Chrome.KAnonymityService.QuerySet.Size", 2, 1);

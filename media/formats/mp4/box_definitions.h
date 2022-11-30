@@ -329,13 +329,14 @@ struct MEDIA_EXPORT VideoSampleEntry : Box {
   PixelAspectRatioBox pixel_aspect;
   ProtectionSchemeInfo sinf;
 
+  VideoDecoderConfig::AlphaMode alpha_mode;
+
   VideoCodec video_codec;
   VideoCodecProfile video_codec_profile;
   VideoCodecLevel video_codec_level;
   VideoColorSpace video_color_space;
 
-  absl::optional<MasteringDisplayColorVolume> mastering_display_color_volume;
-  absl::optional<ContentLightLevelInformation> content_light_level_information;
+  absl::optional<gfx::HDRMetadata> hdr_metadata;
 
   bool IsFormatValid() const;
 
@@ -381,7 +382,7 @@ struct MEDIA_EXPORT OpusSpecificBox : Box {
   uint32_t sample_rate;
 };
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS) && BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
+#if BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
 struct MEDIA_EXPORT DtsSpecificBox : Box {
   DECLARE_BOX_METHODS(DtsSpecificBox);
   DTS dts;
@@ -391,8 +392,7 @@ struct MEDIA_EXPORT DtsUhdSpecificBox : Box {
   DECLARE_BOX_METHODS(DtsUhdSpecificBox);
   DTSX dtsx;
 };
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS) &&
-        // BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
 
 struct MEDIA_EXPORT AudioSampleEntry : Box {
   DECLARE_BOX_METHODS(AudioSampleEntry);
@@ -407,11 +407,10 @@ struct MEDIA_EXPORT AudioSampleEntry : Box {
   ElementaryStreamDescriptor esds;
   FlacSpecificBox dfla;
   OpusSpecificBox dops;
-#if BUILDFLAG(USE_PROPRIETARY_CODECS) && BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
+#if BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
   DtsSpecificBox ddts;
   DtsUhdSpecificBox udts;
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS) &&
-        // BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
 };
 
 struct MEDIA_EXPORT SampleDescription : Box {

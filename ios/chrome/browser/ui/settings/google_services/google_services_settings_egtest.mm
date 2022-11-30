@@ -104,7 +104,7 @@ void WaitForSettingDoneButton() {
 }
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
-  AppLaunchConfiguration config;
+  AppLaunchConfiguration config = [super appConfigurationForTestCase];
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
 
   if ([self isRunningTest:@selector
@@ -380,7 +380,8 @@ void WaitForSettingDoneButton() {
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
 
   // Add a bookmark after sync is initialized.
-  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:kWaitForActionTimeout];
+  [ChromeEarlGrey waitForSyncInitialized:YES
+                             syncTimeout:kWaitForActionTimeout.InSecondsF()];
   [ChromeEarlGrey waitForBookmarksToFinishLoading];
   [BookmarkEarlGrey setupStandardBookmarks];
 
@@ -448,7 +449,8 @@ void WaitForSettingDoneButton() {
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
 
   // Add a bookmark after sync is initialized.
-  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:kWaitForActionTimeout];
+  [ChromeEarlGrey waitForSyncInitialized:YES
+                             syncTimeout:kWaitForActionTimeout.InSecondsF()];
   [ChromeEarlGrey waitForBookmarksToFinishLoading];
   [BookmarkEarlGrey setupStandardBookmarks];
 

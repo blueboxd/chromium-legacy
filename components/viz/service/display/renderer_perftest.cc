@@ -171,7 +171,7 @@ TransferableResource CreateTestTexture(
   DCHECK(sii);
   gpu::Mailbox mailbox = sii->CreateSharedImage(
       RGBA_8888, size, gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin,
-      kPremul_SkAlphaType, gpu::SHARED_IMAGE_USAGE_DISPLAY,
+      kPremul_SkAlphaType, gpu::SHARED_IMAGE_USAGE_DISPLAY_READ,
       MakePixelSpan(pixels));
   gpu::SyncToken sync_token = sii->GenVerifiedSyncToken();
 
@@ -567,7 +567,7 @@ class RendererPerfTest : public VizPerfTest {
                                /*premultiplied_alpha=*/false, shared_state,
                                pass.get());
 
-        current_transform.ConcatTransform(transform_step);
+        current_transform.PostConcat(transform_step);
       }
 
       CompositorRenderPassList pass_list;

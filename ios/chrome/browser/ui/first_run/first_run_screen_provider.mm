@@ -24,10 +24,11 @@
       [screens addObject:@(kSignIn)];
       [screens addObject:@(kSync)];
       break;
-    case NewMobileIdentityConsistencyFRE::kThreeSteps:
-      [screens addObject:@(kWelcomeAndConsent)];
-      [screens addObject:@(kLegacySignIn)];
-      [screens addObject:@(kSync)];
+    case NewMobileIdentityConsistencyFRE::kTangibleSyncA:
+    case NewMobileIdentityConsistencyFRE::kTangibleSyncB:
+    case NewMobileIdentityConsistencyFRE::kTangibleSyncC:
+      [screens addObject:@(kSignIn)];
+      [screens addObject:@(kTangibleSync)];
       break;
     case NewMobileIdentityConsistencyFRE::kUMADialog:
     case NewMobileIdentityConsistencyFRE::kOld:

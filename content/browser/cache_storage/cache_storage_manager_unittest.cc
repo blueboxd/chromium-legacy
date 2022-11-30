@@ -264,12 +264,6 @@ class CacheStorageManagerTest : public testing::Test {
       ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     CreateStorageManager();
-
-    // Instantiate these after `quota_manager_proxy_` has been initialized.
-    bucket_locator1_ =
-        GetOrCreateBucket(storage_key1_, storage::kDefaultBucketName);
-    bucket_locator2_ =
-        GetOrCreateBucket(storage_key2_, storage::kDefaultBucketName);
   }
 
   void TearDown() override {
@@ -383,6 +377,13 @@ class CacheStorageManagerTest : public testing::Test {
             mock_quota_manager_.get(),
             base::ThreadTaskRunnerHandle::Get().get());
 
+    // These must be instantiated after `quota_manager_proxy_` has been
+    // initialized.
+    bucket_locator1_ =
+        GetOrCreateBucket(storage_key1_, storage::kDefaultBucketName);
+    bucket_locator2_ =
+        GetOrCreateBucket(storage_key2_, storage::kDefaultBucketName);
+
     cache_manager_ = CacheStorageManager::Create(
         temp_dir_path, base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get(), quota_manager_proxy_,
@@ -421,6 +422,10 @@ class CacheStorageManagerTest : public testing::Test {
 
     quota_policy_ = nullptr;
     mock_quota_manager_ = nullptr;
+    // Note: After the MockQuotaManager goes away, the buckets get destroyed as
+    // well. We won't clear `bucket_locator1_` or `bucket_locator2_`, though,
+    // for cases where it's useful to compare the bucket locator values to
+    // values written to the Cache Storage index files.
 
     cache_manager_ = nullptr;
   }
@@ -896,6 +901,27 @@ class CacheStorageManagerStorageKeyAndBucketTestP
           net::features::kThirdPartyStoragePartitioning);
     }
 
+    ReinitializeStorageKeysAndBucketLocators();
+  }
+
+  void CreateStorageManager() {
+    // Always reset `storage_key1_` and `storage_key2_` to what they
+    // are expected to be in CacheStorageManagerTest so that when we
+    // reinitialize below the bucket IDs of the new `bucket_locator1_`
+    // and `bucket_locator2_` will be the same regardless of how many
+    // times `DestroyStorageManager()` and then `CreateStorageManager()`
+    // are called.
+    storage_key1_ =
+        blink::StorageKey(url::Origin::Create(GURL("http://example1.com")));
+    storage_key2_ =
+        blink::StorageKey(url::Origin::Create(GURL("http://example2.com")));
+
+    CacheStorageManagerTest::CreateStorageManager();
+
+    ReinitializeStorageKeysAndBucketLocators();
+  }
+
+  void ReinitializeStorageKeysAndBucketLocators() {
     std::string bucket_name;
     switch (test_case_) {
       case (StorageKeyAndBucketTestCase::kFirstPartyDefault):
@@ -915,13 +941,23 @@ class CacheStorageManagerStorageKeyAndBucketTestP
       case (StorageKeyAndBucketTestCase::kFirstPartyDefaultPartitionEnabled):
         // For this case, the storage keys and bucket locators are already
         // initialized correctly.
+        ASSERT_TRUE(storage_key1_.IsFirstPartyContext());
+        ASSERT_TRUE(storage_key2_.IsFirstPartyContext());
+
+        ASSERT_EQ(bucket_locator1_.id, storage::BucketId::FromUnsafeValue(1));
+        ASSERT_EQ(bucket_locator2_.id, storage::BucketId::FromUnsafeValue(2));
         break;
       case (StorageKeyAndBucketTestCase::kFirstPartyNamed):
       case (StorageKeyAndBucketTestCase::kFirstPartyNamedPartitionEnabled):
         // For this case, the storage keys are initialized correctly but we
         // need to create new named buckets.
+        ASSERT_TRUE(storage_key1_.IsFirstPartyContext());
+        ASSERT_TRUE(storage_key2_.IsFirstPartyContext());
+
         bucket_locator1_ = GetOrCreateBucket(storage_key1_, bucket_name);
         bucket_locator2_ = GetOrCreateBucket(storage_key2_, bucket_name);
+        ASSERT_EQ(bucket_locator1_.id, storage::BucketId::FromUnsafeValue(3));
+        ASSERT_EQ(bucket_locator2_.id, storage::BucketId::FromUnsafeValue(4));
         break;
 
       case (StorageKeyAndBucketTestCase::kThirdPartyDefault):
@@ -936,9 +972,12 @@ class CacheStorageManagerStorageKeyAndBucketTestP
 
         bucket_locator1_ = GetOrCreateBucket(storage_key1_, bucket_name);
         bucket_locator2_ = GetOrCreateBucket(storage_key2_, bucket_name);
+        ASSERT_EQ(bucket_locator1_.id, storage::BucketId::FromUnsafeValue(3));
+        ASSERT_EQ(bucket_locator2_.id, storage::BucketId::FromUnsafeValue(4));
         break;
     }
   }
+
   bool ThirdPartyStoragePartitioningEnabled() {
     return test_case_ == StorageKeyAndBucketTestCase::
                              kFirstPartyDefaultPartitionEnabled ||
@@ -1766,6 +1805,64 @@ TEST_P(CacheStorageManagerStorageKeyAndBucketTestP, GetBucketUsage) {
   EXPECT_EQ(2 * foo_size, GetBucketUsage(bucket_locator1_));
 }
 
+TEST_F(CacheStorageManagerTest, GetBucketUsageConflictingBucketIds) {
+  // For buckets with first-party storage keys and default names, the directory
+  // path will be calculated solely based on the origin and owner. This means
+  // that two `BucketLocator`s that are the same in all ways except the bucket
+  // ID will use the same path under these conditions, so if we call
+  // `OpenCacheStorage` with two such `BucketLocator`s, the second call will
+  // instantiate an instance that would hang if we tried to use it (while the
+  // the first instance remains open and "owns" the directory). In theory this
+  // shouldn't happen, but just in case We have some logic to prevent this so
+  // test that here.
+  const GURL kTestURL = GURL("http://example.com/foo");
+  auto modified_bucket_locator1_{bucket_locator1_};
+  modified_bucket_locator1_.id = storage::BucketId::FromUnsafeValue(999);
+
+  base::FilePath bucket_locator1_path =
+      CacheStorageManager::ConstructBucketPath(
+          cache_manager_->profile_path(), bucket_locator1_,
+          storage::mojom::CacheStorageOwner::kCacheAPI);
+
+  base::FilePath modified_bucket_locator1_path =
+      CacheStorageManager::ConstructBucketPath(
+          cache_manager_->profile_path(), modified_bucket_locator1_,
+          storage::mojom::CacheStorageOwner::kCacheAPI);
+
+  ASSERT_EQ(bucket_locator1_path, modified_bucket_locator1_path);
+
+  EXPECT_TRUE(Open(bucket_locator1_, "foo"));
+  EXPECT_TRUE(CachePut(callback_cache_handle_.value(), kTestURL));
+
+  disk_cache::FlushCacheThreadForTesting();
+  content::RunAllTasksUntilIdle();
+
+  // We are testing that this call doesn't hang and returns 0 since the
+  // directory is owned by the existing instance.
+  EXPECT_EQ(GetBucketUsage(modified_bucket_locator1_), 0);
+
+  // Clear out the CacheStorageManager's instance map.
+  DestroyStorageManager();
+  CreateStorageManager();
+
+  // Now try the reverse order when there's an existing index file on disk but
+  // there's no corresponding instance in the CacheStorage map. There should
+  // already be an index file on disk leftover from the test above. In this
+  // case, the `GetBucketUsage()` call should be able to read the size info
+  // from disk and won't take ownership of the directory, allowing the
+  // operations on the other instance to succeed.
+  ASSERT_TRUE(base::PathExists(bucket_locator1_path));
+
+  EXPECT_NE(GetBucketUsage(modified_bucket_locator1_), 0);
+
+  disk_cache::FlushCacheThreadForTesting();
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_TRUE(Open(bucket_locator1_, "foo"));
+  EXPECT_TRUE(CacheMatch(callback_cache_handle_.value(), kTestURL));
+  EXPECT_NE(Size(bucket_locator1_), 0);
+}
+
 TEST_F(CacheStorageManagerMemoryOnlyTest, GetAllStorageKeysUsage) {
   EXPECT_EQ(0ULL, GetAllStorageKeysUsage().size());
   // Put one entry in a cache on origin 1.
@@ -1784,8 +1881,8 @@ TEST_F(CacheStorageManagerMemoryOnlyTest, GetAllStorageKeysUsage) {
       GetAllStorageKeysUsage();
   ASSERT_EQ(2ULL, usage.size());
 
-  int storage_key1_index = usage[0]->origin == storage_key1_.origin() ? 0 : 1;
-  int storage_key2_index = usage[1]->origin == storage_key2_.origin() ? 1 : 0;
+  int storage_key1_index = usage[0]->storage_key == storage_key1_ ? 0 : 1;
+  int storage_key2_index = usage[1]->storage_key == storage_key2_ ? 1 : 0;
   EXPECT_NE(storage_key1_index, storage_key2_index);
 
   int64_t storage_key1_size = usage[storage_key1_index]->total_size_bytes;
@@ -1814,8 +1911,8 @@ TEST_P(CacheStorageManagerStorageKeyAndBucketTestP, GetAllStorageKeysUsage) {
       GetAllStorageKeysUsage();
   ASSERT_EQ(2ULL, usage.size());
 
-  int storage_key1_index = usage[0]->origin == storage_key1_.origin() ? 0 : 1;
-  int storage_key2_index = usage[1]->origin == storage_key2_.origin() ? 1 : 0;
+  int storage_key1_index = usage[0]->storage_key == storage_key1_ ? 0 : 1;
+  int storage_key2_index = usage[1]->storage_key == storage_key2_ ? 1 : 0;
   EXPECT_NE(storage_key1_index, storage_key2_index);
 
   int64_t storage_key1_size = usage[storage_key1_index]->total_size_bytes;
@@ -1826,8 +1923,16 @@ TEST_P(CacheStorageManagerStorageKeyAndBucketTestP, GetAllStorageKeysUsage) {
   EXPECT_FALSE(usage[storage_key2_index]->last_modified.is_null());
 }
 
+// TODO(crbug.com/1369300): Re-enable test for Windows.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_GetAllStorageKeysUsageWithPadding \
+  DISABLED_GetAllStorageKeysUsageWithPadding
+#else
+#define MAYBE_GetAllStorageKeysUsageWithPadding \
+  GetAllStorageKeysUsageWithPadding
+#endif
 TEST_P(CacheStorageManagerStorageKeyAndBucketTestP,
-       GetAllStorageKeysUsageWithPadding) {
+       MAYBE_GetAllStorageKeysUsageWithPadding) {
   EXPECT_EQ(0ULL, GetAllStorageKeysUsage().size());
 
   EXPECT_TRUE(Open(bucket_locator1_, "foo"));
@@ -1837,6 +1942,11 @@ TEST_P(CacheStorageManagerStorageKeyAndBucketTestP,
       storage_dir.AppendASCII(CacheStorage::kIndexFileName);
   EXPECT_TRUE(
       CachePut(callback_cache_handle_.value(), GURL("http://example.com/foo")));
+
+  // Ensure that the index file has been written to disk before calling
+  // `GetAllStorageKeysUsage()`.
+  disk_cache::FlushCacheThreadForTesting();
+  content::RunAllTasksUntilIdle();
 
   auto usage = GetAllStorageKeysUsage();
   ASSERT_EQ(1ULL, usage.size());
@@ -1897,15 +2007,13 @@ TEST_P(CacheStorageManagerTestP, GetAllStorageKeysUsageDifferentOwners) {
           storage::mojom::CacheStorageOwner::kBackgroundFetch);
   ASSERT_EQ(2ULL, usage_bgf.size());
 
-  int storage_key1_index =
-      blink::StorageKey(usage_bgf[0]->origin) == storage_key1_ ? 0 : 1;
-  int storage_key2_index =
-      blink::StorageKey(usage_bgf[1]->origin) == storage_key2_ ? 1 : 0;
+  int storage_key1_index = usage_bgf[0]->storage_key == storage_key1_ ? 0 : 1;
+  int storage_key2_index = usage_bgf[1]->storage_key == storage_key2_ ? 1 : 0;
   EXPECT_NE(storage_key1_index, storage_key2_index);
 
-  EXPECT_EQ(usage_cache[0]->origin, storage_key1_.origin());
-  EXPECT_EQ(usage_bgf[storage_key1_index]->origin, storage_key1_.origin());
-  EXPECT_EQ(usage_bgf[storage_key2_index]->origin, storage_key2_.origin());
+  EXPECT_EQ(usage_cache[0]->storage_key, storage_key1_);
+  EXPECT_EQ(usage_bgf[storage_key1_index]->storage_key, storage_key1_);
+  EXPECT_EQ(usage_bgf[storage_key2_index]->storage_key, storage_key2_);
 
   EXPECT_EQ(usage_cache[0]->total_size_bytes,
             usage_bgf[storage_key1_index]->total_size_bytes);
@@ -2022,13 +2130,24 @@ TEST_P(CacheStorageManagerTestP, GetAllStorageKeysUsageAggregateBucketUsages) {
   ASSERT_EQ(2ULL, original_usage.size());
 
   int original_storage_key1_index =
-      blink::StorageKey(original_usage[0]->origin) == storage_key1_ ? 0 : 1;
+      original_usage[0]->storage_key == storage_key1_ ? 0 : 1;
   int original_storage_key2_index =
-      blink::StorageKey(original_usage[1]->origin) == storage_key2_ ? 1 : 0;
+      original_usage[1]->storage_key == storage_key2_ ? 1 : 0;
   EXPECT_NE(original_storage_key1_index, original_storage_key2_index);
 
-  EXPECT_EQ(original_usage[original_storage_key1_index]->total_size_bytes,
-            original_usage[original_storage_key2_index]->total_size_bytes);
+  // TODO(https://crbug.com/1218097): In memory-only mode this works as
+  // expected, but otherwise the named bucket usage info isn't
+  // currently reported (instead, the code looks up the default bucket usage,
+  // which is zero at this point). This will work correctly once we store the
+  // bucket names in the index files and can use those when determining the
+  // corresponding bucket locator to use.
+  if (MemoryOnly()) {
+    EXPECT_EQ(original_usage[original_storage_key1_index]->total_size_bytes,
+              original_usage[original_storage_key2_index]->total_size_bytes);
+  } else {
+    EXPECT_EQ(original_usage[original_storage_key1_index]->total_size_bytes, 0);
+    EXPECT_NE(original_usage[original_storage_key2_index]->total_size_bytes, 0);
+  }
 
   // Now open a cache using the default bucket and add the entry there as well.
   // `GetAllStorageKeysUsage()` should still return a list with two entries, but
@@ -2046,15 +2165,20 @@ TEST_P(CacheStorageManagerTestP, GetAllStorageKeysUsageAggregateBucketUsages) {
   ASSERT_EQ(2ULL, new_usage.size());
 
   int new_storage_key1_index =
-      blink::StorageKey(new_usage[0]->origin) == storage_key1_ ? 0 : 1;
+      new_usage[0]->storage_key == storage_key1_ ? 0 : 1;
   int new_storage_key2_index =
-      blink::StorageKey(new_usage[1]->origin) == storage_key2_ ? 1 : 0;
+      new_usage[1]->storage_key == storage_key2_ ? 1 : 0;
   EXPECT_NE(new_storage_key1_index, new_storage_key2_index);
 
   EXPECT_EQ(new_usage[new_storage_key1_index]->total_size_bytes,
             new_usage[new_storage_key2_index]->total_size_bytes);
-  EXPECT_EQ(2 * original_usage[original_storage_key1_index]->total_size_bytes,
-            new_usage[new_storage_key1_index]->total_size_bytes);
+  if (MemoryOnly()) {
+    EXPECT_EQ(2 * original_usage[original_storage_key1_index]->total_size_bytes,
+              new_usage[new_storage_key1_index]->total_size_bytes);
+  } else {
+    EXPECT_EQ(original_usage[original_storage_key1_index]->total_size_bytes, 0);
+    EXPECT_NE(new_usage[new_storage_key1_index]->total_size_bytes, 0);
+  }
   EXPECT_EQ(2 * original_usage[original_storage_key2_index]->total_size_bytes,
             new_usage[new_storage_key2_index]->total_size_bytes);
 }
@@ -2063,10 +2187,10 @@ TEST_P(CacheStorageManagerTestP, GetStorageKeysIgnoresKeysFromNamedBuckets) {
   // `GetStorageKeys()` should only return storage keys associated with
   // default buckets, so create separate storage keys that we expect to not find
   // in the list returned by `GetStorageKeys()`.
-  for (const bool toggle : {false, true}) {
+  for (const bool partitioning_enabled : {false, true}) {
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitWithFeatureState(
-        net::features::kThirdPartyStoragePartitioning, toggle);
+        net::features::kThirdPartyStoragePartitioning, partitioning_enabled);
 
     url::Origin test_origin = url::Origin::Create(GURL("http://example4.com"));
 
@@ -2102,17 +2226,20 @@ TEST_P(CacheStorageManagerTestP, GetStorageKeysIgnoresKeysFromNamedBuckets) {
     EXPECT_TRUE(FlushCacheStorageIndex(bucket_locator1_));
     EXPECT_TRUE(FlushCacheStorageIndex(bucket_locator2_));
     EXPECT_TRUE(FlushCacheStorageIndex(bucket_locator3));
-    if (toggle) {
+    if (partitioning_enabled) {
       EXPECT_TRUE(FlushCacheStorageIndex(bucket_locator4));
     }
     disk_cache::FlushCacheThreadForTesting();
     content::RunAllTasksUntilIdle();
 
     std::vector<blink::StorageKey> storage_keys = GetStorageKeys();
+
     ASSERT_EQ(2ULL, storage_keys.size());
     EXPECT_NE(storage_keys[0].origin(), test_origin);
     EXPECT_NE(storage_keys[1].origin(), test_origin);
-    ASSERT_EQ(3ULL, GetAllStorageKeysUsage().size());
+
+    ASSERT_EQ(partitioning_enabled ? 4ULL : 3ULL,
+              GetAllStorageKeysUsage().size());
 
     EXPECT_EQ(DeleteBucketData(bucket_locator1_),
               blink::mojom::QuotaStatusCode::kOk);
@@ -2761,17 +2888,40 @@ TEST_P(CacheStorageManagerTestP, DeleteStorageKeyData) {
 
     // Note that we use `GetAllStorageKeysUsage()` here because
     // `GetStorageKeys()` won't return storage keys only associated with named
-    // buckets. The latter returns results aggregated by origin, but we can use
-    // the sizes to know whether data was deleted.
+    // buckets.
     auto usages = GetAllStorageKeysUsage(owner);
-    EXPECT_EQ(2ULL, usages.size());
+    EXPECT_EQ(3ULL, usages.size());
 
-    int origin1_index = usages[0]->origin == storage_key1_.origin() ? 0 : 1;
-    int origin2_index = usages[1]->origin == storage_key2_.origin() ? 1 : 0;
-    EXPECT_NE(origin1_index, origin2_index);
+    int storage_key1_index = usages[0]->storage_key == storage_key1_   ? 0
+                             : usages[1]->storage_key == storage_key1_ ? 1
+                                                                       : 2;
+    int storage_key2_index = usages[0]->storage_key == storage_key2_   ? 0
+                             : usages[1]->storage_key == storage_key2_ ? 1
+                                                                       : 2;
+    int partitioned_storage_key1_index =
+        usages[0]->storage_key == partitioned_storage_key1   ? 0
+        : usages[1]->storage_key == partitioned_storage_key1 ? 1
+                                                             : 2;
+    EXPECT_NE(storage_key1_index, storage_key2_index);
+    EXPECT_NE(storage_key2_index, partitioned_storage_key1_index);
+    EXPECT_NE(partitioned_storage_key1_index, storage_key1_index);
 
-    EXPECT_EQ(2 * usages[origin2_index]->total_size_bytes,
-              usages[origin1_index]->total_size_bytes);
+    // TODO(https://crbug.com/1218097): In memory-only mode this works as
+    // expected, but otherwise the named bucket usage info isn't currently
+    // reported (instead, the code looks up the default bucket usage, which is
+    // zero at this point). This will work correctly once we store the bucket
+    // names in the index files and can use those when determining the
+    // corresponding bucket locator to use.
+    if (MemoryOnly()) {
+      EXPECT_EQ(usages[storage_key2_index]->total_size_bytes,
+                usages[storage_key1_index]->total_size_bytes);
+      EXPECT_EQ(usages[partitioned_storage_key1_index]->total_size_bytes,
+                usages[storage_key2_index]->total_size_bytes);
+    } else {
+      EXPECT_EQ(usages[storage_key1_index]->total_size_bytes, 0);
+      EXPECT_EQ(usages[partitioned_storage_key1_index]->total_size_bytes, 0);
+      EXPECT_NE(usages[storage_key2_index]->total_size_bytes, 0);
+    }
 
     EXPECT_EQ(DeleteStorageKeyData(storage_key1_, owner),
               blink::mojom::QuotaStatusCode::kOk);
@@ -2783,19 +2933,37 @@ TEST_P(CacheStorageManagerTestP, DeleteStorageKeyData) {
     // data when `DeleteStorageKeyData()` is called, but when we do, update this
     // test condition.
     usages = GetAllStorageKeysUsage(owner);
-    EXPECT_EQ(2ULL, usages.size());
+    EXPECT_EQ(3ULL, usages.size());
 
-    origin1_index = usages[0]->origin == storage_key1_.origin() ? 0 : 1;
-    origin2_index = usages[1]->origin == storage_key2_.origin() ? 1 : 0;
-    EXPECT_NE(origin1_index, origin2_index);
+    storage_key1_index = usages[0]->storage_key == storage_key1_   ? 0
+                         : usages[1]->storage_key == storage_key1_ ? 1
+                                                                   : 2;
+    storage_key2_index = usages[0]->storage_key == storage_key2_   ? 0
+                         : usages[1]->storage_key == storage_key2_ ? 1
+                                                                   : 2;
+    partitioned_storage_key1_index =
+        usages[0]->storage_key == partitioned_storage_key1   ? 0
+        : usages[1]->storage_key == partitioned_storage_key1 ? 1
+                                                             : 2;
+    EXPECT_NE(storage_key1_index, storage_key2_index);
+    EXPECT_NE(storage_key2_index, partitioned_storage_key1_index);
+    EXPECT_NE(partitioned_storage_key1_index, storage_key1_index);
 
-    EXPECT_EQ(2 * usages[origin2_index]->total_size_bytes,
-              usages[origin1_index]->total_size_bytes);
+    if (MemoryOnly()) {
+      EXPECT_EQ(usages[storage_key2_index]->total_size_bytes,
+                usages[storage_key1_index]->total_size_bytes);
+      EXPECT_EQ(usages[partitioned_storage_key1_index]->total_size_bytes,
+                usages[storage_key2_index]->total_size_bytes);
+    } else {
+      EXPECT_EQ(usages[storage_key1_index]->total_size_bytes, 0);
+      EXPECT_EQ(usages[partitioned_storage_key1_index]->total_size_bytes, 0);
+      EXPECT_NE(usages[storage_key2_index]->total_size_bytes, 0);
+    }
 
     EXPECT_EQ(DeleteStorageKeyData(storage_key2_, owner),
               blink::mojom::QuotaStatusCode::kOk);
 
-    EXPECT_EQ(1ULL, GetAllStorageKeysUsage(owner).size());
+    EXPECT_EQ(2ULL, GetAllStorageKeysUsage(owner).size());
 
     if (!MemoryOnly()) {
       auto* legacy_manager =
@@ -2847,6 +3015,59 @@ TEST_P(CacheStorageManagerStorageKeyAndBucketTestP, DeleteBucketData) {
 
     EXPECT_FALSE(base::PathExists(calculated_path));
   }
+}
+
+TEST_F(CacheStorageManagerTest, DeleteBucketDataConflictingBucketIds) {
+  // For an overview of this test, see `GetBucketUsageConflictingBucketIds()`.
+  const GURL kTestURL = GURL("http://example.com/foo");
+  auto modified_bucket_locator1_{bucket_locator1_};
+  modified_bucket_locator1_.id = storage::BucketId::FromUnsafeValue(999);
+
+  base::FilePath bucket_locator1_path =
+      CacheStorageManager::ConstructBucketPath(
+          cache_manager_->profile_path(), bucket_locator1_,
+          storage::mojom::CacheStorageOwner::kCacheAPI);
+
+  base::FilePath modified_bucket_locator1_path =
+      CacheStorageManager::ConstructBucketPath(
+          cache_manager_->profile_path(), modified_bucket_locator1_,
+          storage::mojom::CacheStorageOwner::kCacheAPI);
+
+  ASSERT_EQ(bucket_locator1_path, modified_bucket_locator1_path);
+
+  EXPECT_TRUE(Open(bucket_locator1_, "foo"));
+  EXPECT_TRUE(CachePut(callback_cache_handle_.value(), kTestURL));
+
+  disk_cache::FlushCacheThreadForTesting();
+  content::RunAllTasksUntilIdle();
+
+  // We are testing that this call doesn't hang and that it returns kOk without
+  // actually deleting the directory (which is currently in use).
+  EXPECT_EQ(DeleteBucketData(modified_bucket_locator1_),
+            blink::mojom::QuotaStatusCode::kOk);
+  ASSERT_TRUE(base::PathExists(bucket_locator1_path));
+
+  // Clear out the CacheStorageManager's instance map.
+  DestroyStorageManager();
+  CreateStorageManager();
+
+  // Now try the reverse order when there's an existing index file on disk but
+  // there's no corresponding instance in the CacheStorage map. There should
+  // already be an index file on disk leftover from the test above. In this
+  // case, the `DeleteBucketData()` call should succeed and a subsequent usage
+  // with the correct bucket locator should work as well.
+  ASSERT_TRUE(base::PathExists(bucket_locator1_path));
+  EXPECT_EQ(DeleteBucketData(modified_bucket_locator1_),
+            blink::mojom::QuotaStatusCode::kOk);
+
+  disk_cache::FlushCacheThreadForTesting();
+  content::RunAllTasksUntilIdle();
+
+  ASSERT_FALSE(base::PathExists(bucket_locator1_path));
+
+  EXPECT_TRUE(Open(bucket_locator1_, "foo"));
+  EXPECT_FALSE(CacheMatch(callback_cache_handle_.value(), kTestURL));
+  EXPECT_EQ(Size(bucket_locator1_), 0);
 }
 
 class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
@@ -3058,18 +3279,15 @@ class CacheStorageIndexMigrationTest : public CacheStorageManagerTest {
     int64_t total_usage = -1;
     usages = GetAllStorageKeysUsage();
     for (auto& usage : usages) {
-      if (usage->origin == bucket_locator1_.storage_key.origin()) {
+      if (usage->storage_key == bucket_locator1_.storage_key) {
         total_usage = usage->total_size_bytes;
         break;
       }
     }
 
     // Double-check that total_usage is comparable with what's returned by
-    // `GetBucketUsage()`. Note that in my testing the value returned by
-    // `GetBucketUsage()` here is larger than total_usage by 256, possibly
-    // because the migration increases the calculated size depending on how
-    // and/or when the calculation is done.
-    EXPECT_LE(total_usage, GetBucketUsage(bucket_locator1_));
+    // `GetBucketUsage()`.
+    EXPECT_EQ(total_usage, GetBucketUsage(bucket_locator1_));
 
     // Destroy the manager and then ensure that all tasks have completed before
     // continuing. We can't rely on `FlushCacheStorageIndex()` here because it
@@ -3143,6 +3361,33 @@ TEST_F(CacheStorageIndexMigrationTest, BucketMigration) {
                    upgraded_index.bucket_is_default());
                EXPECT_EQ(this->bucket_locator1_, bucket_locator);
              }));
+}
+
+TEST_F(CacheStorageIndexMigrationTest, InvalidBucketId) {
+  DoTest(
+      "content/test/data/cache_storage/invalid_bucket_id/",
+      base::BindLambdaForTesting(
+          [this](const proto::CacheStorageIndex& original_index,
+                 const proto::CacheStorageIndex& upgraded_index,
+                 int64_t total_usage) {
+            EXPECT_EQ(original_index.storage_key(),
+                      upgraded_index.storage_key());
+            EXPECT_EQ(original_index.bucket_is_default(),
+                      upgraded_index.bucket_is_default());
+
+            EXPECT_EQ(original_index.bucket_id(), 999);
+            EXPECT_GT(original_index.bucket_id(), upgraded_index.bucket_id());
+
+            absl::optional<blink::StorageKey> result =
+                blink::StorageKey::Deserialize(upgraded_index.storage_key());
+            ASSERT_TRUE(result.has_value());
+            EXPECT_EQ(this->storage_key1_, result.value());
+
+            storage::BucketLocator bucket_locator = storage::BucketLocator(
+                storage::BucketId(upgraded_index.bucket_id()), result.value(),
+                StorageType::kTemporary, upgraded_index.bucket_is_default());
+            EXPECT_EQ(this->bucket_locator1_, bucket_locator);
+          }));
 }
 
 INSTANTIATE_TEST_SUITE_P(CacheStorageManagerTests,

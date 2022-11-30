@@ -9,11 +9,13 @@
 
 namespace supervised_users {
 
-extern const base::Feature kWebFilterInterstitialRefresh;
+BASE_DECLARE_FEATURE(kWebFilterInterstitialRefresh);
 
-extern const base::Feature kLocalWebApprovals;
+BASE_DECLARE_FEATURE(kLocalWebApprovals);
+extern const char kLocalWebApprovalsPreferredButtonLocal[];
+extern const char kLocalWebApprovalsPreferredButtonRemote[];
 
-extern const base::Feature kAllowHistoryDeletionForChildAccounts;
+BASE_DECLARE_FEATURE(kAllowHistoryDeletionForChildAccounts);
 
 // Returns whether refreshed version of the website filter interstitial is
 // enabled.
@@ -24,6 +26,11 @@ bool IsWebFilterInterstitialRefreshEnabled();
 // Local web approvals are only available when refreshed version of web
 // filter interstitial is enabled.
 bool IsLocalWebApprovalsEnabled();
+
+// Returns whether the local parent approval should be displayed as the
+// preferred option.
+// This should only be called if IsLocalWebApprovalsEnabled() returns true.
+bool IsLocalWebApprovalThePreferredButton();
 
 }  // namespace supervised_users
 

@@ -119,9 +119,9 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   settings.use_occlusion_for_tile_prioritization = true;
   settings.main_frame_before_activation_enabled = false;
 
-  settings.release_tile_resources_for_hidden_layers =
-      base::FeatureList::IsEnabled(
-          features::kUiCompositorReleaseTileResourcesForHiddenLayers);
+  // Browser UI generally doesn't get gains from keeping around hidden layers.
+  // Better to release the resources and save memory.
+  settings.release_tile_resources_for_hidden_layers = true;
 
   // Disable edge anti-aliasing in order to increase support for HW overlays.
   settings.enable_edge_anti_aliasing = false;
@@ -213,13 +213,8 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
       (memory_limit_when_visible_mb > 0 ? memory_limit_when_visible_mb : 512) *
       1024 * 1024;
 
-  if (base::FeatureList::IsEnabled(features::kUiCompositorRequiredTilesOnly)) {
-    settings.memory_policy.priority_cutoff_when_visible =
-        gpu::MemoryAllocation::CUTOFF_ALLOW_REQUIRED_ONLY;
-  } else {
-    settings.memory_policy.priority_cutoff_when_visible =
-        gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
-  }
+  settings.memory_policy.priority_cutoff_when_visible =
+      gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
 
   settings.disallow_non_exact_resource_reuse =
       command_line->HasSwitch(switches::kDisallowNonExactResourceReuse);
@@ -613,6 +608,7 @@ bool Compositor::HasObserver(const CompositorObserver* observer) const {
 }
 
 void Compositor::AddAnimationObserver(CompositorAnimationObserver* observer) {
+  animation_started_ = true;
   if (animation_observer_list_.empty()) {
     for (auto& obs : observer_list_)
       obs.OnFirstAnimationStarted(this);
@@ -632,8 +628,11 @@ void Compositor::RemoveAnimationObserver(
 
   animation_observer_list_.RemoveObserver(observer);
   if (animation_observer_list_.empty()) {
-    for (auto& obs : observer_list_)
-      obs.OnLastAnimationEnded(this);
+    // The only way to get here should be through the AddAnimationObserver.
+    DCHECK(animation_started_);
+
+    // Request one more frame so that BeginMainFrame could notify the observers.
+    host_->SetNeedsAnimate();
   }
 }
 
@@ -673,6 +672,11 @@ Compositor::GetScopedEventMetricsMonitor(
   return host_->GetScopedEventMetricsMonitor(std::move(done_callback));
 }
 
+void Compositor::DidBeginMainFrame() {
+  for (auto& obs : observer_list_)
+    obs.OnDidBeginMainFrame(this);
+}
+
 void Compositor::DidUpdateLayers() {
   // Dump property trees and layers if run with:
   //   --vmodule=*ui/compositor*=3
@@ -687,18 +691,28 @@ void Compositor::BeginMainFrame(const viz::BeginFrameArgs& args) {
   DCHECK(!IsLocked());
   for (auto& observer : animation_observer_list_)
     observer.OnAnimationStep(args.frame_time);
-  if (!animation_observer_list_.empty())
+  if (!animation_observer_list_.empty()) {
     host_->SetNeedsAnimate();
+  } else if (animation_started_) {
+    // When |animation_started_| is true but there are no animations observers
+    // notify the compositor observers.
+    animation_started_ = false;
+    for (auto& obs : observer_list_)
+      obs.OnFirstNonAnimatedFrameStarted(this);
+  }
 }
 
 void Compositor::BeginMainFrameNotExpectedSoon() {}
 
 void Compositor::BeginMainFrameNotExpectedUntil(base::TimeTicks time) {}
 
-static void SendDamagedRectsRecursive(ui::Layer* layer) {
+// static
+void Compositor::SendDamagedRectsRecursive(Layer* layer) {
   layer->SendDamagedRects();
   // Iterate using the size for the case of mutation during sending damaged
   // regions. https://crbug.com/1242257.
+  base::AutoReset<bool> setter(&(layer->sending_damaged_rects_for_descendants_),
+                               true);
   for (size_t i = 0; i < layer->children().size(); ++i)
     SendDamagedRectsRecursive(layer->children()[i]);
 }

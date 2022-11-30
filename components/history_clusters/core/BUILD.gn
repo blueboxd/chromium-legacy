@@ -8,6 +8,8 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 static_library("core") {
   sources = [
+    "category_cluster_finalizer.cc",
+    "category_cluster_finalizer.h",
     "cluster_finalizer.h",
     "cluster_metrics_utils.cc",
     "cluster_metrics_utils.h",
@@ -59,12 +61,15 @@ static_library("core") {
     "query_clusters_state.h",
     "ranking_cluster_finalizer.cc",
     "ranking_cluster_finalizer.h",
+    "similar_visit.h",
     "similar_visit_deduper_cluster_finalizer.cc",
     "similar_visit_deduper_cluster_finalizer.h",
     "single_domain_cluster_finalizer.cc",
     "single_domain_cluster_finalizer.h",
     "single_visit_cluster_finalizer.cc",
     "single_visit_cluster_finalizer.h",
+    "url_constants.cc",
+    "url_constants.h",
   ]
   deps = [
     "//base",
@@ -90,6 +95,7 @@ static_library("core") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "category_cluster_finalizer_unittest.cc",
     "clusterer_unittest.cc",
     "config_unittest.cc",
     "content_annotations_cluster_processor_unittest.cc",

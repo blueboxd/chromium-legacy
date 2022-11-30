@@ -65,7 +65,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.DeletedUserProfiles" units="profiles"
-    expires_after="2023-02-05">
+    expires_after="2023-04-09">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -207,7 +207,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.DiskCleanupProgress"
-    enum="CryptohomeDiskCleanupProgress" expires_after="2023-02-01">
+    enum="CryptohomeDiskCleanupProgress" expires_after="2023-04-09">
   <owner>vsavu@google.com</owner>
   <owner>dlunev@chromium.org</owner>
   <owner>sarthakkukreti@chromium.org</owner>
@@ -220,7 +220,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.DiskCleanupResult"
-    enum="CryptohomeDiskCleanupResult" expires_after="2023-02-01">
+    enum="CryptohomeDiskCleanupResult" expires_after="2023-04-09">
   <owner>vsavu@google.com</owner>
   <owner>dlunev@chromium.org</owner>
   <summary>Records the result of triggering disk cleanup.</summary>
@@ -368,7 +368,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.Errors" enum="CryptohomeError"
-    expires_after="2023-01-29">
+    expires_after="2023-04-02">
   <owner>apronin@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>Cryptohome errors.</summary>
@@ -402,7 +402,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.FreeDiskSpaceTotalFreedInMb" units="MiB"
-    expires_after="2023-02-01">
+    expires_after="2023-04-09">
   <owner>vsavu@google.com</owner>
   <owner>gwendal@chromium.org</owner>
   <owner>sarthakkukreti@chromium.org</owner>
@@ -417,7 +417,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.FreeDiskSpaceTotalTime2" units="ms"
-    expires_after="2023-02-01">
+    expires_after="2023-04-02">
   <owner>vsavu@google.com</owner>
   <owner>dlunev@chromium.org</owner>
   <owner>sarthakkukreti@chromium.org</owner>
@@ -430,7 +430,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.GCache.FreedDiskSpaceInMb" units="MB"
-    expires_after="2023-02-01">
+    expires_after="2023-04-09">
   <owner>dlunev@chromium.org</owner>
   <owner>sarthakkukreti@chromium.org</owner>
   <summary>
@@ -560,7 +560,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.LoginDiskCleanupResult"
-    enum="CryptohomeDiskCleanupResult" expires_after="2023-02-01">
+    enum="CryptohomeDiskCleanupResult" expires_after="2023-04-09">
   <owner>vsavu@google.com</owner>
   <owner>sarthakkukreti@chromium.org</owner>
   <summary>
@@ -710,7 +710,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.TimeBetweenFreeDiskSpace" units="s"
-    expires_after="2023-02-01">
+    expires_after="2023-04-09">
   <owner>vsavu@google.com</owner>
   <owner>dlunev@chromium.org</owner>
   <owner>sarthakkukreti@chromium.org</owner>
@@ -728,6 +728,30 @@ chromium-metrics-reviews@google.com.
   <summary>
     The amount of time (ms) for Chrome OS cryptohome daemon to verify the user's
     password during an unlock operation.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.TimeToAuthSessionRemoveAuthFactorUSS" units="ms"
+    expires_after="2023-05-01">
+  <owner>thomascedeno@google.com</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    AuthSession is a DBus API for various operations dealing with credential
+    storage, processing, and authentication. This metrics record the time an
+    RemoveAuthFactor takes to complete for USS. The metric is emitted when the
+    respective RemoveAuthFactor is requested through the DBus API.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.TimeToAuthSessionRemoveAuthFactorVK" units="ms"
+    expires_after="2023-05-01">
+  <owner>thomascedeno@google.com</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    AuthSession is a DBus API for various operations dealing with credential
+    storage, processing, and authentication. This metrics record the time an
+    RemoveAuthFactor takes to complete for VK. The metric is emitted when the
+    respective RemoveAuthFactor is requested through the DBus API.
   </summary>
 </histogram>
 
@@ -767,7 +791,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.TimeToGenerateEccAuthValue" units="ms"
-    expires_after="2023-02-05">
+    expires_after="2023-04-09">
   <owner>yich@google.com</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -982,7 +1006,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.{Action}AuthBlockType"
-    enum="CryptohomeAuthBlockType" expires_after="2022-10-04">
+    enum="CryptohomeAuthBlockType" expires_after="2023-04-11">
   <owner>yich@google.com</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -1039,8 +1063,6 @@ chromium-metrics-reviews@google.com.
     <variant name="TimeToAuthSessionAuthenticate"/>
     <variant name="TimeToAuthSessionAuthenticateAuthFactorUSS"/>
     <variant name="TimeToAuthSessionAuthenticateAuthFactorVK"/>
-    <variant name="TimeToAuthSessionRemoveAuthFactorUSS"/>
-    <variant name="TimeToAuthSessionRemoveAuthFactorVK"/>
     <variant name="TimeToAuthSessionUpdateAuthFactorUSS"/>
     <variant name="TimeToAuthSessionUpdateAuthFactorVK"/>
     <variant name="TimeToAuthSessionUpdateCredentials"/>

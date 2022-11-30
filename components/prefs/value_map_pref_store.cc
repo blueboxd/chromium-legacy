@@ -5,14 +5,16 @@
 #include "components/prefs/value_map_pref_store.h"
 
 #include <algorithm>
+#include <string>
 #include <utility>
 
 #include "base/observer_list.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 
 ValueMapPrefStore::ValueMapPrefStore() {}
 
-bool ValueMapPrefStore::GetValue(const std::string& key,
+bool ValueMapPrefStore::GetValue(base::StringPiece key,
                                  const base::Value** value) const {
   return prefs_.GetValue(key, value);
 }
@@ -34,10 +36,9 @@ bool ValueMapPrefStore::HasObservers() const {
 }
 
 void ValueMapPrefStore::SetValue(const std::string& key,
-                                 std::unique_ptr<base::Value> value,
+                                 base::Value value,
                                  uint32_t flags) {
-  DCHECK(value);
-  if (prefs_.SetValue(key, base::Value::FromUniquePtrValue(std::move(value)))) {
+  if (prefs_.SetValue(key, std::move(value))) {
     for (Observer& observer : observers_)
       observer.OnPrefValueChanged(key);
   }
@@ -62,10 +63,9 @@ void ValueMapPrefStore::ReportValueChanged(const std::string& key,
 }
 
 void ValueMapPrefStore::SetValueSilently(const std::string& key,
-                                         std::unique_ptr<base::Value> value,
+                                         base::Value value,
                                          uint32_t flags) {
-  DCHECK(value);
-  prefs_.SetValue(key, base::Value::FromUniquePtrValue(std::move(value)));
+  prefs_.SetValue(key, std::move(value));
 }
 
 ValueMapPrefStore::~ValueMapPrefStore() {}

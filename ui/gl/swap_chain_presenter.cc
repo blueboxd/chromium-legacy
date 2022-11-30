@@ -22,7 +22,6 @@
 #include "ui/gl/dc_layer_tree.h"
 #include "ui/gl/direct_composition_support.h"
 #include "ui/gl/gl_image_d3d.h"
-#include "ui/gl/gl_image_dcomp_surface.h"
 #include "ui/gl/gl_image_dxgi.h"
 #include "ui/gl/gl_image_memory.h"
 #include "ui/gl/gl_switches.h"
@@ -38,8 +37,9 @@ constexpr base::TimeDelta kDelayForRetryingYUVFormat = base::Minutes(10);
 
 // Some drivers fail to correctly handle BT.709 video in overlays. This flag
 // converts them to BT.601 in the video processor.
-const base::Feature kFallbackBT709VideoToBT601{
-    "FallbackBT709VideoToBT601", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kFallbackBT709VideoToBT601,
+             "FallbackBT709VideoToBT601",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsProtectedVideo(gfx::ProtectedVideoType protected_video_type) {
   return protected_video_type != gfx::ProtectedVideoType::kClear;
@@ -556,24 +556,22 @@ bool SwapChainPresenter::AdjustSwapChainToFullScreenSizeIfNeeded(
   }
 
   // Adjust the transform matrix.
-  visual_transform->PostTranslate(-clipped_onscreen_rect.OffsetFromOrigin());
-
   float scale_x = monitor_size.width() * 1.0f / swap_chain_size->width();
   float scale_y = monitor_size.height() * 1.0f / swap_chain_size->height();
-  // TODO(this bug): The previous value of the transform is cleared. We need
-  // to clean up the code if this is the expected behavior.
   visual_transform->MakeIdentity();
   visual_transform->Scale(scale_x, scale_y);
 
-#if DCHECK_IS_ON()
+  // Origin is probably (0,0) all the time. If not, adjust the origin.
+  if (!params.quad_rect.origin().IsOrigin()) {
+    auto new_origin = visual_transform->MapPoint(params.quad_rect.origin());
+    visual_transform->PostTranslate(-new_origin.OffsetFromOrigin());
+  }
+
   // The new transform matrix should transform the swap chain to the monitor
   // rect.
-  gfx::Rect new_swap_chain_rect = gfx::Rect(*swap_chain_size);
-  new_swap_chain_rect.set_origin(params.quad_rect.origin());
-  gfx::RectF new_onscreen_rect(new_swap_chain_rect);
-  visual_transform->TransformRect(&new_onscreen_rect);
-  DCHECK_EQ(gfx::ToEnclosingRect(new_onscreen_rect), gfx::Rect(monitor_size));
-#endif
+  DCHECK_EQ(visual_transform->MapRect(
+                gfx::Rect(params.quad_rect.origin(), *swap_chain_size)),
+            gfx::Rect(monitor_size));
 
   return true;
 }
@@ -597,8 +595,9 @@ void SwapChainPresenter::AdjustSwapChainForFullScreenLetterboxing(
   if (params.clip_rect.has_value())
     clipped_onscreen_rect.Intersect(*visual_clip_rect);
 
-  if (!IsWithinMargin(clipped_onscreen_rect.x(), 0) &&
-      !IsWithinMargin(clipped_onscreen_rect.y(), 0)) {
+  bool is_onscreen_rect_x_near_0 = IsWithinMargin(clipped_onscreen_rect.x(), 0);
+  bool is_onscreen_rect_y_near_0 = IsWithinMargin(clipped_onscreen_rect.y(), 0);
+  if (!is_onscreen_rect_x_near_0 && !is_onscreen_rect_y_near_0) {
     // Not fullscreen letterboxing mode.
     return;
   }
@@ -609,19 +608,74 @@ void SwapChainPresenter::AdjustSwapChainForFullScreenLetterboxing(
     return;
   }
 
+  // Scrolling down during video fullscreen letterboxing will change the
+  // position of the whole clipped_onscreen_rect, which makes it not cover
+  // the whole screen with its black bar surroundings. In this case, the
+  // adjustment should be stopped. (http://crbug.com/1371976)
+  if (is_onscreen_rect_x_near_0 &&
+      !IsWithinMargin(
+          clipped_onscreen_rect.y() * 2 + clipped_onscreen_rect.height(),
+          monitor_size.height())) {
+    // Not fullscreen letterboxing mode.
+    return;
+  }
+
+  if (is_onscreen_rect_y_near_0 &&
+      !IsWithinMargin(
+          clipped_onscreen_rect.x() * 2 + clipped_onscreen_rect.width(),
+          monitor_size.width())) {
+    // Not fullscreen letterboxing mode.
+    return;
+  }
+
   // Adjust the onscreen rect to touch two screen borders, and also make sure
   // the onscreen rect be right in the center.
-  if (IsWithinMargin(clipped_onscreen_rect.x(), 0)) {
+  // At the same time, make sure the origin position for clipped_onscreen_rect
+  // with round-up integer so that no extra blank bar shows up.
+  if (is_onscreen_rect_x_near_0) {
     clipped_onscreen_rect.set_x(0);
     clipped_onscreen_rect.set_width(monitor_size.width());
-    clipped_onscreen_rect.set_y(
-        (monitor_size.height() - clipped_onscreen_rect.height()) / 2);
+    int new_y = (monitor_size.height() - clipped_onscreen_rect.height()) / 2;
+    if (new_y < clipped_onscreen_rect.y()) {
+      // If clipped_onscreen_rect needs to be moved up by n lines, we add n
+      // lines to the video onscreen rect height.
+      clipped_onscreen_rect.set_height(clipped_onscreen_rect.height() +
+                                       clipped_onscreen_rect.y() - new_y);
+      clipped_onscreen_rect.set_y(new_y);
+    } else if (new_y > clipped_onscreen_rect.y()) {
+      // If clipped_onscreen_rect needs to be moved down by n lines, we keep
+      // the original point of the video onscreen rect. Meanwhile, increase its
+      // size to make it symmetrical around the monitor center.
+      clipped_onscreen_rect.set_height(monitor_size.height() -
+                                       clipped_onscreen_rect.y() * 2);
+    }
+
+    // Make clipped_onscreen_rect height even.
+    if (clipped_onscreen_rect.height() % 2 == 1)
+      clipped_onscreen_rect.set_height(clipped_onscreen_rect.height() + 1);
   }
-  if (IsWithinMargin(clipped_onscreen_rect.y(), 0)) {
+
+  if (is_onscreen_rect_y_near_0) {
     clipped_onscreen_rect.set_y(0);
     clipped_onscreen_rect.set_height(monitor_size.height());
-    clipped_onscreen_rect.set_x(
-        (monitor_size.width() - clipped_onscreen_rect.width()) / 2);
+    int new_x = (monitor_size.width() - clipped_onscreen_rect.width()) / 2;
+    if (new_x < clipped_onscreen_rect.x()) {
+      // If clipped_onscreen_rect needs to be moved left by n lines, we add n
+      // lines to the video onscreen rect width.
+      clipped_onscreen_rect.set_width(clipped_onscreen_rect.width() +
+                                      clipped_onscreen_rect.x() - new_x);
+      clipped_onscreen_rect.set_x(new_x);
+    } else if (new_x > clipped_onscreen_rect.x()) {
+      // If clipped_onscreen_rect needs to be moved right by n lines, we keep
+      // the original point of the video onscreen rect. Meanwhile, increase its
+      // size to make it symmetrical around the monitor center.
+      clipped_onscreen_rect.set_width(monitor_size.width() -
+                                      clipped_onscreen_rect.x() * 2);
+    }
+
+    // Make clipped_onscreen_rect width even.
+    if (clipped_onscreen_rect.width() % 2 == 1)
+      clipped_onscreen_rect.set_width(clipped_onscreen_rect.width() + 1);
   }
 
   // Adjust the clip rect.
@@ -649,18 +703,16 @@ void SwapChainPresenter::AdjustSwapChainForFullScreenLetterboxing(
 
 #if DCHECK_IS_ON()
   // The new transform matrix should transform the swap chain correctly
-  gfx::Rect new_swap_chain_rect = gfx::Rect(*swap_chain_size);
-  new_swap_chain_rect.set_origin(params.quad_rect.origin());
-  gfx::RectF new_onscreen_rect(new_swap_chain_rect);
-  visual_transform->TransformRect(&new_onscreen_rect);
+  gfx::Rect new_swap_chain_rect(params.quad_rect.origin(), *swap_chain_size);
+  gfx::Rect result_rect = visual_transform->MapRect(new_swap_chain_rect);
   if (IsWithinMargin(clipped_onscreen_rect.x(), 0)) {
-    DCHECK_EQ(new_onscreen_rect.x(), 0);
-    DCHECK_EQ(new_onscreen_rect.width(), monitor_size.width());
+    DCHECK_EQ(result_rect.x(), 0);
+    DCHECK_EQ(result_rect.width(), monitor_size.width());
   }
 
   if (IsWithinMargin(clipped_onscreen_rect.y(), 0)) {
-    DCHECK_EQ(new_onscreen_rect.y(), 0);
-    DCHECK_EQ(new_onscreen_rect.height(), monitor_size.height());
+    DCHECK_EQ(result_rect.y(), 0);
+    DCHECK_EQ(result_rect.height(), monitor_size.height());
   }
 #endif
 }
@@ -676,11 +728,9 @@ gfx::Size SwapChainPresenter::CalculateSwapChainSize(
   gfx::Size swap_chain_size = params.content_rect.size();
   if (swap_chain_size.IsEmpty())
     return gfx::Size();
-  gfx::RectF bounds(params.quad_rect);
-  if (bounds.IsEmpty())
+  if (params.quad_rect.IsEmpty())
     return gfx::Size();
-  params.transform.TransformRect(&bounds);
-  gfx::Rect overlay_onscreen_rect = gfx::ToEnclosingRect(bounds);
+  gfx::Rect overlay_onscreen_rect = params.transform.MapRect(params.quad_rect);
 
   // If transform isn't a scale or translation then swap chain can't be promoted
   // to an overlay so avoid blitting to a large surface unnecessarily.  Also,
@@ -951,10 +1001,8 @@ bool SwapChainPresenter::PresentToSwapChain(
   *visual_transform = params.transform;
   *visual_clip_rect = params.clip_rect.value_or(gfx::Rect());
 
-  if (GLImageDCOMPSurface::FromGLImage(
-          params.images[kYPlaneImageIndex].get()) != nullptr) {
+  if (params.dcomp_surface_proxy)
     return PresentDCOMPSurface(params, visual_transform);
-  }
 
   // SwapChainPresenter can be reused when switching between MediaFoundation
   // (MF) video content and non-MF content; in such cases, the DirectComposition
@@ -1256,26 +1304,22 @@ bool SwapChainPresenter::PresentDCOMPSurface(
 
   ReleaseSwapChainResources();
 
-  GLImageDCOMPSurface* image_dcomp_surface =
-      GLImageDCOMPSurface::FromGLImage(params.images[kYPlaneImageIndex].get());
+  auto dcomp_surface_proxy = params.dcomp_surface_proxy;
 
-  if (layer_tree_->window() != image_dcomp_surface->GetParentWindow())
-    image_dcomp_surface->SetParentWindow(layer_tree_->window());
+  dcomp_surface_proxy->SetParentWindow(layer_tree_->window());
 
   // Apply transform to video and notify DCOMPTexture.
-  gfx::RectF on_screen_bounds(params.quad_rect);
-  params.transform.TransformRect(&on_screen_bounds);
-  image_dcomp_surface->SetRect(gfx::ToEnclosingRect(on_screen_bounds));
+  dcomp_surface_proxy->SetRect(params.transform.MapRect(params.quad_rect));
 
-  // If |image_dcomp_surface| size is {1, 1}, the texture was initialized
-  // without knowledge of output size; do not add to |clip_visual_|.
-  if (image_dcomp_surface->GetSize().width() == 1 &&
-      image_dcomp_surface->GetSize().height() == 1) {
+  // If |dcomp_surface_proxy| size is {1, 1}, the texture was initialized
+  // without knowledge of output size; reset |content_| so it's not added to the
+  // visual tree.
+  if (dcomp_surface_proxy->GetSize() == gfx::Size(1, 1)) {
     // If |content_visual_| is not updated, empty the visual and clear the DComp
     // surface to prevent stale content from being displayed.
     ReleaseDCOMPSurfaceResourcesIfNeeded();
     DVLOG(2) << __func__ << " this=" << this
-             << " image_dcomp_surface size (1x1) path.";
+             << " dcomp_surface_proxy size (1x1) path.";
     return true;
   }
 
@@ -1288,15 +1332,27 @@ bool SwapChainPresenter::PresentDCOMPSurface(
   visual_transform->Translate(visual_transform_offset);
 
   // This visual's content was a different DC surface.
-  if (dcomp_surface_handle_ != image_dcomp_surface->GetSurfaceHandle()) {
+  HANDLE surface_handle = dcomp_surface_proxy->GetSurfaceHandle();
+  if (dcomp_surface_handle_ != surface_handle) {
     DVLOG(2) << "Update visual's content. " << __func__ << "(" << this << ")";
 
-    Microsoft::WRL::ComPtr<IDCompositionSurface> texture_dc_surface =
-        image_dcomp_surface->CreateSurfaceForDevice(dcomp_device_.Get());
-    content_ = texture_dc_surface.Get();
-    // Don't take ownership of handle as the GLImageDCOMPSurface instance
-    // manages it
-    dcomp_surface_handle_ = image_dcomp_surface->GetSurfaceHandle();
+    Microsoft::WRL::ComPtr<IDCompositionSurface> dcomp_surface;
+    Microsoft::WRL::ComPtr<IDCompositionDevice> dcomp_device1;
+    HRESULT hr = dcomp_device_.As(&dcomp_device1);
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "Failed to get DCOMP device. hr=" << hr;
+      return false;
+    }
+
+    hr = dcomp_device1->CreateSurfaceFromHandle(surface_handle, &dcomp_surface);
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "Failed to create DCOMP surface. hr=" << hr;
+      return false;
+    }
+
+    content_ = dcomp_surface.Get();
+    // Don't take ownership of handle as the DCOMPSurfaceProxy instance owns it.
+    dcomp_surface_handle_ = surface_handle;
   }
 
   return true;

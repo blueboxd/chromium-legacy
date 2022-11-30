@@ -165,15 +165,13 @@ NSPoint clickedLocation;
 
 // The base implementation skips NSAccessibilityRemoteUIElement.
 - (id)accessibilityHitTest:(NSPoint)point {
-  if (@available(macOS 10.10, *)) {
-    for (id child in [[self accessibilityChildren] reverseObjectEnumerator]) {
-      if ([child isKindOfClass:[NSAccessibilityRemoteUIElement class]])
-        return [child accessibilityHitTest:point];
-      if (!NSPointInRect(point, [child accessibilityFrame]))
-        continue;
-      if (id foundChild = [child accessibilityHitTest:point])
-        return foundChild;
-    }
+  for (id child in [[self accessibilityChildren] reverseObjectEnumerator]) {
+    if ([child isKindOfClass:[NSAccessibilityRemoteUIElement class]])
+      return [child accessibilityHitTest:point];
+    if (!NSPointInRect(point, [child accessibilityFrame]))
+      continue;
+    if (id foundChild = [child accessibilityHitTest:point])
+      return foundChild;
   }
 
   // Hit self, but not any child.

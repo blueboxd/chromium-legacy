@@ -19,6 +19,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
+#include "ash/style/style_viewer/system_ui_components_style_viewer_view.h"
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
@@ -30,6 +31,8 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/ui/wm/features.h"
+#include "chromeos/ui/wm/window_util.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/display/manager/display_manager.h"
@@ -197,21 +200,17 @@ void HandleTriggerHUDDisplay() {
   hud_display::HUDDisplayView::Toggle();
 }
 
-void HandleFloatFling(AcceleratorAction action) {
-  aura::Window* window = window_util::GetActiveWindow();
-  DCHECK(window);
-
-  auto* window_state = WindowState::Get(window);
-  if (!window_state)
-    return;
-
+void HandleTuckFloatedWindow(AcceleratorAction action) {
+  // Find the active floated window.
   auto* float_controller = Shell::Get()->float_controller();
+  auto* floated_window = float_controller->FindFloatedWindowOfDesk(
+      DesksController::Get()->GetTargetActiveDesk());
 
-  if (!window_state->IsFloated())
-    float_controller->ToggleFloat(window);
+  DCHECK(floated_window);
 
   float_controller->OnFlingOrSwipeForTablet(
-      window, /*left=*/action == DEBUG_FLOAT_FLING_LEFT, /*up=*/true);
+      floated_window,
+      /*left=*/action == DEBUG_TUCK_FLOATED_WINDOW_LEFT, /*up=*/true);
 }
 
 }  // namespace
@@ -223,6 +222,22 @@ void PrintUIHierarchies() {
   HandlePrintLayerHierarchy();
   HandlePrintWindowHierarchy();
   HandlePrintViewHierarchy();
+}
+
+bool CanToggleFloatingWindow() {
+  if (!chromeos::wm::features::IsFloatWindowEnabled())
+    return false;
+
+  aura::Window* window = window_util::GetActiveWindow();
+  return window && chromeos::wm::CanFloatWindow(window);
+}
+
+bool CanTuckFloatedWindow() {
+  if (!chromeos::wm::features::IsFloatWindowEnabled())
+    return false;
+
+  return Shell::Get()->float_controller()->FindFloatedWindowOfDesk(
+      DesksController::Get()->GetTargetActiveDesk());
 }
 
 bool DebugAcceleratorsEnabled() {
@@ -265,6 +280,9 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
           /*visible_on_lock_screen=*/false, /*has_dismiss_button=*/true,
           /*custom_dismiss_text=*/u"Dismiss"));
       break;
+    case DEBUG_SYSTEM_UI_STYLE_VIEWER:
+      SystemUIComponentsStyleViewerView::CreateAndShowWidget();
+      break;
     case DEBUG_TOGGLE_DARK_MODE:
       HandleToggleDarkMode();
       break;
@@ -292,9 +310,9 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
     case DEBUG_TOGGLE_HUD_DISPLAY:
       HandleTriggerHUDDisplay();
       break;
-    case DEBUG_FLOAT_FLING_LEFT:
-    case DEBUG_FLOAT_FLING_RIGHT:
-      HandleFloatFling(action);
+    case DEBUG_TUCK_FLOATED_WINDOW_LEFT:
+    case DEBUG_TUCK_FLOATED_WINDOW_RIGHT:
+      HandleTuckFloatedWindow(action);
       break;
     default:
       break;

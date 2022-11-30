@@ -16,7 +16,7 @@
 #include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
-#include "content/browser/net/cross_origin_embedder_policy_reporter.h"
+#include "content/browser/network/cross_origin_embedder_policy_reporter.h"
 #include "content/browser/renderer_host/code_cache_host_impl.h"
 #include "content/browser/renderer_host/private_network_access_util.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -449,9 +449,22 @@ blink::mojom::PermissionStatus SharedWorkerHost::GetPermissionStatus(
 void SharedWorkerHost::BindCacheStorageForBucket(
     const storage::BucketInfo& bucket,
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
-  // TODO(estade): pass the bucket rather than the storage key to support
-  // non-default buckets.
-  BindCacheStorage(std::move(receiver));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BindCacheStorageInternal(std::move(receiver), bucket.ToBucketLocator());
+}
+
+void SharedWorkerHost::BindCacheStorageInternal(
+    mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
+    const storage::BucketLocator& bucket_locator) {
+  mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+      coep_reporter;
+  if (coep_reporter_) {
+    coep_reporter_->Clone(coep_reporter.InitWithNewPipeAndPassReceiver());
+  }
+
+  GetProcessHost()->BindCacheStorage(cross_origin_embedder_policy(),
+                                     std::move(coep_reporter), bucket_locator,
+                                     std::move(receiver));
 }
 
 void SharedWorkerHost::AllowFileSystem(
@@ -498,16 +511,9 @@ void SharedWorkerHost::CreateWebTransportConnector(
 void SharedWorkerHost::BindCacheStorage(
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
-      coep_reporter;
-  if (coep_reporter_) {
-    coep_reporter_->Clone(coep_reporter.InitWithNewPipeAndPassReceiver());
-  }
-
-  GetProcessHost()->BindCacheStorage(cross_origin_embedder_policy(),
-                                     std::move(coep_reporter), GetStorageKey(),
-                                     std::move(receiver));
+  BindCacheStorageInternal(
+      std::move(receiver),
+      storage::BucketLocator::ForDefaultBucket(GetStorageKey()));
 }
 
 void SharedWorkerHost::CreateBroadcastChannelProvider(

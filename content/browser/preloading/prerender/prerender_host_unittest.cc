@@ -4,12 +4,19 @@
 
 #include "content/browser/preloading/prerender/prerender_host.h"
 
+#include "base/functional/bind.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "content/browser/preloading/preloading.h"
+#include "content/browser/preloading/preloading_attempt_impl.h"
 #include "content/browser/preloading/prerender/prerender_attributes.h"
 #include "content/browser/preloading/prerender/prerender_host_registry.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/public/browser/preloading.h"
+#include "content/public/browser/preloading_data.h"
 #include "content/public/test/mock_web_contents_observer.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/prerender_test_util.h"
@@ -29,10 +36,15 @@ namespace content {
 namespace {
 
 using ::testing::_;
+using ExpectedReadyForActivationState =
+    base::StrongAlias<class ExpectedReadyForActivationStateType, bool>;
 
 // Finish a prerendering navigation that was already started with
 // CreateAndStartHost().
-void CommitPrerenderNavigation(PrerenderHost& host) {
+void CommitPrerenderNavigation(
+    PrerenderHost& host,
+    ExpectedReadyForActivationState ready_for_activation =
+        ExpectedReadyForActivationState(true)) {
   // Normally we could use EmbeddedTestServer to provide a response, but these
   // tests use RenderViewHostImplTestHarness so the load goes through a
   // TestNavigationURLLoader which we don't have access to in order to
@@ -41,7 +53,7 @@ void CommitPrerenderNavigation(PrerenderHost& host) {
   std::unique_ptr<NavigationSimulator> sim =
       NavigationSimulatorImpl::CreateFromPendingInFrame(ftn);
   sim->Commit();
-  EXPECT_TRUE(host.is_ready_for_activation());
+  EXPECT_EQ(host.is_ready_for_activation(), ready_for_activation.value());
 }
 
 std::unique_ptr<NavigationSimulatorImpl> CreateActivation(
@@ -404,7 +416,7 @@ TEST_F(PrerenderHostTest, DontCancelPrerenderWhenTriggerGetsVisible) {
   ASSERT_NE(prerender_host, nullptr);
   CommitPrerenderNavigation(*prerender_host);
 
-  // Changing the visibility state to VISIBLE will not affect prerendering.
+  // Changing the visibility state to VISIBLE will not stop prerendering.
   web_contents->WasShown();
   web_contents->ActivatePrerenderedPage(kPrerenderingUrl);
   ExpectFinalStatus(PrerenderHost::FinalStatus::kActivated);
@@ -426,7 +438,7 @@ TEST_F(PrerenderHostTest, DontCancelPrerenderWhenTriggerGetsOcculded) {
   ASSERT_NE(prerender_host, nullptr);
   CommitPrerenderNavigation(*prerender_host);
 
-  // Changing the visibility state to OCCLUDED will not affect prerendering.
+  // Changing the visibility state to OCCLUDED will not stop prerendering.
   web_contents->WasOccluded();
   web_contents->ActivatePrerenderedPage(kPrerenderingUrl);
   ExpectFinalStatus(PrerenderHost::FinalStatus::kActivated);
@@ -455,6 +467,70 @@ TEST_F(PrerenderHostTest, UrlMatchPredicate) {
   // able to activate a prerendered page.
   EXPECT_FALSE(
       prerender_host->IsUrlMatch(GURL("https://example2.com/empty.html")));
+}
+
+// Regression test for https://crbug.com/1366046: This test will crash if
+// PrerenderHost is set to "ready_for_activation" after getting canceled.
+TEST_F(PrerenderHostTest, CanceledPrerenderCannotBeReadyForActivation) {
+  std::unique_ptr<TestWebContents> web_contents =
+      CreateWebContents(GURL("https://example.com/"));
+  const GURL kPrerenderingUrl = GURL("https://example.com/empty.html");
+  RenderFrameHostImpl* initiator_rfh = web_contents->GetPrimaryMainFrame();
+  PrerenderHostRegistry* registry = web_contents->GetPrerenderHostRegistry();
+
+  auto* preloading_data =
+      PreloadingData::GetOrCreateForWebContents(web_contents.get());
+
+  // Create new PreloadingAttempt and pass all the values corresponding to
+  // this prerendering attempt.
+  PreloadingURLMatchCallback same_url_matcher =
+      PreloadingData::GetSameURLMatcher(kPrerenderingUrl);
+  PreloadingAttempt* preloading_attempt = preloading_data->AddPreloadingAttempt(
+      ToPreloadingPredictor(ContentPreloadingPredictor::kSpeculationRules),
+      PreloadingType::kPrerender, std::move(same_url_matcher));
+
+  const int prerender_frame_tree_node_id = registry->CreateAndStartHost(
+      GeneratePrerenderAttributes(kPrerenderingUrl, initiator_rfh),
+      *web_contents, preloading_attempt);
+  PrerenderHost* prerender_host =
+      registry->FindNonReservedHostById(prerender_frame_tree_node_id);
+  ASSERT_NE(prerender_host, nullptr);
+
+  // Registry keeps alive through this test, so it is safe to use
+  // base::Unretained.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(base::IgnoreResult(&PrerenderHostRegistry::CancelHost),
+                     base::Unretained(registry), prerender_frame_tree_node_id,
+                     PrerenderHost::FinalStatus::kTriggerDestroyed));
+
+  // For some reasons triggers want to set the failure reason by themselves,
+  // this would happen together with cancelling prerender.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &PreloadingAttempt::SetFailureReason,
+          base::Unretained(preloading_attempt),
+          static_cast<PreloadingFailureReason>(
+              static_cast<int>(PrerenderHost::FinalStatus::kTriggerDestroyed) +
+              static_cast<int>(PreloadingFailureReason::
+                                   kPreloadingFailureReasonCommonEnd))));
+
+  base::RunLoop run_loop;
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        CommitPrerenderNavigation(*prerender_host,
+                                  ExpectedReadyForActivationState(false));
+        run_loop.Quit();
+      }));
+
+  // Wait for the completion of CommitPrerenderNavigation() above.
+  run_loop.Run();
+
+  auto* preloading_attempt_impl =
+      static_cast<PreloadingAttemptImpl*>(preloading_attempt);
+  EXPECT_EQ(preloading_attempt_impl->get_triggering_outcome_for_testing(),
+            PreloadingTriggeringOutcome::kFailure);
 }
 
 // TODO(crbug.com/1356907): Remove this and merge it to PrerenderHostTest once
@@ -492,8 +568,71 @@ TEST_F(PrerenderHostInBackgroundTest,
   ASSERT_NE(prerender_host, nullptr);
   CommitPrerenderNavigation(*prerender_host);
 
-  // Changing the visibility state to HIDDEN will not affect prerendering.
+  // Changing the visibility state to HIDDEN will not stop prerendering.
   web_contents->WasHidden();
+  web_contents->ActivatePrerenderedPage(kPrerenderingUrl);
+  ExpectFinalStatus(PrerenderHost::FinalStatus::kActivated);
+}
+
+TEST_F(PrerenderHostInBackgroundTest, CancelPrerenderWhenTimeout) {
+  std::unique_ptr<TestWebContents> web_contents =
+      CreateWebContents(GURL("https://example.com/"));
+  const GURL kPrerenderingUrl = GURL("https://example.com/empty.html");
+  RenderFrameHostImpl* initiator_rfh = web_contents->GetPrimaryMainFrame();
+  PrerenderHostRegistry* registry = web_contents->GetPrerenderHostRegistry();
+  const int prerender_frame_tree_node_id = registry->CreateAndStartHost(
+      GeneratePrerenderAttributes(kPrerenderingUrl, initiator_rfh),
+      *web_contents);
+  PrerenderHost* prerender_host =
+      registry->FindNonReservedHostById(prerender_frame_tree_node_id);
+  ASSERT_NE(prerender_host, nullptr);
+  CommitPrerenderNavigation(*prerender_host);
+
+  // The timer should not start yet when the prerendered page is in the
+  // foreground.
+  ASSERT_FALSE(prerender_host->GetTimerForTesting()->IsRunning());
+
+  // Inject mock time task runner.
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner =
+      base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  prerender_host->SetTaskRunnerForTesting(task_runner);
+
+  // Changing the visibility state to HIDDEN will not stop prerendering.
+  web_contents->WasHidden();
+  ASSERT_TRUE(prerender_host->GetTimerForTesting()->IsRunning());
+
+  task_runner->FastForwardBy(PrerenderHost::kTimeToLiveInBackground);
+
+  ExpectFinalStatus(PrerenderHost::FinalStatus::kTimeoutBackgrounded);
+}
+
+TEST_F(PrerenderHostInBackgroundTest,
+       TimerResetWhenHiddenPageGoBackToForeground) {
+  std::unique_ptr<TestWebContents> web_contents =
+      CreateWebContents(GURL("https://example.com/"));
+  const GURL kPrerenderingUrl = GURL("https://example.com/empty.html");
+  RenderFrameHostImpl* initiator_rfh = web_contents->GetPrimaryMainFrame();
+  PrerenderHostRegistry* registry = web_contents->GetPrerenderHostRegistry();
+  const int prerender_frame_tree_node_id = registry->CreateAndStartHost(
+      GeneratePrerenderAttributes(kPrerenderingUrl, initiator_rfh),
+      *web_contents);
+  PrerenderHost* prerender_host =
+      registry->FindNonReservedHostById(prerender_frame_tree_node_id);
+  ASSERT_NE(prerender_host, nullptr);
+  CommitPrerenderNavigation(*prerender_host);
+
+  // The timer should not start yet when the prerendered page is in the
+  // foreground.
+  ASSERT_FALSE(prerender_host->GetTimerForTesting()->IsRunning());
+
+  // Changing the visibility state to HIDDEN will not stop prerendering.
+  web_contents->WasHidden();
+  ASSERT_TRUE(prerender_host->GetTimerForTesting()->IsRunning());
+
+  // The timer should be reset when the hidden page goes back to the foreground.
+  web_contents->WasShown();
+  ASSERT_FALSE(prerender_host->GetTimerForTesting()->IsRunning());
+
   web_contents->ActivatePrerenderedPage(kPrerenderingUrl);
   ExpectFinalStatus(PrerenderHost::FinalStatus::kActivated);
 }

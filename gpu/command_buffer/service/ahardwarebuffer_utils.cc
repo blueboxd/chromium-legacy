@@ -164,7 +164,7 @@ std::unique_ptr<VulkanImage> CreateVkImageFromAhbHandle(
     base::android::ScopedHardwareBufferHandle ahb_handle,
     SharedContextState* context_state,
     const gfx::Size& size,
-    const viz::ResourceFormat& format,
+    const viz::SharedImageFormat& format,
     uint32_t queue_family_index) {
   DCHECK(context_state);
   DCHECK(context_state->GrContextIsVulkan());
@@ -175,6 +175,13 @@ std::unique_ptr<VulkanImage> CreateVkImageFromAhbHandle(
       device_queue, std::move(gmb_handle), size, ToVkFormat(format),
       /*usage=*/0, /*flags=*/0, /*image_tiling=*/VK_IMAGE_TILING_OPTIMAL,
       /*queue_family_index=*/queue_family_index);
+}
+
+ui::ScopedEGLImage CreateEGLImageFromAHardwareBuffer(AHardwareBuffer* buffer) {
+  EGLint egl_image_attribs[] = {EGL_IMAGE_PRESERVED_KHR, EGL_FALSE, EGL_NONE};
+  EGLClientBuffer client_buffer = eglGetNativeClientBufferANDROID(buffer);
+  return ui::MakeScopedEGLImage(EGL_NO_CONTEXT, EGL_NATIVE_BUFFER_ANDROID,
+                                client_buffer, egl_image_attribs);
 }
 
 }  // namespace gpu

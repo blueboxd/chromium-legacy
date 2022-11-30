@@ -20,6 +20,7 @@
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 #include "components/sync/protocol/history_specifics.pb.h"
+#include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/test/forwarding_model_type_change_processor.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
@@ -204,6 +205,10 @@ class FakeModelTypeChangeProcessor : public syncer::ModelTypeChangeProcessor {
     return sync_pb::EntitySpecifics::default_instance();
   }
 
+  base::WeakPtr<syncer::ModelTypeChangeProcessor> GetWeakPtr() override {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
   std::unique_ptr<ModelTypeChangeProcessor> CreateForwardingProcessor() {
     return base::WrapUnique<ModelTypeChangeProcessor>(
         new syncer::ForwardingModelTypeChangeProcessor(this));
@@ -222,6 +227,8 @@ class FakeModelTypeChangeProcessor : public syncer::ModelTypeChangeProcessor {
   // Set of storage keys of all unsynced entities (i.e. with local changes that
   // are pending commit).
   std::set<std::string> unsynced_entities_;
+
+  base::WeakPtrFactory<FakeModelTypeChangeProcessor> weak_ptr_factory_{this};
 };
 
 class HistorySyncBridgeTest : public testing::Test {
@@ -250,13 +257,16 @@ class HistorySyncBridgeTest : public testing::Test {
   FakeModelTypeChangeProcessor* processor() { return &fake_processor_; }
   HistorySyncBridge* bridge() { return bridge_.get(); }
 
+  void AdvanceClock() { task_environment_.FastForwardBy(base::Seconds(1)); }
+
   std::pair<URLRow, VisitRow> AddVisitToBackendAndAdvanceClock(
       const GURL& url,
-      ui::PageTransition transition) {
+      ui::PageTransition transition,
+      VisitID referring_visit = kInvalidVisitID) {
     // After grabbing the visit time, advance the mock time so that the next
     // visit will get a unique time.
     base::Time visit_time = base::Time::Now();
-    task_environment_.FastForwardBy(base::Seconds(1));
+    AdvanceClock();
 
     URLRow url_row;
     const URLRow* existing_url_row = backend()->FindURLRow(url);
@@ -274,6 +284,7 @@ class HistorySyncBridgeTest : public testing::Test {
     visit_row.transition =
         ui::PageTransitionFromInt(transition | ui::PAGE_TRANSITION_CHAIN_START |
                                   ui::PAGE_TRANSITION_CHAIN_END);
+    visit_row.referring_visit = referring_visit;
     visit_row.visit_id = backend()->AddVisit(visit_row);
 
     return {url_row, visit_row};
@@ -293,9 +304,10 @@ class HistorySyncBridgeTest : public testing::Test {
     return entity_change_list;
   }
 
-  void MergeSyncData(
+  void ApplyInitialSyncChanges(
       const std::vector<sync_pb::HistorySpecifics>& specifics_vector) {
-    // Just before the merge, the processor starts tracking metadata.
+    // Just before passing on the initial updates, the processor starts tracking
+    // metadata.
     processor()->SetIsTrackingMetadata(true);
 
     // Populate a MetadataChangeList with an update for each entity.
@@ -312,11 +324,14 @@ class HistorySyncBridgeTest : public testing::Test {
       processor()->AddRemoteEntity(storage_key, std::move(data));
     }
 
+    // Note that because HISTORY is in ApplyUpdatesImmediatelyTypes(), the
+    // processor doesn't actually call MergeSyncData, but rather
+    // ApplySyncChanges.
     absl::optional<syncer::ModelError> error =
-        bridge()->MergeSyncData(std::move(metadata_changes),
-                                CreateAddEntityChangeList(specifics_vector));
+        bridge()->ApplySyncChanges(std::move(metadata_changes),
+                                   CreateAddEntityChangeList(specifics_vector));
     if (error) {
-      ADD_FAILURE() << "MergeSyncData failed: " << error->ToString();
+      ADD_FAILURE() << "ApplySyncChanges failed: " << error->ToString();
     }
   }
 
@@ -392,11 +407,11 @@ class HistorySyncBridgeTest : public testing::Test {
   std::unique_ptr<HistorySyncBridge> bridge_;
 };
 
-TEST_F(HistorySyncBridgeTest, MergeDoesNotUploadData) {
+TEST_F(HistorySyncBridgeTest, DoesNotUploadPreexistingData) {
   AddVisitToBackendAndAdvanceClock(GURL("https://www.url.com"),
                                    ui::PAGE_TRANSITION_LINK);
 
-  MergeSyncData({});
+  ApplyInitialSyncChanges({});
 
   // The data should *not* have been uploaded to Sync.
   EXPECT_TRUE(processor()->GetEntities().empty());
@@ -406,7 +421,7 @@ TEST_F(HistorySyncBridgeTest, MergeDoesNotUploadData) {
   EXPECT_EQ(backend()->GetVisits().size(), 1u);
 }
 
-TEST_F(HistorySyncBridgeTest, MergeAppliesRemoteChanges) {
+TEST_F(HistorySyncBridgeTest, AppliesRemoteChanges) {
   const std::string remote_cache_guid("remote_cache_guid");
   const GURL local_url("https://local.com");
   const GURL remote_url("https://remote.com");
@@ -416,7 +431,7 @@ TEST_F(HistorySyncBridgeTest, MergeAppliesRemoteChanges) {
   sync_pb::HistorySpecifics remote_entity = CreateSpecifics(
       base::Time::Now() - base::Minutes(1), remote_cache_guid, remote_url);
 
-  MergeSyncData({remote_entity});
+  ApplyInitialSyncChanges({remote_entity});
 
   // The local and remote data should both exist in the DB now.
   // Note: The ordering of the two entries in the backend doesn't really matter.
@@ -429,14 +444,14 @@ TEST_F(HistorySyncBridgeTest, MergeAppliesRemoteChanges) {
   EXPECT_EQ(backend()->GetVisits()[1].originator_cache_guid, remote_cache_guid);
 }
 
-TEST_F(HistorySyncBridgeTest, MergeMergesRemoteChanges) {
+TEST_F(HistorySyncBridgeTest, MergesRemoteChanges) {
   const GURL remote_url("https://remote.com");
 
   sync_pb::HistorySpecifics remote_entity = CreateSpecifics(
       base::Time::Now() - base::Minutes(1), "remote_cache_guid", remote_url);
 
   // Start Sync the first time, so the remote data gets written to the local DB.
-  MergeSyncData({remote_entity});
+  ApplyInitialSyncChanges({remote_entity});
   ASSERT_EQ(backend()->GetURLs().size(), 1u);
   ASSERT_EQ(backend()->GetVisits().size(), 1u);
   ASSERT_EQ(backend()->GetVisits()[0].visit_duration, base::TimeDelta());
@@ -445,7 +460,7 @@ TEST_F(HistorySyncBridgeTest, MergeMergesRemoteChanges) {
   ApplyStopSyncChanges();
   // ...but the data has been updated in the meantime.
   remote_entity.set_visit_duration_micros(1000);
-  MergeSyncData({remote_entity});
+  ApplyInitialSyncChanges({remote_entity});
 
   // The entries in the local DB should have been updated (*not* duplicated).
   ASSERT_EQ(backend()->GetURLs().size(), 1u);
@@ -453,7 +468,7 @@ TEST_F(HistorySyncBridgeTest, MergeMergesRemoteChanges) {
   EXPECT_EQ(backend()->GetVisits()[0].visit_duration, base::Microseconds(1000));
 }
 
-TEST_F(HistorySyncBridgeTest, MergeIgnoresInvalidVisits) {
+TEST_F(HistorySyncBridgeTest, IgnoresInvalidVisits) {
   const std::string remote_cache_guid("remote_cache_guid");
   const GURL remote_url("https://remote.com");
 
@@ -481,8 +496,8 @@ TEST_F(HistorySyncBridgeTest, MergeIgnoresInvalidVisits) {
   sync_pb::HistorySpecifics valid = CreateSpecifics(
       base::Time::Now() - base::Minutes(10), remote_cache_guid, remote_url);
 
-  MergeSyncData({missing_cache_guid, missing_visit_time, no_redirects, too_old,
-                 too_new, valid});
+  ApplyInitialSyncChanges({missing_cache_guid, missing_visit_time, no_redirects,
+                           too_old, too_new, valid});
 
   // None of the invalid entities should've made it into the DB.
   ASSERT_EQ(backend()->GetURLs().size(), 1u);
@@ -493,7 +508,7 @@ TEST_F(HistorySyncBridgeTest, MergeIgnoresInvalidVisits) {
 
 TEST_F(HistorySyncBridgeTest, UploadsNewLocalVisit) {
   // Start syncing (with no data yet).
-  MergeSyncData({});
+  ApplyInitialSyncChanges({});
 
   // Visit a URL.
   auto [url_row, visit_row] = AddVisitToBackendAndAdvanceClock(
@@ -529,9 +544,44 @@ TEST_F(HistorySyncBridgeTest, UploadsNewLocalVisit) {
   EXPECT_TRUE(history.page_transition().from_address_bar());
 }
 
+TEST_F(HistorySyncBridgeTest, UploadsReferrerURL) {
+  // Start syncing (with no data yet).
+  ApplyInitialSyncChanges({});
+
+  // Visit a first visit (which will become the referrer).
+  auto [url_row1, visit_row1] = AddVisitToBackendAndAdvanceClock(
+      GURL("https://www.referrer.com"),
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
+  bridge()->OnURLVisited(
+      /*history_backend=*/nullptr, url_row1, visit_row1);
+
+  // Visit a second visit, which has the first one as its referrer.
+  auto [url_row2, visit_row2] = AddVisitToBackendAndAdvanceClock(
+      GURL("https://www.url.com"),
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK),
+      /*referring_visit=*/visit_row1.visit_id);
+  bridge()->OnURLVisited(
+      /*history_backend=*/nullptr, url_row2, visit_row2);
+
+  // Check that the second entity has the first one as its referrer, with both
+  // visit ID and the actual URL.
+  ASSERT_EQ(processor()->GetEntities().size(), 2u);
+  const std::string storage_key2 =
+      HistorySyncMetadataDatabase::StorageKeyFromVisitTime(
+          visit_row2.visit_time);
+  ASSERT_EQ(processor()->GetEntities().count(storage_key2), 1u);
+  const syncer::EntityData& entity2 =
+      processor()->GetEntities().at(storage_key2);
+  ASSERT_TRUE(entity2.specifics.has_history());
+  const sync_pb::HistorySpecifics& history2 = entity2.specifics.history();
+  EXPECT_EQ(history2.originator_referring_visit_id(), visit_row1.visit_id);
+  EXPECT_EQ(history2.referrer_url(), url_row1.url());
+}
+
 TEST_F(HistorySyncBridgeTest, UploadsUpdatedLocalVisit) {
   // Start syncing (with no data yet).
-  MergeSyncData({});
+  ApplyInitialSyncChanges({});
 
   // Visit a URL.
   auto [url_row, visit_row] = AddVisitToBackendAndAdvanceClock(
@@ -564,7 +614,7 @@ TEST_F(HistorySyncBridgeTest, UploadsUpdatedLocalVisit) {
 
 TEST_F(HistorySyncBridgeTest, UploadsLocalVisitWithRedirects) {
   // Start syncing (with no data yet).
-  MergeSyncData({});
+  ApplyInitialSyncChanges({});
 
   // Create a redirect chain with 3 entries.
   URLRow url_row1(GURL("https://url1.com"));
@@ -585,21 +635,23 @@ TEST_F(HistorySyncBridgeTest, UploadsLocalVisitWithRedirects) {
   visit_row1.transition = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CHAIN_START |
       ui::PAGE_TRANSITION_CLIENT_REDIRECT);
-  VisitID visit_id1 = backend()->AddVisit(visit_row1);
+  visit_row1.visit_id = backend()->AddVisit(visit_row1);
+
   VisitRow visit_row2;
-  visit_row2.referring_visit = visit_id1;
+  visit_row2.referring_visit = visit_row1.visit_id;
   visit_row2.url_id = url_id2;
   visit_row2.visit_time = visit_time;
   visit_row2.transition = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_SERVER_REDIRECT);
-  VisitID visit_id2 = backend()->AddVisit(visit_row2);
+  visit_row2.visit_id = backend()->AddVisit(visit_row2);
+
   VisitRow visit_row3;
-  visit_row3.referring_visit = visit_id2;
+  visit_row3.referring_visit = visit_row2.visit_id;
   visit_row3.url_id = url_id3;
   visit_row3.visit_time = visit_time;
   visit_row3.transition = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CHAIN_END);
-  backend()->AddVisit(visit_row3);
+  visit_row3.visit_id = backend()->AddVisit(visit_row3);
 
   // Notify the bridge about all of the visits.
   bridge()->OnURLVisited(
@@ -609,7 +661,7 @@ TEST_F(HistorySyncBridgeTest, UploadsLocalVisitWithRedirects) {
   bridge()->OnURLVisited(
       /*history_backend=*/nullptr, url_row3, visit_row3);
 
-  // The whole chain should have resulting in a single entity being Put().
+  // The whole chain should have resulted in a single entity being Put().
   const std::string storage_key =
       HistorySyncMetadataDatabase::StorageKeyFromVisitTime(visit_time);
   EXPECT_EQ(processor()->GetEntities().size(), 1u);
@@ -633,9 +685,126 @@ TEST_F(HistorySyncBridgeTest, UploadsLocalVisitWithRedirects) {
       ui::PAGE_TRANSITION_LINK));
 }
 
+TEST_F(HistorySyncBridgeTest, SplitsRedirectChainWithDifferentTimestamps) {
+  // Start syncing (with no data yet).
+  ApplyInitialSyncChanges({});
+
+  // Create a redirect chain with 2 entries.
+  URLRow url_row1(GURL("https://url1.com"));
+  URLID url_id1 = backend()->AddURL(url_row1);
+  url_row1.set_id(url_id1);
+  URLRow url_row2(GURL("https://url2.com"));
+  URLID url_id2 = backend()->AddURL(url_row2);
+  url_row2.set_id(url_id2);
+
+  const base::Time visit_time_chain1 = base::Time::Now();
+
+  VisitRow visit_row1;
+  visit_row1.url_id = url_id1;
+  visit_row1.visit_time = visit_time_chain1;
+  visit_row1.transition = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CHAIN_START |
+      ui::PAGE_TRANSITION_SERVER_REDIRECT);
+  visit_row1.visit_id = backend()->AddVisit(visit_row1);
+
+  VisitRow visit_row2;
+  visit_row2.referring_visit = visit_row1.visit_id;
+  visit_row2.url_id = url_id2;
+  visit_row2.visit_time = visit_time_chain1;
+  visit_row2.transition = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CHAIN_END);
+  visit_row2.visit_id = backend()->AddVisit(visit_row2);
+
+  // Notify the bridge about the visits.
+  bridge()->OnURLVisited(
+      /*history_backend=*/nullptr, url_row1, visit_row1);
+  bridge()->OnURLVisited(
+      /*history_backend=*/nullptr, url_row2, visit_row2);
+
+  // The chain should have resulted in an entity being Put().
+  const std::string storage_key1 =
+      HistorySyncMetadataDatabase::StorageKeyFromVisitTime(visit_time_chain1);
+  ASSERT_EQ(processor()->GetEntities().size(), 1u);
+  ASSERT_EQ(processor()->GetEntities().count(storage_key1), 1u);
+  sync_pb::HistorySpecifics history1 =
+      processor()->GetEntities().at(storage_key1).specifics.history();
+  ASSERT_EQ(history1.redirect_entries_size(), 2);
+  ASSERT_FALSE(history1.redirect_chain_start_incomplete());
+  ASSERT_FALSE(history1.redirect_chain_end_incomplete());
+
+  // Now, the existing chain gets extended.
+  // First, the PAGE_TRANSITION_CHAIN_END bit gets removed from the existing
+  // visit.
+  visit_row2.transition = ui::PAGE_TRANSITION_LINK;
+  ASSERT_TRUE(backend()->UpdateVisit(visit_row2));
+  // The bridge gets notified about the updated visit, but this should have no
+  // effect since it's not a chain end anymore.
+  bridge()->OnVisitUpdated(visit_row2);
+
+  // Two more visits get appended to the chain.
+  URLRow url_row3(GURL("https://url3.com"));
+  URLID url_id3 = backend()->AddURL(url_row3);
+  url_row3.set_id(url_id3);
+  URLRow url_row4(GURL("https://url4.com"));
+  URLID url_id4 = backend()->AddURL(url_row4);
+  url_row4.set_id(url_id4);
+
+  AdvanceClock();
+  const base::Time visit_time_chain2 = base::Time::Now();
+
+  VisitRow visit_row3;
+  // Link to the previous chain!
+  visit_row3.referring_visit = visit_row2.visit_id;
+  visit_row3.url_id = url_id3;
+  visit_row3.visit_time = visit_time_chain2;
+  // Note: No PAGE_TRANSITION_CHAIN_START.
+  visit_row3.transition = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+  visit_row3.visit_id = backend()->AddVisit(visit_row3);
+
+  VisitRow visit_row4;
+  visit_row4.referring_visit = visit_row3.visit_id;
+  visit_row4.url_id = url_id4;
+  visit_row4.visit_time = visit_time_chain2;
+  visit_row4.transition = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CHAIN_END);
+  visit_row4.visit_id = backend()->AddVisit(visit_row4);
+
+  // Notify the bridge about the new visits.
+  bridge()->OnURLVisited(
+      /*history_backend=*/nullptr, url_row3, visit_row3);
+  bridge()->OnURLVisited(
+      /*history_backend=*/nullptr, url_row4, visit_row4);
+
+  // Now, there should be two entities: The one from the initial chain, and a
+  // separate one for the later addition.
+  const std::string storage_key2 =
+      HistorySyncMetadataDatabase::StorageKeyFromVisitTime(visit_time_chain2);
+  ASSERT_EQ(processor()->GetEntities().size(), 2u);
+  ASSERT_EQ(processor()->GetEntities().count(storage_key1), 1u);
+  ASSERT_EQ(processor()->GetEntities().count(storage_key2), 1u);
+  // The initial chain should not have the chain_end marker anymore, but be
+  // otherwise unmodified.
+  sync_pb::HistorySpecifics history1_expected = history1;
+  history1_expected.set_redirect_chain_end_incomplete(true);
+  sync_pb::HistorySpecifics history1_updated =
+      processor()->GetEntities().at(storage_key1).specifics.history();
+  EXPECT_EQ(*syncer::HistorySpecificsToValue(history1_expected),
+            *syncer::HistorySpecificsToValue(history1_updated));
+  // The second chain should contain only the last two entries.
+  sync_pb::HistorySpecifics history2 =
+      processor()->GetEntities().at(storage_key2).specifics.history();
+  ASSERT_EQ(history2.redirect_entries_size(), 2);
+  EXPECT_EQ(history2.redirect_entries(0).url(), url_row3.url());
+  EXPECT_EQ(history2.redirect_entries(1).url(), url_row4.url());
+  EXPECT_EQ(history2.originator_referring_visit_id(), visit_row2.visit_id);
+  EXPECT_TRUE(history2.redirect_chain_start_incomplete());
+  EXPECT_FALSE(history2.redirect_chain_end_incomplete());
+}
+
 TEST_F(HistorySyncBridgeTest, UntracksEntitiesAfterCommit) {
   // Start syncing (with no data yet).
-  MergeSyncData({});
+  ApplyInitialSyncChanges({});
 
   // Visit some URLs.
   auto [url_row1, visit_row1] = AddVisitToBackendAndAdvanceClock(
@@ -669,7 +838,7 @@ TEST_F(HistorySyncBridgeTest, UntracksEntitiesAfterCommit) {
 
 TEST_F(HistorySyncBridgeTest, UntracksRemoteEntities) {
   // Start Sync with an initial remote entity.
-  MergeSyncData(
+  ApplyInitialSyncChanges(
       {CreateSpecifics(base::Time::Now() - base::Seconds(10),
                        "remote_cache_guid", GURL("https://remote.com"))});
   ASSERT_EQ(backend()->GetURLs().size(), 1u);
@@ -690,7 +859,7 @@ TEST_F(HistorySyncBridgeTest, UntracksRemoteEntities) {
 
 TEST_F(HistorySyncBridgeTest, DoesNotUntrackEntityPendingCommit) {
   // Start syncing (with no data yet).
-  MergeSyncData({});
+  ApplyInitialSyncChanges({});
 
   // Visit a URL locally.
   auto [url_row1, visit_row1] = AddVisitToBackendAndAdvanceClock(
@@ -723,7 +892,7 @@ TEST_F(HistorySyncBridgeTest, DoesNotUntrackEntityPendingCommit) {
 
 TEST_F(HistorySyncBridgeTest, UntracksEntityOnIndividualDeletion) {
   // Start syncing (with no data yet).
-  MergeSyncData({});
+  ApplyInitialSyncChanges({});
 
   // Visit some URLs.
   auto [url_row1, visit_row1] = AddVisitToBackendAndAdvanceClock(
@@ -757,7 +926,7 @@ TEST_F(HistorySyncBridgeTest, UntracksEntityOnIndividualDeletion) {
 
 TEST_F(HistorySyncBridgeTest, UntracksAllEntitiesOnAllHistoryDeletion) {
   // Start syncing (with no data yet).
-  MergeSyncData({});
+  ApplyInitialSyncChanges({});
 
   // Add some visits to the DB.
   auto [url_row1, visit_row1] = AddVisitToBackendAndAdvanceClock(
@@ -825,7 +994,7 @@ TEST_F(HistorySyncBridgeTest, RemapsOriginatorVisitIDs) {
 
   // Start syncing with these three entities - this should trigger the remapping
   // of originator IDs into local IDs.
-  MergeSyncData({entity_first, entity_chain, entity_last});
+  ApplyInitialSyncChanges({entity_first, entity_chain, entity_last});
 
   VisitRow first_row;
   ASSERT_TRUE(backend()->GetLastVisitByTime(first_visit_time, &first_row));
@@ -864,7 +1033,7 @@ TEST_F(HistorySyncBridgeTest, RemapsLegacyRedirectChain) {
       visit_time, remote_cache_guid, urls, originator_visit_ids);
 
   // Start syncing - this should trigger the creation of local referrer IDs.
-  MergeSyncData({entity});
+  ApplyInitialSyncChanges({entity});
 
   VisitRow chain_end_row;
   ASSERT_TRUE(backend()->GetLastVisitByTime(visit_time, &chain_end_row));

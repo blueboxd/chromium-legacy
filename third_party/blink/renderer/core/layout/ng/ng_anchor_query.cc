@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,6 +89,13 @@ struct NGStitchedAnchorQuery : public GarbageCollected<NGStitchedAnchorQuery> {
     return anchor_query;
   }
 
+  enum class Conflict {
+    // The first entry wins. The calls must be in the tree order.
+    kFirstInCallOrder,
+    // Overwrite existing entry if the new one is before the existing one.
+    kOverwriteIfBefore,
+  };
+
   void AddChild(const NGPhysicalFragment& fragment,
                 const PhysicalOffset& offset_from_fragmentainer,
                 const FragmentainerContext& fragmentainer) {
@@ -99,14 +106,15 @@ struct NGStitchedAnchorQuery : public GarbageCollected<NGStitchedAnchorQuery> {
       DCHECK(it.value->fragment);
       AddAnchorReference(it.key, *it.value->fragment,
                          it.value->rect + offset_from_fragmentainer,
-                         fragmentainer);
+                         fragmentainer, Conflict::kFirstInCallOrder);
     }
   }
 
   void AddAnchorReference(const AtomicString& anchor_name,
                           const NGPhysicalFragment& fragment,
                           const PhysicalRect& physical_rect_in_fragmentainer,
-                          const FragmentainerContext& fragmentainer) {
+                          const FragmentainerContext& fragmentainer,
+                          Conflict conflict) {
     const LogicalRect rect_in_fragmentainer =
         fragmentainer.converter.ToLogical(physical_rect_in_fragmentainer);
     auto* new_value = MakeGarbageCollected<NGStitchedAnchorReference>(
@@ -115,16 +123,30 @@ struct NGStitchedAnchorQuery : public GarbageCollected<NGStitchedAnchorQuery> {
     if (result.is_new_entry)
       return;
 
-    // If this is the same anchor-name on a different box, ignore it. The
-    // first one in the pre-order wins.
+    // If this is a fragment of the existing box, unite it with other fragments.
     NGStitchedAnchorReference* existing = result.stored_value->value;
-    if (existing->fragment->GetLayoutObject() !=
-        new_value->fragment->GetLayoutObject()) {
+    const LayoutObject* existing_object = existing->fragment->GetLayoutObject();
+    DCHECK(existing_object);
+    const LayoutObject* new_object = new_value->fragment->GetLayoutObject();
+    DCHECK(new_object);
+    if (existing_object == new_object) {
+      existing->Unite(rect_in_fragmentainer, fragmentainer.offset);
       return;
     }
 
-    // If this is a fragment of the same box, unite it.
-    existing->Unite(rect_in_fragmentainer, fragmentainer.offset);
+    // If this is the same anchor-name on a different box, the first one in the
+    // pre-order wins. Normally, the call order is in the layout-order, which is
+    // pre-order of the box tree. But OOFs may be laid out later, check the tree
+    // order in such case.
+    switch (conflict) {
+      case Conflict::kFirstInCallOrder:
+        DCHECK(existing_object->IsBeforeInPreOrder(*new_object));
+        break;
+      case Conflict::kOverwriteIfBefore:
+        if (new_object->IsBeforeInPreOrder(*existing_object))
+          *existing = *new_value;
+        break;
+    }
   }
 
   void Trace(Visitor* visitor) const { visitor->Trace(references); }
@@ -160,7 +182,12 @@ struct NGStitchedAnchorQueries {
                 .block_size;
         continue;
       }
-      // TODO(kojii): column-spanner not supported yet.
+
+      // The containing block of the spanner is the multicol container itself.
+      // https://drafts.csswg.org/css-multicol/#column-span
+      // So anchor queries in column spanners should not be added to any
+      // containing blocks in the multicol.
+      DCHECK(child->IsColumnSpanAll());
     }
   }
 
@@ -174,8 +201,6 @@ struct NGStitchedAnchorQueries {
   void AddBoxChild(const NGPhysicalBoxFragment& fragment,
                    const PhysicalOffset& offset_from_fragmentainer,
                    const FragmentainerContext& fragmentainer) {
-    // TODO(kojii): nested multicol is not supported yet.
-
     if (fragment.IsOutOfFlowPositioned()) {
       AddOutOfFlowChild(fragment, offset_from_fragmentainer, fragmentainer);
       return;
@@ -198,6 +223,12 @@ struct NGStitchedAnchorQueries {
       }
     }
 
+    if (fragment.IsFragmentationContextRoot()) {
+      AddFragmentationContextRootChild(fragment, offset_from_fragmentainer,
+                                       fragmentainer);
+      return;
+    }
+
     // Add inline children if any.
     if (const NGFragmentItems* items = fragment.Items()) {
       for (NGInlineCursor cursor(fragment, *items); cursor;
@@ -214,10 +245,29 @@ struct NGStitchedAnchorQueries {
 
     // Add block children if any.
     for (const NGLink& child : fragment.Children()) {
+      DCHECK(!child->IsFragmentainerBox());
       const auto child_offset_from_fragmentainer =
           offset_from_fragmentainer + child.offset;
       AddChild(*child, child_offset_from_fragmentainer, fragmentainer);
     }
+  }
+
+  void AddFragmentationContextRootChild(
+      const NGPhysicalBoxFragment& fragment,
+      const PhysicalOffset& offset_from_fragmentainer,
+      const FragmentainerContext& fragmentainer) {
+    DCHECK(fragment.IsFragmentationContextRoot());
+    DCHECK(!fragment.Items());
+    HeapVector<NGLogicalLink> children;
+    for (const NGLink& child : fragment.Children()) {
+      const LogicalOffset child_offset =
+          fragmentainer.converter.ToLogical(
+              offset_from_fragmentainer + child.offset, child->Size()) +
+          fragmentainer.offset;
+      children.push_back(NGLogicalLink{child.fragment, child_offset});
+    }
+    AddFragmentainerChildren(children,
+                             fragmentainer.converter.GetWritingDirection());
   }
 
   void AddOutOfFlowChild(const NGPhysicalBoxFragment& fragment,
@@ -241,18 +291,24 @@ struct NGStitchedAnchorQueries {
     DCHECK(containing_block);
     DCHECK_NE(containing_block, &root_);
     DCHECK(!skip_info.AncestorSkipped());
-    do {
+    // Skip the first containing block, because the spec defines "If el has the
+    // same containing block as query el, el is not absolutely positioned." That
+    // said, for absolutely positioned anchors should be invalid for the first
+    // containing block.
+    // https://tabatkins.github.io/specs/css-anchor-position/#determining
+    containing_block = containing_block->Container(&skip_info);
+    while (containing_block && containing_block != root_ &&
+           !skip_info.AncestorSkipped()) {
       NGStitchedAnchorQuery& query =
           EnsureStitchedAnchorQuery(*containing_block);
       if (!anchor_name.IsNull()) {
-        query.AddAnchorReference(anchor_name, fragment,
-                                 {offset_from_fragmentainer, fragment.Size()},
-                                 fragmentainer);
+        query.AddAnchorReference(
+            anchor_name, fragment, {offset_from_fragmentainer, fragment.Size()},
+            fragmentainer, NGStitchedAnchorQuery::Conflict::kOverwriteIfBefore);
       }
       query.AddChild(fragment, offset_from_fragmentainer, fragmentainer);
       containing_block = containing_block->Container(&skip_info);
-    } while (containing_block && containing_block != root_ &&
-             !skip_info.AncestorSkipped());
+    }
   }
 
   NGStitchedAnchorQuery& EnsureStitchedAnchorQuery(
@@ -302,6 +358,13 @@ void NGLogicalAnchorReference::InsertInPreOrderInto(
 
     head_ptr = &head->next;
   }
+}
+
+// static
+const NGLogicalAnchorQuery& NGLogicalAnchorQuery::Empty() {
+  DEFINE_STATIC_LOCAL(Persistent<NGLogicalAnchorQuery>, empty,
+                      (MakeGarbageCollected<NGLogicalAnchorQuery>()));
+  return *empty;
 }
 
 const NGPhysicalAnchorReference* NGPhysicalAnchorQuery::AnchorReference(
@@ -357,42 +420,55 @@ const NGPhysicalFragment* NGLogicalAnchorQuery::Fragment(
 
 void NGLogicalAnchorQuery::Set(const AtomicString& name,
                                const NGPhysicalFragment& fragment,
-                               const LogicalRect& rect) {
+                               const LogicalRect& rect,
+                               SetOptions options) {
   DCHECK(fragment.GetLayoutObject());
   Set(name,
       MakeGarbageCollected<NGLogicalAnchorReference>(
-          fragment, rect, /* is_invalid */ fragment.IsOutOfFlowPositioned()));
+          fragment, rect, options == SetOptions::kInvalid),
+      options == SetOptions::kValidOutOfOrder);
 }
 
 void NGLogicalAnchorQuery::Set(const AtomicString& name,
-                               NGLogicalAnchorReference* reference) {
+                               NGLogicalAnchorReference* reference,
+                               bool maybe_out_of_order) {
   DCHECK(reference);
   DCHECK(!reference->next);
   const auto result = anchor_references_.insert(name, reference);
   if (result.is_new_entry)
     return;
 
-  DCHECK(result.stored_value->value);
-  NGLogicalAnchorReference& existing = *result.stored_value->value;
-  const LayoutObject* existing_object = existing.fragment->GetLayoutObject();
-  DCHECK(existing_object);
+  // If this is a fragment of the existing |LayoutObject|, unite the rect.
+  Member<NGLogicalAnchorReference>* const existing_head_ptr =
+      &result.stored_value->value;
+  NGLogicalAnchorReference* const existing_head = *existing_head_ptr;
+  DCHECK(existing_head);
+  const NGLogicalAnchorReference* last_valid_existing = nullptr;
   const LayoutObject* new_object = reference->fragment->GetLayoutObject();
   DCHECK(new_object);
-  if (existing_object != new_object) {
-    if (!reference->is_invalid && !existing.is_invalid) {
-      // If both new and existing values are valid, ignore the new value. This
-      // logic assumes the callers call this function in the correct order.
-      DCHECK(existing_object->IsBeforeInPreOrder(*new_object));
+  for (NGLogicalAnchorReference* existing = existing_head; existing;
+       existing = existing->next) {
+    const LayoutObject* existing_object = existing->fragment->GetLayoutObject();
+    DCHECK(existing_object);
+    if (existing_object == new_object) {
+      existing->rect.Unite(reference->rect);
       return;
     }
-    // When out-of-flow objects are involved, callers can't guarantee the call
-    // order. Insert into the list in the tree order.
-    reference->InsertInPreOrderInto(&result.stored_value->value);
+    if (!existing->is_invalid)
+      last_valid_existing = existing;
+  }
+
+  // Ignore the new value if both new and existing values are valid, and the
+  // call order is in the tree order.
+  if (!maybe_out_of_order && !reference->is_invalid && last_valid_existing) {
+    DCHECK(last_valid_existing->fragment->GetLayoutObject()->IsBeforeInPreOrder(
+        *new_object));
     return;
   }
 
-  // If this is a fragment from the same |LayoutObject|, unite the rect.
-  existing.rect.Unite(reference->rect);
+  // When out-of-flow objects are involved, callers can't guarantee the call
+  // order. Insert into the list in the tree order.
+  reference->InsertInPreOrderInto(existing_head_ptr);
 }
 
 void NGPhysicalAnchorQuery::SetFromLogical(
@@ -416,16 +492,18 @@ void NGLogicalAnchorQuery::SetFromPhysical(
     const NGPhysicalAnchorQuery& physical_query,
     const WritingModeConverter& converter,
     const LogicalOffset& additional_offset,
-    bool is_invalid) {
+    SetOptions options) {
   for (const auto& it : physical_query.anchor_references_) {
     LogicalRect rect = converter.ToLogical(it.value->rect);
     rect.offset += additional_offset;
-    Set(it.key, MakeGarbageCollected<NGLogicalAnchorReference>(
-                    *it.value->fragment, rect, is_invalid));
+    Set(it.key,
+        MakeGarbageCollected<NGLogicalAnchorReference>(
+            *it.value->fragment, rect, options == SetOptions::kInvalid),
+        options == SetOptions::kValidOutOfOrder);
   }
 }
 
-const NGLogicalAnchorQuery*
+const NGLogicalAnchorQuery&
 NGLogicalAnchorQueryForFragmentation::StitchedAnchorQuery(
     const LayoutObject& containing_block) const {
   DCHECK(&containing_block);
@@ -433,8 +511,8 @@ NGLogicalAnchorQueryForFragmentation::StitchedAnchorQuery(
          containing_block.CanContainFixedPositionObjects());
   const auto& it = queries_.find(&containing_block);
   if (it != queries_.end())
-    return it->value;
-  return nullptr;
+    return *it->value;
+  return NGLogicalAnchorQuery::Empty();
 }
 
 void NGLogicalAnchorQueryForFragmentation::Update(
@@ -446,9 +524,7 @@ void NGLogicalAnchorQueryForFragmentation::Update(
 
   has_anchors_on_oofs_ = false;
   for (const NGLogicalOOFNodeForFragmentation& oof_node : oof_nodes) {
-    // TODO(crbug.com/1309178): Anchors on in-flow boxes inside of OOFs is not
-    // supported yet.
-    if (!oof_node.box->Style()->AnchorName().IsNull()) {
+    if (oof_node.box->MayHaveAnchorQuery()) {
       has_anchors_on_oofs_ = true;
       break;
     }

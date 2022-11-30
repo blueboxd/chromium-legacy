@@ -4,11 +4,11 @@
 
 #include "ui/views/accessibility/view_accessibility.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/chromeos_buildflags.h"
 #include "ui/accessibility/accessibility_features.h"
@@ -141,11 +141,8 @@ bool ViewAccessibility::Contains(const AXVirtualView* virtual_view) const {
 absl::optional<size_t> ViewAccessibility::GetIndexOf(
     const AXVirtualView* virtual_view) const {
   DCHECK(virtual_view);
-  const auto iter =
-      std::find_if(virtual_children_.begin(), virtual_children_.end(),
-                   [virtual_view](const auto& child) {
-                     return child.get() == virtual_view;
-                   });
+  const auto iter = base::ranges::find(virtual_children_, virtual_view,
+                                       &std::unique_ptr<AXVirtualView>::get);
   return iter != virtual_children_.end()
              ? absl::make_optional(
                    static_cast<size_t>(iter - virtual_children_.begin()))
@@ -203,15 +200,18 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
   if (custom_data_.GetStringAttribute(ax::mojom::StringAttribute::kName,
                                       &name)) {
     if (!name.empty())
-      data->SetName(name);
+      data->SetNameChecked(name);
     else
       data->SetNameExplicitlyEmpty();
   }
 
-  if (custom_data_.HasStringAttribute(
-          ax::mojom::StringAttribute::kDescription)) {
-    data->SetDescription(custom_data_.GetStringAttribute(
-        ax::mojom::StringAttribute::kDescription));
+  std::string description;
+  if (custom_data_.GetStringAttribute(ax::mojom::StringAttribute::kDescription,
+                                      &description)) {
+    if (!description.empty())
+      data->SetDescription(description);
+    else
+      data->SetDescriptionExplicitlyEmpty();
   }
 
   if (custom_data_.GetHasPopup() != ax::mojom::HasPopup::kFalse)
@@ -244,8 +244,8 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
     // accessible name. Only use the tooltip as the accessible description if
     // it's different from the name, otherwise users might be puzzled as to why
     // their screen reader is announcing the same thing twice.
-    if (tooltip !=
-        data->GetString16Attribute(ax::mojom::StringAttribute::kName)) {
+    if (!tooltip.empty() && tooltip != data->GetString16Attribute(
+                                           ax::mojom::StringAttribute::kName)) {
       data->SetDescription(base::UTF16ToUTF8(tooltip));
     }
   }
@@ -375,7 +375,7 @@ void ViewAccessibility::OverrideName(const std::string& name,
   }
 
   custom_data_.SetNameFrom(name_from);
-  custom_data_.SetName(name);
+  custom_data_.SetNameChecked(name);
 }
 
 void ViewAccessibility::OverrideName(const std::u16string& name,
@@ -429,8 +429,8 @@ void ViewAccessibility::OverrideDescription(
       description_from == ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty)
       << "If the description is being removed to improve the user experience, "
          "|description_from| should be set to |kAttributeExplicitlyEmpty|.";
-  custom_data_.SetDescription(description);
   custom_data_.SetDescriptionFrom(description_from);
+  custom_data_.SetDescription(description);
 }
 
 void ViewAccessibility::OverrideDescription(

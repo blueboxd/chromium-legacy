@@ -193,6 +193,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      features::kEnableAccessibilityExposeIgnoredNodes},
 #if BUILDFLAG(IS_ANDROID)
     {wf::EnableAccessibilityPageZoom, features::kAccessibilityPageZoom},
+    {wf::EnableAutoDisableAccessibilityV2,
+     features::kAutoDisableAccessibilityV2},
 #endif
     {wf::EnableAccessibilityUseAXPositionForDocumentMarkers,
      features::kUseAXPositionForDocumentMarkers},
@@ -227,8 +229,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
 #if BUILDFLAG(IS_ANDROID)
     {wf::EnableGetDisplayMedia, features::kUserMediaScreenCapturing},
 #endif
-    {wf::EnableIdentityInCanMakePaymentEventFeature,
-     features::kIdentityInCanMakePaymentEventFeature, kSetOnlyIfOverridden},
     {wf::EnableIdleDetection, features::kIdleDetection, kSetOnlyIfOverridden},
     {wf::EnableInstalledApp, features::kInstalledApp},
     {wf::EnableLazyInitializeMediaControls,
@@ -267,7 +267,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableSharedArrayBufferOnDesktop,
      features::kSharedArrayBufferOnDesktop},
     {wf::EnableSharedAutofill, autofill::features::kAutofillSharedAutofill},
-    {wf::EnableSubresourceWebBundles, features::kSubresourceWebBundles},
     {wf::EnableTouchDragAndContextMenu, features::kTouchDragAndContextMenu},
     {wf::EnableUserActivationSameOriginVisibility,
      features::kUserActivationSameOriginVisibility},
@@ -376,6 +375,8 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
       {wrf::EnableAutomationControlled, switches::kRemoteDebuggingPipe, true},
       {wrf::EnableDatabase, switches::kDisableDatabases, false},
       {wrf::EnableFileSystem, switches::kDisableFileSystem, false},
+      {wrf::EnableFileSystemSyncAccessHandleAsyncInterfaceOverride,
+       switches::kFileSystemSyncAccessHandleAsyncInterfaceEnabled, true},
       {wrf::EnableNetInfoDownlinkMax,
        switches::kEnableNetworkInformationDownlinkMax, true},
       {wrf::EnableNotifications, switches::kDisableNotifications, false},
@@ -544,24 +545,6 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
       WebRuntimeFeatures::EnablePendingBeaconAPI(true);
     }
   }
-
-  if (base::FeatureList::IsEnabled(
-          blink::features::kBackForwardCacheSendNotRestoredReasons)) {
-    // The Chromium flag `kBackForwardCacheSendNotRestoredReasons` is true,
-    // which enables the parts of the API's implementation in Chromium.
-    if (blink::features::
-            kBackForwardCacheSendNotRestoredReasonsRequiresOriginTrial.Get()) {
-      // `kBackForwardCacheSendNotRestoredReasonsRequiresOriginTrial`=true
-      // specifies that execution context needs to have an origin trial token in
-      // order to use the BackForwardCacheNotRestoredReasons web API. So disable
-      // the RuntimeEnabledFeature flag BackForwardCacheNotRestoredReasons here
-      // and let the existence of OT token to decide whether the web API is
-      // enabled.
-      WebRuntimeFeatures::EnableBackForwardCacheNotRestoredReasons(false);
-    } else {
-      WebRuntimeFeatures::EnableBackForwardCacheNotRestoredReasons(true);
-    }
-  }
 }
 
 // Ensures that the various ways of enabling/disabling features do not produce
@@ -600,15 +583,15 @@ void ResolveInvalidConfigurations() {
   // Storage Access API ForSite cannot be enabled unless the larger Storage
   // Access API is also enabled.
   if (base::FeatureList::IsEnabled(
-          blink::features::kStorageAccessAPIForSiteExtension) &&
+          blink::features::kStorageAccessAPIForOriginExtension) &&
       !base::FeatureList::IsEnabled(net::features::kStorageAccessAPI)) {
     LOG_IF(WARNING,
-           WebRuntimeFeatures::IsStorageAccessAPIForSiteExtensionEnabled())
-        << "requestStorageAccessForSite cannot be enabled in this "
+           WebRuntimeFeatures::IsStorageAccessAPIForOriginExtensionEnabled())
+        << "requestStorageAccessForOrigin cannot be enabled in this "
            "configuration. Use --"
         << switches::kEnableFeatures << "="
         << net::features::kStorageAccessAPI.name << " in addition.";
-    WebRuntimeFeatures::EnableStorageAccessAPIForSiteExtension(false);
+    WebRuntimeFeatures::EnableStorageAccessAPIForOriginExtension(false);
   }
 }
 

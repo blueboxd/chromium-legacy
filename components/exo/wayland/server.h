@@ -78,7 +78,7 @@ class Server : public display::DisplayObserver {
 
   // This adds a Unix socket to the Wayland display server which can be used
   // by clients to connect to the display server.
-  bool AddSocket(const std::string name);
+  bool AddSocket(const std::string& name);
 
   // Returns the file descriptor associated with the server.
   int GetFileDescriptor() const;
@@ -130,7 +130,6 @@ class Server : public display::DisplayObserver {
   std::unique_ptr<wayland::WaylandWatcher> wayland_watcher_;
   base::FilePath socket_path_;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<WaylandKeyboardExtension> zcr_keyboard_extension_data_;
   std::unique_ptr<WaylandTextInputManager> zwp_text_manager_data_;
   std::unique_ptr<WaylandTextInputExtension> zcr_text_input_extension_data_;
@@ -138,7 +137,6 @@ class Server : public display::DisplayObserver {
   std::unique_ptr<WaylandXdgShell> xdg_shell_data_;
   std::unique_ptr<WaylandRemoteShellData> remote_shell_data_;
   std::unique_ptr<WestonTest> weston_test_holder_;
-#endif
 };
 
 }  // namespace wayland

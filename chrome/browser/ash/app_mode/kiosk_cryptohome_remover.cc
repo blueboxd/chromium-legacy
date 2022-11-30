@@ -10,6 +10,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "chrome/browser/ash/app_mode/pref_names.h"
 #include "chrome/browser/browser_process.h"
@@ -31,10 +32,10 @@ namespace {
 void ScheduleDelayedCryptohomeRemoval(const AccountId& account_id) {
   PrefService* const local_state = g_browser_process->local_state();
   {
-    DictionaryPrefUpdate dict_update(local_state,
+    ScopedDictPrefUpdate dict_update(local_state,
                                      prefs::kAllKioskUsersToRemove);
-    dict_update->SetKey(cryptohome::Identification(account_id).id(),
-                        base::Value(account_id.GetUserEmail()));
+    dict_update->Set(cryptohome::Identification(account_id).id(),
+                     account_id.GetUserEmail());
   }
   local_state->CommitPendingWrite();
 }
@@ -42,9 +43,9 @@ void ScheduleDelayedCryptohomeRemoval(const AccountId& account_id) {
 void UnscheduleDelayedCryptohomeRemoval(const cryptohome::Identification& id) {
   PrefService* const local_state = g_browser_process->local_state();
   {
-    DictionaryPrefUpdate dict_update(local_state,
+    ScopedDictPrefUpdate dict_update(local_state,
                                      prefs::kAllKioskUsersToRemove);
-    dict_update->RemoveKey(id.id());
+    dict_update->Remove(id.id());
   }
   local_state->CommitPendingWrite();
 }
@@ -115,8 +116,7 @@ void KioskCryptohomeRemover::RemoveCryptohomesAndExitIfNeeded(
   AccountId active_account_id;
   if (active_user)
     active_account_id = active_user->GetAccountId();
-  if (std::find(account_ids.begin(), account_ids.end(), active_account_id) !=
-      account_ids.end()) {
+  if (base::Contains(account_ids, active_account_id)) {
     cryptohomes_barrier_closure = BarrierClosure(
         account_ids.size() - 1, base::BindOnce(&chrome::AttemptUserExit));
   }

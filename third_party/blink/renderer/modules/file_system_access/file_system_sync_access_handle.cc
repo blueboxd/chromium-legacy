@@ -1,14 +1,12 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/file_system_access/file_system_sync_access_handle.h"
 
-#include "base/feature_list.h"
 #include "base/files/file_error_or.h"
 #include "base/numerics/checked_math.h"
 #include "build/build_config.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/modules/file_system_access/file_system_access_file_delegate.h"
@@ -43,8 +41,7 @@ void FileSystemSyncAccessHandle::Trace(Visitor* visitor) const {
 }
 
 ScriptValue FileSystemSyncAccessHandle::close(ScriptState* script_state) {
-  if (base::FeatureList::IsEnabled(
-          blink::features::kSyncAccessHandleAllSyncSurface)) {
+  if (is_all_sync_interface_enabled_) {
     CloseSync(script_state);
     return ScriptValue::From(script_state, ToV8UndefinedGenerator());
   } else {
@@ -108,7 +105,7 @@ void FileSystemSyncAccessHandle::DispatchQueuedClose() {
   DCHECK(file_delegate_->IsValid())
       << "file I/O operation queued after file closed";
 
-  file_delegate_->CloseAsync(WTF::Bind(
+  file_delegate_->CloseAsync(WTF::BindOnce(
       [](ScriptPromiseResolver* resolver,
          FileSystemSyncAccessHandle* access_handle) {
         ScriptState* script_state = resolver->GetScriptState();
@@ -116,7 +113,7 @@ void FileSystemSyncAccessHandle::DispatchQueuedClose() {
           return;
         ScriptState::Scope scope(script_state);
 
-        access_handle->access_handle_remote_->Close(WTF::Bind(
+        access_handle->access_handle_remote_->Close(WTF::BindOnce(
             [](ScriptPromiseResolver* resolver) { resolver->Resolve(); },
             WrapPersistent(resolver)));
       },
@@ -125,8 +122,7 @@ void FileSystemSyncAccessHandle::DispatchQueuedClose() {
 
 ScriptValue FileSystemSyncAccessHandle::flush(ScriptState* script_state,
                                               ExceptionState& exception_state) {
-  if (base::FeatureList::IsEnabled(
-          blink::features::kSyncAccessHandleAllSyncSurface)) {
+  if (is_all_sync_interface_enabled_) {
     FlushSync(script_state, exception_state);
     return ScriptValue::From(script_state, ToV8UndefinedGenerator());
   } else {
@@ -174,7 +170,7 @@ ScriptPromise FileSystemSyncAccessHandle::FlushAsync(
   DCHECK(file_delegate()->IsValid())
       << "file I/O operation queued after file closed";
 
-  file_delegate()->FlushAsync(WTF::Bind(WTF::Bind(
+  file_delegate()->FlushAsync(WTF::BindOnce(WTF::BindOnce(
       [](ScriptPromiseResolver* resolver,
          FileSystemSyncAccessHandle* access_handle, bool success) {
         ScriptState* script_state = resolver->GetScriptState();
@@ -199,8 +195,7 @@ ScriptPromise FileSystemSyncAccessHandle::FlushAsync(
 ScriptValue FileSystemSyncAccessHandle::getSize(
     ScriptState* script_state,
     ExceptionState& exception_state) {
-  if (base::FeatureList::IsEnabled(
-          blink::features::kSyncAccessHandleAllSyncSurface)) {
+  if (is_all_sync_interface_enabled_) {
     return ScriptValue::From(script_state,
                              GetSizeSync(script_state, exception_state));
   } else {
@@ -222,7 +217,7 @@ uint64_t FileSystemSyncAccessHandle::GetSizeSync(
       << "file delgate invalidated before getSize";
 
   base::FileErrorOr<int64_t> error_or_length = file_delegate()->GetLength();
-  if (error_or_length.is_error()) {
+  if (!error_or_length.has_value()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "getSize failed");
     return 0;
@@ -252,7 +247,7 @@ ScriptPromise FileSystemSyncAccessHandle::GetSizeAsync(
   DCHECK(file_delegate()->IsValid())
       << "file I/O operation queued after file closed";
 
-  file_delegate()->GetLengthAsync(WTF::Bind(
+  file_delegate()->GetLengthAsync(WTF::BindOnce(
       [](ScriptPromiseResolver* resolver,
          FileSystemSyncAccessHandle* access_handle,
          base::FileErrorOr<int64_t> error_or_length) {
@@ -262,7 +257,7 @@ ScriptPromise FileSystemSyncAccessHandle::GetSizeAsync(
         ScriptState::Scope scope(script_state);
 
         access_handle->ExitOperation();
-        if (error_or_length.is_error()) {
+        if (!error_or_length.has_value()) {
           resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
               script_state->GetIsolate(), DOMExceptionCode::kInvalidStateError,
               "getSize failed"));
@@ -279,8 +274,7 @@ ScriptValue FileSystemSyncAccessHandle::truncate(
     ScriptState* script_state,
     uint64_t size,
     ExceptionState& exception_state) {
-  if (base::FeatureList::IsEnabled(
-          blink::features::kSyncAccessHandleAllSyncSurface)) {
+  if (is_all_sync_interface_enabled_) {
     TruncateSync(script_state, size, exception_state);
     return ScriptValue::From(script_state, ToV8UndefinedGenerator());
   } else {
@@ -308,7 +302,7 @@ void FileSystemSyncAccessHandle::TruncateSync(ScriptState* script_state,
   }
 
   base::FileErrorOr<bool> result = file_delegate()->SetLength(size);
-  if (!result.is_error())
+  if (result.has_value())
     return;
 
   base::File::Error file_error = result.error();
@@ -356,7 +350,7 @@ ScriptPromise FileSystemSyncAccessHandle::TruncateAsync(
 
   file_delegate()->SetLengthAsync(
       size,
-      WTF::Bind(
+      WTF::BindOnce(
           [](ScriptPromiseResolver* resolver,
              FileSystemSyncAccessHandle* access_handle,
              base::File::Error file_error) {
@@ -390,8 +384,7 @@ uint64_t FileSystemSyncAccessHandle::read(
     MaybeShared<DOMArrayBufferView> buffer,
     FileSystemReadWriteOptions* options,
     ExceptionState& exception_state) {
-  if (base::FeatureList::IsEnabled(
-          blink::features::kSyncAccessHandleAllSyncSurface)) {
+  if (is_all_sync_interface_enabled_) {
     return DoRead(buffer, options, exception_state);
   } else {
     // TODO(crbug.com/1338340): OperationScope is only used for async methods.
@@ -430,7 +423,7 @@ uint64_t FileSystemSyncAccessHandle::DoRead(
   base::FileErrorOr<int> result =
       file_delegate()->Read(file_offset, {read_data, read_size});
 
-  if (result.is_error()) {
+  if (!result.has_value()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Failed to read the content");
     return 0;
@@ -442,8 +435,7 @@ uint64_t FileSystemSyncAccessHandle::write(
     MaybeShared<DOMArrayBufferView> buffer,
     FileSystemReadWriteOptions* options,
     ExceptionState& exception_state) {
-  if (base::FeatureList::IsEnabled(
-          blink::features::kSyncAccessHandleAllSyncSurface)) {
+  if (is_all_sync_interface_enabled_) {
     return DoWrite(buffer, options, exception_state);
   } else {
     // TODO(crbug.com/1338340): OperationScope is only used for async methods.
@@ -496,7 +488,7 @@ uint64_t FileSystemSyncAccessHandle::DoWrite(
 
   base::FileErrorOr<int> result =
       file_delegate()->Write(file_offset, {write_data, write_size});
-  if (result.is_error()) {
+  if (!result.has_value()) {
     base::File::Error file_error = result.error();
     DCHECK_NE(file_error, base::File::FILE_OK);
     if (file_error == base::File::FILE_ERROR_NO_SPACE) {

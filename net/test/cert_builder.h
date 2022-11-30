@@ -99,10 +99,25 @@ class CertBuilder {
                        EVP_PKEY* key,
                        CBB* out_signature);
 
+  static bool SignDataWithDigest(const EVP_MD* digest,
+                                 base::StringPiece tbs_data,
+                                 EVP_PKEY* key,
+                                 CBB* out_signature);
+
   // Returns a DER encoded AlgorithmIdentifier TLV for |signature_algorithm|
   // empty string on error.
   static std::string SignatureAlgorithmToDer(
       SignatureAlgorithm signature_algorithm);
+
+  // Generates |num_bytes| random bytes, and then returns the hex encoding of
+  // those bytes.
+  static std::string MakeRandomHexString(size_t num_bytes);
+
+  // Builds a DER encoded X.501 Name TLV containing a commonName of
+  // |common_name| with type |common_name_tag|.
+  static std::vector<uint8_t> BuildNameWithCommonNameOfType(
+      base::StringPiece common_name,
+      unsigned common_name_tag);
 
   // Sets a value for the indicated X.509 (v3) extension.
   void SetExtension(const der::Input& oid,
@@ -120,8 +135,8 @@ class CertBuilder {
   void SetCaIssuersUrl(const GURL& url);
 
   // Sets an AIA extension with the specified caIssuers and OCSP urls. Either
-  // list can have 0 or more URLs, but it is an error for both lists to be
-  // empty.
+  // list can have 0 or more URLs. If both are empty, the AIA extension is
+  // removed.
   void SetCaIssuersAndOCSPUrls(const std::vector<GURL>& ca_issuers_urls,
                                const std::vector<GURL>& ocsp_urls);
 
@@ -133,15 +148,20 @@ class CertBuilder {
   // with |urls| in distributionPoints.fullName.
   void SetCrlDistributionPointUrls(const std::vector<GURL>& urls);
 
+  // Sets the issuer bytes that will be encoded into the generated certificate.
+  // If this is not called, or |issuer_tlv| is empty, the subject field from
+  // the issuer CertBuilder will be used.
+  void SetIssuerTLV(base::span<const uint8_t> issuer_tlv);
+
   // Sets the subject to a Name with a single commonName attribute with
   // the value |common_name| tagged as a UTF8String.
   void SetSubjectCommonName(base::StringPiece common_name);
 
   // Sets the subject to |subject_tlv|.
-  void SetSubject(base::span<const uint8_t> subject_tlv);
+  void SetSubjectTLV(base::span<const uint8_t> subject_tlv);
 
   // Sets the SAN for the certificate to a single dNSName.
-  void SetSubjectAltName(const std::string& dns_name);
+  void SetSubjectAltName(base::StringPiece dns_name);
 
   // Sets the SAN for the certificate to the given dns names and ip addresses.
   void SetSubjectAltNames(const std::vector<std::string>& dns_names,
@@ -158,6 +178,12 @@ class CertBuilder {
   // Sets the certificatePolicies extension with the specified policyIdentifier
   // OIDs, which must be specified in dotted string notation (e.g. "1.2.3.4").
   void SetCertificatePolicies(const std::vector<std::string>& policy_oids);
+
+  // Sets the PolicyConstraints extension. If both |require_explicit_policy|
+  // and |inhibit_policy_mapping| are nullopt, the PolicyConstraints extension
+  // will removed.
+  void SetPolicyConstraints(absl::optional<uint64_t> require_explicit_policy,
+                            absl::optional<uint64_t> inhibit_policy_mapping);
 
   void SetValidity(base::Time not_before, base::Time not_after);
 
@@ -217,6 +243,9 @@ class CertBuilder {
   // key is specifically needed. If a key was already set, it will be replaced.
   void GenerateRSAKey();
 
+  // Loads the private key for the generated certificate from |key_file|.
+  bool UseKeyFromFile(const base::FilePath& key_file);
+
   // Returns the CertBuilder that issues this certificate. (Will be |this| if
   // certificate is self-signed.)
   CertBuilder* issuer() { return issuer_; }
@@ -250,11 +279,25 @@ class CertBuilder {
   scoped_refptr<X509Certificate> GetX509Certificate();
 
   // Returns an X509Certificate for the generated certificate, including
-  // intermediate certificates.
+  // intermediate certificates (not including the self-signed root).
   scoped_refptr<X509Certificate> GetX509CertificateChain();
+
+  // Returns an X509Certificate for the generated certificate, including
+  // intermediate certificates and the self-signed root.
+  scoped_refptr<X509Certificate> GetX509CertificateFullChain();
 
   // Returns a copy of the certificate's DER.
   std::string GetDER();
+
+  // Returns a copy of the certificate as PEM encoded DER.
+  // Convenience method for debugging, to more easily log what cert is being
+  // created.
+  std::string GetPEM();
+
+  // Returns the full chain (including root) as PEM.
+  // Convenience method for debugging, to more easily log what certs are being
+  // created.
+  std::string GetPEMFullChain();
 
  private:
   // Initializes the CertBuilder, if |orig_cert| is non-null it will be used as
@@ -306,6 +349,7 @@ class CertBuilder {
   };
 
   std::string validity_tlv_;
+  absl::optional<std::string> issuer_tlv_;
   std::string subject_tlv_;
   absl::optional<SignatureAlgorithm> signature_algorithm_;
   std::string outer_signature_algorithm_tlv_;

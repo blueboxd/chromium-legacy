@@ -97,10 +97,10 @@ SmbPersistedShareRegistry::SmbPersistedShareRegistry(Profile* profile)
     : profile_(profile) {}
 
 void SmbPersistedShareRegistry::Save(const SmbShareInfo& share) {
-  ListPrefUpdate pref(profile_->GetPrefs(),
-                      prefs::kNetworkFileSharesSavedShares);
+  ScopedListPrefUpdate pref(profile_->GetPrefs(),
+                            prefs::kNetworkFileSharesSavedShares);
 
-  base::Value::ListView share_list = pref->GetListDeprecated();
+  base::Value::List& share_list = pref.Get();
   for (auto it = share_list.begin(); it != share_list.end(); ++it) {
     if (GetStringValue(*it, kShareUrlKey) == share.share_url().ToString()) {
       *it = ShareToDict(share);
@@ -113,10 +113,10 @@ void SmbPersistedShareRegistry::Save(const SmbShareInfo& share) {
 }
 
 void SmbPersistedShareRegistry::Delete(const SmbUrl& share_url) {
-  ListPrefUpdate pref(profile_->GetPrefs(),
-                      prefs::kNetworkFileSharesSavedShares);
+  ScopedListPrefUpdate pref(profile_->GetPrefs(),
+                            prefs::kNetworkFileSharesSavedShares);
 
-  base::Value::List& list_update = pref->GetList();
+  base::Value::List& list_update = pref.Get();
   for (auto it = list_update.begin(); it != list_update.end(); ++it) {
     if (GetStringValue(*it, kShareUrlKey) == share_url.ToString()) {
       list_update.erase(it);
@@ -130,10 +130,9 @@ absl::optional<SmbShareInfo> SmbPersistedShareRegistry::Get(
   const base::Value& pref =
       profile_->GetPrefs()->GetValue(prefs::kNetworkFileSharesSavedShares);
 
-  base::Value::ConstListView share_list = pref.GetListDeprecated();
-  for (auto it = share_list.begin(); it != share_list.end(); ++it) {
-    if (GetStringValue(*it, kShareUrlKey) == share_url.ToString()) {
-      return DictToShare(*it);
+  for (const auto& entry : pref.GetList()) {
+    if (GetStringValue(entry, kShareUrlKey) == share_url.ToString()) {
+      return DictToShare(entry);
     }
   }
   return {};
@@ -144,13 +143,11 @@ std::vector<SmbShareInfo> SmbPersistedShareRegistry::GetAll() const {
       profile_->GetPrefs()->GetValue(prefs::kNetworkFileSharesSavedShares);
 
   std::vector<SmbShareInfo> shares;
-  base::Value::ConstListView share_list = pref.GetListDeprecated();
-  for (auto it = share_list.begin(); it != share_list.end(); ++it) {
-    absl::optional<SmbShareInfo> info = DictToShare(*it);
-    if (!info) {
-      continue;
+  for (const auto& entry : pref.GetList()) {
+    absl::optional<SmbShareInfo> info = DictToShare(entry);
+    if (info) {
+      shares.push_back(std::move(*info));
     }
-    shares.push_back(std::move(*info));
   }
   return shares;
 }

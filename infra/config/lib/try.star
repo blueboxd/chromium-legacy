@@ -23,11 +23,11 @@ load("./builders.star", "builders", "os", "os_category")
 load("./orchestrator.star", "register_compilator", "register_orchestrator")
 load("//project.star", "settings")
 
-DEFAULT_EXCLUDE_LOCATION_FILTERS = [
+DEFAULT_EXCLUDE_REGEXPS = [
     # Contains documentation that doesn't affect the outputs
-    cq.location_filter(path_regexp = "docs/.+", exclude = True),
+    ".+/[+]/docs/.+",
     # Contains configuration files that aren't active until after committed
-    cq.location_filter(path_regexp = "infra/config/.+", exclude = True),
+    ".+/[+]/infra/config/.+",
 ]
 
 # Intended to be used for the `caches` builder arg when no source checkout is
@@ -66,7 +66,8 @@ def tryjob(
         *,
         disable_reuse = None,
         experiment_percentage = None,
-        location_filters = None,
+        location_regexp = None,
+        location_regexp_exclude = None,
         cancel_stale = None,
         add_default_excludes = True):
     """Specifies the details of a tryjob verifier.
@@ -74,37 +75,22 @@ def tryjob(
     See https://chromium.googlesource.com/infra/luci/luci-go/+/HEAD/lucicfg/doc/README.md#luci.cq_tryjob_verifier
     for details on the most of the arguments.
 
-    Args:
-      disable_reuse: See cq.tryjob_verifier.
-      experiment_percentage: See cq.tryjob_verifier.
-      location_filters: A list of cq.location_filter objects and/or strings.
-        This is the same as the location_filters value of cq.tryjob_verifier
-        except that strings can be provided, which will be converted to a
-        cq.location_filter with path_regexp set to the provided string.
-      cancel_stale: See cq.tryjob_verifier.
-      add_default_excludes: A bool indicating whether to add exclude filters
+    Arguments:
+      add_default_excludes - A bool indicating whether to add exclude regexps
         for certain directories that would have no impact when building chromium
         with the patch applied (docs, config files that don't take effect until
-        landing, etc., see DEFAULT_EXCLUDE_LOCATION_FILTERS).
+        landing, etc., see DEFAULT_EXCLUDE_REGEXPS).
 
     Returns:
       A struct that can be passed to the `tryjob` argument of `try_.builder` to
       enable the builder for CQ.
     """
-
-    def normalize_location_filter(f):
-        if type(f) == type(""):
-            return cq.location_filter(path_regexp = f)
-        return f
-
-    if location_filters:
-        location_filters = [normalize_location_filter(f) for f in location_filters]
-
     return struct(
         disable_reuse = disable_reuse,
         experiment_percentage = experiment_percentage,
         add_default_excludes = add_default_excludes,
-        location_filters = location_filters,
+        location_regexp = location_regexp,
+        location_regexp_exclude = location_regexp_exclude,
         cancel_stale = cancel_stale,
     )
 
@@ -159,7 +145,13 @@ def try_builder(
     experiments = experiments or {}
 
     # TODO(crbug.com/1346781): Enable everywhere.
-    experiments.setdefault("chromium_swarming.expose_merge_script_failures", 1)
+    experiments.setdefault("chromium_swarming.expose_merge_script_failures", 20)
+
+    # TODO(crbug.com/1314194): Enable weetbix everywhere. Remove once chromium
+    # recipe is updated to use this by default.
+    experiments.setdefault("weetbix.enable_weetbix_exonerations", 100)
+    experiments.setdefault("weetbix.retry_weak_exonerations", 100)
+    experiments.setdefault("enable_weetbix_queries", 100)
 
     merged_resultdb_bigquery_exports = [
         resultdb.export_test_results(
@@ -240,16 +232,17 @@ def try_builder(
     builder = "{}/{}".format(bucket, name)
     cq_group = defaults.get_value("cq_group", cq_group)
     if tryjob != None:
-        location_filters = tryjob.location_filters
+        location_regexp_exclude = tryjob.location_regexp_exclude
         if tryjob.add_default_excludes:
-            location_filters = (location_filters or []) + DEFAULT_EXCLUDE_LOCATION_FILTERS
+            location_regexp_exclude = DEFAULT_EXCLUDE_REGEXPS + (location_regexp_exclude or [])
 
         luci.cq_tryjob_verifier(
             builder = builder,
             cq_group = cq_group,
             disable_reuse = tryjob.disable_reuse,
             experiment_percentage = tryjob.experiment_percentage,
-            location_filters = location_filters,
+            location_regexp = tryjob.location_regexp,
+            location_regexp_exclude = location_regexp_exclude,
             cancel_stale = tryjob.cancel_stale,
         )
     else:

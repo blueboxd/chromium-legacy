@@ -25,7 +25,7 @@
 #include "components/search_engines/template_url.h"
 #include "components/url_formatter/url_formatter.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/omnibox_proto/group_id.pb.h"
+#include "third_party/omnibox_proto/groups.pb.h"
 #include "third_party/omnibox_proto/types.pb.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "ui/base/page_transition_types.h"
@@ -57,6 +57,8 @@ const char kACMatchPropertyContentsStartIndex[] = "match contents start index";
 // A match attribute when a default match's score has been boosted with a higher
 // scoring non-default match.
 const char kACMatchPropertyScoreBoostedFrom[] = "score_boosted_from";
+
+// RichAutocompletionParams ---------------------------------------------------
 
 // `RichAutocompletionParams` is a cache for the params used by
 // `TryRichAutocompletion()`. `TryRichAutocompletion()` is called about 80 times
@@ -661,6 +663,9 @@ struct AutocompleteMatch {
   std::string image_dominant_color;
   GURL image_url;
 
+  // Optional entity id for entity suggestions. Empty string means no entity ID.
+  std::string entity_id;
+
   // Optional override to use for types that specify an icon sub-type.
   DocumentType document_type = DocumentType::NONE;
 
@@ -681,11 +686,14 @@ struct AutocompleteMatch {
   std::u16string description_for_shortcuts;
   ACMatchClassifications description_class_for_shortcuts;
 
-  // The optional suggestion group Id. Used to look up the suggestion group info
-  // such as the header text this match must appear under from ACResult.
+  // The optional suggestion group ID used to look up the suggestion group info
+  // for the group this suggestion belongs to from the AutocompleteResult.
   //
-  // This is converted to a primitive int type in Java and JavaScript; with -1
-  // (omnibox::GroupId::INVALID) used as a sentinel value.
+  // Use omnibox::GROUP_INVALID in place of a missing value when converting
+  // this to a primitive type.
+  // TODO(manukh): Seems redundant to prefix a suggestion field with
+  //  'suggestion_'. Check if it makes sense to rename to 'group_id', and
+  //  likewise for the associated methods and local variables.
   absl::optional<omnibox::GroupId> suggestion_group_id;
 
   // If true, UI-level code should swap the contents and description fields
@@ -824,5 +832,16 @@ struct AutocompleteMatch {
 typedef AutocompleteMatch::ACMatchClassification ACMatchClassification;
 typedef std::vector<ACMatchClassification> ACMatchClassifications;
 typedef std::vector<AutocompleteMatch> ACMatches;
+
+// Can be used as the key for grouping AutocompleteMatches in a map based on a
+// std::pair of fields. This can be generalized to a std::tuple if ever needed.
+// The accompanying hash function makes the key usable in an std::unordered_map.
+template <typename S, typename T>
+using ACMatchKey = std::pair<S, T>;
+
+template <typename S, typename T>
+struct ACMatchKeyHash {
+  size_t operator()(const ACMatchKey<S, T>& key) const;
+};
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_AUTOCOMPLETE_MATCH_H_

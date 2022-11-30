@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ absl::optional<TransformationMatrix> XRSpace::NativeFromViewer(
   if (!native_from_mojo)
     return absl::nullopt;
 
-  native_from_mojo->Multiply(*mojo_from_viewer);
+  native_from_mojo->PreConcat(*mojo_from_viewer);
 
   // This is now native_from_viewer
   return native_from_mojo;
@@ -49,7 +49,7 @@ absl::optional<TransformationMatrix> XRSpace::MojoFromOffsetMatrix() const {
 
   // Modifies maybe_mojo_from_native - it becomes mojo_from_offset_matrix.
   // Saves a heap allocation since there is no need to create a new unique_ptr.
-  maybe_mojo_from_native->Multiply(NativeFromOffsetMatrix());
+  maybe_mojo_from_native->PreConcat(NativeFromOffsetMatrix());
   return maybe_mojo_from_native;
 }
 
@@ -79,7 +79,7 @@ XRPose* XRSpace::getPose(const XRSpace* other_space) const {
   }
 
   // Add any origin offset now.
-  mojo_from_offset->Multiply(NativeFromOffsetMatrix());
+  mojo_from_offset->PreConcat(NativeFromOffsetMatrix());
 
   absl::optional<TransformationMatrix> other_from_mojo =
       other_space->NativeFromMojo();
@@ -90,13 +90,13 @@ XRPose* XRSpace::getPose(const XRSpace* other_space) const {
 
   // Add any origin offset from the other space now.
   TransformationMatrix other_offset_from_mojo =
-      other_space->OffsetFromNativeMatrix().Multiply(*other_from_mojo);
+      other_space->OffsetFromNativeMatrix() * other_from_mojo.value();
 
   // TODO(crbug.com/969133): Update how EmulatedPosition is determined here once
   // spec issue https://github.com/immersive-web/webxr/issues/534 has been
   // resolved.
   TransformationMatrix other_offset_from_offset =
-      other_offset_from_mojo.Multiply(*mojo_from_offset);
+      other_offset_from_mojo * mojo_from_offset.value();
   return MakeGarbageCollected<XRPose>(
       other_offset_from_offset,
       EmulatedPosition() || other_space->EmulatedPosition());
@@ -111,7 +111,7 @@ absl::optional<TransformationMatrix> XRSpace::OffsetFromViewer() const {
     return absl::nullopt;
   }
 
-  return OffsetFromNativeMatrix().Multiply(*native_from_viewer);
+  return OffsetFromNativeMatrix() * *native_from_viewer;
 }
 
 ExecutionContext* XRSpace::GetExecutionContext() const {

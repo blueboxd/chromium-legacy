@@ -9,7 +9,9 @@
 #include <string>
 
 #include "ash/public/cpp/locale_update_controller.h"
+#include "ash/public/cpp/system_tray_observer.h"
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -30,7 +32,8 @@ namespace ash {
 
 class WelcomeScreen : public BaseScreen,
                       public input_method::InputMethodManager::Observer,
-                      public ChromeVoxHintDetector::Observer {
+                      public ChromeVoxHintDetector::Observer,
+                      public ash::SystemTrayObserver {
  public:
   using TView = WelcomeView;
 
@@ -90,7 +93,7 @@ class WelcomeScreen : public BaseScreen,
   const std::string& language_list_locale() const {
     return language_list_locale_;
   }
-  const base::Value& language_list() const { return language_list_; }
+  const base::Value::List& language_list() const { return language_list_; }
 
   void UpdateLanguageList();
 
@@ -117,7 +120,6 @@ class WelcomeScreen : public BaseScreen,
   }
 
   // ChromeVox hint.
-  void CancelChromeVoxHintIdleDetection();
   ChromeVoxHintDetector* GetChromeVoxHintDetectorForTesting();
 
  protected:
@@ -131,8 +133,13 @@ class WelcomeScreen : public BaseScreen,
   void OnUserActionDeprecated(const std::string& action_id) override;
   bool HandleAccelerator(LoginAcceleratorAction action) override;
 
+  void CancelChromeVoxHintIdleDetection();
   // ChromeVoxHintDetector::Observer:
   void OnShouldGiveChromeVoxHint() override;
+
+  // SystemTrayObserver:
+  void OnFocusLeavingSystemTray(bool reverse) override;
+  void OnSystemTrayBubbleShown() override;
 
   // InputMethodManager::Observer:
   void InputMethodChanged(input_method::InputMethodManager* manager,
@@ -162,10 +169,9 @@ class WelcomeScreen : public BaseScreen,
           language_switch_result);
 
   // Callback for chromeos::ResolveUILanguageList() (from l10n_util).
-  void OnLanguageListResolved(
-      std::unique_ptr<base::ListValue> new_language_list,
-      const std::string& new_language_list_locale,
-      const std::string& new_selected_language);
+  void OnLanguageListResolved(base::Value::List new_language_list,
+                              const std::string& new_language_list_locale,
+                              const std::string& new_selected_language);
 
   // Callback when the system timezone settings is changed.
   void OnSystemTimezoneChanged();
@@ -178,6 +184,10 @@ class WelcomeScreen : public BaseScreen,
   // migration flag file. Then, simulates a user action, if the flag is set and
   // the screen is not hidden.
   void UpdateChromadMigrationOobeFlow(bool exists);
+
+  void OnAccessibilityStatusChanged(
+      const ash::AccessibilityStatusEventDetails& details);
+  void UpdateA11yState();
 
   // Adds data to the OOBE.WelcomeScreen.UserChangedLocale metric and calls
   // exit_callback with given Result
@@ -194,7 +204,7 @@ class WelcomeScreen : public BaseScreen,
   // Creation of language list happens on Blocking Pool, so we cache
   // resolved data.
   std::string language_list_locale_;
-  base::Value language_list_{base::Value::Type::LIST};
+  base::Value::List language_list_;
 
   // The exact language code selected by user in the menu.
   std::string selected_language_code_;
@@ -204,6 +214,8 @@ class WelcomeScreen : public BaseScreen,
   // This local flag should be true if the OOBE flow is operating as part of the
   // Chromad to cloud device migration. If so, this screen should be skipped.
   bool is_chromad_migration_oobe_flow_ = false;
+
+  base::CallbackListSubscription accessibility_subscription_;
 
   base::WeakPtr<ash::quick_start::TargetDeviceBootstrapController>
       bootstrap_controller_;

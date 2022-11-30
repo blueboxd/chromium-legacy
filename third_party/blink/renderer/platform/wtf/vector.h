@@ -1036,16 +1036,41 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
 // allocate an iterator on stack (as a local variable), and you should not
 // store iterators in another heap object.
 
+// In general, Vector requires destruction.
+template <typename T, wtf_size_t inlineCapacity, bool isGced>
+struct VectorNeedsDestructor {
+  static constexpr bool value = true;
+};
+
+// For garbage collection, Vector does not require destruction when there's no
+// inline capacity.
+template <typename T>
+struct VectorNeedsDestructor<T, 0, true> {
+  static constexpr bool value = false;
+};
+
+// For garbage collection, a Vector with inline capacity conditionally requires
+// destruction based on whether the element type itself requires destruction.
+template <typename T, wtf_size_t inlineCapacity>
+struct VectorNeedsDestructor<T, inlineCapacity, true> {
+  // Always return true here as currently there's many uses of on-stack
+  // HeapVector with inline capacity that require eager clearing for
+  // performance.
+  //
+  // Ideally, there's a different representation for on-stack usages which would
+  // allow eager clearing for all uses of Vector from stack and avoid
+  // destructors on heap.
+  static constexpr bool value = true;
+};
+
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 class Vector
     : private VectorBuffer<T, INLINE_CAPACITY, Allocator>,
-      // ConditionalDestructor could in addition check for
-      // VectorTraits<T>::kNeedsDestruction which requires that the complete
-      // type is available though. Unfortunately, there's some use cases that
-      // use Vector with foward-declared types.
-      public ConditionalDestructor<Vector<T, INLINE_CAPACITY, Allocator>,
-                                   (INLINE_CAPACITY == 0) &&
-                                       Allocator::kIsGarbageCollected> {
+      public ConditionalDestructor<
+          Vector<T, INLINE_CAPACITY, Allocator>,
+          VectorNeedsDestructor<T,
+                                INLINE_CAPACITY,
+                                Allocator::kIsGarbageCollected>::value> {
   USE_ALLOCATOR(Vector, Allocator);
   using Base = VectorBuffer<T, INLINE_CAPACITY, Allocator>;
   using TypeOperations = VectorTypeOperations<T, Allocator>;
@@ -1084,6 +1109,20 @@ class Vector
   template <wtf_size_t otherCapacity>
   Vector& operator=(const Vector<T, otherCapacity, Allocator>&);
 
+  // Creates a vector with items copied from a collection. |Collection| must
+  // have size(), begin() and end() methods.
+  template <typename Collection,
+            // This prevents this constructor from being chosen for e.g.
+            // Vector(3).
+            typename =
+                typename std::enable_if<std::is_class<Collection>::value>::type>
+  explicit Vector(const Collection& collection) : Vector() {
+    assign(collection);
+  }
+  // Replaces the vector with items copied from a collection.
+  template <typename Collection>
+  void assign(const Collection&);
+
   // Moving.
   Vector(Vector&&);
   Vector& operator=(Vector&&);
@@ -1102,7 +1141,7 @@ class Vector
   wtf_size_t size() const { return size_; }
   wtf_size_t capacity() const { return Base::capacity(); }
   size_t CapacityInBytes() const { return Base::AllocationSize(capacity()); }
-  bool IsEmpty() const { return !size(); }
+  bool empty() const { return !size(); }
 
   // at() and operator[]: Obtain the reference of the element that is located
   // at the given index. The reference may be invalidated on a reallocation.
@@ -1183,9 +1222,9 @@ class Vector
   // elements in the vector are not affected. This function does not shrink
   // the size of the backing buffer, even if |newCapacity| is small. This
   // function may cause a reallocation.
-  void ReserveCapacity(wtf_size_t new_capacity);
+  void reserve(wtf_size_t new_capacity);
 
-  // This is similar to reserveCapacity() but must be called immediately after
+  // This is similar to reserve() but must be called immediately after
   // the vector is default-constructed.
   void ReserveInitialCapacity(wtf_size_t initial_capacity);
 
@@ -1195,7 +1234,7 @@ class Vector
 
   // Shrink the backing buffer so it can contain exactly |size()| elements.
   // This function may cause a reallocation.
-  void ShrinkToFit() { ShrinkCapacity(size()); }
+  void shrink_to_fit() { ShrinkCapacity(size()); }
 
   // Shrink the backing buffer if at least 50% of the vector's capacity is
   // unused. If it shrinks, the new buffer contains roughly 25% of unused
@@ -1308,7 +1347,7 @@ class Vector
   // (2) only iterators pointing to the last element will be invalidated. Other
   // references will remain valid.
   void pop_back() {
-    DCHECK(!IsEmpty());
+    DCHECK(!empty());
     Shrink(size() - 1);
   }
 
@@ -1499,7 +1538,7 @@ operator=(const Vector<T, inlineCapacity, Allocator>& other) {
     Shrink(other.size());
   } else if (other.size() > capacity()) {
     clear();
-    ReserveCapacity(other.size());
+    reserve(other.size());
     DCHECK(begin());
   }
 
@@ -1532,7 +1571,7 @@ operator=(const Vector<T, otherCapacity, Allocator>& other) {
     Shrink(other.size());
   } else if (other.size() > capacity()) {
     clear();
-    ReserveCapacity(other.size());
+    reserve(other.size());
     DCHECK(begin());
   }
 
@@ -1546,6 +1585,25 @@ operator=(const Vector<T, otherCapacity, Allocator>& other) {
   size_ = other.size();
 
   return *this;
+}
+
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
+template <typename Collection>
+void Vector<T, inlineCapacity, Allocator>::assign(const Collection& other) {
+  static_assert(
+      !std::is_same<Vector<T, inlineCapacity, Allocator>, Collection>::value,
+      "This method is for copying from a collection of a different type.");
+
+  {
+    // Disallow GC across resize allocation, see crbug.com/568173.
+    GCForbiddenScope scope;
+    resize(base::checked_cast<wtf_size_t>(other.size()));
+  }
+
+  auto src = other.begin();
+  auto src_end = other.end();
+  for (wtf_size_t i = 0; src != src_end; ++src, ++i)
+    at(i) = *src;
 }
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
@@ -1589,7 +1647,7 @@ operator=(std::initializer_list<T> elements) {
     Shrink(input_size);
   } else if (input_size > capacity()) {
     clear();
-    ReserveCapacity(input_size);
+    reserve(input_size);
     DCHECK(begin());
   }
 
@@ -1645,7 +1703,7 @@ Vector<T, inlineCapacity, Allocator>::Fill(const T& val, wtf_size_t new_size) {
     Shrink(new_size);
   } else if (new_size > capacity()) {
     clear();
-    ReserveCapacity(new_size);
+    reserve(new_size);
     DCHECK(begin());
   }
 
@@ -1681,8 +1739,8 @@ void Vector<T, inlineCapacity, Allocator>::ExpandCapacity(
     // (2^31 - 1) allocations.
     expanded_capacity += (expanded_capacity / 4) + 1;
   }
-  ReserveCapacity(std::max(new_min_capacity,
-                           std::max(kInitialVectorSize, expanded_capacity)));
+  reserve(std::max(new_min_capacity,
+                   std::max(kInitialVectorSize, expanded_capacity)));
 }
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
@@ -1727,7 +1785,7 @@ inline void Vector<T, inlineCapacity, Allocator>::resize(wtf_size_t size) {
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 void Vector<T, inlineCapacity, Allocator>::Shrink(wtf_size_t size) {
-  DCHECK_LE(size, size_);
+  CHECK_LE(size, size_);
   TypeOperations::Destruct(begin() + size, end());
   ClearUnusedSlots(begin() + size, end());
   MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, begin(), capacity(), size_,
@@ -1747,8 +1805,7 @@ void Vector<T, inlineCapacity, Allocator>::Grow(wtf_size_t size) {
 }
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
-void Vector<T, inlineCapacity, Allocator>::ReserveCapacity(
-    wtf_size_t new_capacity) {
+void Vector<T, inlineCapacity, Allocator>::reserve(wtf_size_t new_capacity) {
   if (UNLIKELY(new_capacity <= capacity()))
     return;
   if (!data()) {
@@ -2098,7 +2155,7 @@ bool operator==(const Vector<T, inlineCapacityA, Allocator>& a,
                 const Vector<T, inlineCapacityB, Allocator>& b) {
   if (a.size() != b.size())
     return false;
-  if (a.IsEmpty())
+  if (a.empty())
     return true;
   return VectorTypeOperations<T, Allocator>::Compare(a.data(), b.data(),
                                                      a.size());

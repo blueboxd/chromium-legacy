@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
+#include "content/browser/accessibility/web_ax_platform_tree_manager_delegate.h"
 #include "content/common/ax_serialization_utils.h"
 #include "content/public/common/content_client.h"
 #include "third_party/blink/public/strings/grit/blink_accessibility_strings.h"
@@ -313,10 +314,6 @@ BrowserAccessibility::AllChildrenRange::Iterator::operator*() {
   // `AXNode::GetChildAtIndexCrossingTreeBoundary()`.
   ui::AXNode* child = parent_->node()->GetChildAtIndex(index_);
   return parent_->manager()->GetFromAXNode(child);
-}
-
-ui::AXNodeID BrowserAccessibility::GetId() const {
-  return node()->id();
 }
 
 gfx::RectF BrowserAccessibility::GetLocation() const {
@@ -826,7 +823,8 @@ gfx::Rect BrowserAccessibility::RelativeToAbsoluteBounds(
     // TODO(crbug.com/1074116): this should probably apply visual viewport
     // offset as well.
     if (!content::AXShouldIncludePageScaleFactorInRoot()) {
-      BrowserAccessibilityManager* root_manager = manager()->GetRootManager();
+      BrowserAccessibilityManager* root_manager =
+          manager()->GetManagerForRootFrame();
       if (root_manager)
         bounds.Scale(root_manager->GetPageScaleFactor());
     }
@@ -1202,8 +1200,7 @@ BrowserAccessibility::AXPosition BrowserAccessibility::CreateTextPositionAt(
   DCHECK(manager_->GetNode(GetId()))
       << "No node for id: " << GetId() << "   " << node()->id() << "  "
       << node()->data().id;
-  return ui::AXNodePosition::CreateTextPosition(manager_->ax_tree_id(), GetId(),
-                                                offset, affinity);
+  return ui::AXNodePosition::CreateTextPosition(*node(), offset, affinity);
 }
 
 gfx::NativeViewAccessible BrowserAccessibility::GetNSWindow() {
@@ -1216,11 +1213,10 @@ gfx::NativeViewAccessible BrowserAccessibility::GetParent() const {
   if (parent)
     return parent->GetNativeViewAccessible();
 
-  BrowserAccessibilityDelegate* delegate =
+  WebAXPlatformTreeManagerDelegate* delegate =
       manager_->GetDelegateFromRootManager();
   if (!delegate)
     return nullptr;
-
   return delegate->AccessibilityGetNativeViewAccessible();
 }
 
@@ -1479,7 +1475,7 @@ absl::optional<size_t> BrowserAccessibility::GetIndexInParent() {
 
 gfx::AcceleratedWidget
 BrowserAccessibility::GetTargetForNativeAccessibilityEvent() {
-  BrowserAccessibilityDelegate* root_delegate =
+  WebAXPlatformTreeManagerDelegate* root_delegate =
       manager()->GetDelegateFromRootManager();
   if (!root_delegate)
     return gfx::kNullAcceleratedWidget;

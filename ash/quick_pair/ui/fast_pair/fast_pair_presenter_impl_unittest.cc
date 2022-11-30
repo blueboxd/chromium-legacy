@@ -12,11 +12,6 @@
 #include "ash/quick_pair/repository/fake_fast_pair_repository.h"
 #include "ash/quick_pair/ui/actions.h"
 #include "ash/quick_pair/ui/fast_pair/fast_pair_presenter.h"
-#include "ash/services/quick_pair/fast_pair_data_parser.h"
-#include "ash/services/quick_pair/mock_quick_pair_process_manager.h"
-#include "ash/services/quick_pair/quick_pair_process.h"
-#include "ash/services/quick_pair/quick_pair_process_manager.h"
-#include "ash/services/quick_pair/quick_pair_process_manager_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/base64.h"
@@ -24,6 +19,12 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
+#include "chromeos/ash/services/quick_pair/fast_pair_data_parser.h"
+#include "chromeos/ash/services/quick_pair/mock_quick_pair_process_manager.h"
+#include "chromeos/ash/services/quick_pair/quick_pair_process.h"
+#include "chromeos/ash/services/quick_pair/quick_pair_process_manager.h"
+#include "chromeos/ash/services/quick_pair/quick_pair_process_manager_impl.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
@@ -122,6 +123,15 @@ namespace quick_pair {
 
 class FastPairPresenterImplTest : public AshTestBase {
  public:
+  FastPairPresenterImplTest()
+      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+
+  FastPairPresenterImplTest(const FastPairPresenterImplTest&) = delete;
+  FastPairPresenterImplTest& operator=(const FastPairPresenterImplTest&) =
+      delete;
+
+  ~FastPairPresenterImplTest() override = default;
+
   void SetUp() override {
     AshTestBase::SetUp();
 
@@ -398,7 +408,8 @@ TEST_F(FastPairPresenterImplTest, RemoveNotifications) {
   EXPECT_TRUE(test_message_center_.FindVisibleNotificationById(
       kFastPairDiscoveryUserNotificationId));
 
-  fast_pair_presenter_->RemoveNotifications();
+  fast_pair_presenter_->RemoveNotifications(
+      /*clear_already_shown_discovery_notification_cache=*/false);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(test_message_center_.remove_notifications_for_notifier_id());
   EXPECT_FALSE(test_message_center_.FindVisibleNotificationById(
@@ -1438,6 +1449,44 @@ TEST_F(FastPairPresenterImplTest, DontShowDiscoveryAgain_ConnectPressed) {
   EXPECT_EQ(secondary_discovery_action_, DiscoveryAction::kAlreadyDisplayed);
 }
 
+TEST_F(FastPairPresenterImplTest, ShowDiscoveryAgain_ProtocolChanged) {
+  EXPECT_FALSE(test_message_center_.FindVisibleNotificationById(
+      kFastPairDiscoveryUserNotificationId));
+  EXPECT_FALSE(test_message_center_.FindVisibleNotificationById(
+      kFastPairDiscoverySubsequentNotificationId));
+
+  ON_CALL(*browser_delegate_, GetIdentityManager())
+      .WillByDefault(testing::Return(identity_manager_));
+
+  Login(user_manager::UserType::USER_TYPE_REGULAR);
+  base::RunLoop().RunUntilIdle();
+  fast_pair_presenter_->ShowDiscovery(
+      initially_paired_device_,
+      base::BindRepeating(&FastPairPresenterImplTest::OnDiscoveryAction,
+                          weak_pointer_factory_.GetWeakPtr(),
+                          initially_paired_device_));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(test_message_center_.FindVisibleNotificationById(
+      kFastPairDiscoveryUserNotificationId));
+
+  fast_pair_presenter_->ShowDiscovery(
+      subsequently_paired_device_,
+      base::BindRepeating(
+          &FastPairPresenterImplTest::OnDiscoveryActionForSecondNotification,
+          weak_pointer_factory_.GetWeakPtr(), subsequently_paired_device_));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(test_message_center_.FindVisibleNotificationById(
+      kFastPairDiscoverySubsequentNotificationId));
+  test_message_center_.ClickOnNotificationButton(
+      /*id=*/kFastPairDiscoverySubsequentNotificationId, /*button_index=*/0);
+  base::RunLoop().RunUntilIdle();
+
+  // We expect to be able to interact with this second notification and pair it
+  // since it was shown, not dismissed, since it was a different protocol with
+  // same address.
+  EXPECT_EQ(secondary_discovery_action_, DiscoveryAction::kPairToDevice);
+}
+
 TEST_F(FastPairPresenterImplTest, ShowDiscoveryAgain_MapCleared) {
   EXPECT_FALSE(test_message_center_.FindVisibleNotificationById(
       kFastPairDiscoverySubsequentNotificationId));
@@ -1460,7 +1509,8 @@ TEST_F(FastPairPresenterImplTest, ShowDiscoveryAgain_MapCleared) {
   base::RunLoop().RunUntilIdle();
 
   // Simulate the Bluetooth toggle or Fast Pair toggle being toggled off.
-  fast_pair_presenter_->RemoveNotifications();
+  fast_pair_presenter_->RemoveNotifications(
+      /*clear_already_shown_discovery_notification_cache=*/true);
 
   fast_pair_presenter_->ShowDiscovery(
       subsequently_paired_device_,
@@ -1476,6 +1526,109 @@ TEST_F(FastPairPresenterImplTest, ShowDiscoveryAgain_MapCleared) {
 
   EXPECT_EQ(discovery_action_, DiscoveryAction::kPairToDevice);
   EXPECT_EQ(secondary_discovery_action_, DiscoveryAction::kPairToDevice);
+}
+
+TEST_F(FastPairPresenterImplTest, ShowDiscoveryAgain_DevicePaired) {
+  EXPECT_FALSE(test_message_center_.FindVisibleNotificationById(
+      kFastPairDiscoverySubsequentNotificationId));
+
+  ON_CALL(*browser_delegate_, GetIdentityManager())
+      .WillByDefault(testing::Return(identity_manager_));
+
+  Login(user_manager::UserType::USER_TYPE_REGULAR);
+  base::RunLoop().RunUntilIdle();
+  fast_pair_presenter_->ShowDiscovery(
+      subsequently_paired_device_,
+      base::BindRepeating(&FastPairPresenterImplTest::OnDiscoveryAction,
+                          weak_pointer_factory_.GetWeakPtr(),
+                          subsequently_paired_device_));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(test_message_center_.FindVisibleNotificationById(
+      kFastPairDiscoverySubsequentNotificationId));
+  test_message_center_.ClickOnNotificationButton(
+      /*id=*/kFastPairDiscoverySubsequentNotificationId, /*button_index=*/0);
+  base::RunLoop().RunUntilIdle();
+
+  // Simulate the device being removed from the cache when the device is paired.
+  fast_pair_presenter_->RemoveDeviceFromAlreadyShownDiscoveryNotificationCache(
+      subsequently_paired_device_);
+
+  fast_pair_presenter_->ShowDiscovery(
+      subsequently_paired_device_,
+      base::BindRepeating(
+          &FastPairPresenterImplTest::OnDiscoveryActionForSecondNotification,
+          weak_pointer_factory_.GetWeakPtr(), subsequently_paired_device_));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(test_message_center_.FindVisibleNotificationById(
+      kFastPairDiscoverySubsequentNotificationId));
+  test_message_center_.ClickOnNotificationButton(
+      /*id=*/kFastPairDiscoverySubsequentNotificationId, /*button_index=*/0);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(discovery_action_, DiscoveryAction::kPairToDevice);
+  EXPECT_EQ(secondary_discovery_action_, DiscoveryAction::kPairToDevice);
+}
+
+TEST_F(FastPairPresenterImplTest, DontShowDiscoveryNotificationsForDeviceLost) {
+  EXPECT_FALSE(test_message_center_.FindVisibleNotificationById(
+      kFastPairDiscoveryUserNotificationId));
+
+  ON_CALL(*browser_delegate_, GetIdentityManager())
+      .WillByDefault(testing::Return(identity_manager_));
+  Login(user_manager::UserType::USER_TYPE_REGULAR);
+  base::RunLoop().RunUntilIdle();
+
+  // Simulate 'Device Found' event to show the discovery notification.
+  fast_pair_presenter_->ShowDiscovery(
+      initially_paired_device_,
+      base::BindRepeating(&FastPairPresenterImplTest::OnDiscoveryAction,
+                          weak_pointer_factory_.GetWeakPtr(),
+                          initially_paired_device_));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(test_message_center_.FindVisibleNotificationById(
+      kFastPairDiscoveryUserNotificationId));
+
+  // Simulate 'Device Lost' event to dismiss all notifications and start the
+  // timer to prevent showing notifications for device lost.
+  fast_pair_presenter_->RemoveNotifications(
+      /*clear_already_shown_discovery_notification_cache=*/false);
+  fast_pair_presenter_->StartDeviceLostTimer(initially_paired_device_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(test_message_center_.remove_notifications_for_notifier_id());
+  EXPECT_FALSE(test_message_center_.FindVisibleNotificationById(
+      kFastPairDiscoveryUserNotificationId));
+
+  // Simulate another 'Device Found' event to replicate poorly behaved devices
+  // that are constantly found->lost->found.
+  fast_pair_presenter_->ShowDiscovery(
+      initially_paired_device_,
+      base::BindRepeating(&FastPairPresenterImplTest::OnDiscoveryAction,
+                          weak_pointer_factory_.GetWeakPtr(),
+                          initially_paired_device_));
+  base::RunLoop().RunUntilIdle();
+
+  // We expect no notification to be shown for this device since it is within
+  // |kFastPairDeviceLostNotificationTimeoutMinutes|.
+  EXPECT_FALSE(test_message_center_.FindVisibleNotificationById(
+      kFastPairDiscoveryUserNotificationId));
+  EXPECT_EQ(discovery_action_, DiscoveryAction::kAlreadyDisplayed);
+
+  // After |kFastPairDeviceLostNotificationTimeoutMinutes| is over, we expect to
+  // be able to see the notification when we simulate a device found event.
+  task_environment()->FastForwardBy(base::Minutes(
+      features::kFastPairDeviceLostNotificationTimeoutMinutes.Get()));
+  fast_pair_presenter_->ShowDiscovery(
+      initially_paired_device_,
+      base::BindRepeating(&FastPairPresenterImplTest::OnDiscoveryAction,
+                          weak_pointer_factory_.GetWeakPtr(),
+                          initially_paired_device_));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(test_message_center_.FindVisibleNotificationById(
+      kFastPairDiscoveryUserNotificationId));
+  test_message_center_.ClickOnNotificationButton(
+      /*id=*/kFastPairDiscoveryUserNotificationId, /*button_index=*/0);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(discovery_action_, DiscoveryAction::kPairToDevice);
 }
 
 }  // namespace quick_pair

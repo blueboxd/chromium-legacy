@@ -193,7 +193,7 @@ class TabStrip : public views::View,
 
   // Returns the TabGroupHeader with ID |id|.
   TabGroupHeader* group_header(const tab_groups::TabGroupId& id) const {
-    return tab_container_->GetGroupViews().at(id).get()->header();
+    return tab_container_->GetGroupViews(id)->header();
   }
 
   // Returns the index of the specified view in the model coordinate system, or
@@ -242,6 +242,7 @@ class TabStrip : public views::View,
   gfx::Range ListTabsInGroup(
       const tab_groups::TabGroupId& group) const override;
   bool CanExtendDragHandle() const override;
+  const views::View* GetTabClosingModeMouseWatcherHostView() const override;
 
   // TabContainerController AND TabSlotController:
   bool IsGroupCollapsed(const tab_groups::TabGroupId& group) const override;
@@ -315,6 +316,8 @@ class TabStrip : public views::View,
 
   // views::View:
   views::SizeBounds GetAvailableSize(const View* child) const override;
+  gfx::Size GetMinimumSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
@@ -327,14 +330,16 @@ class TabStrip : public views::View,
       gfx::Point loc_in_local_coords) override;
   views::View* GetViewForDrop() override;
 
+  TabHoverCardController* hover_card_controller_for_testing() {
+    return hover_card_controller_.get();
+  }
+
  private:
   class TabDragContextImpl;
 
   friend class TabDragControllerTest;
   friend class TabDragContextImpl;
   friend class TabGroupEditorBubbleViewDialogBrowserTest;
-  friend class TabHoverCardBubbleViewBrowserTest;
-  friend class TabHoverCardBubbleViewInteractiveUiTest;
   friend class TabStripTestBase;
   friend class TabStripRegionViewTestBase;
 

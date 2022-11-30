@@ -5,22 +5,30 @@
 #ifndef CONTENT_BROWSER_FIRST_PARTY_SETS_DATABASE_FIRST_PARTY_SETS_DATABASE_H_
 #define CONTENT_BROWSER_FIRST_PARTY_SETS_DATABASE_FIRST_PARTY_SETS_DATABASE_H_
 
+#include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/sequence_checker.h"
 #include "base/thread_annotations.h"
-#include "content/browser/first_party_sets/first_party_set_parser.h"
 #include "content/common/content_export.h"
 #include "sql/meta_table.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace base {
+class Version;
+}  // namespace base
 
 namespace net {
-class SchemefulSite;
 class FirstPartySetEntry;
+class FirstPartySetsContextConfig;
+class GlobalFirstPartySets;
+class SchemefulSite;
 }  // namespace net
 
 namespace sql {
@@ -38,8 +46,6 @@ namespace content {
 // singleton only and is already sequence-safe.
 class CONTENT_EXPORT FirstPartySetsDatabase {
  public:
-  using FlattenedSets = FirstPartySetParser::SetsMap;
-
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
   enum class InitStatus {
@@ -67,10 +73,15 @@ class CONTENT_EXPORT FirstPartySetsDatabase {
   FirstPartySetsDatabase& operator=(const FirstPartySetsDatabase&&) = delete;
   ~FirstPartySetsDatabase();
 
-  // Stores the public First-Party Sets into database, and returns true on
-  // success.  Note that calling this method will wipe out the pre-existing
-  // data in the table.
-  [[nodiscard]] bool SetPublicSets(const FlattenedSets& sets);
+  // Stores the overall First-Party Sets for the given `browser_context_id` into
+  // database in one transaction.
+  // TODO(crbug.com/1219656): Currently only stores public sets. We should also
+  // store policy modifications and manual set in this method.
+  [[nodiscard]] bool PersistSets(
+      const std::string& browser_context_id,
+      const base::Version& public_sets_version,
+      const net::GlobalFirstPartySets& sets,
+      const net::FirstPartySetsContextConfig& config);
 
   // Stores the `sites` to be cleared for the `browser_context_id` into
   // database, and returns true on success.
@@ -83,19 +94,12 @@ class CONTENT_EXPORT FirstPartySetsDatabase {
   [[nodiscard]] bool InsertBrowserContextCleared(
       const std::string& browser_context_id);
 
-  // Stores the policy modifications into policy_modifications table, and
-  // returns true on success. Note that inserting new modifications will
-  // wipe out the pre-existing ones for the given `browser_context_id`.
-  [[nodiscard]] bool InsertPolicyModifications(
-      const std::string& browser_context_id,
-      const base::flat_map<net::SchemefulSite,
-                           absl::optional<net::FirstPartySetEntry>>&
-          modificatons);
-
   // TODO(crbug.com/1219656): Consider returning absl::nullopt for all the
   // fetching methods when having query errors
 
-  [[nodiscard]] FlattenedSets GetPublicSets();
+  // Gets the global First-Party Sets used by `browser_context_id`.
+  [[nodiscard]] net::GlobalFirstPartySets GetGlobalSets(
+      const std::string& browser_context_id);
 
   // Gets the list of sites to clear for the `browser_context_id`.
   [[nodiscard]] std::vector<net::SchemefulSite> FetchSitesToClear(
@@ -109,11 +113,42 @@ class CONTENT_EXPORT FirstPartySetsDatabase {
 
   // Gets the previously-stored policy modifications for the
   // `browser_context_id`.
-  [[nodiscard]] base::flat_map<net::SchemefulSite,
-                               absl::optional<net::FirstPartySetEntry>>
-  FetchPolicyModifications(const std::string& browser_context_id);
+  [[nodiscard]] net::FirstPartySetsContextConfig FetchPolicyModifications(
+      const std::string& browser_context_id);
+
+  // Check whether the `browser_context_id`  has performed clearing.
+  [[nodiscard]] bool HasEntryInBrowserContextsClearedForTesting(
+      const std::string& browser_context_id);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(FirstPartySetsDatabaseTest,
+                           SetPublicSets_InvalidVersion);
+
+  // Stores the public First-Party Sets into database, and keeps track of the
+  // the sets version used by `browser_context_id`. Returns true on success.
+  [[nodiscard]] bool SetPublicSets(const std::string& browser_context_id,
+                                   const base::Version& sets_version,
+                                   const net::GlobalFirstPartySets& sets);
+
+  // Stores the Manual Sets into manual_sets table, and returns true on success.
+  // Inserting new manual sets will wipe out pre-existing manual sets for the
+  // given 'browser_context_id'
+  [[nodiscard]] bool InsertManualSets(
+      const std::string& browser_context_id,
+      const base::flat_map<net::SchemefulSite, net::FirstPartySetEntry>&
+          manual_sets);
+
+  // Stores the policy modifications into policy_modifications table, and
+  // returns true on success. Note that inserting new modifications will
+  // wipe out the pre-existing ones for the given `browser_context_id`.
+  [[nodiscard]] bool InsertPolicyModifications(
+      const std::string& browser_context_id,
+      const net::FirstPartySetsContextConfig& config);
+
+  // Gets the previously-stored manual_sets for the `browser_context_id`.
+  [[nodiscard]] base::flat_map<net::SchemefulSite, net::FirstPartySetEntry>
+  FetchManualSets(const std::string& browser_context_id);
+
   // Called at the start of each public operation, and initializes the database
   // if it isn't already initialized.
   [[nodiscard]] bool LazyInit() VALID_CONTEXT_REQUIRED(sequence_checker_);

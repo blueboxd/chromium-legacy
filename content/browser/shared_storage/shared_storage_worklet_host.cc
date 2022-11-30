@@ -216,9 +216,23 @@ void SharedStorageWorkletHost::RunURLSelectionOperationOnWorklet(
   // `document_service_` should be valid.
   DCHECK(page_);
   DCHECK(document_service_);
-  IncrementPendingOperationsCount();
 
-  GURL urn_uuid = page_->fenced_frame_urls_map().GeneratePendingMappedURN();
+  auto pending_urn_uuid =
+      page_->fenced_frame_urls_map().GeneratePendingMappedURN();
+
+  if (!pending_urn_uuid.has_value()) {
+    // Pending urn::uuid cannot be inserted to pending urn map because number of
+    // urn mappings has reached limit.
+    std::move(callback).Run(
+        /*success=*/false, /*error_message=*/
+        "sharedStorage.selectURL() failed because number of urn::uuid to url "
+        "mappings has reached the limit.",
+        /*opaque_url=*/{});
+    return;
+  }
+
+  GURL urn_uuid = pending_urn_uuid.value();
+  IncrementPendingOperationsCount();
 
   std::vector<GURL> urls;
   for (const auto& url_with_metadata : urls_with_metadata)
@@ -508,6 +522,38 @@ void SharedStorageWorkletHost::SharedStorageLength(
 
   shared_storage_manager_->Length(shared_storage_origin_,
                                   std::move(operation_completed_callback));
+}
+
+void SharedStorageWorkletHost::SharedStorageRemainingBudget(
+    SharedStorageRemainingBudgetCallback callback) {
+  DCHECK(add_module_state_ == AddModuleState::kInitiated);
+
+  if (!IsSharedStorageAllowed()) {
+    std::move(callback).Run(
+        /*success=*/false,
+        /*error_message=*/kSharedStorageDisabledMessage, /*bits=*/0.0);
+    return;
+  }
+
+  auto operation_completed_callback = base::BindOnce(
+      [](SharedStorageRemainingBudgetCallback callback, BudgetResult result) {
+        if (result.result != OperationResult::kSuccess) {
+          std::move(callback).Run(
+              /*success=*/false,
+              /*error_message=*/"sharedStorage.remainingBudget() failed",
+              /*bits=*/0.0);
+          return;
+        }
+
+        std::move(callback).Run(
+            /*success=*/true,
+            /*error_message=*/{},
+            /*bits=*/result.bits);
+      },
+      std::move(callback));
+
+  shared_storage_manager_->GetRemainingBudget(
+      shared_storage_origin_, std::move(operation_completed_callback));
 }
 
 void SharedStorageWorkletHost::ConsoleLog(const std::string& message) {

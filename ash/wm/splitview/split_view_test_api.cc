@@ -27,13 +27,13 @@ void SplitViewTestApi::SnapWindow(
   SplitViewController::SnapPosition position;
   switch (snap_position) {
     case SnapPosition::NONE:
-      position = SplitViewController::NONE;
+      position = SplitViewController::SnapPosition::kNone;
       break;
     case SnapPosition::LEFT:
-      position = SplitViewController::LEFT;
+      position = SplitViewController::SnapPosition::kPrimary;
       break;
     case SnapPosition::RIGHT:
-      position = SplitViewController::RIGHT;
+      position = SplitViewController::SnapPosition::kSecondary;
       break;
   }
   split_view_controller()->SnapWindow(window, position);
@@ -44,11 +44,11 @@ void SplitViewTestApi::SwapWindows() {
 }
 
 aura::Window* SplitViewTestApi::GetLeftWindow() const {
-  return split_view_controller()->left_window();
+  return split_view_controller()->primary_window();
 }
 
 aura::Window* SplitViewTestApi::GetRightWindow() const {
-  return split_view_controller()->right_window();
+  return split_view_controller()->secondary_window();
 }
 
 }  // namespace ash

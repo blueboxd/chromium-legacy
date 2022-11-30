@@ -5,7 +5,6 @@
 #include "ui/accessibility/ax_tree.h"
 
 #include <stddef.h>
-#include <algorithm>
 #include <numeric>
 #include <utility>
 
@@ -22,6 +21,7 @@
 #include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/crash/core/common/crash_key.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -790,6 +790,8 @@ AXNode* AXTree::GetFromId(AXNodeID id) const {
 }
 
 void AXTree::Destroy() {
+  base::ElapsedThreadTimer timer;
+
   table_info_map_.clear();
   if (!root_)
     return;
@@ -802,6 +804,9 @@ void AXTree::Destroy() {
     // raw_ptr instance that is allowed to dangle.
     DestroyNodeAndSubtree(root_.ExtractAsDangling(), nullptr);
   }  // tree_update_in_progress.
+
+  UMA_HISTOGRAM_TIMES("Accessibility.Performance.AXTree.Destroy",
+                      timer.Elapsed());
 }
 
 void AXTree::UpdateDataForTesting(const AXTreeData& new_data) {
@@ -853,7 +858,7 @@ gfx::RectF AXTree::RelativeToTreeBoundsInternal(const AXNode* node,
   const AXNode* original_node = node;
   while (node != nullptr) {
     if (node->data().relative_bounds.transform)
-      node->data().relative_bounds.transform->TransformRect(&bounds);
+      bounds = node->data().relative_bounds.transform->MapRect(bounds);
     // Apply any transforms and offsets for each node and then walk up to
     // its offset container. If no offset container is specified, coordinates
     // are relative to the root node.
@@ -1047,6 +1052,8 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
 
   AXTreeUpdateState update_state(*this, update);
   const AXNodeID old_root_id = root_ ? root_->id() : kInvalidAXNodeID;
+  DCHECK(old_root_id != kInvalidAXNodeID || update.root_id != kInvalidAXNodeID)
+      << "Tree must have a valid root or update must have a valid root.";
 
   // Accumulates the work that will be required to update the AXTree.
   // This allows us to notify observers of structure changes when the
@@ -1475,11 +1482,8 @@ bool AXTree::ComputePendingChanges(const AXTreeUpdate& update,
           GetFromId(update_state->old_tree_data->focus_id);
       if (old_focus &&
           update_state->ShouldPendingNodeExistInTree(old_focus->id()) &&
-          std::find_if(update_state->updated_nodes.begin(),
-                       update_state->updated_nodes.end(),
-                       [old_focus](const AXNodeData& data) {
-                         return data.id == old_focus->id();
-                       }) == update_state->updated_nodes.end()) {
+          !base::Contains(update_state->updated_nodes, old_focus->id(),
+                          &AXNodeData::id)) {
         update_state->updated_nodes.push_back(old_focus->data());
       }
     }
@@ -1489,11 +1493,8 @@ bool AXTree::ComputePendingChanges(const AXTreeUpdate& update,
           GetFromId(update_state->new_tree_data->focus_id);
       if (new_focus &&
           update_state->ShouldPendingNodeExistInTree(new_focus->id()) &&
-          std::find_if(update_state->updated_nodes.begin(),
-                       update_state->updated_nodes.end(),
-                       [new_focus](const AXNodeData& data) {
-                         return data.id == new_focus->id();
-                       }) == update_state->updated_nodes.end()) {
+          !base::Contains(update_state->updated_nodes, new_focus->id(),
+                          &AXNodeData::id)) {
         update_state->updated_nodes.push_back(new_focus->data());
       }
     }
@@ -2636,118 +2637,15 @@ absl::optional<int> AXTree::GetSetSize(const AXNode& node) {
   return set_size;
 }
 
-namespace {
-
-// Helper for GetUnignoredSelection. Creates a position using |node_id|,
-// |offset| and |affinity|, and if it's ignored, updates these arguments so
-// that they represent a non-null non-ignored position, according to
-// |adjustment_behavior|. Returns true on success, false on failure. Note that
-// if the position is initially null, it's not ignored and it's a success.
-bool ComputeUnignoredSelectionEndpoint(
-    const AXTree& tree,
-    AXPositionAdjustmentBehavior adjustment_behavior,
-    AXNodeID& node_id,
-    int32_t& offset,
-    ax::mojom::TextAffinity& affinity) {
-  AXNode* node = nullptr;
-  if (node_id != kInvalidAXNodeID)
-    node = tree.GetFromId(node_id);
-  if (!node) {
-    node_id = kInvalidAXNodeID;
-    offset = -1;
-    affinity = ax::mojom::TextAffinity::kDownstream;
-    return false;
-  }
-
-  AXNodePosition::AXPositionInstance position =
-      AXNodePosition::CreatePosition(*node, offset, affinity);
-
-  // Null positions are never ignored, but must be considered successful, or
-  // these Android tests would fail:
-  // org.chromium.content.browser.accessibility.AssistViewStructureTest#*
-  // The reason is that |position| becomes null because no AXTreeManager is
-  // registered for that |tree|'s AXTreeID.
-  // TODO(accessibility): investigate and fix this if needed.
-  if (!position->IsIgnored())
-    return true;  // We assume that unignored positions are already valid.
-
-  position =
-      position->AsValidPosition()->AsUnignoredPosition(adjustment_behavior);
-
-  // Moving to an unignored position might have placed the position on a leaf
-  // node. Any selection endpoint that is inside a leaf node is expressed as a
-  // text position in AXTreeData. (Note that in this context "leaf node" means
-  // a node with no children or with only ignored children. This does not
-  // refer to a platform leaf.)
-  if (position->IsLeafTreePosition())
-    position = position->AsTextPosition();
-
-  // We do not expect the selection to have an endpoint on an inline text
-  // box as this will create issues with parts of the code that don't use
-  // inline text boxes.
-  if (position->IsTextPosition() &&
-      position->GetRole() == ax::mojom::Role::kInlineTextBox) {
-    position = position->CreateParentPosition();
-  }
-
-  switch (position->kind()) {
-    case AXPositionKind::NULL_POSITION:
-      node_id = kInvalidAXNodeID;
-      offset = -1;
-      affinity = ax::mojom::TextAffinity::kDownstream;
-      return false;
-    case AXPositionKind::TREE_POSITION:
-      node_id = position->anchor_id();
-      offset = position->child_index();
-      affinity = ax::mojom::TextAffinity::kDownstream;
-      return true;
-    case AXPositionKind::TEXT_POSITION:
-      node_id = position->anchor_id();
-      offset = position->text_offset();
-      affinity = position->affinity();
-      return true;
-  }
-}
-
-}  // namespace
-
 AXSelection AXTree::GetSelection() const {
-  return {data().sel_is_backward,     data().sel_anchor_object_id,
-          data().sel_anchor_offset,   data().sel_anchor_affinity,
-          data().sel_focus_object_id, data().sel_focus_offset,
-          data().sel_focus_affinity};
+  // TODO(accessibility): do not create a selection object every time it's
+  // requested. Either switch AXSelection to getters that computes selection
+  // data upon request or provide an invalidation mechanism.
+  return AXSelection(*this);
 }
 
 AXSelection AXTree::GetUnignoredSelection() const {
-  AXSelection unignored_selection = GetSelection();
-
-  // If one of the selection endpoints is invalid, then the other endpoint
-  // should also be unset.
-  if (!ComputeUnignoredSelectionEndpoint(
-          *this,
-          unignored_selection.is_backward
-              ? AXPositionAdjustmentBehavior::kMoveForward
-              : AXPositionAdjustmentBehavior::kMoveBackward,
-          unignored_selection.anchor_object_id,
-          unignored_selection.anchor_offset,
-          unignored_selection.anchor_affinity)) {
-    unignored_selection.focus_object_id = kInvalidAXNodeID;
-    unignored_selection.focus_offset = -1;
-    unignored_selection.focus_affinity = ax::mojom::TextAffinity::kDownstream;
-  } else if (!ComputeUnignoredSelectionEndpoint(
-                 *this,
-                 unignored_selection.is_backward
-                     ? AXPositionAdjustmentBehavior::kMoveBackward
-                     : AXPositionAdjustmentBehavior::kMoveForward,
-                 unignored_selection.focus_object_id,
-                 unignored_selection.focus_offset,
-                 unignored_selection.focus_affinity)) {
-    unignored_selection.anchor_object_id = kInvalidAXNodeID;
-    unignored_selection.anchor_offset = -1;
-    unignored_selection.anchor_affinity = ax::mojom::TextAffinity::kDownstream;
-  }
-
-  return unignored_selection;
+  return GetSelection().ToUnignoredSelection();
 }
 
 bool AXTree::GetTreeUpdateInProgressState() const {

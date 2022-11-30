@@ -11,7 +11,6 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.IS_VISIBLE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.SHADOW_TOP_OFFSET;
-import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TAB_LIST_ITEM_ANIMATOR_ENABLED;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.VISIBILITY_LISTENER;
 
@@ -26,6 +25,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.CallbackController;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.StrictModeContext;
@@ -35,18 +35,20 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthController;
+import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingUtilities;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
-import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabList;
@@ -119,6 +121,32 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     private final ObservableSupplierImpl<Boolean> mIsDialogVisibleSupplier =
             new ObservableSupplierImpl<>();
 
+    /**
+     * The callback which is supplied to the {@link IncognitoReauthController} that takes care of
+     * resetting the Incognito tab list with actual Incognito tabs upon successful authentication.
+     */
+    private final IncognitoReauthManager.IncognitoReauthCallback mIncognitoReauthCallback =
+            new IncognitoReauthManager.IncognitoReauthCallback() {
+                @Override
+                public void onIncognitoReauthNotPossible() {}
+
+                @Override
+                public void onIncognitoReauthSuccess() {
+                    assert mTabModelSelector.getTabModelFilterProvider()
+                            .getCurrentTabModelFilter()
+                            .isIncognito()
+                        : "The incognito re-auth controller only affects Incognito tab list.";
+                    mResetHandler.resetWithTabList(mTabModelSelector.getTabModelFilterProvider()
+                                                           .getCurrentTabModelFilter(),
+                            false, mShowTabsInMruOrder);
+                    setInitialScrollIndexOffset();
+                }
+
+                @Override
+                public void onIncognitoReauthFailure() {}
+            };
+
+    private CallbackController mCallbackController;
     private Integer mSoftCleanupDelayMsForTesting;
     private Integer mCleanupDelayMsForTesting;
     private TabGridDialogMediator.DialogController mTabGridDialogController;
@@ -127,6 +155,12 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     private TabSwitcher.OnTabSelectingListener mOnTabSelectingListener;
     private PriceMessageService mPriceMessageService;
     private boolean mIsOnHomepage;
+
+    /**
+     * This allows to check if re-auth is pending when tab switcher is shown in Incognito mode.
+     * If so, we clear the Incognito tab lists until the re-auth is successful.
+     */
+    private @Nullable IncognitoReauthController mIncognitoReauthController;
 
     /**
      * A custom view that can be supplied by clients to be shown inside the tab grid.
@@ -262,13 +296,17 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
      * @param multiWindowModeStateDispatcher The {@link MultiWindowModeStateDispatcher} to observe
      *         for multi-window related changes.
      * @param mode One of the {@link TabListMode}.
+     * @param incognitoReauthControllerSupplier {@link OneshotSupplier<IncognitoReauthController>}
+     *         to detect pending re-auth when tab switcher is shown.
      */
     TabSwitcherMediator(Context context, ResetHandler resetHandler,
             PropertyModel containerViewModel, TabModelSelector tabModelSelector,
             BrowserControlsStateProvider browserControlsStateProvider, ViewGroup containerView,
             TabContentManager tabContentManager, MessageItemsController messageItemsController,
             PriceWelcomeMessageController priceWelcomeMessageController,
-            MultiWindowModeStateDispatcher multiWindowModeStateDispatcher, @TabListMode int mode) {
+            MultiWindowModeStateDispatcher multiWindowModeStateDispatcher, @TabListMode int mode,
+            @Nullable OneshotSupplier<IncognitoReauthController>
+                    incognitoReauthControllerSupplier) {
         mResetHandler = resetHandler;
         mContainerViewModel = containerViewModel;
         mTabModelSelector = tabModelSelector;
@@ -276,6 +314,16 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mMultiWindowModeStateDispatcher = multiWindowModeStateDispatcher;
         mMode = mode;
         mContext = context;
+
+        if (incognitoReauthControllerSupplier != null) {
+            mCallbackController = new CallbackController();
+            incognitoReauthControllerSupplier.onAvailable(
+                    mCallbackController.makeCancelable((incognitoReauthController) -> {
+                        mIncognitoReauthController = incognitoReauthController;
+                        mIncognitoReauthController.addIncognitoReauthCallback(
+                                mIncognitoReauthCallback);
+                    }));
+        }
 
         mTabModelSelectorObserver = new TabModelSelectorObserver() {
             @Override
@@ -290,14 +338,9 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                     mTabGridDialogController.hideDialog(false);
                 }
                 if (!mContainerViewModel.get(IS_VISIBLE)) return;
-                mResetHandler.resetWithTabList(currentTabModelFilter, false, mShowTabsInMruOrder);
 
-                // Hide the currently selected tab when moving to an empty incognito model.
-                // TODO(crbug.com/1082612): If the need arises, generalize this solution in the
-                // IncognitoTabModel.
-                if (newModel.isIncognito() && newModel.getCount() == 0 && oldModel.getCount() > 0) {
-                    oldModel.getTabAt(oldModel.index()).hide(TabHidingType.CHANGED_TABS);
-                }
+                if (clearIncognitoTabListForReauth()) return;
+                mResetHandler.resetWithTabList(currentTabModelFilter, false, mShowTabsInMruOrder);
                 setInitialScrollIndexOffset();
             }
         };
@@ -491,12 +534,22 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     public void initWithNative(@Nullable TabSelectionEditorCoordinator
                                        .TabSelectionEditorController tabSelectionEditorController,
             @Nullable SnackbarManager snackbarManager) {
+        setTabSelectionEditorController(tabSelectionEditorController);
+        mSnackbarManager = snackbarManager;
+    }
+
+    /**
+     * Initialization of the {@link TabSelectionEditorCoordinator}.
+     * @param controller the controller to use.
+     */
+    public void setTabSelectionEditorController(
+            @Nullable TabSelectionEditorCoordinator
+                    .TabSelectionEditorController tabSelectionEditorController) {
         if (tabSelectionEditorController != null) {
             mTabSelectionEditorController = tabSelectionEditorController;
             mTabSelectionEditorController.getHandleBackPressChangedSupplier().addObserver(
                     this::notifyBackPressStateChanged);
         }
-        mSnackbarManager = snackbarManager;
     }
 
     /**
@@ -752,22 +805,26 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     public void showTabSwitcherView(boolean animate) {
         mHandler.removeCallbacks(mSoftClearTabListRunnable);
         mHandler.removeCallbacks(mClearTabListRunnable);
-        if (mTabModelSelector.isTabStateInitialized()) {
-            mResetHandler.resetWithTabList(
-                    mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
-                    TabUiFeatureUtilities.isTabToGtsAnimationEnabled(), mShowTabsInMruOrder);
-            recordTabCounts();
-            // When |mTabModelSelector.isTabStateInitialized| is false and INSTANT_START is enabled,
-            // the scrolling request is already processed in TabModelObserver#restoreCompleted.
-            // Therefore, we only need to handle the case with isTabStateInitialized() here.
-            setInitialScrollIndexOffset();
-        } else if (ChromeFeatureList.sInstantStart.isEnabled()) {
-            List<PseudoTab> allTabs;
-            try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-                allTabs = PseudoTab.getAllPseudoTabsFromStateFile(mContext);
+
+        if (!mTabModelSelector.isIncognitoSelected() || !clearIncognitoTabListForReauth()) {
+            if (mTabModelSelector.isTabStateInitialized()) {
+                mResetHandler.resetWithTabList(
+                        mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
+                        TabUiFeatureUtilities.isTabToGtsAnimationEnabled(), mShowTabsInMruOrder);
+                recordTabCounts();
+                // When |mTabModelSelector.isTabStateInitialized| is false and INSTANT_START is
+                // enabled, the scrolling request is already processed in
+                // TabModelObserver#restoreCompleted. Therefore, we only need to handle the case
+                // with isTabStateInitialized() here.
+                setInitialScrollIndexOffset();
+            } else if (ChromeFeatureList.sInstantStart.isEnabled()) {
+                List<PseudoTab> allTabs;
+                try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+                    allTabs = PseudoTab.getAllPseudoTabsFromStateFile(mContext);
+                }
+                mResetHandler.resetWithTabs(allTabs,
+                        TabUiFeatureUtilities.isTabToGtsAnimationEnabled(), mShowTabsInMruOrder);
             }
-            mResetHandler.resetWithTabs(allTabs, TabUiFeatureUtilities.isTabToGtsAnimationEnabled(),
-                    mShowTabsInMruOrder);
         }
 
         if (!animate) mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, false);
@@ -925,9 +982,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mCustomView = customView;
         mCustomViewBackPressRunnable = backPressRunnable;
         notifyBackPressStateChangedInternal();
-
-        // Disable the animation on the tab list during the time period of the custom view.
-        mContainerViewModel.set(TAB_LIST_ITEM_ANIMATOR_ENABLED, false);
     }
 
     /**
@@ -944,8 +998,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mCustomView = null;
         mCustomViewBackPressRunnable = null;
         notifyBackPressStateChangedInternal();
-
-        mContainerViewModel.set(TAB_LIST_ITEM_ANIMATOR_ENABLED, true);
     }
 
     /**
@@ -986,6 +1038,15 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
             mTabGridDialogController.getHandleBackPressChangedSupplier().removeObserver(
                     this::notifyBackPressStateChanged);
         }
+
+        if (mIncognitoReauthController != null) {
+            mIncognitoReauthController.removeIncognitoReauthCallback(mIncognitoReauthCallback);
+        }
+
+        if (mCallbackController != null) {
+            mCallbackController.destroy();
+        }
+
         mTabModelSelector.removeObserver(mTabModelSelectorObserver);
         mBrowserControlsStateProvider.removeObserver(mBrowserControlsObserver);
         mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
@@ -1102,5 +1163,22 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         if (mTabModelSelector.getCurrentTab() == null) return false;
 
         return true;
+    }
+
+    /**
+     * A method which clears the Incognito tab lists when a re-auth is pending.
+     *
+     * @return True, if the Incognito tab list was requested to be cleared and false otherwise.
+     */
+    private boolean clearIncognitoTabListForReauth() {
+        if (!mTabModelSelector.isIncognitoSelected()) return false;
+
+        if (mIncognitoReauthController != null
+                && mIncognitoReauthController.isIncognitoReauthPending()) {
+            mResetHandler.resetWithTabList(null, false, mShowTabsInMruOrder);
+            return true;
+        }
+
+        return false;
     }
 }

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,9 +118,7 @@ class CORE_EXPORT CustomElementDefinition
     return default_style_sheets_;
   }
 
-  bool HasDefaultStyleSheets() const {
-    return !default_style_sheets_.IsEmpty();
-  }
+  bool HasDefaultStyleSheets() const { return !default_style_sheets_.empty(); }
   bool DisableShadow() const { return disable_shadow_; }
   bool DisableInternals() const { return disable_internals_; }
   bool IsFormAssociated() const { return is_form_associated_; }

@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 import {Destination, DestinationOrigin, PrintPreviewAdvancedSettingsDialogElement, PrintPreviewModelElement} from 'chrome://print/print_preview.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {eventToPromise, fakeDataBind} from 'chrome://webui-test/test_util.js';
+import {fakeDataBind} from 'chrome://webui-test/polymer_test_util.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
 import {getCddTemplateWithAdvancedSettings} from './print_preview_test_utils.js';
 
@@ -36,7 +36,8 @@ suite(advanced_dialog_test.suiteName, function() {
     // Create destination
     destination =
         new Destination(printerId, DestinationOrigin.EXTENSION, printerName);
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     const model: PrintPreviewModelElement =
         document.createElement('print-preview-model');
     document.body.appendChild(model);

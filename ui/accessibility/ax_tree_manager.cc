@@ -88,6 +88,11 @@ void AXTreeManager::FireFocusEvent(AXNode* node) {
     g_focus_change_callback_for_testing.Get().Run();
 }
 
+AXNode* AXTreeManager::RetargetForEvents(AXNode* node,
+                                         RetargetEventType type) const {
+  return node;
+}
+
 void AXTreeManager::Initialize(const ui::AXTreeUpdate& initial_tree) {
   if (!ax_tree()->Unserialize(initial_tree)) {
     LOG(FATAL) << "No recovery is possible if the initial tree is broken: "
@@ -101,6 +106,10 @@ AXNode* AXTreeManager::GetNode(const AXNodeID node_id) const {
 
 AXTreeID AXTreeManager::GetTreeID() const {
   return ax_tree_ ? ax_tree_->data().tree_id : AXTreeIDUnknown();
+}
+
+const AXTreeData& AXTreeManager::GetTreeData() const {
+  return ax_tree_ ? ax_tree_->data() : AXTreeDataUnknown();
 }
 
 AXTreeID AXTreeManager::GetParentTreeID() const {
@@ -168,8 +177,49 @@ void AXTreeManager::OnTreeDataChanged(AXTree* tree,
   GetMap().AddTreeManager(ax_tree_id_, this);
 }
 
+void AXTreeManager::OnNodeWillBeDeleted(AXTree* tree, AXNode* node) {
+  DCHECK(node);
+  if (node == GetLastFocusedNode())
+    SetLastFocusedNode(nullptr);
+
+  // We fire these here, immediately, to ensure we can send platform
+  // notifications prior to the actual destruction of the object.
+  if (node->GetRole() == ax::mojom::Role::kMenu)
+    FireGeneratedEvent(AXEventGenerator::Event::MENU_POPUP_END, node);
+}
+
 void AXTreeManager::RemoveFromMap() {
   GetMap().RemoveTreeManager(ax_tree_id_);
+}
+
+AXTreeManager* AXTreeManager::GetParentManager() const {
+  AXTreeID parent_tree_id = GetParentTreeID();
+  if (parent_tree_id == ui::AXTreeIDUnknown())
+    return nullptr;
+
+  // There's no guarantee that we'll find an AXTreeManager for this AXTreeID, so
+  // we might still return nullptr.
+  // See `BrowserAccessibilityManager::GetParentManager` for more details.
+  return FromID(parent_tree_id);
+}
+
+bool AXTreeManager::IsRoot() const {
+  return GetParentTreeID() == ui::AXTreeIDUnknown();
+}
+
+AXTreeManager* AXTreeManager::GetRootManager() const {
+  if (IsRoot())
+    return const_cast<AXTreeManager*>(this);
+
+  AXTreeManager* parent = GetParentManager();
+  if (!parent) {
+    // This can occur when the parent tree is not yet serialized. We can't
+    // prevent a child tree from serializing before the parent tree, so we just
+    // have to handle this case. Attempting to change this to a DCHECK() will
+    // cause a number of tests to fail.
+    return nullptr;
+  }
+  return parent->GetRootManager();
 }
 
 }  // namespace ui

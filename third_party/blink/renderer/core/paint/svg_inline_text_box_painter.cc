@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -145,7 +145,7 @@ void SVGInlineTextBoxPainter::Paint(const PaintInfo& paint_info,
         markers_to_paint, paint_info, paint_offset, style,
         text_layout_object.ScaledFont(), DocumentMarkerPaintPhase::kBackground);
 
-    if (!svg_inline_text_box_.TextFragments().IsEmpty())
+    if (!svg_inline_text_box_.TextFragments().empty())
       PaintTextFragments(paint_info, parent_layout_object);
 
     text_painter.PaintDocumentMarkers(
@@ -453,7 +453,7 @@ bool SVGInlineTextBoxPainter::SetupTextPaint(
     paint_server_transform->Scale(scaling_factor);
 
     if (shader_transform)
-      paint_server_transform->Multiply(*shader_transform);
+      paint_server_transform->PreConcat(*shader_transform);
   }
 
   if (!SVGObjectPainter(ParentInlineLayoutObject())
@@ -562,15 +562,13 @@ SelectionStyleScope::SelectionStyleScope(LayoutObject& layout_object,
     return;
   DCHECK(IsA<SVGElement>(layout_object.GetNode()) &&
          !layout_object.IsSVGInlineText());
-  auto& element = To<SVGElement>(*layout_object_.GetNode());
-  SVGResources::UpdatePaints(element, nullptr, selection_style_);
+  SVGResources::UpdatePaints(layout_object_, nullptr, selection_style_);
 }
 
 SelectionStyleScope::~SelectionStyleScope() {
   if (styles_are_equal_)
     return;
-  auto& element = To<SVGElement>(*layout_object_.GetNode());
-  SVGResources::ClearPaints(element, &selection_style_);
+  SVGResources::ClearPaints(layout_object_, &selection_style_);
 }
 
 }  // namespace
@@ -694,7 +692,7 @@ void SVGInlineTextBoxPainter::PaintTextMarkerForeground(
     const Font& font) {
   const Vector<SVGTextFragmentWithRange> text_match_info_list =
       CollectTextMatches(marker);
-  if (text_match_info_list.IsEmpty())
+  if (text_match_info_list.empty())
     return;
 
   Color text_color = LayoutTheme::GetTheme().PlatformTextSearchColor(
@@ -740,7 +738,7 @@ void SVGInlineTextBoxPainter::PaintTextMarkerBackground(
     const Font& font) {
   const Vector<SVGTextFragmentWithRange> text_match_info_list =
       CollectTextMatches(marker);
-  if (text_match_info_list.IsEmpty())
+  if (text_match_info_list.empty())
     return;
 
   Color color = LayoutTheme::GetTheme().PlatformTextSearchHighlightColor(

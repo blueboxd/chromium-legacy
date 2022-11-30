@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,7 +101,7 @@ using AttributeNameMap = HashMap<QualifiedName, const QualifiedName*>;
 
 const AttributeNameMap& GetSupportedAttributes() {
   DEFINE_STATIC_LOCAL(AttributeNameMap, supported_attributes, ());
-  if (supported_attributes.IsEmpty()) {
+  if (supported_attributes.empty()) {
     // Fill the set for the first use.
     // Animatable attributes from http://www.w3.org/TR/SVG/attindex.html
     const QualifiedName* attributes[] = {
@@ -240,7 +240,7 @@ scoped_refptr<TimingFunction> AnimationInputHelpers::ParseTimingFunction(
     const String& string,
     Document* document,
     ExceptionState& exception_state) {
-  if (string.IsEmpty()) {
+  if (string.empty()) {
     exception_state.ThrowTypeError("Easing may not be the empty string");
     return nullptr;
   }

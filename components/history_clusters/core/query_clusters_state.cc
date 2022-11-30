@@ -83,7 +83,8 @@ void QueryClustersState::LoadNextBatchOfClusters(ResultCallback callback) {
       /*begin_time=*/base::Time(), continuation_params_, recluster_,
       base::BindOnce(&QueryClustersState::OnGotRawClusters,
                      weak_factory_.GetWeakPtr(), query_start_time,
-                     std::move(callback)));
+                     std::move(callback)),
+      HistoryClustersServiceTaskGetMostRecentClusters::Source::kWebUi);
 }
 
 void QueryClustersState::OnGotRawClusters(
@@ -101,7 +102,7 @@ void QueryClustersState::OnGotRawClusters(
       base::BindOnce(&PostProcessor::PostProcess, post_processing_state_,
                      std::move(clusters)),
       base::BindOnce(
-          &QueryClustersState::OnGotClusters, weak_factory_.GetWeakPtr(),
+          &QueryClustersState::OnGotClusters, weak_factory_.GetMutableWeakPtr(),
           std::move(post_processing_timer), clusters_from_backend_count,
           query_start_time, std::move(callback), continuation_params));
 }

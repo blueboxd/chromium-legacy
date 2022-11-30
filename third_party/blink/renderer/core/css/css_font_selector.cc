@@ -80,8 +80,7 @@ void CSSFontSelector::DispatchInvalidationCallbacks(
     FontInvalidationReason reason) {
   font_face_cache_->IncrementVersion();
 
-  HeapVector<Member<FontSelectorClient>> clients;
-  CopyToVector(clients_, clients);
+  HeapVector<Member<FontSelectorClient>> clients(clients_);
   for (auto& client : clients) {
     if (client) {
       client->FontsNeedUpdate(this, reason);
@@ -142,7 +141,7 @@ scoped_refptr<FontData> CSSFontSelector::GetFontData(
   // handed the generic font family name.
   AtomicString settings_family_name =
       FamilyNameFromSettings(request_description, font_family);
-  if (settings_family_name.IsEmpty())
+  if (settings_family_name.empty())
     return nullptr;
 
   ReportFontFamilyLookupByGenericFamily(

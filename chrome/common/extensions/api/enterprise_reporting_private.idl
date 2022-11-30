@@ -221,9 +221,10 @@ namespace enterprise.reportingPrivate {
     // Is true if a currently running process was spawned from this file.
     boolean? isRunning;
 
-    // Sha256 hash of the public key of the certificate used to sign the
-    // executable.
-    DOMString? publicKeySha256;
+    // SHA-256 hashes of the public keys of the certificates used to sign the
+    // executable. A hash is computed over the DER-encoded SubjectPublicKeyInfo
+    // representation of the key.
+    DOMString[]? publicKeysHashes;
 
     // Product name of this executable.
     DOMString? productName;
@@ -269,8 +270,8 @@ namespace enterprise.reportingPrivate {
     boolean getValue;
 
     // Windows registry hive containing the desired value.
-    [platforms = ("win")]
-    RegistryHive hive;
+    // Required value on Windows, will be ignored on other platforms.
+    RegistryHive? hive;
   };
 
   [platforms = ("win", "mac")]
@@ -295,8 +296,8 @@ namespace enterprise.reportingPrivate {
 
     // Hive as given in the corresponding <code>GetSettingsOptions</code>
     // request.
-    [platforms = ("win")]
-    RegistryHive hive;
+    // Present on Windows only.
+    RegistryHive? hive;
 
     // Value indicating whether the specific resource could be found or not.
     PresenceValue presence;

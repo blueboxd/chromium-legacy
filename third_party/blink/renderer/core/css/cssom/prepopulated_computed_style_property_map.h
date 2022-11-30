@@ -1,4 +1,4 @@
-// Copyright 2018 the Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ class CORE_EXPORT PrepopulatedComputedStylePropertyMap
  protected:
   const CSSValue* GetProperty(CSSPropertyID) const override;
   const CSSValue* GetCustomProperty(const AtomicString&) const override;
-  void ForEachProperty(const IterationCallback&) override;
+  void ForEachProperty(IterationFunction visitor) override;
 
   String SerializationForShorthand(const CSSProperty&) const override;
 

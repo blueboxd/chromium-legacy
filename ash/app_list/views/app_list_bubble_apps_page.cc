@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "ash/app_list/app_list_model_provider.h"
+#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/views/app_list_keyboard_controller.h"
@@ -192,11 +193,9 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
       kVerticalPaddingBetweenSections));
   layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStretch);
 
-  // When feature LauncherHideContinueSection is enabled, the "Continue where
-  // you left off" label is in a container that is a child of this view.
-  // Otherwise the label is a child of the ContinueSectionView.
-  if (features::IsLauncherHideContinueSectionEnabled())
-    InitContinueLabelContainer(scroll_contents.get());
+  // The "Continue where you left off" label is in a container that is a child
+  // of this view.
+  InitContinueLabelContainer(scroll_contents.get());
 
   // Continue section row.
   continue_section_ = scroll_contents->AddChildView(
@@ -205,12 +204,10 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
   continue_section_->SetBorder(
       views::CreateEmptyBorder(kContinueSectionInsets));
   continue_section_->SetNudgeController(app_list_nudge_controller_.get());
-  if (features::IsLauncherHideContinueSectionEnabled()) {
-    // Decrease the between-sections spacing so the continue label is closer to
-    // the continue tasks section.
-    continue_section_->SetProperty(views::kMarginsKey,
-                                   gfx::Insets::TLBR(-14, 0, 0, 0));
-  }
+  // Decrease the between-sections spacing so the continue label is closer to
+  // the continue tasks section.
+  continue_section_->SetProperty(views::kMarginsKey,
+                                 gfx::Insets::TLBR(-14, 0, 0, 0));
 
   // Observe changes in continue section visibility, to keep separator
   // visibility in sync.
@@ -249,7 +246,6 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
           app_list_keyboard_controller_.get()));
   scrollable_apps_grid_view_->SetDragAndDropHostOfCurrentAppList(
       drag_and_drop_host);
-  scrollable_apps_grid_view_->Init();
   scrollable_apps_grid_view_->UpdateAppListConfig(app_list_config);
   scrollable_apps_grid_view_->SetMaxColumns(5);
   AppListModel* const model = AppListModelProvider::Get()->model();
@@ -497,6 +493,10 @@ void AppListBubbleAppsPage::AbortAllAnimations() {
 }
 
 void AppListBubbleAppsPage::DisableFocusForShowingActiveFolder(bool disabled) {
+  toggle_continue_section_button_->SetEnabled(!disabled);
+  // Prevent container items from being accessed by ChromeVox.
+  SetViewIgnoredForAccessibility(continue_label_container_, disabled);
+
   continue_section_->DisableFocusForShowingActiveFolder(disabled);
   recent_apps_->DisableFocusForShowingActiveFolder(disabled);
   if (toast_container_)
@@ -518,7 +518,8 @@ void AppListBubbleAppsPage::UpdateForNewSortingOrder(
   // on the toast. Note that when `new_order` is null, `animate` was set to true
   // only if the sort was reverted.
   if (new_order) {
-    toast_container_->AnnounceSortOrder(*new_order);
+    if (*new_order != AppListSortOrder::kAlphabeticalEphemeralAppFirst)
+      toast_container_->AnnounceSortOrder(*new_order);
   } else if (animate) {
     toast_container_->AnnounceUndoSort();
   }

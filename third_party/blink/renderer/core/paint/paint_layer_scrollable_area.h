@@ -246,7 +246,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
     absl::optional<FreezeScrollbarsScope> freezer_;
   };
 
-  // If a DelayScrollOffsetClampScope object is alive, updateAfterLayout() will
+  // If a DelayScrollOffsetClampScope object is alive, UpdateAfterLayout() will
   // not clamp scroll offsets to ensure they are in the valid range.  When the
   // last DelayScrollOffsetClampScope object is destructed, all
   // PaintLayerScrollableArea's that delayed clamping their offsets will
@@ -327,6 +327,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void EnqueueScrollEventIfNeeded();
   gfx::Vector2d MinimumScrollOffsetInt() const override;
   gfx::Vector2d MaximumScrollOffsetInt() const override;
+  PhysicalRect LayoutContentRect(
+      IncludeScrollbarsInRect = kExcludeScrollbars) const;
   gfx::Rect VisibleContentRect(
       IncludeScrollbarsInRect = kExcludeScrollbars) const override;
   PhysicalRect VisibleScrollSnapportRect(
@@ -381,6 +383,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // Currently, they run at the end of box()'es layout (or after all flexbox
   // layout has finished) but while document layout is still happening.
   void UpdateAfterLayout();
+
+  // This function is not affected by DelayScrollOffsetClampScope.
   void ClampScrollOffsetAfterOverflowChange();
 
   void DidChangeGlobalRootScroller() override;
@@ -490,7 +494,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() const final;
 
   // Did DelayScrollOffsetClampScope prevent us from running
-  // clampScrollOffsetsAfterLayout() in updateAfterLayout()?
+  // DelayableClampScrollOffsetsAfterLayout() in UpdateAfterLayout()?
   bool NeedsScrollOffsetClamp() const { return needs_scroll_offset_clamp_; }
   void SetNeedsScrollOffsetClamp(bool val) { needs_scroll_offset_clamp_ = val; }
 
@@ -677,7 +681,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   void UpdateScrollCornerStyle();
   LayoutSize MinimumSizeForResizing(float zoom_factor);
-  PhysicalRect LayoutContentRect(IncludeScrollbarsInRect) const;
 
   void UpdateResizerStyle(const ComputedStyle* old_style);
 
@@ -714,6 +717,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
       bool& previously_was_overlay,
       bool& previously_was_directly_composited,
       gfx::Rect& visual_rect);
+
+  void DelayableClampScrollOffsetAfterOverflowChange();
+  void ClampScrollOffsetAfterOverflowChangeInternal();
 
   // PaintLayer is destructed before PaintLayerScrollable area, during this
   // time before PaintLayerScrollableArea has been collected layer_ will

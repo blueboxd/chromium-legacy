@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -142,7 +142,7 @@ TEST_F(ShapeResultBloberizerTest, StartsEmpty) {
             0ul);
   EXPECT_EQ(ShapeResultBloberizerTestInfo::CommittedBlobCount(bloberizer), 0ul);
 
-  EXPECT_TRUE(bloberizer.Blobs().IsEmpty());
+  EXPECT_TRUE(bloberizer.Blobs().empty());
 }
 
 TEST_F(ShapeResultBloberizerTest, StoresGlyphsOffsets) {

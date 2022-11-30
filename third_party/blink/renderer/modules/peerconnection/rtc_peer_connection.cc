@@ -75,6 +75,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/dom_time_stamp.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation/deprecation.h"
@@ -113,7 +114,6 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_void_request_promise_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/web_rtc_stats_report_callback_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -128,6 +128,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats_request.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/webrtc/api/data_channel_interface.h"
@@ -165,20 +166,22 @@ bool ThrowExceptionIfSignalingStateClosed(
   return false;
 }
 
-void AsyncCallErrorCallback(V8RTCPeerConnectionErrorCallback* error_callback,
+void AsyncCallErrorCallback(ExecutionContext* context,
+                            V8RTCPeerConnectionErrorCallback* error_callback,
                             DOMException* exception) {
   DCHECK(error_callback);
-  Microtask::EnqueueMicrotask(WTF::Bind(
+  context->GetAgent()->event_loop()->EnqueueMicrotask(WTF::BindOnce(
       &V8RTCPeerConnectionErrorCallback::InvokeAndReportException,
       WrapPersistent(error_callback), nullptr, WrapPersistent(exception)));
 }
 
 bool CallErrorCallbackIfSignalingStateClosed(
+    ExecutionContext* context,
     webrtc::PeerConnectionInterface::SignalingState state,
     V8RTCPeerConnectionErrorCallback* error_callback) {
   if (state == webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     if (error_callback) {
-      AsyncCallErrorCallback(error_callback,
+      AsyncCallErrorCallback(context, error_callback,
                              MakeGarbageCollected<DOMException>(
                                  DOMExceptionCode::kInvalidStateError,
                                  kSignalingStateClosedMessage));
@@ -692,7 +695,8 @@ ScriptPromise RTCPeerConnection::createOffer(
       context, WebFeature::kRTCPeerConnectionCreateOfferLegacyFailureCallback);
   UseCounter::Count(context,
                     WebFeature::kRTCPeerConnectionCreateOfferLegacyCompliant);
-  if (CallErrorCallbackIfSignalingStateClosed(signaling_state_, error_callback))
+  if (CallErrorCallbackIfSignalingStateClosed(context, signaling_state_,
+                                              error_callback))
     return ScriptPromise::CastUndefined(script_state);
 
   RTCSessionDescriptionRequest* request =
@@ -746,7 +750,8 @@ ScriptPromise RTCPeerConnection::createAnswer(
   UseCounter::Count(context,
                     WebFeature::kRTCPeerConnectionCreateAnswerLegacyCompliant);
 
-  if (CallErrorCallbackIfSignalingStateClosed(signaling_state_, error_callback))
+  if (CallErrorCallbackIfSignalingStateClosed(context, signaling_state_,
+                                              error_callback))
     return ScriptPromise::CastUndefined(script_state);
 
   RTCSessionDescriptionRequest* request =
@@ -892,7 +897,7 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
   String sdp = session_description_init->sdp();
   // https://w3c.github.io/webrtc-pc/#dom-peerconnection-setlocaldescription
   // step 4.4 and 4.5: If SDP is empty, return the last created offer or answer.
-  if (sdp.IsEmpty()) {
+  if (sdp.empty()) {
     switch (session_description_init->type().AsEnum()) {
       case V8RTCSdpType::Enum::kOffer:
         sdp = last_offer_;
@@ -935,8 +940,9 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
     const RTCSessionDescriptionInit* session_description_init,
     V8VoidFunction* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback) {
-  if (CallErrorCallbackIfSignalingStateClosed(signaling_state_,
-                                              error_callback)) {
+  if (CallErrorCallbackIfSignalingStateClosed(
+          ExecutionContext::From(script_state), signaling_state_,
+          error_callback)) {
     return ScriptPromise::CastUndefined(script_state);
   }
 
@@ -944,7 +950,7 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
   String sdp = session_description_init->sdp();
   // https://w3c.github.io/webrtc-pc/#dom-peerconnection-setlocaldescription
   // step 4.4 and 4.5: If SDP is empty, return the last created offer or answer.
-  if (sdp.IsEmpty() && session_description_init->hasType()) {
+  if (sdp.empty() && session_description_init->hasType()) {
     switch (session_description_init->type().AsEnum()) {
       case V8RTCSdpType::Enum::kOffer:
         sdp = last_offer_;
@@ -985,7 +991,7 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
     DOMException* exception = checkSdpForStateErrors(context, parsed_sdp);
     if (exception) {
       if (error_callback)
-        AsyncCallErrorCallback(error_callback, exception);
+        AsyncCallErrorCallback(context, error_callback, exception);
       return ScriptPromise::CastUndefined(script_state);
     }
   }
@@ -1054,8 +1060,9 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
     const RTCSessionDescriptionInit* session_description_init,
     V8VoidFunction* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback) {
-  if (CallErrorCallbackIfSignalingStateClosed(signaling_state_,
-                                              error_callback)) {
+  if (CallErrorCallbackIfSignalingStateClosed(
+          ExecutionContext::From(script_state), signaling_state_,
+          error_callback)) {
     return ScriptPromise::CastUndefined(script_state);
   }
 
@@ -1089,7 +1096,8 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
   if (ContainsCandidate(session_description_init->sdp()))
     DisableBackForwardCache(context);
 
-  if (CallErrorCallbackIfSignalingStateClosed(signaling_state_, error_callback))
+  if (CallErrorCallbackIfSignalingStateClosed(context, signaling_state_,
+                                              error_callback))
     return ScriptPromise::CastUndefined(script_state);
 
   auto* request = MakeGarbageCollected<RTCVoidRequestImpl>(
@@ -1153,13 +1161,13 @@ RTCConfiguration* RTCPeerConnection::getConfiguration(
   }
 
   HeapVector<Member<RTCIceServer>> ice_servers;
-  ice_servers.ReserveCapacity(
+  ice_servers.reserve(
       base::checked_cast<wtf_size_t>(webrtc_configuration.servers.size()));
   for (const auto& webrtc_server : webrtc_configuration.servers) {
     auto* ice_server = RTCIceServer::Create();
 
     Vector<String> url_vector;
-    url_vector.ReserveCapacity(
+    url_vector.reserve(
         base::checked_cast<wtf_size_t>(webrtc_server.urls.size()));
     for (const auto& url : webrtc_server.urls) {
       url_vector.emplace_back(url.c_str());
@@ -1176,7 +1184,7 @@ RTCConfiguration* RTCPeerConnection::getConfiguration(
 
   if (!webrtc_configuration.certificates.empty()) {
     HeapVector<blink::Member<RTCCertificate>> certificates;
-    certificates.ReserveCapacity(base::checked_cast<wtf_size_t>(
+    certificates.reserve(base::checked_cast<wtf_size_t>(
         webrtc_configuration.certificates.size()));
     for (const auto& webrtc_certificate : webrtc_configuration.certificates) {
       certificates.emplace_back(
@@ -1355,8 +1363,8 @@ ScriptPromise RTCPeerConnection::generateCertificate(
 
   // Helper closure callback for RTCPeerConnection::generateCertificate.
   auto completion_callback =
-      WTF::Bind(RTCPeerConnection::GenerateCertificateCompleted,
-                WrapPersistent(resolver));
+      WTF::BindOnce(RTCPeerConnection::GenerateCertificateCompleted,
+                    WrapPersistent(resolver));
 
   // Generate certificate. The |certificateObserver| will resolve the promise
   // asynchronously upon completion. The observer will manage its own
@@ -1389,7 +1397,7 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
     return ScriptPromise();
   }
 
-  if (candidate->hasCandidate() && candidate->candidate().IsEmpty()) {
+  if (candidate->hasCandidate() && candidate->candidate().empty()) {
     // Temporary mitigation to avoid throwing an exception when candidate is
     // empty or nothing was passed.
     // TODO(crbug.com/978582): Remove this mitigation when the WebRTC layer
@@ -1428,7 +1436,9 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
   DCHECK(success_callback);
   DCHECK(error_callback);
 
-  if (CallErrorCallbackIfSignalingStateClosed(signaling_state_, error_callback))
+  if (CallErrorCallbackIfSignalingStateClosed(
+          ExecutionContext::From(script_state), signaling_state_,
+          error_callback))
     return ScriptPromise::CastUndefined(script_state);
 
   if (IsIceCandidateMissingSdpMidAndMLineIndex(candidate)) {
@@ -1445,7 +1455,7 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
   // empty.
   // TODO(crbug.com/978582): Remove this mitigation when the WebRTC layer
   // handles the empty candidate field or the null candidate correctly.
-  if (platform_candidate->Candidate().IsEmpty())
+  if (platform_candidate->Candidate().empty())
     return ScriptPromise::CastUndefined(script_state);
 
   DisableBackForwardCache(GetExecutionContext());
@@ -1676,8 +1686,8 @@ ScriptPromise RTCPeerConnection::PromiseBasedGetStats(
       // while leaving the associated promise pending as specified.
       resolver->Detach();
     } else {
-      peer_handler_->GetStats(WTF::Bind(WebRTCStatsReportCallbackResolver,
-                                        WrapPersistent(resolver)),
+      peer_handler_->GetStats(WTF::BindOnce(WebRTCStatsReportCallbackResolver,
+                                            WrapPersistent(resolver)),
                               GetExposedGroupIds(script_state));
     }
     return promise;
@@ -2525,7 +2535,7 @@ void RTCPeerConnection::DidNoteInterestingUsage(int usage_pattern) {
 
 void RTCPeerConnection::UnregisterPeerConnectionHandler() {
   if (peer_handler_unregistered_) {
-    DCHECK(scheduled_events_.IsEmpty())
+    DCHECK(scheduled_events_.empty())
         << "Undelivered events can cause memory leaks due to "
         << "WrapPersistent(this) in setup function callbacks";
     return;
@@ -2585,8 +2595,8 @@ void RTCPeerConnection::ChangeIceGatheringState(
       webrtc::PeerConnectionInterface::kIceConnectionClosed) {
     ScheduleDispatchEvent(
         Event::Create(event_type_names::kIcegatheringstatechange),
-        WTF::Bind(&RTCPeerConnection::SetIceGatheringState,
-                  WrapPersistent(this), ice_gathering_state));
+        WTF::BindOnce(&RTCPeerConnection::SetIceGatheringState,
+                      WrapPersistent(this), ice_gathering_state));
     if (ice_gathering_state ==
         webrtc::PeerConnectionInterface::kIceGatheringComplete) {
       // If ICE gathering is completed, generate a null ICE candidate, to
@@ -2700,8 +2710,8 @@ void RTCPeerConnection::ChangePeerConnectionState(
       webrtc::PeerConnectionInterface::PeerConnectionState::kClosed) {
     ScheduleDispatchEvent(
         Event::Create(event_type_names::kConnectionstatechange),
-        WTF::Bind(&RTCPeerConnection::SetPeerConnectionState,
-                  WrapPersistent(this), peer_connection_state));
+        WTF::BindOnce(&RTCPeerConnection::SetPeerConnectionState,
+                      WrapPersistent(this), peer_connection_state));
   }
 }
 
@@ -2761,7 +2771,7 @@ void RTCPeerConnection::ScheduleDispatchEvent(Event* event) {
 void RTCPeerConnection::ScheduleDispatchEvent(Event* event,
                                               BoolFunction setup_function) {
   if (peer_handler_unregistered_) {
-    DCHECK(scheduled_events_.IsEmpty())
+    DCHECK(scheduled_events_.empty())
         << "Undelivered events can cause memory leaks due to "
         << "WrapPersistent(this) in setup function callbacks";
     return;
@@ -2790,14 +2800,14 @@ void RTCPeerConnection::ScheduleDispatchEvent(Event* event,
     // https://www.w3.org/TR/webrtc/#operation
     dispatch_scheduled_events_task_handle_ = PostCancellableTask(
         *context->GetTaskRunner(TaskType::kNetworking), FROM_HERE,
-        WTF::Bind(&RTCPeerConnection::DispatchScheduledEvents,
-                  WrapPersistent(this)));
+        WTF::BindOnce(&RTCPeerConnection::DispatchScheduledEvents,
+                      WrapPersistent(this)));
   }
 }
 
 void RTCPeerConnection::DispatchScheduledEvents() {
   if (peer_handler_unregistered_) {
-    DCHECK(scheduled_events_.IsEmpty())
+    DCHECK(scheduled_events_.empty())
         << "Undelivered events can cause memory leaks due to "
         << "WrapPersistent(this) in setup function callbacks";
     return;

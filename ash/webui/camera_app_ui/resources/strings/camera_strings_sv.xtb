@@ -9,7 +9,7 @@
 <translation id="1300209025925956156">Skanna dokumentet</translation>
 <translation id="1309250603447638106">Laddar ned uppdateringar för dokumentskanning</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Sök + vänsterpil för att få åtkomst.</translation>
-<translation id="1393338179284529051">Quad HD</translation>
+<translation id="1417314334557041815">Redigera sida <ph name="INDEX" /></translation>
 <translation id="1430915738399379752">Skriv ut</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> är inte ansluten.</translation>
 <translation id="1473110567575736769">Timer för 3 sekunder</translation>
@@ -20,8 +20,8 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1627744224761163218">4 × 4</translation>
 <translation id="1664224225747386870">Ingenting spelades in</translation>
-<translation id="169335673490251151">Skanna ytterligare sidor</translation>
 <translation id="1838104802459806957">Vrid uppåt</translation>
+<translation id="1843105061469674856">Skanna ytterligare en sida</translation>
 <translation id="1851169887664797861">Ytterligare kamerakontroller tillgängliga</translation>
 <translation id="1851616744363735765">PAUSAD</translation>
 <translation id="1862930711583847113">Det gick inte att exportera <ph name="FILE" /></translation>
@@ -46,7 +46,6 @@
 <translation id="2599796128805996109">Bakre kamera</translation>
 <translation id="2759905922487820242"><ph name="CURRENT" />/<ph name="MAXIMAL" /> s</translation>
 <translation id="2761536921376153655">Sökningstyp</translation>
-<translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">Spegla förhandsgranskning</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> är ansluten.</translation>
 <translation id="2904654629665923749">Dokumentskanning tillgängligt</translation>
@@ -80,6 +79,7 @@
 <translation id="414641094616694804">Det går inte att ändra upplösning för den här kameran</translation>
 <translation id="4269820728363426813">Kopiera länkadress</translation>
 <translation id="4281620174117014503">Medelhög upplösning</translation>
+<translation id="428234092390943511">Sidminiatyr</translation>
 <translation id="4329152592498422850">Byt till att ta kvadratiskt foto</translation>
 <translation id="4340659173795395806">Nu kan du skapa PDF:er med flera sidor</translation>
 <translation id="4383571725254449280">Skriva ut resultatloggar</translation>
@@ -114,7 +114,6 @@
 <translation id="5916664084637901428">På</translation>
 <translation id="5975083100439434680">Zooma ut</translation>
 <translation id="5976160379964388480">Övriga</translation>
-<translation id="603973421174355542">Full HD</translation>
 <translation id="6073451960410192870">Sluta spela in</translation>
 <translation id="6197807149213783179">Spara metadata</translation>
 <translation id="6233780560267770709">Tre gånger tre</translation>
@@ -137,7 +136,6 @@ Om din feedback handlar om bild- eller videokvalitet bifogar du en exempelbild e
 <translation id="698156982839284926">Tre sekunder</translation>
 <translation id="712848772518857951">Vill du ta bort <ph name="COUNT" /> objekt?</translation>
 <translation id="7134221860976209830">Timer för 10 sekunder</translation>
-<translation id="7150591439198955032">4K</translation>
 <translation id="7191890674911603392">Inspelningstyp</translation>
 <translation id="7243947652761655814">Videoupplösning</translation>
 <translation id="7337660886763914220">Fel i filsystemet.</translation>
@@ -162,7 +160,6 @@ Om din feedback handlar om bild- eller videokvalitet bifogar du en exempelbild e
 <translation id="8167081290930651932">Spara som foto</translation>
 <translation id="8239780215768881278">Spela in en ögonblicksvideo</translation>
 <translation id="8261506727792406068">Radera</translation>
-<translation id="839162370397157884">Välj sida</translation>
 <translation id="8425673304802773841">Vrid nedåt</translation>
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8629662593426079630">360p</translation>

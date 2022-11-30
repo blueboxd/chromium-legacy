@@ -20,9 +20,6 @@ namespace {
 // The size of the symbol image used in content suggestions.
 const CGFloat kSymbolContentSuggestionsPointSize = 22;
 
-// Specific symbols used in the content suggestions.
-NSString* const kContentSuggestionsBookmarksSymbol = @"star.fill";
-
 }  // namespace
 
 NSString* TitleForCollectionShortcutType(NTPCollectionShortcutType type) {
@@ -35,6 +32,8 @@ NSString* TitleForCollectionShortcutType(NTPCollectionShortcutType type) {
       return l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS);
     case NTPCollectionShortcutTypeHistory:
       return l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_HISTORY);
+    case NTPCollectionShortcutTypeWhatsNew:
+      return l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_WHATS_NEW);
     case NTPCollectionShortcutTypeCount:
       NOTREACHED();
       return @"";
@@ -56,6 +55,9 @@ UIImage* ImageForCollectionShortcutType(NTPCollectionShortcutType type) {
     case NTPCollectionShortcutTypeHistory:
       imageName = @"ntp_history_icon";
       break;
+    case NTPCollectionShortcutTypeWhatsNew:
+      imageName = @"ntp_whats_new_icon";
+      break;
     case NTPCollectionShortcutTypeCount:
       NOTREACHED();
       break;
@@ -68,8 +70,7 @@ UIImage* SymbolForCollectionShortcutType(NTPCollectionShortcutType type) {
   switch (type) {
     case NTPCollectionShortcutTypeBookmark:
       return DefaultSymbolTemplateWithPointSize(
-          kContentSuggestionsBookmarksSymbol,
-          kSymbolContentSuggestionsPointSize);
+          kBookmarksSymbol, kSymbolContentSuggestionsPointSize);
     case NTPCollectionShortcutTypeReadingList:
       return CustomSymbolTemplateWithPointSize(
           kReadingListSymbol, kSymbolContentSuggestionsPointSize);
@@ -78,7 +79,10 @@ UIImage* SymbolForCollectionShortcutType(NTPCollectionShortcutType type) {
           kRecentTabsSymbol, kSymbolContentSuggestionsPointSize);
     case NTPCollectionShortcutTypeHistory:
       return DefaultSymbolTemplateWithPointSize(
-          kClockArrowSymbol, kSymbolContentSuggestionsPointSize);
+          kHistorySymbol, kSymbolContentSuggestionsPointSize);
+    case NTPCollectionShortcutTypeWhatsNew:
+      return DefaultSymbolTemplateWithPointSize(
+          kCheckmarkSealSymbol, kSymbolContentSuggestionsPointSize);
     case NTPCollectionShortcutTypeCount:
       NOTREACHED();
       return nil;

@@ -10,7 +10,6 @@
 import {InputController} from '../input_controller.js';
 import {LocaleInfo} from '../locale_info.js';
 import {DeletePrevSentMacro} from '../macros/delete_prev_sent_macro.js';
-import {HiddenMacroManager} from '../macros/hidden_macro_manager.js';
 import {InputTextViewMacro, NewLineMacro} from '../macros/input_text_view_macro.js';
 import {ListCommandsMacro} from '../macros/list_commands_macro.js';
 import {Macro} from '../macros/macro.js';
@@ -253,7 +252,6 @@ export class SimpleParseStrategy extends ParseStrategy {
      * @private {!Map<MacroName, !SimpleMacroFactory>}
      */
     this.macroFactoryMap_ = new Map();
-
     this.initialize_();
   }
 
@@ -261,8 +259,7 @@ export class SimpleParseStrategy extends ParseStrategy {
   initialize_() {
     for (const key in MacroName) {
       const name = MacroName[key];
-      if (HiddenMacroManager.isHiddenMacro(name) ||
-          name === MacroName.INPUT_TEXT_VIEW ||
+      if (name === MacroName.INPUT_TEXT_VIEW ||
           name === MacroName.UNSPECIFIED) {
         continue;
       }
@@ -270,6 +267,17 @@ export class SimpleParseStrategy extends ParseStrategy {
       this.macroFactoryMap_.set(
           name, new SimpleMacroFactory(name, this.getInputController()));
     }
+  }
+
+  /** @override */
+  refresh() {
+    this.enabled = LocaleInfo.areCommandsSupported();
+    if (!this.enabled) {
+      return;
+    }
+
+    this.macroFactoryMap_ = new Map();
+    this.initialize_();
   }
 
   /** @override */

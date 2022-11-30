@@ -68,7 +68,7 @@ class FrameSender {
   static std::unique_ptr<FrameSender> Create(
       scoped_refptr<CastEnvironment> cast_environment,
       const FrameSenderConfig& config,
-      openscreen::cast::Sender* sender,
+      std::unique_ptr<openscreen::cast::Sender> sender,
       Client& client,
       GetSuggestedVideoBitrateCB get_bitrate_cb = GetSuggestedVideoBitrateCB());
 
@@ -91,8 +91,9 @@ class FrameSender {
   // indication event.
   virtual bool NeedsKeyFrame() const = 0;
 
-  // Called by the encoder with the next encoded frame to send.
-  virtual void EnqueueFrame(
+  // Called by the encoder with the next encoded frame to send. Returns true
+  // if successfully enqueued.
+  virtual bool EnqueueFrame(
       std::unique_ptr<SenderEncodedFrame> encoded_frame) = 0;
 
   // Returns true if too many frames would be in-flight by encoding and sending

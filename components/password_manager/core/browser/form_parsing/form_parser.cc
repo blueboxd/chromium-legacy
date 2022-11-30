@@ -139,7 +139,7 @@ bool IsNotUsernameField(const ProcessedField& field) {
 // server-predicted clear-text fields is enabled.
 bool IsPasswordGenerationForClearTextFieldsEnabled() {
   return base::FeatureList::IsEnabled(
-      password_manager::features::KEnablePasswordGenerationForClearTextFields);
+      password_manager::features::kEnablePasswordGenerationForClearTextFields);
 }
 
 // Returns true iff |field_type| is one of password types.
@@ -958,7 +958,8 @@ std::unique_ptr<PasswordForm> AssemblePasswordForm(
     ValueElementVector all_possible_usernames,
     const absl::optional<FormPredictions>& form_predictions) {
   if (!significant_fields.HasPasswords() &&
-      !significant_fields.is_single_username) {
+      !significant_fields.is_single_username &&
+      !significant_fields.accepts_webauthn_credentials) {
     return nullptr;
   }
 

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,8 +112,8 @@ USB::USB(NavigatorBase& navigator)
 USB::~USB() {
   // |service_| may still be valid but there should be no more outstanding
   // requests to them because each holds a persistent handle to this object.
-  DCHECK(get_devices_requests_.IsEmpty());
-  DCHECK(get_permission_requests_.IsEmpty());
+  DCHECK(get_devices_requests_.empty());
+  DCHECK(get_permission_requests_.empty());
 }
 
 ScriptPromise USB::getDevices(ScriptState* script_state,
@@ -134,8 +134,8 @@ ScriptPromise USB::getDevices(ScriptState* script_state,
   EnsureServiceConnection();
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   get_devices_requests_.insert(resolver);
-  service_->GetDevices(WTF::Bind(&USB::OnGetDevices, WrapPersistent(this),
-                                 WrapPersistent(resolver)));
+  service_->GetDevices(WTF::BindOnce(&USB::OnGetDevices, WrapPersistent(this),
+                                     WrapPersistent(resolver)));
   return resolver->Promise();
 }
 
@@ -163,11 +163,12 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+      script_state, exception_state.GetContext());
   ScriptPromise promise = resolver->Promise();
   Vector<UsbDeviceFilterPtr> filters;
   if (options->hasFilters()) {
-    filters.ReserveCapacity(options->filters().size());
+    filters.reserve(options->filters().size());
     for (const auto& filter : options->filters()) {
       UsbDeviceFilterPtr converted_filter =
           ConvertDeviceFilter(filter, resolver);
@@ -180,8 +181,8 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
   DCHECK(options->filters().size() == filters.size());
   get_permission_requests_.insert(resolver);
   service_->GetPermission(std::move(filters),
-                          WTF::Bind(&USB::OnGetPermission, WrapPersistent(this),
-                                    WrapPersistent(resolver)));
+                          resolver->WrapCallbackInScriptScope(WTF::BindOnce(
+                              &USB::OnGetPermission, WrapPersistent(this))));
   return promise;
 }
 
@@ -240,8 +241,8 @@ void USB::OnGetPermission(ScriptPromiseResolver* resolver,
   if (service_.is_bound() && device_info) {
     resolver->Resolve(GetOrCreateDevice(std::move(device_info)));
   } else {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotFoundError, kNoDeviceSelected));
+    resolver->RejectWithDOMException(DOMExceptionCode::kNotFoundError,
+                                     kNoDeviceSelected);
   }
   get_permission_requests_.erase(resolver);
 }
@@ -285,8 +286,14 @@ void USB::OnServiceConnectionError() {
 
   // Similar protection is unnecessary when rejecting a promise.
   for (auto& resolver : get_permission_requests_) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotFoundError, kNoDeviceSelected));
+    ScriptState* resolver_script_state = resolver->GetScriptState();
+    if (!IsInParallelAlgorithmRunnable(resolver->GetExecutionContext(),
+                                       resolver_script_state)) {
+      continue;
+    }
+    ScriptState::Scope script_state_scope(resolver_script_state);
+    resolver->RejectWithDOMException(DOMExceptionCode::kNotFoundError,
+                                     kNoDeviceSelected);
   }
 }
 
@@ -316,7 +323,7 @@ void USB::EnsureServiceConnection() {
   GetExecutionContext()->GetBrowserInterfaceBroker().GetInterface(
       service_.BindNewPipeAndPassReceiver(task_runner));
   service_.set_disconnect_handler(
-      WTF::Bind(&USB::OnServiceConnectionError, WrapWeakPersistent(this)));
+      WTF::BindOnce(&USB::OnServiceConnectionError, WrapWeakPersistent(this)));
 
   DCHECK(!client_receiver_.is_bound());
 
@@ -326,16 +333,19 @@ void USB::EnsureServiceConnection() {
 
 bool USB::IsContextSupported() const {
   // Since WebUSB on Web Workers is in the process of being implemented, we
-  // check here if the runtime flag for the appropriate worker is enabled..
+  // check here if the runtime flag for the appropriate worker is enabled.
   // TODO(https://crbug.com/837406): Remove this check once the feature has
   // shipped.
   ExecutionContext* context = GetExecutionContext();
   if (!context)
     return false;
 
-  DCHECK(context->IsWindow() || context->IsDedicatedWorkerGlobalScope());
+  DCHECK(context->IsWindow() || context->IsDedicatedWorkerGlobalScope() ||
+         context->IsServiceWorkerGlobalScope());
   DCHECK(!context->IsDedicatedWorkerGlobalScope() ||
          RuntimeEnabledFeatures::WebUSBOnDedicatedWorkersEnabled());
+  DCHECK(!context->IsServiceWorkerGlobalScope() ||
+         RuntimeEnabledFeatures::WebUSBOnServiceWorkersEnabled());
 
   return true;
 }

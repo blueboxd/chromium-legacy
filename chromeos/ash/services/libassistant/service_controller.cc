@@ -19,8 +19,7 @@
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 namespace {
 
@@ -35,8 +34,9 @@ using mojom::ServiceState;
     return;                                                                 \
   }
 
-constexpr base::Feature kChromeOSAssistantDogfood{
-    "ChromeOSAssistantDogfood", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kChromeOSAssistantDogfood,
+             "ChromeOSAssistantDogfood",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 constexpr char kServersideDogfoodExperimentId[] = "20347368";
 constexpr char kServersideOpenAppExperimentId[] = "39651593";
@@ -344,5 +344,4 @@ void ServiceController::CreateChromiumApiDelegate(
       CreatePendingURLLoaderFactory(std::move(url_loader_factory_remote)));
 }
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant

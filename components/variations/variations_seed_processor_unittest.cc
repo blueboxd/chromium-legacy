@@ -30,6 +30,7 @@
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/study_filtering.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -84,6 +85,16 @@ Study* CreateStudyWithFlagGroups(int default_group_probability,
   return study;
 }
 
+BASE_FEATURE(kDisabled, "Disabled", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kEnabled, "Enabled", base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kRepeated, "Repeated", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Gets the group name of the study associated with a feature or empty string.
+std::string AssociatedStudyGroup(const base::Feature& feature) {
+  auto* trial = base::FeatureList::GetFieldTrial(feature);
+  return trial ? trial->group_name() : "";
+}
+
 class TestOverrideStringCallback {
  public:
   typedef std::map<uint32_t, std::u16string> OverrideMap;
@@ -115,63 +126,51 @@ class TestOverrideStringCallback {
 
 }  // namespace
 
-// Create a ClientFilterableState with reasonable default values for Chrome.
-std::unique_ptr<ClientFilterableState> CreateChromeClientFilterableState() {
-  auto client_state = std::make_unique<ClientFilterableState>(
-      base::BindOnce([] { return false; }));
-  client_state->locale = "en-CA";
-  client_state->reference_date = base::Time::Now();
-  client_state->version = base::Version("20.0.0.0");
-  client_state->channel = Study::STABLE;
-  client_state->form_factor = Study::PHONE;
-  client_state->platform = Study::PLATFORM_ANDROID;
-  return client_state;
-}
-
 // ChromeEnvironment calls CreateTrialsFromSeed with arguments similar to
-// chrome. In particular, it passes a non-nullptr as low_entropy_source.
+// chrome.
 class ChromeEnvironment {
  public:
+  bool HasHighEntropy() { return true; }
+
   void CreateTrialsFromSeed(
       const VariationsSeed& seed,
-      double low_entropy,
       base::FeatureList* feature_list,
       const VariationsSeedProcessor::UIStringOverrideCallback& callback) {
-    auto client_state = CreateChromeClientFilterableState();
+    auto client_state = CreateDummyClientFilterableState();
     client_state->platform = Study::PLATFORM_ANDROID;
 
-    base::MockEntropyProvider mock_low_entropy_provider(low_entropy);
-    VariationsSeedProcessor seed_processor;
+    MockEntropyProviders entropy_providers({
+        .low_entropy = kAlwaysUseLastGroup,
+        .high_entropy = kAlwaysUseFirstGroup,
+    });
     // This should mimic the call through SetUpFieldTrials from
     // components/variations/service/variations_service.cc
-    seed_processor.CreateTrialsFromSeed(seed, *client_state, callback,
-                                        &mock_low_entropy_provider,
-                                        feature_list);
+    VariationsSeedProcessor().CreateTrialsFromSeed(
+        seed, *client_state, callback, entropy_providers, feature_list);
   }
-
-  bool SupportsLayers() { return true; }
 };
 
 // WebViewEnvironment calls CreateTrialsFromSeed with arguments similar to
-// WebView. In particular, it passes a nullptr as low_entropy_source.
+// WebView.
 class WebViewEnvironment {
  public:
+  bool HasHighEntropy() { return false; }
+
   void CreateTrialsFromSeed(
       const VariationsSeed& seed,
-      double low_entropy,
       base::FeatureList* feature_list,
       const VariationsSeedProcessor::UIStringOverrideCallback& callback) {
-    auto client_state = CreateChromeClientFilterableState();
+    auto client_state = CreateDummyClientFilterableState();
     client_state->platform = Study::PLATFORM_ANDROID_WEBVIEW;
 
-    VariationsSeedProcessor seed_processor;
+    MockEntropyProviders entropy_providers({
+        .low_entropy = kAlwaysUseLastGroup,
+    });
     // This should mimic the call through SetUpFieldTrials from
     // android_webview/browser/aw_feature_list_creator.cc
-    seed_processor.CreateTrialsFromSeed(seed, *client_state, callback, nullptr,
-                                        feature_list);
+    VariationsSeedProcessor().CreateTrialsFromSeed(
+        seed, *client_state, callback, entropy_providers, feature_list);
   }
-
-  bool SupportsLayers() { return false; }
 };
 
 template <typename Environment>
@@ -189,17 +188,15 @@ class VariationsSeedProcessorTest : public ::testing::Test {
     testing::ClearAllVariationParams();
   }
 
-  void CreateTrialsFromSeed(const VariationsSeed& seed,
-                            double low_entropy = 0.9) {
+  void CreateTrialsFromSeed(const VariationsSeed& seed) {
     base::FeatureList feature_list;
-    env.CreateTrialsFromSeed(seed, low_entropy, &feature_list,
+    env.CreateTrialsFromSeed(seed, &feature_list,
                              override_callback_.callback());
   }
 
   void CreateTrialsFromSeed(const VariationsSeed& seed,
                             base::FeatureList* feature_list) {
-    env.CreateTrialsFromSeed(seed, 0.9, feature_list,
-                             override_callback_.callback());
+    env.CreateTrialsFromSeed(seed, feature_list, override_callback_.callback());
   }
 
  protected:
@@ -455,19 +452,8 @@ TYPED_TEST(VariationsSeedProcessorTest, StartsActive) {
   AddExperiment("Default", 0, study3);
   study3->set_activation_type(Study::ACTIVATE_ON_QUERY);
 
-  ClientFilterableState client_state(base::BindOnce([] { return false; }));
-  client_state.locale = "en-CA";
-  client_state.reference_date = base::Time::Now();
-  client_state.version = base::Version("20.0.0.0");
-  client_state.channel = Study::STABLE;
-  client_state.form_factor = Study::DESKTOP;
-  client_state.platform = Study::PLATFORM_ANDROID;
-
   VariationsSeedProcessor seed_processor;
-  base::MockEntropyProvider mock_low_entropy_provider(0.9);
-  seed_processor.CreateTrialsFromSeed(
-      seed, client_state, this->override_callback_.callback(),
-      &mock_low_entropy_provider, base::FeatureList::GetInstance());
+  this->CreateTrialsFromSeed(seed);
 
   // Non-specified and ACTIVATE_ON_QUERY should not start active, but
   // ACTIVATE_ON_STARTUP should.
@@ -524,15 +510,12 @@ TYPED_TEST(VariationsSeedProcessorTest, ForcingFlagAlreadyForced) {
 }
 
 TYPED_TEST(VariationsSeedProcessorTest, FeatureEnabledOrDisableByTrial) {
-  struct base::Feature kFeatureOffByDefault {
-    "kOff", base::FEATURE_DISABLED_BY_DEFAULT
-  };
-  struct base::Feature kFeatureOnByDefault {
-    "kOn", base::FEATURE_ENABLED_BY_DEFAULT
-  };
-  struct base::Feature kUnrelatedFeature {
-    "kUnrelated", base::FEATURE_DISABLED_BY_DEFAULT
-  };
+  static BASE_FEATURE(kFeatureOffByDefault, "kOff",
+                      base::FEATURE_DISABLED_BY_DEFAULT);
+  static BASE_FEATURE(kFeatureOnByDefault, "kOn",
+                      base::FEATURE_ENABLED_BY_DEFAULT);
+  static BASE_FEATURE(kUnrelatedFeature, "kUnrelated",
+                      base::FEATURE_DISABLED_BY_DEFAULT);
 
   struct {
     const char* enable_feature;
@@ -595,12 +578,10 @@ TYPED_TEST(VariationsSeedProcessorTest, FeatureEnabledOrDisableByTrial) {
 }
 
 TYPED_TEST(VariationsSeedProcessorTest, FeatureAssociationAndForcing) {
-  struct base::Feature kFeatureOffByDefault {
-    "kFeatureOffByDefault", base::FEATURE_DISABLED_BY_DEFAULT
-  };
-  struct base::Feature kFeatureOnByDefault {
-    "kFeatureOnByDefault", base::FEATURE_ENABLED_BY_DEFAULT
-  };
+  static BASE_FEATURE(kFeatureOffByDefault, "kFeatureOffByDefault",
+                      base::FEATURE_DISABLED_BY_DEFAULT);
+  static BASE_FEATURE(kFeatureOnByDefault, "kFeatureOnByDefault",
+                      base::FEATURE_ENABLED_BY_DEFAULT);
 
   enum OneHundredPercentGroup {
     DEFAULT_GROUP,
@@ -724,6 +705,106 @@ TYPED_TEST(VariationsSeedProcessorTest, FeatureAssociationAndForcing) {
   }
 }
 
+TYPED_TEST(VariationsSeedProcessorTest, DefaultAssociatedFeatures) {
+  VariationsSeed seed;
+  Study* study = seed.add_study();
+  study->set_name("Study1");
+  {
+    auto* feature_association =
+        AddExperiment("NotSelected1", 0, study)->mutable_feature_association();
+    feature_association->add_disable_feature(kEnabled.name);
+    feature_association->add_enable_feature(kDisabled.name);
+    feature_association->add_disable_feature(kRepeated.name);
+  }
+  {
+    auto* feature_association =
+        AddExperiment("NotSelected2", 0, study)->mutable_feature_association();
+    feature_association->add_enable_feature(kRepeated.name);
+  }
+  AddExperiment("Expected", 100, study);
+
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  this->CreateTrialsFromSeed(seed, feature_list.get());
+  base::test::ScopedFeatureList base_scoped_feature_list;
+  base_scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+
+  // All features should be associated with the group with no features, but
+  // none should have their state changed.
+  EXPECT_FALSE(base::FeatureList::IsEnabled(kDisabled));
+  EXPECT_EQ(AssociatedStudyGroup(kDisabled), "Expected");
+  EXPECT_TRUE(base::FeatureList::IsEnabled(kEnabled));
+  EXPECT_EQ(AssociatedStudyGroup(kEnabled), "Expected");
+  EXPECT_FALSE(base::FeatureList::IsEnabled(kRepeated));
+  EXPECT_EQ(AssociatedStudyGroup(kRepeated), "Expected");
+}
+
+TYPED_TEST(VariationsSeedProcessorTest, NonDefaultAssociatedFeatures) {
+  VariationsSeed seed;
+  Study* study = seed.add_study();
+  study->set_name("Study1");
+  {
+    auto* feature_association =
+        AddExperiment("NotSelected1", 0, study)->mutable_feature_association();
+    feature_association->add_disable_feature(kEnabled.name);
+    feature_association->add_enable_feature(kDisabled.name);
+    feature_association->add_disable_feature(kRepeated.name);
+  }
+  {
+    auto* feature_association =
+        AddExperiment("Expected", 100, study)->mutable_feature_association();
+    feature_association->add_enable_feature(kRepeated.name);
+  }
+  AddExperiment("Default", 0, study);
+
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  this->CreateTrialsFromSeed(seed, feature_list.get());
+  base::test::ScopedFeatureList base_scoped_feature_list;
+  base_scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+
+  // Only the feature explicitly associated with the group should be enabled
+  // or have it's state changed.
+  EXPECT_FALSE(base::FeatureList::IsEnabled(kDisabled));
+  EXPECT_EQ(AssociatedStudyGroup(kDisabled), "");
+  EXPECT_TRUE(base::FeatureList::IsEnabled(kEnabled));
+  EXPECT_EQ(AssociatedStudyGroup(kEnabled), "");
+  EXPECT_TRUE(base::FeatureList::IsEnabled(kRepeated));
+  EXPECT_EQ(AssociatedStudyGroup(kRepeated), "Expected");
+}
+
+TYPED_TEST(VariationsSeedProcessorTest, DefaultAssociatedFeaturesOnStartup) {
+  VariationsSeed seed;
+  Study* study = seed.add_study();
+  study->set_name("Study1");
+  study->set_activation_type(Study::ACTIVATE_ON_STARTUP);
+  {
+    auto* feature_association =
+        AddExperiment("NotSelected1", 0, study)->mutable_feature_association();
+    feature_association->add_disable_feature(kEnabled.name);
+    feature_association->add_enable_feature(kDisabled.name);
+    feature_association->add_disable_feature(kRepeated.name);
+  }
+  {
+    auto* feature_association =
+        AddExperiment("NotSelected2", 0, study)->mutable_feature_association();
+    feature_association->add_enable_feature(kRepeated.name);
+  }
+  AddExperiment("Expected", 100, study);
+
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  this->CreateTrialsFromSeed(seed, feature_list.get());
+  base::test::ScopedFeatureList base_scoped_feature_list;
+  base_scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+
+  // Nothing should be associated with the default group for an
+  // ACTIVATE_ON_STARTUP trial.
+  EXPECT_FALSE(base::FeatureList::IsEnabled(kDisabled));
+  EXPECT_EQ(AssociatedStudyGroup(kDisabled), "");
+  EXPECT_TRUE(base::FeatureList::IsEnabled(kEnabled));
+  EXPECT_EQ(AssociatedStudyGroup(kEnabled), "");
+  EXPECT_FALSE(base::FeatureList::IsEnabled(kRepeated));
+  EXPECT_EQ(AssociatedStudyGroup(kRepeated), "");
+}
+
 TYPED_TEST(VariationsSeedProcessorTest, LowEntropyStudyTest) {
   const std::string kTrial1Name = "A";
   const std::string kTrial2Name = "B";
@@ -745,29 +826,23 @@ TYPED_TEST(VariationsSeedProcessorTest, LowEntropyStudyTest) {
   AddExperiment(kDefaultName, 50, study2);
   study2->mutable_experiment(0)->set_google_web_experiment_id(kExperimentId);
 
-  // An entropy value of 0.1 will cause the AA group to be chosen, since AA is
-  // the only non-default group, and has a probability percent above 0.1.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithNullFeatureAndFieldTrialLists();
-  base::FieldTrialList field_trial_list(
-      std::make_unique<base::MockEntropyProvider>(0.1));
+  this->CreateTrialsFromSeed(seed);
 
-  // This entropy value will cause the default group to be chosen since it's a
-  // 50/50 trial.
-  this->CreateTrialsFromSeed(seed, 0.9);
+  // The environment will create a low entropy source that always picks the last
+  // group, and if it creates a high entropy provider will create one that
+  // always uses the first group.
 
   // Since no experiment in study1 sends experiment IDs, it will use the high
-  // entropy provider, which selects the non-default group.
-  EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrial1Name));
+  // entropy provider when available, which selects the non-default group.
+  if (this->env.HasHighEntropy()) {
+    EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrial1Name));
+  } else {
+    EXPECT_EQ(kDefaultName, base::FieldTrialList::FindFullName(kTrial1Name));
+  }
 
   // Since an experiment in study2 has google_web_experiment_id set, it will use
   // the low entropy provider, which selects the default group.
-  if (this->env.SupportsLayers()) {
-    EXPECT_EQ(kDefaultName, base::FieldTrialList::FindFullName(kTrial2Name));
-  } else {
-    // On WebView we always use the default entropy provider.
-    EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrial1Name));
-  }
+  EXPECT_EQ(kDefaultName, base::FieldTrialList::FindFullName(kTrial2Name));
 }
 
 TYPED_TEST(VariationsSeedProcessorTest, StudyWithInvalidLayer) {
@@ -841,11 +916,7 @@ TYPED_TEST(VariationsSeedProcessorTest, StudyWithLayerSelected) {
   this->CreateTrialsFromSeed(seed);
 
   // The layer only has the single member, which is what should be chosen.
-  if (this->env.SupportsLayers()) {
-    EXPECT_TRUE(base::FieldTrialList::IsTrialActive(study->name()));
-  } else {
-    EXPECT_FALSE(base::FieldTrialList::IsTrialActive(study->name()));
-  }
+  EXPECT_TRUE(base::FieldTrialList::IsTrialActive(study->name()));
 }
 
 TYPED_TEST(VariationsSeedProcessorTest, StudyWithLayerMemberWithNoSlots) {
@@ -856,8 +927,6 @@ TYPED_TEST(VariationsSeedProcessorTest, StudyWithLayerMemberWithNoSlots) {
   layer->set_num_slots(10);
   Layer::LayerMember* member = layer->add_members();
   member->set_id(82);
-  // Add one SlotRange, with no slots actually defined.
-  member->add_slots();
 
   Study* study = seed.add_study();
   study->set_name("Study1");
@@ -873,6 +942,38 @@ TYPED_TEST(VariationsSeedProcessorTest, StudyWithLayerMemberWithNoSlots) {
   // The layer member referenced by the study is missing slots, and should
   // never be chosen.
   EXPECT_FALSE(base::FieldTrialList::IsTrialActive(study->name()));
+}
+
+TYPED_TEST(VariationsSeedProcessorTest, StudyWithLayerMemberWithUnsetSlots) {
+  VariationsSeed seed;
+
+  Layer* layer = seed.add_layers();
+  layer->set_id(42);
+  layer->set_num_slots(10);
+  Layer::LayerMember* member = layer->add_members();
+  member->set_id(82);
+  // Add one SlotRange, with no start/end unset. This should be equivalent
+  // to specifying start/end = 0, which includes slot 0 only.
+  member->add_slots();
+
+  Study* study = seed.add_study();
+  study->set_name("Study1");
+  study->set_activation_type(Study::ACTIVATE_ON_STARTUP);
+
+  LayerMemberReference* layer_membership = study->mutable_layer();
+  layer_membership->set_layer_id(42);
+  layer_membership->set_layer_member_id(82);
+  AddExperiment("A", 1, study);
+
+  this->CreateTrialsFromSeed(seed);
+
+  if (this->env.HasHighEntropy()) {
+    // high entropy should select slot 0, which activates the study.
+    EXPECT_TRUE(base::FieldTrialList::IsTrialActive(study->name()));
+  } else {
+    // low entropy should select slot 9, which does not activate the study.
+    EXPECT_FALSE(base::FieldTrialList::IsTrialActive(study->name()));
+  }
 }
 
 TYPED_TEST(VariationsSeedProcessorTest, StudyWithLayerWithDuplicateSlots) {
@@ -905,11 +1006,7 @@ TYPED_TEST(VariationsSeedProcessorTest, StudyWithLayerWithDuplicateSlots) {
 
   // The layer only has the single member, which is what should be chosen.
   // Having two duplicate slot ranges within that member should not crash.
-  if (this->env.SupportsLayers()) {
-    EXPECT_TRUE(base::FieldTrialList::IsTrialActive(study->name()));
-  } else {
-    EXPECT_FALSE(base::FieldTrialList::IsTrialActive(study->name()));
-  }
+  EXPECT_TRUE(base::FieldTrialList::IsTrialActive(study->name()));
 }
 
 TYPED_TEST(VariationsSeedProcessorTest,
@@ -1007,11 +1104,10 @@ TYPED_TEST(VariationsSeedProcessorTest, StudyWithLayerNotSelected) {
   layer_membership->set_layer_member_id(0xDEAD);
   AddExperiment("A", 1, study);
 
-  // Entropy 0.99 Should cause slot 7920 to be chosen.
-  this->CreateTrialsFromSeed(seed, /*low_entropy=*/0.99);
+  this->CreateTrialsFromSeed(seed);
 
-  // The study is a member of the 0xDEAD layer member and should be inactive
-  // (or layers are not supported by the environment).
+  // Low entropy should select slot 7999, which should not select layer 0xDEAD,
+  // and the study should not be activated.
   EXPECT_FALSE(base::FieldTrialList::IsTrialActive(study->name()));
 }
 
@@ -1050,15 +1146,15 @@ TYPED_TEST(VariationsSeedProcessorTest, LayerWithDefaultEntropy) {
   layer_membership->set_layer_member_id(0xDEAD);
   AddExperiment("A", 1, study);
 
-  // Since we're *not* setting the entropy_mode to LOW, |low_entropy| should
-  // be ignored and the default high entropy should be used, which in
-  // this case is slot 4000 and hence the first layer member is chosen.
-  this->CreateTrialsFromSeed(seed, /*low_entropy=*/0.99);
+  this->CreateTrialsFromSeed(seed);
 
-  // The study is a member of the 0xDEAD layer member and should be active.
-  if (this->env.SupportsLayers()) {
+  if (this->env.HasHighEntropy()) {
+    // The high entropy source should select slot 0, which should select
+    // the member 0xDEAD and activate the study.
     EXPECT_TRUE(base::FieldTrialList::IsTrialActive(study->name()));
   } else {
+    // The low entropy source should select slot 7999, which should NOT select
+    // the member 0xDEAD, so the study will be inactive.
     EXPECT_FALSE(base::FieldTrialList::IsTrialActive(study->name()));
   }
 }
@@ -1192,9 +1288,8 @@ TYPED_TEST(VariationsSeedProcessorTest, StudyWithLowerEntropyThanLayer) {
 }
 
 TYPED_TEST(VariationsSeedProcessorTest, StudiesWithOverlappingEnabledFeatures) {
-  static struct base::Feature kFeature {
-    "FeatureName", base::FEATURE_ENABLED_BY_DEFAULT
-  };
+  static BASE_FEATURE(kFeature, "FeatureName",
+                      base::FEATURE_ENABLED_BY_DEFAULT);
 
   VariationsSeed seed;
 
@@ -1234,9 +1329,8 @@ TYPED_TEST(VariationsSeedProcessorTest, StudiesWithOverlappingEnabledFeatures) {
 
 TYPED_TEST(VariationsSeedProcessorTest,
            StudiesWithOverlappingDisabledFeatures) {
-  static struct base::Feature kFeature {
-    "FeatureName", base::FEATURE_ENABLED_BY_DEFAULT
-  };
+  static BASE_FEATURE(kFeature, "FeatureName",
+                      base::FEATURE_ENABLED_BY_DEFAULT);
 
   VariationsSeed seed;
 

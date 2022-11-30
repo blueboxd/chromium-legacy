@@ -34,10 +34,12 @@
 #import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/util_swift.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/util/ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -104,6 +106,7 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
 @synthesize voiceSearchIsEnabled = _voiceSearchIsEnabled;
 @synthesize logoIsShowing = _logoIsShowing;
 @synthesize logoFetched = _logoFetched;
+@synthesize layoutGuideCenter = _layoutGuideCenter;
 
 - (instancetype)init {
   if (self = [super initWithNibName:nil bundle:nil]) {
@@ -183,7 +186,7 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
 
 - (void)updateFakeOmniboxForWidth:(CGFloat)width {
   self.fakeOmniboxWidthConstraint.constant =
-      content_suggestions::searchFieldWidth(width, self.traitCollection);
+      content_suggestions::SearchFieldWidth(width, self.traitCollection);
 }
 
 - (void)unfocusOmnibox {
@@ -198,10 +201,10 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
   [self.headerView layoutIfNeeded];
 }
 
-// Update the doodle top margin to the new -doodleTopMargin value.
+// Update the doodle top margin to the new value.
 - (void)updateConstraints {
   self.doodleTopMarginConstraint.constant =
-      content_suggestions::doodleTopMargin([self topInset],
+      content_suggestions::DoodleTopMargin([self topInset],
                                            self.traitCollection);
   [self.headerView updateForTopSafeAreaInset:[self topInset]];
 }
@@ -227,7 +230,7 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
 }
 
 - (CGFloat)headerHeight {
-  return content_suggestions::heightForLogoHeader(
+  return content_suggestions::HeightForLogoHeader(
       self.logoIsShowing, self.logoVendor.isShowingDoodle, [self topInset],
       self.traitCollection);
 }
@@ -269,7 +272,7 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
         0, width - safeAreaInsets.left - safeAreaInsets.right);
 
     self.fakeOmniboxWidthConstraint = [self.fakeOmnibox.widthAnchor
-        constraintEqualToConstant:content_suggestions::searchFieldWidth(
+        constraintEqualToConstant:content_suggestions::SearchFieldWidth(
                                       width, self.traitCollection)];
     [self addConstraintsForLogoView:self.logoVendor.view
                         fakeOmnibox:self.fakeOmnibox
@@ -405,8 +408,8 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
   DCHECK(self.voiceSearchIsEnabled);
   base::RecordAction(UserMetricsAction("MobileNTPMostVisitedVoiceSearch"));
   UIView* voiceSearchButton = base::mac::ObjCCastStrict<UIView>(sender);
-  [NamedGuide guideWithName:kVoiceSearchButtonGuide view:voiceSearchButton]
-      .constrainedView = voiceSearchButton;
+  [self.layoutGuideCenter referenceView:voiceSearchButton
+                              underName:kVoiceSearchButtonGuide];
   [self.dispatcher startVoiceSearch];
 }
 
@@ -476,14 +479,14 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
 // shows fakebox if the logo is visible and hides otherwise
 - (void)updateFakeboxDisplay {
   [self.doodleHeightConstraint
-      setConstant:content_suggestions::doodleHeight(
+      setConstant:content_suggestions::DoodleHeight(
                       self.logoVendor.showingLogo,
                       self.logoVendor.isShowingDoodle, self.traitCollection)];
   self.fakeOmnibox.hidden =
       IsRegularXRegularSizeClass(self) && !self.logoIsShowing;
   [self.headerView layoutIfNeeded];
   self.headerViewHeightConstraint.constant =
-      content_suggestions::heightForLogoHeader(
+      content_suggestions::HeightForLogoHeader(
           self.logoIsShowing, self.logoVendor.isShowingDoodle, [self topInset],
           self.traitCollection);
 }
@@ -513,10 +516,10 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
                     andHeaderView:(UIView*)headerView {
   self.doodleTopMarginConstraint = [logoView.topAnchor
       constraintEqualToAnchor:headerView.topAnchor
-                     constant:content_suggestions::doodleTopMargin(
+                     constant:content_suggestions::DoodleTopMargin(
                                   [self topInset], self.traitCollection)];
   self.doodleHeightConstraint = [logoView.heightAnchor
-      constraintEqualToConstant:content_suggestions::doodleHeight(
+      constraintEqualToConstant:content_suggestions::DoodleHeight(
                                     self.logoVendor.showingLogo,
                                     self.logoVendor.isShowingDoodle,
                                     self.traitCollection)];
@@ -526,7 +529,7 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
                                         .preferredContentSizeCategory)];
   self.fakeOmniboxTopMarginConstraint = [logoView.bottomAnchor
       constraintEqualToAnchor:fakeOmnibox.topAnchor
-                     constant:-content_suggestions::searchFieldTopMargin()];
+                     constant:-content_suggestions::SearchFieldTopMargin()];
   self.headerViewHeightConstraint =
       [headerView.heightAnchor constraintEqualToConstant:[self headerHeight]];
   self.headerViewHeightConstraint.active = YES;
@@ -697,11 +700,11 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
 
 - (void)doodleDisplayStateChanged:(BOOL)doodleShowing {
   [self.doodleHeightConstraint
-      setConstant:content_suggestions::doodleHeight(self.logoVendor.showingLogo,
+      setConstant:content_suggestions::DoodleHeight(self.logoVendor.showingLogo,
                                                     doodleShowing,
                                                     self.traitCollection)];
   self.headerViewHeightConstraint.constant =
-      content_suggestions::heightForLogoHeader(
+      content_suggestions::HeightForLogoHeader(
           self.logoIsShowing, self.logoVendor.isShowingDoodle, [self topInset],
           self.traitCollection);
   [self.commandHandler updateForHeaderSizeChange];

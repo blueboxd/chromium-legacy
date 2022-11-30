@@ -9,71 +9,10 @@
 
 #include "content/browser/attribution_reporting/attribution_internals.mojom.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/attribution_source_type.h"
-#include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "mojo/public/cpp/bindings/union_traits.h"
 
 namespace mojo {
-
-template <>
-class EnumTraits<attribution_internals::mojom::SourceType,
-                 content::AttributionSourceType> {
- public:
-  static attribution_internals::mojom::SourceType ToMojom(
-      content::AttributionSourceType input) {
-    switch (input) {
-      case content::AttributionSourceType::kNavigation:
-        return attribution_internals::mojom::SourceType::kNavigation;
-      case content::AttributionSourceType::kEvent:
-        return attribution_internals::mojom::SourceType::kEvent;
-    }
-  }
-
-  static bool FromMojom(attribution_internals::mojom::SourceType input,
-                        content::AttributionSourceType* out) {
-    switch (input) {
-      case attribution_internals::mojom::SourceType::kNavigation:
-        *out = content::AttributionSourceType::kNavigation;
-        break;
-      case attribution_internals::mojom::SourceType::kEvent:
-        *out = content::AttributionSourceType::kEvent;
-        break;
-    }
-
-    return true;
-  }
-};
-
-template <>
-class EnumTraits<attribution_internals::mojom::ReportType,
-                 content::AttributionReport::ReportType> {
- public:
-  static attribution_internals::mojom::ReportType ToMojom(
-      content::AttributionReport::ReportType input) {
-    switch (input) {
-      case content::AttributionReport::ReportType::kEventLevel:
-        return attribution_internals::mojom::ReportType::kEventLevel;
-      case content::AttributionReport::ReportType::kAggregatableAttribution:
-        return attribution_internals::mojom::ReportType::
-            kAggregatableAttribution;
-    }
-  }
-
-  static bool FromMojom(attribution_internals::mojom::ReportType input,
-                        content::AttributionReport::ReportType* out) {
-    switch (input) {
-      case attribution_internals::mojom::ReportType::kEventLevel:
-        *out = content::AttributionReport::ReportType::kEventLevel;
-        break;
-      case attribution_internals::mojom::ReportType::kAggregatableAttribution:
-        *out = content::AttributionReport::ReportType::kAggregatableAttribution;
-        break;
-    }
-
-    return true;
-  }
-};
 
 template <>
 class StructTraits<attribution_internals::mojom::EventLevelReportIDDataView,

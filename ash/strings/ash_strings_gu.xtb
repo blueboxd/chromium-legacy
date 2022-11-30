@@ -78,7 +78,6 @@
 <translation id="1306549533752902673">ભલામણ કરેલ ઍપ</translation>
 <translation id="1312604459020188865">સિગ્નલની સશક્તતા <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">હંમેશાં શેલ્ફ બતાવો</translation>
-<translation id="1316811122439383437">Tote: તાજેતરના સ્ક્રીન કૅપ્ચર, ડાઉનલોડ અને પિન કરેલી ફાઇલો</translation>
 <translation id="132346741904777634">કૅમેરાને ઉપરના ડાબા ખૂણામાં સ્નેપ કર્યો. સિસ્ટમની સપાટીને ઓવરલેપ કરે છે.</translation>
 <translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> કનેક્ટ થયું</translation>
 <translation id="1341651618736211726">ઓવરફ્લો</translation>
@@ -160,12 +159,22 @@
 <translation id="1797271123677381264">પાસવર્ડ ભૂલી ગયા</translation>
 <translation id="181103072419391116">સિગ્નલની સશક્તતા <ph name="SIGNAL_STRENGTH" />, તમારા વ્યવસ્થાપક દ્વારા મેનેજ કરવામાં આવે છે</translation>
 <translation id="1812997170047690955">મારી સ્ક્રીન પર શું છે?</translation>
+<translation id="1823280932251546115">સ્ટેટસ ટ્રે, સમય <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="CHANNEL" />
+        <ph name="NETWORK" />,
+        <ph name="PRIVACY" />,
+        <ph name="MANAGED" />
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="1823873187264960516">ઇથરનેટ: <ph name="ADDRESS" /></translation>
 <translation id="1830308660060964064"><ph name="ITEM_TITLE" />ને અનપિન કરી હતી</translation>
 <translation id="1836215606488044471">Assistant (લોડ થઈ રહ્યું છે…)</translation>
 <translation id="1838895407229022812">રાત્રિ પ્રકાશ બંધ છે.</translation>
 <translation id="1862380676329487333">અપડેટ કરીને સાઇન આઉટ કરો</translation>
 <translation id="1864454756846565995">USB-C ઉપકરણ (પાછળનું પોર્ટ)</translation>
+<translation id="1869497990620230175">ફાઇલોનો ઝડપી ઍક્સેસ</translation>
 <translation id="1879018240766558464">છૂપી વિન્ડોને હાલમાં સપોર્ટ કરવામાં આવતો નથી. અન્ય ઍપ સાચવવામાં આવશે.</translation>
 <translation id="1882814835921407042">કોઈ મોબાઇલ નેટવર્ક નથી</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> પર પ્રતિબિંબિત થઈ રહ્યું છે</translation>
@@ -190,6 +199,7 @@
 <translation id="1989113344093894667">કન્ટેન્ટ કૅપ્ચર કરી શકાતું નથી</translation>
 <translation id="1990046457226896323">સ્પીચ ફાઇલો ડાઉનલોડ કરી</translation>
 <translation id="1993072747612765854">નવીનતમ <ph name="SYSTEM_APP_NAME" /> અપડેટ વિશે વધુ જાણો</translation>
+<translation id="1995660704900986789">પાવર બંધ કરો</translation>
 <translation id="1998100899771863792">વર્તમાન ડેસ્ક</translation>
 <translation id="2001444736072756133">તમારી <ph name="CATEGORY" />, ફાઇલો, ઍપ અને બીજું ઘણું શોધો.</translation>
 <translation id="2016340657076538683">એક સંદેશ લખો</translation>
@@ -226,6 +236,7 @@
 <translation id="2227179592712503583">સૂચન દૂર કરો</translation>
 <translation id="225680501294068881">ઉપકરણો માટે સ્કેન કરી રહ્યું છે...</translation>
 <translation id="2257486738914982088"><ph name="FILENAME" /> ડાઉનલોડ કરતી વખતે કંઈક ખોટું થયું</translation>
+<translation id="2258734398699965611">સૂચવેલી ફાઇલો</translation>
 <translation id="2268130516524549846">Bluetooth અક્ષમ છે</translation>
 <translation id="2268813581635650749">બધાને સાઇન આઉટ કરો</translation>
 <translation id="2269016722240250274">કોઈ ઍપ્લિકેશન તમારા માઇક્રોફોનનો ઉપયોગ કરી રહી છે</translation>
@@ -236,6 +247,7 @@
 <translation id="2298170939937364391">પૂર્ણ-સ્ક્રીન મૅગ્નિફાયર ચાલુ કર્યું. ટૉગલ કરીને તેને બંધ કરવા માટે ફરીથી Ctrl+Search+M દબાવો.</translation>
 <translation id="2302092602801625023">આ એકાઉન્ટ Family Link દ્વારા મેનેજ થાય છે</translation>
 <translation id="2303600792989757991">ટોગલ વિન્ડો વિહંગાવલોકન</translation>
+<translation id="2315005022200073389"><ph name="HOLDING_SPACE_TITLE" />: તાજેતરના સ્ક્રીન કૅપ્ચર, ડાઉનલોડ અને પિન કરેલી ફાઇલો</translation>
 <translation id="2318576281648121272">આજે <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060"><ph name="CATEGORY" /> , શોધ પરિણામની કૅટેગરી</translation>
 <translation id="2322173485024759474">એક અક્ષર પાછળ જાઓ</translation>
@@ -254,6 +266,7 @@
 <translation id="2405664212338326887">કનેક્ટ કરેલું નથી</translation>
 <translation id="2408955596600435184">તમારો PIN દાખલ કરો</translation>
 <translation id="2412593942846481727">અપડેટ ઉપલબ્ધ છે</translation>
+<translation id="2417486498593892439">નેટવર્ક પર સાઇન ઇન કરો</translation>
 <translation id="2426051945783024481">કૅમેરાની ફ્રેમને ઑટોમૅટિક રીતે મધ્યમાં ગોઠવવામાં આવે છે</translation>
 <translation id="2427507373259914951">લેફ્ટ ક્લિક કરો</translation>
 <translation id="2429753432712299108">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. સ્વીકારતાં પહેલાં, કૃપા કરીને તે ડિવાઇસ પર બતાવેલ આ પાસકીની પુષ્ટિ કરો: <ph name="PASSKEY" /></translation>
@@ -327,6 +340,7 @@
 <translation id="2865888419503095837">નેટવર્ક માહિતી</translation>
 <translation id="2872961005593481000">શટ ડાઉન કરો</translation>
 <translation id="2878884018241093801">કોઈ તાજેતરની આઇટમ નથી</translation>
+<translation id="2885950158625301909">વધુ જાણો</translation>
 <translation id="2891209721153296020">"પસંદગી રદ કરો"</translation>
 <translation id="2894949423239620203">કાર્યપ્રદર્શન પર કેબલની અસર થઈ શકે છે</translation>
 <translation id="2903844815300039659"><ph name="NAME" />, <ph name="STRENGTH" /> સાથે કનેક્ટ થયેલ</translation>
@@ -370,6 +384,7 @@
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3120421559657122717">શું ડિવાઇસને શટ ડાઉન કરીએ?</translation>
 <translation id="3126069444801937830">અપડેટ કરવા માટે પુનઃપ્રારંભ કરો</translation>
+<translation id="3139382871451988441">કૅમેરાનો ઍક્સેસ બંધ કરો.</translation>
 <translation id="3139942575505304791">ડેસ્ક 1</translation>
 <translation id="315116470104423982">મોબાઇલ ડેટા</translation>
 <translation id="3151786313568798007">ઓરિએન્ટેશન</translation>
@@ -410,6 +425,7 @@
 <translation id="3368922792935385530">કનેક્ટેડ</translation>
 <translation id="3371140690572404006">USB-C ઉપકરણ (જમણી બાજુનું આગળનું પોર્ટ)</translation>
 <translation id="3375634426936648815">કનેક્ટ કરેલું</translation>
+<translation id="3378438761594387761">તમને તમારા તાજેતરનાં ડાઉનલોડ અને સ્ક્રીન કૅપ્ચર અહીં મળશે</translation>
 <translation id="3378442621503952303">પ્રોફાઇલ સાથે કનેક્ટ કરી રહ્યાં છીએ. થોડીવાર રાહ જુઓ.</translation>
 <translation id="3386978599540877378">પૂર્ણ-સ્ક્રીન મેગ્નિફાયર</translation>
 <translation id="3387527074123400161">ChromiumOS</translation>
@@ -453,6 +469,8 @@
 <translation id="3600061223661453002">બંધ છે</translation>
 <translation id="3604801046548457007">ડેસ્ક <ph name="DESK_TITILE" /> બનાવ્યું</translation>
 <translation id="3606978283550408104">બ્રેઇલ ડિસ્પ્લે કનેક્ટ થયું.</translation>
+<translation id="3609301425104788351"><ph name="MIC" />,
+        <ph name="CAMERA" /></translation>
 <translation id="3615926715408477684">મોબાઇલ ડેટા ચાલુ કરવાથી બ્લૂટૂથ ચાલુ થશે</translation>
 <translation id="3616883743181209306">મેનૂને સ્ક્રીનની ઉપરના જમણા ખૂણામાં ખસેડ્યું.</translation>
 <translation id="3619536907358025872">સ્ક્રીન કૅપ્ચરના સેટિંગ</translation>
@@ -492,7 +510,6 @@
 <translation id="383058930331066723">બૅટરી સેવર મોડ ચાલુ છે</translation>
 <translation id="383629559565718788">કીબોર્ડ સેટિંગ બતાવો</translation>
 <translation id="384082539148746321">નમૂનો ડિલીટ કરીએ?</translation>
-<translation id="3842239759367498783">તમારા મોબાઇલ ઉપકરણ <ph name="TITLE" />માંથી વાંચવાનું ચાલુ રાખો</translation>
 <translation id="3846575436967432996">કોઈ નેટવર્ક માહિતી ઉપલબ્ધ નથી</translation>
 <translation id="385051799172605136">પાછળ</translation>
 <translation id="385300504083504382">શરૂઆત</translation>
@@ -507,7 +524,6 @@
 <translation id="3922427723338465344">{0,plural, =1{1 મિનિટની અંદર ડિવાઇસનું વર્ઝન બદલીને અગાઉનું વર્ઝન કરો}one{# મિનિટની અંદર ડિવાઇસનું વર્ઝન બદલીને અગાઉનું વર્ઝન કરો}other{# મિનિટની અંદર ડિવાઇસનું વર્ઝન બદલીને અગાઉનું વર્ઝન કરો}}</translation>
 <translation id="3923494859158167397">કોઈ મોબાઇલ નેટવર્ક સેટઅપ કરેલા નથી</translation>
 <translation id="3925540965556789199"><ph name="DATE" />, ઇવેન્ટ લોડ થઈ રહી છે.</translation>
-<translation id="392627956579011934">સ્પીચ ફાઇલો ઇન્સ્ટૉલ કરવા માટે ફરી શરૂ કરવાની જરૂર છે.</translation>
 <translation id="3932043219784172185">કોઈ ડિવાઇસ કનેક્ટ કરેલું નથી</translation>
 <translation id="3934456833412894880">અડૅપ્ટિવ ચાર્જિંગ ચાલુ છે. તમારી બૅટરીની આવરદા વધારવા માટે તે 80% પર રહેશે અને જ્યારે તમને જરૂર હોય, ત્યારે તે પૂરી ચાર્જ થશે.</translation>
 <translation id="3943857333388298514">પેસ્ટ કરો</translation>
@@ -562,7 +578,6 @@
 <translation id="4242533952199664413">સેટિંગ ખોલો</translation>
 <translation id="4247123849143712100">અપડેટ કરીને શટ ડાઉન કરો</translation>
 <translation id="4250229828105606438">સ્ક્રીનશૉટ</translation>
-<translation id="4250899820387052060">ફાઇલોનો ઝડપી ઍક્સેસ</translation>
 <translation id="425364040945105958">કોઈ સિમ કાર્ડ નથી</translation>
 <translation id="4261870227682513959">નોટિફિકેશન સેટિંગ બતાવો. નોટિફિકેશન બંધ છે</translation>
 <translation id="4269883910223712419">આ ઉપકરણના વ્યવસ્થાપકની ક્ષમતા:</translation>
@@ -648,6 +663,7 @@
 <ph name="QUERY" /></translation>
 <translation id="4659419629803378708">ChromeVox સક્ષમ કર્યું</translation>
 <translation id="4665114317261903604">'ખલેલ પાડશો નહીં'ને ટૉગલ કરો. <ph name="STATE_TEXT" /></translation>
+<translation id="4666082839192943839">તમામ કૅમેરાને હંમેશાં બ્લૉક કરવા માટે આ ડિવાઇસ પર કૅમેરાનો ઍક્સેસ બંધ કરો.</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" /> ડાઉનલોડ કરી રહ્યાં છીએ</translation>
 <translation id="4690510401873698237">શેલ્ફ સૌથી નીચે છે</translation>
 <translation id="4696813013609194136">માતાપિતાના કોડ વડે ડિવાઇસને અનલૉક કરો</translation>
@@ -658,7 +674,6 @@
 <translation id="4731797938093519117">માતાપિતા માટે ઍક્સેસ</translation>
 <translation id="4733161265940833579"><ph name="BATTERY_PERCENTAGE" />% (ડાબે)</translation>
 <translation id="4734965478015604180">હોરિઝોન્ટલ</translation>
-<translation id="4735498845456076464"><ph name="LAUNCHER_KEY_NAME" /> + Number કીબોર્ડ શૉર્ટકટ બદલવામાં આવ્યો છે. ફંક્શન કીનો ઉપયોગ કરવા માટે, <ph name="LAUNCHER_KEY_NAME" /> કી + ઉપરની પંક્તિ પરની કોઈ એક કી દબાવો.</translation>
 <translation id="473775607612524610">અપડેટ કરો</translation>
 <translation id="4740516757091333363">શું સાચવેલી ડેસ્ક ડિલીટ કરીએ?</translation>
 <translation id="4752784485658729358">માત્ર 6 ડેસ્ક સાચવવાની મંજૂરી છે. કોઈ નવી ડેસ્ક સાચવવા માટે, કોઈ એક ડેસ્ક કાઢી નાખો.</translation>
@@ -667,6 +682,7 @@
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> માટેનો પાસવર્ડ </translation>
 <translation id="4777825441726637019">Play Store</translation>
 <translation id="4778095205580009397">ડેમો સત્રમાં Google Assistant ઉપલબ્ધ નથી.</translation>
+<translation id="4789348252524569426">સ્પીચ માટેની ફાઇલો ઇન્સ્ટૉલ કરી શકતા નથી. તમારા ડિવાઇસને અપડેટ કરવાની જરૂર છે. તમારું ડિવાઇસ ફરી શરૂ કરો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="479989351350248267">શોધ</translation>
 <translation id="4804818685124855865">ડિસ્કનેક્ટ કરો</translation>
 <translation id="4814539958450445987">લૉગ ઇન સ્ક્રીન</translation>
@@ -717,6 +733,7 @@
 <translation id="5083553833479578423">Assistantની વધુ સુવિધાઓને અનલૉક કરો.</translation>
 <translation id="509790653408515442">જ્યારે તમે તમારા ફોનની ઍપ સ્ટ્રીમ કરશો, ત્યારે તે અહીં દેખાશે</translation>
 <translation id="5098537242461068432">ડેસ્ક અને વિન્ડો ફરીથી ખોલવામાં આવી</translation>
+<translation id="5104236669533825617">સ્ક્રીનકાસ્ટ બનાવી શકાતું નથી</translation>
 <translation id="5107522548814527560">વેબ</translation>
 <translation id="5117590920725113268">આગલો મહિનો દર્શાવો</translation>
 <translation id="5136175204352732067">અલગ કીબોર્ડ કનેક્ટ કર્યું</translation>
@@ -762,22 +779,13 @@
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />% (જમણે)</translation>
 <translation id="5352250171825660495">ઘેરી થીમ ચાલુ છે</translation>
 <translation id="5356963482258194581">ઘેરી અને ઝાંખી થીમ વચ્ચે સ્વિચ કરો. ડેસ્કટૉપ આઇકન પર રાઇટ ક્લિક કરો અને વૉલપેપર અને સ્ટાઇલ પસંદ કરો.</translation>
+<translation id="536019650977002321">તમારા ઍડમિનિસ્ટ્રેટર ઑડિયો કૅપ્ચર કરવાની મંજૂરી આપતા નથી. વધુ માહિતી માટે તમારા ઍડમિનિસ્ટ્રેટરનો સંપર્ક કરો.</translation>
 <translation id="5363163447017455357"><ph name="DELIMITER" /> આ ટૅબ પર જાઓ</translation>
 <translation id="5379115545237091094">ઘણા બધા પ્રયાસો</translation>
 <translation id="5391307769715781764">શું સાચવેલી ડેસ્ક બદલવી છે?</translation>
 <translation id="5393156353051693207">તમારી ઍપનો ક્રમ બદલવા માટે ગમે ત્યાં ટચ કરીને થોડીવાર દબાવી રાખો</translation>
 <translation id="5395308026110844773"><ph name="IN_PLACE_APP" />ની સૌથી ઉપર <ph name="DRAGGED_APP_NAME" /> પર, ફોલ્ડર બનાવવા માટે રિલીઝ કરો.</translation>
 <translation id="5397578532367286026">આ વપરાશકર્તાના ઉપયોગ અને ઇતિહાસની chrome.com પર સંચાલક (<ph name="MANAGER_EMAIL" />) દ્વારા સમીક્ષા કરવામાં આવી શકે છે.</translation>
-<translation id="5399673806694250334">સ્ટેટસ ટ્રે, સમય <ph name="TIME" />,
-        <ph name="BATTERY" />
-        <ph name="CHANNEL" />
-        <ph name="NETWORK" />,
-        <ph name="MIC" />,
-        <ph name="CAMERA" />,
-        <ph name="MANAGED" />
-        <ph name="NOTIFICATION" />,
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="5400461572260843123">ઝડપી સેટિંગ, નોટિફિકેશન કેન્દ્ર ઍક્સેસ કરવા માટે Search + ડાબી ઍરો કી દબાવો.</translation>
 <translation id="5426063383988017631">સેટિંગ મેનૂ બંધ કર્યું</translation>
 <translation id="5428899915242071344">પસંદ કરવાનું શરૂ કરો</translation>
@@ -897,9 +905,11 @@
 <translation id="6064463340679478396">ફાઇલનો વપરાશ પૂર્ણ થયો</translation>
 <translation id="6073451960410192870">રેકોર્ડિંગ બંધ કરો</translation>
 <translation id="6074087755403037157">બીટા ચૅનલ</translation>
+<translation id="6095008505822982596">સ્પીચ રેટ</translation>
 <translation id="6099678161144790572">ગયા મહિને ફેરફાર કરવામાં આવ્યો હતો</translation>
 <translation id="6103838137565245112">સિસ્ટમ</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" /> સ્પીચ ફાઇલ ડાઉનલોડ કરી</translation>
+<translation id="6116825164611323644">આ ડિવાઇસ પર કૅમેરાનો ઍક્સેસ બંધ કરવામાં આવ્યો છે</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042"><ph name="FILENAME" /> માટે ડાઉનલોડ કરવું કન્ફર્મ કરો</translation>
 <translation id="612734058257491180">અતિથિ સત્રમાં Google Assistant ઉપલબ્ધ હોતું નથી.</translation>
@@ -1000,7 +1010,6 @@
 <translation id="6700713906295497288">IME મેનૂ બટન</translation>
 <translation id="6707693040195709527">ડિવાઇસનું વર્ઝન બદલીને અગાઉનું વર્ઝન કરવા માટે નિયત કરતાં વધુ સમય થઈ ગયો છે</translation>
 <translation id="6710213216561001401">પાછલી</translation>
-<translation id="6713285437468012787">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ની જોડી બનાવવામાં આવી અને હવે તે બધા વપરાશકર્તાઓને ઉપલબ્ધ છે. તમે સેટિંગનો ઉપયોગ કરીને આ જોડીને દૂર કરી શકો છો.</translation>
 <translation id="6723839937902243910">પાવર</translation>
 <translation id="6727969043791803658">કનેક્ટ થયેલ, બૅટરી <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6732800389263199929">+<ph name="COUNT" /></translation>
@@ -1043,6 +1052,7 @@
 <translation id="6961121602502368900">ઑફિસની પ્રોફાઇલમાં ફોન સાઇલન્ટ રાખવાની સુવિધા ઉપલબ્ધ નથી</translation>
 <translation id="6961840794482373852">Alt કી + ઉપરની ઍરો કી કીબોર્ડ શૉર્ટકટ બદલવામાં આવ્યો છે. Page Up કીનો ઉપયોગ કરવા માટે, <ph name="LAUNCHER_KEY_NAME" /> કી + ઉપરની ઍરો કી દબાવો.</translation>
 <translation id="696267987219125751">કૅમેરા ફ્રેમિંગ બંધ છે.</translation>
+<translation id="6964690557625666701">પિન કરેલી બધી આઇટમ શેલ્ફ પાર્ટીમાં હોવાથી શેલ્ફ પર દર્શાવાતી નથી</translation>
 <translation id="6965382102122355670">બરાબર, સમજાઇ ગયું</translation>
 <translation id="6972754398087986839">પ્રારંભ કરો</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -1098,7 +1108,6 @@
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7313193732017069507">કૅમેરાને મોટો કરો</translation>
 <translation id="731589979057211264">શેલ્ફ પાર્ટી ચાલુ છે.</translation>
-<translation id="7319740667687257810">લૉન્ચર, આંશિક દૃશ્ય</translation>
 <translation id="7346909386216857016">બરાબર, સમજાઇ ગયું</translation>
 <translation id="7348093485538360975">ઑન-સ્ક્રીન કીબોર્ડ</translation>
 <translation id="735745346212279324">VPN ડિસ્કનેક્ટ કર્યું છે</translation>
@@ -1126,6 +1135,7 @@
 <translation id="746232733191930409">સ્ક્રીન રેકોર્ડિંગ મોડ</translation>
 <translation id="7466449121337984263">કૃપા કરીને સેન્સરને સ્પર્શ કરો</translation>
 <translation id="7477793887173910789">તમારું મ્યુઝિક, વીડિયો અને બીજું ઘણું નિયંત્રિત કરો</translation>
+<translation id="7490360161041035804">Google Driveની ફાઇલો સહિત, તમે મહત્ત્વની ફાઇલો પિન કરી શકો છો. પિન કરવા માટે, કોઈ આઇટમ પર કર્સર લઈ જાઓ અથવા Files ખોલો અને કોઈ આઇટમ પર રાઇટ ક્લિક કરો.</translation>
 <translation id="7497767806359279797">ભાષા અને કીબોર્ડ પસંદ કરો</translation>
 <translation id="7508690557411636492">ગયા મહિનામાં ખોલેલી</translation>
 <translation id="7509246181739783082">તમારી ઓળખ ચકાસો</translation>
@@ -1143,6 +1153,7 @@
 <translation id="7557816257942363084"><ph name="APP_NAME" /> હાલમાં તમારા માઇક્રોફોનનો ઉપયોગ કરી રહી છે</translation>
 <translation id="7561982940498449837">મેનૂ બંધ કરો</translation>
 <translation id="7564874036684306347">વિંડોને બીજા ડેસ્કટૉપમાં ખસેડવું તે અનપેક્ષિત વર્તણૂકનું કારણ બની શકે છે. અનુગામી નોટિફિકેશન, વિંડો અને સંવાદો ડેસ્કટૉપ વચ્ચે વિભાજિત થઈ શકે છે.</translation>
+<translation id="7567076708801803118">શું તમે આ ડિવાઇસ પર કૅમેરાનો ઍક્સેસ બંધ કરવા માગો છો?</translation>
 <translation id="7569509451529460200">બ્રેઇલ અને ChromeVox સક્ષમ કર્યાં</translation>
 <translation id="7573585051776738856">સક્રિય વિન્ડોને જમણે ડૉક કરી.</translation>
 <translation id="7579778809502851308">સ્ક્રીન કૅપ્ચર</translation>
@@ -1222,6 +1233,7 @@
 <translation id="7982789257301363584">નેટવર્ક</translation>
 <translation id="7984197416080286869">ફિંગરપ્રિન્ટ માટેના ઘણા બધા પ્રયત્નો</translation>
 <translation id="798779949890829624">આ સેટિંગને તમારા વ્યવસ્થાપક દ્વારા મેનેજ કરવામાં આવે છે</translation>
+<translation id="799296642788192631">તમે મહત્ત્વની ફાઇલો પિન કરી શકો છો. પિન કરવા માટે, કોઈ આઇટમ પર કર્સર લઈ જાઓ અથવા Files ખોલો અને કોઈ આઇટમ પર રાઇટ ક્લિક કરો.</translation>
 <translation id="7994370417837006925">બહુવિધ સાઇન-ઇન</translation>
 <translation id="7995804128062002838">સ્ક્રીન કૅપ્ચર કરવામાં નિષ્ફળ રહ્યાં</translation>
 <translation id="8000066093800657092">નેટવર્ક નથી</translation>
@@ -1253,7 +1265,6 @@
 <translation id="8152264887680882389"><ph name="TEXT" />, ઑટોમેટિક રીતે પૂર્ણ</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> આ સેટિંગને તમારા વ્યવસ્થાપક દ્વારા મેનેજ કરવામાં આવે છે.</translation>
 <translation id="8155628902202578800"><ph name="USER_EMAIL_ADDRESS" /> માટે માહિતી સંવાદ ખોલો</translation>
-<translation id="8157728322324420120">તમારા માટે સૂચવેલા</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" />નો ઉપયોગ કરી રહ્યા છે</translation>
 <translation id="8183592608247778598">તમારા <ph name="DEVICE_TYPE" /> પર તમારા ફોનના તાજેતરના ફોટા, મીડિયા, નોટિફિકેશન અને ઍપ જુઓ</translation>
 <translation id="8192202700944119416">નોટિફિકેશન છુપાવેલા છે.</translation>
@@ -1350,6 +1361,9 @@
 <translation id="8734991477317290293">તે તમારા કીસ્ટ્રોકની ચોરી કરવાનો પ્રયાસ કરતું હોઈ શકે છે</translation>
 <translation id="8735678380411481005">કીબોર્ડની બૅકલાઇટનો રંગ</translation>
 <translation id="8735953464173050365">કીબોર્ડ સેટિંગ બતાવો. <ph name="KEYBOARD_NAME" /> પસંદ કરેલું છે</translation>
+<translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
+        <ph name="SCREEN_SHARE_STATUS" /></translation>
+<translation id="8752416742247198423">કૅમેરા પરવાનગી ધરાવતી ઍપ અને વેબપેજ આ ડિવાઇસ સાથે કનેક્ટેડ કૅમેરાનો ઉપયોગ કરી શકે તે માટે કૅમેરાનો ઍક્સેસ ચાલુ કરો.</translation>
 <translation id="8755498163081687682">તમારી ઓળખની ચકાસણી કરો: આ તમે જ છો, તે <ph name="ORIGIN_NAME" /> કન્ફર્મ કરવા માગે છે</translation>
 <translation id="875593634123171288">VPN સેટિંગ બતાવો</translation>
 <translation id="8759408218731716181">બહુવિધ સાઇન-ઇન સેટ કરી શકતાં નથી</translation>
@@ -1364,6 +1378,7 @@
 <translation id="8819728065740986820">અડૅપ્ટિવ ચાર્જિંગ ચાલુ છે</translation>
 <translation id="8825863694328519386">પાછળ જવા ડાબેથી સ્વાઇપ કરો</translation>
 <translation id="8834539327799336565">હાલમાં કનેક્ટેડ</translation>
+<translation id="8834657930627018205">કૅમેરાનો ઍક્સેસ ચાલુ કરો.</translation>
 <translation id="8841375032071747811">પાછળ બટન</translation>
 <translation id="8843682306134542540">રોટેશન લૉક ટૉગલ કરો. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
@@ -1386,6 +1401,7 @@
 <translation id="8936501819958976551">નિષ્ક્રિય કરેલું</translation>
 <translation id="8938800817013097409">USB-C ડિવાઇસ (પાછળની બાજુએ જમણું પોર્ટ)</translation>
 <translation id="8940956008527784070">બૅટરી ઓછી (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8949925099261528566">કનેક્ટ કર્યું, કોઈ ઇન્ટરનેટ નથી</translation>
 <translation id="8951539504029375108">તમારી Chromebook સાથે ફક્ત મંજૂરી ધરાવતા Thunderbolt ડિવાઇસ સુસંગત હોય છે</translation>
 <translation id="8982906748181120328">નજીકની દૃશ્યતા</translation>
 <translation id="8983038754672563810">HSPA</translation>

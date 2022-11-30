@@ -20,6 +20,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/devtools/url_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -317,16 +319,11 @@ std::string SanitizeRemoteFrontendURL(const std::string& value) {
 }
 
 std::string SanitizeEnabledExperiments(const std::string& value) {
-  bool valid = std::find_if_not(value.begin(), value.end(), [](char ch) {
-                 if (base::IsAsciiAlpha(ch) || base::IsAsciiDigit(ch) ||
-                     ch == ';' || ch == '_')
-                   return true;
-                 return false;
-               }) == value.end();
-  if (!valid) {
-    return std::string();
-  }
-  return value;
+  const auto is_legal = [](char ch) {
+    return base::IsAsciiAlpha(ch) || base::IsAsciiDigit(ch) || ch == ';' ||
+           ch == '_';
+  };
+  return base::ranges::all_of(value, is_legal) ? value : std::string();
 }
 
 std::string SanitizeFrontendQueryParam(
@@ -690,7 +687,7 @@ DevToolsUIBindings::~DevToolsUIBindings() {
   // Remove self from global list.
   DevToolsUIBindingsList& instances =
       DevToolsUIBindings::GetDevToolsUIBindings();
-  auto it(std::find(instances.begin(), instances.end(), this));
+  auto it = base::ranges::find(instances, this);
   DCHECK(it != instances.end());
   instances.erase(it);
 }
@@ -709,7 +706,7 @@ void DevToolsUIBindings::HandleMessageFromDevToolsFrontend(
   int id = message.FindInt(kFrontendHostId).value_or(0);
   base::Value::List params_list;
   if (params)
-    params_list = std::move(params->GetList());
+    params_list = std::move(*params).TakeList();
   embedder_message_dispatcher_->Dispatch(
       base::BindOnce(&DevToolsUIBindings::SendMessageAck,
                      weak_factory_.GetWeakPtr(), id),
@@ -1547,6 +1544,8 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
     extension_info.Set("exposeExperimentalAPIs",
                        extension->permissions_data()->HasAPIPermission(
                            extensions::mojom::APIPermissionID::kExperimental));
+    extension_info.Set("allowFileAccess", extensions::util::AllowFileAccess(
+                                              extension->id(), profile_));
     results.Append(std::move(extension_info));
 
     if (!(extensions::Manifest::IsPolicyLocation(extension->location()) ||

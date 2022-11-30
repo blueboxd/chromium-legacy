@@ -87,10 +87,6 @@ class SpeechMonitor : public content::TtsPlatform {
   bool StopSpeaking() override;
   bool IsSpeaking() override;
   void GetVoices(std::vector<content::VoiceData>* out_voices) override;
-  void GetVoicesForBrowserContext(
-      content::BrowserContext* browser_context,
-      const GURL& source_url,
-      std::vector<content::VoiceData>* out_voices) override {}
   void Pause() override {}
   void Resume() override {}
   void WillSpeakUtteranceWithVoice(
@@ -103,6 +99,7 @@ class SpeechMonitor : public content::TtsPlatform {
   void Shutdown() override;
   void FinalizeVoiceOrdering(std::vector<content::VoiceData>& voices) override;
   void RefreshVoices() override;
+  content::ExternalPlatformDelegate* GetExternalPlatformDelegate() override;
 
   void MaybeContinueReplay();
   void MaybePrintExpectations();

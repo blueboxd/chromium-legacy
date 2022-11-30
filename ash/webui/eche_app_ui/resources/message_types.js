@@ -26,6 +26,8 @@
  *    wifiConnectionState: string,
  *    debugMode: boolean,
  *    MeasureLatency: boolean,
+ *    sendStartSignaling: boolean,
+ *    disable_stun_server: boolean,
  * }}
  */
 /* #export */ let SystemInfo;

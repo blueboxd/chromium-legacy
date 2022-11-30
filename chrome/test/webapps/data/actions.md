@@ -20,7 +20,7 @@ The tables in this file are parsed as action templates for critical user journey
 
 TODO(dmurph): Possibly this table up into markdown-header section.
 
-| # Action base name | Argument Types | Output Actions | Unique Identifier (next: 133) | Status (WIP, Implemented, Not Implemented, Parameterized) | Description | Metadata, implementation bug, etc |
+| # Action base name | Argument Types | Output Actions | Unique Identifier (next: 135) | Status (WIP, Implemented, Not Implemented, Parameterized) | Description | Metadata, implementation bug, etc |
 | --- | --- | --- | --- | --- | --- | --- |
 | # Badging |
 | check_app_badge_empty | Site |  | 2 | Not Implemented | Check that the 'badge' on the app icon is empty |  |
@@ -53,21 +53,21 @@ TODO(dmurph): Possibly this table up into markdown-header section.
 | # Install |
 | install_locally | Site |  | 46 | Implemented | Find the app in the app list (chrome://apps) and install it by right-clicking on the app and selecting the 'install' option. Win/Mac/Linux only. |  |
 | install_omnibox_icon | InstallableSite |  | 31 | Implemented |  |  |
-| install_policy_app | Site, ShortcutOptions, WindowOptions |  | 32 | Implemented | Add a force-installed enterprise policy site to the user profile (must be managed profile). |  |
+| install_policy_app | Site, ShortcutOptions, WindowOptions, InstallMode |  | 32 | Implemented | Add a force-installed enterprise policy site to the user profile (must be managed profile). |  |
 | install_menu_option | InstallableSite |  | 47 | Implemented |  |  |
-| install_no_shortcut | Site | install_policy_app($1, NoShortcut, WindowOptions::All) | 56 | Parameterized |  |  |
-| install_tabbed_no_shortcut | Site | install_policy_app($1, NoShortcut, Browser) | 129 | Parameterized | All installation methods that result in a tabbed webapp without shortcut. |  |
-| install_windowed_no_shortcut | Site | install_policy_app($1, NoShortcut, Windowed) | 131 | Parameterized | All installation methods that result in a windowed webapp without shortcut. |  |
+| install_no_shortcut | Site | install_policy_app($1, NoShortcut, WindowOptions::All, WebApp) | 56 | Parameterized |  |  |
+| install_tabbed_no_shortcut | Site | install_policy_app($1, NoShortcut, Browser, WebApp) | 129 | Parameterized | All installation methods that result in a tabbed webapp without shortcut. |  |
+| install_windowed_no_shortcut | Site | install_policy_app($1, NoShortcut, Windowed, WebApp) | 131 | Parameterized | All installation methods that result in a windowed webapp without shortcut. |  |
 | # Install & Create Shortcut Parameterized |
-| install_or_shortcut | Site | create_shortcut($1, WindowOptions::All) & install_omnibox_icon($1) & install_policy_app($1, ShortcutOptions::All, WindowOptions::All) & install_menu_option($1) | 52 | Parameterized |  |  |
+| install_or_shortcut | Site | create_shortcut($1, WindowOptions::All) & install_omnibox_icon($1) & install_policy_app($1, ShortcutOptions::All, WindowOptions::All, WebApp) & install_menu_option($1) | 52 | Parameterized |  |  |
 | install_or_shortcut_by_user | Site | create_shortcut($1, WindowOptions::All) & install_omnibox_icon($1) & install_menu_option($1) | 53 | Parameterized |  |  |
 | install_or_shortcut_by_user_tabbed | Site | create_shortcut($1, Browser) | 54 | Parameterized |  |  |
 | install_or_shortcut_by_user_windowed | Site | create_shortcut($1, Windowed) & install_omnibox_icon($1) & install_menu_option($1) | 55 | Parameterized |  |  |
-| install_or_shortcut_tabbed | Site | create_shortcut($1, Browser) & install_policy_app($1, ShortcutOptions::All, Browser) | 61 | Parameterized | All installation methods that result in a tabbed webapp. |  |
+| install_or_shortcut_tabbed | Site | create_shortcut($1, Browser) & install_policy_app($1, ShortcutOptions::All, Browser, WebApp) | 61 | Parameterized | All installation methods that result in a tabbed webapp. |  |
 | install_or_shortcut_tabbed_with_shortcut | Site | create_shortcut($1, Browser) & install_policy_app($1, WithShortcut, Browser) | 128 | Parameterized | All installation methods that result in a tabbed webapp with shortcut created. |  |
-| install_or_shortcut_windowed | Site | create_shortcut($1, Windowed) & install_omnibox_icon($1) & install_policy_app($1, ShortcutOptions::All, Windowed) & install_menu_option($1) | 62 | Parameterized | All installation methods that result in a windowed webapp. |  |
-| install_or_shortcut_windowed_with_shortcut | Site | create_shortcut($1, Windowed) & install_omnibox_icon($1) &  install_policy_app($1, WithShortcut, Windowed) & install_menu_option($1) | 130 | Parameterized | All installation methods that result in a windowed webapp with shortcut created. |  |
-| install_or_shortcut_with_shortcut | Site | install_policy_app($1, WithShortcut, WindowOptions::All) & create_shortcut($1, WindowOptions::All) & install_omnibox_icon($1) & install_menu_option($1) | 63 | Parameterized |  |  |
+| install_or_shortcut_windowed | Site | create_shortcut($1, Windowed) & install_omnibox_icon($1) & install_policy_app($1, ShortcutOptions::All, Windowed, WebApp) & install_menu_option($1) | 62 | Parameterized | All installation methods that result in a windowed webapp. |  |
+| install_or_shortcut_windowed_with_shortcut | Site | create_shortcut($1, Windowed) & install_omnibox_icon($1) &  install_policy_app($1, WithShortcut, Windowed, WebApp) & install_menu_option($1) | 130 | Parameterized | All installation methods that result in a windowed webapp with shortcut created. |  |
+| install_or_shortcut_with_shortcut | Site | install_policy_app($1, WithShortcut, WindowOptions::All, WebApp) & create_shortcut($1, WindowOptions::All) & install_omnibox_icon($1) & install_menu_option($1) | 63 | Parameterized |  |  |
 | |
 | # Uninstall |
 | uninstall_from_os | Site |  | 87 | Implemented | Uninstalls the app from OS integration - e.g. Windows Control Panel / Start menu |  |
@@ -82,13 +82,15 @@ TODO(dmurph): Possibly this table up into markdown-header section.
 | check_app_in_list_tabbed | Site |  | 11 | Implemented | Find the app in the app list (on desktop, this is chrome://apps, and on ChromeOS, this is the app drawer). Check that the app opens in a window by right clicking on it to see if the "open in window" option is checked, and by launching it to see if it opens in a separate window. |  |
 | check_app_in_list_windowed | Site |  | 12 | Implemented | Find the app in the app list (on desktop, this is chrome://apps, and on ChromeOS, this is the app drawer). Check that the app opens in a tab by right clicking on it to see if the "open in window" option is unchecked, and by launching it to see if it opens in a browser tab (and not a window). |  |
 | check_app_list_empty |  |  | 13 | Implemented | The app list is empty (on desktop, this is chrome://apps, and on ChromeOS, this is the app drawer). |  |
+| check_app_navigation | Site |  | 133 | Implemented |  |  |
 | check_app_navigation_is_start_url |  |  | 14 | Implemented |  |  |
 | check_app_in_list_not_locally_installed | Site |  | 45 | Implemented | Find the app in the app list (chrome://apps) and check that the given app is in the app list and is not installed. This means the icon is grey, and right clicking on it provides an 'install' option. Win/Mac/Linux only. |  |
 | check_app_not_in_list | Site |  | 15 | Implemented | Check that the given app is NOT in the app list. On desktop, this is chrome://apps, and on ChromeOS, this is the app drawer. |  |
 | check_app_title | Site, Title |  | 79 | Implemented | Check that the app title is correct | finnur@ |
-| check_app_in_list_icon_correct | Site |  | 75 | Not Implemented | Find the app in the app list (on desktop, this is chrome://apps, and on ChromeOS, this is the app drawer). Check that the icon for the given app in the app list is correct. | P2 (dmurph modified - should be easy to fetch icon using web request for chrome://app-icon/<app-id>/<dip> I believe) |
+| check_app_in_list_icon_correct | Site |  | 75 | Implemented | Find the app in the app list (on desktop, this is chrome://apps, and on ChromeOS, this is the app drawer). Check that the icon for the given app in the app list is correct. | P2 (fetch icon using web request for chrome://app-icon/<app-id>/<icon-size>) |
 | check_theme_color | Site |  | 76 | Not Implemented | Asserts that the theme color of the given app window is correct. | P3 |
 | # Misc UX |
+| check_browser_navigation | Site |  | 134 | Implemented | Check the current browser navigation is the given site |  |
 | check_browser_navigation_is_app_settings | Site |  | 109 | Implemented | Check the current browser navigation is chrome://app-settings/<app-id> | phillis@ |
 | check_create_shortcut_not_shown |  |  | 85 | WIP | Check that the "Create Shortcut" menu option (3-dot->"More Tools"->"Create Shortcut) is greyed out |  |
 | check_create_shortcut_shown |  |  | 86 | WIP | Check that the "Create Shortcut" menu option (3-dot->"More Tools"->"Create Shortcut) is shown |  |
@@ -142,7 +144,7 @@ TODO(dmurph): Possibly this table up into markdown-header section.
 | switch_profile_clients | ProfileClient |  | 40 | Implemented | Switch to a different instance of chrome signed in to the same profile |  |
 | sync_turn_off |  |  | 41 | Implemented | Turn chrome sync off for "Apps": chrome://settings/syncSetup/advanced |  |
 | sync_turn_on |  |  | 42 | Implemented | Turn chrome sync on for "Apps": chrome://settings/syncSetup/advanced |  |
-| switch_incognito_profile |  |  | 73 | Not Implemented | Switch to using incognito mode | P2 |
+| switch_incognito_profile |  |  | 73 | Implemented | Switch to using incognito mode | P2 |
 | # File handling |
 | check_site_handles_file | Site, FileExtension |  | 118 | Not Implemented |  |  |
 | check_site_not_handles_file | Site, FileExtension |  | 122 | Not Implemented |  |  |

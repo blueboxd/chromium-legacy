@@ -35,6 +35,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
+#include "services/metrics/public/mojom/ukm_interface.mojom-forward.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -477,7 +478,6 @@ class PageContentAnnotationsServiceBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBrowserTest,
                        DISABLED_ModelExecutes) {
   base::HistogramTester histogram_tester;
-  ukm::TestAutoSetUkmRecorder ukm_recorder;
 
   GURL url(embedded_test_server()->GetURL("a.com", "/hello.html"));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
@@ -527,10 +527,6 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBrowserTest,
   ASSERT_TRUE(got_content_annotations.has_value());
   EXPECT_NE(-1.0, got_content_annotations->model_annotations.visibility_score);
   EXPECT_TRUE(got_content_annotations->model_annotations.categories.empty());
-
-  auto entries = ukm_recorder.GetEntriesByName(
-      ukm::builders::PageContentAnnotations::kEntryName);
-  EXPECT_EQ(1u, entries.size());
 
 #endif  // BUILDFLAG(BUILD_WITH_TFLITE_LIB)
 }
@@ -617,36 +613,40 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBrowserTest,
   }
 }
 
-#if !defined(NDEBUG)
 // Flaky timeout in debug builds (crbug.com/1338408).
-#define MAYBE_OgImagePresent DISABLED_OgImagePresent
-#else
-#define MAYBE_OgImagePresent OgImagePresent
-#endif
+// TODO(crbug.com/1365619): Flaky on several OSes in non-debug.
 IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBrowserTest,
-                       MAYBE_OgImagePresent) {
+                       DISABLED_OgImagePresent) {
   base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
 
   GURL url(embedded_test_server()->GetURL("a.com", "/og_image.html"));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  // Value taken from SalientImageAvailability enum.
+  static const int kAvailableFromOgImage = 3;
 
   RetryForHistogramUntilCountReached(
       &histogram_tester,
       "OptimizationGuide.PageContentAnnotations.SalientImageAvailability", 1);
 
   histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.PageContentAnnotations.SalientImageAvailability", 3,
-      1);
+      "OptimizationGuide.PageContentAnnotations.SalientImageAvailability",
+      kAvailableFromOgImage, 1);
+
+  std::vector<const ukm::mojom::UkmEntry*> entries =
+      ukm_recorder.GetEntriesByName(
+          ukm::builders::SalientImageAvailability::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+
+  ASSERT_EQ(1u, entries[0]->metrics.size());
+  EXPECT_EQ(kAvailableFromOgImage, entries[0]->metrics.begin()->second);
 }
 
-#if !defined(NDEBUG)
 // Flaky timeout in debug builds (crbug.com/1338408).
-#define MAYBE_OgImagePresentButMalformed DISABLED_OgImagePresentButMalformed
-#else
-#define MAYBE_OgImagePresentButMalformed OgImagePresentButMalformed
-#endif
+// TODO(crbug.com/1365619): Flaky on several OSes in non-debug.
 IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBrowserTest,
-                       MAYBE_OgImagePresentButMalformed) {
+                       DISABLED_OgImagePresentButMalformed) {
   base::HistogramTester histogram_tester;
 
   GURL url(embedded_test_server()->GetURL("a.com", "/og_image_malformed.html"));
@@ -692,11 +692,7 @@ class PageContentAnnotationsServiceRemoteMetadataBrowserTest
     // enabled.
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{features::kOptimizationHints, {}},
-         {features::kRemotePageMetadata,
-          {{"persist_page_metadata", "true"},
-           {"remote_page_categories_persistence_allowlist",
-            "category1,othercategory"},
-           {"min_page_category_score", "80"}}}},
+         {features::kRemotePageMetadata, {{"min_page_category_score", "80"}}}},
         /*disabled_features=*/{{features::kPageContentAnnotations}});
     set_load_model_on_startup(false);
   }
@@ -722,9 +718,6 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceRemoteMetadataBrowserTest,
   proto::Category* category2 = page_entities_metadata.add_categories();
   category2->set_category_id("othercategory");
   category2->set_score(0.75);
-  proto::Category* category3 = page_entities_metadata.add_categories();
-  category3->set_category_id("notallowlisted");
-  category3->set_score(0.9);
   page_entities_metadata.set_alternative_title("alternative title");
   OptimizationMetadata metadata;
   metadata.SetAnyMetadataForTesting(page_entities_metadata);
@@ -781,9 +774,6 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceRemoteMetadataBrowserTest,
   proto::Category* category2 = page_entities_metadata.add_categories();
   category2->set_category_id("othercategory");
   category2->set_score(0.75);
-  proto::Category* category3 = page_entities_metadata.add_categories();
-  category3->set_category_id("notallowlisted");
-  category3->set_score(0.9);
   OptimizationMetadata metadata;
   metadata.SetAnyMetadataForTesting(page_entities_metadata);
   OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())

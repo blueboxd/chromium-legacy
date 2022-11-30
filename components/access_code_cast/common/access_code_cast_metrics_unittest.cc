@@ -4,7 +4,9 @@
 
 #include "components/access_code_cast/common/access_code_cast_metrics.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
+#include "base/test/metrics/histogram_enum_reader.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -85,8 +87,36 @@ TEST(AccessCodeCastMetricsTest, OnCastSessionResult) {
       1 /* RouteRequest::OK */, AccessCodeCastCastMode::kDesktopMirror);
   histogram_tester.ExpectBucketCount(
       "AccessCodeCast.Discovery.CastModeOnSuccess", 2, 1);
+  AccessCodeCastMetrics::OnCastSessionResult(
+      1 /* RouteRequest::OK */, AccessCodeCastCastMode::kRemotePlayback);
+  histogram_tester.ExpectBucketCount(
+      "AccessCodeCast.Discovery.CastModeOnSuccess", 3, 1);
   histogram_tester.ExpectTotalCount(
-      "AccessCodeCast.Discovery.CastModeOnSuccess", 3);
+      "AccessCodeCast.Discovery.CastModeOnSuccess", 4);
+}
+
+TEST(AccessCodeCastMetricsTest, RecordAccessCodeNotFoundCount) {
+  base::HistogramTester histogram_tester;
+
+  AccessCodeCastMetrics::RecordAccessCodeNotFoundCount(0);
+  histogram_tester.ExpectTotalCount("AccessCodeCast.Ui.AccessCodeNotFoundCount",
+                                    0);
+
+  AccessCodeCastMetrics::RecordAccessCodeNotFoundCount(1);
+  histogram_tester.ExpectBucketCount(
+      "AccessCodeCast.Ui.AccessCodeNotFoundCount", 1, 1);
+
+  AccessCodeCastMetrics::RecordAccessCodeNotFoundCount(100);
+  histogram_tester.ExpectBucketCount(
+      "AccessCodeCast.Ui.AccessCodeNotFoundCount", 100, 1);
+
+  // Over 100 should be reported as 100.
+  AccessCodeCastMetrics::RecordAccessCodeNotFoundCount(500);
+  histogram_tester.ExpectBucketCount(
+      "AccessCodeCast.Ui.AccessCodeNotFoundCount", 100, 2);
+
+  histogram_tester.ExpectTotalCount("AccessCodeCast.Ui.AccessCodeNotFoundCount",
+                                    3);
 }
 
 TEST(AccessCodeCastMetricsTest, RecordDialogLoadTime) {
@@ -146,4 +176,44 @@ TEST(AccessCodeCastMetricsTest, RecordRememberedDevicesCount) {
   AccessCodeCastMetrics::RecordRememberedDevicesCount(500);
   histogram_tester.ExpectBucketCount(
       "AccessCodeCast.Discovery.RememberedDevicesCount", 100, 2);
+}
+
+TEST(AccessCodeCastMetricsTest, CheckMetricsEnums) {
+  base::HistogramTester histogram_tester;
+
+  // AddSinkResult
+  absl::optional<base::HistogramEnumEntryMap> add_sink_results =
+      base::ReadEnumFromEnumsXml("AccessCodeCastAddSinkResult");
+  EXPECT_TRUE(add_sink_results->size() ==
+      static_cast<int>(AccessCodeCastAddSinkResult::kMaxValue) + 1)
+      << "'AccessCodeCastAddSinkResult' enum was changed in "
+         "access_code_cast_metrics.h. Please update the entry in "
+         "enums.xml to match.";
+
+  // CastMode
+  absl::optional<base::HistogramEnumEntryMap> cast_modes =
+      base::ReadEnumFromEnumsXml("AccessCodeCastCastMode");
+  EXPECT_TRUE(cast_modes->size() ==
+      static_cast<int>(AccessCodeCastCastMode::kMaxValue) + 1)
+      << "'AccessCodeCastCastMode' enum was changed in "
+         "access_code_cast_metrics.h. Please update the entry in "
+         "enums.xml to match.";
+
+  // DialogCloseReason
+  absl::optional<base::HistogramEnumEntryMap> dialog_close_reasons =
+      base::ReadEnumFromEnumsXml("AccessCodeCastDialogCloseReason");
+  EXPECT_TRUE(dialog_close_reasons->size() ==
+      static_cast<int>(AccessCodeCastDialogCloseReason::kMaxValue) + 1)
+      << "'AccessCodeCastDialogCloseReason' enum was changed in "
+         "access_code_cast_metrics.h. Please update the entry in "
+         "enums.xml to match.";
+
+  // DialogOpenLocation
+  absl::optional<base::HistogramEnumEntryMap> dialog_open_locations =
+      base::ReadEnumFromEnumsXml("AccessCodeCastDialogOpenLocation");
+  EXPECT_TRUE(dialog_open_locations->size() ==
+      static_cast<int>(AccessCodeCastDialogOpenLocation::kMaxValue) + 1)
+      << "'AccessCodeCastDialogOpenLocation' enum was changed in "
+         "access_code_cast_metrics.h. Please update the entry in "
+         "enums.xml to match.";
 }

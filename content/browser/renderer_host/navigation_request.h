@@ -303,6 +303,7 @@ class CONTENT_EXPORT NavigationRequest
   SiteInstanceImpl* GetSourceSiteInstance() override;
   bool IsInMainFrame() const override;
   bool IsInPrimaryMainFrame() const override;
+  bool IsInOutermostMainFrame() override;
   bool IsInPrerenderedMainFrame() override;
   bool IsPrerenderedPageActivation() const override;
   bool IsInFencedFrameTree() const override;
@@ -326,7 +327,7 @@ class CONTENT_EXPORT NavigationRequest
   bool IsExternalProtocol() override;
   net::Error GetNetErrorCode() override;
   RenderFrameHostImpl* GetRenderFrameHost() const override;
-  bool IsSameDocument() override;
+  bool IsSameDocument() const override;
   bool HasCommitted() const override;
   bool IsErrorPage() const override;
   bool HasSubframeNavigationEntryCommitted() override;
@@ -727,6 +728,12 @@ class CONTENT_EXPORT NavigationRequest
   // Returns nullptr if this navigation had no initiator.
   const PolicyContainerPolicies* GetInitiatorPolicyContainerPolicies() const;
 
+  // The DocumentToken that should be used for the document created as a result
+  // of committing this navigation.
+  // - must only be called for cross-document navigations
+  // - must not be called before the navigation is ready to commit
+  const blink::DocumentToken& GetDocumentToken() const;
+
   // Returns the policies of the new document being navigated to.
   //
   // Must only be called after ReadyToCommitNavigation().
@@ -809,6 +816,27 @@ class CONTENT_EXPORT NavigationRequest
   // Returns the current url from GetURL() packaged with other state required to
   // properly determine SiteInstances and process allocation.
   UrlInfo GetUrlInfo();
+
+  // Return the parent's base url, snapshotted when this NavigationRequest was
+  // created. Used for sending to srcdoc renderers. See
+  // https://crbug.com/1356658 for further details. Note: The returned value
+  // will be empty unless (i) the navigation is to about:srcdoc, and (ii)
+  // IsolateSandboxedIframes is enabled.
+  // TODO(wjmaclean):  https://crbug.com/1356658 Make this also apply for
+  // about:blank navigations as well.
+
+  // Return the parent's base url, snapshotted when this NavigationRequest was
+  // created. Used for sending to srcdoc renderers. See
+  // https://crbug.com/1356658 for further details.
+  // Note: The returned value will be empty unless:
+  // 1. The navigation is to about:srcdoc, and
+  // 2. IsolateSandboxedIframes is enabled.
+  //
+  // TODO(https://crbug.com/1356658) Make this also apply for
+  // about:blank navigations as well.
+  const GURL& inherited_base_url() const {
+    return commit_params_->fallback_srcdoc_baseurl;
+  }
 
   bool is_overriding_user_agent() const {
     return commit_params_->is_overriding_user_agent;
@@ -928,10 +956,16 @@ class CONTENT_EXPORT NavigationRequest
     return prerender_frame_tree_node_id_.value();
   }
 
+  // TODO(crbug.com/1347953): Replace this function with
+  // NavigationRequest::ComputeFencedFrameProperties(), which falls back to
+  // frame_tree_node_->GetFencedFrameProperties() when the NavigationRequest
+  // itself doesn't have any properties.
   const absl::optional<FencedFrameURLMapping::FencedFrameProperties>&
   fenced_frame_properties() const {
     return fenced_frame_properties_;
   }
+
+  const absl::optional<base::UnguessableToken> ComputeFencedFrameNonce() const;
 
   void RenderFallbackContentForObjectTag();
 
@@ -1086,6 +1120,8 @@ class CONTENT_EXPORT NavigationRequest
   // counters and console warnings once navigation has committed.
   void DetermineOriginAgentClusterEndResult();
   void ProcessOriginAgentClusterEndResult();
+
+  void PopulateDocumentTokenForCrossDocumentNavigation();
 
   // NavigationURLLoaderDelegate implementation.
   void OnRequestRedirected(
@@ -1723,6 +1759,13 @@ class CONTENT_EXPORT NavigationRequest
   // SignedExchangeSubresourcePrefetch.
   absl::optional<SubresourceLoaderParams> subresource_loader_params_;
 
+  // DocumentToken to use for the newly-committed document in a cross-document
+  // navigation. Currently set immediately before sending CommitNavigation to
+  // the renderer. In the future, this may be populated earlier to allow lookup
+  // of a navigation request by the document that it may create, similar to how
+  // `NavigationOrDocumentHandle` behaves.
+  absl::optional<blink::DocumentToken> document_token_;
+
   // See comment on accessor.
   const base::UnguessableToken devtools_navigation_token_ =
       base::UnguessableToken::Create();
@@ -2106,16 +2149,28 @@ class CONTENT_EXPORT NavigationRequest
   // NavigationRequest.
   const bool is_target_fenced_frame_root_originating_from_opaque_url_ = false;
 
-  // On every embedder-initiated navigation of a fenced frame, we reinitialize
-  // the fenced frame properties.
+  // On every embedder-initiated navigation of a fenced frame, i.e.
+  // `is_embedder_initiated_fenced_frame_navigation_`, we reinitialize
+  // the fenced frame properties with the default `FencedFrameProperties()`
+  // constructor, which gives the fenced frame a fresh partition nonce.
+  //
   // If the embedder-initiated navigation is to an opaque url (urn:uuid), i.e.
-  // `is_embedder_initiated_fenced_frame_opaque_url_navigation_`, then
-  // this will be non-empty (containing the properties bound to the opaque url),
-  // and we will store this new set of fenced frame properties in the fenced
-  // frame root FrameTreeNode.
-  // If the embedder-initiated navigation is not to an opaque url, then
-  // this will be nullopt, and we will install it in order to clear the old
-  // fenced frame properties.
+  // `is_embedder_initiated_fenced_frame_opaque_url_navigation_`, we overwrite
+  // the default properties stored in this `NavigationRequest` with the
+  // `FencedFrameProperties` bound to that urn:uuid, in
+  // `NavigationRequest::OnFencedFrameURLMappingComplete`.
+  //
+  // For certain actions related to the pending `NavigationRequest` (rather
+  // than the existing fenced frame document), e.g. partitioned network
+  // requests for the pending navigation, we use the pending
+  // `FencedFrameProperties`.
+  //
+  // If the navigation commits, this new set of fenced frame properties will be
+  // stored in the fenced frame root FrameTreeNode in
+  // `NavigationRequest::DidCommitNavigation`.
+  //
+  // If the navigation doesn't commit (e.g. an HTTP 204 response), the fenced
+  // frame properties will not be stored in the fenced frame root.
   absl::optional<FencedFrameURLMapping::FencedFrameProperties>
       fenced_frame_properties_;
 

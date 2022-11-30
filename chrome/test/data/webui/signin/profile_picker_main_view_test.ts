@@ -8,7 +8,7 @@ import {loadTimeData, ManageProfilesBrowserProxyImpl, NavigationMixin, ProfileCa
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks, waitBeforeNextRender} from 'chrome://webui-test/test_util.js';
+import {flushTasks, waitBeforeNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
 import {TestManageProfilesBrowserProxy} from './test_manage_profiles_browser_proxy.js';
 
@@ -51,7 +51,8 @@ suite('ProfilePickerMainViewTest', function() {
   let navigationElement: NavigationElement;
 
   function resetTest() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     navigationElement = document.createElement('navigation-element');
     document.body.appendChild(navigationElement);
     mainViewElement = document.createElement('profile-picker-main-view');

@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="Printing.ConversionSize.Emf" units="KB"
-    expires_after="2022-12-04">
+    expires_after="2023-09-10">
   <owner>thestig@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>
@@ -33,7 +33,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.ConversionSize.EmfWithReducedRasterization"
-    units="KB" expires_after="2022-09-30">
+    units="KB" expires_after="2023-09-10">
   <owner>thestig@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>
@@ -43,7 +43,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.ConversionSize.PostScript2" units="KB"
-    expires_after="2022-09-30">
+    expires_after="2023-09-10">
   <owner>thestig@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>
@@ -53,7 +53,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.ConversionSize.PostScript3" units="KB"
-    expires_after="2022-09-30">
+    expires_after="2023-09-10">
   <owner>thestig@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>
@@ -63,7 +63,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.ConversionSize.PostScript3WithType42Fonts" units="KB"
-    expires_after="2022-09-30">
+    expires_after="2023-09-10">
   <owner>thestig@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>
@@ -73,7 +73,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.ConversionSize.Pwg" units="KB"
-    expires_after="2022-09-30">
+    expires_after="2023-09-10">
   <owner>thestig@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>
@@ -83,7 +83,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.AddressResolutionResult" enum="BooleanSuccess"
-    expires_after="2023-02-07">
+    expires_after="2023-04-09">
   <owner>bmgordon@chromium.org</owner>
   <owner>cros-printing-dev@chromium.org</owner>
   <summary>
@@ -138,7 +138,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.JobDuration.JobDone" units="ms"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>bmgordon@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
   <summary>
@@ -354,7 +354,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.Oop.PrintResult" enum="PrintOopResult"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>awscreen@chromium.org</owner>
   <owner>thestig@chromium.org</owner>
   <summary>

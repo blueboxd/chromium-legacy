@@ -28,13 +28,14 @@ class StubWebView : public WebView {
   Status Reload(const Timeout* timeout) override;
   Status Freeze(const Timeout* timeout) override;
   Status Resume(const Timeout* timeout) override;
+  Status PostBidiCommand(base::Value::Dict command) override;
   Status SendCommand(const std::string& cmd,
-                     const base::DictionaryValue& params) override;
+                     const base::Value::Dict& params) override;
   Status SendCommandFromWebSocket(const std::string& cmd,
-                                  const base::DictionaryValue& params,
+                                  const base::Value::Dict& params,
                                   const int client_cmd_id) override;
   Status SendCommandAndGetResult(const std::string& cmd,
-                                 const base::DictionaryValue& params,
+                                 const base::Value::Dict& params,
                                  std::unique_ptr<base::Value>* value) override;
   Status TraverseHistory(int delta, const Timeout* timeout) override;
   Status EvaluateScript(const std::string& frame,
@@ -104,11 +105,9 @@ class StubWebView : public WebView {
       const NetworkConditions& network_conditions) override;
   Status OverrideDownloadDirectoryIfNeeded(
       const std::string& download_directory) override;
-  Status CaptureScreenshot(
-      std::string* screenshot,
-      const base::DictionaryValue& params) override;
-  Status PrintToPDF(const base::DictionaryValue& params,
-                    std::string* pdf) override;
+  Status CaptureScreenshot(std::string* screenshot,
+                           const base::Value::Dict& params) override;
+  Status PrintToPDF(const base::Value::Dict& params, std::string* pdf) override;
   Status SetFileInputFiles(const std::string& frame,
                            const base::Value& element,
                            const std::vector<base::FilePath>& files,

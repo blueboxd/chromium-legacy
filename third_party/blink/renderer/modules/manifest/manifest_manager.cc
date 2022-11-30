@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,7 +63,7 @@ ManifestManager::ManifestManager(LocalDOMWindow& window)
 ManifestManager::~ManifestManager() = default;
 
 void ManifestManager::RequestManifest(RequestManifestCallback callback) {
-  RequestManifestImpl(WTF::Bind(
+  RequestManifestImpl(WTF::BindOnce(
       [](RequestManifestCallback callback, const KURL& manifest_url,
          const mojom::blink::ManifestPtr& manifest,
          const mojom::blink::ManifestDebugInfo* debug_info) {
@@ -76,7 +76,7 @@ void ManifestManager::RequestManifest(RequestManifestCallback callback) {
 
 void ManifestManager::RequestManifestDebugInfo(
     RequestManifestDebugInfoCallback callback) {
-  RequestManifestImpl(WTF::Bind(
+  RequestManifestImpl(WTF::BindOnce(
       [](RequestManifestDebugInfoCallback callback, const KURL& manifest_url,
          const mojom::blink::ManifestPtr& manifest,
          const mojom::blink::ManifestDebugInfo* debug_info) {
@@ -91,7 +91,7 @@ void ManifestManager::RequestManifestDebugInfo(
 
 void ManifestManager::RequestManifestForTesting(
     WebManifestManager::Callback callback) {
-  RequestManifestImpl(WTF::Bind(
+  RequestManifestImpl(WTF::BindOnce(
       [](WebManifestManager::Callback callback, const KURL& manifest_url,
          const mojom::blink::ManifestPtr& manifest,
          const mojom::blink::ManifestDebugInfo* debug_info) {
@@ -159,15 +159,15 @@ void ManifestManager::FetchManifest() {
   ResourceFetcher* document_fetcher = window.document()->Fetcher();
   fetcher_ = MakeGarbageCollected<ManifestFetcher>(manifest_url_);
   fetcher_->Start(window, ManifestUseCredentials(), document_fetcher,
-                  WTF::Bind(&ManifestManager::OnManifestFetchComplete,
-                            WrapWeakPersistent(this), window.Url()));
+                  WTF::BindOnce(&ManifestManager::OnManifestFetchComplete,
+                                WrapWeakPersistent(this), window.Url()));
 }
 
 void ManifestManager::OnManifestFetchComplete(const KURL& document_url,
                                               const ResourceResponse& response,
                                               const String& data) {
   fetcher_ = nullptr;
-  if (response.IsNull() && data.IsEmpty()) {
+  if (response.IsNull() && data.empty()) {
     manifest_debug_info_ = nullptr;
     ManifestUmaUtil::FetchFailed(ManifestUmaUtil::FETCH_UNSPECIFIED_REASON);
     ResolveCallbacks(ResolveState::kFailure);
@@ -230,12 +230,12 @@ void ManifestManager::RecordMetrics(const mojom::blink::Manifest& manifest) {
                       WebFeature::kWebAppManifestLaunchHandler);
   }
 
-  if (!manifest.url_handlers.IsEmpty()) {
+  if (!manifest.url_handlers.empty()) {
     UseCounter::Count(GetSupplementable(),
                       WebFeature::kWebAppManifestUrlHandlers);
   }
 
-  if (!manifest.protocol_handlers.IsEmpty()) {
+  if (!manifest.protocol_handlers.empty()) {
     UseCounter::Count(GetSupplementable(),
                       WebFeature::kWebAppManifestProtocolHandlers);
   }

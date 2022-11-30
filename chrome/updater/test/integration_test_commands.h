@@ -29,6 +29,7 @@ class IntegrationTestCommands
     : public base::RefCountedThreadSafe<IntegrationTestCommands> {
  public:
   virtual void EnterTestMode(const GURL& url) const = 0;
+  virtual void ExitTestMode() const = 0;
   virtual void SetGroupPolicies(const base::Value::Dict& values) const = 0;
   virtual void Clean() const = 0;
   virtual void ExpectClean() const = 0;
@@ -101,7 +102,8 @@ class IntegrationTestCommands
   virtual void ExpectLastStarted() const = 0;
   virtual void UninstallApp(const std::string& app_id) const = 0;
 
-  virtual void RunOfflineInstall(bool is_silent_install) = 0;
+  virtual void RunOfflineInstall(bool is_legacy_install,
+                                 bool is_silent_install) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<IntegrationTestCommands>;

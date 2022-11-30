@@ -178,6 +178,7 @@
 <translation id="5386450000063123300">‏מתבצע עדכון של Chromium‏ (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">‏התרת כניסה אל Chromium</translation>
 <translation id="5398878173008909840">‏גרסה חדשה של Chromium זמינה כעת.</translation>
+<translation id="5405650547142096840">‏להסיר מ-‏Chromium‏</translation>
 <translation id="5427571867875391349">‏הגדרת Chromium כדפדפן ברירת המחדל שלך</translation>
 <translation id="5438241569118040789">‏<ph name="PAGE_TITLE" /> - Chromium בגרסת בטא</translation>
 <translation id="5473971139929175403">‏יכול להיות ש-Chromium לא יפעל כראוי כי הוא כבר לא נתמך בגרסה הזו של Linux</translation>
@@ -301,9 +302,9 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="7682601070171973634">‏אנחנו בודקים תכונות חדשות ב-Chromium שמאפשרות לאתרים להציג את אותה חוויית הגלישה תוך שימוש בפחות נתונים.</translation>
 <translation id="7686590090926151193">‏Chromium אינו דפדפן ברירת המחדל שלך</translation>
 <translation id="7689606757190482937">‏סנכרון והתאמה אישית של Chromium בכל המכשירים שברשותך</translation>
-<translation id="7714577916146996629">‏כשההגדרה מופעלת, מערכת Chromium משתמשת בזיכרון מכרטיסיות שאינן בשימוש באופן פעיל. כך המשאבים של המחשב מתפנים למשימות אחרות, ומערכת Chromium ממשיכה לפעול במהירות. כרטיסיות לא פעילות מופיעות ריקות ונטענות מחדש באופן אוטומטי כשלוחצים עליהן. אפשר <ph name="BEGIN_LINK" />לקבל מידע נוסף<ph name="END_LINK" /> או <ph name="BEGIN_LINK_2" />לשלוח משוב<ph name="END_LINK_2" /></translation>
 <translation id="7745317241717453663">‏פעולה זו תמחק את נתוני הגלישה מהמכשיר. כדי לשחזר את הנתונים מאוחר יותר, יש להיכנס אל Chromium עם <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">המתקין לא הצליח ליצור ספרייה זמנית. יש לבדוק את המקום הפנוי בדיסק ואת האישור להתקנת תוכנה.</translation>
+<translation id="7786760609782648049">‏שיפור המהירות ב-Chromium</translation>
 <translation id="7790626492778995050">‏<ph name="PAGE_TITLE" /> – Chromium בגרסת Canary</translation>
 <translation id="7828947555739565424">‏כבר קיים במכשיר פרופיל Chromium עם החשבון הזה.</translation>
 <translation id="7845233973568007926">תודה שהתקנת. עליך להפעיל מחדש את המחשב לפני השימוש ב-<ph name="BUNDLE_NAME" />.</translation>
@@ -331,11 +332,11 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="8453117565092476964">‏הארכיון של המתקין פגום או שאינו חוקי. יש להוריד שוב את Chromium.</translation>
 <translation id="8463672209299734063">‏אופציונלי: שליחה אוטומטית של נתוני אבחון ונתוני שימוש במכשיר אל Google תעזור לשפר את התכונות ואת הביצועים של ChromiumOS.</translation>
 <translation id="8493179195440786826">‏Chromium אינו מעודכן</translation>
-<translation id="8522220489792889625">‏מערכת Chromium משתמשת בזיכרון מכרטיסיות שאינן בשימוש באופן פעיל, לפי הצורך. תמיד אפשר לשנות זאת בהגדרות.</translation>
 <translation id="8550334526674375523">פרופיל העבודה שלך נפרד לחלוטין מהפרופיל האישי שלך.</translation>
 <translation id="8558383651099478961">‏אחד מההורים השבית ב-Chromium את ההגדרה "הרשאות לאתרים, אפליקציות ותוספים". לא ניתן להוסיף את ה<ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8561285221328166383">‏כדי לקבל עדכונים של Chromium בעתיד, צריך להשתמש ב-macOS מגרסה 10.13 ואילך. במחשב הזה מותקנת מערכת ההפעלה macOS 10.12.</translation>
 <translation id="8568283329061645092">‏Chromium יכול לבדוק את הסיסמאות כשנכנסים באמצעות חשבון Google</translation>
+<translation id="8574036838419011058">‏כשהתכונה מופעלת, Chromium חוסך בחיי הסוללה על ידי הגבלת הפעילות ברקע והאפקטים החזותיים, כמו גלילה חלקה וקצב פריימים של סרטונים. <ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">‏Copyright <ph name="YEAR" /> The Chromium Authors. כל הזכויות שמורות.</translation>
 <translation id="8608079656141766906">‏<ph name="BEGIN_BOLD" />אופן השימוש בנתונים האלה:<ph name="END_BOLD" /> אתרים יכולים לשמור מידע ב-Chromium לגבי תחומי העניין שלך. לדוגמה, אם ביקרת באתר כדי לקנות נעליים למרתון, האתר עשוי להגדיר 'ריצת מרתון' כתחום עניין שלך. לאחר מכן, בביקור באתר שונה, למשל כדי להירשם למרוץ, יכול להיות שתוצג לך מודעה לנעלי ריצה על סמך תחומי העניין שלך.</translation>
 <translation id="8619360774459241877">‏הפעלת Chromium מתבצעת...</translation>

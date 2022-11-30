@@ -16,6 +16,11 @@ namespace base {
 
 namespace {
 
+// Additional restrictions on implicit conversions. Not present in the C++23
+// proposal.
+static_assert(!std::is_convertible_v<int, expected<int, int>>);
+static_assert(!std::is_convertible_v<long, expected<bool, long>>);
+
 template <typename T>
 struct Strong {
   constexpr explicit Strong(T value) : value(std::move(value)) {}
@@ -52,33 +57,90 @@ struct WeakMoveOnly {
   T value;
 };
 
+enum class Error {
+  kFail,
+};
+
+TEST(Ok, ValueConstructor) {
+  constexpr ok<int> o(42);
+  static_assert(o.value() == 42);
+}
+
+TEST(Ok, DefaultConstructor) {
+  constexpr ok<int> o(absl::in_place);
+  static_assert(o.value() == 0);
+}
+
+TEST(Ok, InPlaceConstructor) {
+  constexpr ok<std::pair<int, double>> o(absl::in_place, 42, 3.14);
+  static_assert(o.value() == std::pair(42, 3.14));
+}
+
+TEST(Ok, InPlaceListConstructor) {
+  ok<std::vector<int>> o(absl::in_place, {1, 2, 3});
+  EXPECT_EQ(o.value(), std::vector({1, 2, 3}));
+}
+
+TEST(Ok, ValueIsQualified) {
+  using Ok = ok<int>;
+  static_assert(std::is_same_v<decltype(std::declval<Ok&>().value()), int&>);
+  static_assert(
+      std::is_same_v<decltype(std::declval<const Ok&>().value()), const int&>);
+  static_assert(std::is_same_v<decltype(std::declval<Ok>().value()), int&&>);
+  static_assert(
+      std::is_same_v<decltype(std::declval<const Ok>().value()), const int&&>);
+}
+
+TEST(Ok, MemberSwap) {
+  ok o1(42);
+  ok o2(123);
+  o1.swap(o2);
+
+  EXPECT_EQ(o1.value(), 123);
+  EXPECT_EQ(o2.value(), 42);
+}
+
+TEST(Ok, EqualityOperators) {
+  static_assert(ok(42) == ok(42.0));
+  static_assert(ok(42) != ok(43));
+}
+
+TEST(Ok, FreeSwap) {
+  ok o1(42);
+  ok o2(123);
+  swap(o1, o2);
+
+  EXPECT_EQ(o1.value(), 123);
+  EXPECT_EQ(o2.value(), 42);
+}
+
 TEST(Unexpected, ValueConstructor) {
   constexpr unexpected<int> unex(42);
-  static_assert(unex.value() == 42);
+  static_assert(unex.error() == 42);
 }
 
 TEST(Unexpected, DefaultConstructor) {
   constexpr unexpected<int> unex(absl::in_place);
-  static_assert(unex.value() == 0);
+  static_assert(unex.error() == 0);
 }
 
 TEST(Unexpected, InPlaceConstructor) {
   constexpr unexpected<std::pair<int, double>> unex(absl::in_place, 42, 3.14);
-  static_assert(unex.value() == std::pair(42, 3.14));
+  static_assert(unex.error() == std::pair(42, 3.14));
 }
 
 TEST(Unexpected, InPlaceListConstructor) {
   unexpected<std::vector<int>> unex(absl::in_place, {1, 2, 3});
-  EXPECT_EQ(unex.value(), std::vector({1, 2, 3}));
+  EXPECT_EQ(unex.error(), std::vector({1, 2, 3}));
 }
 
-TEST(Unexpected, ValueIsQualified) {
+TEST(Unexpected, ErrorIsQualified) {
   using Unex = unexpected<int>;
-  static_assert(std::is_same_v<decltype(std::declval<Unex&>().value()), int&>);
-  static_assert(std::is_same_v<decltype(std::declval<const Unex&>().value()),
+  static_assert(std::is_same_v<decltype(std::declval<Unex&>().error()), int&>);
+  static_assert(std::is_same_v<decltype(std::declval<const Unex&>().error()),
                                const int&>);
-  static_assert(std::is_same_v<decltype(std::declval<Unex>().value()), int&&>);
-  static_assert(std::is_same_v<decltype(std::declval<const Unex>().value()),
+  static_assert(std::is_same_v<decltype(std::declval<Unex>().error()), int&&>);
+  static_assert(std::is_same_v<decltype(std::declval<const Unex>().error()),
                                const int&&>);
 }
 
@@ -87,8 +149,8 @@ TEST(Unexpected, MemberSwap) {
   unexpected u2(123);
   u1.swap(u2);
 
-  EXPECT_EQ(u1.value(), 123);
-  EXPECT_EQ(u2.value(), 42);
+  EXPECT_EQ(u1.error(), 123);
+  EXPECT_EQ(u2.error(), 42);
 }
 
 TEST(Unexpected, EqualityOperators) {
@@ -101,12 +163,12 @@ TEST(Unexpected, FreeSwap) {
   unexpected u2(123);
   swap(u1, u2);
 
-  EXPECT_EQ(u1.value(), 123);
-  EXPECT_EQ(u2.value(), 42);
+  EXPECT_EQ(u1.error(), 123);
+  EXPECT_EQ(u2.error(), 42);
 }
 
 TEST(Expected, Triviality) {
-  using TrivialExpected = expected<int, int>;
+  using TrivialExpected = expected<int, Error>;
   static_assert(std::is_trivially_destructible_v<TrivialExpected>);
 
   using NonTrivialExpected = expected<int, std::string>;
@@ -114,18 +176,18 @@ TEST(Expected, Triviality) {
 }
 
 TEST(Expected, DefaultConstructor) {
-  constexpr expected<int, int> ex;
+  constexpr expected<int, Error> ex;
   static_assert(ex.has_value());
   EXPECT_EQ(ex.value(), 0);
 
-  static_assert(std::is_default_constructible_v<expected<int, int>>);
-  static_assert(!std::is_default_constructible_v<expected<Strong<int>, int>>);
+  static_assert(std::is_default_constructible_v<expected<int, Error>>);
+  static_assert(!std::is_default_constructible_v<expected<Strong<int>, Error>>);
 }
 
 TEST(Expected, CopyConstructor) {
   {
-    constexpr expected<int, int> ex1 = 42;
-    constexpr expected<int, int> ex2 = ex1;
+    constexpr expected<int, Error> ex1 = 42;
+    constexpr expected<int, Error> ex2 = ex1;
     static_assert(ex2.has_value());
     // Note: In theory this could be constexpr, but is currently not due to
     // implementation details of absl::get [1].
@@ -136,10 +198,10 @@ TEST(Expected, CopyConstructor) {
   }
 
   {
-    constexpr expected<int, int> ex1 = unexpected(42);
-    constexpr expected<int, int> ex2 = ex1;
+    constexpr expected<int, Error> ex1 = unexpected(Error::kFail);
+    constexpr expected<int, Error> ex2 = ex1;
     static_assert(!ex2.has_value());
-    EXPECT_EQ(ex2.error(), 42);
+    EXPECT_EQ(ex2.error(), Error::kFail);
   }
 }
 
@@ -161,41 +223,41 @@ TEST(Expected, MoveConstructor) {
 
 TEST(Expected, ExplicitConvertingCopyConstructor) {
   {
-    expected<int, int> ex1 = 42;
-    expected<Strong<int>, int> ex2(ex1);
+    expected<int, Error> ex1 = 42;
+    expected<Strong<int>, Error> ex2(ex1);
     static_assert(!std::is_convertible_v<decltype(ex1), decltype(ex2)>);
     ASSERT_TRUE(ex2.has_value());
     EXPECT_EQ(ex2.value().value, 42);
   }
 
   {
-    expected<int, int> ex1 = unexpected(42);
-    expected<int, Strong<int>> ex2(ex1);
+    expected<int, Error> ex1 = unexpected(Error::kFail);
+    expected<int, Strong<Error>> ex2(ex1);
     static_assert(!std::is_convertible_v<decltype(ex1), decltype(ex2)>);
     ASSERT_FALSE(ex2.has_value());
-    EXPECT_EQ(ex2.error().value, 42);
+    EXPECT_EQ(ex2.error().value, Error::kFail);
   }
 }
 
 TEST(Expected, ImplicitConvertingCopyConstructor) {
   {
-    expected<int, int> ex1 = 42;
-    expected<Weak<int>, Weak<int>> ex2 = ex1;
+    expected<int, Error> ex1 = 42;
+    expected<Weak<int>, Weak<Error>> ex2 = ex1;
     ASSERT_TRUE(ex2.has_value());
     EXPECT_EQ(ex2.value().value, 42);
   }
   {
-    expected<int, int> ex1 = unexpected(42);
-    expected<Weak<int>, Weak<int>> ex2 = ex1;
+    expected<int, Error> ex1 = unexpected(Error::kFail);
+    expected<Weak<int>, Weak<Error>> ex2 = ex1;
     ASSERT_FALSE(ex2.has_value());
-    EXPECT_EQ(ex2.error().value, 42);
+    EXPECT_EQ(ex2.error().value, Error::kFail);
   }
 }
 
 TEST(Expected, ExplicitConvertingMoveConstructor) {
   {
-    expected<int, int> ex1 = 42;
-    expected<StrongMoveOnly<int>, int> ex2(std::move(ex1));
+    expected<int, Error> ex1 = 42;
+    expected<StrongMoveOnly<int>, Error> ex2(std::move(ex1));
     static_assert(
         !std::is_convertible_v<decltype(std::move(ex1)), decltype(ex2)>);
     ASSERT_TRUE(ex2.has_value());
@@ -203,28 +265,28 @@ TEST(Expected, ExplicitConvertingMoveConstructor) {
   }
 
   {
-    expected<int, int> ex1 = unexpected(42);
-    expected<int, StrongMoveOnly<int>> ex2(std::move(ex1));
+    expected<int, Error> ex1 = unexpected(Error::kFail);
+    expected<int, StrongMoveOnly<Error>> ex2(std::move(ex1));
     static_assert(
         !std::is_convertible_v<decltype(std::move(ex1)), decltype(ex2)>);
     ASSERT_FALSE(ex2.has_value());
-    EXPECT_EQ(ex2.error().value, 42);
+    EXPECT_EQ(ex2.error().value, Error::kFail);
   }
 }
 
 TEST(Expected, ImplicitConvertingMoveConstructor) {
   {
-    expected<int, int> ex1 = 42;
-    expected<WeakMoveOnly<int>, int> ex2 = std::move(ex1);
+    expected<int, Error> ex1 = 42;
+    expected<WeakMoveOnly<int>, Error> ex2 = std::move(ex1);
     ASSERT_TRUE(ex2.has_value());
     EXPECT_EQ(ex2.value().value, 42);
   }
 
   {
-    expected<int, int> ex1 = unexpected(42);
-    expected<int, WeakMoveOnly<int>> ex2 = std::move(ex1);
+    expected<int, Error> ex1 = unexpected(Error::kFail);
+    expected<int, WeakMoveOnly<Error>> ex2 = std::move(ex1);
     ASSERT_FALSE(ex2.has_value());
-    EXPECT_EQ(ex2.error().value, 42);
+    EXPECT_EQ(ex2.error().value, Error::kFail);
   }
 }
 
@@ -247,14 +309,46 @@ TEST(Expected, ExplicitValueConstructor) {
 
 TEST(Expected, ImplicitValueConstructor) {
   {
-    constexpr expected<Weak<int>, int> ex = 42;
+    constexpr expected<Weak<int>, Error> ex = 42;
     static_assert(ex.has_value());
     EXPECT_EQ(ex.value().value, 42);
   }
 
   {
-    constexpr expected<WeakMoveOnly<int>, int> ex = 42;
+    constexpr expected<WeakMoveOnly<int>, Error> ex = 42;
     static_assert(!std::is_convertible_v<int&, decltype(ex)>);
+    static_assert(ex.has_value());
+    EXPECT_EQ(ex.value().value, 42);
+  }
+}
+
+TEST(Expected, ExplicitOkConstructor) {
+  {
+    constexpr expected<Strong<int>, int> ex(ok(42));
+    static_assert(!std::is_convertible_v<ok<int>, decltype(ex)>);
+    static_assert(ex.has_value());
+    EXPECT_EQ(ex.value().value, 42);
+  }
+
+  {
+    constexpr expected<StrongMoveOnly<int>, int> ex(ok(42));
+    static_assert(!std::is_constructible_v<decltype(ex), ok<int>&>);
+    static_assert(!std::is_convertible_v<ok<int>, decltype(ex)>);
+    static_assert(ex.has_value());
+    EXPECT_EQ(ex.value().value, 42);
+  }
+}
+
+TEST(Expected, ImplicitOkConstructor) {
+  {
+    constexpr expected<Weak<int>, Error> ex = ok(42);
+    static_assert(ex.has_value());
+    EXPECT_EQ(ex.value().value, 42);
+  }
+
+  {
+    constexpr expected<WeakMoveOnly<int>, Error> ex = ok(42);
+    static_assert(!std::is_convertible_v<ok<int>&, decltype(ex)>);
     static_assert(ex.has_value());
     EXPECT_EQ(ex.value().value, 42);
   }
@@ -329,6 +423,32 @@ TEST(Expected, AssignValue) {
   EXPECT_EQ(ex.value(), 123);
 }
 
+TEST(Expected, CopyAssignOk) {
+  expected<int, int> ex = unexpected(0);
+  EXPECT_FALSE(ex.has_value());
+
+  ex = ok(42);
+  ASSERT_TRUE(ex.has_value());
+  EXPECT_EQ(ex.value(), 42);
+
+  ex = ok(123);
+  ASSERT_TRUE(ex.has_value());
+  EXPECT_EQ(ex.value(), 123);
+}
+
+TEST(Expected, MoveAssignOk) {
+  expected<StrongMoveOnly<int>, int> ex = unexpected(0);
+  EXPECT_FALSE(ex.has_value());
+
+  ex = ok(StrongMoveOnly(42));
+  ASSERT_TRUE(ex.has_value());
+  EXPECT_EQ(ex.value().value, 42);
+
+  ex = ok(StrongMoveOnly(123));
+  ASSERT_TRUE(ex.has_value());
+  EXPECT_EQ(ex.value().value, 123);
+}
+
 TEST(Expected, CopyAssignUnexpected) {
   expected<int, int> ex;
   EXPECT_TRUE(ex.has_value());
@@ -374,7 +494,7 @@ TEST(Expected, EmplaceList) {
 }
 
 TEST(Expected, MemberSwap) {
-  expected<int, int> ex1 = 42;
+  expected<int, int> ex1(42);
   expected<int, int> ex2 = unexpected(123);
 
   ex1.swap(ex2);
@@ -386,7 +506,7 @@ TEST(Expected, MemberSwap) {
 }
 
 TEST(Expected, FreeSwap) {
-  expected<int, int> ex1 = 42;
+  expected<int, int> ex1(42);
   expected<int, int> ex2 = unexpected(123);
 
   swap(ex1, ex2);
@@ -491,6 +611,8 @@ TEST(Expected, EqualityOperators) {
   EXPECT_EQ(ExLong(42), ExInt(42));
   EXPECT_EQ(ExInt(42), 42);
   EXPECT_EQ(42, ExInt(42));
+  EXPECT_EQ(ExInt(42), ok(42));
+  EXPECT_EQ(ok(42), ExInt(42));
   EXPECT_EQ(ExInt(unexpect, 42), unexpected(42));
   EXPECT_EQ(unexpected(42), ExInt(unexpect, 42));
 
@@ -498,6 +620,8 @@ TEST(Expected, EqualityOperators) {
   EXPECT_NE(ExLong(123), ExInt(42));
   EXPECT_NE(ExInt(42), 123);
   EXPECT_NE(123, ExInt(42));
+  EXPECT_NE(ExInt(42), ok(123));
+  EXPECT_NE(ok(123), ExInt(42));
   EXPECT_NE(ExInt(unexpect, 123), unexpected(42));
   EXPECT_NE(unexpected(42), ExInt(unexpect, 123));
   EXPECT_NE(ExInt(123), unexpected(123));

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -138,8 +138,7 @@ void EditContext::DispatchTextFormatEvent(
   // fire textformateupdate event.
   DCHECK(has_composition_);
   HeapVector<Member<TextFormat>> text_formats;
-  text_formats.ReserveCapacity(
-      static_cast<WTF::wtf_size_t>(ime_text_spans.size()));
+  text_formats.reserve(base::checked_cast<wtf_size_t>(ime_text_spans.size()));
 
   for (const auto& ime_text_span : ime_text_spans) {
     const auto range_start = base::checked_cast<wtf_size_t>(
@@ -758,10 +757,8 @@ void EditContext::AttachElement(Element* element_to_attach) {
 }
 
 void EditContext::DetachElement(Element* element_to_detach) {
-  auto* it = std::find_if(attached_elements_.begin(), attached_elements_.end(),
-                          [element_to_detach](const auto& element) {
-                            return element.Get() == element_to_detach;
-                          });
+  auto* it = base::ranges::find(attached_elements_, element_to_detach,
+                                &Member<Element>::Get);
 
   if (it != attached_elements_.end())
     attached_elements_.erase(it);

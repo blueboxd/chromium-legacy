@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,11 +42,11 @@ BuildEventDetails(const LargestContentfulPaint& lcp,
                     .setLoadTime(ToProtocolTime(timeOrigin, lcp.loadTime()))
                     .setSize(lcp.size())
                     .build();
-  if (!lcp.id().IsEmpty())
+  if (!lcp.id().empty())
     result->setElementId(lcp.id());
   if (Element* element = lcp.element())
     result->setNodeId(IdentifiersFactory::IntIdForNode(element));
-  if (!lcp.url().IsEmpty())
+  if (!lcp.url().empty())
     result->setUrl(lcp.url());
   return result;
 }

@@ -92,6 +92,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_navigation_timings.h"
+#include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/public/web/web_print_page_description.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_range.h"
@@ -135,6 +136,7 @@
 #include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/browser_controls.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
@@ -185,7 +187,6 @@
 #include "third_party/blink/renderer/core/testing/scoped_fake_plugin_registry.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/blob/testing/fake_blob.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
@@ -195,6 +196,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/find_cc_layer.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
@@ -295,8 +297,7 @@ void ExecuteScriptInMainWorld(
 }
 
 const char* ViewBackgroundLayerName() {
-  return RuntimeEnabledFeatures::LayoutNGViewEnabled() &&
-                 RuntimeEnabledFeatures::LayoutNGEnabled()
+  return RuntimeEnabledFeatures::LayoutNGPrintingEnabled()
              ? "Scrolling background of LayoutNGView #document"
              : "Scrolling background of LayoutView #document";
 }
@@ -1618,6 +1619,7 @@ TEST_F(WebFrameTest, PostMessageEvent) {
     message.message = SerializedScriptValue::NullValue();
     message.sender_origin =
         SecurityOrigin::CreateFromString("https://origin.com");
+    message.sender_agent_cluster_id = base::UnguessableToken::Create();
     return message;
   };
 
@@ -4793,11 +4795,13 @@ class ContextLifetimeTestWebFrameClient
       const FramePolicy&,
       const WebFrameOwnerProperties&,
       FrameOwnerElementType,
-      WebPolicyContainerBindParams policy_container_bind_params) override {
+      WebPolicyContainerBindParams policy_container_bind_params,
+      FinishChildFrameCreationFn finish_creation) override {
     return CreateLocalChild(*Frame(), scope,
                             std::make_unique<ContextLifetimeTestWebFrameClient>(
                                 create_notifications_, release_notifications_),
-                            std::move(policy_container_bind_params));
+                            std::move(policy_container_bind_params),
+                            finish_creation);
   }
 
   void DidCreateScriptContext(v8::Local<v8::Context> context,
@@ -7708,7 +7712,7 @@ TEST_F(WebFrameTest, ReloadPost) {
 
   frame_test_helpers::ReloadFrame(frame);
   EXPECT_EQ(mojom::FetchCacheMode::kValidateCache, client.GetCacheMode());
-  EXPECT_EQ(kWebNavigationTypeFormResubmitted,
+  EXPECT_EQ(kWebNavigationTypeFormResubmittedReload,
             frame->GetDocumentLoader()->GetNavigationType());
 }
 
@@ -7735,12 +7739,14 @@ class TestCachePolicyWebFrameClient
       const FramePolicy&,
       const WebFrameOwnerProperties& frame_owner_properties,
       FrameOwnerElementType,
-      WebPolicyContainerBindParams policy_container_bind_params) override {
+      WebPolicyContainerBindParams policy_container_bind_params,
+      FinishChildFrameCreationFn finish_creation) override {
     auto child = std::make_unique<TestCachePolicyWebFrameClient>();
     auto* child_ptr = child.get();
     child_clients_.push_back(std::move(child));
     return CreateLocalChild(*Frame(), scope, child_ptr,
-                            std::move(policy_container_bind_params));
+                            std::move(policy_container_bind_params),
+                            finish_creation);
   }
   void BeginNavigation(std::unique_ptr<WebNavigationInfo> info) override {
     cache_mode_ = info->url_request.GetCacheMode();
@@ -8171,7 +8177,8 @@ class FailCreateChildFrame : public frame_test_helpers::TestWebFrameClient {
       const FramePolicy&,
       const WebFrameOwnerProperties& frame_owner_properties,
       FrameOwnerElementType,
-      WebPolicyContainerBindParams policy_container_bind_params) override {
+      WebPolicyContainerBindParams policy_container_bind_params,
+      FinishChildFrameCreationFn finish_creation) override {
     ++call_count_;
     return nullptr;
   }
@@ -8540,7 +8547,7 @@ TEST_F(WebFrameTest, FullscreenNestedExit) {
   Fullscreen::RequestFullscreen(*iframe_body);
 
   web_view_impl->DidEnterFullscreen();
-  Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
+  top_doc->GetAgent()->event_loop()->PerformMicrotaskCheckpoint();
   UpdateAllLifecyclePhases(web_view_impl);
 
   // We are now in nested fullscreen, with both documents having a non-empty
@@ -9187,10 +9194,11 @@ class WebFrameSwapTestClient : public frame_test_helpers::TestWebFrameClient {
       const FramePolicy&,
       const WebFrameOwnerProperties&,
       FrameOwnerElementType,
-      WebPolicyContainerBindParams policy_container_bind_params) override {
-    return CreateLocalChild(*Frame(), scope,
-                            std::make_unique<WebFrameSwapTestClient>(this),
-                            std::move(policy_container_bind_params));
+      WebPolicyContainerBindParams policy_container_bind_params,
+      FinishChildFrameCreationFn finish_creation) override {
+    return CreateLocalChild(
+        *Frame(), scope, std::make_unique<WebFrameSwapTestClient>(this),
+        std::move(policy_container_bind_params), finish_creation);
   }
 
   void DidChangeFrameOwnerProperties(
@@ -10213,7 +10221,7 @@ TEST_F(WebFrameTest, CrossDomainAccessErrorsUseCallingWindow) {
   popup_view->MainFrameImpl()->ExecuteScript(WebScriptSource(
       "try { opener.frames[1].location.href='data:text/html,foo'; } catch (e) "
       "{}"));
-  EXPECT_TRUE(web_frame_client.messages.IsEmpty());
+  EXPECT_TRUE(web_frame_client.messages.empty());
   ASSERT_EQ(1u, popup_web_frame_client.messages.size());
   EXPECT_TRUE(std::string::npos !=
               popup_web_frame_client.messages[0].text.Utf8().find(
@@ -10224,7 +10232,7 @@ TEST_F(WebFrameTest, CrossDomainAccessErrorsUseCallingWindow) {
   popup_view->MainFrameImpl()->ExecuteScript(
       WebScriptSource("opener.document.querySelectorAll('iframe')[1].src='"
                       "javascript:alert()'"));
-  EXPECT_TRUE(web_frame_client.messages.IsEmpty());
+  EXPECT_TRUE(web_frame_client.messages.empty());
   ASSERT_EQ(2u, popup_web_frame_client.messages.size());
   EXPECT_TRUE(
       std::string::npos !=
@@ -11076,7 +11084,7 @@ TEST_F(WebFrameTest, CopyImageDocument) {
       document->GetFrame()->GetSystemClipboard();
   ASSERT_TRUE(system_clipboard);
 
-  EXPECT_TRUE(system_clipboard->ReadAvailableTypes().IsEmpty());
+  EXPECT_TRUE(system_clipboard->ReadAvailableTypes().empty());
 
   bool result = web_frame->ExecuteCommand("Copy");
   test::RunPendingTasks();
@@ -11121,7 +11129,7 @@ TEST_F(WebFrameTest, CopyTextInImageDocument) {
       document->GetFrame()->GetSystemClipboard();
   ASSERT_TRUE(system_clipboard);
 
-  EXPECT_TRUE(system_clipboard->ReadAvailableTypes().IsEmpty());
+  EXPECT_TRUE(system_clipboard->ReadAvailableTypes().empty());
 
   bool result = web_frame->ExecuteCommand("Copy");
   test::RunPendingTasks();
@@ -11281,9 +11289,11 @@ class WebLocalFrameVisibilityChangeTest
       const FramePolicy&,
       const WebFrameOwnerProperties&,
       FrameOwnerElementType,
-      WebPolicyContainerBindParams policy_container_bind_params) override {
+      WebPolicyContainerBindParams policy_container_bind_params,
+      FinishChildFrameCreationFn finish_creation) override {
     return CreateLocalChild(*Frame(), scope, &child_client_,
-                            std::move(policy_container_bind_params));
+                            std::move(policy_container_bind_params),
+                            finish_creation);
   }
 
   TestLocalFrameHostForVisibility& ChildHost() { return child_host_; }
@@ -13035,9 +13045,11 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
         const FramePolicy&,
         const WebFrameOwnerProperties&,
         FrameOwnerElementType,
-        WebPolicyContainerBindParams policy_container_bind_params) override {
+        WebPolicyContainerBindParams policy_container_bind_params,
+        FinishChildFrameCreationFn finish_creation) override {
       return CreateLocalChild(*Frame(), scope, &child_client_,
-                              std::move(policy_container_bind_params));
+                              std::move(policy_container_bind_params),
+                              finish_creation);
     }
 
     LoadingObserverFrameClient& ChildClient() { return child_client_; }

@@ -51,6 +51,10 @@
         {
           "builder": "lacros-amd64-generic-rel",
           "group": "tryserver.chromium.chromiumos"
+        },
+        {
+          "builder": "lacros-amd64-generic-rel-orchestrator",
+          "group": "tryserver.chromium.chromiumos"
         }
       ]
     }
@@ -70,6 +74,6 @@
   "builder_group": "chromium.chromiumos",
   "recipe": "chromium",
   "sheriff_rotations": [
-    "chrome_browser_release"
+    "chromium"
   ]
 }

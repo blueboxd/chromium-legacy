@@ -8,7 +8,6 @@
 
 #include <utility>
 
-#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_paths.h"
 #include "ash/constants/ash_switches.h"
 #include "base/barrier_closure.h"
@@ -45,6 +44,7 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/crosapi/mojom/chrome_app_kiosk_service.mojom.h"
 #include "components/account_id/account_id.h"
 #include "components/ownership/owner_key_util.h"
@@ -598,25 +598,26 @@ bool KioskAppManager::GetCachedCrx(const std::string& app_id,
 
 crosapi::mojom::AppInstallParams KioskAppManager::CreatePrimaryAppInstallData(
     const std::string& id) const {
-  const base::DictionaryValue* extension = nullptr;
-  if (!external_cache_->GetCachedExtensions()->GetDictionary(id, &extension)) {
+  const base::Value::Dict* extension =
+      external_cache_->GetCachedExtensions().FindDict(id);
+  if (!extension) {
     return crosapi::mojom::AppInstallParams(id, std::string(), std::string(),
                                             false);
   }
 
   const absl::optional<bool> is_store_app_maybe =
-      extension->FindBoolKey(extensions::ExternalProviderImpl::kIsFromWebstore);
-  const std::string* external_update_url_value = extension->FindStringKey(
+      extension->FindBool(extensions::ExternalProviderImpl::kIsFromWebstore);
+  const std::string* external_update_url_value = extension->FindString(
       extensions::ExternalProviderImpl::kExternalUpdateUrl);
   bool is_store_app_bool = is_store_app_maybe.value_or(false) ||
                            IsWebstoreUpdateUrl(external_update_url_value);
 
   const std::string* crx_file_location =
-      extension->FindStringKey(extensions::ExternalProviderImpl::kExternalCrx);
+      extension->FindString(extensions::ExternalProviderImpl::kExternalCrx);
   DCHECK(crx_file_location);
 
-  const std::string* external_version = extension->FindStringKey(
-      extensions::ExternalProviderImpl::kExternalVersion);
+  const std::string* external_version =
+      extension->FindString(extensions::ExternalProviderImpl::kExternalVersion);
   DCHECK(external_version);
 
   return crosapi::mojom::AppInstallParams(id, *crx_file_location,
@@ -792,21 +793,21 @@ void KioskAppManager::UpdateAppsFromPolicy() {
 void KioskAppManager::UpdateExternalCachePrefs() {
   // Request external_cache_ to download new apps and update the existing
   // apps.
-  std::unique_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
-  for (size_t i = 0; i < apps_.size(); ++i) {
-    base::DictionaryValue entry;
+  base::Value::Dict prefs;
+  for (const auto& app : apps_) {
+    base::Value::Dict entry;
 
-    if (apps_[i]->update_url().is_valid()) {
-      entry.SetStringKey(extensions::ExternalProviderImpl::kExternalUpdateUrl,
-                         apps_[i]->update_url().spec());
+    if (app->update_url().is_valid()) {
+      entry.Set(extensions::ExternalProviderImpl::kExternalUpdateUrl,
+                app->update_url().spec());
     } else {
-      entry.SetStringKey(extensions::ExternalProviderImpl::kExternalUpdateUrl,
-                         extension_urls::GetWebstoreUpdateUrl().spec());
+      entry.Set(extensions::ExternalProviderImpl::kExternalUpdateUrl,
+                extension_urls::GetWebstoreUpdateUrl().spec());
     }
 
-    prefs->SetPath(apps_[i]->app_id(), std::move(entry));
+    prefs.SetByDottedPath(app->app_id(), std::move(entry));
   }
-  external_cache_->UpdateExtensionsList(std::move(prefs));
+  external_cache_->UpdateExtensionsListWithDict(std::move(prefs));
 }
 
 void KioskAppManager::OnExtensionLoadedInCache(
@@ -846,9 +847,9 @@ KioskAppManager::AutoLoginState KioskAppManager::GetAutoLoginState() const {
 
 void KioskAppManager::SetAutoLoginState(AutoLoginState state) {
   PrefService* prefs = g_browser_process->local_state();
-  DictionaryPrefUpdate dict_update(prefs,
+  ScopedDictPrefUpdate dict_update(prefs,
                                    KioskAppManager::kKioskDictionaryName);
-  dict_update->SetIntKey(kKeyAutoLoginState, static_cast<int>(state));
+  dict_update->Set(kKeyAutoLoginState, static_cast<int>(state));
   prefs->CommitPendingWrite();
 }
 

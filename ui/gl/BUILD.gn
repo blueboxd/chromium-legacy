@@ -58,8 +58,6 @@ component("gl") {
   sources = [
     "buffer_format_utils.cc",
     "buffer_format_utils.h",
-    "ca_renderer_layer_params.cc",
-    "ca_renderer_layer_params.h",
     "dc_renderer_layer_params.cc",
     "dc_renderer_layer_params.h",
     "dual_gpu_state.cc",
@@ -141,6 +139,8 @@ component("gl") {
     "scoped_binders.h",
     "scoped_make_current.cc",
     "scoped_make_current.h",
+    "scoped_restore_texture.cc",
+    "scoped_restore_texture.h",
     "shader_tracking.cc",
     "shader_tracking.h",
     "sync_control_vsync_provider.cc",
@@ -217,6 +217,8 @@ component("gl") {
       "gl_image_egl.h",
       "gl_surface_egl.cc",
       "gl_surface_egl.h",
+      "scoped_egl_image.cc",
+      "scoped_egl_image.h",
       "shared_gl_fence_egl.cc",
       "shared_gl_fence_egl.h",
     ]
@@ -259,12 +261,6 @@ component("gl") {
 
       deps += [ "//third_party/libsync" ]
     }
-  }
-  if (is_mac || use_egl) {
-    sources += [
-      "yuv_to_rgb_converter.cc",
-      "yuv_to_rgb_converter.h",
-    ]
   }
 
   if (use_ozone) {
@@ -338,6 +334,7 @@ component("gl") {
       "child_window_win.h",
       "dc_layer_tree.cc",
       "dc_layer_tree.h",
+      "dcomp_surface_proxy.h",
       "dcomp_surface_registry.cc",
       "dcomp_surface_registry.h",
       "delegated_ink_point_renderer_gpu.h",
@@ -353,8 +350,6 @@ component("gl") {
       "gl_fence_win.h",
       "gl_image_d3d.cc",
       "gl_image_d3d.h",
-      "gl_image_dcomp_surface.cc",
-      "gl_image_dcomp_surface.h",
       "gl_image_dxgi.cc",
       "gl_image_dxgi.h",
       "hdr_metadata_helper_win.cc",
@@ -394,6 +389,8 @@ component("gl") {
   }
   if (is_mac) {
     sources += [
+      "ca_renderer_layer_params.cc",
+      "ca_renderer_layer_params.h",
       "dual_gpu_state_mac.cc",
       "dual_gpu_state_mac.h",
       "gl_context_cgl.cc",
@@ -414,11 +411,6 @@ component("gl") {
     ]
 
     if (use_egl) {
-      sources += [
-        "gl_image_io_surface_egl.h",
-        "gl_image_io_surface_egl.mm",
-      ]
-
       data_deps += [
         "//third_party/angle:libEGL",
         "//third_party/angle:libGLESv2",
@@ -441,6 +433,9 @@ component("gl") {
     libs = [ "android" ]
 
     deps += [ ":gl_jni_headers" ]
+  }
+  if (is_linux) {
+    deps += [ "//third_party/angle:angle_gpu_info_util" ]
   }
 }
 

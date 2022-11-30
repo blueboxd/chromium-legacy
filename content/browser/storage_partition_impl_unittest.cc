@@ -62,6 +62,7 @@
 #include "content/browser/private_aggregation/private_aggregation_test_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/generated_code_cache_settings.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
@@ -244,6 +245,20 @@ class RemoveInterestGroupTester {
     return get_interest_group_success_;
   }
 
+  bool ContainsInterestGroupKAnon(const url::Origin& origin) {
+    contains_kanon_ = false;
+    EXPECT_TRUE(storage_partition_->GetInterestGroupManager());
+    static_cast<InterestGroupManagerImpl*>(
+        storage_partition_->GetInterestGroupManager())
+        ->GetLastKAnonymityReported(
+            KAnonKeyFor(origin, "Name"),
+            base::BindOnce(
+                &RemoveInterestGroupTester::GetLastKAnonymityReportedCallback,
+                base::Unretained(this)));
+    await_completion_.BlockUntilNotified();
+    return contains_kanon_;
+  }
+
   void AddInterestGroup(const url::Origin& origin) {
     EXPECT_TRUE(storage_partition_->GetInterestGroupManager());
     blink::InterestGroup group;
@@ -261,7 +276,14 @@ class RemoveInterestGroupTester {
     await_completion_.Notify();
   }
 
+  void GetLastKAnonymityReportedCallback(
+      absl::optional<base::Time> last_reported) {
+    contains_kanon_ = last_reported.has_value();
+    await_completion_.Notify();
+  }
+
   bool get_interest_group_success_ = false;
+  bool contains_kanon_ = false;
   AwaitCompletionHelper await_completion_;
   raw_ptr<StoragePartitionImpl> storage_partition_;
 };
@@ -291,7 +313,7 @@ class RemoveLocalStorageTester {
     GetLocalStorageUsage();
     await_completion_.BlockUntilNotified();
     for (size_t i = 0; i < infos_.size(); ++i) {
-      if (origin == infos_[i].origin)
+      if (origin == infos_[i].storage_key.origin())
         return true;
     }
     return false;
@@ -583,8 +605,8 @@ void ClearQuotaDataWithOriginMatcher(
     base::RunLoop* loop_to_quit) {
   partition->ClearData(
       kAllQuotaRemoveMask, StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-      std::move(storage_key_matcher), nullptr, false, delete_begin,
-      base::Time::Max(), loop_to_quit->QuitClosure());
+      /*filter_builder=*/nullptr, std::move(storage_key_matcher), nullptr,
+      false, delete_begin, base::Time::Max(), loop_to_quit->QuitClosure());
 }
 
 void ClearQuotaDataForOrigin(content::StoragePartition* partition,
@@ -627,6 +649,7 @@ void ClearCookiesMatchingInfo(content::StoragePartition* partition,
     delete_end = delete_filter->created_before_time.value();
   partition->ClearData(StoragePartition::REMOVE_DATA_MASK_COOKIES,
                        StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
+                       /*filter_builder=*/nullptr,
                        StoragePartition::StorageKeyPolicyMatcherFunction(),
                        std::move(delete_filter), false, delete_begin,
                        delete_end, run_loop->QuitClosure());
@@ -637,12 +660,13 @@ void ClearStuff(
     content::StoragePartition* partition,
     const base::Time delete_begin,
     const base::Time delete_end,
+    BrowsingDataFilterBuilder* filter_builder,
     StoragePartition::StorageKeyPolicyMatcherFunction storage_key_matcher,
     base::RunLoop* run_loop) {
-  partition->ClearData(remove_mask,
-                       StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-                       std::move(storage_key_matcher), nullptr, false,
-                       delete_begin, delete_end, run_loop->QuitClosure());
+  partition->ClearData(
+      remove_mask, StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
+      filter_builder, std::move(storage_key_matcher), nullptr, false,
+      delete_begin, delete_end, run_loop->QuitClosure());
 }
 
 void ClearData(content::StoragePartition* partition, base::RunLoop* run_loop) {
@@ -676,6 +700,17 @@ void ClearInterestGroups(content::StoragePartition* partition,
                        run_loop->QuitClosure());
 }
 
+void ClearInterestGroupsAndKAnon(content::StoragePartition* partition,
+                                 const base::Time delete_begin,
+                                 const base::Time delete_end,
+                                 base::RunLoop* run_loop) {
+  partition->ClearData(
+      StoragePartition::REMOVE_DATA_MASK_INTEREST_GROUPS |
+          StoragePartition::REMOVE_DATA_MASK_INTEREST_GROUPS_INTERNAL,
+      StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, blink::StorageKey(),
+      delete_begin, delete_end, run_loop->QuitClosure());
+}
+
 void ClearInterestGroupPermissionsCache(content::StoragePartition* partition,
                                         const base::Time delete_begin,
                                         const base::Time delete_end,
@@ -707,9 +742,6 @@ class StoragePartitionImplTest : public testing::Test {
     command_line_.GetProcessCommandLine()->AppendSwitch(
         switches::kAttributionReportingDebugMode);
 
-    // Configures the Conversion API to run in memory to speed up its
-    // initialization and avoid timeouts. See https://crbug.com/1080764.
-    AttributionManagerImpl::RunInMemoryForTesting();
     feature_list_.InitWithFeatures({blink::features::kInterestGroupStorage,
                                     blink::features::kSharedStorageAPI},
                                    {});
@@ -746,6 +778,10 @@ class StoragePartitionImplTest : public testing::Test {
  private:
   base::test::ScopedCommandLine command_line_;
   base::test::ScopedFeatureList feature_list_;
+  // Configures the Attribution Reporting API to run in memory to speed up its
+  // initialization and avoid timeouts. See https://crbug.com/1080764.
+  AttributionManagerImpl::ScopedUseInMemoryStorageForTesting
+      attribution_manager_in_memory_setting_;
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   scoped_refptr<storage::MockQuotaManager> quota_manager_;
@@ -1258,13 +1294,25 @@ TEST_F(StoragePartitionImplTest, RemoveInterestGroupForever) {
   tester.AddInterestGroup(kOrigin);
   ASSERT_TRUE(tester.ContainsInterestGroupOwner(kOrigin));
 
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&ClearInterestGroups, partition, base::Time(),
-                                base::Time::Max(), &run_loop));
-  run_loop.Run();
-
+  {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&ClearInterestGroups, partition, base::Time(),
+                                  base::Time::Max(), &run_loop));
+    run_loop.Run();
+  }
   EXPECT_FALSE(tester.ContainsInterestGroupOwner(kOrigin));
+  EXPECT_TRUE(tester.ContainsInterestGroupKAnon(kOrigin));
+
+  {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&ClearInterestGroupsAndKAnon, partition,
+                                  base::Time(), base::Time::Max(), &run_loop));
+    run_loop.Run();
+  }
+  EXPECT_FALSE(tester.ContainsInterestGroupOwner(kOrigin));
+  EXPECT_FALSE(tester.ContainsInterestGroupKAnon(kOrigin));
 }
 
 TEST_F(StoragePartitionImplTest, RemoveInterestGroupPermissionsCacheForever) {
@@ -1325,6 +1373,7 @@ TEST_F(StoragePartitionImplTest, RemoveUnprotectedLocalStorageForever) {
       base::BindOnce(
           &ClearStuff, StoragePartitionImpl::REMOVE_DATA_MASK_LOCAL_STORAGE,
           partition, base::Time(), base::Time::Max(),
+          /*filter_builder=*/nullptr,
           base::BindRepeating(&DoesOriginMatchForUnprotectedWeb), &run_loop));
   run_loop.Run();
   // ClearData only guarantees that tasks to delete data are scheduled when its
@@ -1360,6 +1409,7 @@ TEST_F(StoragePartitionImplTest, RemoveProtectedLocalStorageForever) {
       base::BindOnce(&ClearStuff,
                      StoragePartitionImpl::REMOVE_DATA_MASK_LOCAL_STORAGE,
                      partition, base::Time(), base::Time::Max(),
+                     /*filter_builder=*/nullptr,
                      base::BindRepeating(
                          &DoesOriginMatchForBothProtectedAndUnprotectedWeb),
                      &run_loop));
@@ -1395,6 +1445,7 @@ TEST_F(StoragePartitionImplTest, RemoveLocalStorageForLastWeek) {
       base::BindOnce(&ClearStuff,
                      StoragePartitionImpl::REMOVE_DATA_MASK_LOCAL_STORAGE,
                      partition, a_week_ago, base::Time::Max(),
+                     /*filter_builder=*/nullptr,
                      base::BindRepeating(
                          &DoesOriginMatchForBothProtectedAndUnprotectedWeb),
                      &run_loop));
@@ -1405,6 +1456,42 @@ TEST_F(StoragePartitionImplTest, RemoveLocalStorageForLastWeek) {
   base::RunLoop().RunUntilIdle();
 
   // kOrigin1 and kOrigin2 do not have age more than a week.
+  EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin1));
+  EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin2));
+  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin3));
+}
+
+TEST_F(StoragePartitionImplTest, RemoveLocalStorageForOrigins) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("http://host1:1/"));
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("http://host2:1/"));
+  const url::Origin kOrigin3 = url::Origin::Create(GURL("http://host3:1/"));
+
+  RemoveLocalStorageTester tester(task_environment(), browser_context());
+
+  tester.AddDOMStorageTestData(kOrigin1, kOrigin2, kOrigin3);
+
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      browser_context()->GetDefaultStoragePartition());
+
+  auto filter_builder = BrowsingDataFilterBuilder::Create(
+      BrowsingDataFilterBuilder::Mode::kDelete);
+  filter_builder->AddOrigin(kOrigin1);
+  filter_builder->AddOrigin(kOrigin2);
+
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &ClearStuff, StoragePartitionImpl::REMOVE_DATA_MASK_LOCAL_STORAGE,
+          partition, base::Time::Min(), base::Time::Max(), filter_builder.get(),
+          StoragePartition::StorageKeyPolicyMatcherFunction(), &run_loop));
+  run_loop.Run();
+  // ClearData only guarantees that tasks to delete data are scheduled when its
+  // callback is invoked. It doesn't guarantee data has actually been cleared.
+  // So run all scheduled tasks to make sure data is cleared.
+  base::RunLoop().RunUntilIdle();
+
+  // kOrigin3 is not filtered by the filter builder.
   EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin1));
   EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin2));
   EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin3));
@@ -1784,6 +1871,8 @@ TEST_F(StoragePartitionImplTest, ConversionsClearDataForFilter) {
 
   // Match against enough Origins to delete three of the imp/conv pairs.
   base::RunLoop run_loop;
+  auto filter_builder = BrowsingDataFilterBuilder::Create(
+      BrowsingDataFilterBuilder::Mode::kPreserve);
   StoragePartition::StorageKeyPolicyMatcherFunction func =
       base::BindRepeating([](const blink::StorageKey& storage_key,
                              storage::SpecialStoragePolicy* policy) {
@@ -1798,7 +1887,8 @@ TEST_F(StoragePartitionImplTest, ConversionsClearDataForFilter) {
       });
   partition->ClearData(
       StoragePartition::REMOVE_DATA_MASK_ATTRIBUTION_REPORTING_SITE_CREATED, 0,
-      func, nullptr, false, now, now, run_loop.QuitClosure());
+      filter_builder.get(), func, nullptr, false, now, now,
+      run_loop.QuitClosure());
   run_loop.Run();
   EXPECT_EQ(2u, GetAttributionReportsForTesting(attribution_manager).size());
 }
@@ -1848,6 +1938,7 @@ TEST_F(StoragePartitionImplTest, DataRemovalObserver) {
                   kBeginTime, kEndTime));
   partition->ClearData(
       kTestClearMask, kTestQuotaClearMask,
+      /*filter_builder=*/nullptr,
       base::BindLambdaForTesting([&](const blink::StorageKey& storage_key,
                                      storage::SpecialStoragePolicy* policy) {
         return storage_key ==
@@ -2127,6 +2218,7 @@ TEST_F(StoragePartitionImplTest, RemoveAggregationServiceData) {
     base::RunLoop run_loop;
     partition->ClearData(
         kTestClearMask, kTestQuotaClearMask,
+        /*filter_builder=*/nullptr,
         base::BindLambdaForTesting([&](const blink::StorageKey& storage_key,
                                        storage::SpecialStoragePolicy* policy) {
           return storage_key ==
@@ -2135,6 +2227,29 @@ TEST_F(StoragePartitionImplTest, RemoveAggregationServiceData) {
         /*cookie_deletion_filter=*/nullptr,
         /*perform_storage_cleanup=*/false, kBeginTime, kEndTime,
         run_loop.QuitClosure());
+    run_loop.Run();
+    testing::Mock::VerifyAndClearExpectations(aggregation_service_ptr);
+  }
+
+  EXPECT_CALL(
+      *aggregation_service_ptr,
+      ClearData(
+          kBeginTime, kEndTime,
+          testing::AllOf(testing::Truly(is_test_origin_valid),
+                         testing::Not(testing::Truly(is_other_origin_valid))),
+          testing::_))
+      .WillOnce(testing::Invoke(invoke_callback));
+  {
+    base::RunLoop run_loop;
+    auto filter_builder = BrowsingDataFilterBuilder::Create(
+        BrowsingDataFilterBuilder::Mode::kDelete);
+    filter_builder->AddOrigin(url::Origin::Create(kTestOrigin));
+    partition->ClearData(kTestClearMask, kTestQuotaClearMask,
+                         filter_builder.get(),
+                         StoragePartition::StorageKeyPolicyMatcherFunction(),
+                         /*cookie_deletion_filter=*/nullptr,
+                         /*perform_storage_cleanup=*/false, kBeginTime,
+                         kEndTime, run_loop.QuitClosure());
     run_loop.Run();
     testing::Mock::VerifyAndClearExpectations(aggregation_service_ptr);
   }
@@ -2236,6 +2351,7 @@ TEST_F(StoragePartitionImplTest, RemovePrivateAggregationData) {
     base::RunLoop run_loop;
     partition->ClearData(
         kTestClearMask, kTestQuotaClearMask,
+        /*filter_builder=*/nullptr,
         base::BindLambdaForTesting([&](const blink::StorageKey& storage_key,
                                        storage::SpecialStoragePolicy* policy) {
           return storage_key ==
@@ -2333,7 +2449,7 @@ class StoragePartitionImplSharedStorageTest : public StoragePartitionImplTest {
   // Returns true, if the given origin URL exists.
   bool SharedStorageExistsForOrigin(const url::Origin& origin) {
     for (const auto& info : GetSharedStorageUsage()) {
-      if (origin == info->origin)
+      if (origin == info->storage_key.origin())
         return true;
     }
     return false;
@@ -2417,6 +2533,7 @@ TEST_F(StoragePartitionImplSharedStorageTest,
       base::BindOnce(&ClearStuff,
                      StoragePartitionImpl::REMOVE_DATA_MASK_SHARED_STORAGE,
                      partition, base::Time(), base::Time::Max(),
+                     /*filter_builder=*/nullptr,
                      base::BindRepeating(&DoesOriginMatchForUnprotectedWeb),
                      &clear_run_loop));
   clear_run_loop.Run();
@@ -2454,6 +2571,7 @@ TEST_F(StoragePartitionImplSharedStorageTest,
       base::BindOnce(&ClearStuff,
                      StoragePartitionImpl::REMOVE_DATA_MASK_SHARED_STORAGE,
                      partition, base::Time(), base::Time::Max(),
+                     /*filter_builder=*/nullptr,
                      base::BindRepeating(
                          &DoesOriginMatchForBothProtectedAndUnprotectedWeb),
                      &clear_run_loop));
@@ -2489,6 +2607,7 @@ TEST_F(StoragePartitionImplSharedStorageTest, RemoveSharedStorageForLastWeek) {
       base::BindOnce(&ClearStuff,
                      StoragePartitionImpl::REMOVE_DATA_MASK_SHARED_STORAGE,
                      partition, a_week_ago, base::Time::Max(),
+                     /*filter_builder=*/nullptr,
                      base::BindRepeating(
                          &DoesOriginMatchForBothProtectedAndUnprotectedWeb),
                      &clear_run_loop));

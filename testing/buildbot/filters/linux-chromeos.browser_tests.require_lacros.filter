@@ -4,6 +4,7 @@
 *Magn*.*
 AccessibilityExtension*
 Autoclick*
+AshTtsApiTest*
 BrowserAppShelfControllerBrowserTest*
 ChromeVox*
 DemoAshRequiresLacrosTest*
@@ -12,6 +13,7 @@ Dictation*
 SelectToSpeak*
 SwitchAccess*
 VpnExtensionObserverBrowserTest*
+WebAppsCrosapiBrowserTest*
 # TODO(crbug.com/1245416) Enable more accessibility tests.
 -ChromeVoxBackgroundTest.SwipeLeftRight4ByContainers
 -ChromeVoxBackgroundTest.TabSwitchAndRefreshRecovery
@@ -26,13 +28,9 @@ VpnExtensionObserverBrowserTest*
 -ChromeVoxPortalsTest.ShouldFocusPortal
 -SelectToSpeakEnhancedNetworkTtsVoicesTest.*
 -SelectToSpeakNavigationControlTest.*
--SwitchAccessFocusRingManagerTest.BackButtonForMenuFocus
--SwitchAccessFocusRingManagerTest.GroupFocus
 -SwitchAccessItemScanManagerTest.*
 -SwitchAccessPointScanManagerTest.PointScanLeftClick
--BrowserAppShelfControllerBrowserTest.*
 -ChromeVoxAutoScrollHandlerTest.RecyclerViewByPredicate
--DockedMagnifierVirtualKeyboardTest.WelcomeScreen
 -ChromeVoxTutorialTest.Gestures
 -ChromeVoxTutorialTest.ExitButtonTest
 -ChromeVoxTutorialTest.EscapeTest

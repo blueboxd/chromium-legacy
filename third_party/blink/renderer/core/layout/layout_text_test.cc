@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -223,7 +223,6 @@ TEST_F(LayoutTextTest, ContainsOnlyWhitespaceOrNbsp) {
 
 #if BUILDFLAG(IS_WIN)
 TEST_F(LayoutTextTest, PrewarmFamily) {
-  base::test::ScopedFeatureList features(kAsyncFontAccess);
   test::ScopedTestFontPrewarmer prewarmer;
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -242,7 +241,6 @@ TEST_F(LayoutTextTest, PrewarmFamily) {
 
 // Test `@font-face` fonts are NOT prewarmed.
 TEST_F(LayoutTextTest, PrewarmFontFace) {
-  base::test::ScopedFeatureList features(kAsyncFontAccess);
   test::ScopedTestFontPrewarmer prewarmer;
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -264,7 +262,6 @@ TEST_F(LayoutTextTest, PrewarmFontFace) {
 }
 
 TEST_F(LayoutTextTest, PrewarmGenericFamily) {
-  base::test::ScopedFeatureList features(kAsyncFontAccess);
   test::ScopedTestFontPrewarmer prewarmer;
   SetBodyInnerHTML(R"HTML(
     <style>

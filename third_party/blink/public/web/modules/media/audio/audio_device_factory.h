@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@ namespace blink {
 
 class AudioRendererMixerManager;
 class AudioRendererSinkCache;
+class WebLocalFrame;
 
 // A factory for creating AudioRendererSinks and AudioCapturerSources. There is
 // a global factory function that can be installed for the purposes of testing
@@ -73,7 +74,7 @@ class BLINK_MODULES_EXPORT AudioDeviceFactory {
   // |frame_token| refers to the RenderFrame containing the entity
   // consuming the audio.
   virtual scoped_refptr<media::AudioCapturerSource> NewAudioCapturerSource(
-      const LocalFrameToken& frame_token,
+      WebLocalFrame* web_frame,
       const media::AudioSourceParameters& params);
 
  protected:

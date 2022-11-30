@@ -41,6 +41,7 @@ import './os_files_page/os_files_page.js';
 import './os_languages_page/input_method_options_page.js';
 import './os_languages_page/input_page.js';
 import './os_languages_page/os_edit_dictionary_page.js';
+import './os_languages_page/os_japanese_manage_user_dictionary_page.js';
 import './os_languages_page/os_languages_page_v2.js';
 import './os_languages_page/os_languages_section.js';
 import './os_languages_page/smart_inputs_page.js';
@@ -69,7 +70,7 @@ import './os_files_page/smb_shares_page.js';
 import '../privacy_page/secure_dns.js';
 import '../privacy_page/secure_dns_input.js';
 
-export {SmbBrowserProxyImpl, SmbMountResult} from 'chrome://resources/cr_components/chromeos/smb_shares/smb_browser_proxy.js';
+export {SmbBrowserProxyImpl, SmbMountResult} from 'chrome://resources/ash/common/smb_shares/smb_browser_proxy.js';
 export {LifetimeBrowserProxyImpl} from '../lifetime_browser_proxy.js';
 export {PrivacyPageBrowserProxyImpl, SecureDnsMode, SecureDnsUiManagementMode} from '../privacy_page/privacy_page_browser_proxy.js';
 export {CrostiniBrowserProxy, CrostiniBrowserProxyImpl} from './crostini_page/crostini_browser_proxy.js';
@@ -81,6 +82,7 @@ export {InputsShortcutReminderState, LanguagesMetricsProxy, LanguagesMetricsProx
 export {PrinterType} from './os_printing_page/cups_printer_types.js';
 export {CupsPrintersBrowserProxy, CupsPrintersBrowserProxyImpl, PrinterSetupResult, PrintServerResult} from './os_printing_page/cups_printers_browser_proxy.js';
 export {CupsPrintersEntryManager} from './os_printing_page/cups_printers_entry_manager.js';
+export {MediaDevicesProxy} from './os_privacy_page/media_devices_proxy.js';
 export {MetricsConsentBrowserProxy, MetricsConsentBrowserProxyImpl, MetricsConsentState} from './os_privacy_page/metrics_consent_browser_proxy.js';
 export {DataAccessPolicyState, PeripheralDataAccessBrowserProxy, PeripheralDataAccessBrowserProxyImpl} from './os_privacy_page/peripheral_data_access_browser_proxy.js';
 export {PrivacyHubBrowserProxy, PrivacyHubBrowserProxyImpl} from './os_privacy_page/privacy_hub_browser_proxy.js';

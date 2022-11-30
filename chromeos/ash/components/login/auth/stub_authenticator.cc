@@ -4,11 +4,13 @@
 
 #include "chromeos/ash/components/login/auth/stub_authenticator.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/notreached.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/ash/components/login/auth/public/auth_failure.h"
+#include "chromeos/ash/components/login/auth/public/cryptohome_key_constants.h"
 
 namespace ash {
 
@@ -77,6 +79,35 @@ void StubAuthenticator::AuthenticateToLogin(
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&StubAuthenticator::OnAuthFailure, this,
                                 AuthFailure::FromNetworkAuthFailure(error)));
+}
+
+void StubAuthenticator::AuthenticateToUnlock(
+    std::unique_ptr<UserContext> user_context) {
+  if (expected_user_context_.GetAccountId() == user_context->GetAccountId() &&
+      (*expected_user_context_.GetKey() == *user_context->GetKey() ||
+       *ExpectedUserContextWithTransformedKey().GetKey() ==
+           *user_context->GetKey())) {
+    switch (auth_action_) {
+      case AuthAction::kAuthFailure:
+        task_runner_->PostTask(
+            FROM_HERE, base::BindOnce(&StubAuthenticator::OnAuthFailure, this,
+                                      AuthFailure(failure_reason_)));
+        break;
+      case AuthAction::kAuthSuccess:
+      case AuthAction::kPasswordChange:
+      case AuthAction::kOldEncryption:
+        // The distinction between fields other than AuthAction::kAuthFailure
+        // only matter for login.
+        task_runner_->PostTask(
+            FROM_HERE, base::BindOnce(&StubAuthenticator::OnAuthSuccess, this));
+        break;
+    }
+    return;
+  }
+
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&StubAuthenticator::OnAuthFailure, this,
+                                AuthFailure(AuthFailure::UNLOCK_FAILED)));
 }
 
 void StubAuthenticator::LoginOffTheRecord() {
@@ -179,6 +210,19 @@ UserContext StubAuthenticator::ExpectedUserContextWithTransformedKey() const {
       expected_user_context_.GetAccountId().GetUserEmail() + kUserIdHashSuffix);
   user_context.GetKey()->Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
                                    "some-salt");
+  if (features::IsUseAuthFactorsEnabled()) {
+    cryptohome::AuthFactorsSet factors;
+    factors.Put(cryptohome::AuthFactorType::kPassword);
+    factors.Put(cryptohome::AuthFactorType::kPin);
+    cryptohome::AuthFactorRef ref(
+        cryptohome::AuthFactorType::kPassword,
+        cryptohome::KeyLabel{kCryptohomeGaiaKeyLabel});
+    cryptohome::AuthFactor password(ref,
+                                    cryptohome::AuthFactorCommonMetadata());
+    user_context.SetAuthFactorsConfiguration(
+        AuthFactorsConfiguration{{password}, factors});
+    user_context.SetAuthSessionId("someauthsessionid");
+  }
   return user_context;
 }
 

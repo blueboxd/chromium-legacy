@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <fcntl.h>
-
 #include "chrome/browser/ash/crostini/crostini_port_forwarder.h"
+
+#include <fcntl.h>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/no_destructor.h"
+#include "base/ranges/algorithm.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
@@ -92,8 +93,9 @@ bool CrostiniPortForwarder::MatchPortRuleContainerId(
 void CrostiniPortForwarder::AddNewPortPreference(const PortRuleKey& key,
                                                  const std::string& label) {
   PrefService* pref_service = profile_->GetPrefs();
-  ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniPortForwarding);
-  base::Value::List& all_ports = update.Get()->GetList();
+  ScopedListPrefUpdate update(pref_service,
+                              crostini::prefs::kCrostiniPortForwarding);
+  base::Value::List& all_ports = update.Get();
   base::Value::Dict new_port_metadata;
   new_port_metadata.Set(kPortNumberKey, key.port_number);
   new_port_metadata.Set(kPortProtocolKey, static_cast<int>(key.protocol_type));
@@ -106,11 +108,12 @@ void CrostiniPortForwarder::AddNewPortPreference(const PortRuleKey& key,
 
 bool CrostiniPortForwarder::RemovePortPreference(const PortRuleKey& key) {
   PrefService* pref_service = profile_->GetPrefs();
-  ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniPortForwarding);
-  base::Value::List& update_list = update->GetList();
-  auto it = std::find_if(
-      update_list.begin(), update_list.end(),
-      [&key, this](const auto& dict) { return MatchPortRuleDict(dict, key); });
+  ScopedListPrefUpdate update(pref_service,
+                              crostini::prefs::kCrostiniPortForwarding);
+  base::Value::List& update_list = update.Get();
+  auto it = base::ranges::find_if(update_list, [&key, this](const auto& dict) {
+    return MatchPortRuleDict(dict, key);
+  });
   if (it == update_list.end())
     return false;
   update_list.erase(it);
@@ -122,9 +125,9 @@ absl::optional<base::Value> CrostiniPortForwarder::ReadPortPreference(
   PrefService* pref_service = profile_->GetPrefs();
   const base::Value::List& all_ports =
       pref_service->GetList(crostini::prefs::kCrostiniPortForwarding);
-  auto it = std::find_if(
-      all_ports.begin(), all_ports.end(),
-      [&key, this](const auto& dict) { return MatchPortRuleDict(dict, key); });
+  auto it = base::ranges::find_if(all_ports, [&key, this](const auto& dict) {
+    return MatchPortRuleDict(dict, key);
+  });
   if (it == all_ports.end()) {
     return absl::nullopt;
   }
@@ -355,8 +358,9 @@ void CrostiniPortForwarder::DeactivateAllActivePorts(
 void CrostiniPortForwarder::RemoveAllPorts(
     const guest_os::GuestId& container_id) {
   PrefService* pref_service = profile_->GetPrefs();
-  ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniPortForwarding);
-  update->GetList().EraseIf([&container_id, this](const auto& dict) {
+  ScopedListPrefUpdate update(pref_service,
+                              crostini::prefs::kCrostiniPortForwarding);
+  update->EraseIf([&container_id, this](const auto& dict) {
     return MatchPortRuleContainerId(dict, container_id);
   });
 

@@ -60,11 +60,14 @@ std::string GetCdmSessionTypeName(media::CdmSessionType session_type) {
   }
 }
 
-base::Value::List VideoCodecProfilesToList(
-    const base::flat_set<media::VideoCodecProfile>& profiles) {
+base::Value::List VideoCodecInfoToList(
+    const media::VideoCodecInfo& video_codec_info) {
+  auto& profiles = video_codec_info.supported_profiles;
+
   base::Value::List list;
   for (const auto& profile : profiles)
     list.Append(media::GetProfileName(profile));
+
   return list;
 }
 
@@ -81,8 +84,10 @@ base::Value::Dict CdmCapabilityToDict(
   for (const auto& [video_codec, video_codec_info] :
        cdm_capability.video_codecs) {
     auto codec_name = media::GetCodecName(video_codec);
-    auto& profiles = video_codec_info.supported_profiles;
-    video_codec_dict->Set(codec_name, VideoCodecProfilesToList(profiles));
+    // Codecs marked with "*" signals clear lead not supported.
+    if (!video_codec_info.supports_clear_lead)
+      codec_name += "*";
+    video_codec_dict->Set(codec_name, VideoCodecInfoToList(video_codec_info));
   }
 
   base::Value::List encryption_scheme_list;

@@ -34,8 +34,7 @@ import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.tabmodel.ChromeTabModelFilterFactory;
 import org.chromium.chrome.browser.back_press.BackPressManager;
-import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
-import org.chromium.chrome.browser.bookmarks.BookmarkBridgeJni;
+import org.chromium.chrome.browser.bookmarks.BookmarkNativesMockRule;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.feed.FeedServiceBridge;
@@ -45,6 +44,7 @@ import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.homepage.HomepageManager;
+import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthController;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcherImpl;
 import org.chromium.chrome.browser.init.ChromeActivityNativeDelegate;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcherImpl;
@@ -66,7 +66,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabGridDialogView;
-import org.chromium.chrome.browser.tasks.tab_management.TabUiThemeProvider;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelperJni;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
@@ -106,6 +105,8 @@ public class StartSurfaceCoordinatorUnitTestRule implements TestRule {
     public TestRule mProcessor = new Features.JUnitProcessor();
     @Rule
     public SuggestionsDependenciesRule mSuggestionsDeps = new SuggestionsDependenciesRule();
+    @Rule
+    public BookmarkNativesMockRule mBookmarkNativesMockRule = new BookmarkNativesMockRule();
 
     private TabModelSelector mTabModelSelector;
     private ViewGroup mContainerView;
@@ -114,6 +115,9 @@ public class StartSurfaceCoordinatorUnitTestRule implements TestRule {
 
     private Activity mActivity;
     private StartSurfaceCoordinator mCoordinator;
+
+    private final OneshotSupplierImpl<IncognitoReauthController>
+            mIncognitoReauthControllerSupplier = new OneshotSupplierImpl<>();
 
     private static class MockTabModelFilterProvider extends TabModelFilterProvider {
         public MockTabModelFilterProvider(Activity activity) {
@@ -170,14 +174,6 @@ public class StartSurfaceCoordinatorUnitTestRule implements TestRule {
         return mCoordinator;
     }
 
-    public TabModelSelector getTabModelSelector() {
-        return mTabModelSelector;
-    }
-
-    public Activity getActivity() {
-        return mActivity;
-    }
-
     private void initJniMocks() {
         Profile profile = Mockito.mock(Profile.class);
         PrefService prefService = Mockito.mock(PrefService.class);
@@ -216,7 +212,6 @@ public class StartSurfaceCoordinatorUnitTestRule implements TestRule {
         mJniMocker.mock(UrlFormatterJni.TEST_HOOKS, urlFormatterJniMock);
 
         mJniMocker.mock(FaviconHelperJni.TEST_HOOKS, Mockito.mock(FaviconHelper.Natives.class));
-        mJniMocker.mock(BookmarkBridgeJni.TEST_HOOKS, Mockito.mock(BookmarkBridge.Natives.class));
         mJniMocker.mock(
                 FeedServiceBridgeJni.TEST_HOOKS, Mockito.mock(FeedServiceBridge.Natives.class));
         mJniMocker.mock(CookieControlsServiceBridgeJni.TEST_HOOKS,
@@ -228,7 +223,6 @@ public class StartSurfaceCoordinatorUnitTestRule implements TestRule {
         mActivity = spy(Robolectric.buildActivity(Activity.class).setup().get());
         mActivity.setTheme(org.chromium.chrome.tab_ui.R.style.Theme_BrowserUI_DayNight);
         mActivity.setTheme(R.style.ColorOverlay_ChromiumAndroid);
-        mActivity.setTheme(TabUiThemeProvider.getThemeOverlayStyleResourceId());
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.CREATED);
 
         when(mContainerView.getContext()).thenReturn(mActivity);
@@ -278,6 +272,7 @@ public class StartSurfaceCoordinatorUnitTestRule implements TestRule {
         OmniboxStub omniboxStub = Mockito.mock(OmniboxStub.class);
         when(omniboxStub.getVoiceRecognitionHandler()).thenReturn(voiceRecognitionHandler);
         when(voiceRecognitionHandler.isVoiceSearchEnabled()).thenReturn(true);
+        mIncognitoReauthControllerSupplier.set(Mockito.mock(IncognitoReauthController.class));
 
         mCoordinator = new StartSurfaceCoordinator(mActivity, scrimCoordinator,
                 Mockito.mock(BottomSheetController.class), new OneshotSupplierImpl<>(),
@@ -292,7 +287,7 @@ public class StartSurfaceCoordinatorUnitTestRule implements TestRule {
                 Mockito.mock(MenuOrKeyboardActionController.class),
                 new MultiWindowModeStateDispatcherImpl(mActivity), new DummyJankTracker(),
                 new ObservableSupplierImpl<>(), new CrowButtonDelegateImpl(),
-                new BackPressManager());
+                new BackPressManager(), mIncognitoReauthControllerSupplier);
 
         Assert.assertFalse(LibraryLoader.getInstance().isLoaded());
         when(mLibraryLoader.isInitialized()).thenReturn(true);

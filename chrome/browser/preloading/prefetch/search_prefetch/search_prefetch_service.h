@@ -16,9 +16,11 @@
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/preloading/chrome_preloading.h"
 #include "chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_request.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/omnibox.mojom-shared.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
@@ -92,7 +94,9 @@ enum class SearchPrefetchServingReason {
   kPostReloadFormOrLink = 9,
   // A prerender navigation request has taken this response away.
   kPrerendered = 10,
-  kMaxValue = kPrerendered,
+  // The prefetch is not ready as it was in-flight.
+  kRequestInFlightNotReady = 11,
+  kMaxValue = kRequestInFlightNotReady,
 };
 
 class SearchPrefetchService : public KeyedService,
@@ -181,9 +185,19 @@ class SearchPrefetchService : public KeyedService,
   // for |match|. |index| is the location within the omnibox drop down.
   // |web_contents| represents the active WebContents this prefetch is started
   // which can be nullptr in case no active WebContents is present.
-  void MaybePrefetchLikelyMatch(size_t index,
-                                const AutocompleteMatch& match,
-                                content::WebContents* web_contents);
+  // |navigation_predictor| indicates the omnibox event type that
+  // indicated a likely navigation.
+  void OnNavigationLikely(
+      size_t index,
+      const AutocompleteMatch& match,
+      omnibox::mojom::NavigationPredictor navigation_predictor,
+      content::WebContents* web_contents);
+
+  // If the navigation URL matches with a prefetch that can be served, this
+  // function marks that prefetch as clicked to prevent deletion when omnibox
+  // closes.
+  void OnURLOpenedFromOmnibox(OmniboxLog* log,
+                              content::WebContents* web_contents);
 
   // Fires all timers.
   void FireAllExpiryTimerForTesting();
@@ -192,7 +206,8 @@ class SearchPrefetchService : public KeyedService,
   // Returns whether the prefetch started or not.
   bool MaybePrefetchURL(const GURL& url,
                         bool navigation_prefetch,
-                        content::WebContents* web_contents);
+                        content::WebContents* web_contents,
+                        ChromePreloadingPredictor predictor);
 
   // Adds |this| as an observer of |template_url_service| if not added already.
   void ObserveTemplateURLService(TemplateURLService* template_url_service);
@@ -208,11 +223,6 @@ class SearchPrefetchService : public KeyedService,
   // Records metrics around the error rate of prefetches. When |error| is true,
   // records the current time to prevent prefetches for a set duration.
   void ReportFetchResult(bool error);
-
-  // If the navigation URL matches with a prefetch that can be served, this
-  // function marks that prefetch as clicked to prevent deletion when omnibox
-  // closes.
-  void OnURLOpenedFromOmnibox(OmniboxLog* log);
 
   // These methods serialize and deserialize |prefetch_cache_| to
   // |profile_| pref service in a dictionary value.

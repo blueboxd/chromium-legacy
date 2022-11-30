@@ -4,6 +4,7 @@
 
 #include "ash/system/locale/locale_feature_pod_controller.h"
 
+#include "ash/constants/quick_settings_catalogs.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -44,12 +45,13 @@ FeaturePodButton* LocaleFeaturePodController::CreateButton() {
   return button;
 }
 
-void LocaleFeaturePodController::OnIconPressed() {
-  tray_controller_->ShowLocaleDetailedView();
+QsFeatureCatalogName LocaleFeaturePodController::GetCatalogName() {
+  return QsFeatureCatalogName::kLocale;
 }
 
-SystemTrayItemUmaType LocaleFeaturePodController::GetUmaType() const {
-  return SystemTrayItemUmaType::UMA_LOCALE;
+void LocaleFeaturePodController::OnIconPressed() {
+  TrackDiveInUMA();
+  tray_controller_->ShowLocaleDetailedView();
 }
 
 }  // namespace ash

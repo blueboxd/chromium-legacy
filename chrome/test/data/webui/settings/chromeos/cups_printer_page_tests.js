@@ -4,13 +4,15 @@
 
 import {CupsPrintersBrowserProxyImpl, CupsPrintersEntryManager, PrinterSetupResult, PrinterType, PrintServerResult} from 'chrome://os-settings/chromeos/lazy_load.js';
 import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
-import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.js';
+import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {NetworkStateProperties} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
+import {ConnectionStateType, NetworkType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.js';
 
 import {createCupsPrinterInfo, createPrinterListEntry} from './cups_printer_test_utils.js';
 import {TestCupsPrintersBrowserProxy} from './test_cups_printers_browser_proxy.js';
@@ -672,20 +674,18 @@ suite('EditPrinterDialog', function() {
   /** @type {?settings.TestCupsPrintersBrowserProxy} */
   let cupsPrintersBrowserProxy = null;
 
-  /** @type {!chromeos.networkConfig.mojom.NetworkStateProperties|undefined} */
+  /** @type {!NetworkStateProperties|undefined} */
   let wifi1;
 
   setup(function() {
-    const mojom = chromeos.networkConfig.mojom;
-
     cupsPrintersBrowserProxy = new TestCupsPrintersBrowserProxy();
 
     CupsPrintersBrowserProxyImpl.setInstanceForTesting(
         cupsPrintersBrowserProxy);
 
     // Simulate internet connection.
-    wifi1 = OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi1');
-    wifi1.connectionState = mojom.ConnectionStateType.kOnline;
+    wifi1 = OncMojo.getDefaultNetworkState(NetworkType.kWiFi, 'wifi1');
+    wifi1.connectionState = ConnectionStateType.kOnline;
 
     PolymerTest.clearBody();
     Router.getInstance().navigateTo(routes.CUPS_PRINTERS);
@@ -1177,8 +1177,7 @@ suite('EditPrinterDialog', function() {
    */
   test('OfflineEdit', function() {
     // Simulate connecting to a network with no internet connection.
-    wifi1.connectionState =
-        chromeos.networkConfig.mojom.ConnectionStateType.kConnected;
+    wifi1.connectionState = ConnectionStateType.kConnected;
     page.onActiveNetworksChanged([wifi1]);
     flush();
     const expectedName = 'editedName';

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -180,7 +180,7 @@ void ThreadedIconLoader::DidFinishLoading(uint64_t resource_identifier) {
                              base::TimeTicks::Now() - start_time_);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      Thread::Current()->GetDeprecatedTaskRunner();
+      threadable_loader_->GetTaskRunner();
 
   if (response_mime_type_ == "image/svg+xml") {
     PostCrossThreadTask(

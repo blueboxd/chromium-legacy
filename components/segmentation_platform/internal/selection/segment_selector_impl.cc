@@ -110,14 +110,14 @@ SegmentSelectorImpl::SegmentSelectorImpl(
     selected_segment_last_session_.is_ready = true;
     selected_segment_last_session_.rank = selected_segment->rank;
     stats::RecordSegmentSelectionFailure(
-        config_->segmentation_key,
+        *config_,
         stats::SegmentationSelectionFailureReason::kSelectionAvailableInPrefs);
 
     group_name = config_->GetSegmentUmaName(selected_segment->segment_id);
   } else {
     stats::RecordSegmentSelectionFailure(
-        config_->segmentation_key, stats::SegmentationSelectionFailureReason::
-                                       kInvalidSelectionResultInPrefs);
+        *config_, stats::SegmentationSelectionFailureReason::
+                      kInvalidSelectionResultInPrefs);
     group_name = "Unselected";
   }
 
@@ -197,7 +197,7 @@ bool SegmentSelectorImpl::IsPreviousSelectionInvalid() {
     if (!platform_options_.force_refresh_results &&
         previous_selection->selection_time + ttl_to_use > clock_->Now()) {
       stats::RecordSegmentSelectionFailure(
-          config_->segmentation_key,
+          *config_,
           stats::SegmentationSelectionFailureReason::kSelectionTtlNotExpired);
       VLOG(1) << __func__ << ": previous selection of segment="
               << SegmentId_Name(previous_selection->segment_id)
@@ -226,7 +226,7 @@ void SegmentSelectorImpl::GetRankForNextSegment(
       auto options =
           std::make_unique<SegmentResultProvider::GetResultOptions>();
       options->segment_id = needed_segment.first;
-      options->segmentation_key = config_->segmentation_key;
+      options->discrete_mapping_key = config_->segmentation_key;
       options->ignore_db_scores = config_->on_demand_execution;
       options->input_context = input_context;
       options->callback = base::BindOnce(
@@ -249,6 +249,8 @@ void SegmentSelectorImpl::GetRankForNextSegment(
     result.rank = segment_id_and_rank.second;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), result));
+    stats::RecordSegmentSelectionComputed(*config_, segment_id_and_rank.first,
+                                          absl::nullopt);
   } else {
     DCHECK(callback.is_null());
     UpdateSelectedSegment(segment_id_and_rank.first,
@@ -263,7 +265,7 @@ void SegmentSelectorImpl::OnGetResultForSegmentSelection(
     SegmentId current_segment_id,
     std::unique_ptr<SegmentResultProvider::SegmentResult> result) {
   if (!result->rank) {
-    stats::RecordSegmentSelectionFailure(config_->segmentation_key,
+    stats::RecordSegmentSelectionFailure(*config_,
                                          GetFailureReason(result->state));
     if (config_->on_demand_execution && !callback.is_null()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -279,17 +281,18 @@ void SegmentSelectorImpl::OnGetResultForSegmentSelection(
 
 std::pair<SegmentId, float> SegmentSelectorImpl::FindBestSegment(
     const SegmentRanks& segment_results) {
-  int max_rank = 0;
+  const float kMinRank = 0;
+  float max_rank = kMinRank;
   SegmentId max_rank_id = SegmentId::OPTIMIZATION_TARGET_UNKNOWN;
   // Loop through all the results. Convert them to discrete ranks. Select the
   // one with highest discrete rank.
   for (const auto& pair : segment_results) {
     SegmentId id = pair.first;
-    int rank = pair.second;
+    float rank = pair.second;
     if (rank > max_rank) {
       max_rank = rank;
       max_rank_id = id;
-    } else if (rank == max_rank && rank > 0) {
+    } else if (rank == max_rank && rank > kMinRank) {
       // TODO(shaktisahu): Use fallback priority.
     }
   }
@@ -321,7 +324,7 @@ void SegmentSelectorImpl::UpdateSelectedSegment(SegmentId new_selection,
   }
 
   stats::RecordSegmentSelectionComputed(
-      config_->segmentation_key, new_selection,
+      *config_, new_selection,
       previous_selection.has_value()
           ? absl::make_optional(previous_selection->segment_id)
           : absl::nullopt);

@@ -16,6 +16,7 @@
 #include "ash/webui/personalization_app/personalization_app_url_constants.h"
 #include "ash/webui/personalization_app/personalization_app_user_provider.h"
 #include "ash/webui/personalization_app/personalization_app_wallpaper_provider.h"
+#include "base/check.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -25,10 +26,10 @@
 #include "services/network/public/mojom/content_security_policy.mojom-shared.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/resources/grit/webui_generated_resources.h"
+#include "ui/webui/color_change_listener/color_change_handler.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
-namespace ash {
-namespace personalization_app {
+namespace ash::personalization_app {
 
 namespace {
 
@@ -110,6 +111,7 @@ void AddStrings(content::WebUIDataSource* source) {
        IDS_PERSONALIZATION_APP_ARIA_LABEL_ENABLE_LIGHT_COLOR_MODE},
       {"ariaLabelEnableAutoColorMode",
        IDS_PERSONALIZATION_APP_ARIA_LABEL_ENABLE_AUTO_COLOR_MODE},
+      {"tooltipAutoColorMode", IDS_PERSONALIZATION_APP_TOOLTIP_AUTO_COLOR_MODE},
 
       // User/avatar related strings.
       {"avatarLabel", IDS_PERSONALIZATION_APP_AVATAR_LABEL},
@@ -322,6 +324,13 @@ void PersonalizationAppUI::BindInterface(
   user_provider_->BindInterface(std::move(receiver));
 }
 
+void PersonalizationAppUI::BindInterface(
+    mojo::PendingReceiver<color_change_listener::mojom::PageHandler> receiver) {
+  DCHECK(features::IsJellyEnabled());
+  color_provider_handler_ = std::make_unique<ui::ColorChangeHandler>(
+      web_ui()->GetWebContents(), std::move(receiver));
+}
+
 void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
   source->AddBoolean("fullScreenPreviewEnabled",
                      features::IsWallpaperFullScreenPreviewEnabled());
@@ -329,9 +338,6 @@ void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
   source->AddBoolean("isGooglePhotosIntegrationEnabled",
                      features::IsWallpaperGooglePhotosIntegrationEnabled() &&
                          wallpaper_provider_->IsEligibleForGooglePhotos());
-
-  source->AddBoolean("isPersonalizationHubEnabled",
-                     features::IsPersonalizationHubEnabled());
 
   source->AddBoolean("isAmbientModeAnimationEnabled",
                      features::IsAmbientModeAnimationEnabled());
@@ -348,9 +354,10 @@ void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
 
   source->AddBoolean("isAvatarsCloudMigrationEnabled",
                      features::IsAvatarsCloudMigrationEnabled());
+
+  source->AddBoolean("isJellyEnabled", features::IsJellyEnabled());
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(PersonalizationAppUI)
 
-}  // namespace personalization_app
-}  // namespace ash
+}  // namespace ash::personalization_app

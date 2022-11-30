@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -119,8 +119,8 @@ void FontUniqueNameLookupAndroid::Init() {
       // WTF::Unretained is safe here because |this| owns
       // |android_font_lookup_service_|.
       android_font_lookup_service_->FetchAllFontFiles(
-          WTF::Bind(&FontUniqueNameLookupAndroid::FontsPrefetched,
-                    WTF::Unretained(this)));
+          WTF::BindOnce(&FontUniqueNameLookupAndroid::FontsPrefetched,
+                        WTF::Unretained(this)));
     }
   }
   if (base::FeatureList::IsEnabled(features::kPrefetchFontLookupTables) &&
@@ -154,7 +154,7 @@ void FontUniqueNameLookupAndroid::ReceiveReadOnlySharedMemoryRegion(
     base::ReadOnlySharedMemoryRegion shared_memory_region) {
   font_table_matcher_ =
       std::make_unique<FontTableMatcher>(shared_memory_region.Map());
-  while (!pending_callbacks_.IsEmpty()) {
+  while (!pending_callbacks_.empty()) {
     NotifyFontUniqueNameLookupReady callback = pending_callbacks_.TakeFirst();
     std::move(callback).Run();
   }

@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/dom/template_content_document_fragment.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/dom/throw_on_dynamic_markup_insertion_count_incrementer.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -61,10 +62,10 @@
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/script/ignore_destructive_write_count_incrementer.h"
 #include "third_party/blink/renderer/core/svg/svg_script_element.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 
 namespace blink {
@@ -103,13 +104,26 @@ static bool HasImpliedEndTag(const HTMLStackItem* item) {
 }
 
 static bool ShouldUseLengthLimit(const ContainerNode& node) {
-  return !IsA<HTMLScriptElement>(node) && !IsA<HTMLStyleElement>(node) &&
-         !IsA<SVGScriptElement>(node);
+  if (auto* html_element = DynamicTo<HTMLElement>(&node)) {
+    return !html_element->HasTagName(html_names::kScriptTag) &&
+           !html_element->HasTagName(html_names::kStyleTag);
+  }
+  return !IsA<SVGScriptElement>(node);
 }
 
-static unsigned TextLengthLimitForContainer(const ContainerNode& node) {
-  return ShouldUseLengthLimit(node) ? Text::kDefaultLengthLimit
-                                    : std::numeric_limits<unsigned>::max();
+static unsigned NextTextBreakPositionForContainer(
+    const ContainerNode& node,
+    unsigned current_position,
+    unsigned string_length,
+    absl::optional<unsigned>& length_limit) {
+  if (string_length < Text::kDefaultLengthLimit)
+    return string_length;
+  if (!length_limit) {
+    length_limit = ShouldUseLengthLimit(node)
+                       ? Text::kDefaultLengthLimit
+                       : std::numeric_limits<unsigned>::max();
+  }
+  return std::min(current_position + *length_limit, string_length);
 }
 
 static inline bool IsAllWhitespace(const String& string) {
@@ -149,6 +163,13 @@ static inline void ExecuteInsertTask(HTMLConstructionSiteTask& task) {
   }
 }
 
+static inline unsigned TextFitsInContainer(const ContainerNode& node,
+                                           unsigned length) {
+  // Common case is all text fits in the default text limit. Only lookup length
+  // limit when necessary as it is costly.
+  return length < Text::kDefaultLengthLimit || !ShouldUseLengthLimit(node);
+}
+
 static inline void ExecuteInsertTextTask(HTMLConstructionSiteTask& task) {
   DCHECK_EQ(task.operation, HTMLConstructionSiteTask::kInsertText);
 
@@ -158,8 +179,8 @@ static inline void ExecuteInsertTextTask(HTMLConstructionSiteTask& task) {
   Node* previous_child = task.next_child ? task.next_child->previousSibling()
                                          : task.parent->lastChild();
   if (auto* previous_text = DynamicTo<Text>(previous_child)) {
-    unsigned length_limit = TextLengthLimitForContainer(*task.parent);
-    if (previous_text->length() + new_text->length() < length_limit) {
+    if (TextFitsInContainer(*task.parent,
+                            previous_text->length() + new_text->length())) {
       previous_text->ParserAppendData(new_text->data());
       return;
     }
@@ -189,7 +210,7 @@ static inline void ExecuteTakeAllChildrenTask(HTMLConstructionSiteTask& task) {
 }
 
 void HTMLConstructionSite::ExecuteTask(HTMLConstructionSiteTask& task) {
-  DCHECK(task_queue_.IsEmpty());
+  DCHECK(task_queue_.empty());
   if (task.operation == HTMLConstructionSiteTask::kInsert)
     return ExecuteInsertTask(task);
 
@@ -248,22 +269,8 @@ static unsigned FindBreakIndexBetween(const StringBuilder& string,
   return 0;
 }
 
-static String AtomizeIfAllWhitespace(const String& string,
-                                     WhitespaceMode whitespace_mode) {
-  // Strings composed entirely of whitespace are likely to be repeated. Turn
-  // them into AtomicString so we share a single string for each.
-  if (whitespace_mode == kAllWhitespace ||
-      (whitespace_mode == kWhitespaceUnknown && IsAllWhitespace(string)))
-    return AtomicString(string).GetString();
-  return string;
-}
-
-void HTMLConstructionSite::FlushPendingText(FlushMode mode) {
+void HTMLConstructionSite::FlushPendingText() {
   if (pending_text_.IsEmpty())
-    return;
-
-  if (mode == kFlushIfAtTextLimit &&
-      !ShouldUseLengthLimit(*pending_text_.parent))
     return;
 
   PendingText pending_text;
@@ -275,13 +282,17 @@ void HTMLConstructionSite::FlushPendingText(FlushMode mode) {
   // Splitting text nodes into smaller chunks contradicts HTML5 spec, but is
   // necessary for performance, see:
   // https://bugs.webkit.org/show_bug.cgi?id=55898
-  unsigned length_limit = TextLengthLimitForContainer(*pending_text.parent);
+
+  // Lazily determine the line limit as it's non-trivial, and in the typical
+  // case not necessary. Note that this is faster than using a ternary operator
+  // to determine limit.
+  absl::optional<unsigned> length_limit;
 
   unsigned current_position = 0;
   const StringBuilder& string = pending_text.string_builder;
   while (current_position < string.length()) {
-    unsigned proposed_break_index =
-        std::min(current_position + length_limit, string.length());
+    unsigned proposed_break_index = NextTextBreakPositionForContainer(
+        *pending_text.parent, current_position, string.length(), length_limit);
     unsigned break_index =
         FindBreakIndexBetween(string, current_position, proposed_break_index);
     DCHECK_LE(break_index, string.length());
@@ -292,23 +303,29 @@ void HTMLConstructionSite::FlushPendingText(FlushMode mode) {
     }
     String substring =
         string.Substring(current_position, break_index - current_position);
-    substring = AtomizeIfAllWhitespace(substring, pending_text.whitespace_mode);
-
-    HTMLConstructionSiteTask task(HTMLConstructionSiteTask::kInsertText);
-    task.parent = pending_text.parent;
-    task.next_child = pending_text.next_child;
-    task.child = Text::Create(task.parent->GetDocument(), substring);
-    QueueTask(task);
+    // Strings composed entirely of whitespace are likely to be repeated. Turn
+    // them into AtomicString so we share a single string for each.
+    if (pending_text.whitespace_mode == kAllWhitespace ||
+        (pending_text.whitespace_mode == kWhitespaceUnknown &&
+         IsAllWhitespace(substring))) {
+      substring = AtomicString(substring).GetString();
+    }
 
     DCHECK_GT(break_index, current_position);
     DCHECK_EQ(break_index - current_position, substring.length());
-    DCHECK_EQ(To<Text>(task.child.Get())->length(), substring.length());
+    HTMLConstructionSiteTask task(HTMLConstructionSiteTask::kInsertText);
+    task.parent = pending_text.parent;
+    task.next_child = pending_text.next_child;
+    task.child = Text::Create(task.parent->GetDocument(), std::move(substring));
+    QueueTask(task);
+    DCHECK_EQ(To<Text>(task.child.Get())->length(),
+              break_index - current_position);
     current_position = break_index;
   }
 }
 
 void HTMLConstructionSite::QueueTask(const HTMLConstructionSiteTask& task) {
-  FlushPendingText(kFlushAlways);
+  FlushPendingText();
   DCHECK(pending_text_.IsEmpty());
   task_queue_.push_back(task);
 }
@@ -402,7 +419,7 @@ void HTMLConstructionSite::InitFragmentParsing(DocumentFragment* fragment,
 HTMLConstructionSite::~HTMLConstructionSite() {
   // Depending on why we're being destroyed it might be OK to forget queued
   // tasks, but currently we don't expect to.
-  DCHECK(task_queue_.IsEmpty());
+  DCHECK(task_queue_.empty());
   // Currently we assume that text will never be the last token in the document
   // and that we'll always queue some additional task to cause it to flush.
   DCHECK(pending_text_.IsEmpty());
@@ -454,7 +471,7 @@ void HTMLConstructionSite::InsertHTMLHtmlStartTagBeforeHTML(
 void HTMLConstructionSite::MergeAttributesFromTokenIntoElement(
     AtomicHTMLToken* token,
     Element* element) {
-  if (token->Attributes().IsEmpty())
+  if (token->Attributes().empty())
     return;
 
   for (const auto& token_attribute : token->Attributes()) {
@@ -605,10 +622,10 @@ void HTMLConstructionSite::SetCompatibilityModeFromDoctype(
       EqualIgnoringASCIICase(
           system_id,
           "http://www.ibm.com/data/dtd/v11/ibmxhtml1-transitional.dtd") ||
-      (system_id.IsEmpty() && public_id.StartsWithIgnoringASCIICase(
-                                  "-//W3C//DTD HTML 4.01 Frameset//")) ||
-      (system_id.IsEmpty() && public_id.StartsWithIgnoringASCIICase(
-                                  "-//W3C//DTD HTML 4.01 Transitional//"))) {
+      (system_id.empty() && public_id.StartsWithIgnoringASCIICase(
+                                "-//W3C//DTD HTML 4.01 Frameset//")) ||
+      (system_id.empty() && public_id.StartsWithIgnoringASCIICase(
+                                "-//W3C//DTD HTML 4.01 Transitional//"))) {
     SetCompatibilityMode(Document::kQuirksMode);
     return;
   }
@@ -618,10 +635,10 @@ void HTMLConstructionSite::SetCompatibilityModeFromDoctype(
           "-//W3C//DTD XHTML 1.0 Frameset//") ||
       public_id.StartsWithIgnoringASCIICase(
           "-//W3C//DTD XHTML 1.0 Transitional//") ||
-      (!system_id.IsEmpty() && public_id.StartsWithIgnoringASCIICase(
-                                   "-//W3C//DTD HTML 4.01 Frameset//")) ||
-      (!system_id.IsEmpty() && public_id.StartsWithIgnoringASCIICase(
-                                   "-//W3C//DTD HTML 4.01 Transitional//"))) {
+      (!system_id.empty() && public_id.StartsWithIgnoringASCIICase(
+                                 "-//W3C//DTD HTML 4.01 Frameset//")) ||
+      (!system_id.empty() && public_id.StartsWithIgnoringASCIICase(
+                                 "-//W3C//DTD HTML 4.01 Transitional//"))) {
     SetCompatibilityMode(Document::kLimitedQuirksMode);
     return;
   }
@@ -632,15 +649,15 @@ void HTMLConstructionSite::SetCompatibilityModeFromDoctype(
 
 void HTMLConstructionSite::ProcessEndOfFile() {
   DCHECK(CurrentNode());
-  Flush(kFlushAlways);
+  Flush();
   OpenElements()->PopAll();
 }
 
 void HTMLConstructionSite::FinishedParsing() {
   // We shouldn't have any queued tasks but we might have pending text which we
   // need to promote to tasks and execute.
-  DCHECK(task_queue_.IsEmpty());
-  Flush(kFlushAlways);
+  DCHECK(task_queue_.empty());
+  Flush();
   document_->FinishedParsing();
 }
 
@@ -830,7 +847,7 @@ void HTMLConstructionSite::InsertTextNode(const StringView& string,
   if (!pending_text_.IsEmpty() &&
       (pending_text_.parent != dummy_task.parent ||
        pending_text_.next_child != dummy_task.next_child))
-    FlushPendingText(kFlushAlways);
+    FlushPendingText();
   pending_text_.Append(dummy_task.parent, dummy_task.next_child, string,
                        whitespace_mode);
 }
@@ -965,7 +982,7 @@ Element* HTMLConstructionSite::CreateElement(
     // checkpoints, but note the spec is different--it talks about the
     // JavaScript stack, not the script nesting level.
     if (0u == reentry_permit_->ScriptNestingLevel())
-      Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
+      document.GetAgent()->event_loop()->PerformMicrotaskCheckpoint();
 
     // "6.3 Push a new element queue onto the custom element
     // reactions stack."

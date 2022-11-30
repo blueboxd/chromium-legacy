@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,7 +146,7 @@ Element* MediaControlTextTrackListElement::CreateTextTrackListItem(
   String track_label =
       GetMediaControls().GetTextTrackManager().GetTextTrackLabel(track);
   auto* track_label_span = MakeGarbageCollected<HTMLSpanElement>(GetDocument());
-  track_label_span->setInnerText(track_label, ASSERT_NO_EXCEPTION);
+  track_label_span->setInnerText(track_label);
   track_label_span->setAttribute(html_names::kAriaHiddenAttr, "true");
   track_item->setAttribute(html_names::kAriaLabelAttr,
                            WTF::AtomicString(track_label));
@@ -155,7 +155,7 @@ Element* MediaControlTextTrackListElement::CreateTextTrackListItem(
 
   // Add a track kind marker icon if there are multiple tracks with the same
   // label or if the track has no label.
-  if (track && (track->label().IsEmpty() || HasDuplicateLabel(track))) {
+  if (track && (track->label().empty() || HasDuplicateLabel(track))) {
     auto* track_kind_marker =
         MakeGarbageCollected<HTMLSpanElement>(GetDocument());
     if (track->kind() == track->CaptionsKeyword()) {

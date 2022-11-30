@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,14 +44,15 @@ void RecordUma(CropToResult result) {
 #if !BUILDFLAG(IS_ANDROID)
 
 // TODO(crbug.com/1332628): Remove this flag once it's clear it's not necessary.
-const base::Feature kCropTopPromiseWaitsForFirstFrame{
-    "CropTopPromiseWaitsForFirstFrame", base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kCropTopPromiseWaitsForFirstFrame,
+             "CropTopPromiseWaitsForFirstFrame",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If crop_id is the empty string, returns an empty base::Token.
 // If crop_id is a valid UUID, returns a base::Token representing the ID.
 // Otherwise, returns nullopt.
 absl::optional<base::Token> CropIdStringToToken(const String& crop_id) {
-  if (crop_id.IsEmpty()) {
+  if (crop_id.empty()) {
     return base::Token();
   }
   if (!crop_id.ContainsOnlyASCIIOrEmpty()) {
@@ -229,13 +230,13 @@ ScriptPromise BrowserCaptureMediaStreamTrack::cropTo(
   // to the new crop-target is observed.
   native_track->AddCropVersionCallback(
       crop_version,
-      WTF::Bind(&BrowserCaptureMediaStreamTrack::OnCropVersionObserved,
-                WrapWeakPersistent(this), crop_version));
+      WTF::BindOnce(&BrowserCaptureMediaStreamTrack::OnCropVersionObserved,
+                    WrapWeakPersistent(this), crop_version));
 
   native_source->Crop(
       crop_id_token.value(), crop_version,
-      WTF::Bind(&BrowserCaptureMediaStreamTrack::OnResultFromBrowserProcess,
-                WrapWeakPersistent(this), crop_version));
+      WTF::BindOnce(&BrowserCaptureMediaStreamTrack::OnResultFromBrowserProcess,
+                    WrapWeakPersistent(this), crop_version));
 
   return promise;
 #endif

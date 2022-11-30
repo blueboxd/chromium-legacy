@@ -104,8 +104,21 @@ public class PrivacySandboxBridge {
         return PrivacySandboxBridgeJni.get().isFirstPartySetsDataAccessManaged();
     }
 
+    public static boolean isPartOfManagedFirstPartySet(String origin) {
+        return PrivacySandboxBridgeJni.get().isPartOfManagedFirstPartySet(origin);
+    }
+
     public static void setFirstPartySetsDataAccessEnabled(boolean enabled) {
         PrivacySandboxBridgeJni.get().setFirstPartySetsDataAccessEnabled(enabled);
+    }
+
+    /**
+     * Gets the First Party Sets owner hostname given a FPS member origin.
+     * @param memberOrigin FPS member origin.
+     * @return A string containing the owner hostname, null if it doesn't exist.
+     */
+    public static String getFirstPartySetOwner(String memberOrigin) {
+        return PrivacySandboxBridgeJni.get().getFirstPartySetOwner(memberOrigin);
     }
 
     @NativeMethods
@@ -115,8 +128,10 @@ public class PrivacySandboxBridge {
         boolean isPrivacySandboxRestricted();
         boolean isFirstPartySetsDataAccessEnabled();
         boolean isFirstPartySetsDataAccessManaged();
+        boolean isPartOfManagedFirstPartySet(String origin);
         void setPrivacySandboxEnabled(boolean enabled);
         void setFirstPartySetsDataAccessEnabled(boolean enabled);
+        String getFirstPartySetOwner(String memberOrigin);
         String getFlocStatusString();
         String getFlocGroupString();
         String getFlocUpdateString();

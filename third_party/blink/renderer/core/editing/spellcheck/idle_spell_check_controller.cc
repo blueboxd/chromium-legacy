@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -180,8 +180,8 @@ void IdleSpellCheckController::SetNeedsColdModeInvocation() {
                                  : kColdModeTimerInterval;
   cold_mode_timer_ = PostDelayedCancellableTask(
       *GetWindow().GetTaskRunner(TaskType::kInternalDefault), FROM_HERE,
-      WTF::Bind(&IdleSpellCheckController::ColdModeTimerFired,
-                WrapPersistent(this)),
+      WTF::BindOnce(&IdleSpellCheckController::ColdModeTimerFired,
+                    WrapPersistent(this)),
       interval);
   state_ = State::kColdModeTimerStarted;
 }

@@ -61,7 +61,12 @@ class WaylandToplevelWindow : public WaylandWindow,
   void Restore() override;
   PlatformWindowState GetPlatformWindowState() const override;
   void Activate() override;
+  void Deactivate() override;
   void SizeConstraintsChanged() override;
+  // `SetZOrderLevel()` must be called on `z_order_` in
+  // `SetUpShellIntegration()`.
+  void SetZOrderLevel(ZOrderLevel order) override;
+  ZOrderLevel GetZOrderLevel() const override;
   std::string GetWindowUniqueId() const override;
   // SetUseNativeFrame and ShouldUseNativeFrame decide on
   // xdg-decoration mode for a window.
@@ -211,10 +216,6 @@ class WaylandToplevelWindow : public WaylandWindow,
   // Sets |workspace_| to |aura_surface_|.
   // This must be called in SetUpShellIntegration().
   void SetInitialWorkspace();
-
-  // Sets `z_order_` in the `shell_toplevel_`.
-  // Must be called in SetUpShellIntegration().
-  void SetInitialZOrder();
 
   // Wrappers around shell surface.
   std::unique_ptr<ShellToplevelWrapper> shell_toplevel_;

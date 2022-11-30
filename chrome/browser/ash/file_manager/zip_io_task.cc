@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/files/file.h"
 #include "base/files/file_error_or.h"
 #include "base/files/file_path.h"
@@ -145,7 +146,7 @@ void ZipIOTask::Execute(IOTask::ProgressCallback progress_callback,
 }
 
 void ZipIOTask::OnFilePreprocessed() {
-  DCHECK(files_preprocessed_ < progress_.sources.size());
+  DCHECK_LT(files_preprocessed_, progress_.sources.size());
   files_preprocessed_++;
   if (files_preprocessed_ < progress_.sources.size()) {
     return;
@@ -194,7 +195,7 @@ void ZipIOTask::GenerateZipNameAfterGotTotalBytes(int64_t total_bytes) {
 // Starts the zip operation.
 void ZipIOTask::ZipItems(
     base::FileErrorOr<storage::FileSystemURL> destination_result) {
-  if (destination_result.is_error()) {
+  if (!destination_result.has_value()) {
     progress_.outputs.emplace_back(progress_.destination_folder,
                                    destination_result.error());
     Complete(State::kError);

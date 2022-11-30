@@ -4,7 +4,7 @@
 
 #include "components/autofill_assistant/browser/startup_util.h"
 
-#include <array>
+#include <iterator>
 #include <memory>
 #include <ostream>
 
@@ -55,11 +55,11 @@ using ::testing::ValuesIn;
 
 // Feature configurations to instantiate tests with.
 struct TestFeatureConfig {
-  std::vector<base::Feature> enabled_features;
+  std::vector<base::test::FeatureRef> enabled_features;
 };
 
 // Shorthand for the full set of relevant features.
-const std::array<base::Feature, 5> kFullFeatureSet = {
+const base::test::FeatureRef kFullFeatureSet[] = {
     kAutofillAssistant, kAutofillAssistantProactiveHelp,
     kAutofillAssistantChromeEntry, kAutofillAssistantLoadDFMForTriggerScripts,
     kAutofillAssistantGetTriggerScriptsByHashPrefix};
@@ -101,11 +101,12 @@ const TestFeatureConfig kTestFeatureConfigs[] = {
     {{kAutofillAssistant, kAutofillAssistantChromeEntry,
       kAutofillAssistantProactiveHelp}},
     // All features are enabled.
-    {{kFullFeatureSet.begin(), kFullFeatureSet.end()}}};
+    {{std::begin(kFullFeatureSet), std::end(kFullFeatureSet)}}};
 
 // Custom output operator overloads to provide human-readable test outputs.
-std::ostream& operator<<(std::ostream& out, const base::Feature& feature) {
-  out << feature.name;
+std::ostream& operator<<(std::ostream& out,
+                         const base::test::FeatureRef& feature) {
+  out << feature->name;
   return out;
 }
 
@@ -150,9 +151,9 @@ class StartupUtilParametrizedTest
  public:
   void SetUp() override {
     StartupUtilTest::SetUp();
-    std::vector<base::Feature> disabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
     for (const auto& feature : kFullFeatureSet) {
-      if (!IsFeatureEnabled(feature)) {
+      if (!IsFeatureEnabled(*feature)) {
         disabled_features.emplace_back(feature);
       }
     }
@@ -166,7 +167,7 @@ class StartupUtilParametrizedTest
   void TearDown() override { scoped_feature_list_.reset(); }
 
   bool IsAnyFeatureSetEnabled(
-      const std::vector<std::vector<base::Feature>>& feature_sets) {
+      const std::vector<std::vector<base::test::FeatureRef>>& feature_sets) {
     for (const auto& features : feature_sets) {
       if (AreFeaturesEnabled(features)) {
         return true;
@@ -175,9 +176,10 @@ class StartupUtilParametrizedTest
     return false;
   }
 
-  bool AreFeaturesEnabled(const std::vector<base::Feature>& features) const {
+  bool AreFeaturesEnabled(
+      const std::vector<base::test::FeatureRef>& features) const {
     for (const auto& feature : features) {
-      if (!IsFeatureEnabled(feature)) {
+      if (!IsFeatureEnabled(*feature)) {
         return false;
       }
     }

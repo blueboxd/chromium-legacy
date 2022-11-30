@@ -24,6 +24,18 @@ namespace os.telemetry {
 
   callback BatteryInfoCallback = void (BatteryInfo batteryInfo);
 
+  dictionary NonRemovableBlockDeviceInfo {
+    DOMString? name;
+    DOMString? type;
+    double? size;
+  };
+
+  dictionary NonRemovableBlockDeviceInfoResponse {
+    NonRemovableBlockDeviceInfo[] deviceInfos;
+  };
+
+  callback NonRemovableBlockDevicesInfoCallback = void (NonRemovableBlockDeviceInfoResponse deviceInfoResponse);
+
   enum CpuArchitectureEnum {
     unknown,
     x86_64,
@@ -73,6 +85,49 @@ namespace os.telemetry {
 
   callback MemoryInfoCallback = void (MemoryInfo cpuInfo);
 
+  enum NetworkType {
+    cellular,
+    ethernet,
+    tether,
+    vpn,
+    wifi
+  };
+
+  enum NetworkState {
+    // The network type is available but not yet initialized.
+    uninitialized,
+    // The network type is available but disabled or disabling.
+    disabled,
+    // The network type is prohibited by policy.
+    prohibited,
+    // The network type is available and enabled or enabling, but no network
+    // connection has been established.
+    not_connected,
+    // The network type is available and enabled, and a network connection is
+    // in progress.
+    connecting,
+    // The network is in a portal state.
+    portal,
+    // The network is in a connected state, but connectivity is limited.
+    connected,
+    // The network is connected and online.
+    online
+  };
+
+  dictionary NetworkInfo {
+    NetworkType? type;
+    NetworkState? state;
+    DOMString? ipv4Address;
+    DOMString[] ipv6Addresses;
+    double? signalStrength;
+  };
+
+  dictionary InternetConnectivityInfo {
+    NetworkInfo[] networks;
+  };
+
+  callback InternetConnectivityInfoCallback = void (InternetConnectivityInfo networkInfo);
+
   dictionary OemData {
     // OEM data. This field used to store battery serial number by some OEMs.
     DOMString? oemData;
@@ -112,10 +167,70 @@ namespace os.telemetry {
 
   callback StatefulPartitionInfoCallback = void (StatefulPartitionInfo statefulPartitionInfo);
 
+  enum TpmGSCVersion {
+    not_gsc,
+    cr50,
+    ti50
+  };
+
+  dictionary TpmVersion {
+    // GSC version.
+    TpmGSCVersion? gscVersion;
+    // TPM family. We use the TPM 2.0 style encoding, e.g.:
+    //  * TPM 1.2: "1.2" -> 0x312e3200
+    //  * TPM 2.0: "2.0" -> 0x322e3000
+    long? family;
+    // TPM spec level.
+    double? specLevel;
+    // Manufacturer code.
+    long? manufacturer;
+    // TPM model number.
+    long? tpmModel;
+    // Firmware version.
+    double? firmwareVersion;
+    // Vendor specific information.
+    DOMString? vendorSpecific;
+  };
+
+  dictionary TpmStatus {
+    // Whether a TPM is enabled on the system.
+    boolean? enabled;
+    // Whether the TPM has been owned.
+    boolean? owned;
+    // Whether the owner password is still retained.
+    boolean? ownerPasswordIsPresent;
+  };
+
+  dictionary TpmDictionaryAttack {
+    // The current dictionary attack counter value.
+    long? counter;
+    // The current dictionary attack counter threshold.
+    long? threshold;
+    // Whether the TPM is in some form of dictionary attack lockout.
+    boolean? lockoutInEffect;
+    // The number of seconds remaining in the lockout.
+    long? lockoutSecondsRemaining;
+  };
+
+  dictionary TpmInfo {
+    // TPM version related information.
+    TpmVersion version;
+    // TPM status related information.
+    TpmStatus status;
+    // TPM dictionary attack (DA) related information.
+    TpmDictionaryAttack dictionaryAttack;
+  };
+
+  callback TpmInfoCallback = void (TpmInfo tpmInfo);
+
   interface Functions {
     [supportsPromises] static void getBatteryInfo(BatteryInfoCallback callback);
 
+    [supportsPromises] static void getNonRemovableBlockDevicesInfo(NonRemovableBlockDevicesInfoCallback callback);
+
     [supportsPromises] static void getCpuInfo(CpuInfoCallback callback);
+
+    [supportsPromises] static void getInternetConnectivityInfo(InternetConnectivityInfoCallback callback);
 
     [supportsPromises] static void getMemoryInfo(MemoryInfoCallback callback);
 
@@ -126,5 +241,7 @@ namespace os.telemetry {
     [supportsPromises] static void getVpdInfo(VpdInfoCallback callback);
 
     [supportsPromises] static void getStatefulPartitionInfo(StatefulPartitionInfoCallback callback);
+
+    [supportsPromises] static void getTpmInfo(TpmInfoCallback callback);
   };
 };

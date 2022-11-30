@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,8 +105,8 @@ AbortSignal* AbortSignal::timeout(ScriptState* script_state,
   // there are or will be event handlers attached.
   context->GetTaskRunner(task_type)->PostDelayedTask(
       FROM_HERE,
-      WTF::Bind(&AbortSignal::AbortTimeoutFired, WrapPersistent(signal),
-                WrapPersistent(script_state)),
+      WTF::BindOnce(&AbortSignal::AbortTimeoutFired, WrapPersistent(signal),
+                    WrapPersistent(script_state)),
       base::Milliseconds(milliseconds));
   return signal;
 }

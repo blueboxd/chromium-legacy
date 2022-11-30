@@ -93,11 +93,6 @@ void AppListTestViewDelegate::SetShouldShowSuggestedContentInfo(
   should_show_suggested_content_info_ = should_show;
 }
 
-const std::vector<SkColor>&
-AppListTestViewDelegate::GetWallpaperProminentColors() {
-  return wallpaper_prominent_colors_;
-}
-
 void AppListTestViewDelegate::ActivateItem(
     const std::string& id,
     int event_flags,
@@ -146,11 +141,6 @@ bool AppListTestViewDelegate::ShouldDismissImmediately() {
 int AppListTestViewDelegate::GetTargetYForAppListHide(
     aura::Window* root_window) {
   return 0;
-}
-
-int AppListTestViewDelegate::AdjustAppListViewScrollOffset(int offset,
-                                                           ui::EventType type) {
-  return offset;
 }
 
 bool AppListTestViewDelegate::HasValidProfile() const {

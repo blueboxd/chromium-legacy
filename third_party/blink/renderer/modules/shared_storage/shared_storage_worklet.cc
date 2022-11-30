@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,7 +77,7 @@ ScriptPromise SharedStorageWorklet::addModule(ScriptState* script_state,
   shared_storage_->GetSharedStorageDocumentService(execution_context)
       ->AddModuleOnWorklet(
           script_source_url,
-          WTF::Bind(
+          WTF::BindOnce(
               [](ScriptPromiseResolver* resolver,
                  SharedStorageWorklet* shared_storage_worklet,
                  base::TimeTicks start_time, bool success,

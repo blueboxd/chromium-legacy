@@ -7,7 +7,9 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
+#include "base/command_line.h"
 #include "base/component_export.h"
 #include "base/gtest_prod_util.h"
 
@@ -56,12 +58,11 @@ class COMPONENT_EXPORT(CHROMEOS_SYSTEM) NameValuePairsParser {
                                    NameValuePairsFormat format);
 
   // Parses name-value pairs in the specified |format| from the standard output
-  // of a tool invocation specified by |argc| and |argv|.
+  // of a tool invocation specified by |command|.
   //
   // Returns false if there was any error in the command invocation or when
   // parsing its output. Valid pairs will still be added to the map.
-  bool ParseNameValuePairsFromTool(int argc,
-                                   const char* argv[],
+  bool ParseNameValuePairsFromTool(const base::CommandLine& command,
                                    NameValuePairsFormat format);
 
   // Delete all pairs with |value|.

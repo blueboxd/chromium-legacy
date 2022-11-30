@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './icons.js';
+import './icons.html.js';
 import './emoji_group.js';
 import './emoji_group_button.js';
 import './emoji_search.js';
 import './text_group_button.js';
 import 'chrome://resources/cr_elements/cr_icons.css.js';
 
-import {afterNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import * as constants from './constants.js';
 import {EmojiGroupComponent} from './emoji_group.js';
+import {getTemplate} from './emoji_picker.html.js';
 import {Feature} from './emoji_picker.mojom-webui.js';
 import {EmojiPickerApiProxy, EmojiPickerApiProxyImpl} from './emoji_picker_api_proxy.js';
 import * as events from './events.js';
@@ -26,15 +27,15 @@ export class EmojiPicker extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static configs() {
     return {
       'dataUrls': {
         [CategoryEnum.EMOJI]: [
-          '/emoji_14_0_ordering_start.json',
-          '/emoji_14_0_ordering_remaining.json',
+          '/emoji_15_0_ordering_start.json',
+          '/emoji_15_0_ordering_remaining.json',
         ],
         [CategoryEnum.EMOTICON]: ['/emoticon_ordering.json'],
         [CategoryEnum.SYMBOL]: ['/symbol_ordering.json'],
@@ -711,6 +712,13 @@ export class EmojiPicker extends PolymerElement {
     }
   }
 
+  preventV2TabScrolling() {
+    if (this.v2Enabled) {
+      this.$.tabs.scrollLeft =
+          this.calculateTabScrollLeftPosition(this.pagination);
+    }
+  }
+
   hideDialogs() {
     this.hideEmojiVariants();
 
@@ -1066,6 +1074,15 @@ export class EmojiPicker extends PolymerElement {
     const offsetByLeftChevron = constants.V2_EMOJI_ICON_SIZE + chevronMargin;
     return (page === 1) ? 0 :
         (page - 1) * constants.EMOJI_PICKER_WIDTH - offsetByLeftChevron;
+  }
+
+  /**
+   * @param {number} itemPagination
+   * @param {number} currentPagination
+   * @returns {number}
+   */
+  getTabIndex(itemPagination, currentPagination) {
+    return itemPagination === currentPagination ? 0 : -1;
   }
 
   /**

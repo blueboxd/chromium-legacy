@@ -20,6 +20,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -89,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(FirstPartySetsPolicyInitializationTest, PolicyDefaults) {
         Profile* profile = Profile::FromBrowserContext(context);
         EXPECT_TRUE(
             profile->GetPrefs()
-                ->FindPreference(::first_party_sets::kFirstPartySetsEnabled)
+                ->FindPreference(prefs::kPrivacySandboxFirstPartySetsEnabled)
                 ->IsDefaultValue());
         EXPECT_TRUE(
             profile->GetPrefs()
@@ -97,8 +98,7 @@ IN_PROC_BROWSER_TEST_F(FirstPartySetsPolicyInitializationTest, PolicyDefaults) {
                 ->IsDefaultValue());
         loop.Quit();
         return base::WrapUnique<KeyedService>(
-            new ::first_party_sets::FirstPartySetsPolicyService(
-                context, base::Value::Dict()));
+            new ::first_party_sets::FirstPartySetsPolicyService(context));
       });
 
   ::first_party_sets::FirstPartySetsPolicyServiceFactory::GetInstance()
@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(FirstPartySetsPolicyInitializationTest,
         // Only the FirstPartySetsEnabled pref was set.
         EXPECT_FALSE(
             profile->GetPrefs()
-                ->FindPreference(::first_party_sets::kFirstPartySetsEnabled)
+                ->FindPreference(prefs::kPrivacySandboxFirstPartySetsEnabled)
                 ->IsDefaultValue());
         EXPECT_TRUE(
             profile->GetPrefs()
@@ -127,12 +127,11 @@ IN_PROC_BROWSER_TEST_F(FirstPartySetsPolicyInitializationTest,
                 ->IsDefaultValue());
         // Check the expected value of FirstPartySetsEnabled the pref.
         EXPECT_EQ(profile->GetPrefs()->GetBoolean(
-                      ::first_party_sets::kFirstPartySetsEnabled),
+                      prefs::kPrivacySandboxFirstPartySetsEnabled),
                   false);
         loop.Quit();
         return base::WrapUnique<KeyedService>(
-            new ::first_party_sets::FirstPartySetsPolicyService(
-                context, base::Value::Dict()));
+            new ::first_party_sets::FirstPartySetsPolicyService(context));
       });
 
   ::first_party_sets::FirstPartySetsPolicyServiceFactory::GetInstance()
@@ -162,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(FirstPartySetsPolicyInitializationTest,
         // Both prefs were set.
         EXPECT_FALSE(
             profile->GetPrefs()
-                ->FindPreference(::first_party_sets::kFirstPartySetsEnabled)
+                ->FindPreference(prefs::kPrivacySandboxFirstPartySetsEnabled)
                 ->IsDefaultValue());
         EXPECT_FALSE(
             profile->GetPrefs()
@@ -170,15 +169,14 @@ IN_PROC_BROWSER_TEST_F(FirstPartySetsPolicyInitializationTest,
                 ->IsDefaultValue());
         // Both prefs have the expected value.
         EXPECT_EQ(profile->GetPrefs()->GetBoolean(
-                      ::first_party_sets::kFirstPartySetsEnabled),
+                      prefs::kPrivacySandboxFirstPartySetsEnabled),
                   true);
         EXPECT_TRUE(profile->GetPrefs()->GetDict(
                         ::first_party_sets::kFirstPartySetsOverrides) ==
                     expected_overrides.GetDict());
         loop.Quit();
         return base::WrapUnique<KeyedService>(
-            new ::first_party_sets::FirstPartySetsPolicyService(
-                context, base::Value::Dict()));
+            new ::first_party_sets::FirstPartySetsPolicyService(context));
       });
 
   ::first_party_sets::FirstPartySetsPolicyServiceFactory::GetInstance()

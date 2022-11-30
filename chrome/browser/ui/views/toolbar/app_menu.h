@@ -21,6 +21,7 @@
 
 class BookmarkMenuDelegate;
 class Browser;
+class ScopedNewBadgeTracker;
 
 namespace views {
 class MenuButtonController;
@@ -34,7 +35,7 @@ class AppMenu : public views::MenuDelegate,
                 public GlobalErrorObserver,
                 public base::SupportsWeakPtr<AppMenu> {
  public:
-  AppMenu(Browser* browser, int run_types, bool alert_reopen_tab_items);
+  AppMenu(Browser* browser, int run_types);
   AppMenu(const AppMenu&) = delete;
   AppMenu& operator=(const AppMenu&) = delete;
   ~AppMenu() override;
@@ -181,11 +182,10 @@ class AppMenu : public views::MenuDelegate,
   // The bit mask of views::MenuRunner::RunTypes.
   const int run_types_;
 
-  // Whether to show items relating to reopening the last-closed tab as alerted.
-  const bool alert_reopen_tab_items_;
-
   // Records the time from when menu opens to when the user selects a menu item.
   base::ElapsedTimer menu_opened_timer_;
+
+  std::unique_ptr<ScopedNewBadgeTracker> new_badge_tracker_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_APP_MENU_H_

@@ -10,6 +10,7 @@
 <translation id="1131805035311359397">Чтобы проверить, защищены ли ваши пароли от утечки данных и прочих проблем с безопасностью, <ph name="BEGIN_LINK" />войдите в Chromium<ph name="END_LINK" />.</translation>
 <translation id="1185134272377778587">О Chromium</translation>
 <translation id="1203500561924088507">Спасибо, что установили <ph name="BUNDLE_NAME" />. Чтобы изменения вступили в силу, перезапустите браузер.</translation>
+<translation id="1261119230216066228">В режиме экономии памяти Chromium работает ещё быстрее</translation>
 <translation id="1315551408014407711">Создайте профиль Chromium</translation>
 <translation id="1385859895174722837">Google Ассистент в Chromium</translation>
 <translation id="1396446129537741364">Вводимые пароли будут отображаться в Chromium.</translation>
@@ -178,6 +179,7 @@
 <translation id="5386450000063123300">Обновление Chromium (<ph name="PROGRESS_PERCENT" />)…</translation>
 <translation id="538767207339317086">Разрешить вход в Chromium</translation>
 <translation id="5398878173008909840">Доступна новая версия Chromium.</translation>
+<translation id="5405650547142096840">Удалить из Chromium</translation>
 <translation id="5427571867875391349">Сделать Chromium браузером по умолчанию</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium (бета-версия)</translation>
 <translation id="5473971139929175403">В работе Chromium могут возникать сбои, так как браузер больше не поддерживает этот дистрибутив Linux.</translation>
@@ -205,6 +207,7 @@
 <translation id="6055895534982063517">Доступна новая версия Chromium, которая стала еще быстрее.</translation>
 <translation id="6063093106622310249">&amp;Открыть в Chromium</translation>
 <translation id="6072279588547424923">Расширение "<ph name="EXTENSION_NAME" />" добавлено в Chromium</translation>
+<translation id="6072463441809498330">Chromium может работать ещё быстрее</translation>
 <translation id="608006075545470555">Добавление рабочего профиля в браузер</translation>
 <translation id="6096348254544841612">Новая версия Chromium уже вышла!</translation>
 <translation id="6119438414301547735">Разрешить расширению показывать запросы доступа на панели инструментов Chromium</translation>
@@ -298,9 +301,9 @@
 <translation id="7682601070171973634">Chromium представляет новый взгляд на просмотр веб-страниц: сайты функционируют в обычном режиме, собирая меньше данных о вас.</translation>
 <translation id="7686590090926151193">Chromium не является браузером по умолчанию.</translation>
 <translation id="7689606757190482937">Синхронизируйте данные Chromium на всех устройствах</translation>
-<translation id="7714577916146996629">В этом режиме Chromium не использует память на вкладки, которые некоторое время оставались неактивными. Это освобождает ресурсы компьютера для текущих задач и поддерживает быструю работу Chromium. Неактивные вкладки при этом показываются как пустые и автоматически загружаются при нажатии на них. Вы можете <ph name="BEGIN_LINK" />узнать больше<ph name="END_LINK" /> или <ph name="BEGIN_LINK_2" />отправить отзыв<ph name="END_LINK_2" />.</translation>
 <translation id="7745317241717453663">Данные о работе в браузере будут удалены с устройства. Чтобы восстановить их позже, войдите в Chromium как <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Программе установки не удалось создать временный каталог. Возможно, у вас нет прав на установку приложений или недостаточно места на диске.</translation>
+<translation id="7786760609782648049">Chromium может работать ещё быстрее</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7828947555739565424">На данном устройстве уже есть профиль Chromium для этого аккаунта.</translation>
 <translation id="7845233973568007926">Спасибо, что установили <ph name="BUNDLE_NAME" />. Чтобы изменения вступили в силу, перезапустите компьютер.</translation>
@@ -328,11 +331,11 @@
 <translation id="8453117565092476964">Установочный архив поврежден. Скачайте Chromium ещё раз.</translation>
 <translation id="8463672209299734063">Автоматически отправлять данные об использовании и диагностике в Google, чтобы помогать нам повышать производительность и улучшать функции Chromium OS (необязательно)</translation>
 <translation id="8493179195440786826">Версия Chromium устарела</translation>
-<translation id="8522220489792889625">При необходимости Chromium освобождает память, закрывая вкладки, которые некоторое время не использовались. Этот параметр можно в любой момент изменить в настройках.</translation>
 <translation id="8550334526674375523">Этот рабочий профиль никак не связан с вашим личным профилем.</translation>
 <translation id="8558383651099478961">Родители отключили в Chromium параметр "Разрешения для сайтов, приложений и расширений". Добавлять это <ph name="EXTENSION_TYPE_PARAMETER" /> запрещено.</translation>
 <translation id="8561285221328166383">На вашем компьютере используется macOS 10.12. Чтобы получать обновления Chromium, установите на устройство macOS 10.13 или более поздней версии.</translation>
 <translation id="8568283329061645092">Chromium проверит ваши пароли, когда вы войдете в аккаунт Google.</translation>
+<translation id="8574036838419011058">Chromium экономит заряд батареи, ограничивая фоновую активность и визуальные эффекты, например плавную прокрутку страниц и частоту кадров в видео. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">© The Chromium Authors, <ph name="YEAR" /> . Все права защищены.</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />Как мы используем эти данные.<ph name="END_BOLD" /> Сайты могут хранить в Chromium информацию о ваших интересах. Например, вы перешли на сайт, чтобы купить беговые кроссовки. Он определит, что вам интересны марафоны. Когда вы перейдете на другой сайт, чтобы зарегистрироваться на забег, то увидите рекламу беговых кроссовок.</translation>
 <translation id="8619360774459241877">Запуск Chromium...</translation>

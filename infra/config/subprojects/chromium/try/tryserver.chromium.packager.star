@@ -13,6 +13,9 @@ try_.defaults.set(
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     pool = try_.DEFAULT_POOL,
     service_account = "chromium-cipd-try-builder@chops-service-accounts.iam.gserviceaccount.com",
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 consoles.list_view(
@@ -41,10 +44,10 @@ try_.builder(
         },
     },
     tryjob = try_.job(
-        location_filters = [
+        location_regexp = [
             # Enable for CLs touching files under "3pp" directories which are
             # two level deep or more from the repo root.
-            ".+/3pp/.+",
+            ".+/[+]/.+/3pp/.+",
         ],
     ),
 )

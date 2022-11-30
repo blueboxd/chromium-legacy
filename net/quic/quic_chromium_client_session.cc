@@ -18,6 +18,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
@@ -823,7 +824,8 @@ void QuicChromiumClientSession::ConnectionMigrationValidationResultDelegate::
 void QuicChromiumClientSession::ConnectionMigrationValidationResultDelegate::
     OnPathValidationFailure(
         std::unique_ptr<quic::QuicPathValidationContext> context) {
-  session_->connection()->OnPathValidationFailureAtClient();
+  session_->connection()->OnPathValidationFailureAtClient(
+      /*is_multi_port=*/false);
   // Note that socket, packet writer, and packet reader in |context| will be
   // discarded.
   auto* chrome_context =
@@ -851,7 +853,8 @@ void QuicChromiumClientSession::PortMigrationValidationResultDelegate::
 void QuicChromiumClientSession::PortMigrationValidationResultDelegate::
     OnPathValidationFailure(
         std::unique_ptr<quic::QuicPathValidationContext> context) {
-  session_->connection()->OnPathValidationFailureAtClient();
+  session_->connection()->OnPathValidationFailureAtClient(
+      /*is_multi_port=*/false);
   // Note that socket, packet writer, and packet reader in |context| will be
   // discarded.
   auto* chrome_context =
@@ -1067,8 +1070,6 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
 
   UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.NumTotalStreams",
                           num_total_streams_);
-  UMA_HISTOGRAM_COUNTS_1M("Net.QuicNumSentClientHellos",
-                          crypto_stream_->num_sent_client_hellos());
   UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.Pushed", streams_pushed_count_);
   UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.PushedAndClaimed",
                           streams_pushed_and_claimed_count_);
@@ -1313,8 +1314,7 @@ int QuicChromiumClientSession::TryCreateStream(StreamRequest* request) {
 void QuicChromiumClientSession::CancelRequest(StreamRequest* request) {
   // Remove |request| from the queue while preserving the order of the
   // other elements.
-  auto it =
-      std::find(stream_requests_.begin(), stream_requests_.end(), request);
+  auto it = base::ranges::find(stream_requests_, request);
   if (it != stream_requests_.end()) {
     it = stream_requests_.erase(it);
   }
@@ -1842,6 +1842,40 @@ void QuicChromiumClientSession::OnConnectionClosed(
   DCHECK(!connection()->connected());
 
   logger_->OnConnectionClosed(frame, source);
+
+  const quic::QuicConnection::MultiPortStats* multi_port_stats =
+      connection()->multi_port_stats();
+  if (multi_port_stats != nullptr) {
+    UMA_HISTOGRAM_COUNTS_1000("Net.QuicMultiPort.NumDefaultPathDegrading",
+                              multi_port_stats->num_path_degrading);
+    UMA_HISTOGRAM_COUNTS_1000(
+        "Net.QuicMultiPort.NumMultiPortFailureWhenPathNotDegrading",
+        multi_port_stats
+            ->num_multi_port_probe_failures_when_path_not_degrading);
+    if (multi_port_stats->num_path_degrading > 0) {
+      base::UmaHistogramSparse(
+          "Net.QuicMultiPort.AltPortRttWhenPathDegradingVsGeneral",
+          static_cast<int>(
+              multi_port_stats->rtt_stats_when_default_path_degrading
+                  .smoothed_rtt()
+                  .ToMilliseconds() *
+              100 /
+              multi_port_stats->rtt_stats.smoothed_rtt().ToMilliseconds()));
+      UMA_HISTOGRAM_COUNTS_1000(
+          "Net.QuicMultiPort.NumMultiPortFailureWhenPathDegrading",
+          multi_port_stats->num_multi_port_probe_failures_when_path_degrading);
+      base::UmaHistogramPercentage(
+          "Net.QuicMultiPort.AltPortFailureWhenPathDegradingVsGeneral",
+          static_cast<int>(
+              multi_port_stats
+                  ->num_multi_port_probe_failures_when_path_degrading *
+              100 /
+              (multi_port_stats
+                   ->num_multi_port_probe_failures_when_path_not_degrading +
+               multi_port_stats
+                   ->num_multi_port_probe_failures_when_path_degrading)));
+    }
+  }
 
   RecordConnectionCloseErrorCode(frame, source, session_key_.host(),
                                  OneRttKeysAvailable());

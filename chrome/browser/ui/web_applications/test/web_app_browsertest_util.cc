@@ -24,9 +24,11 @@
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
@@ -37,6 +39,7 @@
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -146,23 +149,41 @@ AppId InstallWebAppFromPage(Browser* browser, const GURL& app_url) {
   auto* provider = WebAppProvider::GetForTest(browser->profile());
   DCHECK(provider);
   test::WaitUntilReady(provider);
-  provider->command_manager().ScheduleCommand(
-      std::make_unique<FetchManifestAndInstallCommand>(
-          &provider->install_finalizer(), &provider->registrar(),
-          webapps::WebappInstallSource::MENU_BROWSER_TAB,
-          browser->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
-          /*bypass_service_worker_check=*/false,
-          base::BindOnce(&AutoAcceptDialogCallback),
-          base::BindLambdaForTesting(
-              [&run_loop, &app_id](const AppId& installed_app_id,
-                                   webapps::InstallResultCode code) {
-                DCHECK_EQ(code, webapps::InstallResultCode::kSuccessNewInstall);
-                app_id = installed_app_id;
-                run_loop.Quit();
-              }),
-          /*use_fallback=*/true, WebAppInstallFlow::kInstallSite));
+  provider->scheduler().FetchManifestAndInstall(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB,
+      browser->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
+      /*bypass_service_worker_check=*/false,
+      base::BindOnce(&AutoAcceptDialogCallback),
+      base::BindLambdaForTesting(
+          [&run_loop, &app_id](const AppId& installed_app_id,
+                               webapps::InstallResultCode code) {
+            DCHECK_EQ(code, webapps::InstallResultCode::kSuccessNewInstall);
+            app_id = installed_app_id;
+            run_loop.Quit();
+          }),
+      /*use_fallback=*/true);
 
   run_loop.Run();
+  return app_id;
+}
+
+AppId InstallWebAppFromPageAndCloseAppBrowser(Browser* browser,
+                                              const GURL& app_url) {
+  // Create new tab to navigate, install, automatically pop out and then
+  // close. This sequence avoids altering the browser window state it started
+  // with.
+  chrome::AddTabAt(browser, app_url, /*index=*/-1,
+                   /*foreground=*/true);
+
+  ui_test_utils::BrowserChangeObserver observer(
+      nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
+  AppId app_id = InstallWebAppFromPage(browser, app_url);
+
+  Browser* app_browser = observer.Wait();
+  DCHECK_NE(app_browser, browser);
+  DCHECK(AppBrowserController::IsForWebApp(app_browser, app_id));
+  chrome::CloseWindow(app_browser);
+
   return app_id;
 }
 
@@ -178,21 +199,19 @@ AppId InstallWebAppFromManifest(Browser* browser, const GURL& app_url) {
   auto* provider = WebAppProvider::GetForTest(browser->profile());
   DCHECK(provider);
   test::WaitUntilReady(provider);
-  provider->command_manager().ScheduleCommand(
-      std::make_unique<FetchManifestAndInstallCommand>(
-          &provider->install_finalizer(), &provider->registrar(),
-          webapps::WebappInstallSource::MENU_BROWSER_TAB,
-          browser->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
-          /*bypass_service_worker_check=*/false,
-          base::BindOnce(&AutoAcceptDialogCallback),
-          base::BindLambdaForTesting(
-              [&run_loop, &app_id](const AppId& installed_app_id,
-                                   webapps::InstallResultCode code) {
-                DCHECK_EQ(code, webapps::InstallResultCode::kSuccessNewInstall);
-                app_id = installed_app_id;
-                run_loop.Quit();
-              }),
-          /*use_fallback=*/true, WebAppInstallFlow::kInstallSite));
+  provider->scheduler().FetchManifestAndInstall(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB,
+      browser->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
+      /*bypass_service_worker_check=*/false,
+      base::BindOnce(&AutoAcceptDialogCallback),
+      base::BindLambdaForTesting(
+          [&run_loop, &app_id](const AppId& installed_app_id,
+                               webapps::InstallResultCode code) {
+            DCHECK_EQ(code, webapps::InstallResultCode::kSuccessNewInstall);
+            app_id = installed_app_id;
+            run_loop.Quit();
+          }),
+      /*use_fallback=*/true);
 
   run_loop.Run();
   return app_id;
@@ -379,31 +398,6 @@ bool IsBrowserOpen(const Browser* test_browser) {
       return true;
   }
   return false;
-}
-
-void UninstallWebApp(Profile* profile, const AppId& app_id) {
-  auto* provider = WebAppProvider::GetForTest(profile);
-  DCHECK(provider);
-  DCHECK(provider->install_finalizer().CanUserUninstallWebApp(app_id));
-  provider->install_finalizer().UninstallWebApp(
-      app_id, webapps::WebappUninstallSource::kAppMenu, base::DoNothing());
-}
-
-void UninstallWebAppWithCallback(Profile* profile,
-                                 const AppId& app_id,
-                                 UninstallWebAppCallback callback) {
-  auto* provider = WebAppProvider::GetForTest(profile);
-  DCHECK(provider);
-  DCHECK(provider->install_finalizer().CanUserUninstallWebApp(app_id));
-  provider->install_finalizer().UninstallWebApp(
-      app_id, webapps::WebappUninstallSource::kAppMenu,
-      base::BindOnce(
-          [](UninstallWebAppCallback callback,
-             webapps::UninstallResultCode code) {
-            std::move(callback).Run(code ==
-                                    webapps::UninstallResultCode::kSuccess);
-          },
-          std::move(callback)));
 }
 
 BrowserWaiter::BrowserWaiter(Browser* filter) : filter_(filter) {

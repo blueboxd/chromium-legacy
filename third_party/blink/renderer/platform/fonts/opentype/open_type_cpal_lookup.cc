@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,11 @@
 
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_face_from_typeface.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/harfbuzz-ng/utils/hb_scoped.h"
 #include "third_party/skia/include/core/SkStream.h"
 
 // clang-format off
 #include <hb.h>
+#include <hb-cplusplus.hh>
 #include <hb-ot.h>
 // clang-format on
 
@@ -28,7 +28,7 @@ absl::optional<uint16_t> OpenTypeCpalLookup::FirstThemedPalette(
   if (!typeface || !typeface->getTableSize(kCpalTag))
     return absl::nullopt;
 
-  HbScoped<hb_face_t> face(HbFaceFromSkTypeface(typeface));
+  hb::unique_ptr<hb_face_t> face(HbFaceFromSkTypeface(typeface));
 
   if (!face || !hb_ot_color_has_palettes(face.get()))
     return absl::nullopt;

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,7 @@ void PropertyTreeManager::Finalize() {
   while (effect_stack_.size())
     CloseCcEffect();
 
-  DCHECK(effect_stack_.IsEmpty());
+  DCHECK(effect_stack_.empty());
 
   UpdatePixelMovingFilterClipExpanders();
 }
@@ -954,7 +954,7 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     return cc::kInvalidPropertyNodeId;
   }
 
-  if (pending_clips.IsEmpty())
+  if (pending_clips.empty())
     return cc::kInvalidPropertyNodeId;
 
   int cc_effect_id_for_backdrop_effect = cc::kInvalidPropertyNodeId;

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -305,7 +305,7 @@ void InteractiveDetector::HandleForInputDelay(
   // last element exists and this is nullopt value, the first input has not come
   // yet after the last time when the page is restored from the cache.
   if (!page_event_times_.first_input_delays_after_back_forward_cache_restore
-           .IsEmpty() &&
+           .empty() &&
       !page_event_times_.first_input_delays_after_back_forward_cache_restore
            .back()
            .has_value()) {
@@ -411,8 +411,7 @@ void InteractiveDetector::OnLongTaskDetected(base::TimeTicks start_time,
 
 void InteractiveDetector::OnFirstContentfulPaint(
     base::TimeTicks first_contentful_paint) {
-  // Should not set FCP twice.
-  DCHECK(page_event_times_.first_contentful_paint.is_null());
+  // TODO(yoav): figure out what we should do when FCP is set multiple times!
   page_event_times_.first_contentful_paint = first_contentful_paint;
   if (clock_->NowTicks() - first_contentful_paint >= kTimeToInteractiveWindow) {
     // We may have reached TTI already. Check right away.
@@ -473,7 +472,7 @@ void InteractiveDetector::AddCurrentlyActiveNetworkQuietInterval(
 }
 
 void InteractiveDetector::RemoveCurrentlyActiveNetworkQuietInterval() {
-  if (!network_quiet_windows_.IsEmpty() &&
+  if (!network_quiet_windows_.empty() &&
       network_quiet_windows_.back().Low() ==
           active_network_quiet_window_start_) {
     network_quiet_windows_.pop_back();

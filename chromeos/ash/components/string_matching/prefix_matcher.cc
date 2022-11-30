@@ -1,22 +1,29 @@
-// Copyright 2020 The Chromium Authors
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chromeos/ash/components/string_matching/prefix_matcher.h"
 
+#include <cstddef>
+#include <queue>
+#include <string>
+
 #include "base/check.h"
+#include "base/containers/flat_map.h"
+#include "base/strings/strcat.h"
 #include "chromeos/ash/components/string_matching/tokenized_string.h"
-#include "chromeos/ash/components/string_matching/tokenized_string_char_iterator.h"
 
 namespace ash::string_matching {
+namespace {
+using prefix_matcher_constants::kIsFrontOfTokenCharScore;
+using prefix_matcher_constants::kIsPrefixCharScore;
+using prefix_matcher_constants::kIsWeakHitCharScore;
+using prefix_matcher_constants::kNoMatchScore;
 
-// TODO(crbug.com/1336160): Paradigm shift 1: Reconsider the value of
-// search-via-acronym, i.e. the logic around `kIsFrontOfTokenCharScore`.
-//
-// TODO(crbug.com/1336160): Paradigm shift 2: Consider scoring matching prefixes
-// of tokens with equal value, regardless of whether the token is a first token
-// or non-first token.
-//
+MatchInfo::MatchInfo() = default;
+MatchInfo::~MatchInfo() = default;
+}  // namespace
+
 // PrefixMatcher:
 //
 // The factors below are applied when the current char of query matches
@@ -27,9 +34,6 @@ namespace ash::string_matching {
 // the query and the text, which implies that the matched chars are at the same
 // position in query and text. This is the most preferred case thus it has the
 // highest score.
-//
-// When the current char of the query and the text do not match, the algorithm
-// moves to the next token in the text and tries to match from there.
 //
 // 2) `kIsFrontOfTokenCharScore` will be used if the first char of the token
 // matches the current char of the query.
@@ -42,130 +46,182 @@ namespace ash::string_matching {
 //   For text: 'Google Chrome'.
 //
 //   Query 'go' would yield kIsPrefixCharScore for each char.
-//   Query 'gc' would use kIsPrefixCharScore for 'g' and
-//       kIsFrontOfTokenCharScore for 'c'.
 //   Query 'ch' would use kIsFrontOfTokenCharScore for 'c' and
 //       kIsWeakHitCharScore for 'h'.
-
+//
 // kNoMatchScore is a relevance score that represents no match.
 
 PrefixMatcher::PrefixMatcher(const TokenizedString& query,
                              const TokenizedString& text)
-    : query_iter_(query),
-      text_iter_(text),
-      current_match_(gfx::Range::InvalidRange()),
-      current_relevance_(constants::kNoMatchScore) {}
+    : query_(query), text_(text) {}
 PrefixMatcher::~PrefixMatcher() = default;
 
 bool PrefixMatcher::Match() {
-  while (!RunMatch()) {
-    // No match found and no more states to try. Bail out.
-    if (states_.empty()) {
-      current_relevance_ = constants::kNoMatchScore;
-      current_hits_.clear();
-      return false;
+  MatchInfo sentence_match_info;
+  SentencePrefixMatch(sentence_match_info);
+  MatchInfo token_match_info;
+  TokenPrefixMatch(token_match_info);
+
+  MatchInfo& better_match =
+      sentence_match_info.relevance >= token_match_info.relevance
+          ? sentence_match_info
+          : token_match_info;
+  relevance_ = better_match.relevance;
+  hits_ = better_match.hits;
+  return relevance_ > 0.0;
+}
+
+void PrefixMatcher::SentencePrefixMatch(MatchInfo& sentence_match_info) {
+  // Since we are concatenating the tokens, we do not have whitespace
+  // separation, and so we have to be careful with index calculation later on.
+  std::u16string query_sentence = base::StrCat(query_.tokens());
+  std::u16string text_sentence = base::StrCat(text_.tokens());
+
+  // Queue to store the starting index of each token in the `text_sentence`.
+  std::queue<size_t> text_token_indexes;
+  size_t token_index = 0;
+  for (auto text_token : text_.tokens()) {
+    text_token_indexes.push(token_index);
+    token_index += text_token.size();
+  }
+
+  while (!text_token_indexes.empty()) {
+    size_t start_index = text_token_indexes.front();
+    size_t matched_index = text_sentence.find(query_sentence, start_index);
+
+    while (!text_token_indexes.empty() &&
+           text_token_indexes.front() < matched_index) {
+      text_token_indexes.pop();
     }
 
-    PopState();
+    if (text_token_indexes.empty() ||
+        text_token_indexes.front() > matched_index) {
+      continue;
+    }
 
-    // Skip restored match to try other possibilities.
-    AdvanceToNextTextToken();
+    // Calculate the `relevance` score and `hits` and return if the found match
+    // begins from the starting index of a token.
+    DCHECK(text_token_indexes.front() == matched_index);
+    size_t text_pos = text_.tokens().size() - text_token_indexes.size();
+    size_t text_sentence_end_pos = matched_index + query_sentence.size();
+
+    sentence_match_info.relevance = 0.0;
+    sentence_match_info.current_match.set_start(
+        text_.mappings()[text_pos].start());
+
+    while (!text_token_indexes.empty() &&
+           text_token_indexes.front() < text_sentence_end_pos) {
+      // Text size may be smaller than the token size as prefix matching is
+      // allowed for the last token.
+      size_t text_size =
+          std::min(text_.tokens()[text_pos].size(),
+                   text_sentence_end_pos - text_token_indexes.front());
+      sentence_match_info.relevance +=
+          matched_index == 0 ? kIsPrefixCharScore * text_size
+                             : kIsFrontOfTokenCharScore +
+                                   kIsWeakHitCharScore * (text_size - 1);
+      sentence_match_info.current_match.set_end(
+          text_.mappings()[text_pos].start() + text_size);
+
+      ++text_pos;
+      text_token_indexes.pop();
+    }
+    sentence_match_info.hits.push_back(sentence_match_info.current_match);
+    return;
   }
-
-  if (current_match_.IsValid())
-    current_hits_.push_back(current_match_);
-
-  return true;
 }
 
-PrefixMatcher::State::State() : relevance(constants::kNoMatchScore) {}
-PrefixMatcher::State::~State() = default;
-PrefixMatcher::State::State(double relevance,
-                            const gfx::Range& current_match,
-                            const Hits& hits,
-                            const TokenizedStringCharIterator& query_iter,
-                            const TokenizedStringCharIterator& text_iter)
-    : relevance(relevance),
-      current_match(current_match),
-      hits(hits.begin(), hits.end()),
-      query_iter_state(query_iter.GetState()),
-      text_iter_state(text_iter.GetState()) {}
-PrefixMatcher::State::State(const PrefixMatcher::State& state) = default;
+void PrefixMatcher::TokenPrefixMatch(MatchInfo& token_match_info) {
+  const size_t num_query_token = query_.tokens().size();
+  const size_t num_text_token = text_.tokens().size();
 
-bool PrefixMatcher::RunMatch() {
-  bool have_match_already = false;
-  while (!query_iter_.end() && !text_iter_.end()) {
-    if (query_iter_.Get() == text_iter_.Get()) {
-      PushState();
+  // Not a prefix match if `query_`  contains more tokens than  `text_` , or
+  // if `query_`  is empty.
+  if (query_.tokens().empty() || num_query_token > num_text_token)
+    return;
 
-      if (query_iter_.GetArrayPos() == text_iter_.GetArrayPos())
-        current_relevance_ += constants::kIsPrefixCharScore;
-      else if (text_iter_.IsFirstCharOfToken())
-        current_relevance_ += constants::kIsFrontOfTokenCharScore;
-      else
-        current_relevance_ += constants::kIsWeakHitCharScore;
+  // We use `query_map` to allow fast match between query tokens and text
+  // tokens. Queue stores the query token index and ensures the tokens to
+  // match in sequence when multiple same tokens exists. It does not store the
+  // last query token as the last query token allows token prefix matching.
+  base::flat_map<std::u16string, std::queue<size_t>> query_map;
+  for (size_t i = 0; i < num_query_token - 1; ++i) {
+    query_map[query_.tokens()[i]].emplace(i);
+  }
+  const std::u16string last_query_token = query_.tokens()[num_query_token - 1];
 
-      if (!current_match_.IsValid())
-        current_match_.set_start(text_iter_.GetArrayPos());
-      current_match_.set_end(text_iter_.GetArrayPos() +
-                             text_iter_.GetCharSize());
+  size_t matched_num = 0;
+  for (size_t text_pos = 0; text_pos < num_text_token; ++text_pos) {
+    const std::u16string text_token = text_.tokens()[text_pos];
 
-      query_iter_.NextChar();
-      text_iter_.NextChar();
-      have_match_already = true;
-    } else {
-      // Character mismatch. Multiple possibilities:
+    if (query_map.contains(text_token)) {
+      DCHECK(!query_map[text_token].empty());
+      size_t query_pos = query_map[text_token].front();
 
-      if (text_iter_.IsFirstCharOfToken()) {
-        if (have_match_already) {
-          // We have a mismatch in the first letter of the current token, and
-          // have observed matches in previous tokens. Consider this a no match.
-          return false;
-        } else {
-          // No matches have been found so far. Skip over current token.
-          AdvanceToNextTextToken();
-        }
-      } else if (text_iter_.IsSecondCharOfToken()) {
-        // We have a match in the first letter of the current token, and the
-        // next character doesn't match. In this case we can
-        // AdvanceToNextTextToken().
-        AdvanceToNextTextToken();
-      } else {
-        // Mismatch is in the third or further char of the text token. Consider
-        // this a no match.
-        return false;
-      }
+      query_map[text_token].pop();
+      if (query_map[text_token].empty())
+        query_map.erase(text_token);
+
+      UpdateInfoForTokenPrefixMatch(query_pos, text_pos, token_match_info);
+      ++matched_num;
+    } else if (last_query_token.size() <= text_token.size() &&
+               text_token.compare(0, last_query_token.size(),
+                                  last_query_token) == 0) {
+      // This case handles an incomplete last query.
+      // Example:
+      //   For text: 'Google Chrome'.
+      //
+      //   Query 'Google Ch' is also a match as the query token 'ch' is the
+      //   prefix of the text token 'chrome'.
+      UpdateInfoForTokenPrefixMatch(num_query_token - 1, text_pos,
+                                    token_match_info);
+      ++matched_num;
+    }
+
+    if (matched_num == num_query_token) {
+      DCHECK(token_match_info.current_match.IsValid());
+      token_match_info.hits.push_back(token_match_info.current_match);
+      return;
     }
   }
-
-  return query_iter_.end();
+  token_match_info.relevance = kNoMatchScore;
 }
 
-void PrefixMatcher::AdvanceToNextTextToken() {
-  if (current_match_.IsValid()) {
-    current_hits_.push_back(current_match_);
-    current_match_ = gfx::Range::InvalidRange();
+void PrefixMatcher::UpdateInfoForTokenPrefixMatch(size_t query_pos,
+                                                  size_t text_pos,
+                                                  MatchInfo& token_match_info) {
+  const size_t hit_start_pos = text_.mappings()[text_pos].start();
+  const size_t hit_end_pos =
+      text_.mappings()[text_pos].start() + query_.tokens()[query_pos].size();
+
+  // Update the hits information.
+  if (query_pos != token_match_info.last_query_pos + 1 ||
+      text_pos != token_match_info.last_query_pos + 1) {
+    token_match_info.is_front = false;
+
+    // When it's not continuous matching and we have a valid `current_match`,
+    // push it `hits` and start a new match.
+    if (token_match_info.current_match.IsValid()) {
+      token_match_info.hits.push_back(token_match_info.current_match);
+      token_match_info.current_match = gfx::Range::InvalidRange();
+    }
   }
+  // It's a continuous matching if the `current_match` is valid.
+  // Update only the end position if it's a continuous matching, and update both
+  // the start && end positions otherwise.
+  if (!token_match_info.current_match.IsValid())
+    token_match_info.current_match.set_start(hit_start_pos);
+  token_match_info.current_match.set_end(hit_end_pos);
 
-  text_iter_.NextToken();
-}
-
-void PrefixMatcher::PushState() {
-  states_.push_back(State(current_relevance_, current_match_, current_hits_,
-                          query_iter_, text_iter_));
-}
-
-void PrefixMatcher::PopState() {
-  DCHECK(!states_.empty());
-
-  State& last_match = states_.back();
-  current_relevance_ = last_match.relevance;
-  current_match_ = last_match.current_match;
-  current_hits_.swap(last_match.hits);
-  query_iter_.SetState(last_match.query_iter_state);
-  text_iter_.SetState(last_match.text_iter_state);
-
-  states_.pop_back();
+  // Update relevance score.
+  token_match_info.relevance +=
+      token_match_info.is_front
+          ? kIsPrefixCharScore * query_.tokens().at(query_pos).size()
+          : kIsFrontOfTokenCharScore +
+                kIsWeakHitCharScore *
+                    (query_.tokens().at(query_pos).size() - 1);
+  token_match_info.last_query_pos = query_pos;
+  token_match_info.last_text_pos = text_pos;
 }
 
 }  // namespace ash::string_matching

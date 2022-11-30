@@ -165,7 +165,7 @@ class OverviewWindowDragControllerTest : public AshTestBase {
                         GetEventGenerator());
     ASSERT_TRUE(drag_controller());
     EXPECT_EQ(OverviewWindowDragController::DragBehavior::kNormalDrag,
-              drag_controller()->current_drag_behavior());
+              drag_controller()->current_drag_behavior_for_testing());
     ASSERT_TRUE(drag_indicators());
     EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
               drag_indicators()->current_window_dragging_state());
@@ -208,7 +208,7 @@ TEST_F(OverviewWindowDragControllerTest, NoDragToCloseUsingMouse) {
   OverviewWindowDragController* drag_controller =
       overview_session->window_drag_controller();
   EXPECT_EQ(OverviewWindowDragController::DragBehavior::kNormalDrag,
-            drag_controller->current_drag_behavior());
+            drag_controller->current_drag_behavior_for_testing());
   event_generator->ReleaseLeftButton();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_EQ(target_bounds_before_drag, overview_item->target_bounds());
@@ -253,12 +253,12 @@ TEST_F(OverviewWindowDragControllerTest,
   OverviewWindowDragController* drag_controller =
       overview_session->window_drag_controller();
   EXPECT_EQ(OverviewWindowDragController::DragBehavior::kDragToClose,
-            drag_controller->current_drag_behavior());
+            drag_controller->current_drag_behavior_for_testing());
   // Continue dragging vertically up such that the drag location intersects with
   // the desks bar. Expect that normal drag is now triggered.
   event_generator->MoveTouchBy(0, -(space_to_leave + 10));
   EXPECT_EQ(OverviewWindowDragController::DragBehavior::kNormalDrag,
-            drag_controller->current_drag_behavior());
+            drag_controller->current_drag_behavior_for_testing());
   // Now it's possible to drop it on desk_2's mini_view.
   auto* desk_2_mini_view = desks_bar_view->mini_views()[1];
   ASSERT_TRUE(desk_2_mini_view);
@@ -291,11 +291,11 @@ TEST_F(OverviewWindowDragControllerTest, WindowDestroyedDuringDragging) {
   OverviewWindowDragController* drag_controller =
       overview_session->window_drag_controller();
   EXPECT_EQ(OverviewWindowDragController::DragBehavior::kNormalDrag,
-            drag_controller->current_drag_behavior());
+            drag_controller->current_drag_behavior_for_testing());
 
   window.reset();
   EXPECT_EQ(OverviewWindowDragController::DragBehavior::kNoDrag,
-            drag_controller->current_drag_behavior());
+            drag_controller->current_drag_behavior_for_testing());
 }
 
 TEST_F(OverviewWindowDragControllerTest,
@@ -411,6 +411,11 @@ class OverviewWindowDragControllerDesksPortraitTabletTest
     auto* desks_controller = DesksController::Get();
     desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
     ASSERT_EQ(2u, desks_controller->desks().size());
+
+    // Give the second desk a name. The desk name gets exposed as the accessible
+    // name. And the focusable views that are painted in these tests will fail
+    // the accessibility paint checker checks if they lack an accessible name.
+    desks_controller->desks()[1]->SetName(u"Desk 2", false);
   }
 };
 
@@ -438,9 +443,9 @@ TEST_F(OverviewWindowDragControllerDesksPortraitTabletTest,
   auto* event_generator = GetEventGenerator();
   event_generator->MoveMouseTo(GetScreenInPixelsPoint(300, 800));
   ASSERT_TRUE(drag_indicators());
-  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapRight,
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapSecondary,
             drag_indicators()->current_window_dragging_state());
-  EXPECT_EQ(overview_grid()->bounds().y(),
+  EXPECT_EQ(overview_grid()->bounds_for_testing().y(),
             desks_bar_widget()->GetWindowBoundsInScreen().y());
 
   // Drag back to the middle, the desks bar should be shifted again.
@@ -455,19 +460,19 @@ TEST_F(OverviewWindowDragControllerDesksPortraitTabletTest,
   // widget is no longer shifted.
   event_generator->MoveMouseTo(GetScreenInPixelsPoint(300, 0));
   ASSERT_TRUE(drag_indicators());
-  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapLeft,
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapPrimary,
             drag_indicators()->current_window_dragging_state());
-  EXPECT_EQ(overview_grid()->bounds().y(),
+  EXPECT_EQ(overview_grid()->bounds_for_testing().y(),
             desks_bar_widget()->GetWindowBoundsInScreen().y());
 
   // Drop it at this location and expect the window to snap. The desks bar
   // remains unshifted.
   event_generator->ReleaseLeftButton();
   EXPECT_TRUE(overview_controller()->InOverviewSession());
-  EXPECT_EQ(SplitViewController::State::kLeftSnapped,
+  EXPECT_EQ(SplitViewController::State::kPrimarySnapped,
             split_view_controller()->state());
-  EXPECT_EQ(window.get(), split_view_controller()->left_window());
-  EXPECT_EQ(overview_grid()->bounds().y(),
+  EXPECT_EQ(window.get(), split_view_controller()->primary_window());
+  EXPECT_EQ(overview_grid()->bounds_for_testing().y(),
             desks_bar_widget()->GetWindowBoundsInScreen().y());
 }
 
@@ -498,7 +503,7 @@ TEST_F(OverviewWindowDragControllerDesksPortraitTabletTest, DragAndDropInDesk) {
   event_generator->ReleaseLeftButton();  // Drop.
   EXPECT_FALSE(desks_util::BelongsToActiveDesk(window.get()));
   EXPECT_TRUE(overview_controller()->InOverviewSession());
-  EXPECT_EQ(overview_grid()->bounds().y(),
+  EXPECT_EQ(overview_grid()->bounds_for_testing().y(),
             desks_bar_widget()->GetWindowBoundsInScreen().y());
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
             drag_indicators()->current_window_dragging_state());

@@ -353,12 +353,13 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
 
   // LayerTreeHostClient implementation.
   void WillBeginMainFrame() override {}
-  void DidBeginMainFrame() override {}
+  void DidBeginMainFrame() override;
   void OnDeferMainFrameUpdatesChanged(bool) override {}
   void OnDeferCommitsChanged(
       bool,
       cc::PaintHoldingReason,
       absl::optional<cc::PaintHoldingCommitTrigger>) override {}
+  void OnPauseRenderingChanged(bool) override {}
   void WillUpdateLayers() override {}
   void DidUpdateLayers() override;
   void BeginMainFrame(const viz::BeginFrameArgs& args) override;
@@ -462,6 +463,8 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
   friend class base::RefCounted<Compositor>;
   friend class TotalAnimationThroughputReporter;
 
+  static void SendDamagedRectsRecursive(Layer* layer);
+
   // Called when collected metrics for the tracker of |tracker_id| is ready.
   void ReportMetricsForTracker(
       int tracker_id,
@@ -545,6 +548,13 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
   bool disabled_swap_until_resize_ = false;
 
   bool animations_are_enabled_ = true;
+
+  // This together with the animatinos observer list carries the "last
+  // animation finished" state to the next BeginMainFrame so that it could
+  // notify observers if needed. It is set in AddAnimationObserver and
+  // Cleared in BeginMainFrame when there are no animation observers.
+  // See go/report-ux-metrics-at-painting for details.
+  bool animation_started_ = false;
 
   TrackerId next_throughput_tracker_id_ = 1u;
   struct TrackerState {

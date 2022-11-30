@@ -118,13 +118,6 @@ DedicatedWorkerGlobalScope::ParseCreationParams(
   // WorkerGlobalScope.
   parsed_creation_params.parent_context_token =
       creation_params->parent_context_token.value();
-  parsed_creation_params.starter_secure_context =
-      creation_params->starter_secure_context;
-
-  if (!RuntimeEnabledFeatures::SecureContextFixForWorkersEnabled()) {
-    // Preserve incorrect behavior when the fix is not enabled.
-    creation_params->starter_secure_context = true;
-  }
 
   parsed_creation_params.creation_params = std::move(creation_params);
   return parsed_creation_params;
@@ -177,13 +170,6 @@ DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
           MakeGarbageCollected<WorkerAnimationFrameProvider>(
               this,
               begin_frame_provider_params)) {
-  // TODO(https://crbug.com/780031): When the right blink feature is disabled,
-  // we can incorrectly compute the secure context bit for this worker. It
-  // should never be true when the creator context was non-secure.
-  if (IsSecureContext() && !parsed_creation_params.starter_secure_context) {
-    CountUse(mojom::blink::WebFeature::kSecureContextIncorrectForWorker);
-  }
-
   // https://html.spec.whatwg.org/C/#run-a-worker
   // Step 14.10 "If shared is false and owner's cross-origin isolated
   // capability is false, then set worker global scope's cross-origin isolated
@@ -308,12 +294,12 @@ void DedicatedWorkerGlobalScope::FetchAndRunClassicScript(
       script_url, std::move(worker_main_script_load_params), context_type,
       destination, network::mojom::RequestMode::kSameOrigin,
       network::mojom::CredentialsMode::kSameOrigin,
-      WTF::Bind(&DedicatedWorkerGlobalScope::DidReceiveResponseForClassicScript,
-                WrapWeakPersistent(this),
-                WrapPersistent(classic_script_loader)),
-      WTF::Bind(&DedicatedWorkerGlobalScope::DidFetchClassicScript,
-                WrapWeakPersistent(this), WrapPersistent(classic_script_loader),
-                stack_id));
+      WTF::BindOnce(
+          &DedicatedWorkerGlobalScope::DidReceiveResponseForClassicScript,
+          WrapWeakPersistent(this), WrapPersistent(classic_script_loader)),
+      WTF::BindOnce(&DedicatedWorkerGlobalScope::DidFetchClassicScript,
+                    WrapWeakPersistent(this),
+                    WrapPersistent(classic_script_loader), stack_id));
 }
 
 // https://html.spec.whatwg.org/C/#worker-processing-model
@@ -373,7 +359,7 @@ void DedicatedWorkerGlobalScope::postMessage(ScriptState* script_state,
                                              HeapVector<ScriptValue>& transfer,
                                              ExceptionState& exception_state) {
   PostMessageOptions* options = PostMessageOptions::Create();
-  if (!transfer.IsEmpty())
+  if (!transfer.empty())
     options->setTransfer(transfer);
   postMessage(script_state, message, options, exception_state);
 }

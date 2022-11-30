@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -222,12 +222,4 @@ TEST_F(LocalFrameTest, CharacterIndexAtPointWithPinchZoom) {
   EXPECT_EQ(waiter.index(), 5ul);
 }
 #endif
-TEST_F(LocalFrameTest, NavigationCounter) {
-  auto page_holder = std::make_unique<DummyPageHolder>();
-  EXPECT_EQ(1u, page_holder->GetFrame().GetNavigationId());
-  page_holder->GetFrame().IncrementNavigationId();
-  EXPECT_EQ(2u, page_holder->GetFrame().GetNavigationId());
-  page_holder->GetFrame().IncrementNavigationId();
-  EXPECT_EQ(3u, page_holder->GetFrame().GetNavigationId());
-}
 }  // namespace blink

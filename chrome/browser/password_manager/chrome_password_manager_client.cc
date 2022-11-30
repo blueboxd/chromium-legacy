@@ -37,6 +37,9 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
+#include "chrome/browser/safe_browsing/extension_telemetry/extension_telemetry_service.h"
+#include "chrome/browser/safe_browsing/extension_telemetry/extension_telemetry_service_factory.h"
+#include "chrome/browser/safe_browsing/extension_telemetry/password_reuse_signal.h"
 #include "chrome/browser/safe_browsing/user_interaction_observer.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
@@ -44,6 +47,7 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_controller_impl.h"
 #include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
+#include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/channel_info.h"
@@ -87,6 +91,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/sessions/content/content_record_password_state.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -94,6 +99,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/translate/core/browser/translate_manager.h"
+#include "components/url_formatter/url_formatter.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_context.h"
@@ -186,6 +192,8 @@ using password_manager::PasswordManagerMetricsRecorder;
 using password_manager::PasswordManagerSetting;
 using password_manager::metrics_util::PasswordType;
 using sessions::SerializedNavigationEntry;
+using PasswordReuseEvent =
+    safe_browsing::LoginReputationClientRequest::PasswordReuseEvent;
 
 // Shorten the name to spare line breaks. The code provides enough context
 // already.
@@ -195,6 +203,7 @@ namespace {
 
 #if !BUILDFLAG(IS_ANDROID)
 static const char kPasswordBreachEntryTrigger[] = "PASSWORD_ENTRY";
+constexpr char kExtensionScheme[] = "chrome-extension";
 #endif
 
 const syncer::SyncService* GetSyncServiceForProfile(Profile* profile) {
@@ -232,6 +241,28 @@ void HideSavePasswordInfobar(content::WebContents* web_contents) {
   }
 }
 #endif  // BUILDFLAG(IS_ANDROID)
+
+#if !BUILDFLAG(IS_ANDROID)
+// Retrieves and formats the saved passwords domains from signon_realms.
+std::vector<std::string> GetMatchingDomains(
+    const std::vector<password_manager::MatchingReusedCredential>&
+        matching_reused_credentials) {
+  base::flat_set<std::string> matching_domains;
+  for (const auto& credential : matching_reused_credentials) {
+    // TODO(zackhan): Avoid converting signon_realm to URL, ideally use
+    // PasswordForm::url.
+    std::string domain = base::UTF16ToUTF8(url_formatter::FormatUrl(
+        GURL(credential.signon_realm),
+        url_formatter::kFormatUrlOmitDefaults |
+            url_formatter::kFormatUrlOmitHTTPS |
+            url_formatter::kFormatUrlOmitTrivialSubdomains |
+            url_formatter::kFormatUrlTrimAfterHost,
+        base::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
+    matching_domains.insert(std::move(domain));
+  }
+  return std::move(matching_domains).extract();
+}
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace
 
@@ -650,12 +681,21 @@ void ChromePasswordManagerClient::AutomaticPasswordSave(
 void ChromePasswordManagerClient::PasswordWasAutofilled(
     const std::vector<const PasswordForm*>& best_matches,
     const url::Origin& origin,
-    const std::vector<const PasswordForm*>* federated_matches) {
+    const std::vector<const PasswordForm*>* federated_matches,
+    bool was_autofilled_on_pageload) {
 #if !BUILDFLAG(IS_ANDROID)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
       PasswordsClientUIDelegateFromWebContents(web_contents());
   manage_passwords_ui_controller->OnPasswordAutofilled(best_matches, origin,
                                                        federated_matches);
+#endif
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  if (was_autofilled_on_pageload &&
+      password_manager_util::
+          ShouldShowBiometricAuthenticationBeforeFillingPromo(this)) {
+    PasswordsClientUIDelegateFromWebContents(web_contents())
+        ->OnBiometricAuthenticationForFilling(GetPrefs());
+  }
 #endif
 }
 
@@ -665,7 +705,8 @@ void ChromePasswordManagerClient::AutofillHttpAuth(
   httpauth_manager_.Autofill(preferred_match, form_manager);
   DCHECK(!form_manager->GetBestMatches().empty());
   PasswordWasAutofilled(form_manager->GetBestMatches(),
-                        url::Origin::Create(form_manager->GetURL()), nullptr);
+                        url::Origin::Create(form_manager->GetURL()), nullptr,
+                        /*was_autofilled_on_pageload=*/false);
 }
 
 void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
@@ -879,7 +920,7 @@ ChromePasswordManagerClient::GetStoreResultFilter() const {
   return &credentials_filter_;
 }
 
-const autofill::LogManager* ChromePasswordManagerClient::GetLogManager() const {
+autofill::LogManager* ChromePasswordManagerClient::GetLogManager() {
   return log_manager_.get();
 }
 
@@ -958,7 +999,39 @@ void ChromePasswordManagerClient::CheckProtectedPasswordEntry(
       password_type, matching_reused_credentials, password_field_exists);
 
 #if !BUILDFLAG(IS_ANDROID)
-  // TODO(crbug.com/1351484): Hook this to the extension service in the next CL.
+  // If the webpage is not an extension page, do nothing.
+  if (!GURL(domain).SchemeIs(kExtensionScheme)) {
+    return;
+  }
+  content::BrowserContext* browser_context =
+      web_contents()->GetBrowserContext();
+  auto* telemetry_service =
+      safe_browsing::ExtensionTelemetryServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context));
+  if (!telemetry_service || !telemetry_service->enabled() ||
+      !base::FeatureList::IsEnabled(
+          safe_browsing::kExtensionTelemetryPotentialPasswordTheft)) {
+    return;
+  }
+  // Construct password reuse info.
+  safe_browsing::PasswordReuseInfo password_reuse_info;
+  password_reuse_info.matches_signin_password =
+      password_type == PasswordType::PRIMARY_ACCOUNT_PASSWORD;
+  password_reuse_info.matching_domains =
+      GetMatchingDomains(matching_reused_credentials);
+  password_reuse_info.reused_password_account_type =
+      pps->GetPasswordProtectionReusedPasswordAccountType(password_type,
+                                                          username);
+  password_reuse_info.count = 1;
+  password_reuse_info.reused_password_hash = reused_password_hash;
+
+  // Extract the host part of an extension domain, which will be the extension
+  // ID.
+  std::string host = GURL(domain).host();
+  auto password_reuse_signal =
+      std::make_unique<safe_browsing::PasswordReuseSignal>(host,
+                                                           password_reuse_info);
+  telemetry_service->AddSignal(std::move(password_reuse_signal));
 #endif  // !BUILDFLAG(IS_ANDROID)
 }
 
@@ -1383,6 +1456,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       password_manager_(this),
       password_feature_manager_(profile_->GetPrefs(),
+                                g_browser_process->local_state(),
                                 SyncServiceFactory::GetForProfile(profile_)),
       httpauth_manager_(this),
       password_reuse_detection_manager_(this),

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -466,7 +466,7 @@ TEST_F(WebTransportTest, SendConnect) {
   auto args = connector_.TakeConnectArgs();
   ASSERT_EQ(1u, args.size());
   EXPECT_EQ(KURL("https://example.com/"), args[0].url);
-  EXPECT_TRUE(args[0].fingerprints.IsEmpty());
+  EXPECT_TRUE(args[0].fingerprints.empty());
   EXPECT_TRUE(web_transport->HasPendingActivity());
 }
 
@@ -845,7 +845,7 @@ TEST_F(WebTransportTest, BackpressureForOutgoingDatagrams) {
   }
 
   // The first two promises are resolved immediately.
-  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
+  scope.PerformMicrotaskCheckpoint();
   EXPECT_EQ(promise1.V8Promise()->State(), v8::Promise::kFulfilled);
   EXPECT_EQ(promise2.V8Promise()->State(), v8::Promise::kFulfilled);
   EXPECT_EQ(promise3.V8Promise()->State(), v8::Promise::kPending);
@@ -853,7 +853,7 @@ TEST_F(WebTransportTest, BackpressureForOutgoingDatagrams) {
 
   // The rest are resolved by the callback.
   test::RunPendingTasks();
-  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
+  scope.PerformMicrotaskCheckpoint();
   EXPECT_EQ(promise3.V8Promise()->State(), v8::Promise::kFulfilled);
   EXPECT_EQ(promise4.V8Promise()->State(), v8::Promise::kFulfilled);
 }

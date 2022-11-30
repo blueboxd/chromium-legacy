@@ -41,6 +41,7 @@
 #include "net/first_party_sets/first_party_set_metadata.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/net_buildflags.h"
+#include "services/network/cache_transparency_settings.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/first_party_sets/first_party_sets_access_delegate.h"
 #include "services/network/http_cache_data_counter.h"
@@ -77,8 +78,6 @@ class UnguessableToken;
 }  // namespace base
 
 namespace net {
-class CertNetFetcher;
-class CertNetFetcherURLRequest;
 class CertVerifier;
 class HostPortPair;
 class IsolationInfo;
@@ -607,6 +606,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     return cors_non_wildcard_request_headers_support_;
   }
 
+  FirstPartySetsAccessDelegate& first_party_sets_access_delegate() {
+    return first_party_sets_access_delegate_;
+  }
+
 #if BUILDFLAG(ENABLE_REPORTING)
   void AddReportingApiObserver(
       mojo::PendingRemote<network::mojom::ReportingApiObserver> observer)
@@ -617,6 +620,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void OnEndpointsUpdatedForOrigin(
       const std::vector<net::ReportingEndpoint>& endpoints) override;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
+
+  const CacheTransparencySettings* cache_transparency_settings() const {
+    return &cache_transparency_settings_;
+  }
 
  private:
   URLRequestContextOwner MakeURLRequestContext(
@@ -836,11 +843,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   std::vector<base::OnceClosure> dismount_closures_;
 #endif  // BUILDFLAG(IS_DIRECTORY_TRANSFER_REQUIRED)
 
-  // CertNetFetcher used by the context's CertVerifier. May be nullptr if
-  // CertNetFetcher is not used by the current platform, or if the actual
-  // net::CertVerifier is instantiated outside of the network service.
-  scoped_refptr<net::CertNetFetcherURLRequest> cert_net_fetcher_;
-
   // Created on-demand. Null if unused.
   std::unique_ptr<HostResolver> internal_host_resolver_;
   // Map values set to non-null only if that HostResolver has its own private
@@ -930,6 +932,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   scoped_refptr<MojoBackendFileOperationsFactory>
       http_cache_file_operations_factory_;
+
+  const CacheTransparencySettings cache_transparency_settings_;
 
   base::WeakPtrFactory<NetworkContext> weak_factory_{this};
 };

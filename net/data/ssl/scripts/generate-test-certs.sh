@@ -18,10 +18,6 @@ set -e -x
 #   iOS 13/macOS 10.15 - https://support.apple.com/en-us/HT210176
 # 730 is used here as just a short-hand for 2 years
 CERT_LIFETIME=730
-# Some tests mock a test cert as being a public cert, so use the max public
-# cert lifetime for those certs. The current limit is 398 days for certs issued
-# after 2020-09-01.
-PUBLIC_CERT_LIFETIME=397
 
 rm -rf out
 mkdir out
@@ -102,14 +98,6 @@ openssl req \
   -out out/ok_cert.req \
   -config ee.cnf
 
-copy_or_generate_key ../certificates/name_constraint_good.pem \
-  out/name_constrained.key
-openssl req \
-  -new \
-  -key out/name_constrained.key \
-  -out out/name_constrained.req \
-  -config ee.cnf
-
 copy_or_generate_key ../certificates/wildcard.pem out/wildcard.key
 openssl req \
   -new \
@@ -134,15 +122,6 @@ openssl req \
   -out out/test_names.req \
   -reqexts req_test_names \
   -config ee.cnf
-
-copy_or_generate_key ../certificates/ev-multi-oid.pem out/ev-multi-oid.key
-SUBJECT_NAME="req_dn" \
-openssl req \
-  -new \
-  -key out/ev-multi-oid.key \
-  -out out/ev-multi-oid.req \
-  -reqexts req_extensions \
-  -config ee.cnf \
 
 # Generate the leaf certificates
 CA_NAME="req_ca_dn" \
@@ -186,26 +165,6 @@ CA_NAME="req_ca_dn" \
 CA_NAME="req_ca_dn" \
   openssl ca \
     -batch \
-    -extensions name_constraint_bad \
-    -subj "/CN=Leaf certificate/" \
-    -days ${CERT_LIFETIME} \
-    -in out/name_constrained.req \
-    -out out/name_constraint_bad.pem \
-    -config ca.cnf
-
-CA_NAME="req_ca_dn" \
-  openssl ca \
-    -batch \
-    -extensions name_constraint_good \
-    -subj "/CN=Leaf Certificate/" \
-    -days ${CERT_LIFETIME} \
-    -in out/name_constrained.req \
-    -out out/name_constraint_good.pem \
-    -config ca.cnf
-
-CA_NAME="req_ca_dn" \
-  openssl ca \
-    -batch \
     -extensions user_cert \
     -days ${CERT_LIFETIME} \
     -in out/localhost_cert.req \
@@ -232,16 +191,6 @@ CA_NAME="req_ca_dn" \
     -out out/test_names.pem \
     -config ca.cnf
 
-## Certificate for testing EV with multiple OIDs
-CA_NAME="req_ca_dn" \
-  openssl ca \
-    -batch \
-    -extensions ev_multi_oid \
-    -days ${CERT_LIFETIME} \
-    -in out/ev-multi-oid.req \
-    -out out/ev-multi-oid.pem \
-    -config ca.cnf
-
 /bin/sh -c "cat out/ok_cert.key out/ok_cert.pem \
     > ../certificates/ok_cert.pem"
 /bin/sh -c "cat out/wildcard.key out/wildcard.pem \
@@ -252,10 +201,6 @@ CA_NAME="req_ca_dn" \
     > ../certificates/expired_cert.pem"
 /bin/sh -c "cat out/2048-sha256-root.key out/2048-sha256-root.pem \
     > ../certificates/root_ca_cert.pem"
-/bin/sh -c "cat out/name_constrained.key out/name_constraint_bad.pem \
-    > ../certificates/name_constraint_bad.pem"
-/bin/sh -c "cat out/name_constrained.key out/name_constraint_good.pem \
-    > ../certificates/name_constraint_good.pem"
 /bin/sh -c "cat out/ok_cert.key out/bad_validity.pem \
     > ../certificates/bad_validity.pem"
 /bin/sh -c "cat out/ok_cert.key out/int/ok_cert.pem \
@@ -268,8 +213,6 @@ CA_NAME="req_ca_dn" \
     > ../certificates/x509_verify_results.chain.pem"
 /bin/sh -c "cat out/test_names.key out/test_names.pem \
     > ../certificates/test_names.pem"
-/bin/sh -c "cat out/ev-multi-oid.key out/ev-multi-oid.pem \
-    > ../certificates/ev-multi-oid.pem"
 
 # Now generate the one-off certs
 ## Self-signed cert for SPDY/QUIC/HTTP2 pooling testing
@@ -297,12 +240,6 @@ SUBJECT_NAME="req_punycode_dn" \
   openssl req -x509 -days 3650 -extensions req_punycode \
     -config ../scripts/ee.cnf -newkey rsa:2048 -text \
     -out ../certificates/punycodetest.pem
-
-## Reject intranet hostnames in "publicly" trusted certs
-SUBJECT_NAME="req_intranet_dn" \
-  openssl req -x509 -days ${PUBLIC_CERT_LIFETIME} -extensions req_intranet_san \
-    -config ../scripts/ee.cnf -newkey rsa:2048 -text \
-    -out ../certificates/reject_intranet_hosts.pem
 
 ## Leaf certificate with a large key; Apple's certificate verifier rejects with
 ## a fatal error if the key is bigger than 8192 bits.

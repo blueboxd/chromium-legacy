@@ -13,8 +13,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 namespace {
 
@@ -42,8 +41,7 @@ PowerManagerProviderImpl::PowerManagerProviderImpl()
     : main_thread_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       weak_factory_(this) {}
 
-void PowerManagerProviderImpl::Initialize(
-    chromeos::libassistant::mojom::PlatformDelegate* delegate) {
+void PowerManagerProviderImpl::Initialize(mojom::PlatformDelegate* delegate) {
   platform_delegate_ = delegate;
 }
 
@@ -104,7 +102,8 @@ void PowerManagerProviderImpl::AddWakeAlarmOnMainThread(
   DVLOG(1) << __func__;
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
 
-  auto timer = std::make_unique<NativeTimer>(kTag + base::NumberToString(id));
+  auto timer =
+      std::make_unique<chromeos::NativeTimer>(kTag + base::NumberToString(id));
   // Once the timer is created successfully, start the timer and store
   // associated data. The stored |callback| will be called in
   // |OnTimerFiredOnMainThread|.
@@ -197,5 +196,4 @@ void PowerManagerProviderImpl::OnTimerFiredOnMainThread(AlarmId id) {
   timers_.erase(id);
 }
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant

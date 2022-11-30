@@ -90,6 +90,8 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
       {"userConsentLabel", IDS_FEEDBACK_TOOL_USER_CONSENT_LABEL},
       {"includeSystemInfoAndMetricsCheckboxLabel",
        IDS_FEEDBACK_TOOL_INCLUDE_SYSTEM_INFO_AND_METRICS_CHECKBOX_LABEL},
+      {"includePerformanceTraceCheckboxLabel",
+       IDS_FEEDBACK_TOOL_INCLUDE_PERFORMANCE_TRACE_CHECKBOX_LABEL},
       {"anonymousUser", IDS_FEEDBACK_TOOL_ANONYMOUS_EMAIL_OPTION},
       {"thankYouNoteOffline", IDS_FEEDBACK_TOOL_THANK_YOU_NOTE_OFFLINE},
       {"thankYouNoteOnline", IDS_FEEDBACK_TOOL_THANK_YOU_NOTE_ONLINE},
@@ -98,6 +100,10 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
       {"buttonDone", IDS_FEEDBACK_TOOL_DONE_BUTTON_LABEL},
       {"fileTooBigErrorMessage", IDS_FEEDBACK_TOOL_FILE_TOO_BIG_ERROR_MESSAGE},
       {"bluetoothLogsInfo", IDS_FEEDBACK_TOOL_BLUETOOTH_LOGS_CHECKBOX},
+      {"bluetoothLogsMessage", IDS_FEEDBACK_TOOL_BLUETOOTH_LOGS_MESSAGE},
+      {"includeAssistantLogsCheckboxLabel",
+       IDS_FEEDBACK_TOOL_ASSISTANT_LOGS_CHECKBOX},
+      {"assistantLogsMessage", IDS_FEEDBACK_TOOL_ASSISTANT_LOGS_MESSAGE},
   };
 
   source->AddLocalizedStrings(kLocalizedStrings);

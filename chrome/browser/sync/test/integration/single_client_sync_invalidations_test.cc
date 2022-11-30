@@ -194,8 +194,8 @@ sync_pb::DeviceInfoSpecifics CreateDeviceInfoSpecifics(
 class SingleClientSyncInvalidationsTestBase : public SyncTest {
  public:
   SingleClientSyncInvalidationsTestBase(
-      const std::vector<base::Feature>& enabled_features,
-      const std::vector<base::Feature>& disabled_features)
+      const std::vector<base::test::FeatureRef>& enabled_features,
+      const std::vector<base::test::FeatureRef>& disabled_features)
       : SyncTest(SINGLE_CLIENT) {
     override_features_.InitWithFeatures(enabled_features, disabled_features);
   }
@@ -671,14 +671,12 @@ IN_PROC_BROWSER_TEST_F(
 
   // Sign out. The FCM token should be cleared.
   GetClient(0)->SignOutPrimaryAccount();
-  ASSERT_TRUE(SyncInvalidationsServiceFactory::GetForProfile(GetProfile(0))
-                  ->GetFCMRegistrationToken());
-  EXPECT_TRUE(SyncInvalidationsServiceFactory::GetForProfile(GetProfile(0))
-                  ->GetFCMRegistrationToken()
-                  ->empty());
+  ASSERT_FALSE(SyncInvalidationsServiceFactory::GetForProfile(GetProfile(0))
+                   ->GetFCMRegistrationToken());
 
   // Sign in again.
   ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
   ASSERT_TRUE(SyncInvalidationsServiceFactory::GetForProfile(GetProfile(0))
                   ->GetFCMRegistrationToken());
   const std::string new_token =

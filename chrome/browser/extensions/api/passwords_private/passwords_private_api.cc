@@ -287,24 +287,14 @@ ResponseAction PasswordsPrivateOptInForAccountStorageFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-// PasswordsPrivateGetCompromisedCredentialsFunction:
-PasswordsPrivateGetCompromisedCredentialsFunction::
-    ~PasswordsPrivateGetCompromisedCredentialsFunction() = default;
+// PasswordsPrivateGetInsecureCredentialsFunction:
+PasswordsPrivateGetInsecureCredentialsFunction::
+    ~PasswordsPrivateGetInsecureCredentialsFunction() = default;
 
-ResponseAction PasswordsPrivateGetCompromisedCredentialsFunction::Run() {
+ResponseAction PasswordsPrivateGetInsecureCredentialsFunction::Run() {
   return RespondNow(ArgumentList(
-      api::passwords_private::GetCompromisedCredentials::Results::Create(
-          GetDelegate(browser_context())->GetCompromisedCredentials())));
-}
-
-// PasswordsPrivateGetWeakCredentialsFunction:
-PasswordsPrivateGetWeakCredentialsFunction::
-    ~PasswordsPrivateGetWeakCredentialsFunction() = default;
-
-ResponseAction PasswordsPrivateGetWeakCredentialsFunction::Run() {
-  return RespondNow(
-      ArgumentList(api::passwords_private::GetWeakCredentials::Results::Create(
-          GetDelegate(browser_context())->GetWeakCredentials())));
+      api::passwords_private::GetInsecureCredentials::Results::Create(
+          GetDelegate(browser_context())->GetInsecureCredentials())));
 }
 
 // PasswordsPrivateMuteInsecureCredentialFunction:
@@ -499,4 +489,13 @@ ResponseAction PasswordsPrivateExtendAuthValidityFunction::Run() {
   GetDelegate(browser_context())->ExtendAuthValidity();
   return RespondNow(NoArguments());
 }
+
+// PasswordsPrivateSwitchBiometricAuthBeforeFillingStateFunction
+ResponseAction
+PasswordsPrivateSwitchBiometricAuthBeforeFillingStateFunction::Run() {
+  GetDelegate(browser_context())
+      ->SwitchBiometricAuthBeforeFillingState(GetSenderWebContents());
+  return RespondNow(NoArguments());
+}
+
 }  // namespace extensions

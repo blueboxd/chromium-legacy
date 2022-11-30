@@ -9,6 +9,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
+#include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -87,7 +88,15 @@ void QuadFToSkPoints(const QuadF& quad, SkPoint points[4]) {
   points[3] = PointFToSkPoint(quad.p4());
 }
 
+SkMatrix AxisTransform2dToSkMatrix(const AxisTransform2d& transform) {
+  return SkMatrix::MakeAll(
+      transform.scale().x(), 0, transform.translation().x(),  // row 0
+      0, transform.scale().y(), transform.translation().y(),  // row 1
+      0, 0, 1);                                               // row 2
+}
+
 SkM44 TransformToSkM44(const Transform& matrix) {
+  // The parameters of this SkM44 constructor are in row-major order.
   return SkM44(
       matrix.rc(0, 0), matrix.rc(0, 1), matrix.rc(0, 2), matrix.rc(0, 3),
       matrix.rc(1, 0), matrix.rc(1, 1), matrix.rc(1, 2), matrix.rc(1, 3),
@@ -95,8 +104,8 @@ SkM44 TransformToSkM44(const Transform& matrix) {
       matrix.rc(3, 0), matrix.rc(3, 1), matrix.rc(3, 2), matrix.rc(3, 3));
 }
 
-gfx::Transform SkM44ToTransform(const SkM44& matrix) {
-  return Transform(
+Transform SkM44ToTransform(const SkM44& matrix) {
+  return Transform::RowMajor(
       matrix.rc(0, 0), matrix.rc(0, 1), matrix.rc(0, 2), matrix.rc(0, 3),
       matrix.rc(1, 0), matrix.rc(1, 1), matrix.rc(1, 2), matrix.rc(1, 3),
       matrix.rc(2, 0), matrix.rc(2, 1), matrix.rc(2, 2), matrix.rc(2, 3),
@@ -117,10 +126,11 @@ SkMatrix TransformToFlattenedSkMatrix(const Transform& matrix) {
 }
 
 Transform SkMatrixToTransform(const SkMatrix& matrix) {
-  return Transform(matrix.rc(0, 0), matrix.rc(0, 1), 0, matrix.rc(0, 2),
-                   matrix.rc(1, 0), matrix.rc(1, 1), 0, matrix.rc(1, 2),  //
-                   0, 0, 1, 0,                                            //
-                   matrix.rc(2, 0), matrix.rc(2, 1), 0, matrix.rc(2, 2));
+  return Transform::RowMajor(
+      matrix.rc(0, 0), matrix.rc(0, 1), 0, matrix.rc(0, 2),   // row 0
+      matrix.rc(1, 0), matrix.rc(1, 1), 0, matrix.rc(1, 2),   // row 1
+      0, 0, 1, 0,                                             // row 2
+      matrix.rc(2, 0), matrix.rc(2, 1), 0, matrix.rc(2, 2));  // row 3
 }
 
 }  // namespace gfx

@@ -44,6 +44,7 @@
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/css/preferred_color_scheme.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
@@ -61,6 +62,7 @@
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/events/event_path.h"
 #include "third_party/blink/renderer/core/dom/live_node_list_registry.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
@@ -96,7 +98,7 @@ class AnimationTimeline;
 namespace gfx {
 class QuadF;
 class RectF;
-}
+}  // namespace gfx
 
 namespace mojo {
 template <typename Interface>
@@ -119,6 +121,7 @@ enum class CSPDisposition : int32_t;
 
 namespace blink {
 
+class Agent;
 class AnchorElementInteractionTracker;
 class AnimationClock;
 class AXContext;
@@ -349,7 +352,7 @@ class CORE_EXPORT Document : public ContainerNode,
   ~Document() override;
 
   // Constructs a Document instance without a subclass for testing.
-  static Document* CreateForTest();
+  static Document* CreateForTest(ExecutionContext* execution_context = nullptr);
 
   static Range* CreateRangeAdjustedToTreeScope(const TreeScope&,
                                                const Position&);
@@ -619,8 +622,8 @@ class CORE_EXPORT Document : public ContainerNode,
   DocumentState* GetDocumentState() const;
   void SetStateForNewControls(const Vector<String>&);
 
-  LocalFrameView* View() const;  // can be null
-  LocalFrame* GetFrame() const;  // can be null
+  LocalFrameView* View() const;   // can be null
+  LocalFrame* GetFrame() const;   // can be null
   Page* GetPage() const;          // can be null
   Settings* GetSettings() const;  // can be null
 
@@ -847,6 +850,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void writeln(v8::Isolate*, TrustedHTML*, ExceptionState&);
 
   bool WellFormed() const { return well_formed_; }
+
+  const DocumentToken& Token() const { return token_; }
 
   // Return the document URL, or an empty URL if it's unavailable.
   // This is not an implementation of web-exposed Document.prototype.URL.
@@ -1194,8 +1199,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // may otherwise be blocked.
   ScriptPromise hasStorageAccess(ScriptState* script_state);
   ScriptPromise requestStorageAccess(ScriptState* script_state);
-  ScriptPromise requestStorageAccessForSite(ScriptState* script_state,
-                                            const AtomicString& site);
+  ScriptPromise requestStorageAccessForOrigin(ScriptState* script_state,
+                                              const AtomicString& site);
 
   // Fragment directive API, currently used to feature detect text-fragments.
   // https://wicg.github.io/scroll-to-text-fragment/#feature-detectability
@@ -1289,6 +1294,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // Will only return nullptr if the document has Shutdown() or in unit tests.
   // See `execution_context_` for details.
   ExecutionContext* GetExecutionContext() const final;
+
+  // Return the agent. Can only be null in unit tests.
+  Agent* GetAgent() const;
 
   ScriptRunner* GetScriptRunner() { return script_runner_.Get(); }
   const base::ElapsedTimer& GetStartTime() const { return start_time_; }
@@ -1463,6 +1471,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // https://html.spec.whatwg.org/multipage/iframe-embed-object.html#the-embed-element
   void DelayLoadEventUntilLayoutTreeUpdate();
 
+  const EventPath::NodePath& GetOrCalculateEventNodePath(Node& node);
+
   const DocumentTiming& GetTiming() const { return document_timing_; }
 
   bool ShouldMarkFontPerformance() const {
@@ -1536,7 +1546,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetPopupHintShowing(Element* element) { popup_hint_showing_ = element; }
   HeapVector<Member<Element>>& PopupStack() { return popup_stack_; }
   const HeapVector<Member<Element>>& PopupStack() const { return popup_stack_; }
-  bool PopupAutoShowing() const { return !popup_stack_.IsEmpty(); }
+  bool PopupAutoShowing() const { return !popup_stack_.empty(); }
   Element* TopmostPopupAutoOrHint() const;
   HeapHashSet<Member<Element>>& PopupsWaitingToHide() {
     return popups_waiting_to_hide_;
@@ -1749,7 +1759,7 @@ class CORE_EXPORT Document : public ContainerNode,
   ComputedAccessibleNode* GetOrCreateComputedAccessibleNode(AXID ax_id);
 
   // Return true if any accessibility contexts have been enabled.
-  bool IsAccessibilityEnabled() const { return !ax_contexts_.IsEmpty(); }
+  bool IsAccessibilityEnabled() const { return !ax_contexts_.empty(); }
 
   void DispatchHandleLoadStart();
   void DispatchHandleLoadOrLayoutComplete();
@@ -1812,7 +1822,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsForMarkupSanitization() const { return is_for_markup_sanitization_; }
 
   bool HasPendingJavaScriptUrlsForTest() {
-    return !pending_javascript_urls_.IsEmpty();
+    return !pending_javascript_urls_.empty();
   }
 
   void ApplyScrollRestorationLogic();
@@ -1913,6 +1923,13 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // TODO(https://crbug.com/1296161): Delete this function.
   void CheckPartitionedCookiesOriginTrial(const ResourceResponse& response);
+
+  void IncrementIgnoreDestructiveWriteModuleScriptCount() {
+    ignore_destructive_write_module_script_count_++;
+  }
+  unsigned GetIgnoreDestructiveWriteModuleScriptCount() {
+    return ignore_destructive_write_module_script_count_;
+  }
 
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
@@ -2035,7 +2052,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void ChildrenChanged(const ChildrenChange&) override;
 
   String nodeName() const final;
-  NodeType getNodeType() const final;
   bool ChildTypeAllowed(NodeType) const final;
   Node* Clone(Document&, CloneChildrenFlag) const override;
   void CloneDataFromDocument(const Document&);
@@ -2112,6 +2128,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void RunPostPrerenderingActivationSteps();
 
+  const DocumentToken token_;
+
   // Bitfield used for tracking UKM sampling of media features such that each
   // media feature is sampled only once per document.
   uint64_t evaluated_media_features_ = 0;
@@ -2153,6 +2171,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // in unit tests).
   Member<ExecutionContext> execution_context_;
 
+  // Documents should always have an agent except those created with
+  // DocumentInit::ForTest.
+  Member<Agent> agent_;
+
   Member<ResourceFetcher> fetcher_;
   Member<DocumentParser> parser_;
   Member<ContextFeatures> context_features_;
@@ -2167,6 +2189,14 @@ class CORE_EXPORT Document : public ContainerNode,
   KURL base_url_;  // Node.baseURI: The URL to use when resolving relative URLs.
   KURL base_url_override_;  // An alternative base URL that takes precedence
                             // over base_url_ (but not base_element_url_).
+
+  // Used in FallbackBaseURL() to provide the base URL for srcdoc documents,
+  // which is the parent's base URL at the time the navigation was initiated.
+  // Separate from the base_url_* fields because the fallback base URL should
+  // not take precedence over things like <base>.
+  // Note: this currently is only used when IsolateSandboxedIframes is enabled.
+  KURL fallback_base_url_for_srcdoc_;
+
   KURL base_element_url_;   // The URL set by the <base> element.
   KURL cookie_url_;         // The URL to use for cookie access.
 
@@ -2442,6 +2472,16 @@ class CORE_EXPORT Document : public ContainerNode,
   // successful and not successful) by the page.
   std::unique_ptr<FontMatchingMetrics> font_matching_metrics_;
 
+  // For a given node, cache the vector of nodes that defines its EventPath so
+  // all events dispatched on this node won't get recalculated. This cache uses
+  // a LRU strategy and gets cleared when the DOM tree version changes.
+  uint64_t event_node_path_dom_tree_version_;
+  using EventNodePathCache =
+      HeapHashMap<Member<Node>, Member<EventPath::NodePath>>;
+  using EventNodePathCacheKeyList = HeapLinkedHashSet<Member<Node>>;
+  EventNodePathCache event_node_path_cache_;
+  EventNodePathCacheKeyList event_node_path_cache_key_list_;
+
 #if DCHECK_IS_ON()
   unsigned slot_assignment_recalc_forbidden_recursion_depth_ = 0;
 #endif
@@ -2566,6 +2606,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // Document owns pending preloads, prefetches and modulepreloads initiated by
   // link header so that they won't be incidentally GC-ed and cancelled.
   HeapHashSet<Member<const PendingLinkPreload>> pending_link_header_preloads_;
+
+  // This is incremented when a module script is evaluated.
+  // http://crbug.com/1079044
+  unsigned ignore_destructive_write_module_script_count_ = 0;
 
   // If you want to add new data members to blink::Document, please reconsider
   // if the members really should be in blink::Document.  document.h is a very

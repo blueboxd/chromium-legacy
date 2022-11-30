@@ -11,8 +11,7 @@
 #include "base/system/sys_info.h"
 #include "chromeos/ash/services/libassistant/power_manager_provider_impl.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 SystemProviderImpl::SystemProviderImpl(
     std::unique_ptr<PowerManagerProviderImpl> power_manager_provider)
@@ -21,7 +20,7 @@ SystemProviderImpl::SystemProviderImpl(
 SystemProviderImpl::~SystemProviderImpl() = default;
 
 void SystemProviderImpl::Initialize(
-    chromeos::libassistant::mojom::PlatformDelegate* platform_delegate) {
+    mojom::PlatformDelegate* platform_delegate) {
   if (power_manager_provider_)
     power_manager_provider_->Initialize(platform_delegate);
 
@@ -73,5 +72,4 @@ void SystemProviderImpl::FlushForTesting() {
   battery_monitor_.FlushForTesting();  // IN-TEST
 }
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant

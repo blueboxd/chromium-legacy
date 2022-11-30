@@ -200,10 +200,10 @@ void AccessibilityTreeFormatterFuchsia::AddDefaultFilters(
                     AXPropertyFilter::DENY);
 }
 
-base::Value AccessibilityTreeFormatterFuchsia::BuildTree(
+base::Value::Dict AccessibilityTreeFormatterFuchsia::BuildTree(
     ui::AXPlatformNodeDelegate* root) const {
   if (!root) {
-    return base::Value(base::Value::Type::DICTIONARY);
+    return base::Value::Dict();
   }
 
   BrowserAccessibility* root_internal =
@@ -211,7 +211,7 @@ base::Value AccessibilityTreeFormatterFuchsia::BuildTree(
 
   base::Value::Dict dict;
   RecursiveBuildTree(*root_internal, &dict);
-  return base::Value(std::move(dict));
+  return dict;
 }
 
 void AccessibilityTreeFormatterFuchsia::RecursiveBuildTree(
@@ -245,12 +245,12 @@ void AccessibilityTreeFormatterFuchsia::RecursiveBuildTree(
   dict->Set(kChildrenDictAttr, std::move(children));
 }
 
-base::Value AccessibilityTreeFormatterFuchsia::BuildNode(
+base::Value::Dict AccessibilityTreeFormatterFuchsia::BuildNode(
     ui::AXPlatformNodeDelegate* node) const {
   CHECK(node);
   base::Value::Dict dict;
   AddProperties(*BrowserAccessibility::FromAXPlatformNodeDelegate(node), &dict);
-  return base::Value(std::move(dict));
+  return dict;
 }
 
 void AccessibilityTreeFormatterFuchsia::AddProperties(
@@ -396,52 +396,47 @@ void AccessibilityTreeFormatterFuchsia::AddProperties(
 }
 
 std::string AccessibilityTreeFormatterFuchsia::ProcessTreeForOutput(
-    const base::DictionaryValue& node) const {
-  std::string error_value;
-  if (node.GetString("error", &error_value))
-    return error_value;
+    const base::Value::Dict& node) const {
+  if (const std::string* error_value = node.FindString("error")) {
+    return *error_value;
+  }
 
   std::string line;
 
   if (show_ids()) {
-    int id_value = node.FindIntKey("id").value_or(0);
+    int id_value = node.FindInt("id").value_or(0);
     WriteAttribute(true, base::NumberToString(id_value), &line);
   }
 
-  std::string role_value;
-  node.GetString("role", &role_value);
-  WriteAttribute(true, role_value, &line);
+  if (const std::string* role_value = node.FindString("role")) {
+    WriteAttribute(true, *role_value, &line);
+  }
 
-  for (unsigned i = 0; i < std::size(kBoolAttributes); i++) {
-    const char* bool_attribute = kBoolAttributes[i];
-    absl::optional<bool> value = node.FindBoolPath(bool_attribute);
-    if (value && *value)
+  for (const char* bool_attribute : kBoolAttributes) {
+    if (node.FindBool(bool_attribute).value_or(false))
       WriteAttribute(/*include_by_default=*/true, bool_attribute, &line);
   }
 
-  for (unsigned i = 0; i < std::size(kStringAttributes); i++) {
-    const char* string_attribute = kStringAttributes[i];
-    std::string value;
-    if (!node.GetString(string_attribute, &value) || value.empty())
+  for (const char* string_attribute : kStringAttributes) {
+    const std::string* value = node.FindString(string_attribute);
+    if (!value || value->empty())
       continue;
 
     WriteAttribute(
         /*include_by_default=*/true,
-        base::StringPrintf("%s='%s'", string_attribute, value.c_str()), &line);
+        base::StringPrintf("%s='%s'", string_attribute, value->c_str()), &line);
   }
 
-  for (unsigned i = 0; i < std::size(kIntAttributes); i++) {
-    const char* attribute_name = kIntAttributes[i];
-    int value = node.FindIntKey(attribute_name).value_or(0);
+  for (const char* attribute_name : kIntAttributes) {
+    int value = node.FindInt(attribute_name).value_or(0);
     if (value == 0)
       continue;
     WriteAttribute(true, base::StringPrintf("%s=%d", attribute_name, value),
                    &line);
   }
 
-  for (unsigned i = 0; i < std::size(kDoubleAttributes); i++) {
-    const char* attribute_name = kDoubleAttributes[i];
-    int value = node.FindIntKey(attribute_name).value_or(0);
+  for (const char* attribute_name : kDoubleAttributes) {
+    int value = node.FindInt(attribute_name).value_or(0);
     if (value == 0)
       continue;
     WriteAttribute(true, base::StringPrintf("%s=%d", attribute_name, value),
@@ -451,10 +446,10 @@ std::string AccessibilityTreeFormatterFuchsia::ProcessTreeForOutput(
   return line;
 }
 
-base::Value AccessibilityTreeFormatterFuchsia::BuildTreeForSelector(
+base::Value::Dict AccessibilityTreeFormatterFuchsia::BuildTreeForSelector(
     const AXTreeSelector&) const {
   NOTIMPLEMENTED();
-  return base::Value(base::Value::Type::DICTIONARY);
+  return base::Value::Dict();
 }
 
 }  // namespace content

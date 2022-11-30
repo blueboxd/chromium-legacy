@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@ class TestCustomElementDefinition : public CustomElementDefinition {
   ScriptValue GetConstructorForScript() override { return ScriptValue(); }
 
   bool RunConstructor(Element& element) override {
-    if (GetConstructionStack().IsEmpty() ||
+    if (GetConstructionStack().empty() ||
         GetConstructionStack().back() != &element)
       return false;
     GetConstructionStack().back().Clear();

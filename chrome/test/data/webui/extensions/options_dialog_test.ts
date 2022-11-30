@@ -6,7 +6,7 @@
 import 'chrome://extensions/extensions.js';
 
 import {ExtensionsOptionsDialogElement, OptionsDialogMaxHeight, OptionsDialogMinWidth, Service} from 'chrome://extensions/extensions.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {assertEquals, assertFalse, assertGE, assertLE, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
@@ -24,7 +24,8 @@ suite(extension_options_dialog_tests.suiteName, function() {
   let data: chrome.developerPrivate.ExtensionInfo;
 
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     optionsDialog = document.createElement('extensions-options-dialog');
     document.body.appendChild(optionsDialog);
 

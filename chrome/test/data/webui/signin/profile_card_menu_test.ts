@@ -7,9 +7,9 @@ import 'chrome://profile-picker/profile_picker.js';
 import {ManageProfilesBrowserProxyImpl, ProfileCardMenuElement, ProfileState, Statistics, StatisticsResult} from 'chrome://profile-picker/profile_picker.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {waitBeforeNextRender} from 'chrome://webui-test/test_util.js';
+import {waitBeforeNextRender} from 'chrome://webui-test/polymer_test_util.js';
 // <if expr="chromeos_lacros">
-import {waitAfterNextRender} from 'chrome://webui-test/test_util.js';
+import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 // </if>
 
 import {TestManageProfilesBrowserProxy} from './test_manage_profiles_browser_proxy.js';
@@ -29,7 +29,8 @@ suite('ProfileCardMenuTest', function() {
   setup(function() {
     browserProxy = new TestManageProfilesBrowserProxy();
     ManageProfilesBrowserProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     profileCardMenuElement = document.createElement('profile-card-menu');
     document.body.appendChild(profileCardMenuElement);
     const testProfileState: ProfileState = {
@@ -200,7 +201,8 @@ suite('ProfileCardMenuLacrosTest', function() {
   setup(async function() {
     browserProxy = new TestManageProfilesBrowserProxy();
     ManageProfilesBrowserProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     primaryProfileCardMenuElement = document.createElement('profile-card-menu');
     document.body.appendChild(primaryProfileCardMenuElement);
     const testPrimaryProfileState: ProfileState = {

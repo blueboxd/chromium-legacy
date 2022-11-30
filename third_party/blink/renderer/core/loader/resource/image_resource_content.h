@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -186,7 +186,7 @@ class CORE_EXPORT ImageResourceContent final
   scoped_refptr<const SharedBuffer> ResourceBuffer() const;
   bool ShouldUpdateImageImmediately() const;
   bool HasObservers() const {
-    return !observers_.IsEmpty() || !finished_observers_.IsEmpty();
+    return !observers_.empty() || !finished_observers_.empty();
   }
   bool IsRefetchableDataFromDiskCache() const {
     return is_refetchable_data_from_disk_cache_;

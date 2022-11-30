@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,10 +8,12 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
+class DocumentTransitionSupplement;
 class FragmentData;
 class LayoutObject;
 class PaintLayer;
@@ -31,10 +33,12 @@ class CORE_EXPORT CullRectUpdater {
  public:
   explicit CullRectUpdater(PaintLayer& starting_layer);
 
-  void Update();
+  void Update(const CullRect& input_cull_rect = CullRect::Infinite());
 
   static void PaintPropertiesChanged(const LayoutObject&,
                                      const PaintPropertiesChangeInfo&);
+
+  static bool IsOverridingCullRects();
 
  private:
   friend class OverriddenCullRectScope;
@@ -43,7 +47,7 @@ class CORE_EXPORT CullRectUpdater {
     const PaintLayer* container = nullptr;
     bool subtree_is_out_of_cull_rect = false;
     bool subtree_should_use_infinite_cull_rect = false;
-    bool force_proactive_update = false;
+    bool subtree_should_skip_changed_enough = false;
     bool force_update_children = false;
 
     STACK_ALLOCATED();
@@ -71,24 +75,33 @@ class CORE_EXPORT CullRectUpdater {
                                            PaintLayer&,
                                            const FragmentData& fragment,
                                            const CullRect& cull_rect);
-  bool ShouldProactivelyUpdate(const Context&, const PaintLayer&) const;
+  bool ShouldSkipChangedEnough(const Context&, const PaintLayer&) const;
 
   PaintLayer& starting_layer_;
   PropertyTreeState root_state_ = PropertyTreeState::Uninitialized();
+  DocumentTransitionSupplement* document_transition_supplement_;
 };
 
 // Used when painting with a custom top-level cull rect, e.g. when printing a
-// page. It temporarily overrides the cull rect on the PaintLayer (which must be
-// a stacking context) and marks the PaintLayer as needing to recalculate the
-// cull rect when leaving this scope.
-// TODO(crbug.com/1215251): Avoid repaint after the scope if the scope is used
-// to paint into a separate PaintController.
+// page. It temporarily overrides the cull rects on the starting layer and
+// descendant PaintLayers if needed, and restores the original cull rects when
+// leaving this scope.
 class CORE_EXPORT OverriddenCullRectScope {
   STACK_ALLOCATED();
 
  public:
   OverriddenCullRectScope(PaintLayer&, const CullRect&);
   ~OverriddenCullRectScope();
+
+  struct FragmentCullRects {
+    explicit FragmentCullRects(FragmentData&);
+    Persistent<FragmentData> fragment;
+    CullRect cull_rect;
+    CullRect contents_cull_rect;
+  };
+
+ private:
+  Vector<FragmentCullRects> original_cull_rects_;
 };
 
 }  // namespace blink

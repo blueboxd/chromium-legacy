@@ -13,6 +13,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
@@ -314,8 +315,8 @@ class CrostiniManager::CrostiniRestarter
       {mojom::InstallerState::kSetupContainer, base::Minutes(5)},
       // StartContainer sends heartbeat messages on a 30-second interval, but
       // there's a bit of work that's not covered by heartbeat messages so to be
-      // safe set a 5 minute timeout.
-      {mojom::InstallerState::kStartContainer, base::Minutes(5)},
+      // safe set a 8 minute timeout.
+      {mojom::InstallerState::kStartContainer, base::Minutes(8)},
       // Configuration may be slow, making timeout 2 hours at first because some
       // playbooks are gigantic (e.g. Chromium playbook).
       {mojom::InstallerState::kConfigureContainer, base::Hours(2)},
@@ -475,7 +476,7 @@ void CrostiniManager::CrostiniRestarter::Timeout(mojom::InstallerState state) {
 }
 
 void CrostiniManager::CrostiniRestarter::CancelRequest(RestartId restart_id) {
-  int num_requests = requests_.size();
+  size_t num_requests = requests_.size();
   FinishRequests(
       base::BindRepeating(
           [](RestartId restart_id, const RestartRequest& request) -> bool {
@@ -2558,9 +2559,6 @@ void CrostiniManager::OnStartTremplin(std::string vm_name,
   guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePath(
       vm_name, base::FilePath(file_manager::util::kSystemFontsPath),
       /*persist=*/false, base::DoNothing());
-  // Share folders from Downloads, etc with VM.
-  guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePersistedPaths(
-      vm_name, base::DoNothing());
 
   // Run the original callback.
   std::move(callback).Run(/*success=*/true);

@@ -27,6 +27,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/actions/omnibox_pedal.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
+#include "components/omnibox/browser/omnibox.mojom-shared.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_popup_selection.h"
 #include "components/omnibox/browser/vector_icons.h"
@@ -79,7 +80,7 @@ class OmniboxRemoveSuggestionButton : public views::ImageButton {
     // Although this appears visually as a button, expose as a list box option
     // so that it matches the other options within its list box container.
     node_data->role = ax::mojom::Role::kListBoxOption;
-    node_data->SetName(
+    node_data->SetNameChecked(
         l10n_util::GetStringUTF16(IDS_ACC_REMOVE_SUGGESTION_BUTTON));
   }
 };
@@ -422,8 +423,12 @@ void OmniboxResultView::ButtonPressed(OmniboxPopupSelection::LineState state,
 // OmniboxResultView, views::View overrides:
 
 bool OmniboxResultView::OnMousePressed(const ui::MouseEvent& event) {
-  if (event.IsOnlyLeftMouseButton())
+  if (event.IsOnlyLeftMouseButton()) {
     popup_contents_view_->SetSelectedIndex(model_index_);
+    // Inform the model that a new result is now selected via mouse press.
+    model_->OnNavigationLikely(model_index_,
+                               omnibox::mojom::NavigationPredictor::kMouseDown);
+  }
   return true;
 }
 

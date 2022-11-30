@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,7 +59,7 @@ TEST_F(IntersectionObserverTest, ObserveSchedulesFrame) {
 
   Compositor().BeginFrame();
   ASSERT_FALSE(Compositor().NeedsBeginFrame());
-  EXPECT_TRUE(observer->takeRecords(exception_state).IsEmpty());
+  EXPECT_TRUE(observer->takeRecords(exception_state).empty());
   EXPECT_EQ(observer_delegate->CallCount(), 0);
 
   Element* target = GetDocument().getElementById("target");
@@ -323,7 +323,7 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
   EXPECT_EQ(observer_delegate->CallCount(), 2);
   test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 2);
-  EXPECT_FALSE(observer->takeRecords(exception_state).IsEmpty());
+  EXPECT_FALSE(observer->takeRecords(exception_state).empty());
 
   // Generate a notification while document is suspended; then resume document.
   // Notification should happen in a post task.

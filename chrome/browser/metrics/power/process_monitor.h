@@ -30,11 +30,15 @@ enum MonitoredProcessType {
   kExtensionPersistent,
   kExtensionEvent,
   kGpu,
-  kPPAPIPlugin,
   kUtility,
   kNetwork,
+  kOther,  // Contains all other process types that are not explicitly tracked.
   kCount,
 };
+
+MonitoredProcessType
+GetMonitoredProcessTypeForNonRendererChildProcessForTesting(
+    const content::ChildProcessData& data);
 
 struct ProcessInfo {
   ProcessInfo(MonitoredProcessType type,
@@ -131,6 +135,19 @@ class ProcessMonitor : public content::BrowserChildProcessObserver,
       const content::ChildProcessData& data) override;
   void BrowserChildProcessHostDisconnected(
       const content::ChildProcessData& data) override;
+  void BrowserChildProcessCrashed(
+      const content::ChildProcessData& data,
+      const content::ChildProcessTerminationInfo& info) override;
+  void BrowserChildProcessKilled(
+      const content::ChildProcessData& data,
+      const content::ChildProcessTerminationInfo& info) override;
+  void BrowserChildProcessExitedNormally(
+      const content::ChildProcessData& data,
+      const content::ChildProcessTerminationInfo& info) override;
+
+  void OnBrowserChildProcessExited(
+      const content::ChildProcessData& data,
+      const content::ChildProcessTerminationInfo& info);
 
   base::ScopedMultiSourceObservation<content::RenderProcessHost,
                                      content::RenderProcessHostObserver>

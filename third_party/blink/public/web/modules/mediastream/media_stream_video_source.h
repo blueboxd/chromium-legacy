@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -221,7 +221,9 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
     return tracks_.size();
   }
 
-  virtual base::WeakPtr<MediaStreamVideoSource> GetWeakPtr() const = 0;
+  using WebPlatformMediaStreamSource::GetTaskRunner;
+
+  virtual base::WeakPtr<MediaStreamVideoSource> GetWeakPtr() = 0;
 
  protected:
   // MediaStreamSource implementation.

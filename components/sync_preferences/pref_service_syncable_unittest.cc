@@ -38,8 +38,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_features.h"
-#include "base/test/scoped_feature_list.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #endif
 
@@ -299,10 +297,9 @@ TEST_F(PrefServiceSyncableTest, ModelAssociationDoNotSyncDefaults) {
 TEST_F(PrefServiceSyncableTest, ModelAssociationEmptyCloud) {
   prefs_.SetString(kStringPrefName, kExampleUrl0);
   {
-    ListPrefUpdate update(GetPrefs(), kListPrefName);
-    base::Value* url_list = update.Get();
-    url_list->Append(kExampleUrl0);
-    url_list->Append(kExampleUrl1);
+    ScopedListPrefUpdate update(GetPrefs(), kListPrefName);
+    update->Append(kExampleUrl0);
+    update->Append(kExampleUrl1);
   }
   syncer::SyncChangeList out;
   InitWithSyncDataTakeOutput(syncer::SyncDataList(), &out);
@@ -318,9 +315,8 @@ TEST_F(PrefServiceSyncableTest, ModelAssociationEmptyCloud) {
 TEST_F(PrefServiceSyncableTest, ModelAssociationCloudHasData) {
   prefs_.SetString(kStringPrefName, kExampleUrl0);
   {
-    ListPrefUpdate update(GetPrefs(), kListPrefName);
-    base::Value* url_list = update.Get();
-    url_list->Append(kExampleUrl0);
+    ScopedListPrefUpdate update(GetPrefs(), kListPrefName);
+    update->Append(kExampleUrl0);
   }
 
   syncer::SyncDataList in;
@@ -511,10 +507,9 @@ class PrefServiceSyncableMergeTest : public testing::Test {
 
 TEST_F(PrefServiceSyncableMergeTest, ShouldMergeSelectedListValues) {
   {
-    ListPrefUpdate update(&prefs_, kListPrefName);
-    base::Value* url_list = update.Get();
-    url_list->Append(kExampleUrl0);
-    url_list->Append(kExampleUrl1);
+    ScopedListPrefUpdate update(&prefs_, kListPrefName);
+    update->Append(kExampleUrl0);
+    update->Append(kExampleUrl1);
   }
 
   base::ListValue urls_to_restore;
@@ -544,8 +539,7 @@ TEST_F(PrefServiceSyncableMergeTest, ManagedListPreferences) {
   base::Value managed_value(base::Value::Type::LIST);
   managed_value.Append(kExampleUrl0);
   managed_value.Append(kExampleUrl1);
-  managed_prefs_->SetValue(kListPrefName,
-                           base::Value::ToUniquePtrValue(managed_value.Clone()),
+  managed_prefs_->SetValue(kListPrefName, managed_value.Clone(),
                            WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
   // Set a cloud version.
@@ -592,10 +586,9 @@ TEST_F(PrefServiceSyncableMergeTest, ManagedListPreferences) {
 
 TEST_F(PrefServiceSyncableMergeTest, ShouldMergeSelectedDictionaryValues) {
   {
-    DictionaryPrefUpdate update(&prefs_, kDictPrefName);
-    base::Value* dict_value = update.Get();
-    dict_value->SetStringKey("my_key1", "my_value1");
-    dict_value->SetStringKey("my_key3", "my_value3");
+    ScopedDictPrefUpdate update(&prefs_, kDictPrefName);
+    update->Set("my_key1", "my_value1");
+    update->Set("my_key3", "my_value3");
   }
 
   base::DictionaryValue remote_update;
@@ -657,7 +650,7 @@ TEST_F(PrefServiceSyncableMergeTest, RegisterShouldClearTypeMismatchingData) {
 
   pref_registry_->RegisterListPref(
       pref_name, user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  EXPECT_TRUE(GetPreferenceValue(pref_name).GetListDeprecated().empty());
+  EXPECT_TRUE(GetPreferenceValue(pref_name).GetList().empty());
   EXPECT_FALSE(user_prefs_->GetValue(pref_name, nullptr));
 
   prefs_.RemoveSyncedPrefObserver(pref_name, &observer);
@@ -989,7 +982,6 @@ class PrefServiceSyncableChromeOsTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedFeatureList feature_list_;
   scoped_refptr<PrefRegistrySyncable> pref_registry_;
   PrefNotifierImpl* pref_notifier_;  // Owned by |prefs_|.
   scoped_refptr<TestingPrefStore> user_prefs_;
@@ -998,26 +990,7 @@ class PrefServiceSyncableChromeOsTest : public testing::Test {
   std::unique_ptr<PrefServiceSyncable> prefs_;
 };
 
-TEST_F(PrefServiceSyncableChromeOsTest,
-       IsPrefRegistered_CategorizationDisabled) {
-  feature_list_.InitAndDisableFeature(
-      chromeos::features::kSyncSettingsCategorization);
-  CreatePrefService();
-  EXPECT_TRUE(GetRegisteredModelTypes("unsynced_pref").Empty());
-  EXPECT_EQ(ModelTypeSet(syncer::PREFERENCES),
-            GetRegisteredModelTypes("browser_pref"));
-  EXPECT_EQ(ModelTypeSet(syncer::PRIORITY_PREFERENCES),
-            GetRegisteredModelTypes("browser_priority_pref"));
-  EXPECT_EQ(ModelTypeSet(syncer::PREFERENCES),
-            GetRegisteredModelTypes("os_pref"));
-  EXPECT_EQ(ModelTypeSet(syncer::PRIORITY_PREFERENCES),
-            GetRegisteredModelTypes("os_priority_pref"));
-}
-
-TEST_F(PrefServiceSyncableChromeOsTest,
-       IsPrefRegistered_CategorizationEnabled) {
-  feature_list_.InitAndEnableFeature(
-      chromeos::features::kSyncSettingsCategorization);
+TEST_F(PrefServiceSyncableChromeOsTest, IsPrefRegistered) {
   CreatePrefService();
   EXPECT_TRUE(GetRegisteredModelTypes("unsynced_pref").Empty());
   EXPECT_EQ(ModelTypeSet(syncer::PREFERENCES),
@@ -1043,8 +1016,6 @@ TEST_F(PrefServiceSyncableChromeOsTest,
 }
 
 TEST_F(PrefServiceSyncableChromeOsTest, IsSyncing) {
-  feature_list_.InitAndEnableFeature(
-      chromeos::features::kSyncSettingsCategorization);
   CreatePrefService();
   InitSyncForType(syncer::PREFERENCES);
   EXPECT_TRUE(prefs_->IsSyncing());
@@ -1054,8 +1025,6 @@ TEST_F(PrefServiceSyncableChromeOsTest, IsSyncing) {
 }
 
 TEST_F(PrefServiceSyncableChromeOsTest, IsPrioritySyncing) {
-  feature_list_.InitAndEnableFeature(
-      chromeos::features::kSyncSettingsCategorization);
   CreatePrefService();
   InitSyncForType(syncer::PRIORITY_PREFERENCES);
   EXPECT_FALSE(prefs_->IsSyncing());
@@ -1065,8 +1034,6 @@ TEST_F(PrefServiceSyncableChromeOsTest, IsPrioritySyncing) {
 }
 
 TEST_F(PrefServiceSyncableChromeOsTest, AreOsPrefsSyncing) {
-  feature_list_.InitAndEnableFeature(
-      chromeos::features::kSyncSettingsCategorization);
   CreatePrefService();
   InitSyncForType(syncer::OS_PREFERENCES);
   EXPECT_FALSE(prefs_->IsSyncing());
@@ -1076,8 +1043,6 @@ TEST_F(PrefServiceSyncableChromeOsTest, AreOsPrefsSyncing) {
 }
 
 TEST_F(PrefServiceSyncableChromeOsTest, AreOsPriorityPrefsSyncing) {
-  feature_list_.InitAndEnableFeature(
-      chromeos::features::kSyncSettingsCategorization);
   CreatePrefService();
   InitSyncForType(syncer::OS_PRIORITY_PREFERENCES);
   EXPECT_FALSE(prefs_->IsSyncing());
@@ -1087,8 +1052,6 @@ TEST_F(PrefServiceSyncableChromeOsTest, AreOsPriorityPrefsSyncing) {
 }
 
 TEST_F(PrefServiceSyncableChromeOsTest, IsPrefSynced_OsPref) {
-  feature_list_.InitAndEnableFeature(
-      chromeos::features::kSyncSettingsCategorization);
   CreatePrefService();
   InitSyncForAllTypes();
   auto* associator = static_cast<PrefModelAssociator*>(
@@ -1104,8 +1067,6 @@ TEST_F(PrefServiceSyncableChromeOsTest, IsPrefSynced_OsPref) {
 }
 
 TEST_F(PrefServiceSyncableChromeOsTest, IsPrefSynced_OsPriorityPref) {
-  feature_list_.InitAndEnableFeature(
-      chromeos::features::kSyncSettingsCategorization);
   CreatePrefService();
   InitSyncForAllTypes();
   auto* associator = static_cast<PrefModelAssociator*>(
@@ -1121,8 +1082,6 @@ TEST_F(PrefServiceSyncableChromeOsTest, IsPrefSynced_OsPriorityPref) {
 }
 
 TEST_F(PrefServiceSyncableChromeOsTest, SyncedPrefObserver_OsPref) {
-  feature_list_.InitAndEnableFeature(
-      chromeos::features::kSyncSettingsCategorization);
   CreatePrefService();
   InitSyncForAllTypes();
 
@@ -1137,8 +1096,6 @@ TEST_F(PrefServiceSyncableChromeOsTest, SyncedPrefObserver_OsPref) {
 }
 
 TEST_F(PrefServiceSyncableChromeOsTest, SyncedPrefObserver_OsPriorityPref) {
-  feature_list_.InitAndEnableFeature(
-      chromeos::features::kSyncSettingsCategorization);
   CreatePrefService();
   InitSyncForAllTypes();
 
@@ -1152,25 +1109,7 @@ TEST_F(PrefServiceSyncableChromeOsTest, SyncedPrefObserver_OsPriorityPref) {
   prefs_->RemoveSyncedPrefObserver("os_priority_pref", &observer);
 }
 
-TEST_F(PrefServiceSyncableChromeOsTest,
-       OsPrefChangeSyncedAsBrowserPrefChange_CategorizationDisabled) {
-  feature_list_.InitAndDisableFeature(
-      chromeos::features::kSyncSettingsCategorization);
-  CreatePrefService();
-  // Set a non-default value.
-  prefs_->SetString("os_pref", "new_value");
-  // Start syncing.
-  syncer::SyncChangeList output;
-  InitSyncForAllTypes(&output);
-  ASSERT_EQ(1u, output.size());
-  // The OS pref is treated like a browser pref.
-  EXPECT_EQ(syncer::PREFERENCES, output[0].sync_data().GetDataType());
-}
-
-TEST_F(PrefServiceSyncableChromeOsTest,
-       OsPrefChangeSyncedAsOsPrefChange_CategorizationEnabled) {
-  feature_list_.InitAndEnableFeature(
-      chromeos::features::kSyncSettingsCategorization);
+TEST_F(PrefServiceSyncableChromeOsTest, OsPrefChangeSyncedAsOsPrefChange) {
   CreatePrefService();
   // Set a non-default value.
   prefs_->SetString("os_pref", "new_value");
@@ -1188,9 +1127,7 @@ TEST_F(PrefServiceSyncableChromeOsTest,
 }
 
 TEST_F(PrefServiceSyncableChromeOsTest,
-       OsPrefChangeMakesSyncChangeForOldClients_CategorizationEnabled_Update) {
-  feature_list_.InitAndEnableFeature(
-      chromeos::features::kSyncSettingsCategorization);
+       OsPrefChangeMakesSyncChangeForOldClients_Update) {
   CreatePrefService();
   syncer::SyncChangeList changes;
   InitSyncForAllTypes(&changes);
@@ -1214,8 +1151,6 @@ TEST_F(PrefServiceSyncableChromeOsTest,
 
 TEST_F(PrefServiceSyncableChromeOsTest,
        UpdatesFromOldClientsAreIgnored_Startup) {
-  feature_list_.InitAndEnableFeature(
-      chromeos::features::kSyncSettingsCategorization);
   CreatePrefService();
   TestSyncedPrefObserver observer;
   prefs_->AddSyncedPrefObserver("os_pref", &observer);
@@ -1252,8 +1187,6 @@ TEST_F(PrefServiceSyncableChromeOsTest,
 
 TEST_F(PrefServiceSyncableChromeOsTest,
        UpdatesFromOldClientsAreIgnored_Update) {
-  feature_list_.InitAndEnableFeature(
-      chromeos::features::kSyncSettingsCategorization);
   CreatePrefService();
   InitSyncForAllTypes();
   TestSyncedPrefObserver observer;
@@ -1280,8 +1213,6 @@ TEST_F(PrefServiceSyncableChromeOsTest,
 
 TEST_F(PrefServiceSyncableChromeOsTest,
        SyncedPrefObserver_OsPrefIsChangedFromSync) {
-  feature_list_.InitAndEnableFeature(
-      chromeos::features::kSyncSettingsCategorization);
   CreatePrefService();
   prefs_->SetString("os_pref", "default_value");
 
@@ -1315,8 +1246,6 @@ TEST_F(PrefServiceSyncableChromeOsTest,
 
 TEST_F(PrefServiceSyncableChromeOsTest,
        SyncedPrefObserver_OsPrefIsNotChangedFromSync) {
-  feature_list_.InitAndEnableFeature(
-      chromeos::features::kSyncSettingsCategorization);
   CreatePrefService();
   prefs_->SetString("os_pref", "default_value");
 
@@ -1349,8 +1278,6 @@ TEST_F(PrefServiceSyncableChromeOsTest,
 }
 
 TEST_F(PrefServiceSyncableChromeOsTest, SyncedPrefObserver_EmptyCloud) {
-  feature_list_.InitAndEnableFeature(
-      chromeos::features::kSyncSettingsCategorization);
   CreatePrefService();
   prefs_->SetString("os_pref", "new_value");
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/webauthn/sheet_view_factory.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/check.h"
@@ -17,12 +18,16 @@
 #include "chrome/browser/ui/views/webauthn/authenticator_request_sheet_view.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_select_account_sheet_view.h"
 #include "chrome/browser/ui/views/webauthn/hover_list_view.h"
-#include "chrome/browser/ui/views/webauthn/passkey_pill_view.h"
+#include "chrome/browser/ui/views/webauthn/passkey_detail_view.h"
 #include "chrome/browser/ui/webauthn/sheet_models.h"
 #include "chrome/browser/ui/webauthn/transport_hover_list_model.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "device/fido/features.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/text_constants.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/box_layout_view.h"
 
 namespace {
 
@@ -88,12 +93,23 @@ class AuthenticatorCreatePasskeySheetView
   std::pair<std::unique_ptr<views::View>,
             AuthenticatorRequestSheetView::AutoFocus>
   BuildStepSpecificContent() override {
-    return std::make_pair(
-        std::make_unique<PasskeyPillView>(
-            static_cast<AuthenticatorCreatePasskeySheetModel*>(model())
-                ->dialog_model()
-                ->user_entity()),
-        AutoFocus::kNo);
+    auto container = std::make_unique<views::BoxLayoutView>();
+    container->SetOrientation(views::BoxLayout::Orientation::kVertical);
+    container->SetCrossAxisAlignment(
+        views::BoxLayout::CrossAxisAlignment::kStretch);
+    container->SetBetweenChildSpacing(12);
+    container->AddChildView(std::make_unique<PasskeyDetailView>(
+        static_cast<AuthenticatorCreatePasskeySheetModel*>(model())
+            ->dialog_model()
+            ->user_entity()));
+    auto* label = container->AddChildView(std::make_unique<views::Label>(
+        static_cast<AuthenticatorCreatePasskeySheetModel*>(model())
+            ->passkey_storage_description(),
+        views::style::CONTEXT_DIALOG_BODY_TEXT));
+    label->SetMultiLine(true);
+    label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+
+    return std::make_pair(std::move(container), AutoFocus::kNo);
   }
 };
 

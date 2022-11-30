@@ -148,6 +148,14 @@ absl::optional<std::string> ChromeOsFeedbackDelegate::GetSignedInUserEmail()
       .email;
 }
 
+int ChromeOsFeedbackDelegate::GetPerformanceTraceId() {
+  if (ContentTracingManager* manager = ContentTracingManager::Get()) {
+    return manager->RequestTrace();
+  } else {
+    return 0;
+  }
+}
+
 void ChromeOsFeedbackDelegate::GetScreenshotPng(
     GetScreenshotPngCallback callback) {
   scoped_refptr<base::RefCountedMemory> png_data = GetScreenshotData();
@@ -193,6 +201,11 @@ void ChromeOsFeedbackDelegate::SendReport(
     feedback_data->AddLog(kExtraDiagnosticsKey,
                           feedback_context->extra_diagnostics.value());
   }
+  feedback_data->set_trace_id(report->feedback_context->trace_id);
+  feedback_data->set_from_assistant(feedback_context->from_assistant);
+  feedback_data->set_assistant_debug_info_allowed(
+      feedback_context->assistant_debug_info_allowed);
+
   if (feedback_context->category_tag.has_value()) {
     feedback_data->set_category_tag(feedback_context->category_tag.value());
   }
@@ -305,14 +318,6 @@ void ChromeOsFeedbackDelegate::OpenSystemInfoDialog() {
   GURL systemInfoUrl =
       GURL(base::StrCat({chrome::kChromeUIFeedbackURL, "html/sys_info.html"}));
   OpenWebDialog(systemInfoUrl);
-}
-
-void ChromeOsFeedbackDelegate::OpenBluetoothLogsInfoDialog() {
-  // TODO(http://b/233079042): Make the bluetooth_logs_info.html page a separate
-  // WebUI. For now, use the old Feedback tool's bluetooth_logs_info.html.
-  GURL system_info_url = GURL(base::StrCat(
-      {chrome::kChromeUIFeedbackURL, "html/bluetooth_logs_info.html"}));
-  OpenWebDialog(system_info_url);
 }
 
 void ChromeOsFeedbackDelegate::OpenWebDialog(GURL url) {

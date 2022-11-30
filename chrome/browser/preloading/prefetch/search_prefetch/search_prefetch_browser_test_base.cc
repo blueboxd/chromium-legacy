@@ -200,6 +200,8 @@ void SearchPrefetchBaseBrowserTest::SetDSEWithURL(const GURL& url,
       search_suggest_server_->GetURL(kSuggestDomain, "/?q={searchTerms}")
           .spec();
   data.prefetch_likely_navigations = dse_allows_prefetch;
+  data.side_search_param = "side_search";
+  data.side_image_search_param = "side_search_image";
 
   TemplateURL* template_url = model->Add(std::make_unique<TemplateURL>(data));
   ASSERT_TRUE(template_url);
@@ -431,3 +433,18 @@ SearchPrefetchBaseBrowserTest::SearchSuggestionTuple::~SearchSuggestionTuple() =
 
 SearchPrefetchBaseBrowserTest::SearchSuggestionTuple::SearchSuggestionTuple(
     const SearchSuggestionTuple& other) = default;
+
+AutocompleteMatch SearchPrefetchBaseBrowserTest::CreateSearchSuggestionMatch(
+    const std::string& original_query,
+    const std::string& search_terms,
+    bool prefetch_hint) {
+  AutocompleteMatch match;
+  match.search_terms_args = std::make_unique<TemplateURLRef::SearchTermsArgs>(
+      base::UTF8ToUTF16(search_terms));
+  match.search_terms_args->original_query = base::UTF8ToUTF16(original_query);
+  match.destination_url = GetSearchServerQueryURL(search_terms);
+  match.keyword = base::UTF8ToUTF16(original_query);
+  if (prefetch_hint)
+    match.RecordAdditionalInfo("should_prefetch", "true");
+  return match;
+}

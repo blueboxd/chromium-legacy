@@ -13,6 +13,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
+#include "components/viz/common/resources/shared_image_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -57,7 +58,7 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   ~SharedImageFactory();
 
   bool CreateSharedImage(const Mailbox& mailbox,
-                         viz::ResourceFormat format,
+                         viz::SharedImageFormat si_format,
                          const gfx::Size& size,
                          const gfx::ColorSpace& color_space,
                          GrSurfaceOrigin surface_origin,
@@ -65,7 +66,7 @@ class GPU_GLES2_EXPORT SharedImageFactory {
                          gpu::SurfaceHandle surface_handle,
                          uint32_t usage);
   bool CreateSharedImage(const Mailbox& mailbox,
-                         viz::ResourceFormat format,
+                         viz::SharedImageFormat si_format,
                          const gfx::Size& size,
                          const gfx::ColorSpace& color_space,
                          GrSurfaceOrigin surface_origin,
@@ -111,10 +112,6 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   bool ReleaseSysmemBufferCollection(gfx::SysmemBufferCollectionId id);
 #endif  // BUILDFLAG(IS_FUCHSIA)
 
-  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                    base::trace_event::ProcessMemoryDump* pmd,
-                    const std::string& dump_base_name,
-                    uint64_t client_tracing_id);
   bool RegisterBacking(std::unique_ptr<SharedImageBacking> backing);
 
   SharedContextState* GetSharedContextState() const {
@@ -122,33 +119,21 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   }
 
 #if BUILDFLAG(IS_WIN)
-  bool CreateSharedImageVideoPlanes(base::span<const Mailbox> mailboxes,
-                                    gfx::GpuMemoryBufferHandle handle,
-                                    gfx::BufferFormat format,
-                                    const gfx::Size& size,
-                                    uint32_t usage);
   bool CopyToGpuMemoryBuffer(const Mailbox& mailbox);
 #endif
 
   void RegisterSharedImageBackingFactoryForTesting(
       SharedImageBackingFactory* factory);
 
-  static bool set_dmabuf_supported_metric_;
-
  private:
   bool IsSharedBetweenThreads(uint32_t usage);
 
-  // If `use_compound_backing` is not null and `gmb_type` is
-  // gfx::SHARED_MEMORY_BUFFER then we'll see if factory can be used with a
-  // compound backing. This is temporary until all backing types support
-  // compound backings.
   SharedImageBackingFactory* GetFactoryByUsage(
       uint32_t usage,
-      viz::ResourceFormat format,
+      viz::SharedImageFormat format,
       const gfx::Size& size,
       base::span<const uint8_t> pixel_data,
-      gfx::GpuMemoryBufferType gmb_type,
-      bool* use_compound_backing = nullptr);
+      gfx::GpuMemoryBufferType gmb_type);
 
   raw_ptr<SharedImageManager> shared_image_manager_;
   raw_ptr<SharedContextState> shared_context_state_;

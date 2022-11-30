@@ -4,7 +4,7 @@
 
 import {PersonalizationHubBrowserProxyImpl, Router} from 'chrome://os-settings/chromeos/os_settings.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {waitAfterNextRender} from 'chrome://test/test_util.js';
+import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
 import {assertEquals, assertTrue} from '../../chai_assert.js';
 
@@ -25,9 +25,6 @@ function createPersonalizationPage() {
 
 suite('PersonalizationHandler', function() {
   suiteSetup(function() {
-    assertTrue(
-        loadTimeData.getBoolean('isPersonalizationHubEnabled'),
-        'this test only runs with PersonalizationHub enabled');
     testing.Test.disableAnimationsAndTransitions();
   });
 

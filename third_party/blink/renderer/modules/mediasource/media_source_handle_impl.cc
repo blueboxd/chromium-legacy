@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ MediaSourceHandleImpl::MediaSourceHandleImpl(
     : attachment_provider_(std::move(attachment_provider)),
       internal_blob_url_(internal_blob_url) {
   DCHECK(attachment_provider_);
-  DCHECK(!internal_blob_url.IsEmpty());
+  DCHECK(!internal_blob_url.empty());
 
   DVLOG(1) << __func__ << " this=" << this
            << ", attachment_provider_=" << attachment_provider_

@@ -8,11 +8,13 @@
 
 #import "components/password_manager/core/browser/password_manager_util.h"
 #import "components/prefs/pref_service.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/promos_manager/constants.h"
+#import "ios/chrome/browser/promos_manager/promos_manager.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
-#import "ios/chrome/browser/ui/main/scene_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -116,6 +118,8 @@ NSString* const kActiveDaysInPastWeek = @"ActiveDaysInPastWeek";
 // Calls the PromosManager to request iOS displays the
 // App Store Rating prompt to the user.
 - (void)requestPromoDisplay {
+  GetApplicationContext()->GetPromosManager()->RegisterPromoForSingleDisplay(
+      promos_manager::Promo::AppStoreRating);
 }
 
 // Updates kTotalDaysOnChrome and kActiveDaysInPastWeek in NSUserDefaults.
@@ -125,10 +129,11 @@ NSString* const kActiveDaysInPastWeek = @"ActiveDaysInPastWeek";
 
   // Add kActiveDaysInPastWeek to NSUserDefaults if it doesn't already exist.
   if ([defaults objectForKey:kActiveDaysInPastWeek] == nil) {
-    [defaults setObject:[NSMutableArray alloc] forKey:kActiveDaysInPastWeek];
+    [defaults setObject:[[NSMutableArray alloc] init]
+                 forKey:kActiveDaysInPastWeek];
   }
   NSMutableArray* activeDaysInPastWeek =
-      [defaults objectForKey:kActiveDaysInPastWeek];
+      [[defaults objectForKey:kActiveDaysInPastWeek] mutableCopy];
 
   // Exit early if the last recorded day was today.
   if ([activeDaysInPastWeek lastObject] != nil &&

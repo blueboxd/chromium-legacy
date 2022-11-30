@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/supervised_user/supervised_user_features/supervised_user_features.h"
 #include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
@@ -37,6 +38,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/supervised_user/child_accounts/child_account_feedback_reporter_android.h"
@@ -45,6 +47,16 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/favicon/large_icon_service_factory.h"
+#include "chrome/browser/supervised_user/chromeos/supervised_user_favicon_request_handler.h"
 #endif
 
 using content::WebContents;
@@ -145,6 +157,15 @@ void CleanUpInfoBar(content::WebContents* web_contents) {
   }
 }
 
+// TODO(b/250924204): Implement shared logic to get the user's given name.
+std::u16string GetActiveUserFirstName() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  return user_manager::UserManager::Get()->GetActiveUser()->GetGivenName();
+#else
+  // TODO(b/243656773): Implement for LaCrOS.
+  return std::u16string();
+#endif
+}
 }  // namespace
 
 // static
@@ -176,7 +197,20 @@ SupervisedUserInterstitial::SupervisedUserInterstitial(
       url_(url),
       reason_(reason),
       frame_id_(frame_id),
-      interstitial_navigation_id_(interstitial_navigation_id) {}
+      interstitial_navigation_id_(interstitial_navigation_id) {
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (supervised_users::IsLocalWebApprovalsEnabled()) {
+    favicon_handler_ = std::make_unique<SupervisedUserFaviconRequestHandler>(
+        url_.GetWithEmptyPath(),
+        LargeIconServiceFactory::GetForBrowserContext(profile_));
+    // Prefetch the favicon which will be rendered as part of the web approvals
+    // ParentAccessDialog. Pass in DoNothing() for the favicon fetched callback
+    // because if the favicon is by the time the user triggers the opening of
+    // the ParentAccessDialog, we show the default favicon.
+    favicon_handler_->StartFaviconFetch(base::DoNothing());
+  }
+#endif
+}
 
 SupervisedUserInterstitial::~SupervisedUserInterstitial() {}
 
@@ -248,8 +282,13 @@ void SupervisedUserInterstitial::RequestUrlAccessLocal(
 
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_);
+  gfx::ImageSkia favicon;
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  favicon = favicon_handler_->GetFaviconOrFallback();
+#endif
   supervised_user_service->web_approvals_manager().RequestLocalApproval(
-      web_contents(), url_, std::move(callback));
+      web_contents(), url_, GetActiveUserFirstName(), favicon,
+      std::move(callback));
 }
 
 void SupervisedUserInterstitial::ShowFeedback() {

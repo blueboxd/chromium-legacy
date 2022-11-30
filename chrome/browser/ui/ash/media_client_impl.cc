@@ -7,11 +7,14 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/media_controller.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/system/toast_data.h"
 #include "ash/public/cpp/system/toast_manager.h"
+#include "ash/session/session_controller_impl.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
@@ -456,9 +459,11 @@ void MediaClientImpl::OnActiveClientChange(cros::mojom::CameraClientType type,
                                            bool is_active) {
   is_camera_active_ = is_active;
 
-  if (is_active && camera_privacy_switch_state_ ==
-                       cros::mojom::CameraPrivacySwitchState::ON) {
-    ShowCameraOffNotification();
+  if (is_active) {
+    if (camera_privacy_switch_state_ ==
+        cros::mojom::CameraPrivacySwitchState::ON) {
+      ShowCameraOffNotification();
+    }
   }
 }
 

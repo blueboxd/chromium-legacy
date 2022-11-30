@@ -7,6 +7,10 @@
       --feedback-medium-font-weight: 500;
     }
 
+    :host-context([dir='rtl']) .dialog-back-arrow {
+      transform: rotate(180deg);
+    }
+
     html {
       background-color: var(--cros-bg-color);
     }
@@ -117,6 +121,11 @@
       transition: opacity 200ms;
     }
 
+    .focusable:focus {
+      border-radius: 4px;
+      outline: 2px solid var(--cros-focus-ring-color);
+    }
+
     .dialog-toolbar {
       align-items: center;
       background-color: var(--cros-bg-color);
@@ -155,6 +164,47 @@
       position: relative;
       text-align: center;
       width: calc(100% - 88px);
+    }
+
+    .close-dialog-button {
+      border: none;
+      height: 48px;
+      margin-bottom: 4px;
+      margin-inline-end: 8px;
+      margin-top: 4px;
+      min-width: 48px;
+      padding: 0;
+      width: 48px;
+    }
+
+    .dialog-back-arrow {
+      --iron-icon-fill-color: var(--cros-icon-color-primary);
+      height: 20px;
+      width: 20px;
+    }
+
+    paper-tooltip::part(tooltip) {
+      border-radius: 2px;
+      font-family: var(--feedback-roboto-font-family);
+      font-size: 12px;
+      font-weight: var(--feedback-regular-font-weight);
+      line-height: 18px;
+      margin: auto 6px 0 6px;
+      padding: 3px 8px;
+    }
+
+    paper-tooltip {
+      --paper-tooltip-background: var(--cros-tooltip-background-color);
+      --paper-tooltip-text-color: var(--cros-tooltip-label-color);
+    }
+
+    cr-checkbox {
+      --cr-checkbox-ripple-opacity: 0;
+      --cr-checkbox-ripple-size: 32px;
+    }
+
+    :host-context(.focus-outline-visible) cr-checkbox:focus-within {
+      --cr-checkbox-ripple-ring: 2px solid var(--cros-focus-ring-color);
     }
   </style>
 </template>

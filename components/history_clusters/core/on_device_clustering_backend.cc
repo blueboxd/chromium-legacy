@@ -17,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/history_clusters/core/category_cluster_finalizer.h"
 #include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/content_annotations_cluster_processor.h"
 #include "components/history_clusters/core/content_visibility_cluster_finalizer.h"
@@ -205,12 +206,8 @@ void OnDeviceClusteringBackend::ProcessVisits(
 
   std::vector<history::ClusterVisit> cluster_visits;
   base::flat_map<std::string, optimization_guide::EntityMetadata>
-      human_readable_entity_name_to_metadata_map;
-  for (const auto& visit : annotated_visits) {
-    history::ClusterVisit cluster_visit;
-    cluster_visit.annotated_visit = visit;
-    const std::string& visit_host = visit.url_row.url().host();
-
+      entity_id_to_metadata_map;
+  for (auto& visit : annotated_visits) {
     // Skip visits that should not be clustered.
     if (optimization_guide_decider_) {
       optimization_guide::OptimizationGuideDecision decision =
@@ -221,6 +218,8 @@ void OnDeviceClusteringBackend::ProcessVisits(
         continue;
       }
     }
+
+    history::ClusterVisit cluster_visit;
 
     if (visit.content_annotations.search_normalized_url.is_empty()) {
       cluster_visit.normalized_url = visit.url_row.url();
@@ -235,12 +234,14 @@ void OnDeviceClusteringBackend::ProcessVisits(
     cluster_visit.url_for_display =
         ComputeURLForDisplay(cluster_visit.normalized_url);
 
+    const std::string& visit_host = cluster_visit.normalized_url.host();
     if (engagement_score_provider_) {
       auto it = engagement_score_cache_.Peek(visit_host);
       if (it != engagement_score_cache_.end()) {
         cluster_visit.engagement_score = it->second;
       } else {
-        float score = engagement_score_provider_->GetScore(visit.url_row.url());
+        float score =
+            engagement_score_provider_->GetScore(cluster_visit.normalized_url);
         engagement_score_cache_.Put(visit_host, score);
         cluster_visit.engagement_score = score;
       }
@@ -249,35 +250,33 @@ void OnDeviceClusteringBackend::ProcessVisits(
     // Rewrite the entities for the visit, but only if it is possible that we
     // had additional metadata for it.
     if (entity_metadata_provider_) {
-      cluster_visit.annotated_visit.content_annotations.model_annotations
-          .entities.clear();
       base::flat_map<std::string, int> inserted_categories;
-      for (const auto& entity :
-           visit.content_annotations.model_annotations.entities) {
-        auto entity_metadata_it = entity_metadata_map.find(entity.id);
+      auto entity_it =
+          visit.content_annotations.model_annotations.entities.begin();
+      while (entity_it !=
+             visit.content_annotations.model_annotations.entities.end()) {
+        auto entity_metadata_it = entity_metadata_map.find(entity_it->id);
         if (entity_metadata_it == entity_metadata_map.end() ||
-            entity.weight < GetConfig().entity_relevance_threshold) {
+            entity_it->weight < GetConfig().entity_relevance_threshold) {
+          entity_it =
+              visit.content_annotations.model_annotations.entities.erase(
+                  entity_it);
           continue;
         }
 
-        history::VisitContentModelAnnotations::Category rewritten_entity =
-            entity;
-        rewritten_entity.id = entity_metadata_it->second.human_readable_name;
-        cluster_visit.annotated_visit.content_annotations.model_annotations
-            .entities.push_back(rewritten_entity);
-        human_readable_entity_name_to_metadata_map[rewritten_entity.id] =
-            entity_metadata_it->second;
+        entity_id_to_metadata_map[entity_it->id] = entity_metadata_it->second;
+        entity_it++;
       }
     }
 
-    cluster_visits.push_back(cluster_visit);
+    cluster_visit.annotated_visit = std::move(visit);
+    cluster_visits.push_back(std::move(cluster_visit));
   }
 
   RecordBatchUpdateProcessingTime(process_batch_timer.Elapsed());
   OnAllVisitsFinishedProcessing(
       clustering_request_source, completed_task, std::move(cluster_visits),
-      std::move(human_readable_entity_name_to_metadata_map),
-      std::move(callback));
+      std::move(entity_id_to_metadata_map), std::move(callback));
 }
 
 void OnDeviceClusteringBackend::OnAllVisitsFinishedProcessing(
@@ -285,7 +284,7 @@ void OnDeviceClusteringBackend::OnAllVisitsFinishedProcessing(
     optimization_guide::BatchEntityMetadataTask* completed_task,
     std::vector<history::ClusterVisit> cluster_visits,
     base::flat_map<std::string, optimization_guide::EntityMetadata>
-        human_readable_entity_name_to_entity_metadata_map,
+        entity_id_to_metadata_map,
     ClustersCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -305,8 +304,7 @@ void OnDeviceClusteringBackend::OnAllVisitsFinishedProcessing(
       base::BindOnce(
           &OnDeviceClusteringBackend::ClusterVisitsOnBackgroundThread,
           clustering_request_source, engagement_score_provider_ != nullptr,
-          std::move(cluster_visits),
-          std::move(human_readable_entity_name_to_entity_metadata_map));
+          std::move(cluster_visits), std::move(entity_id_to_metadata_map));
 
   switch (clustering_request_source) {
     case ClusteringRequestSource::kJourneysPage:
@@ -327,7 +325,7 @@ OnDeviceClusteringBackend::ClusterVisitsOnBackgroundThread(
     bool engagement_score_provider_is_valid,
     std::vector<history::ClusterVisit> visits,
     base::flat_map<std::string, optimization_guide::EntityMetadata>
-        human_readable_entity_name_to_entity_metadata_map) {
+        entity_id_to_entity_metadata_map) {
   base::ElapsedThreadTimer cluster_visits_timer;
 
   // TODO(crbug.com/1260145): All of these objects are "stateless" between
@@ -344,7 +342,8 @@ OnDeviceClusteringBackend::ClusterVisitsOnBackgroundThread(
 
   if (GetConfig().content_clustering_enabled) {
     cluster_processors.push_back(
-        std::make_unique<ContentAnnotationsClusterProcessor>());
+        std::make_unique<ContentAnnotationsClusterProcessor>(
+            &entity_id_to_entity_metadata_map));
   }
 
   cluster_finalizers.push_back(
@@ -365,10 +364,14 @@ OnDeviceClusteringBackend::ClusterVisitsOnBackgroundThread(
       GetConfig().should_filter_noisy_clusters) {
     cluster_finalizers.push_back(std::make_unique<NoisyClusterFinalizer>());
   }
+  if (GetConfig().should_use_categories_to_filter_on_prominent_ui_surfaces) {
+    cluster_finalizers.push_back(std::make_unique<CategoryClusterFinalizer>());
+  }
   cluster_finalizers.push_back(std::make_unique<KeywordClusterFinalizer>(
-      human_readable_entity_name_to_entity_metadata_map));
+      &entity_id_to_entity_metadata_map));
   if (GetConfig().should_label_clusters) {
-    cluster_finalizers.push_back(std::make_unique<LabelClusterFinalizer>());
+    cluster_finalizers.push_back(std::make_unique<LabelClusterFinalizer>(
+        &entity_id_to_entity_metadata_map));
   }
   if (clustering_request_source ==
       ClusteringRequestSource::kKeywordCacheGeneration) {
@@ -379,7 +382,7 @@ OnDeviceClusteringBackend::ClusterVisitsOnBackgroundThread(
 
   // Group visits into clusters.
   std::vector<history::Cluster> clusters =
-      clusterer->CreateInitialClustersFromVisits(&visits);
+      clusterer->CreateInitialClustersFromVisits(std::move(visits));
 
   // Process clusters.
   for (const auto& processor : cluster_processors) {

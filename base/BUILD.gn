@@ -31,6 +31,7 @@ import("//build/config/logging.gni")
 import("//build/config/nacl/config.gni")
 import("//build/config/profiling/profiling.gni")
 import("//build/config/rust.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/sysroot.gni")
 import("//build/config/ui.gni")
 import("//build/nocompile.gni")
@@ -201,7 +202,6 @@ mixed_component("base") {
     "allocator/dispatcher/reentry_guard.cc",
     "allocator/dispatcher/reentry_guard.h",
     "allocator/dispatcher/subsystem.h",
-    "as_const.h",
     "at_exit.cc",
     "at_exit.h",
     "atomic_ref_count.h",
@@ -221,17 +221,13 @@ mixed_component("base") {
     "big_endian.cc",
     "big_endian.h",
     "bind.h",
-    "bind_internal.h",
     "bit_cast.h",
     "bits.h",
     "build_time.cc",
     "build_time.h",
     "callback.h",
     "callback_forward.h",
-    "callback_helpers.cc",
     "callback_helpers.h",
-    "callback_internal.cc",
-    "callback_internal.h",
     "callback_list.cc",
     "callback_list.h",
     "cancelable_callback.h",
@@ -290,6 +286,7 @@ mixed_component("base") {
     "cpu_reduction_experiment.h",
     "critical_closure.h",
     "cxx17_backports.h",
+    "cxx20_is_constant_evaluated.h",
     "cxx20_to_address.h",
     "dcheck_is_on.h",
     "debug/activity_analyzer.cc",
@@ -357,6 +354,14 @@ mixed_component("base") {
     "files/scoped_temp_dir.cc",
     "files/scoped_temp_dir.h",
     "format_macros.h",
+    "functional/bind.h",
+    "functional/bind_internal.h",
+    "functional/callback.h",
+    "functional/callback_forward.h",
+    "functional/callback_helpers.cc",
+    "functional/callback_helpers.h",
+    "functional/callback_internal.cc",
+    "functional/callback_internal.h",
     "functional/function_ref.h",
     "functional/identity.h",
     "functional/invoke.h",
@@ -543,6 +548,10 @@ mixed_component("base") {
     "pending_task.h",
     "pickle.cc",
     "pickle.h",
+    "power_monitor/battery_level_provider.cc",
+    "power_monitor/battery_level_provider.h",
+    "power_monitor/battery_state_sampler.cc",
+    "power_monitor/battery_state_sampler.h",
     "power_monitor/moving_average.cc",
     "power_monitor/moving_average.h",
     "power_monitor/power_monitor.cc",
@@ -788,6 +797,7 @@ mixed_component("base") {
     "task/simple_task_executor.h",
     "task/single_thread_task_executor.cc",
     "task/single_thread_task_executor.h",
+    "task/single_thread_task_runner.cc",
     "task/single_thread_task_runner.h",
     "task/single_thread_task_runner_thread_mode.h",
     "task/task_executor.cc",
@@ -953,6 +963,7 @@ mixed_component("base") {
     "types/expected.h",
     "types/expected_internal.h",
     "types/id_type.h",
+    "types/optional_ref.h",
     "types/optional_util.h",
     "types/pass_key.h",
     "types/strong_alias.h",
@@ -1073,11 +1084,7 @@ mixed_component("base") {
       "message_loop/message_pump_win.cc",
       "message_loop/message_pump_win.h",
       "native_library_win.cc",
-      "power_monitor/battery_level_provider.cc",
-      "power_monitor/battery_level_provider.h",
       "power_monitor/battery_level_provider_win.cc",
-      "power_monitor/battery_state_sampler.cc",
-      "power_monitor/battery_state_sampler.h",
       "power_monitor/power_monitor_device_source_win.cc",
       "power_monitor/speed_limit_observer_win.cc",
       "power_monitor/speed_limit_observer_win.h",
@@ -1303,11 +1310,7 @@ mixed_component("base") {
       "message_loop/message_pump_mac.h",
       "message_loop/message_pump_mac.mm",
       "native_library_mac.mm",
-      "power_monitor/battery_level_provider.cc",
-      "power_monitor/battery_level_provider.h",
       "power_monitor/battery_level_provider_mac.mm",
-      "power_monitor/battery_state_sampler.cc",
-      "power_monitor/battery_state_sampler.h",
       "power_monitor/battery_state_sampler_mac.cc",
       "power_monitor/iopm_power_source_sampling_event_source.cc",
       "power_monitor/iopm_power_source_sampling_event_source.h",
@@ -1548,9 +1551,6 @@ mixed_component("base") {
     "//third_party/abseil-cpp:absl",
   ]
 
-  # Windows cannot use the nodebug assertion handler because it doesn't support
-  # weak symbols, which are required to override the default libc++
-  # implementation.
   if (use_custom_libcxx && !is_debug) {
     public_deps += [ ":nodebug_assertion" ]
   }
@@ -2634,7 +2634,10 @@ buildflag_header("sanitizer_buildflags") {
   header = "sanitizer_buildflags.h"
   header_dir = "base"
 
-  flags = [ "IS_HWASAN=$is_hwasan" ]
+  flags = [
+    "IS_HWASAN=$is_hwasan",
+    "USING_SANITIZER=$using_sanitizer",
+  ]
 }
 
 buildflag_header("tracing_buildflags") {
@@ -2921,6 +2924,8 @@ if (is_android) {
       "//chrome/android/modules/stack_unwinder/internal:*",
     ]
     sources = [
+      "profiler/libunwindstack_unwinder_android.cc",
+      "profiler/libunwindstack_unwinder_android.h",
       "profiler/native_unwinder_android.cc",
       "profiler/native_unwinder_android.h",
     ]
@@ -3078,7 +3083,6 @@ test("base_unittests") {
     "allocator/dispatcher/testing/dispatcher_test.h",
     "allocator/dispatcher/testing/observer_mock.h",
     "allocator/dispatcher/testing/tools.h",
-    "as_const_unittest.cc",
     "at_exit_unittest.cc",
     "atomicops_unittest.cc",
     "auto_reset_unittest.cc",
@@ -3087,13 +3091,10 @@ test("base_unittests") {
     "base64_unittest.cc",
     "base64url_unittest.cc",
     "big_endian_unittest.cc",
-    "bind_unittest.cc",
     "bit_cast_unittest.cc",
     "bits_unittest.cc",
     "build_time_unittest.cc",
-    "callback_helpers_unittest.cc",
     "callback_list_unittest.cc",
-    "callback_unittest.cc",
     "cancelable_callback_unittest.cc",
     "check_is_test_unittest.cc",
     "check_unittest.cc",
@@ -3125,6 +3126,7 @@ test("base_unittests") {
     "containers/vector_buffer_unittest.cc",
     "cpu_unittest.cc",
     "cxx17_backports_unittest.cc",
+    "cxx20_is_constant_evaluated_unittest.cc",
     "debug/activity_analyzer_unittest.cc",
     "debug/activity_tracker_unittest.cc",
     "debug/alias_unittest.cc",
@@ -3147,6 +3149,9 @@ test("base_unittests") {
     "files/memory_mapped_file_unittest.cc",
     "files/safe_base_name_unittest.cc",
     "files/scoped_temp_dir_unittest.cc",
+    "functional/bind_unittest.cc",
+    "functional/callback_helpers_unittest.cc",
+    "functional/callback_unittest.cc",
     "functional/function_ref_unittest.cc",
     "functional/identity_unittest.cc",
     "functional/invoke_unittest.cc",
@@ -3234,10 +3239,11 @@ test("base_unittests") {
     "observer_list_threadsafe_unittest.cc",
     "observer_list_unittest.cc",
     "one_shot_event_unittest.cc",
-    "optional_unittest.cc",
     "parameter_pack_unittest.cc",
     "path_service_unittest.cc",
     "pickle_unittest.cc",
+    "power_monitor/battery_level_provider_unittest.cc",
+    "power_monitor/battery_state_sampler_unittest.cc",
     "power_monitor/moving_average_unittest.cc",
     "power_monitor/power_monitor_device_source_unittest.cc",
     "power_monitor/power_monitor_unittest.cc",
@@ -3331,6 +3337,7 @@ test("base_unittests") {
     "task/sequence_manager/work_queue_unittest.cc",
     "task/sequenced_task_runner_unittest.cc",
     "task/single_thread_task_executor_unittest.cc",
+    "task/single_thread_task_runner_unittest.cc",
     "task/task_runner_unittest.cc",
     "task/task_runner_util_unittest.cc",
     "task/task_traits_extension_unittest.cc",
@@ -3379,6 +3386,7 @@ test("base_unittests") {
     "test/test_mock_time_task_runner_unittest.cc",
     "test/test_pending_task_unittest.cc",
     "test/test_waitable_event_unittest.cc",
+    "third_party/dynamic_annotations/dynamic_annotations_compiletest.cc",
     "thread_annotations_unittest.cc",
     "threading/hang_watcher_unittest.cc",
     "threading/platform_thread_unittest.cc",
@@ -3414,6 +3422,8 @@ test("base_unittests") {
     "tuple_unittest.cc",
     "types/expected_unittest.cc",
     "types/id_type_unittest.cc",
+    "types/optional_ref_unittest.cc",
+    "types/optional_unittest.cc",
     "types/optional_util_unittest.cc",
     "types/pass_key_unittest.cc",
     "types/strong_alias_unittest.cc",
@@ -3466,6 +3476,7 @@ test("base_unittests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/icu",
+    "//third_party/modp_b64",
   ]
 
   # TODO(crbug.com/1304253): iOS test() targets don't support mixing Rust code
@@ -3502,8 +3513,6 @@ test("base_unittests") {
     sources += [
       "debug/gdi_debug_util_win_unittest.cc",
       "file_version_info_win_unittest.cc",
-      "power_monitor/battery_level_provider_unittest.cc",
-      "power_monitor/battery_state_sampler_unittest.cc",
       "process/launch_unittest_win.cc",
       "test/fake_iasync_operation_win_unittest.cc",
       "test/test_file_util_win_unittest.cc",
@@ -3592,8 +3601,6 @@ test("base_unittests") {
       "mac/scoped_objc_class_swizzler_unittest.mm",
       "mac/scoped_sending_event_unittest.mm",
       "message_loop/message_pump_mac_unittest.mm",
-      "power_monitor/battery_level_provider_unittest.cc",
-      "power_monitor/battery_state_sampler_unittest.cc",
       "power_monitor/thermal_state_observer_mac_unittest.mm",
       "process/memory_unittest_mac.h",
       "process/memory_unittest_mac.mm",
@@ -3653,7 +3660,10 @@ test("base_unittests") {
     }
     if (!exclude_unwind_tables &&
         (current_cpu == "arm" || current_cpu == "arm64")) {
-      sources += [ "profiler/native_unwinder_android_unittest.cc" ]
+      sources += [
+        "profiler/libunwindstack_unwinder_android_unittest.cc",
+        "profiler/native_unwinder_android_unittest.cc",
+      ]
       deps += [
         ":base_profiler_test_support_java",
         ":base_profiler_test_support_jni_headers",
@@ -3679,6 +3689,7 @@ test("base_unittests") {
       "android/linker/modern_linker_jni.h",
       "android/linker/modern_linker_unittest.cc",
       "android/path_utils_unittest.cc",
+      "android/radio_utils_unittest.cc",
       "android/reached_addresses_bitset_unittest.cc",
       "android/scoped_java_ref_unittest.cc",
       "android/sys_utils_unittest.cc",
@@ -4007,15 +4018,15 @@ if (enable_nocompile_tests) {
   nocompile_test("base_nocompile_tests") {
     sources = [
       "allocator/partition_allocator/partition_alloc_base/thread_annotations_pa_unittest.nc",
-      "bind_unittest.nc",
       "callback_list_unittest.nc",
-      "callback_unittest.nc",
       "containers/buffer_iterator_unittest.nc",
       "containers/checked_iterators_unittest.nc",
       "containers/contains_unittest.nc",
       "containers/enum_set_unittest.nc",
       "containers/span_unittest.nc",
       "debug/crash_logging_unittest.nc",
+      "functional/bind_unittest.nc",
+      "functional/callback_unittest.nc",
       "functional/function_ref_unittest.nc",
       "functional/overloaded_unittest.nc",
       "memory/raw_ptr_unittest.nc",

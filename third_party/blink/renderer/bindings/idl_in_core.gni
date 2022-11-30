@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -181,6 +181,7 @@ static_idl_files_in_core = get_path_info(
           "//third_party/blink/renderer/core/dom/non_element_parent_node.idl",
           "//third_party/blink/renderer/core/dom/parent_node.idl",
           "//third_party/blink/renderer/core/dom/pointer_lock_options.idl",
+          "//third_party/blink/renderer/core/dom/popup_target_element.idl",
           "//third_party/blink/renderer/core/dom/processing_instruction.idl",
           "//third_party/blink/renderer/core/dom/range.idl",
           "//third_party/blink/renderer/core/dom/shadow_root.idl",
@@ -520,7 +521,6 @@ static_idl_files_in_core = get_path_info(
           "//third_party/blink/renderer/core/navigation_api/navigation_options.idl",
           "//third_party/blink/renderer/core/navigation_api/navigation_reload_options.idl",
           "//third_party/blink/renderer/core/navigation_api/navigation_result.idl",
-          "//third_party/blink/renderer/core/navigation_api/navigation_transition_while_options.idl",
           "//third_party/blink/renderer/core/navigation_api/navigation_transition.idl",
           "//third_party/blink/renderer/core/navigation_api/navigation_update_current_entry_options.idl",
           "//third_party/blink/renderer/core/navigation_api/navigation.idl",
@@ -703,6 +703,7 @@ static_idl_files_in_core = get_path_info(
           "//third_party/blink/renderer/core/timing/profiler_sample.idl",
           "//third_party/blink/renderer/core/timing/profiler_stack.idl",
           "//third_party/blink/renderer/core/timing/profiler_trace.idl",
+          "//third_party/blink/renderer/core/timing/soft_navigation_entry.idl",
           "//third_party/blink/renderer/core/timing/task_attribution_timing.idl",
           "//third_party/blink/renderer/core/timing/visibility_state_entry.idl",
           "//third_party/blink/renderer/core/timing/window_performance.idl",
@@ -761,7 +762,10 @@ static_idl_files_in_core_for_testing = get_path_info(
           "//third_party/blink/renderer/core/testing/internal_dictionary_derived_derived.idl",
           "//third_party/blink/renderer/core/testing/internal_settings.idl",
           "//third_party/blink/renderer/core/testing/internals.idl",
+          "//third_party/blink/renderer/core/testing/internals_cookie.idl",
           "//third_party/blink/renderer/core/testing/internals_delete_all_cookies.idl",
+          "//third_party/blink/renderer/core/testing/internals_get_all_cookies.idl",
+          "//third_party/blink/renderer/core/testing/internals_get_named_cookie.idl",
           "//third_party/blink/renderer/core/testing/attribution_reporting_automation.idl",
           "//third_party/blink/renderer/core/testing/origin_trials_test.idl",
           "//third_party/blink/renderer/core/testing/origin_trials_test_dictionary.idl",

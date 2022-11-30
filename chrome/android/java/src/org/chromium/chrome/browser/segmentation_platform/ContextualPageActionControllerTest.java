@@ -5,9 +5,10 @@
 package org.chromium.chrome.browser.segmentation_platform;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,7 +21,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -32,15 +32,20 @@ import org.chromium.base.FeatureList.TestValues;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Features;
-import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarButtonController;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures.AdaptiveToolbarButtonVariant;
+import org.chromium.components.commerce.core.ShoppingService;
+import org.chromium.components.commerce.core.ShoppingService.ProductInfo;
+import org.chromium.components.commerce.core.ShoppingService.ProductInfoCallback;
+import org.chromium.components.power_bookmarks.PowerBookmarkMeta;
+import org.chromium.components.power_bookmarks.ShoppingSpecifics;
 import org.chromium.components.segmentation_platform.SegmentSelectionResult;
 import org.chromium.components.segmentation_platform.proto.SegmentationProto.SegmentId;
 
@@ -77,6 +82,12 @@ public class ContextualPageActionControllerTest {
 
     ContextualPageActionController mContextualPageActionController;
 
+    @Mock
+    private ShoppingService mShoppingService;
+
+    @Mock
+    private BookmarkModel mBookmarkModel;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -87,13 +98,45 @@ public class ContextualPageActionControllerTest {
         mJniMocker.mock(ContextualPageActionControllerJni.TEST_HOOKS, mMockControllerJni);
         doReturn(mMockConfiguration).when(mMockResources).getConfiguration();
         doReturn(true).when(mMockActivityLifecycleDispatcher).isNativeInitializationFinished();
+
+        setPriceTrackingBackendResult(false);
+
+        // Setup bookmark model expectations.
+        Mockito.doAnswer(invocation -> {
+                   Runnable runnable = invocation.getArgument(0);
+                   runnable.run();
+                   return null;
+               })
+                .when(mBookmarkModel)
+                .finishLoadingBookmarkModel(any());
+        setPageAlreadyPriceTracked(false);
+    }
+
+    private void setPriceTrackingBackendResult(boolean hasProductInfo) {
+        ProductInfo testProductInfo = new ProductInfo(null, null, 0, 0, null, 0, null);
+        Mockito.doAnswer(invocation -> {
+                   ProductInfoCallback callback = invocation.getArgument(1);
+                   callback.onResult(
+                           invocation.getArgument(0), hasProductInfo ? testProductInfo : null);
+                   return null;
+               })
+                .when(mShoppingService)
+                .getProductInfoForUrl(any(), any());
+    }
+
+    private void setPageAlreadyPriceTracked(boolean alreadyPriceTracked) {
+        when(mBookmarkModel.getUserBookmarkIdForTab(any())).thenReturn(null);
+        PowerBookmarkMeta.Builder builder = PowerBookmarkMeta.newBuilder();
+        builder.setShoppingSpecifics(
+                ShoppingSpecifics.newBuilder().setIsPriceTracked(alreadyPriceTracked).build());
+        when(mBookmarkModel.getPowerBookmarkMeta(any())).thenReturn(builder.build());
     }
 
     private ContextualPageActionController createContextualPageActionController() {
         ContextualPageActionController contextualPageActionController =
                 new ContextualPageActionController(mProfileSupplier, mTabSupplier,
-                        mMockActivityLifecycleDispatcher, mMockResources,
-                        mMockAdaptiveToolbarController);
+                        mMockAdaptiveToolbarController,
+                        () -> mShoppingService, () -> mBookmarkModel);
 
         mProfileSupplier.set(mMockProfile);
 
@@ -104,12 +147,12 @@ public class ContextualPageActionControllerTest {
             org.chromium.components.segmentation_platform.proto.SegmentationProto
                     .SegmentId segmentationResult) {
         Mockito.doAnswer(invocation -> {
-                   Callback<SegmentSelectionResult> callback = invocation.getArgument(2);
+                   Callback<SegmentSelectionResult> callback = invocation.getArgument(3);
                    callback.onResult(new SegmentSelectionResult(true, segmentationResult));
                    return null;
                })
                 .when(mMockControllerJni)
-                .computeContextualPageAction(any(), any(), any());
+                .computeContextualPageAction(any(), any(), anyBoolean(), any());
     }
 
     @Test
@@ -146,6 +189,40 @@ public class ContextualPageActionControllerTest {
     }
 
     @Test
+    public void alreadyPriceTrackedPagesWillBeSkipped() {
+        mMockConfiguration.screenWidthDp = 450;
+        setPageAlreadyPriceTracked(true);
+        setPriceTrackingBackendResult(true);
+        setMockSegmentationResult(
+                SegmentId.OPTIMIZATION_TARGET_CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING);
+
+        ContextualPageActionController contextualPageActionController =
+                createContextualPageActionController();
+
+        mTabSupplier.set(mMockTab);
+
+        verify(mMockControllerJni).computeContextualPageAction(any(), any(), eq(false), any());
+    }
+
+    @Test
+    public void priceTrackingActionShownSuccessfully() {
+        mMockConfiguration.screenWidthDp = 450;
+        setPageAlreadyPriceTracked(true);
+        setPriceTrackingBackendResult(true);
+        setMockSegmentationResult(
+                SegmentId.OPTIMIZATION_TARGET_CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING);
+
+        ContextualPageActionController contextualPageActionController =
+                createContextualPageActionController();
+
+        mTabSupplier.set(mMockTab);
+
+        verify(mMockControllerJni).computeContextualPageAction(any(), any(), eq(false), any());
+        verify(mMockAdaptiveToolbarController)
+                .showDynamicAction(AdaptiveToolbarButtonVariant.PRICE_TRACKING);
+    }
+
+    @Test
     public void buttonNotShownWhenUiDisabled() {
         mMockConfiguration.screenWidthDp = 450;
         setMockSegmentationResult(
@@ -166,114 +243,6 @@ public class ContextualPageActionControllerTest {
 
         verify(mMockAdaptiveToolbarController, never()).showDynamicAction(anyInt());
         // Even if the UI is disabled segmentation should be called.
-        verify(mMockControllerJni).computeContextualPageAction(any(), any(), any());
-    }
-
-    @Test
-    public void testButtonOnLargeScreens() {
-        mMockConfiguration.screenWidthDp = 450;
-        setMockSegmentationResult(
-                SegmentId.OPTIMIZATION_TARGET_CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING);
-
-        ContextualPageActionController contextualPageActionController =
-                createContextualPageActionController();
-
-        mTabSupplier.set(mMockTab);
-
-        verify(mMockAdaptiveToolbarController)
-                .showDynamicAction(AdaptiveToolbarButtonVariant.PRICE_TRACKING);
-    }
-
-    @Test
-    public void testButtonNotShownOnSmallScreens() {
-        mMockConfiguration.screenWidthDp = 320;
-
-        ContextualPageActionController contextualPageActionController =
-                createContextualPageActionController();
-
-        mTabSupplier.set(mMockTab);
-
-        verify(mMockAdaptiveToolbarController)
-                .showDynamicAction(AdaptiveToolbarButtonVariant.UNKNOWN);
-        verify(mMockControllerJni, never()).computeContextualPageAction(any(), any(), any());
-    }
-
-    @Test
-    @DisableFeatures({ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING})
-    public void testConfigurationChangeIgnoredWhenFeatureIsDisabled() {
-        mMockConfiguration.screenWidthDp = 600;
-        setMockSegmentationResult(
-                SegmentId.OPTIMIZATION_TARGET_CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING);
-
-        ContextualPageActionController contextualPageActionController =
-                createContextualPageActionController();
-
-        // Set tab, no button should be shown because feature is disabled.
-        mTabSupplier.set(mMockTab);
-
-        // Change configuration, no button should be shown still.
-        mMockConfiguration.screenWidthDp = 450;
-        contextualPageActionController.onConfigurationChanged(mMockConfiguration);
-
-        // Button should not be updated.
-        verify(mMockAdaptiveToolbarController, never()).showDynamicAction(anyInt());
-        // Segmentation should not be called.
-        verify(mMockControllerJni, never()).computeContextualPageAction(any(), any(), any());
-    }
-
-    @Test
-    public void testConfigurationChangeIgnoredWhenNativeNotReady() {
-        mMockConfiguration.screenWidthDp = 600;
-        setMockSegmentationResult(
-                SegmentId.OPTIMIZATION_TARGET_CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING);
-        doReturn(false).when(mMockActivityLifecycleDispatcher).isNativeInitializationFinished();
-
-        ContextualPageActionController contextualPageActionController =
-                createContextualPageActionController();
-
-        mTabSupplier.set(mMockTab);
-
-        // Change configuration, button shouldn't update, and segmentation shouldn't be called.
-        mMockConfiguration.screenWidthDp = 450;
-        contextualPageActionController.onConfigurationChanged(mMockConfiguration);
-
-        // Button should only be updated once when setting the tab.
-        verify(mMockAdaptiveToolbarController)
-                .showDynamicAction(AdaptiveToolbarButtonVariant.PRICE_TRACKING);
-        // Segmentation should only be called once.
-        verify(mMockControllerJni).computeContextualPageAction(any(), any(), any());
-    }
-
-    @Test
-    public void testButtonShowsOnConfigurationChange() {
-        // Screen is not wide enough to show button.
-        mMockConfiguration.screenWidthDp = 320;
-        setMockSegmentationResult(
-                SegmentId.OPTIMIZATION_TARGET_CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING);
-
-        ContextualPageActionController contextualPageActionController =
-                createContextualPageActionController();
-
-        mTabSupplier.set(mMockTab);
-
-        // Screen is now wide enough to show button.
-        mMockConfiguration.screenWidthDp = 600;
-        contextualPageActionController.onConfigurationChanged(mMockConfiguration);
-
-        // Return to original screen width.
-        mMockConfiguration.screenWidthDp = 320;
-        contextualPageActionController.onConfigurationChanged(mMockConfiguration);
-
-        InOrder inOrder = inOrder(mMockAdaptiveToolbarController);
-
-        inOrder.verify(mMockAdaptiveToolbarController)
-                .showDynamicAction(AdaptiveToolbarButtonVariant.UNKNOWN);
-        inOrder.verify(mMockAdaptiveToolbarController)
-                .showDynamicAction(AdaptiveToolbarButtonVariant.PRICE_TRACKING);
-        inOrder.verify(mMockAdaptiveToolbarController)
-                .showDynamicAction(AdaptiveToolbarButtonVariant.UNKNOWN);
-
-        // Segmentation should only be called once.
-        verify(mMockControllerJni).computeContextualPageAction(any(), any(), any());
+        verify(mMockControllerJni).computeContextualPageAction(any(), any(), anyBoolean(), any());
     }
 }

@@ -15,12 +15,20 @@
 namespace base {
 namespace features {
 
+extern const BASE_EXPORT Feature kPartitionAllocUnretainedDanglingPtr;
+enum class UnretainedDanglingPtrMode {
+  kCrash,
+  kDumpWithoutCrashing,
+};
+extern const BASE_EXPORT base::FeatureParam<UnretainedDanglingPtrMode>
+    kUnretainedDanglingPtrModeParam;
+
 // See /docs/dangling_ptr.md
 //
 // Usage:
 // --enable-features=PartitionAllocDanglingPtr:mode/crash
 // --enable-features=PartitionAllocDanglingPtr:mode/log_signature
-extern const BASE_EXPORT Feature kPartitionAllocDanglingPtr;
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocDanglingPtr);
 enum class DanglingPtrMode {
   // Crash immediately after detecting a dangling raw_ptr.
   kCrash,  // (default)
@@ -38,14 +46,14 @@ extern const BASE_EXPORT base::FeatureParam<DanglingPtrMode>
     kDanglingPtrModeParam;
 
 #if defined(PA_ALLOW_PCSCAN)
-extern const BASE_EXPORT Feature kPartitionAllocPCScan;
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScan);
 #endif  // defined(PA_ALLOW_PCSCAN)
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-extern const BASE_EXPORT Feature kPartitionAllocPCScanBrowserOnly;
-extern const BASE_EXPORT Feature kPartitionAllocPCScanRendererOnly;
-extern const BASE_EXPORT Feature kPartitionAllocBackupRefPtrControl;
-extern const BASE_EXPORT Feature kPartitionAllocLargeThreadCacheSize;
-extern const BASE_EXPORT Feature kPartitionAllocLargeEmptySlotSpanRing;
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanBrowserOnly);
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanRendererOnly);
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocBackupRefPtrControl);
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocLargeThreadCacheSize);
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocLargeEmptySlotSpanRing);
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
 enum class BackupRefPtrEnabledProcesses {
@@ -87,7 +95,7 @@ enum class AlternateBucketDistributionMode : uint8_t {
   kDenser,
 };
 
-extern const BASE_EXPORT Feature kPartitionAllocBackupRefPtr;
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocBackupRefPtr);
 extern const BASE_EXPORT base::FeatureParam<BackupRefPtrEnabledProcesses>
     kBackupRefPtrEnabledProcessesParam;
 extern const BASE_EXPORT base::FeatureParam<BackupRefPtrMode>
@@ -101,13 +109,13 @@ extern const BASE_EXPORT base::FeatureParam<bool>
 extern const BASE_EXPORT base::FeatureParam<AlternateBucketDistributionMode>
     kPartitionAllocAlternateBucketDistributionParam;
 
-extern const BASE_EXPORT Feature kPartitionAllocPCScanMUAwareScheduler;
-extern const BASE_EXPORT Feature kPartitionAllocPCScanStackScanning;
-extern const BASE_EXPORT Feature kPartitionAllocDCScan;
-extern const BASE_EXPORT Feature kPartitionAllocPCScanImmediateFreeing;
-extern const BASE_EXPORT Feature kPartitionAllocPCScanEagerClearing;
-extern const BASE_EXPORT Feature kPartitionAllocSortActiveSlotSpans;
-extern const BASE_EXPORT Feature kPartitionAllocUseAlternateDistribution;
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanMUAwareScheduler);
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanStackScanning);
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocDCScan);
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanImmediateFreeing);
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanEagerClearing);
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocSortActiveSlotSpans);
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocUseAlternateDistribution);
 
 }  // namespace features
 }  // namespace base

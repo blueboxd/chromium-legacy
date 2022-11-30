@@ -10,7 +10,8 @@ import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialo
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import {keyDownOn, keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {assertEquals, assertFalse, assertNotEquals, assertNotReached, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {eventToPromise, flushTasks} from 'chrome://webui-test/test_util.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 // clang-format on
 
@@ -47,7 +48,8 @@ suite('cr-dialog', function() {
   }
 
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     // Ensure svg, which is referred to by a relative URL, is loaded from
     // chrome://resources and not chrome://test
     const base = document.createElement('base');

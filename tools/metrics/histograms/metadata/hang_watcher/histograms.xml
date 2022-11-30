@@ -45,7 +45,9 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="HangWatcher.IsThreadHung.{ProcessAndThreadType}"
-    enum="BooleanHung" expires_after="2022-10-23">
+    enum="BooleanHung" expires_after="never">
+<!-- expires-never: Staple top-level metric for chrome-catan@. -->
+
   <owner>olivierli@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -55,6 +57,10 @@ chromium-metrics-reviews@google.com.
     as &quot;working as intended&quot; by InvalidateActiveExpectations() (Prior
     to 2021-07-09 with IgnoreHangsInScope). Recording is skipped if the hang
     watcher detects an irregular heartbeat (e.g. when the machine sleeps).
+
+    Warning: Starting with 104.0.5112.79 hang counts have gone way up on macOS
+    which is due to additional coverage added and not necessarily to
+    regressions. See: crrev.com/c/3035824
   </summary>
   <token key="ProcessAndThreadType" variants="ProcessAndThreadType"/>
 </histogram>

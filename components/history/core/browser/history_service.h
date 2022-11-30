@@ -350,6 +350,14 @@ class HistoryService : public KeyedService {
       QueryMostVisitedURLsCallback callback,
       base::CancelableTaskTracker* tracker);
 
+  // Request `result_count` of the most repeated queries for the given keyword.
+  // Used by TopSites.
+  base::CancelableTaskTracker::TaskId QueryMostRepeatedQueriesForKeyword(
+      KeywordID keyword_id,
+      size_t result_count,
+      base::OnceCallback<void(KeywordSearchTermVisitList)> callback,
+      base::CancelableTaskTracker* tracker);
+
   // Statistics ----------------------------------------------------------------
 
   // Gets the number of URLs as seen in chrome://history within the time range
@@ -578,12 +586,15 @@ class HistoryService : public KeyedService {
       base::OnceClosure callback,
       base::CancelableTaskTracker* tracker);
 
-  // Get the most recent `Cluster`s within the constraints.  The most recent
-  // visit of a cluster represents the cluster's time.
+  // Get the most recent `Cluster`s within the constraints. The most recent
+  // visit of a cluster represents the cluster's time. `max_clusters` is a hard
+  // cap. `max_visits_soft_cap` is a soft cap; `GetMostRecentClusters()` will
+  // never return a partial cluster.
   base::CancelableTaskTracker::TaskId GetMostRecentClusters(
       base::Time inclusive_min_time,
       base::Time exclusive_max_time,
-      int max_clusters,
+      size_t max_clusters,
+      size_t max_visits_soft_cap,
       base::OnceCallback<void(std::vector<Cluster>)> callback,
       base::CancelableTaskTracker* tracker);
 

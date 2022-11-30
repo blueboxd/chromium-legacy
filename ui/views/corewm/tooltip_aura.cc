@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -19,6 +20,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/owned_window_anchor.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
@@ -33,6 +35,7 @@
 #include "ui/views/border.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
+#include "ui/views/views_features.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -142,7 +145,7 @@ class TooltipView : public views::View {
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     node_data->role = ax::mojom::Role::kTooltip;
-    node_data->SetName(render_text_->GetDisplayText());
+    node_data->SetNameChecked(render_text_->GetDisplayText());
   }
 
  private:
@@ -332,7 +335,10 @@ void TooltipAura::Update(aura::Window* window,
 void TooltipAura::Show() {
   if (widget_) {
     widget_->Show();
-    widget_->StackAtTop();
+
+    if (!base::FeatureList::IsEnabled(views::features::kWidgetLayering))
+      widget_->StackAtTop();
+
     widget_->GetTooltipView()->NotifyAccessibilityEvent(
         ax::mojom::Event::kTooltipOpened, true);
   }

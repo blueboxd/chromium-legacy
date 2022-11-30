@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 """Definitions of builders in the chromium.clang builder group."""
 
+load("//lib/args.star", "args")
 load("//lib/builders.star", "builders", "os", "reclient", "sheriff_rotations", "xcode")
 load("//lib/branches.star", "branches")
 load("//lib/ci.star", "ci")
@@ -24,6 +25,9 @@ ci.defaults.set(
     },
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     sheriff_rotations = sheriff_rotations.CHROMIUM_CLANG,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 consoles.console_view(
@@ -75,7 +79,7 @@ def clang_mac_builder(*, name, cores = 24, **kwargs):
             # The Chromium build doesn't need system Xcode, but the ToT clang
             # bots also build clang and llvm and that build does need system
             # Xcode.
-            "xcode_build_version": "12d4e",
+            "xcode_build_version": "13a233",
         },
         **kwargs
     )
@@ -139,6 +143,7 @@ ci.builder(
         category = "ToT Android",
         short_name = "rel",
     ),
+    sheriff_rotations = args.ignore_default(None),
 )
 
 ci.builder(
@@ -223,14 +228,14 @@ ci.builder(
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "fyi",
-            short_name = "clang-x64",
+            category = "fyi|clang",
+            short_name = "x64",
         ),
     ],
 )
 
 ci.builder(
-    name = "ToTFuchsiaOfficial",
+    name = "ToTFuchsiaOfficial arm64",
     console_view_entry = [
         consoles.console_view_entry(
             category = "ToT Fuchsia",
@@ -239,8 +244,8 @@ ci.builder(
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "fyi",
-            short_name = "clang-off",
+            category = "fyi|clang",
+            short_name = "arm64-off",
         ),
     ],
 )

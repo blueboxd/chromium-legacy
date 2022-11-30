@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
 
-#include <algorithm>
 #include <iterator>
 #include <memory>
 #include <string>
@@ -379,10 +378,6 @@ new_tab_page::mojom::PromoPtr MakePromo(const PromoData& data) {
           continue;
         }
         mojom_link->text = *text;
-        auto* color = part_dict.FindStringByDottedPath("link.color");
-        if (color && !color->empty()) {
-          mojom_link->color = *color;
-        }
         mojom_parts.push_back(
             new_tab_page::mojom::PromoPart::NewLink(std::move(mojom_link)));
       } else if (part_dict.Find("text")) {
@@ -392,10 +387,6 @@ new_tab_page::mojom::PromoPtr MakePromo(const PromoData& data) {
           continue;
         }
         mojom_text->text = *text;
-        auto* color = part_dict.FindStringByDottedPath("text.color");
-        if (color && !color->empty()) {
-          mojom_text->color = *color;
-        }
         mojom_parts.push_back(
             new_tab_page::mojom::PromoPart::NewText(std::move(mojom_text)));
       }
@@ -646,8 +637,8 @@ void NewTabPageHandler::SetModulesVisible(bool visible) {
 
 void NewTabPageHandler::SetModuleDisabled(const std::string& module_id,
                                           bool disabled) {
-  ListPrefUpdate update(profile_->GetPrefs(), prefs::kNtpDisabledModules);
-  base::Value::List& list = update->GetList();
+  ScopedListPrefUpdate update(profile_->GetPrefs(), prefs::kNtpDisabledModules);
+  base::Value::List& list = update.Get();
   base::Value module_id_value(module_id);
   if (disabled) {
     if (!base::Contains(list, module_id_value))
@@ -720,8 +711,7 @@ void NewTabPageHandler::GetModulesOrder(GetModulesOrderCallback callback) {
   std::copy_if(finch_module_ids.begin(), finch_module_ids.end(),
                std::back_inserter(module_ids),
                [&module_ids](const std::string& id) {
-                 return std::find(module_ids.begin(), module_ids.end(), id) ==
-                        module_ids.end();
+                 return !base::Contains(module_ids, id);
                });
 
   std::move(callback).Run(std::move(module_ids));

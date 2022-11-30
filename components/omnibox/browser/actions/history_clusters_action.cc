@@ -15,6 +15,7 @@
 #include "components/history_clusters/core/features.h"
 #include "components/history_clusters/core/history_clusters_service.h"
 #include "components/history_clusters/core/history_clusters_util.h"
+#include "components/history_clusters/core/url_constants.h"
 #include "components/omnibox/browser/actions/omnibox_action.h"
 #include "components/omnibox/browser/actions/omnibox_action_concepts.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -22,6 +23,7 @@
 #include "components/optimization_guide/core/entity_metadata.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "net/base/url_util.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/jni_android.h"
@@ -83,11 +85,15 @@ int TopRelevance(std::vector<AutocompleteMatch>::const_iterator matches_begin,
 }
 
 bool IsNavigationIntent(int top_search_relevance,
-                        int top_navigation_relevance) {
-  DCHECK(!GetConfig().omnibox_action_on_navigation_intents);
+                        int top_navigation_relevance,
+                        int navigation_intent_score_threshold) {
   return top_navigation_relevance > top_search_relevance &&
-         top_navigation_relevance >
-             GetConfig().omnibox_action_navigation_intent_score_threshold;
+         top_navigation_relevance > navigation_intent_score_threshold;
+}
+
+GURL GetFullJourneysUrlForQuery(const std::string& query) {
+  return net::AppendOrReplaceQueryParameter(GURL(kChromeUIHistoryClustersURL),
+                                            "q", query);
 }
 
 HistoryClustersAction::HistoryClustersAction(
@@ -99,9 +105,7 @@ HistoryClustersAction::HistoryClustersAction(
               IDS_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_SUGGESTION_CONTENTS,
               IDS_ACC_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_SUFFIX,
               IDS_ACC_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH),
-          GURL(base::StringPrintf(
-              "chrome://history/journeys?q=%s",
-              base::EscapeQueryParamValue(query, /*use_plus=*/false).c_str()))),
+          GetFullJourneysUrlForQuery(query)),
       matched_keyword_data_(matched_keyword_data),
       query_(query) {
 #if BUILDFLAG(IS_ANDROID)
@@ -222,7 +226,8 @@ void AttachHistoryClustersActions(
           TopRelevance(result.begin(), result.end(),
                        TopRelevanceFilter::FILTER_FOR_SEARCH_MATCHES),
           TopRelevance(result.begin(), result.end(),
-                       TopRelevanceFilter::FILTER_FOR_NON_SEARCH_MATCHES))) {
+                       TopRelevanceFilter::FILTER_FOR_NON_SEARCH_MATCHES),
+          GetConfig().omnibox_action_navigation_intent_score_threshold)) {
     return;
   }
 

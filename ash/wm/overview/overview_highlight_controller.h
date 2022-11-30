@@ -18,8 +18,27 @@ class OverviewSession;
 class ScopedA11yOverrideWindowSetter;
 
 // Manages highlighting items while in overview. Responsible for telling
-// overview items to show or hide their focus ring borders, when tabbing through
-// overview items with arrow keys and trackpad swipes, or when tab dragging.
+// highlightable items to show or hide their focus ring borders, when tabbing
+// through highlightable items with arrow keys and trackpad swipes, or when tab
+// dragging. In this context, an highlightable item can represent anything
+// focusable in overview mode such as a desk textfield, saved desk button and an
+// `OverviewItem`. The idea behind the movement strategy is that it should be
+// possible to access any highlightable view via keyboard by pressing the tab or
+// arrow keys repeatedly.
+// +-------+  +-------+  +-------+
+// |   0   |  |   1   |  |   2   |
+// +-------+  +-------+  +-------+
+// +-------+  +-------+  +-------+
+// |   3   |  |   4   |  |   5   |
+// +-------+  +-------+  +-------+
+// +-------+
+// |   6   |
+// +-------+
+// Example sequences:
+//  - Going right to left
+//    0, 1, 2, 3, 4, 5, 6
+// The highlight is switched to the next window grid (if available) or wrapped
+// if it reaches the end of its movement sequence.
 class ASH_EXPORT OverviewHighlightController {
  public:
   explicit OverviewHighlightController(OverviewSession* overview_session);
@@ -40,9 +59,10 @@ class ASH_EXPORT OverviewHighlightController {
   // Moves the focus ring directly to |target_view|. |target_view| must be a
   // traversable view, i.e. one of the views returned by GetTraversableViews().
   // This should be used when a view requests focus directly so the overview
-  // highlight can be in-sync with focus. Due to this expected use, this does
-  // not trigger an accessibility event.
-  void MoveHighlightToView(OverviewHighlightableView* target_view);
+  // highlight can be in-sync with focus. Due to this expected use, it should
+  // not normally be necessary to trigger an accessibility event.
+  void MoveHighlightToView(OverviewHighlightableView* target_view,
+                           bool suppress_accessibility_event = true);
 
   // Called when a |view| that might be in the focus traversal rotation is about
   // to be deleted.

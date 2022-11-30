@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,10 +65,10 @@ void WriteDataToProducer(
   // the duration of the write.
   producer_raw->Write(
       std::move(data_source),
-      WTF::Bind([](std::unique_ptr<mojo::DataPipeProducer>,
-                   scoped_refptr<base::RefCountedData<Vector<uint8_t>>>,
-                   MojoResult) {},
-                std::move(producer), std::move(data)));
+      WTF::BindOnce([](std::unique_ptr<mojo::DataPipeProducer>,
+                       scoped_refptr<base::RefCountedData<Vector<uint8_t>>>,
+                       MojoResult) {},
+                    std::move(producer), std::move(data)));
 }
 
 }  // namespace
@@ -133,7 +133,7 @@ base::FileErrorOr<int> FileSystemAccessIncognitoFileDelegate::Write(
   mojo::ScopedDataPipeProducerHandle producer_handle;
   mojo::ScopedDataPipeConsumerHandle consumer_handle;
   if (!CreateDataPipeForSize(data.size(), producer_handle, consumer_handle)) {
-    return base::File::Error::FILE_ERROR_FAILED;
+    return base::unexpected(base::File::Error::FILE_ERROR_FAILED);
   }
 
   auto ref_counted_data =
@@ -173,7 +173,7 @@ base::FileErrorOr<int64_t> FileSystemAccessIncognitoFileDelegate::GetLength() {
 void FileSystemAccessIncognitoFileDelegate::GetLengthAsync(
     base::OnceCallback<void(base::FileErrorOr<int64_t>)> callback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  mojo_ptr_->GetLength(WTF::Bind(
+  mojo_ptr_->GetLength(WTF::BindOnce(
       [](base::OnceCallback<void(base::FileErrorOr<int64_t>)> callback,
          base::File::Error file_error, int64_t length) {
         CHECK_GE(length, 0);
@@ -198,7 +198,7 @@ void FileSystemAccessIncognitoFileDelegate::SetLengthAsync(
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   CHECK_GE(length, 0);
 
-  mojo_ptr_->SetLength(length, WTF::Bind(std::move(callback)));
+  mojo_ptr_->SetLength(length, WTF::BindOnce(std::move(callback)));
 }
 
 bool FileSystemAccessIncognitoFileDelegate::Flush() {
@@ -220,7 +220,7 @@ void FileSystemAccessIncognitoFileDelegate::FlushAsync(
   // changing the FileSystemAccessFileDelegateHostImpl to write with a
   // FileStreamWriter and only flushing when this method is called.
   task_runner_->PostTask(FROM_HERE,
-                         WTF::Bind(std::move(callback), /*success=*/true));
+                         WTF::BindOnce(std::move(callback), /*success=*/true));
 }
 
 void FileSystemAccessIncognitoFileDelegate::Close() {

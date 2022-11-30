@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.feed.webfeed;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.text.TextUtils;
@@ -18,9 +19,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.feed.FeedFeatures;
@@ -31,6 +34,7 @@ import org.chromium.chrome.browser.feed.componentinterfaces.SurfaceCoordinator.S
 import org.chromium.chrome.browser.feed.v2.FeedUserActionType;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge.WebFeedMetadata;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedSnackbarController.FeedLauncher;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.crow.CrowButtonDelegate;
@@ -51,6 +55,7 @@ import org.chromium.url.GURL;
  * Specific {@link FrameLayout} that displays the Web Feed footer in the main menu.
  */
 public class WebFeedMainMenuItem extends FrameLayout {
+    private static final String TAG = "WebFeedMainMenuItem";
     private static final int LOADING_REFRESH_TIME_MS = 400;
 
     private final Context mContext;
@@ -60,6 +65,7 @@ public class WebFeedMainMenuItem extends FrameLayout {
     private String mTitle;
     private AppMenuHandler mAppMenuHandler;
     private CrowButtonDelegate mCrowButtonDelegate;
+    private Class<?> mCreatorActivityClass;
 
     // Points to the currently shown chip: null, mFollowingChipView, mFollowChipView,
     private ChipView mChipView;
@@ -70,6 +76,8 @@ public class WebFeedMainMenuItem extends FrameLayout {
     private ChipView mCrowButton;
     private ImageView mIcon;
     private TextView mItemText;
+    // TODO(crbug.com/1369755): Move this variable into a mock
+    private boolean mItemTextClicked;
 
     private WebFeedFaviconFetcher mFaviconFetcher;
     private WebFeedSnackbarController mWebFeedSnackbarController;
@@ -111,11 +119,12 @@ public class WebFeedMainMenuItem extends FrameLayout {
      * @param dialogManager {@link ModalDialogManager} for managing the dialog.
      * @param snackbarManager {@link SnackbarManager} to display snackbars.
      * @param crowButtonDelegate {@link CrowButtonDelegate} for managing a footer chip.
+     * @param creatorActivityClass {@link CreatorActivity} for launching the Creator Activity.
      */
     public void initialize(Tab tab, AppMenuHandler appMenuHandler,
             WebFeedFaviconFetcher faviconFetcher, FeedLauncher feedLauncher,
             ModalDialogManager dialogManager, SnackbarManager snackbarManager,
-            CrowButtonDelegate crowButtonDelegate) {
+            CrowButtonDelegate crowButtonDelegate, Class<?> creatorActivityClass) {
         mUrl = tab.getOriginalUrl();
         mTab = tab;
         mAppMenuHandler = appMenuHandler;
@@ -123,6 +132,7 @@ public class WebFeedMainMenuItem extends FrameLayout {
         mWebFeedSnackbarController = new WebFeedSnackbarController(
                 mContext, feedLauncher, dialogManager, snackbarManager);
         mCrowButtonDelegate = crowButtonDelegate;
+        mCreatorActivityClass = creatorActivityClass;
         Callback<WebFeedMetadata> metadata_callback = result -> {
             initializeFavicon(result);
             initializeText(result);
@@ -145,6 +155,11 @@ public class WebFeedMainMenuItem extends FrameLayout {
                 this::onFaviconFetched);
     }
 
+    @VisibleForTesting
+    public boolean isCreatorActivityInitiated() {
+        return mItemTextClicked;
+    }
+
     private void initializeText(WebFeedMetadata webFeedMetadata) {
         if (webFeedMetadata != null && !TextUtils.isEmpty(webFeedMetadata.title)) {
             mTitle = webFeedMetadata.title;
@@ -152,6 +167,19 @@ public class WebFeedMainMenuItem extends FrameLayout {
             mTitle = UrlFormatter.formatUrlForDisplayOmitSchemePathAndTrivialSubdomains(mUrl);
         }
         mItemText.setText(mTitle);
+        mItemTextClicked = false;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CORMORANT)) {
+            mItemText.setOnClickListener((view) -> {
+                try {
+                    mItemTextClicked = true;
+                    // Launch a new activity for the creator page.
+                    Intent intent = new Intent(mContext, mCreatorActivityClass);
+                    mContext.startActivity(intent);
+                } catch (Exception e) {
+                    Log.d(TAG, "Failed to launch CreatorActivity " + e);
+                }
+            });
+        }
     }
 
     private void initializeChipView(WebFeedMetadata webFeedMetadata) {

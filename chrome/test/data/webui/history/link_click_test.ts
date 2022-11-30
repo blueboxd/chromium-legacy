@@ -3,14 +3,15 @@
 // found in the LICENSE file.
 
 import {BrowserServiceImpl, listenForPrivilegedLinkClicks} from 'chrome://history/history.js';
-import {$} from 'chrome://resources/js/util.m.js';
+import {$} from 'chrome://resources/js/util.js';
 import {assertEquals} from 'chrome://webui-test/chai_assert.js';
 
 import {TestBrowserService} from './test_browser_service.js';
 
 suite('listenForPrivilegedLinkClicks unit test', function() {
   test('click handler', async () => {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     const testService = new TestBrowserService();
     BrowserServiceImpl.setInstance(testService);
 

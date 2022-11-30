@@ -10,6 +10,7 @@ enum RTCStatsType {
 "remote-inbound-rtp",
 "remote-outbound-rtp",
 "media-source",
+"media-playout",
 "peer-connection",
 "data-channel",
 "stream",
@@ -84,6 +85,8 @@ dictionary RTCInboundRtpStreamStats : RTCReceivedRtpStreamStats {
  double               totalSamplesDuration;
  unsigned long        framesReceived;
  DOMString            decoderImplementation;
+ DOMString            playoutId;
+ boolean              powerEfficientDecoder;
 };
 
 dictionary RTCRemoteInboundRtpStreamStats : RTCReceivedRtpStreamStats {
@@ -126,6 +129,7 @@ dictionary RTCOutboundRtpStreamStats : RTCSentRtpStreamStats {
              unsigned long        firCount;
              unsigned long        pliCount;
              DOMString            encoderImplementation;
+             boolean              powerEfficientEncoder;
              boolean              active;
 };
 
@@ -156,6 +160,10 @@ dictionary RTCAudioSourceStats : RTCMediaSourceStats {
               double              totalSamplesDuration;
               double              echoReturnLoss;
               double              echoReturnLossEnhancement;
+              double              droppedSamplesDuration;
+              unsigned long       droppedSamplesEvents;
+              double              totalCaptureDelay;
+              unsigned long long  totalSamplesCaptured;
 };
 
 dictionary RTCVideoSourceStats : RTCMediaSourceStats {
@@ -163,6 +171,14 @@ dictionary RTCVideoSourceStats : RTCMediaSourceStats {
              unsigned long   height;
              unsigned long   frames;
              double          framesPerSecond;
+};
+
+dictionary RTCAudioPlayoutStats : RTCStats {
+             double        synthesizedSamplesDuration;
+             unsigned long synthesizedSamplesEvents;
+             double        totalSamplesDuration;
+             double        totalPlayoutDelay;
+             double        totalSamplesCount;
 };
 
 dictionary RTCPeerConnectionStats : RTCStats {
@@ -214,7 +230,7 @@ dictionary RTCIceCandidateStats : RTCStats {
              required RTCIceCandidateType candidateType;
              long                     priority;
              DOMString                url;
-             DOMString                relayProtocol;
+             RTCIceServerTransportProtocol relayProtocol;
 };
 
 dictionary RTCIceCandidatePairStats : RTCStats {

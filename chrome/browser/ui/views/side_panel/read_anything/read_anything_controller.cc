@@ -77,6 +77,24 @@ ui::ComboboxModel* ReadAnythingController::GetColorsModel() {
   return model_->GetColorsModel();
 }
 
+ui::ColorId ReadAnythingController::GetForegroundColorId() {
+  return model_->GetForegroundColorId();
+}
+
+void ReadAnythingController::OnLineSpacingChanged(int new_index) {
+  if (!model_->GetLineSpacingModel()->IsValidLineSpacingIndex(new_index))
+    return;
+
+  model_->SetSelectedLineSpacingByIndex(new_index);
+
+  browser_->profile()->GetPrefs()->SetInteger(
+      prefs::kAccessibilityReadAnythingLineSpacing, new_index);
+}
+
+ui::ComboboxModel* ReadAnythingController::GetLineSpacingModel() {
+  return model_->GetLineSpacingModel();
+}
+
 void ReadAnythingController::OnLetterSpacingChanged(int new_index) {
   if (!model_->GetLetterSpacingModel()->IsValidLetterSpacingIndex(new_index))
     return;
@@ -134,10 +152,6 @@ void ReadAnythingController::DidStopLoading() {
   DistillAXTree();
 }
 
-void ReadAnythingController::WebContentsDestroyed() {
-  active_contents_ = nullptr;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 void ReadAnythingController::DistillAXTree() {
@@ -146,15 +160,14 @@ void ReadAnythingController::DistillAXTree() {
     return;
   content::WebContents* web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
-  if (!web_contents || active_contents_ == web_contents)
+  if (!web_contents)
     return;
-  active_contents_ = web_contents;
-  WebContentsObserver::Observe(active_contents_);
+  WebContentsObserver::Observe(web_contents);
 
   // Read Anything just runs on the main frame and does not run on embedded
   // content.
   content::RenderFrameHost* render_frame_host =
-      active_contents_->GetPrimaryMainFrame();
+      web_contents->GetPrimaryMainFrame();
   if (!render_frame_host)
     return;
 

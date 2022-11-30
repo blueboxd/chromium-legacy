@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -169,7 +169,8 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams> creation_params) final {
     auto* global_scope = MakeGarbageCollected<FakeWorkletGlobalScope>(
-        std::move(creation_params), GetWorkerReportingProxy(), this);
+        std::move(creation_params), GetWorkerReportingProxy(), this,
+        /*create_microtask_queue=*/true);
     EXPECT_FALSE(global_scope->IsMainThreadWorkletGlobalScope());
     EXPECT_TRUE(global_scope->IsThreadedWorkletGlobalScope());
     return global_scope;
@@ -234,7 +235,6 @@ class ThreadedWorkletMessagingProxyForTest
 
  private:
   friend class ThreadedWorkletTest;
-  FRIEND_TEST_ALL_PREFIXES(ThreadedWorkletTest, NestedRunLoopTermination);
 
   std::unique_ptr<WorkerThread> CreateWorkerThread() final {
     return std::make_unique<ThreadedWorkletThreadForTest>(WorkletObjectProxy());
@@ -280,16 +280,6 @@ class ThreadedWorkletTest : public testing::Test {
     return page_->GetFrame().DomWindow();
   }
   Document& GetDocument() { return page_->GetDocument(); }
-
-  void WaitForReady(WorkerThread* worker_thread) {
-    base::WaitableEvent child_waitable;
-    PostCrossThreadTask(
-        *worker_thread->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBindOnce(&base::WaitableEvent::Signal,
-                            CrossThreadUnretained(&child_waitable)));
-
-    child_waitable.Wait();
-  }
 
  private:
   std::unique_ptr<DummyPageHolder> page_;
@@ -407,42 +397,6 @@ TEST_F(ThreadedWorkletTest, UseCounter) {
 TEST_F(ThreadedWorkletTest, TaskRunner) {
   MessagingProxy()->Start();
 
-  PostCrossThreadTask(
-      *GetWorkerThread()->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-      CrossThreadBindOnce(&ThreadedWorkletThreadForTest::TestTaskRunner,
-                          CrossThreadUnretained(GetWorkerThread())));
-  test::EnterRunLoop();
-}
-
-TEST_F(ThreadedWorkletTest, NestedRunLoopTermination) {
-  MessagingProxy()->Start();
-
-  ThreadedWorkletMessagingProxyForTest* second_messaging_proxy =
-      MakeGarbageCollected<ThreadedWorkletMessagingProxyForTest>(
-          GetExecutionContext());
-
-  // Get a nested event loop where the first one is on the stack
-  // and the second is still alive.
-  second_messaging_proxy->Start();
-
-  // Wait until the workers are setup and ready to accept work before we
-  // pause them.
-  WaitForReady(GetWorkerThread());
-  WaitForReady(second_messaging_proxy->GetWorkerThread());
-
-  // Pause the second worker, then the first.
-  second_messaging_proxy->GetWorkerThread()->Pause();
-  GetWorkerThread()->Pause();
-
-  // Resume then terminate the second worker.
-  second_messaging_proxy->GetWorkerThread()->Resume();
-  second_messaging_proxy->GetWorkerThread()->Terminate();
-  second_messaging_proxy = nullptr;
-
-  // Now resume the first worker.
-  GetWorkerThread()->Resume();
-
-  // Make sure execution still works without crashing.
   PostCrossThreadTask(
       *GetWorkerThread()->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
       CrossThreadBindOnce(&ThreadedWorkletThreadForTest::TestTaskRunner,

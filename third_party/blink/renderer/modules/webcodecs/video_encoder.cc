@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,6 +104,16 @@ namespace {
 
 constexpr const char kCategory[] = "media";
 constexpr int kMaxActiveEncodes = 5;
+
+// Use this function in cases when we can't immediately delete |ptr| because
+// there might be its methods on the call stack.
+template <typename T>
+void DeleteLater(ScriptState* state, std::unique_ptr<T> ptr) {
+  DCHECK(state->ContextIsValid());
+  auto* context = ExecutionContext::From(state);
+  auto runner = context->GetTaskRunner(TaskType::kInternalDefault);
+  runner->DeleteSoon(FROM_HERE, std::move(ptr));
+}
 
 bool IsAcceleratedConfigurationSupported(
     media::VideoCodecProfile profile,
@@ -774,7 +784,7 @@ void VideoEncoder::ProcessEncode(Request* request) {
   // so let's readback pixel data to CPU memory.
   // TODO(crbug.com/1229845): We shouldn't be reading back frames here.
   if (frame->HasTextures() && !frame->HasGpuMemoryBuffer()) {
-    auto readback_done_callback = WTF::Bind(
+    auto readback_done_callback = WTF::BindOnce(
         &VideoEncoder::OnReadbackDone, WrapWeakPersistent(this), keyframe,
         reset_count_, frame, std::move(encode_done_callback));
     if (StartReadback(std::move(frame), std::move(readback_done_callback))) {
@@ -943,7 +953,7 @@ void VideoEncoder::ProcessReconfigure(Request* request) {
   };
 
   blocking_request_in_progress_ = true;
-  media_encoder_->Flush(WTF::Bind(
+  media_encoder_->Flush(WTF::BindOnce(
       flush_done_callback, WrapCrossThreadWeakPersistent(this),
       WrapCrossThreadPersistent(request), std::move(reconf_done_callback)));
 }
@@ -1044,7 +1054,6 @@ void VideoEncoder::ResetInternal() {
 }
 
 static void isConfigSupportedWithSoftwareOnly(
-    ScriptState* script_state,
     ScriptPromiseResolver* resolver,
     VideoEncoderSupport* support,
     VideoEncoderTraits::ParsedConfig* config) {
@@ -1069,25 +1078,22 @@ static void isConfigSupportedWithSoftwareOnly(
     return;
   }
 
-  auto done_callback = [](std::unique_ptr<media::VideoEncoder> encoder,
+  auto done_callback = [](std::unique_ptr<media::VideoEncoder> sw_encoder,
                           ScriptPromiseResolver* resolver,
-                          scoped_refptr<base::SingleThreadTaskRunner> runner,
                           VideoEncoderSupport* support,
                           media::EncoderStatus status) {
     support->setSupported(status.is_ok());
     resolver->Resolve(support);
-    runner->DeleteSoon(FROM_HERE, std::move(encoder));
+    DeleteLater(resolver->GetScriptState(), std::move(sw_encoder));
   };
 
-  auto* context = ExecutionContext::From(script_state);
-  auto runner = context->GetTaskRunner(TaskType::kInternalDefault);
   auto* software_encoder_raw = software_encoder.get();
   software_encoder_raw->Initialize(
       config->profile, config->options, base::DoNothing(),
-      ConvertToBaseOnceCallback(CrossThreadBindOnce(
-          done_callback, std::move(software_encoder),
-          WrapCrossThreadPersistent(resolver), std::move(runner),
-          WrapCrossThreadPersistent(support))));
+      ConvertToBaseOnceCallback(
+          CrossThreadBindOnce(done_callback, std::move(software_encoder),
+                              WrapCrossThreadPersistent(resolver),
+                              WrapCrossThreadPersistent(support))));
 }
 
 static void isConfigSupportedWithHardwareOnly(
@@ -1174,8 +1180,7 @@ ScriptPromise VideoEncoder::isConfigSupported(ScriptState* script_state,
     promises.push_back(resolver->Promise());
     auto* support = VideoEncoderSupport::Create();
     support->setConfig(config_copy);
-    isConfigSupportedWithSoftwareOnly(script_state, resolver, support,
-                                      parsed_config);
+    isConfigSupportedWithSoftwareOnly(resolver, support, parsed_config);
   }
 
   // Wait for all |promises| to resolve and check if any of them have

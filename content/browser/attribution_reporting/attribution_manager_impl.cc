@@ -37,6 +37,7 @@
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_report_network_sender.h"
 #include "content/browser/attribution_reporting/attribution_report_sender.h"
+#include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
 #include "content/browser/attribution_reporting/attribution_storage.h"
 #include "content/browser/attribution_reporting/attribution_storage_delegate.h"
 #include "content/browser/attribution_reporting/attribution_storage_delegate_impl.h"
@@ -49,6 +50,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/attribution_reporting.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
@@ -61,6 +63,9 @@
 namespace content {
 
 namespace {
+
+using ScopedUseInMemoryStorageForTesting =
+    ::content::AttributionManagerImpl::ScopedUseInMemoryStorageForTesting;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -187,7 +192,7 @@ void RecordAssembleAggregatableReportStatus(
 // to be assembled for aggregatable reports, for logging metrics.
 void LogMetricsOnReportSend(const AttributionReport& report, base::Time now) {
   switch (report.GetReportType()) {
-    case AttributionReport::ReportType::kEventLevel: {
+    case AttributionReport::Type::kEventLevel: {
       // Use a large time range to capture users that might not open the browser
       // for a long time while a conversion report is pending. Revisit this
       // range if it is non-ideal for real world data.
@@ -206,12 +211,13 @@ void LogMetricsOnReportSend(const AttributionReport& report, base::Time now) {
                                 time_from_conversion_to_report_send.InHours());
       break;
     }
-    case AttributionReport::ReportType::kAggregatableAttribution: {
+    case AttributionReport::Type::kAggregatableAttribution: {
       base::TimeDelta time_from_conversion_to_report_assembly =
           report.report_time() - report.attribution_info().time;
-      UMA_HISTOGRAM_COUNTS_1000(
-          "Conversions.AggregatableReport.TimeFromTriggerToReportAssembly",
-          time_from_conversion_to_report_assembly.InMinutes());
+      UMA_HISTOGRAM_CUSTOM_TIMES(
+          "Conversions.AggregatableReport.TimeFromTriggerToReportAssembly2",
+          time_from_conversion_to_report_assembly, base::Minutes(1),
+          base::Days(24), 50);
       break;
     }
   }
@@ -221,15 +227,36 @@ void LogMetricsOnReportSend(const AttributionReport& report, base::Time now) {
 void LogMetricsOnReportCompleted(const AttributionReport& report,
                                  SendResult::Status status) {
   switch (report.GetReportType()) {
-    case AttributionReport::ReportType::kEventLevel:
+    case AttributionReport::Type::kEventLevel:
       base::UmaHistogramEnumeration(
           "Conversions.ReportSendOutcome3",
           ConvertToConversionReportSendOutcome(status));
       break;
-    case AttributionReport::ReportType::kAggregatableAttribution:
+    case AttributionReport::Type::kAggregatableAttribution:
       base::UmaHistogramEnumeration(
           "Conversions.AggregatableReport.ReportSendOutcome2",
           ConvertToConversionReportSendOutcome(status));
+      break;
+  }
+}
+
+// Called when `report` is sent successfully.
+void LogMetricsOnReportSent(const AttributionReport& report) {
+  base::TimeDelta time_from_conversion_to_report_sent =
+      base::Time::Now() - report.attribution_info().time;
+
+  switch (report.GetReportType()) {
+    case AttributionReport::Type::kEventLevel:
+      UMA_HISTOGRAM_COUNTS_1000(
+          "Conversions.TimeFromTriggerToReportSentSuccessfully",
+          time_from_conversion_to_report_sent.InHours());
+      break;
+    case AttributionReport::Type::kAggregatableAttribution:
+      UMA_HISTOGRAM_CUSTOM_TIMES(
+          "Conversions.AggregatableReport."
+          "TimeFromTriggerToReportSentSuccessfully",
+          time_from_conversion_to_report_sent, base::Minutes(1), base::Days(24),
+          50);
       break;
   }
 }
@@ -259,6 +286,8 @@ bool IsOperationAllowed(
       destination_origin, reporting_origin);
 }
 
+bool g_run_in_memory = false;
+
 }  // namespace
 
 absl::optional<base::TimeDelta> GetFailedReportDelay(int failed_send_attempts) {
@@ -274,9 +303,13 @@ absl::optional<base::TimeDelta> GetFailedReportDelay(int failed_send_attempts) {
   return kInitialReportDelay * std::pow(kDelayFactor, failed_send_attempts - 1);
 }
 
-// static
-void AttributionManagerImpl::RunInMemoryForTesting() {
-  AttributionStorageSql::RunInMemoryForTesting();
+ScopedUseInMemoryStorageForTesting::ScopedUseInMemoryStorageForTesting()
+    : previous_(g_run_in_memory) {
+  g_run_in_memory = true;
+}
+
+ScopedUseInMemoryStorageForTesting::~ScopedUseInMemoryStorageForTesting() {
+  g_run_in_memory = previous_;
 }
 
 // static
@@ -352,7 +385,7 @@ AttributionManagerImpl::AttributionManagerImpl(
       max_pending_events_(max_pending_events),
       attribution_storage_(base::SequenceBound<AttributionStorageSql>(
           g_storage_task_runner.Get(),
-          user_data_directory,
+          g_run_in_memory ? base::FilePath() : user_data_directory,
           std::move(storage_delegate))),
       scheduler_timer_(std::make_unique<AttributionReportScheduler>(
           base::BindRepeating(&AttributionManagerImpl::GetReportsToSend,
@@ -573,13 +606,12 @@ void AttributionManagerImpl::OnReportStored(const AttributionTrigger trigger,
     // cause sources to reach event-level attribution limit or become
     // associated with a dedup key.
     NotifySourcesChanged();
-    NotifyReportsChanged(AttributionReport::ReportType::kEventLevel);
+    NotifyReportsChanged(AttributionReport::Type::kEventLevel);
   }
 
   if (result.aggregatable_status() ==
       AttributionTrigger::AggregatableResult::kSuccess) {
-    NotifyReportsChanged(
-        AttributionReport::ReportType::kAggregatableAttribution);
+    NotifyReportsChanged(AttributionReport::Type::kAggregatableAttribution);
   }
 
   for (auto& observer : observers_)
@@ -610,7 +642,7 @@ void AttributionManagerImpl::GetActiveSourcesForWebUI(
 }
 
 void AttributionManagerImpl::GetPendingReportsForInternalUse(
-    AttributionReport::ReportTypes report_types,
+    AttributionReport::Types report_types,
     int limit,
     base::OnceCallback<void(std::vector<AttributionReport>)> callback) {
   attribution_storage_.AsyncCall(&AttributionStorage::GetAttributionReports)
@@ -632,6 +664,7 @@ void AttributionManagerImpl::ClearData(
     base::Time delete_begin,
     base::Time delete_end,
     StoragePartition::StorageKeyMatcherFunction filter,
+    BrowsingDataFilterBuilder* filter_builder,
     bool delete_rate_limit_data,
     base::OnceClosure done) {
   attribution_storage_.AsyncCall(&AttributionStorage::ClearData)
@@ -646,9 +679,9 @@ void AttributionManagerImpl::ClearData(
               manager->scheduler_timer_.Refresh();
               manager->NotifySourcesChanged();
               manager->NotifyReportsChanged(
-                  AttributionReport::ReportType::kEventLevel);
+                  AttributionReport::Type::kEventLevel);
               manager->NotifyReportsChanged(
-                  AttributionReport::ReportType::kAggregatableAttribution);
+                  AttributionReport::Type::kAggregatableAttribution);
             }
           },
           std::move(done), weak_factory_.GetWeakPtr()));
@@ -665,9 +698,9 @@ void AttributionManagerImpl::GetReportsToSend() {
   // once, to avoid pulling an arbitrary number of reports into memory.
   attribution_storage_.AsyncCall(&AttributionStorage::GetAttributionReports)
       .WithArgs(/*max_report_time=*/base::Time::Now(), /*limit=*/-1,
-                AttributionReport::ReportTypes{
-                    AttributionReport::ReportType::kEventLevel,
-                    AttributionReport::ReportType::kAggregatableAttribution})
+                AttributionReport::Types{
+                    AttributionReport::Type::kEventLevel,
+                    AttributionReport::Type::kAggregatableAttribution})
       .Then(base::BindOnce(&AttributionManagerImpl::OnGetReportsToSend,
                            weak_factory_.GetWeakPtr()));
 }
@@ -739,11 +772,11 @@ void AttributionManagerImpl::PrepareToSendReport(AttributionReport report,
                                                  bool is_debug_report,
                                                  ReportSentCallback callback) {
   switch (report.GetReportType()) {
-    case AttributionReport::ReportType::kEventLevel:
+    case AttributionReport::Type::kEventLevel:
       report_sender_->SendReport(std::move(report), is_debug_report,
                                  std::move(callback));
       break;
-    case AttributionReport::ReportType::kAggregatableAttribution:
+    case AttributionReport::Type::kAggregatableAttribution:
       AssembleAggregatableReport(std::move(report), is_debug_report,
                                  std::move(callback));
       break;
@@ -755,43 +788,37 @@ void AttributionManagerImpl::OnReportSent(base::OnceClosure done,
                                           SendResult info) {
   // If there was a transient failure, and another attempt is allowed,
   // update the report's DB state to reflect that. Otherwise, delete the report
-  // from storage if it wasn't skipped due to the browser being offline.
+  // from storage.
 
-  bool should_retry = false;
+  absl::optional<base::Time> new_report_time;
   if (info.status == SendResult::Status::kTransientFailure) {
-    report.set_failed_send_attempts(report.failed_send_attempts() + 1);
-    const absl::optional<base::TimeDelta> delay =
-        GetFailedReportDelay(report.failed_send_attempts());
-    if (delay.has_value()) {
-      should_retry = true;
-      report.set_report_time(base::Time::Now() + *delay);
+    if (absl::optional<base::TimeDelta> delay =
+            GetFailedReportDelay(report.failed_send_attempts() + 1)) {
+      new_report_time = base::Time::Now() + *delay;
     }
   }
 
-  if (should_retry) {
-    // After updating the report's failure count and new report time in the DB,
-    // add it directly to the queue so that the retry is attempted as the new
-    // report time is reached, rather than wait for the next DB-polling to
-    // occur.
+  base::OnceCallback then = base::BindOnce(
+      [](base::OnceClosure done, base::WeakPtr<AttributionManagerImpl> manager,
+         AttributionReport::Id report_id,
+         absl::optional<base::Time> new_report_time, bool success) {
+        std::move(done).Run();
+
+        if (manager && success) {
+          manager->MarkReportCompleted(report_id);
+          manager->scheduler_timer_.MaybeSet(new_report_time);
+          manager->NotifyReportsChanged(
+              AttributionReport::GetReportType(report_id));
+        }
+      },
+      std::move(done), weak_factory_.GetWeakPtr(), report.ReportId(),
+      new_report_time);
+
+  if (new_report_time) {
     attribution_storage_
         .AsyncCall(&AttributionStorage::UpdateReportForSendFailure)
-        .WithArgs(report.ReportId(), report.report_time())
-        .Then(base::BindOnce(
-            [](base::OnceClosure done,
-               base::WeakPtr<AttributionManagerImpl> manager,
-               AttributionReport::Id report_id, base::Time new_report_time,
-               bool success) {
-              std::move(done).Run();
-
-              if (manager && success) {
-                manager->MarkReportCompleted(report_id);
-                manager->scheduler_timer_.MaybeSet(new_report_time);
-                manager->NotifyReportsChanged(
-                    AttributionReport::GetReportType(report_id));
-              }
-            },
-            std::move(done), weak_factory_.GetWeakPtr(), report.ReportId(),
-            report.report_time()));
+        .WithArgs(report.ReportId(), *new_report_time)
+        .Then(std::move(then));
 
     // TODO(apaseltiner): Consider surfacing retry attempts in internals UI.
 
@@ -800,21 +827,12 @@ void AttributionManagerImpl::OnReportSent(base::OnceClosure done,
 
   attribution_storage_.AsyncCall(&AttributionStorage::DeleteReport)
       .WithArgs(report.ReportId())
-      .Then(base::BindOnce(
-          [](base::OnceClosure done,
-             base::WeakPtr<AttributionManagerImpl> manager,
-             AttributionReport::Id report_id, bool success) {
-            std::move(done).Run();
-
-            if (manager && success) {
-              manager->MarkReportCompleted(report_id);
-              manager->NotifyReportsChanged(
-                  AttributionReport::GetReportType(report_id));
-            }
-          },
-          std::move(done), weak_factory_.GetWeakPtr(), report.ReportId()));
+      .Then(std::move(then));
 
   LogMetricsOnReportCompleted(report, info.status);
+
+  if (info.status == SendResult::Status::kSent)
+    LogMetricsOnReportSent(report);
 
   NotifyReportSent(/*is_debug_report=*/false, std::move(report), info);
 }
@@ -889,9 +907,20 @@ void AttributionManagerImpl::NotifySourcesChanged() {
 }
 
 void AttributionManagerImpl::NotifyReportsChanged(
-    AttributionReport::ReportType report_type) {
+    AttributionReport::Type report_type) {
   for (auto& observer : observers_)
     observer.OnReportsChanged(report_type);
+}
+
+void AttributionManagerImpl::NotifyFailedSourceRegistration(
+    const std::string& header_value,
+    const url::Origin& reporting_origin,
+    attribution_reporting::mojom::SourceRegistrationError error) {
+  base::Time source_time = base::Time::Now();
+  for (auto& observer : observers_) {
+    observer.OnFailedSourceRegistration(header_value, source_time,
+                                        reporting_origin, error);
+  }
 }
 
 }  // namespace content

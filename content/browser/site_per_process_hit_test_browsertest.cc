@@ -6908,14 +6908,12 @@ class SitePerProcessHitTestDataGenerationBrowserTest
         use_scale_factor ? gfx::ScaleToEnclosingRect(rect, device_scale_factor_,
                                                      device_scale_factor_)
                          : rect;
-    gfx::PointF p1(scaled_rect.origin());
-    gfx::PointF p2(scaled_rect.top_right());
-    gfx::PointF p3(scaled_rect.bottom_right());
-    gfx::PointF p4(scaled_rect.bottom_left());
-    transform.TransformPoint(&p1);
-    transform.TransformPoint(&p2);
-    transform.TransformPoint(&p3);
-    transform.TransformPoint(&p4);
+    // TODO(crbug.com/1359528): Add gfx::Transform::MapQuad().
+    gfx::PointF p1 = transform.MapPoint(gfx::PointF(scaled_rect.origin()));
+    gfx::PointF p2 = transform.MapPoint(gfx::PointF(scaled_rect.top_right()));
+    gfx::PointF p3 =
+        transform.MapPoint(gfx::PointF(scaled_rect.bottom_right()));
+    gfx::PointF p4 = transform.MapPoint(gfx::PointF(scaled_rect.bottom_left()));
     return gfx::QuadF(p1, p2, p3, p4);
   }
 
@@ -6940,9 +6938,7 @@ class SitePerProcessHitTestDataGenerationBrowserTest
   gfx::Rect AxisAlignedLayoutRectFromHitTest(
       const viz::AggregatedHitTestRegion& hit_test_region) {
     DCHECK(hit_test_region.transform.Preserves2dAxisAlignment());
-    gfx::RectF rect(hit_test_region.rect);
-    hit_test_region.transform.TransformRect(&rect);
-    return gfx::ToEnclosingRect(rect);
+    return hit_test_region.transform.MapRect(hit_test_region.rect);
   }
 
  public:
@@ -6974,7 +6970,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestDataGenerationBrowserTest,
   gfx::Transform translate;
   expected_transform.RotateAboutZAxis(-45);
   translate.Translate(-100 * device_scale_factor, -100 * device_scale_factor);
-  expected_transform.PreconcatTransform(translate);
+  expected_transform.PreConcat(translate);
 
   DCHECK(hit_test_data.size() >= 3);
   // The iframe element in main page is transformed and also clips the content

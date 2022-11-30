@@ -1,8 +1,11 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview Externs generated from namespace: fileManagerPrivate */
+/**
+ * @fileoverview Externs generated from namespace: fileManagerPrivate
+ * @externs
+ */
 
 /** @const */
 chrome.fileManagerPrivate = {};
@@ -93,6 +96,7 @@ chrome.fileManagerPrivate.MountCompletedStatus = {
   ERROR_NEED_PASSWORD: 'error_need_password',
   ERROR_IN_PROGRESS: 'error_in_progress',
   ERROR_CANCELLED: 'error_cancelled',
+  ERROR_BUSY: 'error_busy',
 };
 
 /** @enum {string} */
@@ -244,6 +248,7 @@ chrome.fileManagerPrivate.EntryPropertyName = {
   IS_MACHINE_ROOT: 'isMachineRoot',
   IS_EXTERNAL_MEDIA: 'isExternalMedia',
   IS_ARBITRARY_SYNC_FOLDER: 'isArbitrarySyncFolder',
+  SYNC_STATUS: 'syncStatus',
 };
 
 /** @enum {string} */
@@ -356,6 +361,12 @@ chrome.fileManagerPrivate.UserType = {
   ORGANIZATION: 'kOrganization'
 };
 
+/** @enum {string} */
+chrome.fileManagerPrivate.PolicyDefaultHandlerStatus = {
+  DEFAULT_HANDLER_ASSIGNED_BY_POLICY: 'default_handler_assigned_by_policy',
+  INCORRECT_ASSIGNMENT: 'incorrect_assignment',
+};
+
 /**
  * @typedef {{
  *   appId: string,
@@ -376,6 +387,15 @@ chrome.fileManagerPrivate.FileTaskDescriptor;
  * }}
  */
 chrome.fileManagerPrivate.FileTask;
+
+/**
+ * @typedef {{
+ *   tasks: !Array<!chrome.fileManagerPrivate.FileTask>,
+ *   policyDefaultHandlerStatus:
+ * (!chrome.fileManagerPrivate.PolicyDefaultHandlerStatus|undefined)
+ * }}
+ */
+chrome.fileManagerPrivate.ResultingTasks;
 
 /**
  * @typedef {{
@@ -555,7 +575,8 @@ chrome.fileManagerPrivate.FileWatchEvent;
  *   timezone: string,
  *   arcEnabled: boolean,
  *   arcRemovableMediaAccessEnabled: boolean,
- *   folderShortcuts: !Array<string>
+ *   folderShortcuts: !Array<string>,
+ *   trashEnabled: boolean
  * }}
  */
 chrome.fileManagerPrivate.Preferences;
@@ -771,6 +792,13 @@ chrome.fileManagerPrivate.DlpLevel = {
   ALLOW: 'allow',
 };
 
+/** @enum {string} */
+chrome.fileManagerPrivate.SyncStatus = {
+  NOT_FOUND: 'not_found',
+  IN_PROGRESS: 'in_progress',
+  ERROR: 'error'
+};
+
 /**
  * @typedef {{
  *   level: chrome.fileManagerPrivate.DlpLevel,
@@ -779,6 +807,14 @@ chrome.fileManagerPrivate.DlpLevel = {
  * }}
  */
 chrome.fileManagerPrivate.DlpRestrictionDetails;
+
+/**
+ * @typedef {{
+ *   url:  (string|undefined),
+ *   component: (!chrome.fileManagerPrivate.VolumeType|undefined),
+ * }}
+ */
+chrome.fileManagerPrivate.DialogCallerInformation;
 
 /**
  * @typedef {{
@@ -1035,6 +1071,14 @@ chrome.fileManagerPrivate.getDlpRestrictionDetails = function(
  */
 chrome.fileManagerPrivate.getDlpBlockedComponents = function(
     sourceUrl, callback) {};
+
+/**
+ * Retrieves the caller that created the dialog (Save As/File Picker).
+ * @param {function(!chrome.fileManagerPrivate.DialogCallerInformation)}
+ * callback Callback with either a URL or component (subset of VolumeType) of
+ * the caller.
+ */
+chrome.fileManagerPrivate.getDialogCaller = function(callback) {};
 
 /**
  * Starts to copy an entry. If the source is a directory, the copy is done

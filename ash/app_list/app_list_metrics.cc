@@ -27,9 +27,6 @@ namespace ash {
 // The number of files removed from the continue section during this session.
 int g_continue_file_removals_in_session = 0;
 
-const char kAppListPeekingToFullscreenHistogram[] =
-    "Apps.AppListPeekingToFullscreenSource";
-
 // The UMA histogram that logs smoothness of pagination animation.
 constexpr char kPaginationTransitionAnimationSmoothness[] =
     "Apps.PaginationTransition.AnimationSmoothness";
@@ -104,9 +101,6 @@ constexpr char kTimeToLauncherUserActionInClamshell[] =
 constexpr char kAppListAppLaunchedBubbleAllApps[] =
     "Apps.AppListAppLaunchedV2.BubbleAllApps";
 constexpr char kAppListAppLaunchedClosed[] = "Apps.AppListAppLaunchedV2.Closed";
-constexpr char kAppListAppLaunchedPeeking[] =
-    "Apps.AppListAppLaunchedV2.Peeking";
-constexpr char kAppListAppLaunchedHalf[] = "Apps.AppListAppLaunchedV2.Half";
 constexpr char kAppListAppLaunchedFullscreenAllApps[] =
     "Apps.AppListAppLaunchedV2.FullscreenAllApps";
 constexpr char kAppListAppLaunchedFullscreenSearch[] =
@@ -139,7 +133,7 @@ constexpr char kContinueSectionFilesRemovedInSessionHistogram[] =
 // are written to logs.  New enum values can be added, but existing enums must
 // never be renumbered or deleted and reused.
 enum class ApplistSearchResultOpenedSource {
-  kHalfClamshell = 0,
+  kHalfClamshell = 0,  // DEPRECATED.
   kFullscreenClamshell = 1,
   kFullscreenTablet = 2,
   kMaxApplistSearchResultOpenedSource = 3,
@@ -207,14 +201,10 @@ void RecordSearchResultOpenSource(const SearchResult* result,
   if (result->is_recommendation())
     return;
 
-  ApplistSearchResultOpenedSource source;
-  if (is_tablet_mode) {
-    source = ApplistSearchResultOpenedSource::kFullscreenTablet;
-  } else {
-    source = state == AppListViewState::kHalf
-                 ? ApplistSearchResultOpenedSource::kHalfClamshell
-                 : ApplistSearchResultOpenedSource::kFullscreenClamshell;
-  }
+  ApplistSearchResultOpenedSource source =
+      is_tablet_mode ? ApplistSearchResultOpenedSource::kFullscreenTablet
+                     : ApplistSearchResultOpenedSource::kFullscreenClamshell;
+
   UMA_HISTOGRAM_ENUMERATION(
       kAppListSearchResultOpenSourceHistogram, source,
       ApplistSearchResultOpenedSource::kMaxApplistSearchResultOpenedSource);
@@ -242,18 +232,18 @@ std::string GetAppListOpenMethod(AppListShowSource source) {
   // This switch determines which metric we submit for the Apps.AppListOpenTime
   // metric. Adding a string requires you update the apps histogram.xml as well.
   switch (source) {
-    case kSearchKey:
-    case kSearchKeyFullscreen_DEPRECATED:
+    case AppListShowSource::kSearchKey:
+    case AppListShowSource::kSearchKeyFullscreen_DEPRECATED:
       return "SearchKey";
-    case kShelfButton:
-    case kShelfButtonFullscreen:
+    case AppListShowSource::kShelfButton:
+    case AppListShowSource::kShelfButtonFullscreen_DEPRACTED:
       return "HomeButton";
-    case kSwipeFromShelf:
+    case AppListShowSource::kSwipeFromShelf:
       return "Swipe";
-    case kScrollFromShelf:
+    case AppListShowSource::kScrollFromShelf:
       return "Scroll";
-    case kTabletMode:
-    case kAssistantEntryPoint:
+    case AppListShowSource::kTabletMode:
+    case AppListShowSource::kAssistantEntryPoint:
       return "Others";
   }
   NOTREACHED();
@@ -340,16 +330,6 @@ void RecordAppListAppLaunched(AppListLaunchedFrom launched_from,
       DCHECK(!features::IsProductivityLauncherEnabled());
       // Only exists in clamshell mode with ProductivityLauncher disabled.
       UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedClosed, launched_from);
-      break;
-    case AppListViewState::kPeeking:
-      DCHECK(!features::IsProductivityLauncherEnabled());
-      // Only exists in clamshell mode with ProductivityLauncher disabled.
-      UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedPeeking, launched_from);
-      break;
-    case AppListViewState::kHalf:
-      DCHECK(!features::IsProductivityLauncherEnabled());
-      // Only exists in clamshell mode with ProductivityLauncher disabled.
-      UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedHalf, launched_from);
       break;
     case AppListViewState::kFullscreenAllApps:
       if (is_tablet_mode) {

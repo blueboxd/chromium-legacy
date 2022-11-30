@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert, assertInstanceof} from 'chrome://resources/js/assert.m.js';
+import {assert, assertInstanceof} from 'chrome://resources/js/assert.js';
 import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
-import {isRTL} from 'chrome://resources/js/util.m.js';
+import {isRTL} from 'chrome://resources/js/util.js';
 
 import {AsyncUtil} from '../../../common/js/async_util.js';
 import {FileType} from '../../../common/js/file_type.js';
@@ -714,6 +714,7 @@ export class FileGrid extends Grid {
 
       this.decorateThumbnailBox_(assert(listItem), entry);
       this.updateSharedStatus_(assert(listItem), entry);
+      this.updateInlineSyncStatus_(assert(listItem), entry);
     }
     this.updateGroupHeading_();
   }
@@ -753,16 +754,18 @@ export class FileGrid extends Grid {
     frame.className = 'thumbnail-frame';
     li.appendChild(frame);
 
+    if (util.isInlineSyncStatusEnabled()) {
+      const syncStatus = li.ownerDocument.createElement('div');
+      syncStatus.className = 'sync-status';
+      frame.appendChild(syncStatus);
+    }
+
     const box = li.ownerDocument.createElement('div');
     box.classList.add('img-container', 'no-thumbnail');
     frame.appendChild(box);
     if (entry) {
       this.decorateThumbnailBox_(assertInstanceof(li, HTMLLIElement), entry);
     }
-
-    const badge = li.ownerDocument.createElement('div');
-    badge.className = 'badge';
-    frame.appendChild(badge);
 
     const bottom = li.ownerDocument.createElement('div');
     bottom.className = 'thumbnail-bottom';
@@ -784,6 +787,7 @@ export class FileGrid extends Grid {
     li.setAttribute('file-name', util.getEntryLabel(locationInfo, entry));
 
     this.updateSharedStatus_(li, entry);
+    this.updateInlineSyncStatus_(li, entry);
   }
 
   /**
@@ -842,6 +846,25 @@ export class FileGrid extends Grid {
     const icon = li.querySelector('.detail-icon');
     if (icon) {
       icon.classList.toggle('shared', shared);
+    }
+  }
+
+  /**
+   * Update sync status icon for file or directory entry.
+   * @param {!HTMLLIElement} li The grid item.
+   * @param {!Entry} entry File entry for the grid item.
+   * @private
+   */
+  updateInlineSyncStatus_(li, entry) {
+    if (!util.isInlineSyncStatusEnabled()) {
+      return;
+    }
+    const frame = li.querySelector('.thumbnail-frame');
+    const syncStatus =
+        this.metadataModel_.getCache([entry], ['syncStatus'])[0].syncStatus;
+    if (frame && syncStatus) {
+      frame.setAttribute('data-sync-status', syncStatus);
+      // TODO(msalomao): set sync status aria-label.
     }
   }
 

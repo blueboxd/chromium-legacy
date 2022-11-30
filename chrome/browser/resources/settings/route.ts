@@ -20,7 +20,9 @@ function addPrivacyChildRoutes(r: Partial<SettingsRoutes>) {
 
   r.SAFETY_CHECK = r.PRIVACY.createSection('/safetyCheck', 'safetyCheck');
 
-  r.PRIVACY_GUIDE = r.PRIVACY.createChild('guide');
+  if (loadTimeData.getBoolean('showPrivacyGuide')) {
+    r.PRIVACY_GUIDE = r.PRIVACY.createChild('guide');
+  }
   r.SITE_SETTINGS = r.PRIVACY.createChild('/content');
   r.COOKIES = r.PRIVACY.createChild('/cookies');
   r.SECURITY = r.PRIVACY.createChild('/security');
@@ -95,8 +97,9 @@ function addPrivacyChildRoutes(r: Partial<SettingsRoutes>) {
     r.SITE_SETTINGS_BLUETOOTH_SCANNING =
         r.SITE_SETTINGS.createChild('bluetoothScanning');
   }
-  r.SITE_SETTINGS_WINDOW_PLACEMENT =
-      r.SITE_SETTINGS.createChild('windowPlacement');
+
+  r.SITE_SETTINGS_WINDOW_MANAGEMENT =
+      r.SITE_SETTINGS.createChild('windowManagement');
   r.SITE_SETTINGS_FILE_SYSTEM_WRITE = r.SITE_SETTINGS.createChild('filesystem');
   r.SITE_SETTINGS_LOCAL_FONTS = r.SITE_SETTINGS.createChild('localFonts');
 }

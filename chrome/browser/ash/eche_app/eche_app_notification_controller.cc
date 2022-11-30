@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash/eche_app/eche_app_notification_controller.h"
 
-#include "ash/components/multidevice/logging/logging.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/webui/eche_app_ui/eche_alert_generator.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/ash/components/multidevice/logging/logging.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
@@ -46,11 +46,17 @@ EcheAppNotificationController::EcheAppNotificationController(
     const base::RepeatingCallback<void(Profile*)>& relaunch_callback)
     : profile_(profile), relaunch_callback_(relaunch_callback) {}
 
-EcheAppNotificationController::~EcheAppNotificationController() {}
+EcheAppNotificationController::~EcheAppNotificationController() = default;
+
 void EcheAppNotificationController::LaunchSettings() {
   // TODO(crbug.com/1241352): Wait for UX confirm.
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
       profile_, chromeos::settings::mojom::kSecurityAndSignInSubpagePathV2);
+}
+
+void EcheAppNotificationController::LaunchNetworkSettings() {
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      profile_, chromeos::settings::mojom::kNetworkSectionPath);
 }
 
 void EcheAppNotificationController::LaunchTryAgain() {
@@ -87,6 +93,17 @@ void EcheAppNotificationController::ShowNotificationFromWebUI(
           NotificationCatalogName::kEcheAppInactivity, title.value(),
           message.value(), ui::ImageModel(), rich_notification_data,
           new NotificationDelegate(kEcheAppInactivityNotifierId,
+                                   weak_ptr_factory_.GetWeakPtr())));
+    } else if (web_type == mojom::WebNotificationType::WIFI_NOT_READY) {
+      message_center::RichNotificationData rich_notification_data;
+      // Reuse the setting string for Eche's setting button.
+      rich_notification_data.buttons.emplace_back(
+          l10n_util::GetStringUTF16(IDS_ECHE_APP_SCREEN_LOCK_SETTINGS_BUTTON));
+      ShowNotification(CreateNotification(
+          kEcheAppNetworkSettingNotifierId,
+          NotificationCatalogName::kEcheAppNetworkSetting, title.value(),
+          message.value(), ui::ImageModel(), rich_notification_data,
+          new NotificationDelegate(kEcheAppNetworkSettingNotifierId,
                                    weak_ptr_factory_.GetWeakPtr())));
     } else {
       // No need to take the action.
@@ -142,6 +159,8 @@ void EcheAppNotificationController::
   NotificationDisplayService::GetForProfile(profile_)->Close(
       NotificationHandler::Type::TRANSIENT,
       kEcheAppFromWebWithoutButtonNotifierId);
+  NotificationDisplayService::GetForProfile(profile_)->Close(
+      NotificationHandler::Type::TRANSIENT, kEcheAppNetworkSettingNotifierId);
 }
 
 EcheAppNotificationController::NotificationDelegate::NotificationDelegate(
@@ -168,6 +187,10 @@ void EcheAppNotificationController::NotificationDelegate::Click(
   } else if (notification_id_ == kEcheAppInactivityNotifierId) {
     if (*button_index == 0) {
       notification_controller_->LaunchTryAgain();
+    }
+  } else if (notification_id_ == kEcheAppNetworkSettingNotifierId) {
+    if (*button_index == 0) {
+      notification_controller_->LaunchNetworkSettings();
     }
   }
 }

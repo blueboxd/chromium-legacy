@@ -9,10 +9,6 @@
 #include <vector>
 
 #include "ash/accessibility/ui/focus_ring_controller.h"
-#include "ash/components/settings/cros_settings_names.h"
-#include "ash/components/settings/cros_settings_provider.h"
-#include "ash/components/settings/timezone_settings.h"
-#include "ash/components/timezone/timezone_resolver.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/locale_update_controller.h"
@@ -52,7 +48,6 @@
 #include "chrome/browser/ash/net/delay_network_call.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
-#include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/system/device_disabling_manager.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
@@ -74,7 +69,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/lacros_data_backward_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/lacros_data_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -82,6 +77,10 @@
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/ash/components/audio/sounds.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
+#include "chromeos/ash/components/settings/cros_settings_provider.h"
+#include "chromeos/ash/components/settings/timezone_settings.h"
+#include "chromeos/ash/components/timezone/timezone_resolver.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "components/account_id/account_id.h"
 #include "components/language/core/browser/pref_names.h"
@@ -104,7 +103,6 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
-#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event_handler.h"
@@ -136,14 +134,6 @@ const int kCrashCountLimit = 5;
 
 // The default fade out animation time in ms.
 const int kDefaultFadeTimeMs = 200;
-
-struct DisplayScaleFactor {
-  int longest_side;
-  float scale_factor;
-};
-
-const DisplayScaleFactor k4KDisplay = {3840, 1.5f},
-                         kMediumDisplay = {1440, 4.f / 3};
 
 // A class to observe an implicit animation and invokes the callback after the
 // animation is completed.
@@ -449,9 +439,6 @@ LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
       metrics::structured::NeutrinoDevicesLocation::
           kLoginDisplayHostWebUIDestructor);
 
-  if (GetOobeUI())
-    GetOobeUI()->signin_screen_handler()->SetDelegate(nullptr);
-
   SessionManagerClient::Get()->RemoveObserver(this);
   CrasAudioHandler::Get()->RemoveAudioObserver(this);
 
@@ -604,7 +591,6 @@ void LoginDisplayHostWebUI::OnStartSignInScreen() {
   CHECK(login_display_);
 
   // Legacy calls, will go away soon.
-  GetOobeUI()->signin_screen_handler()->SetDelegate(login_display_.get());
   GetOobeUI()->signin_screen_handler()->Show();
 
   ShowGaiaDialogCommon(EmptyAccountId());
@@ -704,34 +690,11 @@ void LoginDisplayHostWebUI::OnDisplayMetricsChanged(
     return;
   }
 
-  if (switches::ShouldScaleOobe() &&
-      policy::EnrollmentRequisitionManager::IsRemoraRequisition()) {
-    UpScaleOobe();
-  }
-
   if (GetOobeUI()) {
     GetOobeUI()->GetCoreOobeView()->UpdateClientAreaSize(
         primary_display.size());
     if (changed_metrics & DISPLAY_METRIC_PRIMARY)
       GetOobeUI()->OnDisplayConfigurationChanged();
-  }
-}
-
-void LoginDisplayHostWebUI::UpScaleOobe() {
-  const int64_t display_id =
-      display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  if (primary_display_id_ == display_id) {
-    return;
-  }
-  primary_display_id_ = display_id;
-  auto* display_manager = Shell::Get()->display_manager();
-  const gfx::Size size =
-      display::Screen::GetScreen()->GetPrimaryDisplay().work_area_size();
-  const int longest_side = std::max(size.width(), size.height());
-  if (longest_side >= k4KDisplay.longest_side) {
-    display_manager->UpdateZoomFactor(display_id, k4KDisplay.scale_factor);
-  } else if (longest_side >= kMediumDisplay.longest_side) {
-    display_manager->UpdateZoomFactor(display_id, kMediumDisplay.scale_factor);
   }
 }
 
@@ -949,7 +912,6 @@ void LoginDisplayHostWebUI::ResetLoginView() {
 
   OobeUI* oobe_ui = login_view_->GetOobeUI();
   if (oobe_ui) {
-    oobe_ui->signin_screen_handler()->SetDelegate(nullptr);
     oobe_ui->RemoveObserver(this);
   }
 
@@ -1024,6 +986,11 @@ void LoginDisplayHostWebUI::VerifyOwnerForKiosk(base::OnceClosure) {
 void LoginDisplayHostWebUI::ShowPasswordChangedDialog(
     const AccountId& account_id,
     bool show_password_error) {
+  NOTREACHED();
+}
+
+void LoginDisplayHostWebUI::StartCryptohomeRecovery(
+    const AccountId& account_id) {
   NOTREACHED();
 }
 

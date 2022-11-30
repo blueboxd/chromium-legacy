@@ -32,8 +32,8 @@ namespace updater {
 class Configurator;
 class PersistedData;
 struct RegistrationRequest;
-struct RegistrationResponse;
 
+using AppClientInstallData = base::flat_map<std::string, std::string>;
 using AppInstallDataIndex = base::flat_map<std::string, std::string>;
 
 // All functions and callbacks must be called on the same sequence.
@@ -45,9 +45,8 @@ class UpdateServiceImpl : public UpdateService {
   void GetVersion(
       base::OnceCallback<void(const base::Version&)> callback) override;
   void FetchPolicies(base::OnceCallback<void(int)> callback) override;
-  void RegisterApp(
-      const RegistrationRequest& request,
-      base::OnceCallback<void(const RegistrationResponse&)> callback) override;
+  void RegisterApp(const RegistrationRequest& request,
+                   base::OnceCallback<void(int)> callback) override;
   void GetAppStates(
       base::OnceCallback<void(const std::vector<AppState>&)>) override;
   void RunPeriodicTasks(base::OnceClosure callback) override;
@@ -59,6 +58,7 @@ class UpdateServiceImpl : public UpdateService {
               StateChangeCallback state_update,
               Callback callback) override;
   void Install(const RegistrationRequest& registration,
+               const std::string& client_install_data,
                const std::string& install_data_index,
                Priority priority,
                StateChangeCallback state_update,
@@ -99,6 +99,8 @@ class UpdateServiceImpl : public UpdateService {
   void OnShouldBlockUpdateForMeteredNetwork(
       StateChangeCallback state_update,
       Callback callback,
+      const std::vector<std::string>& app_ids,
+      const AppClientInstallData& app_client_install_data,
       const AppInstallDataIndex& app_install_data_index,
       Priority priority,
       PolicySameVersionUpdate policy_same_version_update,

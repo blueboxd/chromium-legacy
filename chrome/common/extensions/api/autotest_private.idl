@@ -105,8 +105,6 @@ namespace autotestPrivate {
 
   enum LauncherStateType {
     Closed,
-    Peeking,
-    Half,
     FullscreenAllApps,
     FullscreenSearch
   };
@@ -694,6 +692,12 @@ namespace autotestPrivate {
   callback StopThroughputTrackerDataCollectionCallback = void
       (ThroughputTrackerAnimationData[] data);
 
+  // Callback invoked to report the currently collected ui::ThroughputTracker
+  // animation data. Note that the data reported is removed to avoid reporting
+  // duplicated data.
+  callback GetThroughtputTrackerDataCallback = void
+      (ThroughputTrackerAnimationData[] data);
+
   // Callback invoked to report the number of system web apps that should be
   // installed.
   callback GetRegisteredSystemWebAppsCallback = void
@@ -755,6 +759,18 @@ namespace autotestPrivate {
   // accept key events from the test.
   callback IsInputMethodReadyForTestingCallback = void
       (boolean isReady);
+
+  // Response data for <code>makeFuseboxTempDir</code>.
+  dictionary MakeFuseboxTempDirData {
+    DOMString fuseboxFilePath;
+    DOMString underlyingFilePath;
+  };
+
+  // Callback invoked when the temporary directory was made.
+  callback MakeFuseboxTempDirCallback = void(MakeFuseboxTempDirData data);
+
+  // Callback invoked when the temporary directory was removed.
+  callback RemoveFuseboxTempDirCallback = void();
 
   interface Functions {
     // Must be called to allow autotestPrivateAPI events to be fired.
@@ -1431,9 +1447,13 @@ namespace autotestPrivate {
         VoidCallback callback);
 
     // Stops ui::ThroughputTracker data collection and reports the collected
-    // data since the start.
+    // data since the start or the last GetThroughtputTrackerData call.
     [supportsPromises] static void stopThroughputTrackerDataCollection(
         StopThroughputTrackerDataCollectionCallback callback);
+
+    // Reports the currently collected animation data.
+    [supportsPromises] static void getThroughputTrackerData(
+        GetThroughtputTrackerDataCallback callback);
 
     // Gets the smoothness of a display. If the display id is not specified,
     // the primary display is used.
@@ -1468,6 +1488,16 @@ namespace autotestPrivate {
     // Returns whether the current input method is ready to accept key events.
     [supportsPromises] static void isInputMethodReadyForTesting(
         IsInputMethodReadyForTestingCallback callback);
+
+    // Creates a temporary directory visible under the Fusebox mount point.
+    [supportsPromises] static void makeFuseboxTempDir(
+        MakeFuseboxTempDirCallback callback);
+
+    // Removes a temporary directory visible under the Fusebox mount point. The
+    // fuseboxFilePath argument was returned by the MakeFuseboxTempDirCallback.
+    [supportsPromises] static void removeFuseboxTempDir(
+        DOMString fuseboxFilePath,
+        RemoveFuseboxTempDirCallback callback);
   };
 
   interface Events {

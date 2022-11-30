@@ -19,8 +19,7 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ash {
-namespace device_activity {
+namespace ash::device_activity {
 
 namespace {
 
@@ -87,10 +86,9 @@ TEST_F(DeviceActivityControllerTest,
       local_state()->GetTime(prefs::kDeviceActiveLastKnownMonthlyPingTimestamp);
   EXPECT_EQ(monthly_ts, base::Time::UnixEpoch());
 
-  base::Time alltime_ts =
-      local_state()->GetTime(prefs::kDeviceActiveLastKnownAllTimePingTimestamp);
-  EXPECT_EQ(alltime_ts, base::Time::UnixEpoch());
+  base::Time first_active_ts = local_state()->GetTime(
+      prefs::kDeviceActiveLastKnownFirstActivePingTimestamp);
+  EXPECT_EQ(first_active_ts, base::Time::UnixEpoch());
 }
 
-}  // namespace device_activity
-}  // namespace ash
+}  // namespace ash::device_activity

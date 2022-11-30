@@ -1,4 +1,4 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -772,18 +772,17 @@ experimental domain Audits
       HostCandidateAttributeGetter
       IdentityInCanMakePaymentEvent
       InsecurePrivateNetworkSubresourceRequest
-      LegacyConstraintGoogIPv6
       LocalCSSFileExtensionRejected
       MediaSourceAbortRemove
       MediaSourceDurationTruncatingBuffered
-      NavigateEventRestoreScroll
-      NavigateEventTransitionWhile
       NoSysexWebMIDIWithoutPermission
       NotificationInsecureOrigin
       NotificationPermissionRequestedIframe
       ObsoleteWebRtcCipherSuite
       OpenWebDatabaseInsecureContext
       OverflowVisibleOnReplacedElement
+      PaymentInstruments
+      PaymentRequestCSPViolation
       PersistentQuotaType
       PictureSourceSrc
       PrefixedCancelAnimationFrame
@@ -5257,6 +5256,30 @@ domain Network
       # Type "send-redemption-record" in the Trust Token API.
       Signing
 
+  # The reason why Chrome uses a specific transport protocol for HTTP semantics.
+  experimental type AlternateProtocolUsage extends string
+    enum
+      # Alternate Protocol was used without racing a normal connection.
+      alternativeJobWonWithoutRace
+      # Alternate Protocol was used by winning a race with a normal connection.
+      alternativeJobWonRace
+      # Alternate Protocol was not used by losing a race with a normal connection.
+      mainJobWonRace
+      # Alternate Protocol was not used because no Alternate-Protocol information
+      # was available when the request was issued, but an Alternate-Protocol header
+      # was present in the response.
+      mappingMissing
+      # Alternate Protocol was not used because it was marked broken.
+      broken
+      # HTTPS DNS protocol upgrade job was used without racing with a normal
+      # connection and an Alternate Protocol job.
+      dnsAlpnH3JobWonWithoutRace
+      # HTTPS DNS protocol upgrade job won a race with a normal connection and
+      # an Alternate Protocol job.
+      dnsAlpnH3JobWonRace
+      # This value is used when the reason is unknown.
+      unspecifiedReason
+
   # HTTP response data.
   type Response extends object
     properties
@@ -5302,6 +5325,8 @@ domain Network
       optional string cacheStorageCacheName
       # Protocol used to fetch this request.
       optional string protocol
+      # The reason why Chrome uses a specific transport protocol for HTTP semantics.
+      experimental optional AlternateProtocolUsage alternateProtocolUsage
       # Security state of the request resource.
       Security.SecurityState securityState
       # Security details for the request.
@@ -7107,6 +7132,7 @@ domain Page
       ch-downlink
       ch-ect
       ch-prefers-color-scheme
+      ch-prefers-reduced-motion
       ch-rtt
       ch-save-data
       ch-ua
@@ -7133,7 +7159,6 @@ domain Page
       encrypted-media
       execution-while-out-of-viewport
       execution-while-not-rendered
-      federated-credentials
       focus-without-user-activation
       fullscreen
       frobulate
@@ -7141,6 +7166,7 @@ domain Page
       geolocation
       gyroscope
       hid
+      identity-credentials-get
       idle-detection
       interest-cohort
       join-ad-interest-group
@@ -7656,8 +7682,9 @@ domain Page
       # Recommendation for manifest's id attribute to match current id computed from start_url
       optional string recommendedId
 
-  # Returns all browser cookies. Depending on the backend support, will return detailed cookie
-  # information in the `cookies` field.
+  # Returns all browser cookies for the page and all of its subframes. Depending
+  # on the backend support, will return detailed cookie information in the
+  # `cookies` field.
   experimental deprecated command getCookies
     # Use 'Network.getCookies' instead
     redirect Network
@@ -8459,7 +8486,6 @@ domain Page
       AudioOutputDeviceRequested
       MixedContent
       TriggerBackgrounded
-      EmbedderTriggeredAndSameOriginRedirected
       EmbedderTriggeredAndCrossOriginRedirected
       MemoryLimitExceeded
       # Prerenders can be cancelled when Chrome uses excessive memory. This is
@@ -8468,6 +8494,9 @@ domain Page
       DataSaverEnabled
       HasEffectiveUrl
       ActivatedBeforeStarted
+      InactivePageRestriction
+      StartFailed
+      TimeoutBackgrounded
 
   # Fired when a prerender attempt is completed.
   experimental event prerenderAttemptCompleted
@@ -9360,6 +9389,9 @@ domain Target
       # Frame id of originating window (is only set if target has an opener).
       experimental optional Page.FrameId openerFrameId
       experimental optional Browser.BrowserContextID browserContextId
+      # Provides additional details for specific target types. For example, for
+      # the type of "page", this may be set to "portal" or "prerender".
+      experimental optional string subtype
 
   # A filter used by target query/discovery/auto-attach operations.
   experimental type FilterEntry extends object
@@ -10004,7 +10036,10 @@ domain Fetch
       optional array of HeaderEntry responseHeaders
       # If the intercepted request had a corresponding Network.requestWillBeSent event fired for it,
       # then this networkId will be the same as the requestId present in the requestWillBeSent event.
-      optional RequestId networkId
+      optional Network.RequestId networkId
+      # If the request is due to a redirect response from the server, the id of the request that
+      # has caused the redirect.
+      experimental optional RequestId redirectedRequestId
 
   # Issued when the domain is enabled with handleAuthRequests set to true.
   # The request is paused until client responds with continueWithAuth.

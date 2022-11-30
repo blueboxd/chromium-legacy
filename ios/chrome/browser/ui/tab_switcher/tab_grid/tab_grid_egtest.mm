@@ -754,6 +754,11 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_SKIPPED(@"Multiple windows can't be opened.");
 
+  // TODO(crbug.com/1369148): Test is failing on iPad devices and simulator.
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+
   // Setup first window with tabs 1 and 2.
   [ChromeEarlGrey loadURL:_URL1];
   [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
@@ -902,7 +907,8 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 }
 
 // Tests dragging tab grid item as URL between windows.
-- (void)testDragAndDropURLBetweenWindows {
+// TODO(crbug.com/1363373): Re-enable this test.
+- (void)DISABLED_testDragAndDropURLBetweenWindows {
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_SKIPPED(@"Multiple windows can't be opened.");
 
@@ -966,6 +972,11 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_SKIPPED(@"Multiple windows can't be opened.");
 
+  // TODO(crbug.com/1369148): Test is failing on iPad devices and simulator.
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+
   // Setup first window with one incognito tab 1.
   [ChromeEarlGrey closeAllNormalTabs];
   [ChromeEarlGrey openNewIncognitoTab];
@@ -1025,7 +1036,8 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 }
 
 // Tests dragging tab grid main item as URL to an incognito windows.
-- (void)testDragAndDropMainURLInIncognitoWindow {
+// TODO(crbug.com/1369335): Re-enable this test.
+- (void)DISABLED_testDragAndDropMainURLInIncognitoWindow {
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_SKIPPED(@"Multiple windows can't be opened.");
 
@@ -1422,10 +1434,13 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 
 // Tests that the scrim view is always shown when the search bar is empty in the
 // search mode.
-// TODO(crbug.com/1359271): Disabled due to flakiness. Re-enabled when fixed.
-- (void)DISABLED_testScrimVisibleInSearchModeWhenSearchBarIsEmpty {
+- (void)testScrimVisibleInSearchModeWhenSearchBarIsEmpty {
   [ChromeEarlGrey openNewTab];
   [ChromeEarlGreyUI openTabGrid];
+
+  // Make sure the tab grid is on the regular tabs panel.
+  [[EarlGrey selectElementWithMatcher:TabGridNormalModePageControl()]
+      performAction:grey_tap()];
 
   // Enter search mode.
   [[EarlGrey selectElementWithMatcher:TabGridSearchTabsButton()]

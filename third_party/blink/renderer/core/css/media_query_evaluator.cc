@@ -119,7 +119,7 @@ void MediaQueryEvaluator::Trace(Visitor* visitor) const {
 
 const String MediaQueryEvaluator::MediaType() const {
   // If a static mediaType was given by the constructor, we use it here.
-  if (!media_type_.IsEmpty())
+  if (!media_type_.empty())
     return media_type_;
   // Otherwise, we get one from mediaValues (which may be dynamic or cached).
   if (media_values_)
@@ -129,7 +129,7 @@ const String MediaQueryEvaluator::MediaType() const {
 
 bool MediaQueryEvaluator::MediaTypeMatch(
     const String& media_type_to_match) const {
-  return media_type_to_match.IsEmpty() ||
+  return media_type_to_match.empty() ||
          EqualIgnoringASCIICase(media_type_to_match, media_type_names::kAll) ||
          EqualIgnoringASCIICase(media_type_to_match, MediaType());
 }
@@ -1263,8 +1263,6 @@ static bool DevicePostureMediaFeatureEval(const MediaQueryExpValue& value,
       return device_posture == DevicePostureType::kContinuous;
     case CSSValueID::kFolded:
       return device_posture == DevicePostureType::kFolded;
-    case CSSValueID::kFoldedOver:
-      return device_posture == DevicePostureType::kFoldedOver;
     default:
       NOTREACHED();
       return false;
@@ -1427,20 +1425,19 @@ KleeneValue MediaQueryEvaluator::EvalStyleFeature(
 
   AtomicString property_name(feature.Name());
 
-  const CSSCustomPropertyDeclaration* query_specified =
-      DynamicTo<CSSCustomPropertyDeclaration>(bounds.right.value.GetCSSValue());
+  const CSSValue& query_specified = bounds.right.value.GetCSSValue();
 
-  if (query_specified->IsRevert() || query_specified->IsRevertLayer()) {
+  if (query_specified.IsRevertValue() || query_specified.IsRevertLayerValue()) {
     return KleeneValue::kFalse;
   }
 
   const CSSValue* query_value = StyleResolver::ComputeValue(
-      container, CSSPropertyName(property_name), *query_specified);
+      container, CSSPropertyName(property_name), query_specified);
 
   if (const auto* decl_value =
           DynamicTo<CSSCustomPropertyDeclaration>(query_value)) {
     CSSVariableData* query_computed =
-        decl_value ? decl_value->Value() : nullptr;
+        decl_value ? &decl_value->Value() : nullptr;
     CSSVariableData* computed =
         container->ComputedStyleRef().GetVariableData(property_name);
 

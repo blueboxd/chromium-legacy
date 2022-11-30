@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ void PrependValueForArithmetic(CSSNumericValueVector& vector,
 template <class BinaryOperation>
 CSSUnitValue* MaybeSimplifyAsUnitValue(const CSSNumericValueVector& values,
                                        const BinaryOperation& op) {
-  DCHECK(!values.IsEmpty());
+  DCHECK(!values.empty());
 
   auto* first_unit_value = DynamicTo<CSSUnitValue>(values[0].Get());
   if (!first_unit_value)
@@ -62,7 +62,7 @@ CSSUnitValue* MaybeSimplifyAsUnitValue(const CSSNumericValueVector& values,
 }
 
 CSSUnitValue* MaybeMultiplyAsUnitValue(const CSSNumericValueVector& values) {
-  DCHECK(!values.IsEmpty());
+  DCHECK(!values.empty());
 
   // We are allowed one unit value with type other than kNumber.
   auto unit_other_than_number = CSSPrimitiveValue::UnitType::kNumber;
@@ -231,7 +231,7 @@ bool CSSNumericValue::IsValidUnit(CSSPrimitiveValue::UnitType unit) {
 }
 
 CSSPrimitiveValue::UnitType CSSNumericValue::UnitFromName(const String& name) {
-  if (name.IsEmpty())
+  if (name.empty())
     return CSSPrimitiveValue::UnitType::kUnknown;
   if (EqualIgnoringASCIICase(name, "number"))
     return CSSPrimitiveValue::UnitType::kNumber;

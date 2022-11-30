@@ -30,13 +30,21 @@
 #include "ui/gl/gpu_switching_manager.h"
 #include "ui/gl/scoped_cgl.h"
 
+// From ANGLE's EGL/eglext_angle.h. This should be included instead of being
+// redefined here.
+#ifndef EGL_ANGLE_device_metal
+#define EGL_ANGLE_device_metal 1
+#define EGL_METAL_DEVICE_ANGLE 0x34A6
+#endif /* EGL_ANGLE_device_metal */
+
 namespace gpu {
 
 namespace {
 
 // Control use of AVFoundation to draw video content.
-base::Feature kAVFoundationOverlays{"avfoundation-overlays",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kAVFoundationOverlays,
+             "avfoundation-overlays",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 }  // namespace
 
 ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
@@ -180,13 +188,15 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
 }
 
 gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffers(
-    gl::GLSurface::PresentationCallback callback) {
+    gl::GLSurface::PresentationCallback callback,
+    gl::FrameData data) {
   return SwapBuffersInternal(base::DoNothing(), std::move(callback));
 }
 
 void ImageTransportSurfaceOverlayMac::SwapBuffersAsync(
     gl::GLSurface::SwapCompletionCallback completion_callback,
-    gl::GLSurface::PresentationCallback presentation_callback) {
+    gl::GLSurface::PresentationCallback presentation_callback,
+    gl::FrameData data) {
   SwapBuffersInternal(std::move(completion_callback),
                       std::move(presentation_callback));
 }
@@ -196,7 +206,8 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::PostSubBuffer(
     int y,
     int width,
     int height,
-    gl::GLSurface::PresentationCallback callback) {
+    gl::GLSurface::PresentationCallback callback,
+    gl::FrameData data) {
   return SwapBuffersInternal(base::DoNothing(), std::move(callback));
 }
 
@@ -206,19 +217,22 @@ void ImageTransportSurfaceOverlayMac::PostSubBufferAsync(
     int width,
     int height,
     gl::GLSurface::SwapCompletionCallback completion_callback,
-    gl::GLSurface::PresentationCallback presentation_callback) {
+    gl::GLSurface::PresentationCallback presentation_callback,
+    gl::FrameData data) {
   SwapBuffersInternal(std::move(completion_callback),
                       std::move(presentation_callback));
 }
 
 gfx::SwapResult ImageTransportSurfaceOverlayMac::CommitOverlayPlanes(
-    gl::GLSurface::PresentationCallback callback) {
+    gl::GLSurface::PresentationCallback callback,
+    gl::FrameData data) {
   return SwapBuffersInternal(base::DoNothing(), std::move(callback));
 }
 
 void ImageTransportSurfaceOverlayMac::CommitOverlayPlanesAsync(
     gl::GLSurface::SwapCompletionCallback completion_callback,
-    gl::GLSurface::PresentationCallback presentation_callback) {
+    gl::GLSurface::PresentationCallback presentation_callback,
+    gl::FrameData data) {
   SwapBuffersInternal(std::move(completion_callback),
                       std::move(presentation_callback));
 }
@@ -296,14 +310,6 @@ bool ImageTransportSurfaceOverlayMac::ScheduleOverlayPlane(
 
 bool ImageTransportSurfaceOverlayMac::ScheduleCALayer(
     const ui::CARendererLayerParams& params) {
-  if (params.image) {
-    gl::GLImageIOSurface* io_surface_image =
-        gl::GLImageIOSurface::FromGLImage(params.image);
-    if (!io_surface_image) {
-      DLOG(ERROR) << "Cannot schedule CALayer with non-IOSurface GLImage";
-      return false;
-    }
-  }
   return ca_layer_tree_coordinator_->GetPendingCARendererLayerTree()
       ->ScheduleCALayer(params);
 }
@@ -435,6 +441,25 @@ gfx::SwapResult ImageTransportSurfaceOverlayMacEGL::SwapBuffersInternal(
   constexpr base::TimeDelta kHistogramMaxTime = base::Milliseconds(16);
   constexpr int kHistogramTimeBuckets = 50;
 
+  // Query the underlying Metal device, if one exists. This is needed to ensure
+  // synchronization between the display compositor and the HDRCopierLayer.
+  // https://crbug.com/1372898
+  if (gl::GLDisplayEGL* display =
+          gl::GLDisplayEGL::GetDisplayForCurrentContext()) {
+    EGLAttrib angle_device_attrib = 0;
+    if (eglQueryDisplayAttribEXT(display->GetDisplay(), EGL_DEVICE_EXT,
+                                 &angle_device_attrib)) {
+      EGLDeviceEXT angle_device =
+          reinterpret_cast<EGLDeviceEXT>(angle_device_attrib);
+      EGLAttrib metal_device = 0;
+      if (eglQueryDeviceAttribEXT(angle_device, EGL_METAL_DEVICE_ANGLE,
+                                  &metal_device)) {
+        ca_layer_tree_coordinator_->GetPendingCARendererLayerTree()
+            ->SetMetalDevice(metal_device);
+      }
+    }
+  }
+
   // Do a GL fence for flush to apply back-pressure before drawing.
   {
     base::TimeTicks start_time = base::TimeTicks::Now();
@@ -500,13 +525,15 @@ gfx::SwapResult ImageTransportSurfaceOverlayMacEGL::SwapBuffersInternal(
 }
 
 gfx::SwapResult ImageTransportSurfaceOverlayMacEGL::SwapBuffers(
-    gl::GLSurface::PresentationCallback callback) {
+    gl::GLSurface::PresentationCallback callback,
+    gl::FrameData data) {
   return SwapBuffersInternal(base::DoNothing(), std::move(callback));
 }
 
 void ImageTransportSurfaceOverlayMacEGL::SwapBuffersAsync(
     gl::GLSurface::SwapCompletionCallback completion_callback,
-    gl::GLSurface::PresentationCallback presentation_callback) {
+    gl::GLSurface::PresentationCallback presentation_callback,
+    gl::FrameData data) {
   SwapBuffersInternal(std::move(completion_callback),
                       std::move(presentation_callback));
 }
@@ -516,7 +543,8 @@ gfx::SwapResult ImageTransportSurfaceOverlayMacEGL::PostSubBuffer(
     int y,
     int width,
     int height,
-    gl::GLSurface::PresentationCallback callback) {
+    gl::GLSurface::PresentationCallback callback,
+    gl::FrameData data) {
   return SwapBuffersInternal(base::DoNothing(), std::move(callback));
 }
 
@@ -526,19 +554,22 @@ void ImageTransportSurfaceOverlayMacEGL::PostSubBufferAsync(
     int width,
     int height,
     gl::GLSurface::SwapCompletionCallback completion_callback,
-    gl::GLSurface::PresentationCallback presentation_callback) {
+    gl::GLSurface::PresentationCallback presentation_callback,
+    gl::FrameData data) {
   SwapBuffersInternal(std::move(completion_callback),
                       std::move(presentation_callback));
 }
 
 gfx::SwapResult ImageTransportSurfaceOverlayMacEGL::CommitOverlayPlanes(
-    gl::GLSurface::PresentationCallback callback) {
+    gl::GLSurface::PresentationCallback callback,
+    gl::FrameData data) {
   return SwapBuffersInternal(base::DoNothing(), std::move(callback));
 }
 
 void ImageTransportSurfaceOverlayMacEGL::CommitOverlayPlanesAsync(
     gl::GLSurface::SwapCompletionCallback completion_callback,
-    gl::GLSurface::PresentationCallback presentation_callback) {
+    gl::GLSurface::PresentationCallback presentation_callback,
+    gl::FrameData data) {
   SwapBuffersInternal(std::move(completion_callback),
                       std::move(presentation_callback));
 }
@@ -616,14 +647,6 @@ bool ImageTransportSurfaceOverlayMacEGL::ScheduleOverlayPlane(
 
 bool ImageTransportSurfaceOverlayMacEGL::ScheduleCALayer(
     const ui::CARendererLayerParams& params) {
-  if (params.image) {
-    gl::GLImageIOSurface* io_surface_image =
-        gl::GLImageIOSurface::FromGLImage(params.image);
-    if (!io_surface_image) {
-      DLOG(ERROR) << "Cannot schedule CALayer with non-IOSurface GLImage";
-      return false;
-    }
-  }
   return ca_layer_tree_coordinator_->GetPendingCARendererLayerTree()
       ->ScheduleCALayer(params);
 }

@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 import {Destination, DestinationOrigin, getSelectDropdownBackground, IronMeta, PrintPreviewDestinationSelectElement} from 'chrome://print/print_preview.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
-
+import {assert} from 'chrome://resources/js/assert.js';
 import {assertEquals} from 'chrome://webui-test/chai_assert.js';
-import {waitAfterNextRender} from 'chrome://webui-test/test_util.js';
+import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
 import {selectOption} from './print_preview_test_utils.js';
 
@@ -27,7 +26,8 @@ suite(destination_select_test.suiteName, function() {
   const meta = new IronMeta({type: 'iconset', value: undefined});
 
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     destinationSelect =
         document.createElement('print-preview-destination-select');
     destinationSelect.disabled = false;

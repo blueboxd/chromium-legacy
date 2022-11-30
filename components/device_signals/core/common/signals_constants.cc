@@ -12,10 +12,6 @@ namespace names {
 // policy https://chromeenterprise.google/policies/?policy=AllowScreenLock.
 const char kAllowScreenLock[] = "allowSreenLock";
 
-// Name of the signal for getting information about AV software installed on
-// the device.
-const char kAntiVirusInfo[] = "antiVirusInfo";
-
 // Name of the signal for getting information about the browser version.
 const char kBrowserVersion[] = "browserVersion";
 
@@ -27,8 +23,16 @@ const char kBuiltInDnsClientEnabled[] = "builtInDnsClientEnabled";
 // is enabled on the device.
 const char kChromeCleanupEnabled[] = "chromeCleanupEnabled";
 
-// Name of the signal for getting information about the device id.
-const char kDeviceId[] = "deviceId";
+// Name of the signal for getting information about whether users can
+// access other computers from Chrome using Chrome Remote Desktop.
+const char kChromeRemoteDesktopAppBlocked[] = "chromeRemoteDesktopAppBlocked";
+
+// Customer IDs of organizations that are affiliated with the organization
+// that is currently managing the device (or browser for non-CrOS platforms).
+const char kDeviceAffiliationIds[] = "deviceAffiliationIds";
+
+// Host name of the current device.
+const char kDeviceHostName[] = "deviceHostName";
 
 // Name of the signal for getting information about the device
 // manufacturer (e.g. Dell).
@@ -38,56 +42,30 @@ const char kDeviceManufacturer[] = "deviceManufacturer";
 // (e.g. iPhone 12 Max).
 const char kDeviceModel[] = "deviceModel";
 
+// Name of the signal for getting information about whether the device's main
+// disk is encrypted.
+const char kDiskEncrypted[] = "diskEncrypted";
+
 // Name of the signal for getting information about the human readable
 // name for the device.
 const char kDisplayName[] = "displayName";
 
-// Name of the signal for getting information about the dns address of
-// the device.
-const char kDnsAddress[] = "dnsAddress";
-
 // Name of the signal for getting information about the CBCM enrollment
-// domain of the browser.
-const char kEnrollmentDomain[] = "enrollmentDomain";
-
-// Name of the parameterized signal for getting information from resources
-// stored on the file system. This includes the presence/absence of
-// files/folders, and also additional signals' extraction from executables.
-const char kFileSystemInfo[] = "fileSystemInfo";
+// domain of the browser or ChromeOS device.
+const char kDeviceEnrollmentDomain[] = "deviceEnrollmentDomain";
 
 // Name of the signal for getting information about whether firewall is
 // enabled on the device.
-const char kFirewallOn[] = "firewallOn";
+const char kOsFirewall[] = "osFirewall";
 
 // Name of the signal for getting information about the IMEI.
 const char kImei[] = "imei";
 
-// Name of the signal for getting information about installed hotfixes on
-// the device.
-const char kInstalledHotfixes[] = "hotfixes";
-
-// Name of the signal for getting information about the ip address on the
-// device.
-const char kIpAddress[] = "ipAddress";
-
-// Name of the signal for getting information about whether the disk
-// on the device is encrypted.
-const char kIsDiskEncrypted[] = "isDiskEncrypted";
-
-// Name of the signal for getting information about whether the device is
-// jailbroken or modified.
-const char kIsJailbroken[] = "isJailBroken";
-
-// Name of the signal for getting information about whether access to
-// the OS user is protected by a password.
-const char kIsPasswordProtected[] = "isProtectedByPassword";
+// MAC addresses of the device.
+const char kMacAddresses[] = "macAddresses";
 
 // Name of the signal for getting information about the MEID.
 const char kMeid[] = "meid";
-
-// Name of the signal for getting information about the obfuscated CBCM
-// enrolled customer Id.
-const char kObfuscatedCustomerId[] = "obfuscatedCustomerId";
 
 // Name of the signal for getting information about the OS running
 // on the device (e.g. Chrome OS).
@@ -102,43 +80,53 @@ const char kOsVersion[] = "osVersion";
 const char kPasswordProtectionWarningTrigger[] =
     "passwordPotectionWarningTrigger";
 
-// Name of the signal for getting information about whether users can
-// access other computers from Chrome using Chrome Remote Desktop.
-const char kRemoteDesktopAvailable[] = "remoteDesktopAvailable";
+// Customer IDs of organizations that are affiliated with the organization
+// that is currently managing the user who is logged in to the current Chrome
+// Profile.
+const char kProfileAffiliationIds[] = "profileAffiliationIds";
+
+// Indicates whether Enterprise-grade (i.e. custom) unsafe URL scanning is
+// enabled or not. This setting may be controlled by an enterprise policy:
+// https://chromeenterprise.google/policies/#EnterpriseRealTimeUrlCheckMode
+const char kRealtimeUrlCheckMode[] = "realtimeUrlCheckMode";
 
 // Name of the signal for getting information of the value of the
 // SafeBrowsingProtectionLevel policy.
 // https://chromeenterprise.google/policies/#SafeBrowsingProtectionLevel
 const char kSafeBrowsingProtectionLevel[] = "safeBrowsingProtectionLevel";
 
+// Name of the signal for getting information about whether access to
+// the OS user is protected by a password.
+const char kScreenLockSecured[] = "screenLockSecured";
+
+// Indicates whether the device’s startup software has its Secure Boot feature
+// enabled or not (trusted software).
+const char kSecureBootEnabled[] = "secureBootEnabled";
+
 // Name of the signal for getting information about the device serial
 // number.
 const char kSerialNumber[] = "serialNumber";
-
-// Name of the parameterized signal for getting information from settings
-// storage (e.g. Registry, Plist) on the device.
-const char kSettings[] = "settings";
-
-// Name of the signal for getting information about the signed in profile
-// name.
-const char kSignedInProfileName[] = "signedInProfileName";
 
 // Name of the signal for getting information of the value of the
 // SitePerProcess policy.
 // https://chromeenterprise.google/policies/#SitePerProcess
 const char kSiteIsolationEnabled[] = "siteIsolationEnabled";
 
+// Name of the signal for getting information about the dns address of
+// the device.
+const char kSystemDnsServers[] = "systemDnsServers";
+
 // Name of the signal for getting information about whether third party
 // blocking is enabled on the device.
 const char kThirdPartyBlockingEnabled[] = "thirdPartyBlockingEnabled";
 
-// Name of the signal for getting information about the hash
-// of the EKPub certificate of the TPM on the device, if available.
-const char kTpmHash[] = "tpmHash";
-
 // Name of the signal for getting information about the windows domain
 // the device has joined.
-const char kWindowsDomain[] = "windowsDomain";
+const char kWindowsMachineDomain[] = "windowsMachineDomain";
+
+// Name of the signal for getting information about the windows domain
+// the current OS user.
+const char kWindowsUserDomain[] = "windowsUserDomain";
 
 }  // namespace names
 

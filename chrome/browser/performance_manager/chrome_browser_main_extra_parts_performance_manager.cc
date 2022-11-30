@@ -8,6 +8,8 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/power_monitor/power_monitor_buildflags.h"
+#include "base/system/sys_info.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -16,8 +18,10 @@
 #include "chrome/browser/performance_manager/decorators/frozen_frame_aggregator.h"
 #include "chrome/browser/performance_manager/decorators/helpers/page_live_state_decorator_helper.h"
 #include "chrome/browser/performance_manager/decorators/page_aggregator.h"
+#include "chrome/browser/performance_manager/decorators/page_live_state_decorator_delegate_impl.h"
 #include "chrome/browser/performance_manager/metrics/memory_pressure_metrics.h"
 #include "chrome/browser/performance_manager/metrics/metrics_provider.h"
+#include "chrome/browser/performance_manager/metrics/page_timeline_monitor.h"
 #include "chrome/browser/performance_manager/observers/page_load_metrics_observer.h"
 #include "chrome/browser/performance_manager/policies/background_tab_loading_policy.h"
 #include "chrome/browser/performance_manager/policies/policy_features.h"
@@ -28,6 +32,7 @@
 #include "components/performance_manager/embedder/performance_manager_lifetime.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/performance_manager_feature_observer_client.h"
+#include "components/performance_manager/public/decorators/page_live_state_decorator.h"
 #include "components/performance_manager/public/decorators/page_load_tracker_decorator_helper.h"
 #include "components/performance_manager/public/decorators/process_metrics_decorator.h"
 #include "components/performance_manager/public/features.h"
@@ -37,6 +42,10 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/allocator/buildflags.h"
+#include "chromeos/dbus/power/power_manager_client.h"
+#include "components/performance_manager/power/battery_level_provider_chromeos.h"
+#include "components/performance_manager/power/dbus_power_manager_sampling_event_source.h"
+
 #if defined(ARCH_CPU_X86_64)
 #include "chrome/browser/performance_manager/policies/userspace_swap_policy_chromeos.h"
 #endif  // defined(ARCH_CPU_X86_64)
@@ -52,6 +61,7 @@
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
+#include "base/power_monitor/battery_state_sampler.h"
 #include "chrome/browser/performance_manager/mechanisms/page_freezer.h"
 #include "chrome/browser/performance_manager/policies/high_efficiency_mode_policy.h"
 #include "chrome/browser/performance_manager/policies/page_discarding_helper.h"
@@ -96,6 +106,9 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
       std::make_unique<performance_manager::FrozenFrameAggregator>());
   graph->PassToGraph(
       std::make_unique<performance_manager::ProcessMetricsDecorator>());
+  graph->PassToGraph(
+      std::make_unique<performance_manager::PageLiveStateDecorator>(
+          performance_manager::PageLiveStateDelegateImpl::Create()));
 
   if (performance_manager::policies::WorkingSetTrimmerPolicy::
           PlatformSupportsWorkingSetTrim()) {
@@ -165,6 +178,12 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
   graph->PassToGraph(
       std::make_unique<performance_manager::metrics::MemoryPressureMetrics>());
 
+  if (base::FeatureList::IsEnabled(
+          performance_manager::features::kPageTimelineMonitor)) {
+    graph->PassToGraph(
+        std::make_unique<performance_manager::metrics::PageTimelineMonitor>());
+  }
+
   // TODO(crbug.com/1225070): Consider using this policy on Android.
 #if !BUILDFLAG(IS_ANDROID)
   if (base::FeatureList::IsEnabled(
@@ -208,6 +227,10 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostCreateThreads() {
     int tab_count_threshold =
         performance_manager::features::kHighEfficiencyModePromoTabCountThreshold
             .Get();
+    int memory_percent_threshold =
+        performance_manager::features::
+            kHighEfficiencyModePromoMemoryPercentThreshold.Get();
+    uint64_t system_memory_kb = base::SysInfo::AmountOfPhysicalMemory() / 1024;
     DCHECK_GT(tab_count_threshold, 0);
     user_performance_tuning_manager_ = base::WrapUnique(
         new performance_manager::user_tuning::UserPerformanceTuningManager(
@@ -217,7 +240,9 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostCreateThreads() {
                 base::WrapUnique(new performance_manager::user_tuning::
                                      UserPerformanceTuningManager::
                                          UserPerformanceTuningReceiverImpl),
-                static_cast<size_t>(tab_count_threshold))));
+                /*resident_set_threshold_kb=*/system_memory_kb * 100 /
+                    memory_percent_threshold,
+                /*tab_count_threshold=*/tab_count_threshold)));
   }
 #endif
 
@@ -231,6 +256,28 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostCreateThreads() {
   extension_watcher_ =
       std::make_unique<performance_manager::ExtensionWatcher>();
 #endif
+
+  // Some browser tests need to control how the battery state behaves, so they
+  // install a test `BatteryStateSampler` before browser setup.
+  if (!base::BatteryStateSampler::HasTestingInstance()) {
+    // The ChromeOS `BatteryLevelProvider` and `SamplingEventSource`
+    // implementations are in `components` for dependency reasons, so they need
+    // to be created here and passed in explicitly to `BatteryStateSampler`.
+    // TODO(crbug.com/1373560): All of the battery level machinery should be in
+    // the same location, and the ifdefs should be contained to the
+    // `BatteryLevelProvider` and SamplingEventSource` instantiation functions.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    battery_state_sampler_ = std::make_unique<base::BatteryStateSampler>(
+        std::make_unique<
+            performance_manager::power::DbusPowerManagerSamplingEventSource>(
+            chromeos::PowerManagerClient::Get()),
+        std::make_unique<
+            performance_manager::power::BatteryLevelProviderChromeOS>(
+            chromeos::PowerManagerClient::Get()));
+#elif BUILDFLAG(HAS_BATTERY_LEVEL_PROVIDER_IMPL)
+    battery_state_sampler_ = std::make_unique<base::BatteryStateSampler>();
+#endif
+  }
 }
 
 void ChromeBrowserMainExtraPartsPerformanceManager::PreMainMessageLoopRun() {
@@ -272,6 +319,9 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostMainMessageLoopRun() {
 #if !BUILDFLAG(IS_ANDROID)
   user_performance_tuning_manager_.reset();
   profile_discard_opt_out_list_helper_.reset();
+
+  if (battery_state_sampler_)
+    battery_state_sampler_->Shutdown();
 #endif
 
   // Releasing `performance_manager_lifetime_` will tear down the registry and

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,8 +52,7 @@ void MediaControlScrubbingMessageElement::PopulateChildren() {
   arrow_left_div2->setInnerHTML(
       MediaControlsResourceLoader::GetArrowLeftSVGImage());
   message_div->setInnerText(
-      MediaElement().GetLocale().QueryString(IDS_MEDIA_SCRUBBING_MESSAGE_TEXT),
-      ASSERT_NO_EXCEPTION);
+      MediaElement().GetLocale().QueryString(IDS_MEDIA_SCRUBBING_MESSAGE_TEXT));
   arrow_right_div1->setInnerHTML(
       MediaControlsResourceLoader::GetArrowRightSVGImage());
   arrow_right_div2->setInnerHTML(

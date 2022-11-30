@@ -349,7 +349,8 @@ var CrSettingsSafetyCheckPermissionsTest = class extends CrSettingsBrowserTest {
   get featureListInternal() {
     return {
       enabled: [
-        'features::kSafetyCheckPermissions',
+        'features::kSafetyCheckUnusedSitePermissions',
+        'features::kSafetyCheckNotificationPermissions',
       ],
     };
   }
@@ -420,6 +421,27 @@ TEST_F('CrSettingsSiteDetailsTest', 'MAYBE_SiteDetails', function() {
   mocha.run();
 });
 
+var CrSettingsPerformanceMenuTest = class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/settings_performance_menu_test.js';
+  }
+
+  /** @override */
+  get featureListInternal() {
+    return {
+      enabled: [
+        'performance_manager::features::kHighEfficiencyModeAvailable',
+        'performance_manager::features::kBatterySaverModeAvailable',
+      ],
+    };
+  }
+};
+
+TEST_F('CrSettingsPerformanceMenuTest', 'All', function() {
+  mocha.run();
+});
+
 var CrSettingsPerformancePageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
@@ -437,6 +459,38 @@ var CrSettingsPerformancePageTest = class extends CrSettingsBrowserTest {
 };
 
 TEST_F('CrSettingsPerformancePageTest', 'All', function() {
+  mocha.run();
+});
+
+var CrSettingsBatteryPageTest = class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/battery_page_test.js';
+  }
+
+  /** @override */
+  get featureListInternal() {
+    return {
+      enabled: [
+        'performance_manager::features::kBatterySaverModeAvailable',
+      ],
+    };
+  }
+};
+
+TEST_F('CrSettingsBatteryPageTest', 'All', function() {
+  mocha.run();
+});
+
+var CrSettingsTabDiscardExceptionDialogTest =
+    class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/tab_discard_exception_dialog_test.js';
+  }
+};
+
+TEST_F('CrSettingsTabDiscardExceptionDialogTest', 'All', function() {
   mocha.run();
 });
 
@@ -500,6 +554,10 @@ TEST_F('CrSettingsPrivacyPageTest', 'PrivacyGuideRowTests', function() {
 
 TEST_F('CrSettingsPrivacyPageTest', 'PrivacyGuide2Disabled', function() {
   runMochaSuite('PrivacyGuide2Disabled');
+});
+
+TEST_F('CrSettingsPrivacyPageTest', 'NotificationPermissionReview', function() {
+  runMochaSuite('NotificationPermissionReview');
 });
 
 // TODO(crbug.com/1043665): flaky crash on Linux Tests (dbg).
@@ -810,7 +868,7 @@ var CrSettingsReviewNotificationPermissionsTest =
   get featureList() {
     return {
       enabled: [
-        'features::kSafetyCheckPermissions',
+        'features::kSafetyCheckNotificationPermissions',
       ],
     };
   }

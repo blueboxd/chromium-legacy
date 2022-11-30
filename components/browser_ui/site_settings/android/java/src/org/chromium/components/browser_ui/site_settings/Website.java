@@ -13,9 +13,10 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge.StorageInfoClearedCallback;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.BrowserContextHandle;
+import org.chromium.url.GURL;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,7 +26,7 @@ import java.util.Map;
 /**
  * Website is a class for storing information about a website and its associated permissions.
  */
-public final class Website implements Serializable {
+public final class Website implements WebsiteEntry {
     private final WebsiteAddress mOrigin;
     private final WebsiteAddress mEmbedder;
 
@@ -40,12 +41,28 @@ public final class Website implements Serializable {
     private Map<Integer, PermissionInfo> mPermissionInfos = new HashMap<>();
 
     private LocalStorageInfo mLocalStorageInfo;
+    private FPSCookieInfo mFPSCookieInfo;
+    private CookiesInfo mCookiesInfo;
     private final List<StorageInfo> mStorageInfo = new ArrayList<>();
 
     // The collection of chooser-based permissions (e.g. USB device access) granted to this site.
     // Each entry declares its own ContentSettingsType and so depending on how this object was
     // built this list could contain multiple types of objects.
     private final List<ChosenObjectInfo> mObjectInfo = new ArrayList<ChosenObjectInfo>();
+
+    private static final String SCHEME_SUFFIX = "://";
+
+    /**
+     * Removes the scheme in a given URL, if present.
+     *
+     * Examples:
+     * - "google.com" -> "google.com"
+     * - "https://google.com" -> "google.com"
+     */
+    public static String omitProtocolIfPresent(String url) {
+        if (url.indexOf(SCHEME_SUFFIX) == -1) return url;
+        return UrlFormatter.formatUrlForDisplayOmitScheme(url);
+    }
 
     public Website(WebsiteAddress origin, WebsiteAddress embedder) {
         mOrigin = origin;
@@ -255,12 +272,28 @@ public final class Website implements Serializable {
         return mLocalStorageInfo;
     }
 
+    public FPSCookieInfo getFPSCookieInfo() {
+        return mFPSCookieInfo;
+    }
+
+    public void setFPSCookieInfo(FPSCookieInfo fpsCookieInfo) {
+        mFPSCookieInfo = fpsCookieInfo;
+    }
+
     public void addStorageInfo(StorageInfo info) {
         mStorageInfo.add(info);
     }
 
     public List<StorageInfo> getStorageInfo() {
         return new ArrayList<StorageInfo>(mStorageInfo);
+    }
+
+    public void setCookiesInfo(CookiesInfo info) {
+        mCookiesInfo = info;
+    }
+
+    public CookiesInfo getCookiesInfo() {
+        return mCookiesInfo;
     }
 
     public void clearAllStoredData(
@@ -288,13 +321,6 @@ public final class Website implements Serializable {
         public void onStoredDataCleared();
     }
 
-    public long getTotalUsage() {
-        long usage = 0;
-        if (mLocalStorageInfo != null) usage += mLocalStorageInfo.getSize();
-        for (StorageInfo info : mStorageInfo) usage += info.getSize();
-        return usage;
-    }
-
     /**
      * Add information about an object the user has granted permission for this site to access.
      */
@@ -307,5 +333,35 @@ public final class Website implements Serializable {
      */
     public List<ChosenObjectInfo> getChosenObjectInfo() {
         return new ArrayList<ChosenObjectInfo>(mObjectInfo);
+    }
+
+    // WebsiteEntry implementation.
+    @Override
+    public String getTitleForPreferenceRow() {
+        return omitProtocolIfPresent(getTitle());
+    }
+
+    @Override
+    public GURL getFaviconUrl() {
+        return new GURL(getAddress().getOrigin());
+    }
+
+    @Override
+    public long getTotalUsage() {
+        long usage = 0;
+        if (mLocalStorageInfo != null) usage += mLocalStorageInfo.getSize();
+        for (StorageInfo info : mStorageInfo) usage += info.getSize();
+        return usage;
+    }
+
+    @Override
+    public int getNumberOfCookies() {
+        if (mCookiesInfo == null) return 0;
+        return mCookiesInfo.getCount();
+    }
+
+    @Override
+    public boolean matches(String search) {
+        return getTitle().contains(search);
     }
 }

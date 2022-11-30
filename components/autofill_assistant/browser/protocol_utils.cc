@@ -17,9 +17,7 @@
 #include "components/autofill_assistant/browser/actions/collect_user_data_action.h"
 #include "components/autofill_assistant/browser/actions/configure_bottom_sheet_action.h"
 #include "components/autofill_assistant/browser/actions/configure_ui_state_action.h"
-#include "components/autofill_assistant/browser/actions/delete_password_action.h"
 #include "components/autofill_assistant/browser/actions/dispatch_js_event_action.h"
-#include "components/autofill_assistant/browser/actions/edit_password_action.h"
 #include "components/autofill_assistant/browser/actions/execute_js_action.h"
 #include "components/autofill_assistant/browser/actions/expect_navigation_action.h"
 #include "components/autofill_assistant/browser/actions/external_action.h"
@@ -505,10 +503,6 @@ std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
                          action.scroll_container().animation()));
     case ActionProto::ActionInfoCase::kSetTouchableArea:
       return std::make_unique<SetTouchableAreaAction>(delegate, action);
-    case ActionProto::ActionInfoCase::kDeletePassword:
-      return std::make_unique<DeletePasswordAction>(delegate, action);
-    case ActionProto::ActionInfoCase::kEditPassword:
-      return std::make_unique<EditPasswordAction>(delegate, action);
     case ActionProto::ActionInfoCase::kBlurField:
       return PerformOnSingleElementAction::WithClientId(
           delegate, action, action.blur_field().client_id(),
@@ -781,14 +775,6 @@ absl::optional<ActionProto> ProtocolUtils::ParseFromString(
     case ActionProto::ActionInfoCase::kSetTouchableArea:
       success = ParseActionFromString(action_id, bytes, error_message,
                                       proto.mutable_set_touchable_area());
-      break;
-    case ActionProto::ActionInfoCase::kDeletePassword:
-      success = ParseActionFromString(action_id, bytes, error_message,
-                                      proto.mutable_delete_password());
-      break;
-    case ActionProto::ActionInfoCase::kEditPassword:
-      success = ParseActionFromString(action_id, bytes, error_message,
-                                      proto.mutable_edit_password());
       break;
     case ActionProto::ActionInfoCase::kBlurField:
       success = ParseActionFromString(action_id, bytes, error_message,

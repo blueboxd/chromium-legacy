@@ -58,16 +58,16 @@ class ConfigBase final : public TargetConfig {
   TokenLevel GetLockdownTokenLevel() const override;
   ResultCode SetJobLevel(JobLevel job_level, uint32_t ui_exceptions) override;
   JobLevel GetJobLevel() const override;
-  ResultCode SetJobMemoryLimit(size_t memory_limit) override;
+  void SetJobMemoryLimit(size_t memory_limit) override;
   void SetAllowNoSandboxJob() override;
   bool GetAllowNoSandboxJob() override;
   ResultCode AddRule(SubSystem subsystem,
                      Semantics semantics,
                      const wchar_t* pattern) override;
-  ResultCode AddDllToUnload(const wchar_t* dll_name) override;
+  void AddDllToUnload(const wchar_t* dll_name) override;
   ResultCode SetIntegrityLevel(IntegrityLevel integrity_level) override;
   IntegrityLevel GetIntegrityLevel() const override;
-  ResultCode SetDelayedIntegrityLevel(IntegrityLevel integrity_level) override;
+  void SetDelayedIntegrityLevel(IntegrityLevel integrity_level) override;
   ResultCode SetLowBox(const wchar_t* sid) override;
   ResultCode SetProcessMitigations(MitigationFlags flags) override;
   MitigationFlags GetProcessMitigations() override;
@@ -166,9 +166,6 @@ class PolicyBase final : public TargetPolicy {
 
   // TargetPolicy:
   TargetConfig* GetConfig() override;
-  std::wstring GetDesktopName() override;
-  ResultCode CreateAlternateDesktop(Desktop desktop) override;
-  void DestroyDesktops() override;
   ResultCode SetStdoutHandle(HANDLE handle) override;
   ResultCode SetStderrHandle(HANDLE handle) override;
   void AddHandleToShare(HANDLE handle) override;

@@ -396,11 +396,10 @@ ExtensionFunction::ResponseAction InputMethodPrivateSetSettingsFunction::Run() {
   const auto params = SetSettings::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  DictionaryPrefUpdate update(
+  ScopedDictPrefUpdate update(
       Profile::FromBrowserContext(browser_context())->GetPrefs(),
       prefs::kLanguageInputMethodSpecificSettings);
-  update->GetDict().SetByDottedPath(params->engine_id,
-                                    params->settings.ToValue());
+  update->SetByDottedPath(params->engine_id, params->settings.ToValue());
 
   // The router will only send the event to extensions that are listening.
   extensions::EventRouter* router =
@@ -641,6 +640,18 @@ InputMethodPrivateOnAutocorrectFunction::Run() {
   engine->OnAutocorrect(base::UTF8ToUTF16(params.typed_word),
                         base::UTF8ToUTF16(params.corrected_word),
                         params.start_index);
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+InputMethodPrivateNotifyInputMethodReadyForTestingFunction::Run() {
+  std::string error;
+  ash::input_method::InputMethodEngine* engine = GetEngineIfActive(
+      Profile::FromBrowserContext(browser_context()), extension_id(), &error);
+  if (!engine)
+    return RespondNow(Error(InformativeError(error, static_function_name())));
+
+  engine->NotifyInputMethodExtensionReadyForTesting();  // IN-TEST
   return RespondNow(NoArguments());
 }
 

@@ -18,6 +18,7 @@
 #include "ui/gfx/switches.h"
 
 #if BUILDFLAG(IS_LINUX)
+#include "ui/gl/gl_switches.h"
 #include "ui/ozone/public/ozone_switches.h"
 #endif  // BUILDFLAG(IS_LINUX)
 
@@ -58,6 +59,13 @@ void SetUpCommandLine(const base::CommandLine* command_line) {
   if (!command_line->HasSwitch(switches::kOzoneOverrideScreenSize)) {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kOzoneOverrideScreenSize, "800,600");
+  }
+  // If Ozone/Headless is enabled, Vulkan initialization crashes unless
+  // Angle implementation is specified explicitly.
+  if (!command_line->HasSwitch(switches::kUseGL) &&
+      !command_line->HasSwitch(switches::kUseANGLE)) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kUseANGLE, gl::kANGLEImplementationSwiftShaderForWebGLName);
   }
 #endif  // BUILDFLAG(IS_LINUX)
 }

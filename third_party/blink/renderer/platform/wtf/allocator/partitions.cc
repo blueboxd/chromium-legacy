@@ -56,8 +56,9 @@ const char* const Partitions::kAllocatedObjectPoolName =
 
 #if defined(PA_ALLOW_PCSCAN)
 // Runs PCScan on WTF partitions.
-const base::Feature kPCScanBlinkPartitions{
-    "PartitionAllocPCScanBlinkPartitions", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kPCScanBlinkPartitions,
+             "PartitionAllocPCScanBlinkPartitions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 bool Partitions::initialized_ = false;
@@ -212,7 +213,7 @@ void Partitions::InitializeArrayBufferPartition() {
 
 #if defined(PA_ALLOW_PCSCAN)
   // PCScan relies on the fact that quarantinable allocations go to PA's
-  // giga-cage. This is not the case if configurable pool is available.
+  // regular pool. This is not the case if configurable pool is available.
   if (scan_is_enabled_ && !array_buffer_root_->uses_configurable_pool()) {
     partition_alloc::internal::PCScan::RegisterNonScannableRoot(
         array_buffer_root_);

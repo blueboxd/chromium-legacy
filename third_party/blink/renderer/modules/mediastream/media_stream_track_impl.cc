@@ -400,8 +400,7 @@ void MediaStreamTrackImpl::setReadyState(
 
     // Observers may dispatch events which create and add new Observers;
     // take a snapshot so as to safely iterate.
-    HeapVector<Member<MediaStreamTrack::Observer>> observers;
-    CopyToVector(observers_, observers);
+    HeapVector<Member<MediaStreamTrack::Observer>> observers(observers_);
     for (auto observer : observers)
       observer->TrackChangedState();
   }
@@ -764,7 +763,7 @@ void MediaStreamTrackImpl::applyConstraintsImageCapture(
     ScriptPromiseResolver* resolver,
     const MediaTrackConstraints* constraints) {
   // |constraints| empty means "remove/clear all current constraints".
-  if (!constraints->hasAdvanced() || constraints->advanced().IsEmpty()) {
+  if (!constraints->hasAdvanced() || constraints->advanced().empty()) {
     image_capture_->ClearMediaTrackConstraints();
     resolver->Resolve();
   } else {
@@ -865,7 +864,7 @@ void MediaStreamTrackImpl::BeingTransferred(
   if (user_media_client) {
     user_media_client->KeepDeviceAliveForTransfer(
         device()->serializable_session_id().value(), transfer_id,
-        WTF::Bind(
+        WTF::BindOnce(
             [](MediaStreamTrack* cloned_track,
                ExecutionContext* execution_context, bool device_found) {
               if (!device_found) {

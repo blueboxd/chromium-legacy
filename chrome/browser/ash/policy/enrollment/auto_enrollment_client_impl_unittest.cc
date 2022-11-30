@@ -25,7 +25,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
-#include "chrome/browser/ash/policy/enrollment/private_membership/fake_psm_rlwe_dmserver_client.h"
+#include "chrome/browser/ash/policy/enrollment/psm/fake_rlwe_dmserver_client.h"
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_device_state.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
@@ -50,7 +50,7 @@ namespace em = enterprise_management;
 using PsmExecutionResult = em::DeviceRegisterRequest::PsmExecutionResult;
 
 // A struct reporesents the PSM execution result params.
-using PsmResultHolder = policy::PsmRlweDmserverClient::ResultHolder;
+using PsmResultHolder = policy::psm::RlweDmserverClient::ResultHolder;
 
 namespace policy {
 
@@ -122,10 +122,10 @@ class AutoEnrollmentClientImplBaseTest : public testing::Test {
           progress_callback, service_.get(), local_state_,
           shared_url_loader_factory_, kStateKey, power_initial, power_limit);
     } else {
-      // Store a non-owned smart pointer of FakePsmRlweDmserverClient in
+      // Store a non-owned smart pointer of `psm::FakelweDmserverClient` in
       // `fake_psm_rlwe_dmserver_client_ptr_`.
       auto fake_psm_rlwe_dmserver_client =
-          std::make_unique<FakePsmRlweDmserverClient>();
+          std::make_unique<psm::FakeRlweDmserverClient>();
       fake_psm_rlwe_dmserver_client_ptr_ = fake_psm_rlwe_dmserver_client.get();
 
       client_ =
@@ -303,16 +303,17 @@ class AutoEnrollmentClientImplBaseTest : public testing::Test {
   void VerifyServerBackedStateForAll(
       const std::string& expected_management_domain,
       const std::string& expected_restore_mode,
-      const base::DictionaryValue** local_state_dict) {
+      base::Value::Dict& local_state_dict) {
     const base::Value* state =
         local_state_->GetUserPref(prefs::kServerBackedDeviceState);
     ASSERT_TRUE(state);
-    const base::DictionaryValue* state_dict = nullptr;
-    ASSERT_TRUE(state->GetAsDictionary(&state_dict));
-    *local_state_dict = state_dict;
+    ASSERT_TRUE(state->is_dict());
+
+    const base::Value::Dict& state_dict = state->GetDict();
+    local_state_dict = state_dict.Clone();
 
     const std::string* actual_management_domain =
-        state_dict->FindStringKey(kDeviceStateManagementDomain);
+        state_dict.FindString(kDeviceStateManagementDomain);
     if (expected_management_domain.empty()) {
       EXPECT_FALSE(actual_management_domain);
     } else {
@@ -321,22 +322,22 @@ class AutoEnrollmentClientImplBaseTest : public testing::Test {
     }
 
     if (!expected_restore_mode.empty())
-      EXPECT_TRUE(state_dict->FindStringKey(kDeviceStateMode));
+      EXPECT_TRUE(state_dict.FindString(kDeviceStateMode));
     else
-      EXPECT_EQ(state_dict->FindKey(kDeviceStateMode), nullptr);
+      EXPECT_EQ(state_dict.Find(kDeviceStateMode), nullptr);
   }
 
   void VerifyServerBackedStateForFRE(
       const std::string& expected_management_domain,
       const std::string& expected_restore_mode,
       const std::string& expected_disabled_message) {
-    const base::DictionaryValue* state_dict;
+    base::Value::Dict state_dict;
     VerifyServerBackedStateForAll(expected_management_domain,
-                                  expected_restore_mode, &state_dict);
+                                  expected_restore_mode, state_dict);
 
     if (!expected_restore_mode.empty()) {
       const std::string* actual_restore_mode =
-          state_dict->FindStringKey(kDeviceStateMode);
+          state_dict.FindString(kDeviceStateMode);
       EXPECT_TRUE(actual_restore_mode);
       EXPECT_EQ(protocol_ == AutoEnrollmentProtocol::kFRE
                     ? expected_restore_mode
@@ -346,11 +347,11 @@ class AutoEnrollmentClientImplBaseTest : public testing::Test {
     }
 
     const std::string* actual_disabled_message =
-        state_dict->FindStringKey(kDeviceStateDisabledMessage);
+        state_dict.FindString(kDeviceStateDisabledMessage);
     EXPECT_TRUE(actual_disabled_message);
     EXPECT_EQ(expected_disabled_message, *actual_disabled_message);
-    EXPECT_FALSE(state_dict->FindBoolPath(kDeviceStatePackagedLicense));
-    EXPECT_FALSE(state_dict->FindStringKey(kDeviceStateLicenseType));
+    EXPECT_FALSE(state_dict.FindBool(kDeviceStatePackagedLicense));
+    EXPECT_FALSE(state_dict.FindString(kDeviceStateLicenseType));
   }
 
   void VerifyServerBackedStateForInitialEnrollment(
@@ -358,15 +359,15 @@ class AutoEnrollmentClientImplBaseTest : public testing::Test {
       const std::string& expected_restore_mode,
       bool expected_is_license_packaged_with_device,
       const std::string& expected_license_type) {
-    const base::DictionaryValue* state_dict;
+    base::Value::Dict state_dict;
     VerifyServerBackedStateForAll(expected_management_domain,
-                                  expected_restore_mode, &state_dict);
+                                  expected_restore_mode, state_dict);
 
-    EXPECT_FALSE(state_dict->FindStringKey(kDeviceStateDisabledMessage));
+    EXPECT_FALSE(state_dict.FindString(kDeviceStateDisabledMessage));
 
     absl::optional<bool> actual_is_license_packaged_with_device;
     actual_is_license_packaged_with_device =
-        state_dict->FindBoolPath(kDeviceStatePackagedLicense);
+        state_dict.FindBool(kDeviceStatePackagedLicense);
     if (actual_is_license_packaged_with_device.has_value()) {
       EXPECT_EQ(expected_is_license_packaged_with_device,
                 actual_is_license_packaged_with_device.value());
@@ -375,7 +376,7 @@ class AutoEnrollmentClientImplBaseTest : public testing::Test {
     }
 
     const std::string* actual_license_type =
-        state_dict->FindStringKey(kDeviceStateLicenseType);
+        state_dict.FindString(kDeviceStateLicenseType);
     EXPECT_TRUE(actual_license_type);
     EXPECT_EQ(*actual_license_type, expected_license_type);
   }
@@ -414,8 +415,8 @@ class AutoEnrollmentClientImplBaseTest : public testing::Test {
       DeviceManagementService::JobConfiguration::TYPE_INVALID;
 
   // Sets the final result of PSM protocol for testing.
-  base::raw_ptr<FakePsmRlweDmserverClient> fake_psm_rlwe_dmserver_client_ptr_ =
-      nullptr;
+  base::raw_ptr<psm::FakeRlweDmserverClient>
+      fake_psm_rlwe_dmserver_client_ptr_ = nullptr;
 
  private:
   const AutoEnrollmentProtocol protocol_;
@@ -1609,7 +1610,7 @@ class PsmHelperInitialEnrollmentTest : public AutoEnrollmentClientImplBaseTest {
     AutoEnrollmentClientImplBaseTest::SetUp();
   }
 
-  void PsmWillReplyWith(PsmResult psm_result,
+  void PsmWillReplyWith(psm::RlweResult psm_result,
                         absl::optional<bool> membership_result = absl::nullopt,
                         absl::optional<base::Time>
                             membership_determination_time = absl::nullopt) {
@@ -1659,7 +1660,7 @@ class PsmHelperInitialEnrollmentTest : public AutoEnrollmentClientImplBaseTest {
 
 TEST_F(PsmHelperInitialEnrollmentTest,
        RetryLogicAfterNetworkFailureForRlweQueryResponse) {
-  PsmWillReplyWith(PsmResult::kServerError);
+  PsmWillReplyWith(psm::RlweResult::kServerError);
 
   client()->Start();
   base::RunLoop().RunUntilIdle();
@@ -1695,7 +1696,7 @@ TEST_F(PsmHelperInitialEnrollmentTest,
   // Advance the time forward one second.
   task_environment_.FastForwardBy(kOneSecondTimeDelta);
 
-  PsmWillReplyWith(PsmResult::kSuccessfulDetermination,
+  PsmWillReplyWith(psm::RlweResult::kSuccessfulDetermination,
                    kExpectedMembershipResult,
                    kExpectedPsmDeterminationTimestamp);
 
@@ -1760,7 +1761,7 @@ TEST_F(PsmHelperInitialEnrollmentTest, PsmSucceedAndStateRetrievalSucceed) {
         em::DeviceInitialEnrollmentStateResponse::CHROME_ENTERPRISE);
   }
 
-  PsmWillReplyWith(PsmResult::kSuccessfulDetermination,
+  PsmWillReplyWith(psm::RlweResult::kSuccessfulDetermination,
                    kExpectedMembershipResult,
                    kExpectedPsmDeterminationTimestamp);
 
@@ -1804,7 +1805,7 @@ TEST_F(PsmHelperInitialEnrollmentTest, PsmSucceedAndStateRetrievalFailed) {
   // server-backed state.
   ServerWillFail(net::OK, DeviceManagementService::kServiceUnavailable);
 
-  PsmWillReplyWith(PsmResult::kSuccessfulDetermination,
+  PsmWillReplyWith(psm::RlweResult::kSuccessfulDetermination,
                    kExpectedMembershipResult,
                    kExpectedPsmDeterminationTimestamp);
 
@@ -1840,7 +1841,7 @@ TEST_F(PsmHelperInitialEnrollmentTest, PsmSucceedAndStateRetrievalIsEmpty) {
   // Advance the time forward one second.
   task_environment_.FastForwardBy(kOneSecondTimeDelta);
 
-  PsmWillReplyWith(PsmResult::kSuccessfulDetermination,
+  PsmWillReplyWith(psm::RlweResult::kSuccessfulDetermination,
                    /*membership_result=*/true,
                    kExpectedPsmDeterminationTimestamp);
 
@@ -1869,7 +1870,7 @@ TEST_F(PsmHelperInitialEnrollmentTest, PsmSucceedAndDeviceDisabled) {
   // Advance the time forward one second.
   task_environment_.FastForwardBy(kOneSecondTimeDelta);
 
-  PsmWillReplyWith(PsmResult::kSuccessfulDetermination,
+  PsmWillReplyWith(psm::RlweResult::kSuccessfulDetermination,
                    /*membership_result=*/true,
                    kExpectedPsmDeterminationTimestamp);
 
@@ -1895,17 +1896,18 @@ TEST_F(PsmHelperInitialEnrollmentTest, PsmSucceedAndDeviceDisabled) {
 
 class PsmHelperInitialEnrollmentInternalErrorTest
     : public PsmHelperInitialEnrollmentTest,
-      public testing::WithParamInterface<PsmResult> {
+      public testing::WithParamInterface<psm::RlweResult> {
  protected:
   void SetUp() override {
-    ASSERT_NE(GetPsmInternalErrorResult(), PsmResult::kSuccessfulDetermination);
-    ASSERT_NE(GetPsmInternalErrorResult(), PsmResult::kConnectionError);
-    ASSERT_NE(GetPsmInternalErrorResult(), PsmResult::kServerError);
+    ASSERT_NE(GetPsmInternalErrorResult(),
+              psm::RlweResult::kSuccessfulDetermination);
+    ASSERT_NE(GetPsmInternalErrorResult(), psm::RlweResult::kConnectionError);
+    ASSERT_NE(GetPsmInternalErrorResult(), psm::RlweResult::kServerError);
 
     PsmHelperInitialEnrollmentTest::SetUp();
   }
 
-  PsmResult GetPsmInternalErrorResult() const { return GetParam(); }
+  psm::RlweResult GetPsmInternalErrorResult() const { return GetParam(); }
 };
 
 TEST_P(PsmHelperInitialEnrollmentInternalErrorTest, PsmFails) {
@@ -1941,12 +1943,12 @@ TEST_P(PsmHelperInitialEnrollmentInternalErrorTest, PsmFails) {
 INSTANTIATE_TEST_SUITE_P(
     PsmForInitialEnrollmentInternalError,
     PsmHelperInitialEnrollmentInternalErrorTest,
-    testing::ValuesIn({PsmResult::kCreateRlweClientLibraryError,
-                       PsmResult::kCreateOprfRequestLibraryError,
-                       PsmResult::kCreateQueryRequestLibraryError,
-                       PsmResult::kProcessingQueryResponseLibraryError,
-                       PsmResult::kEmptyOprfResponseError,
-                       PsmResult::kEmptyQueryResponseError}));
+    testing::ValuesIn({psm::RlweResult::kCreateRlweClientLibraryError,
+                       psm::RlweResult::kCreateOprfRequestLibraryError,
+                       psm::RlweResult::kCreateQueryRequestLibraryError,
+                       psm::RlweResult::kProcessingQueryResponseLibraryError,
+                       psm::RlweResult::kEmptyOprfResponseError,
+                       psm::RlweResult::kEmptyQueryResponseError}));
 
 }  // namespace
 }  // namespace policy

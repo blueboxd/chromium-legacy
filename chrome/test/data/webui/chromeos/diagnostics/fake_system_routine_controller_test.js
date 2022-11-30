@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {RoutineRunnerRemote, RoutineType, StandardRoutineResult} from 'chrome://diagnostics/diagnostics_types.js';
 import {FakeSystemRoutineController} from 'chrome://diagnostics/fake_system_routine_controller.js';
-import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {RoutineRunnerRemote, RoutineType, StandardRoutineResult} from 'chrome://diagnostics/system_routine_controller.mojom-webui.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 
@@ -45,8 +45,8 @@ export function fakeSystemRoutineContollerTestSuite() {
 
         if (resultInfo.result.hasOwnProperty('powerResult')) {
           assertEquals(expectedResult, resultInfo.result.powerResult.result);
-
           // Can't have both simpleResult and powerResult
+
           assertFalse(resultInfo.result.hasOwnProperty('simpleResult'));
         }
 

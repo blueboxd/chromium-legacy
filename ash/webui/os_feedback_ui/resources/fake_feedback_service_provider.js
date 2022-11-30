@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {FakeMethodResolver} from 'chrome://resources/ash/common/fake_method_resolver.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 
 import {FeedbackAppExitPath, FeedbackAppHelpContentOutcome, FeedbackAppPostSubmitAction, FeedbackAppPreSubmitAction, FeedbackContext, FeedbackServiceProviderInterface, Report, SendReportStatus} from './feedback_types.js';
 
@@ -45,8 +45,6 @@ export class FakeFeedbackServiceProvider {
       openMetricsDialog: 0,
       /** @type {number} */
       openSystemInfoDialog: 0,
-      /** @type {number} */
-      openBluetoothLogsInfoDialog: 0,
       /** @type {number} */
       recordHelpContentSearchResultCount: 0,
     };
@@ -183,17 +181,6 @@ export class FakeFeedbackServiceProvider {
 
   openSystemInfoDialog() {
     this.callCounts_.openSystemInfoDialog++;
-  }
-
-  /**
-   * @return {number}
-   */
-  getOpenBluetoothLogsInfoDialogCallCount() {
-    return this.callCounts_.openBluetoothLogsInfoDialog;
-  }
-
-  openBluetoothLogsInfoDialog() {
-    this.callCounts_.openBluetoothLogsInfoDialog++;
   }
 
   /**

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,7 +92,7 @@
     {'name': 'foooooo', 'ts': 1099999, 'ph': 'E', 'tid': mainThread, 'pid': pid, 'cat': 'toplevel', 'args': {}}
   ];
 
-  const model = PerformanceTestRunner.createPerformanceModelWithEvents(testData);
+  const model = await PerformanceTestRunner.createPerformanceModelWithEvents(testData);
   const view = new Timeline.EventsTimelineTreeView(null);
   view.setModel(model, PerformanceTestRunner.mainTrack());
   view.updateContents(Timeline.TimelineSelection.fromRange(

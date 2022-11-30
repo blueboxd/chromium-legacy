@@ -66,9 +66,9 @@ enum class IOSDeviceRestoreSignedinState : int {
 };
 
 // Returns the account id associated with `identity`.
-CoreAccountId ChromeIdentityToAccountID(
+CoreAccountId SystemIdentityToAccountID(
     signin::IdentityManager* identity_manager,
-    ChromeIdentity* identity) {
+    id<SystemIdentity> identity) {
   std::string gaia_id = base::SysNSStringToUTF8([identity gaiaID]);
   return identity_manager->FindExtendedAccountInfoByGaiaId(gaia_id).account_id;
 }
@@ -318,7 +318,7 @@ ChromeIdentity* AuthenticationService::GetPrimaryIdentity(
   return account_manager_service_->GetIdentityWithGaiaID(authenticated_gaia_id);
 }
 
-void AuthenticationService::SignIn(ChromeIdentity* identity) {
+void AuthenticationService::SignIn(id<SystemIdentity> identity) {
   ServiceStatus status = GetServiceStatus();
   CHECK(status == ServiceStatus::SigninAllowed ||
         status == ServiceStatus::SigninForcedByPolicy)
@@ -373,7 +373,7 @@ void AuthenticationService::SignIn(ChromeIdentity* identity) {
   crash_keys::SetCurrentlySignedIn(true);
 }
 
-void AuthenticationService::GrantSyncConsent(ChromeIdentity* identity) {
+void AuthenticationService::GrantSyncConsent(id<SystemIdentity> identity) {
   DCHECK(account_manager_service_->IsValidIdentity(identity));
   DCHECK(identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin));
 
@@ -451,9 +451,9 @@ void AuthenticationService::SignOut(
 }
 
 NSDictionary* AuthenticationService::GetCachedMDMInfo(
-    ChromeIdentity* identity) const {
+    id<SystemIdentity> identity) const {
   auto it = cached_mdm_infos_.find(
-      ChromeIdentityToAccountID(identity_manager_, identity));
+      SystemIdentityToAccountID(identity_manager_, identity));
 
   if (it == cached_mdm_infos_.end()) {
     return nil;
@@ -470,12 +470,12 @@ NSDictionary* AuthenticationService::GetCachedMDMInfo(
 }
 
 bool AuthenticationService::HasCachedMDMErrorForIdentity(
-    ChromeIdentity* identity) const {
+    id<SystemIdentity> identity) const {
   return GetCachedMDMInfo(identity) != nil;
 }
 
 bool AuthenticationService::ShowMDMErrorDialogForIdentity(
-    ChromeIdentity* identity) {
+    id<SystemIdentity> identity) {
   NSDictionary* cached_info = GetCachedMDMInfo(identity);
   if (!cached_info) {
     return false;
@@ -533,7 +533,7 @@ void AuthenticationService::OnServiceSupportedChanged() {
   FireServiceStatusNotification();
 }
 
-bool AuthenticationService::HandleMDMNotification(ChromeIdentity* identity,
+bool AuthenticationService::HandleMDMNotification(id<SystemIdentity> identity,
                                                   NSDictionary* user_info) {
   ios::ChromeIdentityService* identity_service =
       ios::GetChromeBrowserProvider().GetChromeIdentityService();
@@ -551,15 +551,15 @@ bool AuthenticationService::HandleMDMNotification(ChromeIdentity* identity,
     if (is_blocked && weak_ptr.get()) {
       // If the identity is blocked, sign out of the account. As only managed
       // account can be blocked, this will clear the associated browsing data.
-      if (identity ==
-          weak_ptr->GetPrimaryIdentity(signin::ConsentLevel::kSignin)) {
+      if ([identity isEqual:weak_ptr->GetPrimaryIdentity(
+                                signin::ConsentLevel::kSignin)]) {
         weak_ptr->SignOut(signin_metrics::ABORT_SIGNIN,
                           /*force_clear_browsing_data=*/false, nil);
       }
     }
   };
   if (identity_service->HandleMDMNotification(identity, user_info, callback)) {
-    cached_mdm_infos_[ChromeIdentityToAccountID(identity_manager_, identity)] =
+    cached_mdm_infos_[SystemIdentityToAccountID(identity_manager_, identity)] =
         user_info;
     return true;
   }
@@ -567,7 +567,7 @@ bool AuthenticationService::HandleMDMNotification(ChromeIdentity* identity,
 }
 
 void AuthenticationService::OnAccessTokenRefreshFailed(
-    ChromeIdentity* identity,
+    id<SystemIdentity> identity,
     NSDictionary* user_info) {
   if (HandleMDMNotification(identity, user_info)) {
     return;
@@ -594,7 +594,7 @@ void AuthenticationService::OnAccessTokenRefreshFailed(
 }
 
 void AuthenticationService::HandleForgottenIdentity(
-    ChromeIdentity* invalid_identity,
+    id<SystemIdentity> invalid_identity,
     bool should_prompt,
     bool device_restore) {
   if (!identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
@@ -602,9 +602,10 @@ void AuthenticationService::HandleForgottenIdentity(
     return;
   }
 
-  ChromeIdentity* authenticated_identity =
+  id<SystemIdentity> authenticated_identity =
       GetPrimaryIdentity(signin::ConsentLevel::kSignin);
-  if (authenticated_identity && authenticated_identity != invalid_identity) {
+  if (authenticated_identity &&
+      ![authenticated_identity isEqual:invalid_identity]) {
     // `authenticated_identity` exists and is a valid identity. Nothing to do
     // here.
     return;
@@ -641,7 +642,8 @@ void AuthenticationService::HandleForgottenIdentity(
     AccountInfo extended_account_info =
         identity_manager_->FindExtendedAccountInfoByAccountId(
             account_info.account_id);
-    StorePreRestoreIdentity(extended_account_info);
+    StorePreRestoreIdentity(GetApplicationContext()->GetLocalState(),
+                            extended_account_info);
   }
 
   // Sign the user out.

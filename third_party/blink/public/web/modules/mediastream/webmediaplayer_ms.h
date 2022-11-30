@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,6 +122,7 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
   void SetPreload(WebMediaPlayer::Preload preload) override;
   WebTimeRanges Buffered() const override;
   WebTimeRanges Seekable() const override;
+  void OnFrozen() override;
 
   // Methods for painting.
   void Paint(cc::PaintCanvas* canvas,

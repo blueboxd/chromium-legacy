@@ -88,14 +88,6 @@ enum WhitespaceMode {
   kAllWhitespace,
 };
 
-enum FlushMode {
-  // Flush pending text. Flush queued tasks.
-  kFlushAlways,
-
-  // Flush pending text if node has length limit. Flush queued tasks.
-  kFlushIfAtTextLimit,
-};
-
 class AtomicHTMLToken;
 class CustomElementDefinition;
 class Document;
@@ -126,20 +118,20 @@ class HTMLConstructionSite final {
 
   // flushPendingText turns pending text into queued Text insertions, but does
   // not execute them.
-  void FlushPendingText(FlushMode);
+  void FlushPendingText();
 
   // Called before every token in HTMLTreeBuilder::processToken, thus inlined:
-  void Flush(FlushMode mode) {
+  void Flush() {
     if (!HasPendingTasks())
       return;
-    FlushPendingText(mode);
+    FlushPendingText();
     // NOTE: Possible reentrancy via JavaScript execution.
     ExecuteQueuedTasks();
-    DCHECK(mode == kFlushIfAtTextLimit || !HasPendingTasks());
+    DCHECK(!HasPendingTasks());
   }
 
   bool HasPendingTasks() {
-    return !pending_text_.IsEmpty() || !task_queue_.IsEmpty();
+    return !pending_text_.IsEmpty() || !task_queue_.empty();
   }
 
   void SetDefaultCompatibilityMode();
@@ -319,6 +311,9 @@ class HTMLConstructionSite final {
     }
 
     void Discard() {
+      if (IsEmpty())
+        return;
+
       PendingText discarded_text;
       Swap(discarded_text);
     }
@@ -326,11 +321,11 @@ class HTMLConstructionSite final {
     bool IsEmpty() {
       // When the stringbuilder is empty, the parent and whitespace should also
       // be "empty".
-      DCHECK_EQ(string_builder.IsEmpty(), !parent);
-      DCHECK(!string_builder.IsEmpty() || !next_child);
-      DCHECK(!string_builder.IsEmpty() ||
+      DCHECK_EQ(string_builder.empty(), !parent);
+      DCHECK(!string_builder.empty() || !next_child);
+      DCHECK(!string_builder.empty() ||
              (whitespace_mode == kWhitespaceUnknown));
-      return string_builder.IsEmpty();
+      return string_builder.empty();
     }
 
     void Trace(Visitor*) const;

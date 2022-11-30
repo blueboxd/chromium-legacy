@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,7 @@ void PostStyleUpdateScope::Apply() {
     element_animations->CssAnimations().MaybeApplyPendingUpdate(element.Get());
   }
 
-  DCHECK(animation_data_.elements_with_pending_updates_.IsEmpty())
+  DCHECK(animation_data_.elements_with_pending_updates_.empty())
       << "MaybeApplyPendingUpdate must not set further pending updates";
 }
 

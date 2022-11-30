@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
+#include "cc/base/features.h"
 #include "cc/base/math_util.h"
 #include "cc/benchmarks/micro_benchmark_impl.h"
 #include "cc/debug/debug_colors.h"
@@ -276,8 +277,8 @@ void PictureLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
     if (high_res) {
       const float epsilon = 1.f;
       gfx::SizeF scaled_tiling_size(high_res->tiling_size());
-      scaled_tiling_size.Scale(1 / raster_contents_scale_.x(),
-                               1 / raster_contents_scale_.y());
+      scaled_tiling_size.InvScale(raster_contents_scale_.x(),
+                                  raster_contents_scale_.y());
       if (raster_contents_scale_.x() >= 1.f)
         DCHECK(std::abs(bounds().width() - scaled_tiling_size.width()) <
                epsilon);
@@ -1156,7 +1157,7 @@ bool PictureLayerImpl::ShouldDirectlyCompositeImage(float raster_scale) const {
   // this is the same set of operations that will happen when using the tiling
   // at that raster scale.
   gfx::RectF content_rect(gfx::ToEnclosingRect(scaled_bounds_rect));
-  content_rect.Scale(1 / raster_scale);
+  content_rect.InvScale(raster_scale);
 
   return std::abs(layer_bounds.width() - content_rect.width()) < 1.f &&
          std::abs(layer_bounds.height() - content_rect.height()) < 1.f;
@@ -1307,8 +1308,8 @@ void PictureLayerImpl::UpdateTilingsForRasterScaleAndTranslation(
 
   if (!high_res) {
     // We always need a high res tiling, so create one if it doesn't exist.
-    high_res = AddTiling(
-        gfx::AxisTransform2d(raster_contents_scale_, raster_translation));
+    high_res = AddTiling(gfx::AxisTransform2d::FromScaleAndTranslation(
+        raster_contents_scale_, raster_translation));
   } else if (high_res->may_contain_low_resolution_tiles()) {
     // If the tiling we find here was LOW_RESOLUTION previously, it may not be
     // fully rastered, so destroy the old tiles.
@@ -1375,12 +1376,27 @@ bool PictureLayerImpl::ShouldAdjustRasterScale() const {
 
   if (was_screen_space_transform_animating_ !=
       draw_properties().screen_space_transform_is_animating) {
-    // Skip adjusting raster scale when animations finish if we have a
-    // will-change: transform hint to preserve maximum resolution tiles
-    // needed.
-    if (draw_properties().screen_space_transform_is_animating ||
-        !AffectedByWillChangeTransformHint())
-      return true;
+    if (draw_properties().screen_space_transform_is_animating) {
+      // Entering animation.
+      // Skip adjusting raster scale if max animation scale already matches
+      // raster scale.
+      float maximum_animation_scale =
+          layer_tree_impl()->property_trees()->MaximumAnimationToScreenScale(
+              transform_tree_index());
+      if (!base::FeatureList::IsEnabled(
+              features::kAvoidRasterDuringElasticOverscroll) ||
+          (maximum_animation_scale != raster_contents_scale_.x() ||
+           maximum_animation_scale != raster_contents_scale_.y())) {
+        return true;
+      }
+    } else {
+      // Exiting animation.
+      // Skip adjusting raster scale when animations finish if we have a
+      // will-change: transform hint to preserve maximum resolution tiles
+      // needed.
+      if (!AffectedByWillChangeTransformHint())
+        return true;
+    }
   }
 
   bool is_pinching = layer_tree_impl()->PinchGestureActive();

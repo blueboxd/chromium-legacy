@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -177,9 +177,9 @@ class NGInlineItemsBuilderTemplate {
   struct BoxInfo {
     DISALLOW_NEW();
 
+    const ComputedStyle& style;
     unsigned item_index;
     bool should_create_box_fragment;
-    bool may_have_margin_;
     FontHeight text_metrics;
 
     BoxInfo(unsigned item_index, const NGInlineItem& item);

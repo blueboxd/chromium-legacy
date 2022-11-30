@@ -23,6 +23,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
+#include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
@@ -39,30 +40,58 @@ enum FeatureState {
   FEATURE_ENABLED_BY_DEFAULT,
 };
 
-// The Feature struct is used to define the default state for a feature. See
-// comment below for more details. There must only ever be one struct instance
-// for a given feature name - generally defined as a constant global variable or
-// file static. It should never be used as a constexpr as it breaks
-// pointer-based identity lookup.
+// Recommended macros for declaring and defining features:
 //
-// Note: New code should use CONSTINIT on the base::Feature declaration, as in:
+// - `kFeature` is the C++ identifier that will be used for the `base::Feature`.
+// - `name` is the feature name, which must be globally unique. This name is
+//   used to enable/disable features via experiments and command-line flags.
+//   Names should use CamelCase-style naming, e.g. "MyGreatFeature".
+// - `default_state` is the default state to use for the feature, i.e.
+//   `base::FEATURE_DISABLED_BY_DEFAULT` or `base::FEATURE_ENABLED_BY_DEFAULT`.
+//   As noted above, the actual runtime state may differ from the default state,
+//   due to field trials or command-line switches.
+
+// Provides a forward declaration for `kFeature` in a header file, e.g.
 //
-//   constexpr Feature kSomeFeature CONSTINIT{"FeatureName",
-//                                            FEATURE_DISABLED_BY_DEFAULT};
+//   BASE_DECLARE_FEATURE(kMyFeature);
 //
-// Making Feature constants mutable allows them to contain a mutable member to
-// cache their override state, while still remaining declared as const. This
-// cache member allows for significantly faster IsEnabled() checks.
-// The "Mutable Constants" check
-// (https://chromium.googlesource.com/chromium/src/+/main/docs/speed/binary_size/android_binary_size_trybot.md#Mutable-Constants)
-// detects this, because this generally means that a readonly symbol is put in
-// writable memory when readonly memory would be more efficient in terms of
-// space. Declaring as LOGICALLY_CONST adds a recognizable pattern to all
-// Feature constant mangled names, which the "Mutable Constants" can use to
-// ignore the symbols declared as such. The performance gains of the cache are
-// large enough that it is worth the tradeoff to have the symbols in
-// non-readonly memory, therefore requiring a bypass of the "Mutable Constants"
-// check.
+// If the feature needs to be marked as exported, i.e. it is referenced by
+// multiple components, then write:
+//
+//   COMPONENT_EXPORT(MY_COMPONENT) BASE_DECLARE_FEATURE(kMyFeature);
+#define BASE_DECLARE_FEATURE(kFeature) \
+  extern CONSTINIT const base::Feature kFeature
+
+// Provides a definition for `kFeature` with `name` and `default_state`, e.g.
+//
+//   BASE_FEATURE(kMyFeature, "MyFeature", base::FEATURE_DISABLED_BY_DEFAULT);
+//
+// Features should *not* be defined in header files; do not use this macro in
+// header files.
+#define BASE_FEATURE(feature, name, default_state) \
+  CONSTINIT const base::Feature feature(name, default_state)
+
+// The Feature struct is used to define the default state for a feature. There
+// must only ever be one struct instance for a given feature name—generally
+// defined as a constant global variable or file static. Declare and define
+// features using the `BASE_DECLARE_FEATURE()` and `BASE_FEATURE()` macros
+// above, as there are some subtleties involved.
+//
+// Feature constants are internally mutable, as this allows them to contain a
+// mutable member to cache their override state, while still remaining declared
+// as const. This cache member allows for significantly faster IsEnabled()
+// checks.
+//
+// However, the "Mutable Constants" check [1] detects this as a regression,
+// because this usually means that a readonly symbol is put in writable memory
+// when readonly memory would be more efficient.
+//
+// The performance gains of the cache are large enough to offset the downsides
+// to having the symbols in bssdata rather than rodata. Use LOGICALLY_CONST to
+// suppress the "Mutable Constants" check.
+//
+// [1]:
+// https://crsrc.org/c/docs/speed/binary_size/android_binary_size_trybot.md#Mutable-Constants
 struct BASE_EXPORT LOGICALLY_CONST Feature {
   constexpr Feature(const char* name, FeatureState default_state)
       : name(name), default_state(default_state) {
@@ -74,12 +103,11 @@ struct BASE_EXPORT LOGICALLY_CONST Feature {
 #endif  // BUILDFLAG(ENABLE_BANNED_BASE_FEATURE_PREFIX)
   }
 
-  // This object needs to be copyable because of some signatures in
-  // ScopedFeatureList, but generally isn't copied anywhere except unit tests.
-  // The `cached_value` doesn't get copied and copies will trigger a lookup if
-  // their state is queried.
-  Feature(const Feature& other)
-      : name(other.name), default_state(other.default_state), cached_value(0) {}
+  // Non-copyable since:
+  // - there should be only one `Feature` instance per unique name.
+  // - a `Feature` contains internal cached state about the override state.
+  Feature(const Feature&) = delete;
+  Feature& operator=(const Feature&) = delete;
 
   // The name of the feature. This should be unique to each feature and is used
   // for enabling/disabling features via command line flags and experiments.
@@ -118,7 +146,7 @@ struct BASE_EXPORT LOGICALLY_CONST Feature {
 // DCHECKs have been built-in, and are configurable at run-time to be fatal, or
 // not, via a DcheckIsFatal feature. We define the Feature here since it is
 // checked in FeatureList::SetInstance(). See https://crbug.com/596231.
-extern BASE_EXPORT const Feature kDCheckIsFatalFeature;
+BASE_EXPORT BASE_DECLARE_FEATURE(kDCheckIsFatalFeature);
 #endif  // BUILDFLAG(DCHECK_IS_CONFIGURABLE)
 
 // The FeatureList class is used to determine whether a given feature is on or

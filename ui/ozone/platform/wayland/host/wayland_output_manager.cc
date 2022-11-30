@@ -4,9 +4,9 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 
-#include <algorithm>
 #include <cstdint>
 #include <memory>
+#include <string>
 
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_output.h"
@@ -31,7 +31,7 @@ bool WaylandOutputManager::IsOutputReady() const {
   return false;
 }
 
-void WaylandOutputManager::AddWaylandOutput(uint32_t output_id,
+void WaylandOutputManager::AddWaylandOutput(WaylandOutput::Id output_id,
                                             wl_output* output) {
   // Make sure an output with |output_id| has not been added yet. It's very
   // unlikely to happen, unless a compositor has a bug in the numeric names
@@ -59,7 +59,7 @@ void WaylandOutputManager::AddWaylandOutput(uint32_t output_id,
   output_list_[output_id] = std::move(wayland_output);
 }
 
-void WaylandOutputManager::RemoveWaylandOutput(uint32_t output_id) {
+void WaylandOutputManager::RemoveWaylandOutput(WaylandOutput::Id output_id) {
   // Check the comment in the WaylandConnection::GlobalRemove.
   if (!GetOutput(output_id))
     return;
@@ -121,12 +121,12 @@ void WaylandOutputManager::InitWaylandScreen(WaylandScreen* screen) {
           output.second->logical_size(), output.second->physical_size(),
           output.second->insets(), output.second->scale_factor(),
           output.second->panel_transform(), output.second->logical_transform(),
-          output.second->label());
+          output.second->description());
     }
   }
 }
 
-WaylandOutput* WaylandOutputManager::GetOutput(uint32_t id) const {
+WaylandOutput* WaylandOutputManager::GetOutput(WaylandOutput::Id id) const {
   auto it = output_list_.find(id);
   if (it == output_list_.end())
     return nullptr;
@@ -145,19 +145,20 @@ const WaylandOutputManager::OutputList& WaylandOutputManager::GetAllOutputs()
   return output_list_;
 }
 
-void WaylandOutputManager::OnOutputHandleMetrics(uint32_t output_id,
-                                                 const gfx::Point& origin,
-                                                 const gfx::Size& logical_size,
-                                                 const gfx::Size& physical_size,
-                                                 const gfx::Insets& insets,
-                                                 float scale_factor,
-                                                 int32_t panel_transform,
-                                                 int32_t logical_transform,
-                                                 const std::string& label) {
+void WaylandOutputManager::OnOutputHandleMetrics(
+    WaylandOutput::Id output_id,
+    const gfx::Point& origin,
+    const gfx::Size& logical_size,
+    const gfx::Size& physical_size,
+    const gfx::Insets& insets,
+    float scale_factor,
+    int32_t panel_transform,
+    int32_t logical_transform,
+    const std::string& description) {
   if (wayland_screen_) {
     wayland_screen_->OnOutputAddedOrUpdated(
         output_id, origin, logical_size, physical_size, insets, scale_factor,
-        panel_transform, logical_transform, label);
+        panel_transform, logical_transform, description);
   }
 
   // Update scale of the windows currently associated with |output_id|. i.e:
@@ -167,7 +168,7 @@ void WaylandOutputManager::OnOutputHandleMetrics(uint32_t output_id,
   const bool is_primary =
       wayland_screen_ && output_id == wayland_screen_->GetPrimaryDisplay().id();
   for (auto* window : connection_->wayland_window_manager()->GetAllWindows()) {
-    uint32_t entered_output = window->GetPreferredEnteredOutputId();
+    auto entered_output = window->GetPreferredEnteredOutputId();
     if (entered_output == output_id || (!entered_output && is_primary))
       window->UpdateWindowScale(true);
   }

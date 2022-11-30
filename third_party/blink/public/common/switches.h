@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,6 +66,8 @@ BLINK_COMMON_EXPORT extern const char kSharedArrayBufferAllowedOrigins[];
 BLINK_COMMON_EXPORT extern const char kShowLayoutShiftRegions[];
 BLINK_COMMON_EXPORT extern const char kShowPaintRects[];
 BLINK_COMMON_EXPORT extern const char kTouchTextSelectionStrategy[];
+BLINK_COMMON_EXPORT extern const char kTouchTextSelectionStrategy_Character[];
+BLINK_COMMON_EXPORT extern const char kTouchTextSelectionStrategy_Direction[];
 BLINK_COMMON_EXPORT extern const char kWebSQLAccess[];
 BLINK_COMMON_EXPORT extern const char kWebSQLNonSecureContextEnabled[];
 

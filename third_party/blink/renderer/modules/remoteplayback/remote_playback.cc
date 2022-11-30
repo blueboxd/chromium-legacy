@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -262,7 +262,7 @@ String RemotePlayback::state() const {
 }
 
 bool RemotePlayback::HasPendingActivity() const {
-  return HasEventListeners() || !availability_callbacks_.IsEmpty() ||
+  return HasEventListeners() || !availability_callbacks_.empty() ||
          prompt_promise_resolver_;
 }
 
@@ -272,18 +272,18 @@ void RemotePlayback::PromptInternal() {
 
   PresentationController* controller =
       PresentationController::FromContext(GetExecutionContext());
-  if (controller && !availability_urls_.IsEmpty()) {
+  if (controller && !availability_urls_.empty()) {
     controller->GetPresentationService()->StartPresentation(
         availability_urls_,
-        WTF::Bind(&RemotePlayback::HandlePresentationResponse,
-                  WrapPersistent(this)));
+        WTF::BindOnce(&RemotePlayback::HandlePresentationResponse,
+                      WrapPersistent(this)));
   } else {
     // TODO(yuryu): Wrapping PromptCancelled with base::OnceClosure as
     // InspectorInstrumentation requires a globally unique pointer to track
     // tasks. We can remove the wrapper if InspectorInstrumentation returns a
     // task id.
     base::OnceClosure task =
-        WTF::Bind(&RemotePlayback::PromptCancelled, WrapPersistent(this));
+        WTF::BindOnce(&RemotePlayback::PromptCancelled, WrapPersistent(this));
 
     std::unique_ptr<probe::AsyncTaskContext> task_context =
         std::make_unique<probe::AsyncTaskContext>();
@@ -291,9 +291,9 @@ void RemotePlayback::PromptInternal() {
     GetExecutionContext()
         ->GetTaskRunner(TaskType::kMediaElementEvent)
         ->PostTask(FROM_HERE,
-                   WTF::Bind(RunRemotePlaybackTask,
-                             WrapPersistent(GetExecutionContext()),
-                             std::move(task), std::move(task_context)));
+                   WTF::BindOnce(RunRemotePlaybackTask,
+                                 WrapPersistent(GetExecutionContext()),
+                                 std::move(task), std::move(task_context)));
   }
 }
 
@@ -316,17 +316,17 @@ int RemotePlayback::WatchAvailabilityInternal(
   // TODO(yuryu): Wrapping notifyInitialAvailability with base::OnceClosure as
   // InspectorInstrumentation requires a globally unique pointer to track tasks.
   // We can remove the wrapper if InspectorInstrumentation returns a task id.
-  base::OnceClosure task = WTF::Bind(&RemotePlayback::NotifyInitialAvailability,
-                                     WrapPersistent(this), id);
+  base::OnceClosure task = WTF::BindOnce(
+      &RemotePlayback::NotifyInitialAvailability, WrapPersistent(this), id);
   std::unique_ptr<probe::AsyncTaskContext> task_context =
       std::make_unique<probe::AsyncTaskContext>();
   task_context->Schedule(GetExecutionContext(), "watchAvailabilityCallback");
   GetExecutionContext()
       ->GetTaskRunner(TaskType::kMediaElementEvent)
       ->PostTask(FROM_HERE,
-                 WTF::Bind(RunRemotePlaybackTask,
-                           WrapPersistent(GetExecutionContext()),
-                           std::move(task), std::move(task_context)));
+                 WTF::BindOnce(RunRemotePlaybackTask,
+                               WrapPersistent(GetExecutionContext()),
+                               std::move(task), std::move(task_context)));
 
   MaybeStartListeningForAvailability();
   return id;
@@ -339,7 +339,7 @@ bool RemotePlayback::CancelWatchAvailabilityInternal(int id) {
   if (iter == availability_callbacks_.end())
     return false;
   availability_callbacks_.erase(iter);
-  if (availability_callbacks_.IsEmpty())
+  if (availability_callbacks_.empty())
     StopListeningForAvailability();
 
   return true;
@@ -440,7 +440,7 @@ void RemotePlayback::SourceChanged(const WebURL& source,
     return;
 
   KURL current_url =
-      availability_urls_.IsEmpty() ? KURL() : availability_urls_[0];
+      availability_urls_.empty() ? KURL() : availability_urls_[0];
   KURL new_url = GetAvailabilityUrl(source, is_source_supported);
 
   if (new_url == current_url)
@@ -641,7 +641,7 @@ void RemotePlayback::MaybeStartListeningForAvailability() {
   if (is_listening_)
     return;
 
-  if (availability_urls_.IsEmpty() || availability_callbacks_.IsEmpty())
+  if (availability_urls_.empty() || availability_callbacks_.empty())
     return;
 
   PresentationController* controller =

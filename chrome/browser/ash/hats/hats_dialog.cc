@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/hats/hats_dialog.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
@@ -25,6 +26,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/size.h"
@@ -40,23 +42,66 @@ namespace {
 const int kDefaultWidth = 384;
 const int kDefaultHeight = 428;
 
-// There are 5 possible choices, from very_dissatisfied to very_satisfied.
-const int kMaxFeedbackScore = 5;
+// The state specific UMA enumerations
+const int kSurveyDisplayedEnumeration = 2;
+const int kSurveyCompleteEnumeration = 3;
 
 // Possible requested actions from the HTML+JS client.
 // Client is ready to close the page.
+const char kClientActionLoad[] = "load";
+// Client is ready to close the page.
 const char kClientActionClose[] = "close";
+// Client is ready to close the page after completing the survey.
+const char kClientActionComplete[] = "complete";
 // There was an unhandled error and we need to log and close the page.
 const char kClientActionUnhandledError[] = "survey-loading-error";
 // A smiley was selected, so we'd like to track that.
-const char kClientSmileySelected[] = "smiley-selected-";
+const char kClientQuestionAnswered[] = "answer-";
+const char kClientQuestionAnsweredRegex[] = "answer-(\\d+)-((?:\\d+,?)+)";
+const char kClientQuestionAnsweredScoreRegex[] = "(\\d+),?";
 
 constexpr char kCrOSHaTSURL[] =
     "https://storage.googleapis.com/chromeos-hats-web-stable/index.html";
 
 }  // namespace
 
+// Only log a histogram value if there is a histogram name provided.
+void LogHistogram(const std::string& histogram_name, int enumeration) {
+  if (!histogram_name.empty()) {
+    base::UmaHistogramSparse(histogram_name, enumeration);
+  }
+}
+
 // static
+bool HatsDialog::ParseAnswer(const std::string& input,
+                             int* question,
+                             std::vector<int>* scores) {
+  std::string question_num_string;
+  re2::StringPiece all_scores_string;
+  if (!RE2::FullMatch(input, kClientQuestionAnsweredRegex, &question_num_string,
+                      &all_scores_string))
+    return false;
+
+  if (!base::StringToInt(question_num_string, question) || *question <= 0 ||
+      *question > 10) {
+    LOG(ERROR) << "Can't parse Survey score";
+    return false;
+  }
+
+  std::string score_string;
+  while (RE2::FindAndConsume(
+      &all_scores_string, kClientQuestionAnsweredScoreRegex, &score_string)) {
+    int score;
+    if (!base::StringToInt(score_string, &score) || score <= 0 || score > 100) {
+      LOG(ERROR) << "Can't parse Survey score";
+      return false;
+    }
+    scores->push_back(score);
+  }
+
+  return true;
+}
+
 bool HatsDialog::HandleClientTriggeredAction(
     const std::string& action,
     const std::string& histogram_name) {
@@ -66,22 +111,46 @@ bool HatsDialog::HandleClientTriggeredAction(
   if (action == kClientActionClose) {
     return true;
   }
+
   // An unhandled error in our client, log and close.
   if (base::StartsWith(action, kClientActionUnhandledError)) {
     LOG(ERROR) << "Error while loading a HaTS Survey " << action;
     return true;
   }
-  // A Smiley (score) was selected.
-  if (base::StartsWith(action, kClientSmileySelected)) {
-    int score;
-    if (!base::StringToInt(action.substr(strlen(kClientSmileySelected)),
-                           &score)) {
-      LOG(ERROR) << "Can't parse Survey score";
-      return false;  // It's a client error, but don't close the page.
+
+  if (features::IsHatsUseNewHistogramsEnabled()) {
+    // Page successfully loaded the survey.
+    if (action == kClientActionLoad) {
+      LogHistogram(histogram_name, kSurveyDisplayedEnumeration);
+      return false;
     }
-    DVLOG(1) << "Setting UMA Metric for smiley " << score;
-    base::UmaHistogramExactLinear(histogram_name, score, kMaxFeedbackScore + 1);
-    return false;  // Don't close the page.
+
+    // Page asks to be closed after completing the survey.
+    if (action == kClientActionComplete) {
+      LogHistogram(histogram_name, kSurveyCompleteEnumeration);
+      return true;
+    }
+
+    // A question was answered
+    if (base::StartsWith(action, kClientQuestionAnswered)) {
+      int question;
+      std::vector<int> question_scores;
+      if (!ParseAnswer(action, &question, &question_scores)) {
+        return false;  // It's a client error, but don't close the page.
+      }
+
+      for (int score : question_scores) {
+        // The enumeration is specified as `QQNN`, where `QQ` is the question
+        // number and `NN` is the answer index. Therefore, we can calculate this
+        // value via `QQ * 100 + NN`.
+        // Note: The `ParseAnswer` function guarantees that the score will be
+        // in the range [1, 100].
+        int enumeration = (question * 100) + score;
+        LogHistogram(histogram_name, enumeration);
+      }
+
+      return false;  // Don't close the page.
+    }
   }
 
   // Future proof - ignore unimplemented commands.
@@ -93,10 +162,19 @@ HatsDialog::HatsDialog(const std::string& trigger_id,
                        const std::string& site_context)
     : trigger_id_(trigger_id), histogram_name_(histogram_name) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  url_ = std::string(kCrOSHaTSURL) + "?" + site_context +
-         "&trigger=" + trigger_id_;
+
+  if (features::IsHatsUseNewHistogramsEnabled()) {
+    url_ = std::string(kCrOSHaTSURL) + "?emitAnswers=true&" + site_context +
+           "&trigger=" + trigger_id_;
+  } else {
+    url_ = std::string(kCrOSHaTSURL) + "?" + site_context +
+           "&trigger=" + trigger_id_;
+  }
+
   set_can_resize(false);
 }
+
+HatsDialog::~HatsDialog() = default;
 
 void HatsDialog::Show(const std::string& trigger_id,
                       const std::string& histogram_name,
@@ -139,10 +217,12 @@ void HatsDialog::OnDialogClosed(const std::string& json_retval) {
 }
 
 void HatsDialog::OnLoadingStateChanged(WebContents* source) {
-  const std::string ref = source->GetURL().ref();
-
-  if (HandleClientTriggeredAction(ref, histogram_name_)) {
-    source->ClosePage();
+  // Only trigger actions when the URL changes
+  if (action_ != source->GetURL().ref()) {
+    action_ = source->GetURL().ref();
+    if (HandleClientTriggeredAction(action_, histogram_name_)) {
+      source->ClosePage();
+    }
   }
 }
 

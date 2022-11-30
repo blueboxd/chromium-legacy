@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {Destination, DestinationOrigin, DestinationStore, DestinationStoreEventType, NativeLayerCrosImpl, NativeLayerImpl, PrintPreviewDestinationDialogCrosElement} from 'chrome://print/print_preview.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {assertEquals, assertNotEquals} from 'chrome://webui-test/chai_assert.js';
@@ -58,7 +58,8 @@ suite(destination_search_test_chromeos.suiteName, function() {
     // Set up dialog
     dialog = document.createElement('print-preview-destination-dialog-cros');
     dialog.destinationStore = destinationStore;
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     document.body.appendChild(dialog);
     return nativeLayer.whenCalled('getPrinterCapabilities').then(function() {
       dialog.show();

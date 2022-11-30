@@ -14,11 +14,14 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/branding_buildflags.h"
+#include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
 #include "chromeos/ash/components/network/network_event_log.h"
+#include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "content/public/browser/notification_service.h"
@@ -106,9 +109,20 @@ void NetworkPortalDetectorImpl::Enable() {
   if (enabled_)
     return;
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  if (!StartupUtils::IsEulaAccepted()) {
+    NET_LOG(EVENT) << "NetworkPortalDetector: Eula not accepted.";
+    return;
+  }
+#endif
+
   NET_LOG(EVENT) << "NetworkPortalDetector Enabled.";
   DCHECK(is_idle());
   enabled_ = true;
+
+  // Ensure that Shill portal detection is enabled.
+  NetworkHandler::Get()->network_state_handler()->SetCheckPortalList(
+      NetworkStateHandler::kDefaultCheckPortalList);
 
   const NetworkState* network = DefaultNetwork();
   if (!network)
@@ -232,9 +246,19 @@ void NetworkPortalDetectorImpl::StartAttempt() {
 
   state_ = STATE_CHECKING_FOR_PORTAL;
 
-  NET_LOG(EVENT) << "Starting captive portal detection.";
+  const NetworkState* default_network = DefaultNetwork();
+  if (!default_network) {
+    NET_LOG(EVENT) << "Start attempt called with no default network, aborting.";
+    return;
+  }
+
+  GURL url = default_network->probe_url();
+  if (url.is_empty())
+    url = GURL(captive_portal::CaptivePortalDetector::kDefaultURL);
+  NET_LOG(EVENT) << "Starting captive portal detection for: "
+                 << NetworkId(default_network) << " Probe url: " << url;
   captive_portal_detector_->DetectCaptivePortal(
-      GURL(CaptivePortalDetector::kDefaultURL),
+      url,
       base::BindOnce(&NetworkPortalDetectorImpl::OnAttemptCompleted,
                      weak_factory_.GetWeakPtr()),
       NO_TRAFFIC_ANNOTATION_YET);

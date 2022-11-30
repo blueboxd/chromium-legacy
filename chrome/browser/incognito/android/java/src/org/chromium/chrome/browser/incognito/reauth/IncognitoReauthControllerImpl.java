@@ -9,6 +9,7 @@ import android.os.Bundle;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
@@ -28,6 +29,9 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * This is the access point for showing the Incognito re-auth dialog. It controls building the
  * {@link IncognitoReauthCoordinator} and showing/hiding the re-auth dialog. The {@link
@@ -44,6 +48,13 @@ public class IncognitoReauthControllerImpl
     // incognito tabs present before Chrome went to background.
     public static final String KEY_IS_INCOGNITO_REAUTH_PENDING = "incognitoReauthPending";
 
+    /**
+     * A list of all {@link IncognitoReauthCallback} that would be triggered from
+     * |mIncognitoReauthCallback|.
+     */
+    private final List<IncognitoReauthManager.IncognitoReauthCallback>
+            mIncognitoReauthCallbackList = new ArrayList<>();
+
     // This callback is fired when the user clicks on "Unlock Incognito" option.
     // This contains the logic to not require further re-authentication if the last one was a
     // success. Please note, a re-authentication would be required again when Chrome is brought to
@@ -53,16 +64,29 @@ public class IncognitoReauthControllerImpl
                 @Override
                 public void onIncognitoReauthNotPossible() {
                     hideDialogIfShowing(DialogDismissalCause.ACTION_ON_DIALOG_NOT_POSSIBLE);
+                    for (IncognitoReauthManager.IncognitoReauthCallback callback :
+                            mIncognitoReauthCallbackList) {
+                        callback.onIncognitoReauthNotPossible();
+                    }
                 }
 
                 @Override
                 public void onIncognitoReauthSuccess() {
                     mIncognitoReauthPending = false;
                     hideDialogIfShowing(DialogDismissalCause.ACTION_ON_DIALOG_COMPLETED);
+                    for (IncognitoReauthManager.IncognitoReauthCallback callback :
+                            mIncognitoReauthCallbackList) {
+                        callback.onIncognitoReauthSuccess();
+                    }
                 }
 
                 @Override
-                public void onIncognitoReauthFailure() {}
+                public void onIncognitoReauthFailure() {
+                    for (IncognitoReauthManager.IncognitoReauthCallback callback :
+                            mIncognitoReauthCallbackList) {
+                        callback.onIncognitoReauthFailure();
+                    }
+                }
             };
 
     // If the user has closed all Incognito tabs, then they don't need to go through re-auth to open
@@ -81,6 +105,23 @@ public class IncognitoReauthControllerImpl
                 @Override
                 public void onTabStateInitialized() {
                     onTabStateInitializedForReauth();
+                }
+            };
+
+    private final LayoutStateProvider.LayoutStateObserver mLayoutStateObserver =
+            new LayoutStateProvider.LayoutStateObserver() {
+                @Override
+                public void onStartedShowing(int layoutType, boolean showToolbar) {
+                    if (layoutType == LayoutType.BROWSING) {
+                        showDialogIfRequired();
+                    }
+                }
+
+                @Override
+                public void onFinishedHiding(int layoutType) {
+                    if (layoutType == LayoutType.TAB_SWITCHER) {
+                        hideDialogIfShowing(DialogDismissalCause.DIALOG_INTERACTION_DEFERRED);
+                    }
                 }
             };
 
@@ -165,6 +206,7 @@ public class IncognitoReauthControllerImpl
         layoutStateProviderOneshotSupplier.onAvailable(
                 mLayoutStateProviderCallbackController.makeCancelable(layoutStateProvider -> {
                     mLayoutStateProvider = layoutStateProvider;
+                    mLayoutStateProvider.addObserver(mLayoutStateObserver);
                     showDialogIfRequired();
                 }));
 
@@ -197,6 +239,10 @@ public class IncognitoReauthControllerImpl
         mLayoutStateProviderCallbackController.destroy();
         mIncognitoReauthCoordinatorFactory.destroy();
         mOnBackPressedInFullScreenReauthCallback.setEnabled(false);
+
+        if (mLayoutStateProvider != null) {
+            mLayoutStateProvider.removeObserver(mLayoutStateObserver);
+        }
         hideDialogIfShowing(DialogDismissalCause.ACTIVITY_DESTROYED);
     }
 
@@ -215,6 +261,26 @@ public class IncognitoReauthControllerImpl
     public boolean isIncognitoReauthPending() {
         // A re-authentication is pending only in the context when the re-auth setting is always on.
         return mIncognitoReauthPending && IncognitoReauthManager.isIncognitoReauthEnabled(mProfile);
+    }
+
+    /**
+     * Override from {@link IncognitoReauthController}.
+     */
+    @Override
+    public void addIncognitoReauthCallback(
+            @NonNull IncognitoReauthManager.IncognitoReauthCallback incognitoReauthCallback) {
+        if (!mIncognitoReauthCallbackList.contains(incognitoReauthCallback)) {
+            mIncognitoReauthCallbackList.add(incognitoReauthCallback);
+        }
+    }
+
+    /**
+     * Override from {@link IncognitoReauthController}.
+     */
+    @Override
+    public void removeIncognitoReauthCallback(
+            @NonNull IncognitoReauthManager.IncognitoReauthCallback incognitoReauthCallback) {
+        mIncognitoReauthCallbackList.remove(incognitoReauthCallback);
     }
 
     /**
@@ -266,6 +332,11 @@ public class IncognitoReauthControllerImpl
     @Override
     public void onBeforeIncognitoTabModelSelected() {
         showDialogIfRequired();
+    }
+
+    @VisibleForTesting
+    IncognitoReauthManager.IncognitoReauthCallback getIncognitoReauthCallbackForTesting() {
+        return mIncognitoReauthCallback;
     }
 
     /**

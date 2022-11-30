@@ -382,7 +382,7 @@ void RollbackNetworkConfig::Importer::Import(const std::string& network_config,
   }
 
   auto barrier_closure = base::BarrierClosure(
-      network_list->GetListDeprecated().size(),
+      network_list->GetList().size(),
       base::BindOnce(&RollbackNetworkConfig::Importer::AllNetworksConfigured,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 
@@ -392,7 +392,7 @@ void RollbackNetworkConfig::Importer::Import(const std::string& network_config,
 
   bool ownership_taken = IsOwnershipTaken();
 
-  for (base::Value& network : network_list->GetListDeprecated()) {
+  for (base::Value& network : network_list->GetList()) {
     if (!ownership_taken) {
       ManagedOncConfigureActivePartAsDeviceWide(network.Clone(),
                                                 finished_a_network);
@@ -468,8 +468,7 @@ RollbackNetworkConfig::RollbackNetworkConfig() = default;
 RollbackNetworkConfig::~RollbackNetworkConfig() = default;
 
 void RollbackNetworkConfig::BindReceiver(
-    mojo::PendingReceiver<
-        chromeos::rollback_network_config::mojom::RollbackNetworkConfig>
+    mojo::PendingReceiver<rollback_network_config::mojom::RollbackNetworkConfig>
         receiver) {
   receivers_.Add(this, std::move(receiver));
 }

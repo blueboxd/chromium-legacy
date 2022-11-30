@@ -9,7 +9,7 @@
 <translation id="1300209025925956156">Naskenujte dokument</translation>
 <translation id="1309250603447638106">Stahování aktualizací pro skenování dokumentů</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Přejdete na ně stisknutím tlačítka Hledat a šipky vlevo.</translation>
-<translation id="1393338179284529051">Quad HD</translation>
+<translation id="1417314334557041815">Upravit stránku <ph name="INDEX" /></translation>
 <translation id="1430915738399379752">Tisk</translation>
 <translation id="1467231725790366244">Kamera <ph name="CAMERA" /> je odpojena.</translation>
 <translation id="1473110567575736769">3sekundový časovač</translation>
@@ -20,8 +20,8 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1627744224761163218">4 × 4</translation>
 <translation id="1664224225747386870">Nic nebylo zaznamenáno</translation>
-<translation id="169335673490251151">Skenovat další stránky</translation>
 <translation id="1838104802459806957">Naklonit nahoru</translation>
+<translation id="1843105061469674856">Naskenovat další stránku</translation>
 <translation id="1851169887664797861">Jsou k dispozici další ovládací prvky kamery</translation>
 <translation id="1851616744363735765">POZASTAVENO</translation>
 <translation id="1862930711583847113">Soubor <ph name="FILE" /> nelze exportovat</translation>
@@ -46,7 +46,6 @@
 <translation id="2599796128805996109">Zadní fotoaparát</translation>
 <translation id="2759905922487820242"><ph name="CURRENT" /> / <ph name="MAXIMAL" /> s</translation>
 <translation id="2761536921376153655">Typ prohledávání</translation>
-<translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">Náhled zrcadlení</translation>
 <translation id="2879583609344924966">Kamera <ph name="CAMERA" /> je připojena.</translation>
 <translation id="2904654629665923749">Je k dispozici skenování dokumentů</translation>
@@ -80,6 +79,7 @@
 <translation id="414641094616694804">Rozlišení této kamery nelze změnit</translation>
 <translation id="4269820728363426813">Zkopírovat adresu odkazu</translation>
 <translation id="4281620174117014503">Střední rozlišení</translation>
+<translation id="428234092390943511">Miniatura stránky</translation>
 <translation id="4329152592498422850">Přepnout na pořízení čtvercové fotky</translation>
 <translation id="4340659173795395806">Teď můžete vytvořit vícestránkový soubor PDF</translation>
 <translation id="4383571725254449280">Vytisknout protokoly výkonu</translation>
@@ -114,7 +114,6 @@
 <translation id="5916664084637901428">Zapnuto</translation>
 <translation id="5975083100439434680">Oddálit</translation>
 <translation id="5976160379964388480">Ostatní</translation>
-<translation id="603973421174355542">Full HD</translation>
 <translation id="6073451960410192870">Zastavit nahrávání</translation>
 <translation id="6197807149213783179">Uložit metadata</translation>
 <translation id="6233780560267770709">3 krát 3</translation>
@@ -137,7 +136,6 @@ Pokud se zpětná vazba týká kvality fotek nebo videí, připojte ukázkovou f
 <translation id="698156982839284926">3 sekundy</translation>
 <translation id="712848772518857951">Opravdu chcete tyto položky (<ph name="COUNT" />) odstranit?</translation>
 <translation id="7134221860976209830">10sekundový časovač</translation>
-<translation id="7150591439198955032">4K</translation>
 <translation id="7191890674911603392">Typ záznamu</translation>
 <translation id="7243947652761655814">Rozlišení videa</translation>
 <translation id="7337660886763914220">Chyby systému souborů.</translation>
@@ -162,7 +160,6 @@ Pokud se zpětná vazba týká kvality fotek nebo videí, připojte ukázkovou f
 <translation id="8167081290930651932">Uložit jako fotku</translation>
 <translation id="8239780215768881278">Pořídit snímek videa</translation>
 <translation id="8261506727792406068">Smazat</translation>
-<translation id="839162370397157884">Vybrat stránku</translation>
 <translation id="8425673304802773841">Naklonit dolů</translation>
 <translation id="8428213095426709021">Nastavení</translation>
 <translation id="8629662593426079630">360p</translation>

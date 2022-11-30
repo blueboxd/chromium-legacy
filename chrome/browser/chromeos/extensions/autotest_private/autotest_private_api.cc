@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/extensions/autotest_private/autotest_private_api.h"
 
-#include <algorithm>
 #include <deque>
 #include <map>
 #include <memory>
@@ -18,7 +17,6 @@
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/components/arc/system_ui/arc_system_ui_bridge.h"
-#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/app_types.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
@@ -60,6 +58,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/strcat.h"
@@ -95,6 +94,7 @@
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/file_manager/open_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/fusebox/fusebox_server.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
@@ -139,8 +139,8 @@
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/views/crostini/crostini_uninstaller_view.h"
 #include "chrome/browser/ui/views/plugin_vm/plugin_vm_installer_view.h"
-#include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_ui.h"
+#include "chrome/browser/ui/webui/ash/crostini_installer/crostini_installer_dialog.h"
+#include "chrome/browser/ui/webui/ash/crostini_installer/crostini_installer_ui.h"
 #include "chrome/browser/web_applications/app_registrar_observer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -149,6 +149,7 @@
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/login/auth/public/user_context.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/services/assistant/assistant_manager_service_impl.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_service.h"
@@ -169,6 +170,8 @@
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/session_manager/core/session_manager.h"
+#include "components/session_manager/session_manager_types.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/update_client/update_client_errors.h"
@@ -496,11 +499,6 @@ api::autotest_private::HotseatState GetHotseatState(
   NOTREACHED();
 }
 
-std::unique_ptr<bool> ConvertOptionalBool(absl::optional<bool> optional) {
-  return optional.has_value() ? std::make_unique<bool>(optional.value())
-                              : nullptr;
-}
-
 // Helper function to set allowed user pref based on |pref_name| with any
 // specific pref validations. Returns error messages if any.
 std::string SetAllowedPref(Profile* profile,
@@ -751,9 +749,7 @@ arc::mojom::ThemeStyleType ToThemeStyleType(
 
 aura::Window* FindAppWindowById(const int64_t id) {
   auto list = ash::GetAppWindowList();
-  auto iter = std::find_if(
-      list.begin(), list.end(),
-      [id](aura::Window* window) { return window->GetId() == id; });
+  auto iter = base::ranges::find(list, id, &aura::Window::GetId);
   if (iter == list.end())
     return nullptr;
   return *iter;
@@ -762,9 +758,9 @@ aura::Window* FindAppWindowById(const int64_t id) {
 // Returns the first available Browser that is not a web app.
 Browser* GetFirstRegularBrowser() {
   const BrowserList* list = BrowserList::GetInstance();
-  auto iter = std::find_if(list->begin(), list->end(), [](Browser* browser) {
-    return browser->app_controller() == nullptr;
-  });
+  const web_app::AppBrowserController* (Browser::*app_controller)() const =
+      &Browser::app_controller;
+  auto iter = base::ranges::find(*list, nullptr, app_controller);
   if (iter == list->end())
     return nullptr;
   return *iter;
@@ -775,10 +771,6 @@ ash::AppListViewState ToAppListViewState(
   switch (state) {
     case api::autotest_private::LauncherStateType::LAUNCHER_STATE_TYPE_CLOSED:
       return ash::AppListViewState::kClosed;
-    case api::autotest_private::LauncherStateType::LAUNCHER_STATE_TYPE_PEEKING:
-      return ash::AppListViewState::kPeeking;
-    case api::autotest_private::LauncherStateType::LAUNCHER_STATE_TYPE_HALF:
-      return ash::AppListViewState::kHalf;
     case api::autotest_private::LauncherStateType::
         LAUNCHER_STATE_TYPE_FULLSCREENALLAPPS:
       return ash::AppListViewState::kFullscreenAllApps;
@@ -849,10 +841,7 @@ bool IsFrameVisible(views::Widget* widget) {
 }
 
 void ConvertPointToHost(aura::Window* root_window, gfx::PointF* location) {
-  gfx::Point3F transformed_location_in_root(*location);
-  root_window->GetHost()->GetRootTransform().TransformPoint(
-      &transformed_location_in_root);
-  *location = transformed_location_in_root.AsPointF();
+  *location = root_window->GetHost()->GetRootTransform().MapPoint(*location);
 }
 
 int GetMouseEventFlags(api::autotest_private::MouseButton button) {
@@ -2553,12 +2542,11 @@ AutotestPrivateRunCrostiniInstallerFunction::Run() {
   // start terminal app on completion.  After starting the installer,
   // we call RestartCrostini and we will be put in the pending restarters
   // queue and be notified on success/otherwise of installation.
-  chromeos::CrostiniInstallerDialog::Show(
+  ash::CrostiniInstallerDialog::Show(
       profile,
-      base::BindOnce(
-          [](base::WeakPtr<chromeos::CrostiniInstallerUI> installer_ui) {
-            installer_ui->ClickInstallForTesting();
-          }));
+      base::BindOnce([](base::WeakPtr<ash::CrostiniInstallerUI> installer_ui) {
+        installer_ui->ClickInstallForTesting();
+      }));
   crostini::CrostiniManager::GetForProfile(profile)->RestartCrostini(
       crostini::DefaultContainerId(),
       base::BindOnce(
@@ -3334,8 +3322,7 @@ class AssistantInteractionHelper
   void SendTextQuery(const std::string& query, bool allow_tts) {
     // Start text interaction with Assistant server.
     GetAssistant()->StartTextInteraction(
-        query, chromeos::assistant::AssistantQuerySource::kUnspecified,
-        allow_tts);
+        query, ash::assistant::AssistantQuerySource::kUnspecified, allow_tts);
 
     query_status_.Set("queryText", query);
   }
@@ -3349,16 +3336,16 @@ class AssistantInteractionHelper
 
  private:
   // chromeos::assistant::AssistantInteractionSubscriber:
-  using AssistantSuggestion = chromeos::assistant::AssistantSuggestion;
+  using AssistantSuggestion = ash::assistant::AssistantSuggestion;
   using AssistantInteractionMetadata =
-      chromeos::assistant::AssistantInteractionMetadata;
+      ash::assistant::AssistantInteractionMetadata;
   using AssistantInteractionResolution =
       chromeos::assistant::AssistantInteractionResolution;
 
   void OnInteractionStarted(
       const AssistantInteractionMetadata& metadata) override {
     const bool is_voice_interaction =
-        chromeos::assistant::AssistantInteractionType::kVoice == metadata.type;
+        ash::assistant::AssistantInteractionType::kVoice == metadata.type;
     query_status_.Set("isMicOpen", is_voice_interaction);
     interaction_in_progress_ = true;
   }
@@ -3366,6 +3353,16 @@ class AssistantInteractionHelper
   void OnInteractionFinished(
       AssistantInteractionResolution resolution) override {
     interaction_in_progress_ = false;
+
+    CHECK(on_interaction_finished_callback_)
+        << "on_interaction_finished_callback_ is not set.";
+
+    if (resolution != AssistantInteractionResolution::kNormal) {
+      SendErrorResponse(
+          base::StringPrintf("Interaction closed with resolution %s",
+                             ResolutionToString(resolution).c_str()));
+      return;
+    }
 
     // Only invoke the callback when |result_| is not empty to avoid an early
     // return before the entire session is completed. This happens when
@@ -3377,15 +3374,7 @@ class AssistantInteractionHelper
       return;
 
     query_status_.Set("queryResponse", std::move(result_));
-
-    if (on_interaction_finished_callback_) {
-      if (resolution == AssistantInteractionResolution::kNormal) {
-        SendSuccessResponse();
-      } else {
-        SendErrorResponse("Interaction closed with resolution " +
-                          ResolutionToString(resolution));
-      }
-    }
+    SendSuccessResponse();
   }
 
   void OnHtmlResponse(const std::string& response,
@@ -3404,7 +3393,7 @@ class AssistantInteractionHelper
   }
 
   void OnOpenAppResponse(
-      const chromeos::assistant::AndroidAppInfo& app_info) override {
+      const ash::assistant::AndroidAppInfo& app_info) override {
     result_.Set("openAppResponse", app_info.package_name);
     CheckResponseIsValid(__FUNCTION__);
   }
@@ -3466,6 +3455,17 @@ AutotestPrivateSendAssistantTextQueryFunction::Run() {
         "Assistant not allowed - state: %d", allowed_state)));
   }
 
+  session_manager::SessionState session_state =
+      session_manager::SessionManager::Get()->session_state();
+  if (session_state != session_manager::SessionState::ACTIVE) {
+    // tast side code matches with this error string, i.e. update both if you
+    // change this.
+    return RespondNow(
+        Error("Session state must be ACTIVE to send a text query. Session "
+              "state was *",
+              ToString(session_state)));
+  }
+
   interaction_helper_->Init(
       base::BindOnce(&AutotestPrivateSendAssistantTextQueryFunction::
                          OnInteractionFinishedCallback,
@@ -3505,6 +3505,28 @@ void AutotestPrivateSendAssistantTextQueryFunction::Timeout() {
 
   // Reset to unsubscribe OnInteractionFinishedCallback().
   interaction_helper_.reset();
+}
+
+std::string AutotestPrivateSendAssistantTextQueryFunction::ToString(
+    session_manager::SessionState session_state) {
+  switch (session_state) {
+    case session_manager::SessionState::UNKNOWN:
+      return "UNKNOWN";
+    case session_manager::SessionState::OOBE:
+      return "OOBE";
+    case session_manager::SessionState::LOGIN_PRIMARY:
+      return "LOGIN_PRIMARY";
+    case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
+      return "LOGGED_IN_NOT_ACTIVE";
+    case session_manager::SessionState::ACTIVE:
+      return "ACTIVE";
+    case session_manager::SessionState::LOCKED:
+      return "LOCKED";
+    case session_manager::SessionState::LOGIN_SECONDARY:
+      return "LOGIN_SECONDARY";
+    case session_manager::SessionState::RMA:
+      return "RMA";
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4479,11 +4501,13 @@ AutotestPrivateGetAppWindowListFunction::Run() {
       window_info.caption_button_enabled_status = caption_button_enabled_status;
       window_info.caption_button_visible_status = caption_button_visible_status;
     } else {
-      auto* widget = views::Widget::GetWidgetForNativeWindow(window);
+      auto* no_frame_header_widget =
+          views::Widget::GetWidgetForNativeWindow(window);
       // All widgets for app windows in chromeos should have a frame. Non app
       // windows may not have a frame and frame mode will be NONE.
-      DCHECK(!widget || widget->GetNativeWindow()->GetType() !=
-                            aura::client::WINDOW_TYPE_NORMAL);
+      DCHECK(!no_frame_header_widget ||
+             no_frame_header_widget->GetNativeWindow()->GetType() !=
+                 aura::client::WINDOW_TYPE_NORMAL);
       window_info.frame_mode =
           api::autotest_private::FrameMode::FRAME_MODE_NONE;
       window_info.is_frame_visible = false;
@@ -5827,6 +5851,7 @@ AutotestPrivateStopThroughputTrackerDataCollectionFunction::Run() {
   auto collected_data = ash::metrics_util::StopDataCollection();
   std::vector<api::autotest_private::ThroughputTrackerAnimationData>
       result_data;
+  result_data.reserve(collected_data.size());
   for (const auto& data : collected_data) {
     api::autotest_private::ThroughputTrackerAnimationData animation_data;
     animation_data.frames_expected = data.frames_expected;
@@ -5834,15 +5859,41 @@ AutotestPrivateStopThroughputTrackerDataCollectionFunction::Run() {
     animation_data.jank_count = data.jank_count;
     result_data.emplace_back(std::move(animation_data));
   }
-
   return RespondNow(
       ArgumentList(api::autotest_private::StopThroughputTrackerDataCollection::
                        Results::Create(result_data)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetThroughputTrackerDataFunction
+///////////////////////////////////////////////////////////////////////////////
+AutotestPrivateGetThroughputTrackerDataFunction::
+    AutotestPrivateGetThroughputTrackerDataFunction() = default;
+
+AutotestPrivateGetThroughputTrackerDataFunction::
+    ~AutotestPrivateGetThroughputTrackerDataFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateGetThroughputTrackerDataFunction::Run() {
+  auto collected_data = ash::metrics_util::GetCollectedData();
+  std::vector<api::autotest_private::ThroughputTrackerAnimationData>
+      result_data;
+  result_data.reserve(collected_data.size());
+  for (const auto& data : collected_data) {
+    api::autotest_private::ThroughputTrackerAnimationData animation_data;
+    animation_data.frames_expected = data.frames_expected;
+    animation_data.frames_produced = data.frames_produced;
+    animation_data.jank_count = data.jank_count;
+    result_data.emplace_back(std::move(animation_data));
+  }
+  return RespondNow(ArgumentList(
+      api::autotest_private::GetThroughputTrackerData::Results::Create(
+          result_data)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateGetDisplaySmoothnessFunction
-//////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 AutotestPrivateGetDisplaySmoothnessFunction::
     AutotestPrivateGetDisplaySmoothnessFunction() = default;
@@ -6101,6 +6152,59 @@ AutotestPrivateIsInputMethodReadyForTestingFunction::Run() {
   ui::TextInputMethod* engine = ui::IMEBridge::Get()->GetCurrentEngineHandler();
   return RespondNow(
       WithArguments(engine && engine->IsReadyForTesting()));  // IN-TEST
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateMakeFuseboxTempDirFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateMakeFuseboxTempDirFunction::
+    ~AutotestPrivateMakeFuseboxTempDirFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateMakeFuseboxTempDirFunction::Run() {
+  fusebox::Server* server = fusebox::Server::GetInstance();
+  if (!server) {
+    return RespondNow(Error("Fusebox server instance not available"));
+  }
+  server->MakeTempDir(base::BindOnce(
+      &AutotestPrivateMakeFuseboxTempDirFunction::OnMakeTempDir, this));
+  return RespondLater();
+}
+
+void AutotestPrivateMakeFuseboxTempDirFunction::OnMakeTempDir(
+    std::string error_message,
+    std::string fusebox_file_path,
+    std::string underlying_file_path) {
+  if (!error_message.empty()) {
+    Respond(Error(error_message));
+    return;
+  }
+  base::Value::Dict dict;
+  dict.Set("fuseboxFilePath", fusebox_file_path);
+  dict.Set("underlyingFilePath", underlying_file_path);
+  Respond(WithArguments(std::move(dict)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateRemoveFuseboxTempDirFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateRemoveFuseboxTempDirFunction::
+    ~AutotestPrivateRemoveFuseboxTempDirFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateRemoveFuseboxTempDirFunction::Run() {
+  std::unique_ptr<api::autotest_private::RemoveFuseboxTempDir::Params> params(
+      api::autotest_private::RemoveFuseboxTempDir::Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  fusebox::Server* server = fusebox::Server::GetInstance();
+  if (!server) {
+    return RespondNow(Error("Fusebox server instance not available"));
+  }
+  server->RemoveTempDir(params->fusebox_file_path);
+  return RespondNow(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

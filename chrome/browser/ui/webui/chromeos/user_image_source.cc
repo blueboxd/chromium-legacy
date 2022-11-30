@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ui/webui/chromeos/user_image_source.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/ash/login/users/default_user_image/default_user_images.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/common/url_constants.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/known_user.h"
@@ -43,7 +45,8 @@ void ParseRequest(const GURL& url, std::string* email, int* frame) {
   // migrated.
   if (!status) {
     LOG(WARNING) << "Failed to deserialize account_id.";
-    account_id = user_manager::known_user::GetAccountId(
+    user_manager::KnownUser known_user(g_browser_process->local_state());
+    account_id = known_user.GetAccountId(
         serialized_account_id, std::string() /* id */, AccountType::UNKNOWN);
   }
   *email = account_id.GetUserEmail();
@@ -131,8 +134,14 @@ scoped_refptr<base::RefCountedMemory> GetUserImageInternal(
   }
 
   if (user) {
+    // After the default avatar images are moved to cloud, the user
+    // should have image bytes when using default images.
+    CHECK(!ash::features::IsAvatarsCloudMigrationEnabled() ||
+          !user->HasDefaultImage() || user->has_image_bytes());
+
     if (user->has_image_bytes()) {
-      if (user->image_format() == user_manager::UserImage::FORMAT_PNG) {
+      if (user->image_format() == user_manager::UserImage::FORMAT_PNG ||
+          user->image_format() == user_manager::UserImage::FORMAT_WEBP) {
         return GetUserImageFrame(user->image_bytes(), user->image_format(),
                                  frame);
       } else {
@@ -147,6 +156,7 @@ scoped_refptr<base::RefCountedMemory> GetUserImageInternal(
       return LoadUserImageFrameForScaleFactor(IDR_LOGIN_DEFAULT_USER, frame,
                                               scale_factor);
     }
+    // After the avatar cloud migration, remove this if case.
     if (user->HasDefaultImage()) {
       return LoadUserImageFrameForScaleFactor(
           default_user_image::GetDefaultImageResourceId(user->image_index()),

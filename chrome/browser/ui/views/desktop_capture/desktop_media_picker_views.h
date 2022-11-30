@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_controller.h"
+#include "ui/base/interaction/element_identifier.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
@@ -17,6 +18,7 @@
 namespace views {
 class Checkbox;
 class TabbedPane;
+class MdTextButton;
 }  // namespace views
 
 class DesktopMediaPickerViews;
@@ -27,6 +29,8 @@ class DesktopMediaPickerViews;
 class DesktopMediaPickerDialogView : public views::DialogDelegateView,
                                      public views::TabbedPaneListener {
  public:
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(
+      kDesktopMediaPickerDialogViewIdentifier);
   // Used for UMA. Visible to this class's .cc file, but opaque beyond.
   enum class DialogType : int;
 
@@ -50,6 +54,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   void Reject();
   void OnSourceListLayoutChanged();
   void OnDelegatedSourceListDismissed();
+  void OnCanReselectChanged(const DesktopMediaListController* controller);
 
   // Relevant for UMA. (E.g. for DesktopMediaPickerViews to report
   // when the dialog gets dismissed.)
@@ -76,7 +81,8 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
         DesktopMediaList::Type type,
         std::unique_ptr<DesktopMediaListController> controller,
         bool audio_offered,
-        bool audio_checked);
+        bool audio_checked,
+        bool supports_reselect_button);
 
     DisplaySurfaceCategory(DisplaySurfaceCategory&& other);
 
@@ -86,12 +92,19 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
     std::unique_ptr<DesktopMediaListController> controller;
     bool audio_offered;  // Whether the audio-checkbox should be visible.
     bool audio_checked;  // Whether the audio-checkbox is checked.
+    // Whether to show a button to allow re-selecting a choice within this
+    // category. Primarily used if there is a separate selection surface that we
+    // may need to re-open.
+    bool supports_reselect_button;
   };
 
   static bool AudioSupported(DesktopMediaList::Type type);
 
-  void SetAudioCheckboxAt(int index);
-
+  void ConfigureUIForNewPane(int index);
+  void StoreAudioCheckboxState();
+  void RemoveCurrentPaneUI();
+  void MaybeCreateReselectButtonForPane(const DisplaySurfaceCategory& category);
+  void MaybeCreateAudioCheckboxForPane(const DisplaySurfaceCategory& category);
   void MaybeSetAudioCheckboxMaxSize();
 
   void OnSourceTypeSwitched(int index);
@@ -114,6 +127,8 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   raw_ptr<views::Label> description_label_ = nullptr;
 
   raw_ptr<views::Checkbox> audio_share_checkbox_ = nullptr;
+
+  raw_ptr<views::MdTextButton> reselect_button_ = nullptr;
 
   raw_ptr<views::TabbedPane> tabbed_pane_ = nullptr;
   std::vector<DisplaySurfaceCategory> categories_;

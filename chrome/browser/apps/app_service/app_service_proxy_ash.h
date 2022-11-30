@@ -134,9 +134,7 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
       apps::mojom::WindowInfoPtr window_info,
       apps::mojom::Publisher::LaunchAppWithIntentCallback callback) override;
 
-  base::WeakPtr<AppServiceProxy> GetWeakPtr();
-
-  void FlushMojoCallsForTesting() override;
+  base::WeakPtr<AppServiceProxyAsh> GetWeakPtr();
 
   void ReInitializeCrostiniForTesting();
   void SetDialogCreatedCallbackForTesting(base::OnceClosure callback);
@@ -244,6 +242,25 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
   // Checks if all instance IDs correspond to existing windows.
   bool CanRunLaunchCallback(
       const std::vector<base::UnguessableToken>& instance_ids);
+
+  // Launches the app if `is_allowed` is set true.
+  void LaunchAppWithIntentIfAllowed(const std::string& app_id,
+                                    int32_t event_flags,
+                                    IntentPtr intent,
+                                    LaunchSource launch_source,
+                                    WindowInfoPtr window_info,
+                                    LaunchCallback callback,
+                                    bool is_allowed);
+  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
+  // interface.
+  void LaunchAppWithMojoIntentIfAllowed(
+      const std::string& app_id,
+      int32_t event_flags,
+      apps::mojom::IntentPtr intent,
+      apps::mojom::LaunchSource launch_source,
+      apps::mojom::WindowInfoPtr window_info,
+      apps::mojom::Publisher::LaunchAppWithIntentCallback callback,
+      bool is_allowed);
 
   SubscriberCrosapi* crosapi_subscriber_ = nullptr;
 

@@ -20,8 +20,6 @@
 #include "ash/components/arc/mojom/enterprise_reporting.mojom.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/components/arc/session/arc_service_manager.h"
-#include "ash/components/settings/cros_settings_names.h"
-#include "ash/components/settings/timezone_settings.h"
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -79,6 +77,8 @@
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
+#include "chromeos/ash/components/settings/timezone_settings.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
@@ -2990,8 +2990,11 @@ bool DeviceStatusCollector::IsReportingAppInfoAndActivity() const {
   return report_app_info_;
 }
 
-void DeviceStatusCollector::OnOSVersion(const std::string& version) {
-  os_version_ = version;
+// TODO(https://crbug.com/1364428)
+// Make this function fallible when the optional received is empty
+void DeviceStatusCollector::OnOSVersion(
+    const absl::optional<std::string>& version) {
+  os_version_ = version.value_or("0.0.0.0");
 }
 
 void DeviceStatusCollector::OnOSFirmware(

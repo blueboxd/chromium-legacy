@@ -59,10 +59,10 @@ DEFINE_VARIATION_PARAM(kIPHAutoDarkUserEducationMessageFeature,
                        "IPH_AutoDarkUserEducationMessage");
 DEFINE_VARIATION_PARAM(kIPHAutoDarkUserEducationMessageOptInFeature,
                        "IPH_AutoDarkUserEducationMessageOptIn");
-DEFINE_VARIATION_PARAM(kIPHContextualPageActionsPriceTrackingFeature,
-                       "IPH_ContextualPageActions_PriceTracking");
-DEFINE_VARIATION_PARAM(kIPHContextualPageActionsPriceTrackingActionChipFeature,
-                       "IPH_ContextualPageActions_PriceTrackingActionChip");
+DEFINE_VARIATION_PARAM(kIPHContextualPageActionsQuietVariantFeature,
+                       "IPH_ContextualPageActions_QuietVariant");
+DEFINE_VARIATION_PARAM(kIPHContextualPageActionsActionChipFeature,
+                       "IPH_ContextualPageActions_ActionChip");
 DEFINE_VARIATION_PARAM(kIPHCrowFeature, "IPH_Crow");
 DEFINE_VARIATION_PARAM(kIPHDataSaverDetailFeature, "IPH_DataSaverDetail");
 DEFINE_VARIATION_PARAM(kIPHDataSaverMilestonePromoFeature,
@@ -224,9 +224,14 @@ DEFINE_VARIATION_PARAM(kIPHExtensionsMenuFeature, "IPH_ExtensionsMenu");
 DEFINE_VARIATION_PARAM(kIPHFocusModeFeature, "IPH_FocusMode");
 DEFINE_VARIATION_PARAM(kIPHGlobalMediaControls, "IPH_GlobalMediaControls");
 DEFINE_VARIATION_PARAM(kIPHGMCCastStartStopFeature, "IPH_GMCCastStartStop");
+DEFINE_VARIATION_PARAM(kIPHHighEfficiencyInfoModeFeature,
+                       "IPH_HighEfficiencyInfoMode");
+DEFINE_VARIATION_PARAM(kIPHHighEfficiencyModeFeature, "IPH_HighEfficiencyMode");
 DEFINE_VARIATION_PARAM(kIPHLiveCaption, "IPH_LiveCaption");
 DEFINE_VARIATION_PARAM(kIPHPasswordsAccountStorageFeature,
                        "IPH_PasswordsAccountStorage");
+DEFINE_VARIATION_PARAM(kIPHPerformanceNewBadgeFeature,
+                       "IPH_PerformanceNewBadge");
 DEFINE_VARIATION_PARAM(kIPHReadingListDiscoveryFeature,
                        "IPH_ReadingListDiscovery");
 DEFINE_VARIATION_PARAM(kIPHReadingListEntryPointFeature,
@@ -278,7 +283,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHAutoDarkOptOutFeature),
         VARIATION_ENTRY(kIPHAutoDarkUserEducationMessageFeature),
         VARIATION_ENTRY(kIPHAutoDarkUserEducationMessageOptInFeature),
-        VARIATION_ENTRY(kIPHContextualPageActionsPriceTrackingFeature),
+        VARIATION_ENTRY(kIPHContextualPageActionsQuietVariantFeature),
         VARIATION_ENTRY(kIPHCrowFeature),
         VARIATION_ENTRY(kIPHDataSaverDetailFeature),
         VARIATION_ENTRY(kIPHDataSaverMilestonePromoFeature),
@@ -362,8 +367,11 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHFocusModeFeature),
         VARIATION_ENTRY(kIPHGlobalMediaControls),
         VARIATION_ENTRY(kIPHGMCCastStartStopFeature),
+        VARIATION_ENTRY(kIPHHighEfficiencyInfoModeFeature),
+        VARIATION_ENTRY(kIPHHighEfficiencyModeFeature),
         VARIATION_ENTRY(kIPHLiveCaption),
         VARIATION_ENTRY(kIPHPasswordsAccountStorageFeature),
+        VARIATION_ENTRY(kIPHPerformanceNewBadgeFeature),
         VARIATION_ENTRY(kIPHReadingListDiscoveryFeature),
         VARIATION_ENTRY(kIPHReadingListEntryPointFeature),
         VARIATION_ENTRY(kIPHReadingListInSidePanelFeature),

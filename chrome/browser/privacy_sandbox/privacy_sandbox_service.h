@@ -9,9 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/scoped_observation.h"
-#include "base/time/time.h"
-#include "components/content_settings/core/common/content_settings.h"
+#include "chrome/browser/first_party_sets/first_party_sets_policy_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/privacy_sandbox/canonical_topic.h"
@@ -99,7 +97,8 @@ class PrivacySandboxService : public KeyedService {
 #if !BUILDFLAG(IS_ANDROID)
       TrustSafetySentimentService* sentiment_service,
 #endif
-      browsing_topics::BrowsingTopicsService* browsing_topics_service);
+      browsing_topics::BrowsingTopicsService* browsing_topics_service,
+      first_party_sets::FirstPartySetsPolicyService* first_party_sets_service);
 
   ~PrivacySandboxService() override;
 
@@ -119,30 +118,30 @@ class PrivacySandboxService : public KeyedService {
   // This method is virtual for mocking in tests.
   virtual void PromptActionOccurred(PromptAction action);
 
-  // Returns whether |url| is suitable to display the Privacy Sandbox dialog
+  // Returns whether |url| is suitable to display the Privacy Sandbox prompt
   // over. Only about:blank and certain chrome:// URLs are considered suitable.
-  static bool IsUrlSuitableForDialog(const GURL& url);
+  static bool IsUrlSuitableForPrompt(const GURL& url);
 
-  // Functions for coordinating the display of the Privacy Sandbox dialog
+  // Functions for coordinating the display of the Privacy Sandbox prompts
   // across multiple browser windows. Only relevant for Desktop.
 
-  // Informs the service that a Privacy Sandbox dialog |view| has been opened
+  // Informs the service that a Privacy Sandbox prompt has been opened
   // or closed for |browser|.
   // Virtual to allow mocking in tests.
-  virtual void DialogOpenedForBrowser(Browser* browser);
-  virtual void DialogClosedForBrowser(Browser* browser);
+  virtual void PromptOpenedForBrowser(Browser* browser);
+  virtual void PromptClosedForBrowser(Browser* browser);
 
-  // Returns whether a Privacy Sandbox dialog is currently open for |browser|.
+  // Returns whether a Privacy Sandbox prompt is currently open for |browser|.
   // Virtual to allow mocking in tests.
-  virtual bool IsDialogOpenForBrowser(Browser* browser);
+  virtual bool IsPromptOpenForBrowser(Browser* browser);
 
-  // Disables the display of the Privacy Sandbox dialog for testing. When
+  // Disables the display of the Privacy Sandbox prompt for testing. When
   // |disabled| is true, GetRequiredPromptType() will only ever return that no
-  // dialog is required.
+  // prompt is required.
   // NOTE: This is set to true in InProcessBrowserTest::SetUp, disabling the
-  // dialog for those tests. If you set this outside of that context, you should
+  // prompt for those tests. If you set this outside of that context, you should
   // ensure it is reset at the end of your test.
-  static void SetDialogDisabledForTests(bool disabled);
+  static void SetPromptDisabledForTests(bool disabled);
 
   // Disables the Privacy Sandbox completely if |enabled| is false. If |enabled|
   // is true, context specific as well as restriction checks will still be
@@ -172,7 +171,7 @@ class PrivacySandboxService : public KeyedService {
   bool IsFirstPartySetsDataAccessEnabled();
 
   // Returns whether the FirstPartySets preference is managed.
-  bool IsFirstPartySetsDataAccessManaged();
+  virtual bool IsFirstPartySetsDataAccessManaged() const;
 
   // Toggles the FirstPartySets preference.
   void SetFirstPartySetsDataAccessEnabled(bool enabled);
@@ -215,26 +214,31 @@ class PrivacySandboxService : public KeyedService {
   virtual void SetTopicAllowed(privacy_sandbox::CanonicalTopic topic,
                                bool allowed);
 
-  // Returns the first party sets recognised by the current profile. If FPS is
-  // disabled, or if sets have not been loaded yet, an empty map is returned.
-  // Encapsulates logic about whether FPS information should be shown, if it
-  // should not, an empty map is always returned.
+  // DEPRECATED - Do not use in new code. It will be replaced with queries to
+  // the First-Party Sets that are in the browser-process.
   // Virtual for mocking in tests.
-  // TODO (crbug.com/1350062): Reconsider whether ignoring async FPS information
-  // is appropriate.
   virtual base::flat_map<net::SchemefulSite, net::SchemefulSite>
-  GetFirstPartySets() const;
+  GetSampleFirstPartySets() const;
 
   // Returns the owner domain of the first party set that `site_url` is a member
   // of, or absl::nullopt if `site_url` is not recognised as a member of an FPS.
   // Encapsulates logic about whether FPS information should be shown, if it
   // should not, absl::nullopt is always returned.
   // Virtual for mocking in tests.
+  virtual absl::optional<net::SchemefulSite> GetFirstPartySetOwner(
+      const GURL& site_url) const;
+
+  // Same as GetFirstPartySetOwner but returns a formatted string.
   virtual absl::optional<std::u16string> GetFirstPartySetOwnerForDisplay(
       const GURL& site_url) const;
 
-  // Returns true if `site`'s membership in an FPS is being managed by policy.
-  // Virtual for mocking in tests.
+  // Returns true if `site`'s membership in an FPS is being managed by policy or
+  // if FirstPartySets preference is managed. Virtual for mocking in tests.
+  //
+  // Note: Enterprises can use the First-Party Set Overrides policy to either
+  // add or remove a site from a First-Party Set. This method returns true only
+  // if `site` is being added into a First-Party Set since there's no UI use for
+  // whether `site` is being removed by an enterprise yet.
   virtual bool IsPartOfManagedFirstPartySet(
       const net::SchemefulSite& site) const;
 
@@ -244,17 +248,17 @@ class PrivacySandboxService : public KeyedService {
                            MetricsLoggingOccursCorrectly);
   FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTestNonRegularProfile,
                            NoMetricsRecorded);
-  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceDialogTest, RestrictedDialog);
-  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceDialogTest, ManagedNoDialog);
-  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceDialogTest,
-                           ManuallyControlledNoDialog);
-  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceDialogTest, NoParamNoDialog);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServicePromptTest, RestrictedPrompt);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServicePromptTest, ManagedNoPrompt);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServicePromptTest,
+                           ManuallyControlledNoPrompt);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServicePromptTest, NoParamNoPrompt);
   FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceDeathTest,
                            GetRequiredPromptType);
   FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
-                           PrivacySandboxDialogNoticeWaiting);
+                           PrivacySandboxPromptNoticeWaiting);
   FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
-                           PrivacySandboxDialogConsentWaiting);
+                           PrivacySandboxPromptConsentWaiting);
   FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
                            PrivacySandboxV1OffEnabled);
   FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
@@ -280,10 +284,18 @@ class PrivacySandboxService : public KeyedService {
   FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
                            PrivacySandboxManuallyControlledDisabled);
   FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
-                           PrivacySandboxNoDialogDisabled);
+                           PrivacySandboxNoPromptDisabled);
   FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
-                           PrivacySandboxNoDialogEnabled);
+                           PrivacySandboxNoPromptEnabled);
   FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest, PrivacySandboxRestricted);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
+                           FirstPartySetsNotRelevantMetricAllowedCookies);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
+                           FirstPartySetsNotRelevantMetricBlockedCookies);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
+                           FirstPartySetsEnabledMetric);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
+                           FirstPartySetsDisabledMetric);
 
   // Should be used only for tests when mocking the service.
   PrivacySandboxService();
@@ -313,31 +325,49 @@ class PrivacySandboxService : public KeyedService {
     kMaxValue = kPSEnabledFlocDisabledBlockAll,
   };
 
+  // Contains all possible states of first party sets preference.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  // Must be kept in sync with the FirstPartySetsState enum in
+  // histograms/enums.xml.
+  enum class FirstPartySetsState {
+    // The user allows all cookies, or blocks all cookies.
+    kFpsNotRelevant = 0,
+    // The user blocks third-party cookies, and has FPS enabled.
+    kFpsEnabled = 1,
+    // The user blocks third-party cookies, and has FPS disabled.
+    kFpsDisabled = 2,
+    kMaxValue = kFpsDisabled,
+  };
+
   // Contains the possible states of a users Privacy Sandbox overall settings.
   // Must be kept in sync with SettingsPrivacySandboxStartupStates in
   // histograms/enums.xml
   enum class PSStartupStates {
-    kDialogWaiting = 0,
-    kDialogOffV1OffEnabled = 1,
-    kDialogOffV1OffDisabled = 2,
+    kPromptWaiting = 0,
+    kPromptOffV1OffEnabled = 1,
+    kPromptOffV1OffDisabled = 2,
     kConsentShownEnabled = 3,
     kConsentShownDisabled = 4,
     kNoticeShownEnabled = 5,
     kNoticeShownDisabled = 6,
-    kDialogOff3PCOffEnabled = 7,
-    kDialogOff3PCOffDisabled = 8,
-    kDialogOffManagedEnabled = 9,
-    kDialogOffManagedDisabled = 10,
-    kDialogOffRestricted = 11,
-    kDialogOffManuallyControlledEnabled = 12,
-    kDialogOffManuallyControlledDisabled = 13,
-    kNoDialogRequiredEnabled = 14,
-    kNoDialogRequiredDisabled = 15,
+    kPromptOff3PCOffEnabled = 7,
+    kPromptOff3PCOffDisabled = 8,
+    kPromptOffManagedEnabled = 9,
+    kPromptOffManagedDisabled = 10,
+    kPromptOffRestricted = 11,
+    kPromptOffManuallyControlledEnabled = 12,
+    kPromptOffManuallyControlledDisabled = 13,
+    kNoPromptRequiredEnabled = 14,
+    kNoPromptRequiredDisabled = 15,
 
     // Add values above this line with a corresponding label in
     // tools/metrics/histograms/enums.xml
-    kMaxValue = kNoDialogRequiredDisabled,
+    kMaxValue = kNoPromptRequiredDisabled,
   };
+
+  // Helper function to log first party sets state.
+  void RecordFirstPartySetsStateHistogram(FirstPartySetsState state);
 
   // Helper function to actually make the metrics call for
   // LogPrivacySandboxState.
@@ -347,7 +377,7 @@ class PrivacySandboxService : public KeyedService {
   // profile startup.
   void LogPrivacySandboxState();
 
-  // Logs the state of privacy sandbox 3 in regards to dialogs. Called once per
+  // Logs the state of privacy sandbox 3 in regards to prompts. Called once per
   // profile startup.
   void RecordPrivacySandbox3StartupMetrics();
 
@@ -383,11 +413,13 @@ class PrivacySandboxService : public KeyedService {
   raw_ptr<TrustSafetySentimentService> sentiment_service_;
 #endif
   raw_ptr<browsing_topics::BrowsingTopicsService> browsing_topics_service_;
+  raw_ptr<first_party_sets::FirstPartySetsPolicyService>
+      first_party_sets_policy_service_;
 
   PrefChangeRegistrar user_prefs_registrar_;
 
-  // The set of Browser windows which have an open Privacy Sandbox dialog.
-  std::set<Browser*> browsers_with_open_dialogs_;
+  // The set of Browser windows which have an open Privacy Sandbox prompt.
+  std::set<Browser*> browsers_with_open_prompts_;
 
   // Fake implementation for current and blocked topics.
   std::set<privacy_sandbox::CanonicalTopic> fake_current_topics_ = {

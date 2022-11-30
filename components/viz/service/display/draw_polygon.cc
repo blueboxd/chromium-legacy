@@ -5,10 +5,12 @@
 #include "components/viz/service/display/draw_polygon.h"
 
 #include <stddef.h>
+
 #include <cmath>
 #include <utility>
 #include <vector>
 
+#include "base/ranges/algorithm.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "components/viz/common/quads/draw_quad.h"
@@ -77,7 +79,7 @@ DrawPolygon::DrawPolygon(const DrawQuad* original_ref,
   for (int i = 0; i < num_vertices_in_clipped_quad; i++) {
     points_.push_back(points[i]);
   }
-  transform.TransformVector(&normal_);
+  normal_ = transform.MapVector(normal_);
   ConstructNormal();
 }
 
@@ -146,22 +148,20 @@ void DrawPolygon::ApplyTransformToNormal(const gfx::Transform& transform) {
   DCHECK(inverted);
   if (!inverted)
     return;
-  inverse_transform.Transpose();
 
-  gfx::Point3F new_normal(normal_.x(), normal_.y(), normal_.z());
-  inverse_transform.TransformPoint(&new_normal);
+  inverse_transform.Transpose();
+  normal_ = inverse_transform.MapVector(normal_);
+
   // Make sure our normal is still normalized.
-  normal_ = gfx::Vector3dF(new_normal.x(), new_normal.y(), new_normal.z());
   float normal_magnitude = normal_.Length();
   if (normal_magnitude != 0 && normal_magnitude != 1) {
-    normal_.Scale(1.0f / normal_magnitude);
+    normal_.InvScale(normal_magnitude);
   }
 }
 
 void DrawPolygon::ApplyTransform(const gfx::Transform& transform) {
-  for (size_t i = 0; i < points_.size(); i++) {
-    transform.TransformPoint(&points_[i]);
-  }
+  for (auto& p : points_)
+    p = transform.MapPoint(p);
 }
 
 // TransformToScreenSpace assumes we're moving a layer from its layer space
@@ -169,7 +169,7 @@ void DrawPolygon::ApplyTransform(const gfx::Transform& transform) {
 // be transformed along with the vertices.
 void DrawPolygon::TransformToScreenSpace(const gfx::Transform& transform) {
   ApplyTransform(transform);
-  transform.TransformVector(&normal_);
+  normal_ = transform.MapVector(normal_);
   ConstructNormal();
 }
 
@@ -245,15 +245,15 @@ void DrawPolygon::SplitPolygon(std::unique_ptr<DrawPolygon> polygon,
   size_t pre_back_begin;
 
   // Find the first vertex that is part of the front split polygon.
-  front_begin = std::find_if(vertex_distance.begin(), vertex_distance.end(),
-                             [](float val) { return val > 0.0; }) -
+  front_begin = base::ranges::find_if(vertex_distance,
+                                      [](float val) { return val > 0.0; }) -
                 vertex_distance.begin();
   while (vertex_distance[pre_front_begin = prev(front_begin)] > 0.0)
     front_begin = pre_front_begin;
 
   // Find the first vertex that is part of the back split polygon.
-  back_begin = std::find_if(vertex_distance.begin(), vertex_distance.end(),
-                            [](float val) { return val < 0.0; }) -
+  back_begin = base::ranges::find_if(vertex_distance,
+                                     [](float val) { return val < 0.0; }) -
                vertex_distance.begin();
   while (vertex_distance[pre_back_begin = prev(back_begin)] < 0.0)
     back_begin = pre_back_begin;

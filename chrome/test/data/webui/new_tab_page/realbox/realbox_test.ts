@@ -6,9 +6,10 @@ import 'chrome://webui-test/mojo_webui_test_support.js';
 import 'chrome://new-tab-page/new_tab_page.js';
 
 import {$$, decodeString16, mojoString16, RealboxBrowserProxy, RealboxElement, RealboxIconElement, RealboxMatchElement} from 'chrome://new-tab-page/new_tab_page.js';
+import {NavigationPredictor} from 'chrome://new-tab-page/omnibox.mojom-webui.js';
 import {AutocompleteMatch} from 'chrome://new-tab-page/realbox.mojom-webui.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.js';
 import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
@@ -132,7 +133,8 @@ suite('NewTabPageRealboxTest', () => {
   });
 
   setup(async () => {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
 
     testProxy = new TestRealboxBrowserProxy();
     RealboxBrowserProxy.setInstance(testProxy);
@@ -183,7 +185,8 @@ suite('NewTabPageRealboxTest', () => {
     loadTimeData.overrideValues({
       realboxDefaultIcon: 'search.svg',
     });
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     realbox = document.createElement('ntp-realbox');
     document.body.appendChild(realbox);
 
@@ -196,7 +199,8 @@ suite('NewTabPageRealboxTest', () => {
     loadTimeData.overrideValues({
       realboxDefaultIcon: 'realbox/icons/google_g.svg',
     });
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     realbox = document.createElement('ntp-realbox');
     document.body.appendChild(realbox);
 
@@ -2454,8 +2458,7 @@ suite('NewTabPageRealboxTest', () => {
 
     assertEquals(
         pedalEl.querySelector<HTMLImageElement>('#action-icon')!.src,
-        'chrome://theme/current-channel-logo');  // Default Pedal
-                                                 // Icon
+        'chrome://theme/current-channel-logo');  // Default Pedal Icon
 
     const leftClick = new MouseEvent('click', {
       bubbles: true,
@@ -2508,8 +2511,7 @@ suite('NewTabPageRealboxTest', () => {
 
     assertEquals(
         pedalEl.querySelector<HTMLImageElement>('#action-icon')!.src,
-        'chrome://theme/current-channel-logo');  // Default Pedal
-                                                 // Icon
+        'chrome://theme/current-channel-logo');  // Default Pedal Icon
 
     const leftClick = new MouseEvent('click', {
       bubbles: true,
@@ -2527,5 +2529,162 @@ suite('NewTabPageRealboxTest', () => {
       assertTrue(args.matchSelectionTimestamp['internalValue'] > 0);
     });
     assertEquals(1, testProxy.handler.getCallCount('executeAction'));
+  });
+
+  //============================================================================
+  // Test Forwarding Events
+  //============================================================================
+
+  test('arrow events are sent to handler', async () => {
+    realbox.$.input.value = 'he';
+    realbox.$.input.dispatchEvent(new InputEvent('input'));
+
+    const matches = [createSearchMatch()];
+    testProxy.callbackRouterRemote.autocompleteResultChanged({
+      input: mojoString16(realbox.$.input.value.trimLeft()),
+      matches,
+      suggestionGroupsMap: {},
+    });
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+    assertTrue(areMatchesShowing());
+
+    const arrowDownEvent = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      composed: true,  // So it propagates across shadow DOM boundary.
+      key: 'ArrowDown',
+    });
+    realbox.$.input.dispatchEvent(arrowDownEvent);
+
+    await testProxy.handler.whenCalled('onNavigationLikely').then((args) => {
+      assertEquals(0, args.line);
+      assertEquals(
+          NavigationPredictor.kUpOrDownArrowButton, args.navigationPredictor);
+    });
+  });
+
+  test('mouse down events are sent to handler', async () => {
+    realbox.$.input.value = 'he';
+    realbox.$.input.dispatchEvent(new InputEvent('input'));
+
+    const matches = [createSearchMatch()];
+    testProxy.callbackRouterRemote.autocompleteResultChanged({
+      input: mojoString16(realbox.$.input.value.trimLeft()),
+      matches,
+      suggestionGroupsMap: {},
+    });
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+    assertTrue(areMatchesShowing());
+
+    const matchEls =
+        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+
+    const mouseDown = new MouseEvent('mousedown', {
+      bubbles: true,
+      button: 0,
+      cancelable: true,
+      composed: true,  // So it propagates across shadow DOM boundary.
+    });
+    matchEls[0]!.$.contents.dispatchEvent(mouseDown);
+
+    await testProxy.handler.whenCalled('onNavigationLikely').then((args) => {
+      assertEquals(0, args.line);
+      assertEquals(NavigationPredictor.kMouseDown, args.navigationPredictor);
+    });
+  });
+
+  suite('Lens search', () => {
+    test('Lens search button does not show by default', () => {
+      // Assert
+      const lensButton =
+          realbox.shadowRoot!.querySelector('#lensSearchButton') as HTMLElement;
+      assertFalse(!!lensButton);
+    });
+
+    test('Lens search button is visible when feature is flipped', async () => {
+      // Arrange.
+      loadTimeData.overrideValues({
+        realboxLensSearch: true,
+      });
+      document.body.innerHTML =
+          window.trustedTypes!.emptyHTML as unknown as string;
+      realbox = document.createElement('ntp-realbox');
+      document.body.appendChild(realbox);
+      await testProxy.callbackRouterRemote.$.flushForTesting();
+
+      // Assert
+      const lensButton =
+          realbox.shadowRoot!.querySelector('#lensSearchButton') as HTMLElement;
+      assertTrue(!!lensButton);
+    });
+
+    test('clicking Lens search button hides matches', async () => {
+      // Arrange.
+      loadTimeData.overrideValues({
+        realboxLensSearch: true,
+      });
+      document.body.innerHTML =
+          window.trustedTypes!.emptyHTML as unknown as string;
+      realbox = document.createElement('ntp-realbox');
+      document.body.appendChild(realbox);
+
+      // Act.
+      realbox.$.input.value = 'hello';
+      realbox.$.input.dispatchEvent(new InputEvent('input'));
+
+      const matches = [
+        createSearchMatch({
+          allowedToBeDefaultMatch: true,
+        }),
+        createUrlMatch(),
+      ];
+      testProxy.callbackRouterRemote.autocompleteResultChanged({
+        input: mojoString16(realbox.$.input.value.trimLeft()),
+        matches,
+        suggestionGroupsMap: {},
+      });
+      await testProxy.callbackRouterRemote.$.flushForTesting();
+
+      // Assert (consistency check).
+      assertTrue(areMatchesShowing());
+
+      // Act.
+      const lensButton =
+          realbox.shadowRoot!.querySelector('#lensSearchButton') as HTMLElement;
+      lensButton.click();
+
+      // Assert.
+      assertFalse(areMatchesShowing());
+
+      // Restore.
+      loadTimeData.overrideValues({
+        realboxLensSearch: false,
+      });
+    });
+
+    test('clicking Lens search button sends Lens search event', async () => {
+      // Arrange.
+      loadTimeData.overrideValues({
+        realboxLensSearch: true,
+      });
+      document.body.innerHTML = '';
+      realbox = document.createElement('ntp-realbox');
+      document.body.appendChild(realbox);
+      const whenOpenLensSearch = eventToPromise('open-lens-search', realbox);
+      await testProxy.callbackRouterRemote.$.flushForTesting();
+
+      // Act.
+      const lensButton =
+        realbox.shadowRoot!.querySelector('#lensSearchButton') as HTMLElement;
+      lensButton.click();
+
+      // Assert.
+      await whenOpenLensSearch;
+
+      // Restore.
+      loadTimeData.overrideValues({
+        realboxLensSearch: false,
+      });
+    });
   });
 });

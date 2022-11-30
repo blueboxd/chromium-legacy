@@ -24,6 +24,7 @@ extern NSString* const kRecentTabsSymbol;
 extern NSString* const kLanguageSymbol;
 extern NSString* const kPasswordSymbol;
 extern NSString* const kCameraLensSymbol;
+extern NSString* const kDownTrendSymbol;
 
 // Default symbol names.
 extern NSString* const kCreditCardSymbol;
@@ -35,24 +36,29 @@ extern NSString* const kPinFillSymbol;
 extern NSString* const kIPhoneSymbol;
 extern NSString* const kIPadSymbol;
 extern NSString* const kLaptopSymbol;
-extern NSString* const kGearShapeSymbol;
+extern NSString* const kSettingsSymbol;
+extern NSString* const kSettingsFilledSymbol;
 extern NSString* const kShareSymbol;
 extern NSString* const kXMarkSymbol;
 extern NSString* const kPlusSymbol;
 extern NSString* const kSearchSymbol;
 extern NSString* const kCheckmarkSymbol;
-extern NSString* const kArrowDownCircleFillSymbol;
+extern NSString* const kDownloadSymbol;
 extern NSString* const kSecureSymbol;
 extern NSString* const kWarningSymbol;
 extern NSString* const kWarningFillSymbol;
-extern NSString* const kHelpFillSymbol;
+extern NSString* const kHelpSymbol;
 extern NSString* const kCheckMarkCircleSymbol;
 extern NSString* const kCheckMarkCircleFillSymbol;
 extern NSString* const kFailMarkCircleFillSymbol;
 extern NSString* const kTrashSymbol;
 extern NSString* const kInfoCircleSymbol;
-extern NSString* const kClockArrowSymbol;
+extern NSString* const kHistorySymbol;
+extern NSString* const kCheckmarkSealSymbol;
 extern NSString* const kWifiSymbol;
+extern NSString* const kBookmarksSymbol;
+extern NSString* const kSyncErrorSymbol;
+extern NSString* const kMenuSymbol;
 
 // The corner radius of the symbol with a colorful background.
 extern const CGFloat kColorfulBackgroundSymbolCornerRadius;

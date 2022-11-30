@@ -493,9 +493,10 @@ TEST_F(PasswordStoreBackendMigrationDecoratorTest,
 
   // Set password sync to be active and have no auth errors.
   InitSyncService(/*is_password_sync_enabled=*/true);
-  sync_service().SetActiveDataTypes(syncer::ModelTypeSet(syncer::PASSWORDS));
-  sync_service().SetAuthError(
-      GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+  sync_service().GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*types=*/{syncer::UserSelectableType::kPasswords});
+  sync_service().ClearAuthError();
 
   // Migration attemot will start and will trigger logins retrieval from the
   // built-in backend.
@@ -529,9 +530,9 @@ TEST_F(PasswordStoreBackendMigrationDecoratorTest,
 
   // Set password sync to be enabled in settings, but inactive.
   InitSyncService(/*is_password_sync_enabled=*/true);
-  sync_service().SetActiveDataTypes({});
-  sync_service().SetAuthError(
-      GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_ERROR));
+  sync_service().GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false, /*types=*/{});
+  sync_service().SetPersistentAuthErrorOtherThanWebSignout();
 
   // Reenrolling migration attempt should not happen, logins should not be
   // retrieved.
@@ -571,9 +572,10 @@ TEST_F(PasswordStoreBackendMigrationDecoratorTest,
 
   // Set password sync to be active and have no auth errors.
   InitSyncService(/*is_password_sync_enabled=*/true);
-  sync_service().SetActiveDataTypes(syncer::ModelTypeSet(syncer::PASSWORDS));
-  sync_service().SetAuthError(
-      GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+  sync_service().GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*types=*/{syncer::UserSelectableType::kPasswords});
+  sync_service().ClearAuthError();
 
   // Reenrolling migration attempt should not happen, logins should not be
   // retrieved.
@@ -613,9 +615,10 @@ TEST_F(PasswordStoreBackendMigrationDecoratorTest,
 
   // Set password sync to be active and have no auth errors.
   InitSyncService(/*is_password_sync_enabled=*/true);
-  sync_service().SetActiveDataTypes(syncer::ModelTypeSet(syncer::PASSWORDS));
-  sync_service().SetAuthError(
-      GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+  sync_service().GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*types=*/{syncer::UserSelectableType::kPasswords});
+  sync_service().ClearAuthError();
 
   // Reenrolling migration attempt should not happen, logins should not be
   // retrieved.

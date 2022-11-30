@@ -248,9 +248,13 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl
                       const GURL& active_url) override;
   void GetDawnInfo(GetDawnInfoCallback callback) override;
 
+  void GetIsolationKey(int client_id,
+                       const blink::WebGPUExecutionContextToken& token,
+                       GetIsolationKeyCallback cb) override;
   void StoreBlobToDisk(const gpu::GpuDiskCacheHandle& handle,
                        const std::string& key,
                        const std::string& shader) override;
+
   // Attempts to atomically shut down the process but only if not running in
   // host process. An error message will be logged.
   void MaybeExitOnContextLost() override;
@@ -320,7 +324,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl
     return main_runner_;
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner() {
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_gpu_task_runner() {
     return compositor_gpu_thread() ? compositor_gpu_thread()->task_runner()
                                    : main_runner_;
   }

@@ -72,6 +72,8 @@ proto_library("metric_data_proto") {
   generate_javascript = true
 
   sources = [ "synced/metric_data.proto" ]
+
+  link_deps = [ "//components/services/app_service/public/protos" ]
 }
 
 # Security XDR events definitions.
@@ -79,4 +81,11 @@ proto_library("security_xdr_events_proto") {
   proto_in_dir = "//"
 
   sources = [ "synced/security_xdr_events.proto" ]
+}
+
+# Definition for pipeline id storage info.
+proto_library("pipeline_id_proto") {
+  proto_in_dir = "//"
+
+  sources = [ "synced/pipeline_id.proto" ]
 }

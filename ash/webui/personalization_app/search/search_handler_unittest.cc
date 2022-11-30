@@ -37,8 +37,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-namespace ash {
-namespace personalization_app {
+namespace ash::personalization_app {
 
 namespace {
 
@@ -150,8 +149,7 @@ class PersonalizationAppSearchHandlerTest : public AshTestBase {
  protected:
   PersonalizationAppSearchHandlerTest() {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{::ash::features::kPersonalizationHub,
-                              ::chromeos::features::kDarkLightMode,
+        /*enabled_features=*/{::chromeos::features::kDarkLightMode,
                               ::ash::features::kAmbientModeFeature},
         /*disabled_features=*/{});
   }
@@ -474,5 +472,4 @@ TEST_F(PersonalizationAppSearchHandlerTest, SortsAndTruncatesResults) {
   EXPECT_EQ(0.5, results.at(1)->relevance_score);
 }
 
-}  // namespace personalization_app
-}  // namespace ash
+}  // namespace ash::personalization_app

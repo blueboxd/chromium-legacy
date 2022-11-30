@@ -425,6 +425,8 @@ void GpuHostImpl::LoadedBlob(const gpu::GpuDiskCacheHandle& handle,
                              const std::string& data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  TRACE_EVENT1("gpu", "GpuHostImpl::LoadedBlob", "handle_type",
+               GetHandleType(handle));
   switch (gpu::GetHandleType(handle)) {
     case gpu::GpuDiskCacheType::kGlShaders: {
       std::string prefix = GetShaderPrefixKey();
@@ -595,6 +597,14 @@ void GpuHostImpl::DisableGpuCompositing() {
   delegate_->DisableGpuCompositing();
 }
 
+void GpuHostImpl::GetIsolationKey(
+    int32_t client_id,
+    const blink::WebGPUExecutionContextToken& token,
+    GetIsolationKeyCallback cb) {
+  std::string isolation_key = delegate_->GetIsolationKey(client_id, token);
+  std::move(cb).Run(isolation_key);
+}
+
 void GpuHostImpl::DidUpdateGPUInfo(const gpu::GPUInfo& gpu_info) {
   delegate_->DidUpdateGPUInfo(gpu_info);
 }
@@ -620,13 +630,14 @@ void GpuHostImpl::SetChildSurface(gpu::SurfaceHandle parent,
 void GpuHostImpl::StoreBlobToDisk(const gpu::GpuDiskCacheHandle& handle,
                                   const std::string& key,
                                   const std::string& blob) {
-  TRACE_EVENT0("gpu", "GpuHostImpl::StoreBlobToDisk");
   scoped_refptr<gpu::GpuDiskCache> cache =
       delegate_->GetGpuDiskCacheFactory()->Get(handle);
   if (!cache) {
     return;
   }
 
+  TRACE_EVENT1("gpu", "GpuHostImpl::StoreBlobToDisk", "handle_type",
+               GetHandleType(handle));
   switch (GetHandleType(handle)) {
     case gpu::GpuDiskCacheType::kGlShaders: {
       std::string prefix = GetShaderPrefixKey();

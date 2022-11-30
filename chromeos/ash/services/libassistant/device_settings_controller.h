@@ -12,8 +12,6 @@
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
-// TODO(https://crbug.com/1164001): move to forward declaration
-#include "chromeos/ash/services/libassistant/grpc/assistant_client.h"
 #include "chromeos/ash/services/libassistant/grpc/assistant_client_observer.h"
 #include "chromeos/ash/services/libassistant/public/mojom/device_settings_delegate.mojom.h"
 #include "chromeos/assistant/internal/action/assistant_action_observer.h"
@@ -35,9 +33,9 @@ struct DeviceSetting;
 }  // namespace assistant
 }  // namespace chromeos
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
+class AssistantClient;
 class Setting;
 
 class DeviceSettingsController
@@ -79,7 +77,6 @@ class DeviceSettingsController
   base::WeakPtrFactory<DeviceSettingsController> weak_factory_{this};
 };
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant
 
 #endif  // CHROMEOS_ASH_SERVICES_LIBASSISTANT_DEVICE_SETTINGS_CONTROLLER_H_

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/streams/underlying_source_base.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
-#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -25,15 +24,10 @@ class IPEndPoint;
 namespace blink {
 
 class ExceptionState;
-
 class ReadableStream;
 class WritableStream;
-
 class ScriptValue;
-
-}  // namespace blink
-
-namespace blink {
+class ScriptState;
 
 class MODULES_EXPORT StreamWrapper : public GarbageCollectedMixin {
  public:

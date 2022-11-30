@@ -20,6 +20,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/numerics/math_constants.h"
 #include "base/ranges/algorithm.h"
@@ -62,6 +63,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
+#include "ui/base/menu_source_utils.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/text/bytes_formatting.h"
@@ -468,11 +470,11 @@ std::u16string DownloadItemView::GetTooltipText(const gfx::Point& p) const {
 
 void DownloadItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kGroup;
-  node_data->SetName(accessible_name_);
+  node_data->SetNameChecked(accessible_name_);
 
   // Set the description to the empty string, otherwise the tooltip will be
   // used, which is redundant with the accessible name.
-  node_data->SetDescription(std::u16string());
+  node_data->SetDescriptionExplicitlyEmpty();
 }
 
 void DownloadItemView::ShowContextMenuForViewImpl(
@@ -1254,6 +1256,7 @@ void DownloadItemView::OpenButtonPressed() {
   if (mode_ == download::DownloadItemMode::kNormal) {
     complete_animation_.End();
     announce_accessible_alert_soon_ = true;
+    RecordDownloadOpenButtonPressed(model_->IsDone());
     model_->OpenDownload();
     // WARNING: |this| may be deleted!
   } else {

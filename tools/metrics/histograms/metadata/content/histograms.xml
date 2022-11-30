@@ -235,26 +235,30 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.DefaultMediaStreamCameraSetting"
-    enum="ContentSetting" expires_after="2023-01-15">
+    enum="ContentSetting" expires_after="2023-03-19">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default camera setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultMediaStreamMicSetting"
-    enum="ContentSetting" expires_after="2022-06-19">
+    enum="ContentSetting" expires_after="2023-02-15">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
-  <summary>The default microphone setting at profile open.</summary>
+  <summary>
+    The default microphone setting at profile open. Warning: this histogram was
+    expired from 2022-06-19 to 2022-09-21; data may be missing.
+  </summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultMIDISysExSetting" enum="ContentSetting"
-    expires_after="2022-08-21">
+    expires_after="2023-02-15">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
     The default MIDI permission setting on sysex (system exclusive) messages at
-    profile open.
+    profile open. The default microphone setting at profile open. Warning: this
+    histogram was expired from 2022-08-21 to 2022-09-21; data may be missing.
   </summary>
 </histogram>
 
@@ -266,10 +270,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.DefaultPopupsSetting" enum="ContentSetting"
-    expires_after="2022-08-21">
+    expires_after="2023-02-15">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
-  <summary>The default popups setting at profile open.</summary>
+  <summary>
+    The default popups setting at profile open. Warning: this histogram was
+    expired from 2022-08-21 to 2022-09-21; data may be missing.
+  </summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultRequestDesktopSiteSetting"
@@ -283,17 +290,20 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.DefaultSoundSetting" enum="ContentSetting"
-    expires_after="2022-10-23">
+    expires_after="2023-02-15">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default sound setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultSubresourceFilterSetting"
-    enum="ContentSetting" expires_after="2022-06-19">
+    enum="ContentSetting" expires_after="2023-02-15">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
-  <summary>The default subresource filter setting at profile open</summary>
+  <summary>
+    The default subresource filter setting at profile open. Warning: this
+    histogram was expired from 2022-06-19 to 2022-09-21; data may be missing.
+  </summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultUsbGuardSetting" enum="ContentSetting"
@@ -304,11 +314,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.DefaultWebBluetoothGuardSetting"
-    enum="ContentSetting" expires_after="2022-08-21">
+    enum="ContentSetting" expires_after="2023-02-15">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
-    The default permission setting for Web Bluetooth at profile open.
+    The default permission setting for Web Bluetooth at profile open. Warning:
+    this histogram was expired from 2022-08-21 to 2022-09-21; data may be
+    missing.
   </summary>
 </histogram>
 
@@ -467,17 +479,18 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.NumberOfExceptions" units="units"
-    expires_after="2022-08-28">
+    expires_after="2023-03-15">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
     The number of user defined hostname patterns for content settings at browser
-    start.
+    start. Warning: this histogram was expired from 2022-08-28 to 2022-09-21;
+    data may be missing.
   </summary>
 </histogram>
 
 <histogram name="ContentSettings.PermissionRequested" enum="PermissionType"
-    expires_after="2022-06-19">
+    expires_after="2023-03-15">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -495,6 +508,9 @@ chromium-metrics-reviews@google.com.
     ContentSettings.PermissionsActions*, or Permissions.Prompt.*.
 
     See https://crbug.com/638076 for more details.
+
+    Warning: this histogram was expired from 2022-06-19 to 2022-09-21; data may
+    be missing.
   </summary>
 </histogram>
 
@@ -508,7 +524,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.Popups" enum="ContentSettingPopupAction"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>charleszhao@chromium.org</owner>
   <owner>lazzzis@google.com</owner>
   <owner>src/components/blocked_content/OWNERS</owner>
@@ -519,7 +535,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.Popups.BlockerActions"
-    enum="PopupBlockerAction" expires_after="2023-01-22">
+    enum="PopupBlockerAction" expires_after="2023-03-26">
   <owner>csharrison@chromium.org</owner>
   <owner>lazzzis@google.com</owner>
   <owner>src/components/blocked_content/OWNERS</owner>
@@ -1007,7 +1023,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.SessionDuration" units="ms"
-    expires_after="2022-10-01">
+    expires_after="2023-04-10">
   <owner>edchin@google.com</owner>
   <owner>sczs@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1045,7 +1061,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.TimeBetweenInteractions" units="ms"
-    expires_after="2022-10-01">
+    expires_after="2023-04-10">
   <owner>edchin@google.com</owner>
   <owner>sczs@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1055,7 +1071,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.TimeBetweenSessions" units="ms"
-    expires_after="2022-10-01">
+    expires_after="2023-04-10">
   <owner>edchin@google.com</owner>
   <owner>sczs@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1336,7 +1352,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.WebFeed.FollowCount.Engaged"
-    units="follows" expires_after="2023-01-15">
+    units="follows" expires_after="2023-03-19">
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>

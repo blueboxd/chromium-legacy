@@ -4,10 +4,10 @@
 
 #include "chrome/browser/accessibility/live_caption_unavailability_notifier.h"
 
-#include <algorithm>
 #include <memory>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/accessibility/caption_bubble_context_browser.h"
 #include "chrome/browser/accessibility/live_caption_controller_factory.h"
@@ -67,8 +67,11 @@ LiveCaptionUnavailabilityNotifier::LiveCaptionUnavailabilityNotifier(
                           base::Unretained(this)));
 }
 
-LiveCaptionUnavailabilityNotifier::~LiveCaptionUnavailabilityNotifier() =
-    default;
+LiveCaptionUnavailabilityNotifier::~LiveCaptionUnavailabilityNotifier() {
+  LiveCaptionController* live_caption_controller = GetLiveCaptionController();
+  if (live_caption_controller)
+    live_caption_controller->OnAudioStreamEnd(context_.get());
+}
 
 void LiveCaptionUnavailabilityNotifier::MediaFoundationRendererCreated(
     mojo::PendingReceiver<media::mojom::MediaFoundationRendererObserver>
@@ -105,17 +108,12 @@ bool LiveCaptionUnavailabilityNotifier::
 }
 
 bool LiveCaptionUnavailabilityNotifier::ErrorSilencedForOrigin() {
-  const base::Value::List& silenced_sites_list = profile_prefs_->GetList(
-      prefs::kLiveCaptionMediaFoundationRendererErrorSilenced);
-
-  const auto it = std::find_if(
-      silenced_sites_list.begin(), silenced_sites_list.end(),
-      [&](const base::Value& value) {
-        return value.GetString() ==
-               render_frame_host().GetLastCommittedOrigin().Serialize();
-      });
-
-  return it != silenced_sites_list.end();
+  using SelectConstVersion = const std::string& (base::Value::*)() const;
+  return base::Contains(
+      profile_prefs_->GetList(
+          prefs::kLiveCaptionMediaFoundationRendererErrorSilenced),
+      render_frame_host().GetLastCommittedOrigin().Serialize(),
+      static_cast<SelectConstVersion>(&base::Value::GetString));
 }
 
 void LiveCaptionUnavailabilityNotifier::DisplayMediaFoundationRendererError() {
@@ -147,14 +145,12 @@ void LiveCaptionUnavailabilityNotifier::
   PrefService* prefs =
       Profile::FromBrowserContext(render_frame_host().GetBrowserContext())
           ->GetPrefs();
-  ListPrefUpdate update(
+  ScopedListPrefUpdate update(
       prefs, prefs::kLiveCaptionMediaFoundationRendererErrorSilenced);
-  base::Value::List& update_list = update->GetList();
   if (checked) {
-    update_list.Append(
-        render_frame_host().GetLastCommittedOrigin().Serialize());
+    update->Append(render_frame_host().GetLastCommittedOrigin().Serialize());
   } else {
-    update_list.EraseIf([&](const base::Value& value) {
+    update->EraseIf([&](const base::Value& value) {
       return value.GetString() ==
              render_frame_host().GetLastCommittedOrigin().Serialize();
     });

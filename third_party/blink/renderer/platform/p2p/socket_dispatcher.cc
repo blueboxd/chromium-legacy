@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -147,6 +147,8 @@ void P2PSocketDispatcher::OnConnectionError() {
 
 void P2PSocketDispatcher::ReconnectP2PSocketManager() {
   network_notification_client_receiver_.reset();
+  if (GetSupplementable()->IsContextDestroyed())
+    return;
   GetP2PSocketManager()->StartNetworkNotifications(
       network_notification_client_receiver_.BindNewPipeAndPassRemote(
           GetSupplementable()->GetTaskRunner(TaskType::kNetworking)));

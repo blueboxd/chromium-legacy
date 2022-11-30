@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_global_scope.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/no_alloc_direct_call_host.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
@@ -427,7 +426,7 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
       (IsRenderingContext2D() &&
        RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled());
 
-  uint32_t shared_image_usage_flags = gpu::SHARED_IMAGE_USAGE_DISPLAY;
+  uint32_t shared_image_usage_flags = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ;
   if (composited_mode && HasPlaceholderCanvas())
     shared_image_usage_flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
@@ -600,7 +599,7 @@ void OffscreenCanvas::UpdateMemoryUsage() {
     NoAllocDirectCallHost* nadc_host =
         context_ ? context_->AsNoAllocDirectCallHost() : nullptr;
     if (nadc_host) {
-      nadc_host->PostDeferrableAction(WTF::Bind(
+      nadc_host->PostDeferrableAction(WTF::BindOnce(
           [](intptr_t delta_bytes) {
             v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
                 delta_bytes);

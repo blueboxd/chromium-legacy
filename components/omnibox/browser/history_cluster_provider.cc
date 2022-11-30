@@ -16,7 +16,7 @@
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
-#include "components/omnibox/browser/suggestion_group.h"
+#include "components/omnibox/browser/suggestion_group_util.h"
 
 HistoryClusterProvider::HistoryClusterProvider(
     AutocompleteProviderClient* client,
@@ -78,7 +78,8 @@ bool HistoryClusterProvider::CreateMatches() {
 
   // If there's a reasonably clear navigation intent, don't distract the user
   // with a history cluster suggestion.
-  if (!history_clusters::GetConfig().omnibox_action_on_navigation_intents) {
+  if (!history_clusters::GetConfig()
+           .omnibox_history_cluster_provider_on_navigation_intents) {
     // Helper to get the top relevance score looking at both providers.
     const auto top_relevance =
         [&](history_clusters::TopRelevanceFilter filter) {
@@ -97,7 +98,9 @@ bool HistoryClusterProvider::CreateMatches() {
             top_relevance(history_clusters::TopRelevanceFilter::
                               FILTER_FOR_SEARCH_MATCHES),
             top_relevance(history_clusters::TopRelevanceFilter::
-                              FILTER_FOR_NON_SEARCH_MATCHES))) {
+                              FILTER_FOR_NON_SEARCH_MATCHES),
+            history_clusters::GetConfig()
+                .omnibox_history_cluster_provider_navigation_intent_score_threshold)) {
       return false;
     }
   }
@@ -150,10 +153,10 @@ AutocompleteMatch HistoryClusterProvider::CreateMatch(std::u16string text) {
   match.contents_class.push_back(
       ACMatchClassification(0, ACMatchClassification::URL));
 
-  match.suggestion_group_id = omnibox::GroupId::HISTORY_CLUSTER;
-  // Insert a corresponding SuggestionGroup with default values in the
+  match.suggestion_group_id = omnibox::GROUP_HISTORY_CLUSTER;
+  // Insert a corresponding omnibox::GroupConfig with default values in the
   // suggestion groups map; otherwise the group ID will get dropped.
-  suggestion_groups_map_[omnibox::GroupId::HISTORY_CLUSTER];
+  suggestion_groups_map_[omnibox::GROUP_HISTORY_CLUSTER];
 
   return match;
 }

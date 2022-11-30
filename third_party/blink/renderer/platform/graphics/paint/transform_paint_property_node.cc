@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,13 @@ TransformPaintPropertyNode::TransformAndOrigin::TransformAndOrigin(
     matrix_and_origin_ = std::make_unique<MatrixAndOrigin>(
         TransformationMatrix(transform), gfx::Point3F());
   }
+}
+
+TransformationMatrix
+TransformPaintPropertyNode::TransformAndOrigin::SlowMatrix() const {
+  return matrix_and_origin_ ? matrix_and_origin_->matrix
+                            : TransformationMatrix::MakeTranslation(
+                                  translation_2d_.x(), translation_2d_.y());
 }
 
 PaintPropertyChangeType

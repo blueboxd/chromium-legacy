@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -763,6 +763,16 @@ void WidgetInputHandlerManager::OnDeferCommitsChanged(
   } else {
     suppressing_input_events_state_ &=
         ~static_cast<uint16_t>(SuppressingInputEventsBits::kDeferCommits);
+  }
+}
+
+void WidgetInputHandlerManager::OnPauseRenderingChanged(bool paused) {
+  if (paused) {
+    suppressing_input_events_state_ |=
+        static_cast<uint16_t>(SuppressingInputEventsBits::kRenderingPaused);
+  } else {
+    suppressing_input_events_state_ &=
+        ~static_cast<uint16_t>(SuppressingInputEventsBits::kRenderingPaused);
   }
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,6 +73,14 @@ class BuildConfigGenerator extends DefaultTask {
             'com_google_android_accessibility_test_framework',
     ]
 
+    static final Map<String, String> ALIASED_LIBS = [
+        // Theese libs are pulled in via doubledown, should
+        // use the alias instead of the real target.
+        com_google_guava_guava_android: '//third_party/android_deps:guava_android_java',
+        com_google_android_material_material: '//third_party/android_deps:material_design_java',
+        com_google_protobuf_protobuf_javalite: '//third_party/android_deps:protobuf_lite_runtime_java',
+    ]
+
     /**
      * Prefixes of androidx dependencies which are allowed to use non-SNAPSHOT
      * versions. These are the legacy androidx targets that are no longer being
@@ -101,7 +109,7 @@ class BuildConfigGenerator extends DefaultTask {
     static final String AUTOROLLED_REPO_PATH = 'third_party/android_deps_autorolled'
 
     static final String COPYRIGHT_HEADER = '''\
-        # Copyright 2021 The Chromium Authors. All rights reserved.
+        # Copyright 2021 The Chromium Authors
         # Use of this source code is governed by a BSD-style license that can be
         # found in the LICENSE file.
     '''.stripIndent()
@@ -211,7 +219,7 @@ class BuildConfigGenerator extends DefaultTask {
         // NOTE: Keep the copyright year 2018 until this generated code is updated, avoiding annual churn of all
         //       cipd.yaml files.
         return """\
-            # Copyright 2018 The Chromium Authors. All rights reserved.
+            # Copyright 2018 The Chromium Authors
             # Use of this source code is governed by a BSD-style license that can be
             # found in the LICENSE file.
 
@@ -475,16 +483,15 @@ class BuildConfigGenerator extends DefaultTask {
             // Special case: If a child dependency is an existing lib, rather than skipping
             // it, replace the child dependency with the existing lib.
             String existingLib = EXISTING_LIBS.get(dep.id)
+            String aliasedLib = ALIASED_LIBS.get(dep.id)
             String depTargetName = translateTargetName(dep.id) + '_java'
             if (existingLib) {
                 // Explicitly allow removing specific deps via |EXCLUDE_THIS_LIB| (e.g. androidx_window_window_java).
                 if (existingLib != EXCLUDE_THIS_LIB) {
                     depsStr += "\"${existingLib}\","
                 }
-            } else if (dep.id == 'com_google_android_material_material') {
-                // Material design is pulled in via doubledown, should
-                // use the variable instead of the real target.
-                depsStr += 'material_design_target,'
+            } else if (aliasedLib) {
+                depsStr += "\"${aliasedLib}\","
             } else if (excludeDependency(dep)) {
                 String thirdPartyDir = (dep.id.startsWith('androidx')) ? 'androidx' : 'android_deps'
                 depsStr += "\"//third_party/${thirdPartyDir}:${depTargetName}\","
@@ -611,18 +618,20 @@ class BuildConfigGenerator extends DefaultTask {
 
         if (dependencyId.startsWith('org_robolectric')) {
             sb.append('  is_robolectric = true\n')
+        } else if (dependencyId.startsWith('io_grpc_') && dependencyExtension == 'jar') {
+            // Skip platform checks since it depends on
+            // accessibility_test_framework_java which requires_android.
+            sb.append('  bypass_platform_checks = true\n')
         }
         if (dependencyExtension == 'aar' &&
                 (dependencyId.startsWith('androidx') || dependencyId.startsWith('com_android_support'))) {
             // The androidx and com_android_support libraries have duplicate resources such as
             // 'primary_text_default_material_dark'.
             sb.append('  resource_overlay = true\n')
-                }
+        }
 
         switch (dependencyId) {
             case 'androidx_annotation_annotation':
-                sb.append('  # https://crbug.com/989505\n')
-                sb.append('  jar_excluded_patterns = ["META-INF/proguard/*"]\n')
                 break
             case 'androidx_core_core':
                 sb.with {
@@ -823,7 +832,7 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  # https://crbug.com/989505\n')
                 sb.append('  jar_excluded_patterns += ["META-INF/proguard/*"]\n')
                 // Deprecated deps jar but still needed by play services basement.
-                sb.append('  input_jars_paths=["\\$android_sdk/optional/org.apache.http.legacy.jar"]\n')
+                sb.append('  input_jars_paths=["$android_sdk/optional/org.apache.http.legacy.jar"]\n')
                 sb.append('  bytecode_rewriter_target = "//build/android/bytecode:fragment_activity_replacer"\n')
                 break
             case 'com_google_android_gms_play_services_maps':
@@ -842,8 +851,8 @@ class BuildConfigGenerator extends DefaultTask {
                     append('    "com/google/protobuf/Empty*",\n')
                     append('    "com/google/protobuf/FieldMask*",\n')
                     append('    "com/google/protobuf/SourceContext*",\n')
-                    append('    "com/google/protobuf/Struct\\\\\\$1.class",\n')
-                    append('    "com/google/protobuf/Struct\\\\\\$Builder.class",\n')
+                    append('    "com/google/protobuf/Struct\\$1.class",\n')
+                    append('    "com/google/protobuf/Struct\\$Builder.class",\n')
                     append('    "com/google/protobuf/Struct.class",\n')
                     append('    "com/google/protobuf/StructOrBuilder.class",\n')
                     append('    "com/google/protobuf/StructProto.class",\n')
@@ -883,13 +892,13 @@ class BuildConfigGenerator extends DefaultTask {
                 break
             case 'com_google_firebase_firebase_components':
                 sb.append('\n')
-                sb.append('  # Can\'t find com.google.firebase.components.Component\\$ComponentType.\n')
+                sb.append('  # Can\'t find com.google.firebase.components.Component$ComponentType.\n')
                 sb.append('  enable_bytecode_checks = false\n')
                 break
             case 'com_google_firebase_firebase_installations':
             case 'com_google_firebase_firebase_installations_interop':
                 sb.append('\n')
-                sb.append('  # Can\'t find com.google.auto.value.AutoValue\\$Builder.\n')
+                sb.append('  # Can\'t find com.google.auto.value.AutoValue$Builder.\n')
                 sb.append('  enable_bytecode_checks = false\n')
                 break
             case 'com_google_firebase_firebase_messaging':
@@ -1020,7 +1029,7 @@ class BuildConfigGenerator extends DefaultTask {
             if (!matcher.find()) {
                 throw new IllegalStateException('BUILD.gn insertion point not found.')
             }
-            out = matcher.replaceFirst(out)
+            out = matcher.replaceFirst(Matcher.quoteReplacement(out))
         } else {
             out = 'import("//build/config/android/rules.gni")\n' + out
         }

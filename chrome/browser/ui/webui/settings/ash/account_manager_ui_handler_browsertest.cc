@@ -116,8 +116,7 @@ MATCHER_P(AccountEmailEqual, other, "") {
 
 }  // namespace
 
-namespace chromeos {
-namespace settings {
+namespace ash::settings {
 
 class TestingAccountManagerUIHandler : public AccountManagerUIHandler {
  public:
@@ -125,7 +124,7 @@ class TestingAccountManagerUIHandler : public AccountManagerUIHandler {
       AccountManager* account_manager,
       account_manager::AccountManagerFacade* account_manager_facade,
       signin::IdentityManager* identity_manager,
-      ash::AccountAppsAvailability* apps_availability,
+      AccountAppsAvailability* apps_availability,
       content::WebUI* web_ui)
       : AccountManagerUIHandler(account_manager,
                                 account_manager_facade,
@@ -223,8 +222,8 @@ class AccountManagerUIHandlerTest
         GetDeviceAccountInfo().email, GetDeviceAccountInfo().token);
   }
 
-  ash::FakeChromeUserManager* GetFakeUserManager() const {
-    return static_cast<ash::FakeChromeUserManager*>(
+  FakeChromeUserManager* GetFakeUserManager() const {
+    return static_cast<FakeChromeUserManager*>(
         user_manager::UserManager::Get());
   }
 
@@ -303,8 +302,7 @@ IN_PROC_BROWSER_TEST_P(AccountManagerUIHandlerTest,
   ASSERT_TRUE(call_data.arg2()->GetBool());
 
   // Get results from JS callback.
-  const base::span<const base::Value> result =
-      call_data.arg3()->GetListDeprecated();
+  const base::Value::List& result = call_data.arg3()->GetList();
   ASSERT_EQ(account_manager_accounts.size(), result.size());
 
   // Check first (device) account.
@@ -352,8 +350,7 @@ IN_PROC_BROWSER_TEST_P(AccountManagerUIHandlerTest,
   ASSERT_TRUE(call_data.arg2()->GetBool());
 
   // Get results from JS callback.
-  const base::span<const base::Value> result =
-      call_data.arg3()->GetListDeprecated();
+  const base::Value::List& result = call_data.arg3()->GetList();
   ASSERT_EQ(account_manager_accounts.size(), result.size());
 
   // Check first (device) account.
@@ -425,7 +422,7 @@ class AccountManagerUIHandlerTestWithArcAccountRestrictions
     : public AccountManagerUIHandlerTest {
  public:
   AccountManagerUIHandlerTestWithArcAccountRestrictions() {
-    feature_list_.InitAndEnableFeature(chromeos::features::kLacrosSupport);
+    feature_list_.InitAndEnableFeature(ash::features::kLacrosSupport);
   }
 
   void SetUpOnMainThread() override {
@@ -435,7 +432,7 @@ class AccountManagerUIHandlerTestWithArcAccountRestrictions
         ::GetAccountManagerFacade(profile()->GetPath().value());
 
     account_apps_availability_ =
-        ash::AccountAppsAvailabilityFactory::GetForProfile(profile());
+        AccountAppsAvailabilityFactory::GetForProfile(profile());
 
     handler_ = std::make_unique<TestingAccountManagerUIHandler>(
         account_manager(), account_manager_facade, identity_manager(),
@@ -479,7 +476,7 @@ class AccountManagerUIHandlerTestWithArcAccountRestrictions
   }
 
   absl::optional<const base::Value> FindAccountDictByEmail(
-      const base::span<const base::Value>& accounts,
+      const base::Value::List& accounts,
       const std::string& email) {
     for (const base::Value& account : accounts) {
       if (ValueOrEmpty(account.FindStringKey("email")) == email)
@@ -488,13 +485,13 @@ class AccountManagerUIHandlerTestWithArcAccountRestrictions
     return absl::nullopt;
   }
 
-  ash::AccountAppsAvailability* account_apps_availability() {
+  AccountAppsAvailability* account_apps_availability() {
     return account_apps_availability_;
   }
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  ash::AccountAppsAvailability* account_apps_availability_;
+  AccountAppsAvailability* account_apps_availability_;
   std::unique_ptr<TestingAccountManagerUIHandler> handler_;
 };
 
@@ -535,8 +532,7 @@ IN_PROC_BROWSER_TEST_P(AccountManagerUIHandlerTestWithArcAccountRestrictions,
   ASSERT_TRUE(call_data.arg2()->GetBool());
 
   // Get results from JS callback.
-  const base::span<const base::Value> result =
-      call_data.arg3()->GetListDeprecated();
+  const base::Value::List& result = call_data.arg3()->GetList();
   ASSERT_EQ(account_manager_accounts.size(), result.size());
 
   // The value for the device account should be always `true`.
@@ -606,8 +602,7 @@ IN_PROC_BROWSER_TEST_P(AccountManagerUIHandlerTestWithArcAccountRestrictions,
 
   // Get results from JS callback.
   const content::TestWebUI::CallData& call_data = *web_ui()->call_data().back();
-  const base::span<const base::Value> accounts_dict =
-      call_data.arg3()->GetListDeprecated();
+  const base::Value::List& accounts_dict = call_data.arg3()->GetList();
   absl::optional<const base::Value> secondary_1_dict =
       FindAccountDictByEmail(accounts_dict, kSecondaryAccount1Email);
   ASSERT_TRUE(secondary_1_dict.has_value());
@@ -640,5 +635,4 @@ INSTANTIATE_TEST_SUITE_P(
                       GetGaiaDeviceAccountInfo(),
                       GetChildDeviceAccountInfo()));
 
-}  // namespace settings
-}  // namespace chromeos
+}  // namespace ash::settings

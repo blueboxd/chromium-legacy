@@ -3536,6 +3536,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="AppList_FullToPeeking">
+  <obsolete>This feature was deprecated in M104</obsolete>
   <owner>vadimt@chromium.org</owner>
   <description>CrOS Launcher went from full to peeking state.</description>
 </action>
@@ -3590,6 +3591,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="AppList_PeekingToFull">
+  <obsolete>This feature was deprecated in M104</obsolete>
   <owner>vadimt@chromium.org</owner>
   <description>
     CrOS Launcher went from peeking to full state or, in a search mode, from
@@ -3808,6 +3810,135 @@ should be able to be added at any place in this file.
 <action name="AutoDetectChange">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Autofill.FastCheckout.Accepted">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>
+    The user accepted their selections of profile and credit card.
+  </description>
+</action>
+
+<action name="Autofill.FastCheckout.Destroyed" not_user_triggered="true">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>The bottomsheet was destroyed.</description>
+</action>
+
+<action name="Autofill.FastCheckout.Dismissed">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>The bottomsheet was dismissed by the user.</description>
+</action>
+
+<action name="Autofill.FastCheckout.Initialized">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>The FastCheckout bottomsheet was initialized.</description>
+</action>
+
+<action name="Autofill.FastCheckout.NavigatedBackHome">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>The user tapped the back button on a detail sheet.</description>
+</action>
+
+<action name="Autofill.FastCheckout.NavigatedToAddresses">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>The user navigated to the addresses details sheet.</description>
+</action>
+
+<action name="Autofill.FastCheckout.NavigatedToAddressesSettingsViaFooter">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>
+    The user tapped the &quot;Add new address&quot; footer.
+  </description>
+</action>
+
+<action name="Autofill.FastCheckout.NavigatedToAddressesSettingsViaIcon">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>
+    The user tapped the settings icon on the addresses details sheet.
+  </description>
+</action>
+
+<action name="Autofill.FastCheckout.NavigatedToCreditCards">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>
+    The user navigated to the credit cards details sheet.
+  </description>
+</action>
+
+<action name="Autofill.FastCheckout.NavigatedToCreditCardsSettingsViaFooter">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>
+    The user tapped the &quot;Add new credit card&quot; footer.
+  </description>
+</action>
+
+<action name="Autofill.FastCheckout.NavigatedToCreditCardsSettingsViaIcon">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>
+    The user tapped the settings icon on the credit cards details sheet.
+  </description>
+</action>
+
+<action name="Autofill.FastCheckout.SelectedDifferentAddress">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>
+    The user selected a different address from the already selected one
+    (navigates back to home screen).
+  </description>
+</action>
+
+<action name="Autofill.FastCheckout.SelectedDifferentCreditCard">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>
+    The user selected a different credit card from the already selected one
+    (navigates back to home screen).
+  </description>
+</action>
+
+<action name="Autofill.FastCheckout.SelectedSameAddress">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>
+    The user selected the same address that was already selected (navigates back
+    to home screen).
+  </description>
+</action>
+
+<action name="Autofill.FastCheckout.SelectedSameCreditCard">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>
+    The user selected the same credit card that was already selected (navigates
+    back to home screen).
+  </description>
 </action>
 
 <action name="Autofill_BrandingTapped">
@@ -7451,15 +7582,6 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="DemoMode.AttractLoop.Break">
-  <owner>lbowen@google.com</owner>
-  <owner>cros-demo-mode-eng@google.com</owner>
-  <description>
-    Recorded when exiting current Attract Loop by moving cursor, clicking mouse
-    or pressing key.
-  </description>
-</action>
-
 <action name="DemoMode.ExitFromShelf">
   <owner>michaelpg@chromium.org</owner>
   <owner>wzang@chromium.org</owner>
@@ -7474,6 +7596,49 @@ should be able to be added at any place in this file.
   <description>
     Recorded when user exits Demo Mode from the logout button in the system
     tray.
+  </description>
+</action>
+
+<action name="DemoMode_AttractLoop_Break">
+  <owner>lbowen@google.com</owner>
+  <owner>cros-demo-mode-eng@google.com</owner>
+  <description>
+    Recorded when exiting current Attract Loop by moving cursor, clicking mouse
+    or pressing key.
+  </description>
+</action>
+
+<action name="DemoMode_Highlights_HomeButtonClick">
+  <owner>lbowen@google.com</owner>
+  <owner>cros-demo-mode-eng@google.com</owner>
+  <description>
+    Recorded when Home button is clicked in the Highlights app.
+  </description>
+</action>
+
+<action name="DemoMode_Highlights_HomePage_Click">
+  <owner>lbowen@google.com</owner>
+  <owner>cros-demo-mode-eng@google.com</owner>
+  <description>
+    Recorded when buttons are clicked in the Home page of the Highlights app.
+  </description>
+</action>
+
+<action name="DemoMode_Highlights_Navbar_Click">
+  <owner>lbowen@google.com</owner>
+  <owner>cros-demo-mode-eng@google.com</owner>
+  <description>
+    Recorded when pillar buttons are clicked on the nav bar of the Highlights
+    app.
+  </description>
+</action>
+
+<action name="DemoMode_Highlights_PillarPage_Click">
+  <owner>lbowen@google.com</owner>
+  <owner>cros-demo-mode-eng@google.com</owner>
+  <description>
+    Recorded when the buttons are clicked in the pillar page of the Highlights
+    app.
   </description>
 </action>
 
@@ -11113,12 +11278,29 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="IOS.ExperienceKit.Calendar.Copy">
+  <owner>erahmaoui@google.com</owner>
+  <owner>djean@chromium.org</owner>
+  <description>
+    Recorded when user taps Copy in context menu after a long press on an date.
+  </description>
+</action>
+
 <action name="IOS.ExperienceKit.Calendar.Display">
   <owner>erahmaoui@google.com</owner>
   <owner>djean@chromium.org</owner>
   <description>
     The number of times the user triggered the &quot;add-to-calendar&quot;
     context after a long press on a date.
+  </description>
+</action>
+
+<action name="IOS.ExperienceKit.Maps.Copy">
+  <owner>erahmaoui@google.com</owner>
+  <owner>djean@chromium.org</owner>
+  <description>
+    Recorded when user taps Copy in context menu after a long press on an
+    address.
   </description>
 </action>
 
@@ -18105,7 +18287,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileFreUMALinkTapped">
-  <owner>arthurmilchior@google.com</owner>
+  <owner>arthurmilchior@chromium.org</owner>
   <owner>jlebel@google.com</owner>
   <owner>chrome-signin-team@google.com</owner>
   <description>
@@ -18437,6 +18619,12 @@ should be able to be added at any place in this file.
   <description>User pressed 'Paste and Go' in the app menu.</description>
 </action>
 
+<action name="MobileMenuPriceNotifications">
+  <owner>danieltwhite@google.com</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>User pressed 'Track Price' in the app menu.</description>
+</action>
+
 <action name="MobileMenuPrint">
   <owner>aurimas@chromium.org</owner>
   <description>User pressed 'Print' in the app menu.</description>
@@ -18507,6 +18695,13 @@ should be able to be added at any place in this file.
   <description>User pressed 'Search Copied Image' in the app menu.</description>
 </action>
 
+<action name="MobileMenuSelectTabs">
+  <owner>ckitagawa@chromium.org</owner>
+  <description>
+    User pressed 'Select tabs' in the mobile tab switcher.
+  </description>
+</action>
+
 <action name="MobileMenuSettings">
   <owner>aurimas@chromium.org</owner>
   <description>User pressed 'Settings' in the app menu.</description>
@@ -18567,6 +18762,12 @@ should be able to be added at any place in this file.
 <action name="MobileMenuVoiceSearch">
   <owner>gambard@chromium.org</owner>
   <description>User pressed 'Voice Search' in the app menu.</description>
+</action>
+
+<action name="MobileMenuWhatsNew">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@google.com</owner>
+  <description>User pressed 'What's New' in the app menu.</description>
 </action>
 
 <action name="MobileMenuWindowManager">
@@ -18852,6 +19053,12 @@ should be able to be added at any place in this file.
 <action name="MobileNTPShowRecentTabs">
   <owner>justincohen@chromium.org</owner>
   <description>The user tapped the recent list icon on the NTP.</description>
+</action>
+
+<action name="MobileNTPShowWhatsNew">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>The user tapped the what's new icon on the NTP.</description>
 </action>
 
 <action name="MobileNTPSwitchToBookmarks">
@@ -19570,6 +19777,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileShareMenuMarkupPDF">
+  <owner>alionadangla@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User pressed &quot;Markup&quot; from the share action menu.
+  </description>
+</action>
+
 <action name="MobileShareMenuPrint">
   <owner>gambard@chromium.org</owner>
   <owner>seblalancette@chromium.org</owner>
@@ -19589,6 +19804,12 @@ should be able to be added at any place in this file.
     User requested the desktop or mobile version of a site web from the share
     menu.
   </description>
+</action>
+
+<action name="MobileShareMenuSaveFile">
+  <owner>alionadangla@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <description>User saved a file from share action menu.</description>
 </action>
 
 <action name="MobileShareMenuSaveImage">
@@ -20261,6 +20482,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileToolbarCloseAllTabs">
+  <owner>clank-app-team@google.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User clicked close all tabs button by long pressing close button on any tab
+    in the tablet tab strip. Android Only.
+  </description>
+</action>
+
 <action name="MobileToolbarCloseTab">
   <owner>clank-app-team@google.com</owner>
   <owner>twellington@chromium.org</owner>
@@ -20325,24 +20555,6 @@ should be able to be added at any place in this file.
     User pressed the reload icon in the toolbar. Pre-M55, MobileToolbarReload
     accounted for all reload actions. M55+, this metric only refers to reloads
     that occurred from the toolbar.
-  </description>
-</action>
-
-<action name="MobileToolbarReorderTab.TabAddedToGroup">
-  <owner>clank-app-team@google.com</owner>
-  <owner>skavuluru@google.com</owner>
-  <description>
-    User long-pressed on a tab, dragged and dropped it within a tab group in the
-    tablet tab strip. Android Only.
-  </description>
-</action>
-
-<action name="MobileToolbarReorderTab.TabRemovedFromGroup">
-  <owner>clank-app-team@google.com</owner>
-  <owner>skavuluru@google.com</owner>
-  <description>
-    User long-pressed on a tab with in a group, dragged and dropped it outside
-    of the group in the tablet tab strip. Android Only.
   </description>
 </action>
 
@@ -20519,6 +20731,23 @@ should be able to be added at any place in this file.
   <owner>chrome-language@google.com</owner>
   <description>
     The user tapped on the top toolbar's voice search button.
+  </description>
+</action>
+
+<action name="MobileTrackingPriceSettingsBack">
+  <owner>danieltwhite@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>
+    Reported when user goes back from Tracking Price Settings UI to root
+    Settings screen. iOS only.
+  </description>
+</action>
+
+<action name="MobileTrackingPriceSettingsClose">
+  <owner>danieltwhite@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>
+    Reported when Tracking Price Settings UI was dismissed. iOS only.
   </description>
 </action>
 
@@ -21048,6 +21277,14 @@ should be able to be added at any place in this file.
     Emitted when a navigation happens to a page whose URL looks like it's a URL
     from the user's default search engine. I.e., emitted when it looks like--via
     a simple pattern match--the user navigated to a search results page.
+
+    Prior to M-108, this was possible to be emitted for all navigations, even
+    within profiles such as &quot;system&quot; profiles that don't allow the
+    user to search. (We expect it was rarely if even logged in those settings.)
+    In those settings, it looked for the search engine used by default in this
+    install of Chrome. This is typically Google. In M-108 and later, this user
+    action is eligible to be emitted only for profiles that allow the user to
+    search: regular profiles, Incognito profiles, and Guest profiles.
 
     NavEntryCommitted will also always be emitted at the same time (in the same
     code, just a few lines before).
@@ -24881,6 +25118,37 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="PasswordProtection.PasswordUpdated.AutomatedFlowPasswordChosen">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    Reported when the automated change password flow completes with a generated
+    password.
+  </description>
+</action>
+
+<action
+    name="PasswordProtection.PasswordUpdated.AutomatedFlowResetLinkRequested">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>Reported when a password-reset link is requested.</description>
+</action>
+
+<action name="PasswordProtection.PasswordUpdated.ManualFlowPasswordChosen">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    Reported when password change/reset flow completes with a user chosen
+    password.
+  </description>
+</action>
+
+<action name="PasswordProtection.PasswordUpdated.Timeout">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>Reported when the password change flow times out.</description>
+</action>
+
 <action name="PasswordProtection.SavedPassword.ChangePasswordButtonClicked">
   <owner>nwokedi@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
@@ -25983,6 +26251,24 @@ should be able to be added at any place in this file.
 
     This user action is of special interest to the chrome-analysis-team@. Do not
     change its semantics or retire it without talking to them first.
+  </description>
+</action>
+
+<action
+    name="SafeBrowsing.AccountIntegration.DisabledDialog.SettingsButtonClicked">
+  <owner>awado@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <description>
+    User clicks the settings button on the ESB disabled dialog.
+  </description>
+</action>
+
+<action
+    name="SafeBrowsing.AccountIntegration.EnabledDialog.SettingsButtonClicked">
+  <owner>awado@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <description>
+    User clicks the settings button on the ESB enabled dialog.
   </description>
 </action>
 
@@ -28727,6 +29013,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Impression_FromPostDeviceRestoreSigninPromo">
+  <owner>scottyoder@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    Recorded when showing sign in after the post restore signin promo.
+  </description>
+</action>
+
 <action name="Signin_Impression_FromRecentTabs" not_user_triggered="true">
   <owner>gogerald@chromium.org</owner>
   <description>
@@ -29345,6 +29639,15 @@ should be able to be added at any place in this file.
   <description>
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromPostDeviceRestoreSigninPromo">
+  <owner>scottyoder@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_POST_DEVICE_RESTORE_SIGNIN_PROMO.
   </description>
 </action>
 
@@ -30927,6 +31230,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Audio_Muted">
+  <obsolete>
+    Replaced with &quot;Ash.QuickSettings.Slider.{SliderBehavior}&quot; in ash,
+    09/2022.
+  </obsolete>
   <owner>tetsui@chromium.org</owner>
   <description>User muted audio from the button in SystemTray.</description>
 </action>
@@ -30950,6 +31257,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Audio_Unmuted">
+  <obsolete>
+    Replaced with &quot;Ash.QuickSettings.Slider.{SliderBehavior}&quot; in ash,
+    09/2022.
+  </obsolete>
   <owner>tetsui@chromium.org</owner>
   <description>User unmuted audio from the button in SystemTray.</description>
 </action>
@@ -31241,6 +31552,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Mic_Gain_Changed">
+  <obsolete>
+    Replaced with &quot;Ash.QuickSettings.Slider.{SliderBehavior}&quot; in ash,
+    09/2022.
+  </obsolete>
   <owner>amehfooz@chromium.org tengs@chromium.org</owner>
   <description>
     The user changed the slider for mic gain in the audio detailed view.
@@ -31248,6 +31563,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Mic_Muted">
+  <obsolete>
+    Replaced with &quot;Ash.QuickSettings.Slider.{SliderBehavior}&quot; in ash,
+    09/2022.
+  </obsolete>
   <owner>amehfooz@chromium.org tengs@chromium.org</owner>
   <description>
     The user muted the mic by pressing the mic mute button.
@@ -31255,6 +31574,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Mic_Unmuted">
+  <obsolete>
+    Replaced with &quot;Ash.QuickSettings.Slider.{SliderBehavior}&quot; in ash,
+    09/2022.
+  </obsolete>
   <owner>amehfooz@chromium.org tengs@chromium.org</owner>
   <description>
     The user unmuted the mic by pressing the mic mute button
@@ -31530,6 +31853,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Volume_ChangedMenu">
+  <obsolete>
+    Replaced with &quot;Ash.QuickSettings.Slider.{SliderBehavior}&quot; in ash,
+    09/2022.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -32660,6 +32987,12 @@ should be able to be added at any place in this file.
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <description>User took an action on the TabSelectionEditor.</description>
+</action>
+
+<action name="TabMultiSelectV2">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>bjfong@google.com</owner>
+  <description>User took an action on the TabSelectionEditorV2.</description>
 </action>
 
 <action name="TabOverview_DetachCell">
@@ -34074,6 +34407,52 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="WhatsNew.AddPasswordManually">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user opened Add Password Manually in What's New.
+  </description>
+</action>
+
+<action name="WhatsNew.Autofill">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>The user opened Autofill in What's New.</description>
+</action>
+
+<action name="WhatsNew.NewOverflowMenu">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>The user opened New Overflow Menu in What's New.</description>
+</action>
+
+<action name="WhatsNew.PasswordsInOtherApps">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user opened Passwords In Other Apps in What's New.
+  </description>
+</action>
+
+<action name="WhatsNew.SearchTabs">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>The user opened Search Tabs in What's New.</description>
+</action>
+
+<action name="WhatsNew.SharedHighlighting">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>The user opened Shared Highlighting in What's New.</description>
+</action>
+
+<action name="WhatsNew.UseChromeByDefault">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>The user opened Chrome By Default in What's New.</description>
+</action>
+
 <action name="Win10WelcomePage_SetAsDefaultBrowser">
   <owner>pmonette@chromium.org</owner>
   <description>
@@ -34520,6 +34899,10 @@ should be able to be added at any place in this file.
   <suffix name="GMCCastStartStop" label="For GMCCastStartStop feature."/>
   <suffix name="GMCCastStartStopFeature"
       label="For Global Media Controls Cast start and stop feature."/>
+  <suffix name="HighEfficiencyInfoMode"
+      label="For HighEfficiencyInfoMode feature."/>
+  <suffix name="HighEfficiencyModeFeature"
+      label="For suggesting High Efficiency Mode feature"/>
   <suffix name="HomePageButton" label="For HomePageButton feature."/>
   <suffix name="HomepageTile" label="For HomepageTile feature."/>
   <suffix name="IdentityDisc" label="For IdentityDisc feature."/>
@@ -34557,6 +34940,8 @@ should be able to be added at any place in this file.
   <suffix name="PasswordsAccountStorage"
       label="For PasswordsAccountStorage feature."/>
   <suffix name="PasswordSuggestions" label="For PasswordSuggestions feature."/>
+  <suffix name="PerformanceNewBadge"
+      label="For new badge next to Performance feature."/>
   <suffix name="PreviewsOmniboxUI"
       label="For the Previews UI in the Android Omnibox feature."/>
   <suffix name="PriceDropNTP" label="For PriceDropNTP feature."/>
@@ -34879,11 +35264,43 @@ should be able to be added at any place in this file.
              back arrow or through the system back."/>
   <suffix name="Done"
       label="Users tapped the action button on the top right corner."/>
+  <suffix name="OpenFromDialog"
+      label="Users tapped the ungroup button in the tab grid dialog."/>
   <suffix name="TabSelected"
       label="Users selected a tab in TabSelectionEditor."/>
   <suffix name="TabUnselected"
       label="Users un-selected a tab in TabSelectionEditor."/>
   <affected-action name="TabMultiSelect"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="Closed"
+      label="Catch all for closures of the TabSelectionEditorV2."/>
+  <suffix name="ClosedAutomatically"
+      label="Users closed the TabSelectionEditorV2 via an action."/>
+  <suffix name="ClosedByUser"
+      label="Users closed the TabSelectionEditorV2 explictly."/>
+  <suffix name="CloseTabs"
+      label="Users tapped on the close tabs button in TabSelectionEditorV2."/>
+  <suffix name="DeselectAll"
+      label="Users tapped on the deselect all button in TabSelectionEditorV2."/>
+  <suffix name="GroupTabs"
+      label="Users tapped on the group tabs button in TabSelectionEditorV2."/>
+  <suffix name="OpenFromDialog"
+      label="Users opened TabSelectionEditorV2 from the Tab Dialog."/>
+  <suffix name="OpenFromGrid"
+      label="Users opened TabSelectionEditorV2 from the Tab Switcher."/>
+  <suffix name="SelectAll"
+      label="Users tapped on the select all button in TabSelectionEditorV2."/>
+  <suffix name="SharedTabAsTextList"
+      label="Users tapped on the share button for a single tab in
+             TabSelectionEditorV2."/>
+  <suffix name="SharedTabsListAsTextList"
+      label="Users tapped on the share button for multiple tabs in
+             TabSelectionEditorV2."/>
+  <suffix name="UngroupTabs"
+      label="Users tapped on the ungroup tabs button in TabSelectionEditorV2."/>
+  <affected-action name="TabMultiSelectV2"/>
 </action-suffix>
 
 <action-suffix separator="." ordering="suffix">
@@ -34958,6 +35375,26 @@ should be able to be added at any place in this file.
   <suffix name="Feed" label="via Feed entry point"/>
   <affected-action name="Crow.EntryPointShown"/>
   <affected-action name="Crow.LaunchCustomTab"/>
+</action-suffix>
+
+<action-suffix separator="_" ordering="suffix">
+  <suffix name="DisplayButton" label="Display pillar page button"/>
+  <suffix name="EasyButton" label="Easy pillar page button"/>
+  <suffix name="FastButton" label="Fast pillar page button"/>
+  <suffix name="GameButton" label="Game pillar page button"/>
+  <suffix name="GraphicsButton" label="Graphics pillar page button"/>
+  <suffix name="KeyboardButton" label="Keyboard pillar page button"/>
+  <suffix name="PeripheralsButton" label="Peripherals pillar page button"/>
+  <suffix name="PowerfulButton" label="Powerful pillar page button"/>
+  <suffix name="SecureButton" label="Secure pillar page button"/>
+  <affected-action name="DemoMode_Highlights_HomePage_Click"/>
+  <affected-action name="DemoMode_Highlights_Navbar_Click"/>
+</action-suffix>
+
+<action-suffix separator="_" ordering="suffix">
+  <suffix name="NextButton" label="next button in pillar pages"/>
+  <suffix name="PreviousButton" label="previous button in pillar pages"/>
+  <affected-action name="DemoMode_Highlights_PillarPage_Click"/>
 </action-suffix>
 
 </actions>

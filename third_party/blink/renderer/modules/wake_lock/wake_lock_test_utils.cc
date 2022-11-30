@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,7 +76,7 @@ void MockWakeLock::Bind(
   DCHECK(!receiver_.is_bound());
   receiver_.Bind(std::move(receiver));
   receiver_.set_disconnect_handler(
-      WTF::Bind(&MockWakeLock::OnConnectionError, WTF::Unretained(this)));
+      WTF::BindOnce(&MockWakeLock::OnConnectionError, WTF::Unretained(this)));
 }
 
 void MockWakeLock::Unbind() {
@@ -159,7 +159,7 @@ void MockPermissionService::BindRequest(mojo::ScopedMessagePipeHandle handle) {
   DCHECK(!receiver_.is_bound());
   receiver_.Bind(mojo::PendingReceiver<mojom::blink::PermissionService>(
       std::move(handle)));
-  receiver_.set_disconnect_handler(WTF::Bind(
+  receiver_.set_disconnect_handler(WTF::BindOnce(
       &MockPermissionService::OnConnectionError, WTF::Unretained(this)));
 }
 
@@ -294,7 +294,8 @@ void WakeLockTestingContext::WaitForPromiseFulfillment(ScriptPromise promise) {
       MakeGarbageCollected<ClosureRunnerCallable>(run_loop.QuitClosure())));
   // Execute pending microtasks, otherwise it can take a few seconds for the
   // promise to resolve.
-  v8::MicrotasksScope::PerformCheckpoint(GetScriptState()->GetIsolate());
+  GetScriptState()->GetContext()->GetMicrotaskQueue()->PerformCheckpoint(
+      GetScriptState()->GetIsolate());
   RunWithStack(&run_loop);
 }
 
@@ -308,7 +309,8 @@ void WakeLockTestingContext::WaitForPromiseRejection(ScriptPromise promise) {
           MakeGarbageCollected<ClosureRunnerCallable>(run_loop.QuitClosure())));
   // Execute pending microtasks, otherwise it can take a few seconds for the
   // promise to resolve.
-  v8::MicrotasksScope::PerformCheckpoint(GetScriptState()->GetIsolate());
+  GetScriptState()->GetContext()->GetMicrotaskQueue()->PerformCheckpoint(
+      GetScriptState()->GetIsolate());
   RunWithStack(&run_loop);
 }
 

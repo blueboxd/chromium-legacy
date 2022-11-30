@@ -16,7 +16,10 @@
 #include "base/allocator/partition_allocator/memory_reclaimer.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/bits.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/compiler_specific.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/no_destructor.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/numerics/checked_math.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/numerics/safe_conversions.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/threading/platform_thread.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
@@ -24,11 +27,7 @@
 #include "base/allocator/partition_allocator/partition_root.h"
 #include "base/allocator/partition_allocator/partition_stats.h"
 #include "base/allocator/partition_allocator/shim/allocator_shim_internals.h"
-#include "base/compiler_specific.h"
-#include "base/feature_list.h"
 #include "base/memory/nonscannable_memory.h"
-#include "base/numerics/checked_math.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
@@ -78,9 +77,9 @@ class LeakySingleton {
  public:
   constexpr LeakySingleton() = default;
 
-  ALWAYS_INLINE T* Get() {
+  PA_ALWAYS_INLINE T* Get() {
     auto* instance = instance_.load(std::memory_order_acquire);
-    if (LIKELY(instance))
+    if (PA_LIKELY(instance))
       return instance;
 
     return GetSlowPath();
@@ -177,7 +176,7 @@ class MainPartitionConstructor {
 
 LeakySingleton<partition_alloc::ThreadSafePartitionRoot,
                MainPartitionConstructor>
-    g_root CONSTINIT = {};
+    g_root PA_CONSTINIT = {};
 partition_alloc::ThreadSafePartitionRoot* Allocator() {
   return g_root.Get();
 }
@@ -194,7 +193,7 @@ class AlignedPartitionConstructor {
 
 LeakySingleton<partition_alloc::ThreadSafePartitionRoot,
                AlignedPartitionConstructor>
-    g_aligned_root CONSTINIT = {};
+    g_aligned_root PA_CONSTINIT = {};
 
 partition_alloc::ThreadSafePartitionRoot* OriginalAllocator() {
   return g_original_root.load(std::memory_order_relaxed);
@@ -232,7 +231,7 @@ size_t g_extra_bytes;
 #endif  // BUILDFLAG(IS_WIN) && defined(ARCH_CPU_X86)
 
 // TODO(brucedawson): Remove this when https://crbug.com/1151455 is fixed.
-ALWAYS_INLINE size_t MaybeAdjustSize(size_t size) {
+PA_ALWAYS_INLINE size_t MaybeAdjustSize(size_t size) {
 #if BUILDFLAG(IS_WIN) && defined(ARCH_CPU_X86)
   return base::CheckAdd(size, g_extra_bytes).ValueOrDie();
 #else   // BUILDFLAG(IS_WIN) && defined(ARCH_CPU_X86)
@@ -320,7 +319,9 @@ void* PartitionCalloc(const AllocatorDispatch*,
                       size_t size,
                       void* context) {
   partition_alloc::ScopedDisallowAllocations guard{};
-  const size_t total = base::CheckMul(n, MaybeAdjustSize(size)).ValueOrDie();
+  const size_t total =
+      partition_alloc::internal::base::CheckMul(n, MaybeAdjustSize(size))
+          .ValueOrDie();
   return Allocator()->AllocWithFlagsNoHooks(
       partition_alloc::AllocFlags::kZeroFill | g_alloc_flags, total,
       partition_alloc::PartitionPageSize());
@@ -386,9 +387,9 @@ void* PartitionRealloc(const AllocatorDispatch*,
                        void* context) {
   partition_alloc::ScopedDisallowAllocations guard{};
 #if BUILDFLAG(IS_APPLE)
-  if (UNLIKELY(!partition_alloc::IsManagedByPartitionAlloc(
-                   reinterpret_cast<uintptr_t>(address)) &&
-               address)) {
+  if (PA_UNLIKELY(!partition_alloc::IsManagedByPartitionAlloc(
+                      reinterpret_cast<uintptr_t>(address)) &&
+                  address)) {
     // A memory region allocated by the system allocator is passed in this
     // function.  Forward the request to `realloc` which supports zone-
     // dispatching so that it appropriately selects the right zone.
@@ -411,9 +412,9 @@ void PartitionFree(const AllocatorDispatch*, void* object, void* context) {
   partition_alloc::ScopedDisallowAllocations guard{};
 #if BUILDFLAG(IS_APPLE)
   // TODO(bartekn): Add MTE unmasking here (and below).
-  if (UNLIKELY(!partition_alloc::IsManagedByPartitionAlloc(
-                   reinterpret_cast<uintptr_t>(object)) &&
-               object)) {
+  if (PA_UNLIKELY(!partition_alloc::IsManagedByPartitionAlloc(
+                      reinterpret_cast<uintptr_t>(object)) &&
+                  object)) {
     // A memory region allocated by the system allocator is passed in this
     // function.  Forward the request to `free` which supports zone-
     // dispatching so that it appropriately selects the right zone.
@@ -426,9 +427,9 @@ void PartitionFree(const AllocatorDispatch*, void* object, void* context) {
   // the pointer, pass it along. This should not have a runtime cost vs regular
   // Android, since on Android we have a PA_CHECK() rather than the branch here.
 #if BUILDFLAG(IS_CAST_ANDROID)
-  if (UNLIKELY(!partition_alloc::IsManagedByPartitionAlloc(
-                   reinterpret_cast<uintptr_t>(object)) &&
-               object)) {
+  if (PA_UNLIKELY(!partition_alloc::IsManagedByPartitionAlloc(
+                      reinterpret_cast<uintptr_t>(object)) &&
+                  object)) {
     // A memory region allocated by the system allocator is passed in this
     // function.  Forward the request to `free()`, which is `__real_free()`
     // here.
@@ -788,23 +789,26 @@ SHIM_ALWAYS_EXPORT struct mallinfo mallinfo(void) __THROW {
   info.arena = 0;  // Memory *not* allocated with mmap().
 
   // Memory allocated with mmap(), aka virtual size.
-  info.hblks = base::checked_cast<decltype(info.hblks)>(
-      allocator_dumper.stats().total_mmapped_bytes +
-      aligned_allocator_dumper.stats().total_mmapped_bytes +
-      nonscannable_allocator_dumper.stats().total_mmapped_bytes +
-      nonquarantinable_allocator_dumper.stats().total_mmapped_bytes);
+  info.hblks =
+      partition_alloc::internal::base::checked_cast<decltype(info.hblks)>(
+          allocator_dumper.stats().total_mmapped_bytes +
+          aligned_allocator_dumper.stats().total_mmapped_bytes +
+          nonscannable_allocator_dumper.stats().total_mmapped_bytes +
+          nonquarantinable_allocator_dumper.stats().total_mmapped_bytes);
   // Resident bytes.
-  info.hblkhd = base::checked_cast<decltype(info.hblkhd)>(
-      allocator_dumper.stats().total_resident_bytes +
-      aligned_allocator_dumper.stats().total_resident_bytes +
-      nonscannable_allocator_dumper.stats().total_resident_bytes +
-      nonquarantinable_allocator_dumper.stats().total_resident_bytes);
+  info.hblkhd =
+      partition_alloc::internal::base::checked_cast<decltype(info.hblkhd)>(
+          allocator_dumper.stats().total_resident_bytes +
+          aligned_allocator_dumper.stats().total_resident_bytes +
+          nonscannable_allocator_dumper.stats().total_resident_bytes +
+          nonquarantinable_allocator_dumper.stats().total_resident_bytes);
   // Allocated bytes.
-  info.uordblks = base::checked_cast<decltype(info.uordblks)>(
-      allocator_dumper.stats().total_active_bytes +
-      aligned_allocator_dumper.stats().total_active_bytes +
-      nonscannable_allocator_dumper.stats().total_active_bytes +
-      nonquarantinable_allocator_dumper.stats().total_active_bytes);
+  info.uordblks =
+      partition_alloc::internal::base::checked_cast<decltype(info.uordblks)>(
+          allocator_dumper.stats().total_active_bytes +
+          aligned_allocator_dumper.stats().total_active_bytes +
+          nonscannable_allocator_dumper.stats().total_active_bytes +
+          nonquarantinable_allocator_dumper.stats().total_active_bytes);
 
   return info;
 }

@@ -16,7 +16,6 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_icon_formatter.h"
 #import "ios/chrome/browser/ui/omnibox/popup/popup_swift.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -215,15 +214,13 @@ UIColor* DimColorIncognito() {
          _match.type == AutocompleteMatchType::HISTORY_URL ||
          _match.type == AutocompleteMatchType::NAVSUGGEST ||
          _match.type == AutocompleteMatchType::NAVSUGGEST_PERSONALIZED ||
-         _match.type == AutocompleteMatchType::STARTER_PACK ||
+         _match.type == AutocompleteMatchType::PHYSICAL_WEB_DEPRECATED ||
          _match.type == AutocompleteMatchType::SEARCH_HISTORY ||
-         _match.type == AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED ||
-         _match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL ||
          _match.type == AutocompleteMatchType::SEARCH_SUGGEST ||
          _match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
          _match.type == AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED ||
          _match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL ||
-         _match.type == AutocompleteMatchType::PHYSICAL_WEB_DEPRECATED;
+         _match.type == AutocompleteMatchType::STARTER_PACK;
 }
 
 - (BOOL)isTabMatch {

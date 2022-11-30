@@ -17,12 +17,19 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
+import org.chromium.base.jank_tracker.JankMetricUMARecorder;
+import org.chromium.base.jank_tracker.JankMetricUMARecorderJni;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
@@ -41,6 +48,7 @@ import org.chromium.net.test.EmbeddedTestServer;
  * Tests for startup timing histograms.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@Batch(Batch.PER_CLASS)
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
 public class StartupLoadingMetricsTest {
     private static final String TAG = "StartupLoadingTest";
@@ -69,6 +77,15 @@ public class StartupLoadingMetricsTest {
     @Rule
     public WebApkActivityTestRule mWebApkActivityTestRule = new WebApkActivityTestRule();
 
+    @Rule
+    public JniMocker mJniMocker = new JniMocker();
+
+    @Rule
+    public MockitoRule mMockitoRule = MockitoJUnit.rule();
+
+    @Mock
+    JankMetricUMARecorder.Natives mJankRecorderNativeMock;
+
     private String mTestPage;
     private String mTestPage2;
     private String mErrorPage;
@@ -85,6 +102,7 @@ public class StartupLoadingMetricsTest {
         mTestPage2 = mTestServer.getURL(TEST_PAGE_2);
         mErrorPage = mTestServer.getURL(ERROR_PAGE);
         mSlowPage = mTestServer.getURL(SLOW_PAGE);
+        mJniMocker.mock(JankMetricUMARecorderJni.TEST_HOOKS, mJankRecorderNativeMock);
     }
 
     @After
@@ -98,7 +116,7 @@ public class StartupLoadingMetricsTest {
         PageLoadMetricsTest.PageLoadMetricsTestObserver testObserver =
                 new PageLoadMetricsTest.PageLoadMetricsTestObserver();
         TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> PageLoadMetrics.addObserver(testObserver));
+                () -> PageLoadMetrics.addObserver(testObserver, false));
         runnable.run();
         // First Contentful Paint may be recorded asynchronously after a page load is finished, we
         // have to wait the event to occur.

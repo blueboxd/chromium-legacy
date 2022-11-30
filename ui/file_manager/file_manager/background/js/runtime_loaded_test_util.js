@@ -7,7 +7,7 @@
  * extension under test at runtime to populate testing functionality.
  */
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 
 import {metrics} from '../../common/js/metrics.js';
 import {util} from '../../common/js/util.js';
@@ -1238,4 +1238,19 @@ test.util.async.disableBannersForTesting = async (contentWindow, callback) => {
     console.error(`Error disabling banners for testing: ${e}`);
   }
   callback(false);
+};
+
+/**
+ * Disables the nudge expiry period for testing.
+ *
+ * @param {Window} contentWindow Window the banner controller exists.
+ * @param {function(boolean)} callback Callback function to be called with a
+ *    boolean indicating success or failure.
+ * @suppress {missingProperties} nudgeContainer is only defined for foreground
+ *    Window so it isn't visible in the background.
+ */
+test.util.async.disableNudgeExpiry = async (contentWindow, callback) => {
+  contentWindow.fileManager.ui_.nudgeContainer
+      .setExpiryPeriodEnabledForTesting = false;
+  callback(true);
 };

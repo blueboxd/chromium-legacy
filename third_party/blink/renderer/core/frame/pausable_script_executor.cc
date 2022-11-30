@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -193,7 +193,7 @@ V8FunctionExecutor::V8FunctionExecutor(v8::Isolate* isolate,
                                        int argc,
                                        v8::Local<v8::Value> argv[])
     : function_(isolate, function), receiver_(isolate, receiver) {
-  args_.ReserveCapacity(base::checked_cast<wtf_size_t>(argc));
+  args_.reserve(base::checked_cast<wtf_size_t>(argc));
   for (int i = 0; i < argc; ++i)
     args_.push_back(TraceWrapperV8Reference<v8::Value>(isolate, argv[i]));
 }
@@ -205,7 +205,7 @@ Vector<v8::Local<v8::Value>> V8FunctionExecutor::Execute(
   v8::Local<v8::Value> single_result;
 
   Vector<v8::Local<v8::Value>> args;
-  args.ReserveCapacity(args_.size());
+  args.reserve(args_.size());
   for (wtf_size_t i = 0; i < args_.size(); ++i)
     args.push_back(args_[i].Get(isolate));
 
@@ -337,8 +337,8 @@ void PausableScriptExecutor::PostExecuteAndDestroySelf(
     ExecutionContext* context) {
   task_handle_ = PostCancellableTask(
       *context->GetTaskRunner(TaskType::kJavascriptTimerImmediate), FROM_HERE,
-      WTF::Bind(&PausableScriptExecutor::ExecuteAndDestroySelf,
-                WrapPersistent(this)));
+      WTF::BindOnce(&PausableScriptExecutor::ExecuteAndDestroySelf,
+                    WrapPersistent(this)));
 }
 
 void PausableScriptExecutor::ExecuteAndDestroySelf() {
@@ -375,8 +375,8 @@ void PausableScriptExecutor::ExecuteAndDestroySelf() {
       keep_alive_ = this;
       MakeGarbageCollected<PromiseAggregator>(
           script_state_, results,
-          WTF::Bind(&PausableScriptExecutor::HandleResults,
-                    WrapWeakPersistent(this)));
+          WTF::BindOnce(&PausableScriptExecutor::HandleResults,
+                        WrapWeakPersistent(this)));
       break;
 
     case mojom::blink::PromiseResultOption::kDoNotWait:
@@ -402,7 +402,7 @@ void PausableScriptExecutor::HandleResults(
     switch (want_result_option_) {
       case mojom::blink::WantResultOption::kWantResult:
       case mojom::blink::WantResultOption::kWantResultDateAndRegExpAllowed:
-        if (!results.IsEmpty() && !results.back().IsEmpty()) {
+        if (!results.empty() && !results.back().IsEmpty()) {
           v8::Context::Scope context_scope(script_state_->GetContext());
           std::unique_ptr<WebV8ValueConverter> converter =
               Platform::Current()->CreateWebV8ValueConverter();

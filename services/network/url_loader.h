@@ -70,8 +70,9 @@ class OriginAccessList;
 
 constexpr size_t kMaxFileUploadRequestsPerBatch = 64;
 
-class NetToMojoPendingBuffer;
+class CacheTransparencySettings;
 class KeepaliveStatisticsRecorder;
+class NetToMojoPendingBuffer;
 class ScopedThrottlingToken;
 class URLLoaderFactory;
 
@@ -178,7 +179,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer,
       mojo::PendingRemote<mojom::AcceptCHFrameObserver>
           accept_ch_frame_observer,
-      bool third_party_cookies_enabled);
+      bool third_party_cookies_enabled,
+      const CacheTransparencySettings* cache_transparency_settings);
 
   URLLoader(const URLLoader&) = delete;
   URLLoader& operator=(const URLLoader&) = delete;
@@ -291,7 +293,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   static bool HasFetchStreamingUploadBody(const ResourceRequest*);
 
-  static void ResetPervasivePayloadsListForTesting();
+  static absl::optional<net::IsolationInfo> GetIsolationInfo(
+      const net::IsolationInfo& factory_isolation_info,
+      bool automatically_assign_isolation_info,
+      const ResourceRequest& request);
 
  private:
   // This class is used to set the URLLoader as user data on a URLRequest. This
@@ -419,8 +424,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
     // processing the request (e.g. by calling ReadMore as necessary).
     kContinueRequest,
   };
-  BlockResponseForCorbResult BlockResponseForCorb(
-      bool should_report_corb_blocking);
+  // Block the response because of CORB (or ORB).
+  BlockResponseForCorbResult BlockResponseForCorb();
+  // Decide whether to call block a response via BlockResponseForCorb.
+  // Returns true if the request should be cancelled.
+  bool MaybeBlockResponseForCorb(corb::ResponseAnalyzer::Decision);
 
   void ReportFlaggedResponseCookies();
   void StartReading();
@@ -626,6 +634,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       url_loader_network_observer_ = nullptr;
   const mojo::Remote<mojom::DevToolsObserver> devtools_observer_remote_;
   const raw_ptr<mojom::DevToolsObserver> devtools_observer_ = nullptr;
+
+  const raw_ptr<const CacheTransparencySettings> cache_transparency_settings_;
 
   // Indicates |url_request_| is fetch upload request and that has streaming
   // body.

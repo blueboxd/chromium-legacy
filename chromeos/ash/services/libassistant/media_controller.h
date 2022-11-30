@@ -11,8 +11,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 class MediaController : public mojom::MediaController,
                         public AssistantClientObserver {
@@ -43,7 +42,6 @@ class MediaController : public mojom::MediaController,
   std::unique_ptr<GrpcEventsObserver> events_observer_;
 };
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant
 
 #endif  // CHROMEOS_ASH_SERVICES_LIBASSISTANT_MEDIA_CONTROLLER_H_

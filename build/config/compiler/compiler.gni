@@ -135,7 +135,8 @@ declare_args() {
 
   # If true, optimize for size.
   # Default to favoring speed over size for platforms not listed below.
-  optimize_for_size = is_android || is_ios || is_fuchsia || is_castos
+  optimize_for_size =
+      !is_high_end_android && (is_android || is_ios || is_fuchsia || is_castos)
 
   # Set to true to enable using the ML inliner in LLVM. This currently only
   # enables the ML inliner when targeting Android.
@@ -144,6 +145,11 @@ declare_args() {
 }
 
 assert(!is_cfi || use_thin_lto, "CFI requires ThinLTO")
+
+if (use_thin_lto && is_debug) {
+  print("WARNING: ThinLTO (use_thin_lto=true) doesn't work with debug" +
+        " (is_debug=true) build.")
+}
 
 declare_args() {
   # Whether we should consider the profile we're using to be accurate. Accurate

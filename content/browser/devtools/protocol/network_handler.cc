@@ -6,12 +6,14 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <memory>
 
 #include "base/barrier_closure.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/containers/queue.h"
 #include "base/feature_list.h"
 #include "base/i18n/i18n_constants.h"
@@ -1315,9 +1317,7 @@ NetworkHandler::BuildProtocolReport(const net::ReportingReport& report) {
     return nullptr;
   }
   std::vector<GURL> reporting_filter_urls = ComputeReportingURLs(host_);
-  auto iter = std::find(reporting_filter_urls.begin(),
-                        reporting_filter_urls.end(), report.url);
-  if (iter != reporting_filter_urls.end()) {
+  if (base::Contains(reporting_filter_urls, report.url)) {
     return protocol::Network::ReportingApiReport::Create()
         .SetId(report.id.ToString())
         .SetInitiatorUrl(report.url.spec())
@@ -1327,8 +1327,7 @@ NetworkHandler::BuildProtocolReport(const net::ReportingReport& report) {
             (report.queued - base::TimeTicks::UnixEpoch()).InSecondsF())
         .SetDepth(report.depth)
         .SetCompletedAttempts(report.attempts)
-        .SetBody(
-            std::make_unique<base::Value::Dict>(report.body->GetDict().Clone()))
+        .SetBody(std::make_unique<base::Value::Dict>(report.body.Clone()))
         .SetStatus(BuildReportStatus(report.status))
         .Build();
   }
@@ -1861,6 +1860,38 @@ String BuildServiceWorkerResponseSource(
   }
 }
 
+String AlternateProtocolUsageToString(
+    net::AlternateProtocolUsage alternate_protocol_usage) {
+  switch (alternate_protocol_usage) {
+    case net::AlternateProtocolUsage::ALTERNATE_PROTOCOL_USAGE_NO_RACE:
+      return protocol::Network::AlternateProtocolUsageEnum::
+          AlternativeJobWonWithoutRace;
+    case net::AlternateProtocolUsage::ALTERNATE_PROTOCOL_USAGE_WON_RACE:
+      return protocol::Network::AlternateProtocolUsageEnum::
+          AlternativeJobWonRace;
+    case net::AlternateProtocolUsage::
+        ALTERNATE_PROTOCOL_USAGE_MAIN_JOB_WON_RACE:
+      return protocol::Network::AlternateProtocolUsageEnum::MainJobWonRace;
+    case net::AlternateProtocolUsage::ALTERNATE_PROTOCOL_USAGE_MAPPING_MISSING:
+      return protocol::Network::AlternateProtocolUsageEnum::MappingMissing;
+    case net::AlternateProtocolUsage::ALTERNATE_PROTOCOL_USAGE_BROKEN:
+      return protocol::Network::AlternateProtocolUsageEnum::Broken;
+    case net::AlternateProtocolUsage::
+        ALTERNATE_PROTOCOL_USAGE_DNS_ALPN_H3_JOB_WON_WITHOUT_RACE:
+      return protocol::Network::AlternateProtocolUsageEnum::
+          DnsAlpnH3JobWonWithoutRace;
+    case net::AlternateProtocolUsage::
+        ALTERNATE_PROTOCOL_USAGE_DNS_ALPN_H3_JOB_WON_RACE:
+      return protocol::Network::AlternateProtocolUsageEnum::DnsAlpnH3JobWonRace;
+    case net::AlternateProtocolUsage::
+        ALTERNATE_PROTOCOL_USAGE_UNSPECIFIED_REASON:
+      return protocol::Network::AlternateProtocolUsageEnum::UnspecifiedReason;
+    case net::AlternateProtocolUsage::ALTERNATE_PROTOCOL_USAGE_MAX:
+      return protocol::Network::AlternateProtocolUsageEnum::UnspecifiedReason;
+  }
+  return protocol::Network::AlternateProtocolUsageEnum::UnspecifiedReason;
+}
+
 std::unique_ptr<Network::Response> BuildResponse(
     const GURL& url,
     const network::mojom::URLResponseHeadDevToolsInfo& info) {
@@ -1905,6 +1936,8 @@ std::unique_ptr<Network::Response> BuildResponse(
   }
 
   response->SetProtocol(GetProtocol(url, info));
+  response->SetAlternateProtocolUsage(
+      AlternateProtocolUsageToString(info.alternate_protocol_usage));
   response->SetRemoteIPAddress(
       net::HostPortPair::FromIPEndPoint(info.remote_endpoint).HostForURL());
   response->SetRemotePort(info.remote_endpoint.port());

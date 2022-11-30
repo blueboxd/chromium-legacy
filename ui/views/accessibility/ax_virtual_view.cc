@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/containers/adapters.h"
 #include "base/no_destructor.h"
+#include "base/ranges/algorithm.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_tree_data.h"
@@ -63,8 +64,9 @@ AXVirtualView::~AXVirtualView() {
          "not both.";
 
   if (ax_platform_node_) {
-    ax_platform_node_->Destroy();
-    ax_platform_node_ = nullptr;
+    // Clear ax_platform_node_ and return another raw_ptr instance that is
+    // allowed to dangle.
+    ax_platform_node_.ExtractAsDangling()->Destroy();
   }
 
 #if defined(USE_AURA)
@@ -188,8 +190,7 @@ absl::optional<size_t> AXVirtualView::GetIndexOf(
     const AXVirtualView* view) const {
   DCHECK(view);
   const auto iter =
-      std::find_if(children_.begin(), children_.end(),
-                   [view](const auto& child) { return child.get() == view; });
+      base::ranges::find(children_, view, &std::unique_ptr<AXVirtualView>::get);
   return iter != children_.end() ? absl::make_optional(static_cast<size_t>(
                                        iter - children_.begin()))
                                  : absl::nullopt;

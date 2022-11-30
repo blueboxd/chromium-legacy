@@ -6,7 +6,6 @@ module storage.mojom;
 
 import "components/services/storage/public/mojom/storage_policy_update.mojom";
 import "components/services/storage/public/mojom/storage_usage_info.mojom";
-import "mojo/public/mojom/base/time.mojom";
 import "third_party/blink/public/mojom/dom_storage/storage_area.mojom";
 import "third_party/blink/public/mojom/storage_key/storage_key.mojom";
 
@@ -22,7 +21,7 @@ interface LocalStorageControl {
                   pending_receiver<blink.mojom.StorageArea> receiver);
 
   // Retrieves some basic usage information about the Local Storage state.
-  GetUsage() => (array<StorageUsageInfoV2> info);
+  GetUsage() => (array<StorageUsageInfo> info);
 
   // Deletes all Local State state for the given `storage_key`. Responds when
   // the deletion is complete.

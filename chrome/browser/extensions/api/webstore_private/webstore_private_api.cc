@@ -207,6 +207,8 @@ const char kIncognitoError[] =
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 const char kSecondaryProfileError[] =
     "Apps may only be installed using the main profile";
+const char kLegacyPackagedAppError[] =
+    "Legacy packaged apps are no longer supported";
 #endif
 const char kEphemeralAppLaunchingNotSupported[] =
     "Ephemeral launching of apps is no longer supported.";
@@ -339,9 +341,9 @@ ExtensionInstallStatus AddExtensionToPendingList(
     return status;
   }
 
-  DictionaryPrefUpdate pending_requests_update(
+  ScopedDictPrefUpdate pending_requests_update(
       profile->GetPrefs(), prefs::kCloudExtensionRequestIds);
-  DCHECK(!pending_requests_update->FindKey(id));
+  DCHECK(!pending_requests_update->Find(id));
   base::Value request_data(base::Value::Type::DICTIONARY);
   request_data.SetKey(extension_misc::kExtensionRequestTimestamp,
                       ::base::TimeToValue(base::Time::Now()));
@@ -349,7 +351,7 @@ ExtensionInstallStatus AddExtensionToPendingList(
     request_data.SetKey(extension_misc::kExtensionWorkflowJustification,
                         base::Value(justification));
   }
-  pending_requests_update->SetKey(id, std::move(request_data));
+  pending_requests_update->Set(id, std::move(request_data));
   // Query the new extension install status again. It should be changed from
   // |kCanRequest| to |kRequestPending| if the id has been added into pending
   // list successfully. Otherwise, it shouldn't be changed.
@@ -952,11 +954,6 @@ WebstorePrivateCompleteInstallFunction::Run() {
   if (profile->IsGuestSession() || profile->IsOffTheRecord()) {
     return RespondNow(Error(kIncognitoError));
   }
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (!profile->IsMainProfile()) {
-    return RespondNow(Error(kSecondaryProfileError));
-  }
-#endif
 
   if (!crx_file::id_util::IdIsValid(params->expected_id))
     return RespondNow(Error(kWebstoreInvalidIdError));
@@ -967,6 +964,23 @@ WebstorePrivateCompleteInstallFunction::Run() {
     return RespondNow(Error(kNoPreviousBeginInstallWithManifestError,
                             params->expected_id));
   }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // TODO(https://crbug.com/1365778): Centralize logic for disallowing
+  // installation with other installation paths.
+  if (!profile->IsMainProfile()) {
+    bool allowed = approval_->dummy_extension &&
+                   (approval_->dummy_extension->is_extension() ||
+                    approval_->dummy_extension->is_theme());
+    if (!allowed) {
+      return RespondNow(Error(kSecondaryProfileError));
+    }
+  }
+  if (approval_->dummy_extension &&
+      approval_->dummy_extension->is_legacy_packaged_app()) {
+    return RespondNow(Error(kLegacyPackagedAppError));
+  }
+#endif
 
   content::WebContents* web_contents = GetSenderWebContents();
   if (!web_contents) {

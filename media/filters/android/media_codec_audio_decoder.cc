@@ -173,13 +173,9 @@ bool MediaCodecAudioDecoder::CreateMediaCodecLoop() {
   std::unique_ptr<MediaCodecBridge> audio_codec_bridge(
       MediaCodecBridgeImpl::CreateAudioDecoder(
           config_, media_crypto,
-          // Use the asynchronous API if we're on Marshallow or higher.
-          base::android::BuildInfo::GetInstance()->sdk_int() >=
-                  base::android::SDK_VERSION_MARSHMALLOW
-              ? BindToCurrentLoop(base::BindRepeating(
-                    &MediaCodecAudioDecoder::PumpMediaCodecLoop,
-                    weak_factory_.GetWeakPtr()))
-              : base::RepeatingClosure()));
+          BindToCurrentLoop(
+              base::BindRepeating(&MediaCodecAudioDecoder::PumpMediaCodecLoop,
+                                  weak_factory_.GetWeakPtr()))));
   if (!audio_codec_bridge) {
     DLOG(ERROR) << __func__ << " failed: cannot create MediaCodecBridge";
     return false;
@@ -447,10 +443,12 @@ bool MediaCodecAudioDecoder::OnDecodedFrame(
     } else if (config_.codec() == AudioCodec::kEAC3) {
       frame_count = Ac3Util::ParseTotalEac3SampleCount(
           audio_buffer->channel_data()[0], out.size);
+#if BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
     } else if (config_.codec() == AudioCodec::kDTS) {
       frame_count = media::dts::ParseTotalSampleCount(
           audio_buffer->channel_data()[0], out.size, AudioCodec::kDTS);
       DVLOG(2) << ": DTS Frame Count = " << frame_count;
+#endif  // BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
     } else {
       NOTREACHED() << "Unsupported passthrough format.";
     }

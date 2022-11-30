@@ -8,13 +8,13 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/chrome_extension_cookies_factory.h"
-#include "chrome/browser/first_party_sets/first_party_sets_pref_names.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/cookie_config/cookie_store_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -27,9 +27,7 @@
 namespace extensions {
 
 ChromeExtensionCookies::ChromeExtensionCookies(Profile* profile)
-    : profile_(profile),
-      first_party_sets_enabled_(profile->GetPrefs()->GetBoolean(
-          first_party_sets::kFirstPartySetsEnabled)) {
+    : profile_(profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   cookie_settings_ = CookieSettingsFactory::GetForProfile(profile);
   cookie_settings_observation_.Observe(cookie_settings_.get());
@@ -42,7 +40,7 @@ ChromeExtensionCookies::ChromeExtensionCookies(Profile* profile)
     creation_config = std::make_unique<content::CookieStoreConfig>(
         profile_->GetPath().Append(chrome::kExtensionsCookieFilename),
         profile_->ShouldRestoreOldSessionCookies(),
-        profile_->ShouldPersistSessionCookies(), first_party_sets_enabled_);
+        profile_->ShouldPersistSessionCookies());
     creation_config->crypto_delegate = cookie_config::GetCookieCryptoDelegate();
   }
   creation_config->cookieable_schemes.push_back(extensions::kExtensionScheme);
@@ -80,7 +78,7 @@ void ChromeExtensionCookies::CreateRestrictedCookieManager(
       base::BindOnce(
           &IOData::ComputeFirstPartySetMetadataAndCreateRestrictedCookieManager,
           base::Unretained(io_data_.get()), origin, isolation_info,
-          first_party_sets_enabled_, std::move(receiver)));
+          std::move(receiver)));
 }
 
 void ChromeExtensionCookies::ClearCookies(const GURL& origin,
@@ -128,20 +126,18 @@ void ChromeExtensionCookies::IOData::
     ComputeFirstPartySetMetadataAndCreateRestrictedCookieManager(
         const url::Origin& origin,
         const net::IsolationInfo& isolation_info,
-        const bool first_party_sets_enabled,
         mojo::PendingReceiver<network::mojom::RestrictedCookieManager>
             receiver) {
   network::RestrictedCookieManager::ComputeFirstPartySetMetadata(
       origin, GetOrCreateCookieStore(), isolation_info,
       base::BindOnce(&IOData::CreateRestrictedCookieManager,
                      weak_factory_.GetWeakPtr(), origin, isolation_info,
-                     first_party_sets_enabled, std::move(receiver)));
+                     std::move(receiver)));
 }
 
 void ChromeExtensionCookies::IOData::CreateRestrictedCookieManager(
     const url::Origin& origin,
     const net::IsolationInfo& isolation_info,
-    const bool first_party_sets_enabled,
     mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver,
     net::FirstPartySetMetadata first_party_set_metadata) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -152,8 +148,7 @@ void ChromeExtensionCookies::IOData::CreateRestrictedCookieManager(
           GetOrCreateCookieStore(), network_cookie_settings_, origin,
           isolation_info,
           /* null cookies_observer disables logging */
-          mojo::NullRemote(), first_party_sets_enabled,
-          std::move(first_party_set_metadata)),
+          mojo::NullRemote(), std::move(first_party_set_metadata)),
       std::move(receiver));
 }
 

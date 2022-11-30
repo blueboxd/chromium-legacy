@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,6 +127,7 @@ void BaseFetchContext::AddClientHintsIfNecessary(
     const PermissionsPolicy* policy,
     const absl::optional<ClientHintImageInfo>& image_info,
     const absl::optional<WTF::AtomicString>& prefers_color_scheme,
+    const absl::optional<WTF::AtomicString>& prefers_reduced_motion,
     ResourceRequest& request) {
   // If the feature is enabled, then client hints are allowed only on secure
   // URLs.
@@ -486,6 +487,19 @@ void BaseFetchContext::AddClientHintsIfNecessary(
           "on");
     }
   }
+
+  if (ShouldSendClientHint(
+          policy, resource_origin, is_1p_origin,
+          network::mojom::blink::WebClientHintsType::kPrefersReducedMotion,
+          hints_preferences) &&
+      prefers_reduced_motion) {
+    request.SetHttpHeaderField(
+        network::GetClientHintToNameMap()
+            .at(network::mojom::blink::WebClientHintsType::
+                    kPrefersReducedMotion)
+            .c_str(),
+        prefers_reduced_motion.value());
+  }
 }
 
 void BaseFetchContext::PrintAccessDeniedMessage(const KURL& url) const {
@@ -697,27 +711,6 @@ bool BaseFetchContext::ShouldSendClientHint(
   }
 
   return IsClientHintSentByDefault(type) || hints_preferences.ShouldSend(type);
-}
-
-void BaseFetchContext::AddBackForwardCacheExperimentHTTPHeaderIfNeeded(
-    ResourceRequest& request) {
-  if (!RuntimeEnabledFeatures::BackForwardCacheExperimentHTTPHeaderEnabled(
-          GetExecutionContext())) {
-    return;
-  }
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kBackForwardCacheABExperimentControl)) {
-    return;
-  }
-  // Send the 'Sec-bfcache-experiment' HTTP header to indicate which
-  // BackForwardCacheSameSite experiment group we're in currently.
-  UseCounter::Count(GetExecutionContext(),
-                    WebFeature::kBackForwardCacheExperimentHTTPHeader);
-  auto experiment_group = base::GetFieldTrialParamValueByFeature(
-      features::kBackForwardCacheABExperimentControl,
-      features::kBackForwardCacheABExperimentGroup);
-  request.SetHttpHeaderField("Sec-bfcache-experiment",
-                             experiment_group.c_str());
 }
 
 void BaseFetchContext::Trace(Visitor* visitor) const {

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -168,10 +168,10 @@ void MojoInterfaceInterceptor::OnInterfaceRequest(
   // request is being satisfied by another process.
   GetExecutionContext()
       ->GetTaskRunner(TaskType::kMicrotask)
-      ->PostTask(
-          FROM_HERE,
-          WTF::Bind(&MojoInterfaceInterceptor::DispatchInterfaceRequestEvent,
-                    WrapPersistent(this), std::move(handle)));
+      ->PostTask(FROM_HERE,
+                 WTF::BindOnce(
+                     &MojoInterfaceInterceptor::DispatchInterfaceRequestEvent,
+                     WrapPersistent(this), std::move(handle)));
 }
 
 void MojoInterfaceInterceptor::DispatchInterfaceRequestEvent(

@@ -7,21 +7,45 @@
 
 #include "build/build_config.h"
 
-namespace autofill_assistant::prefs {
+class PrefRegistrySimple;
 
-#if !BUILDFLAG(IS_ANDROID)
-// TODO(crbug.com/1359957): Migrate Android prefs to profile prefs and use these
-// keys. Once that is done, also consider syncing.
+namespace autofill_assistant::prefs {
 
 // Boolean indicating whether the user has enabled Autofill Assistant.
 // Prefs are not currently synced across devices.
+// NOTE: This key needs to be kept in sync with the corresponding key in
+// `AutofillAssistantPreferenceManager.java`.
 extern const char kAutofillAssistantEnabled[];
 
 // Boolean indicating whether the user has given consent for Autofill
 // Assistant to communicate with Assistant servers.
 // Prefs are not synced across devices.
+// NOTE: This key needs to be kept in sync with the corresponding key in
+// `AutofillAssistantPreferenceManager.java`.
 extern const char kAutofillAssistantConsent[];
-#endif  // !BUILDFLAG(IS_ANDROID)
+
+// Boolean indicating whether trigger scripts are enabled. `true` by default.
+extern const char kAutofillAssistantTriggerScriptsEnabled[];
+
+// Boolean indicating whether this is the first time a trigger script is run for
+// a user. `true` by default.
+extern const char kAutofillAssistantTriggerScriptsIsFirstTimeUser[];
+
+// Below are keys of Android `SharedPreferences`. These are deprecated and
+// currently being migrated to `PrefService`.
+// Migrated to `prefs::kAutofillAssistantConsent`.
+extern const char kDeprecatedAutofillAssistantConsent[];
+// Migrated to `prefs::kAutofillAssistantEnabled`.
+extern const char kDeprecatedAutofillAssistantEnabled[];
+// Migrated to `prefs::kAutofillAssistantTriggerScriptsEnabled`.
+extern const char kDeprecatedAutofillAssistantTriggerScriptsEnabled[];
+// Migrated to `prefs::kAutofillAssistantTriggerScriptsIsFirstTimeUser`.
+extern const char kDeprecatedAutofillAssistantTriggerScriptsIsFirstTimeUser[];
+
+// Registers the Autofill Assistant profile prefs that are exposed to
+// users of the Autofill Assistant component, i.e. whether Autofill Assistant
+// is turned on and whether consent has been given.
+void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
 }  // namespace autofill_assistant::prefs
 

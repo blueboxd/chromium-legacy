@@ -10,6 +10,7 @@
 #include "ash/public/cpp/holding_space/holding_space_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -84,8 +85,7 @@ size_t FilePathToExtension(const base::FilePath& file_path) {
   if (extension.empty())
     return kEmptyExtension;
 
-  auto* const* it =
-      std::find(kKnownExtensions.begin(), kKnownExtensions.end(), extension);
+  auto* const* it = base::ranges::find(kKnownExtensions, extension);
   if (it == kKnownExtensions.end())
     return kOtherExtension;
 
@@ -157,6 +157,10 @@ void RecordItemFailureToLaunch(HoldingSpaceItem::Type type,
                                 reason);
 }
 
+void RecordSuggestionsAction(SuggestionsAction action) {
+  base::UmaHistogramEnumeration("HoldingSpace.Suggestions.Action.All", action);
+}
+
 void RecordTimeFromFirstAvailabilityToFirstAdd(base::TimeDelta time_delta) {
   // NOTE: 24 days appears to be the max supported number of days.
   base::UmaHistogramCustomTimes(
@@ -195,6 +199,13 @@ void RecordPodResizeAnimationSmoothness(int smoothness) {
   DCHECK_LE(smoothness, 100);
   base::UmaHistogramPercentage("HoldingSpace.Animation.PodResize.Smoothness",
                                smoothness);
+}
+
+void RecordUserPreferences(UserPreferences preferences) {
+  base::UmaHistogramBoolean("HoldingSpace.UserPreferences.PreviewsEnabled",
+                            preferences.previews_enabled);
+  base::UmaHistogramBoolean("HoldingSpace.UserPreferences.SuggestionsExpanded",
+                            preferences.suggestions_expanded);
 }
 
 void RecordVisibleItemCounts(

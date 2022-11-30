@@ -33,9 +33,7 @@ SyncCycleSnapshot MakeDefaultCycleSnapshot() {
 }  // namespace
 
 TestSyncService::TestSyncService()
-    : user_settings_(this),
-      active_data_types_(ModelTypeSet::All()),
-      last_cycle_snapshot_(MakeDefaultCycleSnapshot()) {}
+    : user_settings_(this), last_cycle_snapshot_(MakeDefaultCycleSnapshot()) {}
 
 TestSyncService::~TestSyncService() = default;
 
@@ -63,8 +61,32 @@ void TestSyncService::SetHasSyncConsent(bool has_sync_consent) {
   has_sync_consent_ = has_sync_consent;
 }
 
-void TestSyncService::SetAuthError(const GoogleServiceAuthError& auth_error) {
-  auth_error_ = auth_error;
+void TestSyncService::SetPersistentAuthErrorOtherThanWebSignout() {
+  auth_error_ = GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+      GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+          CREDENTIALS_REJECTED_BY_SERVER);
+  CHECK(auth_error_.IsPersistentError());
+}
+
+void TestSyncService::SetPersistentAuthErrorWithWebSignout() {
+  transport_state_ = TransportState::PAUSED;
+  auth_error_ = GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+      GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+          CREDENTIALS_REJECTED_BY_CLIENT);
+  CHECK(auth_error_.IsPersistentError());
+}
+
+void TestSyncService::SetTransientAuthError() {
+  auth_error_ =
+      GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED);
+  CHECK(auth_error_.IsTransientError());
+}
+
+void TestSyncService::ClearAuthError() {
+  auth_error_ = GoogleServiceAuthError::AuthErrorNone();
+  if (transport_state_ == TransportState::PAUSED) {
+    transport_state_ = TransportState::ACTIVE;
+  }
 }
 
 void TestSyncService::SetFirstSetupComplete(bool first_setup_complete) {
@@ -74,8 +96,8 @@ void TestSyncService::SetFirstSetupComplete(bool first_setup_complete) {
     user_settings_.ClearFirstSetupComplete();
 }
 
-void TestSyncService::SetActiveDataTypes(const ModelTypeSet& types) {
-  active_data_types_ = types;
+void TestSyncService::SetFailedDataTypes(const ModelTypeSet& types) {
+  failed_data_types_ = types;
 }
 
 void TestSyncService::SetLastCycleSnapshot(const SyncCycleSnapshot& snapshot) {
@@ -187,7 +209,10 @@ ModelTypeSet TestSyncService::GetPreferredDataTypes() const {
 }
 
 ModelTypeSet TestSyncService::GetActiveDataTypes() const {
-  return active_data_types_;
+  if (transport_state_ != TransportState::ACTIVE) {
+    return ModelTypeSet();
+  }
+  return Difference(GetPreferredDataTypes(), failed_data_types_);
 }
 
 void TestSyncService::StopAndClear() {}

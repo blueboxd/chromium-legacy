@@ -4,7 +4,6 @@
 
 #include "chrome/browser/devtools/devtools_window.h"
 
-#include <algorithm>
 #include <memory>
 #include <set>
 #include <utility>
@@ -16,6 +15,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/escape.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -135,11 +135,11 @@ void SetPreferencesFromJson(Profile* profile, const std::string& json) {
   absl::optional<base::Value> parsed = base::JSONReader::Read(json);
   if (!parsed || !parsed->is_dict())
     return;
-  DictionaryPrefUpdate update(profile->GetPrefs(), prefs::kDevToolsPreferences);
-  for (auto dict_value : parsed->DictItems()) {
+  ScopedDictPrefUpdate update(profile->GetPrefs(), prefs::kDevToolsPreferences);
+  for (auto dict_value : parsed->GetDict()) {
     if (!dict_value.second.is_string())
       continue;
-    update.Get()->SetKey(dict_value.first, std::move(dict_value.second));
+    update->Set(dict_value.first, std::move(dict_value.second));
   }
 }
 
@@ -453,7 +453,7 @@ DevToolsWindow::~DevToolsWindow() {
   owned_toolbox_web_contents_.reset();
 
   DevToolsWindows* instances = g_devtools_window_instances.Pointer();
-  auto it(std::find(instances->begin(), instances->end(), this));
+  auto it = base::ranges::find(*instances, this);
   DCHECK(it != instances->end());
   instances->erase(it);
 
@@ -1679,16 +1679,16 @@ void DevToolsWindow::CreateDevToolsBrowser() {
   if (!prefs->GetDict(prefs::kAppWindowPlacement).Find(kDevToolsApp)) {
     // Ensure there is always a default size so that
     // BrowserFrame::InitBrowserFrame can retrieve it later.
-    DictionaryPrefUpdate update(prefs, prefs::kAppWindowPlacement);
-    base::Value* wp_prefs = update.Get();
-    base::Value dev_tools_defaults(base::Value::Type::DICTIONARY);
-    dev_tools_defaults.SetIntKey("left", 100);
-    dev_tools_defaults.SetIntKey("top", 100);
-    dev_tools_defaults.SetIntKey("right", 740);
-    dev_tools_defaults.SetIntKey("bottom", 740);
-    dev_tools_defaults.SetBoolKey("maximized", false);
-    dev_tools_defaults.SetBoolKey("always_on_top", false);
-    wp_prefs->SetKey(kDevToolsApp, std::move(dev_tools_defaults));
+    ScopedDictPrefUpdate update(prefs, prefs::kAppWindowPlacement);
+    base::Value::Dict& wp_prefs = update.Get();
+    base::Value::Dict dev_tools_defaults;
+    dev_tools_defaults.Set("left", 100);
+    dev_tools_defaults.Set("top", 100);
+    dev_tools_defaults.Set("right", 740);
+    dev_tools_defaults.Set("bottom", 740);
+    dev_tools_defaults.Set("maximized", false);
+    dev_tools_defaults.Set("always_on_top", false);
+    wp_prefs.Set(kDevToolsApp, std::move(dev_tools_defaults));
   }
 
   if (Browser::GetCreationStatusForProfile(profile_) !=

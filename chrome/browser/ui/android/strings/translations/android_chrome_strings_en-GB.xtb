@@ -101,7 +101,6 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="1448440926884431741">Organise your tracked products in Bookmarks</translation>
 <translation id="1450753235335490080">Can't share <ph name="CONTENT_TYPE" /></translation>
 <translation id="1466383950273130737">Pick Chrome’s language</translation>
-<translation id="147113415845704694">Try 'What’s the weather today?'</translation>
 <translation id="1474893630593443211">More control over the ads that you see</translation>
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> download failed due to server issues.</translation>
 <translation id="148482509007564431">Bookmark save flow</translation>
@@ -340,6 +339,7 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="2861923151411510142">Some Chrome features won\u2019t be available anymore</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2871733351037274014">Preload pages</translation>
+<translation id="2876136027428473467"><ph name="CHILD_NAME" /> wants you to approve this website:</translation>
 <translation id="2886836735871983413">A list of sites will appear here as you browse the web</translation>
 <translation id="2888126860611144412">About Chrome</translation>
 <translation id="2891154217021530873">Stop page loading</translation>
@@ -355,6 +355,7 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> storage</translation>
 <translation id="2932222164150889403">Your keyboard won’t change</translation>
 <translation id="2936980480904111527">Chrome notifications make things easier</translation>
+<translation id="2940075786175545812">Option to approve or not approve a website</translation>
 <translation id="2942036813789421260">Preview tab is closed</translation>
 <translation id="2946420957526726953">Updating Chrome to connect to other devices</translation>
 <translation id="2951071800649516099">Add pages to your reading list for later</translation>
@@ -378,7 +379,6 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="3029276696788198026">No preloading</translation>
 <translation id="3029704984691124060">Passphrases do not match</translation>
 <translation id="3031225630520268969">Assistant voice search consent UI</translation>
-<translation id="3034163383943672781">Download will start on <ph name="DATE" />.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Get help<ph name="END_LINK" /></translation>
 <translation id="3037177537145227281">Tracking price</translation>
 <translation id="3037517125981011456">Shows prompts to sign in to Chrome</translation>
@@ -423,6 +423,7 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="3259831549858767975">Make everything on the page smaller</translation>
 <translation id="3264124641674805320">How to download content for later</translation>
 <translation id="3264259168916048410">Your computer wants to use this device to sign in to a site</translation>
+<translation id="3265093782546847662">All pages of <ph name="DOMAIN" /></translation>
 <translation id="3265534588625245297">Manage the sites that you follow</translation>
 <translation id="3269093882174072735">Load image</translation>
 <translation id="3280562213547448728">Voice search</translation>
@@ -455,7 +456,6 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="3443221991560634068">Reload the current page</translation>
 <translation id="3444179773590444986">Share feedback on Dark theme for sites?</translation>
 <translation id="3452832259067974318">To protect your privacy, Chrome will not auto-fill your password in this field.</translation>
-<translation id="3469665409713263828">{FILE_COUNT,plural, =1{1 download scheduled}other{# downloads scheduled}}</translation>
 <translation id="3474624961160222204">Continue as <ph name="NAME" /></translation>
 <translation id="3478363558367712427">You can choose your search engine</translation>
 <translation id="3479552764303398839">Not now</translation>
@@ -722,7 +722,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4925120120285606924">Screenshot <ph name="CURRENT_DATE_ISO" /></translation>
 <translation id="49268022542405662">Your passwords will be exported and downloaded as a text file. They will be visible to anyone and any app with access to the destination folder.</translation>
 <translation id="4932247056774066048">Because you're signing out of an account managed by <ph name="DOMAIN_NAME" />, your Chrome data will be deleted from this device. It will remain in your Google account.</translation>
-<translation id="4941179133499732445">Tap the mic to search with your voice</translation>
 <translation id="4943703118917034429">Virtual Reality</translation>
 <translation id="4943872375798546930">No results</translation>
 <translation id="4950924971025849764">When you’re signed into the same Google Account, other devices can use this phone as a security key.</translation>
@@ -733,6 +732,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4985248278475639481">About ad personalisation</translation>
 <translation id="4987271110129728827">Can’t find that page. Check your spelling or try a web search.</translation>
 <translation id="4988526792673242964">Pages</translation>
+<translation id="4991110219272367918">Option to approve or not approve a website closed</translation>
 <translation id="499724277181351974">Navigate: <ph name="WEBSITE_TITLE" />: <ph name="WEBSITE_URL" /></translation>
 <translation id="5001388021414335527">Follow this site here</translation>
 <translation id="500351648694011114">Browse more easily</translation>
@@ -745,7 +745,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5039804452771397117">Allow</translation>
 <translation id="504456571576643789">Things to consider</translation>
 <translation id="5054455334322721892"><ph name="BEGIN_LINK1" />Other forms of activity<ph name="END_LINK1" /> may be saved in your Google Account when you’re signed in. You can delete them at any time.</translation>
-<translation id="5061533557687621530">To check the weather, tap the mic and say 'What’s the weather today?'</translation>
 <translation id="506254248375231072">No tabs</translation>
 <translation id="5091199029769593641">Soon, you’ll see stories from <ph name="SITE_NAME" /> when you open a new tab. The sites that you follow are saved in your Google Account. You can manage them in Discover settings.</translation>
 <translation id="5091249083535528968">Extended usage data</translation>
@@ -766,7 +765,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5171045022955879922">Search or type URL</translation>
 <translation id="517734441743343109">By continuing, you agree to the <ph name="BEGIN_TOS_LINK" />Terms of Service<ph name="END_TOS_LINK" /> and <ph name="BEGIN_PRIVACY_LINK" />Privacy\u00A0Policy<ph name="END_PRIVACY_LINK" />.</translation>
 <translation id="5184329579814168207">Open in Chrome</translation>
-<translation id="5188992787241350004">Search with your voice</translation>
 <translation id="5191251636205085390">Learn about and control new technologies that aim to replace third-party cookies</translation>
 <translation id="5193988420012215838">Copied to your clipboard</translation>
 <translation id="5199929503336119739">Work profile</translation>
@@ -948,10 +946,10 @@ Privacy Sandbox trials are still in active development and are available in sele
 <translation id="6162892189396105610">Preloads pages that Chrome thinks that you are likely to visit.</translation>
 <translation id="6186394685773237175">No compromised passwords found</translation>
 <translation id="6192907950379606605">Get image descriptions</translation>
+<translation id="6193448654517602979">Select tabs</translation>
 <translation id="6196315980958524839">Passwords are saved to Google Password Manager on this device</translation>
 <translation id="620197886010707372">Open app for <ph name="APPNAME" /> with Google Play?</translation>
 <translation id="6202812185118613467">Sign back in to start sync</translation>
-<translation id="6203593061661911168">Download will start when on Wi-Fi</translation>
 <translation id="6210748933810148297">Not <ph name="EMAIL" />?</translation>
 <translation id="6211386937064921208">Previewing this page</translation>
 <translation id="6221633008163990886">Unlock to export your passwords</translation>
@@ -1107,6 +1105,7 @@ Trust tokens improve privacy on the web and can’t be used to find out who you 
 <translation id="6896758677409633944">Copy</translation>
 <translation id="6900532703269623216">Enhanced protection</translation>
 <translation id="6903907808598579934">Turn on sync</translation>
+<translation id="6908998565271542516">Option to approve or not approve a website opened at full height</translation>
 <translation id="6909589135458168665">Preload pages</translation>
 <translation id="6942665639005891494">Change the default download location at any time using the Settings menu option</translation>
 <translation id="694267552845942083">You are currently customising your Sync settings. To finish turning on sync, tap the Confirm button near the bottom of the screen. Navigate up</translation>
@@ -1114,6 +1113,7 @@ Trust tokens improve privacy on the web and can’t be used to find out who you 
 <translation id="6955535239952325894">This setting is disabled on managed browsers</translation>
 <translation id="6963766334940102469">Delete bookmarks</translation>
 <translation id="696447261358045621">Leave Incognito mode</translation>
+<translation id="6971862865055170158">Don’t approve</translation>
 <translation id="6979737339423435258">All time</translation>
 <translation id="6987047470128880212">Incognito is not available on this device</translation>
 <translation id="6995899638241819463">Warn you if passwords are exposed in a data breach</translation>
@@ -1191,7 +1191,6 @@ Trust tokens improve privacy on the web and can’t be used to find out who you 
 <translation id="7435356471928173109">Turned off by your administrator</translation>
 <translation id="7437998757836447326">Sign out of Chrome</translation>
 <translation id="7443901082822119557">While in Incognito, sites can’t use your cookies to see your browsing activity across different sites, for example, to personalise ads. Features on some sites may break.</translation>
-<translation id="7444811645081526538">More categories</translation>
 <translation id="7453467225369441013">Signs you out of most sites. You won't be signed out of your Google Account.</translation>
 <translation id="7454641608352164238">Not enough space</translation>
 <translation id="7456774706094330779">Extended preloading</translation>
@@ -1214,7 +1213,6 @@ Trust tokens improve privacy on the web and can’t be used to find out who you 
 <translation id="751961395872307827">Can't connect to the site</translation>
 <translation id="752220631458524187">Disconnect when you’ve finished</translation>
 <translation id="7523960634226602883">Search with your camera using Google Lens</translation>
-<translation id="753225086557513863">Scheduled for later</translation>
 <translation id="7562080006725997899">Clear browsing data</translation>
 <translation id="756809126120519699">Cleared Chrome data</translation>
 <translation id="7577900504646297215">Manage interests</translation>
@@ -1273,7 +1271,6 @@ Trust tokens improve privacy on the web and can’t be used to find out who you 
 <translation id="784934925303690534">Time range</translation>
 <translation id="7851858861565204677">Other devices</translation>
 <translation id="7853202427316060426">Activity</translation>
-<translation id="7857691613771368249">Ask when to save files</translation>
 <translation id="7859988229622350291">Never translate</translation>
 <translation id="7866213166286285359">Translate pages here</translation>
 <translation id="78707286264420418"><ph name="PRODUCT_NAME" /> needs Nearby devices permission in order to connect to your device</translation>
@@ -1310,6 +1307,7 @@ Trust tokens improve privacy on the web and can’t be used to find out who you 
 <translation id="8015452622527143194">Return everything on the page to default size</translation>
 <translation id="8026334261755873520">Clear browsing data</translation>
 <translation id="8027863900915310177">Choose where to download</translation>
+<translation id="8030852056903932865">Approve</translation>
 <translation id="8032569120109842252">Following</translation>
 <translation id="8035133914807600019">New folder…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> days left</translation>
@@ -1351,7 +1349,6 @@ Trust tokens improve privacy on the web and can’t be used to find out who you 
 <translation id="8200772114523450471">Resume</translation>
 <translation id="8209050860603202033">Open image</translation>
 <translation id="8216351761227087153">Watch</translation>
-<translation id="8218052821161047641">Fast page</translation>
 <translation id="8218622182176210845">Manage your account</translation>
 <translation id="8221656072740924283">Continue</translation>
 <translation id="8223642481677794647">Feed card menu</translation>
@@ -1516,7 +1513,6 @@ Trust tokens improve privacy on the web and can’t be used to find out who you 
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9065383040763568503">Stored data that Chrome doesn't think is important (e.g. sites with no saved settings or that you don't visit often)</translation>
 <translation id="906781307897697745">in <ph name="PRODUCT_NAME" /></translation>
-<translation id="9069543557624799859">Download will start at <ph name="TIME" />.</translation>
 <translation id="9069999660519089861">No unread pages</translation>
 <translation id="9070377983101773829">Start voice search</translation>
 <translation id="9074336505530349563">To get personalised content suggested by Google, sign in and turn on sync</translation>

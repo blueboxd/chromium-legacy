@@ -5,18 +5,21 @@
 import 'chrome://diagnostics/diagnostics_app.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 
+import {DiagnosticsAppElement} from 'chrome://diagnostics/diagnostics_app.js';
 import {DiagnosticsBrowserProxyImpl} from 'chrome://diagnostics/diagnostics_browser_proxy.js';
-import {BatteryChargeStatus, BatteryHealth, BatteryInfo, CpuUsage, KeyboardInfo, MemoryUsage, SystemInfo} from 'chrome://diagnostics/diagnostics_types.js';
-import {fakeBatteryChargeStatus, fakeBatteryHealth, fakeBatteryInfo, fakeCellularNetwork, fakeCpuUsage, fakeEthernetNetwork, fakeKeyboards, fakeMemoryUsage, fakeNetworkGuidInfoList, fakePowerRoutineResults, fakeRoutineResults, fakeSystemInfo, fakeTouchDevices, fakeWifiNetwork} from 'chrome://diagnostics/fake_data.js';
+import {fakeBatteryChargeStatus, fakeBatteryHealth, fakeBatteryInfo, fakeCellularNetwork, fakeCpuUsage, fakeEthernetNetwork, fakeKeyboards, fakeMemoryUsage, fakeNetworkGuidInfoList, fakeSystemInfo, fakeTouchDevices, fakeWifiNetwork} from 'chrome://diagnostics/fake_data.js';
 import {FakeInputDataProvider} from 'chrome://diagnostics/fake_input_data_provider.js';
 import {FakeNetworkHealthProvider} from 'chrome://diagnostics/fake_network_health_provider.js';
 import {FakeSystemDataProvider} from 'chrome://diagnostics/fake_system_data_provider.js';
 import {FakeSystemRoutineController} from 'chrome://diagnostics/fake_system_routine_controller.js';
+import {KeyboardInfo} from 'chrome://diagnostics/input_data_provider.mojom-webui.js';
 import {setInputDataProviderForTesting, setNetworkHealthProviderForTesting, setSystemDataProviderForTesting, setSystemRoutineControllerForTesting} from 'chrome://diagnostics/mojo_interface_provider.js';
+import {BatteryChargeStatus, BatteryHealth, BatteryInfo, CpuUsage, MemoryUsage, SystemInfo} from 'chrome://diagnostics/system_data_provider.mojom-webui.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {assertFalse, assertTrue} from '../../chai_assert.js';
-import {flushTasks, isVisible} from '../../test_util.js';
+import {isVisible} from '../../test_util.js';
 
 import * as dx_utils from './diagnostics_test_utils.js';
 import {TestDiagnosticsBrowserProxy} from './test_diagnostics_browser_proxy.js';
@@ -45,7 +48,7 @@ export function appTestSuite() {
     setNetworkHealthProviderForTesting(networkHealthProvider);
 
     DiagnosticsBrowserProxy = new TestDiagnosticsBrowserProxy();
-    DiagnosticsBrowserProxyImpl.instance_ = DiagnosticsBrowserProxy;
+    DiagnosticsBrowserProxyImpl.setInstance(DiagnosticsBrowserProxy);
 
     // Setup a fake routine controller.
     routineController = new FakeSystemRoutineController();
@@ -53,7 +56,7 @@ export function appTestSuite() {
 
     // Enable all routines by default.
     routineController.setFakeSupportedRoutines(
-        [...fakeRoutineResults.keys(), ...fakePowerRoutineResults.keys()]);
+        routineController.getAllRoutines());
 
     setSystemRoutineControllerForTesting(routineController);
   });
@@ -73,7 +76,8 @@ export function appTestSuite() {
   function getCautionBanner() {
     assertTrue(!!page);
 
-    return /** @type {!HTMLElement} */ (page.$$('diagnostics-sticky-banner'));
+    return /** @type {!HTMLElement} */ (
+        page.shadowRoot.querySelector('diagnostics-sticky-banner'));
   }
 
   /** @return {!HTMLElement} */
@@ -88,7 +92,8 @@ export function appTestSuite() {
   function getSessionLogButton() {
     assertTrue(!!page);
 
-    return /** @type {!CrButtonElement} */ (page.$$('.session-log-button'));
+    return /** @type {!CrButtonElement} */ (
+        page.shadowRoot.querySelector('.session-log-button'));
   }
 
   /**
@@ -98,7 +103,7 @@ export function appTestSuite() {
     assertTrue(!!page);
 
     return /** @type {!HTMLElement} */ (
-        page.$$('[slot=bottom-nav-content-drawer]'));
+        page.shadowRoot.querySelector('[slot=bottom-nav-content-drawer]'));
   }
 
   /**
@@ -108,7 +113,7 @@ export function appTestSuite() {
     assertTrue(!!page);
 
     return /** @type {!HTMLElement} */ (
-        page.$$('[slot=bottom-nav-content-panel]'));
+        page.shadowRoot.querySelector('[slot=bottom-nav-content-panel]'));
   }
 
   /**
@@ -259,7 +264,7 @@ export function appTestSuiteForInputHiding() {
     setInputDataProviderForTesting(inputDataProvider);
 
     DiagnosticsBrowserProxy = new TestDiagnosticsBrowserProxy();
-    DiagnosticsBrowserProxyImpl.instance_ = DiagnosticsBrowserProxy;
+    DiagnosticsBrowserProxyImpl.setInstance(DiagnosticsBrowserProxy);
   });
 
   setup(() => {
@@ -293,7 +298,7 @@ export function appTestSuiteForInputHiding() {
 
   /** @param {!string} id */
   function navigationSelectorHasId(id) {
-    const items = page.$$('navigation-view-panel')
+    const items = page.shadowRoot.querySelector('navigation-view-panel')
                       .shadowRoot.querySelector('navigation-selector')
                       .selectorItems;
     return !!items.find((item) => item.id === id);

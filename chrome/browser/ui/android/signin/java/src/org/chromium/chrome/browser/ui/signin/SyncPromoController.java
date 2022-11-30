@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.ProfileDataCache;
+import org.chromium.chrome.browser.signin.services.SigninPreferencesManager;
 import org.chromium.chrome.browser.ui.signin.SyncConsentActivityLauncher.AccessPoint;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.browser_ui.widget.impression.ImpressionTracker;
@@ -84,20 +85,10 @@ public class SyncPromoController {
     private static final int MAX_TOTAL_PROMO_SHOW_COUNT = 100;
     private static final int MAX_IMPRESSIONS_BOOKMARKS = 20;
     private static final int MAX_IMPRESSIONS_SETTINGS = 20;
+    private static final int NTP_SYNC_PROMO_RESET_AFTER_DAY = 30;
     private static final int NTP_SYNC_PROMO_INCREASE_SHOW_COUNT_AFTER_MINUTE = 30;
     private static final String SYNC_ANDROID_NTP_PROMO_MAX_IMPRESSIONS =
             "SyncAndroidNTPPromoMaxImpressions";
-
-    /** Suffix strings for promo shown count preference and histograms. */
-    @StringDef({AccessPointId.BOOKMARKS, AccessPointId.NTP, AccessPointId.RECENT_TABS,
-            AccessPointId.SETTINGS})
-    @Retention(RetentionPolicy.SOURCE)
-    @interface AccessPointId {
-        String BOOKMARKS = "Bookmarks";
-        String NTP = "Ntp";
-        String RECENT_TABS = "RecentTabs"; // Only used for histograms
-        String SETTINGS = "Settings";
-    }
 
     /** Strings used for promo shown count histograms. */
     @StringDef({UserAction.CONTINUED, UserAction.DISMISSED, UserAction.SHOWN})
@@ -139,6 +130,15 @@ public class SyncPromoController {
         }
     }
 
+    private static long getNTPSyncPromoResetAfterMillis() {
+        if (ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.SYNC_ANDROID_LIMIT_NTP_PROMO_IMPRESSIONS)) {
+            return NTP_SYNC_PROMO_RESET_AFTER_DAY * DateUtils.DAY_IN_MILLIS;
+        }
+        return StartSurfaceConfiguration.SIGNIN_PROMO_NTP_RESET_AFTER_HOURS.getValue()
+                * DateUtils.HOUR_IN_MILLIS;
+    }
+
     /**
      * If the signin promo card has been hidden for longer than the {@link
      * StartSurfaceConfiguration#SIGNIN_PROMO_NTP_RESET_AFTER_HOURS}, resets the impression counts,
@@ -147,9 +147,7 @@ public class SyncPromoController {
      */
     public static void resetNTPSyncPromoLimitsIfHiddenForTooLong() {
         final long currentTime = System.currentTimeMillis();
-        final long resetAfterMs =
-                StartSurfaceConfiguration.SIGNIN_PROMO_NTP_RESET_AFTER_HOURS.getValue()
-                * DateUtils.HOUR_IN_MILLIS;
+        final long resetAfterMs = getNTPSyncPromoResetAfterMillis();
         final long lastShownTime = SharedPreferencesManager.getInstance().readLong(
                 ChromePreferenceKeys.SIGNIN_PROMO_NTP_LAST_SHOWN_TIME, 0L);
         if (resetAfterMs <= 0 || lastShownTime <= 0) return;
@@ -259,13 +257,15 @@ public class SyncPromoController {
         switch (accessPoint) {
             case SigninAccessPoint.BOOKMARK_MANAGER:
                 return ChromePreferenceKeys.SYNC_PROMO_SHOW_COUNT.createKey(
-                        AccessPointId.BOOKMARKS);
+                        SigninPreferencesManager.SyncPromoAccessPointId.BOOKMARKS);
             case SigninAccessPoint.NTP_CONTENT_SUGGESTIONS:
                 // This preference may get reset while the other ones are never reset unless device
                 // data is wiped.
-                return ChromePreferenceKeys.SYNC_PROMO_SHOW_COUNT.createKey(AccessPointId.NTP);
+                return ChromePreferenceKeys.SYNC_PROMO_SHOW_COUNT.createKey(
+                        SigninPreferencesManager.SyncPromoAccessPointId.NTP);
             case SigninAccessPoint.SETTINGS:
-                return ChromePreferenceKeys.SYNC_PROMO_SHOW_COUNT.createKey(AccessPointId.SETTINGS);
+                return ChromePreferenceKeys.SYNC_PROMO_SHOW_COUNT.createKey(
+                        SigninPreferencesManager.SyncPromoAccessPointId.SETTINGS);
             default:
                 throw new IllegalArgumentException(
                         "Unexpected value for access point: " + accessPoint);
@@ -499,7 +499,7 @@ public class SyncPromoController {
         final Context context = view.getContext();
         Drawable accountImage = mProfileData.getImage();
         view.getImage().setImageDrawable(accountImage);
-        setImageSize(context, view, R.dimen.signin_promo_account_image_size);
+        setImageSize(context, view, R.dimen.sync_promo_account_image_size);
 
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION)) {
             view.getIllustration().setVisibility(View.GONE);
@@ -525,7 +525,7 @@ public class SyncPromoController {
             return;
         }
         view.getPrimaryButton().setText(context.getString(
-                R.string.signin_promo_continue_as, mProfileData.getGivenNameOrFullNameOrEmail()));
+                R.string.sync_promo_continue_as, mProfileData.getGivenNameOrFullNameOrEmail()));
 
         view.getSecondaryButton().setText(R.string.signin_promo_choose_another_account);
         view.getSecondaryButton().setOnClickListener(v -> signinWithNotDefaultAccount(context));
@@ -553,16 +553,16 @@ public class SyncPromoController {
         final String accessPoint;
         switch (mAccessPoint) {
             case SigninAccessPoint.BOOKMARK_MANAGER:
-                accessPoint = AccessPointId.BOOKMARKS;
+                accessPoint = SigninPreferencesManager.SyncPromoAccessPointId.BOOKMARKS;
                 break;
             case SigninAccessPoint.NTP_CONTENT_SUGGESTIONS:
-                accessPoint = AccessPointId.NTP;
+                accessPoint = SigninPreferencesManager.SyncPromoAccessPointId.NTP;
                 break;
             case SigninAccessPoint.RECENT_TABS:
-                accessPoint = AccessPointId.RECENT_TABS;
+                accessPoint = SigninPreferencesManager.SyncPromoAccessPointId.RECENT_TABS;
                 break;
             case SigninAccessPoint.SETTINGS:
-                accessPoint = AccessPointId.SETTINGS;
+                accessPoint = SigninPreferencesManager.SyncPromoAccessPointId.SETTINGS;
                 break;
             default:
                 throw new IllegalArgumentException(

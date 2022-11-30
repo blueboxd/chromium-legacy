@@ -17,11 +17,6 @@
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
-#include "ash/components/settings/cros_settings_names.h"
-#include "ash/components/settings/cros_settings_provider.h"
-#include "ash/components/settings/timezone_settings.h"
-#include "ash/components/timezone/timezone_provider.h"
-#include "ash/components/timezone/timezone_request.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
@@ -50,7 +45,6 @@
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_check_screen.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
-#include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/hwid_checker.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/login_wizard.h"
@@ -63,6 +57,7 @@
 #include "chrome/browser/ash/login/screens/assistant_optin_flow_screen.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 #include "chrome/browser/ash/login/screens/consolidated_consent_screen.h"
+#include "chrome/browser/ash/login/screens/cryptohome_recovery_screen.h"
 #include "chrome/browser/ash/login/screens/demo_preferences_screen.h"
 #include "chrome/browser/ash/login/screens/demo_setup_screen.h"
 #include "chrome/browser/ash/login/screens/device_disabled_screen.h"
@@ -137,6 +132,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/auto_enrollment_check_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/consolidated_consent_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/cryptohome_recovery_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_preferences_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
@@ -175,7 +171,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/saml_confirm_password_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_fatal_error_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/smart_privacy_protection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
@@ -198,7 +193,12 @@
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
-#include "chromeos/services/rollback_network_config/public/mojom/rollback_network_config.mojom.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
+#include "chromeos/ash/components/settings/cros_settings_provider.h"
+#include "chromeos/ash/components/settings/timezone_settings.h"
+#include "chromeos/ash/components/timezone/timezone_provider.h"
+#include "chromeos/ash/components/timezone/timezone_request.h"
+#include "chromeos/ash/services/rollback_network_config/public/mojom/rollback_network_config.mojom.h"
 #include "components/crash/core/app/breakpad_linux.h"
 #include "components/crash/core/app/crashpad.h"
 #include "components/metrics/structured/neutrino_logging.h"
@@ -395,8 +395,7 @@ PrefService* WizardController::local_state_for_testing_ = nullptr;
 
 WizardController::WizardController(WizardContext* wizard_context)
     : screen_manager_(std::make_unique<ScreenManager>()),
-      wizard_context_(wizard_context),
-      network_state_helper_(std::make_unique<login::NetworkStateHelper>()) {
+      wizard_context_(wizard_context) {
   wizard_context_->skip_post_login_screens_for_tests =
       switches::ShouldSkipOobePostLogin();
   AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
@@ -470,8 +469,6 @@ void WizardController::Init(OobeScreenId first_screen) {
   // Do not show the HID Detection screen if device is owned.
   if (!device_is_owned && HIDDetectionScreen::CanShowScreen() &&
       first_screen == ash::OOBE_SCREEN_UNKNOWN) {
-    // Temp logs for crbug/1274589
-    VLOG(1) << "CheckIsScreenRequired";
     // TODO(https://crbug.com/1275960): Move logic into
     // HIDDetectionScreen::MaybeSkip.
     GetScreen<HIDDetectionScreen>()->CheckIsScreenRequired(
@@ -490,6 +487,10 @@ void WizardController::OnDestroyingOobeUI() {
   // the screen/handlers migrated to the new patterns.
   screen_manager_->Shutdown();
   oobe_ui_observation_.Reset();
+}
+
+void WizardController::HideCurrentScreen() {
+  SetCurrentScreen(nullptr);
 }
 
 void WizardController::AdvanceToScreenAfterHIDDetection(
@@ -513,11 +514,12 @@ void WizardController::AdvanceToScreenAfterHIDDetection(
   }
 
   first_screen_for_testing_ = actual_first_screen;
-  AdvanceToScreen(actual_first_screen);
 
   if (!IsMachineHWIDCorrect() && !StartupUtils::IsDeviceRegistered() &&
       first_screen == ash::OOBE_SCREEN_UNKNOWN) {
     ShowWrongHWIDScreen();
+  } else {
+    AdvanceToScreen(actual_first_screen);
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -591,7 +593,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnNetworkScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<EulaScreen>(
-      oobe_ui->GetView<EulaScreenHandler>(),
+      oobe_ui->GetView<EulaScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnEulaScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<UpdateScreen>(
@@ -605,7 +607,6 @@ WizardController::CreateScreens() {
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<ResetScreen>(
       oobe_ui->GetView<ResetScreenHandler>()->AsWeakPtr(),
-      oobe_ui->GetErrorScreen(),
       base::BindRepeating(&WizardController::OnResetScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<DemoSetupScreen>(
@@ -657,7 +658,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnWrongHWIDScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<LacrosDataMigrationScreen>(
-      oobe_ui->GetView<LacrosDataMigrationScreenHandler>()));
+      oobe_ui->GetView<LacrosDataMigrationScreenHandler>()->AsWeakPtr()));
   append(std::make_unique<LacrosDataBackwardMigrationScreen>(
       oobe_ui->GetView<LacrosDataBackwardMigrationScreenHandler>()
           ->AsWeakPtr()));
@@ -818,6 +819,13 @@ WizardController::CreateScreens() {
       oobe_ui->GetView<ThemeSelectionScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnThemeSelectionScreenExit,
                           weak_factory_.GetWeakPtr())));
+
+  if (chromeos::features::IsCryptohomeRecoveryFlowUIEnabled()) {
+    append(std::make_unique<CryptohomeRecoveryScreen>(
+        oobe_ui->GetView<CryptohomeRecoveryScreenHandler>()->AsWeakPtr(),
+        base::BindRepeating(&WizardController::OnCryptohomeRecoveryScreenExit,
+                            weak_factory_.GetWeakPtr())));
+  }
   return result;
 }
 
@@ -844,8 +852,8 @@ void WizardController::OnOwnershipStatusCheckDone(
 
 void WizardController::ShowSignInFatalErrorScreen(
     SignInFatalErrorScreen::Error error,
-    const base::Value* params) {
-  GetScreen<SignInFatalErrorScreen>()->SetErrorState(error, params);
+    base::Value::Dict params) {
+  GetScreen<SignInFatalErrorScreen>()->SetErrorState(error, std::move(params));
   AdvanceToScreen(SignInFatalErrorView::kScreenId);
 }
 
@@ -1065,6 +1073,14 @@ void WizardController::ShowGuestTosScreen() {
   SetCurrentScreen(GetScreen(GuestTosScreenView::kScreenId));
 }
 
+void WizardController::ShowCryptohomeRecoveryScreen(
+    const AccountId& account_id) {
+  DCHECK(chromeos::features::IsCryptohomeRecoveryFlowUIEnabled());
+  CryptohomeRecoveryScreen* screen = GetScreen<CryptohomeRecoveryScreen>();
+  screen->Configure(account_id);
+  SetCurrentScreen(GetScreen(CryptohomeRecoveryScreenView::kScreenId));
+}
+
 void WizardController::OnActiveDirectoryPasswordChangeScreenExit() {
   OnScreenExit(ActiveDirectoryPasswordChangeView::kScreenId,
                kDefaultExitReason);
@@ -1151,7 +1167,7 @@ void WizardController::OnSamlConfirmPasswordScreenExit(
     case SamlConfirmPasswordScreen::Result::kTooManyAttempts:
       ShowSignInFatalErrorScreen(
           SignInFatalErrorScreen::Error::SCRAPED_PASSWORD_VERIFICATION_FAILURE,
-          nullptr);
+          base::Value::Dict());
   }
 }
 
@@ -1212,10 +1228,6 @@ void WizardController::OnConsolidatedConsentScreenExit(
     case ConsolidatedConsentScreen::Result::ACCEPTED_DEMO_ONLINE:
       DCHECK(demo_setup_controller_);
       ShowAutoEnrollmentCheckScreen();
-      break;
-    case ConsolidatedConsentScreen::Result::ACCEPTED_DEMO_OFFLINE:
-      DCHECK(demo_setup_controller_);
-      ShowDemoModeSetupScreen();
       break;
     case ConsolidatedConsentScreen::Result::BACK_DEMO:
       DCHECK(demo_setup_controller_);
@@ -1321,6 +1333,10 @@ void WizardController::OnThemeSelectionScreenExit(
   ShowMarketingOptInScreen();
 }
 
+void WizardController::OnCryptohomeRecoveryScreenExit() {
+  NOTREACHED();
+}
+
 void WizardController::SkipToLoginForTesting() {
   VLOG(1) << "WizardController::SkipToLoginForTesting()";
   if (current_screen_ && current_screen_->screen_id() == GaiaView::kScreenId)
@@ -1330,7 +1346,7 @@ void WizardController::SkipToLoginForTesting() {
   if (!chromeos::features::IsOobeConsolidatedConsentEnabled())
     StartupUtils::MarkEulaAccepted();
 
-  PerformPostEulaActions();
+  PerformPostNetworkScreenActions();
   OnDeviceDisabledChecked(false /* device_disabled */);
 }
 
@@ -1404,42 +1420,67 @@ void WizardController::OnWelcomeScreenExit(WelcomeScreen::Result result) {
 void WizardController::OnQuickStartScreenExit(QuickStartScreen::Result result) {
 }
 
+// The network screen is part of 3 different flows:
+// * Regular Flow: Welcome Screen -> Network Screen -> Update Screen.
+// * Demo Flow: Welcome Screen -> Network Screen -> Demo Preferences Screen.
+// * OS Install Flow: OS Trial Screen -> Network Screen -> Update Screen.
 void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {
   OnScreenExit(NetworkScreenView::kScreenId,
                NetworkScreen::GetResultString(result));
 
+  // Demo mode flow.
+  if (DemoSetupController::IsOobeDemoSetupFlowInProgress()) {
+    switch (result) {
+      case NetworkScreen::Result::CONNECTED:
+      case NetworkScreen::Result::NOT_APPLICABLE:
+        demo_setup_controller_->set_demo_config(
+            DemoSession::DemoModeConfig::kOnline);
+        ShowDemoModePreferencesScreen();
+        break;
+      case NetworkScreen::Result::BACK:
+        demo_setup_controller_.reset();
+        ShowWelcomeScreen();
+        break;
+    }
+    return;
+  }
+
+  // OS Install flow.
+  bool is_consolidated_consent_enabled =
+      chromeos::features::IsOobeConsolidatedConsentEnabled();
+  if (switches::IsOsInstallAllowed()) {
+    switch (result) {
+      case NetworkScreen::Result::CONNECTED:
+      case NetworkScreen::Result::NOT_APPLICABLE:
+        if (is_consolidated_consent_enabled) {
+          MaybeTakeTPMOwnership();
+          PerformPostNetworkScreenActions();
+          InitiateOOBEUpdate();
+        } else {
+          ShowEulaScreen();
+        }
+        break;
+      case NetworkScreen::Result::BACK:
+        ShowOsTrialScreen();
+        break;
+    }
+    return;
+  }
+
+  // Regular flow.
   switch (result) {
-    case NetworkScreen::Result::CONNECTED_REGULAR:
+    case NetworkScreen::Result::CONNECTED:
     case NetworkScreen::Result::NOT_APPLICABLE:
-      DCHECK(!demo_setup_controller_);
-      ShowEulaScreen();
+      if (is_consolidated_consent_enabled) {
+        MaybeTakeTPMOwnership();
+        PerformPostNetworkScreenActions();
+        InitiateOOBEUpdate();
+      } else {
+        ShowEulaScreen();
+      }
       break;
-    case NetworkScreen::Result::CONNECTED_DEMO:
-    case NetworkScreen::Result::NOT_APPLICABLE_CONNECTED_DEMO:
-      DCHECK(demo_setup_controller_);
-      demo_setup_controller_->set_demo_config(
-          DemoSession::DemoModeConfig::kOnline);
-      ShowDemoModePreferencesScreen();
-      break;
-    case NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT:
-    case NetworkScreen::Result::NOT_APPLICABLE_CONSOLIDATED_CONSENT:
-      DCHECK(!demo_setup_controller_);
-      MaybeTakeTPMOwnership();
-      PerformPostEulaActions();
-      InitiateOOBEUpdate();
-      break;
-    case NetworkScreen::Result::BACK_DEMO:
-      DCHECK(demo_setup_controller_);
-      demo_setup_controller_.reset();
+    case NetworkScreen::Result::BACK:
       ShowWelcomeScreen();
-      break;
-    case NetworkScreen::Result::BACK_REGULAR:
-      DCHECK(!demo_setup_controller_);
-      ShowWelcomeScreen();
-      break;
-    case NetworkScreen::Result::BACK_OS_INSTALL:
-      DCHECK(!demo_setup_controller_);
-      ShowOsTrialScreen();
       break;
   }
 }
@@ -1486,7 +1527,7 @@ void WizardController::OnEulaAccepted(bool usage_statistics_reporting_enabled) {
     AdvanceToScreen(HWDataCollectionView::kScreenId);
     return;
   }
-  PerformPostEulaActions();
+  PerformPostNetworkScreenActions();
 
   if (arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
     ShowArcTermsOfServiceScreen();
@@ -1660,7 +1701,7 @@ void WizardController::OnDemoPreferencesScreenExit(
       demo_setup_controller_->set_demo_config(
           DemoSession::DemoModeConfig::kOnline);
       MaybeTakeTPMOwnership();
-      PerformPostEulaActions();
+      PerformPostNetworkScreenActions();
       InitiateOOBEUpdate();
       break;
     case DemoPreferencesScreen::Result::CANCELED:
@@ -1679,7 +1720,7 @@ void WizardController::OnDemoSetupScreenExit(DemoSetupScreen::Result result) {
   switch (result) {
     case DemoSetupScreen::Result::COMPLETED:
       PerformOOBECompletedActions();
-      ShowLoginScreen();
+      SwitchWebUItoMojo();
       break;
     case DemoSetupScreen::Result::CANCELED:
       ShowWelcomeScreen();
@@ -1859,7 +1900,19 @@ void WizardController::OnDeviceModificationCanceled() {
     return;
   }
 
-  ShowPackagedLicenseScreen();
+  // No previous screen found. Most likely the device is owned,
+  // in which case the login screen is the default.
+  if (ash::InstallAttributes::Get()->IsDeviceLocked()) {
+    ShowLoginScreen();
+    return;
+  }
+
+  LOG(WARNING) << "No previous screen on unowned device";
+  if (prescribed_enrollment_config_.should_enroll()) {
+    ShowPackagedLicenseScreen();
+  } else {
+    ShowLoginScreen();
+  }
 }
 
 void WizardController::OnManagementTransitionScreenExit() {
@@ -1995,16 +2048,13 @@ void WizardController::StartTimezoneResolve() {
                      weak_factory_.GetWeakPtr()));
 }
 
-void WizardController::PerformPostEulaActions() {
+void WizardController::PerformPostNetworkScreenActions() {
   StartNetworkTimezoneResolve();
   DelayNetworkCall(base::Milliseconds(kDefaultNetworkRetryDelayMS),
                    ServicesCustomizationDocument::GetInstance()
                        ->EnsureCustomizationAppliedClosure());
 
-  // Now that EULA has been accepted (for official builds), enable portal check.
   // ChromiumOS builds would go though this code path too.
-  NetworkHandler::Get()->network_state_handler()->SetCheckPortalList(
-      NetworkStateHandler::kDefaultCheckPortalList);
   GetAutoEnrollmentController()->Start();
   network_portal_detector::GetInstance()->Enable();
 }
@@ -2093,8 +2143,6 @@ void WizardController::UpdateStatusAreaVisibilityForScreen(
 }
 
 void WizardController::OnHIDScreenNecessityCheck(bool screen_needed) {
-  // Temp logs for crbug/1274589
-  VLOG(1) << "OnHIDScreenNecessityCheck " << screen_needed;
   if (!GetOobeUI())
     return;
 
@@ -2132,8 +2180,8 @@ void WizardController::UpdateOobeConfiguration() {
   auto* network_config =
       wizard_context_->configuration.FindString(configuration::kNetworkConfig);
   if (network_config) {
-    auto rollback_network_config = std::make_unique<mojo::Remote<
-        chromeos::rollback_network_config::mojom::RollbackNetworkConfig>>();
+    auto rollback_network_config = std::make_unique<
+        mojo::Remote<rollback_network_config::mojom::RollbackNetworkConfig>>();
     rollback_network_config::BindToInProcessInstance(
         rollback_network_config->BindNewPipeAndPassReceiver());
     rollback_network_config->get()->RollbackConfigImport(*network_config,
@@ -2149,7 +2197,6 @@ bool WizardController::CanNavigateTo(OobeScreenId screen_id) {
 }
 
 void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
-  // Temp logs for crbug/1274589
   VLOG(1) << "AdvanceToScreen " << screen_id;
   if (!CanNavigateTo(screen_id)) {
     LOG(WARNING) << "Cannot advance to screen : " << screen_id

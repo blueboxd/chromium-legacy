@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,8 @@ void SetV8ObjectPropertyAsString(v8::Isolate* isolate,
                                  const StringView& name,
                                  const StringView& value) {
   v8::MicrotasksScope microtasks_scope(
-      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+      isolate, isolate->GetCurrentContext()->GetMicrotaskQueue(),
+      v8::MicrotasksScope::kDoNotRunMicrotasks);
   object
       ->Set(isolate->GetCurrentContext(), V8String(isolate, name),
             V8String(isolate, value))
@@ -39,7 +40,8 @@ void SetV8ObjectPropertyAsNumber(v8::Isolate* isolate,
                                  const StringView& name,
                                  double value) {
   v8::MicrotasksScope microtasks_scope(
-      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+      isolate, isolate->GetCurrentContext()->GetMicrotaskQueue(),
+      v8::MicrotasksScope::kDoNotRunMicrotasks);
   object
       ->Set(isolate->GetCurrentContext(), V8String(isolate, name),
             v8::Number::New(isolate, value))

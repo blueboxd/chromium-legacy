@@ -6,6 +6,7 @@
 #define ASH_SHELF_SHELF_PARTY_FEATURE_POD_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/constants/quick_settings_catalogs.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shelf_model_observer.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
@@ -27,8 +28,8 @@ class ASH_EXPORT ShelfPartyFeaturePodController
 
   // FeaturePodControllerBase:
   FeaturePodButton* CreateButton() override;
+  QsFeatureCatalogName GetCatalogName() override;
   void OnIconPressed() override;
-  SystemTrayItemUmaType GetUmaType() const override;
 
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;

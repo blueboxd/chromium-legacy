@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/svg_length.h"
@@ -335,6 +336,9 @@ float SVGLengthContext::ConvertValueToUserUnits(
     case CSSPrimitiveValue::UnitType::kIcs:
       user_units = ConvertValueFromICSToUserUnits(value);
       break;
+    case CSSPrimitiveValue::UnitType::kLhs:
+      user_units = ConvertValueFromLHSToUserUnits(value);
+      break;
     case CSSPrimitiveValue::UnitType::kViewportWidth:
     case CSSPrimitiveValue::UnitType::kViewportHeight:
     case CSSPrimitiveValue::UnitType::kViewportMin:
@@ -392,6 +396,8 @@ float SVGLengthContext::ConvertValueFromUserUnits(
       return ConvertValueFromUserUnitsToCHS(value);
     case CSSPrimitiveValue::UnitType::kIcs:
       return ConvertValueFromUserUnitsToICS(value);
+    case CSSPrimitiveValue::UnitType::kLhs:
+      return ConvertValueFromUserUnitsToLHS(value);
     case CSSPrimitiveValue::UnitType::kCentimeters:
       return value / kCssPixelsPerCentimeter;
     case CSSPrimitiveValue::UnitType::kMillimeters:
@@ -479,6 +485,18 @@ float SVGLengthContext::ConvertValueFromICSToUserUnits(float value) const {
          style->EffectiveZoom();
 }
 
+float SVGLengthContext::ConvertValueFromUserUnitsToLHS(float value) const {
+  const ComputedStyle* style = ComputedStyleForLengthResolving(context_);
+  return value / AdjustForAbsoluteZoom::AdjustFloat(style->ComputedLineHeight(),
+                                                    *style);
+}
+
+float SVGLengthContext::ConvertValueFromLHSToUserUnits(float value) const {
+  const ComputedStyle* style = ComputedStyleForLengthResolving(context_);
+  return value * AdjustForAbsoluteZoom::AdjustFloat(style->ComputedLineHeight(),
+                                                    *style);
+}
+
 float SVGLengthContext::ConvertValueFromUserUnitsToEXS(float value) const {
   const ComputedStyle* style = ComputedStyleForLengthResolving(context_);
   if (!style)
@@ -545,7 +563,7 @@ float SVGLengthContext::ResolveValue(const CSSPrimitiveValue& primitive_value,
 
   DCHECK(context_);
   CSSToLengthConversionData conversion_data = CSSToLengthConversionData(
-      style, root_style, context_->GetDocument().GetLayoutView(),
+      style, style, root_style, context_->GetDocument().GetLayoutView(),
       CSSToLengthConversionData::ContainerSizes(
           context_->ParentOrShadowHostElement()),
       1.0f);

@@ -132,6 +132,15 @@ absl::optional<GuestInfo> GuestOsSessionTracker::GetInfo(const GuestId& id) {
   return iter->second;
 }
 
+absl::optional<vm_tools::concierge::VmInfo> GuestOsSessionTracker::GetVmInfo(
+    const std::string& vm_name) {
+  auto iter = vms_.find(vm_name);
+  if (iter == vms_.end()) {
+    return absl::nullopt;
+  }
+  return iter->second;
+}
+
 bool GuestOsSessionTracker::IsRunning(const GuestId& id) {
   return guests_.contains(id);
 }
@@ -216,7 +225,25 @@ void GuestOsSessionTracker::OnContainerShutdown(
   if (signal.owner_id() != owner_id_) {
     return;
   }
-  GuestId id{VmType::UNKNOWN, signal.vm_name(), signal.container_name()};
+  HandleContainerShutdown(signal.vm_name(), signal.container_name());
+}
+
+void GuestOsSessionTracker::OnLxdContainerStopping(
+    const vm_tools::cicerone::LxdContainerStoppingSignal& signal) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (signal.owner_id() != owner_id_) {
+    return;
+  }
+  if (signal.status() ==
+      vm_tools::cicerone::LxdContainerStoppingSignal::STOPPED) {
+    HandleContainerShutdown(signal.vm_name(), signal.container_name());
+  }
+}
+
+void GuestOsSessionTracker::HandleContainerShutdown(
+    const std::string& vm_name,
+    const std::string& container_name) {
+  GuestId id{VmType::UNKNOWN, vm_name, container_name};
   guests_.erase(id);
   auto cb_list = container_shutdown_callbacks_.find(id);
   if (cb_list != container_shutdown_callbacks_.end()) {

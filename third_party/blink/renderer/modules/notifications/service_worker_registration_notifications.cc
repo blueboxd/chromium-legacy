@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,10 +137,10 @@ void ServiceWorkerRegistrationNotifications::PrepareShow(
   scoped_refptr<const SecurityOrigin> origin =
       GetExecutionContext()->GetSecurityOrigin();
   NotificationResourcesLoader* loader =
-      MakeGarbageCollected<NotificationResourcesLoader>(
-          WTF::Bind(&ServiceWorkerRegistrationNotifications::DidLoadResources,
-                    WrapWeakPersistent(this), std::move(origin), data->Clone(),
-                    WrapPersistent(resolver)));
+      MakeGarbageCollected<NotificationResourcesLoader>(WTF::BindOnce(
+          &ServiceWorkerRegistrationNotifications::DidLoadResources,
+          WrapWeakPersistent(this), std::move(origin), data->Clone(),
+          WrapPersistent(resolver)));
   loaders_.insert(loader);
   loader->Start(GetExecutionContext(), *data);
 }

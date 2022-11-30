@@ -86,7 +86,6 @@ class SessionEntropyProvider : public FieldTrial::EntropyProvider {
 
   double GetEntropyForTrial(StringPiece trial_name,
                             uint32_t randomization_seed) const override {
-    DCHECK_EQ(randomization_seed, 0u);
     return RandDouble();
   }
 };
@@ -230,6 +229,18 @@ bool FieldTrial::enable_benchmarking_ = false;
 // FieldTrial methods and members.
 
 FieldTrial::EntropyProvider::~EntropyProvider() = default;
+
+uint32_t FieldTrial::EntropyProvider::GetPseudorandomValue(
+    uint32_t salt,
+    uint32_t output_range) const {
+  // Passing a different salt is sufficient to get a "different" result from
+  // GetEntropyForTrial (ignoring collisions).
+  double entropy_value = GetEntropyForTrial(/*trial_name=*/"", salt);
+
+  // Convert the [0,1) double to an [0, output_range) integer.
+  return static_cast<uint32_t>(GetGroupBoundaryValue(
+      static_cast<FieldTrial::Probability>(output_range), entropy_value));
+}
 
 FieldTrial::PickleState::PickleState() = default;
 
@@ -448,9 +459,7 @@ bool FieldTrialList::used_without_global_ = false;
 
 FieldTrialList::Observer::~Observer() = default;
 
-FieldTrialList::FieldTrialList(
-    std::unique_ptr<const FieldTrial::EntropyProvider> entropy_provider)
-    : entropy_provider_(std::move(entropy_provider)) {
+FieldTrialList::FieldTrialList() {
   DCHECK(!global_);
   DCHECK(!used_without_global_);
   global_ = this;
@@ -1054,16 +1063,6 @@ FieldTrialList::GetAllFieldTrialsFromPersistentAllocator(
     entries.push_back(entry);
   }
   return entries;
-}
-
-// static
-const FieldTrial::EntropyProvider&
-FieldTrialList::GetEntropyProviderForOneTimeRandomization() {
-  // It's invalid to call this when we haven't created the global list with
-  // support for one-time randomization. CHECK that we don't return a null
-  // reference, which would generate a confusing error later.
-  CHECK(global_->entropy_provider_);
-  return *global_->entropy_provider_;
 }
 
 // static

@@ -25,6 +25,7 @@
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/first_run/first_run_internal.h"
 #include "chrome/browser/google/google_brand.h"
+#include "chrome/browser/headless/headless_mode_util.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
@@ -413,24 +414,29 @@ ProcessInitialPreferencesResult ProcessInitialPreferences(
   DCHECK(!user_data_dir.empty());
 
   if (initial_prefs.get()) {
-    if (!internal::ShowPostInstallEULAIfNeeded(initial_prefs.get()))
+    // Don't show EULA when running in headless mode since this would
+    // effectively block the UI because there is no one to accept it.
+    if (!headless::IsChromeNativeHeadless() &&
+        !internal::ShowPostInstallEULAIfNeeded(initial_prefs.get())) {
       return EULA_EXIT_NOW;
+    }
 
-    std::unique_ptr<base::DictionaryValue> initial_dictionary =
-        initial_prefs->initial_dictionary().CreateDeepCopy();
+    base::Value::Dict initial_dictionary =
+        initial_prefs->initial_dictionary().Clone();
     // The distribution dictionary (and any prefs below it) are never registered
     // for use in Chrome's PrefService. Strip them from the initial dictionary
     // before mapping it to prefs.
-    initial_dictionary->RemoveKey(installer::initial_preferences::kDistroDict);
+    initial_dictionary.Remove(installer::initial_preferences::kDistroDict);
 
     if (!chrome_prefs::InitializePrefsFromMasterPrefs(
             profiles::GetDefaultProfileDir(user_data_dir),
-            std::move(initial_dictionary))) {
+            base::DictionaryValue::From(std::make_unique<base::Value>(
+                std::move(initial_dictionary))))) {
       DLOG(ERROR) << "Failed to initialize from initial preferences.";
     }
 
-    base::DictionaryValue* extensions = nullptr;
-    if (initial_prefs->GetExtensionsBlock(&extensions)) {
+    const base::Value::Dict* extensions = nullptr;
+    if (initial_prefs->GetExtensionsBlock(extensions)) {
       DVLOG(1) << "Extensions block found in initial preferences";
       extensions::ExtensionUpdater::UpdateImmediatelyForFirstRun();
     }
@@ -495,14 +501,14 @@ void AutoImport(
     ImportFromFile(profile, import_bookmarks_path);
 }
 
-void DoPostImportTasks(Profile* profile, bool make_chrome_default_for_user) {
+void DoPostImportTasks(bool make_chrome_default_for_user) {
   // Only set default browser after import as auto import relies on the current
   // default browser to know what to import from.
   ProcessDefaultBrowserPolicy(make_chrome_default_for_user);
 
   SetShouldShowWelcomePage();
 
-  internal::DoPostImportPlatformSpecificTasks(profile);
+  internal::DoPostImportPlatformSpecificTasks();
 }
 
 uint16_t auto_import_state() {

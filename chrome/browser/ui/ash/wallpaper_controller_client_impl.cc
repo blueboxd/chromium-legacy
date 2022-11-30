@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/wallpaper/online_wallpaper_params.h"
@@ -55,6 +54,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/cryptohome/system_salt_getter.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
@@ -321,19 +321,6 @@ WallpaperControllerClientImpl* WallpaperControllerClientImpl::Get() {
   return g_wallpaper_controller_client_instance;
 }
 
-void WallpaperControllerClientImpl::SetCustomWallpaper(
-    const AccountId& account_id,
-    const std::string& file_name,
-    ash::WallpaperLayout layout,
-    const gfx::ImageSkia& image,
-    bool preview_mode,
-    const std::string& file_path) {
-  if (!IsKnownUser(account_id))
-    return;
-  wallpaper_controller_->SetCustomWallpaper(account_id, file_name, layout,
-                                            image, preview_mode, file_path);
-}
-
 void WallpaperControllerClientImpl::SetOnlineWallpaper(
     const ash::OnlineWallpaperParams& params,
     ash::WallpaperController::SetWallpaperCallback callback) {
@@ -393,6 +380,7 @@ bool WallpaperControllerClientImpl::SetThirdPartyWallpaper(
     const std::string& file_name,
     ash::WallpaperLayout layout,
     const gfx::ImageSkia& image) {
+  RecordWallpaperSourceUMA(ash::WallpaperType::kThirdParty);
   return IsKnownUser(account_id) &&
          wallpaper_controller_->SetThirdPartyWallpaper(account_id, file_name,
                                                        layout, image);
@@ -488,11 +476,6 @@ gfx::ImageSkia WallpaperControllerClientImpl::GetWallpaperImage() {
   return wallpaper_controller_->GetWallpaperImage();
 }
 
-const std::vector<SkColor>&
-WallpaperControllerClientImpl::GetWallpaperColors() {
-  return wallpaper_controller_->GetWallpaperColors();
-}
-
 bool WallpaperControllerClientImpl::IsWallpaperBlurred() {
   return wallpaper_controller_->IsWallpaperBlurredForLockState();
 }
@@ -549,15 +532,10 @@ bool WallpaperControllerClientImpl::IsWallpaperSyncEnabled(
       SyncServiceFactory::GetForProfile(profile);
   if (!sync_service)
     return false;
-  if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
-    syncer::SyncUserSettings* user_settings = sync_service->GetUserSettings();
-    return user_settings->IsSyncAllOsTypesEnabled() ||
-           profile->GetPrefs()->GetBoolean(
-               chromeos::settings::prefs::kSyncOsWallpaper);
-  }
-  return sync_service->CanSyncFeatureStart() &&
-         sync_service->GetUserSettings()->GetSelectedTypes().Has(
-             syncer::UserSelectableType::kThemes);
+  syncer::SyncUserSettings* user_settings = sync_service->GetUserSettings();
+  return user_settings->IsSyncAllOsTypesEnabled() ||
+         profile->GetPrefs()->GetBoolean(
+             chromeos::settings::prefs::kSyncOsWallpaper);
 }
 
 void WallpaperControllerClientImpl::OnVolumeMounted(
@@ -650,12 +628,6 @@ void WallpaperControllerClientImpl::SetDefaultWallpaper(
 
   wallpaper_controller_->SetDefaultWallpaper(account_id, show_wallpaper,
                                              std::move(callback));
-}
-
-void WallpaperControllerClientImpl::MigrateCollectionIdFromChromeApp(
-    const AccountId& account_id,
-    base::OnceCallback<void(const std::string&)> result_callback) {
-  std::move(result_callback).Run(std::string());
 }
 
 void WallpaperControllerClientImpl::FetchDailyRefreshWallpaper(

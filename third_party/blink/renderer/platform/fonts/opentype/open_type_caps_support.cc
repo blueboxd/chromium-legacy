@@ -1,14 +1,14 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // clang-format off
 #include <hb.h>
 #include <hb-aat.h>
+#include <hb-cplusplus.hh>
 // clang-format on
 
 #include "third_party/blink/renderer/platform/fonts/opentype/open_type_caps_support.h"
-#include "third_party/harfbuzz-ng/utils/hb_scoped.h"
 
 namespace blink {
 
@@ -146,9 +146,9 @@ OpenTypeCapsSupport::FontFormat OpenTypeCapsSupport::GetFontFormat() const {
     hb_face_t* const hb_face =
         hb_font_get_face(harfbuzz_face_->GetScaledFont());
 
-    HbScoped<hb_blob_t> morx_blob(
+    hb::unique_ptr<hb_blob_t> morx_blob(
         hb_face_reference_table(hb_face, HB_TAG('m', 'o', 'r', 'x')));
-    HbScoped<hb_blob_t> mort_blob(
+    hb::unique_ptr<hb_blob_t> mort_blob(
         hb_face_reference_table(hb_face, HB_TAG('m', 'o', 'r', 't')));
 
     // TODO(crbug.com/911149): Use hb_aat_layout_has_substitution() for

@@ -1,16 +1,16 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/peerconnection/rtc_video_encoder.h"
 
-#include <algorithm>
 #include <memory>
 #include <numeric>
 #include <vector>
 
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/unsafe_shared_memory_region.h"
@@ -458,8 +458,9 @@ namespace features {
 
 // Fallback from hardware encoder (if available) to software, for WebRTC
 // screensharing that uses temporal scalability.
-const base::Feature kWebRtcScreenshareSwEncoding{
-    "WebRtcScreenshareSwEncoding", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kWebRtcScreenshareSwEncoding,
+             "WebRtcScreenshareSwEncoding",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features
 
@@ -701,7 +702,7 @@ RTCVideoEncoder::Impl::Impl(media::GpuVideoAcceleratorFactories* gpu_factories,
 #endif
   encoder_info_.supports_native_handle = true;
   encoder_info_.implementation_name = "ExternalEncoder";
-  encoder_info_.has_trusted_rate_controller = true;
+  encoder_info_.has_trusted_rate_controller = false;
   encoder_info_.is_hardware_accelerated = true;
   encoder_info_.is_qp_trusted = true;
   encoder_info_.fps_allocation[0] = {
@@ -857,7 +858,7 @@ void RTCVideoEncoder::Impl::Enqueue(const webrtc::VideoFrame* input_frame,
   // buffers. Returning an error in Encode() is not fatal and WebRTC will just
   // continue. If this is a key frame, WebRTC will request a key frame again.
   // Besides, webrtc will drop a frame if Encode() blocks too long.
-  if (!use_native_input_ && input_buffers_free_.IsEmpty() &&
+  if (!use_native_input_ && input_buffers_free_.empty() &&
       output_buffers_free_count_ == 0) {
     DVLOG(2) << "Run out of input and output buffers. Drop the frame.";
     encode_event.Set(WEBRTC_VIDEO_CODEC_ERROR);
@@ -875,7 +876,7 @@ void RTCVideoEncoder::Impl::Enqueue(const webrtc::VideoFrame* input_frame,
     return;
   }
 
-  if (!input_buffers_free_.IsEmpty())
+  if (!input_buffers_free_.empty())
     EncodeOneFrame();
 }
 
@@ -1058,7 +1059,7 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
   absl::optional<std::vector<gfx::Size>> expected_resolutions;
   if (!failed_timestamp_match_) {
     // Pop timestamps until we have a match.
-    while (!pending_frames_.IsEmpty()) {
+    while (!pending_frames_.empty()) {
       auto& front_frame = pending_frames_.front();
       const bool end_of_picture = !metadata.vp9 || metadata.vp9->end_of_picture;
       if (front_frame.media_timestamp_ == metadata.timestamp) {
@@ -1290,7 +1291,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
   DVLOG(3) << "Impl::EncodeOneFrame()";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(input_next_frame_);
-  DCHECK(!input_buffers_free_.IsEmpty());
+  DCHECK(!input_buffers_free_.empty());
 
   // EncodeOneFrame() may re-enter InputBufferReleased() if VEA::Encode() fails,
   // we receive a VEA::NotifyError(), and the media::VideoFrame we pass to
@@ -1438,15 +1439,13 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
 
       input_buffers_free_.pop_back();
       frame->AddDestructionObserver(media::BindToCurrentLoop(
-          WTF::Bind(&RTCVideoEncoder::Impl::InputBufferReleased,
-                    scoped_refptr<RTCVideoEncoder::Impl>(this), index)));
+          WTF::BindOnce(&RTCVideoEncoder::Impl::InputBufferReleased,
+                        scoped_refptr<RTCVideoEncoder::Impl>(this), index)));
     }
   }
   if (!failed_timestamp_match_) {
-    DCHECK(std::find_if(pending_frames_.begin(), pending_frames_.end(),
-                        [timestamp](const PendingFrame& entry) {
-                          return entry.media_timestamp_ == timestamp;
-                        }) == pending_frames_.end());
+    DCHECK(!base::Contains(pending_frames_, timestamp,
+                           &PendingFrame::media_timestamp_));
     pending_frames_.emplace_back(timestamp, next_frame->timestamp(),
                                  next_frame->render_time_ms(),
                                  ActiveSpatialResolutions());
@@ -1460,7 +1459,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrameWithNativeInput() {
                "RTCVideoEncoder::Impl::EncodeOneFrameWithNativeInput");
   DVLOG(3) << "Impl::EncodeOneFrameWithNativeInput()";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(input_buffers_.IsEmpty() && input_buffers_free_.IsEmpty());
+  DCHECK(input_buffers_.empty() && input_buffers_free_.empty());
   DCHECK(input_next_frame_);
 
   const webrtc::VideoFrame* next_frame = input_next_frame_;
@@ -1504,10 +1503,8 @@ void RTCVideoEncoder::Impl::EncodeOneFrameWithNativeInput() {
   }
 
   if (!failed_timestamp_match_) {
-    DCHECK(std::find_if(pending_frames_.begin(), pending_frames_.end(),
-                        [&frame](const PendingFrame& entry) {
-                          return entry.media_timestamp_ == frame->timestamp();
-                        }) == pending_frames_.end());
+    DCHECK(!base::Contains(pending_frames_, frame->timestamp(),
+                           &PendingFrame::media_timestamp_));
     pending_frames_.emplace_back(frame->timestamp(), next_frame->timestamp(),
                                  next_frame->render_time_ms(),
                                  ActiveSpatialResolutions());

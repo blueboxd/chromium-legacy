@@ -35,7 +35,8 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/style/ash_color_provider.h"
+#include "ash/style/ash_color_id.h"
+#include "ash/style/color_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_dimmer.h"
@@ -53,6 +54,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_type.h"
@@ -227,23 +229,6 @@ views::Widget::InitParams CreateWidgetParams(aura::Window* parent,
   return params;
 }
 
-// Gets the root window associated |location_in_screen| if given, otherwise gets
-// the root window associated with the CursorManager.
-aura::Window* GetPreferredRootWindow(
-    absl::optional<gfx::Point> location_in_screen = absl::nullopt) {
-  int64_t display_id =
-      (location_in_screen
-           ? display::Screen::GetScreen()->GetDisplayNearestPoint(
-                 *location_in_screen)
-           : Shell::Get()->cursor_manager()->GetDisplay())
-          .id();
-
-  // The Display object returned by CursorManager::GetDisplay may be stale, but
-  // will have the correct id.
-  DCHECK_NE(display::kInvalidDisplayId, display_id);
-  return Shell::GetRootWindowForDisplayId(display_id);
-}
-
 // In fullscreen or window capture mode, the mouse will change to a camera
 // image icon if we're capturing image, or a video record image icon if we're
 // capturing video.
@@ -251,7 +236,7 @@ ui::Cursor GetCursorForFullscreenOrWindowCapture(bool capture_image) {
   ui::Cursor cursor(ui::mojom::CursorType::kCustom);
   const display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(
-          GetPreferredRootWindow());
+          capture_mode_util::GetPreferredRootWindow());
   const float device_scale_factor = display.device_scale_factor();
   const gfx::ImageSkia* icon =
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -383,6 +368,13 @@ bool IsWidgetOverlappedWithCameraPreview(views::Widget* widget) {
              widget->GetWindowBoundsInScreen());
 }
 
+// Returns the color provider for the native theme.
+ui::ColorProvider* GetColorProvider() {
+  auto* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+  return ui::ColorProviderManager::Get().GetColorProviderFor(
+      native_theme->GetColorProviderKey(nullptr));
+}
+
 }  // namespace
 
 // -----------------------------------------------------------------------------
@@ -420,7 +412,8 @@ class CaptureModeSession::CursorSetter {
     const CaptureModeType capture_type = CaptureModeController::Get()->type();
     const float device_scale_factor =
         display::Screen::GetScreen()
-            ->GetDisplayNearestWindow(GetPreferredRootWindow())
+            ->GetDisplayNearestWindow(
+                capture_mode_util::GetPreferredRootWindow())
             .device_scale_factor();
 
     // For custom cursors, update the cursor if we need to change between image
@@ -584,7 +577,7 @@ class CaptureModeSession::ParentContainerObserver
 CaptureModeSession::CaptureModeSession(CaptureModeController* controller,
                                        bool projector_mode)
     : controller_(controller),
-      current_root_(GetPreferredRootWindow()),
+      current_root_(capture_mode_util::GetPreferredRootWindow()),
       magnifier_glass_(kMagnifierParams),
       is_in_projector_mode_(projector_mode),
       cursor_setter_(std::make_unique<CursorSetter>()),
@@ -728,8 +721,16 @@ void CaptureModeSession::Shutdown() {
 
     // Stopping the session for any reason other than starting video recording
     // means a cancellation to an ongoing projector session (if any).
-    if (is_in_projector_mode_)
+    if (is_in_projector_mode_) {
       ProjectorControllerImpl::Get()->OnRecordingStartAborted();
+
+      // Reset the camera selection if it was auto-selected in the
+      // projector-initiated capture mode session when the capture mode session
+      // ended before video recording starts to avoid the camera selection
+      // settings of the normal capture mode session being overridden by the
+      // projector-initiated capture mode session.
+      controller_->camera_controller()->MaybeRevertAutoCameraSelection();
+    }
   }
 
   Shell::Get()->RemoveShellObserver(this);
@@ -1067,6 +1068,7 @@ void CaptureModeSession::OnPaintLayer(const ui::PaintContext& context) {
   }
 
   ui::PaintRecorder recorder(context, layer()->size());
+  // TODO(crbug.com/1364248): Make the dimming shield color a dynamic color.
   recorder.canvas()->DrawColor(capture_mode::kDimmingShieldColor);
 
   PaintCaptureRegion(recorder.canvas());
@@ -1758,11 +1760,12 @@ void CaptureModeSession::PaintCaptureRegion(gfx::Canvas* canvas) {
   const float dsf = canvas->UndoDeviceScaleFactor();
   region = gfx::ScaleToEnclosingRect(region, dsf);
 
+  const auto* color_provider = GetColorProvider();
+
   if (!adjustable_region) {
     canvas->FillRect(region, SK_ColorTRANSPARENT, SkBlendMode::kClear);
-    canvas->FillRect(
-        region, AshColorProvider::Get()->GetContentLayerColor(
-                    AshColorProvider::ContentLayerType::kCaptureRegionColor));
+    canvas->FillRect(region,
+                     color_provider->GetColor(kColorAshCaptureRegionColor));
     return;
   }
 
@@ -1779,15 +1782,14 @@ void CaptureModeSession::PaintCaptureRegion(gfx::Canvas* canvas) {
 
   // Draws the focus ring if the region or one of the affordance circles
   // currently has focus.
-  auto maybe_draw_focus_ring = [&canvas, &region,
-                                &dsf](FineTunePosition position) {
+  auto maybe_draw_focus_ring = [&canvas, &region, dsf,
+                                color_provider](FineTunePosition position) {
     if (position == FineTunePosition::kNone)
       return;
 
     cc::PaintFlags focus_ring_flags;
     focus_ring_flags.setAntiAlias(true);
-    focus_ring_flags.setColor(AshColorProvider::Get()->GetControlsLayerColor(
-        AshColorProvider::ControlsLayerType::kFocusRingColor));
+    focus_ring_flags.setColor(color_provider->GetColor(ui::kColorAshFocusRing));
     focus_ring_flags.setStyle(cc::PaintFlags::kStroke_Style);
     focus_ring_flags.setStrokeWidth(kFocusRingStrokeWidthDp);
 
@@ -1901,7 +1903,7 @@ void CaptureModeSession::OnLocatedEvent(ui::LocatedEvent* event,
   const bool can_change_root = !is_capture_region || is_press_event;
 
   if (can_change_root)
-    MaybeChangeRoot(GetPreferredRootWindow(screen_location));
+    MaybeChangeRoot(capture_mode_util::GetPreferredRootWindow(screen_location));
 
   // The root may have switched while pressing the mouse down. Move the capture
   // bar to the current display if that is the case and make sure it is stacked
@@ -2259,13 +2261,9 @@ void CaptureModeSession::UpdateDimensionsLabelWidget(bool is_resizing) {
         CreateWidgetParams(parent, gfx::Rect(), "CaptureModeDimensionsLabel"));
 
     auto size_label = std::make_unique<views::Label>();
-    auto* color_provider = AshColorProvider::Get();
-    size_label->SetEnabledColor(color_provider->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextColorPrimary));
-    size_label->SetBackground(views::CreateRoundedRectBackground(
-        color_provider->GetBaseLayerColor(
-            AshColorProvider::BaseLayerType::kTransparent80),
-        kSizeLabelBorderRadius));
+    size_label->SetEnabledColorId(kColorAshTextColorPrimary);
+    size_label->SetBackground(views::CreateThemedRoundedRectBackground(
+        kColorAshShieldAndBase80, kSizeLabelBorderRadius));
     size_label->SetAutoColorReadabilityEnabled(false);
     dimensions_label_widget_->SetContentsView(std::move(size_label));
 
@@ -2626,6 +2624,8 @@ void CaptureModeSession::MaybeChangeRoot(aura::Window* new_root) {
   layer()->SetBounds(new_parent->bounds());
 
   current_root_ = new_root;
+  // TODO(conniekxu): Observe the new color provider source from the `new_root`
+  // when we support wallpaper per display.
 
   // Update the bounds of the widgets after setting the new root. For region
   // capture, the capture bar will move at a later time, when the mouse is

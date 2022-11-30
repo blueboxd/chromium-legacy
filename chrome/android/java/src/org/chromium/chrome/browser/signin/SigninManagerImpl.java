@@ -27,6 +27,8 @@ import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.SigninPreferencesManager;
@@ -43,6 +45,7 @@ import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.identitymanager.IdentityMutator;
 import org.chromium.components.signin.identitymanager.PrimaryAccountChangeEvent;
+import org.chromium.components.signin.identitymanager.PrimaryAccountError;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SigninReason;
 import org.chromium.components.signin.metrics.SignoutDelete;
@@ -182,6 +185,14 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
                 && isSigninSupported();
     }
 
+    /** Returns true if sign out can be started now. */
+    @Override
+    public boolean isSignOutAllowed() {
+        return mSignOutState == null && mSignInState == null
+                && mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN) != null
+                && !Profile.getLastUsedRegularProfile().isChild();
+    }
+
     /**
      * Returns true if signin is disabled by policy.
      */
@@ -227,6 +238,14 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             for (SignInStateObserver observer : mSignInStateObservers) {
                 observer.onSignInAllowedChanged();
+            }
+        });
+    }
+
+    private void notifySignOutAllowedChanged() {
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
+            for (SignInStateObserver observer : mSignInStateObservers) {
+                observer.onSignOutAllowedChanged();
             }
         });
     }
@@ -322,9 +341,12 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
         @ConsentLevel
         int consentLevel =
                 mSignInState.shouldTurnSyncOn() ? ConsentLevel.SYNC : ConsentLevel.SIGNIN;
-        if (!mIdentityMutator.setPrimaryAccount(
-                    mSignInState.mCoreAccountInfo.getId(), consentLevel)) {
-            Log.w(TAG, "Failed to set the PrimaryAccount in IdentityManager, aborting signin");
+        @PrimaryAccountError
+        int primaryAccountError = mIdentityMutator.setPrimaryAccount(
+                mSignInState.mCoreAccountInfo.getId(), consentLevel);
+        if (primaryAccountError != PrimaryAccountError.NO_ERROR) {
+            Log.w(TAG, "SetPrimaryAccountError in IdentityManager: %d, aborting signin",
+                    primaryAccountError);
             abortSignIn();
             return;
         }
@@ -352,6 +374,7 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
         mSignInState = null;
         notifyCallbacksWaitingForOperation();
         notifySignInAllowedChanged();
+        notifySignOutAllowedChanged();
 
         for (SignInStateObserver observer : mSignInStateObservers) {
             observer.onSignedIn();
@@ -386,6 +409,7 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
                             getManagementDomain() != null
                                     ? SignOutState.DataWipeAction.WIPE_ALL_PROFILE_DATA
                                     : SignOutState.DataWipeAction.WIPE_SIGNIN_DATA_ONLY);
+                    notifySignOutAllowedChanged();
                 }
 
                 // TODO(https://crbug.com/1091858): Remove this after migrating the legacy code that
@@ -401,6 +425,7 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
                         // Don't wipe data as the user is not syncing.
                         mSignOutState = new SignOutState(
                                 null, SignOutState.DataWipeAction.WIPE_SIGNIN_DATA_ONLY);
+                        notifySignOutAllowedChanged();
                     }
                     disableSyncAndWipeData(this::finishSignOut);
                 }
@@ -476,14 +501,6 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
     }
 
     /**
-     * Returns true if sign out can be started now.
-     */
-    @Override
-    public boolean isSignOutAllowed() {
-        return !Profile.getLastUsedRegularProfile().isChild();
-    }
-
-    /**
      * Signs out of Chrome. This method clears the signed-in username, stops sync and sends out a
      * sign-out notification on the native side.
      *
@@ -518,6 +535,7 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
                 // Android has just a single-profile which is never deleted upon
                 // sign-out.
                 SignoutDelete.IGNORE_METRIC);
+        notifySignOutAllowedChanged();
     }
 
     /**
@@ -540,6 +558,9 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
         mSignInState = null;
         notifyCallbacksWaitingForOperation();
 
+        RecordHistogram.recordEnumeratedHistogram("Signin.SigninAbortedAccessPoint",
+                signInState.getAccessPoint(), SigninAccessPoint.MAX);
+
         if (signInState.mCallback != null) {
             signInState.mCallback.onSignInAborted();
         }
@@ -555,6 +576,15 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
         // Should be set at start of sign-out flow.
         assert mSignOutState != null;
 
+        if (ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.SYNC_ANDROID_LIMIT_NTP_PROMO_IMPRESSIONS)) {
+            // After sign-out, reset the Sync promo show count, so the user will see Sync promos
+            // again.
+            SharedPreferencesManager.getInstance().writeInt(
+                    ChromePreferenceKeys.SYNC_PROMO_SHOW_COUNT.createKey(
+                            SigninPreferencesManager.SyncPromoAccessPointId.NTP),
+                    0);
+        }
         SignOutCallback signOutCallback = mSignOutState.mSignOutCallback;
         mSignOutState = null;
 

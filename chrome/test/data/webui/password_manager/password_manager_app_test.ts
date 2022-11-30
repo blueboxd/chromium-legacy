@@ -4,16 +4,18 @@
 
 import 'chrome://password-manager/password_manager.js';
 
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {Page, PasswordManagerAppElement, Router, UrlParam} from 'chrome://password-manager/password_manager.js';
-import {assertEquals, assertTrue, assertFalse} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks, isVisible, eventToPromise} from 'chrome://webui-test/test_util.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
+import {eventToPromise, isVisible} from 'chrome://webui-test/test_util.js';
 
 suite('PasswordManagerAppTest', function() {
   let app: PasswordManagerAppElement;
 
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     app = document.createElement('password-manager-app');
     document.body.appendChild(app);
     app.setNarrowForTesting(false);

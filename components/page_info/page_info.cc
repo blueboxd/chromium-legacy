@@ -95,7 +95,7 @@ ContentSettingsType kPermissionType[] = {
     ContentSettingsType::IMAGES,
 #endif
     ContentSettingsType::POPUPS,
-    ContentSettingsType::WINDOW_PLACEMENT,
+    ContentSettingsType::WINDOW_MANAGEMENT,
     ContentSettingsType::ADS,
     ContentSettingsType::BACKGROUND_SYNC,
     ContentSettingsType::SOUND,
@@ -313,6 +313,9 @@ PageInfo::PageInfo(std::unique_ptr<PageInfoDelegate> delegate,
   DCHECK(delegate_);
   security_level_ = delegate_->GetSecurityLevel();
   visible_security_state_for_metrics_ = delegate_->GetVisibleSecurityState();
+#if !BUILDFLAG(IS_ANDROID)
+  isolated_web_app_name_ = delegate_->GetWebAppShortName();
+#endif
 
   // TabSpecificContentSetting needs to be created before page load.
   DCHECK(GetPageSpecificContentSettings());
@@ -828,6 +831,12 @@ std::u16string PageInfo::GetSimpleSiteName() const {
       site_url_);
 }
 
+std::u16string PageInfo::GetSiteOriginOrAppNameToDisplay() const {
+  return IsIsolatedWebApp() && !isolated_web_app_name_.empty()
+             ? isolated_web_app_name_
+             : GetSimpleSiteName();
+}
+
 void PageInfo::ComputeUIInputs(const GURL& url) {
   auto security_level = delegate_->GetSecurityLevel();
   auto visible_security_state = delegate_->GetVisibleSecurityState();
@@ -1205,15 +1214,17 @@ void PageInfo::PresentSiteDataInternal(base::OnceClosure done) {
     cookies_info.blocked_sites_count =
         GetThirdPartySitesWithBlockedCookiesAccessCount(site_url_);
 
+#if !BUILDFLAG(IS_ANDROID)
     if (base::FeatureList::IsEnabled(
             privacy_sandbox::kPrivacySandboxFirstPartySetsUI)) {
-#if !BUILDFLAG(IS_ANDROID)
       auto fps_owner = delegate_->GetFpsOwner(site_url_);
-      if (fps_owner)
+      if (fps_owner) {
         cookies_info.fps_info = PageInfoUI::CookiesFpsInfo(*fps_owner);
-
-#endif
+        cookies_info.fps_info->is_managed = delegate_->IsFpsManaged();
+      }
     }
+#endif
+
     cookies_info.status = status_;
     cookies_info.enforcement = enforcement_;
     ui_->SetCookieInfo(cookies_info);
@@ -1328,6 +1339,12 @@ std::vector<ContentSettingsType> PageInfo::GetAllPermissionsForTesting() {
 void PageInfo::SetSiteNameForTesting(const std::u16string& site_name) {
   site_name_for_testing_ = site_name;
   PresentSiteIdentity();
+}
+
+void PageInfo::SetIsolatedWebAppNameForTesting(
+    const std::u16string& isolated_web_app_name) {
+  is_isolated_web_app_for_testing_ = true;
+  isolated_web_app_name_ = isolated_web_app_name;
 }
 
 void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
@@ -1461,4 +1478,14 @@ int PageInfo::GetThirdPartyBlockedCookiesCount(const GURL& site_url) {
 
   return settings->blocked_local_shared_objects().GetObjectCount() -
          GetFirstPartyBlockedCookiesCount(site_url);
+}
+
+bool PageInfo::IsIsolatedWebApp() const {
+  if (is_isolated_web_app_for_testing_)
+    return true;
+
+  return web_contents_ &&
+         web_contents_->GetPrimaryMainFrame()->GetWebExposedIsolationLevel() >=
+             content::RenderFrameHost::WebExposedIsolationLevel::
+                 kMaybeIsolatedApplication;
 }

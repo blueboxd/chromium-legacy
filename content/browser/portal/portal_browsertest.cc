@@ -1614,15 +1614,17 @@ class RenderFrameHostFactoryForLocalMainFrameInterceptor
       int32_t routing_id,
       mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
       const blink::LocalFrameToken& frame_token,
+      const blink::DocumentToken& document_token,
       bool renderer_initiated_creation,
       RenderFrameHostImpl::LifecycleStateImpl lifecycle_state,
       scoped_refptr<BrowsingContextState> browsing_context_state) override {
     return base::WrapUnique(new RenderFrameHostImplForLocalMainFrameInterceptor(
         site_instance, std::move(render_view_host), delegate, frame_tree,
         frame_tree_node, routing_id, std::move(frame_remote), frame_token,
-        renderer_initiated_creation, lifecycle_state,
+        document_token, renderer_initiated_creation, lifecycle_state,
         std::move(browsing_context_state),
-        frame_tree_node->frame_owner_element_type()));
+        frame_tree_node->frame_owner_element_type(), frame_tree_node->parent(),
+        frame_tree_node->fenced_frame_status()));
   }
 };
 
@@ -2027,12 +2029,13 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
   RenderFrameHostImpl* portal_frame = portal_contents->GetPrimaryMainFrame();
   WaitForAccessibilityTree(portal_contents);
   if (!main_frame->browser_accessibility_manager() ||
-      !portal_frame->browser_accessibility_manager()->GetRootManager())
+      !portal_frame->browser_accessibility_manager()->GetManagerForRootFrame())
     WaitForAccessibilityTree(web_contents_impl);
 
   EXPECT_NE(nullptr, portal_frame->browser_accessibility_manager());
-  EXPECT_EQ(main_frame->browser_accessibility_manager(),
-            portal_frame->browser_accessibility_manager()->GetRootManager());
+  EXPECT_EQ(
+      main_frame->browser_accessibility_manager(),
+      portal_frame->browser_accessibility_manager()->GetManagerForRootFrame());
   // Activate portal and adopt predecessor.
   EXPECT_TRUE(ExecJs(portal_frame,
                      "window.addEventListener('portalactivate', e => { "
@@ -2052,8 +2055,9 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
     adoption_observer.WaitUntilPortalCreated();
   }
 
-  EXPECT_EQ(portal_frame->browser_accessibility_manager()->GetRootManager(),
-            portal_frame->browser_accessibility_manager());
+  EXPECT_EQ(
+      portal_frame->browser_accessibility_manager()->GetManagerForRootFrame(),
+      portal_frame->browser_accessibility_manager());
 }
 
 IN_PROC_BROWSER_TEST_F(PortalBrowserTest, OrphanedPortalAccessibilityReset) {
@@ -2607,10 +2611,14 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, CallActivateOnTwoPortals) {
       [](Portal* portal_a, Portal* portal_b, const GURL&,
          blink::mojom::ReferrerPtr,
          blink::mojom::Portal::NavigateCallback callback) {
-        portal_a->Activate(blink::TransferableMessage(), base::TimeTicks::Now(),
-                           0, base::DoNothing());
-        portal_b->Activate(blink::TransferableMessage(), base::TimeTicks::Now(),
-                           0, base::DoNothing());
+        blink::TransferableMessage message1;
+        message1.sender_agent_cluster_id = base::UnguessableToken::Create();
+        blink::TransferableMessage message2;
+        message2.sender_agent_cluster_id = base::UnguessableToken::Create();
+        portal_a->Activate(std::move(message1), base::TimeTicks::Now(), 0,
+                           base::DoNothing());
+        portal_b->Activate(std::move(message2), base::TimeTicks::Now(), 0,
+                           base::DoNothing());
         std::move(callback).Run();
       },
       portal_a, portal_b));
@@ -2640,10 +2648,14 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, CallActivateTwice) {
   portal_interceptor->SetNavigateCallback(base::BindRepeating(
       [](Portal* portal, const GURL&, blink::mojom::ReferrerPtr,
          blink::mojom::Portal::NavigateCallback callback) {
-        portal->Activate(blink::TransferableMessage(), base::TimeTicks::Now(),
-                         0, base::DoNothing());
-        portal->Activate(blink::TransferableMessage(), base::TimeTicks::Now(),
-                         0, base::DoNothing());
+        blink::TransferableMessage message1;
+        message1.sender_agent_cluster_id = base::UnguessableToken::Create();
+        blink::TransferableMessage message2;
+        message2.sender_agent_cluster_id = base::UnguessableToken::Create();
+        portal->Activate(std::move(message1), base::TimeTicks::Now(), 0,
+                         base::DoNothing());
+        portal->Activate(std::move(message2), base::TimeTicks::Now(), 0,
+                         base::DoNothing());
         std::move(callback).Run();
       },
       portal));

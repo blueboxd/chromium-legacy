@@ -555,9 +555,9 @@ bool MessagePumpForUI::ProcessPumpReplacementMessage() {
     // but there's no way to specify this (omitting PM_QS_SENDMESSAGE as in
     // crrev.com/791043 doesn't do anything). Hence this call must be considered
     // as a potential work item.
+    auto scoped_do_work_item = run_state_->delegate->BeginWorkItem();
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("base"),
                  "MessagePumpForUI::ProcessPumpReplacementMessage PeekMessage");
-    auto scoped_do_work_item = run_state_->delegate->BeginWorkItem();
     have_message = ::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) != FALSE;
   }
 
@@ -770,7 +770,8 @@ bool MessagePumpForIO::WaitForIOCompletion(DWORD timeout) {
                           item.handler->io_handler_location())));
       });
 
-  item.handler->OnIOCompleted(item.context, item.bytes_transfered, item.error);
+  item.handler.ExtractAsDangling()->OnIOCompleted(
+      item.context.ExtractAsDangling(), item.bytes_transfered, item.error);
 
   return true;
 }

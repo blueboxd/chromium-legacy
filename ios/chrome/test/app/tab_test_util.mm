@@ -8,7 +8,6 @@
 
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/app/main_controller_private.h"
-#import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
@@ -20,6 +19,7 @@
 #import "ios/chrome/browser/ui/main/scene_controller.h"
 #import "ios/chrome/browser/ui/main/scene_controller_testing.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator.h"
+#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
@@ -68,18 +68,6 @@ void OpenNewTab() {
         chrome_test_util::HandlerForActiveBrowser();
     [handler openURLInNewTab:command];
   }
-}
-
-NSURL* SimulateExternalAppURLOpening() {
-  NSURL* url = [NSURL URLWithString:@"http://www.example.com"];
-  TestOpenURLContext* context = [[TestOpenURLContext alloc] init];
-  context.URL = url;
-
-  UIApplication* application = UIApplication.sharedApplication;
-  UIScene* scene = application.connectedScenes.anyObject;
-  [scene.delegate scene:scene openURLContexts:[NSSet setWithObject:context]];
-
-  return url;
 }
 
 void SimulateExternalAppURLOpeningWithURL(NSURL* URL) {

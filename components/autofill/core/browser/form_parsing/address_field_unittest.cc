@@ -72,11 +72,6 @@ TEST_P(AddressFieldTest, ParseStreetAddressFromTextArea) {
 // |ADDRESS_HOME_HOUSE_NUMBER| when they are labeled accordingly and
 // both are present.
 TEST_P(AddressFieldTest, ParseStreetNameAndHouseNumber) {
-  // TODO(crbug.com/1125978): Remove once launched.
-  base::test::ScopedFeatureList enabled;
-  enabled.InitAndEnableFeature(
-      features::kAutofillEnableSupportForMoreStructureInAddresses);
-
   AddTextFormFieldData("street", "Street", ADDRESS_HOME_STREET_NAME);
   AddTextFormFieldData("house-number", "House number",
                        ADDRESS_HOME_HOUSE_NUMBER);
@@ -89,10 +84,8 @@ TEST_P(AddressFieldTest, ParseStreetNameAndHouseNumber) {
 TEST_P(AddressFieldTest, ParseStreetNameAndHouseNumberAndApartmentNumber) {
   // TODO(crbug.com/1125978): Remove once launched.
   base::test::ScopedFeatureList enabled;
-  enabled.InitWithFeatures(
-      {features::kAutofillEnableSupportForMoreStructureInAddresses,
-       features::kAutofillEnableSupportForApartmentNumbers},
-      {});
+  enabled.InitAndEnableFeature(
+      features::kAutofillEnableSupportForApartmentNumbers);
 
   AddTextFormFieldData("street", "Street", ADDRESS_HOME_STREET_NAME);
   AddTextFormFieldData("house-number", "House number",
@@ -105,11 +98,6 @@ TEST_P(AddressFieldTest, ParseStreetNameAndHouseNumberAndApartmentNumber) {
 // |ADDRESS_HOME_HOUSE_NUMBER| combination is classified as
 // |ADDRESS_HOME_LINE2| instead of |ADDRESS_HOME_LINE1|.
 TEST_P(AddressFieldTest, ParseAsAddressLine2AfterStreetName) {
-  // TODO(crbug.com/1125978): Remove once launched.
-  base::test::ScopedFeatureList structured_addresses;
-  structured_addresses.InitAndEnableFeature(
-      features::kAutofillEnableSupportForMoreStructureInAddresses);
-
   AddTextFormFieldData("street", "Street", ADDRESS_HOME_STREET_NAME);
   AddTextFormFieldData("house-number", "House no.", ADDRESS_HOME_HOUSE_NUMBER);
   AddTextFormFieldData("address", "Address", ADDRESS_HOME_LINE2);
@@ -120,10 +108,6 @@ TEST_P(AddressFieldTest, ParseAsAddressLine2AfterStreetName) {
 // it is labeled accordingly but an adjacent field classified as
 // |ADDRESS_HOME_HOUSE_NUMBER| is absent.
 TEST_P(AddressFieldTest, NotParseStreetNameWithoutHouseNumber) {
-  // TODO(crbug.com/1125978): Remove once launched.
-  base::test::ScopedFeatureList enabled;
-  enabled.InitAndEnableFeature(
-      features::kAutofillEnableSupportForMoreStructureInAddresses);
   AddTextFormFieldData("street", "Street", ADDRESS_HOME_LINE1);
   ClassifyAndVerify();
 }
@@ -132,11 +116,6 @@ TEST_P(AddressFieldTest, NotParseStreetNameWithoutHouseNumber) {
 // it is labeled accordingly but adjacent field classified as
 // |ADDRESS_HOME_STREET_NAME| is absent.
 TEST_P(AddressFieldTest, NotParseHouseNumberWithoutStreetName) {
-  // TODO(crbug.com/1125978): Remove once launched.
-  base::test::ScopedFeatureList enabled;
-  enabled.InitAndEnableFeature(
-      features::kAutofillEnableSupportForMoreStructureInAddresses);
-
   AddTextFormFieldData("house-number", "House number", UNKNOWN_TYPE);
   ClassifyAndVerify(ParseResult::NOT_PARSED);
 }
@@ -212,16 +191,17 @@ TEST_P(AddressFieldTest,
 }
 
 // Tests that the field is classified as |ADDRESS_HOME_COUNTRY| when the field
-// label contains 'Region'.
-TEST_P(AddressFieldTest, ParseCountryLabelRegion) {
-  AddTextFormFieldData("country", "Country/Region", ADDRESS_HOME_COUNTRY);
+// contains 'region'.
+TEST_P(AddressFieldTest, ParseAmbiguousCountryState) {
+  // The strings are ambiguous between country and state. Country should be
+  // preferred.
+  AddTextFormFieldData("country/region", "asdf", ADDRESS_HOME_COUNTRY);
   ClassifyAndVerify();
 }
-
-// Tests that the field is classified as |ADDRESS_HOME_COUNTRY| when the field
-// name contains 'region'.
-TEST_P(AddressFieldTest, ParseCountryNameRegion) {
-  AddTextFormFieldData("client_region", "Land", ADDRESS_HOME_COUNTRY);
+TEST_P(AddressFieldTest, ParseAmbiguousCountryState2) {
+  // The strings are ambiguous between country and state. Country should be
+  // preferred.
+  AddTextFormFieldData("asdf", "country/region", ADDRESS_HOME_COUNTRY);
   ClassifyAndVerify();
 }
 

@@ -80,6 +80,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
@@ -169,10 +170,8 @@ class PerProcessRenderViewHostSet : public base::SupportsUserData::Data {
   }
 
   bool HasNonBackForwardCachedInstances() const {
-    return base::ranges::find_if_not(
-               render_view_host_instances_,
-               &RenderViewHostImpl::is_in_back_forward_cache) !=
-           render_view_host_instances_.end();
+    return !base::ranges::all_of(render_view_host_instances_,
+                                 &RenderViewHostImpl::is_in_back_forward_cache);
   }
 
  private:
@@ -289,6 +288,7 @@ RenderViewHostImpl::RenderViewHostImpl(
     : render_widget_host_(std::move(widget)),
       delegate_(delegate),
       render_view_host_map_id_(frame_tree->GetRenderViewHostMapId(group)),
+      site_instance_group_(group->GetSafeRef()),
       storage_partition_config_(storage_partition_config),
       routing_id_(routing_id),
       main_frame_routing_id_(main_frame_routing_id),
@@ -342,24 +342,12 @@ RenderViewHostImpl::RenderViewHostImpl(
 
   GetWidget()->set_owner_delegate(this);
   frame_tree_->RegisterRenderViewHost(render_view_host_map_id_, this);
+  registered_with_frame_tree_ = true;
 }
 
 RenderViewHostImpl::~RenderViewHostImpl() {
   TRACE_EVENT_INSTANT("navigation", "~RenderViewHostImpl()",
                       ChromeTrackEvent::kRenderViewHost, *this);
-
-  // TODO(https://crbug.com/1234634): Remove this.
-  // If the view is destroyed while we were are still waiting for an ack,
-  // then log how long we have been waiting.
-  if (page_lifecycle_state_manager_->persisted_pageshow_timestamp_bug_1234634()
-          .has_value()) {
-    base::TimeDelta delta =
-        base::Time::Now() - page_lifecycle_state_manager_
-                                ->persisted_pageshow_timestamp_bug_1234634()
-                                .value();
-    base::UmaHistogramMediumTimes("Event.PageShow.Persisted.ViewDestroyed.Time",
-                                  delta);
-  }
 
   PerProcessRenderViewHostSet::GetOrCreateForProcess(GetProcess())->Erase(this);
 
@@ -376,9 +364,9 @@ RenderViewHostImpl::~RenderViewHostImpl() {
   delegate_->RenderViewDeleted(this);
   GetProcess()->RemoveObserver(this);
 
-  // If |this| is in the BackForwardCache, then it was already removed from
-  // the FrameTree at the time it entered the BackForwardCache.
-  if (!is_in_back_forward_cache_)
+  // We may have already unregistered the RenderViewHost when marking this
+  // not available for reuse.
+  if (registered_with_frame_tree_)
     frame_tree_->UnregisterRenderViewHost(render_view_host_map_id_, this);
 
   // Corresponds to the TRACE_EVENT_BEGIN in RenderViewHostImpl's constructor.
@@ -387,6 +375,13 @@ RenderViewHostImpl::~RenderViewHostImpl() {
 
 RenderViewHostDelegate* RenderViewHostImpl::GetDelegate() {
   return delegate_;
+}
+
+void RenderViewHostImpl::DisallowReuse() {
+  if (registered_with_frame_tree_) {
+    frame_tree_->UnregisterRenderViewHost(render_view_host_map_id_, this);
+    registered_with_frame_tree_ = false;
+  }
 }
 
 bool RenderViewHostImpl::CreateRenderView(
@@ -440,7 +435,7 @@ bool RenderViewHostImpl::CreateRenderView(
 
   if (main_rfh) {
     auto local_frame_params = mojom::CreateLocalMainFrameParams::New();
-    local_frame_params->token = main_rfh->GetFrameToken();
+    local_frame_params->frame_token = main_rfh->GetFrameToken();
     local_frame_params->routing_id = main_frame_routing_id_;
     mojo::PendingAssociatedRemote<mojom::Frame> pending_frame_remote;
     local_frame_params->frame =
@@ -454,6 +449,11 @@ bool RenderViewHostImpl::CreateRenderView(
 
     local_frame_params->is_on_initial_empty_document =
         main_rfh->frame_tree_node()->is_on_initial_empty_document();
+    // It is safe to ignore safety restrictions here, since it is necessary to
+    // retrieve the document token, even if the frame is speculative, in order
+    // to create the corresponding renderer-side objects.
+    local_frame_params->document_token =
+        main_rfh->GetDocumentTokenIgnoringSafetyRestrictions();
 
     // If this is a new RenderFrameHost for a frame that has already committed a
     // document, we don't have a PolicyContainerHost yet. Indeed, in that case,
@@ -551,6 +551,7 @@ void RenderViewHostImpl::SetMainFrameRoutingId(int routing_id) {
 void RenderViewHostImpl::SetFrameTree(FrameTree& frame_tree) {
   TRACE_EVENT("navigation", "RenderViewHostImpl::SetFrameTree",
               ChromeTrackEvent::kRenderViewHost, *this);
+  DCHECK(registered_with_frame_tree_);
   frame_tree_->UnregisterRenderViewHost(render_view_host_map_id_, this);
   frame_tree_ = &frame_tree;
   frame_tree_->RegisterRenderViewHost(render_view_host_map_id_, this);
@@ -562,31 +563,43 @@ void RenderViewHostImpl::EnterBackForwardCache() {
 
   TRACE_EVENT("navigation", "RenderViewHostImpl::EnterBackForwardCache",
               ChromeTrackEvent::kRenderViewHost, *this);
-  frame_tree_->UnregisterRenderViewHost(render_view_host_map_id_, this);
+  DCHECK(registered_with_frame_tree_);
+  // Only unregister the RenderViewHost if the FrameTree is the primary
+  // FrameTree, inner FrameTrees hold their state when they enter back/forward
+  // cache.
+  if (frame_tree_->type() == FrameTree::Type::kPrimary) {
+    frame_tree_->UnregisterRenderViewHost(render_view_host_map_id_, this);
+    registered_with_frame_tree_ = false;
+  }
   is_in_back_forward_cache_ = true;
   page_lifecycle_state_manager_->SetIsInBackForwardCache(
-      is_in_back_forward_cache_, /*page_restore_params=*/nullptr,
-      /*restoring_main_frame_from_back_forward_cache=*/false);
+      is_in_back_forward_cache_, /*page_restore_params=*/nullptr);
 }
 
 void RenderViewHostImpl::PrepareToLeaveBackForwardCache(
     base::OnceClosure done_cb) {
+  // We wrap `done_cb` in a default invoke because if this RenderViewHostImpl
+  // disappears we still need to call `done_cb` otherwise the navigation
+  // will be blocked indefinitely.
   page_lifecycle_state_manager_->SetIsLeavingBackForwardCache(
-      std::move(done_cb));
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(done_cb)));
 }
 
 void RenderViewHostImpl::LeaveBackForwardCache(
-    blink::mojom::PageRestoreParamsPtr page_restore_params,
-    bool restoring_main_frame_from_back_forward_cache) {
+    blink::mojom::PageRestoreParamsPtr page_restore_params) {
   TRACE_EVENT("navigation", "RenderViewHostImpl::LeaveBackForwardCache",
               ChromeTrackEvent::kRenderViewHost, *this);
   // At this point, the frames |this| RenderViewHostImpl belongs to are
   // guaranteed to be committed, so it should be reused going forward.
-  frame_tree_->RegisterRenderViewHost(render_view_host_map_id_, this);
+  // `registered_with_frame_tree_` will already be true for inner frame
+  // trees.
+  if (!registered_with_frame_tree_) {
+    registered_with_frame_tree_ = true;
+    frame_tree_->RegisterRenderViewHost(render_view_host_map_id_, this);
+  }
   is_in_back_forward_cache_ = false;
   page_lifecycle_state_manager_->SetIsInBackForwardCache(
-      is_in_back_forward_cache_, std::move(page_restore_params),
-      restoring_main_frame_from_back_forward_cache);
+      is_in_back_forward_cache_, std::move(page_restore_params));
 }
 
 void RenderViewHostImpl::ActivatePrerenderedPage(
@@ -618,8 +631,8 @@ void RenderViewHostImpl::OnBackForwardCacheTimeout() {
   const auto& entries =
       frame_tree_->controller().GetBackForwardCache().GetEntries();
   for (auto& entry : entries) {
-    for (auto* const rvh : entry->render_view_hosts()) {
-      if (rvh == this) {
+    for (const auto& rvh : entry->render_view_hosts()) {
+      if (&*rvh == this) {
         RenderFrameHostImpl* rfh = entry->render_frame_host();
         rfh->EvictFromBackForwardCacheWithReason(
             BackForwardCacheMetrics::NotRestoredReason::kTimeoutPuttingInCache);
@@ -636,8 +649,8 @@ void RenderViewHostImpl::MaybeEvictFromBackForwardCache() {
   const auto& entries =
       frame_tree_->controller().GetBackForwardCache().GetEntries();
   for (auto& entry : entries) {
-    for (auto* const rvh : entry->render_view_hosts()) {
-      if (rvh == this) {
+    for (const auto& rvh : entry->render_view_hosts()) {
+      if (&*rvh == this) {
         RenderFrameHostImpl* rfh = entry->render_frame_host();
         rfh->MaybeEvictFromBackForwardCache();
         break;
@@ -747,30 +760,6 @@ void RenderViewHostImpl::ZoomToFindInPageRect(const gfx::Rect& rect_to_zoom) {
 void RenderViewHostImpl::RenderProcessExited(
     RenderProcessHost* host,
     const ChildProcessTerminationInfo& info) {
-  // TODO(https://crbug.com/1234634): Remove this.
-  // If the renderer has exited while we were are still waiting for a ack,
-  // then log information about the exit.
-  if (page_lifecycle_state_manager_->persisted_pageshow_timestamp_bug_1234634()
-          .has_value()) {
-    base::TimeDelta delta =
-        base::Time::Now() - page_lifecycle_state_manager_
-                                ->persisted_pageshow_timestamp_bug_1234634()
-                                .value();
-    // We want to understand if we are losing pageshows because renderers are
-    // exiting soon after restoring from BFCache. We keep the normal exits
-    // separate from the unexpected.
-    const char* histogram =
-        info.status == base::TERMINATION_STATUS_NORMAL_TERMINATION
-            ? "Event.PageShow.Persisted.Termination.Normal.Time"
-            : "Event.PageShow.Persisted.Termination.Unexpected.Time";
-    base::UmaHistogramMediumTimes(histogram, delta);
-    // We don't record this as an enum because the enum is platform dependent.
-    // Since this is temporary debugging, 20 seems a safe upper limit for the
-    // number of elements.
-    base::UmaHistogramExactLinear("Event.PageShow.Persisted.Termination.Status",
-                                  static_cast<int>(info.status), 20);
-  }
-
   renderer_view_created_ = false;
   GetWidget()->RendererExited();
   delegate_->RenderViewTerminated(this, info.status, info.exit_code);
@@ -977,6 +966,10 @@ void RenderViewHostImpl::WriteIntoTrace(
   proto.Set(TraceProto::kProcess, GetProcess());
   proto->set_is_in_back_forward_cache(is_in_back_forward_cache_);
   proto->set_renderer_view_created(renderer_view_created_);
+}
+
+base::SafeRef<RenderViewHostImpl> RenderViewHostImpl::GetSafeRef() {
+  return weak_factory_.GetSafeRef();
 }
 
 }  // namespace content

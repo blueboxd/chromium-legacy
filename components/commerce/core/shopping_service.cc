@@ -641,29 +641,17 @@ void ShoppingService::HandleOptGuideMerchantInfoResponse(
 void ShoppingService::Subscribe(
     std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
     base::OnceCallback<void(bool)> callback) {
-  // TODO(crbug.com/1377515): When calling this api, we should always have a
-  // valid subscriptions_manager_ and there is no need to do the null check. We
-  // can build an internal system for error logging.
-  if (subscriptions_manager_) {
-    subscriptions_manager_->Subscribe(std::move(subscriptions),
-                                      std::move(callback));
-  } else {
-    std::move(callback).Run(false);
-  }
+  CHECK(subscriptions_manager_);
+  subscriptions_manager_->Subscribe(std::move(subscriptions),
+                                    std::move(callback));
 }
 
 void ShoppingService::Unsubscribe(
     std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
     base::OnceCallback<void(bool)> callback) {
-  // TODO(crbug.com/1377515): When calling this api, we should always have a
-  // valid subscriptions_manager_ and there is no need to do the null check. We
-  // can build an internal system for error logging.
-  if (subscriptions_manager_) {
-    subscriptions_manager_->Unsubscribe(std::move(subscriptions),
-                                        std::move(callback));
-  } else {
-    std::move(callback).Run(false);
-  }
+  CHECK(subscriptions_manager_);
+  subscriptions_manager_->Unsubscribe(std::move(subscriptions),
+                                      std::move(callback));
 }
 
 void ShoppingService::FetchPriceEmailPref() {

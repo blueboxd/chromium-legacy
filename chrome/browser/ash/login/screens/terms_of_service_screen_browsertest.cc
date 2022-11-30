@@ -406,14 +406,14 @@ class ManagedUserTosScreenTest : public ManagedUserTosScreenTestBase,
                                  public ::testing::WithParamInterface<bool> {
  public:
   ManagedUserTosScreenTest() {
-    auto enabled_features =
-        std::vector<base::Feature>{features::kManagedTermsOfService};
-    auto disabled_features = std::vector<base::Feature>{};
+    std::vector<base::test::FeatureRef> enabled_features = {
+        features::kManagedTermsOfService};
+    std::vector<base::test::FeatureRef> disabled_features = {};
 
     if (GetParam()) {
-      enabled_features.push_back(features::kUseAuthsessionAuthentication);
+      enabled_features.push_back(features::kUseAuthFactors);
     } else {
-      disabled_features.push_back(features::kUseAuthsessionAuthentication);
+      disabled_features.push_back(features::kUseAuthFactors);
     }
     feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
@@ -514,11 +514,9 @@ class ManagedUserTosOnboardingResumeTest
     pending_screen_param_ = std::get<0>(GetParam());
 
     if (std::get<1>(GetParam())) {
-      feature_list_.InitAndEnableFeature(
-          features::kUseAuthsessionAuthentication);
+      feature_list_.InitAndEnableFeature(features::kUseAuthFactors);
     } else {
-      feature_list_.InitAndDisableFeature(
-          features::kUseAuthsessionAuthentication);
+      feature_list_.InitAndDisableFeature(features::kUseAuthFactors);
     }
   }
 

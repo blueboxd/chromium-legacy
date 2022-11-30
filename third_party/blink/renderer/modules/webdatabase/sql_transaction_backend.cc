@@ -634,7 +634,7 @@ SQLTransactionState SQLTransactionBackend::OpenTransactionAndPreflight() {
     database_->EnableAuthorizer();
     return NextStateForTransactionError();
   }
-  has_version_mismatch_ = !database_->ExpectedVersion().IsEmpty() &&
+  has_version_mismatch_ = !database_->ExpectedVersion().empty() &&
                           (database_->ExpectedVersion() != actual_version);
 
   // Spec 4.3.2.3: Perform preflight steps, jumping to the error callback if
@@ -714,7 +714,7 @@ void SQLTransactionBackend::GetNextStatement() {
   current_statement_backend_ = nullptr;
 
   base::AutoLock locker(statement_lock_);
-  if (!statement_queue_.IsEmpty())
+  if (!statement_queue_.empty())
     current_statement_backend_ = statement_queue_.TakeFirst();
 }
 

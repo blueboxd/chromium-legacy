@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.js';
 import {fakeCalibrationComponentsWithFails, fakeCalibrationComponentsWithoutFails} from 'chrome://shimless-rma/fake_data.js';
 import {FakeShimlessRmaService} from 'chrome://shimless-rma/fake_shimless_rma_service.js';
 import {setShimlessRmaServiceForTesting} from 'chrome://shimless-rma/mojo_interface_provider.js';
 import {ReimagingCalibrationFailedPage} from 'chrome://shimless-rma/reimaging_calibration_failed_page.js';
 import {ShimlessRma} from 'chrome://shimless-rma/shimless_rma.js';
 import {CalibrationComponentStatus, CalibrationStatus, ComponentType} from 'chrome://shimless-rma/shimless_rma_types.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {assertDeepEquals, assertEquals, assertFalse, assertNotEquals, assertNotReached, assertTrue} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.js';
 
 export function reimagingCalibrationFailedPageTest() {
   /**
@@ -20,7 +20,7 @@ export function reimagingCalibrationFailedPageTest() {
    * when handling calibration overall progress signals.
    * @type {?ShimlessRma}
    */
-  let shimless_rma_component = null;
+  let shimlessRmaComponent = null;
 
   /** @type {?ReimagingCalibrationFailedPage} */
   let component = null;
@@ -37,8 +37,8 @@ export function reimagingCalibrationFailedPageTest() {
   teardown(() => {
     component.remove();
     component = null;
-    shimless_rma_component.remove();
-    shimless_rma_component = null;
+    shimlessRmaComponent.remove();
+    shimlessRmaComponent = null;
     service.reset();
   });
 
@@ -49,10 +49,10 @@ export function reimagingCalibrationFailedPageTest() {
   function initializeCalibrationPage(calibrationComponents) {
     assertFalse(!!component);
 
-    shimless_rma_component =
+    shimlessRmaComponent =
         /** @type {!ShimlessRma} */ (document.createElement('shimless-rma'));
-    assertTrue(!!shimless_rma_component);
-    document.body.appendChild(shimless_rma_component);
+    assertTrue(!!shimlessRmaComponent);
+    document.body.appendChild(shimlessRmaComponent);
 
     // Initialize the fake data.
     service.setGetCalibrationComponentListResult(calibrationComponents);

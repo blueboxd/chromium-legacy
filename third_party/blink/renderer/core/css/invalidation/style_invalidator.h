@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,7 +102,7 @@ class CORE_EXPORT StyleInvalidator {
     void PushInvalidationSet(const SiblingInvalidationSet&);
     bool MatchCurrentInvalidationSets(Element&, StyleInvalidator&);
 
-    bool IsEmpty() const { return invalidation_entries_.IsEmpty(); }
+    bool IsEmpty() const { return invalidation_entries_.empty(); }
     void Advance() { element_index_++; }
 
    private:

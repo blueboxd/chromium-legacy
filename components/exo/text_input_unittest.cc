@@ -16,6 +16,7 @@
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/ash/input_method_manager.h"
@@ -34,10 +35,10 @@ namespace {
 ui::CompositionText GenerateCompositionText(const std::u16string& text) {
   ui::CompositionText t;
   t.text = text;
-  t.selection = gfx::Range(1u);
-  t.ime_text_spans.push_back(
-      ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, 0, t.text.size(),
-                      ui::ImeTextSpan::Thickness::kThick));
+  t.selection = gfx::Range(text.size());
+  t.ime_text_spans.emplace_back(ui::ImeTextSpan::Type::kComposition, 0,
+                                t.text.size(),
+                                ui::ImeTextSpan::Thickness::kThick);
   return t;
 }
 
@@ -48,46 +49,54 @@ class MockTextInputDelegate : public TextInput::Delegate {
   MockTextInputDelegate(const MockTextInputDelegate&) = delete;
   MockTextInputDelegate& operator=(const MockTextInputDelegate&) = delete;
 
+  ~MockTextInputDelegate() override = default;
+
   // TextInput::Delegate:
-  MOCK_METHOD(void, Activated, (), ());
-  MOCK_METHOD(void, Deactivated, (), ());
-  MOCK_METHOD(void, OnVirtualKeyboardVisibilityChanged, (bool), ());
-  MOCK_METHOD(void, SetCompositionText, (const ui::CompositionText&), ());
-  MOCK_METHOD(void, Commit, (const std::u16string&), ());
-  MOCK_METHOD(void, SetCursor, (base::StringPiece16, const gfx::Range&), ());
+  MOCK_METHOD(void, Activated, (), (override));
+  MOCK_METHOD(void, Deactivated, (), (override));
+  MOCK_METHOD(void, OnVirtualKeyboardVisibilityChanged, (bool), (override));
+  MOCK_METHOD(void,
+              OnVirtualKeyboardOccludedBoundsChanged,
+              (const gfx::Rect&),
+              (override));
+  MOCK_METHOD(bool, SupportsFinalizeVirtualKeyboardChanges, (), (override));
+  MOCK_METHOD(void,
+              SetCompositionText,
+              (const ui::CompositionText&),
+              (override));
+  MOCK_METHOD(void, Commit, (base::StringPiece16), (override));
+  MOCK_METHOD(void,
+              SetCursor,
+              (base::StringPiece16, const gfx::Range&),
+              (override));
   MOCK_METHOD(void,
               DeleteSurroundingText,
               (base::StringPiece16, const gfx::Range&),
-              ());
-  MOCK_METHOD(void, SendKey, (const ui::KeyEvent&), ());
-  MOCK_METHOD(void, OnLanguageChanged, (const std::string&), ());
+              (override));
+  MOCK_METHOD(void, SendKey, (const ui::KeyEvent&), (override));
   MOCK_METHOD(void,
               OnTextDirectionChanged,
               (base::i18n::TextDirection direction),
-              ());
+              (override));
   MOCK_METHOD(void,
               SetCompositionFromExistingText,
               (base::StringPiece16,
                const gfx::Range&,
                const gfx::Range&,
                const std::vector<ui::ImeTextSpan>& ui_ime_text_spans),
-              ());
+              (override));
   MOCK_METHOD(void,
               ClearGrammarFragments,
               (base::StringPiece16, const gfx::Range&),
-              ());
+              (override));
   MOCK_METHOD(void,
               AddGrammarFragment,
               (base::StringPiece16, const ui::GrammarFragment&),
-              ());
+              (override));
   MOCK_METHOD(void,
               SetAutocorrectRange,
               (base::StringPiece16, const gfx::Range&),
-              ());
-  MOCK_METHOD(void,
-              OnVirtualKeyboardOccludedBoundsChanged,
-              (const gfx::Rect&),
-              ());
+              (override));
 };
 
 class TestingInputMethodObserver : public ui::InputMethodObserver {
@@ -106,12 +115,24 @@ class TestingInputMethodObserver : public ui::InputMethodObserver {
   }
 
   // ui::InputMethodObserver
-  MOCK_METHOD(void, OnFocus, (), ());
-  MOCK_METHOD(void, OnBlur, (), ());
-  MOCK_METHOD(void, OnCaretBoundsChanged, (const ui::TextInputClient*), ());
-  MOCK_METHOD(void, OnTextInputStateChanged, (const ui::TextInputClient*), ());
-  MOCK_METHOD(void, OnInputMethodDestroyed, (const ui::InputMethod*), ());
-  MOCK_METHOD(void, OnVirtualKeyboardVisibilityChangedIfEnabled, (bool), ());
+  MOCK_METHOD(void, OnFocus, (), (override));
+  MOCK_METHOD(void, OnBlur, (), (override));
+  MOCK_METHOD(void,
+              OnCaretBoundsChanged,
+              (const ui::TextInputClient*),
+              (override));
+  MOCK_METHOD(void,
+              OnTextInputStateChanged,
+              (const ui::TextInputClient*),
+              (override));
+  MOCK_METHOD(void,
+              OnInputMethodDestroyed,
+              (const ui::InputMethod*),
+              (override));
+  MOCK_METHOD(void,
+              OnVirtualKeyboardVisibilityChangedIfEnabled,
+              (bool),
+              (override));
 
  private:
   ui::InputMethod* input_method_ = nullptr;
@@ -138,10 +159,13 @@ class TextInputTest : public test::ExoTestBase {
 
   void SetUp() override {
     test::ExoTestBase::SetUp();
-    text_input_ =
-        std::make_unique<TextInput>(std::make_unique<MockTextInputDelegate>());
+    text_input_ = std::make_unique<TextInput>(
+        std::make_unique<testing::NiceMock<MockTextInputDelegate>>());
     seat_ = std::make_unique<Seat>();
     test_surface_.SetUp(exo_test_helper());
+
+    ON_CALL(*delegate(), SupportsFinalizeVirtualKeyboardChanges())
+        .WillByDefault(testing::Return(false));
   }
 
   void TearDown() override {
@@ -454,7 +478,8 @@ TEST_F(TextInputTest, CompositionTextEmpty) {
 TEST_F(TextInputTest, ConfirmCompositionText) {
   SetCompositionText(u"composition");
 
-  EXPECT_CALL(*delegate(), Commit(std::u16string(u"composition"))).Times(1);
+  EXPECT_CALL(*delegate(), Commit(base::StringPiece16(u"composition")))
+      .Times(1);
   const size_t composition_text_length =
       text_input()->ConfirmCompositionText(/*keep_selection=*/false);
   EXPECT_EQ(composition_text_length, 11u);
@@ -468,12 +493,14 @@ TEST_F(TextInputTest, ConfirmCompositionText) {
 TEST_F(TextInputTest, ConfirmCompositionTextKeepSelection) {
   constexpr char16_t kCompositionText[] = u"composition";
   SetCompositionText(kCompositionText);
+  text_input()->SetEditableSelectionRange(gfx::Range(2, 3));
   text_input()->SetSurroundingText(kCompositionText, gfx::Range(2, 3));
 
   EXPECT_CALL(*delegate(), SetCursor(base::StringPiece16(kCompositionText),
                                      gfx::Range(2, 3)))
       .Times(1);
-  EXPECT_CALL(*delegate(), Commit(std::u16string(kCompositionText))).Times(1);
+  EXPECT_CALL(*delegate(), Commit(base::StringPiece16(kCompositionText)))
+      .Times(1);
   const uint32_t composition_text_length =
       text_input()->ConfirmCompositionText(/*keep_selection=*/true);
   EXPECT_EQ(composition_text_length, static_cast<uint32_t>(11));
@@ -493,9 +520,9 @@ TEST_F(TextInputTest, ResetCompositionText) {
 }
 
 TEST_F(TextInputTest, Commit) {
-  std::u16string s = u"commit text";
+  constexpr char16_t s[] = u"commit text";
 
-  EXPECT_CALL(*delegate(), Commit(s)).Times(1);
+  EXPECT_CALL(*delegate(), Commit(base::StringPiece16(s))).Times(1);
   text_input()->InsertText(
       s, ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   EXPECT_FALSE(text_input()->HasCompositionText());
@@ -534,9 +561,11 @@ TEST_F(TextInputTest, SurroundingText) {
   TestingInputMethodObserver observer(GetInputMethod());
 
   gfx::Range range;
-  EXPECT_FALSE(text_input()->GetTextRange(&range));
+  EXPECT_TRUE(text_input()->GetTextRange(&range));
+  EXPECT_EQ(gfx::Range(0, 0), range);
   EXPECT_FALSE(text_input()->GetCompositionTextRange(&range));
-  EXPECT_FALSE(text_input()->GetEditableSelectionRange(&range));
+  EXPECT_TRUE(text_input()->GetEditableSelectionRange(&range));
+  EXPECT_EQ(gfx::Range(0, 0), range);
   std::u16string got_text;
   EXPECT_FALSE(text_input()->GetTextFromRange(gfx::Range(0, 1), &got_text));
 
@@ -565,26 +594,27 @@ TEST_F(TextInputTest, SurroundingText) {
   size_t composition_size = std::string("composition").size();
   SetCompositionText(u"composition");
   EXPECT_TRUE(text_input()->GetCompositionTextRange(&range));
-  EXPECT_EQ(gfx::Range(11, 11 + composition_size).ToString(), range.ToString());
+  EXPECT_EQ(gfx::Range(11, 11 + composition_size), range);
   EXPECT_TRUE(text_input()->GetEditableSelectionRange(&range));
-  EXPECT_EQ(gfx::Range(11, 12).ToString(), range.ToString());
+  EXPECT_EQ(gfx::Range(11 + composition_size), range);
 }
 
 TEST_F(TextInputTest, SetEditableSelectionRange) {
   SetCompositionText(u"text");
-  text_input()->SetSurroundingText(u"text", gfx::Range(1, 2));
+  text_input()->SetSurroundingText(u"text", gfx::Range(4, 4));
 
   // Should commit composition text and set selection range.
   EXPECT_CALL(*delegate(),
               SetCursor(base::StringPiece16(u"text"), gfx::Range(0, 3)))
       .Times(1);
-  EXPECT_CALL(*delegate(), Commit(std::u16string(u"text"))).Times(1);
+  EXPECT_CALL(*delegate(), Commit(base::StringPiece16(u"text"))).Times(1);
   EXPECT_TRUE(text_input()->SetEditableSelectionRange(gfx::Range(0, 3)));
   testing::Mock::VerifyAndClearExpectations(delegate());
 }
 
 TEST_F(TextInputTest, GetTextFromRange) {
   std::u16string text = u"surrounding text";
+  text_input()->SetEditableSelectionRange(gfx::Range(11, 12));
   text_input()->SetSurroundingText(text, gfx::Range(11, 12));
 
   const struct {
@@ -682,22 +712,18 @@ TEST_F(TextInputTest, CorrectTextReturnedAfterSetCompositionTextCalled) {
   std::u16string composition_text = u" and composition";
 
   ui::CompositionText t = GenerateCompositionText(composition_text);
-  EXPECT_CALL(*delegate(), SetCompositionText)
-      .WillOnce(
-          testing::Invoke([this, cursor_pos, surrounding_text,
-                           composition_text](const ui::CompositionText& t) {
-            EXPECT_EQ(t.text, composition_text);
-            // Simulate surrounding text update from wayland.
-            auto before = surrounding_text.substr(0, cursor_pos.GetMin());
-            auto after = surrounding_text.substr(cursor_pos.GetMin());
-            auto new_surrounding = before + t.text + after;
-            auto new_cursor_pos = cursor_pos.GetMin() + t.text.length();
-            text_input()->SetSurroundingText(
-                new_surrounding, gfx::Range(new_cursor_pos, new_cursor_pos));
-          }));
+  EXPECT_CALL(*delegate(), SetCompositionText(_)).Times(1);
 
   text_input()->SetSurroundingText(surrounding_text, cursor_pos);
   text_input()->SetCompositionText(t);
+
+  // Simulate surrounding text update from wayland.
+  auto before = surrounding_text.substr(0, cursor_pos.GetMin());
+  auto after = surrounding_text.substr(cursor_pos.GetMin());
+  auto new_surrounding = before + t.text + after;
+  auto new_cursor_pos = cursor_pos.GetMin() + t.text.length();
+  text_input()->SetSurroundingText(new_surrounding,
+                                   gfx::Range(new_cursor_pos, new_cursor_pos));
 
   gfx::Range text_range;
   std::u16string text;
@@ -783,6 +809,112 @@ TEST_F(TextInputTest, OnKeyboardHidden) {
   EXPECT_CALL(*delegate(), OnVirtualKeyboardOccludedBoundsChanged(bounds));
   EXPECT_CALL(*delegate(), OnVirtualKeyboardVisibilityChanged(false));
   text_input()->OnKeyboardHidden();
+}
+
+TEST_F(TextInputTest, FinalizeVirtualKeyboardChangesNotSupported) {
+  EXPECT_CALL(*delegate(), SupportsFinalizeVirtualKeyboardChanges())
+      .WillRepeatedly(testing::Return(false));
+
+  const gfx::Rect kBounds(10, 20, 300, 400);
+
+  testing::InSequence s;
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardVisibilityChanged(true));
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardOccludedBoundsChanged(kBounds));
+  text_input()->OnKeyboardVisible(gfx::Rect());
+  text_input()->EnsureCaretNotInRect(kBounds);
+
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardOccludedBoundsChanged(gfx::Rect()));
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardVisibilityChanged(false));
+  text_input()->OnKeyboardHidden();
+}
+
+TEST_F(TextInputTest, FinalizeVirtualKeyboardChanges) {
+  EXPECT_CALL(*delegate(), SupportsFinalizeVirtualKeyboardChanges())
+      .WillRepeatedly(testing::Return(true));
+
+  const gfx::Rect kBounds(10, 20, 300, 400);
+  const gfx::Rect kBounds2(20, 40, 500, 600);
+
+  testing::InSequence s;
+  // After the client requests a vk change, the server buffers vk updates.
+  text_input()->ShowVirtualKeyboardIfEnabled();
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardVisibilityChanged).Times(0);
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardOccludedBoundsChanged).Times(0);
+  text_input()->OnKeyboardVisible(gfx::Rect());
+  text_input()->EnsureCaretNotInRect(kBounds);
+
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardVisibilityChanged(true));
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardOccludedBoundsChanged(kBounds));
+  text_input()->FinalizeVirtualKeyboardChanges();
+
+  // The server can update the client immediately if the client hasn't requested
+  // any new changes.
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardVisibilityChanged).Times(0);
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardOccludedBoundsChanged(kBounds2));
+  text_input()->EnsureCaretNotInRect(kBounds2);
+
+  // The client requests to hide vk.
+  text_input()->HideVirtualKeyboard();
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardOccludedBoundsChanged).Times(0);
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardVisibilityChanged).Times(0);
+  text_input()->OnKeyboardHidden();
+
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardOccludedBoundsChanged(gfx::Rect()));
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardVisibilityChanged(false));
+  text_input()->FinalizeVirtualKeyboardChanges();
+}
+
+TEST_F(TextInputTest, FinalizeVirtualKeyboardChangesWithMultipleChanges) {
+  EXPECT_CALL(*delegate(), SupportsFinalizeVirtualKeyboardChanges())
+      .WillRepeatedly(testing::Return(true));
+
+  const gfx::Rect kBounds(10, 20, 300, 400);
+  const gfx::Rect kBounds2(20, 40, 500, 600);
+  const gfx::Rect kBounds3(30, 50, 200, 100);
+
+  testing::InSequence s;
+  // After the client requests a vk change, the server buffers vk updates.
+  text_input()->ShowVirtualKeyboardIfEnabled();
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardVisibilityChanged).Times(0);
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardOccludedBoundsChanged).Times(0);
+  text_input()->OnKeyboardVisible(gfx::Rect());
+  text_input()->EnsureCaretNotInRect(kBounds);
+  text_input()->EnsureCaretNotInRect(kBounds2);
+  text_input()->OnKeyboardHidden();
+  text_input()->OnKeyboardVisible(gfx::Rect());
+  text_input()->EnsureCaretNotInRect(kBounds3);
+
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardVisibilityChanged(true));
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardOccludedBoundsChanged(kBounds3));
+  text_input()->FinalizeVirtualKeyboardChanges();
+}
+
+TEST_F(TextInputTest, FinalizeVirtualKeyboardChangesDoesntSendStaleBounds) {
+  EXPECT_CALL(*delegate(), SupportsFinalizeVirtualKeyboardChanges())
+      .WillRepeatedly(testing::Return(true));
+
+  const gfx::Rect kBounds(10, 20, 300, 400);
+  const gfx::Rect kBounds2(20, 40, 500, 600);
+
+  testing::InSequence s;
+  // After the client requests a vk change, the server buffers vk updates.
+  text_input()->ShowVirtualKeyboardIfEnabled();
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardVisibilityChanged).Times(0);
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardOccludedBoundsChanged).Times(0);
+  text_input()->OnKeyboardVisible(gfx::Rect());
+  text_input()->EnsureCaretNotInRect(kBounds);
+  text_input()->OnKeyboardHidden();
+  text_input()->OnKeyboardVisible(gfx::Rect());
+
+  // Showing vk invalidates any previously staged bounds.
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardVisibilityChanged(true));
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardOccludedBoundsChanged).Times(0);
+  text_input()->FinalizeVirtualKeyboardChanges();
+
+  // Bounds update doesn't change vk visibility.
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardVisibilityChanged).Times(0);
+  EXPECT_CALL(*delegate(), OnVirtualKeyboardOccludedBoundsChanged(kBounds2));
+  text_input()->EnsureCaretNotInRect(kBounds2);
 }
 
 }  // anonymous namespace

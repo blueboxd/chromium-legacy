@@ -1,9 +1,11 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef IPCZ_SRC_DRIVERS_ASYNC_REFERENCE_DRIVER_H_
 #define IPCZ_SRC_DRIVERS_ASYNC_REFERENCE_DRIVER_H_
+
+#include <utility>
 
 #include "ipcz/ipcz.h"
 
@@ -27,6 +29,11 @@ struct AsyncTransportPair {
   IpczDriverHandle non_broker;
 };
 AsyncTransportPair CreateAsyncTransportPair();
+
+// Creates a new pair of async transport endpoints, one for each of two
+// different brokers to be connected.
+std::pair<IpczDriverHandle, IpczDriverHandle>
+CreateAsyncTransportPairForBrokers();
 
 }  // namespace ipcz::reference_drivers
 

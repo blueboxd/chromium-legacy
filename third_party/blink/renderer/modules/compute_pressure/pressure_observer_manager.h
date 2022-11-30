@@ -1,16 +1,12 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_COMPUTE_PRESSURE_PRESSURE_OBSERVER_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_COMPUTE_PRESSURE_PRESSURE_OBSERVER_MANAGER_H_
 
-#include <cstddef>
-
 #include "third_party/blink/public/mojom/compute_pressure/pressure_service.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_pressure_source.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -40,10 +36,7 @@ class MODULES_EXPORT PressureObserverManager final
   PressureObserverManager(const PressureObserverManager&) = delete;
   PressureObserverManager& operator=(const PressureObserverManager&) = delete;
 
-  ScriptPromise AddObserver(V8PressureSource,
-                            blink::PressureObserver*,
-                            ScriptState*,
-                            ExceptionState&);
+  void AddObserver(V8PressureSource, blink::PressureObserver*);
   void RemoveObserver(V8PressureSource, blink::PressureObserver*);
   void RemoveObserverFromAllSources(blink::PressureObserver*);
 
@@ -52,7 +45,7 @@ class MODULES_EXPORT PressureObserverManager final
   void ContextLifecycleStateChanged(mojom::blink::FrameLifecycleState) override;
 
   // mojom::blink::PressureObserver implementation.
-  void OnUpdate(device::mojom::blink::PressureStatePtr) override;
+  void OnUpdate(device::mojom::blink::PressureUpdatePtr) override;
 
   // GarbageCollected implementation.
   void Trace(Visitor*) const override;
@@ -72,13 +65,7 @@ class MODULES_EXPORT PressureObserverManager final
 
   void DidBindObserver(V8PressureSource,
                        blink::PressureObserver*,
-                       ScriptPromiseResolver*,
                        mojom::blink::PressureStatus);
-
-  void DidSetQuantization(V8PressureSource,
-                          blink::PressureObserver*,
-                          ScriptPromiseResolver*,
-                          mojom::blink::SetQuantizationStatus);
 
   constexpr static size_t kPressureSourceSize = V8PressureSource::kEnumSize;
 

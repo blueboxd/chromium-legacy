@@ -319,11 +319,10 @@ const InfoBox* UiController::GetInfoBox() const {
 
 bool UiController::SetProgressActiveStepIdentifier(
     const std::string& active_step_identifier) {
-  const auto it = base::ranges::find_if(
+  const auto it = base::ranges::find(
       step_progress_bar_configuration_.annotated_step_icons(),
-      [&](const ShowProgressBarProto::StepProgressBarIcon& icon) {
-        return icon.identifier() == active_step_identifier;
-      });
+      active_step_identifier,
+      &ShowProgressBarProto::StepProgressBarIcon::identifier);
   if (it == step_progress_bar_configuration_.annotated_step_icons().cend()) {
     return false;
   }
@@ -467,11 +466,15 @@ void UiController::SetGenericUi(
     std::unique_ptr<GenericUserInterfaceProto> generic_ui,
     base::OnceCallback<void(const ClientStatus&)> end_action_callback,
     base::OnceCallback<void(const ClientStatus&)>
-        view_inflation_finished_callback) {
+        view_inflation_finished_callback,
+    base::RepeatingCallback<void(const RequestBackendDataProto&)>
+        request_backend_data_callback) {
   generic_user_interface_ = std::move(generic_ui);
   basic_interactions_.SetEndActionCallback(std::move(end_action_callback));
   basic_interactions_.SetViewInflationFinishedCallback(
       std::move(view_inflation_finished_callback));
+  basic_interactions_.SetRequestBackendDataCallback(
+      std::move(request_backend_data_callback));
   for (UiControllerObserver& observer : observers_) {
     observer.OnGenericUserInterfaceChanged(generic_user_interface_.get());
   }

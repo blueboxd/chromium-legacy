@@ -22,17 +22,8 @@
 #include "chromeos/assistant/internal/proto/shared/proto/v2/display_interface.pb.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 
-namespace chromeos {
+namespace ash::libassistant {
 
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
-namespace assistant {
-using ::ash::assistant::AssistantDevice;
-using ::ash::assistant::AssistantDeviceSettings;
-using ::ash::assistant::AssistantDeviceSettingsUpdate;
-using ::ash::assistant::SettingsUiUpdate;
-}  // namespace assistant
-
-namespace libassistant {
 namespace {
 
 // Each authentication token exists of a [gaia_id, access_token] tuple.
@@ -413,5 +404,4 @@ void SettingsController::OnDestroyingAssistantClient(
   spoken_feedback_enabled_.reset();
 }
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant

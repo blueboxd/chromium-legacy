@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -181,8 +181,8 @@ void VideoWakeLock::EnsureWakeLockService() {
                        device::mojom::blink::WakeLockReason::kVideoPlayback,
                        "Video Wake Lock",
                        wake_lock_service_.BindNewPipeAndPassReceiver());
-  wake_lock_service_.set_disconnect_handler(
-      WTF::Bind(&VideoWakeLock::OnConnectionError, WrapWeakPersistent(this)));
+  wake_lock_service_.set_disconnect_handler(WTF::BindOnce(
+      &VideoWakeLock::OnConnectionError, WrapWeakPersistent(this)));
 }
 
 void VideoWakeLock::OnConnectionError() {

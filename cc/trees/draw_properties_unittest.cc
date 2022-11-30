@@ -921,9 +921,9 @@ TEST_F(DrawPropertiesTest, TransformAboveRootLayer) {
   }
 
   gfx::Transform composite;
-  composite.ConcatTransform(translate);
-  composite.ConcatTransform(scale);
-  composite.ConcatTransform(rotate);
+  composite.PostConcat(translate);
+  composite.PostConcat(scale);
+  composite.PostConcat(rotate);
   {
     SetDeviceTransform(composite);
     UpdateActiveTreeDrawProperties(device_scale_factor);
@@ -2374,7 +2374,7 @@ TEST_F(DrawPropertiesTest,
   child->SetDrawsContent(true);
 
   // Case 1: a truly degenerate matrix
-  gfx::Transform uninvertible_matrix(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+  auto uninvertible_matrix = gfx::Transform::MakeScale(0.0);
   ASSERT_FALSE(uninvertible_matrix.IsInvertible());
 
   CopyProperties(root, child);
@@ -2459,7 +2459,7 @@ TEST_F(DrawPropertiesTest, ClipExpanderWithUninvertibleTransform) {
   child->SetBounds(gfx::Size(50, 50));
   child->SetDrawsContent(true);
 
-  gfx::Transform uninvertible_matrix(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+  auto uninvertible_matrix = gfx::Transform::MakeScale(0.0);
   ASSERT_FALSE(uninvertible_matrix.IsInvertible());
 
   CopyProperties(root, child);
@@ -3299,10 +3299,8 @@ TEST_F(DrawPropertiesScalingTest, SurfaceLayerTransformsInHighDPI) {
                                                     contents_scale_factor);
   expected_perspective_surface_draw_transform.Translate(
       perspective_surface_offset);
-  expected_perspective_surface_draw_transform.PreconcatTransform(
-      perspective_matrix);
-  expected_perspective_surface_draw_transform.PreconcatTransform(
-      scale_small_matrix);
+  expected_perspective_surface_draw_transform.PreConcat(perspective_matrix);
+  expected_perspective_surface_draw_transform.PreConcat(scale_small_matrix);
   expected_perspective_surface_draw_transform.Scale(
       1.0f / contents_scale_factor, 1.0f / contents_scale_factor);
   gfx::Transform expected_perspective_surface_layer_draw_transform;

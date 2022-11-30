@@ -1,11 +1,10 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/extensions/chromeos/system_extensions/window_management/cros_window_management.h"
 
-#include <algorithm>
-
+#include "base/ranges/algorithm.h"
 #include "third_party/blink/public/mojom/chromeos/system_extensions/window_management/cros_window_management.mojom-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -13,8 +12,7 @@
 #include "third_party/blink/renderer/bindings/extensions_chromeos/v8/v8_cros_window_event_init.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/extensions/chromeos/event_target_chromeos.h"
+#include "third_party/blink/renderer/extensions/chromeos/event_target_chromeos_names.h"
 #include "third_party/blink/renderer/extensions/chromeos/event_type_chromeos_names.h"
 #include "third_party/blink/renderer/extensions/chromeos/system_extensions/window_management/cros_accelerator_event.h"
 #include "third_party/blink/renderer/extensions/chromeos/system_extensions/window_management/cros_screen.h"
@@ -94,8 +92,8 @@ ScriptPromise CrosWindowManagement::getWindows(ScriptState* script_state) {
   auto* window_management = GetCrosWindowManagementOrNull();
   if (window_management) {
     window_management->GetAllWindows(
-        WTF::Bind(&CrosWindowManagement::WindowsCallback, WrapPersistent(this),
-                  WrapPersistent(resolver)));
+        WTF::BindOnce(&CrosWindowManagement::WindowsCallback,
+                      WrapPersistent(this), WrapPersistent(resolver)));
   }
   return resolver->Promise();
 }
@@ -123,8 +121,8 @@ ScriptPromise CrosWindowManagement::getScreens(ScriptState* script_state) {
   auto* window_management = GetCrosWindowManagementOrNull();
   if (window_management) {
     window_management->GetAllScreens(
-        WTF::Bind(&CrosWindowManagement::ScreensCallback, WrapPersistent(this),
-                  WrapPersistent(resolver)));
+        WTF::BindOnce(&CrosWindowManagement::ScreensCallback,
+                      WrapPersistent(this), WrapPersistent(resolver)));
   }
   return resolver->Promise();
 }
@@ -144,7 +142,6 @@ void CrosWindowManagement::ScreensCallback(
 }
 
 void CrosWindowManagement::DispatchStartEvent() {
-  DLOG(INFO) << "Dispatching event";
   DispatchEvent(*Event::Create(event_type_names::kStart));
 }
 
@@ -170,10 +167,7 @@ void CrosWindowManagement::DispatchWindowOpenedEvent(
   // cache and dispatching open event. In the future, this shouldn't happen and
   // we should DCHECK() the newly opened window does not exist in cache.
   auto* cached_window_ptr =
-      std::find_if(windows_.begin(), windows_.end(),
-                   [&opened_id](Member<CrosWindow> window) {
-                     return window->id() == opened_id;
-                   });
+      base::ranges::find(windows_, opened_id, &CrosWindow::id);
 
   auto* event_init = CrosWindowEventInit::Create();
   if (cached_window_ptr == windows_.end()) {
@@ -194,10 +188,7 @@ void CrosWindowManagement::DispatchWindowClosedEvent(
     mojom::blink::CrosWindowInfoPtr window) {
   WTF::String closed_window_id_string = WTF::String(window->id.ToString());
   Member<CrosWindow>* window_ptr =
-      std::find_if(windows_.begin(), windows_.end(),
-                   [&closed_window_id_string](Member<CrosWindow> cros_window) {
-                     return cros_window->id() == closed_window_id_string;
-                   });
+      base::ranges::find(windows_, closed_window_id_string, &CrosWindow::id);
 
   auto* event_init = CrosWindowEventInit::Create();
   if (window_ptr == windows_.end()) {

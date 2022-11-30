@@ -41,6 +41,8 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "cc/tiles/raster_dark_mode_filter.h"
+#include "cc/trees/raster_context_provider_wrapper.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_latency.h"
@@ -67,6 +69,10 @@ class SkBitmap;
 namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
+
+namespace cc {
+class RasterDarkModeFilter;
+}
 
 namespace gfx {
 class ColorSpace;
@@ -119,6 +125,7 @@ class URLLoaderThrottle;
 class UserMetricsAction;
 class WebAudioBus;
 class WebAudioLatencyHint;
+class WebAudioSinkDescriptor;
 class WebCrypto;
 class WebDedicatedWorker;
 class WebDedicatedWorkerHostFactoryClient;
@@ -203,6 +210,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Creates an audio output device platform interface for Web Audio API.
   virtual std::unique_ptr<WebAudioDevice> CreateAudioDevice(
+      const WebAudioSinkDescriptor& sink_descriptor,
       unsigned number_of_output_channels,
       const WebAudioLatencyHint& latency_hint,
       WebAudioDevice::RenderCallback*) {
@@ -534,8 +542,9 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Returns a worker context provider that will be bound on the compositor
   // thread.
-  virtual scoped_refptr<viz::RasterContextProvider>
-  SharedCompositorWorkerContextProvider();
+  virtual scoped_refptr<cc::RasterContextProviderWrapper>
+  SharedCompositorWorkerContextProvider(
+      cc::RasterDarkModeFilter* dark_mode_filter);
 
   // Synchronously establish a channel to the GPU plugin if not previously
   // established or if it has been lost (for example if the GPU plugin crashed).

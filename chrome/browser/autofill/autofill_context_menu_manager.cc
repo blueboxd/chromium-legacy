@@ -64,18 +64,13 @@ AutofillContextMenuManager::AutofillContextMenuManager(
     PersonalDataManager* personal_data_manager,
     RenderViewContextMenuBase* delegate,
     ui::SimpleMenuModel* menu_model,
-    Browser* browser,
-    content::RenderFrameHost* render_frame_host)
+    Browser* browser)
     : personal_data_manager_(personal_data_manager),
       menu_model_(menu_model),
       delegate_(delegate),
-      browser_(browser),
-      render_frame_host_(render_frame_host) {
-  DCHECK(render_frame_host_);
-  content_autofill_driver_ =
-      ContentAutofillDriver::GetForRenderFrameHost(render_frame_host_);
-  if (delegate_)
-    params_ = delegate_->params();
+      browser_(browser) {
+  DCHECK(delegate_);
+  params_ = delegate_->params();
 }
 
 AutofillContextMenuManager::~AutofillContextMenuManager() {
@@ -89,12 +84,23 @@ void AutofillContextMenuManager::AppendItems() {
     return;
   }
 
+  content::RenderFrameHost* rfh = delegate_->GetRenderFrameHost();
+  if (!rfh)
+    return;
+
+  ContentAutofillDriver* driver =
+      ContentAutofillDriver::GetForRenderFrameHost(rfh);
+  // Do not show autofill context menu options for input fields that cannot be
+  // filled by the driver. See crbug.com/1367547.
+  if (!driver || !driver->CanShowAutofillUi())
+    return;
+
   DCHECK(personal_data_manager_);
   DCHECK(menu_model_);
 
+  content::WebContents* web_contents = delegate_->GetWebContents();
   AutofillClient* autofill_client =
-      autofill::ChromeAutofillClient::FromWebContents(
-          content::WebContents::FromRenderFrameHost(render_frame_host_));
+      autofill::ChromeAutofillClient::FromWebContents(web_contents);
   // If the autofill popup is shown and the user double clicks from within the
   // bounds of the initiating field, it is assumed that the context menu would
   // overlap with the autofill popup. In that case, hide the autofill popup.
@@ -103,7 +109,7 @@ void AutofillContextMenuManager::AppendItems() {
         PopupHidingReason::kOverlappingWithAutofillContextMenu);
   }
 
-  // Stores all the profile values added to the content menu alongwith the
+  // Stores all the profile values added to the context menu along with the
   // command id of the row.
   std::vector<std::pair<CommandId, ContextMenuItem>>
       detail_items_added_to_context_menu;
@@ -132,7 +138,8 @@ bool AutofillContextMenuManager::IsCommandIdEnabled(
 }
 
 void AutofillContextMenuManager::ExecuteCommand(CommandId command_id) {
-  if (!content_autofill_driver_)
+  content::RenderFrameHost* rfh = delegate_->GetRenderFrameHost();
+  if (!rfh)
     return;
 
   auto it = command_id_to_menu_item_value_mapper_.find(command_id);
@@ -167,8 +174,10 @@ void AutofillContextMenuManager::ExecuteCommand(CommandId command_id) {
     return;
   }
 
-  content_autofill_driver_->browser_events().RendererShouldFillFieldWithValue(
-      {LocalFrameToken(render_frame_host_->GetFrameToken().value()),
+  ContentAutofillDriver* driver =
+      ContentAutofillDriver::GetForRenderFrameHost(rfh);
+  driver->browser_events().RendererShouldFillFieldWithValue(
+      {LocalFrameToken(rfh->GetFrameToken().value()),
        FieldRendererId(params_.field_renderer_id.value())},
       it->second.fill_value);
 

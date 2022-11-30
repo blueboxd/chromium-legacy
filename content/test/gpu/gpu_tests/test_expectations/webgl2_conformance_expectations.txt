@@ -9,7 +9,8 @@
 #         win win8 win10 ]
 # Devices
 # tags: [ android-nexus-5 android-nexus-5x android-pixel-2 android-pixel-4
-#             android-pixel-6 android-shield-android-tv
+#             android-pixel-6 android-shield-android-tv android-sm-a135m
+#             android-sm-a235m
 #         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
 #         fuchsia-board-astro fuchsia-board-sherlock fuchsia-board-qemu-x64 ]
 # Platform
@@ -25,9 +26,8 @@
 #         apple apple-apple-m1 apple-angle-metal-renderer:-apple-m1
 #         arm
 #         google google-0xffff
-#         intel intel-hd-630-family intel-gen-9 intel-0xa2e intel-0xd26
-#               intel-0xa011 intel-0x3e92 intel-0x3e9b intel-0x5912
-#               intel-0x9bc5
+#         intel intel-gen-9 intel-0xa2e intel-0xd26 intel-0xa011 intel-0x3e92
+#               intel-0x3e9b intel-0x5912 intel-0x9bc5
 #         nvidia nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
 #         qualcomm ]
 # Architecture
@@ -174,10 +174,6 @@ crbug.com/735483 conformance2/rendering/texture-switch-performance.html [ Skip ]
 # Crashes with the Quadro P400's drivers. Can probably be removed after the
 # switch to GTX 1660s.
 crbug.com/1236820 [ linux nvidia ] conformance2/glsl3/reciprocal-sqrt-of-sum-of-squares-crash.html [ Skip ]
-
-# Caused kernel panics on drivers from around November 2020, can likely be
-# re-enabled once newer drivers are obtained.
-crbug.com/1147232 [ linux amd-0x7340 no-passthrough ] conformance/textures/misc/texture-size-limit.html [ Skip ]
 
 # Can occasionally kill machines. Appears to be tied to kernel version, so can
 # be removed once upgraded to kernel 5.4.0-77 or later.
@@ -366,6 +362,7 @@ crbug.com/angleproject/7209 [ mac passthrough angle-metal amd ] deqp/functional/
 crbug.com/angleproject/7209 [ mac passthrough angle-metal amd ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
 crbug.com/angleproject/7425 [ mac passthrough angle-metal amd ] deqp/functional/gles3/texturespecification/texstorage3d_format_depth_stencil.html [ Failure ]
 crbug.com/1355825 [ mac passthrough angle-metal amd ] deqp/functional/gles3/texturespecification/texstorage2d_format_2d_00.html [ Failure ]
+crbug.com/1369290 [ mac passthrough angle-metal amd ] deqp/functional/gles3/texturefiltering/2d_array_combinations_05.html [ RetryOnFailure ]
 
 # Metal Intel
 crbug.com/angleproject/6430 [ mac passthrough angle-metal intel ] conformance2/textures/canvas/tex-2d-rgb16f-rgb-float.html [ Failure ]
@@ -737,14 +734,11 @@ crbug.com/1310144 [ linux intel mesa_ge_21.0 ] conformance2/rendering/blitframeb
 crbug.com/1343520 [ linux nvidia angle-opengl passthrough ] conformance2/textures/canvas/tex-2d-r8-red-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/angleproject/5783 [ linux nvidia angle-opengl passthrough ] conformance2/textures/misc/immutable-tex-render-feedback.html [ Failure ]
 crbug.com/1115314 [ linux nvidia-0x2184 angle-opengl passthrough ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
+crbug.com/1372694 [ linux nvidia-0x2184 angle-opengl passthrough ] conformance2/samplers/sampler-drawing-test.html [ RetryOnFailure ]
 
 # Linux AMD RX 5500 XT
 crbug.com/1147232 [ linux amd-0x7340 angle-opengl passthrough ] conformance/textures/misc/texture-size-limit.html [ Failure ]
-crbug.com/1152588 [ linux amd-0x7340 ] conformance2/rendering/multisampling-fragment-evaluation.html [ Failure ]
-crbug.com/1283514 [ linux amd-0x7340 angle-opengl ] conformance2/textures/misc/angle-stuck-depth-textures.html [ Failure ]
-crbug.com/1283514 [ linux amd-0x7340 angle-opengl ] deqp/functional/gles3/fboinvalidate/whole.html [ Failure ]
-crbug.com/1311007 [ linux amd-0x7340 angle-opengl passthrough ] deqp/functional/gles3/fborender/shared_depth_stencil.html [ Failure ]
-crbug.com/1300683 [ linux amd-0x7340 angle-opengl passthrough ] deqp/functional/gles3/fborender/recreate_depth_stencil.html [ RetryOnFailure ]
+crbug.com/1152588 [ linux amd-0x7340 angle-opengl passthrough ] conformance2/rendering/multisampling-fragment-evaluation.html [ Failure ]
 
 ####################
 # Android failures #
@@ -925,11 +919,19 @@ crbug.com/1328444 [ chromeos chromeos-board-kevin ] conformance2/textures/misc/t
 
 crbug.com/1337803 [ chromeos chromeos-board-kevin ] conformance2/misc/expando-loss-2.html [ Failure ]
 
+crbug.com/1373277 [ chromeos chromeos-board-kevin ] conformance2/textures/video/tex-3d-srgb8-rgb-unsigned_byte.html [ Failure ]
+
 # Must investigate ChromeOS failures with passthrough command decoder.
 crbug.com/angleproject/5038 [ chromeos passthrough ] conformance/extensions/ext-color-buffer-half-float.html [ Failure ]
 
 # Failures on validating command decoder only; won't fix.
 crbug.com/angleproject/5038 [ chromeos no-passthrough ] conformance/extensions/ext-color-buffer-half-float.html [ Failure ]
+
+[ chromeos chromeos-board-amd64-generic passthrough ] conformance/context/context-eviction-with-garbage-collection.html [ Slow ]
+[ chromeos chromeos-board-amd64-generic passthrough ] conformance/extensions/s3tc-and-rgtc.html [ Slow ]
+[ chromeos chromeos-board-amd64-generic passthrough ] conformance/extensions/webgl-compressed-texture-astc.html [ Slow ]
+[ chromeos chromeos-board-amd64-generic passthrough ] conformance2/extensions/webgl-multi-draw-instanced-base-vertex-base-instance.html [ Slow ]
+[ chromeos chromeos-board-amd64-generic passthrough ] conformance2/textures/canvas_sub_rectangle/* [ Slow ]
 
 ##############################
 # Lacros-like Linux Failures #

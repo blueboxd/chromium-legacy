@@ -17,6 +17,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/dcheck_is_on.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -448,11 +449,13 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, GestureEndShouldEndDragTest) {
 
 class DetachToBrowserTabDragControllerTest
     : public TabDragControllerTest,
-      public ::testing::WithParamInterface<const char*> {
+      public ::testing::WithParamInterface<testing::tuple<bool, const char*>> {
  public:
   DetachToBrowserTabDragControllerTest() {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{},
+        /*enabled_features=*/std::get<0>(GetParam())
+            ? std::vector<base::test::FeatureRef>{features::kSplitTabStrip}
+            : std::vector<base::test::FeatureRef>{},
         /*disabled_features=*/{
           features::kWebUITabStrip,
 #if BUILDFLAG(IS_WIN)
@@ -484,8 +487,8 @@ class DetachToBrowserTabDragControllerTest
   }
 
   InputSource input_source() const {
-    return strstr(GetParam(), "mouse") ?
-        INPUT_SOURCE_MOUSE : INPUT_SOURCE_TOUCH;
+    return strstr(std::get<1>(GetParam()), "mouse") ? INPUT_SOURCE_MOUSE
+                                                    : INPUT_SOURCE_TOUCH;
   }
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -2417,6 +2420,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 // Creates two browsers, then drags a group from one to the other.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        MAYBE_DragGroupHeaderToSeparateWindow) {
+  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
+
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   TabStripModel* model = browser()->tab_strip_model();
   AddTabsAndResetBrowser(browser(), 1);
@@ -2728,6 +2733,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 // Creates two browsers, then drags a collapsed group from one to the other.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        MAYBE_DragCollapsedGroupHeaderToSeparateWindow) {
+  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
+
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   TabStripModel* model = browser()->tab_strip_model();
   AddTabsAndResetBrowser(browser(), 2);
@@ -3738,9 +3745,9 @@ void DragToMinimizedOverviewWindowStep2(
   EXPECT_FALSE(dragged_window->GetProperty(chromeos::kIsShowingInOverviewKey));
 
   // Now drag the tabs to a point that is contained by |target_window|.
-  gfx::RectF target_window_bounds(target_window->bounds());
   gfx::Transform transform = target_window->layer()->GetTargetTransform();
-  transform.TransformRect(&target_window_bounds);
+  gfx::RectF target_window_bounds =
+      transform.MapRect(gfx::RectF(target_window->bounds()));
   gfx::Point target_point(target_window_bounds.CenterPoint().x(),
                           target_window_bounds.CenterPoint().y());
 
@@ -4859,39 +4866,44 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 }
 
 #if BUILDFLAG(IS_CHROMEOS)
-INSTANTIATE_TEST_SUITE_P(TabDragging,
-                         DetachToBrowserTabDragControllerTest,
-                         ::testing::Values("mouse", "touch"));
+INSTANTIATE_TEST_SUITE_P(
+    TabDragging,
+    DetachToBrowserTabDragControllerTest,
+    ::testing::Combine(::testing::Bool(), ::testing::Values("mouse", "touch")));
 INSTANTIATE_TEST_SUITE_P(
     TabDragging,
     DetachToBrowserTabDragControllerTestWithScrollableTabStripEnabled,
-    ::testing::Values("mouse", "touch"));
+    ::testing::Combine(::testing::Bool(), ::testing::Values("mouse", "touch")));
 #else
 INSTANTIATE_TEST_SUITE_P(TabDragging,
                          DetachToBrowserTabDragControllerTest,
-                         ::testing::Values("mouse"));
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Values("mouse")));
 INSTANTIATE_TEST_SUITE_P(
     TabDragging,
     DetachToBrowserTabDragControllerTestWithScrollableTabStripEnabled,
-    ::testing::Values("mouse"));
+    ::testing::Combine(::testing::Bool(), ::testing::Values("mouse")));
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 INSTANTIATE_TEST_SUITE_P(TabDragging,
                          DetachToBrowserInSeparateDisplayTabDragControllerTest,
-                         ::testing::Values("mouse"));
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Values("mouse")));
 INSTANTIATE_TEST_SUITE_P(TabDragging,
                          DifferentDeviceScaleFactorDisplayTabDragControllerTest,
-                         ::testing::Values("mouse"));
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Values("mouse")));
 INSTANTIATE_TEST_SUITE_P(
     TabDragging,
     DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest,
-    ::testing::Values("mouse"));
+    ::testing::Combine(::testing::Bool(), ::testing::Values("mouse")));
 INSTANTIATE_TEST_SUITE_P(TabDragging,
                          DetachToBrowserTabDragControllerTestTouch,
-                         ::testing::Values("touch"));
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Values("touch")));
 INSTANTIATE_TEST_SUITE_P(
     TabDragging,
     DetachToBrowserTabDragControllerTestWithTabbedSystemApp,
-    ::testing::Values("mouse", "touch"));
+    ::testing::Combine(::testing::Bool(), ::testing::Values("mouse", "touch")));
 #endif

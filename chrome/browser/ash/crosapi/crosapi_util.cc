@@ -7,8 +7,6 @@
 #include <sys/mman.h>
 
 #include "ash/components/arc/arc_util.h"
-#include "ash/components/settings/cros_settings_names.h"
-#include "ash/components/settings/cros_settings_provider.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
@@ -34,6 +32,8 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
+#include "chromeos/ash/components/settings/cros_settings_provider.h"
 #include "chromeos/components/cdm_factory_daemon/mojom/browser_cdm_factory.mojom.h"
 #include "chromeos/components/remote_apps/mojom/remote_apps.mojom.h"
 #include "chromeos/components/sensors/mojom/cros_sensor_service.mojom.h"
@@ -92,6 +92,7 @@
 #include "chromeos/crosapi/mojom/network_settings_service.mojom.h"
 #include "chromeos/crosapi/mojom/networking_attributes.mojom.h"
 #include "chromeos/crosapi/mojom/networking_private.mojom.h"
+#include "chromeos/crosapi/mojom/parent_access.mojom.h"
 #include "chromeos/crosapi/mojom/policy_service.mojom.h"
 #include "chromeos/crosapi/mojom/power.mojom.h"
 #include "chromeos/crosapi/mojom/prefs.mojom.h"
@@ -245,7 +246,7 @@ constexpr InterfaceVersionEntry MakeInterfaceVersionEntry() {
   return {T::Uuid_, T::Version_};
 }
 
-static_assert(crosapi::mojom::Crosapi::Version_ == 96,
+static_assert(crosapi::mojom::Crosapi::Version_ == 97,
               "If you add a new crosapi, please add it to "
               "kInterfaceVersionEntries below.");
 
@@ -350,6 +351,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<media_session::mojom::MediaControllerManager>(),
     MakeInterfaceVersionEntry<media_session::mojom::AudioFocusManager>(),
     MakeInterfaceVersionEntry<media_session::mojom::AudioFocusManagerDebug>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::ParentAccess>(),
 };
 
 constexpr bool HasDuplicatedUuid() {

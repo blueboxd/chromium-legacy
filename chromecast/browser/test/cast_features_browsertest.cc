@@ -9,6 +9,7 @@
 #include <unordered_set>
 
 #include "base/metrics/field_trial_params.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chromecast/base/pref_names.h"
 #include "chromecast/browser/cast_browser_process.h"
@@ -71,26 +72,19 @@ namespace {
 // which is based at the next available multiple of 10.
 
 // For use in TestFeaturesActivateOnBoot only.
-const base::Feature kTestFeat1{"test_feat_1",
-                               base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kTestFeat2{"test_feat_2", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kTestFeat3{"test_feat_3",
-                               base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kTestFeat4{"test_feat_4", base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kTestFeat1, "test_feat_1", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kTestFeat2, "test_feat_2", base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kTestFeat3, "test_feat_3", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kTestFeat4, "test_feat_4", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // For use in TestParamsActivateOnBoot only.
-const base::Feature kTestFeat11{"test_feat_11",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kTestFeat11, "test_feat_11", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // For use in TestOnlyWellFormedFeaturesPersisted only.
-const base::Feature kTestFeat21{"test_feat_21",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kTestFeat22{"test_feat_22",
-                                base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kTestFeat23{"test_feat_23",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kTestFeat24{"test_feat_24",
-                                base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kTestFeat21, "test_feat_21", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kTestFeat22, "test_feat_22", base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kTestFeat23, "test_feat_23", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kTestFeat24, "test_feat_24", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Extend the default features with test features only used in this browsertest.
 void SetupFeatures() {
@@ -134,10 +128,10 @@ class CastFeaturesBrowserTest : public CastBrowserTest {
 
   // Clears |features| from the PrefStore. Should be called in a PRE_PRE_*
   // method for any tested feature in a test to ensure consistent state.
-  void ClearFeaturesFromPrefs(std::vector<base::Feature> features) {
+  void ClearFeaturesFromPrefs(std::vector<base::test::FeatureRef> features) {
     DictionaryPrefUpdate dict(pref_service(), prefs::kLatestDCSFeatures);
-    for (auto f : features)
-      dict->RemoveKey(f.name);
+    for (const auto& f : features)
+      dict->RemoveKey(f->name);
     pref_service()->CommitPendingWrite();
   }
 

@@ -15,6 +15,7 @@ bokan@chromium.org
 cbiesinger@chromium.org
 chrishtr@chromium.org
 clamy@chromium.org
+dbaron@chromium.org
 dcheng@chromium.org
 dgozman@chromium.org
 dlibby@microsoft.com
@@ -53,7 +54,6 @@ nhiroki@chromium.org
 obrufau@igalia.com
 # pdr reviews many svg and text autosizing patches.
 pdr@chromium.org
-pfeldman@chromium.org
 pkasting@chromium.org
 rego@igalia.com
 rbuis@igalia.com
@@ -68,5 +68,4 @@ vmpstr@chromium.org
 vollick@chromium.org
 wangxianzhu@chromium.org
 xiaochengh@chromium.org
-yhirano@chromium.org
 yoavweiss@chromium.org

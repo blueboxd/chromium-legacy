@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,7 +90,7 @@ void ImeOnFocusTest::RunImeOnFocusTest(
   if (tap_point.x() >= 0 && tap_point.y() >= 0)
     SendGestureTap(web_view, tap_point);
 
-  if (!frame.IsEmpty()) {
+  if (!frame.empty()) {
     RegisterMockedURLLoadFromBase(WebString(base_url_),
                                   test::CoreTestDataPath(), WebString(frame));
     WebLocalFrame* child_frame =

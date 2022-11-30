@@ -1018,7 +1018,7 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 }
 
 // Marks all read entries as unread, when there is a lot of entries. This is to
-// prevent crbug.com/1013708 from regressing.
+// prevent crbug.com/1013708 and crbug.com/1246283 from regressing.
 - (void)testMarkAllUnreadLotOfEntry {
   AddLotOfEntriesAndEnterEdit();
 

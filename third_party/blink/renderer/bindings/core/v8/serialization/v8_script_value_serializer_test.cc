@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1529,7 +1529,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripBlob) {
       Blob::Create(reinterpret_cast<const unsigned char*>(&kHelloWorld),
                    sizeof(kHelloWorld), "text/plain");
   String uuid = blob->Uuid();
-  EXPECT_FALSE(uuid.IsEmpty());
+  EXPECT_FALSE(uuid.empty());
   v8::Local<v8::Value> wrapper = ToV8(blob, scope.GetScriptState());
   v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
   ASSERT_TRUE(V8Blob::HasInstance(result, scope.GetIsolate()));
@@ -1563,7 +1563,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripBlobIndex) {
       Blob::Create(reinterpret_cast<const unsigned char*>(&kHelloWorld),
                    sizeof(kHelloWorld), "text/plain");
   String uuid = blob->Uuid();
-  EXPECT_FALSE(uuid.IsEmpty());
+  EXPECT_FALSE(uuid.empty());
   v8::Local<v8::Value> wrapper = ToV8(blob, scope.GetScriptState());
   WebBlobInfoArray blob_info_array;
   v8::Local<v8::Value> result =
@@ -1648,7 +1648,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripFileBackedByBlob) {
   ASSERT_TRUE(V8File::HasInstance(result, scope.GetIsolate()));
   File* new_file = V8File::ToImpl(result.As<v8::Object>());
   EXPECT_FALSE(new_file->HasBackingFile());
-  EXPECT_TRUE(file->GetPath().IsEmpty());
+  EXPECT_TRUE(file->GetPath().empty());
   EXPECT_TRUE(new_file->FileSystemURL().IsEmpty());
 }
 
@@ -1680,7 +1680,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripFileNonNativeSnapshot) {
   ASSERT_TRUE(V8File::HasInstance(result, scope.GetIsolate()));
   File* new_file = V8File::ToImpl(result.As<v8::Object>());
   EXPECT_FALSE(new_file->HasBackingFile());
-  EXPECT_TRUE(file->GetPath().IsEmpty());
+  EXPECT_TRUE(file->GetPath().empty());
   EXPECT_TRUE(new_file->FileSystemURL().IsEmpty());
 }
 
@@ -1876,7 +1876,7 @@ TEST(V8ScriptValueSerializerTest, DecodeFileIndex) {
   File* new_file = V8File::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("d875dfc2-4505-461b-98fe-0cf6cc5eaf44", new_file->Uuid());
   EXPECT_EQ("text/plain", new_file->type());
-  EXPECT_TRUE(new_file->GetPath().IsEmpty());
+  EXPECT_TRUE(new_file->GetPath().empty());
   EXPECT_EQ("path", new_file->name());
 }
 
@@ -2035,7 +2035,7 @@ TEST(V8ScriptValueSerializerTest, DecodeFileListIndex) {
   FileList* new_file_list = V8FileList::ToImpl(result.As<v8::Object>());
   EXPECT_EQ(1u, new_file_list->length());
   File* new_file = new_file_list->item(0);
-  EXPECT_TRUE(new_file->GetPath().IsEmpty());
+  EXPECT_TRUE(new_file->GetPath().empty());
   EXPECT_EQ("name", new_file->name());
   EXPECT_EQ("d875dfc2-4505-461b-98fe-0cf6cc5eaf44", new_file->Uuid());
   EXPECT_EQ("text/plain", new_file->type());
@@ -2166,6 +2166,15 @@ TEST(V8ScriptValueSerializerTest, DecodeDOMExceptionWithInvalidNameString) {
   V8TestingScope scope;
   scoped_refptr<SerializedScriptValue> input = SerializedValue(
       {0xff, 0x13, 0xff, 0x0d, 0x5c, 0x78, 0x01, 0xff, 0x00, 0x00});
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(scope.GetScriptState(), input).Deserialize();
+  EXPECT_TRUE(result->IsNull());
+}
+
+TEST(V8ScriptValueSerializerTest, NoSharedValueConveyor) {
+  V8TestingScope scope;
+  scoped_refptr<SerializedScriptValue> input =
+      SerializedValue({0xff, 0x14, 0xff, 0x0f, 'p', 0x00});
   v8::Local<v8::Value> result =
       V8ScriptValueDeserializer(scope.GetScriptState(), input).Deserialize();
   EXPECT_TRUE(result->IsNull());

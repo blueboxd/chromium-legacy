@@ -12,6 +12,11 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+namespace content {
+class BrowserContext;
+class StoragePartitionConfig;
+}  // namespace content
+
 namespace web_package {
 class SignedWebBundleId;
 }
@@ -31,12 +36,22 @@ class IsolatedWebAppUrlInfo {
   static base::expected<IsolatedWebAppUrlInfo, std::string> Create(
       const GURL& url);
 
+  // Wraps Create() but accepts a SignedWebBundleId object.
+  static base::expected<IsolatedWebAppUrlInfo, std::string>
+  CreateFromSignedWebBundleId(
+      const web_package::SignedWebBundleId& web_bundle_id);
+
   // Returns the origin of the IWA that this URL refers to.
   const url::Origin& origin() const;
 
   // Returns the AppId that should be used when installing the app hosted at
   // this URL.
   const AppId& app_id() const;
+
+  // Returns the StoragePartitionConfig that should be used by the resource
+  // hosted at this URL.
+  content::StoragePartitionConfig storage_partition_config(
+      content::BrowserContext* browser_context) const;
 
   // Parses a `SignedWebBundleId` from the URL, verifying that it is a valid
   // isolated-app:// URL. Returns an error message on failure.

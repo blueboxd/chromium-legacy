@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,6 @@ class RTCEncodedAudioStreamTransformerDelegate
     : public webrtc::FrameTransformerInterface {
  public:
   RTCEncodedAudioStreamTransformerDelegate(
-      RTCEncodedAudioStreamTransformer* transformer,
       scoped_refptr<base::SingleThreadTaskRunner> realm_task_runner,
       scoped_refptr<RTCEncodedAudioStreamTransformer::Broker>
           transformer_broker)
@@ -151,7 +150,6 @@ RTCEncodedAudioStreamTransformer::RTCEncodedAudioStreamTransformer(
     : broker_(base::AdoptRef(new Broker(this))),
       delegate_(
           new rtc::RefCountedObject<RTCEncodedAudioStreamTransformerDelegate>(
-              this,
               std::move(realm_task_runner),
               broker_)) {}
 

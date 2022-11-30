@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,10 +70,6 @@ struct ArenaDestroy {
 // A unique_ptr that only calls destructors, instead of deallocating.
 template <class T>
 using ArenaUniquePtr = std::unique_ptr<T, ArenaDestroy<T>>;
-
-template <class T, bool UseArena>
-using MaybeArenaUniquePtr =
-    std::conditional_t<UseArena, ArenaUniquePtr<T>, std::unique_ptr<T>>;
 
 }  // namespace blink
 

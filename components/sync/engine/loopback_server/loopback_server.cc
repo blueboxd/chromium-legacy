@@ -68,9 +68,9 @@ static const char kSyncedBookmarksFolderName[] = "Synced Bookmarks";
 // version is updated and set in SaveEntity() and there is no need to increment
 // it again in CommitResponse. Otherwise, it would be possible that the next
 // commit request would return the same version.
-const base::Feature kSyncReturnRealVersionOnCommitInLoopbackServer{
-    "SyncReturnRealVersionOnCommitInLoopbackServer",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kSyncReturnRealVersionOnCommitInLoopbackServer,
+             "SyncReturnRealVersionOnCommitInLoopbackServer",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 int GetServerMigrationVersion(
     const std::map<ModelType, int>& server_migration_versions,
@@ -641,10 +641,8 @@ bool LoopbackServer::HandleCommitRequest(
   string guid = commit.cache_guid();
   ModelTypeSet committed_model_types;
 
-  ModelTypeSet enabled_types;
-  for (int field_number : commit.config_params().enabled_type_ids()) {
-    enabled_types.Put(GetModelTypeFromSpecificsFieldNumber(field_number));
-  }
+  ModelTypeSet enabled_types = GetModelTypeSetFromSpecificsFieldNumberList(
+      commit.config_params().enabled_type_ids());
 
   // TODO(pvalenzuela): Add validation of CommitMessage.entries.
   for (const sync_pb::SyncEntity& client_entity : commit.entries()) {

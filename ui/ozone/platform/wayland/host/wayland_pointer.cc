@@ -13,6 +13,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_serial_tracker.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
+#include "ui/ozone/platform/wayland/host/wayland_zaura_shell.h"
 
 namespace ui {
 
@@ -82,12 +83,14 @@ void WaylandPointer::Leave(void* data,
   pointer->connection_->serial_tracker().ResetSerial(
       wl::SerialType::kMouseEnter);
 
-  // TODO(https://crrev.com/c/1352584): Switch from kImmediate to kOnFrame when
-  // Exo comply with other compositors in how it isolates each
-  // wl_pointer.enter|leave event with their respective wl_pointer.frame.
+  auto event_dispatch_policy =
+      pointer->connection_->zaura_shell() &&
+              pointer->connection_->zaura_shell()->HasBugFix(1352584)
+          ? EventDispatchPolicyForPlatform()
+          : wl::EventDispatchPolicy::kImmediate;
+
   pointer->delegate_->OnPointerFocusChanged(
-      nullptr, pointer->delegate_->GetPointerLocation(),
-      wl::EventDispatchPolicy::kImmediate);
+      nullptr, pointer->delegate_->GetPointerLocation(), event_dispatch_policy);
 }
 
 // static
@@ -258,19 +261,26 @@ void WaylandPointer::Tool(void* data,
 
 // static
 void WaylandPointer::Force(void* data,
-                           struct zcr_pointer_stylus_v2* x,
-                           uint32_t y,
-                           wl_fixed_t z) {
-  NOTIMPLEMENTED_LOG_ONCE();
+                           struct zcr_pointer_stylus_v2* obj,
+                           uint32_t time,
+                           wl_fixed_t force) {
+  auto* pointer = static_cast<WaylandPointer*>(data);
+  DCHECK(pointer);
+
+  pointer->delegate_->OnPointerStylusForceChanged(wl_fixed_to_double(force));
 }
 
 // static
 void WaylandPointer::Tilt(void* data,
-                          struct zcr_pointer_stylus_v2* x,
-                          uint32_t y,
-                          wl_fixed_t z,
-                          wl_fixed_t a) {
-  NOTIMPLEMENTED_LOG_ONCE();
+                          struct zcr_pointer_stylus_v2* obj,
+                          uint32_t time,
+                          wl_fixed_t tilt_x,
+                          wl_fixed_t tilt_y) {
+  auto* pointer = static_cast<WaylandPointer*>(data);
+  DCHECK(pointer);
+
+  pointer->delegate_->OnPointerStylusTiltChanged(
+      gfx::Vector2dF(wl_fixed_to_double(tilt_x), wl_fixed_to_double(tilt_y)));
 }
 
 }  // namespace ui

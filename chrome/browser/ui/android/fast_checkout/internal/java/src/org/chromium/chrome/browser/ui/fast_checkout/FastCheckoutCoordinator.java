@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ui.fast_checkout;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.ViewFlipper;
 
 import org.chromium.chrome.browser.ui.fast_checkout.FastCheckoutProperties.ScreenType;
@@ -27,9 +28,13 @@ class FastCheckoutCoordinator implements FastCheckoutComponent {
     public void initialize(Context context, BottomSheetController sheetController,
             FastCheckoutComponent.Delegate delegate) {
         mBottomSheetController = sheetController;
-        mMediator.initialize(delegate, mModel, mBottomSheetController);
+        mMediator.initialize(delegate, mModel, mBottomSheetController,
+                context.getResources().getDimensionPixelSize(
+                        R.dimen.fast_checkout_detail_sheet_height_single_address),
+                context.getResources().getDimensionPixelSize(
+                        R.dimen.fast_checkout_detail_sheet_height_single_credit_card));
 
-        ViewFlipper rootView = (ViewFlipper) LayoutInflater.from(context).inflate(
+        LinearLayout rootView = (LinearLayout) LayoutInflater.from(context).inflate(
                 R.layout.fast_checkout_bottom_sheet, null);
         mContent = new FastCheckoutSheetContent(rootView);
 
@@ -43,9 +48,11 @@ class FastCheckoutCoordinator implements FastCheckoutComponent {
         DetailScreenCoordinator detailScreenCoordinator =
                 new DetailScreenCoordinator(context, detailScreenView, mModel);
 
+        ViewFlipper viewFlipperView =
+                (ViewFlipper) rootView.findViewById(R.id.fast_checkout_bottom_sheet_view_flipper);
         mModel.addObserver((source, propertyKey) -> {
             if (FastCheckoutProperties.CURRENT_SCREEN == propertyKey) {
-                rootView.setDisplayedChild(getScreenIndexForScreenType(
+                viewFlipperView.setDisplayedChild(getScreenIndexForScreenType(
                         mModel.get(FastCheckoutProperties.CURRENT_SCREEN)));
             } else if (FastCheckoutProperties.VISIBLE == propertyKey) {
                 // Dismiss the sheet if it can't be immediately shown.

@@ -9,6 +9,7 @@
 #include <set>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -79,6 +80,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/mojom/text_input_state.mojom.h"
+#include "ui/base/owned_window_anchor.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
@@ -963,7 +965,7 @@ void RenderWidgetHostViewAura::DidStopFlinging() {
 void RenderWidgetHostViewAura::TransformPointToRootSurface(gfx::PointF* point) {
   aura::Window* root = window_->GetRootWindow();
   aura::Window::ConvertPointToTarget(window_, root, point);
-  root->GetRootWindow()->transform().TransformPoint(point);
+  *point = root->GetRootWindow()->transform().MapPoint(*point);
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
@@ -2346,13 +2348,14 @@ void RenderWidgetHostViewAura::Shutdown() {
   }
 }
 
-bool RenderWidgetHostViewAura::ShouldVirtualKeyboardOverlayContent() {
+ui::mojom::VirtualKeyboardMode
+RenderWidgetHostViewAura::GetVirtualKeyboardMode() {
   // overlaycontent flag can only be set from main frame.
   RenderFrameHostImpl* frame = host()->frame_tree()->GetMainFrame();
   if (!frame)
-    return false;
+    return ui::mojom::VirtualKeyboardMode::kUnset;
 
-  return frame->GetPage().virtual_keyboard_overlays_content();
+  return frame->GetPage().virtual_keyboard_mode();
 }
 
 void RenderWidgetHostViewAura::NotifyVirtualKeyboardOverlayRect(
@@ -2360,8 +2363,13 @@ void RenderWidgetHostViewAura::NotifyVirtualKeyboardOverlayRect(
   // geometrychange event can only be fired on main frame and not focused frame
   // which could be an iframe.
   RenderFrameHostImpl* frame = host()->frame_tree()->GetMainFrame();
-  if (!frame || !frame->GetPage().virtual_keyboard_overlays_content())
+  if (!frame)
     return;
+
+  if (GetVirtualKeyboardMode() !=
+      ui::mojom::VirtualKeyboardMode::kOverlaysContent) {
+    return;
+  }
   gfx::Rect keyboard_root_relative_rect = keyboard_rect;
   if (!keyboard_root_relative_rect.IsEmpty()) {
     // If the rect is non-empty, we need to transform it to be widget-relative
@@ -2614,7 +2622,12 @@ void RenderWidgetHostViewAura::CreateSelectionController() {
       ui::GestureConfiguration::GetInstance()->long_press_time_in_ms());
   tsc_config.tap_slop = ui::GestureConfiguration::GetInstance()
                             ->max_touch_move_in_pixels_for_click();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  tsc_config.enable_longpress_drag_selection = base::FeatureList::IsEnabled(
+      chromeos::features::kTouchTextEditingRedesign);
+#else
   tsc_config.enable_longpress_drag_selection = false;
+#endif
   selection_controller_ = std::make_unique<ui::TouchSelectionController>(
       selection_controller_client_.get(), tsc_config);
 }

@@ -4,13 +4,14 @@
 
 // clang-format off
 import {isChromeOS, isWindows} from 'chrome://resources/js/cr.m.js';
-import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {CrCheckboxElement, kMenuCloseDelay, LanguageHelper, LanguagesBrowserProxyImpl, SettingsAddLanguagesDialogElement, SettingsLanguagesPageElement} from 'chrome://settings/lazy_load.js';
 import {CrActionMenuElement, CrButtonElement, CrSettingsPrefs, loadTimeData} from 'chrome://settings/settings.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertGE, assertGT, assertLT, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {eventToPromise, fakeDataBind} from 'chrome://webui-test/test_util.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
+import {fakeDataBind} from 'chrome://webui-test/polymer_test_util.js';
 
 import {FakeLanguageSettingsPrivate, getFakeLanguagePrefs} from './fake_language_settings_private.js';
 import {FakeSettingsPrivate} from './fake_settings_private.js';
@@ -37,7 +38,8 @@ suite('languages page', function() {
   const initialLanguages = 'en-US,sw';
 
   suiteSetup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     CrSettingsPrefs.deferInitialization = true;
   });
 
@@ -84,7 +86,8 @@ suite('languages page', function() {
   });
 
   teardown(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
   });
 
   suite(languages_page_tests.TestNames.AddLanguagesDialog, function() {
@@ -492,8 +495,10 @@ suite('languages page', function() {
       item.querySelector('cr-icon-button')!.click();
 
       assertTrue(actionMenu.open);
-      const removeMenuItem = getMenuItem('removeLanguage');
-      assertTrue(removeMenuItem.hidden);
+      const removeMenuItem = getMenuItem<HTMLButtonElement>('removeLanguage');
+      // Remove button should be disabled
+      assertFalse(removeMenuItem.hidden);
+      assertTrue(removeMenuItem.disabled);
     });
 
     test('remove language when starting with 2 languages', function() {

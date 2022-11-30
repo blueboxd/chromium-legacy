@@ -14,11 +14,19 @@
 #include <utility>
 #include <vector>
 
+#include "ash/display/display_util.h"
+#include "ash/display/screen_orientation_controller.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/session/session_controller_impl.h"
+#include "ash/shell.h"
+#include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/logging.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/chromeos_buildflags.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
@@ -32,7 +40,10 @@
 #include "components/exo/wayland/wayland_display_observer.h"
 #include "components/exo/wayland/wayland_display_util.h"
 #include "components/exo/wayland/wl_output.h"
+#include "components/exo/wayland/xdg_shell.h"
 #include "components/exo/wm_helper.h"
+#include "components/exo/wm_helper_chromeos.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/compositor/layer.h"
@@ -43,20 +54,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/public/activation_client.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/display/display_util.h"
-#include "ash/display/screen_orientation_controller.h"
-#include "ash/public/cpp/tablet_mode_observer.h"
-#include "ash/session/session_controller_impl.h"
-#include "ash/shell.h"
-#include "ash/wm/desks/desk.h"
-#include "ash/wm/desks/desks_controller.h"
-#include "base/strings/utf_string_conversions.h"
-#include "components/exo/wayland/xdg_shell.h"
-#include "components/exo/wm_helper_chromeos.h"
-#include "ui/aura/client/aura_constants.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace exo {
 namespace wayland {
@@ -75,7 +72,7 @@ bool TransformRelativeToScreenIsAxisAligned(aura::Window* window) {
   gfx::Transform transform_relative_to_screen;
   DCHECK(window->layer()->GetTargetTransformRelativeTo(
       window->GetRootWindow()->layer(), &transform_relative_to_screen));
-  transform_relative_to_screen.ConcatTransform(
+  transform_relative_to_screen.PostConcat(
       window->GetRootWindow()->layer()->GetTargetTransform());
   return transform_relative_to_screen.Preserves2dAxisAlignment();
 }
@@ -540,14 +537,12 @@ void AuraSurface::ComputeAndSendOcclusion(
     const SkRegion& occluded_region) {
   SendOcclusionState(occlusion_state);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Should re-write in locked case - we don't want to trigger PIP upon
   // locking the screen.
   if (ash::Shell::Get()->session_controller()->IsScreenLocked()) {
     SendOcclusionFraction(0.0f);
     return;
   }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Send the occlusion fraction.
   auto* window = surface_->window();
@@ -633,8 +628,6 @@ void AuraSurface::Pin(bool trusted) {
 void AuraSurface::Unpin() {
   surface_->Unpin();
 }
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 chromeos::OrientationType OrientationLock(uint32_t orientation_lock) {
   switch (orientation_lock) {
@@ -737,6 +730,14 @@ void AuraToplevel::SetZOrder(ui::ZOrderLevel z_order) {
   shell_surface_->SetZOrder(z_order);
 }
 
+void AuraToplevel::Activate() {
+  shell_surface_->RequestActivation();
+}
+
+void AuraToplevel::Deactivate() {
+  shell_surface_->RequestDeactivation();
+}
+
 void AuraToplevel::SetClientUsesScreenCoordinates() {
   supports_window_bounds_ = true;
   shell_surface_->set_client_supports_window_bounds(true);
@@ -824,8 +825,6 @@ void AuraPopup::SetMenu() {
   shell_surface_->SetMenu();
 }
 
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 namespace {
 
 void aura_output_release(wl_client* client, wl_resource* resource) {
@@ -876,13 +875,12 @@ bool AuraOutput::SendDisplayMetrics(const display::Display& display,
         display::GetDisplayZoomFactors(active_mode);
 
     // Ensure that the current zoom factor is a part of the list.
-    auto it =
-        base::ranges::find_if(zoom_factors, [&display_info](float zoom_factor) {
+    if (base::ranges::none_of(zoom_factors, [&display_info](float zoom_factor) {
           return std::abs(display_info.zoom_factor() - zoom_factor) <=
                  std::numeric_limits<float>::epsilon();
-        });
-    if (it == zoom_factors.end())
+        })) {
       zoom_factors.push_back(display_info.zoom_factor());
+    }
 
     for (float zoom_factor : zoom_factors) {
       int32_t output_scale = std::round(zoom_factor * 1000.f);
@@ -948,14 +946,14 @@ namespace {
 ////////////////////////////////////////////////////////////////////////////////
 // aura_shell_interface:
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-
 // IDs of bugs that have been fixed in the exo implementation. These are
 // propagated to clients on aura_shell bind and can be used to gate client
 // logic on the presence of certain fixes.
 const uint32_t kFixedBugIds[] = {
     1151508,  // Do not remove, used for sanity checks by
               // |wayland_simple_client|
+    1352584,
+    1358908,
 };
 
 // Implements aura shell interface and monitors workspace state needed
@@ -1149,6 +1147,15 @@ void aura_toplevel_set_window_bounds(wl_client* client,
   GetUserDataAs<AuraToplevel>(resource)->SetWindowBounds(x, y, width, height);
 }
 
+void aura_toplevel_set_origin(wl_client* client,
+                              wl_resource* resource,
+                              int32_t x,
+                              int32_t y,
+                              wl_resource* output) {
+  // TODO(b/247452928): Implement aura_toplevel.set_origin.
+  NOTIMPLEMENTED();
+}
+
 void aura_toplevel_set_restore_info(wl_client* client,
                                     wl_resource* resource,
                                     int32_t restore_session_id,
@@ -1231,6 +1238,14 @@ void aura_toplevel_set_z_order(wl_client* client,
       AuraTopLevelZOrderLevel(z_order));
 }
 
+void aura_toplevel_activate(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<AuraToplevel>(resource)->Activate();
+}
+
+void aura_toplevel_deactivate(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<AuraToplevel>(resource)->Deactivate();
+}
+
 const struct zaura_toplevel_interface aura_toplevel_implementation = {
     aura_toplevel_set_orientation_lock,
     aura_toplevel_surface_submission_in_pixel_coordinates,
@@ -1245,6 +1260,9 @@ const struct zaura_toplevel_interface aura_toplevel_implementation = {
     aura_toplevel_set_float,
     aura_toplevel_unset_float,
     aura_toplevel_set_z_order,
+    aura_toplevel_set_origin,
+    aura_toplevel_activate,
+    aura_toplevel_deactivate,
 };
 
 void aura_popup_surface_submission_in_pixel_coordinates(wl_client* client,
@@ -1319,22 +1337,6 @@ void aura_shell_get_aura_popup(wl_client* client,
                     std::make_unique<AuraPopup>(shell_surface));
 }
 
-#else
-void aura_shell_get_aura_toplevel(wl_client* client,
-                                  wl_resource* resource,
-                                  uint32_t id,
-                                  wl_resource* surface_resource) {
-  NOTREACHED();
-}
-
-void aura_shell_get_aura_popup(wl_client* client,
-                               wl_resource* resource,
-                               uint32_t id,
-                               wl_resource* surface_resource) {
-  NOTREACHED();
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH))
-
 void aura_shell_get_aura_surface(wl_client* client,
                                  wl_resource* resource,
                                  uint32_t id,
@@ -1399,14 +1401,9 @@ void bind_aura_shell(wl_client* client,
       wl_resource_create(client, &zaura_shell_interface,
                          std::min(version, kZAuraShellVersion), id);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   Display* display = static_cast<Display*>(data);
   SetImplementation(resource, &aura_shell_implementation,
                     std::make_unique<WaylandAuraShell>(resource, display));
-#else
-  wl_resource_set_implementation(resource, &aura_shell_implementation, nullptr,
-                                 nullptr);
-#endif
 }
 
 }  // namespace wayland

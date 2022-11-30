@@ -1,10 +1,11 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 
 #include "base/containers/adapters.h"
+#include "base/ranges/algorithm.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/editing/drag_caret.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -1725,15 +1726,15 @@ void NGBoxFragmentPainter::PaintBoxItem(const NGFragmentItem& item,
 
 bool NGBoxFragmentPainter::ShouldPaint(
     const ScopedPaintState& paint_state) const {
-  // TODO(layout-dev): Add support for scrolling, see BlockPainter::ShouldPaint.
-  const NGPhysicalBoxFragment& fragment = PhysicalFragment();
-  if (!fragment.IsInlineBox()) {
-    return paint_state.LocalRectIntersectsCullRect(
-        To<LayoutBox>(fragment.GetLayoutObject())
-            ->PhysicalVisualOverflowRect());
-  }
-  NOTREACHED();
-  return false;
+  DCHECK(!box_fragment_.IsInlineBox());
+  // When printing, the root fragment's background (i.e. the document's
+  // background) should extend onto every page, regardless of the overflow
+  // rectangle.
+  if (box_fragment_.IsPaginatedRoot())
+    return true;
+  const auto& box = *To<LayoutBox>(box_fragment_.GetLayoutObject());
+  return paint_state.LocalRectIntersectsCullRect(
+      box.PhysicalVisualOverflowRect());
 }
 
 void NGBoxFragmentPainter::PaintTextClipMask(const PaintInfo& paint_info,
@@ -2020,9 +2021,7 @@ bool NGBoxFragmentPainter::UpdateHitTestResultForView(
   if (!element)
     return false;
   const auto children = PhysicalFragment().Children();
-  auto it = std::find_if(
-      children.begin(), children.end(),
-      [element](const NGLink& link) { return link->GetNode() == element; });
+  auto it = base::ranges::find(children, element, &NGPhysicalFragment::GetNode);
   if (it == children.end())
     return false;
   return hit_test.AddNodeToResultWithContentOffset(

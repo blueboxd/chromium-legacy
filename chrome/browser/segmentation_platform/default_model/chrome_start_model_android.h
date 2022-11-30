@@ -9,6 +9,8 @@
 
 namespace segmentation_platform {
 
+struct Config;
+
 // Segmentation Chrome Start model provider. Provides a default model and
 // metadata for the chrome start optimization target.
 class ChromeStartModel : public ModelProvider {
@@ -19,6 +21,8 @@ class ChromeStartModel : public ModelProvider {
   // Disallow copy/assign.
   ChromeStartModel(ChromeStartModel&) = delete;
   ChromeStartModel& operator=(ChromeStartModel&) = delete;
+
+  static std::unique_ptr<Config> GetConfig();
 
   // ModelProvider implementation.
   void InitAndFetchModel(

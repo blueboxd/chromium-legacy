@@ -228,15 +228,13 @@
   request.existence_checker_path =
       base::mac::NSStringToFilePath(existenceCheckerPath);
 
-  auto cb = base::BindOnce(
-      base::RetainBlock(^(const updater::RegistrationResponse& response) {
-        VLOG(0) << "Registration complete: status code = "
-                << response.status_code;
-        if (reply)
-          reply(response.status_code);
+  auto cb = base::BindOnce(base::RetainBlock(^(int result) {
+    VLOG(0) << "Registration complete: status code = " << result;
+    if (reply)
+      reply(result);
 
-        _appServer->TaskCompleted();
-      }));
+    _appServer->TaskCompleted();
+  }));
 
   _appServer->TaskStarted();
   _callbackRunner->PostTask(
@@ -274,6 +272,7 @@
                      tag:(NSString* _Nullable)ap
                  version:(NSString* _Nullable)version
     existenceCheckerPath:(NSString* _Nullable)existenceCheckerPath
+       clientInstallData:(NSString* _Nullable)clientInstallData
         installDataIndex:(NSString* _Nullable)installDataIndex
                 priority:(CRUPriorityWrapper* _Nonnull)priority
              updateState:(CRUUpdateStateObserver* _Nonnull)updateState
@@ -326,6 +325,7 @@
   _callbackRunner->PostTask(
       FROM_HERE,
       base::BindOnce(&updater::UpdateService::Install, _service, request,
+                     base::SysNSStringToUTF8(clientInstallData),
                      base::SysNSStringToUTF8(installDataIndex),
                      [priority priority], std::move(sccb), std::move(cb)));
 }
@@ -487,6 +487,7 @@
                      tag:(NSString* _Nullable)ap
                  version:(NSString* _Nullable)version
     existenceCheckerPath:(NSString* _Nullable)existenceCheckerPath
+       clientInstallData:(NSString* _Nullable)clientInstallData
         installDataIndex:(NSString* _Nullable)installDataIndex
                 priority:(CRUPriorityWrapper* _Nonnull)priority
              updateState:(CRUUpdateStateObserver* _Nonnull)updateState

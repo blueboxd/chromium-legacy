@@ -3339,10 +3339,11 @@ function testWebViewAndEmbedderInNewWindow() {
         // We could use e.targetUrl here I suppose, but it's about:blank so
         // it doesn't seem to trigger a loadstop.
         newwebview.setAttribute('src', embedder.emptyGuestURL);
-        newwebview.addEventListener('loadstop', function (evt2) {
+        newwebview.addEventListener('loadstop', function(evt2) {
           // After this test exits, we'll still need to compare embedders in the
           // C++ part of this test.
-          embedder.test.succeed();
+          if (newwebview.src == embedder.emptyGuestURL)
+            embedder.test.succeed();
         });
         // Be sure to do the attach before appending to document.
         e.window.attach(newwebview);
@@ -3468,6 +3469,26 @@ function testActivatePortal() {
   });
 
   document.body.appendChild(webview);
+}
+
+// Inserting a webview element into a detached iframe's document shouldn't
+// crash.
+function testInsertIntoDetachedIframe() {
+  let webview = document.createElement('webview');
+  webview.src = embedder.emptyGuestURL;
+  let iframe = document.createElement('iframe');
+
+  iframe.addEventListener('load', () => {
+    let doc = iframe.contentDocument;
+    iframe.remove();
+    doc.body.appendChild(webview);
+
+    setTimeout(() => {
+      embedder.test.succeed();
+    });
+  });
+
+  document.body.appendChild(iframe);
 }
 
 embedder.test.testList = {
@@ -3603,6 +3624,7 @@ embedder.test.testList = {
   'testWebRequestBlockedNavigation': testWebRequestBlockedNavigation,
   'testAddFencedFrame': testAddFencedFrame,
   'testActivatePortal': testActivatePortal,
+  'testInsertIntoDetachedIframe': testInsertIntoDetachedIframe,
 };
 
 onload = function() {

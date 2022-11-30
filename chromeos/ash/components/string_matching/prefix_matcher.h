@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,23 +6,46 @@
 #define CHROMEOS_ASH_COMPONENTS_STRING_MATCHING_PREFIX_MATCHER_H_
 
 #include "chromeos/ash/components/string_matching/tokenized_string.h"
-#include "chromeos/ash/components/string_matching/tokenized_string_char_iterator.h"
+#include "ui/gfx/range/range.h"
 
 namespace ash::string_matching {
 
 // These are described in more detail in the .cc file.
-namespace constants {
+namespace prefix_matcher_constants {
 
 constexpr double kIsPrefixCharScore = 1.0;
 constexpr double kIsFrontOfTokenCharScore = 0.8;
 constexpr double kIsWeakHitCharScore = 0.6;
-
 constexpr double kNoMatchScore = 0.0;
 
-}  // namespace constants
+}  // namespace prefix_matcher_constants
+
+namespace {
+struct MatchInfo {
+ public:
+  typedef std::vector<gfx::Range> Hits;
+
+  MatchInfo();
+  ~MatchInfo();
+
+  MatchInfo(const MatchInfo&) = delete;
+  MatchInfo& operator=(const MatchInfo&) = delete;
+
+  double relevance = prefix_matcher_constants::kNoMatchScore;
+  Hits hits;
+
+  gfx::Range current_match = gfx::Range::InvalidRange();
+  // The last query/text position that the relevance was updated.
+  size_t last_query_pos = SIZE_MAX;
+  size_t last_text_pos = SIZE_MAX;
+  // Flag to track if we are still matching the prefixes of both the query and
+  // text.
+  bool is_front = true;
+};
+}  // namespace
 
 // PrefixMatcher matches the chars of a given query as prefix of tokens in
-// a given text or as prefix of the acronyms of those text tokens.
+// a given text. We give some specific scoring examples in the .cc file.
 class PrefixMatcher {
  public:
   typedef std::vector<gfx::Range> Hits;
@@ -33,64 +56,63 @@ class PrefixMatcher {
   PrefixMatcher(const PrefixMatcher&) = delete;
   PrefixMatcher& operator=(const PrefixMatcher&) = delete;
 
-  // Invokes RunMatch to perform prefix match. Use |states_| as a stack to
-  // perform DFS (depth first search) so that all possible matches are
-  // attempted. Stops on the first full match and returns true. Otherwise,
-  // returns false to indicate no match.
+  // Return true if we found either sentence prefix matching or token prefix
+  // matching. If no full match is found, return false.
   bool Match();
 
-  double relevance() const { return current_relevance_; }
-  const Hits& hits() const { return current_hits_; }
+  double relevance() const { return relevance_; }
+  const Hits& hits() const { return hits_; }
 
  private:
-  // Context record of a match.
-  struct State {
-    State();
-    ~State();
-    State(double relevance,
-          const gfx::Range& current_match,
-          const Hits& hits,
-          const TokenizedStringCharIterator& query_iter,
-          const TokenizedStringCharIterator& text_iter);
-    State(const State& state);
+  // Stops on the first full sentence prefix match and updates the relevance
+  // score. If no match found, set relevance as kNoMatchScore.
+  //
+  // We treat the following as sentence prefix match:
+  // query        |       text
+  // chromeos     | [chrome os] flex        (prefix)
+  // chrome os    | google [chromeos]       (non-prefix)
+  // google pixel | buy [google pixel]book  (unfinished)
+  //
+  // But not the following:
+  // query        |       text
+  // cof          | chrome os flex
+  // go chrome    | google chromeos
+  void SentencePrefixMatch(MatchInfo& sentence_match_info);
 
-    // The current score of the processed query chars.
-    double relevance;
+  // Stops on the first full token prefix match and updates the relevance
+  // score. If no match found, set relevance as kNoMatchScore.
+  //
+  // We treat the following as token prefix match:
+  // query        |       text
+  // chrome store | my [chrome store]       (continuous)
+  // chrome store | [chrome] web [store]    (discrete)
+  // chrome google| [google chrome]         (unordered)
+  // google pixel | buy [google pixel]book  (unfinished)
+  //
+  // But not the following:
+  // query        |       text
+  // cof          | chrome os flex
+  // chrome flex  | chromeos flex
+  //
+  // The time complexity of the token prefix match algorithm is `O(m+n)`, where
+  // m is the `num_query_token` and n is the `num_text_token`. O(m) to construct
+  // the `query_map` and O(n) to traverse the text tokens to find matches. Each
+  // text token will be compared at most twice (one for `query_map` and one for
+  // last query token).
+  void TokenPrefixMatch(MatchInfo& token_match_info);
 
-    // Current matching range.
-    gfx::Range current_match;
+  // Update the relevance score of token prefix based on the matched token. This
+  // method can cope with full and partial token matches as it always update the
+  // `relevance` and `hits` according the query size.
+  void UpdateInfoForTokenPrefixMatch(size_t query_pos,
+                                     size_t text_pos,
+                                     MatchInfo& token_match_info);
 
-    // Completed matching ranges of the processed query chars.
-    PrefixMatcher::Hits hits;
+  const TokenizedString& query_;
+  const TokenizedString& text_;
 
-    // States of the processed query and text chars.
-    TokenizedStringCharIterator::State query_iter_state;
-    TokenizedStringCharIterator::State text_iter_state;
-  };
-  typedef std::vector<State> States;
-
-  // Match chars from the query and text one by one. For each matching char,
-  // calculate relevance and matching ranges. And the current stats is
-  // recorded so that the match could be skipped later to try other
-  // possibilities. Repeat until any of the iterators run out. Return true if
-  // query iterator runs out, i.e. all chars in query are matched.
-  bool RunMatch();
-
-  // Skip to the next text token and close current match. Invoked when a
-  // mismatch happens or to skip a restored match.
-  void AdvanceToNextTextToken();
-
-  void PushState();
-  void PopState();
-
-  TokenizedStringCharIterator query_iter_;
-  TokenizedStringCharIterator text_iter_;
-
-  States states_;
-  gfx::Range current_match_;
-
-  double current_relevance_;
-  Hits current_hits_;
+  double relevance_ = prefix_matcher_constants::kNoMatchScore;
+  Hits hits_;
 };
 
 }  // namespace ash::string_matching

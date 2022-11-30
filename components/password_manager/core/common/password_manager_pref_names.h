@@ -201,6 +201,12 @@ extern const char kPasswordChangeSuccessTrackerFlows[];
 extern const char kPasswordChangeSuccessTrackerVersion[];
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+// Integer indicating how many times user saw biometric authentication before
+// filling promo.
+extern const char kBiometricAuthBeforeFillingPromoShownCounter[];
+// Boolean indicating whether user interacted with biometric authentication
+// before filling promo.
+extern const char kHasUserInteractedWithBiometricAuthPromo[];
 // Boolean indicating whether user enabled biometric authentication before
 // filling.
 extern const char kBiometricAuthenticationBeforeFilling[];

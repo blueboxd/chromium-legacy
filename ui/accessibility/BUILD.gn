@@ -5,6 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
+import("//extensions/buildflags/buildflags.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
@@ -147,6 +148,7 @@ component("accessibility") {
     "ax_offscreen_result.h",
     "ax_position.h",
     "ax_range.h",
+    "ax_selection.cc",
     "ax_selection.h",
     "ax_serializable_tree.cc",
     "ax_serializable_tree.h",
@@ -234,12 +236,12 @@ source_set("ax_assistant") {
 static_library("test_support") {
   testonly = true
   sources = [
-    "platform/test_ax_tree_update.cc",
-    "platform/test_ax_tree_update.h",
     "test_ax_node_helper.cc",
     "test_ax_node_helper.h",
     "test_ax_tree_manager.cc",
     "test_ax_tree_manager.h",
+    "test_ax_tree_update.cc",
+    "test_ax_tree_update.h",
     "test_ax_tree_update_json_reader.cc",
     "test_ax_tree_update_json_reader.h",
     "tree_generator.cc",
@@ -269,6 +271,7 @@ test("accessibility_unittests") {
     "ax_node_unittest.cc",
     "ax_range_unittest.cc",
     "ax_role_properties_unittest.cc",
+    "ax_selection_unittest.cc",
     "ax_table_info_unittest.cc",
     "ax_text_utils_unittest.cc",
     "ax_tree_combiner_unittest.cc",
@@ -312,6 +315,10 @@ test("accessibility_unittests") {
     "//ui/accessibility/mojom",
     "//ui/gfx:test_support",
   ]
+
+  if (enable_extensions) {
+    sources += [ "platform/automation/automation_api_util_unittest.cc" ]
+  }
 
   if (is_fuchsia) {
     sources += [

@@ -34,7 +34,6 @@
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui/elements/form_input_accessory_view.h"
@@ -56,8 +55,9 @@ using base::UmaHistogramEnumeration;
 namespace {
 
 // Kill switch guarding a workaround for keyboard flicker, see crbug.com/1253561
-const base::Feature kFormInputKeyboardReloadInputViews{
-    "FormInputKeyboardReloadInputViews", base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kFormInputKeyboardReloadInputViews,
+             "FormInputKeyboardReloadInputViews",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace
 

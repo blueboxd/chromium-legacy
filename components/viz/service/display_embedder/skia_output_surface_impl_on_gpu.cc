@@ -5,13 +5,13 @@
 #include "components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/atomic_sequence_num.h"
-#include "base/bind.h"
-#include "base/callback_forward.h"
-#include "base/callback_helpers.h"
 #include "base/debug/crash_logging.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
@@ -519,7 +519,6 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
 #endif
 
     const bool end_semaphores_empty = end_semaphores.empty();
-
     auto result = scoped_output_device_paint_->Flush(vulkan_context_provider_,
                                                      std::move(end_semaphores),
                                                      std::move(on_finished));
@@ -527,8 +526,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     if (result != GrSemaphoresSubmitted::kYes &&
         !(begin_semaphores.empty() && end_semaphores_empty)) {
       if (!return_release_fence_cb.is_null()) {
-        PostTaskToClientThread(base::BindOnce(
-            std::move(return_release_fence_cb), gfx::GpuFenceHandle()));
+        std::move(return_release_fence_cb).Run(gfx::GpuFenceHandle());
       }
       // TODO(penghuang): handle vulkan device lost.
       FailedSkiaFlush("output_sk_surface()->flush() failed.");
@@ -547,8 +545,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     if (!return_release_fence_cb.is_null()) {
       // Returning fences for Vulkan is delayed. See the comment above.
       DCHECK(!is_using_vulkan());
-      PostTaskToClientThread(base::BindOnce(std::move(return_release_fence_cb),
-                                            std::move(release_fence)));
+      std::move(return_release_fence_cb).Run(std::move(release_fence));
     }
   }
 }
@@ -690,16 +687,16 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     };
     gpu::AddVulkanCleanupTaskForSkiaFlush(vulkan_context_provider_,
                                           &flush_info);
-    if (on_finished)
+    if (on_finished) {
       gpu::AddCleanupTaskForSkiaFlush(std::move(on_finished), &flush_info);
+    }
 
     auto end_state = scoped_access->TakeEndState();
     auto result = surface->flush(flush_info, end_state.get());
     if (result != GrSemaphoresSubmitted::kYes &&
         !(begin_semaphores.empty() && end_semaphores.empty())) {
       if (!return_release_fence_cb.is_null()) {
-        PostTaskToClientThread(base::BindOnce(
-            std::move(return_release_fence_cb), gfx::GpuFenceHandle()));
+        std::move(return_release_fence_cb).Run(gfx::GpuFenceHandle());
       }
       // TODO(penghuang): handle vulkan device lost.
       FailedSkiaFlush("offscreen.surface()->flush() failed.");
@@ -719,8 +716,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     if (!return_release_fence_cb.is_null()) {
       // Returning fences for Vulkan is delayed. See the comment above.
       DCHECK(!is_using_vulkan());
-      PostTaskToClientThread(base::BindOnce(std::move(return_release_fence_cb),
-                                            std::move(release_fence)));
+      std::move(return_release_fence_cb).Run(std::move(release_fence));
     }
 
     bool sync_cpu =
@@ -739,11 +735,13 @@ SkiaOutputSurfaceImplOnGpu::CreateSharedImageRepresentationSkia(
   constexpr uint32_t kUsage = gpu::SHARED_IMAGE_USAGE_GLES2 |
                               gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
                               gpu::SHARED_IMAGE_USAGE_RASTER |
-                              gpu::SHARED_IMAGE_USAGE_DISPLAY;
+                              gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
+                              gpu::SHARED_IMAGE_USAGE_DISPLAY_WRITE;
 
   gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
+  SharedImageFormat si_format = SharedImageFormat::SinglePlane(resource_format);
   bool result = shared_image_factory_->CreateSharedImage(
-      mailbox, resource_format, size, color_space, kBottomLeft_GrSurfaceOrigin,
+      mailbox, si_format, size, color_space, kBottomLeft_GrSurfaceOrigin,
       kUnpremul_SkAlphaType, gpu::kNullSurfaceHandle, kUsage);
   if (!result) {
     DLOG(ERROR) << "Failed to create shared image.";
@@ -1954,8 +1952,7 @@ void SkiaOutputSurfaceImplOnGpu::PostSubmit(
       LOG(ERROR) << "Unable to create a release fence for Vulkan.";
     else
       semaphores.emplace_back(item.first.vkSemaphore());
-    PostTaskToClientThread(
-        base::BindOnce(std::move(item.second), std::move(release_fence)));
+    std::move(item.second).Run(std::move(release_fence));
     pending_release_fence_cbs_.pop_front();
   }
 
@@ -2133,6 +2130,10 @@ void SkiaOutputSurfaceImplOnGpu::MarkContextLost(ContextLostReason reason) {
   // Release all ongoing AsyncReadResults.
   ReleaseAsyncReadResultHelpers();
 
+  for (auto& entry : skia_representations_) {
+    entry.second->OnContextLost();
+  }
+
   context_state_->MarkContextLost();
   if (context_lost_callback_) {
     PostTaskToClientThread(std::move(context_lost_callback_));
@@ -2269,8 +2270,9 @@ void SkiaOutputSurfaceImplOnGpu::CreateSharedImage(
     const gfx::ColorSpace& color_space,
     uint32_t usage,
     gpu::SurfaceHandle surface_handle) {
+  SharedImageFormat si_format = SharedImageFormat::SinglePlane(format);
   shared_image_factory_->CreateSharedImage(
-      mailbox, format, size, color_space, kTopLeft_GrSurfaceOrigin,
+      mailbox, si_format, size, color_space, kTopLeft_GrSurfaceOrigin,
       kPremul_SkAlphaType, surface_handle, usage);
   skia_representations_.emplace(mailbox, nullptr);
 }
@@ -2281,6 +2283,7 @@ void SkiaOutputSurfaceImplOnGpu::CreateSolidColorSharedImage(
     const gfx::ColorSpace& color_space) {
   // Create a 1x1 pixel span of the colour in RGBA format.
   gfx::Size size(1, 1);
+  SharedImageFormat si_format = SharedImageFormat::SinglePlane(RGBA_8888);
   // Premultiply the SkColor4f to support transparent quads.
   SkColor4f premul{color[0] * color[3], color[1] * color[3],
                    color[2] * color[3], color[3]};
@@ -2290,17 +2293,20 @@ void SkiaOutputSurfaceImplOnGpu::CreateSolidColorSharedImage(
 
   // TODO(crbug.com/1360538) Some work is needed to properly support F16 format.
   shared_image_factory_->CreateSharedImage(
-      mailbox, RGBA_8888, size, color_space, kTopLeft_GrSurfaceOrigin,
+      mailbox, si_format, size, color_space, kTopLeft_GrSurfaceOrigin,
       kPremul_SkAlphaType,
-      gpu::SHARED_IMAGE_USAGE_SCANOUT | gpu::SHARED_IMAGE_USAGE_DISPLAY,
+      gpu::SHARED_IMAGE_USAGE_SCANOUT | gpu::SHARED_IMAGE_USAGE_DISPLAY_READ,
       pixel_span);
   solid_color_images_.insert(mailbox);
 }
 
 void SkiaOutputSurfaceImplOnGpu::DestroySharedImage(gpu::Mailbox mailbox) {
   shared_image_factory_->DestroySharedImage(mailbox);
-  // The write access should be destroyed already.
-  DCHECK(!overlay_pass_accesses_.contains(mailbox));
+  // Under normal circumstances the write access should be destroyed already in
+  // PostSubmit(), but if context was lost then SwapBuffersInternal will no-op
+  // and PostSubmit() will not be called.
+  DCHECK(!overlay_pass_accesses_.contains(mailbox) || context_is_lost_);
+  overlay_pass_accesses_.erase(mailbox);
   skia_representations_.erase(mailbox);
   solid_color_images_.erase(mailbox);
 }

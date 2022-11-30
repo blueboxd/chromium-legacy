@@ -20,13 +20,16 @@ ci.defaults.set(
     pool = ci.DEFAULT_POOL,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     sheriff_rotations = sheriff_rotations.FUCHSIA,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 consoles.console_view(
     name = "chromium.fuchsia.fyi",
 )
 
-# The chromium.fuchsia.fyi console includes some entries for builders from the chrome project
+# The chromium.fuchsia.fyi console includes some entries for builders from the chrome project.
 [branches.console_view_entry(
     builder = "chrome:ci/{}".format(name),
     console_view = "chromium.fuchsia.fyi",
@@ -40,58 +43,18 @@ consoles.console_view(
 )]
 
 ci.builder(
-    name = "fuchsia-arm64-cast-receiver-rel",
+    name = "fuchsia-arm64-chrome-rel",
     console_view_entry = [
         consoles.console_view_entry(
             category = "release",
-            short_name = "arm64-cast-ng",
+            short_name = "a64-chrome",
         ),
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "fuchsia ci|arm64",
-            short_name = "cast-ng",
-        ),
-    ],
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "fuchsia_arm64",
-                "fuchsia_arm64_host",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_arch = builder_config.target_arch.ARM,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.FUCHSIA,
-        ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
-        ),
-        build_gs_bucket = "chromium-fyi-archive",
-        run_tests_serially = True,
-    ),
-)
-
-# TODO(crbug.com/1294938): Move to 'chromium.fuchsia' and update accordingly.
-ci.builder(
-    name = "fuchsia-arm64-rel",
-    console_view_entry = [
-        consoles.console_view_entry(
-            category = "release",
-            short_name = "arm64-ng",
-        ),
-        consoles.console_view_entry(
-            branch_selector = branches.MAIN,
-            console_view = "sheriff.fuchsia",
-            category = "fuchsia ci|arm64",
-            short_name = "rel-ng",
+            # TODO(crbug.com/1372224): Move to "fuchsia ci|arm64" once green.
+            category = "fyi|arm64",
+            short_name = "chrome",
         ),
     ],
     builder_spec = builder_config.builder_spec(
@@ -130,7 +93,7 @@ ci.builder(
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "fuchsia ci|arm64",
+            category = "gardener|fuchsia ci|arm64",
             short_name = "dbg",
         ),
     ],
@@ -170,7 +133,7 @@ ci.builder(
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "fuchsia ci|x64",
+            category = "gardener|fuchsia ci|x64",
             short_name = "asan",
         ),
     ],
@@ -208,7 +171,7 @@ ci.builder(
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "fuchsia ci|x64",
+            category = "gardener|fuchsia ci|x64",
             short_name = "dbg",
         ),
     ],
@@ -236,19 +199,19 @@ ci.builder(
     ),
 )
 
-# TODO(crbug.com/1294938): Move to 'chromium.fuchsia' and update accordingly.
 ci.builder(
-    name = "fuchsia-x64-cast-receiver-rel",
+    name = "fuchsia-x64-chrome-rel",
     console_view_entry = [
         consoles.console_view_entry(
             category = "release",
-            short_name = "x64-cast-ng",
+            short_name = "x64-chrome",
         ),
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "fuchsia ci|x64",
-            short_name = "cast-ng",
+            # TODO(crbug.com/1372224): Move to "fuchsia ci|x64" once green.
+            category = "fyi|x64",
+            short_name = "chrome",
         ),
     ],
     builder_spec = builder_config.builder_spec(
@@ -276,24 +239,24 @@ ci.builder(
 )
 
 ci.builder(
-    name = "fuchsia-x64-rel",
+    name = "fuchsia-x64-workstation",
     console_view_entry = [
         consoles.console_view_entry(
-            category = "release",
-            short_name = "x64-ng",
+            category = "fuchsia|x64",
+            short_name = "work",
         ),
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "fuchsia ci|x64",
-            short_name = "rel-ng",
+            category = "fyi|x64",
+            short_name = "work",
         ),
     ],
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
             apply_configs = [
-                "fuchsia_x64",
+                "fuchsia_workstation",
             ],
         ),
         chromium_config = builder_config.chromium_config(

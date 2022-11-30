@@ -1,4 +1,4 @@
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,19 +9,18 @@ if (is_android) {
 }
 
 _proto_files = [
-  "group_config_info.proto",
-  "group_id.proto",
+  "groups.proto",
   "types.proto",
 ]
 
 proto_library("omnibox_proto") {
   sources = _proto_files
-  proto_in_dir = "."
+  proto_in_dir = "//"
 }
 
 if (is_android) {
   proto_java_library("omnibox_proto_java") {
-    proto_path = "."
+    proto_path = "//"
     sources = _proto_files
   }
 }

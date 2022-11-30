@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -151,7 +151,7 @@ CalculationExpressionOperationNode::CreateSimplified(Children&& children,
     case CalculationOperator::kClamp: {
       DCHECK_EQ(children.size(), 3u);
       Vector<float> operand_pixels;
-      operand_pixels.ReserveCapacity(children.size());
+      operand_pixels.reserve(children.size());
       bool can_simplify = true;
       for (auto& child : children) {
         const auto* pixels_and_percent =
@@ -224,7 +224,7 @@ float CalculationExpressionOperationNode::Evaluate(
       return left * right;
     }
     case CalculationOperator::kMin: {
-      DCHECK(!children_.IsEmpty());
+      DCHECK(!children_.empty());
       float minimum = children_[0]->Evaluate(max_value, anchor_evaluator);
       for (auto& child : children_) {
         minimum =
@@ -233,7 +233,7 @@ float CalculationExpressionOperationNode::Evaluate(
       return minimum;
     }
     case CalculationOperator::kMax: {
-      DCHECK(!children_.IsEmpty());
+      DCHECK(!children_.empty());
       float maximum = children_[0]->Evaluate(max_value, anchor_evaluator);
       for (auto& child : children_) {
         maximum =
@@ -242,7 +242,7 @@ float CalculationExpressionOperationNode::Evaluate(
       return maximum;
     }
     case CalculationOperator::kClamp: {
-      DCHECK(!children_.IsEmpty());
+      DCHECK(!children_.empty());
       float min = children_[0]->Evaluate(max_value, anchor_evaluator);
       float val = children_[1]->Evaluate(max_value, anchor_evaluator);
       float max = children_[2]->Evaluate(max_value, anchor_evaluator);
@@ -288,7 +288,7 @@ CalculationExpressionOperationNode::Zoom(double factor) const {
     case CalculationOperator::kClamp: {
       DCHECK(children_.size());
       Vector<scoped_refptr<const CalculationExpressionNode>> cloned_operands;
-      cloned_operands.ReserveCapacity(children_.size());
+      cloned_operands.reserve(children_.size());
       for (const auto& child : children_)
         cloned_operands.push_back(child->Zoom(factor));
       return CreateSimplified(std::move(cloned_operands), operator_);

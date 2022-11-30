@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 import {Destination, DestinationOrigin, Error, Margins, MeasurementSystem, MeasurementSystemUnitType, NativeLayerImpl, PluginProxyImpl, PreviewAreaState, PrintPreviewPreviewAreaElement, Size, State} from 'chrome://print/print_preview.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {fakeDataBind} from 'chrome://webui-test/test_util.js';
+import {fakeDataBind} from 'chrome://webui-test/polymer_test_util.js';
 
 import {NativeLayerStub} from './native_layer_stub.js';
 import {getCddTemplate} from './print_preview_test_utils.js';
@@ -35,7 +35,8 @@ suite(preview_area_test.suiteName, function() {
     pluginProxy = new TestPluginProxy();
     PluginProxyImpl.setInstance(pluginProxy);
 
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     const model = document.createElement('print-preview-model');
     document.body.appendChild(model);
     model.setSetting('pages', [1, 2, 3]);

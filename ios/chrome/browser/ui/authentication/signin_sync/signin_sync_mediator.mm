@@ -225,7 +225,7 @@
   }
 }
 
-- (void)identityChanged:(ChromeIdentity*)identity {
+- (void)identityChanged:(id<SystemIdentity>)identity {
   if ([self.selectedIdentity isEqual:identity]) {
     [self updateConsumerIdentity];
   }
@@ -239,7 +239,7 @@
     [self.consumer noIdentityAvailable];
   } else {
     UIImage* avatar = self.accountManagerService->GetIdentityAvatarWithIdentity(
-        self.selectedIdentity, IdentityAvatarSize::DefaultLarge);
+        self.selectedIdentity, IdentityAvatarSize::Regular);
     [self.consumer
         setSelectedIdentityUserName:self.selectedIdentity.userFullName
                               email:self.selectedIdentity.userEmail
@@ -270,7 +270,9 @@
   sync_pb::UserConsentTypes::SyncConsent syncConsent;
   syncConsent.set_status(sync_pb::UserConsentTypes::ConsentStatus::
                              UserConsentTypes_ConsentStatus_GIVEN);
+  DCHECK_NE(confirmationID, 0);
   syncConsent.set_confirmation_grd_id(confirmationID);
+  DCHECK_NE(consentIDs.count, 0ul);
   for (NSNumber* consentID in consentIDs) {
     syncConsent.add_description_grd_ids([consentID intValue]);
   }

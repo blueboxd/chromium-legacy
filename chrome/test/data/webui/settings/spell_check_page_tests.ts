@@ -20,7 +20,7 @@ import {assertNotEquals} from 'chrome://webui-test/chai_assert.js';
 import {FakeChromeEvent} from 'chrome://webui-test/fake_chrome_event.js';
 // </if>
 
-import {fakeDataBind} from 'chrome://webui-test/test_util.js';
+import {fakeDataBind} from 'chrome://webui-test/polymer_test_util.js';
 
 import {FakeLanguageSettingsPrivate, getFakeLanguagePrefs} from './fake_language_settings_private.js';
 import {FakeSettingsPrivate} from './fake_settings_private.js';
@@ -45,7 +45,8 @@ suite('spell check page', function() {
   let browserProxy: TestLanguagesBrowserProxy;
 
   suiteSetup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     CrSettingsPrefs.deferInitialization = true;
   });
 
@@ -91,7 +92,8 @@ suite('spell check page', function() {
   });
 
   teardown(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
   });
 
   suite(spell_check_page_tests.TestNames.Spellcheck, function() {

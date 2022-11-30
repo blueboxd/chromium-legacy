@@ -6,9 +6,10 @@
 
 #include "base/bind.h"
 #include "base/observer_list.h"
+#include "base/ranges/algorithm.h"
 #include "chrome/browser/media/router/providers/cast/chrome_cast_message_handler.h"
 #include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
-#include "components/cast_channel/cast_socket_service.h"
+#include "components/media_router/common/providers/cast/channel/cast_socket_service.h"
 
 namespace media_router {
 
@@ -47,11 +48,9 @@ const CastSessionTracker::SessionMap& CastSessionTracker::GetSessions() const {
 CastSession* CastSessionTracker::GetSessionById(
     const std::string& session_id) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto it =
-      std::find_if(sessions_by_sink_id_.begin(), sessions_by_sink_id_.end(),
-                   [&session_id](const auto& entry) {
-                     return entry.second->session_id() == session_id;
-                   });
+  auto it = base::ranges::find(
+      sessions_by_sink_id_, session_id,
+      [](const auto& entry) { return entry.second->session_id(); });
   return it != sessions_by_sink_id_.end() ? it->second.get() : nullptr;
 }
 
@@ -156,12 +155,9 @@ void CastSessionTracker::HandleMediaStatusMessage(
   absl::optional<int> request_id =
       cast_channel::GetRequestIdFromResponse(updated_message);
 
-  // NOTE: Media status is always passed as a dictionary. Consider making
-  // OnMediaStatusUpdated() take a base::Value::Dict.
-  base::Value updated_message_value(std::move(updated_message));
   // Notify observers of media update.
   for (auto& observer : observers_)
-    observer.OnMediaStatusUpdated(sink, updated_message_value, request_id);
+    observer.OnMediaStatusUpdated(sink, updated_message, request_id);
 }
 
 void CastSessionTracker::CopySavedMediaFieldsToMediaList(
@@ -171,7 +167,7 @@ void CastSessionTracker::CopySavedMediaFieldsToMediaList(
   // to a value in |media_list|, copy the 'media' field from the saved objects
   // to the corresponding objects in |media_list|.
   const base::Value::List* session_media_value_list =
-      session->value().GetDict().FindList("media");
+      session->value().FindList("media");
   if (!session_media_value_list)
     return;
 
@@ -181,12 +177,10 @@ void CastSessionTracker::CopySavedMediaFieldsToMediaList(
     if (!media_session_id.has_value() || media_dict.Find("media"))
       continue;
 
-    auto session_media_it = std::find_if(
-        session_media_value_list->begin(), session_media_value_list->end(),
-        [&media_session_id](const base::Value& session_media) {
-          absl::optional<int> session_media_session_id =
-              session_media.GetDict().FindInt("mediaSessionId");
-          return session_media_session_id == media_session_id;
+    auto session_media_it = base::ranges::find(
+        *session_media_value_list, media_session_id,
+        [](const base::Value& session_media) {
+          return session_media.GetDict().FindInt("mediaSessionId");
         });
     if (session_media_it == session_media_value_list->end())
       continue;

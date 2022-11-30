@@ -59,8 +59,7 @@ class AppManagementDelegate : public AppManagementPageHandler::Delegate {
 
 }  // namespace
 
-namespace chromeos {
-namespace settings {
+namespace ash::settings {
 
 // static
 void OSSettingsUI::RegisterProfilePrefs(
@@ -86,8 +85,7 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   // TODO(khorimoto): Move to DeviceSection::AddHandler() once |html_source|
   // parameter is removed.
   web_ui->AddMessageHandler(
-      std::make_unique<chromeos::settings::StorageHandler>(profile,
-                                                           html_source));
+      std::make_unique<StorageHandler>(profile, html_source));
 
   webui::SetupWebUIDataSource(
       html_source,
@@ -110,19 +108,20 @@ OSSettingsUI::~OSSettingsUI() {
 }
 
 void OSSettingsUI::BindInterface(
-    mojo::PendingReceiver<ash::cellular_setup::mojom::CellularSetup> receiver) {
-  ash::cellular_setup::CellularSetupImpl::CreateAndBindToReciever(
+    mojo::PendingReceiver<cellular_setup::mojom::CellularSetup> receiver) {
+  cellular_setup::CellularSetupImpl::CreateAndBindToReciever(
       std::move(receiver));
 }
 
 void OSSettingsUI::BindInterface(
-    mojo::PendingReceiver<ash::cellular_setup::mojom::ESimManager> receiver) {
-  ash::GetESimManager(std::move(receiver));
+    mojo::PendingReceiver<cellular_setup::mojom::ESimManager> receiver) {
+  GetESimManager(std::move(receiver));
 }
 
 void OSSettingsUI::BindInterface(
-    mojo::PendingReceiver<network_config::mojom::CrosNetworkConfig> receiver) {
-  ash::GetNetworkConfigService(std::move(receiver));
+    mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
+        receiver) {
+  GetNetworkConfigService(std::move(receiver));
 }
 
 void OSSettingsUI::BindInterface(
@@ -140,27 +139,19 @@ void OSSettingsUI::BindInterface(
 }
 
 void OSSettingsUI::BindInterface(
-    mojo::PendingReceiver<::ash::personalization_app::mojom::SearchHandler>
-        receiver) {
-  DCHECK(ash::features::IsPersonalizationHubEnabled())
-      << "This interface should only be bound if personalization hub feature "
-         "is enabled";
-
+    mojo::PendingReceiver<personalization_app::mojom::SearchHandler> receiver) {
   auto* profile = Profile::FromWebUI(web_ui());
-  DCHECK(
-      ash::personalization_app::CanSeeWallpaperOrPersonalizationApp(profile));
+  DCHECK(personalization_app::CanSeeWallpaperOrPersonalizationApp(profile));
 
-  auto* search_handler =
-      ::ash::personalization_app::PersonalizationAppManagerFactory::
-          GetForBrowserContext(profile)
-              ->search_handler();
+  auto* search_handler = personalization_app::PersonalizationAppManagerFactory::
+                             GetForBrowserContext(profile)
+                                 ->search_handler();
   DCHECK(search_handler);
   search_handler->BindInterface(std::move(receiver));
 }
 
 void OSSettingsUI::BindInterface(
-    mojo::PendingReceiver<
-        ash::settings::app_notification::mojom::AppNotificationsHandler>
+    mojo::PendingReceiver<app_notification::mojom::AppNotificationsHandler>
         receiver) {
   OsSettingsManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()))
       ->app_notification_handler()
@@ -219,29 +210,27 @@ void OSSettingsUI::BindInterface(
 }
 
 void OSSettingsUI::BindInterface(
-    mojo::PendingReceiver<ash::bluetooth_config::mojom::CrosBluetoothConfig>
+    mojo::PendingReceiver<bluetooth_config::mojom::CrosBluetoothConfig>
         receiver) {
-  DCHECK(features::IsBluetoothRevampEnabled());
-  ash::GetBluetoothConfigService(std::move(receiver));
+  GetBluetoothConfigService(std::move(receiver));
 }
 
 void OSSettingsUI::BindInterface(
-    mojo::PendingReceiver<ash::audio_config::mojom::CrosAudioConfig> receiver) {
+    mojo::PendingReceiver<audio_config::mojom::CrosAudioConfig> receiver) {
   DCHECK(features::IsAudioSettingsPageEnabled());
-  ash::GetAudioConfigService(std::move(receiver));
+  GetAudioConfigService(std::move(receiver));
 }
 
 void OSSettingsUI::BindInterface(
-    mojo::PendingReceiver<ash::auth::mojom::AuthFactorConfig> receiver) {
-  ash::auth::BindToAuthFactorConfig(std::move(receiver));
+    mojo::PendingReceiver<auth::mojom::AuthFactorConfig> receiver) {
+  auth::BindToAuthFactorConfig(std::move(receiver));
 }
 
 void OSSettingsUI::BindInterface(
-    mojo::PendingReceiver<ash::auth::mojom::RecoveryFactorEditor> receiver) {
-  ash::auth::BindToRecoveryFactorEditor(std::move(receiver));
+    mojo::PendingReceiver<auth::mojom::RecoveryFactorEditor> receiver) {
+  auth::BindToRecoveryFactorEditor(std::move(receiver));
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(OSSettingsUI)
 
-}  // namespace settings
-}  // namespace chromeos
+}  // namespace ash::settings

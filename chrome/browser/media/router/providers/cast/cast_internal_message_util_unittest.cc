@@ -7,7 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/test/gtest_util.h"
 #include "chrome/browser/media/router/test/provider_test_helpers.h"
-#include "components/cast_channel/cast_test_util.h"
+#include "components/media_router/common/providers/cast/channel/cast_test_util.h"
 #include "components/media_router/common/test/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -70,7 +70,7 @@ void ExpectNoCastSession(const MediaSinkInternal& sink,
 
 void ExpectInvalidCastInternalMessage(const std::string& message_str,
                                       const std::string& invalid_reason) {
-  EXPECT_FALSE(CastInternalMessage::From(ParseJson(message_str)))
+  EXPECT_FALSE(CastInternalMessage::From(ParseJsonDict(message_str)))
       << "message expected to be invlaid: " << invalid_reason;
 }
 
@@ -96,15 +96,15 @@ TEST_F(CastInternalMessageUtilDeathTest,
     }
   })";
 
-  auto message = CastInternalMessage::From(ParseJson(message_str));
+  auto message = CastInternalMessage::From(ParseJsonDict(message_str));
   ASSERT_TRUE(message);
   EXPECT_EQ(CastInternalMessage::Type::kAppMessage, message->type());
   EXPECT_EQ("12345", message->client_id());
   EXPECT_EQ(999, message->sequence_number());
   EXPECT_EQ("urn:x-cast:com.google.foo", message->app_message_namespace());
   EXPECT_EQ("sessionId", message->session_id());
-  base::Value message_body(base::Value::Type::DICTIONARY);
-  message_body.SetKey("foo", base::Value("bar"));
+  base::Value::Dict message_body;
+  message_body.Set("foo", base::Value("bar"));
   EXPECT_EQ(message_body, message->app_message_body());
 
   EXPECT_DCHECK_DEATH(message->v2_message_type());
@@ -124,7 +124,7 @@ TEST_F(CastInternalMessageUtilDeathTest,
     }
   })";
 
-  auto message = CastInternalMessage::From(ParseJson(message_str));
+  auto message = CastInternalMessage::From(ParseJsonDict(message_str));
   ASSERT_TRUE(message);
   EXPECT_EQ(CastInternalMessage::Type::kV2Message, message->type());
   EXPECT_EQ("12345", message->client_id());
@@ -150,7 +150,7 @@ TEST_F(CastInternalMessageUtilDeathTest,
       "message": {}
     })";
 
-  auto message = CastInternalMessage::From(ParseJson(message_str));
+  auto message = CastInternalMessage::From(ParseJsonDict(message_str));
   ASSERT_TRUE(message);
   EXPECT_EQ(CastInternalMessage::Type::kClientConnect, message->type());
   EXPECT_EQ("12345", message->client_id());
@@ -242,7 +242,6 @@ TEST(CastInternalMessageUtilTest, CastSessionFromReceiverStatusNoStatusText) {
   base::flat_set<std::string> message_namespaces = {
       "urn:x-cast:com.google.cast.media", "urn:x-cast:com.google.foo"};
   EXPECT_EQ(message_namespaces, session->message_namespaces());
-  EXPECT_TRUE(session->value().is_dict());
   EXPECT_EQ("App display name", session->GetRouteDescription());
 }
 
@@ -500,10 +499,11 @@ TEST(CastInternalMessageUtilTest, CreateAppMessageAck) {
 TEST(CastInternalMessageUtilTest, CreateAppMessage) {
   std::string session_id = "sessionId";
   std::string client_id = "clientId";
-  base::Value message_body(base::Value::Type::DICTIONARY);
-  message_body.SetKey("foo", base::Value("bar"));
+  base::Value::Dict message_body;
+  message_body.Set("foo", base::Value("bar"));
   cast::channel::CastMessage cast_message = cast_channel::CreateCastMessage(
-      "urn:x-cast:com.google.foo", message_body, "sourceId", "transportId");
+      "urn:x-cast:com.google.foo", base::Value(std::move(message_body)),
+      "sourceId", "transportId");
 
   auto message = CreateAppMessage(session_id, client_id, cast_message);
   EXPECT_THAT(message, IsPresentationConnectionMessage(R"({
@@ -519,8 +519,8 @@ TEST(CastInternalMessageUtilTest, CreateAppMessage) {
 }
 
 TEST(CastInternalMessageUtilTest, CreateV2Message) {
-  base::Value message_body(base::Value::Type::DICTIONARY);
-  message_body.SetKey("foo", base::Value("bar"));
+  base::Value::Dict message_body;
+  message_body.Set("foo", base::Value("bar"));
 
   auto message = CreateV2Message("client_id", message_body, 12345);
   EXPECT_THAT(message, IsPresentationConnectionMessage(R"({

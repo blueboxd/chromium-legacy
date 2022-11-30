@@ -6,9 +6,6 @@
 
 #include <memory>
 
-#include "ash/components/multidevice/remote_device_test_util.h"
-#include "ash/components/multidevice/software_feature.h"
-#include "ash/components/multidevice/software_feature_state.h"
 #include "ash/constants/ash_features.h"
 #include "ash/services/device_sync/proto/cryptauth_api.pb.h"
 #include "ash/services/device_sync/public/cpp/fake_device_sync_client.h"
@@ -16,6 +13,9 @@
 #include "base/containers/flat_set.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time_override.h"
+#include "chromeos/ash/components/multidevice/remote_device_test_util.h"
+#include "chromeos/ash/components/multidevice/software_feature.h"
+#include "chromeos/ash/components/multidevice/software_feature_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
@@ -44,8 +44,8 @@ class MultiDeviceSetupEligibleHostDevicesProviderImplTest
 
   // testing::Test:
   void SetUp() override {
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
     use_get_devices_activity_status_ = std::get<0>(GetParam());
     use_connectivity_status_ = std::get<1>(GetParam());
     always_use_active_eligible_devices_ = std::get<2>(GetParam());

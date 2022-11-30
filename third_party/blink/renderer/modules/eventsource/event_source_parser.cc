@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,12 +65,12 @@ void EventSourceParser::ParseLine() {
   if (line_.size() == 0) {
     last_event_id_ = id_;
     // We dispatch an event when seeing an empty line.
-    if (!data_.IsEmpty()) {
+    if (!data_.empty()) {
       DCHECK_EQ(data_[data_.size() - 1], '\n');
       String data = FromUTF8(data_.data(), data_.size() - 1);
       client_->OnMessageEvent(
-          event_type_.IsEmpty() ? event_type_names::kMessage : event_type_,
-          data, last_event_id_);
+          event_type_.empty() ? event_type_names::kMessage : event_type_, data,
+          last_event_id_);
       data_.clear();
     }
     event_type_ = g_null_atom;

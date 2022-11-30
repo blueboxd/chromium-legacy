@@ -24,6 +24,18 @@
       "use_goma": true
     }
   },
+  "fuchsia-arm64-chrome-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 0,
+      "target_cpu": "arm64",
+      "target_os": "fuchsia",
+      "test_host_cpu": "arm64",
+      "use_goma": true
+    }
+  },
   "fuchsia-arm64-rel": {
     "gn_args": {
       "dcheck_always_on": true,
@@ -37,6 +49,7 @@
     }
   },
   "fuchsia-binary-size": {
+    "args_file": "//build/config/fuchsia/size_optimized_cast_receiver_args.gn",
     "gn_args": {
       "dcheck_always_on": false,
       "is_debug": false,
@@ -106,9 +119,35 @@
       "use_goma": true
     }
   },
+  "fuchsia-x64-chrome-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "fuchsia_browser_type": "chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 0,
+      "target_os": "fuchsia",
+      "use_cfv2_script": true,
+      "use_goma": true
+    }
+  },
   "fuchsia-x64-rel": {
     "gn_args": {
       "dcheck_always_on": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 0,
+      "target_os": "fuchsia",
+      "use_goma": true
+    }
+  },
+  "fuchsia-x64-workstation": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "fuchsia_additional_boot_images": [
+        "//third_party/fuchsia-sdk/images/qemu-x64-release/"
+      ],
+      "fuchsia_browser_type": "chrome",
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 0,

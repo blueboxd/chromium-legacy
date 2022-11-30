@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="be">
+<translation id="1005794457625275818">Выкарыстанне файлаў cookie дазволена для некалькіх сайтаў (<ph name="FPS_MEMBERS_COUNT" />) у групе <ph name="FPS_OWNER" />, у тым ліку для <ph name="FPS_MEMBER" /></translation>
 <translation id="1006017844123154345">Адкрыць у інтэрнэце</translation>
 <translation id="1044891598689252897">Сайты будуць працаваць нармальна</translation>
 <translation id="1124090076051167250">Будуць выдалены файлы cookie і даныя (<ph name="DATASIZE" />), захаваныя сайтамі або размешчанымі на галоўным экране праграмамі.</translation>
@@ -21,6 +22,7 @@
 <translation id="1426410128494586442">Так</translation>
 <translation id="1446450296470737166">Дазв. поўны кантроль MIDI-прылад</translation>
 <translation id="1620510694547887537">Камера</translation>
+<translation id="1633720957382884102">Звязаныя сайты</translation>
 <translation id="1644574205037202324">Гісторыя</translation>
 <translation id="1647582022260550163">Вы ўпэўненыя, што хочаце скінуць дазволы, выдаліць файлы cookie і іншыя даныя сайта?</translation>
 <translation id="1660204651932907780">Дазволіць сайтам прайграваць гук (рэкамендуецца)</translation>
@@ -115,6 +117,7 @@
 <translation id="3333961966071413176">Усе кантакты</translation>
 <translation id="3362437373201486687">Ідзе пошук прылад з Bluetooth</translation>
 <translation id="3386292677130313581">Пытацца, перш чым дазволіць сайтам атрымліваць інфармацыю пра ваша месцазнаходжанне (рэкамендуецца)</translation>
+<translation id="3521663503435878242">Сайты дамена <ph name="DOMAIN" /></translation>
 <translation id="3538390592868664640">Забараніць сайтам ствараць 3D-карту вашага асяроддзя і адсочваць становішча камеры</translation>
 <translation id="3551268116566418498">Выйсці з рэжыму інкогніта?</translation>
 <translation id="3586500876634962664">Выкарыстанне камеры і мікрафона</translation>
@@ -260,6 +263,7 @@
 <translation id="6554732001434021288">Апошняе наведванне: <ph name="NUM_DAYS" /> сут таму</translation>
 <translation id="6561560012278703671">Забараніць сайтам адцягваць вашу ўвагу запытамі дазволу на паказ апавяшчэнняў. Паказваць замест іх індыкатар блакіроўкі ў адрасным радку</translation>
 <translation id="6593061639179217415">Версія для ПК</translation>
+<translation id="6608211702542341247">Гэты сайт належыць да групы сайтаў у дамене <ph name="FPS_OWNER" /> з доступам да звестак пра вашы дзеянні ў групе</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> ГБ</translation>
 <translation id="6612358246767739896">Абароненае змесціва</translation>
 <translation id="662080504995468778">Застацца</translation>
@@ -348,7 +352,6 @@
 <translation id="8380167699614421159">Гэты сайт паказвае назойлівую рэкламу або рэкламу, якая ўводзіць у зман</translation>
 <translation id="8394832520002899662">Каб вярнуцца на сайт, націсніце тут</translation>
 <translation id="8409345997656833551">Апавяшчаць, калі артыкул можна адкрыць у спрошчаным выглядзе</translation>
-<translation id="8425213833346101688">Змяніць</translation>
 <translation id="8428213095426709021">Налады</translation>
 <translation id="8441146129660941386">Перайсці назад</translation>
 <translation id="8444433999583714703">Каб даць праграме "<ph name="APP_NAME" />" доступ да даных пра ваша месцазнаходжанне, уключыце апошнія ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
@@ -372,6 +375,7 @@
 <translation id="8751914237388039244">Выберыце відарыс</translation>
 <translation id="8801436777607969138">Блакіраванне JavaScript для канкрэтнага сайта.</translation>
 <translation id="8816026460808729765">Забараніць сайтам доступ да датчыкаў</translation>
+<translation id="8823559166155093873">Блакіраваць файлы cookie</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8903921497873541725">Павялічыць маштаб</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>

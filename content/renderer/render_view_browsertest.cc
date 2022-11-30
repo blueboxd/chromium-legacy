@@ -95,6 +95,7 @@
 #include "third_party/blink/public/web/web_input_method_controller.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
+#include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/public/web/web_origin_trials.h"
 #include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/public/web/web_performance.h"
@@ -868,7 +869,8 @@ TEST_F(RenderViewImplTest, BeginNavigationHandlesAllTopLevel) {
       blink::kWebNavigationTypeFormSubmitted,
       blink::kWebNavigationTypeBackForward,
       blink::kWebNavigationTypeReload,
-      blink::kWebNavigationTypeFormResubmitted,
+      blink::kWebNavigationTypeFormResubmittedBackForward,
+      blink::kWebNavigationTypeFormResubmittedReload,
       blink::kWebNavigationTypeOther,
   };
 
@@ -1142,7 +1144,8 @@ TEST_F(RenderViewImplScaleFactorTest, DeviceScaleCorrectAfterCrossOriginNav) {
       base::UnguessableToken::Create(), blink::mojom::TreeScopeType::kDocument,
       std::move(replication_state), std::move(widget_params),
       blink::mojom::FrameOwnerProperties::New(),
-      /*is_on_initial_empty_document=*/true, CreateStubPolicyContainer());
+      /*is_on_initial_empty_document=*/true, blink::DocumentToken(),
+      CreateStubPolicyContainer());
 
   TestRenderFrame* provisional_frame =
       static_cast<TestRenderFrame*>(RenderFrameImpl::FromRoutingID(routing_id));
@@ -1208,7 +1211,8 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
       base::UnguessableToken::Create(), blink::mojom::TreeScopeType::kDocument,
       std::move(replication_state),
       /*widget_params=*/nullptr, blink::mojom::FrameOwnerProperties::New(),
-      /*is_on_initial_empty_document=*/true, CreateStubPolicyContainer());
+      /*is_on_initial_empty_document=*/true, blink::DocumentToken(),
+      CreateStubPolicyContainer());
   {
     TestRenderFrame* provisional_frame = static_cast<TestRenderFrame*>(
         RenderFrameImpl::FromRoutingID(routing_id));

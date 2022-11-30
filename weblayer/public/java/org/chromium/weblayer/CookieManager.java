@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * Manages cookies for a WebLayer profile.
  */
-public class CookieManager {
+class CookieManager {
     private final ICookieManager mImpl;
 
     static CookieManager create(IProfile profile) {

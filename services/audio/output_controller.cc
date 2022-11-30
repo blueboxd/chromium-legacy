@@ -7,7 +7,6 @@
 #include <inttypes.h>
 #include <stdio.h>
 
-#include <algorithm>
 #include <string>
 #include <utility>
 
@@ -18,11 +17,12 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/audio_timestamp_helper.h"
-#include "services/audio/concurrent_stream_metric_reporter.h"
+#include "media/media_buildflags.h"
 #include "services/audio/device_listener_output_stream.h"
 #include "services/audio/stream_monitor.h"
 
@@ -115,7 +115,6 @@ void OutputController::ErrorStatisticsTracker::WedgeCheck() {
 OutputController::OutputController(
     media::AudioManager* audio_manager,
     EventHandler* handler,
-    OutputStreamActivityMonitor* activity_monitor,
     const media::AudioParameters& params,
     const std::string& output_device_id,
     SyncReader* sync_reader,
@@ -126,7 +125,6 @@ OutputController::OutputController(
       managed_device_output_stream_create_callback_(
           std::move(managed_device_output_stream_create_callback)),
       handler_(handler),
-      activity_monitor_(activity_monitor),
       task_runner_(audio_manager->GetTaskRunner()),
       construction_time_(base::TimeTicks::Now()),
       output_device_id_(output_device_id),
@@ -139,7 +137,6 @@ OutputController::OutputController(
                      base::Milliseconds(kPowerMeasurementTimeConstantMillis)) {
   DCHECK(audio_manager);
   DCHECK(handler_);
-  DCHECK(activity_monitor_);
   DCHECK(sync_reader_);
   DCHECK(task_runner_.get());
 }
@@ -281,8 +278,6 @@ void OutputController::Play() {
     return;
 
   StartStream();
-  if (StreamIsActive())
-    activity_monitor_->OnOutputStreamActive();
 }
 
 void OutputController::StartStream() {
@@ -331,8 +326,6 @@ void OutputController::Pause() {
   TRACE_EVENT0("audio", "OutputController::Pause");
   SendLogMessage("%s([state=%s])", __func__, StateToString(state_));
 
-  if (StreamIsActive())
-    activity_monitor_->OnOutputStreamInactive();
   StopStream();
 
   if (state_ != kPaused)
@@ -369,8 +362,6 @@ void OutputController::Close() {
   SendLogMessage("%s([state=%s])", __func__, StateToString(state_));
 
   if (state_ != kClosed) {
-    if (StreamIsActive())
-      activity_monitor_->OnOutputStreamInactive();
     StopCloseAndClearStream();
     sync_reader_->Close();
     state_ = kClosed;
@@ -438,7 +429,13 @@ int OutputController::OnMoreData(base::TimeDelta delay,
 
   sync_reader_->RequestMoreData(delay, delay_timestamp, prior_frames_skipped);
 
-  if (will_monitor_audio_levels()) {
+#if !BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
+  constexpr bool is_bitstream = false;
+#else
+  const bool is_bitstream = params_.IsBitstreamFormat();
+#endif
+
+  if (will_monitor_audio_levels() && !is_bitstream) {
     // Note: this code path should never be hit when using bitstream streams.
     // Scan doesn't expect compressed audio, so it may go out of bounds trying
     // to read |frames| frames of PCM data.
@@ -474,11 +471,6 @@ void OutputController::LogAudioPowerLevel(const char* call_name) {
       power_monitor_.ReadCurrentPowerAndClip();
   SendLogMessage("%s => (average audio level=%.2f dBFS)", call_name,
                  power_and_clip.first);
-}
-
-bool OutputController::StreamIsActive() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return (state_ == kPlaying) && !disable_local_output_;
 }
 
 void OutputController::OnError(ErrorType type) {
@@ -527,7 +519,7 @@ void OutputController::StopSnooping(Snooper* snooper) {
 
   // The list will only update on this thread, and only be read on the realtime
   // audio thread.
-  const auto it = std::find(snoopers_.begin(), snoopers_.end(), snooper);
+  const auto it = base::ranges::find(snoopers_, snooper);
   DCHECK(it != snoopers_.end());
   // We also don't care about ordering, so swap and pop rather than erase.
   base::AutoLock lock(snooper_lock_);
@@ -540,8 +532,6 @@ void OutputController::StartMuting() {
   SendLogMessage("%s([state=%s])", __func__, StateToString(state_));
 
   if (!disable_local_output_) {
-    if (StreamIsActive())
-      activity_monitor_->OnOutputStreamInactive();
     ToggleLocalOutput();
   }
 }
@@ -552,8 +542,6 @@ void OutputController::StopMuting() {
 
   if (disable_local_output_) {
     ToggleLocalOutput();
-    if (StreamIsActive())
-      activity_monitor_->OnOutputStreamActive();
   }
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,6 +45,7 @@ class LayerTreeViewDelegate {
       bool defer_status,
       cc::PaintHoldingReason reason,
       absl::optional<cc::PaintHoldingCommitTrigger> trigger) = 0;
+  virtual void OnPauseRenderingChanged(bool) = 0;
 
   // Notifies that the layer tree host has completed a call to
   // RequestMainFrameUpdate in response to a BeginMainFrame.

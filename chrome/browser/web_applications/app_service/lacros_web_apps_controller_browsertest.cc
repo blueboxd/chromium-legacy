@@ -4,7 +4,6 @@
 
 #include "chrome/browser/web_applications/app_service/lacros_web_apps_controller.h"
 
-#include <algorithm>
 #include <iterator>
 #include <memory>
 #include <vector>
@@ -14,6 +13,7 @@
 #include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
@@ -68,6 +69,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/display/types/display_constants.h"
@@ -226,14 +228,7 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest, PublishApps) {
   EXPECT_TRUE(found_ready_with_icon);
 
   {
-    base::RunLoop run_loop;
-    UninstallWebAppWithCallback(
-        profile(), app_id,
-        base::BindLambdaForTesting([&run_loop](bool uninstalled) {
-          EXPECT_TRUE(uninstalled);
-          run_loop.Quit();
-        }));
-    run_loop.Run();
+    test::UninstallWebApp(profile(), app_id);
     mock_app_publisher.Wait();
     EXPECT_EQ(mock_app_publisher.get_deltas().back()->app_id, app_id);
     EXPECT_EQ(mock_app_publisher.get_deltas().back()->readiness,
@@ -355,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest,
             IconEffects::kRoundCorners | IconEffects::kCrOsStandardMask);
 }
 
-IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest, PolicyId) {
+IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest, PolicyIds) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL app_url = embedded_test_server()->GetURL("/web_apps/basic.html");
   const GURL install_url =
@@ -369,18 +364,26 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest, PolicyId) {
 
   EXPECT_EQ(mock_app_publisher.get_deltas().back()->publisher_id,
             app_url.spec());
-  EXPECT_TRUE(mock_app_publisher.get_deltas().back()->policy_id->empty());
+  EXPECT_TRUE(mock_app_publisher.get_deltas().back()->policy_ids.empty());
 
   // Writing to the external prefs to set policy to pin the app.
   web_app::test::AddInstallUrlData(
       browser()->profile()->GetPrefs(), &provider().sync_bridge(), app_id,
       install_url, ExternalInstallSource::kExternalPolicy);
 
+  // Add a mock secondary install url to verify that all values are propagated
+  // to policy_ids correctly.
+  const GURL secondary_install_url{"http://install.url/manifest.json"};
+  web_app::test::AddInstallUrlData(
+      browser()->profile()->GetPrefs(), &provider().sync_bridge(), app_id,
+      secondary_install_url, ExternalInstallSource::kExternalPolicy);
+
   provider().install_manager().NotifyWebAppInstalledWithOsHooks(app_id);
 
   mock_app_publisher.Wait();
-  EXPECT_EQ(mock_app_publisher.get_deltas().back()->policy_id,
-            install_url.spec());
+  EXPECT_THAT(mock_app_publisher.get_deltas().back()->policy_ids,
+              testing::UnorderedElementsAre(install_url.spec(),
+                                            secondary_install_url.spec()));
 }
 
 IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest, ContentSettings) {
@@ -417,11 +420,9 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest, ContentSettings) {
 
   const std::vector<apps::PermissionPtr>& permissions =
       mock_app_publisher.get_deltas().back()->permissions;
-  auto camera_permission = std::find_if(
-      permissions.begin(), permissions.end(),
-      [](const apps::PermissionPtr& permission) {
-        return permission->permission_type == apps::PermissionType::kCamera;
-      });
+  auto camera_permission =
+      base::ranges::find(permissions, apps::PermissionType::kCamera,
+                         &apps::Permission::permission_type);
   ASSERT_TRUE(camera_permission != permissions.end());
   EXPECT_TRUE(absl::holds_alternative<apps::TriState>(
       (*camera_permission)->value->value));
@@ -993,10 +994,16 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest,
 
   // Have to call it explicitly due to usage of
   // OsIntegrationManager::ScopedSuppressForTesting
+  base::RunLoop run_loop;
   provider()
       .os_integration_manager()
       .file_handler_manager()
-      .EnableAndRegisterOsFileHandlers(app_id);
+      .EnableAndRegisterOsFileHandlers(
+          app_id, base::BindLambdaForTesting([&](Result result) {
+            EXPECT_EQ(result, Result::kOk);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
 
   MockAppPublisher mock_app_publisher;
   LacrosWebAppsController lacros_web_apps_controller(profile());

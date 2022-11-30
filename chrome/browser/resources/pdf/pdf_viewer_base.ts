@@ -5,7 +5,7 @@
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserApi, ZoomBehavior} from './browser_api.js';
@@ -35,7 +35,7 @@ function getScrollbarWidth(): number {
 
 export type KeyEventData = MessageData&{keyEvent: SerializedKeyEvent};
 
-export abstract class PDFViewerBaseElement extends PolymerElement {
+export abstract class PdfViewerBaseElement extends PolymerElement {
   static get properties(): any {
     return {
       showErrorDialog: {
@@ -256,7 +256,7 @@ export abstract class PDFViewerBaseElement extends PolymerElement {
   }
 
   /**
-   * Sends a 'documentLoaded' message to the PDFScriptingAPI if the document has
+   * Sends a 'documentLoaded' message to the PdfScriptingApi if the document has
    * finished loading.
    */
   sendDocumentLoadedMessage() {
@@ -297,7 +297,7 @@ export abstract class PDFViewerBaseElement extends PolymerElement {
 
   /**
    * Handles a scripting message from outside the extension (typically sent by
-   * PDFScriptingAPI in a page containing the extension) to interact with the
+   * PdfScriptingApi in a page containing the extension) to interact with the
    * plugin.
    * @return Whether the message was handled.
    */
@@ -422,31 +422,33 @@ export abstract class PDFViewerBaseElement extends PolymerElement {
    * @param params The open params passed in the URL.
    */
   private handleURLParams_(params: OpenPdfParams) {
+    assert(this.viewport_);
+
     if (params.zoom) {
-      this.viewport_!.setZoom(params.zoom);
+      this.viewport_.setZoom(params.zoom);
     }
 
     if (params.position) {
-      this.viewport_!.goToPageAndXY(
+      this.viewport_.goToPageAndXY(
           params.page ? params.page : 0, params.position.x, params.position.y);
     } else if (params.page) {
-      this.viewport_!.goToPage(params.page);
+      this.viewport_.goToPage(params.page);
     }
 
     if (params.view) {
       this.isUserInitiatedEvent = false;
-      this.updateViewportFit(params.view);
+      this.viewport_.setFittingType(params.view);
       this.forceFit(params.view);
       if (params.viewPosition) {
         const zoomedPositionShift =
-            params.viewPosition * this.viewport_!.getZoom();
-        const currentViewportPosition = this.viewport_!.position;
+            params.viewPosition * this.viewport_.getZoom();
+        const currentViewportPosition = this.viewport_.position;
         if (params.view === FittingType.FIT_TO_WIDTH) {
           currentViewportPosition.y += zoomedPositionShift;
         } else if (params.view === FittingType.FIT_TO_HEIGHT) {
           currentViewportPosition.x += zoomedPositionShift;
         }
-        this.viewport_!.setPosition(currentViewportPosition);
+        this.viewport_.setPosition(currentViewportPosition);
       }
       this.isUserInitiatedEvent = true;
     }
@@ -467,7 +469,7 @@ export abstract class PDFViewerBaseElement extends PolymerElement {
 
   /**
    * Send a scripting message outside the extension (typically to
-   * PDFScriptingAPI in a page containing the extension).
+   * PdfScriptingApi in a page containing the extension).
    */
   protected sendScriptingMessage(message: any) {
     if (this.parentWindow_ && this.parentOrigin_) {
@@ -494,19 +496,9 @@ export abstract class PDFViewerBaseElement extends PolymerElement {
     }
   }
 
-  protected updateViewportFit(fittingType: FittingType) {
-    if (fittingType === FittingType.FIT_TO_PAGE) {
-      this.viewport_!.fitToPage();
-    } else if (fittingType === FittingType.FIT_TO_WIDTH) {
-      this.viewport_!.fitToWidth();
-    } else if (fittingType === FittingType.FIT_TO_HEIGHT) {
-      this.viewport_!.fitToHeight();
-    }
-  }
-
   /** Requests to change the viewport fitting type. */
   protected onFitToChanged(e: CustomEvent<FittingType>) {
-    this.updateViewportFit(e.detail);
+    this.viewport_!.setFittingType(e.detail);
     recordFitTo(e.detail);
   }
 

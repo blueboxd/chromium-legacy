@@ -1674,10 +1674,8 @@ TEST_F(LegacySWPictureLayerImplTest, FarScrolledQuadsShifted) {
     EXPECT_EQ(draw_quad->material, viz::DrawQuad::Material::kTiledContent);
 
     auto transform = [draw_quad](const gfx::Rect& rect) {
-      gfx::RectF result(rect);
-      draw_quad->shared_quad_state->quad_to_target_transform.TransformRect(
-          &result);
-      return result;
+      return draw_quad->shared_quad_state->quad_to_target_transform.MapRect(
+          gfx::RectF(rect));
     };
 
     gfx::RectF transformed_rect = transform(draw_quad->rect);
@@ -1752,10 +1750,8 @@ TEST_F(LegacySWPictureLayerImplTest, FarScrolledSolidColorQuadsShifted) {
     EXPECT_EQ(draw_quad->material, viz::DrawQuad::Material::kSolidColor);
 
     auto transform = [draw_quad](const gfx::Rect& rect) {
-      gfx::RectF result(rect);
-      draw_quad->shared_quad_state->quad_to_target_transform.TransformRect(
-          &result);
-      return result;
+      return draw_quad->shared_quad_state->quad_to_target_transform.MapRect(
+          gfx::RectF(rect));
     };
 
     gfx::RectF transformed_rect = transform(draw_quad->rect);
@@ -6020,7 +6016,7 @@ TEST_F(LegacySWPictureLayerImplTest,
   SetupDrawProperties(pending_layer(), 2.25f, 1.5f, 1.f);
   gfx::Transform translate1;
   translate1.Translate(0.25f, 0.5f);
-  pending_layer()->draw_properties().screen_space_transform.ConcatTransform(
+  pending_layer()->draw_properties().screen_space_transform.PostConcat(
       translate1);
   pending_layer()->draw_properties().target_space_transform =
       pending_layer()->draw_properties().screen_space_transform;
@@ -6040,7 +6036,7 @@ TEST_F(LegacySWPictureLayerImplTest,
   SetupDrawProperties(pending_layer(), 2.25f, 1.5f, 1.f);
   gfx::Transform translate2;
   translate2.Translate(0.75f, 0.25f);
-  pending_layer()->draw_properties().screen_space_transform.ConcatTransform(
+  pending_layer()->draw_properties().screen_space_transform.PostConcat(
       translate2);
   pending_layer()->draw_properties().target_space_transform =
       pending_layer()->draw_properties().screen_space_transform;
@@ -6058,7 +6054,7 @@ TEST_F(LegacySWPictureLayerImplTest,
   // Now change the device scale factor but keep the same total scale. Old tiles
   // with the same scale would become non-ideal and deleted on pending layers.
   SetupDrawProperties(pending_layer(), 2.25f, 1.0f, 1.f);
-  pending_layer()->draw_properties().screen_space_transform.ConcatTransform(
+  pending_layer()->draw_properties().screen_space_transform.PostConcat(
       translate2);
   pending_layer()->draw_properties().target_space_transform =
       pending_layer()->draw_properties().screen_space_transform;
@@ -6086,7 +6082,7 @@ TEST_F(LegacySWPictureLayerImplTest,
   SetupDrawProperties(active_layer(), 2.25f, 1.5f, 1.f);
   gfx::Transform translate1;
   translate1.Translate(0.25f, 0.5f);
-  active_layer()->draw_properties().screen_space_transform.ConcatTransform(
+  active_layer()->draw_properties().screen_space_transform.PostConcat(
       translate1);
   active_layer()->draw_properties().target_space_transform =
       active_layer()->draw_properties().screen_space_transform;
@@ -6106,7 +6102,7 @@ TEST_F(LegacySWPictureLayerImplTest,
   SetupDrawProperties(pending_layer(), 2.25f, 1.5f, 1.f);
   gfx::Transform translate2;
   translate2.Translate(0.75f, 0.25f);
-  pending_layer()->draw_properties().screen_space_transform.ConcatTransform(
+  pending_layer()->draw_properties().screen_space_transform.PostConcat(
       translate2);
   pending_layer()->draw_properties().target_space_transform =
       pending_layer()->draw_properties().screen_space_transform;

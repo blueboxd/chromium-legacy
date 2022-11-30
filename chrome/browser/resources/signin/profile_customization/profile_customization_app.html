@@ -163,17 +163,21 @@
     min-width: 76px;
   }
 
+  #selectAvatarWrapper {
+    height: 428px;
+    margin: 0 14px;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
   cr-profile-avatar-selector {
     --avatar-size: 72px;
     --avatar-spacing: 18px;
     --avatar-grid-columns: 5;
-    height: 398px;
-    margin: 0 14px;
-    overflow-x: hidden;
-    overflow-y: auto;
-    padding-bottom: 15px;
-    padding-inline-start: 15px;
-    padding-top: 15px;
+    height: fit-content;
+    padding-bottom: 12px;
+    padding-inline-start: 16px;
+    padding-top: 12px;
     width: fit-content;
   }
 
@@ -260,7 +264,7 @@
         aria-label="$i18n{profileCustomizationInputLabel}" auto-validate
         placeholder="$i18n{profileCustomizationInputPlaceholder}" autofocus
         error-message="$i18n{profileCustomizationInputErrorMessage}"
-        required spellcheck="false">
+        required spellcheck="false" on-blur="validateInputOnBlur_">
       </cr-input>
 
       <div id="pickThemeContainer">
@@ -300,13 +304,15 @@
           $i18n{profileCustomizationAvatarSelectionTitle}
         </div>
       </div>
-      <cr-profile-avatar-selector avatars="[[availableIcons_]]"
-          selected-avatar="{{selectedAvatar_}}">
-      </cr-profile-avatar-selector>
+      <div id="selectAvatarWrapper" class="custom-scrollbar">
+        <cr-profile-avatar-selector avatars="[[availableIcons_]]"
+            selected-avatar="{{selectedAvatar_}}">
+        </cr-profile-avatar-selector>
+      </div>
       <div class="action-container">
         <cr-button id="selectAvatarConfirmButton" class="action-button"
             on-click="onSelectAvatarConfirmClicked_">
-          $i18n{profileCustomizationAvatarSelectionConfirmButtonLabel}
+          $i18n{profileCustomizationDoneLabel}
         </cr-button>
       </div>
     </div>

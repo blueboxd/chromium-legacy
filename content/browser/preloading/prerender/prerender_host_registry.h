@@ -36,7 +36,7 @@ class RenderFrameHostImpl;
 //
 // - Triggers (e.g., SpeculationHostImpl) start prerendering by
 //   CreateAndStartHost() and notify the registry of destruction of the trigger
-//   by OnTriggerDestroyed().
+//   by CancelHosts().
 // - Activators (i.e., NavigationRequest) can reserve the prerender host on
 //   activation start by ReserveHostToActivate(), activate it by
 //   ActivateReservedHost(), and notify the registry of completion of the
@@ -89,6 +89,11 @@ class CONTENT_EXPORT PrerenderHostRegistry {
   bool CancelHost(int frame_tree_node_id,
                   PrerenderHost::FinalStatus final_status);
 
+  // Cancels the existing hosts specified in the vector with the same final
+  // status.
+  void CancelHosts(const std::vector<int>& frame_tree_node_ids,
+                   PrerenderHost::FinalStatus final_status);
+
   // Applies CancelHost for all existing PrerenderHost.
   void CancelAllHosts(PrerenderHost::FinalStatus final_status);
 
@@ -124,12 +129,6 @@ class CONTENT_EXPORT PrerenderHostRegistry {
 
   RenderFrameHostImpl* GetRenderFrameHostForReservedHost(
       int frame_tree_node_id);
-
-  // For triggers.
-  // Called from the triggers (e.g., SpeculationHostImpl) when they are
-  // destroyed. `frame_tree_node_id` should be the id returned by
-  // CreateAndStartHost().
-  void OnTriggerDestroyed(int frame_tree_node_id);
 
   // For activators.
   // Called from the destructor of NavigationRequest that reserved the host.
@@ -190,9 +189,6 @@ class CONTENT_EXPORT PrerenderHostRegistry {
   // function starts prerendering for the id. Returns starting prerender host id
   // when it succeeds, and returns `RenderFrameHost::kNoFrameTreeNodeId` if it's
   // cancelled.
-  //
-  // TODO(crbug.com/1355151): Add tests to make sure that requests from embedder
-  // triggers are prioritized over requests from speculation rules.
   int StartPrerendering(int frame_tree_node_id);
 
   // Returns whether a certain type of PrerenderTriggerType is allowed to be
@@ -211,6 +207,9 @@ class CONTENT_EXPORT PrerenderHostRegistry {
 
   // Holds the frame_tree_node_id of running PrerenderHost. Reset to
   // RenderFrameHost::kNoFrameTreeNodeId when there's no running PrerenderHost.
+  // Tracks only the host id of speculation rules triggers and ignores requests
+  // from embedder because embedder requests are more urgent and we'd like to
+  // handle embedder prerender independently from speculation rules requests.
   // This is valid only when kPrerender2SequentialPrerendering is enabled.
   int running_prerender_host_id_ = RenderFrameHost::kNoFrameTreeNodeId;
 

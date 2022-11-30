@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_FIRST_PARTY_SETS_LOCAL_SET_DECLARATION_H_
 
 #include <string>
-#include <tuple>
 
 #include "content/browser/first_party_sets/first_party_set_parser.h"
 #include "content/common/content_export.h"
@@ -33,28 +32,17 @@ class CONTENT_EXPORT LocalSetDeclaration {
 
   size_t size() const { return empty() ? 0 : GetSet().size(); }
 
-  // Gets the primary site. Must not be called if `empty()` returns true.
-  const net::SchemefulSite& GetPrimary() const;
-
   // Gets the set entries. Must not be called if `empty()` returns true.
   const FirstPartySetParser::SingleSet& GetSet() const;
 
-  // Gets the set entries. Must not be called if `empty()` returns true.
-  const FirstPartySetParser::Aliases& GetAliases() const;
-
  private:
   explicit LocalSetDeclaration(
-      absl::optional<std::tuple<net::SchemefulSite,
-                                FirstPartySetParser::SingleSet,
-                                FirstPartySetParser::Aliases>> parsed_set);
+      absl::optional<FirstPartySetParser::SingleSet> parsed_set);
 
   // Stores the result of parsing the inputs. Specifically, this may be empty if
-  // no set was locally defined; otherwise, it holds the primary site, the
-  // collection of FirstPartySetEntries, and any ccTLD aliases.
-  absl::optional<std::tuple<net::SchemefulSite,
-                            FirstPartySetParser::SingleSet,
-                            FirstPartySetParser::Aliases>>
-      parsed_set_;
+  // no set was locally defined; otherwise, it holds the collection of
+  // FirstPartySetEntries and any ccTLD aliases.
+  absl::optional<FirstPartySetParser::SingleSet> parsed_set_;
 };
 
 }  // namespace content

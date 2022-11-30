@@ -1,4 +1,4 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Updates expectations and baselines when updating web-platform-tests.
@@ -9,14 +9,10 @@ Specifically, this class fetches results from try bots for the current CL, then
 """
 
 import argparse
-import contextlib
 import copy
 import logging
-import os
 import re
-import shutil
 import sys
-import tempfile
 from collections import defaultdict, namedtuple
 
 from blinkpy.common.memoized import memoized
@@ -24,12 +20,9 @@ from blinkpy.common.net.git_cl import GitCL
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.log_utils import configure_logging
-from blinkpy.w3c.wpt_manifest import WPTManifest, BASE_MANIFEST_NAME
 from blinkpy.web_tests.models.test_expectations import (
     ParseError, SystemConfigurationRemover, TestExpectations)
 from blinkpy.web_tests.models.typ_types import ResultType
-from blinkpy.web_tests.port.android import (
-    PRODUCTS, PRODUCTS_TO_EXPECTATION_FILE_PATHS, WPT_SMOKE_TESTS_FILE)
 
 _log = logging.getLogger(__name__)
 
@@ -85,8 +78,7 @@ class WPTExpectationsUpdater(object):
         for tests that were renamed. Also the files may have their expectations
         updated using builder results.
         """
-        return (list(self.port.all_expectations_dict().keys()) +
-                list(PRODUCTS_TO_EXPECTATION_FILE_PATHS.values()))
+        return list(self.port.all_expectations_dict().keys())
 
     def run(self):
         """Does required setup before calling update_expectations().
@@ -345,7 +337,8 @@ class WPTExpectationsUpdater(object):
         func = lambda x: (x["variant"]["def"]["test_suite"] == test_suite)
         test_results_list = []
         predicate = {"expectancy": "VARIANTS_WITH_ONLY_UNEXPECTED_RESULTS"}
-        rv = self.host.results_fetcher.fetch_results_from_resultdb(self.host, [build], predicate)
+        rv = self.host.results_fetcher.fetch_results_from_resultdb([build],
+                                                                   predicate)
         rv = list(filter(func, rv))
         if not self.options.include_unexpected_pass:
             # if a test first fail then passed unexpectedly
@@ -1041,16 +1034,8 @@ class WPTExpectationsUpdater(object):
         for path in self._test_expectations.expectations_dict:
             _log.info('Updating %s for any removed or renamed tests.',
                       self.host.filesystem.basename(path))
-            if path in PRODUCTS_TO_EXPECTATION_FILE_PATHS.values():
-                # Also delete any expectations for modified test cases at
-                # android side to avoid any conflict
-                # TODO: consider keep the triaged expectations when results do
-                # not change
-                self._clean_single_test_expectations_file(
-                    path, deleted_files + modified_files, renamed_files)
-            else:
-                self._clean_single_test_expectations_file(
-                    path, deleted_files, renamed_files)
+            self._clean_single_test_expectations_file(path, deleted_files,
+                                                      renamed_files)
         self._test_expectations.commit_changes()
 
     def _list_files(self, diff_filter):

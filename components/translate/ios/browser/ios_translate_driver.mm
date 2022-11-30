@@ -19,7 +19,7 @@
 #include "components/translate/core/common/translate_metrics.h"
 #include "components/translate/core/common/translate_util.h"
 #include "components/translate/core/language_detection/language_detection_model.h"
-#import "components/translate/ios/browser/js_translate_manager.h"
+#import "components/translate/ios/browser/js_translate_web_frame_manager_factory.h"
 #import "components/translate/ios/browser/language_detection_controller.h"
 #include "components/translate/ios/browser/language_detection_model_service.h"
 #import "components/translate/ios/browser/translate_controller.h"
@@ -75,13 +75,9 @@ IOSTranslateDriver::IOSTranslateDriver(
           web_state, language_detection_model,
           translate_manager_->translate_client()->GetPrefs());
 
-  // Create the translate controller.
-  JsTranslateManager* js_translate_manager =
-      [[JsTranslateManager alloc] initWithWebState:web_state];
-  translate_controller_ =
-      std::make_unique<TranslateController>(web_state, js_translate_manager);
-
-  translate_controller_->set_observer(this);
+  TranslateController::CreateForWebState(
+      web_state, JSTranslateWebFrameManagerFactory::GetInstance());
+  TranslateController::FromWebState(web_state)->set_observer(this);
 }
 
 IOSTranslateDriver::~IOSTranslateDriver() {
@@ -166,13 +162,14 @@ void IOSTranslateDriver::TranslatePage(int page_seq_no,
   source_language_ = source_lang;
   target_language_ = target_lang;
   pending_page_seq_no_ = page_seq_no;
-  translate_controller_->InjectTranslateScript(translate_script);
+  TranslateController::FromWebState(web_state_)
+      ->InjectTranslateScript(translate_script);
 }
 
 void IOSTranslateDriver::RevertTranslation(int page_seq_no) {
   if (page_seq_no != page_seq_no_)
     return;  // The user navigated away.
-  translate_controller_->RevertTranslation();
+  TranslateController::FromWebState(web_state_)->RevertTranslation();
 }
 
 bool IOSTranslateDriver::IsIncognito() {
@@ -260,7 +257,8 @@ void IOSTranslateDriver::OnTranslateScriptReady(TranslateErrors error_type,
   std::string source = (source_language_ != kUnknownLanguageCode)
                            ? source_language_
                            : kAutoDetectionLanguage;
-  translate_controller_->StartTranslation(source_language_, target_language_);
+  TranslateController::FromWebState(web_state_)
+      ->StartTranslation(source_language_, target_language_);
 }
 
 void IOSTranslateDriver::OnTranslateComplete(TranslateErrors error_type,

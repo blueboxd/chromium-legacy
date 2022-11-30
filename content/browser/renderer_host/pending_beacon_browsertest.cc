@@ -13,8 +13,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/back_forward_cache_test_util.h"
+#include "content/browser/renderer_host/pending_beacon_host.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/permission_controller_delegate.h"
 #include "content/public/browser/permission_result.h"
 #include "content/public/browser/render_frame_host.h"
@@ -292,6 +294,7 @@ IN_PROC_BROWSER_TEST_P(PendingBeaconTimeoutNoBackForwardCacheBrowserTest,
   ASSERT_TRUE(WaitUntilPreviousDocumentDeleted());
 
   // The beacon should have been sent out after the page is gone.
+  WaitForAllBeaconsSent(total_beacon);
   EXPECT_EQ(sent_beacon_count(), total_beacon);
 }
 
@@ -309,6 +312,7 @@ IN_PROC_BROWSER_TEST_P(PendingBeaconTimeoutNoBackForwardCacheBrowserTest,
   ASSERT_TRUE(WaitUntilPreviousDocumentDeleted());
 
   // The beacon should have been sent out after the page is gone.
+  WaitForAllBeaconsSent(total_beacon);
   EXPECT_EQ(sent_beacon_count(), total_beacon);
 }
 
@@ -690,6 +694,7 @@ IN_PROC_BROWSER_TEST_F(PendingBeaconSendOnPagehideBrowserTest,
   std::u16string expected_title = u"true/false/false/false";
   TitleWatcher title_watcher(web_contents(), expected_title);
   EXPECT_EQ(title_watcher.WaitAndGetTitle(), expected_title);
+  WaitForAllBeaconsSent(total_beacon);
   EXPECT_EQ(sent_beacon_count(), total_beacon);
 }
 
@@ -722,6 +727,7 @@ IN_PROC_BROWSER_TEST_F(PendingBeaconSendOnPagehideBrowserTest,
   std::u16string expected_title = u"true/false/false/false";
   TitleWatcher title_watcher(web_contents(), expected_title);
   EXPECT_EQ(title_watcher.WaitAndGetTitle(), expected_title);
+  WaitForAllBeaconsSent(total_beacon);
   EXPECT_EQ(sent_beacon_count(), total_beacon);
 }
 
@@ -754,6 +760,52 @@ IN_PROC_BROWSER_TEST_F(PendingBeaconSendOnPagehideBrowserTest,
   std::u16string expected_title = u"true/false/false/false";
   TitleWatcher title_watcher(web_contents(), expected_title);
   EXPECT_EQ(title_watcher.WaitAndGetTitle(), expected_title);
+  WaitForAllBeaconsSent(total_beacon);
+  EXPECT_EQ(sent_beacon_count(), total_beacon);
+}
+
+class PendingBeaconRendererProcessExitBrowserTest
+    : public PendingBeaconTimeoutBrowserTestBase {
+ protected:
+  const FeaturesType& GetEnabledFeatures() override {
+    static const FeaturesType enabled_features = {
+        {blink::features::kPendingBeaconAPI, {}},
+        // Forces BFCache to work in low memory device so that a page won't be
+        // killed by normal page discard.
+        {features::kBackForwardCacheMemoryControls,
+         {{"memory_threshold_for_back_forward_cache_in_mb", "0"}}}};
+    return enabled_features;
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(PendingBeaconRendererProcessExitBrowserTest,
+                       SendAllOnProcessCrash) {
+  const size_t total_beacon = 2;
+  RegisterBeaconRequestMonitor(total_beacon);
+
+  // Creates a pending beacon that will only be sent on page discard or crash.
+  // Make beacon creations within a Promise to ensure they can all be created
+  // before executing next statement.
+  RunScriptInA(JsReplace(R"(
+    new Promise(resolve => {
+      new PendingGetBeacon($1);
+      new PendingPostBeacon($1);
+      resolve();
+    });
+  )",
+                         kBeaconEndpoint));
+  ASSERT_EQ(sent_beacon_count(), 0u);
+  ASSERT_TRUE(
+      PendingBeaconHost::GetForCurrentDocument(current_document().get()));
+
+  // Make the renderer crash.
+  CrashTab(web_contents());
+  // The RenderFrame is dead but the attached beacon host is still alive.
+  ASSERT_FALSE(current_document()->IsRenderFrameLive());
+  ASSERT_TRUE(
+      PendingBeaconHost::GetForCurrentDocument(current_document().get()));
+
+  WaitForAllBeaconsSent(total_beacon);
   EXPECT_EQ(sent_beacon_count(), total_beacon);
 }
 

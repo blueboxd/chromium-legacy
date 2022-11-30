@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/files/file_util.h"
-#include "base/json/json_writer.h"
 #include "chrome/browser/ash/drive/drive_integration_service_browser_test_base.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/search/files/drive_file_suggestion_provider.h"
 #include "chrome/browser/ui/app_list/search/files/file_suggest_keyed_service.h"
 #include "chrome/browser/ui/app_list/search/files/file_suggest_keyed_service_factory.h"
+#include "chrome/browser/ui/app_list/search/files/file_suggest_test_util.h"
 #include "chrome/browser/ui/app_list/search/files/file_suggest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chromeos/ash/components/drivefs/fake_drivefs.h"
@@ -36,19 +37,17 @@ class MockObserver : public FileSuggestKeyedService::Observer {
 
  private:
   void OnSuggestFileDataFetched(
-      absl::optional<std::vector<FileSuggestData>> suggest_data_array) {
+      const absl::optional<std::vector<FileSuggestData>>& suggest_data_array) {
     last_fetched_data_ = suggest_data_array;
     run_loop_.Quit();
   }
 
   // FileSuggestKeyedService::Observer:
-  void OnFileSuggestionUpdated(
-      FileSuggestKeyedService::SuggestionType type) override {
-    EXPECT_EQ(FileSuggestKeyedService::SuggestionType::kItemSuggest, type);
+  void OnFileSuggestionUpdated(FileSuggestionType type) override {
+    EXPECT_EQ(FileSuggestionType::kDriveFile, type);
     file_suggest_service_->GetSuggestFileData(
-        FileSuggestKeyedService::SuggestionType::kItemSuggest,
-        base::BindOnce(&MockObserver::OnSuggestFileDataFetched,
-                       base::Unretained(this)));
+        type, base::BindOnce(&MockObserver::OnSuggestFileDataFetched,
+                             base::Unretained(this)));
   }
 
   FileSuggestKeyedService* const file_suggest_service_;
@@ -59,53 +58,18 @@ class MockObserver : public FileSuggestKeyedService::Observer {
       file_suggest_service_observation_{this};
 };
 
-/*
-The suggest item metadata. It matches the json response used by
-`ItemSuggestCache`. A sample json response is listed as below:
- R"(
-    {
-      "item": [
-        {
-          "itemId": "id",
-          "displayText": "text",
-          "predictionReason": "reason"
-        }
-      ],
-      "suggestionSessionId": "session id"
-    })";
-*/
-struct SuggestItemMetaData {
-  std::string item_id;
-  std::string display_text;
-  std::string prediction_reason;
-};
-
-// Calculates a json string used to update the drive suggest cache.
-std::string CalculateDriveSuggestUpdateJsonString(
-    const std::vector<SuggestItemMetaData>& data_array,
-    const std::string& session_id) {
-  base::Value::List list_value;
-  for (const auto& data : data_array) {
-    base::Value::Dict dict_value;
-    dict_value.Set("itemId", data.item_id);
-    dict_value.Set("displayText", data.display_text);
-    dict_value.Set("predictionReason", data.prediction_reason);
-    list_value.Append(std::move(dict_value));
-  }
-
-  base::Value::Dict suggest_item_update;
-  suggest_item_update.Set("item", std::move(list_value));
-  suggest_item_update.Set("suggestionSessionId", session_id);
-
-  std::string json_string;
-  base::JSONWriter::Write(suggest_item_update, &json_string);
-  return json_string;
-}
-
 }  // namespace
 
-using FileSuggestKeyedServiceBrowserTest =
-    drive::DriveIntegrationServiceBrowserTestBase;
+class FileSuggestKeyedServiceBrowserTest
+    : public drive::DriveIntegrationServiceBrowserTestBase {
+  // drive::DriveIntegrationServiceBrowserTestBase:
+  void SetUpOnMainThread() override {
+    drive::DriveIntegrationServiceBrowserTestBase::SetUpOnMainThread();
+    WaitUntilFileSuggestServiceReady(
+        FileSuggestKeyedServiceFactory::GetInstance()->GetService(
+            browser()->profile()));
+  }
+};
 
 // Verifies that the file suggest keyed service works as expected when the item
 // suggest cache is empty.
@@ -116,9 +80,9 @@ IN_PROC_BROWSER_TEST_F(FileSuggestKeyedServiceBrowserTest,
       app_list::FileSuggestKeyedServiceFactory::GetInstance()->GetService(
           browser()->profile());
   service->GetSuggestFileData(
-      FileSuggestKeyedService::SuggestionType::kItemSuggest,
+      FileSuggestionType::kDriveFile,
       base::BindOnce(
-          [](absl::optional<std::vector<FileSuggestData>> suggest_data) {
+          [](const absl::optional<std::vector<FileSuggestData>>& suggest_data) {
             EXPECT_FALSE(suggest_data.has_value());
           }));
   tester.ExpectBucketCount("Ash.Search.DriveFileSuggestDataValidation.Status",
@@ -160,9 +124,10 @@ IN_PROC_BROWSER_TEST_F(FileSuggestKeyedServiceBrowserTest,
     MockObserver observer(service);
 
     // Update the item suggest cache with a non-existed file id.
-    service->item_suggest_cache_for_test()->UpdateCacheWithJsonForTest(
-        CalculateDriveSuggestUpdateJsonString(
-            {{non_existed_id, "dispaly text 1", "prediction reason 1"}},
+    service->drive_file_suggestion_provider_for_test()
+        ->item_suggest_cache_for_test()
+        ->UpdateCacheWithJsonForTest(CreateItemSuggestUpdateJsonString(
+            {{non_existed_id, "display text 1", "prediction reason 1"}},
             "suggestion id 0"));
 
     observer.WaitUntilFetchingSuggestData();
@@ -180,19 +145,20 @@ IN_PROC_BROWSER_TEST_F(FileSuggestKeyedServiceBrowserTest,
 
     // Update the item suggest cache with two file ids: one is valid and the
     // other is not.
-    std::string json_string = CalculateDriveSuggestUpdateJsonString(
-        {{"abc123", "dispaly text 1", "prediction reason 1"},
+    std::string json_string = CreateItemSuggestUpdateJsonString(
+        {{"abc123", "display text 1", "prediction reason 1"},
          {non_existed_id, "display text 2", "prediction reason 2"}},
         "suggestion id 1");
-    service->item_suggest_cache_for_test()->UpdateCacheWithJsonForTest(
-        json_string);
+    service->drive_file_suggestion_provider_for_test()
+        ->item_suggest_cache_for_test()
+        ->UpdateCacheWithJsonForTest(json_string);
 
     observer.WaitUntilFetchingSuggestData();
     const auto& fetched_data = observer.last_fetched_data();
     EXPECT_TRUE(fetched_data.has_value());
     EXPECT_EQ(1u, fetched_data->size());
     EXPECT_EQ(absolute_file_path1, fetched_data->at(0).file_path);
-    EXPECT_EQ("prediction reason 1", *fetched_data->at(0).prediction_reason);
+    EXPECT_EQ(u"prediction reason 1", *fetched_data->at(0).prediction_reason);
     tester.ExpectBucketCount("Ash.Search.DriveFileSuggestDataValidation.Status",
                              /*sample=*/DriveSuggestValidationStatus::kOk,
                              /*expected_count=*/1);
@@ -203,12 +169,13 @@ IN_PROC_BROWSER_TEST_F(FileSuggestKeyedServiceBrowserTest,
     MockObserver observer(service);
 
     // Update the item suggest cache with two valid ids.
-    std::string json_string = CalculateDriveSuggestUpdateJsonString(
-        {{"abc123", "dispaly text 1", "prediction reason 1"},
+    std::string json_string = CreateItemSuggestUpdateJsonString(
+        {{"abc123", "display text 1", "prediction reason 1"},
          {"qwertyqwerty", "display text 2", "prediction reason 2"}},
         "suggestion id 2");
-    service->item_suggest_cache_for_test()->UpdateCacheWithJsonForTest(
-        json_string);
+    service->drive_file_suggestion_provider_for_test()
+        ->item_suggest_cache_for_test()
+        ->UpdateCacheWithJsonForTest(json_string);
 
     observer.WaitUntilFetchingSuggestData();
     tester.ExpectBucketCount("Ash.Search.DriveFileSuggestDataValidation.Status",
@@ -220,9 +187,9 @@ IN_PROC_BROWSER_TEST_F(FileSuggestKeyedServiceBrowserTest,
     EXPECT_TRUE(fetched_data.has_value());
     EXPECT_EQ(2u, fetched_data->size());
     EXPECT_EQ(absolute_file_path1, fetched_data->at(0).file_path);
-    EXPECT_EQ("prediction reason 1", *fetched_data->at(0).prediction_reason);
+    EXPECT_EQ(u"prediction reason 1", *fetched_data->at(0).prediction_reason);
     EXPECT_EQ(absolute_file_path2, fetched_data->at(1).file_path);
-    EXPECT_EQ("prediction reason 2", *fetched_data->at(1).prediction_reason);
+    EXPECT_EQ(u"prediction reason 2", *fetched_data->at(1).prediction_reason);
   }
 }
 

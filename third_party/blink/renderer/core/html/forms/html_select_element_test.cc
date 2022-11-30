@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -174,13 +174,13 @@ TEST_F(HTMLSelectElementTest, RestoreUnmatchedFormControlState) {
   EXPECT_EQ(nullptr, To<HTMLSelectElement>(element)->OptionToBeShown());
 }
 
-TEST_F(HTMLSelectElementTest, VisibleBoundsInVisualViewport) {
+TEST_F(HTMLSelectElementTest, VisibleBoundsInLocalRoot) {
   SetHtmlInnerHTML(
       "<select style='position:fixed; top:12.3px; height:24px; "
       "-webkit-appearance:none;'><option>o1</select>");
   auto* select = To<HTMLSelectElement>(GetDocument().body()->firstChild());
   ASSERT_NE(select, nullptr);
-  gfx::Rect bounds = select->VisibleBoundsInVisualViewport();
+  gfx::Rect bounds = select->VisibleBoundsInLocalRoot();
   EXPECT_EQ(24, bounds.height());
 }
 

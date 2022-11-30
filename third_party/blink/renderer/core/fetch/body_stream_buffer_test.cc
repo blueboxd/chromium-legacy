@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,6 +53,7 @@ class BodyStreamBufferTest : public testing::Test {
     v8::Local<v8::String> source;
     v8::Local<v8::Script> script;
     v8::MicrotasksScope microtasks(script_state->GetIsolate(),
+                                   ToMicrotaskQueue(script_state),
                                    v8::MicrotasksScope::kDoNotRunMicrotasks);
     if (!v8::String::NewFromUtf8(script_state->GetIsolate(), s,
                                  v8::NewStringType::kNormal)
@@ -213,7 +214,7 @@ TEST_F(BodyStreamBufferTest, TeeFromHandleMadeFromStream) {
   // TODO(yhirano): A uniformed behavior is preferred.
   EXPECT_FALSE(buffer->IsStreamDisturbed());
 
-  v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
+  scope.PerformMicrotaskCheckpoint();
 
   EXPECT_TRUE(buffer->IsStreamLocked());
   EXPECT_TRUE(buffer->IsStreamDisturbed());
@@ -651,7 +652,7 @@ TEST_F(BodyStreamBufferTest, NestedPull) {
   EvalWithPrintingError(scope.GetScriptState(), "reader.read();");
 
   test::RunPendingTasks();
-  v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
+  scope.PerformMicrotaskCheckpoint();
 }
 
 TEST_F(BodyStreamBufferTest, NullAbortSignalIsNotAborted) {

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,7 @@ class MockWebAudioDevice : public WebAudioDevice {
 class TestPlatform : public TestingPlatformSupport {
  public:
   std::unique_ptr<WebAudioDevice> CreateAudioDevice(
+      const WebAudioSinkDescriptor& sink_descriptor,
       unsigned number_of_output_channels,
       const WebAudioLatencyHint& latency_hint,
       WebAudioDevice::RenderCallback*) override {

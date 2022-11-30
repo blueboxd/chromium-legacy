@@ -36,6 +36,7 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
+#include "ui/accessibility/ax_event_intent.h"
 #include "ui/accessibility/ax_mode.h"
 
 namespace gfx {
@@ -98,16 +99,6 @@ class BLINK_EXPORT WebAXObject {
   bool IsDetached() const;
 
   int AxID() const;
-
-  // Update layout if necessary on the underlying tree and return true if the
-  // object is valid. Note that calling this and other methods can cause other
-  // WebAXObjects to become invalid, so always check validity of an object
-  // before using it.
-  bool MaybeUpdateLayoutAndCheckValidity();
-
-  // Return true if this object is still valid (not detached) and has updated
-  // layout.
-  bool CheckValidity();
 
   unsigned ChildCount() const;
 
@@ -342,10 +333,12 @@ class BLINK_EXPORT WebAXObject {
                          gfx::Transform& container_transform,
                          bool* clips_children = nullptr) const;
 
-  // Retrieves a vector of all WebAXObjects in this document whose
-  // bounding boxes may have changed since the last query. Sends that vector
-  // via mojo to the browser process.
-  void SerializeLocationChanges() const;
+  // Marks ths object as dirty (needing serialization). If subtree is true,
+  // the entire AX subtree should be invalidated as well.
+  void MarkDirty(bool subtree,
+                 ax::mojom::EventFrom event_from,
+                 ax::mojom::Action event_from_action,
+                 std::vector<ui::AXEventIntent> event_intents) const;
 
   // Exchanges a WebAXObject with another.
   void Swap(WebAXObject& other);

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,7 +113,7 @@ void ContentDecryptionModuleResultPromise::CompleteWithError(
   StringBuilder result;
   result.Append(error_message);
   if (system_code != 0) {
-    if (result.IsEmpty())
+    if (result.empty())
       result.Append("Rejected with system code");
     result.Append(" (");
     result.AppendNumber(system_code);

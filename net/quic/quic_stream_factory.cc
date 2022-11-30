@@ -4,7 +4,6 @@
 
 #include "net/quic/quic_stream_factory.h"
 
-#include <algorithm>
 #include <memory>
 #include <set>
 #include <tuple>
@@ -474,11 +473,7 @@ class QuicStreamFactory::Job {
     IPEndPoint stale_address =
         resolve_host_request_->GetAddressResults()->front();
 
-    if (std::find(endpoints.begin(), endpoints.end(), stale_address) !=
-        endpoints.end()) {
-      return true;
-    }
-    return false;
+    return base::Contains(endpoints, stale_address);
   }
 
   void LogStaleHostRacing(bool used) {
@@ -1226,7 +1221,7 @@ QuicStreamFactory::QuicStreamFactory(
   DCHECK(transport_security_state_);
   DCHECK(http_server_properties_);
   if (params_.disable_tls_zero_rtt)
-    SetQuicFlag(FLAGS_quic_disable_client_tls_zero_rtt, true);
+    SetQuicFlag(quic_disable_client_tls_zero_rtt, true);
   InitializeMigrationOptions();
 }
 

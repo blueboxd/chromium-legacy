@@ -27,11 +27,13 @@
 
 #include "base/notreached.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_conversions.h"
 
 namespace blink {
 
@@ -388,15 +390,38 @@ SkColor4f Color::toSkColor4f() const {
       switch (color_function_space_) {
         case ColorFunctionSpace::kSRGB:
           return SkColor4f{param0_, param1_, param2_, alpha_};
+        case ColorFunctionSpace::kSRGBLinear:
+          return gfx::SRGBLinearToSkColor4f(param0_, param1_, param2_, alpha_);
+        case ColorFunctionSpace::kDisplayP3:
+          return gfx::DisplayP3ToSkColor4f(param0_, param1_, param2_, alpha_);
+        case ColorFunctionSpace::kA98RGB:
+          return gfx::AdobeRGBToSkColor4f(param0_, param1_, param2_, alpha_);
+        case ColorFunctionSpace::kProPhotoRGB:
+          return gfx::ProPhotoToSkColor4f(param0_, param1_, param2_, alpha_);
+        case ColorFunctionSpace::kRec2020:
+          return gfx::Rec2020ToSkColor4f(param0_, param1_, param2_, alpha_);
+        case ColorFunctionSpace::kXYZD50:
+          return gfx::XYZD50ToSkColor4f(param0_, param1_, param2_, alpha_);
+        case ColorFunctionSpace::kXYZD65:
+          return gfx::XYZD65ToSkColor4f(param0_, param1_, param2_, alpha_);
         default:
           NOTIMPLEMENTED();
           return SkColor4f{0.f, 0.f, 0.f, 0.f};
       }
     case SerializationType::kLab:
+      return gfx::LabToSkColor4f(param0_, param1_, param2_, alpha_);
     case SerializationType::kOKLab:
-      // TODO(crbug.com/1354622): Implement CSSColor4 types.
-      // https://www.w3.org/TR/css-color-4/
-      return SkColor4f{0.0f, 0.0f, 0.0f, 0.0f};
+      return gfx::OKLabToSkColor4f(param0_, param1_, param2_, alpha_);
+    case SerializationType::kLCH:
+      return gfx::LchToSkColor4f(
+          param0_, param1_,
+          param2_is_none_ ? absl::nullopt : absl::optional<float>(param2_),
+          alpha_);
+    case SerializationType::kOKLCH:
+      return gfx::OKLchToSkColor4f(
+          param0_, param1_,
+          param2_is_none_ ? absl::nullopt : absl::optional<float>(param2_),
+          alpha_);
     default:
       NOTIMPLEMENTED();
       return SkColor4f{0.f, 0.f, 0.f, 0.f};
@@ -433,7 +458,7 @@ bool Color::ParseHexColor(const UChar* name, unsigned length, Color& color) {
 }
 
 bool Color::ParseHexColor(const StringView& name, Color& color) {
-  if (name.IsEmpty())
+  if (name.empty())
     return false;
   if (name.Is8Bit())
     return ParseHexColor(name.Characters8(), name.length(), color);

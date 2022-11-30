@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -187,7 +187,7 @@ void CrossThreadMediaSourceAttachment::RemoveTracksFromMediaElementInternal(
   DCHECK(!IsMainThread());
   DCHECK(worker_runner_->BelongsToCurrentThread());
 
-  DCHECK(!track_ids.IsEmpty());
+  DCHECK(!track_ids.empty());
 
   // Detachment might have started, and could lead to MSE teardown calling us.
   // In such case, media element must forget all its tracks directly (see
@@ -228,7 +228,7 @@ void CrossThreadMediaSourceAttachment::RemoveTracksFromMediaElementOnMainThread(
     TrackAddRemovalType track_type,
     Vector<String> track_ids,
     bool enqueue_change_event) {
-  DCHECK(!track_ids.IsEmpty());
+  DCHECK(!track_ids.empty());
 
   {
     base::AutoLock lock(attachment_state_lock_);

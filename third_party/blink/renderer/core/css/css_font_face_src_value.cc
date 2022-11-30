@@ -78,7 +78,7 @@ String TechnologyToString(CSSFontFaceSrcValue::FontTechnology font_technology) {
 bool CSSFontFaceSrcValue::IsSupportedFormat() const {
   // format() syntax is already checked at parse time, see
   // AtRuleDescriptorParser.
-  if (!format_.IsEmpty())
+  if (!format_.empty())
     return true;
 
   // Normally we would just check the format, but in order to avoid conflicts
@@ -104,7 +104,7 @@ String CSSFontFaceSrcValue::CustomCSSText() const {
     result.Append(SerializeURI(specified_resource_));
   }
 
-  if (!format_.IsEmpty()) {
+  if (!format_.empty()) {
     result.Append(" format(");
     // Format should be serialized as strings:
     // https://github.com/w3c/csswg-drafts/issues/6328#issuecomment-971823790
@@ -113,7 +113,7 @@ String CSSFontFaceSrcValue::CustomCSSText() const {
   }
 
   if (RuntimeEnabledFeatures::CSSFontFaceSrcTechParsingEnabled() &&
-      !technologies_.IsEmpty()) {
+      !technologies_.empty()) {
     result.Append(" tech(");
     for (wtf_size_t i = 0; i < technologies_.size(); ++i) {
       result.Append(TechnologyToString(technologies_[i]));

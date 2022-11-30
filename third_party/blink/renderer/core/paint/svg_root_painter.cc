@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ AffineTransform SVGRootPainter::TransformToPixelSnappedBorderBox(
         snapped_size.width() / size.Width().ToFloat(),
         snapped_size.height() / size.Height().ToFloat());
   }
-  paint_offset_to_border_box.Multiply(
+  paint_offset_to_border_box.PreConcat(
       layout_svg_root_.LocalToBorderBoxTransform());
   return paint_offset_to_border_box;
 }

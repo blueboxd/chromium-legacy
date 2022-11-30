@@ -10,7 +10,6 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/char_iterator.h"
 #include "base/i18n/rtl.h"
-#include "base/json/json_reader.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
@@ -23,18 +22,15 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/omnibox/resources/grit/omnibox_pedal_synonyms.h"
-#include "components/omnibox/resources/grit/omnibox_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 typedef base::StringTokenizerT<std::u16string, std::u16string::const_iterator>
     StringTokenizer16;
 
 // This is a hard upper bound on the number of tokens that will be processed.
-// It determines resident token sequence allocation size and limits the value
-// of |max_tokens_| which may be set smaller to speed up matching.
-constexpr size_t kMaximumMaxTokens = 64;
+// The current value is determined from the existing body of translation data.
+constexpr size_t kMaxTokens = 36;
 
 // All characters in this string get removed from text before processing.
 // U+200F is a RTL marker punctuation character that seems to throw
@@ -54,7 +50,7 @@ OmniboxPedalProvider::OmniboxPedalProvider(
     : client_(client),
       pedals_(std::move(pedals)),
       ignore_group_(false, false, 0),
-      match_tokens_(kMaximumMaxTokens) {
+      match_tokens_(kMaxTokens) {
   LoadPedalConcepts();
 
   // Cull Pedals with incomplete data; they won't trigger if not enabled,
@@ -155,12 +151,11 @@ OmniboxPedal* OmniboxPedalProvider::FindReadyPedalMatch(
 
 void OmniboxPedalProvider::Tokenize(OmniboxPedal::TokenSequence& out_tokens,
                                     const std::u16string& text) const {
-  // TODO(orinj): We may want to use FoldCase instead of ToLower here
-  //  once the JSON data is eliminated (for now it's still needed for tests).
-  //  See base/i18n/case_conversion.h for advice about unicode case handling.
-  //  FoldCase is equivalent to lower-casing for ASCII/English, but provides
-  //  more consistent (canonical) handling in other languages as well.
-  std::u16string reduced_text = base::i18n::ToLower(text);
+  // Note that FoldCase (not ToLower) is used here and elsewhere in this code.
+  // See base/i18n/case_conversion.h for advice about unicode case handling.
+  // FoldCase is equivalent to lower-casing for ASCII/English, but provides
+  // more consistent (canonical) handling in other languages as well.
+  std::u16string reduced_text = base::i18n::FoldCase(text);
   base::RemoveChars(reduced_text, kRemoveChars, &reduced_text);
   out_tokens.Clear();
   if (tokenize_characters_.empty()) {
@@ -173,7 +168,7 @@ void OmniboxPedalProvider::Tokenize(OmniboxPedal::TokenSequence& out_tokens,
       if (right > left) {
         const auto token = reduced_text.substr(left, right - left);
         const auto iter = dictionary_.find(token);
-        if (iter == dictionary_.end() || out_tokens.Size() >= max_tokens_) {
+        if (iter == dictionary_.end() || out_tokens.Size() >= kMaxTokens) {
           // No Pedal can possibly match because we found a token not
           // present in the token dictionary, or the text has too many tokens.
           out_tokens.Clear();
@@ -191,7 +186,7 @@ void OmniboxPedalProvider::Tokenize(OmniboxPedal::TokenSequence& out_tokens,
     StringTokenizer16 tokenizer(reduced_text, tokenize_characters_);
     while (tokenizer.GetNext()) {
       const auto iter = dictionary_.find(tokenizer.token());
-      if (iter == dictionary_.end() || out_tokens.Size() >= max_tokens_) {
+      if (iter == dictionary_.end() || out_tokens.Size() >= kMaxTokens) {
         // No Pedal can possibly match because we found a token not
         // present in the token dictionary, or the text has too many tokens.
         out_tokens.Clear();
@@ -215,11 +210,6 @@ void OmniboxPedalProvider::TokenizeAndExpandDictionary(
       char_iter.Advance();
       size_t right = char_iter.array_pos();
       if (right > left) {
-        if (out_tokens.Size() >= max_tokens_) {
-          // Can't take another token; the source data is invalid.
-          out_tokens.Clear();
-          break;
-        }
         const std::u16string raw_token =
             token_sequence_string.substr(left, right - left);
         const std::u16string token = base::i18n::FoldCase(raw_token);
@@ -241,11 +231,6 @@ void OmniboxPedalProvider::TokenizeAndExpandDictionary(
     // Delimiters will neatly divide the string into tokens.
     StringTokenizer16 tokenizer(token_sequence_string, tokenize_characters_);
     while (tokenizer.GetNext()) {
-      if (out_tokens.Size() >= max_tokens_) {
-        // Can't take another token; the source data is invalid.
-        out_tokens.Clear();
-        break;
-      }
       std::u16string raw_token = tokenizer.token();
       base::StringPiece16 trimmed_token =
           base::TrimWhitespace(raw_token, base::TrimPositions::TRIM_ALL);
@@ -270,44 +255,14 @@ void OmniboxPedalProvider::LoadPedalConcepts() {
   const std::string locale = base::i18n::GetConfiguredLocale();
   const std::string language_code = locale.substr(0, 2);
 
-  // Load concept data then parse to base::Value in order to construct Pedals.
-  std::string uncompressed_data =
-      ui::ResourceBundle::GetSharedInstance().LoadLocalizedResourceString(
-          IDR_OMNIBOX_PEDAL_CONCEPTS);
-  const auto concept_data = base::JSONReader::Read(uncompressed_data);
-
-  DCHECK(concept_data);
-  DCHECK(concept_data->is_dict());
-
-  const int data_version = concept_data->FindKey("data_version")->GetInt();
-  CHECK_EQ(data_version, OMNIBOX_PEDAL_CONCEPTS_DATA_VERSION);
-
-  max_tokens_ = concept_data->FindKey("max_tokens")->GetInt();
-  // It is conceivable that some language may need more here, but the goal is
-  // to sanity check input since it is trusted and used for vector reserve.
-  DCHECK_LE(max_tokens_, kMaximumMaxTokens);
-
   // According to the pedals localization data, only a few languages
-  // were set to tokenize each character, so those are checked directly here
-  // to eliminate the need for JSON data. Note, zh-CN was set to tokenize
-  // each character but zh-TW was not so the full locale is checked for that
-  // exceptional case.
+  // were set to tokenize each character, so those are checked directly here.
+  // Note, zh-CN was set to tokenize each character but zh-TW was not so the
+  // full locale is checked for that exceptional case.
   if (language_code == "ja" || (language_code == "zh" && locale != "zh-TW")) {
     tokenize_characters_ = u"";
   } else {
     tokenize_characters_ = u" -";
-  }
-
-  const auto& dictionary =
-      concept_data->FindKey("dictionary")->GetListDeprecated();
-  dictionary_.reserve(dictionary.size());
-  int token_id = 0;
-  for (const auto& token_value : dictionary) {
-    std::u16string token;
-    if (token_value.is_string())
-      token = base::UTF8ToUTF16(token_value.GetString());
-    dictionary_.insert({token, token_id});
-    ++token_id;
   }
 
   ignore_group_ = LoadSynonymGroupString(
@@ -323,22 +278,8 @@ void OmniboxPedalProvider::LoadPedalConcepts() {
   }
   ignore_group_.SortSynonyms();
 
-  for (const auto& pedal_value :
-       concept_data->FindKey("pedals")->GetListDeprecated()) {
-    DCHECK(pedal_value.is_dict());
-    const int id = pedal_value.FindIntKey("id").value();
-    const auto pedal_iter = pedals_.find(static_cast<OmniboxPedalId>(id));
-    if (pedal_iter == pedals_.end()) {
-      // Data may exist for Pedals that are intentionally not registered; skip.
-      continue;
-    }
-    OmniboxPedal* pedal = pedal_iter->second.get();
-    const base::Value* ui_strings =
-        pedal_value.FindDictKey("omnibox_ui_strings");
-    if (ui_strings && pedal->GetLabelStrings().hint.empty()) {
-      pedal->SetLabelStrings(*ui_strings);
-    }
-
+  for (auto& entry : pedals_) {
+    OmniboxPedal* pedal = entry.second.get();
     OmniboxPedal::TokenSequence verbatim_sequence(0);
     TokenizeAndExpandDictionary(verbatim_sequence,
                                 pedal->GetLabelStrings().hint);
@@ -347,31 +288,21 @@ void OmniboxPedalProvider::LoadPedalConcepts() {
 
     std::vector<OmniboxPedal::SynonymGroupSpec> specs =
         pedal->SpecifySynonymGroups(language_code == "en");
-    // `specs` will be empty for any pedals not yet processed by l10n because
-    // the appropriate string names won't be defined. In such cases, we fall
-    // back to loading from JSON to robustly handle partial presence of data.
-    if (specs.empty()) {
-      for (const auto& group_value :
-           pedal_value.FindKey("groups")->GetListDeprecated()) {
-        // Note, group JSON values are preprocessed by the data generation tool.
-        pedal->AddSynonymGroup(LoadSynonymGroupValue(group_value));
-      }
-    } else {
-      for (const auto& spec : specs) {
-        // Note, group strings are not preprocessed; they are the raw outputs
-        // from translators in the localization pipeline, so we need to remove
-        // ignore group sequences and validate remaining data. The groups
-        // are sorted *after* erasing the ignore group to ensure no synonym
-        // token sequences are made shorter than sequences later in the order,
-        // which would break an invariant expected by the matching algorithm.
-        OmniboxPedal::SynonymGroup group =
-            LoadSynonymGroupString(spec.required, spec.match_once,
-                                   l10n_util::GetStringUTF16(spec.message_id));
-        group.EraseIgnoreGroup(ignore_group_);
-        group.SortSynonyms();
-        if (group.IsValid()) {
-          pedal->AddSynonymGroup(std::move(group));
-        }
+    DCHECK(!specs.empty());
+    for (const auto& spec : specs) {
+      // Note, group strings are not preprocessed; they are the raw outputs
+      // from translators in the localization pipeline, so we need to remove
+      // ignore group sequences and validate remaining data. The groups
+      // are sorted *after* erasing the ignore group to ensure no synonym
+      // token sequences are made shorter than sequences later in the order,
+      // which would break an invariant expected by the matching algorithm.
+      OmniboxPedal::SynonymGroup group =
+          LoadSynonymGroupString(spec.required, spec.match_once,
+                                 l10n_util::GetStringUTF16(spec.message_id));
+      group.EraseIgnoreGroup(ignore_group_);
+      group.SortSynonyms();
+      if (group.IsValid()) {
+        pedal->AddSynonymGroup(std::move(group));
       }
     }
   }
@@ -380,25 +311,6 @@ void OmniboxPedalProvider::LoadPedalConcepts() {
   for (auto& entry : pedals_) {
     entry.second->OnLoaded();
   }
-}
-
-OmniboxPedal::SynonymGroup OmniboxPedalProvider::LoadSynonymGroupValue(
-    const base::Value& group_value) const {
-  DCHECK(group_value.is_dict());
-  const bool required = group_value.FindKey("required")->GetBool();
-  const bool single = group_value.FindKey("single")->GetBool();
-  const auto& synonyms = group_value.FindKey("synonyms")->GetListDeprecated();
-  OmniboxPedal::SynonymGroup synonym_group(required, single, synonyms.size());
-  for (const auto& synonyms_value : synonyms) {
-    DCHECK(synonyms_value.is_list());
-    const auto& synonyms_value_list = synonyms_value.GetListDeprecated();
-    OmniboxPedal::TokenSequence synonym_all_tokens(synonyms_value_list.size());
-    for (const auto& token_index_value : synonyms_value_list) {
-      synonym_all_tokens.Add(token_index_value.GetInt());
-    }
-    synonym_group.AddSynonym(std::move(synonym_all_tokens));
-  }
-  return synonym_group;
 }
 
 OmniboxPedal::SynonymGroup OmniboxPedalProvider::LoadSynonymGroupString(
@@ -417,6 +329,10 @@ OmniboxPedal::SynonymGroup OmniboxPedalProvider::LoadSynonymGroupString(
     // added by translators for reading convenience in translation console.
     TokenizeAndExpandDictionary(
         sequence, base::CollapseWhitespace(tokenizer.token(), false));
+    // This DCHECK should only trigger in case of extra long translation
+    // phrases which would need to be fixed in the translation data itself
+    // for best efficiency, or by adjusting `kMaxTokens` if really necessary.
+    DCHECK_LE(sequence.Size(), kMaxTokens);
     group.AddSynonym(std::move(sequence));
   }
   return group;

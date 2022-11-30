@@ -84,6 +84,7 @@ const debug_suites_list = [
   'DiagnosticsNetworkIcon',
   'DiagnosticsStickyBanner',
   'DiagnosticsUtils',
+  'DrawingProvider',
   'EthernetInfo',
   'FakeMojoInterface',
   'FakeNetworkHealthProvider',
@@ -109,10 +110,12 @@ const debug_suites_list = [
   'RoutineSection',
   'SystemPage',
   'TextBadge',
+  'TouchscreenTester',
   'WifiInfo',
 ];
 
-TEST_F('DiagnosticsApp', 'BrowserTest', function() {
+// Flaky: https://crbug.com/1372958
+TEST_F('DiagnosticsApp', 'DISABLED_BrowserTest', function() {
   assertDeepEquals(
       debug_suites_list, Object.keys(test_suites_list),
       'List of registered tests suites and debug suites do not match.\n' +
@@ -121,11 +124,13 @@ TEST_F('DiagnosticsApp', 'BrowserTest', function() {
   mocha.run();
 });
 
-TEST_F('DiagnosticsAppWithNetwork', 'BrowserTest', function() {
+// Flaky: https://crbug.com/1372958
+TEST_F('DiagnosticsAppWithNetwork', 'DISABLED_BrowserTest', function() {
   mocha.run();
 });
 
-TEST_F('DiagnosticsAppWithInput', 'BrowserTest', function() {
+// Flaky: https://crbug.com/1372958
+TEST_F('DiagnosticsAppWithInput', 'DISABLED_BrowserTest', function() {
   mocha.run();
 });
 

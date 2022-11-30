@@ -162,8 +162,8 @@ BOOL canProcessCrossOriginIframes() {
   self = [super init];
   if (self) {
     DCHECK(webState);
-    IOSPasswordManagerDriverFactory::CreateForWebState(self, passwordManager,
-                                                       webState);
+    IOSPasswordManagerDriverFactory::CreateForWebState(webState, self,
+                                                       passwordManager);
     _webState = webState;
     _webStateObserverBridge =
         std::make_unique<web::WebStateObserverBridge>(self);
@@ -307,16 +307,11 @@ BOOL canProcessCrossOriginIframes() {
     return;
   }
 
-  // Casting is safe, as this code is run on iOS Chrome & WebView only.
-  auto* driver = static_cast<IOSPasswordManagerDriver*>(
-      [_driverHelper PasswordManagerDriver:web_frame]);
-  if (driver)
-    driver->ProcessFrameDeletion();
-
   auto fieldDataManager =
       UniqueIDDataTabHelper::FromWebState(_webState)->GetFieldDataManager();
-  _passwordManager->OnIframeDetach(web_frame->GetFrameId(), driver,
-                                   *fieldDataManager);
+  _passwordManager->OnIframeDetach(
+      web_frame->GetFrameId(), [_driverHelper PasswordManagerDriver:web_frame],
+      *fieldDataManager);
 }
 
 - (void)webStateDestroyed:(web::WebState*)webState {
@@ -425,8 +420,8 @@ BOOL canProcessCrossOriginIframes() {
   web::WebFrame* frame =
       web::GetWebFrameWithId(_webState, SysNSStringToUTF8(formQuery.frameID));
 
-  if (frame == nullptr || (IsCrossOriginIframe(_webState, frame) &&
-                           !canProcessCrossOriginIframes())) {
+  if (IsCrossOriginIframe(_webState, frame) &&
+      !canProcessCrossOriginIframes()) {
     completion({}, self);
     return;
   }
@@ -562,14 +557,14 @@ BOOL canProcessCrossOriginIframes() {
   return _webState ? _webState->GetLastCommittedURL() : GURL::EmptyGURL();
 }
 
-- (void)fillPasswordForm:(const autofill::PasswordFormFillData&)formData
-                 inFrame:(web::WebFrame*)frame
-       completionHandler:(void (^)(BOOL))completionHandler {
+- (void)processPasswordFormFillData:
+            (const autofill::PasswordFormFillData&)formData
+                            inFrame:(web::WebFrame*)frame {
+  // Biometric auth is always enabled on iOS so wait_for_username is
+  // specifically set to prevent filling without user confirmation.
+  DCHECK(formData.wait_for_username);
   [self.suggestionHelper processWithPasswordFormFillData:formData
                                                  inFrame:frame];
-  [self.formHelper fillPasswordForm:formData
-                            inFrame:frame
-                  completionHandler:completionHandler];
 }
 
 - (void)onNoSavedCredentials {

@@ -28,6 +28,7 @@
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/shell_dialogs/select_file_utils_win.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "url/gurl.h"
 
 namespace ui {
 
@@ -173,7 +174,8 @@ class SelectFileDialogImpl : public ui::SelectFileDialog,
                       int file_type_index,
                       const base::FilePath::StringType& default_extension,
                       gfx::NativeWindow owning_window,
-                      void* params) override;
+                      void* params,
+                      const GURL* caller) override;
 
  private:
   ~SelectFileDialogImpl() override;
@@ -241,7 +243,8 @@ void SelectFileDialogImpl::SelectFileImpl(
     int file_type_index,
     const base::FilePath::StringType& default_extension,
     gfx::NativeWindow owning_window,
-    void* params) {
+    void* params,
+    const GURL* caller) {
   has_multiple_file_type_choices_ =
       file_types ? file_types->extensions.size() > 1 : true;
 

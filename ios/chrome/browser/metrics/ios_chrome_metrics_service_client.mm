@@ -16,6 +16,7 @@
 #import "base/callback.h"
 #import "base/check.h"
 #import "base/command_line.h"
+#import "base/debug/dump_without_crashing.h"
 #import "base/files/file_path.h"
 #import "base/files/file_util.h"
 #import "base/metrics/histogram_functions.h"
@@ -24,8 +25,10 @@
 #import "base/path_service.h"
 #import "base/process/process_metrics.h"
 #import "base/rand_util.h"
+#import "base/strings/safe_sprintf.h"
 #import "base/task/thread_pool.h"
 #import "base/threading/platform_thread.h"
+#import "components/crash/core/common/crash_key.h"
 #import "components/crash/core/common/crash_keys.h"
 #import "components/history/core/browser/history_service.h"
 #import "components/keyed_service/core/service_access_type.h"
@@ -35,7 +38,6 @@
 #import "components/metrics/drive_metrics_provider.h"
 #import "components/metrics/entropy_state_provider.h"
 #import "components/metrics/field_trials_provider.h"
-#import "components/metrics/form_factor_metrics_provider.h"
 #import "components/metrics/metrics_data_validation.h"
 #import "components/metrics/metrics_log_uploader.h"
 #import "components/metrics/metrics_pref_names.h"
@@ -47,6 +49,7 @@
 #import "components/metrics/net/network_metrics_provider.h"
 #import "components/metrics/persistent_histograms.h"
 #import "components/metrics/stability_metrics_helper.h"
+#import "components/metrics/ui/form_factor_metrics_provider.h"
 #import "components/metrics/ui/screen_info_metrics_provider.h"
 #import "components/metrics/url_constants.h"
 #import "components/metrics/version_utils.h"
@@ -411,6 +414,17 @@ void IOSChromeMetricsServiceClient::CollectFinalHistograms() {
             "Memory.Browser.MemoryFootprint.Background", footprint_mb);
         break;
     }
+  } else {
+    // Max kern_return_t is 0x100 = 256, plus trailing null.
+    // (https://opensource.apple.com/source/xnu/xnu-792.25.20/osfmk/mach/kern_return.h)
+    // TODO(crbug.com/1365392): Remove this when done debugging the uncaught
+    // memory regression.
+    static crash_reporter::CrashKeyString<4> task_info_kern_return(
+        "task-info-kern-return");
+    char kr_buf[4];
+    base::strings::SafeSPrintf(kr_buf, "%d", kr);
+    task_info_kern_return.Set(kr_buf);
+    base::debug::DumpWithoutCrashing();
   }
 
   std::vector<ChromeBrowserState*> loaded_browser_states =

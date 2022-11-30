@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,7 +92,7 @@ void BeginFrameProvider::CreateCompositorFrameSinkIfNeeded() {
       cfs_receiver_.BindNewPipeAndPassRemote(task_runner),
       compositor_frame_sink_.BindNewPipeAndPassReceiver(task_runner));
 
-  compositor_frame_sink_.set_disconnect_with_reason_handler(WTF::Bind(
+  compositor_frame_sink_.set_disconnect_with_reason_handler(WTF::BindOnce(
       &BeginFrameProvider::OnMojoConnectionError, WrapWeakPersistent(this)));
 }
 

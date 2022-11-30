@@ -32,6 +32,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/back_forward_cache_can_store_document_result.h"
+#include "content/browser/renderer_host/private_network_access_util.h"
 #include "content/browser/service_worker/payment_handler_support.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
@@ -53,6 +54,7 @@
 #include "net/base/net_errors.h"
 #include "net/cookies/site_for_cookies.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
@@ -431,6 +433,23 @@ void ServiceWorkerVersion::set_fetch_handler_type(
   fetch_handler_type_ = fetch_handler_type;
 }
 
+ServiceWorkerVersion::FetchHandlerType
+ServiceWorkerVersion::EffectiveFetchHandlerType() const {
+  switch (fetch_handler_type()) {
+    case FetchHandlerType::kNoHandler:
+      return FetchHandlerType::kNoHandler;
+    case FetchHandlerType::kNotSkippable:
+      return FetchHandlerType::kNotSkippable;
+    case FetchHandlerType::kEmptyFetchHandler: {
+      if (features::kSkipEmptyFetchHandler.Get()) {
+        return FetchHandlerType::kEmptyFetchHandler;
+      } else {
+        return FetchHandlerType::kNotSkippable;
+      }
+    }
+  }
+}
+
 void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
                                        StatusCallback callback) {
   TRACE_EVENT_INSTANT2(
@@ -659,6 +678,9 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
       request_id, event_type, expiration_time, timeout_behavior);
   DCHECK(is_inserted);
   request_rawptr->timeout_iter = iter;
+  // TODO(crbug.com/1363504): remove the following DCHECK when the cause
+  // identified.
+  DCHECK_EQ(request_timeouts_.size(), inflight_requests_.size());
   if (expiration_time > max_request_expiration_time_)
     max_request_expiration_time_ = expiration_time;
 
@@ -721,6 +743,9 @@ bool ServiceWorkerVersion::FinishRequestWithFetchCount(int request_id,
       "Handled", was_handled);
   request_timeouts_.erase(request->timeout_iter);
   inflight_requests_.Remove(request_id);
+  // TODO(crbug.com/1363504): remove the following DCHECK when the cause
+  // identified.
+  DCHECK_EQ(request_timeouts_.size(), inflight_requests_.size());
 
   if (!HasWorkInBrowser())
     OnNoWorkInBrowser();
@@ -1217,20 +1242,25 @@ void ServiceWorkerVersion::OnStarted(
   blink::ServiceWorkerStatusCode status =
       mojo::ConvertTo<blink::ServiceWorkerStatusCode>(start_status);
 
-  // TODO(crbug.com/1360324): update the live version if it is feasible.
-  if (status == blink::ServiceWorkerStatusCode::kOk && fetch_handler_type_ &&
-      fetch_handler_type_ != fetch_handler_type) {
-    context_->registry()->UpdateFetchHandlerType(
-        registration_id_, key_, fetch_handler_type,
-        base::BindOnce([](blink::ServiceWorkerStatusCode status) {
+  if (status == blink::ServiceWorkerStatusCode::kOk) {
+    if (fetch_handler_type_ && fetch_handler_type_ != fetch_handler_type) {
+      context_->registry()->UpdateFetchHandlerType(
+          registration_id_, key_, fetch_handler_type,
           // Ignore errors; bumping the update fetch handler type is
           // just best-effort.
-        }));
-    base::UmaHistogramEnumeration(
-        "ServiceWorker.OnStarted.UpdatedFetchHandlerType", fetch_handler_type);
-  }
-  if (status == blink::ServiceWorkerStatusCode::kOk && !fetch_handler_type_) {
-    set_fetch_handler_type(fetch_handler_type);
+          base::DoNothing());
+      base::UmaHistogramEnumeration(
+          "ServiceWorker.OnStarted.UpdatedFetchHandlerType",
+          fetch_handler_type);
+    }
+    if (!fetch_handler_type_) {
+      set_fetch_handler_type(fetch_handler_type);
+    } else if (
+        // Avoid to change live fetch_handler_existence() result.
+        fetch_handler_type != FetchHandlerType::kNoHandler &&
+        fetch_handler_type_ != FetchHandlerType::kNoHandler) {
+      fetch_handler_type_ = fetch_handler_type;
+    }
   }
 
   // Fire all start callbacks.
@@ -1515,6 +1545,9 @@ void ServiceWorkerVersion::PostMessageToClient(
     receiver_.reset();
     return;
   }
+  // As we don't track tasks between workers and renderers, we can nullify the
+  // message's parent task ID.
+  message.parent_task_id = absl::nullopt;
   container_host->PostMessageToClient(this, std::move(message));
 }
 
@@ -1758,6 +1791,8 @@ void ServiceWorkerVersion::set_cross_origin_embedder_policy(
     network::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
   // Once it is set, the CrossOriginEmbedderPolicy is immutable.
   DCHECK(!client_security_state_ ||
+         client_security_state_->cross_origin_embedder_policy.value ==
+             network::mojom::CrossOriginEmbedderPolicyValue::kNone ||
          client_security_state_->cross_origin_embedder_policy ==
              cross_origin_embedder_policy);
   if (!client_security_state_) {
@@ -1995,6 +2030,19 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   if (policy_container_host_) {
     params->policy_container =
         policy_container_host_->CreatePolicyContainerForBlink();
+
+    if (base::FeatureList::IsEnabled(
+            features::kPrivateNetworkAccessForWorkers)) {
+      if (!client_security_state_) {
+        client_security_state_ = network::mojom::ClientSecurityState::New();
+      }
+      client_security_state_->ip_address_space =
+          policy_container_host_->ip_address_space();
+      client_security_state_->is_web_secure_context =
+          policy_container_host_->policies().is_web_secure_context;
+      client_security_state_->private_network_request_policy =
+          DerivePrivateNetworkRequestPolicy(policy_container_host_->policies());
+    }
   }
 
   embedded_worker_->Start(std::move(params),
@@ -2118,6 +2166,9 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
   // Ensure the `request_timeouts_` won't be touched during the loop.
   DCHECK(request_timeouts_.empty());
   request_timeouts_.swap(request_timeouts);
+  // TODO(crbug.com/1363504): remove the following DCHECK when the cause
+  // identified.
+  DCHECK_EQ(request_timeouts_.size(), inflight_requests_.size());
   if (stop_for_timeout && running_status() != EmbeddedWorkerStatus::STOPPING)
     embedded_worker_->Stop();
 
@@ -2230,6 +2281,9 @@ void ServiceWorkerVersion::SetAllRequestExpirations(
     request->timeout_iter = iter;
   }
   request_timeouts_.swap(new_timeouts);
+  // TODO(crbug.com/1363504): remove the following DCHECK when the cause
+  // identified.
+  DCHECK_EQ(request_timeouts_.size(), inflight_requests_.size());
 }
 
 blink::ServiceWorkerStatusCode
@@ -2338,6 +2392,13 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
     FinishStartWorker(DeduceStartWorkerFailureReason(
         blink::ServiceWorkerStatusCode::kErrorStartWorkerFailed));
   }
+
+  // TODO(crbug.com/1363504): remove the following DCHECK when the cause
+  // identified.
+  // Failing this DCHECK means, the function is called while
+  // the function is modifying contents of request_timeouts_.
+  DCHECK(inflight_requests_.IsEmpty() || !request_timeouts_.empty());
+  DCHECK_EQ(request_timeouts_.size(), inflight_requests_.size());
 
   // Let all message callbacks fail (this will also fire and clear all
   // callbacks for events).

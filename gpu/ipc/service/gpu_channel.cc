@@ -50,14 +50,12 @@
 #include "gpu/ipc/service/gles2_command_buffer_stub.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
-#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/image_decode_accelerator_stub.h"
 #include "gpu/ipc/service/raster_command_buffer_stub.h"
 #include "gpu/ipc/service/webgpu_command_buffer_stub.h"
 #include "ipc/ipc_channel.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_utils.h"
 
@@ -631,6 +629,13 @@ void GpuChannel::OnChannelError() {
   gpu_channel_manager_->RemoveChannel(client_id_);
 }
 
+void GpuChannel::GetIsolationKey(
+    const blink::WebGPUExecutionContextToken& token,
+    GetIsolationKeyCallback cb) {
+  gpu_channel_manager_->delegate()->GetIsolationKey(client_id_, token,
+                                                    std::move(cb));
+}
+
 void GpuChannel::OnCommandBufferScheduled(CommandBufferStub* stub) {
   scheduler_->EnableSequence(stub->sequence_id());
 }
@@ -1071,39 +1076,6 @@ uint64_t GpuChannel::GetMemoryUsage() const {
   size += shared_image_stub_->GetSize();
 
   return size;
-}
-
-scoped_refptr<gl::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
-    gfx::GpuMemoryBufferHandle handle,
-    const gfx::Size& size,
-    gfx::BufferFormat format,
-    gfx::BufferPlane plane,
-    SurfaceHandle surface_handle) {
-  switch (handle.type) {
-    case gfx::SHARED_MEMORY_BUFFER: {
-      if (plane != gfx::BufferPlane::DEFAULT)
-        return nullptr;
-      auto image = base::MakeRefCounted<gl::GLImageSharedMemory>(size);
-      if (!image->Initialize(handle.region, handle.id, format, handle.offset,
-                             handle.stride)) {
-        return nullptr;
-      }
-
-      return image;
-    }
-    default: {
-      GpuChannelManager* manager = gpu_channel_manager();
-      if (!manager->gpu_memory_buffer_factory())
-        return nullptr;
-
-      // TODO(b/220336463): plumb the right color space.
-      return manager->gpu_memory_buffer_factory()
-          ->AsImageFactory()
-          ->CreateImageForGpuMemoryBuffer(std::move(handle), size, format,
-                                          gfx::ColorSpace(), plane, client_id_,
-                                          surface_handle);
-    }
-  }
 }
 
 }  // namespace gpu

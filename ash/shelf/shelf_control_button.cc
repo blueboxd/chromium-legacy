@@ -82,7 +82,7 @@ gfx::Size ShelfControlButton::CalculatePreferredSize() const {
 
 void ShelfControlButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   ShelfButton::GetAccessibleNodeData(node_data);
-  node_data->SetName(GetAccessibleName());
+  node_data->SetNameChecked(GetAccessibleName());
 }
 
 void ShelfControlButton::PaintButtonContents(gfx::Canvas* canvas) {
@@ -93,7 +93,7 @@ void ShelfControlButton::PaintBackground(gfx::Canvas* canvas,
                                          const gfx::Rect& bounds) {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(ShelfConfig::Get()->GetShelfControlButtonColor());
+  flags.setColor(ShelfConfig::Get()->GetShelfControlButtonColor(GetWidget()));
   canvas->DrawRoundRect(bounds, ShelfConfig::Get()->control_border_radius(),
                         flags);
 }

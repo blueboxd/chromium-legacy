@@ -55,7 +55,7 @@
 <translation id="1442433966118452622">Umthombo wesithombe</translation>
 <translation id="1451536289672181509">Idivayisi iyikhibhodi.</translation>
 <translation id="1459693405370120464">Isimo sezulu</translation>
-<translation id="1468664791493211953">Imititilizo</translation>
+<translation id="1468664791493211953">Ukunikezwa</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> iphatha le divayisi futhi ingakwazi ukwengamela umsebenzi wakho.</translation>
 <translation id="1478594628797167447">Iskena</translation>
 <translation id="1483493594462132177">Thumela</translation>
@@ -250,6 +250,7 @@
 <translation id="3484914941826596830">Ngenkathi i-firmware ibuyekeza, ungakhiphi ukuxhuma le divayisi yangaphandle noma ucishe ikhompyutha. Unganciphisa leli windi. Lesi sibuyekezo singase sithathe imizuzu embalwa futhi idivayisi yakho yangaphandle ingase ingasebenzi phakathi nalesi sikhathi.</translation>
 <translation id="3486220673238053218">incazelo</translation>
 <translation id="3488065109653206955">Yenziwe yasebenza ngokungaphelele</translation>
+<translation id="3510890413042482857">Thumela <ph name="BEGIN_LINK1" />idatha yokulandelela ukusebenza<ph name="END_LINK1" /></translation>
 <translation id="3517001332549868749">Isibuyekezo se-ChromeOS</translation>
 <translation id="3527036260304016759">Yehlukile - Iphutha elingaziwa</translation>
 <translation id="3532980081107202182">Kusele cishe amaminithi angu-<ph name="MIN_REMAINING" /></translation>

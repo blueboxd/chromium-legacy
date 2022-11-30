@@ -76,9 +76,6 @@ std::vector<ui::AXPropertyFilter> DumpAccessibilityTreeTest::DefaultFilters()
 void DumpAccessibilityTreeTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   DumpAccessibilityTestBase::SetUpCommandLine(command_line);
-  // Enable auto expand <details> element, which is used in some tests.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnableBlinkFeatures, "AutoExpandDetailsElement");
   // Enable MathMLCore, used in other tests.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kEnableBlinkFeatures, "MathMLCore");
@@ -121,8 +118,8 @@ std::vector<std::string> DumpAccessibilityTreeTest::Dump() {
 }
 
 void DumpAccessibilityTreeTest::ChooseFeatures(
-    std::vector<base::Feature>* enabled_features,
-    std::vector<base::Feature>* disabled_features) {
+    std::vector<base::test::FeatureRef>* enabled_features,
+    std::vector<base::test::FeatureRef>* disabled_features) {
   // http://crbug.com/1063155 - temporary until this is enabled
   // everywhere.
   enabled_features->emplace_back(
@@ -134,8 +131,8 @@ void DumpAccessibilityTreeTest::ChooseFeatures(
 }
 
 void DumpAccessibilityTreeTestWithIgnoredNodes::ChooseFeatures(
-    std::vector<base::Feature>* enabled_features,
-    std::vector<base::Feature>* disabled_features) {
+    std::vector<base::test::FeatureRef>* enabled_features,
+    std::vector<base::test::FeatureRef>* disabled_features) {
   // http://crbug.com/1063155 - temporary until this is enabled
   // everywhere.
   enabled_features->emplace_back(
@@ -3282,7 +3279,14 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("node-changed-crash-in-editable-text.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityNoSourceVideo) {
+// TODO(https://crbug.com/1366446): This test is failing on Android.
+#if BUILDFLAG(IS_ANDROID)
+#define MAYBE_AccessibilityNoSourceVideo DISABLED_AccessibilityNoSourceVideo
+#else
+#define MAYBE_AccessibilityNoSourceVideo AccessibilityNoSourceVideo
+#endif  // BUILDFLAG(IS_ANDROID)
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       MAYBE_AccessibilityNoSourceVideo) {
 #if BUILDFLAG(IS_MAC)
   // The /blink test pass is different on macOS than on other platforms. See
   // https://crbug.com/1314896.

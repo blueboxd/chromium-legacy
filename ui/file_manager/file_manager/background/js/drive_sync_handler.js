@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from 'chrome://resources/js/assert.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
 
 import {AsyncUtil} from '../../common/js/async_util.js';
@@ -12,6 +13,7 @@ import {xfm} from '../../common/js/xfm.js';
 import {DriveSyncHandler} from '../../externs/background/drive_sync_handler.js';
 import {ProgressCenter} from '../../externs/background/progress_center.js';
 import {DriveDialogControllerInterface} from '../../externs/drive_dialog_controller.js';
+import {MetadataModel} from '../../foreground/js/metadata/metadata_model.js';
 
 import {fileOperationUtil} from './file_operation_util.js';
 
@@ -31,6 +33,13 @@ export class DriveSyncHandlerImpl extends EventTarget {
      * @private
      */
     this.progressCenter_ = progressCenter;
+
+    /**
+     * The metadata model to notify entries have changed.
+     * @type {?MetadataModel}
+     * @private
+     */
+    this.metadataModel_ = null;
 
     /**
      * Predefined error ID for out of quota messages.
@@ -185,6 +194,13 @@ export class DriveSyncHandlerImpl extends EventTarget {
   }
 
   /**
+   * @param {!MetadataModel} model
+   */
+  set metadataModel(model) {
+    this.metadataModel_ = model;
+  }
+
+  /**
    * Returns the completed event name.
    * @return {string}
    */
@@ -234,9 +250,30 @@ export class DriveSyncHandlerImpl extends EventTarget {
       this.progressCenter_.updateItem(item);
       return;
     }
+
+    /** @type {?Entry}  */
+    let entry;
+    if (status.fileUrl) {
+      try {
+        entry = await util.urlToEntry(status.fileUrl);
+      } catch (error) {
+        console.warn('Resolving URL ' + status.fileUrl + ' is failed: ', error);
+      }
+    }
+
+    if (util.isInlineSyncStatusEnabled()) {
+      if (entry) {
+        this.metadataModel_.notifyEntriesChanged([entry]);
+        this.metadataModel_.get([entry], ['syncStatus']);
+      }
+
+      // If inline sync status is enabled, don't display visual signal for
+      // Drive syncing.
+      return;
+    }
     switch (status.transferState) {
       case 'in_progress':
-        await this.updateItem_(item, status);
+        await this.updateItem_(item, status, entry);
         break;
       case 'completed':
       case 'failed':
@@ -256,15 +293,17 @@ export class DriveSyncHandlerImpl extends EventTarget {
    * @param {ProgressCenterItem} item Item to update.
    * @param {chrome.fileManagerPrivate.FileTransferStatus} status Transfer
    *     status.
+   * @param {?Entry} entry Transfer status' corresponding entry.
    * @private
    */
-  async updateItem_(item, status) {
+  async updateItem_(item, status, entry) {
+    if (!entry) {
+      console.warn('No corresponding entry for progress update event.');
+      return;
+    }
+
     const unlock = await this.queue_.lock();
     try {
-      const entry = await new Promise((resolve, reject) => {
-        window.webkitResolveLocalFileSystemURL(status.fileUrl, resolve, reject);
-      });
-
       item.state = ProgressItemState.PROGRESSING;
       item.type = ProgressItemType.SYNC;
       item.quiet = true;
@@ -284,8 +323,6 @@ export class DriveSyncHandlerImpl extends EventTarget {
       item.remainingTime = speedometer.getRemainingTime();
 
       this.progressRateLimiter_.run();
-    } catch (error) {
-      console.warn('Resolving URL ' + status.fileUrl + ' is failed: ', error);
     } finally {
       unlock();
     }

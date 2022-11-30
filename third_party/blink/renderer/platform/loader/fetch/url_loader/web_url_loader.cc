@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -115,34 +115,6 @@ network::mojom::LoadTimingInfo ToMojoLoadTiming(
       load_timing.service_worker_ready_time,
       load_timing.service_worker_fetch_start,
       load_timing.service_worker_respond_with_settled);
-}
-
-// This is complementary to ConvertNetPriorityToWebKitPriority, defined in
-// service_worker_context_client.cc.
-// TODO(yhirano): Move this to blink/platform/loader.
-net::RequestPriority ConvertWebKitPriorityToNetPriority(
-    const WebURLRequest::Priority& priority) {
-  switch (priority) {
-    case WebURLRequest::Priority::kVeryHigh:
-      return net::HIGHEST;
-
-    case WebURLRequest::Priority::kHigh:
-      return net::MEDIUM;
-
-    case WebURLRequest::Priority::kMedium:
-      return net::LOW;
-
-    case WebURLRequest::Priority::kLow:
-      return net::LOWEST;
-
-    case WebURLRequest::Priority::kVeryLow:
-      return net::IDLE;
-
-    case WebURLRequest::Priority::kUnresolved:
-    default:
-      NOTREACHED();
-      return net::LOW;
-  }
 }
 
 // TODO(crbug.com/862940): Use KURL here.
@@ -394,7 +366,7 @@ void WebURLLoader::Context::DidChangePriority(
     int intra_priority_value) {
   if (request_id_ != -1) {
     net::RequestPriority net_priority =
-        ConvertWebKitPriorityToNetPriority(new_priority);
+        WebURLRequest::ConvertToNetPriority(new_priority);
     resource_request_sender_->DidChangePriority(net_priority,
                                                 intra_priority_value);
     // TODO(https://crbug.com/1137682): Change this to
@@ -736,6 +708,7 @@ void WebURLLoader::PopulateURLResponse(
   response->SetWasAlpnNegotiated(head.was_alpn_negotiated);
   response->SetAlpnNegotiatedProtocol(
       WebString::FromUTF8(head.alpn_negotiated_protocol));
+  response->SetAlternateProtocolUsage(head.alternate_protocol_usage);
   response->SetHasAuthorizationCoveredByWildcardOnPreflight(
       head.has_authorization_covered_by_wildcard_on_preflight);
   response->SetWasAlternateProtocolAvailable(
@@ -985,6 +958,7 @@ net::NetworkTrafficAnnotationTag WebURLLoader::Context::GetTrafficAnnotationTag(
     case network::mojom::RequestDestination::kIframe:
     case network::mojom::RequestDestination::kFrame:
     case network::mojom::RequestDestination::kFencedframe:
+    case network::mojom::RequestDestination::kWebIdentity:
       NOTREACHED();
       [[fallthrough]];
 

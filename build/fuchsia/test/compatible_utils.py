@@ -5,8 +5,10 @@
 
 import os
 import re
+import subprocess
 
-from typing import Tuple
+from typing import List, Optional, Tuple
+
 
 # File indicating version of an image downloaded to the host
 _BUILD_ARGS = "buildargs.gn"
@@ -16,6 +18,19 @@ _FILTER_DIR = 'testing/buildbot/filters'
 
 class VersionNotFoundError(Exception):
     """Thrown when version info cannot be retrieved from device."""
+
+
+def pave(image_dir: str, target_id: Optional[str])\
+        -> subprocess.CompletedProcess:
+    """"Pave a device using the pave script inside |image_dir|."""
+
+    pave_command = [
+        os.path.join(image_dir, 'pave.sh'), '--authorized-keys',
+        os.path.expanduser('~/.ssh/fuchsia_authorized_keys'), '-1'
+    ]
+    if target_id:
+        pave_command.extend(['-n', target_id])
+    return subprocess.run(pave_command, check=True, text=True, timeout=300)
 
 
 def parse_host_port(host_port_pair: str) -> Tuple[str, int]:
@@ -39,6 +54,17 @@ def parse_host_port(host_port_pair: str) -> Tuple[str, int]:
     if len(host) >= 4 and host[0] == '[' and host[-1] == ']':
         host = host[1:-1]
     return (host, int(port))
+
+
+def get_ssh_prefix(host_port_pair: str) -> List[str]:
+    """Get the prefix of a barebone ssh command."""
+
+    ssh_addr, ssh_port = parse_host_port(host_port_pair)
+    return [
+        'ssh', '-F',
+        os.path.expanduser('~/.fuchsia/sshconfig'), ssh_addr, '-p',
+        str(ssh_port)
+    ]
 
 
 # TODO(crbug.com/1279803): Until one can send files to the device when running

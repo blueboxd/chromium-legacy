@@ -11,24 +11,43 @@
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/compiler_specific.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/component_export.h"
+#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "build/build_config.h"
 
 namespace partition_alloc {
 
-enum class PageAccessibilityConfiguration {
-  kInaccessible,
-  kRead,
-  kReadWrite,
-  // This flag is mapped to kReadWrite on systems that
-  // don't support MTE.
-  kReadWriteTagged,
-  // This flag is mapped to kReadExecute on systems
-  // that don't support Arm's BTI.
-  kReadExecuteProtected,
-  kReadExecute,
-  // This flag is deprecated and will go away soon.
-  // TODO(bbudge) Remove this as soon as V8 doesn't need RWX pages.
-  kReadWriteExecute,
+struct PageAccessibilityConfiguration {
+  enum Permissions {
+    kInaccessible,
+    kRead,
+    kReadWrite,
+    // This flag is mapped to kReadWrite on systems that
+    // don't support MTE.
+    kReadWriteTagged,
+    // This flag is mapped to kReadExecute on systems
+    // that don't support Arm's BTI.
+    kReadExecuteProtected,
+    kReadExecute,
+    // This flag is deprecated and will go away soon.
+    // TODO(bbudge) Remove this as soon as V8 doesn't need RWX pages.
+    kReadWriteExecute,
+  };
+
+#if BUILDFLAG(ENABLE_PKEYS)
+  constexpr PageAccessibilityConfiguration(Permissions permissions)
+      : permissions(permissions), pkey(0) {}
+  constexpr PageAccessibilityConfiguration(Permissions permissions, int pkey)
+      : permissions(permissions), pkey(pkey) {}
+#else
+  constexpr PageAccessibilityConfiguration(Permissions permissions)
+      : permissions(permissions) {}
+#endif  // BUILDFLAG(ENABLE_PKEYS)
+
+  Permissions permissions;
+#if BUILDFLAG(ENABLE_PKEYS)
+  // Tag the page with a Memory Protection Key. Use 0 for none.
+  int pkey;
+#endif  // BUILDFLAG(ENABLE_PKEYS)
 };
 
 // Use for De/RecommitSystemPages API.
@@ -78,12 +97,17 @@ uintptr_t NextAlignedWithOffset(uintptr_t ptr,
 // |page_tag| is used on some platforms to identify the source of the
 // allocation. Use PageTag::kChromium as a catch-all category.
 //
+// |file_descriptor_for_shared_alloc| is only used in mapping the shadow
+// pools to the same physical address as the real one in
+// PartitionAddressSpace::Init(). It should be ignored in other cases.
+//
 // This call will return 0/nullptr if the allocation cannot be satisfied.
 PA_COMPONENT_EXPORT(PARTITION_ALLOC)
 uintptr_t AllocPages(size_t length,
                      size_t align,
                      PageAccessibilityConfiguration accessibility,
-                     PageTag page_tag);
+                     PageTag page_tag,
+                     int file_descriptor_for_shared_alloc = -1);
 PA_COMPONENT_EXPORT(PARTITION_ALLOC)
 uintptr_t AllocPages(uintptr_t address,
                      size_t length,
@@ -103,7 +127,8 @@ uintptr_t AllocPagesWithAlignOffset(
     size_t align,
     size_t align_offset,
     PageAccessibilityConfiguration page_accessibility,
-    PageTag page_tag);
+    PageTag page_tag,
+    int file_descriptor_for_shared_alloc = -1);
 
 // Frees one or more pages starting at |address| and continuing for |length|
 // bytes.

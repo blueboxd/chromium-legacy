@@ -21,23 +21,27 @@ namespace enterprise_connectors {
 
 namespace {
 
-constexpr char kFakeCustomerId[] = "fake_obfuscated_customer_id";
 constexpr char kFakeEnrollmentDomain[] = "fake.domain.google.com";
-constexpr char kFakeDeviceId[] = "fake_device_id";
 constexpr char kLatencyHistogram[] =
     "Enterprise.DeviceTrust.SignalsDecorator.Latency.Browser";
-constexpr char kCachedLatencyHistogram[] =
-    "Enterprise.DeviceTrust.SignalsDecorator.Latency.Browser.WithCache";
+
+constexpr int32_t kDisabledSetting = 1;
+constexpr int32_t kEnabledSetting = 2;
+
+base::Value::List GetExpectedMacAddresses() {
+  base::Value::List mac_addresses;
+  mac_addresses.Append("00:00:00:00:00:00");
+  return mac_addresses;
+}
 
 }  // namespace
 
 class BrowserSignalsDecoratorTest : public testing::Test {
  protected:
   void SetUp() override {
-    fake_dm_token_storage_.SetClientId(kFakeDeviceId);
     enterprise_signals::DeviceInfoFetcher::SetForceStubForTesting(
         /*should_force=*/true);
-    decorator_.emplace(&fake_dm_token_storage_, &mock_cloud_policy_store_);
+    decorator_.emplace(&mock_cloud_policy_store_);
   }
 
   void TearDown() override {
@@ -47,24 +51,55 @@ class BrowserSignalsDecoratorTest : public testing::Test {
 
   void SetFakePolicyData() {
     auto policy_data = std::make_unique<enterprise_management::PolicyData>();
-    policy_data->set_obfuscated_customer_id(kFakeCustomerId);
     policy_data->set_managed_by(kFakeEnrollmentDomain);
     mock_cloud_policy_store_.set_policy_data_for_testing(
         std::move(policy_data));
   }
 
   void ValidateStaticSignals(const base::Value::Dict& signals) {
-    EXPECT_EQ(*signals.FindString(device_signals::names::kDeviceId),
-              kFakeDeviceId);
-    EXPECT_EQ(*signals.FindString(device_signals::names::kSerialNumber),
-              "twirlchange");
-    EXPECT_EQ(*signals.FindBool(device_signals::names::kIsDiskEncrypted),
-              false);
+    const auto* serial_number =
+        signals.FindString(device_signals::names::kSerialNumber);
+    ASSERT_TRUE(serial_number);
+    EXPECT_EQ(*serial_number, "twirlchange");
+
+    auto screen_lock_secured =
+        signals.FindInt(device_signals::names::kScreenLockSecured);
+    ASSERT_TRUE(screen_lock_secured);
+    EXPECT_EQ(screen_lock_secured.value(), kEnabledSetting);
+
+    auto disk_encrypted =
+        signals.FindInt(device_signals::names::kDiskEncrypted);
+    ASSERT_TRUE(disk_encrypted);
+    EXPECT_EQ(disk_encrypted.value(), kDisabledSetting);
+
+    const auto* device_host_name =
+        signals.FindString(device_signals::names::kDeviceHostName);
+    ASSERT_TRUE(device_host_name);
+    EXPECT_EQ(*device_host_name, "midnightshift");
+
+    const auto* mac_addresses =
+        signals.FindList(device_signals::names::kMacAddresses);
+    ASSERT_TRUE(mac_addresses);
+    EXPECT_EQ(*mac_addresses, GetExpectedMacAddresses());
+
+    const auto* windows_machine_domain =
+        signals.FindString(device_signals::names::kWindowsMachineDomain);
+    ASSERT_TRUE(windows_machine_domain);
+    EXPECT_EQ(*windows_machine_domain, "MACHINE_DOMAIN");
+
+    const auto* windows_user_domain =
+        signals.FindString(device_signals::names::kWindowsUserDomain);
+    ASSERT_TRUE(windows_user_domain);
+    EXPECT_EQ(*windows_user_domain, "USER_DOMAIN");
+
+    auto secure_boot_enabled =
+        signals.FindInt(device_signals::names::kSecureBootEnabled);
+    ASSERT_TRUE(secure_boot_enabled);
+    EXPECT_EQ(secure_boot_enabled.value(), kEnabledSetting);
   }
 
   base::test::TaskEnvironment task_environment_;
   base::HistogramTester histogram_tester_;
-  policy::FakeBrowserDMTokenStorage fake_dm_token_storage_;
   policy::MockCloudPolicyStore mock_cloud_policy_store_;
   absl::optional<BrowserSignalsDecorator> decorator_;
 };
@@ -81,28 +116,11 @@ TEST_F(BrowserSignalsDecoratorTest, Decorate_WithPolicyData) {
 
   ValidateStaticSignals(signals);
 
-  EXPECT_EQ(kFakeCustomerId,
-            *signals.FindString(device_signals::names::kObfuscatedCustomerId));
-  EXPECT_EQ(kFakeEnrollmentDomain,
-            *signals.FindString(device_signals::names::kEnrollmentDomain));
+  EXPECT_EQ(
+      kFakeEnrollmentDomain,
+      *signals.FindString(device_signals::names::kDeviceEnrollmentDomain));
 
   histogram_tester_.ExpectTotalCount(kLatencyHistogram, 1);
-  histogram_tester_.ExpectTotalCount(kCachedLatencyHistogram, 0);
-
-  // Running a second time will exercise the caching code.
-  base::RunLoop second_run_loop;
-  base::Value::Dict second_signals;
-  decorator_->Decorate(second_signals, second_run_loop.QuitClosure());
-
-  second_run_loop.Run();
-
-  EXPECT_EQ(*signals.FindString(device_signals::names::kSerialNumber),
-            *second_signals.FindString(device_signals::names::kSerialNumber));
-  EXPECT_EQ(*signals.FindBool(device_signals::names::kIsDiskEncrypted),
-            *second_signals.FindBool(device_signals::names::kIsDiskEncrypted));
-
-  histogram_tester_.ExpectTotalCount(kLatencyHistogram, 1);
-  histogram_tester_.ExpectTotalCount(kCachedLatencyHistogram, 1);
 }
 
 TEST_F(BrowserSignalsDecoratorTest, Decorate_WithoutPolicyData) {
@@ -114,8 +132,8 @@ TEST_F(BrowserSignalsDecoratorTest, Decorate_WithoutPolicyData) {
   run_loop.Run();
 
   ValidateStaticSignals(signals);
-  EXPECT_FALSE(signals.contains(device_signals::names::kObfuscatedCustomerId));
-  EXPECT_FALSE(signals.contains(device_signals::names::kEnrollmentDomain));
+  EXPECT_FALSE(
+      signals.contains(device_signals::names::kDeviceEnrollmentDomain));
 }
 
 }  // namespace enterprise_connectors

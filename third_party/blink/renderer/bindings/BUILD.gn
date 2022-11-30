@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -232,7 +232,15 @@ action_with_pydeps("check_generated_file_list") {
   web_idl_database = web_idl_database_outputs[0]
   result_file = "${bindings_gen_dir}/check_generated_file_list_results.txt"
 
-  inputs = [ web_idl_database ]
+  inputs = [
+    web_idl_database,
+    "//third_party/blink/renderer/bindings/generated_in_core.gni",
+    "//third_party/blink/renderer/bindings/generated_in_extensions_chromeos.gni",
+    "//third_party/blink/renderer/bindings/generated_in_modules.gni",
+    "//third_party/blink/renderer/bindings/idl_in_core.gni",
+    "//third_party/blink/renderer/bindings/idl_in_extensions_chromeos.gni",
+    "//third_party/blink/renderer/bindings/idl_in_modules.gni",
+  ]
   outputs = [ result_file ]
 
   file_list = []

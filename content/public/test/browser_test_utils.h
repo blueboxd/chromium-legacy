@@ -40,6 +40,8 @@
 #include "content/public/test/fake_frame_widget.h"
 #include "content/public/test/test_utils.h"
 #include "ipc/message_filter.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/base/load_flags.h"
 #include "net/cookies/cookie_options.h"
@@ -48,10 +50,13 @@
 #include "storage/common/file_system/file_system_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/context_menu_data/untrustworthy_context_menu_params.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-test-utils.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/frame/remote_frame.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
@@ -352,6 +357,10 @@ void SimulateGestureScrollSequence(RenderWidgetHost* render_widget_host,
 void SimulateGestureScrollSequence(WebContents* web_contents,
                                    const gfx::Point& point,
                                    const gfx::Vector2dF& delta);
+
+void SimulateGestureEvent(RenderWidgetHost* render_widget_host,
+                          const blink::WebGestureEvent& gesture_event,
+                          const ui::LatencyInfo& latency);
 
 void SimulateGestureEvent(WebContents* web_contents,
                           const blink::WebGestureEvent& gesture_event,
@@ -983,6 +992,18 @@ bool SetCookie(BrowserContext* browser_context,
                    net::CookieOptions::SameSiteCookieContext::MakeInclusive(),
                net::SamePartyContext::Type party_context =
                    net::SamePartyContext::Type::kSameParty);
+
+// Same as `SetCookie`, but sets a Partitioned cookie with the given partition
+// key. `value` is expected to use the `Partitioned` attribute.
+bool SetPartitionedCookie(
+    BrowserContext* browser_context,
+    const GURL& url,
+    const std::string& value,
+    const net::CookiePartitionKey& cookie_partition_key,
+    net::CookieOptions::SameSiteCookieContext context =
+        net::CookieOptions::SameSiteCookieContext::MakeInclusive(),
+    net::SamePartyContext::Type party_context =
+        net::SamePartyContext::Type::kSameParty);
 
 // Deletes cookies matching the provided filter. Returns the number of cookies
 // that were deleted.
@@ -2027,7 +2048,34 @@ class UpdateUserActivationStateInterceptor
   bool update_user_activation_state_ = false;
 };
 
-WebContents* GetEmbedderForGuest(content::WebContents* guest);
+// Helper class to interpose on Blob URL registrations, replacing the URL
+// contained in incoming registration requests with the specified URL.
+class BlobURLStoreInterceptor
+    : public blink::mojom::BlobURLStoreInterceptorForTesting {
+ public:
+  static void Intercept(
+      GURL target_url,
+      mojo::SelfOwnedAssociatedReceiverRef<blink::mojom::BlobURLStore>
+          receiver);
+
+  ~BlobURLStoreInterceptor() override;
+
+  blink::mojom::BlobURLStore* GetForwardingInterface() override;
+
+  void Register(
+      mojo::PendingRemote<blink::mojom::Blob> blob,
+      const GURL& url,
+      // TODO(https://crbug.com/1224926): Remove these once experiment is over.
+      const base::UnguessableToken& unsafe_agent_cluster_id,
+      const absl::optional<net::SchemefulSite>& unsafe_top_level_site,
+      RegisterCallback callback) override;
+
+ private:
+  explicit BlobURLStoreInterceptor(GURL target_url);
+
+  std::unique_ptr<blink::mojom::BlobURLStore> url_store_;
+  GURL target_url_;
+};
 
 // Load the given |url| with |network_context| and return the |net::Error| code.
 //

@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "chrome/browser/apps/app_preload_service/app_preload_service_factory.h"
 #include "chrome/browser/apps/app_preload_service/device_info_manager.h"
+#include "chrome/browser/apps/app_preload_service/preload_app_definition.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -40,13 +41,16 @@ static constexpr char kApsStateManager[] =
 
 AppPreloadService::AppPreloadService(Profile* profile)
     : profile_(profile),
-      server_connector_(std::make_unique<AppPreloadServerConnector>()) {
+      server_connector_(std::make_unique<AppPreloadServerConnector>()),
+      device_info_manager_(std::make_unique<DeviceInfoManager>(profile)) {
   // Check to see if the service has been run before.
   auto is_first_run = GetStateManager().FindBool(kFirstLoginFlowCompletedKey);
   if (is_first_run == absl::nullopt) {
     // the first run completed key has not been set, kick off the initial app
     // installation flow.
-    StartAppInstallationForFirstLogin();
+    device_info_manager_->GetDeviceInfo(
+        base::BindOnce(&AppPreloadService::StartAppInstallationForFirstLogin,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -63,17 +67,22 @@ void AppPreloadService::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(prefs::kApsStateManager);
 }
 
-void AppPreloadService::StartAppInstallationForFirstLogin() {
+void AppPreloadService::StartAppInstallationForFirstLogin(
+    DeviceInfo device_info) {
   server_connector_->GetAppsForFirstLogin(
-      DeviceInfoManager(profile_),
+      device_info, profile_->GetURLLoaderFactory(),
       base::BindOnce(&AppPreloadService::OnGetAppsForFirstLoginCompleted,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void AppPreloadService::OnGetAppsForFirstLoginCompleted() {
-  DictionaryPrefUpdate(profile_->GetPrefs(), prefs::kApsStateManager)
-      ->GetDict()
-      .Set(kFirstLoginFlowCompletedKey, true);
+void AppPreloadService::OnGetAppsForFirstLoginCompleted(
+    std::vector<PreloadAppDefinition> apps) {
+  ScopedDictPrefUpdate(profile_->GetPrefs(), prefs::kApsStateManager)
+      ->Set(kFirstLoginFlowCompletedKey, true);
+
+  if (check_first_pref_set_callback_) {
+    std::move(check_first_pref_set_callback_).Run();
+  }
 }
 
 const base::Value::Dict& AppPreloadService::GetStateManager() const {

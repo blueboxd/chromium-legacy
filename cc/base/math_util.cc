@@ -276,12 +276,6 @@ gfx::Rect MathUtil::MapEnclosingClippedRectIgnoringError(
     return src_rect + gfx::ToFlooredVector2d(transform.To2dTranslation());
 
   gfx::RectF mapped_rect = MapClippedRect(transform, gfx::RectF(src_rect));
-
-  // gfx::ToEnclosingRect crashes if called on a RectF with any NaN coordinate.
-  if (std::isnan(mapped_rect.x()) || std::isnan(mapped_rect.y()) ||
-      std::isnan(mapped_rect.right()) || std::isnan(mapped_rect.bottom()))
-    return gfx::Rect();
-
   return gfx::ToEnclosingRectIgnoringError(mapped_rect, ignore_error);
 }
 
@@ -467,7 +461,7 @@ bool MathUtil::MapClippedQuad3d(const gfx::Transform& transform,
     bool clamp_by_points = false;
     float length = normal.Length();
     if (std::isnormal(length)) {  // exclude 0, denormals, +/- inf, NaN
-      normal.Scale(1.0f / length);
+      normal.InvScale(length);
 
       // Find the vector to the point in the plane closest to (0,0,0).
       gfx::Vector3dF shortest_from_zero(normal);

@@ -83,13 +83,18 @@ class TabletModeWindowState : public WindowState::State {
   // window state. If |animated| is set we animate the change.
   void UpdateBounds(WindowState* window_state, bool animated);
 
-  // Handles Alt+[ if |snap_position| is |SplitViewController::LEFT|; handles
-  // Alt+] if |snap_position| is |SplitViewController::RIGHT|.
+  // Handles Alt+[ if |snap_position| is
+  // |SplitViewController::SnapPosition::kPrimary|; handles // Alt+] if
+  // |snap_position| is |SplitViewController::SnapPosition::kSecondary|.
   void CycleTabletSnap(WindowState* window_state,
                        SplitViewController::SnapPosition snap_position);
 
   // Snap the window in tablet split view if it can be snapped.
   void DoTabletSnap(WindowState* window_state, WMEventType snap_event_type);
+
+  // Called by `WM_EVENT_RESTORE`, or a `WM_EVENT_NORMAL` that is restoring.
+  // Restores to the state in `window_states`'s restore history.
+  void DoRestore(WindowState* window_state);
 
   // The original bounds and state object of the window.
   gfx::Rect old_window_bounds_in_screen_;

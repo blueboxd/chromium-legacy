@@ -6,11 +6,11 @@
 #define COMPONENTS_PREFS_IN_MEMORY_PREF_STORE_H_
 
 #include <stdint.h>
-
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_value_map.h"
@@ -27,7 +27,7 @@ class COMPONENTS_PREFS_EXPORT InMemoryPrefStore : public PersistentPrefStore {
   InMemoryPrefStore& operator=(const InMemoryPrefStore&) = delete;
 
   // PrefStore implementation.
-  bool GetValue(const std::string& key,
+  bool GetValue(base::StringPiece key,
                 const base::Value** result) const override;
   base::Value::Dict GetValues() const override;
   void AddObserver(PrefStore::Observer* observer) override;
@@ -39,10 +39,10 @@ class COMPONENTS_PREFS_EXPORT InMemoryPrefStore : public PersistentPrefStore {
   bool GetMutableValue(const std::string& key, base::Value** result) override;
   void ReportValueChanged(const std::string& key, uint32_t flags) override;
   void SetValue(const std::string& key,
-                std::unique_ptr<base::Value> value,
+                base::Value value,
                 uint32_t flags) override;
   void SetValueSilently(const std::string& key,
-                        std::unique_ptr<base::Value> value,
+                        base::Value value,
                         uint32_t flags) override;
   void RemoveValue(const std::string& key, uint32_t flags) override;
   bool ReadOnly() const override;

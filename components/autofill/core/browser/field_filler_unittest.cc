@@ -153,8 +153,6 @@ class AutofillFieldFillerTest : public testing::Test {
 
 TEST_F(AutofillFieldFillerTest, Type) {
   AutofillField field;
-  AutofillQueryResponse::FormSuggestion::FieldSuggestion::FieldPrediction
-      prediction;
 
   ASSERT_EQ(NO_SERVER_DATA, field.server_type());
   ASSERT_EQ(UNKNOWN_TYPE, field.heuristic_type());
@@ -168,8 +166,8 @@ TEST_F(AutofillFieldFillerTest, Type) {
   EXPECT_EQ(FieldTypeGroup::kName, field.Type().group());
 
   // Set the server type and check it.
-  prediction.set_type(ADDRESS_HOME_LINE1);
-  field.set_server_predictions({prediction});
+  field.set_server_predictions(
+      {::autofill::test::CreateFieldPrediction(ADDRESS_HOME_LINE1)});
   EXPECT_EQ(ADDRESS_HOME_LINE1, field.Type().GetStorableType());
   EXPECT_EQ(FieldTypeGroup::kAddressHome, field.Type().group());
 
@@ -179,14 +177,14 @@ TEST_F(AutofillFieldFillerTest, Type) {
   EXPECT_EQ(FieldTypeGroup::kAddressHome, field.Type().group());
 
   // Checks that setting server type resets overall type.
-  prediction.set_type(ADDRESS_HOME_LINE1);
-  field.set_server_predictions({prediction});
+  field.set_server_predictions(
+      {::autofill::test::CreateFieldPrediction(ADDRESS_HOME_LINE1)});
   EXPECT_EQ(ADDRESS_HOME_LINE1, field.Type().GetStorableType());
   EXPECT_EQ(FieldTypeGroup::kAddressHome, field.Type().group());
 
   // Remove the server type to make sure the heuristic type is preserved.
-  prediction.set_type(NO_SERVER_DATA);
-  field.set_server_predictions({prediction});
+  field.set_server_predictions(
+      {::autofill::test::CreateFieldPrediction(NO_SERVER_DATA)});
   EXPECT_EQ(NAME_FIRST, field.Type().GetStorableType());
   EXPECT_EQ(FieldTypeGroup::kName, field.Type().group());
 
@@ -228,27 +226,25 @@ TEST_F(AutofillFieldFillerTest, Type_CreditCardOverrideHtml_Heuristics) {
 // unrecognized autocomplete attribute.
 TEST_F(AutofillFieldFillerTest, Type_CreditCardOverrideHtml_ServerPredicitons) {
   AutofillField field;
-  AutofillQueryResponse::FormSuggestion::FieldSuggestion::FieldPrediction
-      prediction;
 
   field.SetHtmlType(HtmlFieldType::kUnrecognized, HtmlFieldMode::kNone);
 
   // A credit card server prediction overrides the unrecognized type.
-  prediction.set_type(CREDIT_CARD_NUMBER);
-  field.set_server_predictions({prediction});
+  field.set_server_predictions(
+      {::autofill::test::CreateFieldPrediction(CREDIT_CARD_NUMBER)});
   EXPECT_EQ(CREDIT_CARD_NUMBER, field.Type().GetStorableType());
 
   // A non credit card server prediction doesn't override the unrecognized
   // type.
-  prediction.set_type(NAME_FIRST);
-  field.set_server_predictions({prediction});
+  field.set_server_predictions(
+      {::autofill::test::CreateFieldPrediction(NAME_FIRST)});
   EXPECT_EQ(UNKNOWN_TYPE, field.Type().GetStorableType());
 
   // A credit card server prediction doesn't override a known specified html
   // type.
   field.SetHtmlType(HtmlFieldType::kName, HtmlFieldMode::kNone);
-  prediction.set_type(CREDIT_CARD_NUMBER);
-  field.set_server_predictions({prediction});
+  field.set_server_predictions(
+      {::autofill::test::CreateFieldPrediction(CREDIT_CARD_NUMBER)});
   EXPECT_EQ(NAME_FULL, field.Type().GetStorableType());
 }
 
@@ -258,37 +254,35 @@ TEST_F(AutofillFieldFillerTest, Type_CreditCardOverrideHtml_ServerPredicitons) {
 TEST_F(AutofillFieldFillerTest,
        Type_ServerPredictionOfCityAndNumber_OverrideHtml) {
   AutofillField field;
-  AutofillQueryResponse::FormSuggestion::FieldSuggestion::FieldPrediction
-      prediction;
 
   field.SetHtmlType(HtmlFieldType::kTel, HtmlFieldMode::kNone);
 
-  prediction.set_type(PHONE_HOME_CITY_AND_NUMBER);
-  field.set_server_predictions({prediction});
+  field.set_server_predictions(
+      {::autofill::test::CreateFieldPrediction(PHONE_HOME_CITY_AND_NUMBER)});
   EXPECT_EQ(PHONE_HOME_CITY_AND_NUMBER, field.Type().GetStorableType());
 
   // Overrides to another number format.
-  prediction.set_type(PHONE_HOME_NUMBER);
-  field.set_server_predictions({prediction});
+  field.set_server_predictions(
+      {::autofill::test::CreateFieldPrediction(PHONE_HOME_NUMBER)});
   EXPECT_EQ(PHONE_HOME_NUMBER, field.Type().GetStorableType());
 
   // Overrides autocomplete=tel-national too.
   field.SetHtmlType(HtmlFieldType::kTelNational, HtmlFieldMode::kNone);
-  prediction.set_type(PHONE_HOME_WHOLE_NUMBER);
-  field.set_server_predictions({prediction});
+  field.set_server_predictions(
+      {::autofill::test::CreateFieldPrediction(PHONE_HOME_WHOLE_NUMBER)});
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER, field.Type().GetStorableType());
 
   // If autocomplete=tel-national but server says it's not a phone field,
   // do not override.
   field.SetHtmlType(HtmlFieldType::kTelNational, HtmlFieldMode::kNone);
-  prediction.set_type(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR);
-  field.set_server_predictions({prediction});
+  field.set_server_predictions({::autofill::test::CreateFieldPrediction(
+      CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR)});
   EXPECT_EQ(PHONE_HOME_CITY_AND_NUMBER, field.Type().GetStorableType());
 
   // If html type not specified, we still use server prediction.
   field.SetHtmlType(HtmlFieldType::kUnspecified, HtmlFieldMode::kNone);
-  prediction.set_type(PHONE_HOME_CITY_AND_NUMBER);
-  field.set_server_predictions({prediction});
+  field.set_server_predictions(
+      {::autofill::test::CreateFieldPrediction(PHONE_HOME_CITY_AND_NUMBER)});
   EXPECT_EQ(PHONE_HOME_CITY_AND_NUMBER, field.Type().GetStorableType());
 }
 
@@ -334,8 +328,6 @@ TEST_F(AutofillFieldFillerTest, FieldSignatureAsStr) {
 
 TEST_F(AutofillFieldFillerTest, IsFieldFillable) {
   AutofillField field;
-  AutofillQueryResponse::FormSuggestion::FieldSuggestion::FieldPrediction
-      prediction;
   ASSERT_EQ(UNKNOWN_TYPE, field.Type().GetStorableType());
 
   // Type is unknown.
@@ -347,14 +339,14 @@ TEST_F(AutofillFieldFillerTest, IsFieldFillable) {
 
   // Only server type is set.
   field.set_heuristic_type(GetActivePatternSource(), UNKNOWN_TYPE);
-  prediction.set_type(NAME_LAST);
-  field.set_server_predictions({prediction});
+  field.set_server_predictions(
+      {::autofill::test::CreateFieldPrediction(NAME_LAST)});
   EXPECT_TRUE(field.IsFieldFillable());
 
   // Both types set.
   field.set_heuristic_type(GetActivePatternSource(), NAME_FIRST);
-  prediction.set_type(NAME_LAST);
-  field.set_server_predictions({prediction});
+  field.set_server_predictions(
+      {::autofill::test::CreateFieldPrediction(NAME_LAST)});
   EXPECT_TRUE(field.IsFieldFillable());
 
   // Field has autocomplete="off" set. Since autofill was able to make a
@@ -1377,11 +1369,9 @@ TEST_F(AutofillFieldFillerTest, FillStreetAddressTextArea) {
 
 TEST_F(AutofillFieldFillerTest, FillStreetAddressTextField) {
   AutofillField field;
-  AutofillQueryResponse::FormSuggestion::FieldSuggestion::FieldPrediction
-      prediction;
   field.form_control_type = "text";
-  prediction.set_type(ADDRESS_HOME_STREET_ADDRESS);
-  field.set_server_predictions({prediction});
+  field.set_server_predictions(
+      {::autofill::test::CreateFieldPrediction(ADDRESS_HOME_STREET_ADDRESS)});
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
 
   std::u16string value = u"123 Fake St.\nApt. 42";
@@ -1715,145 +1705,79 @@ INSTANTIATE_TEST_SUITE_P(
         FillStateTextTestCase{HtmlFieldType::kAddressLevel1, 3, u"Quebec", u"",
                               false}));
 
-// Tests that the correct option is chosen in the selection box when one of the
-// options exactly matches the phone country code.
-TEST_F(AutofillFieldFillerTest,
-       FillSelectControlPhoneCountryCodeWithExactMatch) {
-  base::test::ScopedFeatureList enabled;
-  enabled.InitAndEnableFeature(
-      features::kAutofillEnableAugmentedPhoneCountryCode);
+// Tests that augment phone country code fields are filled correctly.
+struct FillAugmentedPhoneCountryCodeTestCase {
+  std::vector<const char*> phone_country_code_selection_options;
+  std::u16string phone_home_whole_number_value;
+  std::u16string expected_value;
+};
 
-  std::vector<const char*> kPhoneCountryCode = {"91", "1", "20", "49"};
+class AutofillFillAugmentedPhoneCountryCodeTest
+    : public AutofillFieldFillerTest,
+      public testing::WithParamInterface<
+          FillAugmentedPhoneCountryCodeTestCase> {};
+
+TEST_P(AutofillFillAugmentedPhoneCountryCodeTest,
+       FillAugmentedPhoneCountryCodeField) {
+  auto test_case = GetParam();
   AutofillField field;
-  test::CreateTestSelectField(kPhoneCountryCode, &field);
+  test::CreateTestSelectField(test_case.phone_country_code_selection_options,
+                              &field);
   field.set_heuristic_type(GetActivePatternSource(), PHONE_HOME_COUNTRY_CODE);
 
   AutofillProfile address;
-  address.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"+15145554578");
+  address.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
+                     test_case.phone_home_whole_number_value);
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   filler.FillFormField(field, &address, /*forced_fill_values=*/{}, &field,
                        /*cvc=*/std::u16string(),
                        mojom::RendererFormDataAction::kFill);
-  EXPECT_EQ(u"1", field.value);
+  EXPECT_EQ(field.value, test_case.expected_value);
 }
 
-// Tests that the correct option is chosen in the selection box when the options
-// are preceded by a plus sign and the field is of |PHONE_HOME_COUNTRY_CODE|
-// type.
-TEST_F(AutofillFieldFillerTest,
-       FillSelectControlPhoneCountryCodePrecededByPlus) {
-  base::test::ScopedFeatureList enabled;
-  enabled.InitAndEnableFeature(
-      features::kAutofillEnableAugmentedPhoneCountryCode);
-
-  std::vector<const char*> kPhoneCountryCode = {"+91", "+1", "+20", "+49"};
-  AutofillField field;
-  test::CreateTestSelectField(kPhoneCountryCode, &field);
-  field.set_heuristic_type(GetActivePatternSource(), PHONE_HOME_COUNTRY_CODE);
-
-  AutofillProfile address;
-  address.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"+918890888888");
-  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, &address, /*forced_fill_values=*/{}, &field,
-                       /*cvc=*/std::u16string(),
-                       mojom::RendererFormDataAction::kFill);
-  EXPECT_EQ(u"+91", field.value);
-}
-
-// Tests that the correct option is chosen in the selection box when the options
-// are preceded by a '00' and the field is of |PHONE_HOME_COUNTRY_CODE|
-// type.
-TEST_F(AutofillFieldFillerTest,
-       FillSelectControlPhoneCountryCodePrecededByDoubleZeros) {
-  base::test::ScopedFeatureList enabled;
-  enabled.InitAndEnableFeature(
-      features::kAutofillEnableAugmentedPhoneCountryCode);
-
-  std::vector<const char*> kPhoneCountryCode = {"0091", "001", "0020", "0049"};
-  AutofillField field;
-  test::CreateTestSelectField(kPhoneCountryCode, &field);
-  field.set_heuristic_type(GetActivePatternSource(), PHONE_HOME_COUNTRY_CODE);
-
-  AutofillProfile address;
-  address.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"+918890888888");
-  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, &address, /*forced_fill_values=*/{}, &field,
-                       /*cvc=*/std::u16string(),
-                       mojom::RendererFormDataAction::kFill);
-  EXPECT_EQ(u"0091", field.value);
-}
-
-// Tests that the correct option is chosen in the selection box when the options
-// are composed of the country code and the country name.
-TEST_F(AutofillFieldFillerTest, FillSelectControlAugmentedPhoneCountryCode) {
-  base::test::ScopedFeatureList enabled;
-  enabled.InitAndEnableFeature(
-      features::kAutofillEnableAugmentedPhoneCountryCode);
-
-  std::vector<const char*> kPhoneCountryCode = {
-      "Please select an option", "+91 (India)", "+1 (United States)",
-      "+20 (Egypt)", "+49 (Germany)"};
-  AutofillField field;
-  test::CreateTestSelectField(kPhoneCountryCode, &field);
-  field.set_heuristic_type(GetActivePatternSource(), PHONE_HOME_COUNTRY_CODE);
-
-  AutofillProfile address;
-  address.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"+49151669087345");
-  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, &address, /*forced_fill_values=*/{}, &field,
-                       /*cvc=*/std::u16string(),
-                       mojom::RendererFormDataAction::kFill);
-  EXPECT_EQ(u"+49 (Germany)", field.value);
-}
-
-// Tests that the correct option is chosen in the selection box when the options
-// are composed of the country code having whitespace and the country name.
-TEST_F(AutofillFieldFillerTest,
-       FillSelectControlAugmentedPhoneCountryCodeWithWhiteSpaces) {
-  base::test::ScopedFeatureList enabled;
-  enabled.InitAndEnableFeature(
-      features::kAutofillEnableAugmentedPhoneCountryCode);
-
-  std::vector<const char*> kPhoneCountryCode = {
-      "Please select an option", "(00 91) India", "(00 1) United States",
-      "(00 20) Egypt", "(00 49) Germany"};
-  AutofillField field;
-  test::CreateTestSelectField(kPhoneCountryCode, &field);
-  field.set_heuristic_type(GetActivePatternSource(), PHONE_HOME_COUNTRY_CODE);
-
-  AutofillProfile address;
-  address.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"+49151669087345");
-  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, &address, /*forced_fill_values=*/{}, &field,
-                       /*cvc=*/std::u16string(),
-                       mojom::RendererFormDataAction::kFill);
-  EXPECT_EQ(u"(00 49) Germany", field.value);
-}
-
-// Tests that the correct option is chosen in the selection box when the options
-// are composed of the country code that is preceded by '00' and the country
-// name.
-TEST_F(AutofillFieldFillerTest,
-       FillSelectControlAugmentedPhoneCountryCodeHavingDoubleZeros) {
-  base::test::ScopedFeatureList enabled;
-  enabled.InitAndEnableFeature(
-      features::kAutofillEnableAugmentedPhoneCountryCode);
-
-  std::vector<const char*> kPhoneCountryCode = {
-      "Please select an option", "(0091) India", "(001) United States",
-      "(0020) Egypt", "(0049) Germany"};
-  AutofillField field;
-  test::CreateTestSelectField(kPhoneCountryCode, &field);
-  field.set_heuristic_type(GetActivePatternSource(), PHONE_HOME_COUNTRY_CODE);
-
-  AutofillProfile address;
-  address.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"+49151669087345");
-  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, &address, /*forced_fill_values=*/{}, &field,
-                       /*cvc=*/std::u16string(),
-                       mojom::RendererFormDataAction::kFill);
-  EXPECT_EQ(u"(0049) Germany", field.value);
-}
+INSTANTIATE_TEST_SUITE_P(
+    AutofillFieldFillerTest,
+    AutofillFillAugmentedPhoneCountryCodeTest,
+    testing::Values(
+        // Filling phone country code selection field when one of the options
+        // exactly matches the phone country code.
+        FillAugmentedPhoneCountryCodeTestCase{{"91", "1", "20", "49"},
+                                              u"+15145554578",
+                                              u"1"},
+        // Filling phone country code selection field when the options
+        // are preceded by a plus sign and the field is of
+        // `PHONE_HOME_COUNTRY_CODE` type.
+        FillAugmentedPhoneCountryCodeTestCase{{"+91", "+1", "+20", "+49"},
+                                              u"+918890888888",
+                                              u"+91"},
+        // Filling phone country code selection field when the options
+        // are preceded by a '00' and the field is of `PHONE_HOME_COUNTRY_CODE`
+        // type.
+        FillAugmentedPhoneCountryCodeTestCase{{"0091", "001", "0020", "0049"},
+                                              u"+918890888888",
+                                              u"0091"},
+        // Filling phone country code selection field when the options are
+        // composed of the country code and the country name.
+        FillAugmentedPhoneCountryCodeTestCase{
+            {"Please select an option", "+91 (India)", "+1 (United States)",
+             "+20 (Egypt)", "+49 (Germany)"},
+            u"+49151669087345",
+            u"+49 (Germany)"},
+        // Filling phone country code selection field when the options are
+        // composed of the country code having whitespace and the country name.
+        FillAugmentedPhoneCountryCodeTestCase{
+            {"Please select an option", "(00 91) India", "(00 1) United States",
+             "(00 20) Egypt", "(00 49) Germany"},
+            u"+49151669087345",
+            u"(00 49) Germany"},
+        // Filling phone country code selection field when the options are
+        // composed of the country code that is preceded by '00' and the country
+        // name.
+        FillAugmentedPhoneCountryCodeTestCase{
+            {"Please select an option", "(0091) India", "(001) United States",
+             "(0020) Egypt", "(0049) Germany"},
+            u"+49151669087345",
+            u"(0049) Germany"}));
 
 // Tests that the abbreviated state names are selected correctly.
 TEST_F(AutofillFieldFillerTest, FillSelectAbbreviatedState) {

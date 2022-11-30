@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_rtp_contributing_source.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_rtp_synchronization_source.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver.h"
-#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_source.h"
@@ -25,6 +24,7 @@
 namespace blink {
 
 class RTCPeerConnection;
+class ScriptState;
 
 // Implements RTCRtpReceiver.getSynchronizationSources/getContributingSources as
 // well as a cache of the result. The cache serves two purposes:
@@ -56,7 +56,8 @@ class RtpContributingSourceCache {
   // Ensures the cache for `requesting_receiver` is up-to-date. Based on a
   // heuristic, this method may update the cache for all other receivers while
   // it is at it.
-  void MaybeUpdateRtpSources(RTCRtpReceiver* requesting_receiver);
+  void MaybeUpdateRtpSources(ScriptState* script_state,
+                             RTCRtpReceiver* requesting_receiver);
   void UpdateRtpSourcesOnWorkerThread(
       Vector<RTCRtpReceiverPlatform*>* receivers,
       HashMap<RTCRtpReceiverPlatform*, RTCRtpSources>*

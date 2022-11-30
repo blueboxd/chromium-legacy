@@ -541,11 +541,33 @@ void DemoSession::InstallAppFromUpdateUrl(const std::string& id) {
   extensions_external_loader_->LoadApp(id);
 }
 
+void DemoSession::SetKeyboardBrightnessToOneHundredPercentFromCurrentLevel(
+    absl::optional<double> keyboard_brightness_percentage) {
+  // Map of current keyboard brightness percentage to times needed to call
+  // IncreaseKeyboardBrightness to reach max brightness level.
+  const base::flat_map<int, int> kTimesToIncreaseKeyboardBrightnessToMax = {
+      {0, 5}, {10, 4}, {20, 3}, {40, 2}, {60, 1}, {100, 0}};
+
+  if (keyboard_brightness_percentage.has_value()) {
+    const auto timesToIncreaseKeyboardBrightness =
+        kTimesToIncreaseKeyboardBrightnessToMax.find(
+            keyboard_brightness_percentage.value());
+
+    if (kTimesToIncreaseKeyboardBrightnessToMax.end() !=
+        timesToIncreaseKeyboardBrightness) {
+      for (int i = 0; i < timesToIncreaseKeyboardBrightness->second; i++) {
+        chromeos::PowerManagerClient::Get()->IncreaseKeyboardBrightness();
+      }
+    }
+  }
+}
+
 void DemoSession::OnSessionStateChanged() {
   switch (session_manager::SessionManager::Get()->session_state()) {
     case session_manager::SessionState::LOGIN_PRIMARY:
-      EnsureResourcesLoaded(base::BindOnce(&DemoSession::ShowSplashScreen,
-                                           weak_ptr_factory_.GetWeakPtr()));
+      EnsureResourcesLoaded(
+          base::BindOnce(&DemoSession::ConfigureAndStartSplashScreen,
+                         weak_ptr_factory_.GetWeakPtr()));
       break;
     case session_manager::SessionState::ACTIVE:
       if (ShouldRemoveSplashScreen())
@@ -572,6 +594,14 @@ void DemoSession::OnSessionStateChanged() {
                     ->GetAccountId());
       }
 
+      if (chromeos::PowerManagerClient::Get()) {
+        chromeos::PowerManagerClient::Get()->GetKeyboardBrightnessPercent(
+            base::BindOnce(
+                &DemoSession::
+                    SetKeyboardBrightnessToOneHundredPercentFromCurrentLevel,
+                weak_ptr_factory_.GetWeakPtr()));
+      }
+
       if (!ash::features::IsDemoModeSWAEnabled() ||
           extension_misc::IsDemoModeChromeApp(GetHighlightsAppId())) {
         // Do app installation when one of the following condition holds:
@@ -586,7 +616,7 @@ void DemoSession::OnSessionStateChanged() {
         g_browser_process->platform_part()->cros_component_manager()->Load(
             "demo-mode-app",
             component_updater::CrOSComponentManager::MountPolicy::kMount,
-            component_updater::CrOSComponentManager::UpdatePolicy::kForce,
+            component_updater::CrOSComponentManager::UpdatePolicy::kDontForce,
             base::BindOnce(&DemoSession::OnDemoAppComponentLoaded,
                            weak_ptr_factory_.GetWeakPtr()));
       }
@@ -597,6 +627,13 @@ void DemoSession::OnSessionStateChanged() {
     default:
       break;
   }
+}
+
+base::FilePath DemoSession::GetDemoAppComponentPath() {
+  DCHECK(!DemoSession::default_demo_app_component_path_.empty());
+  return base::FilePath(GetSwitchOrDefault(
+      switches::kDemoModeSwaContentDirectory,
+      DemoSession::default_demo_app_component_path_.value()));
 }
 
 void LaunchDemoSystemWebApp() {
@@ -614,25 +651,38 @@ void DemoSession::OnDemoAppComponentLoaded(
                  << static_cast<int>(error);
     return;
   }
-  demo_app_component_path_ = path;
+  default_demo_app_component_path_ = path;
   Profile* profile = ProfileManager::GetActiveUserProfile();
   ash::SystemWebAppManager::Get(profile)->on_apps_synchronized().Post(
       FROM_HERE, base::BindOnce(&LaunchDemoSystemWebApp));
 }
 
-void DemoSession::ShowSplashScreen() {
-  const std::string current_locale = g_browser_process->GetApplicationLocale();
-  base::FilePath image_path = demo_resources_->path()
-                                  .Append(kSplashScreensPath)
-                                  .Append(current_locale + ".jpg");
-  if (!base::PathExists(image_path)) {
-    image_path =
-        demo_resources_->path().Append(kSplashScreensPath).Append("en-US.jpg");
-  }
+base::FilePath GetSplashScreenImagePath(base::FilePath localized_image_path,
+                                        base::FilePath fallback_path) {
+  return base::PathExists(localized_image_path) ? localized_image_path
+                                                : fallback_path;
+}
+
+void DemoSession::ShowSplashScreen(base::FilePath image_path) {
   WallpaperControllerClientImpl::Get()->ShowAlwaysOnTopWallpaper(image_path);
   remove_splash_screen_fallback_timer_->Start(
       FROM_HERE, kRemoveSplashScreenTimeout,
       base::BindOnce(&DemoSession::RemoveSplashScreen,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DemoSession::ConfigureAndStartSplashScreen() {
+  const std::string current_locale = g_browser_process->GetApplicationLocale();
+  base::FilePath localized_image_path = demo_resources_->path()
+                                            .Append(kSplashScreensPath)
+                                            .Append(current_locale + ".jpg");
+  base::FilePath fallback_path =
+      demo_resources_->path().Append(kSplashScreensPath).Append("en-US.jpg");
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&GetSplashScreenImagePath, localized_image_path,
+                     fallback_path),
+      base::BindOnce(&DemoSession::ShowSplashScreen,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 

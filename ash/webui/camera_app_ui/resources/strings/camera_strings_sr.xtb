@@ -9,7 +9,7 @@
 <translation id="1300209025925956156">Скенирајте документ</translation>
 <translation id="1309250603447638106">Преузимају се ажурирања за скенирање докумената</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Тастер за претрагу + стрелица налево да бисте приступили.</translation>
-<translation id="1393338179284529051">Quad HD</translation>
+<translation id="1417314334557041815">Измени <ph name="INDEX" />. страницу</translation>
 <translation id="1430915738399379752">Штампај</translation>
 <translation id="1467231725790366244">Камера <ph name="CAMERA" /> је искључена.</translation>
 <translation id="1473110567575736769">Тајмер за 3 секунде</translation>
@@ -20,8 +20,8 @@
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1627744224761163218">4×4</translation>
 <translation id="1664224225747386870">Ништа није снимљено</translation>
-<translation id="169335673490251151">Скенирај додатне странице</translation>
 <translation id="1838104802459806957">Нагињање нагоре</translation>
+<translation id="1843105061469674856">Скенирај додатну страницу</translation>
 <translation id="1851169887664797861">Доступне су додатне контроле за камеру</translation>
 <translation id="1851616744363735765">ПАУЗИРАНО</translation>
 <translation id="1862930711583847113">Извоз датотеке <ph name="FILE" /> није успео</translation>
@@ -46,7 +46,6 @@
 <translation id="2599796128805996109">Задња камера</translation>
 <translation id="2759905922487820242"><ph name="CURRENT" />/<ph name="MAXIMAL" /> сек</translation>
 <translation id="2761536921376153655">Тип скенирања</translation>
-<translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">Преглед пресликавања</translation>
 <translation id="2879583609344924966">Камера <ph name="CAMERA" /> је прикључена.</translation>
 <translation id="2904654629665923749">Доступно је скенирање докумената</translation>
@@ -80,6 +79,7 @@
 <translation id="414641094616694804">Ова камера не може да промени резолуцију</translation>
 <translation id="4269820728363426813">Копирај адресу линка</translation>
 <translation id="4281620174117014503">Средња резолуција</translation>
+<translation id="428234092390943511">Сличица странице</translation>
 <translation id="4329152592498422850">Пређи на режим за снимање слика у облику квадрата</translation>
 <translation id="4340659173795395806">Сада можете да направите PDF са више страница</translation>
 <translation id="4383571725254449280">Евиденције о учинку штампања</translation>
@@ -114,7 +114,6 @@
 <translation id="5916664084637901428">Укључено</translation>
 <translation id="5975083100439434680">Умањивање</translation>
 <translation id="5976160379964388480">Други</translation>
-<translation id="603973421174355542">Full HD</translation>
 <translation id="6073451960410192870">Заустави снимање</translation>
 <translation id="6197807149213783179">Сачувај метаподатке</translation>
 <translation id="6233780560267770709">3 са 3</translation>
@@ -137,7 +136,6 @@
 <translation id="698156982839284926">3 секунде</translation>
 <translation id="712848772518857951">Желите ли стварно да уклоните ове ставке (<ph name="COUNT" />)?</translation>
 <translation id="7134221860976209830">Тајмер за 10 секунди</translation>
-<translation id="7150591439198955032">4K</translation>
 <translation id="7191890674911603392">Тип записа</translation>
 <translation id="7243947652761655814">Резолуција видео снимка</translation>
 <translation id="7337660886763914220">Грешке система датотека.</translation>
@@ -162,7 +160,6 @@
 <translation id="8167081290930651932">Сачувај као слику</translation>
 <translation id="8239780215768881278">Направите видео-снимак</translation>
 <translation id="8261506727792406068">Избриши</translation>
-<translation id="839162370397157884">Изабери страницу</translation>
 <translation id="8425673304802773841">Нагињање надоле</translation>
 <translation id="8428213095426709021">Подешавања</translation>
 <translation id="8629662593426079630">360p</translation>

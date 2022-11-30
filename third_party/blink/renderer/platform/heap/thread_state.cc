@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "v8/include/cppgc/heap-consistency.h"
 #include "v8/include/v8-cppgc.h"
 #include "v8/include/v8-embedder-heap.h"
-#include "v8/include/v8-initialization.h"
 #include "v8/include/v8-isolate.h"
 #include "v8/include/v8-object.h"
 #include "v8/include/v8-traced-handle.h"
@@ -54,12 +53,8 @@ class BlinkRootsHandler final : public v8::EmbedderRootsHandler {
   // invoked for references where IsRoot() returned false during young
   // generation garbage collections.
   void ResetRoot(const v8::TracedReference<v8::Value>& handle) final {
-    const uint16_t class_id = handle.WrapperClassId();
-    // Only consider handles that have not been treated as roots, see IsRoot().
-    if (class_id != WrapperTypeInfo::kNodeClassId &&
-        class_id != WrapperTypeInfo::kObjectClassId)
-      return;
-
+    DCHECK(handle.WrapperClassId() == WrapperTypeInfo::kNodeClassId ||
+           handle.WrapperClassId() == WrapperTypeInfo::kObjectClassId);
     // Clearing the wrapper below adjusts the DOM wrapper store which may
     // re-allocate its backing. NoGarbageCollectionScope is required to avoid
     // triggering a GC from such re-allocating calls as ResetRoot() is itself
@@ -252,13 +247,6 @@ void ThreadState::CollectNodeAndCssStatistics(
 
 void ThreadState::EnableDetachedGarbageCollectionsForTesting() {
   cpp_heap().EnableDetachedGarbageCollectionsForTesting();
-  // Detached GCs cannot rely on the V8 platform being initialized which is
-  // needed by cppgc to perform a garbage collection.
-  static bool v8_platform_initialized = false;
-  if (!v8_platform_initialized) {
-    v8::V8::InitializePlatform(gin::V8Platform::Get());
-    v8_platform_initialized = true;
-  }
 }
 
 bool ThreadState::IsIncrementalMarking() {

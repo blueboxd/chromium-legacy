@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -881,7 +881,7 @@ void RemoteFrame::AdvanceFocus(mojom::blink::FocusType type,
 bool RemoteFrame::DetachChildren() {
   using FrameVector = HeapVector<Member<Frame>>;
   FrameVector children_to_detach;
-  children_to_detach.ReserveCapacity(Tree().ChildCount());
+  children_to_detach.reserve(Tree().ChildCount());
   for (Frame* child = Tree().FirstChild(); child;
        child = child->Tree().NextSibling())
     children_to_detach.push_back(child);

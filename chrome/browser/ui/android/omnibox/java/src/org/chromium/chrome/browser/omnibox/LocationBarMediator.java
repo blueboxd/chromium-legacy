@@ -362,6 +362,8 @@ class LocationBarMediator
                 mLocationBarLayout.setUrlActionContainerVisibility(View.GONE);
             }
 
+            // Add expansion animation for the space besides status view in location bar.
+            mLocationBarLayout.setUrlFocusChangePercent(fraction);
             mStatusCoordinator.setUrlFocusChangePercent(fraction);
         }
     }
@@ -1073,7 +1075,7 @@ class LocationBarMediator
         // This widget must guarantee consistent feature set regardless of search engine choice or
         // other aspects that may not be met by Lens.
         LocationBarDataProvider dataProvider = getLocationBarDataProvider();
-        if (dataProvider.getPageClassification(dataProvider.isIncognito())
+        if (dataProvider.getPageClassification(dataProvider.isIncognito(), /*isPrefetch=*/false)
                 == PageClassification.ANDROID_SEARCH_WIDGET_VALUE) {
             return false;
         }
@@ -1180,6 +1182,42 @@ class LocationBarMediator
             // padding area. Set clip padding to false to prevent them from getting clipped.
             mLocationBarLayout.setClipToPadding(false);
         }
+    }
+
+    float getUrlBarTranslationXForToolbarAnimation(float urlExpansionPercent, boolean isOnNtp) {
+        // No offset is required if we are not showing the SE logo.
+        if (!mSearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                    mLocationBarDataProvider.isIncognito())) {
+            return 0;
+        }
+
+        boolean isRtl = mLocationBarLayout.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
+        // The calculation here is: the difference in padding between the focused vs unfocused
+        // states and also accounts for the translation that the status icon will do. In the end,
+        // this translation will be the distance that the url bar needs to travel to arrive at the
+        // desired padding when focused.
+        float translation =
+                urlExpansionPercent * mLocationBarLayout.getEndPaddingPixelSizeOnFocusDelta();
+
+        boolean scrollingOnNtp =
+                !mUrlHasFocus && mStatusCoordinator.isSearchEngineStatusIconVisible() && isOnNtp;
+        if (scrollingOnNtp) {
+            // When:
+            // 1. unfocusing the LocationBar on the NTP.
+            // 2. scrolling the fakebox to the LocationBar on the NTP.
+            // The status icon and the URL bar text overlap in the animation.
+            //
+            // This branch calculates the negative distance the URL bar needs to travel to
+            // completely overlap the status icon and end up in a state that matches the fakebox.
+            translation -= (1f - urlExpansionPercent)
+                    * (mStatusCoordinator.getStatusIconWidth()
+                            - mLocationBarLayout.getEndPaddingPixelSizeOnFocusDelta());
+        }
+        // For LTR, the value is negative because the status icon is left of the url bar on the
+        // x/y plane.
+        // For RTL, the value is positive because the status icon is right of the url bar on the
+        // x/y plane.
+        return isRtl ? -translation : translation;
     }
 
     // LocationBarData.Observer implementation

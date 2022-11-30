@@ -189,6 +189,8 @@ enum class AccessPoint : int {
   ACCESS_POINT_SEND_TAB_TO_SELF_PROMO = 36,
   ACCESS_POINT_NTP_FEED_TOP_PROMO = 37,
   ACCESS_POINT_SETTINGS_SYNC_OFF_ROW = 38,
+  ACCESS_POINT_POST_DEVICE_RESTORE_SIGNIN_PROMO = 39,
+  ACCESS_POINT_POST_DEVICE_RESTORE_BACKGROUND_SIGNIN = 40,
   // Add values above this line with a corresponding label to the
   // "SigninAccessPoint" enum in tools/metrics/histograms/enums.xml
   ACCESS_POINT_MAX,  // This must be last.
@@ -449,6 +451,23 @@ enum class FetchAccountCapabilitiesFromSystemLibraryResult {
   kErrorUnexpectedValue = 21,
 
   kMaxValue = kErrorUnexpectedValue
+};
+
+// Enum values used for "Signin.SyncConsentScreen.DataRowClicked"
+// histogram, which records that a user tapped on an entry in TangibleSync
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// TODO(crbug.com/1373063): use this enum in java
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
+enum class SigninSyncConsentDataRow {
+  // The bookmark row is tapped.
+  kBookmarksRowTapped = 0,
+  // The Autofill row is tapped.
+  kAutofillRowTapped = 1,
+  // The "History and more" row is tapped.
+  kHistoryRowTapped = 2,
+  // Always the last enumerated type.
+  kMaxValue = kHistoryRowTapped,
 };
 
 // -----------------------------------------------------------------------------

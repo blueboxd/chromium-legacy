@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ash/guest_os/public/guest_os_mount_provider_registry.h"
 
-#include <algorithm>
 #include <vector>
 
+#include "base/ranges/algorithm.h"
 #include "chrome/browser/ash/guest_os/guest_os_test_helpers.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_mount_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,10 +21,11 @@ class MockObserver : public GuestOsMountProviderRegistry::Observer {
  public:
   std::vector<Id> ids_;
   void OnRegistered(Id id, GuestOsMountProvider* provider) override {
+    DCHECK(provider);
     ids_.push_back(id);
   }
   void OnUnregistered(Id id) override {
-    auto pos = std::find(ids_.begin(), ids_.end(), id);
+    auto pos = base::ranges::find(ids_, id);
     if (pos != ids_.end()) {
       ids_.erase(pos);
     }
@@ -68,9 +69,9 @@ TEST_F(GuestOsMountProviderRegistryTest, TestObservation) {
   std::vector<Id> expected = std::vector<Id>{0, 1};
   ASSERT_EQ(obs.ids_, expected);
   registry.Unregister(0);
-  ASSERT_EQ(obs.ids_.size(), 1);
+  ASSERT_EQ(obs.ids_.size(), 1u);
   registry.Unregister(1);
-  ASSERT_EQ(obs.ids_.size(), 0);
+  ASSERT_EQ(obs.ids_.size(), 0u);
 }
 
 }  // namespace guest_os

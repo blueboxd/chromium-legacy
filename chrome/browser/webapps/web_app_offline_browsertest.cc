@@ -5,23 +5,20 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/test/service_worker_registration_waiter.h"
 #include "chrome/browser/web_applications/test/web_app_icon_waiter.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
-#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
-#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
-#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/ui_base_switches.h"
@@ -100,6 +97,12 @@ class WebAppOfflineTest : public InProcessBrowserTest {
     content::TestNavigationObserver observer(web_contents, 1);
     web_contents->GetController().Reload(content::ReloadType::NORMAL, false);
     observer.Wait();
+  }
+
+  void CloseBrowser(content::WebContents* web_contents) {
+    Browser* app_browser = chrome::FindBrowserWithWebContents(web_contents);
+    app_browser->window()->Close();
+    ui_test_utils::WaitForBrowserToClose(app_browser);
   }
 };
 
@@ -333,6 +336,50 @@ IN_PROC_BROWSER_TEST_P(WebAppOfflinePageTest, WebAppOfflineMetricsBackOnline) {
   }
 }
 
+IN_PROC_BROWSER_TEST_P(WebAppOfflinePageTest, WebAppOfflineMetricsPwaClosing) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ExpectUniqueSample(net::ERR_INTERNET_DISCONNECTED, 0);
+  web_app::AppId app_id =
+      StartWebAppAndDisconnect(web_contents, "/banners/no-sw-with-colors.html");
+
+  SyncHistograms();
+  histogram()->ExpectTotalCount(kHistogramDurationShown, 0);
+  histogram()->ExpectTotalCount(kHistogramClosingReason, 0);
+
+  if (GetParam() == PageFlagParam::kWithDefaultPageFlag) {
+    ExpectUniqueSample(net::ERR_INTERNET_DISCONNECTED, 1);
+    // Expect that the default offline page is showing.
+    EXPECT_TRUE(
+        EvalJs(web_contents,
+               "document.getElementById('default-web-app-msg') !== null")
+            .ExtractBool());
+
+    CloseBrowser(web_contents);
+
+    SyncHistograms();
+    histogram()->ExpectTotalCount(kHistogramDurationShown, 1);
+    histogram()->ExpectTotalCount(kHistogramClosingReason, 1);
+    EXPECT_THAT(histogram()->GetAllSamples(kHistogramClosingReason),
+                ElementsAre(base::Bucket(/* min= */ 2, /* count= */ 1)));
+  } else {
+    ExpectUniqueSample(net::ERR_INTERNET_DISCONNECTED, 0);
+    // Expect that the default offline page is not showing.
+    EXPECT_TRUE(
+        EvalJs(web_contents,
+               "document.getElementById('default-web-app-msg') === null")
+            .ExtractBool());
+
+    CloseBrowser(web_contents);
+
+    // There should be no histograms still.
+    SyncHistograms();
+    histogram()->ExpectTotalCount(kHistogramDurationShown, 0);
+    histogram()->ExpectTotalCount(kHistogramClosingReason, 0);
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(
     All,
     WebAppOfflinePageTest,
@@ -344,7 +391,7 @@ class WebAppOfflineDarkModeTest
       public testing::WithParamInterface<blink::mojom::PreferredColorScheme> {
  public:
   WebAppOfflineDarkModeTest() {
-    std::vector<base::Feature> disabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
 #if BUILDFLAG(IS_CHROMEOS)
     disabled_features.push_back(chromeos::features::kDarkLightMode);
 #endif
@@ -388,8 +435,16 @@ class WebAppOfflineDarkModeTest
 
 // Testing offline page in dark mode for a web app with a manifest and no
 // service worker.
+// TODO(crbug.com/1373750): tests are flaky on Lacros.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_WebAppOfflineDarkModeNoServiceWorker \
+  DISABLED_WebAppOfflineDarkModeNoServiceWorker
+#else
+#define MAYBE_WebAppOfflineDarkModeNoServiceWorker \
+  WebAppOfflineDarkModeNoServiceWorker
+#endif
 IN_PROC_BROWSER_TEST_P(WebAppOfflineDarkModeTest,
-                       WebAppOfflineDarkModeNoServiceWorker) {
+                       MAYBE_WebAppOfflineDarkModeNoServiceWorker) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // ui::NativeTheme::GetInstanceForNativeUi()->set_use_dark_colors(true);
@@ -435,9 +490,16 @@ IN_PROC_BROWSER_TEST_P(WebAppOfflineDarkModeTest,
 
 // Testing offline page in dark mode for a web app with a manifest and service
 // worker that does not handle offline error.
-// TODO(1295430): Flaky on both Linux and Windows CI bots
+// TODO(crbug.com/1373750): tests are flaky on Lacros.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_WebAppOfflineDarkModeEmptyServiceWorker \
+  DISABLED_WebAppOfflineDarkModeEmptyServiceWorker
+#else
+#define MAYBE_WebAppOfflineDarkModeEmptyServiceWorker \
+  WebAppOfflineDarkModeEmptyServiceWorker
+#endif
 IN_PROC_BROWSER_TEST_P(WebAppOfflineDarkModeTest,
-                       WebAppOfflineDarkModeEmptyServiceWorker) {
+                       MAYBE_WebAppOfflineDarkModeEmptyServiceWorker) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* web_contents =
@@ -483,8 +545,16 @@ IN_PROC_BROWSER_TEST_P(WebAppOfflineDarkModeTest,
 
 // Testing offline page in dark mode for a web app with a manifest that has not
 // provided dark mode colors.
+// TODO(crbug.com/1373750): tests are flaky on Lacros.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_WebAppOfflineNoDarkModeColorsProvided \
+  DISABLED_WebAppOfflineNoDarkModeColorsProvided
+#else
+#define MAYBE_WebAppOfflineNoDarkModeColorsProvided \
+  WebAppOfflineNoDarkModeColorsProvided
+#endif
 IN_PROC_BROWSER_TEST_P(WebAppOfflineDarkModeTest,
-                       WebAppOfflineNoDarkModeColorsProvided) {
+                       MAYBE_WebAppOfflineNoDarkModeColorsProvided) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* web_contents =

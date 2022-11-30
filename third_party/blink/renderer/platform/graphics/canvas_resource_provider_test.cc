@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,7 +76,7 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderAcceleratedOverlay) {
   const SkImageInfo kInfo = SkImageInfo::MakeN32Premul(10, 10);
 
   const uint32_t shared_image_usage_flags =
-      gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT |
+      gpu::SHARED_IMAGE_USAGE_DISPLAY_READ | gpu::SHARED_IMAGE_USAGE_SCANOUT |
       gpu::SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE;
 
   auto provider = CanvasResourceProvider::CreateSharedImageProvider(
@@ -133,7 +133,7 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderUnacceleratedOverlay) {
   const SkImageInfo kInfo = SkImageInfo::MakeN32Premul(10, 10);
 
   const uint32_t shared_image_usage_flags =
-      gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
+      gpu::SHARED_IMAGE_USAGE_DISPLAY_READ | gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
   auto provider = CanvasResourceProvider::CreateSharedImageProvider(
       kInfo, cc::PaintFlags::FilterQuality::kLow,
@@ -160,7 +160,7 @@ TEST_F(CanvasResourceProviderTest,
   const SkImageInfo kInfo = SkImageInfo::MakeN32Premul(10, 10);
 
   const uint32_t shared_image_usage_flags =
-      gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
+      gpu::SHARED_IMAGE_USAGE_DISPLAY_READ | gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
   auto provider = CanvasResourceProvider::CreateSharedImageProvider(
       kInfo, cc::PaintFlags::FilterQuality::kMedium,
@@ -215,7 +215,7 @@ TEST_F(CanvasResourceProviderTest,
   const SkImageInfo kInfo = SkImageInfo::MakeN32Premul(10, 10);
 
   const uint32_t shared_image_usage_flags =
-      gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
+      gpu::SHARED_IMAGE_USAGE_DISPLAY_READ | gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
   auto provider = CanvasResourceProvider::CreateSharedImageProvider(
       kInfo, cc::PaintFlags::FilterQuality::kMedium,
@@ -261,7 +261,7 @@ TEST_F(CanvasResourceProviderTest,
   const SkImageInfo kInfo = SkImageInfo::MakeN32Premul(10, 10);
 
   const uint32_t shared_image_usage_flags =
-      gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
+      gpu::SHARED_IMAGE_USAGE_DISPLAY_READ | gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
   auto provider = CanvasResourceProvider::CreateSharedImageProvider(
       kInfo, cc::PaintFlags::FilterQuality::kMedium,
@@ -328,7 +328,7 @@ TEST_F(CanvasResourceProviderTest,
   const SkImageInfo kInfo = SkImageInfo::MakeN32Premul(10, 10);
 
   const uint32_t shared_image_usage_flags =
-      gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT |
+      gpu::SHARED_IMAGE_USAGE_DISPLAY_READ | gpu::SHARED_IMAGE_USAGE_SCANOUT |
       gpu::SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE;
 
   auto provider = CanvasResourceProvider::CreateSharedImageProvider(

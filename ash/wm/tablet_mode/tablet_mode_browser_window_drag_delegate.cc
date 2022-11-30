@@ -18,8 +18,6 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
-#include "ui/gfx/color_analysis.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -182,7 +180,7 @@ void TabletModeBrowserWindowDragDelegate::UpdateSourceWindow(
     SplitViewController::SnapPosition snap_position =
         GetSnapPosition(location_in_screen);
 
-    if (snap_position == SplitViewController::NONE) {
+    if (snap_position == SplitViewController::SnapPosition::kNone) {
       // Scale down the source window if the event location passes the vertical
       // |kIndicatorThresholdRatio| threshold.
       expected_bounds.ClampToCenteredSize(
@@ -191,9 +189,9 @@ void TabletModeBrowserWindowDragDelegate::UpdateSourceWindow(
     } else {
       // Put the source window on the other side of the split screen.
       expected_bounds = split_view_controller_->GetSnappedWindowBoundsInScreen(
-          snap_position == SplitViewController::LEFT
-              ? SplitViewController::RIGHT
-              : SplitViewController::LEFT,
+          snap_position == SplitViewController::SnapPosition::kPrimary
+              ? SplitViewController::SnapPosition::kSecondary
+              : SplitViewController::SnapPosition::kPrimary,
           source_window);
     }
   }
@@ -244,7 +242,7 @@ void TabletModeBrowserWindowDragDelegate::MergeBackToSourceWindowIfApplicable(
   // If splitscreen is not active, do not merge back if the dragged window is
   // in the drag-to-snap preview area.
   if (!split_view_controller_->InSplitViewMode() &&
-      desired_snap_position != SplitViewController::NONE) {
+      desired_snap_position != SplitViewController::SnapPosition::kNone) {
     return;
   }
 
@@ -259,8 +257,8 @@ void TabletModeBrowserWindowDragDelegate::MergeBackToSourceWindowIfApplicable(
             ? drag_position < split_view_controller_->divider_position()
             : drag_position > split_view_controller_->divider_position();
     aura::Window* window_on_opposite_side =
-        is_dragging_on_left ? split_view_controller_->right_window()
-                            : split_view_controller_->left_window();
+        is_dragging_on_left ? split_view_controller_->secondary_window()
+                            : split_view_controller_->primary_window();
     if (source_window == window_on_opposite_side)
       return;
   }

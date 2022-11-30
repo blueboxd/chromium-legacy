@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/debug/alias.h"
+#include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/viz/common/gpu/context_lost_reason.h"
@@ -29,7 +30,6 @@
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/buffer_format_util.h"
-#include "ui/gl/dc_renderer_layer_params.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
@@ -39,6 +39,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "components/viz/service/display/dc_layer_overlay.h"
+#include "ui/gl/dc_renderer_layer_params.h"
 #endif
 
 namespace viz {
@@ -76,11 +77,11 @@ class SkiaOutputDeviceGL::OverlayData {
     return *this;
   }
 
-  scoped_refptr<gl::GLImage> GetImage() {
+  gpu::OverlayImageRepresentation::ScopedReadAccess* BeginOverlayAccess() {
     DCHECK(representation_);
     access_ = representation_->BeginScopedReadAccess(/*needs_gl_image=*/true);
     DCHECK(access_);
-    return access_->gl_image();
+    return access_.get();
   }
 
   void EndOverlayAccess() { access_.reset(); }
@@ -111,11 +112,9 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
   capabilities_.supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
 #if BUILDFLAG(IS_WIN)
   if (gl_surface_->SupportsDCLayers()) {
-    // We need to set this bit to allow viz to track the previous damage rect
-    // of a backbuffer in a multiple backbuffer system, so backbuffers always
-    // have valid pixels, even outside the current damage rect.
-    capabilities_.preserve_buffer_content =
-        gl::ShouldForceDirectCompositionRootSurfaceFullDamage();
+    // DWM handles preserving the contents of the backbuffer in Present1, so we
+    // don't need to have SkiaOutputSurface handle it.
+    capabilities_.preserve_buffer_content = false;
     capabilities_.number_of_buffers =
         gl::DirectCompositionRootSurfaceBufferCount();
     capabilities_.supports_delegated_ink = gl_surface_->SupportsDelegatedInk();
@@ -308,13 +307,16 @@ void SkiaOutputDeviceGL::SwapBuffers(BufferPresentedCallback feedback,
   gfx::Size surface_size =
       gfx::Size(sk_surface_->width(), sk_surface_->height());
 
+  auto data = std::move(frame.data);
   if (supports_async_swap_) {
     auto callback = base::BindOnce(
         &SkiaOutputDeviceGL::DoFinishSwapBuffersAsync,
         weak_ptr_factory_.GetWeakPtr(), surface_size, std::move(frame));
-    gl_surface_->SwapBuffersAsync(std::move(callback), std::move(feedback));
+    gl_surface_->SwapBuffersAsync(std::move(callback), std::move(feedback),
+                                  std::move(data));
   } else {
-    gfx::SwapResult result = gl_surface_->SwapBuffers(std::move(feedback));
+    gfx::SwapResult result =
+        gl_surface_->SwapBuffers(std::move(feedback), std::move(data));
     DoFinishSwapBuffers(surface_size, std::move(frame),
                         gfx::SwapCompletionResult(result));
   }
@@ -328,16 +330,18 @@ void SkiaOutputDeviceGL::PostSubBuffer(const gfx::Rect& rect,
   gfx::Size surface_size =
       gfx::Size(sk_surface_->width(), sk_surface_->height());
 
+  auto data = std::move(frame.data);
   if (supports_async_swap_) {
     auto callback = base::BindOnce(
         &SkiaOutputDeviceGL::DoFinishSwapBuffersAsync,
         weak_ptr_factory_.GetWeakPtr(), surface_size, std::move(frame));
     gl_surface_->PostSubBufferAsync(rect.x(), rect.y(), rect.width(),
                                     rect.height(), std::move(callback),
-                                    std::move(feedback));
+                                    std::move(feedback), std::move(data));
   } else {
     gfx::SwapResult result = gl_surface_->PostSubBuffer(
-        rect.x(), rect.y(), rect.width(), rect.height(), std::move(feedback));
+        rect.x(), rect.y(), rect.width(), rect.height(), std::move(feedback),
+        std::move(data));
     DoFinishSwapBuffers(surface_size, std::move(frame),
                         gfx::SwapCompletionResult(result));
   }
@@ -350,15 +354,16 @@ void SkiaOutputDeviceGL::CommitOverlayPlanes(BufferPresentedCallback feedback,
   gfx::Size surface_size =
       gfx::Size(sk_surface_->width(), sk_surface_->height());
 
+  auto data = std::move(frame.data);
   if (supports_async_swap_) {
     auto callback = base::BindOnce(
         &SkiaOutputDeviceGL::DoFinishSwapBuffersAsync,
         weak_ptr_factory_.GetWeakPtr(), surface_size, std::move(frame));
     gl_surface_->CommitOverlayPlanesAsync(std::move(callback),
-                                          std::move(feedback));
+                                          std::move(feedback), std::move(data));
   } else {
     gfx::SwapResult result =
-        gl_surface_->CommitOverlayPlanes(std::move(feedback));
+        gl_surface_->CommitOverlayPlanes(std::move(feedback), std::move(data));
     DoFinishSwapBuffers(surface_size, std::move(frame),
                         gfx::SwapCompletionResult(result));
   }
@@ -417,15 +422,23 @@ void SkiaOutputDeviceGL::ScheduleOverlays(
       if (i > 0 && mailbox.IsZero())
         break;
 
-      auto image = GetGLImageForMailbox(mailbox);
-      if (!image) {
+      auto* read_access = BeginOverlayAccess(mailbox);
+      if (!read_access) {
+        success = false;
+        break;
+      }
+
+      if (auto dcomp_surface_proxy = read_access->GetDCOMPSurfaceProxy()) {
+        params->dcomp_surface_proxy = std::move(dcomp_surface_proxy);
+      } else if (auto* image = read_access->gl_image()) {
+        image->SetColorSpace(dc_layer.color_space);
+        params->images[i] = std::move(image);
+      } else {
         success = false;
         break;
       }
 
       scheduled_overlay_mailboxes_.insert(mailbox);
-      image->SetColorSpace(dc_layer.color_space);
-      params->images[i] = std::move(image);
     }
 
     if (!success) {
@@ -467,18 +480,18 @@ SkSurface* SkiaOutputDeviceGL::BeginPaint(
 
 void SkiaOutputDeviceGL::EndPaint() {}
 
-scoped_refptr<gl::GLImage> SkiaOutputDeviceGL::GetGLImageForMailbox(
-    const gpu::Mailbox& mailbox) {
+gpu::OverlayImageRepresentation::ScopedReadAccess*
+SkiaOutputDeviceGL::BeginOverlayAccess(const gpu::Mailbox& mailbox) {
   auto it = overlays_.find(mailbox);
   if (it != overlays_.end())
-    return it->second.GetImage();
+    return it->second.BeginOverlayAccess();
 
   auto overlay = shared_image_representation_factory_->ProduceOverlay(mailbox);
   if (!overlay)
     return nullptr;
 
   std::tie(it, std::ignore) = overlays_.emplace(mailbox, std::move(overlay));
-  return it->second.GetImage();
+  return it->second.BeginOverlayAccess();
 }
 
 }  // namespace viz

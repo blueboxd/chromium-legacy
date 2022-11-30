@@ -450,11 +450,7 @@ void ExtensionManagement::Refresh() {
   // Parse default settings.
   const base::Value wildcard("*");
   if ((denied_list_pref &&
-       // TODO(crbug.com/1187106): Use base::Contains once |denied_list_pref| is
-       // not a ListValue.
-       std::find(denied_list_pref->GetList().begin(),
-                 denied_list_pref->GetList().end(),
-                 wildcard) != denied_list_pref->GetList().end()) ||
+       base::Contains(denied_list_pref->GetList(), wildcard)) ||
       (extension_request_pref && extension_request_pref->GetBool())) {
     default_settings_->installation_mode = INSTALLATION_BLOCKED;
   }
@@ -741,10 +737,10 @@ ExtensionManagement::GetInstallListByMode(
          installation_mode == INSTALLATION_RECOMMENDED);
 
   auto extension_dict = std::make_unique<base::DictionaryValue>();
-  for (const auto& entry : settings_by_id_) {
-    if (entry.second->installation_mode == installation_mode) {
-      ExternalPolicyLoader::AddExtension(extension_dict.get(), entry.first,
-                                         entry.second->update_url);
+  for (const auto& [id, settings] : settings_by_id_) {
+    if (settings->installation_mode == installation_mode) {
+      ExternalPolicyLoader::AddExtension(extension_dict->GetDict(), id,
+                                         settings->update_url);
     }
   }
   return extension_dict;

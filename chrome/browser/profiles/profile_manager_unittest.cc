@@ -25,7 +25,6 @@
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -54,11 +53,13 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/lifetime/application_lifetime_desktop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/test_browser_window.h"
 #endif
@@ -169,9 +170,13 @@ class ProfileManagerTest : public testing::Test {
     session_type_ = extensions::ScopedCurrentFeatureSessionType(
         extensions::GetCurrentFeatureSessionType());
 #endif
+
+    in_process_data_decoder_ =
+        std::make_unique<data_decoder::test::InProcessDataDecoder>();
   }
 
   void TearDown() override {
+    in_process_data_decoder_.reset();
     TestingBrowserProcess::GetGlobal()->SetProfileManager(nullptr);
     content::RunAllTasksUntilIdle();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -314,6 +319,9 @@ class ProfileManagerTest : public testing::Test {
   // still using the temp directories upon teardown.
   base::ScopedTempDir temp_dir_;
   ScopedTestingLocalState local_state_;
+
+  std::unique_ptr<data_decoder::test::InProcessDataDecoder>
+      in_process_data_decoder_;
 
   content::BrowserTaskEnvironment task_environment_;
 
@@ -1535,11 +1543,11 @@ TEST_F(ProfileManagerTest, CleanUpEphemeralProfiles) {
   local_state->SetString(prefs::kProfileLastUsed, profile_name1);
 
   // Set the last used profiles.
-  ListPrefUpdate update(local_state, prefs::kProfilesLastActive);
-  base::Value* initial_last_active_profile_list = update.Get();
-  initial_last_active_profile_list->Append(
+  ScopedListPrefUpdate update(local_state, prefs::kProfilesLastActive);
+  base::Value::List& initial_last_active_profile_list = update.Get();
+  initial_last_active_profile_list.Append(
       base::Value(path1.BaseName().MaybeAsASCII()));
-  initial_last_active_profile_list->Append(
+  initial_last_active_profile_list.Append(
       base::Value(path2.BaseName().MaybeAsASCII()));
 
   profile_manager->CleanUpEphemeralProfiles();
@@ -1606,11 +1614,11 @@ TEST_F(ProfileManagerGuestTest, CleanUpOnlyEphemeralProfiles) {
   local_state->SetString(prefs::kProfileLastUsed, guest_profile_name);
 
   // Set the last used profiles.
-  ListPrefUpdate update(local_state, prefs::kProfilesLastActive);
-  base::Value* initial_last_active_profile_list = update.Get();
-  initial_last_active_profile_list->Append(
+  ScopedListPrefUpdate update(local_state, prefs::kProfilesLastActive);
+  base::Value::List& initial_last_active_profile_list = update.Get();
+  initial_last_active_profile_list.Append(
       base::Value(guest_path.BaseName().MaybeAsASCII()));
-  initial_last_active_profile_list->Append(
+  initial_last_active_profile_list.Append(
       base::Value(path.BaseName().MaybeAsASCII()));
 
   profile_manager->CleanUpEphemeralProfiles();

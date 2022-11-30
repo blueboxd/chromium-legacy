@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/ranges/algorithm.h"
 #include "cc/base/features.h"
 #include "cc/document_transition/document_transition_request.h"
 #include "cc/paint/display_item_list.h"
@@ -53,7 +54,7 @@ class PaintArtifactCompositor::OldPendingLayerMatcher {
   // Finds the next PendingLayer that can be matched by |new_layer|.
   // It's efficient if most of the pending layers can be matched sequentially.
   PendingLayer* Find(const PendingLayer& new_layer) {
-    if (pending_layers_.IsEmpty())
+    if (pending_layers_.empty())
       return nullptr;
     if (!new_layer.FirstPaintChunk().CanMatchOldChunk())
       return nullptr;
@@ -574,11 +575,10 @@ SynthesizedClip& PaintArtifactCompositor::CreateOrReuseSynthesizedClipLayer(
     bool needs_layer,
     CompositorElementId& mask_isolation_id,
     CompositorElementId& mask_effect_id) {
-  auto* entry =
-      std::find_if(synthesized_clip_cache_.begin(),
-                   synthesized_clip_cache_.end(), [&clip](const auto& entry) {
-                     return entry.key == &clip && !entry.in_use;
-                   });
+  auto* entry = base::ranges::find_if(
+      synthesized_clip_cache_, [&clip](const auto& entry) {
+        return entry.key == &clip && !entry.in_use;
+      });
   if (entry == synthesized_clip_cache_.end()) {
     synthesized_clip_cache_.push_back(SynthesizedClipEntry{
         &clip, std::make_unique<SynthesizedClip>(), false});
@@ -650,7 +650,7 @@ void PaintArtifactCompositor::Update(
       base::FeatureList::IsEnabled(features::kScrollUnification);
   // See: |UpdateRepaintedLayers| for repaint updates.
   DCHECK(needs_update_);
-  DCHECK(scroll_translation_nodes.IsEmpty() || unification_enabled);
+  DCHECK(scroll_translation_nodes.empty() || unification_enabled);
   DCHECK(root_layer_);
 
   TRACE_EVENT0("blink", "PaintArtifactCompositor::Update");
@@ -671,7 +671,7 @@ void PaintArtifactCompositor::Update(
 
   wtf_size_t old_size = pending_layers_.size();
   OldPendingLayerMatcher old_pending_layer_matcher(std::move(pending_layers_));
-  pending_layers_.ReserveCapacity(old_size);
+  pending_layers_.reserve(old_size);
 
   // Make compositing decisions, storing the result in |pending_layers_|.
   CollectPendingLayers(artifact);

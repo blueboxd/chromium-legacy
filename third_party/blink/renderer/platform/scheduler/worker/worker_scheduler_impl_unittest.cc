@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,8 +133,8 @@ class WorkerSchedulerImplTest : public testing::Test {
                     const String& task_descriptor,
                     TaskType task_type) {
     worker_scheduler_->GetTaskRunner(task_type)->PostTask(
-        FROM_HERE, WTF::Bind(&AppendToVectorTestTask,
-                             WTF::Unretained(run_order), task_descriptor));
+        FROM_HERE, WTF::BindOnce(&AppendToVectorTestTask,
+                                 WTF::Unretained(run_order), task_descriptor));
   }
 
  protected:
@@ -161,7 +161,7 @@ TEST_F(WorkerSchedulerImplTest, TestPostTasks) {
   PostTestTask(&run_order, "T4", TaskType::kInternalTest);
   PostTestTask(&run_order, "T5", TaskType::kInternalTest);
   RunUntilIdle();
-  EXPECT_TRUE(run_order.IsEmpty());
+  EXPECT_TRUE(run_order.empty());
 
   worker_scheduler_.reset();
 }

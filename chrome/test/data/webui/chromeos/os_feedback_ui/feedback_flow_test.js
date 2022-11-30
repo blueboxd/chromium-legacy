@@ -10,10 +10,11 @@ import {FeedbackAppExitPath, FeedbackAppHelpContentOutcome, FeedbackAppPreSubmit
 import {OS_FEEDBACK_TRUSTED_ORIGIN} from 'chrome://os-feedback/help_content.js';
 import {setFeedbackServiceProviderForTesting, setHelpContentProviderForTesting} from 'chrome://os-feedback/mojo_interface_provider.js';
 import {SearchPageElement} from 'chrome://os-feedback/search_page.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {eventToPromise, flushTasks, isVisible} from '../../test_util.js';
+import {eventToPromise, isVisible} from '../../test_util.js';
 
 export function FeedbackFlowTestSuite() {
   /** @type {?FeedbackFlowElement} */
@@ -112,6 +113,36 @@ export function FeedbackFlowTestSuite() {
     verifyRecordExitPathCalled(/*metric_emitted=*/ false, exitPath);
     window.dispatchEvent(new CustomEvent('beforeunload'));
     verifyRecordExitPathCalled(/*metric_emitted=*/ true, exitPath);
+  }
+
+  /**
+   * @private
+   */
+  function testWithInternalAccount() {
+    feedbackServiceProvider = new FakeFeedbackServiceProvider();
+    feedbackServiceProvider.setFakeFeedbackContext(
+        fakeInternalUserFeedbackContext);
+    setFeedbackServiceProviderForTesting(feedbackServiceProvider);
+  }
+
+  /**
+   * @param {boolean} from_assistant
+   * @private
+   */
+  function setFromAssistantFlag(from_assistant) {
+    if (from_assistant) {
+      const queryParams = new URLSearchParams(window.location.search);
+      const from_assistant = 'true';
+      queryParams.set(
+          AdditionalContextQueryParam.FROM_ASSISTANT, from_assistant);
+
+      window.history.replaceState(null, '', '?' + queryParams.toString());
+    } else {
+      window.history.replaceState(
+          null, '',
+          '?' +
+              '');
+    }
   }
 
   // Test that the search page is shown by default.
@@ -312,10 +343,7 @@ export function FeedbackFlowTestSuite() {
   // Test the bluetooth logs will show up if logged with internal account and
   // input description is related.
   test('ShowBluetoothLogsWithRelatedDescription', async () => {
-    feedbackServiceProvider = new FakeFeedbackServiceProvider();
-    feedbackServiceProvider.setFakeFeedbackContext(
-        fakeInternalUserFeedbackContext);
-    setFeedbackServiceProviderForTesting(feedbackServiceProvider);
+    testWithInternalAccount();
     await initializePage();
 
     // Check the bluetooth checkbox component hidden when input is not related
@@ -375,6 +403,77 @@ export function FeedbackFlowTestSuite() {
         activePage.shadowRoot.querySelector('#bluetoothCheckboxContainer');
     assertTrue(!!bluetoothCheckbox);
     assertFalse(isVisible(bluetoothCheckbox));
+  });
+
+  // Test the assistant logs will show up if logged with internal account and
+  // the fromAssistant flag is true.
+  test('ShowAssistantCheckboxWithInternalAccountAndFlagSetTrue', async () => {
+    // Replacing the query string to set the fromAssistant flag as true.
+    setFromAssistantFlag(true);
+    testWithInternalAccount();
+    await initializePage();
+    page.setCurrentStateForTesting(FeedbackFlowState.SHARE_DATA);
+
+    const feedbackContext = getFeedbackContext_();
+    assertTrue(feedbackContext.isInternalAccount);
+    assertTrue(feedbackContext.fromAssistant);
+    // Check the assistant checkbox component visible when input is not
+    // related to bluetooth.
+    const activePage = page.shadowRoot.querySelector('.iron-selected');
+    assertEquals('shareDataPage', activePage.id);
+
+    const assistantCheckbox =
+        activePage.shadowRoot.querySelector('#assistantLogsContainer');
+
+    assertTrue(!!assistantCheckbox);
+    assertTrue(isVisible(assistantCheckbox));
+  });
+
+  // Test the assistant checkbox will not show up to external account user
+  // with fromAssistant flag passed.
+  test('AssistantCheckboxHiddenWithExternalAccount', async () => {
+    // Replacing the query string to set the fromAssistant flag as true.
+    setFromAssistantFlag(true);
+    await initializePage();
+    page.setCurrentStateForTesting(FeedbackFlowState.SHARE_DATA);
+
+    const feedbackContext = getFeedbackContext_();
+    assertFalse(feedbackContext.isInternalAccount);
+    assertTrue(feedbackContext.fromAssistant);
+    let activePage = page.shadowRoot.querySelector('.iron-selected');
+    activePage = page.shadowRoot.querySelector('.iron-selected');
+
+    assertEquals('shareDataPage', activePage.id);
+    const assistantCheckbox =
+        activePage.shadowRoot.querySelector('#assistantLogsContainer');
+    assertTrue(!!assistantCheckbox);
+    assertFalse(isVisible(assistantCheckbox));
+  });
+
+  // Test the assistant logs will not show up if fromAssistant flag is not
+  // passed but logged in with Internal google account.
+  test('AssistantCheckboxHiddenWithoutFlagPassed', async () => {
+    // Replace the current querystring back to default.
+    setFromAssistantFlag(false);
+    // Set Internal Account flag as true.
+    testWithInternalAccount();
+    await initializePage();
+    page.setCurrentStateForTesting(FeedbackFlowState.SHARE_DATA);
+
+    const feedbackContext = getFeedbackContext_();
+    assertTrue(feedbackContext.isInternalAccount);
+    assertFalse(feedbackContext.fromAssistant);
+    // Set input description related to bluetooth.
+    let activePage = page.shadowRoot.querySelector('.iron-selected');
+    activePage = page.shadowRoot.querySelector('.iron-selected');
+
+    assertEquals('shareDataPage', activePage.id);
+    const assistantCheckbox =
+        activePage.shadowRoot.querySelector('#assistantLogsContainer');
+    assertTrue(!!assistantCheckbox);
+    assertFalse(isVisible(assistantCheckbox));
+    // Set the flag back to true.
+    fakeInternalUserFeedbackContext.fromAssistant = true;
   });
 
   // Test the navigation from confirmation page to search page after the
@@ -471,8 +570,8 @@ export function FeedbackFlowTestSuite() {
     assertEquals(1, feedbackServiceProvider.getFeedbackContextCallCount());
   });
 
-  // Test that the extra diagnostics and category tag get set
-  // when query parameter is non-empty.
+  // Test that the extra diagnostics, category tag, page_url and fromAssistant
+  // flag get set when query parameter is non-empty.
   test(
       'AdditionalContextParametersProvidedInUrl_FeedbackContext_Matches',
       async () => {
@@ -486,6 +585,11 @@ export function FeedbackFlowTestSuite() {
             description_template);
         const category_tag = 'some%20category%20tag';
         queryParams.set(AdditionalContextQueryParam.CATEGORY_TAG, category_tag);
+        const page_url = 'some%20page%20url';
+        queryParams.set(AdditionalContextQueryParam.PAGE_URL, page_url);
+        const from_assistant = 'true';
+        queryParams.set(
+            AdditionalContextQueryParam.FROM_ASSISTANT, from_assistant);
         // Replace current querystring with the new one.
         window.history.replaceState(null, '', '?' + queryParams.toString());
         await initializePage();
@@ -493,7 +597,7 @@ export function FeedbackFlowTestSuite() {
         const descriptionElement = getSearchPage().$['descriptionText'];
 
         const feedbackContext = getFeedbackContext_();
-        assertEquals(fakeFeedbackContext.pageUrl, feedbackContext.pageUrl);
+        assertEquals(page_url, feedbackContext.pageUrl.url);
         assertEquals(fakeFeedbackContext.email, feedbackContext.email);
         assertEquals(
             decodeURIComponent(extra_diagnostics),
@@ -502,9 +606,15 @@ export function FeedbackFlowTestSuite() {
             decodeURIComponent(description_template), descriptionElement.value);
         assertEquals(
             decodeURIComponent(category_tag), feedbackContext.categoryTag);
+        assertTrue(feedbackContext.fromAssistant);
+
+        // Set the pageUrl in fake feedback context back to its origin value
+        // because it's overwritten by the page_url passed from the app.
+        fakeFeedbackContext.pageUrl = {url: 'chrome://tab/'};
       });
 
-  // Test that the extra diagnostics gets set when query parameter is empty.
+  // Test that the extra diagnostics gets set, and pageUrl uses the one passed
+  // from the feedbackContext when query parameter is empty.
   test(
       'AdditionalContextParametersNotProvidedInUrl_FeedbackContext_UsesDefault',
       async () => {
@@ -524,6 +634,7 @@ export function FeedbackFlowTestSuite() {
         assertEquals('', feedbackContext.extraDiagnostics);
         assertEquals('', descriptionElement.value);
         assertEquals('', feedbackContext.categoryTag);
+        assertFalse(feedbackContext.fromAssistant);
       });
 
   /**

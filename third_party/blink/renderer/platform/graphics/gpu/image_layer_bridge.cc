@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,7 +55,7 @@ scoped_refptr<StaticBitmapImage> MakeAccelerated(
       image_info, cc::PaintFlags::FilterQuality::kLow,
       CanvasResourceProvider::ShouldInitialize::kNo, context_provider_wrapper,
       RasterMode::kGPU, source->IsOriginTopLeft(),
-      gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT);
+      gpu::SHARED_IMAGE_USAGE_DISPLAY_READ | gpu::SHARED_IMAGE_USAGE_SCANOUT);
   if (!provider || !provider->IsAccelerated())
     return nullptr;
 
@@ -199,9 +199,9 @@ bool ImageLayerBridge::PrepareTransferableResource(
       layer_->SetFlipped(false);
     }
 
-    auto func =
-        WTF::Bind(&ImageLayerBridge::ResourceReleasedGpu,
-                  WrapWeakPersistent(this), std::move(image_for_compositor));
+    auto func = WTF::BindOnce(&ImageLayerBridge::ResourceReleasedGpu,
+                              WrapWeakPersistent(this),
+                              std::move(image_for_compositor));
     *out_release_callback = std::move(func);
   } else {
     // Readback if needed and retain the readback in image_ to prevent future
@@ -239,8 +239,8 @@ bool ImageLayerBridge::PrepareTransferableResource(
     out_resource->color_space = sk_image->colorSpace()
                                     ? gfx::ColorSpace(*sk_image->colorSpace())
                                     : gfx::ColorSpace::CreateSRGB();
-    auto func = WTF::Bind(&ImageLayerBridge::ResourceReleasedSoftware,
-                          WrapWeakPersistent(this), std::move(registered));
+    auto func = WTF::BindOnce(&ImageLayerBridge::ResourceReleasedSoftware,
+                              WrapWeakPersistent(this), std::move(registered));
     *out_release_callback = std::move(func);
   }
 
@@ -263,7 +263,7 @@ ImageLayerBridge::RegisteredBitmap ImageLayerBridge::CreateOrRecycleBitmap(
   recycled_bitmaps_.Shrink(
       static_cast<wtf_size_t>(it - recycled_bitmaps_.begin()));
 
-  if (!recycled_bitmaps_.IsEmpty()) {
+  if (!recycled_bitmaps_.empty()) {
     RegisteredBitmap registered = std::move(recycled_bitmaps_.back());
     recycled_bitmaps_.pop_back();
     DCHECK(registered.bitmap->size() == size);

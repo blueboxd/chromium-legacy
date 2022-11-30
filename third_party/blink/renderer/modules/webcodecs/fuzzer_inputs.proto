@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -304,7 +304,7 @@ message ImageBitmapOptions {
   }
 
   optional ImageOrientation image_orientation = 1;
-  optional PremultiplyAlpha premultiply_alpha = 2;
+  optional PremultiplyAlpha premultiply_alpha = 2 [deprecated = true];
   optional ColorSpaceConversion color_space_conversion = 3;
   optional uint32 resize_width = 4;
   optional uint32 resize_height = 5;

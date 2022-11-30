@@ -152,7 +152,7 @@ BrowserAccessibilityFindInPageInfo::BrowserAccessibilityFindInPageInfo()
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
-    BrowserAccessibilityDelegate* delegate) {
+    WebAXPlatformTreeManagerDelegate* delegate) {
   BrowserAccessibilityManager* manager =
       new BrowserAccessibilityManager(delegate);
   manager->Initialize(initial_tree);
@@ -161,7 +161,7 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
-    BrowserAccessibilityDelegate* delegate) {
+    WebAXPlatformTreeManagerDelegate* delegate) {
   BrowserAccessibilityManager* manager =
       new BrowserAccessibilityManager(delegate);
   manager->Initialize(BrowserAccessibilityManager::GetEmptyDocument());
@@ -178,7 +178,7 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::FromID(
 }
 
 BrowserAccessibilityManager::BrowserAccessibilityManager(
-    BrowserAccessibilityDelegate* delegate)
+    WebAXPlatformTreeManagerDelegate* delegate)
     : AXPlatformTreeManager(ui::AXTreeIDUnknown(),
                             std::make_unique<ui::AXSerializableTree>()),
       WebContentsObserver(delegate
@@ -280,13 +280,13 @@ bool BrowserAccessibilityManager::CanFireEvents() const {
   // Fire events only when the root of the tree is reachable, to avoid a bug
   // in AppKit that gets stuck in an infinite loop trying to find the root,
   // causing VoiceOver to get stuck announcing "Chrome is not responding".
-  BrowserAccessibilityManager* root_manager = GetRootManager();
+  BrowserAccessibilityManager* root_manager = GetManagerForRootFrame();
   if (!root_manager)
     return false;
 
   // Make sure that nodes can be traversed to the root.
   const BrowserAccessibilityManager* ancestor_manager = this;
-  while (!ancestor_manager->IsRootTree()) {
+  while (!ancestor_manager->IsRootFrameManager()) {
     BrowserAccessibility* host_node =
         ancestor_manager->GetParentNodeFromParentTree();
     if (!host_node)
@@ -309,18 +309,12 @@ bool BrowserAccessibilityManager::CanFireEvents() const {
          !delegate_->AccessibilityRenderFrameHost()->IsInBackForwardCache();
 }
 
-BrowserAccessibility* BrowserAccessibilityManager::RetargetForEvents(
-    BrowserAccessibility* node,
-    RetargetEventType type) const {
-  return node;
-}
-
 void BrowserAccessibilityManager::FireGeneratedEvent(
     ui::AXEventGenerator::Event event_type,
-    BrowserAccessibility* node) {
+    const ui::AXNode* node) {
   if (!generated_event_callback_for_testing_.is_null()) {
-    generated_event_callback_for_testing_.Run(delegate(), event_type,
-                                              node->GetId());
+    generated_event_callback_for_testing_.Run(
+        delegate()->AccessibilityRenderFrameHost(), event_type, node->id());
   }
 }
 
@@ -369,11 +363,22 @@ BrowserAccessibility* BrowserAccessibilityManager::GetParentNodeFromParentTree()
 
   // TODO(accessibility) Try to remove this redundant lookup. The call to
   // GetParentNodeFromParentTreeAsAXNode() already retrieved the parent manager.
-  BrowserAccessibilityManager* parent_manager = GetParentManager();
+  AXTreeManager* parent_manager = GetParentManager();
   DCHECK(parent_manager) << "Impossible to have null parent_manager if we "
                             "already have a parent AXNode.";
-  BrowserAccessibility* parent_node = parent_manager->GetFromAXNode(parent);
-  DCHECK_EQ(parent_node->manager(), parent_manager);
+
+  // There is a chance that the parent manager is not a
+  // `BrowserAccessibilityManager` since the parent of the
+  // manager that is on the root frame will be a
+  // `ViewsAXTreeManager`. In that case, we should return nullptr since doing
+  // the cast will fail and result in undefined behavior.
+  if (this->IsRootFrameManager())
+    return nullptr;
+  BrowserAccessibilityManager* parent_manager_wrapper =
+      static_cast<BrowserAccessibilityManager*>(parent_manager);
+  BrowserAccessibility* parent_node =
+      parent_manager_wrapper->GetFromAXNode(parent);
+  DCHECK_EQ(parent_node->manager(), parent_manager_wrapper);
   DCHECK_NE(parent_node->manager(), this);
   return parent_node;
 }
@@ -388,10 +393,12 @@ void BrowserAccessibilityManager::ParentConnectionChanged(
   parent->OnDataChanged();
   parent->UpdatePlatformAttributes();
   BrowserAccessibilityManager* parent_manager = parent->manager();
-  parent = parent_manager->RetargetForEvents(
+  parent = parent_manager->RetargetBrowserAccessibilityForEvents(
       parent, RetargetEventType::RetargetEventTypeGenerated);
+  DCHECK(parent) << "RetargetBrowserAccessibilityForEvents shouldn't return a "
+                    "null pointer when |parent| is not null.";
   parent_manager->FireGeneratedEvent(
-      ui::AXEventGenerator::Event::CHILDREN_CHANGED, parent);
+      ui::AXEventGenerator::Event::CHILDREN_CHANGED, parent->node());
 }
 
 void BrowserAccessibilityManager::EnsureParentConnectionIfNotRootManager() {
@@ -399,7 +406,7 @@ void BrowserAccessibilityManager::EnsureParentConnectionIfNotRootManager() {
   if (parent) {
     if (!connected_to_parent_tree_node_)
       ParentConnectionChanged(parent);
-    SANITIZER_CHECK(!IsRootTree());
+    SANITIZER_CHECK(!IsRootFrameManager());
     return;
   }
 
@@ -415,7 +422,7 @@ void BrowserAccessibilityManager::EnsureParentConnectionIfNotRootManager() {
     // an existing document. Due to race conditions, in some cases, |this| is
     // destroyed first, and this condition is not reached; while in other cases
     // the parent node is destroyed first (this case).
-    DCHECK(IsRootTree() || !CanFireEvents());
+    DCHECK(IsRootFrameManager() || !CanFireEvents());
   }
 }
 
@@ -431,17 +438,13 @@ BrowserAccessibility* BrowserAccessibilityManager::GetPopupRoot() const {
   return nullptr;
 }
 
-const ui::AXTreeData& BrowserAccessibilityManager::GetTreeData() const {
-  return ax_tree()->data();
-}
-
 void BrowserAccessibilityManager::OnWindowFocused() {
-  if (IsRootTree())
+  if (IsRootFrameManager())
     FireFocusEventsIfNeeded();
 }
 
 void BrowserAccessibilityManager::OnWindowBlurred() {
-  if (IsRootTree())
+  if (IsRootFrameManager())
     SetLastFocusedNode(nullptr);
 }
 
@@ -507,6 +510,9 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
       // This is a fatal error, but if there is a delegate, it will handle the
       // error result and recover by re-creating the manager. After a max
       // threshold number of errors is reached, it will crash the browser.
+      CHECK(!ax_tree()->error().empty())
+          << "A failed serialization didn't supply the error via "
+             "AXTree::RecordError().";
       if (!delegate_)
         CHECK(false) << ax_tree()->error();
       return false;
@@ -537,7 +543,7 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     return true;
   }
 
-  BrowserAccessibilityManager* root_manager = GetRootManager();
+  BrowserAccessibilityManager* root_manager = GetManagerForRootFrame();
   DCHECK(root_manager) << "Cannot have detached document here, as "
                           "CanFireEvents() must return false in that case.";
 
@@ -546,7 +552,7 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
   bool has_parent_id = parent_id != ui::AXTreeIDUnknown();
   BrowserAccessibilityManager* parent_manager =
       has_parent_id ? BrowserAccessibilityManager::FromID(parent_id) : nullptr;
-  if (IsRootTree()) {
+  if (IsRootFrameManager()) {
     CHECK(!has_parent_id) << "The root frame must be parentless, root url = "
                           << GetTreeData().url << "\nSupposed parent = "
                           << (parent_manager
@@ -590,7 +596,7 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     BrowserAccessibility* event_target = GetFromID(targeted_event.node_id);
     DCHECK(event_target) << "No event target for " << targeted_event.node_id;
 
-    event_target = RetargetForEvents(
+    event_target = RetargetBrowserAccessibilityForEvents(
         event_target, RetargetEventType::RetargetEventTypeGenerated);
     if (!event_target)
       continue;  // Drop the event if RetargetForEvents() returns nullptr.
@@ -598,10 +604,12 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
       continue;
 
     // IsDescendantOf() also returns true in the case of equality.
-    if (focus && focus != event_target && focus->IsDescendantOf(event_target))
-      FireGeneratedEvent(targeted_event.event_params.event, event_target);
-    else
+    if (focus && focus != event_target && focus->IsDescendantOf(event_target)) {
+      FireGeneratedEvent(targeted_event.event_params.event,
+                         event_target->node());
+    } else {
       deferred_events.push_back(targeted_event);
+    }
   }
 
   // Screen readers might not process events related to the currently-focused
@@ -621,14 +629,14 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     BrowserAccessibility* event_target = GetFromID(targeted_event.node_id);
     DCHECK(event_target) << "No event target for " << targeted_event.node_id;
 
-    event_target = RetargetForEvents(
+    event_target = RetargetBrowserAccessibilityForEvents(
         event_target, RetargetEventType::RetargetEventTypeGenerated);
     if (!event_target)
       continue;  // Drop the event if RetargetForEvents() returns nullptr.
     if (!event_target->CanFireEvents())
       continue;
 
-    FireGeneratedEvent(targeted_event.event_params.event, event_target);
+    FireGeneratedEvent(targeted_event.event_params.event, event_target->node());
   }
   event_generator().ClearEvents();
 
@@ -642,7 +650,8 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
         event.event_type == ax::mojom::Event::kHover
             ? RetargetEventType::RetargetEventTypeBlinkHover
             : RetargetEventType::RetargetEventTypeBlinkGeneral;
-    BrowserAccessibility* retargeted = RetargetForEvents(event_target, type);
+    BrowserAccessibility* retargeted =
+        RetargetBrowserAccessibilityForEvents(event_target, type);
     if (!retargeted)
       continue;  // Drop the event if RetargetForEvents() returns nullptr.
     if (!retargeted->CanFireEvents())
@@ -850,12 +859,12 @@ std::vector<BrowserAccessibility*> BrowserAccessibilityManager::GetAriaControls(
 }
 
 bool BrowserAccessibilityManager::NativeViewHasFocus() {
-  BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
+  WebAXPlatformTreeManagerDelegate* delegate = GetDelegateFromRootManager();
   return delegate && delegate->AccessibilityViewHasFocus();
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetFocus() const {
-  BrowserAccessibilityManager* root_manager = GetRootManager();
+  BrowserAccessibilityManager* root_manager = GetManagerForRootFrame();
   if (!root_manager) {
     // We can't retrieved the globally focused object since we don't have access
     // to the top document. If we return the focus in the current or a
@@ -1175,7 +1184,7 @@ void BrowserAccessibilityManager::HitTest(const gfx::Point& frame_point,
 
 gfx::Rect BrowserAccessibilityManager::GetViewBoundsInScreenCoordinates()
     const {
-  BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
+  WebAXPlatformTreeManagerDelegate* delegate = GetDelegateFromRootManager();
   if (delegate) {
     gfx::Rect bounds = delegate->AccessibilityGetViewBounds();
 
@@ -1574,23 +1583,6 @@ void BrowserAccessibilityManager::OnTreeDataChanged(
   ui::AXTreeManager::OnTreeDataChanged(tree, old_data, new_data);
 }
 
-void BrowserAccessibilityManager::OnNodeWillBeDeleted(ui::AXTree* tree,
-                                                      ui::AXNode* node) {
-  DCHECK(node);
-  if (BrowserAccessibility* wrapper = GetFromAXNode(node)) {
-    if (node == GetLastFocusedNode())
-      SetLastFocusedNode(nullptr);
-
-    // We fire these here, immediately, to ensure we can send platform
-    // notifications prior to the actual destruction of the object.
-    if (node->GetRole() == ax::mojom::Role::kMenu)
-      FireGeneratedEvent(ui::AXEventGenerator::Event::MENU_POPUP_END, wrapper);
-  }
-}
-
-void BrowserAccessibilityManager::OnSubtreeWillBeDeleted(ui::AXTree* tree,
-                                                         ui::AXNode* node) {}
-
 void BrowserAccessibilityManager::OnNodeCreated(ui::AXTree* tree,
                                                 ui::AXNode* node) {
   DCHECK(node);
@@ -1694,7 +1686,7 @@ ui::AXPlatformNode* BrowserAccessibilityManager::GetPlatformNodeFromTree(
 
 ui::AXNode* BrowserAccessibilityManager::GetParentNodeFromParentTreeAsAXNode()
     const {
-  BrowserAccessibilityManager* parent_manager = GetParentManager();
+  ui::AXTreeManager* parent_manager = GetParentManager();
   if (!parent_manager)
     return nullptr;
 
@@ -1724,12 +1716,17 @@ ui::AXNode* BrowserAccessibilityManager::GetParentNodeFromParentTreeAsAXNode()
   return parent_node;
 }
 
-BrowserAccessibilityManager* BrowserAccessibilityManager::GetRootManager()
-    const {
-  if (IsRootTree())
+ui::AXPlatformNodeDelegate* BrowserAccessibilityManager::RootDelegate() const {
+  return GetBrowserAccessibilityRoot();
+}
+
+BrowserAccessibilityManager*
+BrowserAccessibilityManager::GetManagerForRootFrame() const {
+  if (IsRootFrameManager())
     return const_cast<BrowserAccessibilityManager*>(this);
 
-  BrowserAccessibilityManager* parent_manager = GetParentManager();
+  BrowserAccessibilityManager* parent_manager =
+      static_cast<BrowserAccessibilityManager*>(GetParentManager());
   if (!parent_manager) {
     // This can occur when the child frame has an embedding token, but the
     // parent element (e.g. <iframe>) does not yet know about the child.
@@ -1740,51 +1737,61 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::GetRootManager()
     return nullptr;
   }
 
-  return parent_manager->GetRootManager();
+  return parent_manager->GetManagerForRootFrame();
 }
 
-BrowserAccessibilityManager* BrowserAccessibilityManager::GetParentManager()
-    const {
-  ui::AXTreeID parent_tree_id = GetParentTreeID();
-  if (parent_tree_id == ui::AXTreeIDUnknown())
-    return nullptr;  // Not connected yet.
+ui::AXTreeManager* BrowserAccessibilityManager::GetParentManager() const {
+  // `AXTreeManager::GetParentManager` can still return null if the parent frame
+  // has not yet been serialized. We can't prevent a child frame from
+  // serializing before the parent frame does, because the child frame does not
+  // have access to the parent in the case of remote frames, aka Out-Of-Process
+  // Iframes, aka OOPIFs.
+  ui::AXTreeManager* parent = AXTreeManager::GetParentManager();
+  if (!parent)
+    return nullptr;
 
-  DCHECK(!IsRootTree());
+  DCHECK(!IsRootFrameManager());
 
-  // This can still return null if the parent frame has not yet been serialized.
-  // We can't prevent a child frame from serializing before the parent frame
-  // does, because the child frame does not have access to the parent in the
-  // case of remote frames, aka Out-Of-Process Iframes, aka OOPIFs.
-  BrowserAccessibilityManager* parent =
-      BrowserAccessibilityManager::FromID(parent_tree_id);
 #if DCHECK_IS_ON()
-  DCHECK(parent || !connected_to_parent_tree_node_);
+  // There is a chance that the parent manager is not a
+  // `BrowserAccessibilityManager` since the parent of the
+  // manager that is on the root frame will be a
+  // `ViewsAXTreeManager`. In that case, we should return nullptr since doing
+  // the cast will fail and result in undefined behavior.
+  if (this->IsRootFrameManager())
+    return parent;
+  BrowserAccessibilityManager* browser_accessibility_manager_parent =
+      static_cast<BrowserAccessibilityManager*>(parent);
+  DCHECK(browser_accessibility_manager_parent ||
+         !connected_to_parent_tree_node_);
   // delegate_ is null during unit tests.
   if (parent && delegate_ && delegate_->AccessibilityRenderFrameHost()) {
     DCHECK(delegate_->AccessibilityRenderFrameHost()
                ->GetParentOrOuterDocumentOrEmbedder() ==
-           parent->delegate()->AccessibilityRenderFrameHost())
-        << "RenderFrameHost parent should match BrowserAccessibilityManager's "
+           browser_accessibility_manager_parent->delegate()
+               ->AccessibilityRenderFrameHost())
+        << "RenderFrameHost parent should match "
+           "BrowserAccessibilityManager's "
            "parent's RenderFrameHost.";
   }
 #endif
   return parent;
 }
 
-BrowserAccessibilityDelegate*
+WebAXPlatformTreeManagerDelegate*
 BrowserAccessibilityManager::GetDelegateFromRootManager() const {
-  BrowserAccessibilityManager* root_manager = GetRootManager();
+  BrowserAccessibilityManager* root_manager = GetManagerForRootFrame();
   if (root_manager)
     return root_manager->delegate();
   return nullptr;
 }
 
-bool BrowserAccessibilityManager::IsRootTree() const {
+bool BrowserAccessibilityManager::IsRootFrameManager() const {
   // delegate_ can be null in unit tests.
   if (!delegate_)
     return GetTreeData().parent_tree_id == ui::AXTreeIDUnknown();
 
-  bool is_root_tree = delegate_->AccessibilityIsMainFrame();
+  bool is_root_tree = delegate_->AccessibilityIsRootFrame();
   DCHECK(!is_root_tree || GetParentTreeID() == ui::AXTreeIDUnknown())
       << "Root tree has parent tree id of: " << GetParentTreeID();
   return is_root_tree;
@@ -1812,7 +1819,7 @@ BrowserAccessibility* BrowserAccessibilityManager::CachingAsyncHitTest(
   // hit test result, but AXPlatformNodeDelegate says that it's only supposed
   // to return a descendant, so this isn't correctly fulfilling the contract.
   // Unchecked it can even lead to an infinite loop.
-  BrowserAccessibilityManager* root_manager = GetRootManager();
+  BrowserAccessibilityManager* root_manager = GetManagerForRootFrame();
   if (root_manager && root_manager != this)
     return root_manager->CachingAsyncHitTest(physical_pixel_point);
 
@@ -1864,11 +1871,6 @@ BrowserAccessibility* BrowserAccessibilityManager::ApproximateHitTest(
     return AXTreeHitTest(blink_screen_point);
 
   return GetBrowserAccessibilityRoot()->ApproximateHitTest(blink_screen_point);
-}
-
-void BrowserAccessibilityManager::DetachFromParentManager() {
-  connected_to_parent_tree_node_ = false;
-  delegate_ = nullptr;
 }
 
 void BrowserAccessibilityManager::BuildAXTreeHitTestCache() {
@@ -1951,7 +1953,7 @@ void BrowserAccessibilityManager::DidActivatePortal(
     base::TimeTicks activation_time) {
   if (GetTreeData().loaded) {
     FireGeneratedEvent(ui::AXEventGenerator::Event::PORTAL_ACTIVATED,
-                       GetBrowserAccessibilityRoot());
+                       GetRoot());
   }
 }
 
@@ -2009,17 +2011,19 @@ void BrowserAccessibilityManager::CollectChangedNodesAndParentsForAtomicUpdate(
 
 bool BrowserAccessibilityManager::ShouldFireEventForNode(
     BrowserAccessibility* node) const {
-  node = RetargetForEvents(node, RetargetEventType::RetargetEventTypeGenerated);
+  node = RetargetBrowserAccessibilityForEvents(
+      node, RetargetEventType::RetargetEventTypeGenerated);
   if (!node || !node->CanFireEvents())
     return false;
 
   // If the root delegate isn't the main-frame, this may be a new frame that
   // hasn't yet been swapped in or added to the frame tree. Suppress firing
   // events until then.
-  BrowserAccessibilityDelegate* root_delegate = GetDelegateFromRootManager();
+  WebAXPlatformTreeManagerDelegate* root_delegate =
+      GetDelegateFromRootManager();
   if (!root_delegate)
     return false;
-  if (!root_delegate->AccessibilityIsMainFrame())
+  if (!root_delegate->AccessibilityIsRootFrame())
     return false;
 
   // Don't fire events when this document might be stale as the user has
@@ -2033,6 +2037,24 @@ bool BrowserAccessibilityManager::ShouldFireEventForNode(
     return false;
 
   return true;
+}
+
+BrowserAccessibility*
+BrowserAccessibilityManager::RetargetBrowserAccessibilityForEvents(
+    BrowserAccessibility* node,
+    RetargetEventType event_type) const {
+  if (!node) {
+    // TODO(accessibility): |node| should never be null, however for
+    // reasons that are not yet clear, it is sometimes null.
+    // See https://crbug.com/1350627, https://crbug.com/1362266 and
+    // https://crbug.com/1362321.
+    // ClusterFuzz was able to come up with a reliably-reproducible test case
+    // which can be seen in https://crbug.com/1362230. This needs to be
+    // investigated further.
+    NOTREACHED();
+    return nullptr;
+  }
+  return GetFromAXNode(RetargetForEvents(node->node(), event_type));
 }
 
 float BrowserAccessibilityManager::device_scale_factor() const {

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -396,9 +396,9 @@ TEST_F(MediaStreamRemoteVideoSourceTest,
 
   webrtc::RtpPacketInfos::vector_type packet_infos;
   for (int i = 0; i < 4; ++i) {
-    packet_infos.emplace_back(
-        kSsrc, kCsrcs, kRtpTimestamp, absl::nullopt, absl::nullopt,
-        kProcessingStart - webrtc::TimeDelta::Micros(10000 - i * 30));
+    webrtc::Timestamp receive_time =
+        kProcessingStart - webrtc::TimeDelta::Micros(10000 - i * 30);
+    packet_infos.emplace_back(kSsrc, kCsrcs, kRtpTimestamp, receive_time);
   }
   // Expected receive time should be the same as the last arrival time.
   base::TimeTicks kExpectedReceiveTime =

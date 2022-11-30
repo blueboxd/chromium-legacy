@@ -28,6 +28,19 @@
 class LAContext;
 #endif
 
+// This enum represents the error or success statuses of calling
+// TouchIdCredentialStore.UpdateCredential.
+// This enum is used for UMA histograms and the values should not be
+// reassigned. New error statuses should be reflected in the
+// WebAuthenticationTouchIdCredentialStoreUpdateCredentialStatus enum.
+enum class TouchIdCredentialStoreUpdateCredentialStatus {
+  kUpdateCredentialSuccess = 0,
+  kNoCredentialsFound = 1,
+  kNoMatchingCredentialId = 2,
+  kSecItemUpdateFailure = 3,
+  kMaxValue = kSecItemUpdateFailure,
+};
+
 namespace device::fido::mac {
 
 // Credential represents a WebAuthn credential from the keychain.
@@ -149,6 +162,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdCredentialStore
                              base::Time created_not_after);
 
   bool DeleteCredentialById(base::span<const uint8_t> credential_id) const;
+
+  bool UpdateCredential(base::span<uint8_t> credential_id,
+                        const std::string& username);
 
   size_t CountCredentialsSync(base::Time created_not_before,
                               base::Time created_not_after);

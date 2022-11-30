@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,22 +65,19 @@ bool IdentityCredential::IsRejectingPromiseDueToCSP(
     return false;
   }
 
-  // kFollowedRedirect means that the path will not be checked, which is
-  // what we want -- at least one high-profile site has specific paths
-  // in its existing connect-src policy which do not work with FedCM, breaking
-  // the "no RP changes required" promise of FedCM.
-  // (note that we disable redirects for FedCM requests on the browser side)
-  // TODO(cbiesinger): Once the two known websites are fixed, make this
-  // codepath metrics-only and move kSuppressReporting here. crbug.com/1320724
+  // kFollowedRedirect ignores paths.
   if (policy->AllowConnectToSource(provider_url, provider_url,
                                    RedirectStatus::kFollowedRedirect)) {
+    // Log how frequently FedCM is attempted from RPs:
+    // (1) With specific paths in their connect-src policy
+    // AND
+    // (2) Whose connect-src policy does not whitelist FedCM endpoints
     UMA_HISTOGRAM_ENUMERATION("Blink.FedCm.Status.Csp",
                               FedCmCspStatus::kFailedPathButPassedOrigin);
-    return false;
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Blink.FedCm.Status.Csp",
+                              FedCmCspStatus::kFailedOrigin);
   }
-
-  UMA_HISTOGRAM_ENUMERATION("Blink.FedCm.Status.Csp",
-                            FedCmCspStatus::kFailedOrigin);
 
   WTF::String error =
       "Refused to connect to '" + provider_url.ElidedString() +
@@ -119,7 +116,7 @@ ScriptPromise IdentityCredential::logoutRPs(
                           "FedCM flag in about:flags not enabled."));
   }
 
-  if (logout_endpoints.IsEmpty()) {
+  if (logout_endpoints.empty()) {
     return ScriptPromise();
   }
 
@@ -139,7 +136,7 @@ ScriptPromise IdentityCredential::logoutRPs(
     }
     if (IsRejectingPromiseDueToCSP(policy, resolver, logout_request->url))
       return promise;
-    if (logout_request->account_id.IsEmpty()) {
+    if (logout_request->account_id.empty()) {
       resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kSyntaxError, "Account ID cannot be empty."));
       return promise;
@@ -151,7 +148,7 @@ ScriptPromise IdentityCredential::logoutRPs(
       CredentialManagerProxy::From(script_state)->FedCmLogoutRpsRequest();
   fedcm_logout_request->LogoutRps(
       std::move(logout_requests),
-      WTF::Bind(&OnLogoutRpsResponse, WrapPersistent(resolver)));
+      WTF::BindOnce(&OnLogoutRpsResponse, WrapPersistent(resolver)));
   return promise;
 }
 

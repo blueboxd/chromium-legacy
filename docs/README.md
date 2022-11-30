@@ -150,6 +150,9 @@ used when committed.
     Visualizing view trees during debugging
 *   [Bitmap Pipeline](bitmap_pipeline.md) - How bitmaps are moved from the
     renderer to the screen.
+*   [Flag Guarding Guidelines](flag_guarding_guidelines.md) - When to use
+    server controlled kill switches and A/B experiments to safely roll out
+    changes.
 *   [Using the Origin Trials Framework](origin_trials_integration.md) - A
     framework for conditionally enabling experimental APIs for testing.
 *   [Chrome Sync](https://source.chromium.org/chromium/chromium/src/+/main:docs/website/site/developers/design-documents/sync) -
@@ -157,10 +160,7 @@ used when committed.
 *   [Ozone Overview](ozone_overview.md) - Ozone is an abstraction layer between
     the window system and low level input and graphics.
 *   [Optimizing Chrome Web UIs](optimizing_web_uis.md) - Notes on making webuis
-    more performant
-*   [Adding a new feature flag in chrome://flags](how_to_add_your_feature_flag.md) - Quick
-    guide to add a new feature flag to experiment your feature.
-*   [Guidelines for considering branch dates in project planning](release_branch_guidance.md) -
+    more performant*   [Guidelines for considering branch dates in project planning](release_branch_guidance.md) -
     What to do (and not to do) around branch dates when scheduling your project
     work.
 *   [WebUI Explainer](webui_explainer.md) - An explanation of C++ and JavaScript
@@ -202,6 +202,14 @@ used when committed.
 *   [Code Coverage](testing/code_coverage.md) - Code coverage for Chromium.
 *   [Code Coverage in Gerrit](testing/code_coverage_in_gerrit.md) - Per-CL code
     coverage in Gerrit to assist code reviews.
+
+### Configuration Docs
+
+*   [Configuration: Prefs, Settings, Features, Switches & Flags](configuration.md) - Explains different ways to gate a new feature.
+*   [Adding a new feature flag in chrome://flags](how_to_add_your_feature_flag.md) - Quick guide to add a new feature flag to experiment your feature.
+*   [Runtime Enabled Features](https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/RuntimeEnabledFeatures.md)
+*   [Initialization of Blink runtime features in content layer](initialize_blink_features.md)
+*   [Integrating a feature with the origin trials framework](origin_trials_integration.md)
 
 ### GPU-related docs
 *   [GPU Pixel Wrangling](gpu/pixel_wrangling.md) - Instructions for GPU

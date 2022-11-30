@@ -135,7 +135,7 @@ class WTF_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
 
   size_t size() const { return size_; }
 
-  bool IsEmpty() const { return !size(); }
+  bool empty() const { return !size(); }
 
   void Append(const SharedBuffer&);
 
@@ -219,7 +219,7 @@ class WTF_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
   bool GetBytesInternal(void* dest, size_t) const;
   Iterator GetIteratorAtInternal(size_t position) const;
   size_t GetLastSegmentSize() const {
-    DCHECK(!segments_.IsEmpty());
+    DCHECK(!segments_.empty());
     return (size_ - buffer_.size() + kSegmentSize - 1) % kSegmentSize + 1;
   }
 

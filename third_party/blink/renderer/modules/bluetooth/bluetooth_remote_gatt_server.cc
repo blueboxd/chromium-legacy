@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,8 +109,8 @@ ScriptPromise BluetoothRemoteGATTServer::connect(
 
   service->RemoteServerConnect(
       device_->GetDevice()->id, std::move(client),
-      WTF::Bind(&BluetoothRemoteGATTServer::ConnectCallback,
-                WrapPersistent(this), WrapPersistent(resolver)));
+      WTF::BindOnce(&BluetoothRemoteGATTServer::ConnectCallback,
+                    WrapPersistent(this), WrapPersistent(resolver)));
 
   return promise;
 }
@@ -240,9 +240,9 @@ ScriptPromise BluetoothRemoteGATTServer::GetPrimaryServicesImpl(
       device_->GetBluetooth()->Service();
   service->RemoteServerGetPrimaryServices(
       device_->GetDevice()->id, quantity, services_uuid,
-      WTF::Bind(&BluetoothRemoteGATTServer::GetPrimaryServicesCallback,
-                WrapPersistent(this), services_uuid, quantity,
-                WrapPersistent(resolver)));
+      WTF::BindOnce(&BluetoothRemoteGATTServer::GetPrimaryServicesCallback,
+                    WrapPersistent(this), services_uuid, quantity,
+                    WrapPersistent(resolver)));
   return promise;
 }
 

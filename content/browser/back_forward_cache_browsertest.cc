@@ -202,9 +202,8 @@ void BackForwardCacheBrowserTest::TearDownInProcessBrowserTestFixture() {
 void BackForwardCacheBrowserTest::SetupFeaturesAndParameters() {
   std::vector<base::test::ScopedFeatureList::FeatureAndParams> enabled_features;
 
-  for (auto& features_with_param : features_with_params_) {
-    enabled_features.emplace_back(features_with_param.first,
-                                  features_with_param.second);
+  for (const auto& [feature_ref, params] : features_with_params_) {
+    enabled_features.emplace_back(*feature_ref, params);
   }
 
   feature_list_.InitWithFeaturesAndParameters(enabled_features,
@@ -213,13 +212,13 @@ void BackForwardCacheBrowserTest::SetupFeaturesAndParameters() {
 }
 
 void BackForwardCacheBrowserTest::EnableFeatureAndSetParams(
-    base::Feature feature,
+    const base::Feature& feature,
     std::string param_name,
     std::string param_value) {
   features_with_params_[feature][param_name] = param_value;
 }
 
-void BackForwardCacheBrowserTest::DisableFeature(base::Feature feature) {
+void BackForwardCacheBrowserTest::DisableFeature(const base::Feature& feature) {
   disabled_features_.push_back(feature);
 }
 
@@ -1751,9 +1750,13 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, TextInputStateUpdated) {
   }
 }
 
-// TODO(https://crbug.com/1275493): Flaky on various builders.
+#if (BUILDFLAG(IS_MAC))
+#define MAYBE_SubframeTextInputStateUpdated DISABLED_SubframeTextInputStateUpdated
+#else
+#define MAYBE_SubframeTextInputStateUpdated SubframeTextInputStateUpdated
+#endif
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       DISABLED_SubframeTextInputStateUpdated) {
+                       MAYBE_SubframeTextInputStateUpdated) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_1(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(a))"));
@@ -1817,7 +1820,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
     EXPECT_TRUE(rfh_a->IsInBackForwardCache());
     EXPECT_TRUE(rfh_b->IsInBackForwardCache());
     EXPECT_TRUE(rfh_subframe_a->IsInBackForwardCache());
-    EXPECT_EQ(current_frame_host(), web_contents()->GetFocusedFrame());
+    EXPECT_NE(rfh_subframe_a, web_contents()->GetFocusedFrame());
   }
 
   {
@@ -2502,19 +2505,17 @@ bool BackForwardCacheBrowserTest::IsUnloadAllowedToEnterBackForwardCache() {
 }
 
 bool BackForwardCacheBrowserTest::AddBlocklistedFeature(RenderFrameHost* rfh) {
-  return ExecJs(rfh, R"(
-    let object = document.createElement("object");
-    object.type = "application/x-blink-test-plugin";
-    document.body.appendChild(object);
-  )");
+  // Add kDummy as blocking feature.
+  RenderFrameHostImplWrapper rfh_a(rfh);
+  rfh_a->UseDummyStickyBackForwardCacheDisablingFeatureForTesting();
+  return true;
 }
 
 void BackForwardCacheBrowserTest::ExpectNotRestoredDueToBlocklistedFeature(
     base::Location location) {
-  ExpectNotRestored(
-      {NotRestoredReason::kBlocklistedFeatures},
-      {blink::scheduler::WebSchedulerTrackedFeature::kContainsPlugins}, {}, {},
-      {}, location);
+  ExpectNotRestored({NotRestoredReason::kBlocklistedFeatures},
+                    {blink::scheduler::WebSchedulerTrackedFeature::kDummy}, {},
+                    {}, {}, location);
 }
 
 const ukm::TestAutoSetUkmRecorder& BackForwardCacheBrowserTest::ukm_recorder() {

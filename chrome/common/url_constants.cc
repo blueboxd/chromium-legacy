@@ -26,6 +26,9 @@ const char kAdvancedProtectionDownloadLearnMoreURL[] =
 const char kAppNotificationsBrowserSettingsURL[] =
     "chrome://settings/content/notifications";
 
+const char kBatterySaverModeLearnMoreUrl[] =
+    "https://support.google.com/chrome/?p=chrome_battery_saver";
+
 const char kBluetoothAdapterOffHelpURL[] =
     "https://support.google.com/chrome?p=bluetooth";
 
@@ -169,7 +172,7 @@ const char kGooglePasswordManagerURL[] = "https://passwords.google.com";
 const char kGooglePhotosURL[] = "https://photos.google.com";
 
 const char kHighEfficiencyModeLearnMoreUrl[] =
-    "https://support.google.com/chrome/?p=chrome_performance_snooze";
+    "https://support.google.com/chrome/?p=chrome_memory_saver";
 
 const char kLearnMoreReportingURL[] =
     "https://support.google.com/chrome/?p=ui_usagestat";

@@ -39,6 +39,7 @@
 #include "content/public/browser/permission_result.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "ui/base/window_open_disposition_utils.h"
 #include "url/origin.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -59,6 +60,7 @@
 #include "chrome/browser/ui/hats/trust_safety_sentiment_service_factory.h"
 #include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
 #include "chrome/browser/ui/tab_dialogs.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_utils.h"
 #include "ui/events/event.h"
 #else
@@ -175,6 +177,11 @@ absl::optional<std::u16string> ChromePageInfoDelegate::GetFpsOwner(
       ->GetFirstPartySetOwnerForDisplay(site_url);
 }
 
+bool ChromePageInfoDelegate::IsFpsManaged() {
+  return PrivacySandboxServiceFactory::GetForProfile(GetProfile())
+      ->IsFirstPartySetsDataAccessManaged();
+}
+
 bool ChromePageInfoDelegate::CreateInfoBarDelegate() {
   infobars::ContentInfoBarManager* infobar_manager =
       infobars::ContentInfoBarManager::FromWebContents(web_contents_);
@@ -193,6 +200,15 @@ ChromePageInfoDelegate::CreateCookieControlsController() {
       profile->IsOffTheRecord()
           ? CookieSettingsFactory::GetForProfile(profile->GetOriginalProfile())
           : nullptr);
+}
+
+std::u16string ChromePageInfoDelegate::GetWebAppShortName() {
+  std::u16string web_app_name;
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  if (browser && browser->app_controller()->IsWebApp(browser)) {
+    web_app_name = browser->app_controller()->GetAppShortName();
+  }
+  return web_app_name;
 }
 
 void ChromePageInfoDelegate::ShowSiteSettings(const GURL& site_url) {

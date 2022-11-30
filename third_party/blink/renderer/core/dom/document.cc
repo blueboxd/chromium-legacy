@@ -38,6 +38,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_timeline.h"
@@ -316,7 +317,6 @@
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/source_location.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
@@ -376,11 +376,17 @@ enum class RequestStorageResult {
   REJECTED_EXISTING_DENIAL = 5,
   REJECTED_SANDBOXED = 6,
   REJECTED_GRANT_DENIED = 7,
-  kMaxValue = REJECTED_GRANT_DENIED,
+  REJECTED_INCORRECT_FRAME = 8,
+  kMaxValue = REJECTED_INCORRECT_FRAME,
 };
 void FireRequestStorageAccessHistogram(RequestStorageResult result) {
   base::UmaHistogramEnumeration("API.StorageAccess.RequestStorageAccess",
                                 result);
+}
+
+void FireRequestStorageAccessForOriginHistogram(RequestStorageResult result) {
+  base::UmaHistogramEnumeration(
+      "API.StorageAccess.RequestStorageAccessForOrigin", result);
 }
 
 class IntrinsicSizeResizeObserverDelegate : public ResizeObserver::Delegate {
@@ -616,7 +622,7 @@ const ListedElement::List& Document::UnassociatedListedElementsList::Get(
     const Document& owner) {
   if (dirty_) {
     const Node& root = owner.GetTreeScope().RootNode();
-    DCHECK(list_.IsEmpty());
+    DCHECK(list_.empty());
 
     // TODO(crbug.com/1243730): We do not consider shadow trees for now.
     for (HTMLElement& element : Traversal<HTMLElement>::StartsAfter(root)) {
@@ -676,8 +682,9 @@ Document* Document::Create(Document& document) {
   return new_document;
 }
 
-Document* Document::CreateForTest() {
-  return MakeGarbageCollected<Document>(DocumentInit::Create().ForTest());
+Document* Document::CreateForTest(ExecutionContext* execution_context) {
+  return MakeGarbageCollected<Document>(
+      DocumentInit::Create().ForTest(execution_context));
 }
 
 Document::Document(const DocumentInit& initializer,
@@ -689,15 +696,18 @@ Document::Document(const DocumentInit& initializer,
               &Document::OnAdoptedStyleSheetSet),
           static_cast<V8ObservableArrayCSSStyleSheet::DeleteAlgorithmCallback>(
               &Document::OnAdoptedStyleSheetDelete)),
+      token_(initializer.GetToken()),
       is_initial_empty_document_(initializer.IsInitialEmptyDocument()),
       is_prerendering_(initializer.IsPrerendering()),
       evaluate_media_queries_on_style_recalc_(false),
       pending_sheet_layout_(kNoLayoutWithPendingSheets),
       dom_window_(initializer.GetWindow()),
       execution_context_(initializer.GetExecutionContext()),
+      agent_(execution_context_ ? execution_context_->GetAgent() : nullptr),
       context_features_(ContextFeatures::DefaultSwitch()),
       http_refresh_scheduler_(MakeGarbageCollected<HttpRefreshScheduler>(this)),
       well_formed_(false),
+      fallback_base_url_for_srcdoc_(initializer.FallbackSrcdocBaseURL()),
       cookie_url_(dom_window_ ? initializer.GetCookieUrl()
                               : KURL(g_empty_string)),
       printing_(kNotPrinting),
@@ -955,7 +965,7 @@ void Document::SetDoctype(DocumentType* doc_type) {
     if (doc_type_->publicId().StartsWithIgnoringASCIICase(
             "-//wapforum//dtd xhtml mobile 1.")) {
       is_mobile_document_ = true;
-      style_engine_->ViewportRulesChanged();
+      style_engine_->ViewportStyleSettingChanged();
     }
   }
 }
@@ -1387,7 +1397,7 @@ bool Document::HasValidNamespaceForElements(const QualifiedName& q_name) {
   // These checks are from DOM Core Level 2, createElementNS
   // http://www.w3.org/TR/DOM-Level-2-Core/core.html#ID-DocCrElNS
   // createElementNS(null, "html:div")
-  if (!q_name.Prefix().IsEmpty() && q_name.NamespaceURI().IsNull())
+  if (!q_name.Prefix().empty() && q_name.NamespaceURI().IsNull())
     return false;
   // createElementNS("http://www.example.com", "xml:lang")
   if (q_name.Prefix() == g_xml_atom &&
@@ -1399,7 +1409,7 @@ bool Document::HasValidNamespaceForElements(const QualifiedName& q_name) {
   // createElementNS("http://www.w3.org/2000/xmlns/", "foo:bar"),
   // createElementNS(null, "xmlns:bar"), createElementNS(null, "xmlns")
   if (q_name.Prefix() == g_xmlns_atom ||
-      (q_name.Prefix().IsEmpty() && q_name.LocalName() == g_xmlns_atom))
+      (q_name.Prefix().empty() && q_name.LocalName() == g_xmlns_atom))
     return q_name.NamespaceURI() == xmlns_names::kNamespaceURI;
   return q_name.NamespaceURI() != xmlns_names::kNamespaceURI;
 }
@@ -1527,14 +1537,14 @@ void Document::SetMimeType(const AtomicString& mime_type) {
 }
 
 AtomicString Document::contentType() const {
-  if (!mime_type_.IsEmpty())
+  if (!mime_type_.empty())
     return mime_type_;
 
   if (DocumentLoader* document_loader = Loader())
     return document_loader->MimeType();
 
   String mime_type = SuggestedMIMEType();
-  if (!mime_type.IsEmpty())
+  if (!mime_type.empty())
     return AtomicString(mime_type);
 
   return AtomicString("application/xml");
@@ -1621,7 +1631,7 @@ void Document::UpdateTitle(const String& title) {
   raw_title_ = title;
 
   String old_title = title_;
-  if (raw_title_.IsEmpty())
+  if (raw_title_.empty())
     title_ = String();
   else if (raw_title_.Is8Bit())
     title_ = CanonicalizedTitle<LChar>(this, raw_title_);
@@ -1825,10 +1835,6 @@ String Document::nodeName() const {
   return "#document";
 }
 
-Node::NodeType Document::getNodeType() const {
-  return kDocumentNode;
-}
-
 FormController& Document::GetFormController() {
   if (!form_controller_) {
     form_controller_ = MakeGarbageCollected<FormController>(*this);
@@ -1905,7 +1911,7 @@ Document::CalculateStyleAndLayoutTreeUpdateForThisDocument() const {
 
   if (style_engine_->NeedsFullStyleUpdate())
     return StyleAndLayoutTreeUpdate::kFull;
-  if (!use_elements_needing_update_.IsEmpty())
+  if (!use_elements_needing_update_.empty())
     return StyleAndLayoutTreeUpdate::kFull;
   // We have scheduled an invalidation set on the document node which means any
   // element may need a style recalc.
@@ -2769,7 +2775,7 @@ void Document::UpdateUseShadowTreesIfNeeded() {
   ScriptForbiddenScope forbid_script;
 
   // Breadth-first search since nested use elements add to the queue.
-  while (!use_elements_needing_update_.IsEmpty()) {
+  while (!use_elements_needing_update_.empty()) {
     HeapHashSet<Member<SVGUseElement>> elements;
     use_elements_needing_update_.swap(elements);
     for (SVGUseElement* element : elements)
@@ -2918,24 +2924,22 @@ void Document::Shutdown() {
   if (this == &AXObjectCacheOwner()) {
     ax_contexts_.clear();
     ClearAXObjectCache();
+  } else {
+    DCHECK(!ax_object_cache_ || ExistingAXObjectCache())
+        << "Had AXObjectCache for parent, but not for popup document.";
+    if (AXObjectCache* cache = ExistingAXObjectCache()) {
+      // This is a popup document. Clear all accessibility state related to it
+      // by removing the AXObject for its root. The AXObjectCache is
+      // retrieved from the main document, but it maintains both documents.
+      cache->Remove(this);
+    }
   }
+
   computed_node_mapping_.clear();
 
   DetachLayoutTree();
   layout_view_ = nullptr;
   DCHECK(!View()->IsAttached());
-
-  if (this != &AXObjectCacheOwner()) {
-    if (AXObjectCache* cache = ExistingAXObjectCache()) {
-      // Documents that are not a root document use the AXObjectCache in
-      // their root document. Node::removedFrom is called after the
-      // document has been detached so it can't find the root document.
-      // We do the removals here instead.
-      for (Node& node : NodeTraversal::DescendantsOf(*this)) {
-        cache->Remove(&node);
-      }
-    }
-  }
 
   GetStyleEngine().DidDetach();
 
@@ -3026,7 +3030,7 @@ static ui::AXMode ComputeAXModeFromAXContexts(Vector<AXContext*> ax_contexts) {
   for (AXContext* context : ax_contexts)
     ax_mode |= context->GetAXMode();
 
-  if (!ax_contexts.IsEmpty()) {
+  if (!ax_contexts.empty()) {
     DCHECK(!ax_mode.is_mode_off())
         << "The computed AX mode was empty but there were > 0 AXContext "
            "objects. A caller should have called RemoveAXContext().";
@@ -3067,9 +3071,7 @@ void Document::AXContextModeChanged() {
 }
 
 void Document::RemoveAXContext(AXContext* context) {
-  auto** iter =
-      std::find_if(ax_contexts_.begin(), ax_contexts_.end(),
-                   [&context](const auto& item) { return item == context; });
+  auto** iter = base::ranges::find(ax_contexts_, context);
   if (iter != ax_contexts_.end())
     ax_contexts_.erase(iter);
   if (ax_contexts_.size() == 0) {
@@ -3342,10 +3344,6 @@ void Document::open() {
   // Window object as well.
   RemoveAllEventListenersRecursively();
 
-  ResetTreeScope();
-  if (GetFrame())
-    GetFrame()->Selection().Clear();
-
   // Create a new HTML parser and associate it with |document|.
   //
   // Set the current document readiness of |document| to "loading".
@@ -3392,8 +3390,10 @@ DocumentParser* Document::OpenForNavigation(
     const AtomicString& mime_type,
     const AtomicString& encoding) {
   DocumentParser* parser = ImplicitOpen(parser_sync_policy);
-  if (parser->NeedsDecoder())
-    parser->SetDecoder(BuildTextResourceDecoderFor(this, mime_type, encoding));
+  if (parser->NeedsDecoder()) {
+    parser->SetDecoder(
+        BuildTextResourceDecoder(GetFrame(), Url(), mime_type, encoding));
+  }
   if (AnchorElementInteractionTracker::IsFeatureEnabled() &&
       !GetFrame()->IsProvisional()) {
     anchor_element_interaction_tracker_ =
@@ -4067,7 +4067,7 @@ void Document::SetParsingState(ParsingState parsing_state) {
       form_controller_->ScheduleRestore();
     if (auto* ds_controller = DeferredShapingController::From(*this)) {
       PaintTiming& timing = PaintTiming::From(*this);
-      if (!timing.FirstContentfulPaint().is_null())
+      if (!timing.FirstContentfulPaintIgnoringSoftNavigations().is_null())
         ds_controller->ReshapeAllDeferred(ReshapeReason::kDomContentLoaded);
     }
   }
@@ -4149,6 +4149,10 @@ void Document::write(const String& text,
     if (ignore_opens_during_unload_count_)
       return;
 
+    if (ignore_destructive_write_module_script_count_) {
+      UseCounter::Count(*this,
+                        WebFeature::kDestructiveDocumentWriteAfterModuleScript);
+    }
     open(entered_window, ASSERT_NO_EXCEPTION);
   }
 
@@ -4276,6 +4280,23 @@ void Document::UpdateBaseURL() {
   if (!base_url_.IsValid())
     base_url_ = KURL();
 
+  // The RenderFrameHost won't know anything about the state of
+  // `base_element_url_` or `base_url_override_`, so if either of these affect
+  // `base_url_` we should share it with the frame host.
+  bool has_overridden_base_url =
+      !base_element_url_.IsEmpty() || !base_url_override_.IsEmpty();
+  // Avoid sending a spurious IPC if this is the first UpdateBaseURL() call
+  // and there is no overridden base URL. There may not be a frame since
+  // UpdateBaseURL() is called for documents that do not have a frame;
+  // there is nothing to notify in that case however.
+  // If we sent `base_url_` to the frame host, and then later its dependence
+  // on `base_element_url_`/`base_url_override_` ends, we should notify the
+  // frame host so it can reset its copy.
+  if ((!old_base_url.IsNull() || has_overridden_base_url) && GetFrame()) {
+    GetFrame()->GetLocalFrameHostRemote().DidChangeBaseURL(
+        has_overridden_base_url ? base_url_ : KURL());
+  }
+
   if (elem_sheet_) {
     // Element sheet is silly. It never contains anything.
     DCHECK(!elem_sheet_->Contents()->RuleCount());
@@ -4306,14 +4327,21 @@ KURL Document::FallbackBaseURL() const {
   //           document base URL of document's browsing context's container
   //           document.
   if (IsSrcdocDocument()) {
+    // Return the base_url value that was sent from the parent along with the
+    // srcdoc attribute's value.
+    if (fallback_base_url_for_srcdoc_.IsValid())
+      return fallback_base_url_for_srcdoc_;
+    // Until https://crbug.com/1356658 is resolved,
+    // `fallback_base_url_for_srcdoc_` will only be sent from the frame host if
+    // we are process isolating sandboxed srcdoc iframes (although when the
+    // IsolateSandboxedIframes feature is enabled we will send it for all srcdoc
+    // iframes, not just sandboxed ones). If `fallback_base_url_for_srcdoc_`
+    // isn't sent, then we must still check that `ParentDocument()` is non-null,
+    // in case this function is called while the document is detached.
     // TODO(https://crbug.com/751329, https://crbug.com/1336904): Referring to
     // ParentDocument() is not correct.
-    if (Document* parent = ParentDocument()) {
-      return parent->BaseURL();
-    }
-    // TODO(https://crbug.com/1339824) Sandboxed about:srcdoc document can be
-    // hosted in a different process. As a result, their `parent` may be null,
-    // and we might return something wrong, in a different way here.
+    if (ParentDocument())
+      return ParentDocument()->BaseURL();
   }
 
   // [spec] 2. If document's URL is about:blank, and document's browsing
@@ -4377,7 +4405,7 @@ void Document::ProcessBaseElement() {
   KURL base_element_url;
   if (href) {
     String stripped_href = StripLeadingAndTrailingHTMLSpaces(*href);
-    if (!stripped_href.IsEmpty())
+    if (!stripped_href.empty())
       base_element_url = KURL(FallbackBaseURL(), stripped_href);
   }
 
@@ -4437,8 +4465,8 @@ void Document::DidLoadAllScriptBlockingResources() {
   // just for executing scripts.
   execute_scripts_waiting_for_resources_task_handle_ = PostCancellableTask(
       *GetTaskRunner(TaskType::kNetworking), FROM_HERE,
-      WTF::Bind(&Document::ExecuteScriptsWaitingForResources,
-                WrapWeakPersistent(this)));
+      WTF::BindOnce(&Document::ExecuteScriptsWaitingForResources,
+                    WrapWeakPersistent(this)));
 
   if (IsA<HTMLDocument>(this) && body()) {
     // For HTML if we have no more stylesheets to load and we're past the body
@@ -4481,7 +4509,7 @@ void Document::MaybeHandleHttpRefresh(const String& content,
                         delay, refresh_url_string))
     return;
   KURL refresh_url =
-      refresh_url_string.IsEmpty() ? Url() : CompleteURL(refresh_url_string);
+      refresh_url_string.empty() ? Url() : CompleteURL(refresh_url_string);
 
   if (refresh_url.ProtocolIsJavaScript()) {
     String message =
@@ -5335,7 +5363,7 @@ void Document::MoveNodeIteratorsToNewDocument(Node& node,
 
 void Document::DidMoveTreeToNewDocument(const Node& root) {
   DCHECK_NE(root.GetDocument(), this);
-  if (!ranges_.IsEmpty()) {
+  if (!ranges_.empty()) {
     AttachedRangeSet ranges = ranges_;
     for (Range* range : ranges)
       range->UpdateOwnerDocumentIfNeeded();
@@ -5441,7 +5469,7 @@ void Document::DidMergeTextNodes(const Text& merged_node,
                                  unsigned old_length) {
   NodeWithIndex node_to_be_removed_with_index(
       const_cast<Text&>(node_to_be_removed));
-  if (!ranges_.IsEmpty()) {
+  if (!ranges_.empty()) {
     for (Range* range : ranges_)
       range->DidMergeTextNodes(node_to_be_removed_with_index, old_length);
   }
@@ -5840,7 +5868,7 @@ void Document::setDomain(const String& raw_domain,
     return;
   }
 
-  if (new_domain.IsEmpty()) {
+  if (new_domain.empty()) {
     exception_state.ThrowSecurityError("'" + new_domain +
                                        "' is an empty domain.");
     return;
@@ -5968,13 +5996,13 @@ void Document::setDomain(const String& raw_domain,
 
 absl::optional<base::Time> Document::lastModifiedTime() const {
   AtomicString http_last_modified = override_last_modified_;
-  if (http_last_modified.IsEmpty()) {
+  if (http_last_modified.empty()) {
     if (DocumentLoader* document_loader = Loader()) {
       http_last_modified = document_loader->GetResponse().HttpHeaderField(
           http_names::kLastModified);
     }
   }
-  if (!http_last_modified.IsEmpty()) {
+  if (!http_last_modified.empty()) {
     return ParseDate(http_last_modified);
   }
   return absl::nullopt;
@@ -6041,7 +6069,7 @@ mojom::blink::PermissionService* Document::GetPermissionService(
     execution_context->GetBrowserInterfaceBroker().GetInterface(
         data_->permission_service_.BindNewPipeAndPassReceiver(
             execution_context->GetTaskRunner(TaskType::kPermission)));
-    data_->permission_service_.set_disconnect_handler(WTF::Bind(
+    data_->permission_service_.set_disconnect_handler(WTF::BindOnce(
         &Document::PermissionServiceConnectionError, WrapWeakPersistent(this)));
   }
   return data_->permission_service_.get();
@@ -6064,15 +6092,19 @@ ScriptPromise Document::hasStorageAccess(ScriptState* script_state) {
   return promise;
 }
 
-ScriptPromise Document::requestStorageAccessForSite(ScriptState* script_state,
-                                                    const AtomicString& site) {
+ScriptPromise Document::requestStorageAccessForOrigin(
+    ScriptState* script_state,
+    const AtomicString& origin) {
   if (!GetFrame()) {
+    FireRequestStorageAccessForOriginHistogram(
+        RequestStorageResult::REJECTED_NO_ORIGIN);
     // Note that in detached frames, resolvers are not able to return a promise.
     return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kSecurityError,
-                          "requestStorageAccessForSite: Cannot be used unless "
-                          "the document is fully active."));
+        script_state,
+        MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kInvalidStateError,
+            "requestStorageAccessForOrigin: Cannot be used unless "
+            "the document is fully active."));
   }
 
   ScriptPromiseResolver* resolver =
@@ -6088,9 +6120,11 @@ ScriptPromise Document::requestStorageAccessForSite(ScriptState* script_state,
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kSecurity,
         mojom::blink::ConsoleMessageLevel::kError,
-        "requestStorageAccessForSite: Must be handling a user gesture to "
+        "requestStorageAccessForOrigin: Must be handling a user gesture to "
         "use."));
 
+    FireRequestStorageAccessForOriginHistogram(
+        RequestStorageResult::REJECTED_NO_USER_GESTURE);
     resolver->Reject();
     return promise;
   }
@@ -6099,8 +6133,10 @@ ScriptPromise Document::requestStorageAccessForSite(ScriptState* script_state,
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kSecurity,
         mojom::blink::ConsoleMessageLevel::kError,
-        "requestStorageAccessForSite: Only supported in primary top-level "
+        "requestStorageAccessForOrigin: Only supported in primary top-level "
         "browsing contexts."));
+    FireRequestStorageAccessForOriginHistogram(
+        RequestStorageResult::REJECTED_INCORRECT_FRAME);
     resolver->Reject();
     return promise;
   }
@@ -6109,29 +6145,24 @@ ScriptPromise Document::requestStorageAccessForSite(ScriptState* script_state,
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kSecurity,
         mojom::blink::ConsoleMessageLevel::kError,
-        "requestStorageAccessForSite: Cannot be used by opaque origins."));
+        "requestStorageAccessForOrigin: Cannot be used by opaque origins."));
 
+    FireRequestStorageAccessForOriginHistogram(
+        RequestStorageResult::REJECTED_OPAQUE_ORIGIN);
     resolver->Reject();
     return promise;
   }
 
-  KURL site_as_kurl{site};
-  if (!site_as_kurl.IsValid()) {
-    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kSecurity,
-        mojom::blink::ConsoleMessageLevel::kError,
-        "requestStorageAccessForSite: Invalid site parameter."));
-    resolver->Reject();
-    return promise;
-  }
-
+  KURL origin_as_kurl{origin};
   scoped_refptr<SecurityOrigin> supplied_origin =
-      SecurityOrigin::Create(site_as_kurl);
+      SecurityOrigin::Create(origin_as_kurl);
   if (supplied_origin->IsOpaque()) {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kSecurity,
         mojom::blink::ConsoleMessageLevel::kError,
-        "requestStorageAccessForSite: Invalid site parameter."));
+        "requestStorageAccessForOrigin: Invalid origin parameter."));
+    FireRequestStorageAccessForOriginHistogram(
+        RequestStorageResult::REJECTED_OPAQUE_ORIGIN);
     resolver->Reject();
     return promise;
   }
@@ -6139,6 +6170,8 @@ ScriptPromise Document::requestStorageAccessForSite(ScriptState* script_state,
   if (dom_window_->GetSecurityOrigin()->IsSameSiteWith(supplied_origin.get())) {
     // Access is not actually disabled, so accept the request.
     resolver->Resolve();
+    FireRequestStorageAccessForOriginHistogram(
+        RequestStorageResult::APPROVED_EXISTING_ACCESS);
     return promise;
   }
 
@@ -6154,7 +6187,7 @@ ScriptPromise Document::requestStorageAccessForSite(ScriptState* script_state,
   GetPermissionService(ExecutionContext::From(script_state))
       ->RequestPermission(
           std::move(descriptor), has_user_gesture,
-          WTF::Bind(
+          WTF::BindOnce(
               [](ScriptPromiseResolver* resolver, Document* document,
                  mojom::blink::PermissionStatus status) {
                 DCHECK(resolver);
@@ -6163,13 +6196,19 @@ ScriptPromise Document::requestStorageAccessForSite(ScriptState* script_state,
                 switch (status) {
                   case mojom::blink::PermissionStatus::GRANTED:
                     document->expressly_denied_storage_access_ = false;
+                    FireRequestStorageAccessForOriginHistogram(
+                        RequestStorageResult::APPROVED_NEW_GRANT);
                     resolver->Resolve();
                     break;
                   case mojom::blink::PermissionStatus::DENIED:
+                    LocalFrame::ConsumeTransientUserActivation(
+                        document->GetFrame());
                     document->expressly_denied_storage_access_ = true;
                     [[fallthrough]];
                   case mojom::blink::PermissionStatus::ASK:
                   default:
+                    FireRequestStorageAccessForOriginHistogram(
+                        RequestStorageResult::REJECTED_GRANT_DENIED);
                     resolver->Reject();
                 }
               },
@@ -6185,7 +6224,7 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
     // Note that in detached frames, resolvers are not able to return a promise.
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kSecurityError,
+                          DOMExceptionCode::kInvalidStateError,
                           "requestStorageAccess: Cannot be used unless the "
                           "document is fully active."));
   }
@@ -6268,7 +6307,7 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
   GetPermissionService(ExecutionContext::From(script_state))
       ->RequestPermission(
           std::move(descriptor), has_user_gesture,
-          WTF::Bind(
+          WTF::BindOnce(
               [](ScriptPromiseResolver* resolver, Document* document,
                  mojom::blink::PermissionStatus status) {
                 DCHECK(resolver);
@@ -6355,15 +6394,15 @@ ScriptPromise Document::hasTrustToken(ScriptState* script_state,
         data_->trust_token_query_answerer_.BindNewPipeAndPassReceiver(
             GetExecutionContext()->GetTaskRunner(TaskType::kInternalDefault)));
     data_->trust_token_query_answerer_.set_disconnect_handler(
-        WTF::Bind(&Document::TrustTokenQueryAnswererConnectionError,
-                  WrapWeakPersistent(this)));
+        WTF::BindOnce(&Document::TrustTokenQueryAnswererConnectionError,
+                      WrapWeakPersistent(this)));
   }
 
   data_->pending_trust_token_query_resolvers_.insert(resolver);
 
   data_->trust_token_query_answerer_->HasTrustTokens(
       issuer_origin,
-      WTF::Bind(
+      WTF::BindOnce(
           [](WeakPersistent<ScriptPromiseResolver> resolver,
              WeakPersistent<Document> document,
              network::mojom::blink::HasTrustTokensResultPtr result) {
@@ -6450,15 +6489,15 @@ ScriptPromise Document::hasRedemptionRecord(ScriptState* script_state,
         data_->trust_token_query_answerer_.BindNewPipeAndPassReceiver(
             GetExecutionContext()->GetTaskRunner(TaskType::kInternalDefault)));
     data_->trust_token_query_answerer_.set_disconnect_handler(
-        WTF::Bind(&Document::TrustTokenQueryAnswererConnectionError,
-                  WrapWeakPersistent(this)));
+        WTF::BindOnce(&Document::TrustTokenQueryAnswererConnectionError,
+                      WrapWeakPersistent(this)));
   }
 
   data_->pending_trust_token_query_resolvers_.insert(resolver);
 
   data_->trust_token_query_answerer_->HasRedemptionRecord(
       issuer_origin,
-      WTF::Bind(
+      WTF::BindOnce(
           [](WeakPersistent<ScriptPromiseResolver> resolver,
              WeakPersistent<Document> document,
              network::mojom::blink::HasRedemptionRecordResultPtr result) {
@@ -6620,13 +6659,13 @@ static ParseQualifiedNameResult ParseQualifiedNameInternal(
     local_name = qualified_name;
   } else {
     prefix = AtomicString(characters, colon_pos);
-    if (prefix.IsEmpty())
+    if (prefix.empty())
       return ParseQualifiedNameResult(kQNEmptyPrefix);
     int prefix_start = colon_pos + 1;
     local_name = AtomicString(characters + prefix_start, length - prefix_start);
   }
 
-  if (local_name.IsEmpty())
+  if (local_name.empty())
     return ParseQualifiedNameResult(kQNEmptyLocalName);
 
   return ParseQualifiedNameResult(kQNValid);
@@ -6802,7 +6841,7 @@ KURL Document::OpenSearchDescriptionURL() {
 }
 
 V8HTMLOrSVGScriptElement* Document::currentScriptForBinding() const {
-  if (current_script_stack_.IsEmpty())
+  if (current_script_stack_.empty())
     return nullptr;
   ScriptElementBase* script_element_base = current_script_stack_.back();
   if (!script_element_base)
@@ -6815,7 +6854,7 @@ void Document::PushCurrentScript(ScriptElementBase* new_current_script) {
 }
 
 void Document::PopCurrentScript(ScriptElementBase* script) {
-  DCHECK(!current_script_stack_.IsEmpty());
+  DCHECK(!current_script_stack_.empty());
   DCHECK_EQ(current_script_stack_.back(), script);
   current_script_stack_.pop_back();
 }
@@ -6867,6 +6906,10 @@ Document& Document::TopDocument() const {
 
 ExecutionContext* Document::GetExecutionContext() const {
   return execution_context_.Get();
+}
+
+Agent* Document::GetAgent() const {
+  return agent_.Get();
 }
 
 Attr* Document::createAttribute(const AtomicString& name,
@@ -7084,8 +7127,7 @@ void Document::FinishedParsing() {
   // Ensure Custom Element callbacks are drained before DOMContentLoaded.
   // FIXME: Remove this ad-hoc checkpoint when DOMContentLoaded is dispatched in
   // a queued task, which will do a checkpoint anyway. https://crbug.com/425790
-  if (!ScriptForbiddenScope::IsScriptForbidden())
-    Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
+  agent_->event_loop()->PerformMicrotaskCheckpoint();
 
   ScriptableDocumentParser* parser = GetScriptableDocumentParser();
   well_formed_ = parser && parser->WellFormed();
@@ -7093,7 +7135,7 @@ void Document::FinishedParsing() {
   if (LocalFrame* frame = GetFrame()) {
     // Guarantee at least one call to the client specifying a title. (If
     // |title_| is not empty, then the title has already been dispatched.)
-    if (title_.IsEmpty())
+    if (title_.empty())
       DispatchDidReceiveTitle();
 
     // Don't update the layout tree if we haven't requested the main resource
@@ -7116,13 +7158,6 @@ void Document::FinishedParsing() {
     BeginLifecycleUpdatesIfRenderingReady();
 
     frame->Loader().FinishedParsing();
-
-    if (parser) {
-      if (SourceKeyedCachedMetadataHandler* metadata_handler =
-              parser->GetInlineScriptCacheHandler()) {
-        metadata_handler->LogUsageMetrics();
-      }
-    }
 
     if (ShouldMarkFontPerformance())
       FontPerformance::MarkDomContentLoaded();
@@ -7196,7 +7231,7 @@ Vector<IconURL> Document::IconURLs(int icon_types_mask) {
     if (link_element->Href().IsEmpty())
       continue;
 
-    if (!link_element->Media().IsEmpty()) {
+    if (!link_element->Media().empty()) {
       auto* media_query =
           GetMediaQueryMatcher().MatchMedia(link_element->Media());
       if (!media_query->matches())
@@ -7266,7 +7301,7 @@ absl::optional<Color> Document::ThemeColor() {
   // tree order that matches and is valid.
   // https://html.spec.whatwg.org/multipage/semantics.html#meta-theme-color
   for (auto& element : meta_theme_color_elements_) {
-    if (!element->Media().IsEmpty()) {
+    if (!element->Media().empty()) {
       auto* media_query = GetMediaQueryMatcher().MatchMedia(
           element->Media().GetString().StripWhiteSpace());
       if (!media_query->matches())
@@ -7583,7 +7618,7 @@ HTMLDialogElement* Document::ActiveModalDialog() const {
 Element* Document::TopmostPopupAutoOrHint() const {
   if (PopupHintShowing())
     return PopupHintShowing();
-  if (PopupStack().IsEmpty())
+  if (PopupStack().empty())
     return nullptr;
   return PopupStack().back();
 }
@@ -7910,7 +7945,7 @@ bool Document::HaveRenderBlockingResourcesLoaded() const {
 
 Locale& Document::GetCachedLocale(const AtomicString& locale) {
   AtomicString locale_key = locale;
-  if (locale.IsEmpty() ||
+  if (locale.empty() ||
       !RuntimeEnabledFeatures::LangAttributeAwareFormControlUIEnabled())
     return Locale::DefaultLocale();
   LocaleIdentifierToLocaleMap::AddResult result =
@@ -8031,7 +8066,7 @@ void Document::FlushAutofocusCandidates() {
     return;
 
   // 3. If candidates is empty, then return.
-  if (autofocus_candidates_.IsEmpty())
+  if (autofocus_candidates_.empty())
     return;
 
   // 4. If topDocument's focused area is not topDocument itself, or
@@ -8062,7 +8097,7 @@ void Document::FlushAutofocusCandidates() {
   }
 
   // 5. While candidates is not empty:
-  while (!autofocus_candidates_.IsEmpty()) {
+  while (!autofocus_candidates_.empty()) {
     // 5.1. Let element be candidates[0].
     Element& element = *autofocus_candidates_[0];
 
@@ -8387,6 +8422,7 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(pending_animations_);
   visitor->Trace(worklet_animation_controller_);
   visitor->Trace(execution_context_);
+  visitor->Trace(agent_);
   visitor->Trace(canvas_font_cache_);
   visitor->Trace(intersection_observer_controller_);
   visitor->Trace(snap_coordinator_);
@@ -8411,6 +8447,8 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(anchor_element_interaction_tracker_);
   visitor->Trace(focused_element_change_observers_);
   visitor->Trace(pending_link_header_preloads_);
+  visitor->Trace(event_node_path_cache_);
+  visitor->Trace(event_node_path_cache_key_list_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
@@ -8490,9 +8528,10 @@ void Document::ProcessJavaScriptUrl(
   GetFrame()->Loader().Progress().ProgressStarted();
   pending_javascript_urls_.push_back(PendingJavascriptUrl(url, world));
   if (!javascript_url_task_handle_.IsActive()) {
-    javascript_url_task_handle_ = PostCancellableTask(
-        *GetTaskRunner(TaskType::kNetworking), FROM_HERE,
-        WTF::Bind(&Document::ExecuteJavaScriptUrls, WrapWeakPersistent(this)));
+    javascript_url_task_handle_ =
+        PostCancellableTask(*GetTaskRunner(TaskType::kNetworking), FROM_HERE,
+                            WTF::BindOnce(&Document::ExecuteJavaScriptUrls,
+                                          WrapWeakPersistent(this)));
   }
 }
 
@@ -8511,7 +8550,7 @@ bool Document::IsInWebAppScope() const {
     return false;
 
   const String& web_app_scope = GetSettings()->GetWebAppScope();
-  if (web_app_scope.IsNull() || web_app_scope.IsEmpty())
+  if (web_app_scope.IsNull() || web_app_scope.empty())
     return false;
 
   DCHECK_EQ(KURL(web_app_scope).GetString(), web_app_scope);
@@ -8794,6 +8833,62 @@ Document::PendingJavascriptUrl::~PendingJavascriptUrl() = default;
 void Document::CheckPartitionedCookiesOriginTrial(
     const ResourceResponse& response) {
   cookie_jar_->CheckPartitionedCookiesOriginTrial(response);
+}
+
+static wtf_size_t MaxEventNodePathCachedEntriesValue() {
+  // The cache stores N entries/nodes that are receiving events simultaneously
+  // in a document. The size of this cache will be O(kN) where k is the average
+  // tree depth of the stored nodes.
+  static const wtf_size_t kMaxEventNodePathCachedEntriesValue =
+      features::kDocumentMaxEventNodePathCachedEntries.Get();
+  return kMaxEventNodePathCachedEntriesValue;
+}
+
+static bool EventNodePathCachingEnabled() {
+  // Cache the feature value since checking for each event path regresses
+  // performance.
+  static const bool kEnabled =
+      base::FeatureList::IsEnabled(features::kDocumentEventNodePathCaching);
+  return kEnabled;
+}
+
+const EventPath::NodePath& Document::GetOrCalculateEventNodePath(Node& node) {
+  DCHECK(EventNodePathCachingEnabled());
+  if (event_node_path_dom_tree_version_ != dom_tree_version_) {
+    if (!event_node_path_cache_.empty()) {
+      event_node_path_cache_.clear();
+      event_node_path_cache_key_list_.clear();
+    } else {
+      DCHECK(event_node_path_cache_key_list_.empty());
+    }
+    event_node_path_dom_tree_version_ = dom_tree_version_;
+  }
+
+  EventPath::NodePath* event_node_path = nullptr;
+  {
+    // Keep `result` within own scope to avoid dangling references into cache,
+    // because it might get modified during pruning.
+    auto result = event_node_path_cache_.insert(&node, nullptr);
+    if (result.is_new_entry) {
+      EventPath::NodePath node_path = EventPath::CalculateNodePath(node);
+      result.stored_value->value =
+          MakeGarbageCollected<EventPath::NodePath>(std::move(node_path));
+    }
+    event_node_path = result.stored_value->value;
+  }
+  event_node_path_cache_key_list_.PrependOrMoveToFirst(&node);
+
+  // Prune oldest cached node if size is bigger than max.
+  wtf_size_t max_entries = MaxEventNodePathCachedEntriesValue();
+  if (event_node_path_cache_key_list_.size() > max_entries) {
+    DCHECK_EQ(event_node_path_cache_key_list_.size(), max_entries + 1);
+    event_node_path_cache_.erase(event_node_path_cache_key_list_.back());
+    event_node_path_cache_key_list_.pop_back();
+  }
+
+  DCHECK_EQ(event_node_path_cache_.size(),
+            event_node_path_cache_key_list_.size());
+  return *event_node_path;
 }
 
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;

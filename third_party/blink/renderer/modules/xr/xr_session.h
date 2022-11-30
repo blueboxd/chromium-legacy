@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -281,7 +281,7 @@ class XRSession final
   bool EmulatedPosition() const {
     // If we don't have display info then we should be using the identity
     // reference space, which by definition will be emulating the position.
-    if (pending_views_.IsEmpty()) {
+    if (pending_views_.empty()) {
       return true;
     }
 
@@ -535,7 +535,7 @@ class XRSession final
   // on the device - this is done in |hit_test_source_ids_| and
   // |hit_test_source_for_transient_input_ids_|.
   // For the specifics of HeapHashMap<Key, WeakMember<Value>> behavior, see:
-  // https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/platform/heap/BlinkGCAPIReference.md#weak-collections
+  // https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/heap/BlinkGCAPIReference.md#weak-collections
   HeapHashMap<uint64_t, WeakMember<XRHitTestSource>>
       hit_test_source_ids_to_hit_test_sources_;
   HeapHashMap<uint64_t, WeakMember<XRTransientInputHitTestSource>>

@@ -15,12 +15,12 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/navigation/referrer.h"
 #import "net/base/mac/url_conversions.h"
@@ -414,6 +414,8 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 
   UIButton* learnMoreButton = [UIButton buttonWithType:UIButtonTypeCustom];
   learnMoreButton.accessibilityTraits = UIAccessibilityTraitLink;
+  learnMoreButton.accessibilityHint =
+      l10n_util::GetNSString(IDS_IOS_INCOGNITO_INTERSTITIAL_LEARN_MORE_HINT);
   [learnMoreButton
       setTitle:l10n_util::GetNSString(IDS_NEW_TAB_OTR_LEARN_MORE_LINK)
       forState:UIControlStateNormal];

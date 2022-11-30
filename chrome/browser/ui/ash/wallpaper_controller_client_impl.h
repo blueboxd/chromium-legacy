@@ -66,9 +66,6 @@ class WallpaperControllerClientImpl
       const AccountId& account_id,
       bool show_wallpaper,
       ash::WallpaperController::SetWallpaperCallback callback) override;
-  void MigrateCollectionIdFromChromeApp(
-      const AccountId& account_id,
-      base::OnceCallback<void(const std::string&)> result_callback) override;
   void FetchDailyRefreshWallpaper(
       const std::string& collection_id,
       DailyWallpaperUrlFetchedCallback callback) override;
@@ -151,7 +148,6 @@ class WallpaperControllerClientImpl
   void AddObserver(ash::WallpaperControllerObserver* observer);
   void RemoveObserver(ash::WallpaperControllerObserver* observer);
   gfx::ImageSkia GetWallpaperImage();
-  const std::vector<SkColor>& GetWallpaperColors();
   bool IsWallpaperBlurred();
   bool IsActiveUserWallpaperControlledByPolicy();
   absl::optional<ash::WallpaperInfo> GetActiveUserWallpaperInfo();

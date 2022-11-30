@@ -72,8 +72,6 @@ const char* FinalStatusToString(PrerenderHost::FinalStatus final_status) {
       return "MixedContent";
     case PrerenderHost::FinalStatus::kTriggerBackgrounded:
       return "TriggerBackgrounded";
-    case PrerenderHost::FinalStatus::kEmbedderTriggeredAndSameOriginRedirected:
-      return "EmbedderTriggeredAndSameOriginRedirected";
     case PrerenderHost::FinalStatus::kEmbedderTriggeredAndCrossOriginRedirected:
       return "EmbedderTriggeredAndCrossOriginRedirected";
     case PrerenderHost::FinalStatus::kMemoryLimitExceeded:
@@ -86,6 +84,12 @@ const char* FinalStatusToString(PrerenderHost::FinalStatus final_status) {
       return "HasEffectiveUrl";
     case PrerenderHost::FinalStatus::kActivatedBeforeStarted:
       return "ActivatedBeforeStarted";
+    case PrerenderHost::FinalStatus::kInactivePageRestriction:
+      return "InactivePageRestriction";
+    case PrerenderHost::FinalStatus::kStartFailed:
+      return "StartFailed";
+    case PrerenderHost::FinalStatus::kTimeoutBackgrounded:
+      return "TimeoutBackgrounded";
   }
   NOTREACHED();
   return "";

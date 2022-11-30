@@ -12,22 +12,19 @@ import androidx.annotation.ColorRes;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
 import org.chromium.chrome.browser.omnibox.NewTabPageDelegate;
-import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityPreferencesManager;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.metrics.OmniboxEventProtos.OmniboxEventProto.PageClassification;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.url.GURL;
 
 class SearchBoxDataProvider implements LocationBarDataProvider {
     private final @ColorInt int mPrimaryColor;
-    private final @ColorInt int mDropdownStandardBgColor;
-    private final @ColorInt int mDropdownIncognitoBgColor;
-    private final @ColorInt int mSuggestionStandardBgColor;
-    private final @ColorInt int mSuggestionIncognitoBgColor;
     private boolean mIsFromQuickActionSearchWidget;
     private Tab mTab;
+    private GURL mGurl;
 
     /**
      * @param context The {@link Context} for accessing colors.
@@ -36,12 +33,6 @@ class SearchBoxDataProvider implements LocationBarDataProvider {
     SearchBoxDataProvider(Context context) {
         mIsFromQuickActionSearchWidget = false;
         mPrimaryColor = ChromeColors.getPrimaryBackgroundColor(context, isIncognito());
-        mDropdownStandardBgColor = ChromeColors.getSurfaceColor(
-                context, R.dimen.omnibox_suggestion_dropdown_bg_elevation);
-        mDropdownIncognitoBgColor = context.getColor(R.color.omnibox_dropdown_bg_incognito);
-        mSuggestionStandardBgColor =
-                ChromeColors.getSurfaceColor(context, R.dimen.omnibox_suggestion_bg_elevation);
-        mSuggestionIncognitoBgColor = context.getColor(R.color.omnibox_suggestion_bg_incognito);
     }
 
     /**
@@ -115,6 +106,16 @@ class SearchBoxDataProvider implements LocationBarDataProvider {
     }
 
     @Override
+    public GURL getCurrentGurl() {
+        if (mGurl == null) {
+            assert LibraryLoader.getInstance().isInitialized();
+            mGurl = new GURL(getCurrentUrl());
+        }
+
+        return mGurl;
+    }
+
+    @Override
     public boolean isOfflinePage() {
         return false;
     }
@@ -125,7 +126,7 @@ class SearchBoxDataProvider implements LocationBarDataProvider {
     }
 
     @Override
-    public int getPageClassification(boolean isFocusedFromFakebox) {
+    public int getPageClassification(boolean isFocusedFromFakebox, boolean isPrefetch) {
         if (mIsFromQuickActionSearchWidget) {
             return PageClassification.ANDROID_SHORTCUTS_WIDGET_VALUE;
         } else {
@@ -146,26 +147,6 @@ class SearchBoxDataProvider implements LocationBarDataProvider {
     @Override
     public int getSecurityIconContentDescriptionResourceId() {
         return 0;
-    }
-
-    @Override
-    public int getDropdownStandardBackgroundColor() {
-        return mDropdownStandardBgColor;
-    }
-
-    @Override
-    public int getDropdownIncognitoBackgroundColor() {
-        return mDropdownIncognitoBgColor;
-    }
-
-    @Override
-    public int getSuggestionStandardBackgroundColor() {
-        return mSuggestionStandardBgColor;
-    }
-
-    @Override
-    public int getSuggestionIncognitoBackgroundColor() {
-        return mSuggestionIncognitoBgColor;
     }
 
     void setIsFromQuickActionSearchWidget(boolean isFromQuickActionsWidget) {

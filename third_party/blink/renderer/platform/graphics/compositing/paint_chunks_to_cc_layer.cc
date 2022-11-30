@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -617,7 +617,7 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
 void ConversionContext::UpdateEffectBounds(
     const gfx::RectF& bounds,
     const TransformPaintPropertyNode& transform) {
-  if (effect_bounds_stack_.IsEmpty() || bounds.IsEmpty())
+  if (effect_bounds_stack_.empty() || bounds.IsEmpty())
     return;
 
   auto& effect_bounds_info = effect_bounds_stack_.back();

@@ -9,11 +9,11 @@
 // #import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 // #import {loadTimeData} from '../i18n_setup.js';
 // #import {Oobe} from '../cr_ui.m.js'
-// #import {$} from 'chrome://resources/js/util.m.js';
+// #import {$} from 'chrome://resources/js/util.js';
 // #import './debug_util.js';
 // #import {AssistantNativeIconType} from '../../assistant_optin/utils.m.js';
 
-// #import {MessageType, ProblemType} from 'chrome://resources/cr_components/chromeos/quick_unlock/setup_pin_keyboard.js';
+// #import {MessageType, ProblemType} from 'chrome://resources/ash/common/quick_unlock/setup_pin_keyboard.js';
 
 const createAssistantData = (isMinor) => {
   const data = {};
@@ -418,6 +418,15 @@ cr.define('cr.ui.login.debug', function() {
           id: 'creds',
           trigger: (screen) => {
             screen.setUIStep('creds');
+            screen.isDomainJoin = false;
+          },
+          data: {},
+        },
+        {
+          id: 'creds(isDomainJoin)',
+          trigger: (screen) => {
+            screen.setUIStep('creds');
+            screen.isDomainJoin = true;
           },
           data: {},
         },
@@ -632,6 +641,13 @@ cr.define('cr.ui.login.debug', function() {
           trigger: (screen) => {
             screen.reset();
             screen.setShouldShowConfirmationDialog(true);
+          },
+        },
+        {
+          id: 'rollback-error',
+          trigger: (screen) => {
+            screen.reset();
+            screen.setScreenState(3);
           },
         },
       ],
@@ -1542,6 +1558,10 @@ cr.define('cr.ui.login.debug', function() {
           },
         },
       ],
+    },
+    {
+      id: 'cryptohome-recovery',
+      kind: ScreenKind.NORMAL,
     },
   ];
 

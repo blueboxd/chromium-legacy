@@ -123,19 +123,19 @@ Transform BuildSkewMatrix(const DecomposedTransform& decomp) {
   Transform temp;
   if (decomp.skew[2]) {
     temp.set_rc(1, 2, decomp.skew[2]);
-    matrix.PreconcatTransform(temp);
+    matrix.PreConcat(temp);
   }
 
   if (decomp.skew[1]) {
     temp.set_rc(1, 2, 0);
     temp.set_rc(0, 2, decomp.skew[1]);
-    matrix.PreconcatTransform(temp);
+    matrix.PreConcat(temp);
   }
 
   if (decomp.skew[0]) {
     temp.set_rc(0, 2, 0);
     temp.set_rc(0, 1, decomp.skew[0]);
-    matrix.PreconcatTransform(temp);
+    matrix.PreConcat(temp);
   }
   return matrix;
 }
@@ -162,11 +162,11 @@ Transform ComposeTransform(const Transform& perspective,
                            const Transform& scale) {
   Transform matrix;
 
-  matrix.PreconcatTransform(perspective);
-  matrix.PreconcatTransform(translation);
-  matrix.PreconcatTransform(rotation);
-  matrix.PreconcatTransform(skew);
-  matrix.PreconcatTransform(scale);
+  matrix.PreConcat(perspective);
+  matrix.PreConcat(translation);
+  matrix.PreConcat(rotation);
+  matrix.PreConcat(skew);
+  matrix.PreConcat(scale);
 
   return matrix;
 }
@@ -174,12 +174,11 @@ Transform ComposeTransform(const Transform& perspective,
 bool CheckViewportPointMapsWithinOnePixel(const Point& point,
                                           const Transform& transform) {
   auto point_original = Point3F(PointF(point));
-  auto point_transformed = Point3F(PointF(point));
 
   // Can't use TransformRect here since it would give us the axis-aligned
   // bounding rect of the 4 points in the initial rectable which is not what we
   // want.
-  transform.TransformPoint(&point_transformed);
+  auto point_transformed = transform.MapPoint(point_original);
 
   if ((point_transformed - point_original).Length() > 1.f) {
     // The changed distance should not be more than 1 pixel.
@@ -560,7 +559,7 @@ bool SnapTransform(Transform* out,
 Transform TransformAboutPivot(const PointF& pivot, const Transform& transform) {
   Transform result;
   result.Translate(pivot.x(), pivot.y());
-  result.PreconcatTransform(transform);
+  result.PreConcat(transform);
   result.Translate(-pivot.x(), -pivot.y());
   return result;
 }
@@ -586,41 +585,27 @@ std::string DecomposedTransform::ToString() const {
       quaternion.w());
 }
 
-Transform OrthoProjectionMatrix(float left,
-                                float right,
-                                float bottom,
-                                float top) {
-  // Use the standard formula to map the clipping frustum to the cube from
-  // [-1, -1, -1] to [1, 1, 1].
+AxisTransform2d OrthoProjectionTransform(float left,
+                                         float right,
+                                         float bottom,
+                                         float top) {
+  // Use the standard formula to map the clipping frustum to the square from
+  // [-1, -1] to [1, 1].
   float delta_x = right - left;
   float delta_y = top - bottom;
-  Transform proj;
   if (!delta_x || !delta_y)
-    return proj;
-  proj.set_rc(0, 0, 2.0f / delta_x);
-  proj.set_rc(0, 3, -(right + left) / delta_x);
-  proj.set_rc(1, 1, 2.0f / delta_y);
-  proj.set_rc(1, 3, -(top + bottom) / delta_y);
+    return AxisTransform2d();
 
-  // Z component of vertices is always set to zero as we don't use the depth
-  // buffer while drawing.
-  proj.set_rc(2, 2, 0);
-
-  return proj;
+  return AxisTransform2d::FromScaleAndTranslation(
+      Vector2dF(2.0f / delta_x, 2.0f / delta_y),
+      Vector2dF(-(right + left) / delta_x, -(top + bottom) / delta_y));
 }
 
-Transform WindowMatrix(int x, int y, int width, int height) {
-  Transform canvas;
-
-  // Map to window position and scale up to pixel coordinates.
-  canvas.Translate3d(x, y, 0);
-  canvas.Scale3d(width, height, 0);
-
-  // Map from ([-1, -1] to [1, 1]) -> ([0, 0] to [1, 1])
-  canvas.Translate3d(0.5, 0.5, 0.5);
-  canvas.Scale3d(0.5, 0.5, 0.5);
-
-  return canvas;
+AxisTransform2d WindowTransform(int x, int y, int width, int height) {
+  // Map from ([-1, -1] to [1, 1]) -> ([x, y] to [x + width, y + height]).
+  return AxisTransform2d::FromScaleAndTranslation(
+      Vector2dF(width * 0.5f, height * 0.5f),
+      Vector2dF(x + width * 0.5f, y + height * 0.5f));
 }
 
 static inline bool NearlyZero(double value) {
@@ -680,8 +665,7 @@ Vector2dF ComputeTransform2dScaleComponents(const Transform& transform,
 }
 
 float ComputeApproximateMaxScale(const Transform& transform) {
-  RectF unit(0.f, 0.f, 1.f, 1.f);
-  transform.TransformRect(&unit);
+  gfx::RectF unit = transform.MapRect(RectF(0.f, 0.f, 1.f, 1.f));
   return std::max(unit.width(), unit.height());
 }
 

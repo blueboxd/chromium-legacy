@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -191,7 +191,7 @@ TEST_F(RTCPeerConnectionTest, GetTrackRemoveStreamAndGCAll) {
     // Transceivers will still reference the stream even after it is "removed".
     // To make the GC tests work, clear the stream from tracks so that the
     // stream does not keep tracks alive.
-    while (!stream->getTracks().IsEmpty())
+    while (!stream->getTracks().empty())
       stream->removeTrack(stream->getTracks()[0], scope.GetExceptionState());
   }
 
@@ -228,7 +228,7 @@ TEST_F(RTCPeerConnectionTest,
     // Transceivers will still reference the stream even after it is "removed".
     // To make the GC tests work, clear the stream from tracks so that the
     // stream does not keep tracks alive.
-    while (!stream->getTracks().IsEmpty())
+    while (!stream->getTracks().empty())
       stream->removeTrack(stream->getTracks()[0], scope.GetExceptionState());
   }
 

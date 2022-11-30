@@ -12,8 +12,7 @@
 #include "crypto/hmac.h"
 #include "third_party/private_membership/src/private_membership_rlwe_client.h"
 
-namespace ash {
-namespace device_activity {
+namespace ash::device_activity {
 
 namespace psm_rlwe = private_membership::rlwe;
 
@@ -29,16 +28,28 @@ DeviceActiveUseCase::DeviceActiveUseCase(
     const ChromeDeviceMetadataParameters& chrome_passed_device_params,
     const std::string& use_case_pref_key,
     psm_rlwe::RlweUseCase psm_use_case,
-    PrefService* local_state)
+    PrefService* local_state,
+    std::unique_ptr<PsmDelegateInterface> psm_delegate)
     : psm_device_active_secret_(psm_device_active_secret),
       chrome_passed_device_params_(chrome_passed_device_params),
       use_case_pref_key_(use_case_pref_key),
       psm_use_case_(psm_use_case),
       local_state_(local_state),
+      psm_delegate_(std::move(psm_delegate)),
       statistics_provider_(
-          chromeos::system::StatisticsProvider::GetInstance()) {}
+          chromeos::system::StatisticsProvider::GetInstance()) {
+  DCHECK(psm_delegate_);
+}
 
 DeviceActiveUseCase::~DeviceActiveUseCase() = default;
+
+void DeviceActiveUseCase::ClearSavedState() {
+  window_id_ = absl::nullopt;
+
+  psm_id_ = absl::nullopt;
+
+  psm_rlwe_client_.reset();
+}
 
 PrefService* DeviceActiveUseCase::GetLocalState() const {
   return local_state_;
@@ -64,15 +75,36 @@ absl::optional<std::string> DeviceActiveUseCase::GetWindowIdentifier() const {
   return window_id_;
 }
 
-void DeviceActiveUseCase::SetWindowIdentifier(
-    absl::optional<std::string> window_id) {
+bool DeviceActiveUseCase::SetWindowIdentifier(base::Time ts) {
+  std::string window_id = GenerateUTCWindowIdentifier(ts);
+  psm_id_ = GeneratePsmIdentifier(window_id);
+
+  // Check if |psm_id_| is generated.
+  if (!psm_id_.has_value()) {
+    LOG(ERROR) << "PSM ID has no value.";
+    return false;
+  }
+
+  std::vector<psm_rlwe::RlwePlaintextId> psm_rlwe_ids = {psm_id_.value()};
+  auto status_or_client =
+      psm_delegate_->CreatePsmClient(GetPsmUseCase(), psm_rlwe_ids);
+
+  if (!status_or_client.ok()) {
+    LOG(ERROR) << "Failed to initialize PSM client.";
+    return false;
+  }
+
+  // Set the PSM RLWE client and window identifier if
+  // the |psm_id_| is generated successfully.
+  SetPsmRlweClient(std::move(status_or_client.value()));
   window_id_ = window_id;
 
-  // nullopt the psm_id_ if a new window_id gets assigned.
-  psm_id_ = absl::nullopt;
+  return true;
+}
 
-  // Reset |psm_rlwe_client_| since it also depends on psm_id value.
-  psm_rlwe_client_.reset();
+absl::optional<psm_rlwe::RlwePlaintextId>
+DeviceActiveUseCase::GetPsmIdentifier() const {
+  return psm_id_;
 }
 
 std::string DeviceActiveUseCase::GetDigestString(
@@ -86,29 +118,8 @@ std::string DeviceActiveUseCase::GetDigestString(
   return base::HexEncode(&digest[0], digest.size());
 }
 
-absl::optional<psm_rlwe::RlwePlaintextId>
-DeviceActiveUseCase::GetPsmIdentifier() {
-  if (!psm_id_.has_value()) {
-    psm_id_ = GeneratePsmIdentifier();
-  }
-  return psm_id_;
-}
-
-void DeviceActiveUseCase::SetPsmIdentifier(
-    absl::optional<psm_rlwe::RlwePlaintextId> psm_id) {
-  psm_id_ = psm_id;
-}
-
 psm_rlwe::PrivateMembershipRlweClient* DeviceActiveUseCase::GetPsmRlweClient() {
   return psm_rlwe_client_.get();
-}
-
-void DeviceActiveUseCase::SetPsmRlweClient(
-    std::unique_ptr<psm_rlwe::PrivateMembershipRlweClient> psm_rlwe_client) {
-  DCHECK(psm_rlwe_client);
-
-  // Re-assigning the unique_ptr will reset the old unique_ptr.
-  psm_rlwe_client_ = std::move(psm_rlwe_client);
 }
 
 bool DeviceActiveUseCase::IsDevicePingRequired(base::Time new_ping_ts) const {
@@ -125,6 +136,19 @@ bool DeviceActiveUseCase::IsDevicePingRequired(base::Time new_ping_ts) const {
   // day's previous to one that we reported already.
   return prev_ping_ts < new_ping_ts &&
          prev_ping_window_id != new_ping_window_id;
+}
+
+bool DeviceActiveUseCase::EncryptPsmValueAsCiphertext(base::Time ts) {
+  (void)ts;
+  NOTREACHED();
+  return false;
+}
+
+base::Time DeviceActiveUseCase::DecryptPsmValueAsTimestamp(
+    std::string ciphertext) const {
+  (void)ciphertext;
+  NOTREACHED();
+  return base::Time::UnixEpoch();
 }
 
 std::string DeviceActiveUseCase::GetFullHardwareClass() const {
@@ -161,10 +185,18 @@ MarketSegment DeviceActiveUseCase::GetMarketSegment() const {
   return chrome_passed_device_params_.market_segment;
 }
 
+const std::string& DeviceActiveUseCase::GetPsmDeviceActiveSecret() const {
+  if (psm_device_active_secret_.empty()) {
+    VLOG(1) << "PSM Device Active Secret is not defined.";
+  }
+
+  return psm_device_active_secret_;
+}
+
 absl::optional<psm_rlwe::RlwePlaintextId>
-DeviceActiveUseCase::GeneratePsmIdentifier() const {
+DeviceActiveUseCase::GeneratePsmIdentifier(
+    absl::optional<std::string> window_id) const {
   const std::string psm_use_case = psm_rlwe::RlweUseCase_Name(GetPsmUseCase());
-  absl::optional<std::string> window_id = GetWindowIdentifier();
   if (psm_device_active_secret_.empty() || psm_use_case.empty() ||
       !window_id.has_value()) {
     VLOG(1) << "Can not generate PSM id without the psm device secret, use "
@@ -175,14 +207,15 @@ DeviceActiveUseCase::GeneratePsmIdentifier() const {
   std::string unhashed_psm_id =
       base::JoinString({psm_use_case, window_id.value()}, "|");
 
-  // Convert bytes to hex to avoid encoding/decoding proto issues across
-  // client/server.
-  std::string psm_id_hex =
+  // |psm_id_str| represents a 64 byte hex encoded value by default.
+  // However for the first active use case, this value is a 32 byte string.
+  std::string psm_id_str =
       GetDigestString(psm_device_active_secret_, unhashed_psm_id);
 
-  if (!psm_id_hex.empty()) {
+  if (!psm_id_str.empty()) {
     psm_rlwe::RlwePlaintextId psm_rlwe_id;
-    psm_rlwe_id.set_sensitive_id(psm_id_hex);
+    psm_rlwe_id.set_sensitive_id(psm_id_str);
+
     return psm_rlwe_id;
   }
 
@@ -191,5 +224,12 @@ DeviceActiveUseCase::GeneratePsmIdentifier() const {
   return absl::nullopt;
 }
 
-}  // namespace device_activity
-}  // namespace ash
+void DeviceActiveUseCase::SetPsmRlweClient(
+    std::unique_ptr<psm_rlwe::PrivateMembershipRlweClient> psm_rlwe_client) {
+  DCHECK(psm_rlwe_client);
+
+  // Re-assigning the unique_ptr will reset the old unique_ptr.
+  psm_rlwe_client_ = std::move(psm_rlwe_client);
+}
+
+}  // namespace ash::device_activity

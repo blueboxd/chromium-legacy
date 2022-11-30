@@ -28,6 +28,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/feature_engagement/test/mock_tracker.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/user_education/common/feature_promo_controller.h"
 #include "components/user_education/common/feature_promo_handle.h"
 #include "components/user_education/common/feature_promo_registry.h"
@@ -62,16 +63,24 @@ using ::testing::Ref;
 using ::testing::Return;
 
 namespace {
-base::Feature kTestIPHFeature{"TestIPHFeature",
-                              base::FEATURE_ENABLED_BY_DEFAULT};
-base::Feature kOneOffIPHFeature("AnyContextIPHFeature",
-                                base::FEATURE_ENABLED_BY_DEFAULT);
-base::Feature kTutorialIPHFeature{"TutorialTestIPHFeature",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
-base::Feature kCustomActionIPHFeature{"CustomActionTestIPHFeature",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-base::Feature kDefaultCustomActionIPHFeature{
-    "DefaultCustomActionTestIPHFeature", base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kTestIPHFeature,
+             "TestIPHFeature",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kOneOffIPHFeature,
+             "AnyContextIPHFeature",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kTutorialIPHFeature,
+             "TutorialTestIPHFeature",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kCustomActionIPHFeature,
+             "CustomActionTestIPHFeature",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kDefaultCustomActionIPHFeature,
+             "DefaultCustomActionTestIPHFeature",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kCustomActionIPHFeature2,
+             "CustomActionTestIPHFeature2",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 constexpr char kTestTutorialIdentifier[] = "Test Tutorial";
 DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kOneOffIPHElementId);
 }  // namespace
@@ -153,6 +162,7 @@ class BrowserFeaturePromoControllerTest : public TestWithBrowserView {
             base::Unretained(this),
             base::Unretained(&kDefaultCustomActionIPHFeature)));
     default_custom.SetCustomActionIsDefault(true);
+    default_custom.SetCustomActionDismissText(IDS_NOT_NOW);
     registry()->RegisterFeature(std::move(default_custom));
 
     // Make sure the browser view is visible for the tests.
@@ -982,7 +992,7 @@ TEST_F(BrowserFeaturePromoControllerTest, PerformsCustomAction) {
       .WillOnce(Return(true));
   ASSERT_TRUE(controller_->MaybeShowPromo(kCustomActionIPHFeature));
 
-  // Simulate clicking the "Show Tutorial" button.
+  // Simulate clicking the custom action button.
   auto* const bubble = GetPromoBubble();
   ASSERT_TRUE(bubble);
   views::test::WidgetDestroyedWaiter waiter(bubble->GetWidget());
@@ -1001,9 +1011,16 @@ TEST_F(BrowserFeaturePromoControllerTest, PerformsCustomActionAsDefault) {
       .WillOnce(Return(true));
   ASSERT_TRUE(controller_->MaybeShowPromo(kDefaultCustomActionIPHFeature));
 
-  // Simulate clicking the "Show Tutorial" button.
+  // Simulate clicking the custom action button.
   auto* const bubble = GetPromoBubble();
   ASSERT_TRUE(bubble);
+
+  auto* const button = bubble->GetNonDefaultButtonForTesting(0);
+  ASSERT_TRUE(button);
+
+  const std::u16string& text = button->GetText();
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NOT_NOW), text);
+
   views::test::WidgetDestroyedWaiter waiter(bubble->GetWidget());
   views::test::InteractionTestUtilSimulatorViews::PressButton(
       bubble->GetDefaultButtonForTesting());
@@ -1020,7 +1037,7 @@ TEST_F(BrowserFeaturePromoControllerTest, DoesNotPerformCustomAction) {
       .WillOnce(Return(true));
   ASSERT_TRUE(controller_->MaybeShowPromo(kCustomActionIPHFeature));
 
-  // Simulate clicking the "Show Tutorial" button.
+  // Simulate clicking the other button.
   auto* const bubble = GetPromoBubble();
   ASSERT_TRUE(bubble);
   views::test::WidgetDestroyedWaiter waiter(bubble->GetWidget());
@@ -1040,7 +1057,7 @@ TEST_F(BrowserFeaturePromoControllerTest, DoesNotPerformDefaultCustomAction) {
       .WillOnce(Return(true));
   ASSERT_TRUE(controller_->MaybeShowPromo(kDefaultCustomActionIPHFeature));
 
-  // Simulate clicking the "Show Tutorial" button.
+  // Simulate clicking the other button.
   auto* const bubble = GetPromoBubble();
   ASSERT_TRUE(bubble);
   views::test::WidgetDestroyedWaiter waiter(bubble->GetWidget());
@@ -1049,6 +1066,43 @@ TEST_F(BrowserFeaturePromoControllerTest, DoesNotPerformDefaultCustomAction) {
   waiter.Wait();
 
   EXPECT_EQ(0, custom_callback_count_);
+}
+
+// Test that the promo controller can handle the anchor view disappearing from
+// under the bubble during the button callback.
+TEST_F(BrowserFeaturePromoControllerTest, CustomActionHidesAnchorView) {
+  FeaturePromoHandle promo_handle;
+  registry()->RegisterFeature(FeaturePromoSpecification::CreateForCustomAction(
+      kCustomActionIPHFeature2, kAppMenuButtonElementId, IDS_REOPEN_TAB_PROMO,
+      IDS_REOPEN_TAB_PROMO,
+      base::BindLambdaForTesting(
+          [&](ui::ElementContext context, FeaturePromoHandle handle) {
+            views::ElementTrackerViews::GetInstance()
+                ->GetUniqueView(kAppMenuButtonElementId, context)
+                ->SetVisible(false);
+            promo_handle = std::move(handle);
+          })));
+
+  // Launch a feature promo that has a tutorial.
+  EXPECT_CALL(*mock_tracker_, Dismissed).Times(0);
+  EXPECT_CALL(*mock_tracker_,
+              ShouldTriggerHelpUI(Ref(kCustomActionIPHFeature2)))
+      .WillOnce(Return(true));
+  ASSERT_TRUE(controller_->MaybeShowPromo(kCustomActionIPHFeature2));
+
+  // Simulate clicking the custom action button.
+  auto* const bubble = GetPromoBubble();
+  ASSERT_TRUE(bubble);
+  views::test::WidgetDestroyedWaiter waiter(bubble->GetWidget());
+  views::test::InteractionTestUtilSimulatorViews::PressButton(
+      bubble->GetNonDefaultButtonForTesting(0));
+  waiter.Wait();
+  EXPECT_TRUE(promo_handle.is_valid());
+
+  // Promo is actually dismissed when the handle is released.
+  EXPECT_CALL(*mock_tracker_, Dismissed(testing::Ref(kCustomActionIPHFeature2)))
+      .Times(1);
+  promo_handle.Release();
 }
 
 TEST_F(BrowserFeaturePromoControllerTest, GetAnchorContext) {

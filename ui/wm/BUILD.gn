@@ -24,8 +24,6 @@ component("wm") {
     "core/coordinate_conversion.h",
     "core/cursor_loader.cc",
     "core/cursor_loader.h",
-    "core/cursor_lookup.cc",
-    "core/cursor_lookup.h",
     "core/cursor_manager.cc",
     "core/cursor_manager.h",
     "core/cursor_util.cc",
@@ -191,7 +189,6 @@ test("wm_unittests") {
   }
 
   if (is_fuchsia) {
-    use_cfv1 = false
     additional_manifest_fragments = [
       "//build/config/fuchsia/test/present_view.shard.test-cml",
       "//third_party/fuchsia-sdk/sdk/pkg/vulkan/client.shard.cml",

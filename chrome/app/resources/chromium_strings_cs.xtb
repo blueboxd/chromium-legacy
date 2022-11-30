@@ -12,6 +12,8 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1131805035311359397">Chcete-li zkontrolovat, zda jsou hesla v bezpečí před porušením zabezpečení údajů a ostatními bezpečnostními hrozbami, <ph name="BEGIN_LINK" />přihlaste se do prohlížeče Chromium<ph name="END_LINK" />.</translation>
 <translation id="1185134272377778587">O prohlížeči Chromium</translation>
 <translation id="1203500561924088507">Děkujeme za instalaci aplikace <ph name="BUNDLE_NAME" />. Před jejím použitím je potřeba restartovat prohlížeč.</translation>
+<translation id="1231839967188101156">Když je tato funkce zapnutá, uvolňuje Chromium paměť obsazenou neaktivními kartami. Aktivní karty a jiné aplikace tak mají k dispozici více výpočetních zdrojů a prohlížeč Chromium zůstává rychlý. Když se k neaktivním kartám vrátíte, automaticky se aktivují. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
+<translation id="1261119230216066228">Prohlížeč Chromium byl zrychlen pomocí Spořiče paměti</translation>
 <translation id="1315551408014407711">Nastavení nového profilu Chromium</translation>
 <translation id="1385859895174722837">Asistent Google v prohlížeči Chromium</translation>
 <translation id="1396446129537741364">Chromium se pokouší zobrazit hesla.</translation>
@@ -182,6 +184,7 @@ Na tento účet se mohou vztahovat oprávnění, která jste již udělili webů
 <translation id="5386450000063123300">Aktualizace prohlížeče Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Povolit přihlášení do prohlížeče Chromium</translation>
 <translation id="5398878173008909840">K dispozici je nová verze prohlížeče Chromium.</translation>
+<translation id="5405650547142096840">Odstranit z prohlížeče Chromium</translation>
 <translation id="5427571867875391349">Nastavit Chromium jako výchozí prohlížeč</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
 <translation id="5473971139929175403">Prohlížeč Chromium nemusí fungovat správně, protože v této distribuci Linuxu už není podporován</translation>
@@ -209,6 +212,7 @@ Na tento účet se mohou vztahovat oprávnění, která jste již udělili webů
 <translation id="6055895534982063517">K dispozici je nová verze prohlížeče Chromium, ještě rychlejší než ty předchozí.</translation>
 <translation id="6063093106622310249">&amp;Otevřít v prohlížeči Chromium</translation>
 <translation id="6072279588547424923">Do prohlížeče Chromium bylo přidáno rozšíření <ph name="EXTENSION_NAME" /></translation>
+<translation id="6072463441809498330">Zrychlete si Chromium</translation>
 <translation id="608006075545470555">Přidat do tohoto prohlížeče pracovní profil</translation>
 <translation id="6096348254544841612">Přizpůsobte si prohlížeč Chromium a ovládejte jej. Je k dispozici aktualizace.</translation>
 <translation id="6119438414301547735">Povolit rozšíření zobrazovat na liště prohlížeče Chromium žádosti o přístup</translation>
@@ -252,6 +256,7 @@ Na tento účet se mohou vztahovat oprávnění, která jste již udělili webů
 <translation id="6717134281241384636">Nelze použít váš profil, protože byl vytvořen v novější verzi prohlížeče Chromium.
 
 Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu, nebo používejte novější verzi prohlížeče Chromium.</translation>
+<translation id="6730677189742196061">Prohlížeč Chromium byl zrychlen pomocí Spořiče paměti</translation>
 <translation id="6734291798041940871">Prohlížeč Chromium je na tomto počítači již nainstalován pro všechny uživatele.</translation>
 <translation id="673636774878526923">Chcete-li mít ve všech zařízeních přístup k údajům z prohlížeče Chromium, přihlaste se a zapněte synchronizaci.</translation>
 <translation id="6774082503108938489">Tvůj rodič pro prohlížeč Chromium vypnul možnost Oprávnění pro weby, aplikace a rozšíření. Aktivace tohoto <ph name="EXTENSION_TYPE_PARAMETER" /> není povolena.</translation>
@@ -305,9 +310,9 @@ Chromium nemůže vaše nastavení obnovit.</translation>
 <translation id="7682601070171973634">Chromium zkoumá nové funkce, které webům umožňují poskytovat stejné prostředí a využívat při tom méně dat</translation>
 <translation id="7686590090926151193">Chromium není vaším výchozím prohlížečem</translation>
 <translation id="7689606757190482937">Synchronizujte a upravte si Chromium na různých zařízeních</translation>
-<translation id="7714577916146996629">Když je tato možnost zapnutá, Chromium bude využívat paměť z karet, které aktivně nepoužíváte. Uvolní se tak zdroje vašeho počítače k dalším úkolům a prohlížeč Chromium zůstane rychlý. Neaktivní karty se zobrazují prázdné a po kliknutí se automaticky znovu načtou. Můžete si přečíst <ph name="BEGIN_LINK" />další informace<ph name="END_LINK" /> nebo <ph name="BEGIN_LINK_2" />odeslat zpětnou vazbu<ph name="END_LINK_2" />.</translation>
 <translation id="7745317241717453663">Ze zařízení budou smazány vaše údaje o prohlížení. Budete-li chtít své údaje později načíst, přihlaste se do prohlížeče Chromium jako <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Instalační soubor nemohl vytvořit dočasný adresář. Zkontrolujte prosím volné místo na disku a povolení instalovat software.</translation>
+<translation id="7786760609782648049">Zrychlete svůj prohlížeč Chromium</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7828947555739565424">Profil Chromium s tímto účtem už v tomto zařízení existuje</translation>
 <translation id="7845233973568007926">Děkujeme za instalaci aplikace <ph name="BUNDLE_NAME" />. Před jejím použitím je třeba restartovat počítač.</translation>
@@ -335,11 +340,11 @@ Chromium nemůže vaše nastavení obnovit.</translation>
 <translation id="8453117565092476964">Archiv instalačního programu je poškozený nebo neplatný. Stáhněte prosím Chromium znovu.</translation>
 <translation id="8463672209299734063">Volitelné: Pomozte se zlepšováním funkcí a výkonu operačního systému ChromiumOS tím, že budete do Googlu automaticky odesílat diagnostické údaje a údaje o využití.</translation>
 <translation id="8493179195440786826">Prohlížeč Chromium je zastaralý</translation>
-<translation id="8522220489792889625">Chromium podle potřeby znovu využívá paměť obsazenou kartami, které aktivně nepoužíváte. Tuto volbu můžete v nastavení kdykoli změnit.</translation>
 <translation id="8550334526674375523">Tento pracovní profil je zcela oddělen od vašeho osobního profilu.</translation>
 <translation id="8558383651099478961">Tvůj rodič pro prohlížeč Chromium vypnul možnost Oprávnění pro weby, aplikace a rozšíření. Přidání tohoto <ph name="EXTENSION_TYPE_PARAMETER" /> není povoleno.</translation>
 <translation id="8561285221328166383">Pokud chcete v budoucnu dostávat aktualizace prohlížeče Chromium, budete potřebovat systém macOS 10.13 nebo novější. Tento počítač používá systém macOS 10.12.</translation>
 <translation id="8568283329061645092">Když se přihlásíte pomocí účtu Google, může vám Chromium kontrolovat hesla</translation>
+<translation id="8574036838419011058">Když je tato funkce zapnutá, Chromium šetří baterii tím, že omezuje aktivitu na pozadí a vizuální efekty, jako jsou plynulé posouvání a snímková frekvence videí. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autoři prohlížeče Chromium. Všechna práva vyhrazena.</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />Jak tyto údaje využíváme:<ph name="END_BOLD" /> Weby mohou v prohlížeči Chromium ukládat informace o vašich zájmech. Např. když navštívíte web, kde se prodávají boty na maraton, web může definovat váš zájem jako běhání maratonů. Když později navštívíte jiný web s registrací na závod, může se vám na něm na základě vašich zájmů zobrazit reklama na boty na běhání.</translation>
 <translation id="8619360774459241877">Spouštění prohlížeče Chromium...</translation>

@@ -23,9 +23,17 @@ function BrowserTestReporter(runner) {
   let passes = 0;
   let failures = 0;
 
+  // Log test progress.
+  runner.on('test', function(test) {
+    console.info(`Mocha test started: ${test.fullTitle()}`);
+  });
+
   // Increment passes for each passed test.
   runner.on('pass', function(test) {
     passes++;
+    // Note: Adding an extra space before 'passed' to beter align with the
+    // 'Mocha test started' message.
+    console.info(`Mocha test  passed: ${test.fullTitle()}`);
   });
 
   // Report failures. Mocha only catches "assert" failures, because "expect"
@@ -94,5 +102,5 @@ mocha.setup({
   // Mocha timeouts are set to 2 seconds initially. This isn't nearly enough for
   // slower bots (e.g., Dr. Memory). Disable timeouts globally, because the C++
   // will handle it (and has scaled timeouts for slower bots).
-  enableTimeouts: false,
+  timeout: '0',
 });

@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/event_target_names.h"
 #include "third_party/blink/renderer/core/events/animation_playback_event.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -68,12 +69,12 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -212,18 +213,19 @@ Animation* Animation::Create(AnimationEffect* effect,
       // TODO(crbug.com/1216527)
       // Eventually we hope to be able to be more flexible with
       // iteration_duration "auto" and its interaction with start_delay and
-      // end_delay. For now we will throw an exception if either delay is set.
+      // end_delay. For now we will throw an exception if either delay is set
+      // to a non-zero time-based value.
       // Once the spec (https://github.com/w3c/csswg-drafts/pull/6337) has been
       // ratified, we will be able to better handle mixed scenarios like "auto"
       // and time based delays.
 
       // If either delay or end_delay are non-zero, we can't yet handle "auto"
-      if (!effect->timing_.start_delay.is_zero() ||
-          !effect->timing_.end_delay.is_zero()) {
+      if (effect->timing_.start_delay.IsNonzeroTimeBasedDelay() ||
+          effect->timing_.end_delay.IsNonzeroTimeBasedDelay()) {
         exception_state.ThrowDOMException(
             DOMExceptionCode::kNotSupportedError,
-            "Effect duration \"auto\" with delays is not yet implemented when "
-            "used with Scroll Timelines");
+            "Effect duration \"auto\" with time-based delays is not yet "
+            "implemented when used with Scroll Timelines");
         return nullptr;
       }
     }
@@ -1711,14 +1713,17 @@ void Animation::UpdateFinishedState(UpdateType update_type,
 }
 
 void Animation::ScheduleAsyncFinish() {
+  auto* execution_context = GetExecutionContext();
+  if (!execution_context)
+    return;
   // Run a task to handle the finished promise and event as a microtask. With
   // the exception of an explicit call to Animation::finish, it is important to
   // apply these updates asynchronously as it is possible to enter the finished
   // state temporarily.
   pending_finish_notification_ = true;
   if (!has_queued_microtask_) {
-    Microtask::EnqueueMicrotask(
-        WTF::Bind(&Animation::AsyncFinishMicrotask, WrapWeakPersistent(this)));
+    execution_context->GetAgent()->event_loop()->EnqueueMicrotask(WTF::BindOnce(
+        &Animation::AsyncFinishMicrotask, WrapWeakPersistent(this)));
     has_queued_microtask_ = true;
   }
 }
@@ -2564,9 +2569,10 @@ void Animation::ResolvePromiseMaybeAsync(AnimationPromise* promise) {
   if (ScriptForbiddenScope::IsScriptForbidden()) {
     GetExecutionContext()
         ->GetTaskRunner(TaskType::kDOMManipulation)
-        ->PostTask(FROM_HERE,
-                   WTF::Bind(&AnimationPromise::Resolve<Animation*>,
-                             WrapPersistent(promise), WrapPersistent(this)));
+        ->PostTask(
+            FROM_HERE,
+            WTF::BindOnce(&AnimationPromise::Resolve<Animation*>,
+                          WrapPersistent(promise), WrapPersistent(this)));
   } else {
     promise->Resolve(this);
   }
@@ -2582,9 +2588,9 @@ void Animation::RejectAndResetPromiseMaybeAsync(AnimationPromise* promise) {
   if (ScriptForbiddenScope::IsScriptForbidden()) {
     GetExecutionContext()
         ->GetTaskRunner(TaskType::kDOMManipulation)
-        ->PostTask(FROM_HERE,
-                   WTF::Bind(&Animation::RejectAndResetPromise,
-                             WrapPersistent(this), WrapPersistent(promise)));
+        ->PostTask(FROM_HERE, WTF::BindOnce(&Animation::RejectAndResetPromise,
+                                            WrapPersistent(this),
+                                            WrapPersistent(promise)));
   } else {
     RejectAndResetPromise(promise);
   }
@@ -2745,10 +2751,10 @@ void Animation::commitStyles(ExceptionState& exception_state) {
   //    format for which style attributes are not defined) throw a
   //    "NoModificationAllowedError" DOMException and abort these steps.
   if (!target || !target->IsStyledElement() ||
-      !To<KeyframeEffect>(effect())->pseudoElement().IsEmpty()) {
+      !To<KeyframeEffect>(effect())->pseudoElement().empty()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNoModificationAllowedError,
-        "Animation not associated with a styled target element");
+        "Animation not associated with a styled taemptyement");
     return;
   }
   // 2. If, after applying any pending style changes, target is not being

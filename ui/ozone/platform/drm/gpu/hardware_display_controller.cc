@@ -7,6 +7,7 @@
 #include <drm.h>
 #include <string.h>
 #include <xf86drm.h>
+
 #include <ios>
 #include <memory>
 #include <type_traits>
@@ -15,11 +16,11 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
-#include "base/trace_event/trace_conversion_helper.h"
-#include "base/trace_event/trace_event.h"
-#include "base/trace_event/traced_value.h"
+#include "base/trace_event/typed_macros.h"
 #include "third_party/libdrm/src/include/drm/drm_fourcc.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/geometry/point.h"
@@ -179,7 +180,18 @@ void HardwareDisplayController::SchedulePageFlip(
       "Compositing.Display.HardwareDisplayController.SchedulePageFlipResult",
       result);
 
-  if (PageFlipResult::kSuccess != result) {
+  if (PageFlipResult::kFailedPlaneAssignment == result) {
+    watchdog_.CrashOnFailedPlaneAssignment();
+
+    // Plane assignment is usually an intermittent problem that recovers itself
+    // within a few frames. Send back a NAK and hope for the best--the
+    // watchdog will handle things if this problem is persistent.
+    std::move(submission_callback)
+        .Run(gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS,
+             /*release_fence=*/gfx::GpuFenceHandle());
+    std::move(presentation_callback).Run(gfx::PresentationFeedback::Failure());
+    return;
+  } else if (PageFlipResult::kFailedCommit == result) {
     for (const auto& plane : plane_list) {
       // If the page flip failed and we see that the buffer has been allocated
       // before the latest modeset, it could mean it was an in-flight buffer
@@ -199,7 +211,7 @@ void HardwareDisplayController::SchedulePageFlip(
 
     // No outdated buffers detected which makes this a true page flip failure.
     // Alert the watchdog.
-    watchdog_.Arm();
+    watchdog_.ArmForFailedCommit();
 
     std::move(submission_callback)
         .Run(gfx::SwapResult::SWAP_FAILED,
@@ -222,6 +234,7 @@ void HardwareDisplayController::SchedulePageFlip(
   std::move(submission_callback)
       .Run(gfx::SwapResult::SWAP_ACK, std::move(release_fence));
 
+  watchdog_.OnSuccessfulPageFlip();
   // Everything was submitted successfully, wait for asynchronous completion.
   page_flip_request->TakeCallback(
       base::BindOnce(&CompletePageFlip, weak_ptr_factory_.GetWeakPtr(),
@@ -365,8 +378,8 @@ void HardwareDisplayController::AddCrtc(
 std::unique_ptr<CrtcController> HardwareDisplayController::RemoveCrtc(
     const scoped_refptr<DrmDevice>& drm,
     uint32_t crtc) {
-  auto controller_it = std::find_if(
-      crtc_controllers_.begin(), crtc_controllers_.end(),
+  auto controller_it = base::ranges::find_if(
+      crtc_controllers_,
       [drm, crtc](const std::unique_ptr<CrtcController>& crtc_controller) {
         return crtc_controller->drm() == drm && crtc_controller->crtc() == crtc;
       });
@@ -467,31 +480,24 @@ void HardwareDisplayController::OnPageFlipComplete(
   page_flip_request_ = nullptr;
 }
 
-void HardwareDisplayController::AsValueInto(
-    base::trace_event::TracedValue* value) const {
-  using base::trace_event::ValueToString;
+void HardwareDisplayController::WriteIntoTrace(
+    perfetto::TracedValue context) const {
+  auto dict = std::move(context).WriteDictionary();
 
-  value->SetString("origin", ValueToString(origin_));
-  value->SetString("cursor_location", ValueToString(cursor_location_));
-  value->SetBoolean("has_page_flip_request", page_flip_request_ != nullptr);
+  dict.Add("origin", origin_.ToString());
+  dict.Add("cursor_location", cursor_location_.ToString());
+  dict.Add("has_page_flip_request", page_flip_request_ != nullptr);
+
+  dict.Add("owned_hardware_planes", owned_hardware_planes_);
+  dict.Add("crtc_controllers", crtc_controllers_);
 
   {
-    auto scoped_dict = value->BeginDictionaryScoped("owned_hardware_planes");
-    owned_hardware_planes_.AsValueInto(value);
-  }
-  {
-    auto scoped_array = value->BeginArrayScoped("crtc_controllers");
-    for (const auto& crtc : crtc_controllers_) {
-      auto scoped_dict = value->AppendDictionaryScoped();
-      crtc->AsValueInto(value);
-    }
-  }
-  {
-    auto scoped_array = value->BeginArrayScoped("preferred_format_modifiers");
+    auto array = dict.AddArray("preferred_format_modifiers");
     for (const auto& format_modifier : preferred_format_modifier_) {
-      auto scoped_dict = value->AppendDictionaryScoped();
-      value->SetString("format", NumberToHexString(format_modifier.first));
-      value->SetString("modifier", NumberToHexString(format_modifier.second));
+      auto format_dict = array.AppendDictionary();
+
+      format_dict.Add("format", NumberToHexString(format_modifier.first));
+      format_dict.Add("modifier", NumberToHexString(format_modifier.second));
     }
   }
 }

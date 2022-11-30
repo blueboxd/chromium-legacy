@@ -6,7 +6,7 @@
 import 'chrome://extensions/extensions.js';
 
 import {ExtensionsItemListElement} from 'chrome://extensions/extensions.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals} from 'chrome://webui-test/chai_assert.js';
@@ -31,7 +31,8 @@ suite(extension_item_list_tests.suiteName, function() {
 
   // Initialize an extension item before each test.
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     itemList = document.createElement('extensions-item-list');
     boundTestVisible = testVisible.bind(null, itemList);
 

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,8 +102,8 @@ WorkerThreadScheduler::WorkerThreadScheduler(
     : NonMainThreadSchedulerBase(sequence_manager,
                                  TaskType::kWorkerThreadTaskQueueDefault),
       thread_type_(thread_type),
-      idle_helper_queue_(
-          GetHelper().NewTaskQueue(TaskQueue::Spec("worker_idle_tq"))),
+      idle_helper_queue_(GetHelper().NewTaskQueue(
+          TaskQueue::Spec(base::sequence_manager::QueueName::WORKER_IDLE_TQ))),
       idle_helper_(&GetHelper(),
                    this,
                    "WorkerSchedulerIdlePeriod",
@@ -132,7 +132,7 @@ WorkerThreadScheduler::~WorkerThreadScheduler() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("worker.scheduler"), "WorkerScheduler", this);
 
-  DCHECK(worker_schedulers_.IsEmpty());
+  DCHECK(worker_schedulers_.empty());
 }
 
 scoped_refptr<SingleThreadIdleTaskRunner>

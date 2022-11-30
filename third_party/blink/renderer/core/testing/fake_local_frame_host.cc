@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,8 +49,8 @@ void FakeLocalFrameHost::MainDocumentElementAvailable(
     bool uses_temporary_zoom_level) {}
 
 void FakeLocalFrameHost::SetNeedsOcclusionTracking(bool needs_tracking) {}
-void FakeLocalFrameHost::SetVirtualKeyboardOverlayPolicy(
-    bool vk_overlays_content) {}
+void FakeLocalFrameHost::SetVirtualKeyboardMode(
+    ui::mojom::blink::VirtualKeyboardMode mode) {}
 
 void FakeLocalFrameHost::VisibilityChanged(
     mojom::blink::FrameVisibility visibility) {}
@@ -241,6 +241,8 @@ void FakeLocalFrameHost::BindFrameHostReceiver(
 void FakeLocalFrameHost::DidChangeSrcDoc(
     const blink::FrameToken& child_frame_token,
     const WTF::String& srcdoc_value) {}
+
+void FakeLocalFrameHost::DidChangeBaseURL(const ::blink::KURL& url) {}
 
 void FakeLocalFrameHost::ReceivedDelegatedCapability(
     blink::mojom::DelegatedCapability delegated_capability) {}

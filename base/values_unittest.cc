@@ -16,7 +16,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/as_const.h"
 #include "base/bits.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
@@ -1451,7 +1450,7 @@ TEST(ValuesTest, RemovePath) {
   EXPECT_NE(nullptr, root.FindByDottedPath("one.two.four"));
 }
 
-TEST(ValuesTest, ExtractPath) {
+TEST(ValuesTest, ExtractByDottedPath) {
   Value::Dict root;
   root.SetByDottedPath("one.two.three", Value(123));
 
@@ -1736,6 +1735,22 @@ TEST(ValuesTest, Clone) {
   Value::Dict* copy_nested_dictionary = copy_value->GetIfDict();
   ASSERT_TRUE(copy_nested_dictionary);
   EXPECT_TRUE(copy_nested_dictionary->Find("key"));
+}
+
+TEST(ValuesTest, TakeString) {
+  Value value("foo");
+  std::string taken = std::move(value).TakeString();
+  EXPECT_EQ(taken, "foo");
+}
+
+// Check that the value can still be used after `TakeString()` was called, as
+// long as a new value was assigned to it.
+TEST(ValuesTest, PopulateAfterTakeString) {
+  Value value("foo");
+  std::string taken = std::move(value).TakeString();
+
+  value = Value(false);
+  EXPECT_EQ(value, Value(false));
 }
 
 TEST(ValuesTest, TakeDict) {

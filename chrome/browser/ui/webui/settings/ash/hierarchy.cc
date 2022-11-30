@@ -13,8 +13,14 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace chromeos {
-namespace settings {
+namespace ash::settings {
+
+namespace mojom {
+using ::chromeos::settings::mojom::Section;
+using ::chromeos::settings::mojom::Setting;
+using ::chromeos::settings::mojom::Subpage;
+}  // namespace mojom
+
 namespace {
 
 // Used to generate localized names.
@@ -313,5 +319,4 @@ std::vector<std::u16string> Hierarchy::GenerateHierarchyStrings(
   return hierarchy_strings;
 }
 
-}  // namespace settings
-}  // namespace chromeos
+}  // namespace ash::settings

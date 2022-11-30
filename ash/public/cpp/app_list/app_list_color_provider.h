@@ -24,11 +24,6 @@ class ASH_PUBLIC_EXPORT AppListColorProvider {
   // Returns the singleton instance.
   static AppListColorProvider* Get();
 
-  // |default_color| will be used when dark/light mode is disabled.
-  virtual SkColor GetAppListBackgroundColor(
-      bool is_tablet_mode,
-      SkColor default_color,
-      const views::Widget* app_list_widget) const = 0;
   virtual SkColor GetSearchBoxBackgroundColor(
       const views::Widget* app_list_widget) const = 0;
   virtual SkColor GetSearchBoxTextColor(
@@ -39,10 +34,6 @@ class ASH_PUBLIC_EXPORT AppListColorProvider {
       const views::Widget* app_list_widget) const = 0;
   virtual SkColor GetSearchBoxSuggestionTextColor(
       SkColor default_color,
-      const views::Widget* app_list_widget) const = 0;
-  virtual SkColor GetSuggestionChipBackgroundColor(
-      const views::Widget* app_list_widget) const = 0;
-  virtual SkColor GetSuggestionChipTextColor(
       const views::Widget* app_list_widget) const = 0;
   virtual SkColor GetAppListItemTextColor(
       bool is_in_folder,

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -129,7 +129,7 @@ TEST_F(LayoutBlockTest, ContainmentStyleChange) {
   auto* target = To<LayoutBlockFlow>(target_element->GetLayoutObject());
   auto* contained = GetLayoutBoxByElementId("contained");
   if (target->IsLayoutNGObject()) {
-    EXPECT_TRUE(target->GetCachedLayoutResult()
+    EXPECT_TRUE(target->GetSingleCachedLayoutResult()
                     ->PhysicalFragment()
                     .HasOutOfFlowFragmentChild());
   } else {
@@ -141,7 +141,7 @@ TEST_F(LayoutBlockTest, ContainmentStyleChange) {
   target_element->setAttribute(html_names::kStyleAttr, "contain:style");
   UpdateAllLifecyclePhasesForTest();
   if (target->IsLayoutNGObject()) {
-    EXPECT_FALSE(target->GetCachedLayoutResult()
+    EXPECT_FALSE(target->GetSingleCachedLayoutResult()
                      ->PhysicalFragment()
                      .HasOutOfFlowFragmentChild());
   } else {
@@ -149,7 +149,7 @@ TEST_F(LayoutBlockTest, ContainmentStyleChange) {
   }
   const LayoutView* view = GetDocument().GetLayoutView();
   if (view->IsLayoutNGObject()) {
-    EXPECT_TRUE(view->GetCachedLayoutResult()
+    EXPECT_TRUE(view->GetSingleCachedLayoutResult()
                     ->PhysicalFragment()
                     .HasOutOfFlowFragmentChild());
   } else {

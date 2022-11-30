@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/containers/flat_map.h"
+#include "base/cpu_reduction_experiment.h"
 #include "base/no_destructor.h"
 #include "base/numerics/checked_math.h"
 #include "base/strings/string_number_conversions.h"
@@ -33,9 +34,16 @@ namespace ui {
 
 namespace {
 
-// A function to call when focus changes, for testing only.
-base::LazyInstance<std::map<ax::mojom::Event, base::RepeatingClosure>>::
-    DestructorAtExit g_on_notify_event_for_testing;
+using OnNotifyEventCallbackMap =
+    std::map<ax::mojom::Event,
+             // A function to call when focus changes, for testing only.
+             base::RepeatingClosure>;
+
+OnNotifyEventCallbackMap& GetOnNotifyEventCallbackMap() {
+  static base::NoDestructor<OnNotifyEventCallbackMap>
+      on_notify_event_for_testing;
+  return *on_notify_event_for_testing;
+}
 
 // Check for descendant comment, using limited depth first search.
 bool FindDescendantRoleWithMaxDepth(const AXPlatformNodeBase* node,
@@ -62,14 +70,66 @@ bool FindDescendantRoleWithMaxDepth(const AXPlatformNodeBase* node,
   return false;
 }
 
+// Map from each AXPlatformNode's unique id to its instance, with some helpers
+// provided for convenience. Internally, this class uses either a
+// `base::flat_map` or a `std::map` based on a Finch experiment.
+class UniqueIdMap {
+ public:
+  static UniqueIdMap& GetInstance() {
+    static base::NoDestructor<UniqueIdMap> kUniqueIdMap;
+    return *kUniqueIdMap;
+  }
+
+  UniqueIdMap() : use_std_map_(base::IsRunningCpuReductionExperiment()) {}
+
+  AXPlatformNode* FindOrNull(int32_t id) const {
+    return use_std_map_ ? FindOrNull(id, map_) : FindOrNull(id, flat_map_);
+  }
+
+  size_t Size() const { return use_std_map_ ? Size(map_) : Size(flat_map_); }
+
+  void InsertAndOverwrite(int32_t id, AXPlatformNode* node) {
+    return use_std_map_ ? InsertAndOverwrite(id, node, map_)
+                        : InsertAndOverwrite(id, node, flat_map_);
+  }
+
+  void Erase(int32_t id) {
+    return use_std_map_ ? Erase(id, map_) : Erase(id, flat_map_);
+  }
+
+ private:
+  template <typename MapType>
+  static AXPlatformNode* FindOrNull(int32_t id, const MapType& map) {
+    const auto iter = map.find(id);
+    return iter == map.end() ? nullptr : iter->second;
+  }
+
+  template <typename MapType>
+  static size_t Size(const MapType& map) {
+    return map.size();
+  }
+
+  template <typename MapType>
+  static void InsertAndOverwrite(int32_t id,
+                                 AXPlatformNode* node,
+                                 MapType& map) {
+    map[id] = node;
+  }
+
+  template <typename MapType>
+  static void Erase(int32_t id, MapType& map) {
+    map.erase(id);
+  }
+
+  base::flat_map<int32_t, AXPlatformNode*> flat_map_;
+  std::map<int32_t, AXPlatformNode*> map_;
+  // Specifies which map is in use.
+  const bool use_std_map_;
+};
+
 }  // namespace
 
 const char16_t AXPlatformNodeBase::kEmbeddedCharacter = u'\xfffc';
-
-// Map from each AXPlatformNode's unique id to its instance.
-using UniqueIdMap = base::flat_map<int32_t, AXPlatformNode*>;
-base::LazyInstance<UniqueIdMap>::Leaky g_unique_id_map =
-    LAZY_INSTANCE_INITIALIZER;
 
 // TODO(fxbug.dev/91030): Remove the !BUILDFLAG(IS_FUCHSIA) condition once
 // fuchsia has native accessibility.
@@ -84,24 +144,20 @@ AXPlatformNode* AXPlatformNode::Create(AXPlatformNodeDelegate* delegate) {
 
 // static
 AXPlatformNode* AXPlatformNodeBase::GetFromUniqueId(int32_t unique_id) {
-  UniqueIdMap* unique_ids = g_unique_id_map.Pointer();
-  auto iter = unique_ids->find(unique_id);
-  if (iter != unique_ids->end())
-    return iter->second;
-
-  return nullptr;
+  return UniqueIdMap::GetInstance().FindOrNull(unique_id);
 }
 
 // static
 size_t AXPlatformNodeBase::GetInstanceCountForTesting() {
-  return g_unique_id_map.Get().size();
+  return UniqueIdMap::GetInstance().Size();
 }
 
 // static
 void AXPlatformNodeBase::SetOnNotifyEventCallbackForTesting(
     ax::mojom::Event event_type,
     base::RepeatingClosure callback) {
-  g_on_notify_event_for_testing.Get()[event_type] = std::move(callback);
+  OnNotifyEventCallbackMap& callback_map = GetOnNotifyEventCallbackMap();
+  callback_map[event_type] = std::move(callback);
 }
 
 AXPlatformNodeBase::AXPlatformNodeBase() = default;
@@ -112,7 +168,7 @@ void AXPlatformNodeBase::Init(AXPlatformNodeDelegate* delegate) {
   delegate_ = delegate;
 
   // This must be called after assigning our delegate.
-  g_unique_id_map.Get()[GetUniqueId()] = this;
+  UniqueIdMap::GetInstance().InsertAndOverwrite(GetUniqueId(), this);
 }
 
 const AXNodeData& AXPlatformNodeBase::GetData() const {
@@ -384,7 +440,7 @@ AXPlatformNodeBase* AXPlatformNodeBase::GetActiveDescendant() const {
 // AXPlatformNode overrides.
 
 void AXPlatformNodeBase::Destroy() {
-  g_unique_id_map.Get().erase(GetUniqueId());
+  UniqueIdMap::GetInstance().Erase(GetUniqueId());
   AXPlatformNode::Destroy();
   delegate_ = nullptr;
   Dispose();
@@ -399,10 +455,10 @@ gfx::NativeViewAccessible AXPlatformNodeBase::GetNativeViewAccessible() {
 }
 
 void AXPlatformNodeBase::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
-  if (g_on_notify_event_for_testing.Get().find(event_type) !=
-          g_on_notify_event_for_testing.Get().end() &&
-      g_on_notify_event_for_testing.Get()[event_type]) {
-    g_on_notify_event_for_testing.Get()[event_type].Run();
+  OnNotifyEventCallbackMap& callback_map = GetOnNotifyEventCallbackMap();
+  if (callback_map.find(event_type) != callback_map.end() &&
+      callback_map[event_type]) {
+    callback_map[event_type].Run();
   }
 }
 

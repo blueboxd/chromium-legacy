@@ -37,16 +37,18 @@ defaults.set(
     bucket = "reviver",
     list_view = "reviver",
     service_account = "reviver-builder@chops-service-accounts.iam.gserviceaccount.com",
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
-def target_builder(*, name, dimensions):
+def target_builder(*, name):
     return {
         "builder_id": {
             "project": "chromium",
             "bucket": "ci",
             "builder": name,
         },
-        "dimensions": {k: str(v) for k, v in dimensions.items()},
     }
 
 builder(
@@ -62,19 +64,44 @@ builder(
         },
         "target_builders": [
             target_builder(
-                name = "android-marshmallow-x86-rel",
-                dimensions = {
-                    "builderless": 1,
-                    "cpu": cpu.X86_64,
-                    "free_space": free_space.standard,
-                    "os": os.LINUX_DEFAULT.dimension,
-                    "ssd": "0",
-                },
+                name = "android-nougat-x86-rel",
+            ),
+            target_builder(
+                name = "android-12-x64-rel",
             ),
         ],
     },
     # To avoid peak hours, we run it at 1 AM, 4 AM, 7 AM, 10AM, 1 PM UTC.
     schedule = "0 1,4,7,10,13 * * *",
+)
+
+# A coordinator of slightly aggressive scheduling with effectively unlimited
+# test bot capacity for fuchsia.
+builder(
+    name = "fuchsia-coordinator",
+    executable = "recipe:chromium_polymorphic/launcher",
+    os = os.LINUX_DEFAULT,
+    pool = "luci.chromium.ci",
+    properties = {
+        "runner_builder": {
+            "project": "chromium",
+            "bucket": "reviver",
+            "builder": "runner",
+        },
+        "target_builders": [
+            target_builder(
+                name = "fuchsia-fyi-x64-rel",
+            ),
+            target_builder(
+                name = "fuchsia-fyi-arm64-dbg",
+            ),
+            target_builder(
+                name = "fuchsia-fyi-x64-asan",
+            ),
+        ],
+    },
+    # Avoid peak hours.
+    schedule = "0 1,3,5,7,9,11,13 * * *",
 )
 
 builder(
@@ -91,4 +118,9 @@ builder(
             bq_table = "chrome-luci-data.chromium.reviver_test_results",
         ),
     ],
+    builderless = 1,
+    cpu = cpu.X86_64,
+    free_space = free_space.standard,
+    os = os.LINUX_DEFAULT,
+    ssd = False,
 )

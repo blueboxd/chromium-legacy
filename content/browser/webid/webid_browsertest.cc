@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/webid/fake_identity_request_dialog_controller.h"
@@ -45,13 +46,26 @@ namespace content {
 namespace {
 
 constexpr char kRpHostName[] = "rp.example";
-constexpr char kIdpOrigin[] = "https://idp.example.org";
+
+// Use localhost for IDP so that the manifest list can be fetched from the test
+// server's custom port.
+// IdpNetworkRequestManager::ComputeManifestListUrl() does not enforce a
+// specific port if the IDP is localhost.
+constexpr char kIdpOrigin[] = "https://127.0.0.1";
+
 constexpr char kExpectedManifestPath[] = "/fedcm.json";
+constexpr char kExpectedManifestListPath[] = "/.well-known/web-identity";
 constexpr char kTestContentType[] = "application/json";
 constexpr char kIdpForbiddenHeader[] = "Sec-FedCM-CSRF";
 
-// Token value in //content/test/data/id_token_endpoint.json
+// Token value in //content/test/data/id_assertion_endpoint.json
 constexpr char kToken[] = "[not a real token]";
+
+bool IsGetRequestWithPath(const HttpRequest& request,
+                          const std::string& expected_path) {
+  return request.method == HttpMethod::METHOD_GET &&
+         request.relative_url == expected_path;
+}
 
 // This class implements the IdP logic, and responds to requests sent to the
 // test HTTP server.
@@ -62,7 +76,7 @@ class IdpTestServer {
     std::string content_type;
     std::string accounts_endpoint_url;
     std::string client_metadata_endpoint_url;
-    std::string id_token_endpoint_url;
+    std::string id_assertion_endpoint_url;
   };
 
   IdpTestServer() = default;
@@ -82,8 +96,13 @@ class IdpTestServer {
     }
 
     auto response = std::make_unique<BasicHttpResponse>();
-    if (IsManifestRequest(request)) {
+    if (IsGetRequestWithPath(request, kExpectedManifestPath)) {
       BuildManifestResponseFromDetails(*response.get(), manifest_details_);
+      return response;
+    }
+
+    if (IsGetRequestWithPath(request, kExpectedManifestListPath)) {
+      BuildManifestListResponse(*response.get());
       return response;
     }
 
@@ -95,23 +114,23 @@ class IdpTestServer {
   }
 
  private:
-  bool IsManifestRequest(const HttpRequest& request) {
-    if (request.method == HttpMethod::METHOD_GET &&
-        request.relative_url == kExpectedManifestPath) {
-      return true;
-    }
-    return false;
-  }
-
   void BuildManifestResponseFromDetails(BasicHttpResponse& response,
                                         const ManifestDetails& details) {
     std::string content = ConvertToJsonDictionary(
         {{"accounts_endpoint", details.accounts_endpoint_url},
          {"client_metadata_endpoint", details.client_metadata_endpoint_url},
-         {"id_token_endpoint", details.id_token_endpoint_url}});
+         {"id_assertion_endpoint", details.id_assertion_endpoint_url}});
     response.set_code(details.status_code);
     response.set_content(content);
     response.set_content_type(details.content_type);
+  }
+
+  void BuildManifestListResponse(BasicHttpResponse& response) {
+    std::string content = base::StringPrintf("{\"provider_urls\": [\"%s\"]}",
+                                             kExpectedManifestPath);
+    response.set_code(net::HTTP_OK);
+    response.set_content(content);
+    response.set_content_type("application/json");
   }
 
   std::string ConvertToJsonDictionary(
@@ -164,16 +183,14 @@ class WebIdBrowserTest : public ContentBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    std::vector<base::Feature> features;
+    std::vector<base::test::FeatureRef> features;
 
     // kSplitCacheByNetworkIsolationKey feature is needed to verify
     // that the network shard for fetching the fedcm manifest file is different
     // from that used for other IdP transactions, to prevent data leakage.
     features.push_back(net::features::kSplitCacheByNetworkIsolationKey);
     features.push_back(features::kFedCm);
-    // TODO(https://1314987): Test manifest validation.
-    scoped_feature_list_.InitWithFeatures(features,
-                                          {features::kFedCmManifestValidation});
+    scoped_feature_list_.InitWithFeatures(features, {});
 
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
@@ -207,9 +224,9 @@ class WebIdBrowserTest : public ContentBrowserTest {
     std::string accounts_endpoint_url = "/fedcm/accounts_endpoint.json";
     std::string client_metadata_endpoint_url =
         "/fedcm/client_metadata_endpoint.json";
-    std::string id_token_endpoint_url = "/fedcm/id_token_endpoint.json";
+    std::string id_assertion_endpoint_url = "/fedcm/id_assertion_endpoint.json";
     return {net::HTTP_OK, kTestContentType, accounts_endpoint_url,
-            client_metadata_endpoint_url, id_token_endpoint_url};
+            client_metadata_endpoint_url, id_assertion_endpoint_url};
   }
 
   IdpTestServer* idp_server() { return idp_server_.get(); }
@@ -244,7 +261,8 @@ IN_PROC_BROWSER_TEST_F(WebIdBrowserTest, AbsoluteURLs) {
   manifest_details.accounts_endpoint_url = "/fedcm/accounts_endpoint.json";
   manifest_details.client_metadata_endpoint_url =
       "/fedcm/client_metadata_endpoint.json";
-  manifest_details.id_token_endpoint_url = "/fedcm/id_token_endpoint.json";
+  manifest_details.id_assertion_endpoint_url =
+      "/fedcm/id_assertion_endpoint.json";
 
   idp_server()->SetManifestResponseDetails(manifest_details);
 

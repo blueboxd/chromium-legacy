@@ -16,7 +16,7 @@ namespace chrome {
 namespace android {
 
 // TODO(b/182286787): A/B experiment monitoring session/activity resume order.
-extern const base::Feature kFixedUmaSessionResumeOrder;
+BASE_DECLARE_FEATURE(kFixedUmaSessionResumeOrder);
 
 enum CustomTabsVisibilityHistogram {
   VISIBLE_CUSTOM_TAB,
@@ -50,6 +50,17 @@ enum class DarkModeState {
   kMaxValue = kLightModeApp,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. See MultipleUserProfilesState in
+// enums.xml.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.flags
+enum class MultipleUserProfilesState {
+  kUnknown = 0,
+  kSingleProfile = 1,
+  kMultipleProfiles = 2,
+  kMaxValue = kMultipleProfiles,
+};
+
 // Returns the CustomTabs.Visible histogram value that corresponde to |type|.
 CustomTabsVisibilityHistogram GetCustomTabsVisibleValue(ActivityType type);
 
@@ -81,6 +92,9 @@ absl::optional<chrome::android::ActivityType> GetActivityTypeFromLocalState(
 // Saves the activity type |value| to |local_state|.
 void SaveActivityTypeToLocalState(PrefService* local_state,
                                   chrome::android::ActivityType value);
+
+// Returns whether there are multiple user profiles.
+MultipleUserProfilesState GetMultipleUserProfilesState();
 
 }  // namespace android
 }  // namespace chrome

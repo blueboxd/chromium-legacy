@@ -62,10 +62,11 @@
 #include "chrome/browser/file_system_access/chrome_file_system_access_permission_context.h"
 #include "chrome/browser/file_system_access/file_system_access_permission_context_factory.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
-#include "chrome/browser/k_anonymity_service/k_anonymity_service_client.h"
+#include "chrome/browser/k_anonymity_service/k_anonymity_service_factory.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/notifications/platform_notification_service_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
+#include "chrome/browser/origin_trials/origin_trials_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -114,7 +115,6 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
@@ -124,9 +124,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "components/background_sync/background_sync_controller_impl.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/breadcrumbs/core/breadcrumb_persistent_storage_manager.h"
 #include "components/breadcrumbs/core/breadcrumbs_status.h"
-#include "components/breadcrumbs/core/crash_reporter_breadcrumb_observer.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -148,7 +146,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
-#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/site_isolation/site_isolation_policy.h"
@@ -234,11 +231,6 @@
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
-#endif
-
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-#include "chrome/browser/accessibility/ax_screen_ai_annotator_factory.h"
-#include "ui/accessibility/accessibility_features.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
@@ -842,25 +834,8 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
   AnnouncementNotificationServiceFactory::GetForProfile(this)
       ->MaybeShowNotification();
 
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  // TODO(https://crbug.com/1278249): Implement settings to replace flag.
-  if (features::IsPdfOcrEnabled())
-    screen_ai::AXScreenAIAnnotatorFactory::GetForBrowserContext(this);
-#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-
-  if (breadcrumbs::IsEnabled()) {
-    breadcrumbs::BreadcrumbManagerKeyedService* breadcrumb_service =
-        BreadcrumbManagerKeyedServiceFactory::GetForBrowserContext(
-            this, /*create=*/true);
-    breadcrumbs::CrashReporterBreadcrumbObserver::GetInstance()
-        .ObserveBreadcrumbManagerService(breadcrumb_service);
-
-    breadcrumbs::BreadcrumbPersistentStorageManager*
-        persistent_storage_manager =
-            g_browser_process->GetBreadcrumbPersistentStorageManager();
-    DCHECK(persistent_storage_manager);
-    breadcrumb_service->StartPersisting(persistent_storage_manager);
-  }
+  if (breadcrumbs::IsEnabled())
+    BreadcrumbManagerKeyedServiceFactory::GetForBrowserContext(this);
 }
 
 base::FilePath ProfileImpl::last_selected_directory() {
@@ -877,15 +852,6 @@ ProfileImpl::~ProfileImpl() {
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
   StopCreateSessionServiceTimer();
 #endif
-
-  breadcrumbs::BreadcrumbManagerKeyedService* breadcrumb_service =
-      BreadcrumbManagerKeyedServiceFactory::GetForBrowserContext(
-          this, /*create=*/false);
-  if (breadcrumb_service) {
-    breadcrumb_service->StopPersisting();
-    breadcrumbs::CrashReporterBreadcrumbObserver::GetInstance()
-        .StopObservingBreadcrumbManagerService(breadcrumb_service);
-  }
 
   // Remove pref observers
   pref_change_registrar_.RemoveAll();
@@ -1386,20 +1352,19 @@ ProfileImpl::GetFederatedIdentitySharingPermissionContext() {
   return FederatedIdentitySharingPermissionContextFactory::GetForProfile(this);
 }
 
-std::unique_ptr<content::KAnonymityServiceDelegate>
-ProfileImpl::CreateKAnonymityServiceDelegate() {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (!base::FeatureList::IsEnabled(features::kKAnonymityService))
-    return nullptr;
-  return std::make_unique<KAnonymityServiceClient>(this);
-#else
-  return nullptr;
-#endif
+content::KAnonymityServiceDelegate*
+ProfileImpl::GetKAnonymityServiceDelegate() {
+  return KAnonymityServiceFactory::GetForProfile(this);
 }
 
 content::ReduceAcceptLanguageControllerDelegate*
 ProfileImpl::GetReduceAcceptLanguageControllerDelegate() {
   return ReduceAcceptLanguageFactory::GetForProfile(this);
+}
+
+content::OriginTrialsControllerDelegate*
+ProfileImpl::GetOriginTrialsControllerDelegate() {
+  return OriginTrialsFactory::GetForBrowserContext(this);
 }
 
 std::string ProfileImpl::GetMediaDeviceIDSalt() {

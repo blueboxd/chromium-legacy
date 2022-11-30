@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,15 +12,12 @@
 
 namespace blink {
 
-class Document;
-
 class DocumentPictureInPictureSession : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   explicit DocumentPictureInPictureSession(LocalDOMWindow* window);
 
-  Document* document() const { return window_->document(); }
   LocalDOMWindow* window() const { return window_.Get(); }
 
   void Trace(Visitor*) const override;

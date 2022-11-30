@@ -13,8 +13,6 @@
 #import "ios/chrome/app/application_delegate/fake_startup_information.h"
 #import "ios/chrome/app/main_application_delegate.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/chrome_url_constants.h"
-#import "ios/chrome/browser/chrome_url_util.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
@@ -23,6 +21,8 @@
 #import "ios/chrome/browser/ui/start_surface/start_surface_recent_tab_browser_agent.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_util.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/url/chrome_url_constants.h"
+#import "ios/chrome/browser/url/url_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/test/scoped_key_window.h"
@@ -130,7 +130,7 @@ class StartSurfaceSceneAgentTest : public PlatformTest {
 // foreground to a background state.
 TEST_F(StartSurfaceSceneAgentTest, RemoveExcessNTP) {
   base::test::ScopedFeatureList scoped_feature_list;
-  std::vector<base::Feature> enabled_features;
+  std::vector<base::test::FeatureRef> enabled_features;
   enabled_features.push_back(kRemoveExcessNTPs);
 
   scoped_feature_list.InitWithFeatures(enabled_features, {});
@@ -156,7 +156,7 @@ TEST_F(StartSurfaceSceneAgentTest, RemoveExcessNTP) {
 // is kept after moving to the background state.
 TEST_F(StartSurfaceSceneAgentTest, OnlyRemoveEmptyNTPTabs) {
   base::test::ScopedFeatureList scoped_feature_list;
-  std::vector<base::Feature> enabled_features;
+  std::vector<base::test::FeatureRef> enabled_features;
   enabled_features.push_back(kRemoveExcessNTPs);
 
   scoped_feature_list.InitWithFeatures(enabled_features, {});
@@ -182,7 +182,7 @@ TEST_F(StartSurfaceSceneAgentTest, OnlyRemoveEmptyNTPTabs) {
 // the active WebState after a background.
 TEST_F(StartSurfaceSceneAgentTest, KeepNTPAsActiveTab) {
   base::test::ScopedFeatureList scoped_feature_list;
-  std::vector<base::Feature> enabled_features;
+  std::vector<base::test::FeatureRef> enabled_features;
   enabled_features.push_back(kRemoveExcessNTPs);
 
   scoped_feature_list.InitWithFeatures(enabled_features, {});

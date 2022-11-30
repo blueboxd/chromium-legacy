@@ -17,6 +17,7 @@
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/swap_result.h"
+#include "ui/gl/gl_surface.h"
 
 namespace gpu {
 class SharedImageFactory;
@@ -31,17 +32,18 @@ class VIZ_SERVICE_EXPORT OutputPresenter {
  public:
   class Image {
    public:
-    Image();
+    Image(gpu::SharedImageFactory* factory,
+          gpu::SharedImageRepresentationFactory* representation_factory,
+          SkiaOutputSurfaceDependency* deps);
     virtual ~Image();
 
     Image(const Image&) = delete;
     Image& operator=(const Image&) = delete;
 
-    bool Initialize(
-        gpu::SharedImageFactory* factory,
-        gpu::SharedImageRepresentationFactory* representation_factory,
-        const gpu::Mailbox& mailbox,
-        SkiaOutputSurfaceDependency* deps);
+    virtual bool Initialize(const gfx::Size& size,
+                            const gfx::ColorSpace& color_space,
+                            SharedImageFormat format,
+                            uint32_t shared_image_usage);
 
     gpu::SkiaImageRepresentation* skia_representation() {
       return skia_representation_.get();
@@ -60,11 +62,22 @@ class VIZ_SERVICE_EXPORT OutputPresenter {
 
     base::WeakPtr<Image> GetWeakPtr() { return weak_ptr_factory_.GetWeakPtr(); }
 
-   private:
-    base::ScopedClosureRunner shared_image_deleter_;
+   protected:
+    const raw_ptr<gpu::SharedImageFactory> factory_;
+    const raw_ptr<gpu::SharedImageRepresentationFactory>
+        representation_factory_;
+    const raw_ptr<SkiaOutputSurfaceDependency> deps_;
+    gpu::Mailbox mailbox_;
+
     std::unique_ptr<gpu::SkiaImageRepresentation> skia_representation_;
     std::unique_ptr<gpu::SkiaImageRepresentation::ScopedWriteAccess>
         scoped_skia_write_access_;
+
+    std::unique_ptr<gpu::OverlayImageRepresentation> overlay_representation_;
+    std::unique_ptr<gpu::OverlayImageRepresentation::ScopedReadAccess>
+        scoped_overlay_read_access_;
+
+    int present_count_ = 0;
 
     std::vector<GrBackendSemaphore> end_semaphores_;
     base::WeakPtrFactory<Image> weak_ptr_factory_{this};
@@ -94,13 +107,16 @@ class VIZ_SERVICE_EXPORT OutputPresenter {
       gfx::ColorSpace color_space,
       gfx::Size image_size);
   virtual void SwapBuffers(SwapCompletionCallback completion_callback,
-                           BufferPresentedCallback presentation_callback) = 0;
+                           BufferPresentedCallback presentation_callback,
+                           gl::FrameData data) = 0;
   virtual void PostSubBuffer(const gfx::Rect& rect,
                              SwapCompletionCallback completion_callback,
-                             BufferPresentedCallback presentation_callback) = 0;
+                             BufferPresentedCallback presentation_callback,
+                             gl::FrameData data) = 0;
   virtual void CommitOverlayPlanes(
       SwapCompletionCallback completion_callback,
-      BufferPresentedCallback presentation_callback) = 0;
+      BufferPresentedCallback presentation_callback,
+      gl::FrameData data) = 0;
   virtual void SchedulePrimaryPlane(
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane& plane,
       Image* image,

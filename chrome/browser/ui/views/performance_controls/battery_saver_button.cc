@@ -55,22 +55,42 @@ bool BatterySaverButton::IsBubbleShowing() const {
 void BatterySaverButton::Show() {
   bool was_visible = GetVisible();
   SetVisible(true);
+  PreferredSizeChanged();
 
+  // Wait until the view is properly laid out before triggering the promo
+  // The promo will be triggered in |OnBoundsChanged| if the flag is set
   if (!was_visible)
-    MaybeShowFeaturePromo();
+    pending_promo_ = true;
 }
 
 void BatterySaverButton::Hide() {
+  CloseFeaturePromo();
+
   if (IsBubbleShowing()) {
     // The bubble is closed sync and will be cleared in OnBubbleHidden
     BatterySaverBubbleView::CloseBubble(bubble_);
   }
 
   SetVisible(false);
+  PreferredSizeChanged();
 }
 
 void BatterySaverButton::OnBubbleHidden() {
   bubble_ = nullptr;
+}
+
+bool BatterySaverButton::ShouldShowInkdropAfterIphInteraction() {
+  return false;
+}
+
+void BatterySaverButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  ToolbarButton::OnBoundsChanged(previous_bounds);
+
+  if (!GetVisible() || size().IsEmpty())
+    return;
+
+  if (pending_promo_)
+    MaybeShowFeaturePromo();
 }
 
 void BatterySaverButton::OnClicked() {
@@ -88,31 +108,16 @@ void BatterySaverButton::OnClicked() {
   }
 }
 
-void BatterySaverButton::OnFeatureEngagementInitialized(bool initialized) {
-  if (!initialized)
-    return;
-
-  browser_view_->MaybeShowFeaturePromo(
-      feature_engagement::kIPHBatterySaverModeFeature);
-}
-
 void BatterySaverButton::MaybeShowFeaturePromo() {
-  auto* const promo_controller = browser_view_->GetFeaturePromoController();
-  if (!promo_controller)
-    return;
-
-  // Toolbar button could be visible early in browser startup where the feature
-  // engagement tracker might not have fully initialized. So wait for the
-  // initialization to complete before triggering the promo.
-  auto* tracker = promo_controller->feature_engagement_tracker();
-  tracker->AddOnInitializedCallback(
-      base::BindOnce(&BatterySaverButton::OnFeatureEngagementInitialized,
-                     weak_ptr_factory_.GetWeakPtr()));
+  pending_promo_ = false;
+  browser_view_->MaybeShowStartupFeaturePromo(
+      feature_engagement::kIPHBatterySaverModeFeature);
 }
 
 void BatterySaverButton::CloseFeaturePromo() {
   // CloseFeaturePromo checks if the promo is active for the feature before
   // attempting to close the promo bubble
+  pending_promo_ = false;
   browser_view_->CloseFeaturePromo(
       feature_engagement::kIPHBatterySaverModeFeature);
 }

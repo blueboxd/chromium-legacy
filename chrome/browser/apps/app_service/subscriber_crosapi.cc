@@ -30,15 +30,6 @@ bool Accepts(apps::AppType app_type) {
          app_type == apps::AppType::kStandaloneBrowserChromeApp;
 }
 
-bool Accepts(const std::vector<apps::mojom::AppPtr>& deltas) {
-  for (const auto& delta : deltas) {
-    if (!Accepts(apps::ConvertMojomAppTypToAppType(delta->app_type))) {
-      return false;
-    }
-  }
-  return true;
-}
-
 }  // namespace
 
 namespace apps {
@@ -137,24 +128,6 @@ void SubscriberCrosapi::Clone(
   receivers_.Add(this, std::move(receiver));
 }
 
-void SubscriberCrosapi::OnPreferredAppsChanged(
-    apps::mojom::PreferredAppChangesPtr changes) {
-  if (!subscriber_.is_bound()) {
-    return;
-  }
-  subscriber_->OnPreferredAppsChanged(
-      ConvertMojomPreferredAppChangesToPreferredAppChanges(changes));
-}
-
-void SubscriberCrosapi::InitializePreferredApps(
-    std::vector<apps::mojom::PreferredAppPtr> preferred_apps) {
-  if (!subscriber_.is_bound()) {
-    return;
-  }
-  subscriber_->InitializePreferredApps(
-      ConvertMojomPreferredAppsToPreferredApps(preferred_apps));
-}
-
 void SubscriberCrosapi::OnCrosapiDisconnected() {
   crosapi_receiver_.reset();
   subscriber_.reset();
@@ -208,13 +181,8 @@ void SubscriberCrosapi::LoadIcon(const std::string& app_id,
 
 void SubscriberCrosapi::AddPreferredApp(const std::string& app_id,
                                         crosapi::mojom::IntentPtr intent) {
-  if (base::FeatureList::IsEnabled(kAppServicePreferredAppsWithoutMojom)) {
-    proxy_->AddPreferredApp(
-        app_id, apps_util::CreateAppServiceIntentFromCrosapi(intent, profile_));
-  } else {
-    proxy_->AddPreferredApp(
-        app_id, apps_util::ConvertCrosapiToAppServiceIntent(intent, profile_));
-  }
+  proxy_->AddPreferredApp(
+      app_id, apps_util::CreateAppServiceIntentFromCrosapi(intent, profile_));
 }
 
 void SubscriberCrosapi::ShowAppManagementPage(const std::string& app_id) {
@@ -233,8 +201,7 @@ void SubscriberCrosapi::SetSupportedLinksPreference(const std::string& app_id) {
 
 void SubscriberCrosapi::UninstallSilently(const std::string& app_id,
                                           UninstallSource uninstall_source) {
-  proxy_->UninstallSilently(
-      app_id, ConvertUninstallSourceToMojomUninstallSource(uninstall_source));
+  proxy_->UninstallSilently(app_id, uninstall_source);
 }
 
 void SubscriberCrosapi::OnSubscriberDisconnected() {

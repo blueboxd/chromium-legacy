@@ -4,9 +4,8 @@
 
 #include "content/browser/file_system_access/file_system_access_directory_handle_impl.h"
 
+#include "base/guid.h"
 #include "base/i18n/file_util_icu.h"
-#include "base/strings/escape.h"
-#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -458,9 +457,12 @@ bool IsShellIntegratedExtension(const base::FilePath::StringType& extension) {
 
   // .lnk and .scf files may be used to execute arbitrary code (see
   // https://nvd.nist.gov/vuln/detail/CVE-2010-2568 and
-  // https://crbug.com/1227995, respectively).
+  // https://crbug.com/1227995, respectively). '.url' files can be used to read
+  // arbitrary files (see https://crbug.com/1307930 and
+  // https://crbug.com/1354518).
   if (extension_lower == FILE_PATH_LITERAL("lnk") ||
-      extension_lower == FILE_PATH_LITERAL("scf")) {
+      extension_lower == FILE_PATH_LITERAL("scf") ||
+      extension_lower == FILE_PATH_LITERAL("url")) {
     return true;
   }
 
@@ -574,6 +576,15 @@ FileSystemAccessEntryPtr FileSystemAccessDirectoryHandleImpl::CreateEntry(
       FileSystemAccessHandle::NewFile(
           manager()->CreateFileHandle(context(), url, handle_state())),
       basename);
+}
+
+void FileSystemAccessDirectoryHandleImpl::GetUniqueId(
+    GetUniqueIdCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  base::GUID id = manager()->GetUniqueId(*this);
+  DCHECK(id.is_valid());
+  std::move(callback).Run(id.AsLowercaseString());
 }
 
 base::WeakPtr<FileSystemAccessHandleBase>

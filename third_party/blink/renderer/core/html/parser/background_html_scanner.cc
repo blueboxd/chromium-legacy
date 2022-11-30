@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -218,7 +218,7 @@ void BackgroundHTMLScanner::ScriptTokenScanner::ScanToken(
           in_tag_ == InsideTag::kScript) {
         in_tag_ = InsideTag::kNone;
         // The script was empty, do nothing.
-        if (builder_.IsEmpty())
+        if (builder_.empty())
           return;
 
         String script_text = builder_.ReleaseString();
@@ -251,7 +251,7 @@ void BackgroundHTMLScanner::ScriptTokenScanner::ScanToken(
                  in_tag_ == InsideTag::kStyle) {
         in_tag_ = InsideTag::kNone;
         // The style was empty, do nothing.
-        if (builder_.IsEmpty())
+        if (builder_.empty())
           return;
 
         String style_text = builder_.ReleaseString();

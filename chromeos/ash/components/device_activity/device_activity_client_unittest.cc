@@ -16,7 +16,10 @@
 #include "base/timer/mock_timer.h"
 #include "chromeos/ash/components/dbus/system_clock/system_clock_client.h"
 #include "chromeos/ash/components/device_activity/daily_use_case_impl.h"
+#include "chromeos/ash/components/device_activity/device_active_use_case.h"
 #include "chromeos/ash/components/device_activity/device_activity_controller.h"
+#include "chromeos/ash/components/device_activity/fake_psm_delegate.h"
+#include "chromeos/ash/components/device_activity/first_active_use_case_impl.h"
 #include "chromeos/ash/components/device_activity/fresnel_pref_names.h"
 #include "chromeos/ash/components/device_activity/fresnel_service.pb.h"
 #include "chromeos/ash/components/device_activity/monthly_use_case_impl.h"
@@ -34,8 +37,7 @@
 #include "third_party/private_membership/src/internal/testing/regression_test_data/regression_test_data.pb.h"
 #include "third_party/private_membership/src/private_membership_rlwe_client.h"
 
-namespace ash {
-namespace device_activity {
+namespace ash::device_activity {
 
 namespace psm_rlwe = private_membership::rlwe;
 
@@ -68,8 +70,12 @@ const char kPsmImportRequestEndpoint[] = "/v1/fresnel/psmRlweImport";
 const char kPsmOprfRequestEndpoint[] = "/v1/fresnel/psmRlweOprf";
 const char kPsmQueryRequestEndpoint[] = "/v1/fresnel/psmRlweQuery";
 
-// Create fake secrets used by the |DeviceActivityClient|.
-constexpr char kFakePsmDeviceActiveSecret[] = "FAKE_PSM_DEVICE_ACTIVE_SECRET";
+// Initialize fake value used by the FirstActiveUseCaseImpl.
+// This secret should be of exactly length 64, since it is a 256 bit string
+// encoded as a hexadecimal.
+constexpr char kFakePsmDeviceActiveSecret[] =
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+
 constexpr char kFakeFresnelApiKey[] = "FAKE_FRESNEL_API_KEY";
 
 constexpr ChromeDeviceMetadataParameters kFakeChromeParameters = {
@@ -130,46 +136,17 @@ base::TimeDelta TimeUntilNewUTCMonth() {
   return new_ts - current_ts;
 }
 
-}  // namespace
-
-class FakePsmDelegate : public PsmDelegate {
- public:
-  FakePsmDelegate(const std::string& ec_cipher_key,
-                  const std::string& seed,
-                  const std::vector<psm_rlwe::RlwePlaintextId>& plaintext_ids)
-      : ec_cipher_key_(ec_cipher_key),
-        seed_(seed),
-        plaintext_ids_(plaintext_ids) {}
-  FakePsmDelegate(const FakePsmDelegate&) = delete;
-  FakePsmDelegate& operator=(const FakePsmDelegate&) = delete;
-  ~FakePsmDelegate() override = default;
-
-  // PsmDelegate:
-  rlwe::StatusOr<
-      std::unique_ptr<private_membership::rlwe::PrivateMembershipRlweClient>>
-  CreatePsmClient(private_membership::rlwe::RlweUseCase use_case,
-                  const std::vector<private_membership::rlwe::RlwePlaintextId>&
-                      plaintext_ids) override {
-    return psm_rlwe::PrivateMembershipRlweClient::CreateForTesting(
-        use_case, plaintext_ids_, ec_cipher_key_, seed_);
-  }
-
- private:
-  // Used by the PSM client to generate deterministic request/response protos.
-  std::string ec_cipher_key_;
-  std::string seed_;
-  std::vector<psm_rlwe::RlwePlaintextId> plaintext_ids_;
-};
-
 class FakeDailyUseCaseImpl : public DailyUseCaseImpl {
  public:
   FakeDailyUseCaseImpl(
       const std::string& psm_device_active_secret,
       const ChromeDeviceMetadataParameters& chrome_passed_device_params,
-      PrefService* local_state)
+      PrefService* local_state,
+      std::unique_ptr<PsmDelegateInterface> psm_delegate)
       : DailyUseCaseImpl(psm_device_active_secret,
                          chrome_passed_device_params,
-                         local_state) {}
+                         local_state,
+                         std::move(psm_delegate)) {}
   FakeDailyUseCaseImpl(const FakeDailyUseCaseImpl&) = delete;
   FakeDailyUseCaseImpl& operator=(const FakeDailyUseCaseImpl&) = delete;
   ~FakeDailyUseCaseImpl() override = default;
@@ -180,14 +157,35 @@ class FakeMonthlyUseCaseImpl : public MonthlyUseCaseImpl {
   FakeMonthlyUseCaseImpl(
       const std::string& psm_device_active_secret,
       const ChromeDeviceMetadataParameters& chrome_passed_device_params,
-      PrefService* local_state)
+      PrefService* local_state,
+      std::unique_ptr<PsmDelegateInterface> psm_delegate)
       : MonthlyUseCaseImpl(psm_device_active_secret,
                            chrome_passed_device_params,
-                           local_state) {}
+                           local_state,
+                           std::move(psm_delegate)) {}
   FakeMonthlyUseCaseImpl(const FakeMonthlyUseCaseImpl&) = delete;
   FakeMonthlyUseCaseImpl& operator=(const FakeMonthlyUseCaseImpl&) = delete;
   ~FakeMonthlyUseCaseImpl() override = default;
 };
+
+class FakeFirstActiveUseCaseImpl : public FirstActiveUseCaseImpl {
+ public:
+  FakeFirstActiveUseCaseImpl(
+      const std::string& psm_device_active_secret,
+      const ChromeDeviceMetadataParameters& chrome_passed_device_params,
+      PrefService* local_state,
+      std::unique_ptr<PsmDelegateInterface> psm_delegate)
+      : FirstActiveUseCaseImpl(psm_device_active_secret,
+                               chrome_passed_device_params,
+                               local_state,
+                               std::move(psm_delegate)) {}
+  FakeFirstActiveUseCaseImpl(const FakeFirstActiveUseCaseImpl&) = delete;
+  FakeFirstActiveUseCaseImpl& operator=(const FakeFirstActiveUseCaseImpl&) =
+      delete;
+  ~FakeFirstActiveUseCaseImpl() override = default;
+};
+
+}  // namespace
 
 // TODO(crbug/1317652): Refactor checking if current use case local pref is
 // unset. We may also want to abstract the psm network responses for the unit
@@ -275,10 +273,11 @@ class DeviceActivityClientTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kDeviceActiveClientMonthlyCheckIn,
-                              features::kDeviceActiveClientDailyCheckMembership,
-                              features::
-                                  kDeviceActiveClientMonthlyCheckMembership},
+        /*enabled_features=*/
+        {features::kDeviceActiveClientMonthlyCheckIn,
+         features::kDeviceActiveClientDailyCheckMembership,
+         features::kDeviceActiveClientMonthlyCheckMembership,
+         features::kDeviceActiveClientFirstActiveCheckMembership},
         /*disabled_features*/ {});
 
     // Initialize pointer to our fake |PsmTestData| object.
@@ -306,18 +305,30 @@ class DeviceActivityClientTest : public testing::Test {
     // should maintain ownership of.
     std::vector<std::unique_ptr<DeviceActiveUseCase>> use_cases;
     use_cases.push_back(std::make_unique<FakeDailyUseCaseImpl>(
-        kFakePsmDeviceActiveSecret, kFakeChromeParameters, &local_state_));
-    use_cases.push_back(std::make_unique<FakeMonthlyUseCaseImpl>(
-        kFakePsmDeviceActiveSecret, kFakeChromeParameters, &local_state_));
-
-    device_activity_client_ = std::make_unique<DeviceActivityClient>(
-        network_state_test_helper_->network_state_handler(),
-        test_shared_loader_factory_,
+        kFakePsmDeviceActiveSecret, kFakeChromeParameters, &local_state_,
         // |FakePsmDelegate| can use any test case parameters.
         std::make_unique<FakePsmDelegate>(
             psm_test_data_->nonmember_test_case.ec_cipher_key(),
             psm_test_data_->nonmember_test_case.seed(),
-            GetPlaintextIds(psm_test_data_->nonmember_test_case)),
+            GetPlaintextIds(psm_test_data_->nonmember_test_case))));
+    use_cases.push_back(std::make_unique<FakeMonthlyUseCaseImpl>(
+        kFakePsmDeviceActiveSecret, kFakeChromeParameters, &local_state_,
+        // |FakePsmDelegate| can use any test case parameters.
+        std::make_unique<FakePsmDelegate>(
+            psm_test_data_->nonmember_test_case.ec_cipher_key(),
+            psm_test_data_->nonmember_test_case.seed(),
+            GetPlaintextIds(psm_test_data_->nonmember_test_case))));
+    use_cases.push_back(std::make_unique<FakeFirstActiveUseCaseImpl>(
+        kFakePsmDeviceActiveSecret, kFakeChromeParameters, &local_state_,
+        // |FakePsmDelegate| can use any test case parameters.
+        std::make_unique<FakePsmDelegate>(
+            psm_test_data_->nonmember_test_case.ec_cipher_key(),
+            psm_test_data_->nonmember_test_case.seed(),
+            GetPlaintextIds(psm_test_data_->nonmember_test_case))));
+
+    device_activity_client_ = std::make_unique<DeviceActivityClient>(
+        network_state_test_helper_->network_state_handler(),
+        test_shared_loader_factory_,
         std::make_unique<base::MockRepeatingTimer>(), kTestFresnelBaseUrl,
         kFakeFresnelApiKey, std::move(use_cases));
   }
@@ -340,6 +351,8 @@ class DeviceActivityClientTest : public testing::Test {
         prefs::kDeviceActiveLastKnownDailyPingTimestamp);
     local_state_.RemoveUserPref(
         prefs::kDeviceActiveLastKnownMonthlyPingTimestamp);
+    local_state_.RemoveUserPref(
+        prefs::kDeviceActiveLastKnownFirstActivePingTimestamp);
   }
 
   void SimulateOprfResponse(const std::string& serialized_response_body,
@@ -704,6 +717,15 @@ TEST_F(DeviceActivityClientTest, CheckInOnLocalStateSetAndPingRequired) {
                  << psm_rlwe::RlweUseCase_Name(use_case->GetPsmUseCase()));
 
     EXPECT_TRUE(use_case->IsLastKnownPingTimestampSet());
+
+    // First active use case only updates the last ping timestamp once. Since
+    // the timestamp is already set, the client does not attempt to report first
+    // active use case again.
+    if (use_case->GetPsmUseCase() ==
+        psm_rlwe::RlweUseCase::CROS_FRESNEL_FIRST_ACTIVE) {
+      continue;
+    }
+
     EXPECT_EQ(device_activity_client_->GetState(),
               DeviceActivityClient::State::kCheckingIn);
 
@@ -771,7 +793,7 @@ TEST_F(DeviceActivityClientTest, TransitionClientToIdleOnInvalidQueryResponse) {
             DeviceActivityClient::State::kIdle);
 }
 
-TEST_F(DeviceActivityClientTest, DailyCheckInFailsButMonthlyCheckInSucceeds) {
+TEST_F(DeviceActivityClientTest, DailyCheckInFailsButRemainingUseCasesSucceed) {
   // Device active reporting starts check membership on network connect.
   SetWifiNetworkState(shill::kStateOnline);
 
@@ -803,7 +825,9 @@ TEST_F(DeviceActivityClientTest, DailyCheckInFailsButMonthlyCheckInSucceeds) {
       // Failed to update the local state since the OPRF response was invalid.
       EXPECT_FALSE(use_case->IsLastKnownPingTimestampSet());
     } else if (use_case->GetPsmUseCase() ==
-               psm_rlwe::RlweUseCase::CROS_FRESNEL_MONTHLY) {
+                   psm_rlwe::RlweUseCase::CROS_FRESNEL_MONTHLY ||
+               use_case->GetPsmUseCase() ==
+                   psm_rlwe::RlweUseCase::CROS_FRESNEL_FIRST_ACTIVE) {
       // Monthly use case will return valid psm network request responses.
       SimulateOprfResponse(GetFresnelOprfResponse(nonmember_test_case),
                            net::HTTP_OK);
@@ -817,7 +841,7 @@ TEST_F(DeviceActivityClientTest, DailyCheckInFailsButMonthlyCheckInSucceeds) {
       // current mocked time for this test.
       EXPECT_EQ(use_case->GetLastKnownPingTimestamp(), base::Time::Now());
     } else {
-      // Currently we only support daily, and monthly use cases.
+      // Currently we only support daily, monthly, and first active use cases.
       NOTREACHED() << "Invalid Use Case.";
     }
   }
@@ -827,7 +851,8 @@ TEST_F(DeviceActivityClientTest, DailyCheckInFailsButMonthlyCheckInSucceeds) {
             DeviceActivityClient::State::kIdle);
 }
 
-TEST_F(DeviceActivityClientTest, MonthlyCheckInFailsButDailyCheckInSucceeds) {
+TEST_F(DeviceActivityClientTest,
+       MonthlyCheckInFailsButRemainingUseCasesSucceeds) {
   // Device active reporting starts check membership on network connect.
   SetWifiNetworkState(shill::kStateOnline);
 
@@ -849,7 +874,9 @@ TEST_F(DeviceActivityClientTest, MonthlyCheckInFailsButDailyCheckInSucceeds) {
               DeviceActivityClient::State::kCheckingMembershipOprf);
 
     if (use_case->GetPsmUseCase() ==
-        psm_rlwe::RlweUseCase::CROS_FRESNEL_DAILY) {
+            psm_rlwe::RlweUseCase::CROS_FRESNEL_DAILY ||
+        use_case->GetPsmUseCase() ==
+            psm_rlwe::RlweUseCase::CROS_FRESNEL_FIRST_ACTIVE) {
       // Daily use case will return valid psm network request responses.
       SimulateOprfResponse(GetFresnelOprfResponse(nonmember_test_case),
                            net::HTTP_OK);
@@ -873,7 +900,7 @@ TEST_F(DeviceActivityClientTest, MonthlyCheckInFailsButDailyCheckInSucceeds) {
       // Failed to update the local state since the OPRF response was invalid.
       EXPECT_FALSE(use_case->IsLastKnownPingTimestampSet());
     } else {
-      // Currently we only support daily, and monthly use cases.
+      // Currently we only support daily, monthly, and first active use cases.
       NOTREACHED() << "Invalid Use Case.";
     }
   }
@@ -951,7 +978,7 @@ TEST_F(DeviceActivityClientTest, NetworkDisconnectsWhileWaitingForResponse) {
   SetWifiNetworkState(shill::kStateOnline);
 
   // We expect the size of the use cases to be greater than 0.
-  EXPECT_GT(device_activity_client_->GetUseCases().size(), 0);
+  EXPECT_GT(device_activity_client_->GetUseCases().size(), 0u);
 
   EXPECT_EQ(device_activity_client_->GetState(),
             DeviceActivityClient::State::kCheckingMembershipOprf);
@@ -1040,7 +1067,7 @@ TEST_F(DeviceActivityClientTest,
       "Ash.DeviceActivity.MethodCalled",
       DeviceActivityClient::DeviceActivityMethod::
           kDeviceActivityClientOnCheckInDone,
-      2);
+      device_activity_client_->GetUseCases().size());
 
   // Verify the last known ping timestamp is set for each use case.
   for (auto* use_case : device_activity_client_->GetUseCases()) {
@@ -1390,5 +1417,4 @@ TEST_F(DeviceActivityClientTest, UmaHistogramStateCountAfterFirstCheckIn) {
                                       use_cases.size());
 }
 
-}  // namespace device_activity
-}  // namespace ash
+}  // namespace ash::device_activity

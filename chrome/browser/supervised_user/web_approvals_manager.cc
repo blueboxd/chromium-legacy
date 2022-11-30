@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "components/url_matcher/url_util.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -29,11 +31,35 @@
 
 namespace {
 
+constexpr char kLocalWebApprovalDurationHistogramName[] =
+    "FamilyLinkUser.LocalWebApprovalCompleteRequestTotalDuration";
+
 void CreateURLAccessRequest(
     const GURL& url,
     PermissionRequestCreator* creator,
     WebApprovalsManager::ApprovalRequestInitiatedCallback callback) {
   creator->CreateURLAccessRequest(url, std::move(callback));
+}
+
+// Helper method for getting human readable outcome for a local web approval.
+std::string EnumLocalWebApprovalFlowOutcomeToString(
+    AndroidLocalWebApprovalFlowOutcome outcome) {
+  switch (outcome) {
+    case AndroidLocalWebApprovalFlowOutcome::kApproved:
+      return "Approved";
+    case AndroidLocalWebApprovalFlowOutcome::kRejected:
+      return "Rejected";
+    case AndroidLocalWebApprovalFlowOutcome::kIncomplete:
+      return "Incomplete";
+  }
+}
+
+// TODO(b/250947827): Record the
+// "ManagedUsers.LocalWebApprovalCompleteRequestTotalDuration" metric for
+// completed verification flows on Chrome OS.
+void RecordTimeToApprovalDurationMetric(base::TimeDelta durationMs) {
+  base::UmaHistogramLongTimes(kLocalWebApprovalDurationHistogramName,
+                              durationMs);
 }
 
 }  // namespace
@@ -45,20 +71,30 @@ WebApprovalsManager::~WebApprovalsManager() = default;
 void WebApprovalsManager::RequestLocalApproval(
     content::WebContents* web_contents,
     const GURL& url,
+    const std::u16string& child_display_name,
+    const gfx::ImageSkia& favicon,
     ApprovalRequestInitiatedCallback callback) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // TODO(crbug.com/1233615): pass completion_callback.
-  // TODO(b/195316776): Pass in relevant local web approvals params instead of
-  // an empty object.
+  // TODO(b/250954669): replace this with call to the ParentAccess crosapi with
+  // appropriate parameters and handle the ParentAccess crosapi result.
+  std::vector<uint8_t> favicon_bytes;
+  gfx::PNGCodec::FastEncodeBGRASkBitmap(*favicon.bitmap(), false,
+                                        &favicon_bytes);
   parent_access_ui::mojom::ParentAccessParamsPtr params =
       parent_access_ui::mojom::ParentAccessParams::New(
           parent_access_ui::mojom::ParentAccessParams::FlowType::kWebsiteAccess,
           parent_access_ui::mojom::FlowTypeParams::NewWebApprovalsParams(
-              parent_access_ui::mojom::WebApprovalsParams::New()));
-  chromeos::ParentAccessDialog::ShowError result =
-      chromeos::ParentAccessDialog::Show(std::move(params));
+              parent_access_ui::mojom::WebApprovalsParams::New(
+                  url.GetWithEmptyPath(), child_display_name, favicon_bytes)));
 
-  if (result != chromeos::ParentAccessDialog::ShowError::kNone) {
+  chromeos::ParentAccessDialogProvider provider;
+  chromeos::ParentAccessDialogProvider::ShowError result = provider.Show(
+      std::move(params),
+      base::BindOnce(
+          [](std::unique_ptr<chromeos::ParentAccessDialog::Result> result)
+              -> void {}));
+
+  if (result != chromeos::ParentAccessDialogProvider::ShowError::kNone) {
     LOG(ERROR) << "Error showing ParentAccessDialog: " << result;
     std::move(callback).Run(false);
     return;
@@ -72,7 +108,8 @@ void WebApprovalsManager::RequestLocalApproval(
   WebsiteParentApproval::RequestLocalApproval(
       web_contents, NormalizeUrl(url),
       base::BindOnce(&WebApprovalsManager::OnLocalApprovalRequestCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), settings_service, url));
+                     weak_ptr_factory_.GetWeakPtr(), settings_service, url,
+                     base::TimeTicks::Now()));
   std::move(callback).Run(true);
 #endif
 }
@@ -149,11 +186,18 @@ void WebApprovalsManager::OnRemoteApprovalRequestIssued(
 void WebApprovalsManager::OnLocalApprovalRequestCompleted(
     SupervisedUserSettingsService* settings_service,
     const GURL& url,
-    bool request_approved) {
-  // TODO(crbug.com/1324945): output metrics.
-  VLOG(0) << "Local URL approval final result: " << request_approved;
+    base::TimeTicks start_time,
+    AndroidLocalWebApprovalFlowOutcome request_outcome) {
+  VLOG(0) << "Local URL approval final result: "
+          << EnumLocalWebApprovalFlowOutcomeToString(request_outcome);
 
-  if (request_approved) {
+  // Record duration metrics only for completed approval flows.
+  if (request_outcome == AndroidLocalWebApprovalFlowOutcome::kApproved ||
+      request_outcome == AndroidLocalWebApprovalFlowOutcome::kRejected) {
+    RecordTimeToApprovalDurationMetric(base::TimeTicks::Now() - start_time);
+  }
+
+  if (request_outcome == AndroidLocalWebApprovalFlowOutcome::kApproved) {
     settings_service->RecordLocalWebsiteApproval(url.host());
   }
 }

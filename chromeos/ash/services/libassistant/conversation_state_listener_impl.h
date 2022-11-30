@@ -12,17 +12,12 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
+
 namespace mojom {
 class ConversationObserver;
 class SpeechRecognitionObserver;
 }  // namespace mojom
-}  // namespace libassistant
-}  // namespace chromeos
-
-namespace chromeos {
-namespace libassistant {
 
 class AudioInputController;
 
@@ -75,7 +70,6 @@ class ConversationStateListenerImpl
   base::WeakPtrFactory<ConversationStateListenerImpl> weak_factory_{this};
 };
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant
 
 #endif  // CHROMEOS_ASH_SERVICES_LIBASSISTANT_CONVERSATION_STATE_LISTENER_IMPL_H_

@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="Login.AllowlistCOILFallback" enum="Boolean"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>emaamari@google.com</owner>
   <owner>cros-lurs@google.com</owner>
   <owner>cros-oac@google.com</owner>
@@ -72,12 +72,26 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Login.ArcContinueBootImpulseTime2" units="ms"
     expires_after="2023-02-12">
+  <obsolete>
+    Removed 2022/09, replaced with ArcContinueBootImpulseTime3.
+  </obsolete>
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
     Tracks the time to execute arc-boot-continue impulse. This is emitted when
     we successfully upgrade the ARC container from mini to full. This metrics
     increases the number of buckets to 50 and a maximum duration of 60 seconds.
+  </summary>
+</histogram>
+
+<histogram name="Login.ArcContinueBootImpulseTime3" units="ms"
+    expires_after="2023-09-12">
+  <owner>mhasank@google.com</owner>
+  <owner>arc-core@google.com</owner>
+  <summary>
+    Tracks the time to execute arc-boot-continue impulse. This is emitted when
+    we successfully upgrade the ARC container from mini to full. This metrics
+    increases the number of buckets to 50 and a maximum duration of 40 seconds.
   </summary>
 </histogram>
 
@@ -147,9 +161,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.InvalidCombinationsOfAllowedUsersPolicies"
-    enum="AllowedUsersPoliciesInvalidState" expires_after="2022-10-17">
+    enum="AllowedUsersPoliciesInvalidState" expires_after="2023-04-17">
   <owner>emaamari@google.com</owner>
-  <owner>src/ash/components/policy/OWNERS</owner>
+  <owner>src/chromeos/ash/components/policy/OWNERS</owner>
   <summary>
     Chrome OS histogram that keeps track of cases where devices have an invalid
     combination of allow_new_users and user_allowlist policies. This is emitted
@@ -305,7 +319,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.SessionExitType" enum="LoginSessionExitType"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>iby@chromium.org</owner>
   <summary>
     Tracks whether a ChromeOS user was logged out because Chrome repeatedly

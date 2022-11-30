@@ -298,11 +298,12 @@ EXPORTS
     ??$EmplaceBack@UPayload@status_internal@absl@@@?$Storage@UPayload@status_internal@absl@@$00V?$allocator@UPayload@status_internal@absl@@@Cr@std@@@inlined_vector_internal@absl@@QEAAAEAUPayload@status_internal@2@$$QEAU342@@Z
     ??$EmplaceBackSlow@AEBQEAUCordRep@cord_internal@absl@@@?$Storage@PEAUCordRep@cord_internal@absl@@$01V?$allocator@PEAUCordRep@cord_internal@absl@@@Cr@std@@@inlined_vector_internal@absl@@AEAAAEAPEAUCordRep@cord_internal@2@AEBQEAU342@@Z
     ??$EmplaceBackSlow@UPayload@status_internal@absl@@@?$Storage@UPayload@status_internal@absl@@$00V?$allocator@UPayload@status_internal@absl@@@Cr@std@@@inlined_vector_internal@absl@@AEAAAEAUPayload@status_internal@2@$$QEAU342@@Z
-    ??$ExtractCharSet@$0BPOAA@@str_format_internal@absl@@YA?AW4FormatConversionCharSet@1@U?$ArgConvertResult@$0BPOAA@@01@@Z
     ??$ExtractCharSet@$0BPPPL@@str_format_internal@absl@@YA?AW4FormatConversionCharSet@1@U?$ArgConvertResult@$0BPPPL@@01@@Z
     ??$ExtractCharSet@$0EAAAA@@str_format_internal@absl@@YA?AW4FormatConversionCharSet@1@U?$ArgConvertResult@$0EAAAA@@01@@Z
     ??$ExtractCharSet@$0EAAAE@@str_format_internal@absl@@YA?AW4FormatConversionCharSet@1@U?$ArgConvertResult@$0EAAAE@@01@@Z
     ??$ExtractCharSet@$0IAAAE@@str_format_internal@absl@@YA?AW4FormatConversionCharSet@1@U?$ArgConvertResult@$0IAAAE@@01@@Z
+    ??$ExtractCharSet@$0JPOAA@@str_format_internal@absl@@YA?AW4FormatConversionCharSet@1@U?$ArgConvertResult@$0JPOAA@@01@@Z
+    ??$ExtractCharSet@$0JPPPL@@str_format_internal@absl@@YA?AW4FormatConversionCharSet@1@U?$ArgConvertResult@$0JPPPL@@01@@Z
     ??$FastIntToBuffer@C@numbers_internal@absl@@YAPEADCPEAD@Z
     ??$FastIntToBuffer@D@numbers_internal@absl@@YAPEADDPEAD@Z
     ??$FastIntToBuffer@E@numbers_internal@absl@@YAPEADEPEAD@Z
@@ -325,7 +326,7 @@ EXPORTS
     ??$ForEach@V<lambda_1>@?0???$Fill@$0A@@CordRepRing@cord_internal@absl@@AEAAXPEBV234@II@Z@@CordRepRing@cord_internal@absl@@QEBAXII$$QEAV<lambda_1>@?0???$Fill@$0A@@012@AEAAXPEBV012@II@Z@@Z
     ??$ForEach@V<lambda_2>@?0???$AddRing@$00@CordRepRing@cord_internal@absl@@CAPEAV234@PEAV234@0_K1@Z@@CordRepRing@cord_internal@absl@@QEBAXII$$QEAV<lambda_2>@?0???$AddRing@$00@012@CAPEAV012@PEAV012@0_K1@Z@@Z
     ??$ForEach@V<lambda_2>@?0???$AddRing@$0A@@CordRepRing@cord_internal@absl@@CAPEAV234@PEAV234@0_K1@Z@@CordRepRing@cord_internal@absl@@QEBAXII$$QEAV<lambda_2>@?0???$AddRing@$0A@@012@CAPEAV012@PEAV012@0_K1@Z@@Z
-    ??$FormatConvertImpl@_N$0A@@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0BPPPL@@01@_NVFormatConversionSpecImpl@01@PEAVFormatSinkImpl@01@@Z
+    ??$FormatConvertImpl@_N$0A@@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0JPPPL@@01@_NVFormatConversionSpecImpl@01@PEAVFormatSinkImpl@01@@Z
     ??$FromChrono@_JV?$ratio@$00$0PECEA@@Cr@std@@@time_internal@absl@@YA?AVDuration@1@AEBV?$duration@_JV?$ratio@$00$0PECEA@@Cr@std@@@chrono@Cr@std@@@Z
     ??$FromInt64@$00@time_internal@absl@@YA?AVDuration@1@_JV?$ratio@$00$00@Cr@std@@@Z
     ??$FromInt64@$0DLJKMKAA@@time_internal@absl@@YA?AVDuration@1@_JV?$ratio@$00$0DLJKMKAA@@Cr@std@@@Z
@@ -472,7 +473,7 @@ EXPORTS
     ??$__allocate_at_least@V?$allocator@UTransitionType@cctz@time_internal@absl@@@Cr@std@@@Cr@std@@YA?AU?$__allocation_result@PEAUTransitionType@cctz@time_internal@absl@@@01@AEAV?$allocator@UTransitionType@cctz@time_internal@absl@@@01@_K@Z
     ??$__allocate_at_least@V?$allocator@UViableSubstitution@strings_internal@absl@@@Cr@std@@@Cr@std@@YA?AU?$__allocation_result@PEAUViableSubstitution@strings_internal@absl@@@01@AEAV?$allocator@UViableSubstitution@strings_internal@absl@@@01@_K@Z
     ??$__allocate_at_least@V?$allocator@VFormatArgImpl@str_format_internal@absl@@@Cr@std@@@Cr@std@@YA?AU?$__allocation_result@PEAVFormatArgImpl@str_format_internal@absl@@@01@AEAV?$allocator@VFormatArgImpl@str_format_internal@absl@@@01@_K@Z
-    ??$__construct_at_end@PEBVFormatArgImpl@str_format_internal@absl@@@?$vector@VFormatArgImpl@str_format_internal@absl@@V?$allocator@VFormatArgImpl@str_format_internal@absl@@@Cr@std@@@Cr@std@@AEAAXPEBVFormatArgImpl@str_format_internal@absl@@0_K@Z
+    ??$__construct_at_end@PEBVFormatArgImpl@str_format_internal@absl@@$0A@@?$vector@VFormatArgImpl@str_format_internal@absl@@V?$allocator@VFormatArgImpl@str_format_internal@absl@@@Cr@std@@@Cr@std@@AEAAXPEBVFormatArgImpl@str_format_internal@absl@@0_K@Z
     ??$__construct_at_end@V?$move_iterator@PEAPEAPEBVImpl@time_zone@cctz@time_internal@absl@@@Cr@std@@@?$__split_buffer@PEAPEBVImpl@time_zone@cctz@time_internal@absl@@AEAV?$allocator@PEAPEBVImpl@time_zone@cctz@time_internal@absl@@@Cr@std@@@Cr@std@@QEAAXV?$move_iterator@PEAPEAPEBVImpl@time_zone@cctz@time_internal@absl@@@12@0@Z
     ??$__construct_at_end@V?$move_iterator@PEAUTransition@cctz@time_internal@absl@@@Cr@std@@@?$__split_buffer@UTransition@cctz@time_internal@absl@@AEAV?$allocator@UTransition@cctz@time_internal@absl@@@Cr@std@@@Cr@std@@QEAAXV?$move_iterator@PEAUTransition@cctz@time_internal@absl@@@12@0@Z
     ??$__construct_at_end@V?$move_iterator@PEAUTransitionType@cctz@time_internal@absl@@@Cr@std@@@?$__split_buffer@UTransitionType@cctz@time_internal@absl@@AEAV?$allocator@UTransitionType@cctz@time_internal@absl@@@Cr@std@@@Cr@std@@QEAAXV?$move_iterator@PEAUTransitionType@cctz@time_internal@absl@@@12@0@Z
@@ -622,7 +623,7 @@ EXPORTS
     ??$advance@PEBUTransition@cctz@time_internal@absl@@_J@?$_IterOps@U_ClassicAlgPolicy@Cr@std@@@Cr@std@@SAXAEAPEBUTransition@cctz@time_internal@absl@@_J@Z
     ??$advance@PEBUTransition@cctz@time_internal@absl@@_J_JX@Cr@std@@YAXAEAPEBUTransition@cctz@time_internal@absl@@_J@Z
     ??$advance@PEBVFormatArgImpl@str_format_internal@absl@@_K_KX@Cr@std@@YAXAEAPEBVFormatArgImpl@str_format_internal@absl@@_K@Z
-    ??$assign@PEBVFormatArgImpl@str_format_internal@absl@@@?$vector@VFormatArgImpl@str_format_internal@absl@@V?$allocator@VFormatArgImpl@str_format_internal@absl@@@Cr@std@@@Cr@std@@QEAAXPEBVFormatArgImpl@str_format_internal@absl@@0@Z
+    ??$assign@PEBVFormatArgImpl@str_format_internal@absl@@$0A@@?$vector@VFormatArgImpl@str_format_internal@absl@@V?$allocator@VFormatArgImpl@str_format_internal@absl@@@Cr@std@@@Cr@std@@QEAAXPEBVFormatArgImpl@str_format_internal@absl@@0@Z
     ??$assign@V?$basic_string@DU?$char_traits@D@Cr@std@@V?$allocator@D@23@@Cr@std@@@?$optional_data_base@V?$basic_string@DU?$char_traits@D@Cr@std@@V?$allocator@D@23@@Cr@std@@@optional_internal@absl@@IEAAX$$QEAV?$basic_string@DU?$char_traits@D@Cr@std@@V?$allocator@D@23@@Cr@std@@@Z
     ??$bit_cast@_J_K$0A@@absl@@YA_JAEB_K@Z
     ??$bit_cast@_K_J$0A@@absl@@YA_KAEB_J@Z
@@ -1532,6 +1533,8 @@ EXPORTS
     ?Append@FormatSinkImpl@str_format_internal@absl@@QEAAXVstring_view@3@@Z
     ?Append@FormatSinkImpl@str_format_internal@absl@@QEAAX_KD@Z
     ?Append@ParsedFormatConsumer@ParsedFormatBase@str_format_internal@absl@@QEAA_NVstring_view@4@@Z
+    ?Append@StringifySink@strings_internal@absl@@QEAAXVstring_view@3@@Z
+    ?Append@StringifySink@strings_internal@absl@@QEAAX_KD@Z
     ?AppendArray@InlineRep@Cord@absl@@QEAAXVstring_view@3@W4MethodIdentifier@CordzUpdateTracker@cord_internal@3@@Z
     ?AppendLeaf@CordRepRing@cord_internal@absl@@CAPEAV123@PEAV123@PEAUCordRep@23@_K2@Z
     ?AppendPack@str_format_internal@absl@@YAAEAV?$basic_string@DU?$char_traits@D@Cr@std@@V?$allocator@D@23@@Cr@std@@PEAV345@VUntypedFormatSpecImpl@12@V?$Span@$$CBVFormatArgImpl@str_format_internal@absl@@@2@@Z
@@ -1617,6 +1620,7 @@ EXPORTS
     ?Contains@str_format_internal@absl@@YA_NW4FormatConversionCharSet@2@D@Z
     ?Contains@str_format_internal@absl@@YA_NW4FormatConversionCharSet@2@W4FormatConversionChar@2@@Z
     ?ControlWord@base_internal@absl@@YAPEAU?$atomic@I@Cr@std@@PEAVonce_flag@2@@Z
+    ?ConvertBoolArg@str_format_internal@absl@@YA_N_NPEAVFormatSinkImpl@12@@Z
     ?ConvertDateTime@absl@@YA?AUTimeConversion@1@_JHHHHHVTimeZone@1@@Z
     ?ConvertDeletedToEmptyAndFullToDeleted@container_internal@absl@@YAXPEAW4ctrl_t@12@_K@Z
     ?ConvertFloatImpl@str_format_internal@absl@@YA_NMAEBVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
@@ -1810,26 +1814,26 @@ EXPORTS
     ?FormatConversionCharToConvInt@str_format_internal@absl@@YA_KD@Z
     ?FormatConversionCharToConvInt@str_format_internal@absl@@YA_KW4FormatConversionChar@2@@Z
     ?FormatConversionCharToConvValue@str_format_internal@absl@@YA?AW4FormatConversionCharSet@2@D@Z
-    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0BPOAA@@12@MVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
-    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0BPOAA@@12@NVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
-    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0BPOAA@@12@OVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
     ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0BPPPL@@12@CVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
     ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0BPPPL@@12@DVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
     ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0BPPPL@@12@EVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
-    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0BPPPL@@12@FVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
-    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0BPPPL@@12@GVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
-    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0BPPPL@@12@HVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
-    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0BPPPL@@12@IVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
-    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0BPPPL@@12@JVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
-    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0BPPPL@@12@KVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
-    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0BPPPL@@12@Vint128@2@VFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
-    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0BPPPL@@12@Vuint128@2@VFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
-    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0BPPPL@@12@_JVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
-    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0BPPPL@@12@_KVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
     ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0EAAAA@@12@UVoidPtr@12@VFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
     ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0EAAAE@@12@PEBDVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
     ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0IAAAE@@12@AEBV?$basic_string@DU?$char_traits@D@Cr@std@@V?$allocator@D@23@@Cr@std@@VFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
     ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0IAAAE@@12@Vstring_view@2@VFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
+    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0JPOAA@@12@MVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
+    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0JPOAA@@12@NVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
+    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0JPOAA@@12@OVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
+    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0JPPPL@@12@FVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
+    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0JPPPL@@12@GVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
+    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0JPPPL@@12@HVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
+    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0JPPPL@@12@IVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
+    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0JPPPL@@12@JVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
+    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0JPPPL@@12@KVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
+    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0JPPPL@@12@Vint128@2@VFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
+    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0JPPPL@@12@Vuint128@2@VFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
+    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0JPPPL@@12@_JVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
+    ?FormatConvertImpl@str_format_internal@absl@@YA?AU?$ArgConvertResult@$0JPPPL@@12@_KVFormatConversionSpecImpl@12@PEAVFormatSinkImpl@12@@Z
     ?FormatDuration@absl@@YA?AV?$basic_string@DU?$char_traits@D@Cr@std@@V?$allocator@D@23@@Cr@std@@VDuration@1@@Z
     ?FormatPack@str_format_internal@absl@@YA?AV?$basic_string@DU?$char_traits@D@Cr@std@@V?$allocator@D@23@@Cr@std@@VUntypedFormatSpecImpl@12@V?$Span@$$CBVFormatArgImpl@str_format_internal@absl@@@2@@Z
     ?FormatTime@absl@@YA?AV?$basic_string@DU?$char_traits@D@Cr@std@@V?$allocator@D@23@@Cr@std@@VTime@1@@Z
@@ -1841,7 +1845,6 @@ EXPORTS
     ?FromChrono@absl@@YA?AVDuration@1@AEBV?$duration@_JV?$ratio@$00$0PECEA@@Cr@std@@@chrono@Cr@std@@@Z
     ?FromChrono@absl@@YA?AVTime@1@AEBV?$time_point@Vsystem_clock@chrono@Cr@std@@V?$duration@_JV?$ratio@$00$0PECEA@@Cr@std@@@234@@chrono@Cr@std@@@Z
     ?FromCivil@absl@@YA?AVTime@1@V?$civil_time@Usecond_tag@time_internal@absl@@@detail@cctz@time_internal@1@VTimeZone@1@@Z
-    ?FromHost64@big_endian@absl@@YA_K_K@Z
     ?FromHost64@little_endian@absl@@YA_K_K@Z
     ?FromInt64@time_internal@absl@@YA?AVDuration@2@_JV?$ratio@$0DM@$00@Cr@std@@@Z
     ?FromInt64@time_internal@absl@@YA?AVDuration@2@_JV?$ratio@$0OBA@$00@Cr@std@@@Z
@@ -2202,6 +2205,7 @@ EXPORTS
     ?PushDead@?$SampleRecorder@UHashtablezInfo@container_internal@absl@@@profiling_internal@absl@@AEAAXPEAUHashtablezInfo@container_internal@3@@Z
     ?PushNew@?$SampleRecorder@UHashtablezInfo@container_internal@absl@@@profiling_internal@absl@@AEAAXPEAUHashtablezInfo@container_internal@3@@Z
     ?PutPaddedString@FormatSinkImpl@str_format_internal@absl@@QEAA_NVstring_view@3@HH_N@Z
+    ?PutPaddedString@StringifySink@strings_internal@absl@@QEAA_NVstring_view@3@HH_N@Z
     ?PutTwoDigits@numbers_internal@absl@@YAX_KPEAD@Z
     ?RandomSeed@container_internal@absl@@YA_KXZ
     ?RawLog@raw_log_internal@absl@@YAXW4LogSeverity@2@PEBDH1ZZ
@@ -2413,7 +2417,7 @@ EXPORTS
     ?ToDoubleSeconds@absl@@YANVDuration@1@@Z
     ?ToHost16@big_endian@absl@@YAGG@Z
     ?ToHost32@big_endian@absl@@YAII@Z
-    ?ToHost64@big_endian@absl@@YA_K_K@Z
+    ?ToHost64@little_endian@absl@@YA_K_K@Z
     ?ToInt64@time_internal@absl@@YA_JVDuration@2@V?$ratio@$00$00@Cr@std@@@Z
     ?ToInt64@time_internal@absl@@YA_JVDuration@2@V?$ratio@$00$0DLJKMKAA@@Cr@std@@@Z
     ?ToInt64@time_internal@absl@@YA_JVDuration@2@V?$ratio@$00$0DOI@@Cr@std@@@Z
@@ -3269,7 +3273,7 @@ EXPORTS
     ?offset@?$probe_seq@$07@container_internal@absl@@QEBA_KXZ
     ?offset@?$probe_seq@$07@container_internal@absl@@QEBA_K_K@Z
     ?ok@Status@absl@@QEBA_NXZ
-    ?overflow@OStringStream@strings_internal@absl@@EEAAHH@Z
+    ?overflow@Streambuf@OStringStream@strings_internal@absl@@MEAAHH@Z
     ?parse@detail@cctz@time_internal@absl@@YA_NAEBV?$basic_string@DU?$char_traits@D@Cr@std@@V?$allocator@D@23@@Cr@std@@0AEBVtime_zone@234@PEAV?$time_point@Vsystem_clock@chrono@Cr@std@@V?$duration@_JV?$ratio@$00$00@Cr@std@@@234@@chrono@67@PEAV?$duration@_JV?$ratio@$00$0DINHOKEMGIAAA@@Cr@std@@@chrono@67@PEAV567@@Z
     ?parsed_conversion@UntypedFormatSpecImpl@str_format_internal@absl@@QEBAPEBVParsedFormatBase@23@XZ
     ?pointer_to@?$pointer_traits@PEAU?$__hash_node_base@PEAU?$__hash_node@U?$__hash_value_type@V?$basic_string@DU?$char_traits@D@Cr@std@@V?$allocator@D@23@@Cr@std@@PEBVImpl@time_zone@cctz@time_internal@absl@@@Cr@std@@PEAX@Cr@std@@@Cr@std@@@Cr@std@@SAPEAU?$__hash_node_base@PEAU?$__hash_node@U?$__hash_value_type@V?$basic_string@DU?$char_traits@D@Cr@std@@V?$allocator@D@23@@Cr@std@@PEBVImpl@time_zone@cctz@time_internal@absl@@@Cr@std@@PEAX@Cr@std@@@23@AEAU423@@Z
@@ -3381,6 +3385,7 @@ EXPORTS
     ?second@?$civil_time@Usecond_tag@time_internal@absl@@@detail@cctz@time_internal@absl@@QEBAHXZ
     ?set_arg@BoundConversion@str_format_internal@absl@@QEAAXPEBVFormatArgImpl@23@@Z
     ?set_begin@CordRepBtree@cord_internal@absl@@AEAAX_K@Z
+    ?set_conversion_char@FormatConversionSpecImpl@str_format_internal@absl@@QEAAXW4FormatConversionChar@3@@Z
     ?set_cordz_info@InlineData@cord_internal@absl@@QEAAXPEAVCordzInfo@23@@Z
     ?set_cordz_mean_interval@cord_internal@absl@@YAXH@Z
     ?set_data@InlineRep@Cord@absl@@QEAAPEAD_K@Z
@@ -3440,8 +3445,8 @@ EXPORTS
     ?substr@string_view@absl@@QEBA?AV12@_K0@Z
     ?substring@CordRep@cord_internal@absl@@QEAAPEAUCordRepSubstring@23@XZ
     ?substring@CordRep@cord_internal@absl@@QEBAPEBUCordRepSubstring@23@XZ
-    ?tag@InlineData@cord_internal@absl@@AEAAAEADXZ
-    ?tag@InlineData@cord_internal@absl@@AEBADXZ
+    ?tag@InlineData@cord_internal@absl@@AEAAAEACXZ
+    ?tag@InlineData@cord_internal@absl@@AEBACXZ
     ?tail@CordRepRing@cord_internal@absl@@QEBAIXZ
     ?thread_identity@PerThreadSynch@base_internal@absl@@QEAAPEAUThreadIdentity@23@XZ
     ?throw_bad_optional_access@optional_internal@absl@@YAXXZ
@@ -3458,7 +3463,7 @@ EXPORTS
     ?width@FormatConversionSpecImpl@str_format_internal@absl@@QEBAHXZ
     ?words@?$BigUnsigned@$03@strings_internal@absl@@QEBAPEBIXZ
     ?words@?$BigUnsigned@$0FE@@strings_internal@absl@@QEBAPEBIXZ
-    ?xsputn@OStringStream@strings_internal@absl@@EEAA_JPEBD_J@Z
+    ?xsputn@Streambuf@OStringStream@strings_internal@absl@@MEAA_JPEBD_J@Z
     ?year@?$civil_time@Uday_tag@detail@cctz@time_internal@absl@@@detail@cctz@time_internal@absl@@QEBA_JXZ
     ?year@?$civil_time@Usecond_tag@detail@cctz@time_internal@absl@@@detail@cctz@time_internal@absl@@QEBA_JXZ
     ?year@?$civil_time@Usecond_tag@time_internal@absl@@@detail@cctz@time_internal@absl@@QEBA_JXZ

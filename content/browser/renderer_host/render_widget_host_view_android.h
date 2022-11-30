@@ -32,7 +32,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/render_frame_host.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-forward.h"
-#include "third_party/blink/public/mojom/widget/record_content_to_visible_time_request.mojom-forward.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/delegated_frame_host_android.h"
 #include "ui/android/view_android.h"
@@ -209,7 +208,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       override;
   void TransferTouches(
       const std::vector<std::unique_ptr<ui::TouchEvent>>& touches) override;
-  bool ShouldVirtualKeyboardOverlayContent() override;
+  ui::mojom::VirtualKeyboardMode GetVirtualKeyboardMode() override;
 
   // ui::EventHandlerAndroid implementation.
   bool OnTouchEvent(const ui::MotionEventAndroid& m) override;
@@ -403,11 +402,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetDisplayFeatureForTesting(
       const DisplayFeature* display_feature) override;
   void NotifyHostAndDelegateOnWasShown(
-      blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request)
-      final;
+      blink::mojom::RecordContentToVisibleTimeRequestPtr) final;
   void RequestPresentationTimeFromHostOrDelegate(
-      blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request)
-      final;
+      blink::mojom::RecordContentToVisibleTimeRequestPtr) final;
   void CancelPresentationTimeRequestForHostAndDelegate() final;
 
  private:
@@ -495,8 +492,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // Window-specific bits that affect widget visibility.
   bool is_window_visible_;
   bool is_window_activity_started_;
-
-  PageVisibilityState page_visibility_ = PageVisibilityState::kHidden;
 
   // Used to customize behavior for virtual reality mode, such as the
   // appearance of overscroll glow and the keyboard.

@@ -923,6 +923,7 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
           /*fenced_frame_reporting_metadata=*/nullptr,
           // This timestamp will be populated when the commit IPC is sent.
           base::TimeTicks() /* commit_sent */, std::string() /* srcdoc_value */,
+          GURL() /* fallback_srcdoc_baseurl */,
           false /* should_load_data_url */, ancestor_or_self_has_cspee,
           std::string() /* reduced_accept_language */);
 #if BUILDFLAG(IS_ANDROID)
@@ -1086,6 +1087,23 @@ FrameNavigationEntry* NavigationEntryImpl::GetFrameEntry(
     FrameTreeNode* frame_tree_node) const {
   NavigationEntryImpl::TreeNode* tree_node = GetTreeNode(frame_tree_node);
   return tree_node ? tree_node->frame_entry.get() : nullptr;
+}
+
+void NavigationEntryImpl::ForEachFrameEntry(
+    FrameEntryIterationCallback on_frame_entry) {
+  NavigationEntryImpl::TreeNode* node = nullptr;
+  base::queue<NavigationEntryImpl::TreeNode*> work_queue;
+  work_queue.push(root_node());
+  while (!work_queue.empty()) {
+    node = work_queue.front();
+    work_queue.pop();
+
+    on_frame_entry(node->frame_entry.get());
+
+    // Enqueue any children.
+    for (const auto& child : node->children)
+      work_queue.push(child.get());
+  }
 }
 
 base::flat_map<std::string, bool> NavigationEntryImpl::GetSubframeUniqueNames(

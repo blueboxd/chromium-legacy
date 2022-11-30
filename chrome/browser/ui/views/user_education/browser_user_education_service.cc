@@ -10,17 +10,21 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
+#include "chrome/browser/ui/performance_controls/performance_controls_metrics.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/google_chrome_strings.h"
 #include "components/feature_engagement/public/feature_constants.h"
+#include "components/performance_manager/public/user_tuning/prefs.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_education/common/feature_promo_handle.h"
 #include "components/user_education/common/feature_promo_registry.h"
@@ -290,9 +294,48 @@ void MaybeRegisterChromeFeaturePromos(
                 if (browser)
                   chrome::ShowSettingsSubPage(browser,
                                               chrome::kPerformanceSubPage);
+                RecordBatterySaverIPHOpenSettings(browser != nullptr);
               }))
           .SetBubbleTitleText(IDS_BATTERY_SAVER_MODE_PROMO_TITLE)
           .SetBubbleArrow(HelpBubbleArrow::kTopRight)));
+
+  // kIPHHighEfficiencyInfoModeFeature:
+  registry.RegisterFeature(std::move(
+      FeaturePromoSpecification::CreateForCustomAction(
+          feature_engagement::kIPHHighEfficiencyInfoModeFeature,
+          kHighEfficiencyChipElementId,
+          IDS_HIGH_EFFICIENCY_INFO_MODE_PROMO_TEXT,
+          IDS_HIGH_EFFICIENCY_INFO_MODE_PROMO_ACTION_TEXT,
+          base::BindRepeating(
+              [](ui::ElementContext ctx,
+                 user_education::FeaturePromoHandle promo_handle) {
+                auto* browser = chrome::FindBrowserWithUiElementContext(ctx);
+                if (browser)
+                  chrome::ShowSettingsSubPage(browser,
+                                              chrome::kPerformanceSubPage);
+                RecordHighEfficiencyInfoIPHOpenSettings(browser != nullptr);
+              }))
+          .SetBubbleTitleText(IDS_HIGH_EFFICIENCY_INFO_MODE_PROMO_TITLE)
+          .SetBubbleArrow(HelpBubbleArrow::kTopCenter)));
+
+  // kIPHHighEfficiencyModeFeature:
+  registry.RegisterFeature(std::move(
+      FeaturePromoSpecification::CreateForCustomAction(
+          feature_engagement::kIPHHighEfficiencyModeFeature,
+          kAppMenuButtonElementId, IDS_HIGH_EFFICIENCY_MODE_PROMO_TEXT,
+          IDS_HIGH_EFFICIENCY_MODE_PROMO_ACTION_TEXT,
+          base::BindRepeating(
+              [](ui::ElementContext context,
+                 user_education::FeaturePromoHandle promo_handle) {
+                PrefService* prefs = g_browser_process->local_state();
+                prefs->SetBoolean(performance_manager::user_tuning::prefs::
+                                      kHighEfficiencyModeEnabled,
+                                  true);
+                RecordHighEfficiencyIPHEnableMode(true);
+              }))
+          .SetCustomActionIsDefault(true)
+          .SetCustomActionDismissText(IDS_NOT_NOW)
+          .SetBubbleTitleText(IDS_HIGH_EFFICIENCY_MODE_PROMO_TITLE)));
 }
 
 void MaybeRegisterChromeTutorials(

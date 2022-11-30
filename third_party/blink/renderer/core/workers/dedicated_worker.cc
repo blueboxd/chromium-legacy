@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,11 +92,25 @@ DedicatedWorker* DedicatedWorker::Create(ExecutionContext* context,
 DedicatedWorker::DedicatedWorker(ExecutionContext* context,
                                  const KURL& script_request_url,
                                  const WorkerOptions* options)
+    : DedicatedWorker(
+          context,
+          script_request_url,
+          options,
+          [context](DedicatedWorker* worker) {
+            return MakeGarbageCollected<DedicatedWorkerMessagingProxy>(context,
+                                                                       worker);
+          }) {}
+
+DedicatedWorker::DedicatedWorker(
+    ExecutionContext* context,
+    const KURL& script_request_url,
+    const WorkerOptions* options,
+    base::FunctionRef<DedicatedWorkerMessagingProxy*(DedicatedWorker*)>
+        context_proxy_factory)
     : AbstractWorker(context),
       script_request_url_(script_request_url),
       options_(options),
-      context_proxy_(
-          MakeGarbageCollected<DedicatedWorkerMessagingProxy>(context, this)),
+      context_proxy_(context_proxy_factory(this)),
       factory_client_(
           Platform::Current()->CreateDedicatedWorkerHostFactoryClient(
               this,
@@ -123,7 +137,7 @@ void DedicatedWorker::postMessage(ScriptState* script_state,
                                   HeapVector<ScriptValue>& transfer,
                                   ExceptionState& exception_state) {
   PostMessageOptions* options = PostMessageOptions::Create();
-  if (!transfer.IsEmpty())
+  if (!transfer.empty())
     options->setTransfer(transfer);
   postMessage(script_state, message, options, exception_state);
 }
@@ -224,8 +238,8 @@ void DedicatedWorker::Start() {
 
   factory_client_->CreateWorkerHostDeprecated(
       token_, script_request_url_,
-      WTF::Bind(&DedicatedWorker::OnHostCreated, WrapWeakPersistent(this),
-                std::move(blob_url_loader_factory)));
+      WTF::BindOnce(&DedicatedWorker::OnHostCreated, WrapWeakPersistent(this),
+                    std::move(blob_url_loader_factory)));
 }
 
 void DedicatedWorker::OnHostCreated(
@@ -250,9 +264,9 @@ void DedicatedWorker::OnHostCreated(
         network::mojom::RequestDestination::kWorker,
         network::mojom::RequestMode::kSameOrigin,
         network::mojom::CredentialsMode::kSameOrigin,
-        WTF::Bind(&DedicatedWorker::OnResponse, WrapPersistent(this)),
-        WTF::Bind(&DedicatedWorker::OnFinished, WrapPersistent(this),
-                  std::move(back_forward_cache_controller_host)),
+        WTF::BindOnce(&DedicatedWorker::OnResponse, WrapPersistent(this)),
+        WTF::BindOnce(&DedicatedWorker::OnFinished, WrapPersistent(this),
+                      std::move(back_forward_cache_controller_host)),
         reject_coep_unsafe_none, std::move(blob_url_loader_factory));
     return;
   }

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -128,6 +128,14 @@ ScriptPromise WakeLock::request(ScriptState* script_state,
                                         "The requesting page is not visible");
       return ScriptPromise();
     }
+
+    // Measure calls without transient activation as proposed in
+    // https://github.com/w3c/screen-wake-lock/pull/351.
+    if (type == V8WakeLockType::Enum::kScreen &&
+        !LocalFrame::HasTransientUserActivation(window->GetFrame())) {
+      UseCounter::Count(
+          context, WebFeature::kWakeLockAcquireScreenLockWithoutActivation);
+    }
   }
 
   // 7. Let promise be a new promise.
@@ -171,8 +179,8 @@ void WakeLock::DoRequest(V8WakeLockType::Enum type,
       CreatePermissionDescriptor(permission_name),
       LocalFrame::HasTransientUserActivation(local_frame),
       resolver->WrapCallbackInScriptScope(
-          WTF::Bind(&WakeLock::DidReceivePermissionResponse,
-                    WrapPersistent(this), type)));
+          WTF::BindOnce(&WakeLock::DidReceivePermissionResponse,
+                        WrapPersistent(this), type)));
 }
 
 void WakeLock::DidReceivePermissionResponse(V8WakeLockType::Enum type,

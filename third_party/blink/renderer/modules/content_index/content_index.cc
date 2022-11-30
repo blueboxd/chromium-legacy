@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,8 +24,9 @@ namespace features {
 
 // If enabled, registering content index entries will perform a check
 // to see if the provided launch url is offline-capable.
-const base::Feature kContentIndexCheckOffline{
-    "ContentIndexCheckOffline", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kContentIndexCheckOffline,
+             "ContentIndexCheckOffline",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features
 
@@ -39,20 +40,20 @@ WTF::String ValidateDescription(const ContentDescription& description,
                                 ServiceWorkerRegistration* registration) {
   // TODO(crbug.com/973844): Should field sizes be capped?
 
-  if (description.id().IsEmpty())
+  if (description.id().empty())
     return "ID cannot be empty";
 
-  if (description.title().IsEmpty())
+  if (description.title().empty())
     return "Title cannot be empty";
 
-  if (description.description().IsEmpty())
+  if (description.description().empty())
     return "Description cannot be empty";
 
-  if (description.url().IsEmpty())
+  if (description.url().empty())
     return "Invalid launch URL provided";
 
   for (const auto& icon : description.icons()) {
-    if (icon->src().IsEmpty())
+    if (icon->src().empty())
       return "Invalid icon URL provided";
     KURL icon_url =
         registration->GetExecutionContext()->CompleteURL(icon->src());
@@ -115,7 +116,7 @@ ScriptPromise ContentIndex::add(ScriptState* script_state,
   auto mojo_description = mojom::blink::ContentDescription::From(description);
   auto category = mojo_description->category;
   GetService()->GetIconSizes(
-      category, resolver->WrapCallbackInScriptScope(WTF::Bind(
+      category, resolver->WrapCallbackInScriptScope(WTF::BindOnce(
                     &ContentIndex::DidGetIconSizes, WrapPersistent(this),
                     std::move(mojo_description))));
 
@@ -126,7 +127,7 @@ void ContentIndex::DidGetIconSizes(
     mojom::blink::ContentDescriptionPtr description,
     ScriptPromiseResolver* resolver,
     const Vector<gfx::Size>& icon_sizes) {
-  if (!icon_sizes.IsEmpty() && description->icons.IsEmpty()) {
+  if (!icon_sizes.empty() && description->icons.empty()) {
     resolver->Reject(V8ThrowException::CreateTypeError(
         resolver->GetScriptState()->GetIsolate(), "icons must be provided"));
     return;
@@ -140,7 +141,7 @@ void ContentIndex::DidGetIconSizes(
     return;
   }
 
-  if (icon_sizes.IsEmpty()) {
+  if (icon_sizes.empty()) {
     DidGetIcons(resolver, std::move(description), /* icons= */ {});
     return;
   }
@@ -148,7 +149,7 @@ void ContentIndex::DidGetIconSizes(
   auto* icon_loader = MakeGarbageCollected<ContentIndexIconLoader>();
   icon_loader->Start(registration_->GetExecutionContext(),
                      std::move(description), icon_sizes,
-                     resolver->WrapCallbackInScriptScope(WTF::Bind(
+                     resolver->WrapCallbackInScriptScope(WTF::BindOnce(
                          &ContentIndex::DidGetIcons, WrapPersistent(this))));
 }
 
@@ -178,7 +179,7 @@ void ContentIndex::DidGetIcons(ScriptPromiseResolver* resolver,
   if (base::FeatureList::IsEnabled(features::kContentIndexCheckOffline)) {
     GetService()->CheckOfflineCapability(
         registration_->RegistrationId(), launch_url,
-        resolver->WrapCallbackInScriptScope(WTF::Bind(
+        resolver->WrapCallbackInScriptScope(WTF::BindOnce(
             &ContentIndex::DidCheckOfflineCapability, WrapPersistent(this),
             launch_url, std::move(description), std::move(icons))));
     return;
@@ -204,7 +205,7 @@ void ContentIndex::DidCheckOfflineCapability(
 
   GetService()->Add(registration_->RegistrationId(), std::move(description),
                     icons, launch_url,
-                    resolver->WrapCallbackInScriptScope(WTF::Bind(
+                    resolver->WrapCallbackInScriptScope(WTF::BindOnce(
                         &ContentIndex::DidAdd, WrapPersistent(this))));
 }
 
@@ -254,7 +255,7 @@ ScriptPromise ContentIndex::deleteDescription(ScriptState* script_state,
 
   GetService()->Delete(
       registration_->RegistrationId(), id,
-      resolver->WrapCallbackInScriptScope(WTF::Bind(
+      resolver->WrapCallbackInScriptScope(WTF::BindOnce(
           &ContentIndex::DidDeleteDescription, WrapPersistent(this))));
 
   return promise;
@@ -304,8 +305,8 @@ ScriptPromise ContentIndex::getDescriptions(ScriptState* script_state,
 
   GetService()->GetDescriptions(
       registration_->RegistrationId(),
-      resolver->WrapCallbackInScriptScope(
-          WTF::Bind(&ContentIndex::DidGetDescriptions, WrapPersistent(this))));
+      resolver->WrapCallbackInScriptScope(WTF::BindOnce(
+          &ContentIndex::DidGetDescriptions, WrapPersistent(this))));
 
   return promise;
 }
@@ -315,7 +316,7 @@ void ContentIndex::DidGetDescriptions(
     mojom::blink::ContentIndexError error,
     Vector<mojom::blink::ContentDescriptionPtr> descriptions) {
   HeapVector<Member<ContentDescription>> blink_descriptions;
-  blink_descriptions.ReserveCapacity(descriptions.size());
+  blink_descriptions.reserve(descriptions.size());
   for (const auto& description : descriptions)
     blink_descriptions.push_back(description.To<blink::ContentDescription*>());
 

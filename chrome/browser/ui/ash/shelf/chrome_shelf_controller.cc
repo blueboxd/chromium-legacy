@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 
-#include <algorithm>
 #include <memory>
 #include <set>
 #include <utility>
@@ -12,7 +11,6 @@
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/arc_util.h"
 #include "ash/constants/app_types.h"
-#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/shelf_item.h"
@@ -28,6 +26,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -193,8 +192,7 @@ void ChromeShelfControllerUserSwitchObserver::OnUserProfileReadyToSwitch(
     std::string user_id =
         multi_user_util::GetAccountIdFromProfile(profile).GetUserEmail();
     std::set<std::string>::iterator it =
-        std::find(added_user_ids_waiting_for_profiles_.begin(),
-                  added_user_ids_waiting_for_profiles_.end(), user_id);
+        base::ranges::find(added_user_ids_waiting_for_profiles_, user_id);
     if (it != added_user_ids_waiting_for_profiles_.end()) {
       added_user_ids_waiting_for_profiles_.erase(it);
       AddUser(profile->GetOriginalProfile());
@@ -1206,9 +1204,7 @@ void ChromeShelfController::OnIsSyncingChanged() {
 
   // Wait until the initial sync happens.
   auto* pref_service = PrefServiceSyncableFromProfile(profile());
-  bool is_syncing = chromeos::features::IsSyncSettingsCategorizationEnabled()
-                        ? pref_service->AreOsPrefsSyncing()
-                        : pref_service->IsSyncing();
+  bool is_syncing = pref_service->AreOsPrefsSyncing();
   if (!is_syncing)
     return;
   // Initialize the local prefs if this is the first time sync has occurred.

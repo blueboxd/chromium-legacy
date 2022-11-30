@@ -29,8 +29,9 @@
 namespace segmentation_platform {
 namespace {
 
-constexpr base::Feature kSegmentationCompactionFix{
-    "SegmentationCompactionFix", base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kSegmentationCompactionFix,
+             "SegmentationCompactionFix",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // TODO(shaktisahu): May be make this a class member for ease of testing.
 bool FilterKeyBasedOnRange(proto::SignalType signal_type,
@@ -232,14 +233,13 @@ void SignalDatabaseImpl::OnGetSamplesForDeletion(
 
 void SignalDatabaseImpl::CompactSamplesForDay(proto::SignalType signal_type,
                                               uint64_t name_hash,
-                                              base::Time day_start_time,
+                                              base::Time day_end_time,
                                               SuccessCallback callback) {
   TRACE_EVENT("segmentation_platform",
               "SignalDatabaseImpl::CompactSamplesForDay");
   DCHECK(initialized_);
   // Compact the signals between 00:00:00AM to 23:59:59PM.
-  day_start_time = day_start_time.UTCMidnight();
-  base::Time day_end_time = day_start_time + base::Days(1) - base::Seconds(1);
+  base::Time day_start_time = day_end_time.UTCMidnight();
   SignalKey compact_key(metadata_utils::SignalTypeToSignalKind(signal_type),
                         name_hash, day_end_time, day_start_time);
   database_->LoadKeysAndEntriesWithFilter(

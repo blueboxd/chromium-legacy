@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -311,13 +311,6 @@ const NGLayoutResult* NGSimplifiedLayoutAlgorithm::Layout() {
   container_builder_.SetPreviousBreakAfter(previous_result_.FinalBreakAfter());
 
   NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
-
-  // The block size may have been changed. This may affect the inline block
-  // baseline if it is from the logical bottom margin edge.
-  DCHECK_EQ(previous_fragment.LastBaseline().has_value(),
-            container_builder_.LastBaseline().has_value());
-  if (container_builder_.LastBaseline())
-    container_builder_.SetLastBaselineToBlockEndMarginEdgeIfNeeded();
 
   return container_builder_.ToBoxFragment();
 }

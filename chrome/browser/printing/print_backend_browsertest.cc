@@ -85,6 +85,8 @@ constexpr int kPrintSettingsCopies = 42;
 constexpr int kPrintSettingsDefaultDpi = 300;
 constexpr int kPrintSettingsOverrideDpi = 150;
 
+constexpr int32_t kTestDocumentCookie = 1;
+
 bool LoadMetafileDataFromFile(const std::string& file_name,
                               Metafile& metafile) {
   base::FilePath data_file;
@@ -124,11 +126,6 @@ class PrintBackendBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::TearDown();
     PrintingContext::SetPrintingContextFactoryForTest(/*factory=*/nullptr);
     PrintBackend::SetPrintBackendForTesting(/*print_backend=*/nullptr);
-  }
-
-  void LaunchUninitialized() {
-    print_backend_service_ =
-        PrintBackendServiceTestImpl::LaunchUninitialized(remote_);
   }
 
   // Initialize and load the backend service with some test print drivers.
@@ -171,7 +168,7 @@ class PrintBackendBrowserTest : public InProcessBrowserTest {
     // Safe to use base::Unretained(this) since waiting locally on the callback
     // forces a shorter lifetime than `this`.
     GetPrintBackendService()->StartPrinting(
-        /*document_cookie=*/1, u"document name",
+        kTestDocumentCookie, u"document name",
         mojom::PrintTargetType::kDirectToDevice, print_settings,
         base::BindOnce(&PrintBackendBrowserTest::CaptureResult,
                        base::Unretained(this), std::ref(result)));
@@ -195,7 +192,7 @@ class PrintBackendBrowserTest : public InProcessBrowserTest {
     // forces a shorter lifetime than `this`.
     mojom::ResultCode result;
     GetPrintBackendService()->RenderPrintedPage(
-        /*document_cookie=*/1,
+        kTestDocumentCookie,
         /*page_index=*/0, metafile.GetDataType(),
         std::move(region_mapping.region),
         /*page_size=*/gfx::Size(200, 200),
@@ -225,7 +222,7 @@ class PrintBackendBrowserTest : public InProcessBrowserTest {
     // forces a shorter lifetime than `this`.
     mojom::ResultCode result;
     GetPrintBackendService()->RenderPrintedDocument(
-        /*document_cookie=*/1, metafile.GetDataType(),
+        kTestDocumentCookie, metafile.GetDataType(),
         std::move(region_mapping.region),
         base::BindOnce(&PrintBackendBrowserTest::CaptureResult,
                        base::Unretained(this), std::ref(result)));
@@ -240,7 +237,7 @@ class PrintBackendBrowserTest : public InProcessBrowserTest {
     // Safe to use base::Unretained(this) since waiting locally on the callback
     // forces a shorter lifetime than `this`.
     GetPrintBackendService()->DocumentDone(
-        /*document_cookie=*/1,
+        kTestDocumentCookie,
         base::BindOnce(&PrintBackendBrowserTest::CaptureResult,
                        base::Unretained(this), std::ref(result)));
     WaitUntilCallbackReceived();
@@ -351,36 +348,6 @@ class PrintBackendBrowserTest : public InProcessBrowserTest {
   PrintBackendPrintingContextFactoryForTest test_printing_context_factory_;
   std::unique_ptr<PrintBackendServiceTestImpl> print_backend_service_;
 };
-
-// A print backend service requires initialization prior to being used for a
-// query/command.  Verify that a query fails if one tries to use a new service
-// without having performed initialization.
-IN_PROC_BROWSER_TEST_F(PrintBackendBrowserTest, FailWithoutInit) {
-  // Launch the service, but without initializing to desired locale.
-  LaunchUninitialized();
-
-  mojom::DefaultPrinterNameResultPtr default_printer_name;
-  mojom::PrinterSemanticCapsAndDefaultsResultPtr printer_caps;
-
-  // Safe to use base::Unretained(this) since waiting locally on the callback
-  // forces a shorter lifetime than `this`.
-  GetPrintBackendService()->GetDefaultPrinterName(
-      base::BindOnce(&PrintBackendBrowserTest::OnDidGetDefaultPrinterName,
-                     base::Unretained(this), std::ref(default_printer_name)));
-  WaitUntilCallbackReceived();
-  ASSERT_TRUE(default_printer_name->is_result_code());
-  EXPECT_EQ(default_printer_name->get_result_code(),
-            mojom::ResultCode::kFailed);
-
-  GetPrintBackendService()->GetPrinterSemanticCapsAndDefaults(
-      kDefaultPrinterName,
-      base::BindOnce(
-          &PrintBackendBrowserTest::OnDidGetPrinterSemanticCapsAndDefaults,
-          base::Unretained(this), std::ref(printer_caps)));
-  WaitUntilCallbackReceived();
-  ASSERT_TRUE(printer_caps->is_result_code());
-  EXPECT_EQ(printer_caps->get_result_code(), mojom::ResultCode::kFailed);
-}
 
 IN_PROC_BROWSER_TEST_F(PrintBackendBrowserTest, EnumeratePrinters) {
   LaunchService();

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mn">
+<translation id="1005794457625275818"><ph name="FPS_MEMBER" />-г оруулаад <ph name="FPS_OWNER" /> бүлэг дэх <ph name="FPS_MEMBERS_COUNT" /> сайтад күүкийг зөвшөөрсөн</translation>
 <translation id="1006017844123154345">Онлайнаар нээх</translation>
 <translation id="1044891598689252897">Сайтууд хэвийн ажиллана</translation>
 <translation id="1124090076051167250">Энэ нь сайт эсвэл таны Үндсэн нүүрэн дээрх аппуудаас хадгалсан <ph name="DATASIZE" /> өгөгдөл болон күүкиг арилгана.</translation>
@@ -21,6 +22,7 @@
 <translation id="1426410128494586442">Тийм</translation>
 <translation id="1446450296470737166">MIDI төхөөрөмжийг бүрэн хянахыг зөвшөөрөх</translation>
 <translation id="1620510694547887537">Камер</translation>
+<translation id="1633720957382884102">Холбоотой сайтууд</translation>
 <translation id="1644574205037202324">Түүх</translation>
 <translation id="1647582022260550163">Та зөвшөөрлийг шинэчлэх, күүки болон сайтын өгөгдлийг арилгахдаа итгэлтэй байна уу?</translation>
 <translation id="1660204651932907780">Сайтуудад дуу тоглуулахыг зөвшөөрөх (санал болгосон)</translation>
@@ -115,6 +117,7 @@
 <translation id="3333961966071413176">Бүх харилцагч</translation>
 <translation id="3362437373201486687">Bluetooth төхөөрөмжүүдийг скан хийж байна</translation>
 <translation id="3386292677130313581">Сайтууд байршил мэдэх зөвшөөрөл авах (санал болгосон)</translation>
+<translation id="3521663503435878242"><ph name="DOMAIN" />-н сайтууд</translation>
 <translation id="3538390592868664640">Сайтуудад таны эргэн тойрны 3D газрын зургийг үүсгэх эсвэл камерын хөдөлгөөнийг хянахыг хориглох</translation>
 <translation id="3551268116566418498">Нууцлалтай горимоос гарах уу?</translation>
 <translation id="3586500876634962664">Камер болон микрофоны ашиглалт</translation>
@@ -260,6 +263,7 @@
 <translation id="6554732001434021288">Хамгийн сүүлд <ph name="NUM_DAYS" /> хоногийн өмнө зочилсон</translation>
 <translation id="6561560012278703671">Илүү чимээгүй мессежийг ашиглах (мэдэгдлийн сануулгад танд саад болохыг хориглодог)</translation>
 <translation id="6593061639179217415">Дэлгэцийн сайт</translation>
+<translation id="6608211702542341247">Энэ сайт нь таны бүлэг дэх үйл ажиллагааг харах боломжтой <ph name="FPS_OWNER" />-н сайтуудын бүлэгт байна</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> ГБ</translation>
 <translation id="6612358246767739896">Хамгаалагдсан агуулга</translation>
 <translation id="662080504995468778">Үлдэх</translation>
@@ -348,7 +352,6 @@
 <translation id="8380167699614421159">Энэ сайт төвөгтэй эсвэл хуурамч зар харуулдаг</translation>
 <translation id="8394832520002899662">Сайт руу буцахын тулд товшино уу</translation>
 <translation id="8409345997656833551">Нийтлэлийг хялбаршуулсан харагдах байдлаар харуулах боломжтой болох үед мэдэгдэл авна уу</translation>
-<translation id="8425213833346101688">Өөрчлөлт</translation>
 <translation id="8428213095426709021">Тохиргоо</translation>
 <translation id="8441146129660941386">Буцаж хайх</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" />-д таны байршилд хандахыг зөвшөөрөхийн тулд байршлыг мөн <ph name="BEGIN_LINK" />Андройдын тохиргоо<ph name="END_LINK" />-нд асаана уу.</translation>
@@ -372,6 +375,7 @@
 <translation id="8751914237388039244">Зураг сонгох</translation>
 <translation id="8801436777607969138">Зарим сайт дээр JavaScript-г блоклоно уу.</translation>
 <translation id="8816026460808729765">Сайтуудыг мэдрэгчид хандахыг хориглох</translation>
+<translation id="8823559166155093873">Күүкиг блоклох</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8903921497873541725">Томруулж харах</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>

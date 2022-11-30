@@ -48,13 +48,17 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_values.h"
 #include "net/log/net_log_with_source.h"
-#include "net/net_buildflags.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
 #include "url/url_canon.h"
 
-#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(USE_NSS_CERTS) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(USE_NSS_CERTS) || BUILDFLAG(IS_MAC) || \
+    BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
 #include "net/cert/cert_verify_proc_builtin.h"
 #endif
+
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+#include "net/cert/internal/trust_store_chrome.h"
+#endif  // CHROME_ROOT_STORE_SUPPORTED
 
 #if BUILDFLAG(IS_ANDROID)
 #include "net/cert/cert_verify_proc_android.h"
@@ -226,9 +230,10 @@ void BestEffortCheckOCSP(const std::string& raw_response,
         certificate.intermediate_buffers().front().get());
   }
 
-  verify_result->revocation_status =
-      CheckOCSP(raw_response, cert_der, issuer_der, base::Time::Now(),
-                kMaxRevocationLeafUpdateAge, &verify_result->response_status);
+  verify_result->revocation_status = CheckOCSP(
+      raw_response, std::string_view(cert_der.data(), cert_der.size()),
+      std::string_view(issuer_der.data(), issuer_der.size()), base::Time::Now(),
+      kMaxRevocationLeafUpdateAge, &verify_result->response_status);
 }
 
 // Records details about the most-specific trust anchor in |hashes|, which is
@@ -387,16 +392,8 @@ bool AreSHA1IntermediatesAllowed() {
   switch (*cert_algorithm) {
     case SignatureAlgorithm::kRsaPkcs1Sha1:
     case SignatureAlgorithm::kEcdsaSha1:
-    case SignatureAlgorithm::kDsaSha1:
       verify_result->has_sha1 = true;
       return true;  // For now.
-
-    case SignatureAlgorithm::kRsaPkcs1Md2:
-    case SignatureAlgorithm::kRsaPkcs1Md4:
-    case SignatureAlgorithm::kRsaPkcs1Md5:
-      // TODO(https://crbug.com/1321688): Remove these from the parser
-      // altogether.
-      return false;
 
     case SignatureAlgorithm::kRsaPkcs1Sha256:
     case SignatureAlgorithm::kRsaPkcs1Sha384:
@@ -407,7 +404,6 @@ bool AreSHA1IntermediatesAllowed() {
     case SignatureAlgorithm::kRsaPssSha256:
     case SignatureAlgorithm::kRsaPssSha384:
     case SignatureAlgorithm::kRsaPssSha512:
-    case SignatureAlgorithm::kDsaSha256:
       return true;
   }
 
@@ -529,12 +525,23 @@ scoped_refptr<CertVerifyProc> CertVerifyProc::CreateSystemVerifyProc(
 }
 #endif
 
-#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(USE_NSS_CERTS) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(USE_NSS_CERTS)
 // static
 scoped_refptr<CertVerifyProc> CertVerifyProc::CreateBuiltinVerifyProc(
     scoped_refptr<CertNetFetcher> cert_net_fetcher) {
   return CreateCertVerifyProcBuiltin(std::move(cert_net_fetcher),
                                      CreateSslSystemTrustStore());
+}
+#endif
+
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+// static
+scoped_refptr<CertVerifyProc> CertVerifyProc::CreateBuiltinWithChromeRootStore(
+    scoped_refptr<CertNetFetcher> cert_net_fetcher) {
+  return CreateCertVerifyProcBuiltin(
+      std::move(cert_net_fetcher),
+      CreateSslSystemTrustStoreChromeRoot(
+          std::make_unique<net::TrustStoreChrome>()));
 }
 #endif
 

@@ -11,8 +11,6 @@ import("//testing/test.gni")
 source_set("audio") {
   sources = [
     "audio_manager_power_user.h",
-    "concurrent_stream_metric_reporter.cc",
-    "concurrent_stream_metric_reporter.h",
     "debug_recording.cc",
     "debug_recording.h",
     "delay_buffer.cc",
@@ -28,6 +26,8 @@ source_set("audio") {
     "in_process_audio_manager_accessor.h",
     "input_controller.cc",
     "input_controller.h",
+    "input_glitch_counter.cc",
+    "input_glitch_counter.h",
     "input_stream.cc",
     "input_stream.h",
     "input_sync_writer.cc",
@@ -160,6 +160,7 @@ source_set("tests") {
     "device_notifier_unittest.cc",
     "group_coordinator_unittest.cc",
     "input_controller_unittest.cc",
+    "input_glitch_counter_unittest.cc",
     "input_stream_unittest.cc",
     "input_sync_writer_unittest.cc",
     "local_muter_unittest.cc",

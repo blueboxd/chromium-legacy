@@ -60,11 +60,27 @@ std::string GetServiceWorkerForError(const std::string& error) {
         );
         chrome.test.succeed();
       },
+      async function getInternetConnectivityInfo() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.telemetry.getInternetConnectivityInfo(),
+            'Error: Unauthorized access to chrome.os.telemetry.' +
+            'getInternetConnectivityInfo. %s'
+        );
+        chrome.test.succeed();
+      },
       async function getMemoryInfo() {
         await chrome.test.assertPromiseRejects(
             chrome.os.telemetry.getMemoryInfo(),
             'Error: Unauthorized access to chrome.os.telemetry.getMemoryInfo.' +
             ' %s'
+        );
+        chrome.test.succeed();
+      },
+      async function getNonRemovableBlockDevicesInfo() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.telemetry.getNonRemovableBlockDevicesInfo(),
+            'Error: Unauthorized access to chrome.os.telemetry.' +
+            'getNonRemovableBlockDevicesInfo. %s'
         );
         chrome.test.succeed();
       },
@@ -91,6 +107,14 @@ std::string GetServiceWorkerForError(const std::string& error) {
             'Error: Unauthorized access to ' +
             'chrome.os.telemetry.getStatefulPartitionInfo.' +
             ' %s'
+        );
+        chrome.test.succeed();
+      },
+      async function getTpmInfo() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.telemetry.getTpmInfo(),
+            'Error: Unauthorized access to chrome.os.telemetry.getTpmInfo. ' +
+            '%s'
         );
         chrome.test.succeed();
       },
@@ -254,6 +278,33 @@ std::string GetServiceWorkerForError(const std::string& error) {
         );
         chrome.test.succeed();
       },
+      async function runDnsResolutionRoutine() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.diagnostics.runDnsResolutionRoutine(),
+            'Error: Unauthorized access to ' +
+            'chrome.os.diagnostics.runDnsResolutionRoutine. ' +
+            '%s'
+        );
+        chrome.test.succeed();
+      },
+      async function runDnsResolverPresentRoutine() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.diagnostics.runDnsResolverPresentRoutine(),
+            'Error: Unauthorized access to ' +
+            'chrome.os.diagnostics.runDnsResolverPresentRoutine. ' +
+            '%s'
+        );
+        chrome.test.succeed();
+      },
+      async function runGatewayCanBePingedRoutine() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.diagnostics.runGatewayCanBePingedRoutine(),
+            'Error: Unauthorized access to ' +
+            'chrome.os.diagnostics.runGatewayCanBePingedRoutine. ' +
+            '%s'
+        );
+        chrome.test.succeed();
+      },
       async function runLanConnectivityRoutine() {
         await chrome.test.assertPromiseRejects(
             chrome.os.diagnostics.runLanConnectivityRoutine(),
@@ -285,6 +336,15 @@ std::string GetServiceWorkerForError(const std::string& error) {
         );
         chrome.test.succeed();
       },
+      async function runSignalStrengthRoutine() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.diagnostics.runSignalStrengthRoutine(),
+            'Error: Unauthorized access to ' +
+            'chrome.os.diagnostics.runSignalStrengthRoutine. ' +
+            '%s'
+        );
+        chrome.test.succeed();
+      },
       async function runSmartctlCheckRoutine() {
         await chrome.test.assertPromiseRejects(
             chrome.os.diagnostics.runSmartctlCheckRoutine(),
@@ -306,8 +366,8 @@ std::string GetServiceWorkerForError(const std::string& error) {
             item => typeof obj[item] === 'function');
         }
         apiNames = [
-          ...getMethods(chrome.os.telemetry),
-          ...getMethods(chrome.os.diagnostics)
+          ...getMethods(chrome.os.telemetry).sort(),
+          ...getMethods(chrome.os.diagnostics).sort()
         ];
         chrome.test.assertEq(getTestNames(tests), apiNames);
         chrome.test.succeed();

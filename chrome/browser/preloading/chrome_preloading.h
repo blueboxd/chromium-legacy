@@ -7,15 +7,13 @@
 
 #include <string>
 
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/preloading.h"
 
 #include "url/gurl.h"
 
 class TemplateURLService;
 using content::PreloadingPredictor;
-namespace content {
-class WebContents;
-}
 
 // Defines various embedder triggering mechanisms which triggers different
 // preloading operations mentioned in //content/public/browser/preloading.h.
@@ -48,6 +46,11 @@ enum class ChromePreloadingPredictor {
   // change in Omnibox selection.
   kOmniboxSearchPredictor =
       static_cast<int>(PreloadingPredictor::kPreloadingPredictorContentEnd) + 3,
+
+  // When the preloading URL is predicted from the default search suggest due to
+  // mouse being pressed down on a Omnibox Search suggestion.
+  kOmniboxMousePredictor =
+      static_cast<int>(PreloadingPredictor::kPreloadingPredictorContentEnd) + 4,
 
   // TODO(crbug.com/1309934): Integrate more Preloading predictors with
   // Preloading logging APIs.
@@ -115,18 +118,19 @@ content::PreloadingEligibility ToPreloadingEligibility(
     ChromePreloadingEligibility eligibility);
 
 // Helpers methods to extract search terms from a given URL.
-TemplateURLService* GetTemplateURLServiceFromWebContents(
-    content::WebContents& web_contents);
+TemplateURLService* GetTemplateURLServiceFromBrowserContext(
+    content::BrowserContext* browser_context);
 std::u16string ExtractSearchTermsFromURL(
     const TemplateURLService* const template_url_service,
     const GURL& url);
-std::u16string ExtractSearchTermsFromURL(content::WebContents& web_contents,
-                                         const GURL& url);
+std::u16string ExtractSearchTermsFromURL(
+    content::BrowserContext* browser_context,
+    const GURL& url);
 
 // Returns true when the two given URLs are considered as navigating to the same
 // search term.
 bool IsSearchDestinationMatch(const std::u16string& preloading_search_terms,
-                              content::WebContents& web_contents,
+                              content::BrowserContext* browser_context,
                               const GURL& navigation_url);
 
 #endif  // CHROME_BROWSER_PRELOADING_CHROME_PRELOADING_H_

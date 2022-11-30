@@ -12,6 +12,7 @@
 
 namespace gfx {
 
+class AxisTransform2d;
 class Transform;
 
 // A class that defines a linear gradient mask.
@@ -33,7 +34,7 @@ class GEOMETRY_SKIA_EXPORT LinearGradient {
   };
   static LinearGradient& GetEmpty();
 
-  static constexpr size_t kMaxStepSize = 6;
+  static constexpr size_t kMaxStepSize = 8;
   using StepArray = std::array<Step, kMaxStepSize>;
 
   LinearGradient();
@@ -59,7 +60,8 @@ class GEOMETRY_SKIA_EXPORT LinearGradient {
   void ReverseSteps();
 
   // Transform the angle.
-  void Transform(const gfx::Transform& transform);
+  void ApplyTransform(const Transform& transform);
+  void ApplyTransform(const AxisTransform2d& transform);
 
   std::string ToString() const;
 

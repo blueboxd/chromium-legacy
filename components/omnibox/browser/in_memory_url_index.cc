@@ -124,10 +124,15 @@ void InMemoryURLIndex::ClearPrivateData() {
 ScoredHistoryMatches InMemoryURLIndex::HistoryItemsForTerms(
     const std::u16string& term_string,
     size_t cursor_position,
+    const std::string& host_filter,
     size_t max_matches) {
   return private_data_->HistoryItemsForTerms(
-      term_string, cursor_position, max_matches, bookmark_model_,
+      term_string, cursor_position, host_filter, max_matches, bookmark_model_,
       template_url_service_);
+}
+
+std::vector<std::string> InMemoryURLIndex::HighlyVisitedHosts() const {
+  return private_data_->HighlyVisitedHosts();
 }
 
 // Updating --------------------------------------------------------------------
@@ -243,11 +248,4 @@ void InMemoryURLIndex::DoneRebuildingPrivateDataFromHistoryDB(
   restored_ = true;
   if (restore_cache_observer_)
     restore_cache_observer_->OnCacheRestoreFinished(succeeded);
-}
-
-void InMemoryURLIndex::RebuildFromHistory(
-    history::HistoryDatabase* history_db) {
-  private_data_tracker_.TryCancelAll();
-  private_data_ =
-      URLIndexPrivateData::RebuildFromHistory(history_db, scheme_allowlist_);
 }

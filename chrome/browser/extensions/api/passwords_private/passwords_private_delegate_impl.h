@@ -95,9 +95,7 @@ class PasswordsPrivateDelegateImpl
   // TODO(crbug.com/1102294): Mimic the signature in PasswordFeatureManager.
   void SetAccountStorageOptIn(bool opt_in,
                               content::WebContents* web_contents) override;
-  std::vector<api::passwords_private::PasswordUiEntry>
-  GetCompromisedCredentials() override;
-  std::vector<api::passwords_private::PasswordUiEntry> GetWeakCredentials()
+  std::vector<api::passwords_private::PasswordUiEntry> GetInsecureCredentials()
       override;
   bool MuteInsecureCredential(
       const api::passwords_private::PasswordUiEntry& credential) override;
@@ -117,6 +115,8 @@ class PasswordsPrivateDelegateImpl
   password_manager::InsecureCredentialsManager* GetInsecureCredentialsManager()
       override;
   void ExtendAuthValidity() override;
+  void SwitchBiometricAuthBeforeFillingState(
+      content::WebContents* web_contents) override;
 
   // KeyedService overrides:
   void Shutdown() override;
@@ -133,6 +133,11 @@ class PasswordsPrivateDelegateImpl
           os_reauth_call) {
     password_access_authenticator_.set_os_reauth_call(
         std::move(os_reauth_call));
+  }
+
+  void SetPorterForTesting(
+      std::unique_ptr<PasswordManagerPorterInterface> porter) {
+    password_manager_porter_ = std::move(porter);
   }
 #endif  // defined(UNIT_TEST)
 
@@ -204,6 +209,11 @@ class PasswordsPrivateDelegateImpl
   // Invokes PasswordsPrivateEventRouter::OnPasswordManagerAuthTimeout().
   void OsReauthTimeoutCall();
 
+  void AuthenticateWithBiometrics(
+      const std::u16string& message,
+      password_manager::PasswordAccessAuthenticator::AuthResultCallback
+          callback);
+
   // Not owned by this class.
   raw_ptr<Profile> profile_;
 
@@ -211,7 +221,7 @@ class PasswordsPrivateDelegateImpl
   password_manager::SavedPasswordsPresenter saved_passwords_presenter_;
 
   // Used to control the export and import flows.
-  std::unique_ptr<PasswordManagerPorter> password_manager_porter_;
+  std::unique_ptr<PasswordManagerPorterInterface> password_manager_porter_;
 
   password_manager::PasswordAccessAuthenticator password_access_authenticator_;
 

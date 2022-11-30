@@ -56,12 +56,13 @@ NSString* const kPlusCircleFillSymbol = @"plus_circle_fill";
 NSString* const kPopupBadgeMinusSymbol = @"popup_badge_minus";
 NSString* const kPhotoBadgePlusSymbol = @"photo_badge_plus";
 NSString* const kPhotoBadgeMagnifyingglassSymbol =
-    @"photo_badge_magnifyinggglass";
+    @"photo_badge_magnifyingglass";
 NSString* const kReadingListSymbol = @"square_bullet_square";
 NSString* const kRecentTabsSymbol = @"laptopcomputer_and_phone";
 NSString* const kLanguageSymbol = @"language";
 NSString* const kPasswordSymbol = @"password";
 NSString* const kCameraLensSymbol = @"camera_lens";
+NSString* const kDownTrendSymbol = @"line_downtrend";
 
 // Default symbol names.
 NSString* const kCreditCardSymbol = @"creditcard";
@@ -73,24 +74,30 @@ NSString* const kPinFillSymbol = @"pin.fill";
 NSString* const kIPhoneSymbol = @"iphone";
 NSString* const kIPadSymbol = @"ipad";
 NSString* const kLaptopSymbol = @"laptopcomputer";
-NSString* const kGearShapeSymbol = @"gearshape.fill";
+NSString* const kSettingsSymbol = @"gearshape";
+NSString* const kSettingsFilledSymbol = @"gearshape.fill";
 NSString* const kShareSymbol = @"square.and.arrow.up";
 NSString* const kXMarkSymbol = @"xmark";
 NSString* const kPlusSymbol = @"plus";
 NSString* const kSearchSymbol = @"magnifyingglass";
 NSString* const kCheckmarkSymbol = @"checkmark";
-NSString* const kArrowDownCircleFillSymbol = @"arrow.down.circle.fill";
+NSString* const kDownloadSymbol = @"arrow.down.circle";
 NSString* const kSecureSymbol = @"lock";
 NSString* const kWarningSymbol = @"exclamationmark.triangle";
 NSString* const kWarningFillSymbol = @"exclamationmark.triangle.fill";
-NSString* const kHelpFillSymbol = @"questionmark.circle";
+NSString* const kHelpSymbol = @"questionmark.circle";
 NSString* const kCheckMarkCircleSymbol = @"checkmark.circle";
 NSString* const kCheckMarkCircleFillSymbol = @"checkmark.circle.fill";
 NSString* const kFailMarkCircleFillSymbol = @"exclamationmark.circle.fill";
 NSString* const kTrashSymbol = @"trash";
 NSString* const kInfoCircleSymbol = @"info.circle";
-NSString* const kClockArrowSymbol = @"clock.arrow.circlepath";
+NSString* const kHistorySymbol = @"clock.arrow.circlepath";
+NSString* const kCheckmarkSealSymbol = @"checkmark.seal";
 NSString* const kWifiSymbol = @"wifi";
+NSString* const kBookmarksSymbol = @"star.fill";
+NSString* const kSyncErrorSymbol =
+    @"exclamationmark.arrow.triangle.2.circlepath";
+NSString* const kMenuSymbol = @"ellipsis";
 
 const CGFloat kColorfulBackgroundSymbolCornerRadius = 7;
 

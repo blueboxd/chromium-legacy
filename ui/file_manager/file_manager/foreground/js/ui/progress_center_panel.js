@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {assertNotReached} from 'chrome://resources/js/assert.js';
 
 import {ProgressCenterItem, ProgressItemState, ProgressItemType} from '../../../common/js/progress_center_common.js';
 import {str, strf, util} from '../../../common/js/util.js';
@@ -81,8 +81,9 @@ export class ProgressCenterPanel {
           if (item.type === ProgressItemType.TRASH) {
             return strf('MOVE_TO_TRASH_FILE_NAME', source);
           }
-          if (item.type === ProgressItemType.RESTORE_TO_DESTINATION) {
-            return strf('RESTORE_FROM_TRASH_FILE_NAME', source);
+          if (item.type === ProgressItemType.RESTORE_TO_DESTINATION ||
+              item.type === ProgressItemType.RESTORE) {
+            return strf('RESTORING_FROM_TRASH_FILE_NAME', source);
           }
           return item.message;
         }
@@ -103,8 +104,9 @@ export class ProgressCenterPanel {
         if (item.type === ProgressItemType.TRASH) {
           return strf('MOVE_TO_TRASH_ITEMS_REMAINING', count);
         }
-        if (item.type === ProgressItemType.RESTORE_TO_DESTINATION) {
-          return strf('RESTORE_FROM_TRASH_ITEMS_REMAINING', count);
+        if (item.type === ProgressItemType.RESTORE_TO_DESTINATION ||
+            item.type === ProgressItemType.RESTORE) {
+          return strf('RESTORING_FROM_TRASH_ITEMS_REMAINING', count);
         }
         return item.message;
         break;
@@ -184,8 +186,11 @@ export class ProgressCenterPanel {
                 strf('MOVE_TO_TRASH_FILE_NAME', source) :
                 strf('UNDO_DELETE_ONE', source);
           }
-          if (item.type === ProgressItemType.RESTORE_TO_DESTINATION) {
-            return strf('RESTORE_FROM_TRASH_FILE_NAME', source);
+          if (item.type === ProgressItemType.RESTORE_TO_DESTINATION ||
+              item.type === ProgressItemType.RESTORE) {
+            return item.state == ProgressItemState.PROGRESSING ?
+                strf('RESTORING_FROM_TRASH_FILE_NAME', source) :
+                strf('RESTORE_TRASH_FILE_NAME', source);
           }
           return item.message;
         }
@@ -217,8 +222,11 @@ export class ProgressCenterPanel {
               strf('MOVE_TO_TRASH_ITEMS_REMAINING', count) :
               strf('UNDO_DELETE_SOME', count);
         }
-        if (item.type === ProgressItemType.RESTORE_TO_DESTINATION) {
-          return strf('RESTORE_FROM_TRASH_ITEMS_REMAINING', count);
+        if (item.type === ProgressItemType.RESTORE_TO_DESTINATION ||
+            item.type === ProgressItemType.RESTORE) {
+          return item.state == ProgressItemState.PROGRESSING ?
+              strf('RESTORING_FROM_TRASH_ITEMS_REMAINING', count) :
+              strf('RESTORE_TRASH_MANY_ITEMS', count);
         }
         return item.message;
         break;
@@ -263,7 +271,7 @@ export class ProgressCenterPanel {
       // Return empty string for invalid remaining time in non progressing
       // state.
       return item.state === ProgressItemState.PROGRESSING ?
-          str('PENDING_LABEL') :
+          str('PREPARING_LABEL') :
           '';
     }
 
@@ -370,7 +378,8 @@ export class ProgressCenterPanel {
               item.type === ProgressItemType.ZIP ||
               item.type === ProgressItemType.DELETE ||
               item.type === ProgressItemType.TRASH ||
-              item.type === ProgressItemType.RESTORE_TO_DESTINATION) {
+              item.type === ProgressItemType.RESTORE_TO_DESTINATION ||
+              item.type === ProgressItemType.RESTORE) {
             const donePanelItem = this.feedbackHost_.addPanelItem(item.id);
             if (item.extraButton.has(ProgressItemState.COMPLETED)) {
               extraButton = item.extraButton.get(ProgressItemState.COMPLETED);

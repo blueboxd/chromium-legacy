@@ -20,8 +20,6 @@
 
 namespace chromecast {
 namespace {
-// A constant used to always activate a FieldTrial.
-const base::FieldTrial::Probability k100PercentProbability = 100;
 
 // The name of the default group to use for Cast DCS features.
 const char kDefaultDCSFeaturesGroup[] = "default_dcs_features_group";
@@ -71,8 +69,8 @@ void SetExperimentIds(const base::Value::List& list) {
 //    the value that the feature will hold until overriden by the server or the
 //    command line. Here's an exmaple:
 //
-//      const base::Feature kSuperSecretSauce{
-//          "enable_super_secret_sauce", base::FEATURE_DISABLED_BY_DEFAULT};
+//      BASE_FEATURE(kSuperSecretSauce, "SuperSecretSauce",
+//                   base::FEATURE_DISABLED_BY_DEFAULT);
 //
 //    IMPORTANT NOTE:
 //    The first parameter that you pass in the definition is the feature's name.
@@ -127,42 +125,48 @@ void SetExperimentIds(const base::Value::List& list) {
 
 // Allows applications to access media capture devices (webcams/microphones)
 // through getUserMedia API.
-const base::Feature kAllowUserMediaAccess{"allow_user_media_access",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kAllowUserMediaAccess,
+             "allow_user_media_access",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 // Enables the use of QUIC in Cast-specific NetworkContexts. See
 // chromecast/browser/cast_network_contexts.cc for usage.
-const base::Feature kEnableQuic{"enable_quic",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kEnableQuic, "enable_quic", base::FEATURE_DISABLED_BY_DEFAULT);
 // Enables triple-buffer 720p graphics (overriding default graphics buffer
 // settings for a platform).
-const base::Feature kTripleBuffer720{"enable_triple_buffer_720",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kTripleBuffer720,
+             "enable_triple_buffer_720",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 // Enables single-buffered graphics (overriding default graphics buffer
 // settings and takes precedence over triple-buffer feature).
-const base::Feature kSingleBuffer{"enable_single_buffer",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kSingleBuffer,
+             "enable_single_buffer",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 // Disable idle sockets closing on memory pressure. See
 // chromecast/browser/cast_network_contexts.cc for usage.
-const base::Feature kDisableIdleSocketsCloseOnMemoryPressure{
-    "disable_idle_sockets_close_on_memory_pressure",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kDisableIdleSocketsCloseOnMemoryPressure,
+             "disable_idle_sockets_close_on_memory_pressure",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
-const base::Feature kEnableGeneralAudienceBrowsing{
-    "enable_general_audience_browsing", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kEnableGeneralAudienceBrowsing,
+             "enable_general_audience_browsing",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
-const base::Feature kEnableSideGesturePassThrough{
-    "enable_side_gesture_pass_through", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kEnableSideGesturePassThrough,
+             "enable_side_gesture_pass_through",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Uses AudioManagerAndroid, instead of CastAudioManagerAndroid. This will
 // disable lots of Cast features, so it should only be used for development and
 // testing.
-const base::Feature kEnableChromeAudioManagerAndroid{
-    "enable_chrome_audio_manager_android", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kEnableChromeAudioManagerAndroid,
+             "enable_chrome_audio_manager_android",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables CastAudioOutputDevice for audio output on Android. When disabled,
 // CastAudioManagerAndroid will be used.
-const base::Feature kEnableCastAudioOutputDevice{
-    "enable_cast_audio_output_device", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kEnableCastAudioOutputDevice,
+             "enable_cast_audio_output_device",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // End Chromecast Feature definitions.
 const base::Feature* kFeatures[] = {
@@ -225,17 +229,21 @@ void InitializeFeatureList(const base::Value::Dict& dcs_features,
     //     maintain a 1:1 mapping with Features in order to properly store and
     //     access parameters associated with each Feature. Therefore, use the
     //     Feature's name as the FieldTrial name to ensure uniqueness.
-    //   - The probability is hard-coded to 100% so that the FeatureList always
-    //     respects the value from DCS.
-    //   - The default group is unused; it will be the same for every feature.
-    //   - SessionRandomization is used as a trivial entropy_provider. However,
-    //     this value doesn't matter.
     //   - We don't care about the group_id.
     //
     const std::string& feature_name = kv.first;
-    auto* field_trial = base::FieldTrialList::FactoryGetFieldTrial(
-        feature_name, k100PercentProbability, kDefaultDCSFeaturesGroup,
-        base::FieldTrialList::GetEntropyProviderForSessionRandomization());
+    auto* field_trial = base::FieldTrialList::CreateFieldTrial(
+        feature_name, kDefaultDCSFeaturesGroup);
+
+    // |field_trial| is null only if the trial has already been forced to
+    // another group. This shouldn't happen, unless we've processed a
+    // --force-fieldtrial commandline argument that overrides this to some other
+    // group.
+    if (!field_trial) {
+      LOG(ERROR) << "A trial was already created for a DCS feature: "
+                 << feature_name;
+      continue;
+    }
 
     if (kv.second.is_bool()) {
       // A boolean entry simply either enables or disables a feature.

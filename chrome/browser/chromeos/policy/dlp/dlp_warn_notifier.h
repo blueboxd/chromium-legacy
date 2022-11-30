@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_contents.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_confidential_file.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_warn_dialog.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -49,13 +50,14 @@ class DlpWarnNotifier : public views::WidgetObserver {
 
   // Shows a warning dialog that informs the user that |files_action| to
   // |dst_component| or |destination_pattern| on selected
-  // |confidential_contents| files is not recommended. Calls |callback| and
+  // |confidential_files| is not recommended. Calls |callback| and
   // passes user's choice of whether to proceed or not.
-  void ShowDlpFilesWarningDialog(
+  // Returns a pointer to the widget that owns the created dialog.
+  base::WeakPtr<views::Widget> ShowDlpFilesWarningDialog(
       OnDlpRestrictionCheckedCallback callback,
-      const DlpConfidentialContents& confidential_contents,
+      const std::vector<DlpConfidentialFile>& confidential_files,
       absl::optional<DlpRulesManager::Component> dst_component,
-      const std::string& destination_pattern,
+      const absl::optional<std::string>& destination_pattern,
       DlpFilesController::FileAction files_action);
 
   // Shows a warning dialog that informs the user that screen sharing is not

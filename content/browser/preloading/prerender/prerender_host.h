@@ -17,6 +17,7 @@
 #include "content/browser/renderer_host/stored_page.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/preloading_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -55,6 +56,12 @@ class WebContentsImpl;
 // is owned by PrerenderHostRegistry.
 class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
  public:
+  // The time to allow prerendering kept alive in the background. PrerenderHost
+  // will be terminated with kTimeoutBackgrounded when the timer exceeds this.
+  // The value was determined to align with the default value of BFCache's
+  // eviction timer.
+  static constexpr base::TimeDelta kTimeToLiveInBackground = base::Seconds(180);
+
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
   enum class FinalStatus {
@@ -93,7 +100,9 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
     // Break down into kEmbedderTriggeredAndSameOriginRedirected and
     // kEmbedderTriggeredAndCrossOriginRedirected for investigation.
     // kEmbedderTriggeredAndRedirected = 32,
-    kEmbedderTriggeredAndSameOriginRedirected = 33,
+    // Deprecate since same origin redirection is allowed considering that the
+    // initial prerender origin is a safe site.
+    // kEmbedderTriggeredAndSameOriginRedirected = 33,
     kEmbedderTriggeredAndCrossOriginRedirected = 34,
     // Deprecated. This has the same meaning as kTriggerDestroyed because the
     // metric's name includes trigger type.
@@ -103,7 +112,10 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
     kDataSaverEnabled = 38,
     kHasEffectiveUrl = 39,
     kActivatedBeforeStarted = 40,
-    kMaxValue = kActivatedBeforeStarted,
+    kInactivePageRestriction = 41,
+    kStartFailed = 42,
+    kTimeoutBackgrounded = 43,
+    kMaxValue = kTimeoutBackgrounded,
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -239,6 +251,11 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
       const url::Origin& origin,
       blink::EnabledClientHints* client_hints) const;
 
+  // Only used for tests.
+  base::OneShotTimer* GetTimerForTesting() { return &timeout_timer_; }
+  void SetTaskRunnerForTesting(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
   // Returns absl::nullopt iff prerendering is initiated by the browser (not by
   // a renderer using Speculation Rules API).
   absl::optional<url::Origin> initiator_origin() const {
@@ -269,6 +286,8 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
     return attributes_.embedder_histogram_suffix;
   }
 
+  base::WeakPtr<PreloadingAttempt> preloading_attempt() { return attempt_; }
+
  private:
   // Records the status to UMA and UKM. `initiator_ukm_id` represents the page
   // that starts prerendering and `prerendered_ukm_id` represents the
@@ -296,6 +315,8 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   ActivationNavigationParamsMatch
   AreCommonNavigationParamsCompatibleWithNavigation(
       const blink::mojom::CommonNavigationParams& potential_activation);
+
+  scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner();
 
   const PrerenderAttributes attributes_;
 
@@ -328,6 +349,12 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   // Stores the client hints type that applies to this page.
   base::flat_map<url::Origin, std::vector<network::mojom::WebClientHintsType>>
       client_hints_type_;
+
+  // Starts running the timer when prerendering gets hidden.
+  base::OneShotTimer timeout_timer_;
+  // Only used for tests. This task runner is used for precise injection in
+  // tests and for timing control.
+  scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_for_testing_;
 
   // Holds the navigation ID for the main frame initial navigation.
   absl::optional<int64_t> initial_navigation_id_;

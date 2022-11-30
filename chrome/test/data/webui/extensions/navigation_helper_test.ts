@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {Dialog, NavigationHelper, Page, PageState} from 'chrome://extensions/extensions.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {assertDeepEquals, assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {MockMethod} from 'chrome://webui-test/mock_controller.js';
 
@@ -36,7 +36,8 @@ suite(extension_navigation_helper_tests.suiteName, function() {
   let navigationHelper: NavigationHelper;
 
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     navigationHelper = new NavigationHelper();
   });
 

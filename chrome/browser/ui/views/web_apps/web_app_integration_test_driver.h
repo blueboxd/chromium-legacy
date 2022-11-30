@@ -45,6 +45,7 @@ enum class Site {
   kStandalone,
   kStandaloneNestedA,
   kStandaloneNestedB,
+  kStandaloneNotStartUrl,
   kMinimalUi,
   kNotPromotable,
   kWco,
@@ -52,18 +53,21 @@ enum class Site {
   kFileHandler,
   kNoServiceWorker,
   kNotInstalled,
+  kScreenshots
 };
 
 enum class InstallableSite {
   kStandalone,
   kStandaloneNestedA,
   kStandaloneNestedB,
+  kStandaloneNotStartUrl,
   kMinimalUi,
   kWco,
   kIsolated,
   kFileHandler,
   kNoServiceWorker,
   kNotInstalled,
+  kScreenshots
 };
 
 enum class Title { kStandaloneOriginal, kStandaloneUpdated };
@@ -83,6 +87,8 @@ enum class Display { kBrowser, kStandalone, kMinimalUi, kWco };
 enum class WindowOptions { kWindowed, kBrowser };
 
 enum class ShortcutOptions { kWithShortcut, kNoShortcut };
+
+enum class InstallMode { kWebApp, kWebShortcut };
 
 enum class AllowDenyOptions { kAllow, kDeny };
 
@@ -223,7 +229,8 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void InstallOmniboxIcon(InstallableSite site);
   void InstallPolicyApp(Site site,
                         ShortcutOptions shortcut,
-                        WindowOptions window);
+                        WindowOptions window,
+                        InstallMode mode);
   // These functions install apps which are tabbed and creates shortcuts.
   void ApplyRunOnOsLoginPolicyAllowed(Site site);
   void ApplyRunOnOsLoginPolicyBlocked(Site site);
@@ -268,7 +275,9 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void CheckAppInListNotLocallyInstalled(Site site);
   void CheckAppInListWindowed(Site site);
   void CheckAppInListTabbed(Site site);
+  void CheckAppNavigation(Site site);
   void CheckAppNavigationIsStartUrl();
+  void CheckBrowserNavigation(Site site);
   void CheckBrowserNavigationIsAppSettings(Site site);
   void CheckAppNotInList(Site site);
   void CheckAppIcon(Site site, Color color);
@@ -318,7 +327,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void AfterStateCheckAction();
 
   AppId GetAppIdBySiteMode(Site site);
-  GURL GetAppStartURL(Site site);
+  GURL GetUrlForSite(Site site);
   absl::optional<AppState> GetAppBySiteMode(StateSnapshot* state_snapshot,
                                             Profile* profile,
                                             Site site);
@@ -327,25 +336,20 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
 
   std::unique_ptr<StateSnapshot> ConstructStateSnapshot();
 
-  std::string GetBrowserWindowTitle(Browser* browser);
   content::WebContents* GetCurrentTab(Browser* browser);
   GURL GetInScopeURL(Site site);
-  GURL GetScopeForSiteMode(Site site);
   base::FilePath GetShortcutPath(base::FilePath shortcut_dir,
                                  const std::string& app_name,
                                  const AppId& app_id);
-  GURL GetURLForSiteMode(Site site);
-
   void InstallPolicyAppInternal(Site site,
                                 base::Value default_launch_container,
-                                bool create_shortcut);
+                                const bool create_shortcut,
+                                const bool install_as_shortcut);
   void ApplyRunOnOsLoginPolicy(Site site, const char* policy);
 
   void UninstallPolicyAppById(const AppId& id);
   void ForceUpdateManifestContents(Site site,
                                    const GURL& app_url_with_manifest_param);
-  void MaybeWaitForManifestUpdates();
-
   void MaybeNavigateTabbedBrowserInScope(Site site);
 
   enum class NavigationMode { kNewTab, kCurrentTab };
@@ -385,6 +389,8 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
 
   const net::EmbeddedTestServer& GetTestServerForSiteMode(Site site_mode) const;
 
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   base::flat_set<AppId> previous_manifest_updates_;
 
   // |waiting_for_update_*| variables are either all populated or all not
@@ -406,7 +412,6 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   // can often call another action).
   int executing_action_level_ = 0;
 
-  raw_ptr<Browser> active_browser_ = nullptr;
   raw_ptr<Profile> active_profile_ = nullptr;
   AppId active_app_id_;
   // TODO(crbug.com/1298696): browser_tests breaks with MTECheckedPtr

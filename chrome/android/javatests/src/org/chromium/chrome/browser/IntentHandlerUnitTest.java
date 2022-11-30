@@ -354,7 +354,7 @@ public class IntentHandlerUnitTest {
     @Test
     @SmallTest
     public void testExtraHeadersVerifiedOrigin() throws Exception {
-        // Check that non-whitelisted headers from extras are passed
+        // Check that non-allowlisted headers from extras are passed
         // when origin is verified.
         Context context = InstrumentationRegistry.getTargetContext();
         Intent headersIntent = CustomTabsIntentTestUtils.createMinimalCustomTabIntent(
@@ -386,7 +386,7 @@ public class IntentHandlerUnitTest {
     @Test
     @SmallTest
     public void testExtraHeadersNonVerifiedOrigin() throws Exception {
-        // Check that non-whitelisted headers from extras are passed
+        // Check that non-allowlisted headers from extras are passed
         // when origin is verified.
         Context context = InstrumentationRegistry.getTargetContext();
         Intent headersIntent = CustomTabsIntentTestUtils.createMinimalCustomTabIntent(
@@ -474,6 +474,18 @@ public class IntentHandlerUnitTest {
     public void testStripNonCorsSafelistedCustomHeader() {
         Bundle bundle = new Bundle();
         bundle.putString("X-Some-Header", "1");
+        Intent headersIntent = new Intent(Intent.ACTION_VIEW);
+        headersIntent.putExtra(Browser.EXTRA_HEADERS, bundle);
+        Assert.assertNull(IntentHandler.getExtraHeadersFromIntent(headersIntent));
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    @Feature({"Android-AppBase"})
+    public void testIgnoreHeaderNewLineInValue() {
+        Bundle bundle = new Bundle();
+        bundle.putString("sec-ch-ua-full", "\nCookie: secret=cookie");
         Intent headersIntent = new Intent(Intent.ACTION_VIEW);
         headersIntent.putExtra(Browser.EXTRA_HEADERS, bundle);
         Assert.assertNull(IntentHandler.getExtraHeadersFromIntent(headersIntent));

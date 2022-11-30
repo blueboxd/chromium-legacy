@@ -39,7 +39,8 @@ class MEDIA_EXPORT FuchsiaVideoDecoder : public VideoDecoder,
  public:
   FuchsiaVideoDecoder(
       scoped_refptr<viz::RasterContextProvider> raster_context_provider,
-      media::mojom::FuchsiaMediaResourceProvider* media_resource_provider);
+      media::mojom::FuchsiaMediaResourceProvider* media_resource_provider,
+      bool allow_overlays);
   ~FuchsiaVideoDecoder() override;
 
   FuchsiaVideoDecoder(const FuchsiaVideoDecoder&) = delete;
@@ -119,9 +120,6 @@ class MEDIA_EXPORT FuchsiaVideoDecoder : public VideoDecoder,
 
   OutputCB output_cb_;
   WaitingCB waiting_cb_;
-
-  // Aspect ratio specified in container.
-  VideoAspectRatio container_aspect_ratio_;
 
   std::unique_ptr<SysmemBufferStream> sysmem_buffer_stream_;
 

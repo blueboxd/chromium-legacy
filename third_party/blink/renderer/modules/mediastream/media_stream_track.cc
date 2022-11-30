@@ -1,4 +1,4 @@
-// Copyright (c) 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_constraints.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/modules/mediastream/media_constraints_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
 #include "third_party/blink/renderer/modules/mediastream/transferred_media_stream_track.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
@@ -64,6 +65,13 @@ String ReadyStateToString(const MediaStreamSource::ReadyState& ready_state) {
 MediaStreamTrack* MediaStreamTrack::FromTransferredState(
     ScriptState* script_state,
     const TransferredValues& data) {
+  DCHECK(data.track_impl_subtype);
+
+  // Allow injecting a mock.
+  if (GetFromTransferredStateImplForTesting()) {
+    return GetFromTransferredStateImplForTesting().Run(data);
+  }
+
   auto* window =
       DynamicTo<LocalDOMWindow>(ExecutionContext::From(script_state));
   if (!window)
@@ -76,10 +84,17 @@ MediaStreamTrack* MediaStreamTrack::FromTransferredState(
 
   MediaErrorState error_state;
   // TODO(1288839): Set media_type, options, callbacks, surface appropriately
-  UserMediaRequest* const request = UserMediaRequest::Create(
-      window, user_media_client, UserMediaRequestType::kDisplayMedia,
-      MediaStreamConstraints::Create(),
-      MakeGarbageCollected<GetOpenDeviceRequestCallbacks>(), error_state,
+  MediaConstraints audio = (data.kind == "audio")
+                               ? media_constraints_impl::Create()
+                               : MediaConstraints();
+  MediaConstraints video = (data.kind == "video")
+                               ? media_constraints_impl::Create()
+                               : MediaConstraints();
+  UserMediaRequest* const request = MakeGarbageCollected<UserMediaRequest>(
+      window, user_media_client, UserMediaRequestType::kDisplayMedia, audio,
+      video, /*should_prefer_current_tab=*/false,
+      /*auto_select_all_screens=*/false,
+      MakeGarbageCollected<GetOpenDeviceRequestCallbacks>(),
       IdentifiableSurface());
   if (!request) {
       return nullptr;
@@ -95,7 +110,29 @@ MediaStreamTrack* MediaStreamTrack::FromTransferredState(
   request->SetTransferData(data.session_id, data.transfer_id,
                            transferred_media_stream_track);
   request->Start();
-  return transferred_media_stream_track;
+
+  // TODO(1288839): get rid of TransferredMediaStreamTrack, since it's just a
+  // container for the impl track
+  auto* track = transferred_media_stream_track->track();
+  // TODO(1288839): What happens if GetOpenDevice fails?
+  DCHECK(track);
+  if (track->GetWrapperTypeInfo() != data.track_impl_subtype) {
+    NOTREACHED() << "transferred track should be "
+                 << data.track_impl_subtype->interface_name
+                 << " but instead it is "
+                 << track->GetWrapperTypeInfo()->interface_name;
+    return nullptr;
+  }
+  return track;
+}
+
+// static
+MediaStreamTrack::FromTransferredStateImplForTesting&
+MediaStreamTrack::GetFromTransferredStateImplForTesting() {
+  static base::NoDestructor<
+      MediaStreamTrack::FromTransferredStateImplForTesting>
+      impl;
+  return *impl;
 }
 
 }  // namespace blink

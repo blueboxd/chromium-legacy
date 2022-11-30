@@ -289,9 +289,9 @@ class SharedStorageDatabase {
   [[nodiscard]] OperationResult PurgeStaleOrigins();
 
   // Fetches a vector of `mojom::StorageUsageInfoPtr`, with one
-  // `mojom::StorageUsageInfoPtr` for each origin currently using shared storage
-  // in this profile. If `exclude_empty_origins` is true, then only those with
-  // positive `length` are included in the vector.
+  // `mojom::StorageUsageInfoPtr` for each origin currently using shared
+  // storage in this profile. If `exclude_empty_origins` is true, then only
+  // those with positive `length` are included in the vector.
   [[nodiscard]] std::vector<mojom::StorageUsageInfoPtr> FetchOrigins(
       bool exclude_empty_origins = true);
 

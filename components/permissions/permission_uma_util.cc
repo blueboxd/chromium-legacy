@@ -106,8 +106,8 @@ RequestTypeForUma GetUmaValueForRequestType(RequestType request_type) {
     case RequestType::kVrSession:
       return RequestTypeForUma::PERMISSION_VR;
 #if !BUILDFLAG(IS_ANDROID)
-    case RequestType::kWindowPlacement:
-      return RequestTypeForUma::PERMISSION_WINDOW_PLACEMENT;
+    case RequestType::kWindowManagement:
+      return RequestTypeForUma::PERMISSION_WINDOW_MANAGEMENT;
 #endif
   }
 }
@@ -152,7 +152,7 @@ std::string GetPermissionRequestString(RequestTypeForUma type) {
       return "StorageAccess";
     case RequestTypeForUma::PERMISSION_CAMERA_PAN_TILT_ZOOM:
       return "CameraPanTiltZoom";
-    case RequestTypeForUma::PERMISSION_WINDOW_PLACEMENT:
+    case RequestTypeForUma::PERMISSION_WINDOW_MANAGEMENT:
       return "WindowPlacement";
     case RequestTypeForUma::PERMISSION_LOCAL_FONTS:
       return "LocalFonts";
@@ -893,7 +893,7 @@ void PermissionUmaUtil::RecordPermissionAction(
       base::UmaHistogramEnumeration("Permissions.Action.CameraPanTiltZoom",
                                     action, PermissionAction::NUM);
       break;
-    case ContentSettingsType::WINDOW_PLACEMENT:
+    case ContentSettingsType::WINDOW_MANAGEMENT:
       base::UmaHistogramEnumeration("Permissions.Action.WindowPlacement",
                                     action, PermissionAction::NUM);
       break;
@@ -1018,6 +1018,13 @@ void PermissionUmaUtil::RecordPermissionPredictionServiceHoldback(
             GetPermissionRequestString(GetUmaValueForRequestType(request_type)),
         is_heldback);
   }
+}
+
+// static
+void PermissionUmaUtil::RecordPageInfoDialogAccessType(
+    PageInfoDialogAccessType access_type) {
+  base::UmaHistogramEnumeration(
+      "Permissions.ConfirmationChip.PageInfoDialogAccessType", access_type);
 }
 
 std::string PermissionUmaUtil::GetPermissionActionString(

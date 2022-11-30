@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,8 +32,9 @@ constexpr double kVsyncBoundaryErrorRate = 0.05;
 
 namespace features {
 
-const base::Feature kLowLatencyVideoRendererAlgorithm{
-    "LowLatencyVideoRendererAlgorithm", base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kLowLatencyVideoRendererAlgorithm,
+             "LowLatencyVideoRendererAlgorithm",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features
 

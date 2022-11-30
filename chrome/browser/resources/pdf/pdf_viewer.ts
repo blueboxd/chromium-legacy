@@ -17,7 +17,7 @@ import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {listenOnce} from 'chrome://resources/js/util.m.js';
+import {listenOnce} from 'chrome://resources/js/util.js';
 
 import {Bookmark} from './bookmark_type.js';
 import {BrowserApi} from './browser_api.js';
@@ -39,7 +39,7 @@ import {record, UserAction} from './metrics.js';
 import {NavigatorDelegateImpl, PdfNavigator, WindowOpenDisposition} from './navigator.js';
 import {deserializeKeyEvent, LoadState} from './pdf_scripting_api.js';
 import {getTemplate} from './pdf_viewer.html.js';
-import {KeyEventData, PDFViewerBaseElement} from './pdf_viewer_base.js';
+import {KeyEventData, PdfViewerBaseElement} from './pdf_viewer_base.js';
 import {DestinationMessageData, DocumentDimensionsMessageData, hasCtrlModifier, shouldIgnoreKeyEvents} from './pdf_viewer_utils.js';
 
 interface EmailMessageData {
@@ -95,7 +95,7 @@ const LOCAL_STORAGE_SIDENAV_COLLAPSED_KEY: string = 'sidenavCollapsed';
  */
 const BACKGROUND_COLOR: number = 0xff525659;
 
-export interface PDFViewerElement {
+export interface PdfViewerElement {
   $: {
     content: HTMLElement,
     scroller: HTMLElement,
@@ -104,7 +104,7 @@ export interface PDFViewerElement {
   };
 }
 
-export class PDFViewerElement extends PDFViewerBaseElement {
+export class PdfViewerElement extends PdfViewerBaseElement {
   static get is() {
     return 'pdf-viewer';
   }
@@ -846,7 +846,7 @@ export class PDFViewerElement extends PDFViewerBaseElement {
       const result = await this.currentController.saveAttachment(index);
 
       // Cap the PDF attachment size at 100 MB. This cap should be kept in sync
-      // with and is also enforced in pdf/pdf_view_plugin_base.h.
+      // with and is also enforced in pdf/pdf_view_web_plugin.h.
       const MAX_FILE_SIZE = 100 * 1000 * 1000;
       const bufView = new Uint8Array(result.dataToSave);
       assert(
@@ -1070,8 +1070,8 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'pdf-viewer': PDFViewerElement;
+    'pdf-viewer': PdfViewerElement;
   }
 }
 
-customElements.define(PDFViewerElement.is, PDFViewerElement);
+customElements.define(PdfViewerElement.is, PdfViewerElement);

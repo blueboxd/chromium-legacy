@@ -17,6 +17,7 @@
 #include "chrome/browser/ash/attestation/tpm_challenge_key.h"
 #include "chrome/browser/ash/attestation/tpm_challenge_key_result.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/common/attestation_utils.h"
+#include "chrome/browser/enterprise/connectors/device_trust/common/common_types.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -51,9 +52,7 @@ constexpr char kEncodedChallenge[] =
     "u3W4CMboCswxIxNYRCGrIIVPElE3Yb4QS65mKrg=";
 
 constexpr char kFakeResponse[] = "fake_response";
-
-constexpr char kDeviceId[] = "device-id";
-constexpr char kObfuscatedCustomerId[] = "customer-id";
+constexpr char kDisplayName[] = "display-name";
 
 std::string GetSerializedSignedChallenge() {
   std::string serialized_signed_challenge;
@@ -112,9 +111,7 @@ class AshAttestationServiceTest : public testing::Test {
 
   base::Value::Dict CreateSignals() {
     base::Value::Dict signals;
-    signals.Set(device_signals::names::kDeviceId, kDeviceId);
-    signals.Set(device_signals::names::kObfuscatedCustomerId,
-                kObfuscatedCustomerId);
+    signals.Set(device_signals::names::kDisplayName, kDisplayName);
     return signals;
   }
 
@@ -127,9 +124,12 @@ class AshAttestationServiceTest : public testing::Test {
 
 TEST_F(AshAttestationServiceTest, BuildChallengeResponse_Success) {
   base::RunLoop run_loop;
-  auto callback =
-      base::BindLambdaForTesting([&](const std::string& challenge_response) {
+  auto callback = base::BindLambdaForTesting(
+      [&](const AttestationResponse& attestation_response) {
+        auto challenge_response = attestation_response.challenge_response;
         ASSERT_FALSE(challenge_response.empty());
+        EXPECT_EQ(attestation_response.result_code,
+                  DTAttestationResult::kSuccess);
         auto parsed_value = ParseValueFromResponse(challenge_response);
         ASSERT_TRUE(parsed_value.has_value());
         EXPECT_EQ(kFakeResponse, parsed_value.value());

@@ -21,7 +21,7 @@
 #include "net/first_party_sets/first_party_set_entry.h"
 #include "net/first_party_sets/first_party_set_metadata.h"
 #include "net/first_party_sets/first_party_sets_context_config.h"
-#include "net/first_party_sets/public_sets.h"
+#include "net/first_party_sets/global_first_party_sets.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
@@ -31,8 +31,6 @@ namespace network {
 class FirstPartySetsManager {
  public:
   using EntriesResult =
-      base::flat_map<net::SchemefulSite, net::FirstPartySetEntry>;
-  using FlattenedSets =
       base::flat_map<net::SchemefulSite, net::FirstPartySetEntry>;
 
   explicit FirstPartySetsManager(bool enabled);
@@ -63,10 +61,7 @@ class FirstPartySetsManager {
   //
   // Only the first call to SetCompleteSets can have any effect; subsequent
   // invocations are ignored.
-  void SetCompleteSets(net::PublicSets public_sets);
-
-  // Sets the enabled_ attribute for testing.
-  void SetEnabledForTesting(bool enabled);
+  void SetCompleteSets(net::GlobalFirstPartySets sets);
 
   // Returns the mapping of sites to entries for the given input sites (if an
   // entry exists).
@@ -104,18 +99,6 @@ class FirstPartySetsManager {
       const std::set<net::SchemefulSite>& party_context,
       const net::FirstPartySetsContextConfig& fps_context_config) const;
 
-  // Returns whether the `site` is same-party with the `party_context`, and
-  // `top_frame_site` (if it is not nullptr). That is, is the `site`'s owner the
-  // same as the owners of every member of `party_context` and of
-  // `top_frame_site`? Note: if `site` is not a member of a First-Party Set
-  // (with more than one member), then this returns false. If `top_frame_site`
-  // is nullptr, then it is ignored.
-  bool IsContextSamePartyWithSite(
-      const net::SchemefulSite& site,
-      const net::SchemefulSite* top_frame_site,
-      const std::set<net::SchemefulSite>& party_context,
-      const net::FirstPartySetsContextConfig& fps_context_config) const;
-
   // Returns `site`'s entry, or `nullopt` if `site` has no entry.
   // `fps_context_config` is the configuration to be used in this context.
   //
@@ -146,11 +129,12 @@ class FirstPartySetsManager {
   // initialized.
   void InvokePendingQueries();
 
-  // The actual public sets data.
+  // The global First-Party Sets data.
   //
   // Optional because it is unset until the data has been received from the
   // browser process.
-  absl::optional<net::PublicSets> sets_ GUARDED_BY_CONTEXT(sequence_checker_);
+  absl::optional<net::GlobalFirstPartySets> sets_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
   bool enabled_ GUARDED_BY_CONTEXT(sequence_checker_) = false;
 

@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task/bind_post_task.h"
 #include "base/test/test_future.h"
 #include "chrome/test/base/testing_profile.h"
@@ -203,7 +204,7 @@ TEST_F(CertManagerImplTest, ImportKeyAndCertTest) {
   EXPECT_EQ(key_id, cert_id);
   EXPECT_EQ(import_future.imported_cert_id().value(), cert_id);
   EXPECT_EQ(import_future.imported_slot_id().value(),
-            PK11_GetSlotID(private_slot.get()));
+            static_cast<int>(PK11_GetSlotID(private_slot.get())));
 }
 
 // Importing a certificate with the wrong key fail.

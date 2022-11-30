@@ -333,7 +333,7 @@ TEST_F(AXNativeWidgetMacTest, PositionAttribute) {
 TEST_F(AXNativeWidgetMacTest, HelpAttribute) {
   Label* label = new Label(base::SysNSStringToUTF16(kTestStringValue));
   label->SetSize(GetWidgetBounds().size());
-  EXPECT_NSEQ(@"", A11yElementAtMidpoint().accessibilityHelp);
+  EXPECT_NSEQ(nil, A11yElementAtMidpoint().accessibilityHelp);
   label->SetTooltipText(base::SysNSStringToUTF16(kTestPlaceholderText));
   widget()->GetContentsView()->AddChildView(label);
   EXPECT_NSEQ(kTestPlaceholderText, A11yElementAtMidpoint().accessibilityHelp);
@@ -377,13 +377,24 @@ TEST_F(AXNativeWidgetMacTest, TextfieldGenericAttributes) {
   textfield->RequestFocus();
   EXPECT_EQ(YES, ax_obj.isAccessibilityFocused);
 
-  // NSAccessibilityTitleAttribute.
-  EXPECT_NSEQ(NSAccessibilityTextFieldRole, ax_obj.accessibilityRole);
-  EXPECT_NSEQ(kTestTitle, ax_obj.accessibilityTitle);
+  // NSAccessibilityTitleAttribute, NSAccessibilityLabelAttribute.
+  // https://developer.apple.com/documentation/appkit/nsaccessibilityprotocol
+  // * accessibilityTitle() returns the title of the accessibility element,
+  //   for example a button's visible text.
+  // * accessibilityLabel() returns a short description of the accessibility
+  //   element.
+  // Textfield::SetAssociatedLabel() is what should be used if the textfield
+  // has a visible label. Because AddChildTextfield() uses SetAccessibleName()
+  // to set the accessible name to a flat string, the title should be exposed
+  // via accessibilityLabel() instead of accessibilityTitle();
+  EXPECT_NSEQ(@"", ax_obj.accessibilityTitle);
+  EXPECT_NSEQ(kTestTitle, ax_obj.accessibilityLabel);
   EXPECT_NSEQ(kTestStringValue, ax_obj.accessibilityValue);
 
+  // NSAccessibilityRoleAttribute,
   // NSAccessibilitySubroleAttribute and
   // NSAccessibilityRoleDescriptionAttribute.
+  EXPECT_NSEQ(NSAccessibilityTextFieldRole, ax_obj.accessibilityRole);
   EXPECT_NSEQ(nil, ax_obj.accessibilitySubrole);
   NSString* role_description =
       NSAccessibilityRoleDescription(NSAccessibilityTextFieldRole, nil);

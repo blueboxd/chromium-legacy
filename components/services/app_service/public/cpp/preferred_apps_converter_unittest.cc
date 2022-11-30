@@ -34,21 +34,20 @@ TEST_F(PreferredAppsConverterTest, ConvertSimpleEntry) {
   auto* converted_preferred_apps =
       converted_value.FindKey(apps::kPreferredAppsKey);
   // Check that each entry is correct.
-  ASSERT_EQ(1u, converted_preferred_apps->GetListDeprecated().size());
-  auto& entry = converted_preferred_apps->GetListDeprecated()[0];
+  ASSERT_EQ(1u, converted_preferred_apps->GetList().size());
+  auto& entry = converted_preferred_apps->GetList()[0];
   EXPECT_EQ(kAppId1, *entry.FindStringKey(apps::kAppIdKey));
 
   auto* converted_intent_filter = entry.FindKey(apps::kIntentFilterKey);
   ASSERT_EQ(intent_filter->conditions.size(),
-            converted_intent_filter->GetListDeprecated().size());
+            converted_intent_filter->GetList().size());
 
   for (size_t i = 0; i < intent_filter->conditions.size(); i++) {
     auto& condition = intent_filter->conditions[i];
-    auto& converted_condition = converted_intent_filter->GetListDeprecated()[i];
+    auto& converted_condition = converted_intent_filter->GetList()[i];
     auto& condition_values = condition->condition_values;
-    auto converted_condition_values =
-        converted_condition.FindKey(apps::kConditionValuesKey)
-            ->GetListDeprecated();
+    const auto& converted_condition_values =
+        converted_condition.FindKey(apps::kConditionValuesKey)->GetList();
 
     EXPECT_EQ(static_cast<int>(condition->condition_type),
               converted_condition.FindIntKey(apps::kConditionTypeKey));
@@ -547,23 +546,4 @@ TEST_F(PreferredAppsConverterTest, UpgradePreferredApp) {
   apps::UpgradePreferredApps(old_preferred_apps_value);
   EXPECT_TRUE(
       IsEqual(old_preferred_apps_value, new_preferred_apps.GetReference()));
-}
-
-// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
-TEST_F(PreferredAppsConverterTest, ReplacedAppPreferencesMojomConvert) {
-  std::string app_id("abcdefg");
-  GURL filter_url = GURL("https://www.google.com/abc");
-
-  auto intent_filter = apps_util::MakeIntentFilterForUrlScope(filter_url);
-
-  apps::ReplacedAppPreferences replaced_app_preferences;
-  replaced_app_preferences[app_id].push_back(std::move(intent_filter));
-
-  apps::ReplacedAppPreferences new_replaced_app_preferences =
-      apps::ConvertMojomReplacedAppPreferencesToReplacedAppPreferences(
-          apps::ConvertReplacedAppPreferencesToMojomReplacedAppPreferences(
-              replaced_app_preferences));
-  ASSERT_EQ(1u, new_replaced_app_preferences.size());
-  EXPECT_TRUE(apps::IsEqual(replaced_app_preferences[app_id],
-                            new_replaced_app_preferences[app_id]));
 }

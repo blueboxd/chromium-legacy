@@ -7,18 +7,20 @@
 
 namespace autofill_assistant {
 
-class LegacyStarterHeuristicConfig;
 class FinchStarterHeuristicConfig;
 
 namespace finch_configs {
 
 // Starter heuristic instances from finch, to be shared between tabs.
-const LegacyStarterHeuristicConfig* GetOrCreateLegacyConfig();
 const FinchStarterHeuristicConfig* GetOrCreateUrlHeuristic1();
 const FinchStarterHeuristicConfig* GetOrCreateUrlHeuristic2();
 const FinchStarterHeuristicConfig* GetOrCreateUrlHeuristic3();
 const FinchStarterHeuristicConfig* GetOrCreateUrlHeuristic4();
 const FinchStarterHeuristicConfig* GetOrCreateUrlHeuristic5();
+const FinchStarterHeuristicConfig* GetOrCreateUrlHeuristic6();
+const FinchStarterHeuristicConfig* GetOrCreateUrlHeuristic7();
+const FinchStarterHeuristicConfig* GetOrCreateUrlHeuristic8();
+const FinchStarterHeuristicConfig* GetOrCreateUrlHeuristic9();
 
 }  // namespace finch_configs
 }  // namespace autofill_assistant

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -355,7 +355,7 @@ TEST_F(ScriptStreamingTest, SuppressingStreaming) {
   // script is loaded.
   V8TestingScope scope;
 
-  SingleCachedMetadataHandler* cache_handler = resource_->CacheHandler();
+  CachedMetadataHandler* cache_handler = resource_->CacheHandler();
   EXPECT_TRUE(cache_handler);
   cache_handler->DisableSendToPlatformForTesting();
   // CodeCacheHost can be nullptr since we disabled sending data to

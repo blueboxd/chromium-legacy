@@ -10,12 +10,9 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
-#include "build/build_config.h"
 #include "components/autofill_assistant/browser/public/external_action_delegate.h"
 #include "components/autofill_assistant/browser/public/headless_script_controller.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-
-class PrefRegistrySimple;
 
 namespace autofill {
 class FormSignature;
@@ -44,6 +41,9 @@ class AutofillAssistant {
 
     // The form signatures that the script may be started on.
     std::vector<autofill::FormSignature> trigger_form_signatures;
+
+    // Indicates whether the script supports consentless execution.
+    bool supports_consentless_execution = false;
   };
 
   struct CapabilitiesInfo {
@@ -70,13 +70,6 @@ class AutofillAssistant {
                               const std::vector<CapabilitiesInfo>&)>;
 
   virtual ~AutofillAssistant() = default;
-
-  // Registers the Autofill Assistant profile prefs that are exposed to
-  // users of the Autofill Assistant component, i.e. whether Autofill Assistant
-  // is turned on and whether consent has been given.
-#if !BUILDFLAG(IS_ANDROID)
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
-#endif  // !BUILDFLAG(IS_ANDROID)
 
   // Creates a hash prefix of `hash_prefix_length` for `origin` for use in
   // `GetCapabilitiesByHashPrefix`.

@@ -478,6 +478,15 @@ const char kHideWebStoreIcon[] = "hide_web_store_icon";
 // attestation.
 const char kAttestationExtensionAllowlist[] = "attestation.extension_allowlist";
 
+// A boolean specifying whether the Desk API is enabled for third party web
+// applications. If set to true, the Desk API bridge component extension will be
+// installed.
+const char kDeskAPIThirdPartyAccessEnabled[] =
+    "desk_api.third_party_access_enabled";
+
+// A list of third party web application domains allowed to use the Desk API.
+const char kDeskAPIThirdPartyAllowlist[] = "desk_api.third_party_allowlist";
+
 // The list of extensions allowed to skip print job confirmation dialog when
 // they use the chrome.printing.submitJob() function. Note that this used to be
 // `kPrintingAPIExtensionsWhitelist`, hence the difference between the variable
@@ -897,6 +906,15 @@ const char kHatsPhotosExperienceCycleEndTs[] =
 // survey.
 const char kHatsPhotosExperienceIsSelected[] =
     "hats_photos_experience_is_selected";
+
+// An int64 pref. This is the timestamp, microseconds after epoch, that
+// indicated the end of the most recent general camera survey cycle.
+const char kHatsGeneralCameraSurveyCycleEndTs[] =
+    "hats_general_camera_cycle_end_timestamp";
+
+// A boolean pref. Indicated if the device is selected for the general camera
+// survey.
+const char kHatsGeneralCameraIsSelected[] = "hats_general_camera_is_selected";
 
 // A boolean pref. Indicates if we've already shown a notification to inform the
 // current user about the quick unlock feature.
@@ -1370,8 +1388,10 @@ const char kUseCustomChromeFrame[] = "browser.custom_chrome_frame";
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-// Which plugins have been whitelisted manually by the user.
-const char kContentSettingsPluginWhitelist[] =
+// Which plugins have been allowed manually by the user.
+// Note that this used to be `kContentSettingsPluginWhitelist`, hence the
+// difference between the variable name and the string value.
+const char kContentSettingsPluginAllowlist[] =
     "profile.content_settings.plugin_whitelist";
 #endif
 
@@ -1907,6 +1927,13 @@ const char kDefaultTasksByMimeType[] = "filebrowser.tasks.default_by_mime_type";
 // Map of default tasks, associated by file suffix.
 const char kDefaultTasksBySuffix[] = "filebrowser.tasks.default_by_suffix";
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Maps file extensions to handlers according to the
+// DefaultHandlersForFileExtensions policy.
+const char kDefaultHandlersForFileExtensions[] =
+    "filebrowser.default_handlers_for_file_extensions";
+#endif
+
 // A flag to enable/disable the Shared Clipboard feature which enables users to
 // send text across devices.
 const char kSharedClipboardEnabled[] = "browser.shared_clipboard_enabled";
@@ -2278,6 +2305,12 @@ const char kNtlmV2Enabled[] = "auth.ntlm_v2_enabled";
 #if BUILDFLAG(IS_CHROMEOS)
 // Boolean whether Kerberos functionality is enabled.
 const char kKerberosEnabled[] = "kerberos.enabled";
+
+// A list of dictionaries for force-installed Isolated Web Apps. Each dictionary
+// contains two strings: the update manifest URL and Web Bundle ID of the
+// Isolated Web App,
+const char kIsolatedWebAppInstallForceList[] =
+    "profile.isolated_web_app.install.forcelist";
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 // Boolean that specifies whether to enable revocation checking (best effort)
@@ -3253,18 +3286,6 @@ const char kIsolateOrigins[] = "site_isolation.isolate_origins";
 // Boolean that specifies opting into --site-per-process (full Site Isolation).
 const char kSitePerProcess[] = "site_isolation.site_per_process";
 
-// Boolean that is true when the display-capture permissions-policy is enabled.
-// This permissions-policy gates access to getDisplayMedia(), as per this spec:
-// https://www.w3.org/TR/screen-capture/#feature-policy-integration
-// However, if kDisplayCapturePermissionsPolicyEnabled is set to |false|,
-// this requirement is not enforced, and getDisplayMedia() is allowed from
-// contexts that would otherwise be forbidden.
-// This Enterprise policy is temporary. It is intended to unblock Enterprise
-// users whose application is non-spec compliant, but needs time to be fixed.
-// TODO(crbug.com/1233969): Remove this around m100.
-extern const char kDisplayCapturePermissionsPolicyEnabled[] =
-    "display_capture_permissions_policy_enabled";
-
 #if !BUILDFLAG(IS_ANDROID)
 // Boolean to allow SharedArrayBuffer in non-crossOriginIsolated contexts.
 // TODO(crbug.com/1144104) Remove when migration to COOP+COEP is complete.
@@ -3592,5 +3613,12 @@ const char kShouldShowPriceTrackFUEBubble[] =
 
 const char kStrictMimetypeCheckForWorkerScriptsEnabled[] =
     "strict_mime_type_check_for_worker_scripts_enabled";
+
+#if BUILDFLAG(IS_ANDROID)
+// If true, the virtual keyboard will resize the layout viewport by default.
+// Has no effect otherwise.
+const char kVirtualKeyboardResizesLayoutByDefault[] =
+    "virtual_keyboard_resizes_layout_by_default";
+#endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace prefs

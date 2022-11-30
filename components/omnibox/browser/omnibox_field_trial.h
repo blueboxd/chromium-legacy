@@ -359,6 +359,8 @@ bool IsFuzzyUrlSuggestionsEnabled();
 extern const base::FeatureParam<bool> kFuzzyUrlSuggestionsCounterfactual;
 // Indicates whether to bypass fuzzy processing when `IsLowEndDevice` is true.
 extern const base::FeatureParam<bool> kFuzzyUrlSuggestionsLowEndBypass;
+// Indicates whether to support transpose edit operations in fuzzy search.
+extern const base::FeatureParam<bool> kFuzzyUrlSuggestionsTranspose;
 
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.
@@ -474,6 +476,10 @@ extern const char kOmniboxUIUnelideURLOnHoverThresholdMsParam[];
 // `FeatureParam`s
 
 // Autocomplete stability and related features.
+// If enabled and the input is in keyword mode, the default suggestion isn't
+// preserved.
+extern const base::FeatureParam<bool>
+    kAutocompleteStabilityPreserveDefaultExcludeKeywordInputs;
 // When providers update their matches, the aggregated matches for the current
 // input are sorted, then merged with the matches from the previous input
 // (`TransferOldMatches()`), then resorted. If enabled, both sorts preserve the
@@ -497,6 +503,9 @@ extern const base::FeatureParam<bool>
 // providers whose suggestions are pending have their old matches copied over.
 extern const base::FeatureParam<bool>
     kAutocompleteStabilityDontCopyDoneProviders;
+// If enabled, transferred matches from the previous input are not allowed to
+// be default.
+extern const base::FeatureParam<bool> kPreventDefaultPreviousMatches;
 // Begin async providers before sync providers so their async requests can
 // happen in parallel. This effects only the search, history_url, document, and
 // on device head providers.
@@ -518,15 +527,12 @@ extern const base::FeatureParam<int> kZeroSuggestCacheMaxSize;
 // Determines the relevance score for the local history zero-prefix suggestions.
 extern const base::FeatureParam<int> kLocalHistoryZeroSuggestRelevanceScore;
 
-// Whether the same AutocompleteController instance used by the omnibox should
-// be used to prefetch zero-prefix suggestions. For this to be true,
-// omnibox::kZeroSuggestPrefetching must also be true.
-// This is only checked on Android which uses ZeroSuggestPrefetcher by default,
-// which spins off a new throw-away AutocompleteController instance.
-bool UseSharedInstanceForZeroSuggestPrefetching();
-
 // Returns true if any of the zero-suggest prefetching features are enabled.
 bool IsZeroSuggestPrefetchingEnabled();
+
+// Returns whether zero-suggest prefetching is enabled in the given context.
+bool IsZeroSuggestPrefetchingEnabledInContext(
+    metrics::OmniboxEventProto::PageClassification page_classification);
 
 // Whether duplicative visits should be ignored for local history zero-suggest.
 // A duplicative visit is a visit to the same search term in an interval smaller
@@ -552,13 +558,7 @@ extern const base::FeatureParam<int>
     kShortBookmarkSuggestionsByTotalInputLengthThreshold;
 
 // Bookmark paths.
-// Parameter names used for bookmark path variations that determine whether
-// bookmark suggestion texts will contain the title, URL, and/or path.
 extern const base::FeatureParam<std::string> kBookmarkPathsCounterfactual;
-extern const base::FeatureParam<bool> kBookmarkPathsUiReplaceTitle;
-extern const base::FeatureParam<bool> kBookmarkPathsUiReplaceUrl;
-extern const base::FeatureParam<bool> kBookmarkPathsUiAppendAfterTitle;
-extern const base::FeatureParam<bool> kBookmarkPathsUiDynamicReplaceUrl;
 
 // Shortcut Expanding.
 bool IsShortcutExpandingEnabled();
@@ -591,6 +591,29 @@ extern const base::FeatureParam<bool>
 // Specifies the relevance scores for the Site Search Starter Pack ACMatches
 // (e.g. @bookmarks, @history) provided by the Builtin Provider.
 extern const base::FeatureParam<int> kSiteSearchStarterPackRelevanceScore;
+
+// Domain suggestions.
+// The minimum number of unique URLs a domain needs to be considered highly
+// visited.
+extern const base::FeatureParam<int> kDomainSuggestionsTypedUrlsThreshold;
+// The minimum number of typed visits a URL needs to count for
+// `kDomainSuggestionsTypedUrlsThreshold`
+extern const base::FeatureParam<int> kDomainSuggestionsTypedUrlsOffset;
+// The minimum number of typed visits a domain needs to be considered highly
+// visited.
+extern const base::FeatureParam<int> kDomainSuggestionsTypedVisitThreshold;
+// The value to subtract from each URL's typed visits before contributing to
+// `kDomainSuggestionsTypedVisitThreshold`.
+extern const base::FeatureParam<int> kDomainSuggestionsTypedVisitOffset;
+// The max each visit can contribute to `kDomainSuggestionsTypedVisitThreshold`.
+// E.g. if 2, 'google.com/x' is typed-visited 5 times, and 'google.com/y' is
+// typed visited 1 time, then 'google.com' will be scored min(5,2) + min(1,2) =
+// 3, rather than 5+1 = 6.
+extern const base::FeatureParam<int> kDomainSuggestionsTypedVisitCapPerVisit;
+// The input inclusive minimum length to trigger domain suggestions.
+extern const base::FeatureParam<int> kDomainSuggestionsMinInputLength;
+// The maximum number of matches per domain to suggest.
+extern const base::FeatureParam<int> kDomainSuggestionsMaxMatchesPerDomain;
 
 // New params should be inserted above this comment. They should be ordered
 // consistently with `omnibox_features.h`. They should be formatted as:

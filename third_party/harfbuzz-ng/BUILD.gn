@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -41,6 +41,7 @@ if (use_system_harfbuzz) {
       "src/src/hb-blob.h",
       "src/src/hb-buffer.h",
       "src/src/hb-common.h",
+      "src/src/hb-cplusplus.hh",
       "src/src/hb-deprecated.h",
       "src/src/hb-face.h",
       "src/src/hb-font.h",
@@ -63,6 +64,14 @@ if (use_system_harfbuzz) {
     ]
 
     sources = [
+      "src/src/graph/classdef-graph.hh",
+      "src/src/graph/coverage-graph.hh",
+      "src/src/graph/gsubgpos-context.cc",
+      "src/src/graph/gsubgpos-context.hh",
+      "src/src/graph/gsubgpos-graph.hh",
+      "src/src/graph/markbasepos-graph.hh",
+      "src/src/graph/pairpos-graph.hh",
+      "src/src/graph/split-helpers.hh",
       "src/src/hb-aat-layout-ankr-table.hh",
       "src/src/hb-aat-layout-bsln-table.hh",
       "src/src/hb-aat-layout-common.hh",
@@ -321,9 +330,6 @@ if (use_system_harfbuzz) {
       # TODO(https://crbug.com/949962): Remove once this is fixed upstream.
       "U_DISABLE_VERSION_SUFFIX=0",
 
-      # No experimental font format extensions yet.
-      "HB_NO_BORING_EXPANSION",
-
       # Buffer verification not used in production build.
       "HB_NO_BUFFER_VERIFY",
 
@@ -404,15 +410,9 @@ if (use_system_harfbuzz) {
   }
 }
 
-source_set("hb_scoped_util") {
-  sources = [ "utils/hb_scoped.h" ]
-  deps = [ "//third_party:freetype_harfbuzz" ]
-}
-
 fuzzer_test("hb_shape_fuzzer") {
   sources = [ "fuzz/hb_shape_fuzzer.cc" ]
   deps = [
-    ":hb_scoped_util",
     "//base",
     "//third_party:freetype_harfbuzz",
   ]
@@ -422,7 +422,6 @@ fuzzer_test("hb_shape_fuzzer") {
 fuzzer_test("hb_subset_fuzzer") {
   sources = [ "fuzz/hb_subset_fuzzer.cc" ]
   deps = [
-    ":hb_scoped_util",
     "//base",
     "//third_party:freetype_harfbuzz",
   ]

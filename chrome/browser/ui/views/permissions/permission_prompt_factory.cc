@@ -65,10 +65,18 @@ bool ShouldUseChip(permissions::PermissionPrompt::Delegate* delegate) {
   if (!base::FeatureList::IsEnabled(permissions::features::kPermissionChip))
     return false;
 
+  // Permission request chip should not be shown if `delegate->Requests()` were
+  // requested without a user gesture.
+  if (!permissions::PermissionUtil::HasUserGesture(delegate))
+    return false;
+
   std::vector<permissions::PermissionRequest*> requests = delegate->Requests();
   return base::ranges::all_of(
       requests, [](permissions::PermissionRequest* request) {
-        return request->GetRequestChipText().has_value();
+        return request
+            ->GetRequestChipText(
+                permissions::PermissionRequest::ChipTextType::LOUD_REQUEST)
+            .has_value();
       });
 }
 

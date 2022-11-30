@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
 #include "base/callback_forward.h"
+#include "base/containers/contains.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -28,7 +27,6 @@
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
@@ -46,9 +44,7 @@ namespace ash {
 class WebKioskBrowserControllerAshTest : public InProcessBrowserTest,
                                          public BrowserListObserver {
  public:
-  WebKioskBrowserControllerAshTest() {
-    feature_list.InitAndEnableFeature(features::kKioskEnableAppService);
-  }
+  WebKioskBrowserControllerAshTest() = default;
   WebKioskBrowserControllerAshTest(const WebKioskBrowserControllerAshTest&) =
       delete;
   WebKioskBrowserControllerAshTest& operator=(
@@ -100,7 +96,6 @@ class WebKioskBrowserControllerAshTest : public InProcessBrowserTest,
   }
 
  private:
-  base::test::ScopedFeatureList feature_list;
   net::EmbeddedTestServer https_server_;
   apps::AppServiceTest app_service_test_;
 
@@ -166,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(WebKioskBrowserControllerAshTest,
   const auto* browser_list = BrowserList::GetInstance();
   {
     base::RunLoop run_loop;
-    set_browser_removed_callback(run_loop.QuitWhenIdleClosure());
+    set_browser_removed_callback(run_loop.QuitClosure());
     auto* new_browser =
         Browser::Create(Browser::CreateParams(browser()->profile(), true));
     NavigateParams nav_params(
@@ -181,9 +176,7 @@ IN_PROC_BROWSER_TEST_F(WebKioskBrowserControllerAshTest,
     // The newly opened browser will be closed and removed from |BrowserList|.
     run_loop.Run();
 
-    EXPECT_EQ(
-        std::find(browser_list->begin(), browser_list->end(), new_browser),
-        browser_list->end());
+    EXPECT_FALSE(base::Contains(*browser_list, new_browser));
   }
 
   // Verify that accessibility settings can be opened as popup.
@@ -204,9 +197,7 @@ IN_PROC_BROWSER_TEST_F(WebKioskBrowserControllerAshTest,
                                     ->app_session()
                                     ->GetSettingsBrowserForTesting();
     EXPECT_TRUE(settings_browser);
-    EXPECT_NE(
-        std::find(browser_list->begin(), browser_list->end(), settings_browser),
-        browser_list->end());
+    EXPECT_TRUE(base::Contains(*browser_list, settings_browser));
   }
 }
 

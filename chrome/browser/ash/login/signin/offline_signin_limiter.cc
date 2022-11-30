@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/components/proximity_auth/screenlock_bridge.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/ash/components/proximity_auth/screenlock_bridge.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
@@ -368,9 +368,9 @@ void OfflineSigninLimiter::ForceOnlineLogin() {
   user_manager::UserManager::Get()->SaveForceOnlineSignin(user->GetAccountId(),
                                                           true);
   if (user->using_saml())
-    RecordReauthReason(user->GetAccountId(), ReauthReason::SAML_REAUTH_POLICY);
+    RecordReauthReason(user->GetAccountId(), ReauthReason::kSamlReauthPolicy);
   else
-    RecordReauthReason(user->GetAccountId(), ReauthReason::GAIA_REAUTH_POLICY);
+    RecordReauthReason(user->GetAccountId(), ReauthReason::kGaiaReauthPolicy);
   offline_signin_limit_timer_->Stop();
 }
 
@@ -393,10 +393,10 @@ void OfflineSigninLimiter::ForceOnlineLockScreenReauth() {
 
   if (user->using_saml()) {
     RecordReauthReason(user->GetAccountId(),
-                       ReauthReason::SAML_LOCK_SCREEN_REAUTH_POLICY);
+                       ReauthReason::kSamlLockScreenReauthPolicy);
   } else {
     RecordReauthReason(user->GetAccountId(),
-                       ReauthReason::GAIA_LOCK_SCREEN_REAUTH_POLICY);
+                       ReauthReason::kGaiaLockScreenReauthPolicy);
   }
   offline_lock_screen_signin_limit_timer_->Stop();
 }

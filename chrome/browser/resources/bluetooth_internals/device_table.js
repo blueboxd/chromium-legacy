@@ -5,9 +5,9 @@
 /**
  * Javascript for DeviceTable UI, served from chrome://bluetooth-internals/.
  */
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {define as crUiDefine} from 'chrome://resources/js/cr/ui.js';
-import {$} from 'chrome://resources/js/util.m.js';
+import {$} from 'chrome://resources/js/util.js';
 
 import {DeviceInfo} from './device.mojom-webui.js';
 import {DeviceCollection} from './device_collection.js';

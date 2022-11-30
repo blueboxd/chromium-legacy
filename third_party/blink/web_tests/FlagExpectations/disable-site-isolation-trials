@@ -39,16 +39,25 @@ http/tests/inspector-protocol/target/message-to-detached-session.js [ Skip ]
 http/tests/inspector-protocol/target/tab-target.js [ Skip ]
 http/tests/inspector-protocol/target/target-filter.js [ Skip ]
 virtual/fenced-frame-mparch/http/tests/inspector-protocol/fenced-frame/fenced-frame-in-oopif-auto-attach.js [ Skip ]
+http/tests/inspector-protocol/target/target-info-changed-auto-attach.js [ Skip ]
 
 # Rely on OOPIF for an iframe to be a separate devtools target
 http/tests/inspector-protocol/timeline/auction-worklet-frame.js [ Skip ]
 virtual/fledge/http/tests/inspector-protocol/timeline/auction-worklet-frame.js [ Skip ]
 
 # Fix to unblock wpt-importer
+# The paths for these tests' baselines (with an `-expected.{txt,png}` suffix) is
+# too long on Windows. Skip for now.
 crbug.com/1209223 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/javascript-url-security-check-multi-globals.sub.html [ Failure ]
 crbug.com/1209223 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/javascript-url-security-check-same-origin-domain.sub.html [ Failure ]
+crbug.com/1209233 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/reporting-redirect-with-same-origin-allow-popups.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/fetch/api/abort/serviceworker-intercepted.https.html [ Timeout ]
+crbug.com/626703 virtual/orb-v01/external/wpt/fetch/api/abort/serviceworker-intercepted.https.html [ Timeout ]
+crbug.com/626703 external/wpt/encoding/unsupported-labels.window.html [ Failure Timeout ]
+crbug.com/626703 external/wpt/resize-observer/notify.html [ Timeout ]
+crbug.com/626703 external/wpt/resize-observer/svg.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-flexbox/flex-item-transferred-sizes-padding-border-sizing.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-flexbox/flex-item-transferred-sizes-padding-content-sizing.html [ Failure ]
 crbug.com/626703 external/wpt/page-visibility/visibility-state-entry.tentative.html [ Timeout ]
@@ -115,3 +124,8 @@ crbug.com/1339051 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-a
 
 crbug.com/1311518 virtual/document-transition-wide-gamut/wpt_internal/document-transition/iframe-transition.sub.html [ Crash Failure Timeout ]
 crbug.com/1311518 virtual/document-transition/wpt_internal/document-transition/iframe-transition.sub.html [ Crash Failure Timeout ]
+
+# reenable print ref tests
+crbug.com/1090628 external/wpt/html/browsers/windows/iframe-cross-origin-print.sub.html [ Pass ]
+crbug.com/1090628 external/wpt/html/browsers/windows/iframe-cross-origin-scaled-print.sub.html [ Pass ]
+

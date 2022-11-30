@@ -35,6 +35,7 @@ public class HomeScreenViewBinder {
         final Context mContext;
         final TextView mFullNameTextView;
         final TextView mStreetAddressTextView;
+        final LinearLayout mProfileSubsectionView;
         final TextView mEmailAddressTextView;
         final TextView mPhoneNumberTextView;
         final TextView mCreditCardHeaderTextView;
@@ -42,7 +43,6 @@ public class HomeScreenViewBinder {
         final LinearLayout mSelectedAddressView;
         final LinearLayout mSelectedCreditCardView;
         final ButtonCompat mAcceptButton;
-        final ButtonCompat mDeclineButton;
 
         ViewHolder(Context context, View contentView) {
             mContext = context;
@@ -50,6 +50,8 @@ public class HomeScreenViewBinder {
                     contentView.findViewById(R.id.fast_checkout_home_sheet_profile_name);
             mStreetAddressTextView =
                     contentView.findViewById(R.id.fast_checkout_home_sheet_profile_street);
+            mProfileSubsectionView =
+                    contentView.findViewById(R.id.fast_checkout_home_sheet_profile_sub_section);
             mEmailAddressTextView =
                     contentView.findViewById(R.id.fast_checkout_home_sheet_profile_email);
             mPhoneNumberTextView =
@@ -60,7 +62,6 @@ public class HomeScreenViewBinder {
             mSelectedAddressView = contentView.findViewById(R.id.selected_address_profile_view);
             mSelectedCreditCardView = contentView.findViewById(R.id.selected_credit_card_view);
             mAcceptButton = contentView.findViewById(R.id.fast_checkout_button_accept);
-            mDeclineButton = contentView.findViewById(R.id.fast_checkout_button_decline);
         }
     }
 
@@ -72,9 +73,11 @@ public class HomeScreenViewBinder {
 
             view.mSelectedCreditCardView.setOnClickListener((v) -> delegate.onShowCreditCardList());
 
-            view.mDeclineButton.setOnClickListener((v) -> delegate.onDismiss());
-
-            view.mAcceptButton.setOnClickListener((v) -> delegate.onOptionsAccepted());
+            view.mAcceptButton.setOnClickListener((v) -> {
+                view.mAcceptButton.announceForAccessibility(view.mContext.getResources().getString(
+                        R.string.fast_checkout_home_sheet_accept_button_clicked_description));
+                delegate.onOptionsAccepted();
+            });
         } else if (propertyKey == SELECTED_PROFILE) {
             updateProfile(model, view);
         } else if (propertyKey == SELECTED_CREDIT_CARD) {
@@ -83,7 +86,14 @@ public class HomeScreenViewBinder {
     }
 
     private static String getFullStreetAddress(FastCheckoutAutofillProfile profile) {
-        return profile.getStreetAddress() + ", " + profile.getPostalCode();
+        StringBuilder builder = new StringBuilder();
+        builder.append(profile.getStreetAddress());
+        // Add divider only if both elements exist.
+        if (!profile.getStreetAddress().isEmpty() && !profile.getPostalCode().isEmpty()) {
+            builder.append(", ");
+        }
+        builder.append(profile.getPostalCode());
+        return builder.toString();
     }
 
     private static void updateProfile(PropertyModel model, ViewHolder view) {
@@ -92,6 +102,16 @@ public class HomeScreenViewBinder {
         view.mStreetAddressTextView.setText(getFullStreetAddress(profile));
         view.mEmailAddressTextView.setText(profile.getEmailAddress());
         view.mPhoneNumberTextView.setText(profile.getPhoneNumber());
+        hideIfEmpty(view.mFullNameTextView);
+        hideIfEmpty(view.mStreetAddressTextView);
+        hideIfEmpty(view.mEmailAddressTextView);
+        hideIfEmpty(view.mPhoneNumberTextView);
+
+        // Hide address profile subsection if empty.
+        view.mProfileSubsectionView.setVisibility(
+                profile.getEmailAddress().isEmpty() && profile.getPhoneNumber().isEmpty()
+                        ? View.GONE
+                        : View.VISIBLE);
     }
 
     private static void updateCreditCard(PropertyModel model, ViewHolder view) {
@@ -103,5 +123,9 @@ public class HomeScreenViewBinder {
         } catch (Resources.NotFoundException e) {
             view.mCreditCardImageView.setImageDrawable(null);
         }
+    }
+
+    private static void hideIfEmpty(TextView view) {
+        view.setVisibility(view.length() == 0 ? View.GONE : View.VISIBLE);
     }
 }

@@ -21,6 +21,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/discardable_memory_allocator.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
@@ -55,8 +56,10 @@
 #include "cc/base/switches.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "cc/raster/task_graph_runner.h"
+#include "cc/tiles/image_decode_cache_utils.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "cc/trees/raster_context_provider_wrapper.h"
 #include "cc/trees/ukm_manager.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "components/metrics/public/mojom/single_sample_metrics.mojom.h"
@@ -797,9 +800,10 @@ int RenderThreadImpl::GenerateRoutingID() {
 bool RenderThreadImpl::GenerateFrameRoutingID(
     int32_t& routing_id,
     blink::LocalFrameToken& frame_token,
-    base::UnguessableToken& devtools_frame_token) {
+    base::UnguessableToken& devtools_frame_token,
+    blink::DocumentToken& document_token) {
   return render_message_filter()->GenerateFrameRoutingID(
-      &routing_id, &frame_token, &devtools_frame_token);
+      &routing_id, &frame_token, &devtools_frame_token, &document_token);
 }
 
 void RenderThreadImpl::AddFilter(IPC::MessageFilter* filter) {
@@ -1594,23 +1598,24 @@ RenderThreadImpl::GetMediaThreadTaskRunner() {
   return media_thread_->task_runner();
 }
 
-scoped_refptr<viz::RasterContextProvider>
-RenderThreadImpl::SharedCompositorWorkerContextProvider() {
+scoped_refptr<cc::RasterContextProviderWrapper>
+RenderThreadImpl::SharedCompositorWorkerContextProvider(
+    cc::RasterDarkModeFilter* dark_mode_filter) {
   DCHECK(IsMainThread());
   // Try to reuse existing shared worker context provider.
-  if (shared_worker_context_provider_) {
+  if (shared_worker_context_provider_wrapper_) {
     // Note: If context is lost, delete reference after releasing the lock.
     viz::RasterContextProvider::ScopedRasterContextLock lock(
-        shared_worker_context_provider_.get());
+        shared_worker_context_provider_wrapper_->GetContext().get());
     if (lock.RasterInterface()->GetGraphicsResetStatusKHR() == GL_NO_ERROR)
-      return shared_worker_context_provider_;
+      return shared_worker_context_provider_wrapper_;
   }
 
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
       EstablishGpuChannelSync());
   if (!gpu_channel_host) {
-    shared_worker_context_provider_ = nullptr;
-    return shared_worker_context_provider_;
+    shared_worker_context_provider_wrapper_ = nullptr;
+    return shared_worker_context_provider_wrapper_;
   }
 
   bool support_locking = true;
@@ -1626,20 +1631,26 @@ RenderThreadImpl::SharedCompositorWorkerContextProvider() {
   auto shared_memory_limits =
       support_gpu_rasterization ? gpu::SharedMemoryLimits::ForOOPRasterContext()
                                 : gpu::SharedMemoryLimits();
-  shared_worker_context_provider_ = CreateOffscreenContext(
-      std::move(gpu_channel_host), GetGpuMemoryBufferManager(),
-      shared_memory_limits, support_locking, support_gles2_interface,
-      support_raster_interface, support_gpu_rasterization, support_grcontext,
-      automatic_flushes,
-      viz::command_buffer_metrics::ContextType::RENDER_WORKER,
-      kGpuStreamIdWorker, kGpuStreamPriorityWorker);
-  auto result = shared_worker_context_provider_->BindToCurrentThread();
-  if (result != gpu::ContextResult::kSuccess) {
-    shared_worker_context_provider_ = nullptr;
-    return nullptr;
-  }
+  scoped_refptr<viz::ContextProviderCommandBuffer>
+      shared_worker_context_provider = CreateOffscreenContext(
+          std::move(gpu_channel_host), GetGpuMemoryBufferManager(),
+          shared_memory_limits, support_locking, support_gles2_interface,
+          support_raster_interface, support_gpu_rasterization,
+          support_grcontext, automatic_flushes,
+          viz::command_buffer_metrics::ContextType::RENDER_WORKER,
+          kGpuStreamIdWorker, kGpuStreamPriorityWorker);
 
-  return shared_worker_context_provider_;
+  auto result = shared_worker_context_provider->BindToCurrentThread();
+  if (result != gpu::ContextResult::kSuccess)
+    return nullptr;
+
+  shared_worker_context_provider_wrapper_ =
+      base::MakeRefCounted<cc::RasterContextProviderWrapper>(
+          std::move(shared_worker_context_provider), dark_mode_filter,
+          cc::ImageDecodeCacheUtils::GetWorkingSetBytesForImageDecode(
+              /*for_renderer=*/true));
+
+  return shared_worker_context_provider_wrapper_;
 }
 
 bool RenderThreadImpl::RendererIsHidden() const {
@@ -1647,7 +1658,11 @@ bool RenderThreadImpl::RendererIsHidden() const {
 }
 
 void RenderThreadImpl::OnRendererHidden() {
-  blink::MainThreadIsolate()->IsolateInBackgroundNotification();
+  if (!base::FeatureList::IsEnabled(
+          features::kLowerV8MemoryLimitForNonMainRenderers) ||
+      MainFrameCounter::has_main_frame()) {
+    blink::MainThreadIsolate()->IsolateInBackgroundNotification();
+  }
   // TODO(rmcilroy): Remove IdleHandler and replace it with an IdleTask
   // scheduled by the RendererScheduler - http://crbug.com/469210.
   if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())

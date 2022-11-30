@@ -110,7 +110,7 @@ void TransformOperation::Bake() {
     case TransformOperation::TRANSFORM_OPERATION_PERSPECTIVE: {
       Transform m;
       m.set_rc(3, 2, perspective_m43);
-      matrix.PreconcatTransform(m);
+      matrix.PreConcat(m);
       break;
     }
     case TransformOperation::TRANSFORM_OPERATION_MATRIX:
@@ -360,10 +360,8 @@ static void BoundingBoxForArc(const gfx::Point3F& point,
 
   *box = gfx::BoxF();
 
-  gfx::Point3F point_rotated_from = point;
-  from_transform.TransformPoint(&point_rotated_from);
-  gfx::Point3F point_rotated_to = point;
-  to_transform.TransformPoint(&point_rotated_to);
+  gfx::Point3F point_rotated_from = from_transform.MapPoint(point);
+  gfx::Point3F point_rotated_to = to_transform.MapPoint(point);
 
   box->set_origin(point_rotated_from);
   box->ExpandTo(point_rotated_to);
@@ -379,7 +377,7 @@ static void BoundingBoxForArc(const gfx::Point3F& point,
                           &num_candidates);
   } else {
     gfx::Vector3dF normal = axis;
-    normal.Scale(1.f / normal.Length());
+    normal.InvScale(normal.Length());
 
     // First, find center of rotation.
     gfx::Point3F origin;
@@ -394,7 +392,7 @@ static void BoundingBoxForArc(const gfx::Point3F& point,
     if (v1_length == 0.f)
       return;
 
-    v1.Scale(1.f / v1_length);
+    v1.InvScale(v1_length);
     gfx::Vector3dF v2 = gfx::CrossProduct(normal, v1);
     // v1 is the basis vector in the direction of the point.
     // i.e. with a rotation of 0, v1 is our +x vector.
@@ -435,8 +433,7 @@ static void BoundingBoxForArc(const gfx::Point3F& point,
 
     gfx::Transform rotation;
     rotation.RotateAbout(axis, gfx::RadToDeg(radians));
-    gfx::Point3F rotated = point;
-    rotation.TransformPoint(&rotated);
+    gfx::Point3F rotated = rotation.MapPoint(point);
 
     box->ExpandTo(rotated);
   }
@@ -478,11 +475,9 @@ bool TransformOperation::BlendedBoundsForBox(const gfx::BoxF& box,
           !BlendTransformOperations(from, to, max_progress, &to_operation))
         return false;
 
-      *bounds = box;
-      from_operation.matrix.TransformBox(bounds);
+      *bounds = from_operation.matrix.MapBox(box);
 
-      gfx::BoxF to_box = box;
-      to_operation.matrix.TransformBox(&to_box);
+      BoxF to_box = to_operation.matrix.MapBox(box);
       bounds->ExpandTo(to_box);
 
       return true;

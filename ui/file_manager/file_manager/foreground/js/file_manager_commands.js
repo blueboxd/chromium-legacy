@@ -5,7 +5,7 @@
 import './webui_command_extender.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 
 import {getDlpRestrictionDetails, getHoldingSpaceState, startIOTask} from '../../common/js/api.js';
 import {DialogType} from '../../common/js/dialog_type.js';
@@ -13,10 +13,11 @@ import {FileOperationProgressEvent} from '../../common/js/file_operation_common.
 import {FileType} from '../../common/js/file_type.js';
 import {EntryList} from '../../common/js/files_app_entry_types.js';
 import {metrics} from '../../common/js/metrics.js';
-import {TrashEntry} from '../../common/js/trash.js';
+import {RestoreFailedType, RestoreFailedTypesUMA, RestoreFailedUMA, TrashEntry} from '../../common/js/trash.js';
 import {str, strf, util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {xfm} from '../../common/js/xfm.js';
+import {NudgeType} from '../../containers/nudge_container.js';
 import {CommandHandlerDeps} from '../../externs/command_handler_deps.js';
 import {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 import {VolumeInfo} from '../../externs/volume_info.js';
@@ -1152,8 +1153,9 @@ CommandHandler.deleteCommand_ = new (class extends FilesCommand {
 
     // Hide 'move-to-trash' if trash will not be used. E.g. drive or removable.
     if (event.command.id === 'move-to-trash' &&
-        !fileManager.fileOperationManager.willUseTrash(
-            fileManager.volumeManager, entries)) {
+        (!fileManager.fileOperationManager.willUseTrash(
+             fileManager.volumeManager, entries) ||
+         !fileManager.trashEnabled)) {
       event.canExecute = false;
       event.command.setHidden(true);
     }
@@ -1181,7 +1183,10 @@ CommandHandler.deleteCommand_ = new (class extends FilesCommand {
     // We show undo toast rather than dialog for entries which will use trash.
     if (!permanentlyDelete &&
         fileManager.fileOperationManager.willUseTrash(
-            fileManager.volumeManager, entries)) {
+            fileManager.volumeManager, entries) &&
+        fileManager.trashEnabled) {
+      fileManager.ui.nudgeContainer.showNudge(NudgeType['TRASH_NUDGE']);
+
       chrome.fileManagerPrivate.startIOTask(
           chrome.fileManagerPrivate.IOTaskType.TRASH, entries,
           /*params=*/ {});
@@ -1276,43 +1281,135 @@ CommandHandler.COMMANDS_['move-to-trash'] = CommandHandler.deleteCommand_;
  * @suppress {invalidCasts} See FilesAppEntry in files_app_entry_interfaces.js
  * for explanation of why FilesAppEntry cannot extend Entry.
  */
-CommandHandler.COMMANDS_['restore-from-trash'] =
-    new (class extends FilesCommand {
-      execute(event, fileManager) {
-        const entries =
-            CommandUtil.getCommandEntries(fileManager, event.target);
+CommandHandler
+    .COMMANDS_['restore-from-trash'] = new (class extends FilesCommand {
+  /** @private */
+  async execute_(event, fileManager) {
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
 
-        const infoEntries = entries.map(e => {
-          const entry = /** @type {!TrashEntry} */ (e);
-          return entry.infoEntry;
-        });
-        startIOTask(
-            chrome.fileManagerPrivate.IOTaskType.RESTORE, infoEntries,
-            /*params=*/ {});
+    const infoEntries = [];
+    const failedParents = [];
+    for (const e of entries) {
+      const entry = /** @type {!TrashEntry} */ (e);
+      try {
+        const {exists, parentName} = await this.getParentName(
+            entry.restoreEntry, fileManager.volumeManager);
+        if (!exists) {
+          failedParents.push({fileName: entry.restoreEntry.name, parentName});
+        } else {
+          infoEntries.push(entry.infoEntry);
+        }
+      } catch (err) {
+        console.warn('Failed getting parent metadata for:', err);
       }
-
-      /** @override */
-      canExecute(event, fileManager) {
-        const entries =
-            CommandUtil.getCommandEntries(fileManager, event.target);
-
-        const enabled =
-            entries.length > 0 && entries.every(e => util.isTrashEntry(e));
-        event.canExecute = enabled;
-        event.command.setHidden(!enabled);
+    }
+    if (failedParents && failedParents.length > 0) {
+      // Only a single item is being trashed and the parent doesn't exist.
+      if (failedParents.length === 1 && infoEntries.length === 0) {
+        metrics.recordEnum(
+            RestoreFailedUMA, RestoreFailedType.SINGLE_ITEM,
+            RestoreFailedTypesUMA);
+        fileManager.ui.alertDialog.show(
+            strf('CANT_RESTORE_SINGLE_ITEM', failedParents[0].parentName));
+        return;
       }
-    })();
+      // More than one item has been trashed but all the items have their
+      // parent removed.
+      if (failedParents.length > 1 && infoEntries.length === 0) {
+        const isParentFolderSame = failedParents.every(
+            p => p.parentName === failedParents[0].parentName);
+        // All the items were from the same parent folder.
+        if (isParentFolderSame) {
+          metrics.recordEnum(
+              RestoreFailedUMA, RestoreFailedType.MULTIPLE_ITEMS_SAME_PARENTS,
+              RestoreFailedTypesUMA);
+          fileManager.ui.alertDialog.show(strf(
+              'CANT_RESTORE_MULTIPLE_ITEMS_SAME_PARENTS',
+              failedParents[0].parentName));
+          return;
+        }
+        // All the items are from different parent folders.
+        metrics.recordEnum(
+            RestoreFailedUMA,
+            RestoreFailedType.MULTIPLE_ITEMS_DIFFERENT_PARENTS,
+            RestoreFailedTypesUMA);
+        fileManager.ui.alertDialog.show(
+            str('CANT_RESTORE_MULTIPLE_ITEMS_DIFFERENT_PARENTS'));
+        return;
+      }
+      // A mix of items with parents and without parents are attempting to be
+      // restored.
+      metrics.recordEnum(
+          RestoreFailedUMA, RestoreFailedType.MULTIPLE_ITEMS_MIXED,
+          RestoreFailedTypesUMA);
+      fileManager.ui.alertDialog.show(str('CANT_RESTORE_SOME_ITEMS'));
+      return;
+    }
+    startIOTask(
+        chrome.fileManagerPrivate.IOTaskType.RESTORE, infoEntries,
+        /*params=*/ {});
+  }
+
+  /** @override */
+  execute(event, fileManager) {
+    this.execute_(event, fileManager);
+  }
+
+  /** @override */
+  canExecute(event, fileManager) {
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+
+    const enabled = entries.length > 0 &&
+        entries.every(e => util.isTrashEntry(e)) && fileManager.trashEnabled;
+    event.canExecute = enabled;
+    event.command.setHidden(!enabled);
+  }
+
+  /**
+   * Check whether the parent exists from a supplied entry and return the folder
+   * name (if it exists or doesn't).
+   * @param {!Entry} entry The entry to identify the parent from.
+   * @param {!VolumeManager} volumeManager
+   * @returns {Promise<{exists: boolean, parentName: string}>}
+   */
+  async getParentName(entry, volumeManager) {
+    return new Promise((resolve, reject) => {
+      entry.getParent(
+          parent => resolve({exists: true, parentName: parent.name}), err => {
+            // If this failed, it may be because the parent doesn't exist.
+            // Extract the parent from the path components in that case.
+            if (err.name === 'NotFoundError') {
+              const components = PathComponent.computeComponentsFromEntry(
+                  entry, volumeManager);
+              resolve({
+                exists: false,
+                parentName: components[components.length - 2].name,
+              });
+              return;
+            }
+            reject(err);
+          });
+    });
+  }
+})();
 
 /**
  * Empties (permanently deletes all) files from trash.
  */
 CommandHandler.COMMANDS_['empty-trash'] = new (class extends FilesCommand {
   execute(event, fileManager) {
-    fileManager.ui.deleteConfirmDialog.show(str('CONFIRM_EMPTY_TRASH'), () => {
-      startIOTask(
-          chrome.fileManagerPrivate.IOTaskType.EMPTY_TRASH, /*entries=*/[],
-          /*params=*/ {});
-    });
+    const numEntries = fileManager.directoryModel.getFileList().length;
+    if (numEntries === 0) {
+      return;
+    }
+
+    fileManager.ui.emptyTrashConfirmDialog.showWithTitle(
+        str('CONFIRM_EMPTY_TRASH_TITLE'), str('CONFIRM_EMPTY_TRASH_DESC'),
+        () => {
+          startIOTask(
+              chrome.fileManagerPrivate.IOTaskType.EMPTY_TRASH, /*entries=*/[],
+              /*params=*/ {});
+        });
   }
 
   /** @override */
@@ -1322,7 +1419,8 @@ CommandHandler.COMMANDS_['empty-trash'] = new (class extends FilesCommand {
     event.canExecute = true;
 
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
-    const visible = entries.length === 1 && util.isTrashRoot(entries[0]);
+    const visible = entries.length === 1 && util.isTrashRoot(entries[0]) &&
+        fileManager.trashEnabled;
     event.command.setHidden(!visible);
   }
 })();
@@ -1531,6 +1629,10 @@ CommandHandler.COMMANDS_['rename'] = new (class extends FilesCommand {
     if (util.isNonModifiable(fileManager.volumeManager, entry)) {
       return;
     }
+    const currentRootType = fileManager.directoryModel.getCurrentRootType();
+    if (currentRootType === VolumeManagerCommon.RootType.TRASH) {
+      return;
+    }
     let isRemovableRoot = false;
     let volumeInfo = null;
     if (entry) {
@@ -1569,6 +1671,16 @@ CommandHandler.COMMANDS_['rename'] = new (class extends FilesCommand {
         event.command.setHidden(true);
         return;
       }
+    }
+
+    // Items in Trash are a fake representation of a file + it's metadata. These
+    // items can't be renamed whilst in Trash and should be restored to enable
+    // renaming.
+    const currentRootType = fileManager.directoryModel.getCurrentRootType();
+    if (currentRootType === VolumeManagerCommon.RootType.TRASH) {
+      event.canExecute = false;
+      event.command.setHidden(true);
+      return;
     }
 
     // Check if it is removable drive

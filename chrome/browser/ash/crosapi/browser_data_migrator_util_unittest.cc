@@ -30,7 +30,7 @@ namespace ash::browser_data_migrator_util {
 namespace {
 
 constexpr char kDownloadsPath[] = "Downloads";
-constexpr char kPolicyDataPath[] = "Policy";
+constexpr char kSharedProtoDBPath[] = "shared_proto_db";
 constexpr char kBookmarksPath[] = "Bookmarks";
 constexpr char kCookiesPath[] = "Cookies";
 constexpr char kCachePath[] = "Cache";
@@ -635,7 +635,7 @@ class BrowserDataMigratorUtilWithTargetsTest : public ::testing::Test {
     // |- Downloads/     /* remain in ash */
     //     |- file
     //     |- file 2
-    // |- Policy         /* need to copy */
+    // |- shared_proto_db  /* need to copy */
     // |- Cache          /* deletable */
     // |- Code Cache/    /* deletable */
     //     |- file
@@ -658,7 +658,7 @@ class BrowserDataMigratorUtilWithTargetsTest : public ::testing::Test {
                                 kTextFileContent, kTextFileSize));
 
     // Need to copy items.
-    ASSERT_TRUE(base::WriteFile(profile_data_dir_.Append(kPolicyDataPath),
+    ASSERT_TRUE(base::WriteFile(profile_data_dir_.Append(kSharedProtoDBPath),
                                 kTextFileContent, kTextFileSize));
 
     // Deletable items.
@@ -708,7 +708,7 @@ TEST_F(BrowserDataMigratorUtilWithTargetsTest, GetTargetItems) {
 
   // Check for items that need copies in lacros.
   std::vector<TargetItem> expected_need_copy_items = {
-      {profile_data_dir_.Append(kPolicyDataPath), kTextFileSize,
+      {profile_data_dir_.Append(kSharedProtoDBPath), kTextFileSize,
        TargetItem::ItemType::kFile}};
   TargetItems need_copy_items =
       GetTargetItems(profile_data_dir_, ItemType::kNeedCopyForMove);
@@ -748,9 +748,9 @@ TEST_F(BrowserDataMigratorUtilWithTargetsTest, DryRunToCollectUMA) {
   const std::string uma_name_downloads =
       std::string(browser_data_migrator_util::kUserDataStatsRecorderDataSize) +
       "Downloads";
-  const std::string uma_name_policy =
+  const std::string uma_name_shared_proto_db =
       std::string(browser_data_migrator_util::kUserDataStatsRecorderDataSize) +
-      "Policy";
+      "SharedProtoDb";
   const std::string uma_name_cache =
       std::string(browser_data_migrator_util::kUserDataStatsRecorderDataSize) +
       "Cache";
@@ -764,7 +764,7 @@ TEST_F(BrowserDataMigratorUtilWithTargetsTest, DryRunToCollectUMA) {
                                      kTextFileSize / 1024 / 1024, 1);
   histogram_tester.ExpectBucketCount(uma_name_downloads,
                                      kTextFileSize * 2 / 1024 / 1024, 1);
-  histogram_tester.ExpectBucketCount(uma_name_policy,
+  histogram_tester.ExpectBucketCount(uma_name_shared_proto_db,
                                      kTextFileSize / 1024 / 1024, 1);
   histogram_tester.ExpectBucketCount(uma_name_cache,
                                      kTextFileSize / 1024 / 1024, 1);
@@ -841,7 +841,7 @@ TEST(BrowserDataMigratorUtilTest, UpdatePreferencesKeyByType) {
   // If a type other than string is found in a list, it will be left unchanged.
   base::Value::List* l = ash_dict.FindListByDottedPath(wrong_type_key);
   EXPECT_NE(nullptr, l);
-  EXPECT_EQ(3, l->size());
+  EXPECT_EQ(3u, l->size());
 
   // Test Lacros against expected results.
   d = lacros_dict.FindDictByDottedPath("extensions.settings");
@@ -849,7 +849,7 @@ TEST(BrowserDataMigratorUtilTest, UpdatePreferencesKeyByType) {
   EXPECT_EQ(expected_keys, CollectDictKeys(d));
   l = lacros_dict.FindListByDottedPath(wrong_type_key);
   EXPECT_NE(nullptr, l);
-  EXPECT_EQ(3, l->size());
+  EXPECT_EQ(3u, l->size());
 }
 
 TEST(BrowserDataMigratorUtilTest, MigratePreferencesContents) {
@@ -895,7 +895,7 @@ TEST(BrowserDataMigratorUtilTest, MigratePreferencesContents) {
   base::Value::List* ash_extension_list =
       ash_root_dict->FindListByDottedPath(extension_list_key);
   EXPECT_NE(nullptr, ash_extension_list);
-  EXPECT_EQ(2, ash_extension_list->size());
+  EXPECT_EQ(2u, ash_extension_list->size());
   EXPECT_EQ(kExtensionsAshOnly[0], (*ash_extension_list)[0].GetString());
   EXPECT_EQ(kExtensionsBothChromes[0], (*ash_extension_list)[1].GetString());
 
@@ -917,7 +917,7 @@ TEST(BrowserDataMigratorUtilTest, MigratePreferencesContents) {
   base::Value::List* lacros_extension_list =
       lacros_root_dict->FindListByDottedPath(extension_list_key);
   EXPECT_NE(nullptr, lacros_extension_list);
-  EXPECT_EQ(2, lacros_extension_list->size());
+  EXPECT_EQ(2u, lacros_extension_list->size());
   EXPECT_EQ(kExtensionsBothChromes[0], (*lacros_extension_list)[0].GetString());
   EXPECT_EQ(kMoveExtensionId, (*lacros_extension_list)[1].GetString());
 }

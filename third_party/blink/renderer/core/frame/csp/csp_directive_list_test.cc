@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -628,7 +628,7 @@ TEST_F(CSPDirectiveListTest, OperativeDirectiveGivenType) {
     // Start the tests with all directives present.
     directive_string = all_directives.str();
 
-    while (!test.fallback_list.IsEmpty()) {
+    while (!test.fallback_list.empty()) {
       directive_list = CreateList(directive_string.c_str(),
                                   ContentSecurityPolicyType::kEnforce);
 
@@ -880,10 +880,10 @@ TEST_F(CSPDirectiveListTest, ReportURIInMeta) {
   network::mojom::blink::ContentSecurityPolicyPtr directive_list =
       CreateList(policy, ContentSecurityPolicyType::kEnforce,
                  ContentSecurityPolicySource::kMeta);
-  EXPECT_TRUE(directive_list->report_endpoints.IsEmpty());
+  EXPECT_TRUE(directive_list->report_endpoints.empty());
   directive_list = CreateList(policy, ContentSecurityPolicyType::kEnforce,
                               ContentSecurityPolicySource::kHTTP);
-  EXPECT_FALSE(directive_list->report_endpoints.IsEmpty());
+  EXPECT_FALSE(directive_list->report_endpoints.empty());
 }
 
 MATCHER_P(HasSubstr, s, "") {

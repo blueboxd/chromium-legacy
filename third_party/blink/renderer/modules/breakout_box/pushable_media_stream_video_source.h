@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,7 +100,7 @@ class MODULES_EXPORT PushableMediaStreamVideoSource
       EncodedVideoFrameCB encoded_frame_callback,
       VideoCaptureCropVersionCB crop_version_callback) override;
   void StopSourceImpl() override;
-  base::WeakPtr<MediaStreamVideoSource> GetWeakPtr() const override;
+  base::WeakPtr<MediaStreamVideoSource> GetWeakPtr() override;
   void SetCanDiscardAlpha(bool can_discard_alpha) override;
   // This function can be called on any thread.
   media::VideoCaptureFeedbackCB GetFeedbackCallback() const override;

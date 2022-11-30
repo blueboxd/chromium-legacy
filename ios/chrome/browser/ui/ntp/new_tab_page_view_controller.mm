@@ -139,7 +139,7 @@
     [self.view addSubview:gradientView];
     AddSameConstraints(self.view, gradientView);
   } else {
-    self.view.backgroundColor = ntp_home::kNTPBackgroundColor();
+    self.view.backgroundColor = ntp_home::NTPBackgroundColor();
   }
 
   [self registerNotifications];
@@ -197,6 +197,10 @@
   // changed in another tab. This ensures that the sticky elements are correct
   // whenever an NTP reappears.
   [self handleStickyElementsForScrollPosition:[self scrollPosition] force:YES];
+  
+  if (![self isInitialOffsetFromSavedState]) {
+    [self setContentOffsetToTop];
+  }
 
   self.viewDidAppear = YES;
 }
@@ -723,7 +727,7 @@
     self.feedHeaderConstraints = @[
       [self.feedHeaderViewController.view.topAnchor
           constraintEqualToAnchor:self.headerController.view.bottomAnchor
-                         constant:-(content_suggestions::headerBottomPadding() +
+                         constant:-(content_suggestions::HeaderBottomPadding() +
                                     [self.feedHeaderViewController
                                             customSearchEngineViewHeight])],
       [self.collectionView.topAnchor
@@ -1015,7 +1019,7 @@
     offset = -(self.headerController.view.frame.size.height -
                [self stickyOmniboxHeight] -
                [self.feedHeaderViewController customSearchEngineViewHeight] -
-               content_suggestions::headerBottomPadding());
+               content_suggestions::HeaderBottomPadding());
   } else {
     offset = -[self feedHeaderHeight];
   }

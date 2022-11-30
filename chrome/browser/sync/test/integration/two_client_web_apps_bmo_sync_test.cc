@@ -15,17 +15,18 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/commands/fetch_manifest_and_install_command.h"
 #include "chrome/browser/web_applications/commands/install_from_info_command.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/test/fake_os_integration_manager.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -109,19 +110,18 @@ class TwoClientWebAppsBMOSyncTest : public WebAppsSyncTestBase {
     AppId app_id;
     base::RunLoop run_loop;
     auto* provider = WebAppProvider::GetForTest(profile);
-    provider->command_manager().ScheduleCommand(
-        std::make_unique<FetchManifestAndInstallCommand>(
-            &provider->install_finalizer(), &provider->registrar(), source,
-            browser->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
-            /*bypass_service_worker_check=*/false,
-            base::BindOnce(test::TestAcceptDialogCallback),
-            base::BindLambdaForTesting([&](const AppId& new_app_id,
-                                           webapps::InstallResultCode code) {
+    provider->scheduler().FetchManifestAndInstall(
+        source,
+        browser->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
+        /*bypass_service_worker_check=*/false,
+        base::BindOnce(test::TestAcceptDialogCallback),
+        base::BindLambdaForTesting(
+            [&](const AppId& new_app_id, webapps::InstallResultCode code) {
               EXPECT_EQ(code, webapps::InstallResultCode::kSuccessNewInstall);
               app_id = new_app_id;
               run_loop.Quit();
             }),
-            /*use_fallback=*/true, WebAppInstallFlow::kInstallSite));
+        /*use_fallback=*/true);
     run_loop.Run();
     return app_id;
   }
@@ -330,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
   ASSERT_TRUE(SetupSync());
 
   // Uninstall the app from one of the profiles.
-  UninstallWebApp(GetProfile(0), app_id);
+  test::UninstallWebApp(GetProfile(0), app_id);
 
   ASSERT_TRUE(AwaitWebAppQuiescence());
 
@@ -423,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
   EXPECT_TRUE(app->IsSynced());
 
   // Uninstall the web app on the sync profile.
-  UninstallWebApp(GetProfile(1), app_id);
+  test::UninstallWebApp(GetProfile(1), app_id);
 
   ASSERT_TRUE(AwaitWebAppQuiescence());
 
@@ -540,7 +540,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, MAYBE_UninstallSynced) {
   {
     WebAppTestUninstallObserver app_listener(GetProfile(1));
     app_listener.BeginListening();
-    UninstallWebApp(GetProfile(0), app_id);
+    test::UninstallWebApp(GetProfile(0), app_id);
     app_listener.Wait();
     EXPECT_THAT(GetAllAppIdsForProfile(GetProfile(0)),
                 ElementsAreArray(GetAllAppIdsForProfile(GetProfile(1))));
@@ -559,7 +559,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, MAYBE_UninstallSynced) {
   {
     WebAppTestUninstallObserver app_listener(GetProfile(1));
     app_listener.BeginListening();
-    UninstallWebApp(GetProfile(0), app_id);
+    test::UninstallWebApp(GetProfile(0), app_id);
     app_listener.Wait();
   }
 
@@ -588,7 +588,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, UninstallDoesNotReinstall) {
   {
     WebAppTestUninstallObserver app_listener(GetProfile(0));
     app_listener.BeginListening();
-    UninstallWebApp(GetProfile(0), app_id);
+    test::UninstallWebApp(GetProfile(0), app_id);
     app_listener.Wait();
   }
   // Propagate the change to profile 1.

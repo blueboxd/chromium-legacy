@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -212,14 +212,17 @@ enum PermissionsPolicyFeature {
   kBluetooth = 101,
 
   // Controls use of FedCM API.
-  kFederatedCredentials = 102,
+  kIdentityCredentialsGet = 102,
 
   // "shared-storage" permissions policy that controls the use of Shared Storage
   // API.
   kSharedStorage = 103,
 
-// Controls use of unload handlers.
+  // Controls use of unload handlers.
   kUnload = 104,
+
+  // Client Hint for the preferred reduced motion.
+  kClientHintPrefersReducedMotion = 105,
 
   // Don't change assigned numbers of any item, and don't reuse removed slots.
   // Add new features at the end of the enum.

@@ -9,7 +9,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <algorithm>
 #include <list>
 #include <memory>
 #include <utility>
@@ -26,6 +25,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
 #include "base/time/default_tick_clock.h"
@@ -54,14 +54,14 @@
 
 namespace media {
 
-const base::Feature kMultiPlaneSoftwareVideoSharedImages {
-  "MultiPlaneSoftwareVideoSharedImages",
+BASE_FEATURE(kMultiPlaneSoftwareVideoSharedImages,
+             "MultiPlaneSoftwareVideoSharedImages",
 #if BUILDFLAG(IS_MAC)
-      base::FEATURE_ENABLED_BY_DEFAULT
+             base::FEATURE_ENABLED_BY_DEFAULT
 #else
-      base::FEATURE_DISABLED_BY_DEFAULT
+             base::FEATURE_DISABLED_BY_DEFAULT
 #endif
-};
+);
 
 bool GpuMemoryBufferVideoFramePool::MultiPlaneVideoSharedImagesEnabled() {
   return base::FeatureList::IsEnabled(kMultiPlaneSoftwareVideoSharedImages);
@@ -387,7 +387,8 @@ size_t NumGpuMemoryBuffers(GpuVideoAcceleratorFactories::OutputFormat format) {
 // GpuMemoryBuffer can be mapped to several SharedImages (one for each plane).
 size_t NumSharedImages(GpuVideoAcceleratorFactories::OutputFormat format) {
   if (GpuMemoryBufferVideoFramePool::MultiPlaneVideoSharedImagesEnabled()) {
-    if (format == GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB) {
+    if (format == GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB ||
+        format == GpuVideoAcceleratorFactories::OutputFormat::P010) {
       return 2;
     }
   }
@@ -401,7 +402,8 @@ size_t GpuMemoryBufferPlaneResourceIndexForPlane(
     GpuVideoAcceleratorFactories::OutputFormat format,
     size_t plane) {
   if (GpuMemoryBufferVideoFramePool::MultiPlaneVideoSharedImagesEnabled()) {
-    if (format == GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB) {
+    if (format == GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB ||
+        format == GpuVideoAcceleratorFactories::OutputFormat::P010) {
       return 0;
     }
   }
@@ -414,7 +416,8 @@ gfx::BufferPlane GetSharedImageBufferPlane(
     GpuVideoAcceleratorFactories::OutputFormat format,
     size_t plane) {
   if (GpuMemoryBufferVideoFramePool::MultiPlaneVideoSharedImagesEnabled()) {
-    if (format == GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB) {
+    if (format == GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB ||
+        format == GpuVideoAcceleratorFactories::OutputFormat::P010) {
       switch (plane) {
         case 0:
           return gfx::BufferPlane::Y;
@@ -1090,8 +1093,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::OnCopiesDoneOnMediaThread(
     // Drop the resources if there was an error with them. If we're not in
     // shutdown we also need to remove the pool entry for them.
     if (!in_shutdown_) {
-      auto it = std::find(resources_pool_.begin(), resources_pool_.end(),
-                          frame_resources);
+      auto it = base::ranges::find(resources_pool_, frame_resources);
       DCHECK(it != resources_pool_.end());
       resources_pool_.erase(it);
     }
@@ -1172,9 +1174,10 @@ scoped_refptr<VideoFrame> GpuMemoryBufferVideoFramePool::PoolImpl::
     unsigned texture_target = gpu_factories_->ImageTextureTarget(buffer_format);
     // Bind the texture and create or rebind the image.
     if (gpu_memory_buffer && plane_resource.mailbox.IsZero()) {
-      uint32_t usage =
-          gpu::SHARED_IMAGE_USAGE_GLES2 | gpu::SHARED_IMAGE_USAGE_RASTER |
-          gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
+      uint32_t usage = gpu::SHARED_IMAGE_USAGE_GLES2 |
+                       gpu::SHARED_IMAGE_USAGE_RASTER |
+                       gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
+                       gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
       // TODO(crbug.com/1241537): Always add the flag once the
@@ -1205,13 +1208,6 @@ scoped_refptr<VideoFrame> GpuMemoryBufferVideoFramePool::PoolImpl::
     mailbox_holders[plane].sync_token = sync_token;
 
   VideoPixelFormat frame_format = VideoFormat(output_format_);
-
-#if BUILDFLAG(IS_MAC)
-  // TODO(https://crbug.com/1155760): Until individual planes can be bound as
-  // their own textures, P010 buffers are copied to F16 textures for sampling.
-  if (frame_format == PIXEL_FORMAT_P016LE)
-    frame_format = PIXEL_FORMAT_RGBAF16;
-#endif
 
   // Create the VideoFrame backed by native textures.
   scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(

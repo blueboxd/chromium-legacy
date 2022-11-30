@@ -10,6 +10,7 @@
 <translation id="1131805035311359397">‏للتحقُّق مما إذا كانت كلمات المرور آمنة من عمليات اختراق البيانات ومشاكل الأمان الأخرى، يُرجى <ph name="BEGIN_LINK" />تسجيل الدخول إلى Chromium<ph name="END_LINK" />.</translation>
 <translation id="1185134272377778587">‏لمحة عن Chromium</translation>
 <translation id="1203500561924088507">شكرًا على التثبيت. عليك إعادة تشغيل المتصفِّح قبل استخدام <ph name="BUNDLE_NAME" />.</translation>
+<translation id="1261119230216066228">‏زيادة سرعة أداء Chromium من خلال ميزة "توفير الذاكرة"</translation>
 <translation id="1315551408014407711">‏إعداد ملفك الشخصي الجديد على Chromium</translation>
 <translation id="1385859895174722837">‏"مساعد Google" في Chromium</translation>
 <translation id="1396446129537741364">‏يحاول Chromium إظهار كلمات المرور.</translation>
@@ -176,6 +177,7 @@
 <translation id="5386450000063123300">‏جارٍ تحديث Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">‏السماح بتسجيل الدخول إلى Chromium</translation>
 <translation id="5398878173008909840">‏يتوفر إصدار جديد من Chromium.</translation>
+<translation id="5405650547142096840">‏إزالة من Chromium</translation>
 <translation id="5427571867875391349">‏تعيين Chromium المتصفح التلقائي</translation>
 <translation id="5438241569118040789">‏<ph name="PAGE_TITLE" /> - الإصدار التجريبي من Chromium</translation>
 <translation id="5473971139929175403">‏قد لا يعمل Chromium بشكل صحيح لأنّه لم يعد متاحًا على توزيع Linux هذا.</translation>
@@ -203,6 +205,7 @@
 <translation id="6055895534982063517">‏يتوفر إصدار جديد من Chromium، وهو أسرع بكثير من ذي قبل.</translation>
 <translation id="6063093106622310249">‏&amp;فتح في Chromium</translation>
 <translation id="6072279588547424923">‏تمت إضافة <ph name="EXTENSION_NAME" /> إلى Chromium</translation>
+<translation id="6072463441809498330">‏زيادة سرعة أداء Chromium</translation>
 <translation id="608006075545470555">إضافة ملف شخصي للعمل على هذا المتصفِّح</translation>
 <translation id="6096348254544841612">‏تخصيص Chromium والتحكُّم فيه. هناك تحديث متوفر.</translation>
 <translation id="6119438414301547735">‏السماح للإضافة بعرض طلبات الوصول في شريط أدوات Chromium</translation>
@@ -299,9 +302,9 @@
 <translation id="7682601070171973634">‏يعمل Chromium على استكشاف ميزات جديدة تتيح للمواقع الإلكترونية توفير تجربة التصفّح نفسها باستخدام قدر أقل من البيانات.</translation>
 <translation id="7686590090926151193">‏Chromium ليس متصفحك التلقائي.</translation>
 <translation id="7689606757190482937">‏يمكنك مزامنة Chromium وتخصيصه على جميع أجهزتك.</translation>
-<translation id="7714577916146996629">‏عند تفعيل هذا الإعداد، يستعيد Chromium الذاكرة من علامات التبويب غير النشطة. يؤدي هذا إلى توفير بعض موارد جهاز الكمبيوتر لتنفيذ مهام أخرى والحفاظ على سرعة الأداء في Chromium. وتظهر علامات التبويب غير النشطة فارغة وتتم إعادة تحميلها تلقائيًا عند النقر عليها. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /> أو <ph name="BEGIN_LINK_2" />إرسال ملاحظات<ph name="END_LINK_2" /></translation>
 <translation id="7745317241717453663">‏سيؤدي هذا إلى حذف بيانات التصفح من هذا الجهاز. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chromium كـ <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">تعذر على أداة المثبِّت إنشاء دليل مؤقت. يُرجى التحقق من وجود مساحة خالية على القرص وتوفر الإذن اللازم لتثبيت البرنامج.</translation>
+<translation id="7786760609782648049">‏زيادة سرعة متصفِّح Chromium</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7828947555739565424">‏يتوفّر حاليًا على هذا الجهاز ملف شخصي لهذا الحساب على Chromium.</translation>
 <translation id="7845233973568007926">شكرًا على التثبيت. عليك إعادة تشغيل الكمبيوتر قبل استخدام <ph name="BUNDLE_NAME" />.</translation>
@@ -329,11 +332,11 @@
 <translation id="8453117565092476964">‏أرشيف أداة التثبيت تالف أو غير صالح. يُرجى إعادة تنزيل Chromium.</translation>
 <translation id="8463672209299734063">‏إجراء اختياري: يمكنك المساعدة في تحسين ميزات نظام التشغيل Chromium وأدائه من خلال إرسال بيانات التشخيص والاستخدام تلقائيًا إلى Google.</translation>
 <translation id="8493179195440786826">‏إصدار Chromium قديم</translation>
-<translation id="8522220489792889625">‏حسب الحاجة، يستعيد Chromium الذاكرة من علامات التبويب غير النشطة. يمكنك تعديل ذلك في أي وقت من خلال الإعدادات.</translation>
 <translation id="8550334526674375523">هذا الملف الشخصي للعمل منفصِل تمامًا عن ملفك الشخصي.</translation>
 <translation id="8558383651099478961">‏أوقفَ أحد والدَيك "أذونات المواقع الإلكترونية والتطبيقات والإضافات" لمتصفِّح Chromium. ولا يمكن تثبيت <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8561285221328166383">‏للحصول على تحديثات Chromium في المستقبل، يجب استخدام جهاز يعمل بنظام التشغيل macOS 10.13 أو إصدار أحدث. يعمل هذا الكمبيوتر بنظام التشغيل macOS 10.12.</translation>
 <translation id="8568283329061645092">‏لا يستطيع Chromium التحقّق من كلمات المرور إلا عند تسجيل الدخول باستخدام حسابك على Google.</translation>
+<translation id="8574036838419011058">‏عندما يكون هذا الإعداد مفعَّلاً، يحافظ Chromium على طاقة البطارية من خلال الحدّ من الأنشطة في الخلفية والتأثيرات المرئية، مثل التمرير السلس وعدد اللقطات في الثانية للفيديو. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">‏حقوق الطبع والنشر لعام <ph name="YEAR" /> لصالح The Chromium Authors. جميع الحقوق محفوظة.</translation>
 <translation id="8608079656141766906">‏<ph name="BEGIN_BOLD" />آلية استخدامنا لهذه البيانات:<ph name="END_BOLD" /> يمكن أن تخزّن المواقع الإلكترونية معلومات عن اهتماماتك في متصفّح Chromium. على سبيل المثال، إذا انتقلت إلى موقع إلكتروني لشراء حذاء لاستخدامه في سباق ماراثون، قد يحدّد هذا الموقع الإلكتروني حسب تقديره أنك مهتم بسباقات الماراثون. وبعد ذلك، إذا انتقلت إلى موقع إلكتروني آخر للتسجيل في سباق ماراثون، يمكن أن يعرض لك هذا الموقع الإلكتروني إعلانًا عن الأحذية المخصّصة للجري بناءً على اهتماماتك.</translation>
 <translation id="8619360774459241877">‏جارٍ إطلاق Chromium...</translation>

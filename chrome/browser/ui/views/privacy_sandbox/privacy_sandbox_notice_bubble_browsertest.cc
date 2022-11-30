@@ -35,7 +35,12 @@ views::Widget* ShowBubble(Browser* browser) {
   views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
                                        kPrivacySandboxNoticeBubbleName);
   ShowPrivacySandboxPrompt(browser, PrivacySandboxService::PromptType::kNotice);
-  return waiter.WaitIfNeededAndGet();
+  auto* bubble = waiter.WaitIfNeededAndGet();
+  // The bubble shouldn't close on focus loss, it may lead to unexpected
+  // behaviour in browser tests which run in parallel.
+  auto* bubble_delegate = bubble->widget_delegate()->AsBubbleDialogDelegate();
+  bubble_delegate->set_close_on_deactivate(false);
+  return bubble;
 }
 
 }  // namespace
@@ -47,14 +52,6 @@ class PrivacySandboxNoticeBubbleBrowserTest : public DialogBrowserTest {
         PrivacySandboxServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             browser()->profile(),
             base::BindRepeating(&BuildMockPrivacySandboxService)));
-  }
-
-  void SetUp() override {
-    const base::FieldTrialParams params = {
-        {privacy_sandbox::kPrivacySandboxSettings3NewNotice.name, "true"}};
-    feature_list_.InitWithFeaturesAndParameters(
-        {{privacy_sandbox::kPrivacySandboxSettings3, params}}, {});
-    InProcessBrowserTest::SetUp();
   }
 
   // DialogBrowserTest:

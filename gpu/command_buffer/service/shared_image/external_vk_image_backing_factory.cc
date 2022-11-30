@@ -52,9 +52,9 @@ VkImageUsageFlags GetMaximalImageUsageFlags(
   return usage_flags;
 }
 
-VulkanImageUsageCache CreateImageUsageCache(
+base::flat_map<VkFormat, VkImageUsageFlags> CreateImageUsageCache(
     VkPhysicalDevice vk_physical_device) {
-  VulkanImageUsageCache image_usage_cache = {};
+  base::flat_map<VkFormat, VkImageUsageFlags> image_usage_cache;
 
   for (int i = 0; i <= static_cast<int>(viz::RESOURCE_FORMAT_MAX); ++i) {
     viz::ResourceFormat format = static_cast<viz::ResourceFormat>(i);
@@ -65,7 +65,7 @@ VulkanImageUsageCache CreateImageUsageCache(
     VkFormatProperties format_props = {};
     vkGetPhysicalDeviceFormatProperties(vk_physical_device, vk_format,
                                         &format_props);
-    image_usage_cache.optimal_tiling_usage[format] =
+    image_usage_cache[vk_format] =
         GetMaximalImageUsageFlags(format_props.optimalTilingFeatures);
   }
 
@@ -97,7 +97,7 @@ ExternalVkImageBackingFactory::~ExternalVkImageBackingFactory() {
 std::unique_ptr<SharedImageBacking>
 ExternalVkImageBackingFactory::CreateSharedImage(
     const Mailbox& mailbox,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
@@ -108,14 +108,14 @@ ExternalVkImageBackingFactory::CreateSharedImage(
   DCHECK(!is_thread_safe);
   return ExternalVkImageBacking::Create(
       context_state_, command_pool_.get(), mailbox, format, size, color_space,
-      surface_origin, alpha_type, usage, &image_usage_cache_,
+      surface_origin, alpha_type, usage, image_usage_cache_,
       base::span<const uint8_t>());
 }
 
 std::unique_ptr<SharedImageBacking>
 ExternalVkImageBackingFactory::CreateSharedImage(
     const Mailbox& mailbox,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
@@ -124,7 +124,7 @@ ExternalVkImageBackingFactory::CreateSharedImage(
     base::span<const uint8_t> pixel_data) {
   return ExternalVkImageBacking::Create(
       context_state_, command_pool_.get(), mailbox, format, size, color_space,
-      surface_origin, alpha_type, usage, &image_usage_cache_, pixel_data);
+      surface_origin, alpha_type, usage, image_usage_cache_, pixel_data);
 }
 
 std::unique_ptr<SharedImageBacking>
@@ -147,22 +147,20 @@ ExternalVkImageBackingFactory::CreateSharedImage(
   }
   return ExternalVkImageBacking::CreateFromGMB(
       context_state_, command_pool_.get(), mailbox, std::move(handle),
-      buffer_format, size, color_space, surface_origin, alpha_type, usage,
-      &image_usage_cache_);
+      buffer_format, size, color_space, surface_origin, alpha_type, usage);
 }
 
 bool ExternalVkImageBackingFactory::CanImportGpuMemoryBuffer(
     gfx::GpuMemoryBufferType memory_buffer_type) {
   auto* device_queue = context_state_->vk_context_provider()->GetDeviceQueue();
   return context_state_->vk_context_provider()
-             ->GetVulkanImplementation()
-             ->CanImportGpuMemoryBuffer(device_queue, memory_buffer_type) ||
-         memory_buffer_type == gfx::SHARED_MEMORY_BUFFER;
+      ->GetVulkanImplementation()
+      ->CanImportGpuMemoryBuffer(device_queue, memory_buffer_type);
 }
 
 bool ExternalVkImageBackingFactory::IsSupported(
     uint32_t usage,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     const gfx::Size& size,
     bool thread_safe,
     gfx::GpuMemoryBufferType gmb_type,
@@ -174,8 +172,7 @@ bool ExternalVkImageBackingFactory::IsSupported(
 
   // TODO(crbug.com/969114): Not all shared image factory implementations
   // support concurrent read/write usage.
-  constexpr uint32_t kInvalidUsages =
-      SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE | SHARED_IMAGE_USAGE_CPU_UPLOAD;
+  constexpr uint32_t kInvalidUsages = SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE;
   if (usage & kInvalidUsages) {
     return false;
   }

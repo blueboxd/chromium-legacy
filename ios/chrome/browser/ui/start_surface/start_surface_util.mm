@@ -25,9 +25,6 @@ NSString* kStartSurfaceSceneEnterIntoBackgroundTime =
 
 NSTimeInterval GetTimeSinceMostRecentTabWasOpenForSceneState(
     SceneState* sceneState) {
-  if (!IsStartSurfaceEnabled()) {
-    return 0;
-  }
   NSDate* timestamp = (NSDate*)[sceneState
       sessionObjectForKey:kStartSurfaceSceneEnterIntoBackgroundTime];
 
@@ -38,10 +35,6 @@ NSTimeInterval GetTimeSinceMostRecentTabWasOpenForSceneState(
 }
 
 bool ShouldShowStartSurfaceForSceneState(SceneState* sceneState) {
-  if (!IsStartSurfaceEnabled()) {
-    return NO;
-  }
-
   NSDate* timestamp = (NSDate*)[sceneState
       sessionObjectForKey:kStartSurfaceSceneEnterIntoBackgroundTime];
   if (timestamp == nil || [[NSDate date] timeIntervalSinceDate:timestamp] <
@@ -85,10 +78,6 @@ NSString* GetRecentTabTileTimeLabelForSceneState(SceneState* sceneState) {
 }
 
 void SetStartSurfaceSessionObjectForSceneState(SceneState* sceneState) {
-  if (!IsStartSurfaceEnabled()) {
-    return;
-  }
-
   [sceneState setSessionObject:[NSDate date]
                         forKey:kStartSurfaceSceneEnterIntoBackgroundTime];
 }

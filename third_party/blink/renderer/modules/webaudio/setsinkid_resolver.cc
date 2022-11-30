@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ void SetSinkIdResolver::Start() {
     return;
   }
 
-  auto set_sink_id_completion_callback = WTF::Bind(
+  auto set_sink_id_completion_callback = WTF::BindOnce(
       &SetSinkIdResolver::OnSetSinkIdComplete, WrapWeakPersistent(this));
 
   audio_context_->destination()->SetSinkId(
@@ -93,7 +93,7 @@ void SetSinkIdResolver::OnSetSinkIdComplete(media::OutputDeviceStatus status) {
 
   resolvers.pop_front();
 
-  if (!resolvers.IsEmpty()) {
+  if (!resolvers.empty()) {
     resolvers.front()->Start();
   }
 }

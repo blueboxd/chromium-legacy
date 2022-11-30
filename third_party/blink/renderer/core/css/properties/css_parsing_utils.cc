@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_image_set_value.h"
 #include "third_party/blink/renderer/core/css/css_image_value.h"
+#include "third_party/blink/renderer/core/css/css_inherited_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/css_light_dark_value_pair.h"
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
@@ -39,10 +40,13 @@
 #include "third_party/blink/renderer/core/css/css_property_value.h"
 #include "third_party/blink/renderer/core/css/css_ratio_value.h"
 #include "third_party/blink/renderer/core/css/css_ray_value.h"
+#include "third_party/blink/renderer/core/css/css_revert_layer_value.h"
+#include "third_party/blink/renderer/core/css/css_revert_value.h"
 #include "third_party/blink/renderer/core/css/css_scroll_value.h"
 #include "third_party/blink/renderer/core/css/css_shadow_value.h"
 #include "third_party/blink/renderer/core/css/css_string_value.h"
 #include "third_party/blink/renderer/core/css/css_timing_function_value.h"
+#include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/css_uri_value.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
@@ -52,6 +56,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_fast_paths.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_idioms.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
@@ -514,16 +519,14 @@ bool ConsumeTranslate3d(CSSParserTokenRange& args,
 // Add CSSVariableData to variableData vector.
 bool AddCSSPaintArgument(
     const Vector<CSSParserToken>& tokens,
-    Vector<scoped_refptr<CSSVariableData>>* const variable_data,
-    const CSSParserContext& context) {
+    Vector<scoped_refptr<CSSVariableData>>* const variable_data) {
   CSSParserTokenRange token_range(tokens);
   if (CSSVariableParser::ContainsValidVariableReferences(token_range))
     return false;
   if (!token_range.AtEnd()) {
     // TODO(crbug.com/661854): Pass through the original string when we have it.
     scoped_refptr<CSSVariableData> unparsed_css_variable_data =
-        CSSVariableData::Create({token_range, StringView()}, false, false,
-                                context.BaseURL(), context.Charset());
+        CSSVariableData::Create({token_range, StringView()}, false, false);
     if (unparsed_css_variable_data.get()) {
       variable_data->push_back(std::move(unparsed_css_variable_data));
       return true;
@@ -953,6 +956,10 @@ CSSPrimitiveValue* ConsumeLength(CSSParserTokenRange& range,
         break;
       case CSSPrimitiveValue::UnitType::kIcs:
         if (!RuntimeEnabledFeatures::CSSIcUnitEnabled())
+          return nullptr;
+        break;
+      case CSSPrimitiveValue::UnitType::kLhs:
+        if (!RuntimeEnabledFeatures::CSSLhUnitEnabled())
           return nullptr;
         break;
       default:
@@ -2914,14 +2921,14 @@ static CSSValue* ConsumePaint(CSSParserTokenRange& args,
     if (args.Peek().GetType() != kCommaToken) {
       argument_tokens.AppendVector(ConsumeFunctionArgsOrNot(args));
     } else {
-      if (!AddCSSPaintArgument(argument_tokens, &variable_data, context))
+      if (!AddCSSPaintArgument(argument_tokens, &variable_data))
         return nullptr;
       argument_tokens.clear();
       if (!ConsumeCommaIncludingWhitespace(args))
         return nullptr;
     }
   }
-  if (!AddCSSPaintArgument(argument_tokens, &variable_data, context))
+  if (!AddCSSPaintArgument(argument_tokens, &variable_data))
     return nullptr;
 
   return MakeGarbageCollected<CSSPaintValue>(name, variable_data);
@@ -3462,6 +3469,26 @@ bool IsDashedIdent(const CSSParserToken& token) {
     return false;
   DCHECK(!IsCSSWideKeyword(token.Value()));
   return token.Value().ToString().StartsWith(kTwoDashes);
+}
+
+CSSValue* ConsumeCSSWideKeyword(CSSParserTokenRange& range) {
+  if (!IsCSSWideKeyword(range.Peek().Id()))
+    return nullptr;
+  switch (range.ConsumeIncludingWhitespace().Id()) {
+    case CSSValueID::kInitial:
+      return CSSInitialValue::Create();
+    case CSSValueID::kInherit:
+      return CSSInheritedValue::Create();
+    case CSSValueID::kUnset:
+      return cssvalue::CSSUnsetValue::Create();
+    case CSSValueID::kRevert:
+      return cssvalue::CSSRevertValue::Create();
+    case CSSValueID::kRevertLayer:
+      return cssvalue::CSSRevertLayerValue::Create();
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
 }
 
 bool IsTimelineName(const CSSParserToken& token) {
@@ -4465,7 +4492,7 @@ String ConcatenateFamilyName(CSSParserTokenRange& range) {
   bool added_space = false;
   const CSSParserToken& first_token = range.Peek();
   while (range.Peek().GetType() == kIdentToken) {
-    if (!builder.IsEmpty()) {
+    if (!builder.empty()) {
       builder.Append(' ');
       added_space = true;
     }
@@ -4581,13 +4608,15 @@ CSSValue* ConsumeFontStretch(CSSParserTokenRange& range,
 CSSValue* ConsumeFontWeight(CSSParserTokenRange& range,
                             const CSSParserContext& context) {
   const CSSParserToken& token = range.Peek();
-  if (token.Id() >= CSSValueID::kNormal && token.Id() <= CSSValueID::kLighter)
-    return ConsumeIdent(range);
-
-  if (RuntimeEnabledFeatures::CSSFontFaceAutoVariableRangeEnabled() &&
-      token.Id() == CSSValueID::kAuto &&
-      context.Mode() == kCSSFontFaceRuleMode) {
-    return ConsumeIdent(range);
+  if (context.Mode() != kCSSFontFaceRuleMode) {
+    if (token.Id() >= CSSValueID::kNormal && token.Id() <= CSSValueID::kLighter)
+      return ConsumeIdent(range);
+  } else {
+    if ((token.Id() == CSSValueID::kNormal ||
+         token.Id() == CSSValueID::kBold) ||
+        (RuntimeEnabledFeatures::CSSFontFaceAutoVariableRangeEnabled() &&
+         token.Id() == CSSValueID::kAuto))
+      return ConsumeIdent(range);
   }
 
   // Avoid consuming the first zero of font: 0/0; e.g. in the Acid3 test.  In
@@ -4739,7 +4768,7 @@ bool IsSupportedKeywordFormat(CSSValueID keyword) {
 }
 
 Vector<String> ParseGridTemplateAreasColumnNames(const String& grid_row_names) {
-  DCHECK(!grid_row_names.IsEmpty());
+  DCHECK(!grid_row_names.empty());
 
   // Using StringImpl to avoid checks and indirection in every call to
   // String::operator[].
@@ -4748,14 +4777,14 @@ Vector<String> ParseGridTemplateAreasColumnNames(const String& grid_row_names) {
   Vector<String> column_names;
   for (unsigned i = 0; i < text.length(); ++i) {
     if (IsCSSSpace(text[i])) {
-      if (!area_name.IsEmpty())
+      if (!area_name.empty())
         column_names.push_back(area_name.ReleaseString());
       continue;
     }
     if (text[i] == '.') {
       if (area_name == ".")
         continue;
-      if (!area_name.IsEmpty())
+      if (!area_name.empty())
         column_names.push_back(area_name.ReleaseString());
     } else {
       if (!IsNameCodePoint(text[i]))
@@ -4766,7 +4795,7 @@ Vector<String> ParseGridTemplateAreasColumnNames(const String& grid_row_names) {
     area_name.Append(text[i]);
   }
 
-  if (!area_name.IsEmpty())
+  if (!area_name.empty())
     column_names.push_back(area_name.ReleaseString());
 
   return column_names;
@@ -5586,6 +5615,51 @@ CSSValue* ConsumeOffsetRotate(CSSParserTokenRange& range,
   if (angle)
     list->Append(*angle);
   return list;
+}
+
+CSSValue* ConsumeInitialLetter(CSSParserTokenRange& range,
+                               const CSSParserContext& context) {
+  if (auto* normal = ConsumeIdent<CSSValueID::kNormal>(range))
+    return CSSIdentifierValue::Create(CSSValueID::kNormal);
+
+  CSSValueList* const list = CSSValueList::CreateSpaceSeparated();
+  // ["drop" | "raise"] number[1,Inf]
+  if (auto* sink_type =
+          ConsumeIdent<CSSValueID::kDrop, CSSValueID::kRaise>(range)) {
+    if (auto* size = ConsumeNumber(
+            range, context, CSSPrimitiveValue::ValueRange::kNonNegative)) {
+      if (size->GetFloatValue() < 1)
+        return nullptr;
+      list->Append(*size);
+      list->Append(*sink_type);
+      return list;
+    }
+    return nullptr;
+  }
+
+  // number[1, Inf]
+  // number[1, Inf] ["drop" | "raise"]
+  // number[1, Inf] integer[1, Inf]
+  if (auto* size = ConsumeNumber(range, context,
+                                 CSSPrimitiveValue::ValueRange::kNonNegative)) {
+    if (size->GetFloatValue() < 1)
+      return nullptr;
+    list->Append(*size);
+    if (range.AtEnd())
+      return list;
+    if (auto* sink_type =
+            ConsumeIdent<CSSValueID::kDrop, CSSValueID::kRaise>(range)) {
+      list->Append(*sink_type);
+      return list;
+    }
+    if (auto* sink = ConsumeIntegerOrNumberCalc(
+            range, context, CSSPrimitiveValue::ValueRange::kPositiveInteger)) {
+      list->Append(*sink);
+      return list;
+    }
+  }
+
+  return nullptr;
 }
 
 bool ConsumeRadii(CSSValue* horizontal_radii[4],

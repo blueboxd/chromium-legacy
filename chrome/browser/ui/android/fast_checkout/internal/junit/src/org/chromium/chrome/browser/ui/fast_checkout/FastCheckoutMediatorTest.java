@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
@@ -19,6 +20,7 @@ import static org.mockito.Mockito.when;
 import static org.chromium.chrome.browser.ui.fast_checkout.FastCheckoutProperties.CREDIT_CARD_MODEL_LIST;
 import static org.chromium.chrome.browser.ui.fast_checkout.FastCheckoutProperties.CURRENT_SCREEN;
 import static org.chromium.chrome.browser.ui.fast_checkout.FastCheckoutProperties.DETAIL_SCREEN_BACK_CLICK_HANDLER;
+import static org.chromium.chrome.browser.ui.fast_checkout.FastCheckoutProperties.DETAIL_SCREEN_LIST_HEIGHT_IN_PX;
 import static org.chromium.chrome.browser.ui.fast_checkout.FastCheckoutProperties.DETAIL_SCREEN_MODEL_LIST;
 import static org.chromium.chrome.browser.ui.fast_checkout.FastCheckoutProperties.DETAIL_SCREEN_SETTINGS_CLICK_HANDLER;
 import static org.chromium.chrome.browser.ui.fast_checkout.FastCheckoutProperties.DETAIL_SCREEN_SETTINGS_MENU_TITLE;
@@ -30,10 +32,12 @@ import static org.chromium.chrome.browser.ui.fast_checkout.FastCheckoutPropertie
 import static org.chromium.chrome.browser.ui.fast_checkout.FastCheckoutProperties.VISIBLE;
 
 import android.view.MenuItem;
+import android.widget.FrameLayout;
 
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +46,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.UserActionTester;
 import org.chromium.chrome.browser.ui.fast_checkout.FastCheckoutProperties.DetailItemType;
 import org.chromium.chrome.browser.ui.fast_checkout.FastCheckoutProperties.ScreenType;
 import org.chromium.chrome.browser.ui.fast_checkout.data.FastCheckoutAutofillProfile;
@@ -87,7 +92,9 @@ public class FastCheckoutMediatorTest {
             FastCheckoutTestUtils.createDummyCreditCard(
                     "hfg", "https://example.co.uk", "4111111145454111"),
             FastCheckoutTestUtils.createDummyCreditCard(
-                    "iyul", "https://neverseenbefore.com", "411167568911")};
+                    "iyul", "https://neverseenbefore.com", "411167568911"),
+            FastCheckoutTestUtils.createDummyCreditCard(
+                    "iyul", "https://www.example.com", "4118102027996045")};
 
     @Mock
     RecyclerView mMockParentView;
@@ -99,13 +106,20 @@ public class FastCheckoutMediatorTest {
     private BottomSheetController mMockBottomSheetController;
 
     private FastCheckoutMediator mMediator = new FastCheckoutMediator();
+    private UserActionTester mActionTester;
 
     private final PropertyModel mModel = FastCheckoutProperties.createDefaultModel();
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mMediator.initialize(mMockDelegate, mModel, mMockBottomSheetController);
+        mActionTester = new UserActionTester();
+        mMediator.initialize(mMockDelegate, mModel, mMockBottomSheetController, 160, 92);
+    }
+
+    @After
+    public void tearDown() {
+        mActionTester.tearDown();
     }
 
     @Test
@@ -124,6 +138,7 @@ public class FastCheckoutMediatorTest {
 
         assertNotNull(mModel.get(DETAIL_SCREEN_BACK_CLICK_HANDLER));
         assertThat(mModel.get(DETAIL_SCREEN_BACK_CLICK_HANDLER), instanceOf(Runnable.class));
+        assertActionRecorded(FastCheckoutUserActions.INITIALIZED);
     }
 
     @Test
@@ -160,6 +175,7 @@ public class FastCheckoutMediatorTest {
 
         mModel.get(DETAIL_SCREEN_BACK_CLICK_HANDLER).run();
         assertThat(mModel.get(CURRENT_SCREEN), is(ScreenType.HOME_SCREEN));
+        assertActionRecorded(FastCheckoutUserActions.NAVIGATED_BACK_HOME);
     }
 
     @Test
@@ -173,6 +189,7 @@ public class FastCheckoutMediatorTest {
 
         mModel.get(DETAIL_SCREEN_SETTINGS_CLICK_HANDLER).onMenuItemClick(settingsItem);
         verify(mMockDelegate).openAutofillProfileSettings();
+        assertActionRecorded(FastCheckoutUserActions.NAVIGATED_TO_ADDRESSES_SETTINGS_VIA_ICON);
     }
 
     @Test
@@ -186,6 +203,7 @@ public class FastCheckoutMediatorTest {
 
         mModel.get(DETAIL_SCREEN_SETTINGS_CLICK_HANDLER).onMenuItemClick(settingsItem);
         verify(mMockDelegate).openCreditCardSettings();
+        assertActionRecorded(FastCheckoutUserActions.NAVIGATED_TO_CREDIT_CARDS_SETTINGS_VIA_ICON);
     }
 
     @Test
@@ -361,6 +379,7 @@ public class FastCheckoutMediatorTest {
         assertThat(mModel.get(SELECTED_PROFILE),
                 is(model.get(AutofillProfileItemProperties.AUTOFILL_PROFILE)));
         assertThat(mModel.get(CURRENT_SCREEN), is(ScreenType.HOME_SCREEN));
+        assertActionRecorded(FastCheckoutUserActions.SELECTED_DIFFERENT_ADDRESS);
     }
 
     @Test
@@ -378,6 +397,7 @@ public class FastCheckoutMediatorTest {
         assertThat(mModel.get(SELECTED_CREDIT_CARD),
                 is(model.get(CreditCardItemProperties.CREDIT_CARD)));
         assertThat(mModel.get(CURRENT_SCREEN), is(ScreenType.HOME_SCREEN));
+        assertActionRecorded(FastCheckoutUserActions.SELECTED_DIFFERENT_CREDIT_CARD);
     }
 
     @Test
@@ -393,6 +413,7 @@ public class FastCheckoutMediatorTest {
         PropertyModel model = models.get(DUMMY_PROFILES.length).model;
         model.get(FooterItemProperties.ON_CLICK_HANDLER).run();
         verify(mMockDelegate).openAutofillProfileSettings();
+        assertActionRecorded(FastCheckoutUserActions.NAVIGATED_TO_ADDRESSES_SETTINGS_VIA_FOOTER);
     }
 
     @Test
@@ -408,6 +429,7 @@ public class FastCheckoutMediatorTest {
         PropertyModel model = models.get(DUMMY_CARDS.length).model;
         model.get(FooterItemProperties.ON_CLICK_HANDLER).run();
         verify(mMockDelegate).openCreditCardSettings();
+        assertActionRecorded(FastCheckoutUserActions.NAVIGATED_TO_CREDIT_CARDS_SETTINGS_VIA_FOOTER);
     }
 
     @Test
@@ -419,5 +441,42 @@ public class FastCheckoutMediatorTest {
 
         mMediator.destroy();
         assertThat(mModel.get(VISIBLE), is(false));
+        assertActionRecorded(FastCheckoutUserActions.DESTROYED);
+    }
+
+    @Test
+    public void testHeightOfAddressItemList() {
+        mMediator.showOptions(
+                DUMMY_PROFILES, DUMMY_CARDS); /* 3 addresses, should show 2 and a half items. */
+        mMediator.setCurrentScreen(ScreenType.AUTOFILL_PROFILE_SCREEN);
+        assertThat(mModel.get(VISIBLE), is(true));
+        assertThat(mModel.get(DETAIL_SCREEN_LIST_HEIGHT_IN_PX), is(400));
+
+        mMediator.showOptions(
+                new FastCheckoutAutofillProfile[] {DUMMY_PROFILES[0], DUMMY_PROFILES[1]},
+                DUMMY_CARDS); /* 2 addresses, should show all items */
+        mMediator.setCurrentScreen(ScreenType.AUTOFILL_PROFILE_SCREEN);
+        assertThat(mModel.get(DETAIL_SCREEN_LIST_HEIGHT_IN_PX),
+                is(FrameLayout.LayoutParams.WRAP_CONTENT));
+    }
+
+    @Test
+    public void testHeightOfCreditCardItemList() {
+        mMediator.showOptions(
+                DUMMY_PROFILES, DUMMY_CARDS); /* 4 credit cards, should show 3 and a half items. */
+        mMediator.setCurrentScreen(ScreenType.CREDIT_CARD_SCREEN);
+        assertThat(mModel.get(VISIBLE), is(true));
+        assertThat(mModel.get(DETAIL_SCREEN_LIST_HEIGHT_IN_PX), is(322));
+
+        mMediator.showOptions(DUMMY_PROFILES,
+                new FastCheckoutCreditCard[] {DUMMY_CARDS[0], DUMMY_CARDS[1],
+                        DUMMY_CARDS[2]}); /* 3 addresses, should show all items */
+        mMediator.setCurrentScreen(ScreenType.CREDIT_CARD_SCREEN);
+        assertThat(mModel.get(DETAIL_SCREEN_LIST_HEIGHT_IN_PX),
+                is(FrameLayout.LayoutParams.WRAP_CONTENT));
+    }
+
+    private void assertActionRecorded(FastCheckoutUserActions action) {
+        assertTrue(mActionTester.getActions().contains(action.getAction()));
     }
 }

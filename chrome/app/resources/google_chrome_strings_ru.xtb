@@ -57,7 +57,6 @@
 <translation id="2094648590148273905">Условия использования Chrome OS Flex</translation>
 <translation id="2094919256425865063">Завершить работу Chrome?</translation>
 <translation id="2106831557840787829">Chrome OS Flex, как и <ph name="BEGIN_LINK_LINUX_OSS" />среда разработки Linux<ph name="END_LINK_LINUX_OSS" />, работает благодаря дополнительному <ph name="BEGIN_LINK_CROS_OSS" />программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS" />.</translation>
-<translation id="2112742052114331084">В этом режиме Chrome не использует память на вкладки, которые некоторое время оставались неактивными. Это освобождает ресурсы компьютера для текущих задач и поддерживает быструю работу Chrome. Неактивные вкладки при этом показываются как пустые и автоматически загружаются при нажатии на них. Вы можете <ph name="BEGIN_LINK" />узнать больше<ph name="END_LINK" /> или <ph name="BEGIN_LINK_2" />отправить отзыв<ph name="END_LINK_2" />.</translation>
 <translation id="2120620239521071941">С устройства будут удалены объекты (<ph name="ITEMS_COUNT" />). Чтобы восстановить данные позже, войдите в Chrome как <ph name="USER_EMAIL" />.</translation>
 <translation id="2121284319307530122">Перезапустить для обновления &amp;Chrome</translation>
 <translation id="2123055963409958220">Отправьте отчет о <ph name="BEGIN_LINK" />текущих настройках Chrome<ph name="END_LINK" />, чтобы помочь нам улучшить браузер</translation>
@@ -87,7 +86,7 @@
 <translation id="2586406160782125153">Данные о работе в браузере будут удалены с устройства. Чтобы восстановить данные позже, войдите в Chrome как <ph name="USER_EMAIL" />.</translation>
 <translation id="2597976513418770460">Получите доступ к данным браузера Chrome, сохраненным в аккаунте <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="2622559029861875898">Не удалось проверить наличие обновлений в Chrome. Проверьте подключение к Интернету.</translation>
-<translation id="2645435784669275700">ChromeOS</translation>
+<translation id="2645435784669275700">Chrome OS</translation>
 <translation id="2652691236519827073">Открыть ссылку в новой вкладке браузера Chrome</translation>
 <translation id="2665296953892887393">Отправлять в Google такие данные, как отчеты о сбоях и <ph name="UMA_LINK" />, чтобы помочь улучшить Google Chrome</translation>
 <translation id="2689103672227170538">Расширение изменило стартовую страницу Chrome.</translation>
@@ -129,6 +128,7 @@
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome перезапускается}=1{Chrome перезапустится через 1 секунду}one{Chrome перезапустится через # секунду}few{Chrome перезапустится через # секунды}many{Chrome перезапустится через # секунд}other{Chrome перезапустится через # секунды}}</translation>
 <translation id="3396977131400919238">При установке произошла ошибка операционной системы. Скачайте Google Chrome снова.</translation>
+<translation id="3426646014273736870">В режиме экономии памяти Chrome работает ещё быстрее</translation>
 <translation id="3428747202529429621">Защищает вас в браузере Chrome и может использоваться для повышения безопасности в других приложениях Google при входе в аккаунт.</translation>
 <translation id="3434246496373299699">Chrome сможет проверить ваши пароли, когда вы войдете в аккаунт Google.</translation>
 <translation id="3451115285585441894">Установка...</translation>
@@ -226,6 +226,7 @@
 <translation id="5412485296464121825">Сайты могут хранить в Chrome информацию о ваших интересах. Например, вы перешли на сайт, чтобы купить беговые кроссовки. Он определит, что вам интересны марафоны. Когда вы перейдете на другой сайт, чтобы зарегистрироваться на забег, то увидите рекламу беговых кроссовок.</translation>
 <translation id="5430073640787465221">Файл настроек поврежден или недействителен. Google Chrome не может восстановить ваши параметры.</translation>
 <translation id="5524761631371622910">Если пробные функции включены и Chrome случайным образом выберет вас для их тестирования, то история браузера будет влиять на предложенные интересы, которые представлены ниже, и на то, какую рекламу вы будете видеть. Чтобы обеспечивать вашу конфиденциальность, Chrome каждый месяц удаляет ваши интересы.</translation>
+<translation id="5530733413481476019">Chrome может работать ещё быстрее</translation>
 <translation id="556024056938947818">Вводимые пароли будут отображаться в Google Chrome.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Chrome заблокировал файл <ph name="FILE_NAME" /> как потенциально опасный.</translation>
@@ -259,20 +260,21 @@
 <translation id="6273793429163604305">Подготовка…</translation>
 <translation id="6291089322031436445">Приложения Chrome для разработчиков</translation>
 <translation id="6291549208091401781">Google Chrome уже установлен для всех пользователей вашего компьютера</translation>
+<translation id="6326175484149238433">Удалить</translation>
 <translation id="6327105987658262776">Нет обновлений.</translation>
 <translation id="6412673304250309937">Сверяет URL со списком небезопасных сайтов в Chrome. Кроме того, если вы скачаете вредоносный файл или сайт попытается похитить ваш пароль, Chrome может отправить URL с образцами контента на проверку с помощью Безопасного просмотра.</translation>
 <translation id="6418662306461808273">Переключиться на существующий профиль Chrome?</translation>
 <translation id="6506909944137591434">Для создания 3D-карты места, в котором вы находитесь, браузеру Chrome требуется доступ к камере.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome для разработчиков</translation>
-<translation id="659498884637196217">В Менеджере паролей Google на этом устройстве</translation>
+<translation id="659498884637196217">В Диспетчере паролей Google на этом устройстве</translation>
 <translation id="6632473616050862500">Chrome OS Flex работает благодаря дополнительному <ph name="BEGIN_LINK_CROS_OSS" />программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6676384891291319759">Доступ в Интернет</translation>
 <translation id="6679975945624592337">Разрешить Google Chrome работать в фоновом режиме</translation>
 <translation id="6696915334902295848">Браузер Chrome запрашивает доступ к микрофону для этого сайта.</translation>
+<translation id="6718739135284199302">Chrome может работать ещё быстрее</translation>
 <translation id="6735387454586646204">Система Chrome OS Flex</translation>
 <translation id="6739177684496155661">Продолжить работу в новом профиле Chrome?</translation>
 <translation id="6750954913813541382">Для проверки правописания Chrome отправляет в Google текст, который вы вводите в браузере.</translation>
-<translation id="6756581345161130259">При необходимости Chrome освобождает память, закрывая вкладки, которые некоторое время не использовались. Этот параметр можно в любой момент изменить в настройках.</translation>
 <translation id="677276454032249905">Закрыть Chrome?</translation>
 <translation id="6785872064505734160">Google Ассистент в Chrome может помогать вам выполнять действия на сайтах.</translation>
 <translation id="683440813066116847">Разрешить в Google Chrome Canary передачу входящего трафика по протоколу mDNS</translation>
@@ -338,7 +340,7 @@
 <translation id="7930071585467473040">Google Chrome пытается скопировать пароли</translation>
 <translation id="7951272445806340501">Чтобы установить обновление, перезапустите Chrome OS Flex.</translation>
 <translation id="7962410387636238736">Google Chrome больше не будет обновляться на этом компьютере, так как поддержка Windows XP и Windows Vista прекращена.</translation>
-<translation id="8005666035647241369">В Менеджере паролей Google на этом устройстве</translation>
+<translation id="8005666035647241369">В Диспетчере паролей Google на этом устройстве</translation>
 <translation id="8008534537613507642">Переустановить Chrome</translation>
 <translation id="8013993649590906847">Если у изображения нет понятного описания, Chrome попытается его найти. Для создания описаний изображения отправляются в Google.</translation>
 <translation id="80471789339884597">Спасибо, что установили <ph name="BUNDLE_NAME" />. Чтобы изменения вступили в силу, перезапустите все открытые браузеры.</translation>
@@ -392,6 +394,7 @@
 <translation id="8986207147630327271">После добавления рабочего профиля администратор не сможет управлять другими профилями.</translation>
 <translation id="8989968390305463310">История браузера влияет на предложенные интересы, которые представлены ниже, и на то, какую рекламу вы будете видеть. Чтобы обеспечивать вашу конфиденциальность, Chrome каждый месяц автоматически удаляет ваши интересы. Они могут обновляться, если вы их не удалите.</translation>
 <translation id="8999208279178790196">{0,plural, =0{Доступно обновление Chrome}=1{Доступно обновление Chrome}one{Обновление Chrome доступно # день}few{Обновление Chrome доступно # дня}many{Обновление Chrome доступно # дней}other{Обновление Chrome доступно # дня}}</translation>
+<translation id="9003498785844995646">Chrome экономит заряд батареи, ограничивая фоновую активность и визуальные эффекты, например плавную прокрутку страниц и частоту кадров в видео. Вы можете <ph name="BEGIN_LINK" />узнать больше<ph name="END_LINK" /> или <ph name="BEGIN_LINK_2" />отправить отзыв<ph name="END_LINK_2" />.</translation>
 <translation id="9053892488859122171">Система Chrome OS Flex</translation>
 <translation id="9067395829937117663">Для работы Google Chrome необходима ОС Windows 7 или более поздней версии.</translation>
 <translation id="911206726377975832">Также удалить данные о работе в браузере?</translation>

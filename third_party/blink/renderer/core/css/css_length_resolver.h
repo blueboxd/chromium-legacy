@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,7 @@ class CORE_EXPORT CSSLengthResolver {
   virtual double DynamicViewportHeight() const = 0;
   virtual double ContainerWidth() const = 0;
   virtual double ContainerHeight() const = 0;
+  virtual float LineHeight() const = 0;
 
   virtual WritingMode GetWritingMode() const = 0;
 

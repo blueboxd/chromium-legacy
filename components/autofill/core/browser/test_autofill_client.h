@@ -78,7 +78,8 @@ class TestAutofillClient : public AutofillClient {
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
   AutofillOfferManager* GetAutofillOfferManager() override;
-  const GURL& GetLastCommittedURL() const override;
+  const GURL& GetLastCommittedPrimaryMainFrameURL() const override;
+  url::Origin GetLastCommittedPrimaryMainFrameOrigin() const override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
   translate::LanguageState* GetLanguageState() override;
   translate::TranslateDriver* GetTranslateDriver() override;
@@ -157,6 +158,9 @@ class TestAutofillClient : public AutofillClient {
   bool IsFastCheckoutSupported() override;
   bool IsFastCheckoutTriggerForm(const FormData& form,
                                  const FormFieldData& field) override;
+  bool FastCheckoutScriptSupportsConsentlessExecution(
+      const url::Origin& origin) override;
+  bool FastCheckoutClientSupportsConsentlessExecution() override;
   bool ShowFastCheckout(base::WeakPtr<FastCheckoutDelegate> delegate) override;
   void HideFastCheckout() override;
   bool IsTouchToFillCreditCardSupported() override;
@@ -236,7 +240,7 @@ class TestAutofillClient : public AutofillClient {
   }
 
   void set_test_form_data_importer(
-      std::unique_ptr<TestFormDataImporter> form_data_importer) {
+      std::unique_ptr<FormDataImporter> form_data_importer) {
     form_data_importer_ = std::move(form_data_importer);
   }
 
@@ -250,7 +254,7 @@ class TestAutofillClient : public AutofillClient {
     security_level_ = security_level;
   }
 
-  void set_last_committed_url(const GURL& url);
+  void set_last_committed_primary_main_frame_url(const GURL& url);
 
   void SetVariationConfigCountryCode(
       const std::string& variation_config_country_code) {
@@ -358,7 +362,7 @@ class TestAutofillClient : public AutofillClient {
   // latter.
   std::unique_ptr<TestPersonalDataManager> test_personal_data_manager_;
   std::unique_ptr<AutofillOfferManager> autofill_offer_manager_;
-  std::unique_ptr<TestFormDataImporter> form_data_importer_;
+  std::unique_ptr<FormDataImporter> form_data_importer_;
 
   GURL form_origin_;
   ukm::SourceId source_id_ = -1;
@@ -399,8 +403,9 @@ class TestAutofillClient : public AutofillClient {
   // A mock translate driver which provides the language state.
   translate::testing::MockTranslateDriver mock_translate_driver_;
 
-  // The last URL submitted by the user in the URL bar. Set in the constructor.
-  GURL last_committed_url_;
+  // The last URL submitted in the primary main frame by the user. Set in the
+  // constructor.
+  GURL last_committed_primary_main_frame_url_;
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   std::vector<std::string> allowed_merchants_;

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,9 @@ class PLATFORM_EXPORT BlobBytesProvider : public mojom::blink::BytesProvider {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BlobBytesProviderTest, Consolidation);
+
+  static void IncreaseChildProcessRefCount();
+  static void DecreaseChildProcessRefCount();
 
   Vector<scoped_refptr<RawData>> data_ GUARDED_BY_CONTEXT(sequence_checker_);
   // |offsets_| always contains exactly one fewer item than |data_| (except when

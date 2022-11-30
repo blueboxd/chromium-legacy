@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,7 +118,7 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   void InvalidateEffectTargetStyle();
 
   // See DocumentAnimations::ValidateTimelines
-  void ValidateState();
+  bool ValidateState();
 
   cc::AnimationTimeline* EnsureCompositorTimeline() override;
   void UpdateCompositorTimeline() override;
@@ -140,12 +140,6 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   // These properties are scroller offset, content size, viewport size,
   // overflow, adding and removal of scrollable area.
   static void Invalidate(Node* node);
-
-  // A change in the compositing state of a ScrollTimeline's scroll source
-  // can cause the compositor's view of the scroll source to become out of
-  // date. We inform the WorkletAnimationController about any such changes
-  // so that it can schedule a compositing animations update.
-  static void InvalidateCompositingState(Node* node);
 
   // Duration is the maximum value a timeline may generate for current time.
   // Used to convert time values to proportional values.
@@ -188,7 +182,6 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   // Snapshots scroll timeline current time and phase.
   // Called once per animation frame.
   bool ComputeIsActive() const;
-  PhaseAndTime ComputeCurrentPhaseAndTime() const;
 
   struct TimelineState {
     // TODO(crbug.com/1338167): Remove phase as it can be inferred from

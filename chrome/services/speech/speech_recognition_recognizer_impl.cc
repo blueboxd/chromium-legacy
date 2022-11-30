@@ -38,12 +38,12 @@ constexpr char kInvalidAudioDataError[] = "Invalid audio data received.";
 // static
 const char
     SpeechRecognitionRecognizerImpl::kCaptionBubbleVisibleHistogramName[] =
-        "Accessibility.LiveCaption.Duration.CaptionBubbleVisible2";
+        "Accessibility.LiveCaption.Duration.CaptionBubbleVisible3";
 
 // static
 const char
     SpeechRecognitionRecognizerImpl::kCaptionBubbleHiddenHistogramName[] =
-        "Accessibility.LiveCaption.Duration.CaptionBubbleHidden2";
+        "Accessibility.LiveCaption.Duration.CaptionBubbleHidden3";
 
 namespace {
 
@@ -125,14 +125,12 @@ SpeechRecognitionRecognizerImpl::~SpeechRecognitionRecognizerImpl() {
 void SpeechRecognitionRecognizerImpl::Create(
     mojo::PendingReceiver<media::mojom::SpeechRecognitionRecognizer> receiver,
     mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient> remote,
-    base::WeakPtr<SpeechRecognitionServiceImpl> speech_recognition_service_impl,
     media::mojom::SpeechRecognitionOptionsPtr options,
     const base::FilePath& binary_path,
     const base::FilePath& config_path) {
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<SpeechRecognitionRecognizerImpl>(
-          std::move(remote), std::move(speech_recognition_service_impl),
-          std::move(options), binary_path, config_path),
+          std::move(remote), std::move(options), binary_path, config_path),
       std::move(receiver));
 }
 
@@ -175,7 +173,6 @@ void SpeechRecognitionRecognizerImpl::OnRecognitionStoppedCallback() {
 
 SpeechRecognitionRecognizerImpl::SpeechRecognitionRecognizerImpl(
     mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient> remote,
-    base::WeakPtr<SpeechRecognitionServiceImpl> speech_recognition_service_impl,
     media::mojom::SpeechRecognitionOptionsPtr options,
     const base::FilePath& binary_path,
     const base::FilePath& config_path)
@@ -223,13 +220,16 @@ void SpeechRecognitionRecognizerImpl::SendAudioToSpeechRecognitionService(
   size_t buffer_size = 0;
 
   // Update watch time durations.
-  base::TimeDelta duration =
-      media::AudioTimestampHelper::FramesToTime(frame_count, sample_rate);
-  if (is_client_requesting_speech_recognition_) {
-    caption_bubble_visible_duration_ += duration;
-  } else {
-    caption_bubble_hidden_duration_ += duration;
-    return;
+  if (options_->recognizer_client_type ==
+      media::mojom::RecognizerClientType::kLiveCaption) {
+    base::TimeDelta duration =
+        media::AudioTimestampHelper::FramesToTime(frame_count, sample_rate);
+    if (is_client_requesting_speech_recognition_) {
+      caption_bubble_visible_duration_ += duration;
+    } else {
+      caption_bubble_hidden_duration_ += duration;
+      return;
+    }
   }
 
   // Verify the channel count.
@@ -341,6 +341,13 @@ void SpeechRecognitionRecognizerImpl::ResetSodaWithNewLanguage(
 }
 
 void SpeechRecognitionRecognizerImpl::RecordDuration() {
+  if (options_->recognizer_client_type !=
+      media::mojom::RecognizerClientType::kLiveCaption) {
+    return;
+  }
+
+  // TODO(b:245620092) Create metrics for other features using speech
+  // recognition.
   if (caption_bubble_visible_duration_.is_positive()) {
     base::UmaHistogramLongTimes100(kCaptionBubbleVisibleHistogramName,
                                    caption_bubble_visible_duration_);

@@ -639,15 +639,6 @@ struct FuzzTraits<viz::LocalSurfaceId> {
 };
 
 template <>
-struct FuzzTraits<viz::ResourceFormat> {
-  static bool Fuzz(viz::ResourceFormat* p, Fuzzer* fuzzer) {
-    int format = RandInRange(viz::ResourceFormat::RESOURCE_FORMAT_MAX + 1);
-    *p = static_cast<viz::ResourceFormat>(format);
-    return true;
-  }
-};
-
-template <>
 struct FuzzTraits<blink::PageState> {
   static bool Fuzz(blink::PageState* p, Fuzzer* fuzzer) {
     std::string data = p->ToEncodedData();
@@ -801,19 +792,6 @@ struct FuzzTraits<gfx::PointF> {
 };
 
 template <>
-struct FuzzTraits<gfx::PresentationFeedback> {
-  static bool Fuzz(gfx::PresentationFeedback* p, Fuzzer* fuzzer) {
-    if (!FuzzParam(&p->timestamp, fuzzer))
-      return false;
-    if (!FuzzParam(&p->interval, fuzzer))
-      return false;
-    if (!FuzzParam(&p->flags, fuzzer))
-      return false;
-    return true;
-  }
-};
-
-template <>
 struct FuzzTraits<gfx::Rect> {
   static bool Fuzz(gfx::Rect* p, Fuzzer* fuzzer) {
     gfx::Point origin = p->origin();
@@ -922,16 +900,11 @@ struct FuzzTraits<gfx::SwapTimings> {
 template <>
 struct FuzzTraits<gfx::Transform> {
   static bool Fuzz(gfx::Transform* p, Fuzzer* fuzzer) {
-    SkScalar matrix[16];
-    for (size_t i = 0; i < std::size(matrix); i++) {
-      matrix[i] = p->matrix().rc(i / 4, i % 4);
-    }
+    float matrix[16];
+    p->GetColMajorF(matrix);
     if (!FuzzParamArray(&matrix[0], std::size(matrix), fuzzer))
       return false;
-    *p = gfx::Transform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4],
-                        matrix[5], matrix[6], matrix[7], matrix[8], matrix[9],
-                        matrix[10], matrix[11], matrix[12], matrix[13],
-                        matrix[14], matrix[15]);
+    *p = gfx::Transform::ColMajorF(matrix);
     return true;
   }
 };
@@ -1085,16 +1058,6 @@ template <>
 struct FuzzTraits<gpu::Mailbox> {
   static bool Fuzz(gpu::Mailbox* p, Fuzzer* fuzzer) {
     fuzzer->FuzzBytes(p->name, sizeof(p->name));
-    return true;
-  }
-};
-
-template <>
-struct FuzzTraits<gpu::SchedulingPriority> {
-  static bool Fuzz(gpu::SchedulingPriority* p, Fuzzer* fuzzer) {
-    int priority =
-        RandInRange(static_cast<int>(gpu::SchedulingPriority::kLast) + 1);
-    *p = static_cast<gpu::SchedulingPriority>(priority);
     return true;
   }
 };

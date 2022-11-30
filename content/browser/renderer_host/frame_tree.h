@@ -19,6 +19,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/safe_ref.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/navigator_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_manager.h"
@@ -94,7 +95,8 @@ class CONTENT_EXPORT FrameTree {
 
     NodeIterator(const std::vector<FrameTreeNode*>& starting_nodes,
                  const FrameTreeNode* root_of_subtree_to_skip,
-                 bool should_descend_into_inner_trees);
+                 bool should_descend_into_inner_trees,
+                 bool include_delegate_nodes_for_inner_frame_trees);
 
     void AdvanceNode();
 
@@ -105,6 +107,7 @@ class CONTENT_EXPORT FrameTree {
     RAW_PTR_EXCLUSION const FrameTreeNode* const root_of_subtree_to_skip_;
 
     const bool should_descend_into_inner_trees_;
+    const bool include_delegate_nodes_for_inner_frame_trees_;
     base::circular_deque<FrameTreeNode*> queue_;
   };
 
@@ -121,11 +124,13 @@ class CONTENT_EXPORT FrameTree {
 
     NodeRange(const std::vector<FrameTreeNode*>& starting_nodes,
               const FrameTreeNode* root_of_subtree_to_skip,
-              bool should_descend_into_inner_trees);
+              bool should_descend_into_inner_trees,
+              bool include_delegate_nodes_for_inner_frame_trees);
 
     const std::vector<FrameTreeNode*> starting_nodes_;
     const raw_ptr<const FrameTreeNode> root_of_subtree_to_skip_;
     const bool should_descend_into_inner_trees_;
+    const bool include_delegate_nodes_for_inner_frame_trees_;
   };
 
   class CONTENT_EXPORT Delegate {
@@ -236,7 +241,8 @@ class CONTENT_EXPORT FrameTree {
 
   Type type() const { return type_; }
 
-  FrameTreeNode* root() const { return root_; }
+  FrameTreeNode* root() { return &root_; }
+  const FrameTreeNode* root() const { return &root_; }
 
   bool is_prerendering() const { return type_ == FrameTree::Type::kPrerender; }
 
@@ -305,8 +311,11 @@ class CONTENT_EXPORT FrameTree {
   // Returns a range to iterate over all FrameTreeNodes in a subtree, starting
   // from, but not including |parent|, as well as any FrameTreeNodes of inner
   // frame trees. Note that this includes inner frame trees of inner WebContents
-  // as well.
-  static NodeRange SubtreeAndInnerTreeNodes(RenderFrameHostImpl* parent);
+  // as well. If `include_delegate_nodes_for_inner_frame_trees` is true the
+  // delegate RenderFrameHost owning the inner frame tree will also be returned.
+  static NodeRange SubtreeAndInnerTreeNodes(
+      RenderFrameHostImpl* parent,
+      bool include_delegate_nodes_for_inner_frame_trees = false);
 
   // Adds a new child frame to the frame tree. |process_id| is required to
   // disambiguate |new_routing_id|, and it must match the process of the
@@ -339,6 +348,7 @@ class CONTENT_EXPORT FrameTree {
       bool is_created_by_script,
       const blink::LocalFrameToken& frame_token,
       const base::UnguessableToken& devtools_frame_token,
+      const blink::DocumentToken& document_token,
       const blink::FramePolicy& frame_policy,
       const blink::mojom::FrameOwnerProperties& frame_owner_properties,
       bool was_discarded,
@@ -565,15 +575,6 @@ class CONTENT_EXPORT FrameTree {
   // Indicates type of frame tree.
   const Type type_;
 
-  // This is an owned ptr to the root FrameTreeNode, which never changes over
-  // the lifetime of the FrameTree. It is not a scoped_ptr because we need the
-  // pointer to remain valid even while the FrameTreeNode is being destroyed,
-  // since it's common for a node to test whether it's the root node.
-  //
-  // TODO(crbug.com/1298696): content_browsertests breaks with MTECheckedPtr
-  // enabled. Triage.
-  raw_ptr<FrameTreeNode, DanglingUntriagedDegradeToNoOpWhenMTE> root_;
-
   int focused_frame_tree_node_id_;
 
   // Overall load progress.
@@ -593,6 +594,13 @@ class CONTENT_EXPORT FrameTree {
   // Whether Shutdown() was called.
   bool was_shut_down_ = false;
 #endif
+
+  // The root FrameTreeNode.
+  //
+  // Note: It is common for a node to test whether it's the root node, via the
+  // `root()` method, even while `root_` is running its destructor.
+  // For that reason, we want to destroy |root_| before any other fields.
+  FrameTreeNode root_;
 
   base::WeakPtrFactory<FrameTree> weak_ptr_factory_{this};
 };

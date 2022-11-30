@@ -22,10 +22,25 @@ class PasswordChangeRunController {
   // Interrupts are not triggered during prompts, therefore
   // there is no need to keep their state.
   struct Model {
+    Model();
+    Model(Model& other);
+    Model(Model&& other);
+    Model& operator=(const Model& other);
+    Model& operator=(Model&& other);
+
+    ~Model();
+
     std::u16string title;
+    std::u16string accessibility_title;
     autofill_assistant::password_change::TopIcon top_icon;
     std::u16string description;
     autofill_assistant::password_change::ProgressStep progress_step;
+    // Whether the icon animation on the progress bar is paused.
+    bool progress_bar_animation_is_paused = false;
+    // The flow type (i.e. password change vs. password reset). It is used to
+    // decide which completion screen to display at the end.
+    autofill_assistant::password_change::FlowType flow_type =
+        autofill_assistant::password_change::FlowType::FLOW_TYPE_UNSPECIFIED;
   };
 
   // Factory function to create the controller.
@@ -42,7 +57,10 @@ class PasswordChangeRunController {
   // sibling view methods.
   virtual void SetTopIcon(
       autofill_assistant::password_change::TopIcon top_icon) = 0;
-  virtual void SetTitle(const std::u16string& title) = 0;
+  // Sets the title shown in the side panel. If `accessibility_title` is not set
+  // defaults to `title`.
+  virtual void SetTitle(const std::u16string& title,
+                        const std::u16string& accessibility_title) = 0;
   virtual void SetDescription(const std::u16string& description) = 0;
   virtual void SetProgressBarStep(
       autofill_assistant::password_change::ProgressStep progress_step) = 0;
@@ -66,7 +84,7 @@ class PasswordChangeRunController {
   // from the script controller.
   virtual void ShowStartingScreen(const GURL& url) = 0;
 
-  // Shows the ending screen, displayed after script completion.
+  // Shows the ending screen that is displayed after script completion.
   virtual void ShowCompletionScreen(
       base::RepeatingClosure done_button_callback) = 0;
 
@@ -79,6 +97,10 @@ class PasswordChangeRunController {
   // Returns whether a password change run has resulted in a successfully
   // changed password.
   virtual bool PasswordWasSuccessfullyChanged() = 0;
+
+  // Pauses and resumes that icon animation in the progress bar.
+  virtual void PauseProgressBarAnimation() = 0;
+  virtual void ResumeProgressBarAnimation() = 0;
 
   // Returns a weak pointer to this controller.
   virtual base::WeakPtr<PasswordChangeRunController> GetWeakPtr() = 0;

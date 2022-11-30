@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,7 +81,7 @@ void PermissionStatusListener::OnPermissionStatusChange(
 }
 
 void PermissionStatusListener::AddObserver(Observer* observer) {
-  if (observers_.IsEmpty())
+  if (observers_.empty())
     StartListening();
 
   observers_.insert(observer);
@@ -90,7 +90,7 @@ void PermissionStatusListener::AddObserver(Observer* observer) {
 void PermissionStatusListener::RemoveObserver(Observer* observer) {
   observers_.erase(observer);
 
-  if (observers_.IsEmpty())
+  if (observers_.empty())
     StopListening();
 }
 

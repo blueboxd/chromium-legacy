@@ -10,7 +10,8 @@ import {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_c
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {isChildVisible, waitAfterNextRender} from 'chrome://webui-test/test_util.js';
+import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
+import {isChildVisible} from 'chrome://webui-test/test_util.js';
 
 import {TestEnterpriseProfileWelcomeBrowserProxy} from './test_enterprise_profile_welcome_browser_proxy.js';
 
@@ -37,7 +38,8 @@ suite('EnterpriseProfileWelcomeTest', function() {
     browserProxy =
         new TestEnterpriseProfileWelcomeBrowserProxy(testEnterpriseInfo);
     EnterpriseProfileWelcomeBrowserProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     app = document.createElement('enterprise-profile-welcome-app');
     document.body.appendChild(app);
     await waitAfterNextRender(app);
@@ -75,7 +77,8 @@ suite('EnterpriseProfileWelcomeTest', function() {
 
     loadTimeData.overrideValues({'showLinkDataCheckbox': true});
 
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     app = document.createElement('enterprise-profile-welcome-app');
     document.body.appendChild(app);
     await waitAfterNextRender(app);
@@ -106,7 +109,8 @@ suite('EnterpriseProfileWelcomeTest', function() {
 
     loadTimeData.overrideValues({'showLinkDataCheckbox': true});
 
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     app = document.createElement('enterprise-profile-welcome-app');
     document.body.appendChild(app);
     await waitAfterNextRender(app);

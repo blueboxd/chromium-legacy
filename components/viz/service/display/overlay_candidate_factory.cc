@@ -5,6 +5,7 @@
 #include "components/viz/service/display/overlay_candidate_factory.h"
 
 #include "base/containers/contains.h"
+#include "base/containers/fixed_flat_set.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "components/viz/common/quads/aggregated_render_pass_draw_quad.h"
@@ -31,13 +32,22 @@ namespace viz {
 
 namespace {
 
-const gfx::BufferFormat kOverlayFormats[] = {
-    gfx::BufferFormat::RGBX_8888, gfx::BufferFormat::RGBA_8888,
-    gfx::BufferFormat::BGRX_8888, gfx::BufferFormat::BGRA_8888,
-    gfx::BufferFormat::BGR_565,   gfx::BufferFormat::YUV_420_BIPLANAR,
-    gfx::BufferFormat::P010};
+constexpr auto kOverlayFormats = base::MakeFixedFlatSet<gfx::BufferFormat>(
+    {gfx::BufferFormat::RGBX_8888, gfx::BufferFormat::RGBA_8888,
+     gfx::BufferFormat::BGRX_8888, gfx::BufferFormat::BGRA_8888,
+     gfx::BufferFormat::BGR_565, gfx::BufferFormat::YUV_420_BIPLANAR,
+     gfx::BufferFormat::P010});
 
 enum Axis { NONE, AXIS_POS_X, AXIS_NEG_X, AXIS_POS_Y, AXIS_NEG_Y };
+
+constexpr auto kOpaqueFormats = base::MakeFixedFlatSet<gfx::BufferFormat>(
+    {gfx::BufferFormat::RGBX_8888, gfx::BufferFormat::BGRX_8888,
+     gfx::BufferFormat::BGR_565, gfx::BufferFormat::YUV_420_BIPLANAR,
+     gfx::BufferFormat::P010});
+
+bool IsOpaque(const gfx::BufferFormat& format) {
+  return base::Contains(kOpaqueFormats, format);
+}
 
 Axis VectorToAxis(const gfx::Vector3dF& vec) {
   if (!cc::MathUtil::IsWithinEpsilon(vec.z(), 0.f))
@@ -97,12 +107,11 @@ OverlayCandidate::CandidateStatus GetReasonForTransformNotAxisAligned(
 
   // The transform has a shear component if the x and y sub-vectors are not
   // perpendicular (have a non-zero dot product).
-  const auto& matrix = transform.matrix();
-  gfx::Vector2dF x_part(matrix.rc(0, 0), matrix.rc(1, 0));
-  gfx::Vector2dF y_part(matrix.rc(0, 1), matrix.rc(1, 1));
+  gfx::Vector2dF x_part(transform.rc(0, 0), transform.rc(1, 0));
+  gfx::Vector2dF y_part(transform.rc(0, 1), transform.rc(1, 1));
   // Normalize to avoid numerical issues.
-  x_part.Scale(1.f / x_part.Length());
-  y_part.Scale(1.f / y_part.Length());
+  x_part.InvScale(x_part.Length());
+  y_part.InvScale(y_part.Length());
   if (std::abs(gfx::DotProduct(x_part, y_part)) > kEpsilon)
     return OverlayCandidate::CandidateStatus::kFailNotAxisAligned2dShear;
 
@@ -317,7 +326,7 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuadResource(
   if (supports_arbitrary_transform_) {
     gfx::Transform transform = sqs->quad_to_target_transform;
     if (y_flipped) {
-      transform.PreconcatTransform(gfx::OverlayTransformToTransform(
+      transform.PreConcat(gfx::OverlayTransformToTransform(
           gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL, candidate.display_rect.size()));
     }
     candidate.transform = transform;
@@ -331,7 +340,8 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuadResource(
     }
     candidate.transform = overlay_transform;
 
-    sqs->quad_to_target_transform.TransformRect(&candidate.display_rect);
+    candidate.display_rect =
+        sqs->quad_to_target_transform.MapRect(candidate.display_rect);
   }
 
   candidate.clip_rect = sqs->clip_rect;
@@ -380,21 +390,25 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuadResource(
       DCHECK(
           absl::holds_alternative<gfx::OverlayTransform>(candidate.transform));
 
+      gfx::RectF clip_to_apply = candidate.display_rect;
+
       if (candidate.clip_rect.has_value())
-        OverlayCandidate::ApplyClip(candidate,
-                                    gfx::RectF(*candidate.clip_rect));
+        clip_to_apply.Intersect(gfx::RectF(*candidate.clip_rect));
 
       // TODO(rivr): Apply the same |visible_rect| and |display_rect| clip logic
       // when delegating |clip_rect|.
       if (quad->visible_rect != quad->rect) {
         auto visible_rect = gfx::RectF(quad->visible_rect);
-        sqs->quad_to_target_transform.TransformRect(&visible_rect);
-        OverlayCandidate::ApplyClip(candidate, gfx::RectF(visible_rect));
+        visible_rect = sqs->quad_to_target_transform.MapRect(visible_rect);
+        clip_to_apply.Intersect(visible_rect);
       }
+
       // TODO(https://crbug.com/1300552) : Tile quads can overlay other quads
       // and the window by one pixel. Exo does not yet clip these quads so we
       // need to clip here with the |primary_rect|.
-      OverlayCandidate::ApplyClip(candidate, primary_rect_);
+      clip_to_apply.Intersect(primary_rect_);
+
+      OverlayCandidate::ApplyClip(candidate, clip_to_apply);
 
       if (candidate.display_rect.IsEmpty())
         return CandidateStatus::kFailVisible;
@@ -446,7 +460,8 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromVideoHoleQuad(
     if (overlay_transform == gfx::OVERLAY_TRANSFORM_INVALID)
       return CandidateStatus::kFailNotAxisAligned;
     candidate.transform = overlay_transform;
-    sqs->quad_to_target_transform.TransformRect(&candidate.display_rect);
+    candidate.display_rect =
+        sqs->quad_to_target_transform.MapRect(candidate.display_rect);
   }
   candidate.is_opaque =
       !quad->ShouldDrawWithBlendingForReasonOtherThanMaskFilter();
@@ -488,22 +503,26 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromTextureQuad(
   if (quad->nearest_neighbor)
     return CandidateStatus::kFailNearFilter;
 
-  if (quad->background_color != SkColors::kTransparent &&
-      (quad->ShouldDrawWithBlendingForReasonOtherThanMaskFilter() ||
-       quad->shared_quad_state->mask_filter_info.HasGradientMask())) {
-    // This path can also be used by other platforms like Ash/Chrome, which does
-    // not support overlays with background color. Only LaCros/Wayland supports
-    // that.
-    if (!is_delegated_context_)
-      return CandidateStatus::kFailBlending;
-    candidate.color = quad->background_color;
-  }
-
   candidate.uv_rect = BoundingRect(quad->uv_top_left, quad->uv_bottom_right);
 
   auto rtn = FromDrawQuadResource(quad, quad->resource_id(), quad->y_flipped,
                                   candidate);
   if (rtn == CandidateStatus::kSuccess) {
+    // Background color applies through the transparency of the texture draw
+    // quad buffer. It is independent of any blending or opaqueness flags.
+    // Specifically it is independent of |shared_quad_state| flags of
+    // |blend_mode| and |are_contents_opaque |.
+    if (quad->background_color.fA != 0.f && !IsOpaque(candidate.format)) {
+      // This path can also be used by other platforms like Ash/Chrome, which
+      // does not support overlays with background color. Only LaCros/Wayland
+      // supports that.
+      // TODO(https://crbug.com/1366397): Support |background_color| for real
+      // hardware overlays.
+      if (!is_delegated_context_)
+        return CandidateStatus::kFailBlending;
+      candidate.color = quad->background_color;
+    }
+
     // Only handle clip rect for required overlays
     if (!is_delegated_context_ && candidate.requires_overlay)
       HandleClipAndSubsampling(candidate);
@@ -562,6 +581,7 @@ void OverlayCandidateFactory::HandleClipAndSubsampling(
   DCHECK(absl::holds_alternative<gfx::OverlayTransform>(candidate.transform));
 
   // Calculate |uv_rect| of |clip_rect| in |display_rect|
+  // TODO(rivr): Handle candidates with an overlay transform applied.
   gfx::RectF uv_rect = cc::MathUtil::ScaleRectProportional(
       candidate.uv_rect, candidate.display_rect,
       gfx::RectF(*candidate.clip_rect));
@@ -608,7 +628,7 @@ void OverlayCandidateFactory::AssignDamage(const DrawQuad* quad,
   auto transformed_damage = damage_rect;
   gfx::Transform inv;
   if (transform.GetInverse(&inv)) {
-    inv.TransformRect(&transformed_damage);
+    transformed_damage = inv.MapRect(transformed_damage);
     // The quad's |rect| is in content space. To get to buffer space we need
     // to remove the |rect|'s pixel offset.
     auto buffer_damage_origin =
@@ -618,8 +638,7 @@ void OverlayCandidateFactory::AssignDamage(const DrawQuad* quad,
 
     if (!quad->rect.IsEmpty()) {
       // Normalize damage to be in UVs.
-      transformed_damage.Scale(1.0f / quad->rect.width(),
-                               1.0f / quad->rect.height());
+      transformed_damage.InvScale(quad->rect.width(), quad->rect.height());
     }
 
     // The normalization above is not enough if the |uv_rect| is not 0,0-1x1.

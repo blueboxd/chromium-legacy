@@ -78,6 +78,7 @@
 #include "third_party/blink/renderer/core/paint/box_reflection_utils.h"
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
+#include "third_party/blink/renderer/core/paint/cull_rect_updater.h"
 #include "third_party/blink/renderer/core/paint/filter_effect_builder.h"
 #include "third_party/blink/renderer/core/paint/hit_testing_transform_state.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
@@ -1872,7 +1873,7 @@ bool PaintLayer::HitTestFragmentsWithPhase(
     const HitTestLocation& hit_test_location,
     HitTestPhase phase,
     bool& inside_clip_rect) const {
-  if (layer_fragments.IsEmpty())
+  if (layer_fragments.empty())
     return false;
 
   for (int i = layer_fragments.size() - 1; i >= 0; --i) {
@@ -2446,8 +2447,10 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
 
   bool needs_full_transform_update = diff.TransformChanged();
   if (needs_full_transform_update) {
-    // Schedule a direct transform update instead of full update.
-    if (PaintPropertyTreeBuilder::ScheduleDeferredTransformNodeUpdate(
+    // If only the transform property changed, without other related properties
+    // changing, try to schedule a deferred transform node update.
+    if (!diff.OtherTransformPropertyChanged() &&
+        PaintPropertyTreeBuilder::ScheduleDeferredTransformNodeUpdate(
             GetLayoutObject())) {
       needs_full_transform_update = false;
       SetNeedsDescendantDependentFlagsUpdate();
@@ -2598,6 +2601,13 @@ PaintLayerResourceInfo& PaintLayer::EnsureResourceInfo() {
         MakeGarbageCollected<PaintLayerResourceInfo>(this);
   }
   return *rare_data.resource_info;
+}
+
+void PaintLayer::SetNeedsReorderOverlayOverflowControls(bool b) {
+  if (b != needs_reorder_overlay_overflow_controls_) {
+    SetNeedsRepaint();
+    needs_reorder_overlay_overflow_controls_ = b;
+  }
 }
 
 gfx::RectF PaintLayer::MapRectForFilter(const gfx::RectF& rect) const {
@@ -2764,6 +2774,13 @@ void PaintLayer::DirtyStackingContextZOrderLists() {
     stacking_context->StackingNode()->DirtyZOrderLists();
 
   MarkAncestorChainForFlagsUpdate();
+}
+
+void PaintLayer::SetPreviousPaintResult(PaintResult result) {
+  if (CullRectUpdater::IsOverridingCullRects())
+    return;
+  previous_paint_result_ = static_cast<unsigned>(result);
+  DCHECK(previous_paint_result_ == static_cast<unsigned>(result));
 }
 
 void PaintLayer::Trace(Visitor* visitor) const {

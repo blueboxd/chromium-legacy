@@ -154,7 +154,7 @@ base::Value::List ReadJsonTestFileAsList(const char* test_file_name) {
   CHECK(result.has_value());
   CHECK(result->is_list());
 
-  return std::move(result->GetList());
+  return std::move(*result).TakeList();
 }
 
 std::vector<uint8_t> GetBytesFromHexString(const base::Value* dict,
@@ -337,7 +337,7 @@ absl::optional<base::Value::Dict> GetJwkDictionary(
   absl::optional<base::Value> value = base::JSONReader::Read(json_string);
   EXPECT_TRUE(value.has_value());
   EXPECT_TRUE(value.value().is_dict());
-  return absl::make_optional(std::move(value->GetDict()));
+  return absl::make_optional(std::move(*value).TakeDict());
 }
 
 // Verifies the input dictionary contains the expected values. Exact matches are
@@ -584,16 +584,18 @@ blink::WebCryptoNamedCurve GetCurveNameFromDictionary(
     ADD_FAILURE() << "Missing crv parameter";
     return blink::kWebCryptoNamedCurveP384;
   }
+  return CurveNameToCurve(curve_str);
+}
 
-  if (curve_str == "P-256")
+blink::WebCryptoNamedCurve CurveNameToCurve(const std::string& name) {
+  if (name == "P-256")
     return blink::kWebCryptoNamedCurveP256;
-  if (curve_str == "P-384")
+  if (name == "P-384")
     return blink::kWebCryptoNamedCurveP384;
-  if (curve_str == "P-521")
+  if (name == "P-521")
     return blink::kWebCryptoNamedCurveP521;
-  else
-    ADD_FAILURE() << "Unrecognized curve name: " << curve_str;
 
+  CHECK(false) << "Invalid curve name in test data: " << name;
   return blink::kWebCryptoNamedCurveP384;
 }
 

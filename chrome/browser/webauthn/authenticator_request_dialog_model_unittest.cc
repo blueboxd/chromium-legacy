@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/strings/string_util.h"
@@ -19,8 +18,6 @@
 #include "chrome/browser/webauthn/authenticator_reference.h"
 #include "chrome/browser/webauthn/authenticator_transport.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "device/fido/authenticator_data.h"
-#include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/discoverable_credential_metadata.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_constants.h"
@@ -103,10 +100,14 @@ base::StringPiece RequestTypeToString(RequestType req_type) {
 
 enum class TransportAvailabilityParam {
   kHasPlatformCredential,
+  kOneRecognizedCred,
+  kTwoRecognizedCreds,
+  kEmptyAllowList,
   kHasWinNativeAuthenticator,
   kHasCableV1Extension,
   kHasCableV2Extension,
   kPreferNativeAPI,
+  kRequireResidentKey,
 };
 
 base::StringPiece TransportAvailabilityParamToString(
@@ -114,6 +115,12 @@ base::StringPiece TransportAvailabilityParamToString(
   switch (param) {
     case TransportAvailabilityParam::kHasPlatformCredential:
       return "kHasPlatformCredential";
+    case TransportAvailabilityParam::kOneRecognizedCred:
+      return "kOneRecognizedCred";
+    case TransportAvailabilityParam::kTwoRecognizedCreds:
+      return "kTwoRecognizedCreds";
+    case TransportAvailabilityParam::kEmptyAllowList:
+      return "kEmptyAllowList";
     case TransportAvailabilityParam::kHasWinNativeAuthenticator:
       return "kHasWinNativeAuthenticator";
     case TransportAvailabilityParam::kHasCableV1Extension:
@@ -122,6 +129,8 @@ base::StringPiece TransportAvailabilityParamToString(
       return "kHasCableV2Extension";
     case TransportAvailabilityParam::kPreferNativeAPI:
       return "kPreferNativeAPI";
+    case TransportAvailabilityParam::kRequireResidentKey:
+      return "kRequireResidentKey";
   }
 }
 
@@ -131,6 +140,11 @@ std::string SetToString(base::flat_set<T> s) {
   std::transform(s.begin(), s.end(), std::back_inserter(names), F);
   return base::JoinString(names, ", ");
 }
+
+const device::DiscoverableCredentialMetadata
+    kCred1("rp.com", {0}, device::PublicKeyCredentialUserEntity({1, 2, 3, 4}));
+const device::DiscoverableCredentialMetadata
+    kCred2("rp.com", {1}, device::PublicKeyCredentialUserEntity({5, 6, 7, 8}));
 
 }  // namespace
 
@@ -159,7 +173,10 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
   const auto has_winapi =
       TransportAvailabilityParam::kHasWinNativeAuthenticator;
   const auto has_plat = TransportAvailabilityParam::kHasPlatformCredential;
-  const auto native = TransportAvailabilityParam::kPreferNativeAPI;
+  const auto one_cred = TransportAvailabilityParam::kOneRecognizedCred;
+  const auto two_cred = TransportAvailabilityParam::kTwoRecognizedCreds;
+  const auto empty_al = TransportAvailabilityParam::kEmptyAllowList;
+  const auto rk = TransportAvailabilityParam::kRequireResidentKey;
   using t = AuthenticatorRequestDialogModel::Mechanism::Transport;
   using p = AuthenticatorRequestDialogModel::Mechanism::Phone;
   const auto winapi =
@@ -169,6 +186,9 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
   const auto mss = Step::kMechanismSelection;
   const auto plat_ui = Step::kNotStarted;
   const auto cable_ui = Step::kCableActivate;
+  [[maybe_unused]] const auto create_pk = Step::kCreatePasskey;
+  const auto use_pk = Step::kPreSelectSingleAccount;
+  const auto use_pk_multi = Step::kPreSelectAccount;
 
   const struct {
     RequestType request_type;
@@ -178,16 +198,57 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
     std::vector<AuthenticatorRequestDialogModel::Mechanism::Type>
         expected_mechanisms;
     Step expected_first_step;
+    bool conditional_ui = false;
   } kTests[] = {
       // If there's only a single mechanism, it should activate.
       {mc, {usb}, {}, {}, {t(usb)}, usb_ui},
       {ga, {usb}, {}, {}, {t(usb)}, usb_ui},
       // ... otherwise should the selection sheet.
-      {mc, {usb, internal}, {}, {}, {t(usb), t(internal)}, mss},
-      {ga, {usb, internal}, {}, {}, {t(usb), t(internal)}, mss},
+      {ga, {usb, cable}, {}, {}, {t(usb), add}, mss},
+      {ga, {usb, cable}, {}, {}, {t(usb), add}, mss},
 
       // If the platform authenticator has a credential it should activate.
-      {ga, {usb, internal}, {has_plat}, {}, {t(usb), t(internal)}, plat_ui},
+      {ga, {usb, internal}, {has_plat}, {}, {t(internal), t(usb)}, plat_ui},
+      // ... but with an empty allow list the user should be prompted first.
+      {ga,
+       {usb, internal},
+       {has_plat, one_cred, empty_al},
+       {},
+       {t(internal), t(usb)},
+       use_pk},
+      {ga,
+       {usb, internal},
+       {has_plat, two_cred, empty_al},
+       {},
+       {t(internal), t(usb)},
+       use_pk_multi},
+
+      // MakeCredential with attachment=platform shows the 'Create a passkey'
+      // step, but only on macOS. On other OSes, we defer to the platform.
+      {mc,
+       {internal},
+       {},
+       {},
+       {t(internal)},
+#if BUILDFLAG(IS_MAC)
+       create_pk
+#else
+       plat_ui
+#endif
+      },
+      // MakeCredential with attachment=undefined also shows the 'Create a
+      // passkey' step on macOS. On other OSes, we show mechanism selection.
+      {mc,
+       {usb, internal},
+       {},
+       {},
+       {t(internal), t(usb)},
+#if BUILDFLAG(IS_MAC)
+       create_pk
+#else
+       mss
+#endif
+      },
 
       // If the Windows API is available without caBLE, it should activate.
       {mc, {}, {has_winapi}, {}, {winapi}, plat_ui},
@@ -208,38 +269,43 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
        {usb, aoa, cable},
        {},
        {"a", "b"},
-       {add, t(usb), p("a"), p("b")},
+       {p("a"), p("b"), t(usb), add},
        mss},
       {ga,
        {usb, aoa, cable},
        {},
        {"a", "b"},
-       {add, t(usb), p("a"), p("b")},
+       {p("a"), p("b"), t(usb), add},
        mss},
 
-      // On Windows, if there are linked phones we'll show a selection sheet.
-      {mc, {cable}, {has_winapi}, {"a"}, {winapi, add, p("a")}, mss},
-      {ga, {cable}, {has_winapi}, {"a"}, {winapi, add, p("a")}, mss},
-      // ... unless the `prefer_native_api` flag is set because Chrome
-      // remembered that the last successful security key operation was via the
-      // Windows API. In that case we'll still jump directly to the native UI.
-      {mc,
-       {cable},
-       {has_winapi, native},
-       {"a"},
-       {winapi, add, p("a")},
-       plat_ui},
+      // If this is a Conditional UI request, don't offer the platform
+      // authenticator.
+      {ga, {usb, internal}, {}, {}, {t(usb)}, usb_ui, true},
+      {ga, {usb, internal, cable}, {}, {"a"}, {p("a"), t(usb), add}, mss, true},
+
+      // On Windows, mc with rk=required shows mechanism selection, unless caBLE
+      // isn't an option.
+      {mc, {cable}, {has_winapi, rk}, {}, {winapi, add}, mss},
+      {mc, {}, {has_winapi, rk}, {}, {winapi}, plat_ui},
+      // But for rk=discouraged, always jump to Windows UI.
+      {mc, {cable}, {has_winapi}, {}, {winapi, add}, plat_ui},
+      {mc, {}, {has_winapi}, {}, {winapi}, plat_ui},
+
+      // On Windows, ga with empty allow list shows mechanism selection, unless
+      // caBLE isn't an option.
+      {ga, {cable}, {has_winapi, empty_al}, {}, {winapi, add}, mss},
+      {ga, {}, {has_winapi, empty_al}, {}, {winapi}, plat_ui},
+      // But with a non-empty allow list, always jump to Windows UI.
+      {ga, {cable}, {has_winapi}, {}, {winapi, add}, plat_ui},
+      {ga, {}, {has_winapi}, {}, {winapi}, plat_ui},
+      // Except when the request is legacy cable.
+      {ga, {cable, aoa}, {has_winapi, v1}, {}, {winapi, t(cable)}, cable_ui},
       {ga,
-       {cable},
-       {has_winapi, native},
-       {"a"},
-       {winapi, add, p("a")},
-       plat_ui},
-      // Even without `prefer_native_api`, if there aren't any linked phones
-      // we'll still jump directly to the native UI, at least until we enable
-      // the "Add phone" option.
-      {mc, {cable}, {has_winapi}, {}, {winapi}, plat_ui},
-      {ga, {cable}, {has_winapi}, {}, {winapi}, plat_ui},
+       {cable, aoa},
+       {has_winapi, v2},
+       {},
+       {winapi, t(aoa), t(cable)},
+       cable_ui},
   };
 
   unsigned test_num = 0;
@@ -266,14 +332,32 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
             : device::FidoRequestHandlerBase::RecognizedCredential::
                   kNoRecognizedCredential;
 
+    if (base::Contains(test.params,
+                       TransportAvailabilityParam::kOneRecognizedCred)) {
+      transports_info.recognized_platform_authenticator_credentials = {kCred1};
+    } else if (base::Contains(
+                   test.params,
+                   TransportAvailabilityParam::kTwoRecognizedCreds)) {
+      transports_info.recognized_platform_authenticator_credentials = {kCred1,
+                                                                       kCred2};
+    }
+    transports_info.has_empty_allow_list = base::Contains(
+        test.params, TransportAvailabilityParam::kEmptyAllowList);
+
     if (base::Contains(
             test.params,
             TransportAvailabilityParam::kHasWinNativeAuthenticator)) {
       transports_info.has_win_native_api_authenticator = true;
       transports_info.win_native_api_authenticator_id = "some_authenticator_id";
+      transports_info.win_native_ui_shows_resident_credential_notice = true;
     }
+    transports_info.resident_key_requirement =
+        base::Contains(test.params,
+                       TransportAvailabilityParam::kRequireResidentKey)
+            ? device::ResidentKeyRequirement::kRequired
+            : device::ResidentKeyRequirement::kDiscouraged;
 
-    AuthenticatorRequestDialogModel model(/*web_contents=*/nullptr);
+    AuthenticatorRequestDialogModel model(/*render_frame_host=*/nullptr);
 
     absl::optional<bool> has_v2_cable_extension;
     if (base::Contains(test.params,
@@ -287,7 +371,9 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
       has_v2_cable_extension = true;
     }
 
-    if (has_v2_cable_extension.has_value() || !test.phone_names.empty()) {
+    if (has_v2_cable_extension.has_value() || !test.phone_names.empty() ||
+        base::Contains(test.transports,
+                       device::FidoTransportProtocol::kHybrid)) {
       std::vector<AuthenticatorRequestDialogModel::PairedPhone> phones;
       for (const auto& name : test.phone_names) {
         std::array<uint8_t, device::kP256X962Length> public_key = {0};
@@ -299,11 +385,14 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
     }
 
     model.StartFlow(
-        std::move(transports_info),
-        /*is_conditional_mediation=*/false,
+        std::move(transports_info), test.conditional_ui,
         /*prefer_native_api=*/
         base::Contains(test.params,
                        TransportAvailabilityParam::kPreferNativeAPI));
+    if (test.conditional_ui) {
+      EXPECT_EQ(model.current_step(), Step::kConditionalMediation);
+      model.TransitionToModalWebAuthnRequest();
+    }
     EXPECT_EQ(test.expected_first_step, model.current_step());
 
     std::vector<AuthenticatorRequestDialogModel::Mechanism::Type>
@@ -327,22 +416,27 @@ TEST_F(AuthenticatorRequestDialogModelTest, WinCancel) {
   // Simulate the user canceling the Windows native UI, both with and without
   // that UI being immediately triggered. If it was immediately triggered then
   // canceling it should show the mechanism selection UI.
-  for (const bool prefer_native_api : {false, true}) {
-    SCOPED_TRACE(prefer_native_api);
+  for (const bool is_passkey_request : {false, true}) {
+    SCOPED_TRACE(is_passkey_request);
 
     AuthenticatorRequestDialogModel::TransportAvailabilityInfo tai;
+    tai.request_type = device::FidoRequestType::kMakeCredential;
     tai.has_win_native_api_authenticator = true;
     tai.win_native_api_authenticator_id = "ID";
     tai.available_transports.insert(device::FidoTransportProtocol::kHybrid);
+    tai.resident_key_requirement =
+        is_passkey_request ? device::ResidentKeyRequirement::kRequired
+                           : device::ResidentKeyRequirement::kDiscouraged;
 
     AuthenticatorRequestDialogModel model(/*web_contents=*/nullptr);
     model.set_cable_transport_info(absl::nullopt, {}, base::DoNothing(),
                                    "fido:/1234");
 
     model.StartFlow(std::move(tai),
-                    /*is_conditional_mediation=*/false, prefer_native_api);
+                    /*is_conditional_mediation=*/false,
+                    /*prefer_native_api=*/false);
 
-    if (prefer_native_api) {
+    if (!is_passkey_request) {
       // The Windows native UI should have been triggered.
       EXPECT_EQ(model.current_step(), Step::kNotStarted);
       // Canceling the Windows native UI should be handled.
@@ -360,7 +454,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, WinCancel) {
 
 TEST_F(AuthenticatorRequestDialogModelTest, NoAvailableTransports) {
   testing::StrictMock<MockDialogModelObserver> mock_observer;
-  AuthenticatorRequestDialogModel model(/*web_contents=*/nullptr);
+  AuthenticatorRequestDialogModel model(/*render_frame_host=*/nullptr);
   model.AddObserver(&mock_observer);
 
   EXPECT_CALL(mock_observer, OnStepTransition());
@@ -432,7 +526,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, Cable2ndFactorFlows) {
     transports_info.is_off_the_record_context =
         test.profile == Profile::INCOGNITO;
 
-    AuthenticatorRequestDialogModel model(/*web_contents=*/nullptr);
+    AuthenticatorRequestDialogModel model(/*render_frame_host=*/nullptr);
 
     std::array<uint8_t, device::kP256X962Length> public_key = {0};
     std::vector<AuthenticatorRequestDialogModel::PairedPhone> phones(
@@ -496,10 +590,11 @@ TEST_F(AuthenticatorRequestDialogModelTest, AwaitingAcknowledgement) {
 
   for (const auto& test_case : kTestCases) {
     testing::StrictMock<MockDialogModelObserver> mock_observer;
-    AuthenticatorRequestDialogModel model(/*web_contents=*/nullptr);
+    AuthenticatorRequestDialogModel model(/*render_frame_host=*/nullptr);
     model.AddObserver(&mock_observer);
 
     TransportAvailabilityInfo transports_info;
+    transports_info.request_type = RequestType::kGetAssertion;
     transports_info.available_transports = kAllTransportsWithoutCable;
 
     EXPECT_CALL(mock_observer, OnStepTransition());
@@ -540,7 +635,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, BleAdapterAlreadyPowered) {
     transports_info.is_ble_powered = true;
 
     BluetoothAdapterPowerOnCallbackReceiver power_receiver;
-    AuthenticatorRequestDialogModel model(/*web_contents=*/nullptr);
+    AuthenticatorRequestDialogModel model(/*render_frame_host=*/nullptr);
     model.SetBluetoothAdapterPowerOnCallback(power_receiver.GetCallback());
     model.set_cable_transport_info(true, {}, base::DoNothing(), absl::nullopt);
     model.StartFlow(std::move(transports_info),
@@ -569,7 +664,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, BleAdapterNeedToBeManuallyPowered) {
 
     testing::NiceMock<MockDialogModelObserver> mock_observer;
     BluetoothAdapterPowerOnCallbackReceiver power_receiver;
-    AuthenticatorRequestDialogModel model(/*web_contents=*/nullptr);
+    AuthenticatorRequestDialogModel model(/*render_frame_host=*/nullptr);
     model.AddObserver(&mock_observer);
     model.SetBluetoothAdapterPowerOnCallback(power_receiver.GetCallback());
     model.set_cable_transport_info(true, {}, base::DoNothing(), absl::nullopt);
@@ -611,7 +706,7 @@ TEST_F(AuthenticatorRequestDialogModelTest,
     transports_info.is_ble_powered = false;
 
     BluetoothAdapterPowerOnCallbackReceiver power_receiver;
-    AuthenticatorRequestDialogModel model(/*web_contents=*/nullptr);
+    AuthenticatorRequestDialogModel model(/*render_frame_host=*/nullptr);
     model.SetBluetoothAdapterPowerOnCallback(power_receiver.GetCallback());
     model.set_cable_transport_info(true, {}, base::DoNothing(), absl::nullopt);
     model.StartFlow(std::move(transports_info),
@@ -634,48 +729,6 @@ TEST_F(AuthenticatorRequestDialogModelTest,
 }
 
 TEST_F(AuthenticatorRequestDialogModelTest,
-       RequestCallbackOnlyCalledOncePerAuthenticator) {
-  ::device::FidoRequestHandlerBase::TransportAvailabilityInfo transports_info;
-  transports_info.request_type = RequestType::kMakeCredential;
-  transports_info.available_transports = {
-      AuthenticatorTransport::kInternal,
-      AuthenticatorTransport::kUsbHumanInterfaceDevice};
-
-  int num_called = 0;
-  AuthenticatorRequestDialogModel model(/*web_contents=*/nullptr);
-  model.SetRequestCallback(base::BindRepeating(
-      [](int* i, const std::string& authenticator_id) { ++(*i); },
-      &num_called));
-  model.saved_authenticators().AddAuthenticator(AuthenticatorReference(
-      /*device_id=*/"authenticator", AuthenticatorTransport::kInternal));
-
-  model.StartFlow(std::move(transports_info),
-                  /*is_conditional_mediation=*/false,
-                  /*prefer_native_api=*/false);
-  EXPECT_EQ(AuthenticatorRequestDialogModel::Step::kMechanismSelection,
-            model.current_step());
-  EXPECT_EQ(0, num_called);
-
-  // Simulate switching back and forth between transports. The request callback
-  // should only be invoked once (USB is not dispatched through the UI).
-  model.StartTransportFlowForTesting(AuthenticatorTransport::kInternal);
-  EXPECT_TRUE(model.should_dialog_be_closed());
-  task_environment()->RunUntilIdle();
-  EXPECT_EQ(1, num_called);
-  model.StartTransportFlowForTesting(
-      AuthenticatorTransport::kUsbHumanInterfaceDevice);
-  EXPECT_EQ(AuthenticatorRequestDialogModel::Step::kUsbInsertAndActivate,
-            model.current_step());
-  task_environment()->RunUntilIdle();
-  EXPECT_FALSE(model.should_dialog_be_closed());
-  EXPECT_EQ(1, num_called);
-  model.StartTransportFlowForTesting(AuthenticatorTransport::kInternal);
-  EXPECT_TRUE(model.should_dialog_be_closed());
-  task_environment()->RunUntilIdle();
-  EXPECT_EQ(1, num_called);
-}
-
-TEST_F(AuthenticatorRequestDialogModelTest,
        RequestCallbackForWindowsAuthenticatorIsInvokedAutomatically) {
   constexpr char kWinAuthenticatorId[] = "some_authenticator_id";
 
@@ -686,7 +739,7 @@ TEST_F(AuthenticatorRequestDialogModelTest,
   transports_info.win_native_api_authenticator_id = kWinAuthenticatorId;
 
   std::vector<std::string> dispatched_authenticator_ids;
-  AuthenticatorRequestDialogModel model(/*web_contents=*/nullptr);
+  AuthenticatorRequestDialogModel model(/*render_frame_host=*/nullptr);
   model.SetRequestCallback(base::BindRepeating(
       [](std::vector<std::string>* ids, const std::string& authenticator_id) {
         ids->push_back(authenticator_id);
@@ -704,7 +757,7 @@ TEST_F(AuthenticatorRequestDialogModelTest,
 
 TEST_F(AuthenticatorRequestDialogModelTest,
        ConditionalUINoRecognizedCredential) {
-  AuthenticatorRequestDialogModel model(/*web_contents=*/nullptr);
+  AuthenticatorRequestDialogModel model(/*render_frame_host=*/nullptr);
 
   int preselect_num_called = 0;
   model.SetAccountPreselectedCallback(base::BindRepeating(
@@ -738,7 +791,7 @@ TEST_F(AuthenticatorRequestDialogModelTest,
 }
 
 TEST_F(AuthenticatorRequestDialogModelTest, ConditionalUIRecognizedCredential) {
-  AuthenticatorRequestDialogModel model(/*web_contents=*/nullptr);
+  AuthenticatorRequestDialogModel model(/*render_frame_host=*/nullptr);
   int preselect_num_called = 0;
   model.SetAccountPreselectedCallback(base::BindRepeating(
       [](int* i, std::vector<uint8_t> credential_id) {
@@ -787,7 +840,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, ConditionalUIRecognizedCredential) {
 // it.
 TEST_F(AuthenticatorRequestDialogModelTest, ConditionalUICancelRequest) {
   testing::StrictMock<MockDialogModelObserver> mock_observer;
-  AuthenticatorRequestDialogModel model(/*web_contents=*/nullptr);
+  AuthenticatorRequestDialogModel model(/*render_frame_host=*/nullptr);
   model.AddObserver(&mock_observer);
   model.saved_authenticators().AddAuthenticator(AuthenticatorReference(
       /*device_id=*/"internal", AuthenticatorTransport::kInternal));
@@ -846,7 +899,7 @@ class AuthenticatorRequestDialogModelPreselectCredentialTest
 
 TEST_F(AuthenticatorRequestDialogModelPreselectCredentialTest,
        PreSelectWithEmptyAllowList) {
-  AuthenticatorRequestDialogModel model(/*web_contents=*/nullptr);
+  AuthenticatorRequestDialogModel model(/*render_frame_host=*/nullptr);
   int preselect_num_called = 0;
   model.SetAccountPreselectedCallback(base::BindLambdaForTesting(
       [&preselect_num_called](std::vector<uint8_t> credential_id) {

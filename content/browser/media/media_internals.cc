@@ -110,6 +110,8 @@ std::string FormatToString(media::AudioParameters::Format format) {
       return "dtsxp2";
     case media::AudioParameters::AUDIO_BITSTREAM_IEC61937:
       return "iec61937";
+    case media::AudioParameters::AUDIO_BITSTREAM_DTS_HD_MA:
+      return "dtshd_ma";
     case media::AudioParameters::AUDIO_FAKE:
       return "fake";
   }
@@ -384,7 +386,7 @@ static bool ConvertEventToUpdate(int render_process_id,
   const double ticks_millis = ticks / base::Time::kMicrosecondsPerMillisecond;
   dict.Set("ticksMillis", ticks_millis);
 
-  base::Value::Dict cloned_params = event.params.GetDict().Clone();
+  base::Value::Dict cloned_params = event.params.Clone();
   switch (event.type) {
     case media::MediaLogRecord::Type::kMessage:
       dict.Set("type", "MEDIA_LOG_ENTRY");

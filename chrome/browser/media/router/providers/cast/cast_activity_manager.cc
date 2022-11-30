@@ -14,6 +14,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
@@ -22,12 +23,12 @@
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
 #include "chrome/browser/media/router/providers/cast/mirroring_activity.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/cast_channel/cast_message_util.h"
-#include "components/cast_channel/enum_table.h"
 #include "components/media_router/browser/logger_impl.h"
 #include "components/media_router/browser/media_router_metrics.h"
 #include "components/media_router/common/media_source.h"
 #include "components/media_router/common/mojom/media_router.mojom.h"
+#include "components/media_router/common/providers/cast/channel/cast_message_util.h"
+#include "components/media_router/common/providers/cast/channel/enum_table.h"
 #include "components/media_router/common/route_request_result.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -161,9 +162,9 @@ void CastActivityManager::LaunchSessionParsed(
 
   // If there is currently a session on the sink, it must be terminated before
   // the new session can be launched.
-  auto activity_it = std::find_if(
-      activities_.begin(), activities_.end(), [&sink_id](const auto& activity) {
-        return activity.second->route().media_sink_id() == sink_id;
+  auto activity_it =
+      base::ranges::find(activities_, sink_id, [](const auto& activity) {
+        return activity.second->route().media_sink_id();
       });
 
   if (activity_it == activities_.end()) {
@@ -257,10 +258,9 @@ AppActivity* CastActivityManager::FindActivityForSessionJoin(
 
   // Find activity by session ID.  Search should fail if the session ID is not
   // valid.
-  auto it = std::find_if(app_activities_.begin(), app_activities_.end(),
-                         [&session_id](const auto& entry) {
-                           return entry.second->session_id() == session_id;
-                         });
+  auto it = base::ranges::find(
+      app_activities_, session_id,
+      [](const auto& entry) { return entry.second->session_id(); });
   return it == app_activities_.end() ? nullptr : it->second;
 }
 
@@ -276,8 +276,8 @@ AppActivity* CastActivityManager::FindActivityForAutoJoin(
       return nullptr;
   }
 
-  auto it = std::find_if(
-      app_activities_.begin(), app_activities_.end(),
+  auto it = base::ranges::find_if(
+      app_activities_,
       [&cast_source, &origin, frame_tree_node_id](const auto& pair) {
         AutoJoinPolicy policy = cast_source.auto_join_policy();
         const AppActivity* activity = pair.second;
@@ -483,22 +483,19 @@ bool CastActivityManager::CreateMediaController(
 
 CastActivityManager::ActivityMap::iterator
 CastActivityManager::FindActivityByChannelId(int channel_id) {
-  return std::find_if(
-      activities_.begin(), activities_.end(), [channel_id, this](auto& entry) {
-        const MediaRoute& route = entry.second->route();
-        const MediaSinkInternal* sink =
-            media_sink_service_->GetSinkByRoute(route);
-        return sink && sink->cast_data().cast_channel_id == channel_id;
-      });
+  return base::ranges::find_if(activities_, [channel_id, this](auto& entry) {
+    const MediaRoute& route = entry.second->route();
+    const MediaSinkInternal* sink = media_sink_service_->GetSinkByRoute(route);
+    return sink && sink->cast_data().cast_channel_id == channel_id;
+  });
 }
 
 CastActivityManager::ActivityMap::iterator
 CastActivityManager::FindActivityBySink(const MediaSinkInternal& sink) {
   const MediaSink::Id& sink_id = sink.sink().id();
-  return std::find_if(
-      activities_.begin(), activities_.end(), [&sink_id](const auto& activity) {
-        return activity.second->route().media_sink_id() == sink_id;
-      });
+  return base::ranges::find(activities_, sink_id, [](const auto& activity) {
+    return activity.second->route().media_sink_id();
+  });
 }
 
 AppActivity* CastActivityManager::AddAppActivity(const MediaRoute& route,
@@ -626,9 +623,10 @@ void CastActivityManager::OnSessionRemoved(const MediaSinkInternal& sink) {
   }
 }
 
-void CastActivityManager::OnMediaStatusUpdated(const MediaSinkInternal& sink,
-                                               const base::Value& media_status,
-                                               absl::optional<int> request_id) {
+void CastActivityManager::OnMediaStatusUpdated(
+    const MediaSinkInternal& sink,
+    const base::Value::Dict& media_status,
+    absl::optional<int> request_id) {
   auto it = FindActivityBySink(sink);
   if (it != activities_.end()) {
     it->second->SendMediaStatusToClients(media_status, request_id);
@@ -834,7 +832,7 @@ void CastActivityManager::HandleLaunchSessionResponse(
         mojom::RouteRequestResultCode::ROUTE_NOT_FOUND);
     return;
   }
-  RecordLaunchSessionResponseAppType(session->value().FindKey("appType"));
+  RecordLaunchSessionResponseAppType(session->value().Find("appType"));
 
   mojom::RoutePresentationConnectionPtr presentation_connection;
   const std::string& client_id = cast_source.client_id();
@@ -872,11 +870,10 @@ void CastActivityManager::HandleLaunchSessionResponse(
   if (!client_id.empty() && base::Contains(session->message_namespaces(),
                                            cast_channel::kMediaNamespace)) {
     // Request media status from the receiver.
-    base::Value request(base::Value::Type::DICTIONARY);
-    request.SetStringKey("type",
-                         cast_util::EnumToString<
-                             cast_channel::V2MessageType,
-                             cast_channel::V2MessageType::kMediaGetStatus>());
+    base::Value::Dict request;
+    request.Set("type", cast_util::EnumToString<
+                            cast_channel::V2MessageType,
+                            cast_channel::V2MessageType::kMediaGetStatus>());
     message_handler_->SendMediaRequest(channel_id, request, client_id,
                                        destination_id);
   }

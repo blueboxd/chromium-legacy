@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,6 @@ String PostureToString(device::mojom::blink::DevicePostureType posture) {
       return "continuous";
     case device::mojom::blink::DevicePostureType::kFolded:
       return "folded";
-    case device::mojom::blink::DevicePostureType::kFoldedOver:
-      return "folded-over";
   }
 }
 
@@ -62,7 +60,7 @@ void DevicePosture::EnsureServiceConnection() {
 
   service_->AddListenerAndGetCurrentPosture(
       receiver_.BindNewPipeAndPassRemote(task_runner),
-      WTF::Bind(&DevicePosture::OnPostureChanged, WrapPersistent(this)));
+      WTF::BindOnce(&DevicePosture::OnPostureChanged, WrapPersistent(this)));
 }
 
 void DevicePosture::AddedEventListener(const AtomicString& event_type,

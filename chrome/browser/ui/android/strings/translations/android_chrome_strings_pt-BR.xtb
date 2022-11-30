@@ -101,7 +101,6 @@ Ao excluir todo o histórico de navegação ou apenas o de um site específico, 
 <translation id="1448440926884431741">Organize seus produtos monitorados nos favoritos</translation>
 <translation id="1450753235335490080">Falha no compartilhamento de <ph name="CONTENT_TYPE" /></translation>
 <translation id="1466383950273130737">Idioma do Chrome</translation>
-<translation id="147113415845704694">Diga "Qual é a previsão do tempo para hoje?"</translation>
 <translation id="1474893630593443211">Mais controle sobre os anúncios que você vê</translation>
 <translation id="1477626028522505441">Falha no download do arquivo <ph name="FILE_NAME" /> devido a problemas de servidor.</translation>
 <translation id="148482509007564431">Fluxo para adicionar aos favoritos</translation>
@@ -340,6 +339,7 @@ Ao excluir todo o histórico de navegação ou apenas o de um site específico, 
 <translation id="2861923151411510142">Você vai perder o acesso a alguns dos recursos do Chrome</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2871733351037274014">Páginas pré-carregadas</translation>
+<translation id="2876136027428473467"><ph name="CHILD_NAME" /> quer que você aprove este site:</translation>
 <translation id="2886836735871983413">Uma lista de sites vai aparecer aqui conforme você navega na Web</translation>
 <translation id="2888126860611144412">Sobre o Google Chrome</translation>
 <translation id="2891154217021530873">Para de carregar a página</translation>
@@ -355,6 +355,7 @@ Ao excluir todo o histórico de navegação ou apenas o de um site específico, 
 <translation id="2932150158123903946">Armazenamento do Google <ph name="APP_NAME" /></translation>
 <translation id="2932222164150889403">Seu teclado continuará o mesmo</translation>
 <translation id="2936980480904111527">As notificações do Chrome facilitam tudo</translation>
+<translation id="2940075786175545812">Opção para aprovar ou não um site</translation>
 <translation id="2942036813789421260">A guia "Visualizar" está fechada</translation>
 <translation id="2946420957526726953">Atualizando o Chrome para se conectar a outros dispositivos</translation>
 <translation id="2951071800649516099">Adicionar páginas à lista de leitura para mais tarde</translation>
@@ -378,7 +379,6 @@ Ao excluir todo o histórico de navegação ou apenas o de um site específico, 
 <translation id="3029276696788198026">Sem pré-carregamento</translation>
 <translation id="3029704984691124060">As senhas não correspondem</translation>
 <translation id="3031225630520268969">IU de consentimento para a pesquisa por voz do Assistente</translation>
-<translation id="3034163383943672781">O download será feito em <ph name="DATE" />.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Receber ajuda<ph name="END_LINK" /></translation>
 <translation id="3037177537145227281">Monitorando preço</translation>
 <translation id="3037517125981011456">Mostra solicitações para fazer login no Chrome</translation>
@@ -423,6 +423,7 @@ Ao excluir todo o histórico de navegação ou apenas o de um site específico, 
 <translation id="3259831549858767975">Diminuir tudo na página.</translation>
 <translation id="3264124641674805320">Como fazer o download de conteúdo para ver mais tarde</translation>
 <translation id="3264259168916048410">O computador quer usar este dispositivo para fazer login em um site</translation>
+<translation id="3265093782546847662">Todas as páginas de <ph name="DOMAIN" /></translation>
 <translation id="3265534588625245297">Gerenciar os sites seguidos</translation>
 <translation id="3269093882174072735">Carregar imagem</translation>
 <translation id="3280562213547448728">Pesquisa por voz</translation>
@@ -455,7 +456,6 @@ Ao excluir todo o histórico de navegação ou apenas o de um site específico, 
 <translation id="3443221991560634068">Atualizar a página atual</translation>
 <translation id="3444179773590444986">Enviar feedback sobre o tema escuro para sites?</translation>
 <translation id="3452832259067974318">Para proteger sua privacidade, o Chrome não vai preencher a senha automaticamente neste campo.</translation>
-<translation id="3469665409713263828">{FILE_COUNT,plural, =1{1 download programado}one{# download programado}other{# downloads programados}}</translation>
 <translation id="3474624961160222204">Continuar como <ph name="NAME" /></translation>
 <translation id="3478363558367712427">Você pode escolher seu mecanismo de pesquisa</translation>
 <translation id="3479552764303398839">Não agora</translation>
@@ -723,7 +723,6 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="4925120120285606924">Captura de tela <ph name="CURRENT_DATE_ISO" /></translation>
 <translation id="49268022542405662">Suas senhas serão exportadas e transferidas por download como um arquivo de texto. Elas ficarão visíveis para qualquer pessoa e app que tiver acesso à pasta de destino.</translation>
 <translation id="4932247056774066048">Você está saindo de uma conta gerenciada por <ph name="DOMAIN_NAME" />, por isso seus dados do Chrome serão excluídos deste dispositivo. No entanto, eles permanecerão na sua Conta do Google.</translation>
-<translation id="4941179133499732445">Toque no microfone para pesquisar usando sua voz</translation>
 <translation id="4943703118917034429">Realidade virtual</translation>
 <translation id="4943872375798546930">Nenhum resultado</translation>
 <translation id="4950924971025849764">Quando você se conecta à mesma Conta do Google, outros dispositivos podem usar este smartphone como uma chave de segurança.</translation>
@@ -734,6 +733,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="4985248278475639481">Sobre a personalização de anúncios</translation>
 <translation id="4987271110129728827">Não foi possível encontrar a página. Verifique se há erros de ortografia ou faça uma pesquisa na Web.</translation>
 <translation id="4988526792673242964">Páginas</translation>
+<translation id="4991110219272367918">A opção para aprovar ou não um site foi fechada</translation>
 <translation id="499724277181351974">Navegar: <ph name="WEBSITE_TITLE" /> (<ph name="WEBSITE_URL" />)</translation>
 <translation id="5001388021414335527">Siga este site</translation>
 <translation id="500351648694011114">Navegue com mais facilidade</translation>
@@ -746,7 +746,6 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="504456571576643789">Considerações</translation>
 <translation id="5054455334322721892"><ph name="BEGIN_LINK1" />Outras formas de atividade<ph name="END_LINK1" /> podem ser salvas na sua conta quando ela está conectada. É possível excluí-las a qualquer momento.</translation>
-<translation id="5061533557687621530">Para consultar a previsão do tempo, toque no microfone e diga "Qual é a previsão do tempo para hoje?"</translation>
 <translation id="506254248375231072">Nenhuma guia</translation>
 <translation id="5091199029769593641">Em breve, você verá stories de <ph name="SITE_NAME" /> quando abrir uma nova guia. Os sites que você segue são armazenados na sua Conta do Google. Você pode gerenciá-los nas configurações do Discover.</translation>
 <translation id="5091249083535528968">Dados de uso estendidos</translation>
@@ -767,7 +766,6 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5171045022955879922">Pesquisar ou digitar URL</translation>
 <translation id="517734441743343109">Ao continuar, você concorda com os <ph name="BEGIN_TOS_LINK" />Termos de Serviço<ph name="END_TOS_LINK" /> e a <ph name="BEGIN_PRIVACY_LINK" />Política\u00A0de\u00A0Privacidade<ph name="END_PRIVACY_LINK" />.</translation>
 <translation id="5184329579814168207">Abrir no Google Chrome</translation>
-<translation id="5188992787241350004">Pesquise usando a voz</translation>
 <translation id="5191251636205085390">Descubra e controle novas tecnologias para substituir cookies de terceiros</translation>
 <translation id="5193988420012215838">Copiado para a área de transferência</translation>
 <translation id="5199929503336119739">Perfil de trabalho</translation>
@@ -949,10 +947,10 @@ Os testes dessa tecnologia ainda estão em desenvolvimento ativo e estão dispon
 <translation id="6162892189396105610">Pré-carrega páginas que o Chrome acredita que você irá acessar.</translation>
 <translation id="6186394685773237175">Não foram encontradas senhas comprometidas</translation>
 <translation id="6192907950379606605">Ver descrições de imagens</translation>
+<translation id="6193448654517602979">Selecione as guias</translation>
 <translation id="6196315980958524839">As senhas são salvas no Gerenciador de senhas do Google neste dispositivo</translation>
 <translation id="620197886010707372">Abrir app <ph name="APPNAME" /> com o Google Play?</translation>
 <translation id="6202812185118613467">Faça login novamente para iniciar a sincronização</translation>
-<translation id="6203593061661911168">O download será iniciado quando houver uma conexão Wi-Fi</translation>
 <translation id="6210748933810148297">Não é <ph name="EMAIL" />?</translation>
 <translation id="6211386937064921208">Visualizando esta página</translation>
 <translation id="6221633008163990886">Desbloqueie para exportar suas senhas</translation>
@@ -1108,6 +1106,7 @@ Os tokens de confiança melhoram a privacidade na Web e não podem ser usados pa
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6900532703269623216">Proteção reforçada</translation>
 <translation id="6903907808598579934">Ativar a sincronização</translation>
+<translation id="6908998565271542516">Opção para aprovar ou não um site aberta no tamanho máximo</translation>
 <translation id="6909589135458168665">Páginas pré-carregadas</translation>
 <translation id="6942665639005891494">Altere o local padrão de download a qualquer momento usando a opção do menu "Configurações"</translation>
 <translation id="694267552845942083">No momento, você está personalizando suas configurações de sincronização. Para terminar de ativar a sincronização, toque no botão "Confirmar" na parte inferior da tela. Navegar para cima</translation>
@@ -1115,6 +1114,7 @@ Os tokens de confiança melhoram a privacidade na Web e não podem ser usados pa
 <translation id="6955535239952325894">Esta configuração está desativada em navegadores gerenciados</translation>
 <translation id="6963766334940102469">Excluir favoritos</translation>
 <translation id="696447261358045621">Sair do modo de navegação anônima</translation>
+<translation id="6971862865055170158">Não aprovar</translation>
 <translation id="6979737339423435258">Todo o período</translation>
 <translation id="6987047470128880212">A navegação anônima não está disponível neste dispositivo</translation>
 <translation id="6995899638241819463">Avisar se suas senhas forem expostas em uma violação de dados</translation>
@@ -1192,7 +1192,6 @@ Os tokens de confiança melhoram a privacidade na Web e não podem ser usados pa
 <translation id="7435356471928173109">Desativado pelo administrador</translation>
 <translation id="7437998757836447326">Sair do Google Chrome</translation>
 <translation id="7443901082822119557">Na navegação anônima, os sites não podem usar os cookies para ver sua atividade de navegação em outros sites, por exemplo, para personalizar anúncios. Os recursos de alguns sites podem falhar.</translation>
-<translation id="7444811645081526538">Mais categorias</translation>
 <translation id="7453467225369441013">Desconecta você da maioria dos sites, mas não da sua Conta do Google.</translation>
 <translation id="7454641608352164238">Espaço insuficiente</translation>
 <translation id="7456774706094330779">Pré-carregamento estendido</translation>
@@ -1215,7 +1214,6 @@ Os tokens de confiança melhoram a privacidade na Web e não podem ser usados pa
 <translation id="751961395872307827">Não foi possível se conectar ao site</translation>
 <translation id="752220631458524187">Desconecte o smartphone quando terminar</translation>
 <translation id="7523960634226602883">Pesquisar com a câmera usando o Lens</translation>
-<translation id="753225086557513863">Programado para mais tarde</translation>
 <translation id="7562080006725997899">Limpando dados de navegação</translation>
 <translation id="756809126120519699">Dados do Chrome apagados</translation>
 <translation id="7577900504646297215">Gerenciar interesses</translation>
@@ -1274,7 +1272,6 @@ Os tokens de confiança melhoram a privacidade na Web e não podem ser usados pa
 <translation id="784934925303690534">Período</translation>
 <translation id="7851858861565204677">Outros dispositivos</translation>
 <translation id="7853202427316060426">Atividade</translation>
-<translation id="7857691613771368249">Perguntar antes de salvar arquivos</translation>
 <translation id="7859988229622350291">Nunca traduzir</translation>
 <translation id="7866213166286285359">Traduzir páginas aqui</translation>
 <translation id="78707286264420418">Para se conectar ao seu dispositivo, o <ph name="PRODUCT_NAME" /> precisa da permissão de acesso a dispositivos por perto.</translation>
@@ -1311,6 +1308,7 @@ Os tokens de confiança melhoram a privacidade na Web e não podem ser usados pa
 <translation id="8015452622527143194">Retornar tudo na página para o tamanho padrão</translation>
 <translation id="8026334261755873520">Remover dados de navegação</translation>
 <translation id="8027863900915310177">Escolha um local para fazer o download</translation>
+<translation id="8030852056903932865">Aprovar</translation>
 <translation id="8032569120109842252">Seguindo</translation>
 <translation id="8035133914807600019">Nova pasta...</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dias restantes</translation>
@@ -1352,7 +1350,6 @@ Os tokens de confiança melhoram a privacidade na Web e não podem ser usados pa
 <translation id="8200772114523450471">Retomar</translation>
 <translation id="8209050860603202033">Abrir imagem</translation>
 <translation id="8216351761227087153">Assistir</translation>
-<translation id="8218052821161047641">Página de carregamento rápido</translation>
 <translation id="8218622182176210845">Gerenciar sua conta</translation>
 <translation id="8221656072740924283">Continuar</translation>
 <translation id="8223642481677794647">Menu do card do feed</translation>
@@ -1517,7 +1514,6 @@ Os tokens de confiança melhoram a privacidade na Web e não podem ser usados pa
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9065383040763568503">Dados armazenados que não parecem ser importantes para o Chrome. Por exemplo, sites sem configurações salvas ou que você não visita com frequência</translation>
 <translation id="906781307897697745">no: <ph name="PRODUCT_NAME" /></translation>
-<translation id="9069543557624799859">O download começará às <ph name="TIME" />.</translation>
 <translation id="9069999660519089861">Não há páginas não lidas</translation>
 <translation id="9070377983101773829">Iniciar pesquisa por voz</translation>
 <translation id="9074336505530349563">Para receber conteúdo personalizado sugerido pelo Google, ative a sincronização</translation>

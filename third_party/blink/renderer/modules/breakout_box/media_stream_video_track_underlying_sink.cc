@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,17 +25,17 @@ namespace blink {
 
 namespace {
 
-const base::Feature kBreakoutBoxEagerConversion {
-  "BreakoutBoxEagerConversion",
-  // This feature has the same restrictions as TwoCopyCanvasCapture; see
-  // comments there.
+BASE_FEATURE(kBreakoutBoxEagerConversion,
+             "BreakoutBoxEagerConversion",
+// This feature has the same restrictions as TwoCopyCanvasCapture; see
+// comments there.
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || \
     (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY))
-      base::FEATURE_ENABLED_BY_DEFAULT
+             base::FEATURE_ENABLED_BY_DEFAULT
 #else
-      base::FEATURE_DISABLED_BY_DEFAULT
+             base::FEATURE_DISABLED_BY_DEFAULT
 #endif
-};
+);
 
 class TransferringOptimizer : public WritableStreamTransferringOptimizer {
  public:
@@ -203,9 +203,9 @@ MediaStreamVideoTrackUnderlyingSink::MaybeConvertToNV12GMBVideoFrame(
               FROM_HERE, ConvertToBaseOnceCallback(CrossThreadBindOnce([]() {
                 return Platform::Current()->GetGpuMemoryBufferManager();
               })),
-              WTF::Bind(&MediaStreamVideoTrackUnderlyingSink::
-                            CreateAcceleratedFramePool,
-                        WrapWeakPersistent(this)));
+              WTF::BindOnce(&MediaStreamVideoTrackUnderlyingSink::
+                                CreateAcceleratedFramePool,
+                            WrapWeakPersistent(this)));
       return absl::nullopt;
     }
     auto* gmb_manager = Platform::Current()->GetGpuMemoryBufferManager();
@@ -223,7 +223,7 @@ MediaStreamVideoTrackUnderlyingSink::MaybeConvertToNV12GMBVideoFrame(
 
   auto resolver =
       WrapPersistent(MakeGarbageCollected<ScriptPromiseResolver>(script_state));
-  auto convert_done_callback = WTF::Bind(
+  auto convert_done_callback = WTF::BindOnce(
       &MediaStreamVideoTrackUnderlyingSink::ConvertDone, WrapPersistent(this),
       resolver, video_frame, estimated_capture_time);
   const bool success = accelerated_frame_pool_->ConvertVideoFrame(

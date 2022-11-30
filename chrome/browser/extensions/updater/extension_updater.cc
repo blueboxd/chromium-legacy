@@ -55,8 +55,8 @@
 #include "extensions/common/manifest_url_handlers.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/settings/cros_settings_names.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/user_manager/user_manager.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -471,6 +471,10 @@ void ExtensionUpdater::CheckNow(CheckParams params) {
       if (CanUseUpdateService(pending_id)) {
         update_check_params.update_info[pending_id].is_corrupt_reinstall =
             is_corrupt_reinstall;
+        if (is_corrupt_reinstall) {
+          LOG(WARNING) << "Corrupt extension with id " << pending_id
+                       << " will be reinstalled with UpdateService.";
+        }
       } else if (info &&
                  downloader_->AddPendingExtension(ExtensionDownloaderTask(
                      pending_id, info->update_url(), info->install_source(),
@@ -481,6 +485,10 @@ void ExtensionUpdater::CheckNow(CheckParams params) {
         request.in_progress_ids.insert(pending_id);
         InstallStageTracker::Get(profile_)->ReportInstallationStage(
             pending_id, InstallStageTracker::Stage::DOWNLOADING);
+        if (is_corrupt_reinstall) {
+          LOG(WARNING) << "Corrupt extension with id " << pending_id
+                       << " will be reinstalled with ExtensionDownloader.";
+        }
       } else {
         InstallStageTracker::Get(profile_)->ReportFailure(
             pending_id,

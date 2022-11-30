@@ -388,7 +388,7 @@ MutableCSSPropertyValueSet::SetResult MutableCSSPropertyValueSet::SetProperty(
   // Setting the value to an empty string just removes the property in both IE
   // and Gecko. Setting it to null seems to produce less consistent results, but
   // we treat it just the same.
-  if (value.IsEmpty()) {
+  if (value.empty()) {
     return RemoveProperty(ResolveCSSPropertyID(unresolved_property))
                ? kChangedPropertySet
                : kUnchanged;
@@ -408,7 +408,7 @@ MutableCSSPropertyValueSet::SetResult MutableCSSPropertyValueSet::SetProperty(
     SecureContextMode secure_context_mode,
     StyleSheetContents* context_style_sheet,
     bool is_animation_tainted) {
-  if (value.IsEmpty()) {
+  if (value.empty()) {
     return RemoveProperty(custom_property_name) ? kChangedPropertySet
                                                 : kUnchanged;
   }
@@ -511,7 +511,7 @@ MutableCSSPropertyValueSet::SetResult
 MutableCSSPropertyValueSet::AddParsedProperties(
     const HeapVector<CSSPropertyValue, 64>& properties) {
   SetResult changed = kUnchanged;
-  property_vector_.ReserveCapacity(property_vector_.size() + properties.size());
+  property_vector_.reserve(property_vector_.size() + properties.size());
   for (unsigned i = 0; i < properties.size(); ++i)
     changed = std::max(changed, SetProperty(properties[i]));
   return changed;
@@ -572,7 +572,7 @@ inline bool ContainsId(const CSSProperty* const set[],
 bool MutableCSSPropertyValueSet::RemovePropertiesInSet(
     const CSSProperty* const set[],
     unsigned length) {
-  if (property_vector_.IsEmpty())
+  if (property_vector_.empty())
     return false;
 
   CSSPropertyValue* properties = property_vector_.data();

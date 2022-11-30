@@ -98,10 +98,6 @@ TreeScope::TreeScope(Document& document,
 
 TreeScope::~TreeScope() = default;
 
-void TreeScope::ResetTreeScope() {
-  selection_ = nullptr;
-}
-
 bool TreeScope::IsInclusiveAncestorTreeScopeOf(const TreeScope& scope) const {
   for (const TreeScope* current = &scope; current;
        current = current->ParentTreeScope()) {
@@ -133,7 +129,7 @@ void TreeScope::ClearScopedStyleResolver() {
 }
 
 Element* TreeScope::getElementById(const AtomicString& element_id) const {
-  if (element_id.IsEmpty())
+  if (element_id.empty())
     return nullptr;
   if (!elements_by_id_)
     return nullptr;
@@ -144,7 +140,7 @@ const HeapVector<Member<Element>>& TreeScope::GetAllElementsById(
     const AtomicString& element_id) const {
   DEFINE_STATIC_LOCAL(Persistent<HeapVector<Member<Element>>>, empty_vector,
                       (MakeGarbageCollected<HeapVector<Member<Element>>>()));
-  if (element_id.IsEmpty())
+  if (element_id.empty())
     return *empty_vector;
   if (!elements_by_id_)
     return *empty_vector;
@@ -321,7 +317,7 @@ HeapVector<Member<Element>> TreeScope::ElementsFromHitTestResult(
     }
   }
   if (Element* document_element = GetDocument().documentElement()) {
-    if (elements.IsEmpty() || elements.back() != document_element)
+    if (elements.empty() || elements.back() != document_element)
       elements.push_back(document_element);
   }
   return elements;
@@ -430,7 +426,7 @@ DOMSelection* TreeScope::GetSelection() const {
 }
 
 Element* TreeScope::FindAnchorWithName(const String& name) {
-  if (name.IsEmpty())
+  if (name.empty())
     return nullptr;
   if (Element* element = getElementById(AtomicString(name)))
     return element;
@@ -475,7 +471,7 @@ Node* TreeScope::FindAnchor(const String& fragment) {
 
   // 7. If decodedFragment is "top", top of the document.
   // TODO(1117212) Move the IsEmpty check to step 2.
-  if (fragment.IsEmpty() || EqualIgnoringASCIICase(name, "top"))
+  if (fragment.empty() || EqualIgnoringASCIICase(name, "top"))
     anchor = &GetDocument();
 
   return anchor;
@@ -633,7 +629,7 @@ const TreeScope* TreeScope::CommonAncestorTreeScope(
   // is found. If |this| and |other| belong to different documents, null will be
   // returned.
   const TreeScope* last_ancestor = nullptr;
-  while (!this_chain.IsEmpty() && !other_chain.IsEmpty() &&
+  while (!this_chain.empty() && !other_chain.empty() &&
          this_chain.back() == other_chain.back()) {
     last_ancestor = this_chain.back();
     this_chain.pop_back();
@@ -657,7 +653,7 @@ bool TreeScope::IsInclusiveAncestorOf(const TreeScope& scope) const {
 }
 
 Element* TreeScope::GetElementByAccessKey(const String& key) const {
-  if (key.IsEmpty())
+  if (key.empty())
     return nullptr;
   Element* result = nullptr;
   Node& root = RootNode();

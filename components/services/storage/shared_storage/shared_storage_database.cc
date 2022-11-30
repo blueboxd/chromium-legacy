@@ -24,6 +24,7 @@
 #include "sql/transaction.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -781,7 +782,7 @@ std::vector<mojom::StorageUsageInfoPtr> SharedStorageDatabase::FetchOrigins(
 
   while (statement.Step()) {
     fetched_origin_infos.emplace_back(mojom::StorageUsageInfo::New(
-        url::Origin::Create(GURL(statement.ColumnString(0))),
+        blink::StorageKey(url::Origin::Create(GURL(statement.ColumnString(0)))),
         statement.ColumnInt64(2) * kSharedStorageEntryTotalBytesMultiplier *
             max_string_length_,
         statement.ColumnTime(1)));

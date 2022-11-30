@@ -29,8 +29,7 @@ const CONSENT_DESCRIPTION_TEXTS = [
 ];
 const CONSENT_DESCRIPTION_SIGNIN_INTERCEPT_TEXTS = [
   'Welcome, Person 1',
-  'Turn on sync to get your bookmarks, passwords, history, and more on this device and anywhere else you\'re syncing.',
-  'Google may use your history to personalize Search and other Google services',
+  'Turn on sync to get your bookmarks, passwords, history, and more on this device and anywhere else you\'re syncing. Google may use your history to personalize Search and other Google services.',
 ];
 
 // <if expr="chromeos_lacros">
@@ -61,7 +60,8 @@ suite(`SigninSyncConfirmationTest`, function() {
   setup(async function() {
     browserProxy = new TestSyncConfirmationBrowserProxy();
     SyncConfirmationBrowserProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     app = document.createElement('sync-confirmation-app');
     document.body.append(app);
     // Check that the account image is requested when the app element is
@@ -116,7 +116,8 @@ suite(`SigninSyncConfirmationConsentRecordingTest`, function() {
     browserProxy = new TestSyncConfirmationBrowserProxy();
     SyncConfirmationBrowserProxyImpl.setInstance(browserProxy);
 
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     app = document.createElement('sync-confirmation-app');
     document.body.append(app);
     // Wait for the app element to get attached to the document (which is
@@ -130,10 +131,14 @@ suite(`SigninSyncConfirmationConsentRecordingTest`, function() {
     app.shadowRoot!.querySelector<HTMLElement>('#confirmButton')!.click();
     const [description, confirmation] =
         await browserProxy.whenCalled('confirm');
-    assertEquals(
-        isSigninInterceptFreEnabled ? SIGNIN_INTERCEPT_CONSENT_CONFIRMATION :
-                                      STANDARD_CONSENT_CONFIRMATION,
-        confirmation);
+    if (isSigninInterceptFreEnabled) {
+      // Confirmation button is capitalized on MacOS.
+      assertEquals(
+          SIGNIN_INTERCEPT_CONSENT_CONFIRMATION.toLowerCase(),
+          confirmation.toLowerCase());
+    } else {
+      assertEquals(STANDARD_CONSENT_CONFIRMATION, confirmation);
+    }
     assertArrayEquals(
         isSigninInterceptFreEnabled ?
             CONSENT_DESCRIPTION_SIGNIN_INTERCEPT_TEXTS :

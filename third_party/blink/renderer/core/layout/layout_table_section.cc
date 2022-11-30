@@ -331,7 +331,7 @@ void LayoutTableSection::AddCell(LayoutTableCell* cell, LayoutTableRow* row) {
 
 bool LayoutTableSection::RowHasOnlySpanningCells(unsigned row) {
   NOT_DESTROYED();
-  if (grid_[row].grid_cells.IsEmpty())
+  if (grid_[row].grid_cells.empty())
     return false;
 
   for (const auto& grid_cell : grid_[row].grid_cells) {
@@ -976,7 +976,7 @@ int LayoutTableSection::CalcRowLogicalHeight() {
     row_pos_[r + 1] = std::max(row_pos_[r + 1], row_pos_[r]);
   }
 
-  if (!row_span_cells.IsEmpty())
+  if (!row_span_cells.empty())
     DistributeRowSpanHeightToRows(row_span_cells);
 
   DCHECK(!NeedsLayout());
@@ -1018,7 +1018,7 @@ void LayoutTableSection::UpdateLayout() {
   // addChild may over-grow grid_ but we don't want to throw away the memory
   // too early as addChild can be called in a loop (e.g during parsing). Doing
   // it now ensures we have a stable-enough structure.
-  grid_.ShrinkToFit();
+  grid_.shrink_to_fit();
 
   LayoutState state(*this);
 
@@ -1769,7 +1769,7 @@ void LayoutTableSection::RecalcCells() {
     }
   }
 
-  grid_.ShrinkToFit();
+  grid_.shrink_to_fit();
   SetNeedsLayoutAndFullPaintInvalidation(layout_invalidation_reason::kUnknown);
 }
 

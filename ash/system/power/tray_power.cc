@@ -63,7 +63,7 @@ gfx::Size PowerTrayView::CalculatePreferredSize() const {
 void PowerTrayView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // A valid role must be set prior to setting the name.
   node_data->role = ax::mojom::Role::kImage;
-  node_data->SetName(accessible_name_);
+  node_data->SetNameChecked(accessible_name_);
 }
 
 views::View* PowerTrayView::GetTooltipHandlerForPoint(const gfx::Point& point) {
@@ -124,7 +124,7 @@ void PowerTrayView::UpdateImage(bool icon_color_changed) {
   // Note: The icon color (both fg and bg) changes when the UI in in OOBE mode.
   const SkColor icon_fg_color = TrayIconColor(session_state_);
   const SkColor icon_bg_color = color_utils::GetResultingPaintColor(
-      ShelfConfig::Get()->GetShelfControlButtonColor(),
+      ShelfConfig::Get()->GetShelfControlButtonColor(GetWidget()),
       GetColorProvider()->GetColor(kColorAshShieldAndBaseOpaque));
 
   image_view()->SetImage(PowerStatus::GetBatteryImage(

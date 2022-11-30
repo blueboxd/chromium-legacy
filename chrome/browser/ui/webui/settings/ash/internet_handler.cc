@@ -33,7 +33,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/events/event_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -41,6 +41,7 @@ const char kAddThirdPartyVpnMessage[] = "addThirdPartyVpn";
 const char kConfigureThirdPartyVpnMessage[] = "configureThirdPartyVpn";
 const char kShowCarrierAccountDetail[] = "showCarrierAccountDetail";
 const char kShowCellularSetupUI[] = "showCellularSetupUI";
+const char kShowPortalSignin[] = "showPortalSignin";
 const char kRequestGmsCoreNotificationsDisabledDeviceNames[] =
     "requestGmsCoreNotificationsDisabledDeviceNames";
 const char kSendGmsCoreNotificationsDisabledDeviceNames[] =
@@ -99,6 +100,9 @@ void InternetHandler::RegisterMessages() {
       kShowCellularSetupUI,
       base::BindRepeating(&InternetHandler::ShowCellularSetupUI,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kShowPortalSignin, base::BindRepeating(&InternetHandler::ShowPortalSignin,
+                                             base::Unretained(this)));
 }
 
 void InternetHandler::OnJavascriptAllowed() {}
@@ -217,7 +221,16 @@ void InternetHandler::ShowCarrierAccountDetail(const base::Value::List& args) {
     return;
   }
   const std::string& guid = args[0].GetString();
-  chromeos::NetworkConnect::Get()->ShowCarrierAccountDetail(guid);
+  NetworkConnect::Get()->ShowCarrierAccountDetail(guid);
+}
+
+void InternetHandler::ShowPortalSignin(const base::Value::List& args) {
+  if (args.size() < 1 || !args[0].is_string()) {
+    NOTREACHED() << "Invalid args for: " << kShowPortalSignin;
+    return;
+  }
+  const std::string& guid = args[0].GetString();
+  chromeos::NetworkConnect::Get()->ShowPortalSignin(guid);
 }
 
 void InternetHandler::ShowCellularSetupUI(const base::Value::List& args) {
@@ -226,7 +239,7 @@ void InternetHandler::ShowCellularSetupUI(const base::Value::List& args) {
     return;
   }
   const std::string& guid = args[0].GetString();
-  chromeos::NetworkConnect::Get()->ShowMobileSetup(guid);
+  NetworkConnect::Get()->ShowMobileSetup(guid);
 }
 
 void InternetHandler::SetGmsCoreNotificationsDisabledDeviceNames() {
@@ -265,7 +278,7 @@ gfx::NativeWindow InternetHandler::GetNativeWindow() {
 }
 
 void InternetHandler::SetGmsCoreNotificationsStateTrackerForTesting(
-    chromeos::tether::GmsCoreNotificationsStateTracker*
+    tether::GmsCoreNotificationsStateTracker*
         gms_core_notifications_state_tracker) {
   if (gms_core_notifications_state_tracker_)
     gms_core_notifications_state_tracker_->RemoveObserver(this);
@@ -275,5 +288,4 @@ void InternetHandler::SetGmsCoreNotificationsStateTrackerForTesting(
 }
 
 }  // namespace settings
-
-}  // namespace chromeos
+}  // namespace ash

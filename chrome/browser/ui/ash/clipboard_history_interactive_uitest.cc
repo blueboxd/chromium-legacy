@@ -41,7 +41,7 @@ const std::list<ash::ClipboardHistoryItem>& GetClipboardItems() {
 class ClipboardHistoryWebContentsInteractiveTest : public InProcessBrowserTest {
  public:
   ClipboardHistoryWebContentsInteractiveTest() {
-    std::vector<base::Feature> disabled_features = {
+    std::vector<base::test::FeatureRef> disabled_features = {
         ash::features::kClipboardHistoryReorder};
     feature_list_.InitWithFeatures(/*enabled_features=*/{}, disabled_features);
   }
@@ -149,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWebContentsInteractiveTest,
   // Verify that the clipboard history menu is open and populated with the
   // correct number of items.
   EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
-  ASSERT_EQ(2, GetContextMenu()->GetMenuItemsCount());
+  ASSERT_EQ(2u, GetContextMenu()->GetMenuItemsCount());
 }
 
 // Verifies that the clipboard history menu works as expected when copying a

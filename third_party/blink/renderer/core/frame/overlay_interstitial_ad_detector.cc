@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,7 +70,7 @@ void OverlayInterstitialAdDetector::MaybeFireDetection(
 
   // Skip any measurement before the FCP.
   if (PaintTiming::From(*outermost_main_frame->GetDocument())
-          .FirstContentfulPaint()
+          .FirstContentfulPaintIgnoringSoftNavigations()
           .is_null()) {
     return;
   }

@@ -19,8 +19,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 class ChromiumApiDelegate;
 class LibassistantFactory;
@@ -101,7 +100,6 @@ using ScopedAssistantClientObserver = base::ScopedObservation<
     &ServiceController::AddAndFireAssistantClientObserver,
     &ServiceController::RemoveAssistantClientObserver>;
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant
 
 #endif  // CHROMEOS_ASH_SERVICES_LIBASSISTANT_SERVICE_CONTROLLER_H_

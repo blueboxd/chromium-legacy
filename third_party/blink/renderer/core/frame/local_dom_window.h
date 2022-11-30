@@ -31,6 +31,7 @@
 
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/mojom/content_security_policy.mojom-blink.h"
 #include "third_party/blink/public/common/frame/fullscreen_request_token.h"
 #include "third_party/blink/public/common/frame/payment_request_token.h"
 #include "third_party/blink/public/common/metrics/post_message_counter.h"
@@ -214,6 +215,16 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void CountPermissionsPolicyUsage(
       mojom::blink::PermissionsPolicyFeature feature,
       UseCounterImpl::PermissionsPolicyUsageType type);
+
+  // Checks if navigation to Javascript URL is allowed. This check should run
+  // before any action is taken (e.g. creating new window) for all
+  // same-origin navigations.
+  String CheckAndGetJavascriptUrl(
+      const DOMWrapperWorld* world,
+      const KURL& url,
+      Element* element,
+      network::mojom::CSPDisposition csp_disposition =
+          network::mojom::CSPDisposition::CHECK);
 
   Document* InstallNewDocument(const DocumentInit&);
 
@@ -479,6 +490,9 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
     return closewatcher_stack_;
   }
 
+  void IncrementNavigationId() { navigation_id_++; }
+  uint32_t GetNavigationId() const { return navigation_id_; }
+
  protected:
   // EventTarget overrides.
   void AddedEventListener(const AtomicString& event_type,
@@ -528,11 +542,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   mutable Member<Navigator> navigator_;
   mutable Member<StyleMedia> media_;
   mutable Member<CustomElementRegistry> custom_elements_;
-  // We store reference to Modulator here to have it TraceWrapper-ed.
-  // This is wrong, as Modulator is per-context, where as LocalDOMWindow is
-  // shared among context. However, this *works* as Modulator is currently only
-  // enabled in the main world,
-  Member<Modulator> modulator_;
   Member<External> external_;
 
   String status_;
@@ -611,6 +620,11 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // If set, this window is a Document Picture in Picture window.
   // https://github.com/steimelchrome/document-pip-explainer/blob/main/explainer.md
   bool is_picture_in_picture_window_ = false;
+
+  // The navigation id of a document is to identify navigation of special types
+  // like bfcache navigation or soft navigation. It increments when navigations
+  // of these types occur.
+  uint32_t navigation_id_ = 1;
 };
 
 template <>
@@ -628,6 +642,7 @@ inline String LocalDOMWindow::status() const {
 }
 
 inline String LocalDOMWindow::defaultStatus() const {
+  DCHECK(RuntimeEnabledFeatures::WindowDefaultStatusEnabled());
   return default_status_;
 }
 

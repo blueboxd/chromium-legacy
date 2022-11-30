@@ -35,16 +35,22 @@
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/view_class_properties.h"
 
 namespace views {
 namespace {
 
+// Extra margin to be added to contents view when it's inside a scroll view.
+constexpr int kScrollViewVerticalMargin = 2;
+
 BubbleDialogModelHost::ContentsView* SetAndGetContentsView(
     BubbleDialogModelHost* parent,
     ui::ModalType modal_type) {
+  const bool is_modal_dialog = modal_type != ui::MODAL_TYPE_NONE;
   auto contents_view_unique =
-      std::make_unique<BubbleDialogModelHost::ContentsView>(parent);
+      std::make_unique<BubbleDialogModelHost::ContentsView>(parent,
+                                                            is_modal_dialog);
   BubbleDialogModelHost::ContentsView* contents_view =
       contents_view_unique.get();
 
@@ -52,9 +58,7 @@ BubbleDialogModelHost::ContentsView* SetAndGetContentsView(
   // content. Thus, the content has to be manually set by the view inside a
   // scroll view. Modal dialogs handle their own size via constrained windows,
   // so we can add a scroll view to the DialogModel directly.
-  if (modal_type == ui::MODAL_TYPE_NONE) {
-    parent->SetContentsView(std::move(contents_view_unique));
-  } else {
+  if (is_modal_dialog) {
     constexpr int kMaxDialogHeight = 448;
     auto scroll_view = std::make_unique<views::ScrollView>();
     scroll_view->ClipHeightTo(0, kMaxDialogHeight);
@@ -62,6 +66,8 @@ BubbleDialogModelHost::ContentsView* SetAndGetContentsView(
         views::ScrollView::ScrollBarMode::kDisabled);
     scroll_view->SetContents(std::move(contents_view_unique));
     parent->SetContentsView(std::move(scroll_view));
+  } else {
+    parent->SetContentsView(std::move(contents_view_unique));
   }
   return contents_view;
 }
@@ -216,9 +222,22 @@ std::unique_ptr<View> BubbleDialogModelHost::CustomView::TransferView() {
 // into this class. This was done in steps to limit the size of the diff.
 class BubbleDialogModelHost::ContentsView : public BoxLayoutView {
  public:
-  explicit ContentsView(BubbleDialogModelHost* parent) : parent_(parent) {
+  ContentsView(BubbleDialogModelHost* parent, bool is_modal_dialog)
+      : parent_(parent) {
     // Note that between-child spacing is manually handled using kMarginsKey.
     SetOrientation(views::BoxLayout::Orientation::kVertical);
+    // Margins are added directly in the dialog. When the dialog is modal, these
+    // contents are wrapped by a scroll view and margins are added outside of it
+    // (instead of outside this contents). This causes some items (e.g
+    // emphasized buttons) to be cut by the scroll view margins (see
+    // crbug.com/1360772). Since we do want the margins outside the scroll view
+    // (so they are always present when scrolling), we add
+    // `kScrollViewVerticalMargin` inside the contents view and later remove it
+    // from the dialog margins.
+    // TODO(crbug.com/1348165): Remove this workaround when contents view
+    // directly supports a scroll view.
+    if (is_modal_dialog)
+      SetInsideBorderInsets(gfx::Insets::VH(kScrollViewVerticalMargin, 0));
   }
 
   void OnThemeChanged() override {
@@ -388,11 +407,11 @@ BubbleDialogModelHost::BubbleDialogModelHost(
         base::BindRepeating(&ui::DialogModelButton::OnPressed,
                             base::Unretained(extra_button), GetPassKey()),
         extra_button->label(GetPassKey())));
-  } else if (ui::DialogModelLabel::Link* extra_link =
+  } else if (ui::DialogModelLabel::TextReplacement* extra_link =
                  model_->extra_link(GetPassKey())) {
-    auto link = std::make_unique<views::Link>(
-        l10n_util::GetStringUTF16(extra_link->message_id));
-    link->SetCallback(extra_link->callback);
+    DCHECK(extra_link->callback().has_value());
+    auto link = std::make_unique<views::Link>(extra_link->text());
+    link->SetCallback(extra_link->callback().value());
     SetExtraView(std::move(link));
   }
 
@@ -631,17 +650,21 @@ void BubbleDialogModelHost::UpdateSpacingAndMargins() {
   }
 
   contents_view_->InvalidateLayout();
-
-  // Since ContentsView can have ScrollView as a child view, dialog margins
-  // may not be taken into account by them. Thus, reset the dialog margins and
-  // add insets directly to contents view.
-  set_margins(gfx::Insets());
-  contents_view_->SetInsideBorderInsets(gfx::Insets::TLBR(
-      GetDialogTopMargins(layout_provider, first_field, GetPassKey()), 0,
+  // Set margins based on the first and last item. Note that we remove margins
+  // that were already added to contents view at construction.
+  // TODO(crbug.com/1348165): Remove the extra margin workaround when contents
+  // view directly supports a scroll view.
+  const int extra_margin = scroll_view ? kScrollViewVerticalMargin : 0;
+  const int top_margin =
+      GetDialogTopMargins(layout_provider, first_field, GetPassKey()) -
+      extra_margin;
+  const int bottom_margin =
       GetDialogBottomMargins(layout_provider, last_field,
                              GetDialogButtons() != ui::DIALOG_BUTTON_NONE,
-                             GetPassKey()),
-      0));
+                             GetPassKey()) -
+      extra_margin;
+  set_margins(gfx::Insets::TLBR(top_margin >= 0 ? top_margin : 0, 0,
+                                bottom_margin >= 0 ? bottom_margin : 0, 0));
 }
 
 void BubbleDialogModelHost::OnWindowClosing() {
@@ -897,8 +920,7 @@ View* BubbleDialogModelHost::GetTargetView(
 
 bool BubbleDialogModelHost::DialogModelLabelRequiresStyledLabel(
     const ui::DialogModelLabel& dialog_label) {
-  // Link support only exists in StyledLabel.
-  return !dialog_label.links(GetPassKey()).empty();
+  return !dialog_label.replacements(GetPassKey()).empty();
 }
 
 std::unique_ptr<View> BubbleDialogModelHost::CreateViewForLabel(
@@ -912,27 +934,45 @@ std::unique_ptr<StyledLabel>
 BubbleDialogModelHost::CreateStyledLabelForDialogModelLabel(
     const ui::DialogModelLabel& dialog_label) {
   DCHECK(DialogModelLabelRequiresStyledLabel(dialog_label));
-  // TODO(pbos): Make sure this works for >1 link, it uses .front() now.
-  DCHECK_EQ(dialog_label.links(GetPassKey()).size(), 1u);
+  const std::vector<ui::DialogModelLabel::TextReplacement>& replacements =
+      dialog_label.replacements(GetPassKey());
 
-  size_t offset;
-  const std::u16string link_text = l10n_util::GetStringUTF16(
-      dialog_label.links(GetPassKey()).front().message_id);
+  // Retrieve the replacements strings to create the text.
+  std::vector<std::u16string> string_replacements;
+  for (auto replacement : replacements) {
+    string_replacements.push_back(replacement.text());
+  }
+  std::vector<size_t> offsets;
   const std::u16string text = l10n_util::GetStringFUTF16(
-      dialog_label.message_id(GetPassKey()), link_text, &offset);
+      dialog_label.message_id(GetPassKey()), string_replacements, &offsets);
 
   auto styled_label = std::make_unique<StyledLabel>();
   styled_label->SetText(text);
-  auto style_info = StyledLabel::RangeStyleInfo::CreateForLink(
-      dialog_label.links(GetPassKey()).front().callback);
-  style_info.accessible_name =
-      dialog_label.links(GetPassKey()).front().accessible_name;
-  styled_label->AddStyleRange(gfx::Range(offset, offset + link_text.length()),
-                              style_info);
-
   styled_label->SetDefaultTextStyle(dialog_label.is_secondary(GetPassKey())
                                         ? style::STYLE_SECONDARY
                                         : style::STYLE_PRIMARY);
+
+  // Style the replacements as needed.
+  DCHECK_EQ(string_replacements.size(), offsets.size());
+  for (size_t i = 0; i < replacements.size(); ++i) {
+    auto replacement = replacements[i];
+    // No styling needed if replacement is neither a link nor emphasized text.
+    if (!replacement.callback().has_value() && !replacement.is_emphasized())
+      continue;
+
+    StyledLabel::RangeStyleInfo style_info;
+    if (replacement.callback().has_value()) {
+      style_info = StyledLabel::RangeStyleInfo::CreateForLink(
+          replacement.callback().value());
+      style_info.accessible_name = replacement.accessible_name().value();
+    } else if (replacement.is_emphasized()) {
+      style_info.text_style = views::style::STYLE_EMPHASIZED;
+    }
+
+    auto offset = offsets[i];
+    styled_label->AddStyleRange(
+        gfx::Range(offset, offset + replacement.text().length()), style_info);
+  }
 
   return styled_label;
 }

@@ -59,12 +59,12 @@ version = "0.1"
 features = [ "unbounded_depth", "float_roundtrip" ]
 
 [dependencies.bindgen]
-version = "0.59"
+version = "0.60"
 build-script-outputs = [ "host-target.txt" ]
 features = [ "static" ]
 
 [dependencies.autocxx-bindgen]
-version = "0.59"
+version = "0.60"
 build-script-outputs = [ "host-target.txt" ]
 features = [ "static" ]
 

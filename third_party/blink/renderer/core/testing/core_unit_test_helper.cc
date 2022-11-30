@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,7 @@ LocalFrame* SingleChildLocalFrameClient::CreateFrame(
   auto policy_container = std::make_unique<PolicyContainer>(
       dummy_host.Unbind(), std::move(policy_container_data));
 
-  child->Init(/*opener=*/nullptr, std::move(policy_container),
+  child->Init(/*opener=*/nullptr, DocumentToken(), std::move(policy_container),
               parent_frame->DomWindow()->GetStorageKey());
 
   return child;
@@ -143,7 +143,7 @@ void RenderingTest::TearDown() {
   PageTestBase::TearDown();
 
   // Clear memory cache, otherwise we can leak pruned resources.
-  GetMemoryCache()->EvictResources();
+  MemoryCache::Get()->EvictResources();
 }
 
 void RenderingTest::SetChildFrameHTML(const String& html) {

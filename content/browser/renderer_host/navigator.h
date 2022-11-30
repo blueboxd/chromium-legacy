@@ -10,6 +10,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
+#include "content/browser/renderer_host/navigation_discard_reason.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_client.mojom.h"
 #include "content/public/browser/navigation_controller.h"
@@ -164,7 +165,8 @@ class CONTENT_EXPORT Navigator {
       const absl::optional<blink::Impression>& impression,
       base::TimeTicks navigation_start_time,
       bool is_embedder_initiated_fenced_frame_navigation = false,
-      bool is_unfenced_top_navigation = false);
+      bool is_unfenced_top_navigation = false,
+      bool force_new_browsing_instance = false);
 
   // Called after BeforeUnloadCompleted callback is invoked from the renderer.
   // If |frame_tree_node| has a NavigationRequest waiting for the renderer
@@ -194,7 +196,8 @@ class CONTENT_EXPORT Navigator {
       std::unique_ptr<NavigationRequest> navigation_request);
 
   // Cancel a NavigationRequest for |frame_tree_node|.
-  void CancelNavigation(FrameTreeNode* frame_tree_node);
+  void CancelNavigation(FrameTreeNode* frame_tree_node,
+                        NavigationDiscardReason reason);
 
   // Called to record the time it took to execute the beforeunload hook for the
   // current navigation. See RenderFrameHostImpl::SendBeforeUnload() for details

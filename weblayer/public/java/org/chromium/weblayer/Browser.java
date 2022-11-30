@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,11 +7,9 @@ package org.chromium.weblayer;
 import android.os.RemoteException;
 import android.view.SurfaceControlViewHost;
 import android.view.View;
-import android.webkit.ValueCallback;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IBrowser;
@@ -45,12 +43,9 @@ import java.util.Set;
  * restored in {@link onStart}. Restore happens during start so that callbacks can be attached. As
  *  a result of this, the Browser has no tabs until the Fragment is started.
  */
-public class Browser {
+class Browser {
     // Set to null once destroyed (or for tests).
     private IBrowser mImpl;
-    // The Fragment the Browser is associated with. The value of this may change.
-    @Nullable
-    private Fragment mFragment;
     private final ObserverList<TabListCallback> mTabListCallbacks;
     private final UrlBarController mUrlBarController;
 
@@ -92,9 +87,8 @@ public class Browser {
     }
 
     // Constructor for browserfragment to inject the {@code tabListCallback} on startup.
-    Browser(IBrowser impl, Fragment fragment, @Nullable TabListCallback tabListCallback) {
+    Browser(IBrowser impl, @Nullable TabListCallback tabListCallback) {
         mImpl = impl;
-        mFragment = fragment;
         mTabListCallbacks = new ObserverList<TabListCallback>();
         if (tabListCallback != null) {
             mTabListCallbacks.addObserver(tabListCallback);
@@ -110,26 +104,6 @@ public class Browser {
         }
     }
 
-    Browser(IBrowser impl, Fragment fragment) {
-        this(impl, fragment, null);
-    }
-
-    /**
-     * Changes the fragment. During configuration changes the fragment may change.
-     */
-    void setFragment(@Nullable BrowserFragment fragment) {
-        mFragment = fragment;
-    }
-
-    /**
-     * Returns the fragment this Browser is associated with. During configuration changes the
-     * fragment may change, and be null for some amount of time.
-     */
-    @Nullable
-    public Fragment getFragment() {
-        return mFragment;
-    }
-
     private void throwIfDestroyed() {
         if (mImpl == null) {
             throw new IllegalStateException("Browser can not be used once destroyed");
@@ -138,18 +112,6 @@ public class Browser {
 
     IBrowser getIBrowser() {
         return mImpl;
-    }
-
-    /**
-     * Returns the Browser for the supplied Fragment; null if
-     * {@link fragment} was not created by WebLayer.
-     *
-     * @return the Browser
-     */
-    @Nullable
-    public static Browser fromFragment(@Nullable Fragment fragment) {
-        return fragment instanceof BrowserFragment ? ((BrowserFragment) fragment).getBrowser()
-                                                   : null;
     }
 
     /**
@@ -162,7 +124,6 @@ public class Browser {
 
     // Called prior to notifying IBrowser of destroy().
     void prepareForDestroy() {
-        mFragment = null;
         for (TabListCallback callback : mTabListCallbacks) {
             callback.onWillDestroyBrowserAndAllTabs();
         }
@@ -507,54 +468,6 @@ public class Browser {
     }
 
     /**
-     * Control support for embedding use cases such as animations. This should be enabled when the
-     * container view of the fragment is animated in any way, needs to be rotated or blended, or
-     * need to control z-order with other views or other BrowserFragmentImpls. Note embedder should
-     * keep WebLayer in the default non-embedding mode when user is interacting with the web
-     * content. Embedding mode does not support encrypted video.
-     * Deprecated in 90. Use setEmbeddabilityMode instead.
-     *
-     * @param enable Whether to support embedding
-     * @param callback {@link Callback} to be called with a boolean indicating whether request
-     * succeeded. A request might fail if it is subsumed by a subsequent request, or if this object
-     * is destroyed.
-     */
-    @Deprecated
-    public void setSupportsEmbedding(boolean enable, @NonNull Callback<Boolean> callback) {
-        ThreadCheck.ensureOnUiThread();
-        throwIfDestroyed();
-        try {
-            mImpl.setSupportsEmbedding(
-                    enable, ObjectWrapper.wrap((ValueCallback<Boolean>) callback::onResult));
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
-    }
-
-    /**
-     * See BrowserEmbeddabilityMode for details. The default mode is UNSUPPORTED.
-     * @param mode the requested embedding mode.
-     * @param callback {@link Callback} to be called with a boolean indicating whether request
-     * succeeded. A request might fail if it is subsumed by a subsequent request, or if this object
-     * is destroyed.
-     * @since 90
-     */
-    public void setEmbeddabilityMode(
-            @BrowserEmbeddabilityMode int mode, @NonNull Callback<Boolean> callback) {
-        ThreadCheck.ensureOnUiThread();
-        if (WebLayer.getSupportedMajorVersionInternal() < 90) {
-            throw new UnsupportedOperationException();
-        }
-        throwIfDestroyed();
-        try {
-            mImpl.setEmbeddabilityMode(
-                    mode, ObjectWrapper.wrap((ValueCallback<Boolean>) callback::onResult));
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
-    }
-
-    /**
      * Set the minimum surface size of this Browser instance.
      * Setting this avoids expensive surface resize for a fragment view resize that is within the
      * minimum size. The trade off is the additional memory and power needed for the larger
@@ -731,7 +644,7 @@ public class Browser {
         @Override
         public IRemoteFragment createMediaRouteDialogFragment() {
             StrictModeWorkaround.apply();
-            return MediaRouteDialogFragment.create(mFragment);
+            return new MediaRouteDialogFragmentEventHandler().getRemoteFragment();
         }
 
         @Override

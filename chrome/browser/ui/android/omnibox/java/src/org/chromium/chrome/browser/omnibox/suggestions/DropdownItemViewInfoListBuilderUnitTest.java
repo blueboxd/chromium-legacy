@@ -16,7 +16,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import android.util.SparseArray;
+import static org.chromium.components.omnibox.GroupConfigTestSupport.SECTION_1_EXPANDED_NO_HEADER;
+import static org.chromium.components.omnibox.GroupConfigTestSupport.SECTION_2_EXPANDED_WITH_HEADER;
+import static org.chromium.components.omnibox.GroupConfigTestSupport.SECTION_3_EXPANDED_WITH_HEADER;
 
 import androidx.test.filters.SmallTest;
 
@@ -34,12 +36,13 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
+import org.chromium.chrome.browser.omnibox.suggestions.dividerline.DividerLineProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.header.HeaderProcessor;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteMatchBuilder;
 import org.chromium.components.omnibox.AutocompleteResult;
-import org.chromium.components.omnibox.AutocompleteResult.GroupDetails;
+import org.chromium.components.omnibox.GroupsProto.GroupsInfo;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.ShadowGURL;
 
@@ -59,6 +62,7 @@ public class DropdownItemViewInfoListBuilderUnitTest {
     private @Mock AutocompleteController mAutocompleteController;
     private @Mock SuggestionProcessor mMockSuggestionProcessor;
     private @Mock HeaderProcessor mMockHeaderProcessor;
+    private @Mock DividerLineProcessor mMockDividerLineProcessor;
     private @Mock OmniboxPedalDelegate mMockOmniboxPedalDelegate;
     DropdownItemViewInfoListBuilder mBuilder;
 
@@ -98,8 +102,8 @@ public class DropdownItemViewInfoListBuilderUnitTest {
     @SmallTest
     public void headers_buildsHeaderForFirstSuggestion() {
         final List<AutocompleteMatch> actualList = new ArrayList<>();
-        final SparseArray<GroupDetails> groupsDetails = new SparseArray<>();
-        groupsDetails.put(1, new GroupDetails("Header 1", false));
+        final var groupsDetails =
+                GroupsInfo.newBuilder().putGroupConfigs(1, SECTION_2_EXPANDED_WITH_HEADER).build();
         when(mMockSuggestionProcessor.doesProcessSuggestion(any(), anyInt())).thenReturn(true);
 
         AutocompleteMatch suggestion =
@@ -114,7 +118,8 @@ public class DropdownItemViewInfoListBuilderUnitTest {
         final List<DropdownItemViewInfo> model = mBuilder.buildDropdownViewInfoList(
                 AutocompleteResult.fromCache(actualList, groupsDetails));
 
-        verifier.verify(mMockHeaderProcessor, times(1)).populateModel(any(), eq(1), eq("Header 1"));
+        verifier.verify(mMockHeaderProcessor, times(1))
+                .populateModel(any(), eq(1), eq(SECTION_2_EXPANDED_WITH_HEADER.getHeaderText()));
         verifier.verify(mMockSuggestionProcessor, times(1))
                 .populateModel(eq(suggestion), any(), eq(0));
         verifier.verify(mMockSuggestionProcessor, times(1))
@@ -136,9 +141,10 @@ public class DropdownItemViewInfoListBuilderUnitTest {
     @SmallTest
     public void headers_buildsHeadersOnlyWhenGroupChanges() {
         final List<AutocompleteMatch> actualList = new ArrayList<>();
-        final SparseArray<GroupDetails> groupsDetails = new SparseArray<>();
-        groupsDetails.put(1, new GroupDetails("Header 1", false));
-        groupsDetails.put(2, new GroupDetails("Header 2", false));
+        final var groupsDetails = GroupsInfo.newBuilder()
+                                          .putGroupConfigs(1, SECTION_2_EXPANDED_WITH_HEADER)
+                                          .putGroupConfigs(2, SECTION_3_EXPANDED_WITH_HEADER)
+                                          .build();
 
         when(mMockSuggestionProcessor.doesProcessSuggestion(any(), anyInt())).thenReturn(true);
         AutocompleteMatch suggestionWithNoGroup =
@@ -165,12 +171,14 @@ public class DropdownItemViewInfoListBuilderUnitTest {
 
         verifier.verify(mMockSuggestionProcessor, times(1))
                 .populateModel(eq(suggestionWithNoGroup), any(), eq(0));
-        verifier.verify(mMockHeaderProcessor, times(1)).populateModel(any(), eq(1), eq("Header 1"));
+        verifier.verify(mMockHeaderProcessor, times(1))
+                .populateModel(any(), eq(1), eq(SECTION_2_EXPANDED_WITH_HEADER.getHeaderText()));
         verifier.verify(mMockSuggestionProcessor, times(1))
                 .populateModel(eq(suggestionForGroup1), any(), eq(1));
         verifier.verify(mMockSuggestionProcessor, times(1))
                 .populateModel(eq(suggestionForGroup1), any(), eq(2));
-        verifier.verify(mMockHeaderProcessor, times(1)).populateModel(any(), eq(2), eq("Header 2"));
+        verifier.verify(mMockHeaderProcessor, times(1))
+                .populateModel(any(), eq(2), eq(SECTION_3_EXPANDED_WITH_HEADER.getHeaderText()));
         verifier.verify(mMockSuggestionProcessor, times(1))
                 .populateModel(eq(suggestionForGroup2), any(), eq(3));
         verifier.verify(mMockSuggestionProcessor, times(1))
@@ -193,6 +201,72 @@ public class DropdownItemViewInfoListBuilderUnitTest {
         Assert.assertEquals(model.get(5).groupId, 2);
         Assert.assertEquals(model.get(6).type, OmniboxSuggestionUiType.DEFAULT);
         Assert.assertEquals(model.get(6).groupId, 2);
+    }
+
+    @Test
+    @SmallTest
+    public void headers_respectGroupHeadersWithNoTitle() {
+        final List<AutocompleteMatch> actualList = new ArrayList<>();
+        final var groupsDetails = GroupsInfo.newBuilder()
+                                          .putGroupConfigs(1, SECTION_1_EXPANDED_NO_HEADER)
+                                          .putGroupConfigs(2, SECTION_2_EXPANDED_WITH_HEADER)
+                                          .build();
+
+        when(mMockSuggestionProcessor.doesProcessSuggestion(any(), anyInt())).thenReturn(true);
+        AutocompleteMatch suggestionWithNoGroup =
+                AutocompleteMatchBuilder.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .build();
+        AutocompleteMatch suggestionForGroup1 =
+                AutocompleteMatchBuilder.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setGroupId(1)
+                        .build();
+        AutocompleteMatch suggestionForGroup2 =
+                AutocompleteMatchBuilder.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setGroupId(2)
+                        .build();
+
+        actualList.add(suggestionWithNoGroup);
+        actualList.add(suggestionForGroup1);
+        actualList.add(suggestionForGroup1);
+        actualList.add(suggestionForGroup2);
+        actualList.add(suggestionForGroup2);
+
+        final InOrder verifier = inOrder(mMockSuggestionProcessor, mMockHeaderProcessor);
+        final List<DropdownItemViewInfo> model = mBuilder.buildDropdownViewInfoList(
+                AutocompleteResult.fromCache(actualList, groupsDetails));
+
+        verifier.verify(mMockSuggestionProcessor, times(1))
+                .populateModel(eq(suggestionWithNoGroup), any(), eq(0));
+        verifier.verify(mMockSuggestionProcessor, times(1))
+                .populateModel(eq(suggestionForGroup1), any(), eq(1));
+        verifier.verify(mMockSuggestionProcessor, times(1))
+                .populateModel(eq(suggestionForGroup1), any(), eq(2));
+        verifier.verify(mMockHeaderProcessor, times(1))
+                .populateModel(any(), eq(2), eq(SECTION_2_EXPANDED_WITH_HEADER.getHeaderText()));
+        verifier.verify(mMockSuggestionProcessor, times(1))
+                .populateModel(eq(suggestionForGroup2), any(), eq(3));
+        verifier.verify(mMockSuggestionProcessor, times(1))
+                .populateModel(eq(suggestionForGroup2), any(), eq(4));
+
+        // Make sure no other headers were ever constructed.
+        verify(mMockHeaderProcessor, times(1)).populateModel(any(), anyInt(), any());
+
+        Assert.assertEquals(6, model.size()); // 1 header + 5 suggestions.
+
+        Assert.assertEquals(model.get(0).type, OmniboxSuggestionUiType.DEFAULT);
+        Assert.assertEquals(model.get(0).groupId, -1);
+
+        Assert.assertEquals(model.get(1).type, OmniboxSuggestionUiType.DEFAULT);
+        Assert.assertEquals(model.get(1).groupId, 1);
+        Assert.assertEquals(model.get(2).type, OmniboxSuggestionUiType.DEFAULT);
+        Assert.assertEquals(model.get(2).groupId, 1);
+
+        Assert.assertEquals(model.get(3).type, OmniboxSuggestionUiType.HEADER);
+        Assert.assertEquals(model.get(3).groupId, 2);
+        Assert.assertEquals(model.get(4).type, OmniboxSuggestionUiType.DEFAULT);
+        Assert.assertEquals(model.get(4).groupId, 2);
+        Assert.assertEquals(model.get(5).type, OmniboxSuggestionUiType.DEFAULT);
+        Assert.assertEquals(model.get(5).groupId, 2);
     }
 
     @Test
@@ -382,7 +456,7 @@ public class DropdownItemViewInfoListBuilderUnitTest {
         AutocompleteResult mockResult = mock(AutocompleteResult.class);
         when(mockResult.getSuggestionsList())
                 .thenReturn(Arrays.asList(match1, match2, match1, match2, match3, match3));
-        when(mockResult.getGroupsDetails()).thenReturn(new SparseArray<>());
+        when(mockResult.getGroupsInfo()).thenReturn(GroupsInfo.newBuilder().build());
         doNothing().when(mockResult).groupSuggestionsBySearchVsURL(anyInt(), anyInt());
 
         when(mMockSuggestionProcessor.doesProcessSuggestion(any(), anyInt())).thenReturn(true);
@@ -420,5 +494,55 @@ public class DropdownItemViewInfoListBuilderUnitTest {
 
         // Skipping scenario where all suggestions are below the keyboard, because in this scenario
         // the user can't realistically interact with them.
+    }
+
+    @Test
+    @SmallTest
+    public void dividerLineOnTop() {
+        when(mMockDividerLineProcessor.createModel())
+                .thenAnswer((mock) -> new PropertyModel(SuggestionCommonProperties.ALL_KEYS));
+        when(mMockDividerLineProcessor.getViewTypeId())
+                .thenReturn(OmniboxSuggestionUiType.DIVIDER_LINE);
+        mBuilder.setDividerLineProcessorForTest(mMockDividerLineProcessor);
+
+        final List<AutocompleteMatch> actualList = new ArrayList<>();
+        final var groupsDetails =
+                GroupsInfo.newBuilder().putGroupConfigs(1, SECTION_2_EXPANDED_WITH_HEADER).build();
+        when(mMockSuggestionProcessor.doesProcessSuggestion(any(), anyInt())).thenReturn(true);
+
+        AutocompleteMatch suggestion =
+                AutocompleteMatchBuilder.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setGroupId(1)
+                        .build();
+
+        actualList.add(suggestion);
+        actualList.add(suggestion);
+
+        final List<DropdownItemViewInfo> infoList = mBuilder.buildDropdownViewInfoList(
+                AutocompleteResult.fromCache(actualList, groupsDetails));
+        Assert.assertEquals(4, infoList.size()); // 1 divider line + 1 header + 2 suggestions.
+
+        Assert.assertEquals(infoList.get(0).type, OmniboxSuggestionUiType.DIVIDER_LINE);
+        Assert.assertEquals(infoList.get(1).type, OmniboxSuggestionUiType.HEADER);
+        Assert.assertEquals(infoList.get(2).type, OmniboxSuggestionUiType.DEFAULT);
+        Assert.assertEquals(infoList.get(3).type, OmniboxSuggestionUiType.DEFAULT);
+
+        mBuilder.setDividerLineProcessorForTest(null);
+    }
+
+    @Test
+    @SmallTest
+    public void noDividerLineForEmptyList() {
+        when(mMockDividerLineProcessor.createModel())
+                .thenAnswer((mock) -> new PropertyModel(SuggestionCommonProperties.ALL_KEYS));
+        when(mMockDividerLineProcessor.getViewTypeId())
+                .thenReturn(OmniboxSuggestionUiType.DIVIDER_LINE);
+        mBuilder.setDividerLineProcessorForTest(mMockDividerLineProcessor);
+
+        final List<DropdownItemViewInfo> infoList =
+                mBuilder.buildDropdownViewInfoList(AutocompleteResult.fromCache(null, null));
+        Assert.assertEquals(0, infoList.size());
+
+        mBuilder.setDividerLineProcessorForTest(null);
     }
 }

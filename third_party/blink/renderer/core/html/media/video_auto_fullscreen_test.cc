@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,7 @@ class VideoAutoFullscreenFrameHost : public FakeLocalFrameHost {
     std::move(callback).Run(true);
     web_view_->MainFrameImpl()
         ->GetTaskRunner(TaskType::kInternalNavigationAssociated)
-        ->PostTask(FROM_HERE, WTF::Bind(
+        ->PostTask(FROM_HERE, WTF::BindOnce(
                                   [](WebViewImpl* web_view) {
                                     web_view->DidEnterFullscreen();
                                   },
@@ -43,7 +43,7 @@ class VideoAutoFullscreenFrameHost : public FakeLocalFrameHost {
   void ExitFullscreen() override {
     web_view_->MainFrameImpl()
         ->GetTaskRunner(TaskType::kInternalNavigationAssociated)
-        ->PostTask(FROM_HERE, WTF::Bind(
+        ->PostTask(FROM_HERE, WTF::BindOnce(
                                   [](WebViewImpl* web_view) {
                                     web_view->DidExitFullscreen();
                                   },

@@ -23,6 +23,7 @@
 <translation id="117624967391683467">Copiando <ph name="FILE_NAME" />...</translation>
 <translation id="1178581264944972037">Pausar</translation>
 <translation id="1190144681599273207">A busca deste arquivo usará aproximadamente <ph name="FILE_SIZE" /> de dados móveis.</translation>
+<translation id="1194390763418645112">Acessos a um arquivo de <ph name="RESTRICTED_DESTINATIONS" /></translation>
 <translation id="1201402288615127009">Próxima</translation>
 <translation id="1209796539517632982">Servidores de nome automáticos</translation>
 <translation id="1210831758834677569">Laosiano</translation>
@@ -61,6 +62,7 @@
 <translation id="1561842594491319104">Dispositivos Chrome</translation>
 <translation id="1572585716423026576">Definir como plano de fundo</translation>
 <translation id="1576937952766665062">Bengali (transliteração)</translation>
+<translation id="1577977504532381335">Revisar a política do administrador</translation>
 <translation id="158849752021629804">Rede doméstica ausente</translation>
 <translation id="1589128298353575783"><ph name="NUMBER_OF_PB" /> PB</translation>
 <translation id="1620510694547887537">Câmera</translation>
@@ -78,7 +80,6 @@
 <translation id="1722487484194605434">Compactando <ph name="NUMBER_OF_ITEMS" /> itens…</translation>
 <translation id="1722687688096767818">Adicionando perfil…</translation>
 <translation id="1726100011689679555">Servidores de nomes</translation>
-<translation id="1726600877401297672"><ph name="NUMBER_OF_ITEMS" /> itens movidos para a lixeira</translation>
 <translation id="1729953886957086472">Alemão (Alemanha)</translation>
 <translation id="1730235522912993863">Chinês (cangjie)</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> itens copiados.</translation>
@@ -112,6 +113,7 @@
 <translation id="1942765061641586207">Resolução da imagem</translation>
 <translation id="1972984168337863910">Expandir painéis de feedback de arquivos</translation>
 <translation id="1995337122023280937">Acessar local do arquivo</translation>
+<translation id="1999709132469742660">Acessos a um arquivo de todos os URLs</translation>
 <translation id="2001796770603320721">Gerenciar no Drive</translation>
 <translation id="2009067268969781306">A formatação de uma unidade excluirá todos os dados armazenados nela. Esta ação não pode ser desfeita.</translation>
 <translation id="2025955442973426285">Tigrínia</translation>
@@ -142,6 +144,7 @@
 <translation id="2239068707900391003">Pessoa com café</translation>
 <translation id="2251368349685848079">Restaurar da lixeira</translation>
 <translation id="2282155092769082568">URL de configuração automática</translation>
+<translation id="2284767815536050991">armazenamento removível</translation>
 <translation id="2288278176040912387">Gravador</translation>
 <translation id="2291538123825441971">Abrindo <ph name="NUMBER_OF_FILES" /> arquivos.</translation>
 <translation id="2303301624314357662">Abrindo o arquivo <ph name="FILE_NAME" />.</translation>
@@ -154,11 +157,12 @@
 <translation id="2377319039870049694">Alternar para a visualização de lista</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> pastas compartilhadas com o Linux</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> arquivos selecionados</translation>
-<translation id="2387120140441437063">Não é possível abrir arquivos que estão na lixeira. Restaure os arquivos antes de abrir.</translation>
+<translation id="2383454254762599978">Mover para a lixeira</translation>
 <translation id="2387458720915042159">Tipo de conexão proxy</translation>
 <translation id="2389832672041313158">Birmanês (Mianmar)</translation>
 <translation id="2392369802118427583">Ativar</translation>
 <translation id="240770291734945588">Disponível: <ph name="SPACE_AVAILABLE" /></translation>
+<translation id="2417486498593892439">Fazer login na rede</translation>
 <translation id="2425665904502185219">Tamanho total do arquivo</translation>
 <translation id="2428749644083375155">Copiando <ph name="NUMBER_OF_ITEMS" /> itens para <ph name="FOLDER_NAME" /></translation>
 <translation id="2448312741937722512">Tipo</translation>
@@ -171,6 +175,7 @@
 <translation id="2500392669976258912">Guzerate (fonético)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Verificar</translation>
+<translation id="252641322760726369">Toque em um arquivo, mantenha pressionado e toque em <ph name="ICON" />. Em seguida, selecione "<ph name="PIN_COMMAND" />" para ter acesso rápido a ele pela estante.</translation>
 <translation id="2534460670861217804">Proxy HTTP seguro</translation>
 <translation id="2541377937973966830">Os conteúdos da pasta são somente leitura. Algumas atividades estão indisponíveis.</translation>
 <translation id="2542049655219295786">Tabela do Google</translation>
@@ -207,7 +212,6 @@
 <translation id="2888807692577297075">Nenhum item corresponde a &lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt;</translation>
 <translation id="2894654529758326923">Informações</translation>
 <translation id="2902734494705624966">EUA estendido</translation>
-<translation id="2906052776158021882">Movendo <ph name="NUMBER_OF_ITEMS" /> itens para a lixeira</translation>
 <translation id="290843123675549676">Marati</translation>
 <translation id="2923240520113693977">Estoniano</translation>
 <translation id="2938685643439809023">Mongol</translation>
@@ -217,13 +221,13 @@
 <translation id="2958458230122209142">Pouco armazenamento, <ph name="REMAINING_PERCENTAGE" />% restante do seu armazenamento individual de <ph name="TOTAL_SPACE" />.</translation>
 <translation id="2977940621473452797">Esse arquivo foi criado para um computador que utilize o software Macintosh. Ele não é compatível com seu dispositivo, que roda o ChromeOS. Procure na Chrome Web Store por um app substituto adequado.</translation>
 <translation id="2984337792991268709">Hoje <ph name="TODAY_DAYTIME" /></translation>
-<translation id="2994320653639462337">Restaurando <ph name="COUNT" /> itens…</translation>
 <translation id="299638574917407533">Francês (Canadá)</translation>
 <translation id="3003189754374775221">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, intensidade do sinal em <ph name="SIGNAL_STRENGTH" />%, conectar</translation>
 <translation id="3003633581067744647">Alternar para a visualização de miniaturas</translation>
 <translation id="3016566519832145558">Atenção: esses arquivos são temporários e podem ser excluídos automaticamente para liberar espaço em disco.</translation>
 <translation id="3029114385395636667">Ative o Documentos Google off-line para usar o Documentos, Planilhas e Apresentações off-line.</translation>
 <translation id="303198083543495566">Região geográfica</translation>
+<translation id="3044404008258011032">Para restaurar esses itens, arraste-os para uma nova pasta fora da lixeira. A pasta original "<ph name="PARENT_FOLDER_NAME" />" foi excluída.</translation>
 <translation id="3047197340186497470">Chinês (dayi)</translation>
 <translation id="3067790092342515856">Arquivos do Windows</translation>
 <translation id="3083975830683400843">Chromebits</translation>
@@ -234,6 +238,7 @@
 <translation id="3124404833828281817">Pessoa sonhadora</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3138624403379688522">PIN inválido. Você tem <ph name="RETRIES" /> tentativas restantes.</translation>
+<translation id="3157931365184549694">Restaurar</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (no hardware)</translation>
 <translation id="3188257591659621405">Meus arquivos</translation>
 <translation id="3194553149358267393">Nenhum arquivo de áudio recente</translation>
@@ -271,7 +276,6 @@
 <translation id="3414856743105198592">A formatação da mídia removível apagará todos os dados. Quer continuar?</translation>
 <translation id="3437801641691368414">Hora da criação</translation>
 <translation id="343907260260897561">Câmera instantânea</translation>
-<translation id="3452106565701029351">Liberar dos Arquivos de acesso rápido</translation>
 <translation id="3455931012307786678">Estoniano</translation>
 <translation id="3475447146579922140">Planilha do Google</translation>
 <translation id="3479552764303398839">Não agora</translation>
@@ -286,6 +290,7 @@
 <translation id="3549797760399244642">Ir para drive.google.com...</translation>
 <translation id="3553048479571901246">Para abrir arquivos usando <ph name="APP_NAME" />, primeiro os copie para a pasta de arquivos do Windows.</translation>
 <translation id="3556731189587832921">Inglês (EUA) com teclado internacional de PC</translation>
+<translation id="3557414470514932909">Movendo o arquivo <ph name="FILE_NAME" /> para a lixeira</translation>
 <translation id="3567221313191587603">Selecione um arquivo e ative a opção <ph name="OFFLINE_CHECKBOX_NAME" /> para acessá-lo off-line.</translation>
 <translation id="357479282490346887">Lituano</translation>
 <translation id="3587482841069643663">Tudo</translation>
@@ -322,6 +327,7 @@
 <translation id="3830674330436234648">Nenhuma reprodução disponível</translation>
 <translation id="383652340667548381">Sérvio</translation>
 <translation id="385051799172605136">Voltar</translation>
+<translation id="3851491607336266896">Conectada, conectividade limitada</translation>
 <translation id="3855472144336161447">Alemão (Neo 2)</translation>
 <translation id="3858860766373142691">Nome</translation>
 <translation id="3866249974567520381">Descrição</translation>
@@ -337,12 +343,17 @@
 <translation id="3975895378829046965">Bengali (fonético)</translation>
 <translation id="4002066346123236978">Título</translation>
 <translation id="4017788180641807848">Inglês (EUA) com teclado Workman</translation>
+<translation id="4019998208269143058">Fixar nos arquivos de acesso rápido</translation>
 <translation id="4040753847560036377">PUK incorreta</translation>
 <translation id="4057991113334098539">Ativando...</translation>
 <translation id="4092890906744441904">Irlandês</translation>
 <translation id="4124935795427217608">Unicórnio</translation>
+<translation id="4131235941541910880">Mova os itens desnecessários para a lixeira</translation>
+<translation id="4153015322587141338">Clique com o botão direito do mouse em um arquivo e selecione "<ph name="PIN_COMMAND" />" para ter acesso rápido a ele pela estante.</translation>
+<translation id="4157569377477607576">A política do administrador não recomenda o seguinte:</translation>
 <translation id="4159731583141908892"><ph name="FILE_NAME" /> movido.</translation>
 <translation id="4176286497474237543">Esvaziar lixeira agora</translation>
+<translation id="4179621117429069925">Esse item está na lixeira</translation>
 <translation id="4186579485882418952">Ativar Documentos off-line</translation>
 <translation id="4193154014135846272">Documento do Google</translation>
 <translation id="4197674956721858839">Compactar seleção</translation>
@@ -356,6 +367,7 @@
 <translation id="4290535918735525311">1 pasta compartilhada com o Linux</translation>
 <translation id="4299729908419173967">Português brasileiro</translation>
 <translation id="4302605047395093221">Para usar este dispositivo, será necessário digitar o PIN para se conectar a esta rede móvel</translation>
+<translation id="4303531889494116116">Esta rede está ocupada. Tente novamente mais tarde.</translation>
 <translation id="4309915981827077375">Informações gerais</translation>
 <translation id="432252891123397018">Romeno com teclado padrão</translation>
 <translation id="4325128273762811722">Esloveno</translation>
@@ -372,6 +384,7 @@
 <translation id="4387004326333427325">Certificado de autenticação rejeitado remotamente</translation>
 <translation id="4394214039309501350">Link externo</translation>
 <translation id="4394980935660306080">No início desta semana</translation>
+<translation id="4398096759193130964">Restaure ou arraste os itens para uma nova pasta fora da lixeira</translation>
 <translation id="4401287888955153199">Extrair tudo</translation>
 <translation id="4410695710508688828">A operação de extração falhou. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Criar um atalho para seus arquivos</translation>
@@ -427,6 +440,7 @@
 <translation id="4790766916287588578">Híndi com teclado InScript</translation>
 <translation id="4801956050125744859">Manter ambas</translation>
 <translation id="4804827417948292437">Abacate</translation>
+<translation id="4805966553127040832">Restaurando <ph name="COUNT" /> itens</translation>
 <translation id="4823651846660089135">O dispositivo é somente leitura</translation>
 <translation id="4826849268470072925">Tâmil (ITRANS)</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> itens selecionados</translation>
@@ -435,14 +449,17 @@
 <translation id="485316830061041779">Alemão</translation>
 <translation id="4867079195717347957">Clique para classificar a coluna em ordem decrescente.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> bytes</translation>
+<translation id="4874569719830985133">Excluir definitivamente</translation>
 <translation id="4880214202172289027">Controle deslizante de volume</translation>
 <translation id="4881695831933465202">Abrir</translation>
+<translation id="4891091358278567964">Para restaurar esses itens, arraste-os para uma nova pasta fora da lixeira. As pastas originais foram excluídas.</translation>
 <translation id="4900532980794411603">Compartilhar com o Parallels Desktop</translation>
 <translation id="4902546322522096650">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, intensidade do sinal em <ph name="SIGNAL_STRENGTH" />%, conectada</translation>
 <translation id="4906580650526544301">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, intensidade do sinal em <ph name="SIGNAL_STRENGTH" />%, bateria do smartphone em <ph name="BATTERY_STATUS" />%, detalhes</translation>
 <translation id="4935975195727477204">Flor Gazânia</translation>
 <translation id="4943368462779413526">Futebol americano</translation>
 <translation id="4961158930123534723">1 pasta compartilhada com o Parallels Desktop</translation>
+<translation id="496656650103537022">Arquivo <ph name="FILE_NAME" /> restaurado</translation>
 <translation id="4969785127455456148">Álbum</translation>
 <translation id="4973523518332075481">Use um nome que tenha no máximo <ph name="MAX_LENGTH" /> caracteres</translation>
 <translation id="4973970068702235170">Falha na compactação, erro inesperado: <ph name="ERROR_MESSAGE" /></translation>
@@ -461,7 +478,6 @@
 <translation id="5068919226082848014">Pizza</translation>
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> de arquivos serão excluídos</translation>
 <translation id="508423945471810158">Movendo <ph name="NUMBER_OF_ITEMS" /> itens para <ph name="FOLDER_NAME" /></translation>
-<translation id="5092200349368278146">O arquivo <ph name="FILE_NAME" /> foi movido para a lixeira</translation>
 <translation id="509429900233858213">Ocorreu um erro.</translation>
 <translation id="5098629044894065541">Hebraico</translation>
 <translation id="5102922915594634436">Gerenciar pastas sincronizadas</translation>
@@ -478,7 +494,6 @@
        A remoção do dispositivo enquanto ele está em uso pode causar perda de dados. Espere até que a operação esteja terminada e remova o dispositivo usando o aplicativo Arquivos.</translation>
 <translation id="5163869187418756376">Falha no compartilhamento. Verifique sua conexão e tente novamente mais tarde.</translation>
 <translation id="516592729076796170">Programmer Dvorak americano</translation>
-<translation id="5172749059808361023">Detalhes de restrição</translation>
 <translation id="5177526793333269655">Visualização em miniatura</translation>
 <translation id="5181896909298187506">Nenhum arquivo recente</translation>
 <translation id="5194713942430106590">Clique para classificar a coluna em ordem crescente.</translation>
@@ -494,19 +509,21 @@
     <ph name="MARKUP_7" />Compartilhe, crie e colabore<ph name="MARKUP_8" />
     em arquivos com outras pessoas em um só lugar.<ph name="MARKUP_9" /></translation>
 <translation id="5275973617553375938">Arquivos recuperados a partir do Google Drive</translation>
+<translation id="5278111733643988471">Para restaurar esse item, arraste-o para uma nova pasta fora da lixeira. A pasta original "<ph name="PARENT_FOLDER_NAME" />" foi excluída.</translation>
 <translation id="5286194356314741248">Verificando</translation>
 <translation id="5288441970121584418">Hambúrguer</translation>
 <translation id="5288481194217812690"><ph name="FILENAME" /></translation>
-<translation id="5299998344490869684">Tem certeza de que quer esvaziar a lixeira?</translation>
 <translation id="5305688511332277257">Nenhum instalado</translation>
 <translation id="5317780077021120954">Salvar</translation>
 <translation id="5318819489018851358">Compartilhar com o Linux</translation>
 <translation id="5323213332664049067">América Latina</translation>
 <translation id="5330145655348521461">Estes arquivos estão abertos em uma área de trabalho diferente. Mude para <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) para vê-los.</translation>
 <translation id="5330512191124428349">Ver informações</translation>
+<translation id="5337538975554986899">Acessos a um arquivo de todos os URLs, exceto <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="535792325654997756">Pessoa com gatos</translation>
 <translation id="5358764674931277">Frame rate</translation>
 <translation id="5363339716524495120">O idioma de entrada é o chinês</translation>
+<translation id="5364067326287025678">Lixeira vazia</translation>
 <translation id="5368191757080475556">Compartilhar pasta com o Linux</translation>
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5411472733320185105">Não usar as configurações de proxy para estes hosts e domínios:</translation>
@@ -528,6 +545,7 @@
 <translation id="5533102081734025921">Imagem <ph name="IMAGE_TYPE" /></translation>
 <translation id="5534520101572674276">Calculando tamanho...</translation>
 <translation id="554153475311314364">Grego (transliteração)</translation>
+<translation id="5580591966435005537">máquina virtual</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5583664733673201137">A largura da pontuação é inteira</translation>
 <translation id="5602622065581044566">Búlgaro com teclado fonético</translation>
@@ -544,6 +562,7 @@
 <translation id="5691596662111998220">O item <ph name="FILE_NAME" /> não existe mais.</translation>
 <translation id="5698411045597658393"><ph name="NETWORK_NAME" />, Desbloquear</translation>
 <translation id="5700087501958648444">Informações sobre o áudio</translation>
+<translation id="5720028165859493293">O arquivo <ph name="FILE_NAME" /> foi movido para a lixeira</translation>
 <translation id="5724172041621205163">Tailandês com teclado Pattachote</translation>
 <translation id="5756666464756035725">QWERTY húngaro</translation>
 <translation id="5763377084591234761">Alemão (Suíça)</translation>
@@ -565,7 +584,6 @@
 <translation id="5845721951356578987">Profissional de enfermagem</translation>
 <translation id="5861477046012235702">Gamer</translation>
 <translation id="5864471791310927901">Falha ao procurar DHCP</translation>
-<translation id="5887342613489958822">Movendo <ph name="FILE_NAME" /> para a lixeira</translation>
 <translation id="5896749729057314184">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, inativa, intensidade do sinal <ph name="SIGNAL_STRENGTH" />%, detalhes</translation>
 <translation id="5911887972742538906">Ocorreu um erro durante a instalação do aplicativo Linux.</translation>
 <translation id="5912396950572065471">Formato</translation>
@@ -588,6 +606,7 @@
 <translation id="61118516107968648">Texto no formato CSV</translation>
 <translation id="6129953537138746214">Espaço</translation>
 <translation id="6133173853026656527">Transferindo <ph name="FILE_NAME" />...</translation>
+<translation id="6133877453787250710">Os administradores monitoram:</translation>
 <translation id="613750717151263950">Japonês com teclado dos EUA</translation>
 <translation id="6138894911715675297"><ph name="NETWORK_TYPE" />, sem rede</translation>
 <translation id="6146563240635539929">Vídeos</translation>
@@ -608,11 +627,13 @@
 <translation id="6287852322318138013">Selecione um aplicativo para abrir este arquivo</translation>
 <translation id="6295542640242147836">Bloquear chip</translation>
 <translation id="6296410173147755564">PUK inválida</translation>
+<translation id="6308243004861726558">Este arquivo é confidencial e está sujeito à política do administrador. As seguintes ações de acesso e transferência de arquivos são aplicáveis.</translation>
 <translation id="6312403991423642364">Erro de rede desconhecido</translation>
 <translation id="6317608858038767920">Servidor de nomes personalizado <ph name="INPUT_INDEX" /></translation>
 <translation id="6320212353742551423">Arquivo <ph name="ARCHIVE_TYPE" /></translation>
 <translation id="6321303798550928047">Acenando</translation>
 <translation id="6327785803543103246">Descoberta automática do proxy da Web</translation>
+<translation id="6337014272874260727">Liberar dos arquivos de acesso rápido</translation>
 <translation id="6339145975392024142">Internacional dos EUA (PC)</translation>
 <translation id="6346310558342052870">Acesso restrito</translation>
 <translation id="6356685157277930264">Janela de feedback do Arquivos</translation>
@@ -653,6 +674,7 @@
 <translation id="6751256176799620176">1 pasta selecionada</translation>
 <translation id="6755827872271341378">Dispositivo ChromeOS Flex</translation>
 <translation id="6790428901817661496">Reproduzir</translation>
+<translation id="6794539005637808366">Restaure ou arraste o item para uma nova pasta fora da lixeira</translation>
 <translation id="6795884519221689054">Panda</translation>
 <translation id="6806699711453372963">Gerenciar compartilhamento do Linux</translation>
 <translation id="6806796368146926706">Alfanumérico com teclado japonês</translation>
@@ -675,11 +697,9 @@
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">Workman dos EUA</translation>
 <translation id="6930242544192836755">Duração</translation>
-<translation id="6931302001003657424">Fixar nos Arquivos de acesso rápido</translation>
 <translation id="6935521024859866267">Ponta-cabeça</translation>
 <translation id="6943836128787782965">HTTP falhou</translation>
 <translation id="6949408524333579394">Sérvio (transliteração)</translation>
-<translation id="6954309393500027528">O administrador bloqueou a opção de colar esse arquivo</translation>
 <translation id="6960565108681981554">Desativada. Entre em contato com a operadora.</translation>
 <translation id="696203921837389374">Ativar a sincronização de dados móveis</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -690,6 +710,7 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6989942356279143254">Sueco</translation>
 <translation id="6990081529015358884">Não há espaço suficiente</translation>
+<translation id="6993826899923627728">Esses itens estão na lixeira</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> pastas selecionadas</translation>
 <translation id="7008426324576352165">Sua organização precisa de mais armazenamento para concluir o upload.</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
@@ -721,6 +742,7 @@
 <translation id="7248671827512403053">Aplicativo</translation>
 <translation id="7256405249507348194">Erro não reconhecido: <ph name="DESC" /></translation>
 <translation id="7268659760406822741">Serviços disponíveis</translation>
+<translation id="7292816689782057017">A política do administrador restringe a capacidade de salvar em alguns locais.</translation>
 <translation id="7294063083760278948">Telugo (transliteração)</translation>
 <translation id="7295662345261934369">Compartilhar com outras pessoas</translation>
 <translation id="7297443947353982503">Nome de usuário/senha incorretos ou falha de autenticação EAP</translation>
@@ -734,6 +756,7 @@
 <translation id="7408870451288633753">Tcheco</translation>
 <translation id="7417453074306512035">Teclado etíope</translation>
 <translation id="7417705661718309329">Mapa do Google</translation>
+<translation id="7419668828140929293">Restaurando o arquivo <ph name="FILENAME" /></translation>
 <translation id="7458955835361612701">Nenhuma imagem recente</translation>
 <translation id="7460898608667578234">Ucraniano</translation>
 <translation id="7469894403370665791">Conectar automaticamente a esta rede</translation>
@@ -751,7 +774,6 @@
 <translation id="7547811415869834682">Holandês</translation>
 <translation id="7551643184018910560">Fixar na estante</translation>
 <translation id="7553492409867692754">Conceder aos apps do Linux permissão para acessar arquivos na pasta <ph name="FOLDER_NAME" /></translation>
-<translation id="7575645593344061397">Restaurando "<ph name="FILENAME" />"…</translation>
 <translation id="7589661784326793847">Aguarde um segundo</translation>
 <translation id="7592775719802218421">Disponibilizando <ph name="FILE_NAME" /> off-line</translation>
 <translation id="7600126690270271294">Sérvio</translation>
@@ -763,6 +785,7 @@
 <translation id="7655441028674523381">Acesso fácil ao Google Fotos</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7663224033570512922">Híndi</translation>
+<translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> itens movidos para a lixeira</translation>
 <translation id="7693909743393669729">Formatar uma unidade excluirá todos os dados armazenados nela e todas as partições existentes, incluindo partições não visíveis. Essa ação não pode ser desfeita.</translation>
 <translation id="7695430100978772476">Não foi possível formatar <ph name="DRIVE_NAME" />.</translation>
 <translation id="76959938259365003">Falha ao esvaziar a lixeira.</translation>
@@ -772,10 +795,12 @@
 <translation id="7711920809702896782">Informações sobre a imagem</translation>
 <translation id="7724603315864178912">Recortar</translation>
 <translation id="7732111077498238432">A rede é controlada por política</translation>
+<translation id="7736003208887389532">Excluir esses arquivos permanentemente?</translation>
 <translation id="7748626145866214022">Mais opções disponíveis na barra de ação. Pressione Alt e A para colocar o foco na barra de ação.</translation>
 <translation id="7760449188139285140">Chinês (wubi)</translation>
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7774365994322694683">Pássaro</translation>
+<translation id="7780322752056734036"><ph name="NUMBER_OF_ITEMS" /> itens restaurados</translation>
 <translation id="7781829728241885113">Ontem</translation>
 <translation id="7788080748068240085">Para salvar "<ph name="FILE_NAME" />" off-line, é necessário liberar um espaço adicional de mais <ph name="TOTAL_FILE_SIZE" />:<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />libere arquivos que você não precisa mais acessar off-line<ph name="MARKUP_3" />
@@ -797,6 +822,7 @@
 <translation id="78946041517601018">Drives compartilhados</translation>
 <translation id="7903984238293908205">Katakana</translation>
 <translation id="7908793776359722643">Formatar uma partição excluirá todos os dados armazenados nela. Essa ação não pode ser desfeita.</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7925247922861151263">Falha ao verificar AAA</translation>
 <translation id="7925686952655276919">Não usar dados móveis na sincronização</translation>
 <translation id="7928710562641958568">Ejetar dispositivo</translation>
@@ -832,8 +858,10 @@
 <translation id="8249296373107784235">Cancelar</translation>
 <translation id="8250690786522693009">latim</translation>
 <translation id="8250920743982581267">Documentos</translation>
+<translation id="8255595130163158297">Todos os itens na lixeira vão ser excluídos e não vão poder ser restaurados.</translation>
 <translation id="8261506727792406068">Excluir</translation>
 <translation id="8261561378965667560">Chinês (array)</translation>
+<translation id="8262872909443689080">Política do administrador</translation>
 <translation id="8264024885325823677">Essas configurações são gerenciadas pelo administrador.</translation>
 <translation id="8269755669432358899">Recolher painéis de feedback de arquivos</translation>
 <translation id="8280151743281770066">Armênio fonético</translation>
@@ -860,7 +888,6 @@
 <translation id="8456681095658380701">Nome inválido</translation>
 <translation id="8457767749626250697">Seu chip está bloqueado</translation>
 <translation id="8459404855768962328">Se você copiar esse item, ele será compartilhado com todos que podem ver a pasta compartilhada "<ph name="DESTINATION_NAME" />".</translation>
-<translation id="8461467696380332069">Clique com o botão direito do mouse em um arquivo e selecione "Fixar na estante" para ter acesso rápido a ele pela estante.</translation>
 <translation id="8461914792118322307">Proxy</translation>
 <translation id="8463494891489624050">Vietnamita (VIQR)</translation>
 <translation id="8475647382427415476">Não foi possível para o Google Drive sincronizar "<ph name="FILENAME" />" no momento. O Google Drive tentará novamente mais tarde.</translation>
@@ -897,23 +924,24 @@
 <translation id="8719721339511222681">Selecionado: <ph name="ENTRY_NAME" />.</translation>
 <translation id="872537912056138402">Croata</translation>
 <translation id="8743164338060742337">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, intensidade do sinal em <ph name="SIGNAL_STRENGTH" />%, gerenciada pelo administrador, conectar</translation>
-<translation id="8750438273876807512">Toque em um arquivo, mantenha-o pressionado e toque em <ph name="ICON" />. Em seguida, selecione "Fixar na estante" para ter acesso rápido a ele pela estante.</translation>
 <translation id="8787254343425541995">Permitir proxies para redes compartilhadas</translation>
 <translation id="8790981080411996443">Pessoa regando plantas</translation>
 <translation id="8798099450830957504">Padrão</translation>
-<translation id="8802459921616481935">Mover para a lixeira</translation>
 <translation id="8808686172382650546">Gato</translation>
 <translation id="8810671769985673465">Falha na compactação, o item existe: "<ph name="FILE_NAME" />"</translation>
 <translation id="8813284582615685103">Espanhol (Espanha)</translation>
 <translation id="8834164572807951958">Membros de '<ph name="DESTINATION_NAME" />' terão acesso à cópia desses itens.</translation>
+<translation id="8849389110234859568">A política do administrador restringe o acesso a alguns arquivos.</translation>
 <translation id="8857149712089373752">Nepalês com teclado fonético</translation>
 <translation id="8860454412039442620">Planilha do Excel</translation>
 <translation id="8866284467018526531">Árabe (transliteração)</translation>
+<translation id="8873014196523807561">Para restaurar esses itens, arraste-os para uma nova pasta. As pastas originais de alguns deles foram excluídas.</translation>
 <translation id="8874184842967597500">Não conectado</translation>
 <translation id="8900820606136623064">Húngaro</translation>
 <translation id="8903931173357132290">Formando</translation>
 <translation id="8912078710089354287">Cachorro abanando o rabo</translation>
 <translation id="8919081441417203123">Dinamarquês</translation>
+<translation id="8949925099261528566">Conectada, sem Internet</translation>
 <translation id="8965697826696209160">Não há espaço suficiente.</translation>
 <translation id="8997962250644902079">Chinês (tradicional, pinyin)</translation>
 <translation id="8998871447376656508">Não há espaço livre suficiente no seu Google Drive para concluir o upload.</translation>
@@ -930,6 +958,7 @@
 <translation id="9100610230175265781">Senha necessária</translation>
 <translation id="9110990317705400362">Estamos constantemente à procura de maneiras para tornar sua navegação mais segura. Anteriormente, qualquer website podia pedir que você adicionasse uma extensão no seu navegador. Nas versões mais recentes do Google Chrome, você deve dizer explicitamente ao Chrome que deseja instalar essas extensões, adicionando-as através da página de extensões. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="9111102763498581341">Desbloquear</translation>
+<translation id="9116909380156770361">Transferências de arquivos para <ph name="RESTRICTED_COMPONENTS" /></translation>
 <translation id="912419004897138677">Codec</translation>
 <translation id="9130775360844693113">Membros de '<ph name="DESTINATION_NAME" />' terão acesso a esses itens.</translation>
 <translation id="9131598836763251128">Selecione um ou mais arquivos</translation>
@@ -951,7 +980,9 @@
 <translation id="943972244133411984">Modificado por</translation>
 <translation id="945522503751344254">Enviar comentários</translation>
 <translation id="947144732524271678">Foram selecionadas <ph name="ENTRY_COUNT" /> entradas de <ph name="FROM_ENTRY_NAME" /> até <ph name="TO_ENTRY_NAME" />.</translation>
+<translation id="954194396377670556">A política do administrador é aplicada para evitar o seguinte:</translation>
 <translation id="965477715979482472">Inglês (África do Sul)</translation>
+<translation id="976666271385981812">Movendo <ph name="NUMBER_OF_ITEMS" /> itens para a lixeira</translation>
 <translation id="981121421437150478">Off-line</translation>
 <translation id="988685240266037636">Já existe um arquivo chamado "<ph name="FILE_NAME" />". Você quer substitui-lo?</translation>
 <translation id="992401651319295351">Você tem <ph name="RETRIES" /> tentativas restantes. Não será possível usar esta rede até que um novo PIN seja configurado.</translation>

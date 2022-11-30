@@ -32,10 +32,11 @@ const int kEventExpirationMinutes = 20;
 
 }  // namespace
 
-BreadcrumbManager::BreadcrumbManager(base::TimeTicks start_time)
-    : start_time_(start_time) {}
-
-BreadcrumbManager::~BreadcrumbManager() = default;
+// static
+BreadcrumbManager& BreadcrumbManager::GetInstance() {
+  static base::NoDestructor<BreadcrumbManager> breadcrumb_manager;
+  return *breadcrumb_manager;
+}
 
 const std::list<std::string> BreadcrumbManager::GetEvents() {
   DropOldEvents();
@@ -75,11 +76,14 @@ void BreadcrumbManager::AddEvent(const std::string& event) {
   event_buckets_.back().events.push_back(event_log);
 
   for (auto& observer : observers_) {
-    observer.EventAdded(this, event_log);
+    observer.EventAdded(event_log);
   }
 
   DropOldEvents();
 }
+
+BreadcrumbManager::BreadcrumbManager() = default;
+BreadcrumbManager::~BreadcrumbManager() = default;
 
 void BreadcrumbManager::DropOldEvents() {
   bool old_buckets_dropped = false;
@@ -110,7 +114,7 @@ void BreadcrumbManager::DropOldEvents() {
 
   if (old_buckets_dropped) {
     for (auto& observer : observers_) {
-      observer.OldEventsRemoved(this);
+      observer.OldEventsRemoved();
     }
   }
 }
@@ -125,6 +129,11 @@ void BreadcrumbManager::AddObserver(BreadcrumbManagerObserver* observer) {
 
 void BreadcrumbManager::RemoveObserver(BreadcrumbManagerObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void BreadcrumbManager::ResetForTesting() {
+  start_time_ = base::TimeTicks::Now();
+  event_buckets_.clear();
 }
 
 BreadcrumbManager::EventBucket::EventBucket(int minutes_elapsed)

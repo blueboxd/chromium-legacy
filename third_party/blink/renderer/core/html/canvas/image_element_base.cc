@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -184,6 +184,7 @@ ScriptPromise ImageElementBase::CreateImageBitmap(
     // The following function only works on SVGImages (as checked above).
     return ImageBitmap::CreateAsync(
         this, crop_rect, script_state,
+        GetElement().GetDocument().GetTaskRunner(TaskType::kInternalDefault),
         GetElement().GetDocument().GetPreferredColorScheme(), exception_state,
         options);
   }

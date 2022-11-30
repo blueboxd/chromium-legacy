@@ -73,6 +73,9 @@ class MockNavigationHandle : public NavigationHandle {
   bool IsInPrimaryMainFrame() const override {
     return is_in_primary_main_frame_;
   }
+  bool IsInOutermostMainFrame() override {
+    return !GetParentFrameOrOuterDocument();
+  }
   MOCK_METHOD0(GetFrameTreeNodeId, int());
   MOCK_METHOD0(GetPreviousRenderFrameHostId, GlobalRenderFrameHostId());
   MOCK_METHOD(int, GetExpectedRenderProcessHostId, ());
@@ -116,7 +119,7 @@ class MockNavigationHandle : public NavigationHandle {
   RenderFrameHost* GetRenderFrameHost() const override {
     return render_frame_host_;
   }
-  bool IsSameDocument() override { return is_same_document_; }
+  bool IsSameDocument() const override { return is_same_document_; }
   MOCK_METHOD0(WasServerRedirect, bool());
   const std::vector<GURL>& GetRedirectChain() override {
     return redirect_chain_;

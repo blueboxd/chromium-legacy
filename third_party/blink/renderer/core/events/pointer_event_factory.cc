@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,7 +157,7 @@ HeapVector<Member<PointerEvent>> PointerEventFactory::CreateEventSequence(
   AtomicString type = PointerEventNameForEventType(web_pointer_event.GetType());
   HeapVector<Member<PointerEvent>> result;
 
-  if (!event_list.IsEmpty()) {
+  if (!event_list.empty()) {
     // Make a copy of LastPointerPosition so we can modify it after creating
     // each coalesced event.
     gfx::PointF last_global_position =

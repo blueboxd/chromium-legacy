@@ -4,12 +4,12 @@
 
 #include "extensions/shell/browser/shell_desktop_controller_aura.h"
 
-#include <algorithm>
 #include <memory>
 #include <string>
 
 #include "base/check_op.h"
 #include "base/memory/raw_ptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "build/chromeos_buildflags.h"
 #include "components/keep_alive_registry/keep_alive_registry.h"
@@ -17,6 +17,7 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/shell/browser/shell_app_window_client.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/cursor_shape_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
@@ -52,6 +53,7 @@
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace extensions {
+
 namespace {
 
 // A class that bridges the gap between CursorManager and Aura. It borrows
@@ -60,12 +62,16 @@ class ShellNativeCursorManager : public wm::NativeCursorManager {
  public:
   explicit ShellNativeCursorManager(
       ShellDesktopControllerAura* desktop_controller)
-      : desktop_controller_(desktop_controller) {}
+      : desktop_controller_(desktop_controller) {
+    aura::client::SetCursorShapeClient(&cursor_loader_);
+  }
 
   ShellNativeCursorManager(const ShellNativeCursorManager&) = delete;
   ShellNativeCursorManager& operator=(const ShellNativeCursorManager&) = delete;
 
-  ~ShellNativeCursorManager() override {}
+  ~ShellNativeCursorManager() override {
+    aura::client::SetCursorShapeClient(nullptr);
+  }
 
   // wm::NativeCursorManager overrides.
   void SetDisplay(const display::Display& display,
@@ -202,11 +208,9 @@ void ShellDesktopControllerAura::CloseAppWindows() {
 
 void ShellDesktopControllerAura::CloseRootWindowController(
     RootWindowController* root_window_controller) {
-  const auto it = std::find_if(
-      root_window_controllers_.cbegin(), root_window_controllers_.cend(),
-      [root_window_controller](const auto& candidate_pair) {
-        return candidate_pair.second.get() == root_window_controller;
-      });
+  const auto it = base::ranges::find(
+      root_window_controllers_, root_window_controller,
+      [](const auto& candidate_pair) { return candidate_pair.second.get(); });
   DCHECK(it != root_window_controllers_.end());
   TearDownRootWindowController(it->second.get());
   root_window_controllers_.erase(it);

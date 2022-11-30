@@ -11,8 +11,7 @@
 #include "chromeos/assistant/internal/test_support/fake_assistant_manager_internal.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 namespace {
 
@@ -33,8 +32,7 @@ class NotificationDelegateMock : public mojom::NotificationDelegate {
               (const std::string& grouping_key, bool from_server));
 
   void Bind(
-      mojo::PendingReceiver<chromeos::libassistant::mojom::NotificationDelegate>
-          pending_receiver) {
+      mojo::PendingReceiver<mojom::NotificationDelegate> pending_receiver) {
     receiver_.Bind(std::move(pending_receiver));
   }
 
@@ -50,24 +48,25 @@ class NotificationDelegateMock : public mojom::NotificationDelegate {
 class CrosActionModuleHelper {
  public:
   explicit CrosActionModuleHelper(
-      assistant::action::CrosActionModule* action_module)
+      chromeos::assistant::action::CrosActionModule* action_module)
       : action_module_(*action_module) {}
   CrosActionModuleHelper(const CrosActionModuleHelper&) = delete;
   CrosActionModuleHelper& operator=(const CrosActionModuleHelper&) = delete;
   ~CrosActionModuleHelper() = default;
 
-  void ShowNotification(const assistant::action::Notification& notification) {
+  void ShowNotification(
+      const chromeos::assistant::action::Notification& notification) {
     for (auto* observer : action_observers())
       observer->OnShowNotification(notification);
   }
 
  private:
-  const std::vector<assistant::action::AssistantActionObserver*>&
+  const std::vector<chromeos::assistant::action::AssistantActionObserver*>&
   action_observers() {
     return action_module_.GetActionObserversForTesting();
   }
 
-  const assistant::action::CrosActionModule& action_module_;
+  const chromeos::assistant::action::CrosActionModule& action_module_;
 };
 
 }  // namespace
@@ -84,7 +83,7 @@ class NotificationDelegateTest : public ::testing::Test {
         service_tester_.GetNotificationDelegatePendingReceiver());
     service_tester_.Start();
     action_module_helper_ = std::make_unique<CrosActionModuleHelper>(
-        static_cast<assistant::action::CrosActionModule*>(
+        static_cast<chromeos::assistant::action::CrosActionModule*>(
             service_tester_.assistant_manager_internal().action_module()));
 
     service_tester_.service()
@@ -111,7 +110,7 @@ class NotificationDelegateTest : public ::testing::Test {
 };
 
 TEST_F(NotificationDelegateTest, ShouldInvokeAddOrUpdateNotification) {
-  assistant::action::Notification input_notification{
+  chromeos::assistant::action::Notification input_notification{
       /*title=*/"title",
       /*text=*/"text",
       /*action_url=*/"https://action-url/",
@@ -165,5 +164,4 @@ TEST_F(NotificationDelegateTest, ShouldInvokeRemoveNotificationByGroupingKey) {
   delegate_mock().FlushForTesting();
 }
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant

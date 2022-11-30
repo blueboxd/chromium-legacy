@@ -8,6 +8,7 @@ import org.chromium.base.BaseFeatures;
 import org.chromium.base.BaseSwitches;
 import org.chromium.blink_public.common.BlinkFeatures;
 import org.chromium.blink_scheduler.BlinkSchedulerFeatures;
+import org.chromium.cc.base.CcFeatures;
 import org.chromium.cc.base.CcSwitches;
 import org.chromium.components.autofill.AutofillFeatures;
 import org.chromium.components.feature_engagement.FeatureConstants;
@@ -152,9 +153,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.GMS_CORE_EMOJI,
                     "Enables retrieval of the emoji font through GMS Core "
                             + "improving emoji glyph coverage."),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_SERVER_TYPE_TAKES_PRECEDENCE,
-                    "Enables server type marked as overrides to take precedence over the "
-                            + "autocomplete attribute."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ACROSS_IFRAMES,
                     "Enable Autofill for frame-transcending forms (forms whose fields live in "
                             + "different frames)."),
@@ -165,15 +163,6 @@ public final class ProductionSupportedFlagList {
                     "Enables parsing dependent locality fields (e.g. Bairros in Brazil)."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_RANKING_FORMULA,
                     "Enables new autofill suggestion ranking formula"),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_SUPPORT_FOR_MORE_STRUCTURE_IN_NAMES,
-                    "Enables support for names with a rich structure including multiple last "
-                            + "names."),
-            Flag.baseFeature(
-                    AutofillFeatures.AUTOFILL_ENABLE_SUPPORT_FOR_MORE_STRUCTURE_IN_ADDRESSES,
-                    "Enables support for address with a rich structure including separate street "
-                            + "names and house numberse."),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_AUGMENTED_PHONE_COUNTRY_CODE,
-                    "Enables support for phone code number fields with additional text."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENFORCE_DELAYS_IN_STRIKE_DATABASE,
                     "Enforce delay between offering Autofill opportunities in the "
                             + "strike database."),
@@ -188,8 +177,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AutofillFeatures.AUTOFILL_PARSE_MERCHANT_PROMO_CODE_FIELDS,
                     "When enabled, Autofill will attempt to find merchant promo/coupon/gift code "
                             + "fields when parsing forms."),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_NAME_SURENAME_PARSING,
-                    "Adds new name surname field combinations to the parsing logic"),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_RATIONALIZE_STREET_ADDRESS_AND_ADDRESS_LINE,
                     "Rationalizes (street address, address line 2) field sequences to "
                             + "(address line1, address line 2)."),
@@ -199,6 +186,8 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AutofillFeatures.AUTOFILL_CONSIDER_PLACEHOLDER_FOR_PARSING,
                     "When enabled, Autofill local heuristics consider the placeholder attribute "
                             + "for determining field types."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_IMPROVED_LABEL_FOR_INFERENCE,
+                    "When enabled, Autofill associates assigned labels with inputs in unowned forms."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_SERVER_BEHAVIORS,
                     "When enabled, Autofill will request experimental "
                             + "predictions from the Autofill API."),
@@ -283,9 +272,10 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(ContentFeatures.AVOID_UNNECESSARY_BEFORE_UNLOAD_CHECK_POST_TASK,
                     "Avoids an unnecessary renderer ipc during navigation for before-unload "
                             + "handlers."),
-            Flag.baseFeature(AwFeatures.WEBVIEW_X_REQUESTED_WITH_HEADER,
-                    "Enables automatic insertion of XRequestedWith header "
-                            + "on all outgoing requests."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_X_REQUESTED_WITH_HEADER_CONTROL,
+                    "Restricts insertion of XRequestedWith header on outgoing requests "
+                            + "to those that have been allow-listed through the appropriate "
+                            + "developer API."),
             Flag.baseFeature(
                     AwFeatures.WEBVIEW_SYNTHESIZE_PAGE_LOAD_ONLY_ON_INITIAL_MAIN_DOCUMENT_ACCESS,
                     "Only synthesize page load for URL spoof prevention at most once,"
@@ -374,6 +364,26 @@ public final class ProductionSupportedFlagList {
                     "Enable to increase the cost of SendPendingAccessibilityEvents"),
             Flag.baseFeature(ContentFeatures.WEBVIEW_THROTTLE_BACKGROUND_BEGIN_FRAME,
                     "Enable to throttle begin frames when webview is not being drawn"),
+            Flag.baseFeature(BlinkFeatures.RUN_TEXT_INPUT_UPDATE_POST_LIFECYCLE,
+                    "Runs code to update IME state at the end of a lifecycle update "
+                            + "rather than the beginning."),
+            Flag.baseFeature(CcFeatures.NON_BLOCKING_COMMIT,
+                    "Don't block the renderer main thread unconditionally while waiting "
+                            + "for commit to finish on the compositor thread."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_CLIENT_HINTS_CONTROLLER_DELEGATE,
+                    "This persists client hints between top-level navigations."),
+            Flag.baseFeature(CcFeatures.USE_DMSAA_FOR_TILES,
+                    "Switches skia to use DMSAA instead of MSAA for tile raster"),
+            Flag.baseFeature(
+                    CcFeatures.AVOID_RASTER_DURING_ELASTIC_OVERSCROLL, "No effect on webview"),
+            Flag.baseFeature(BlinkFeatures.DOCUMENT_EVENT_NODE_PATH_CACHING,
+                    "Enables a performance optimization that caches event paths."),
+            Flag.baseFeature(BlinkFeatures.WEB_RTC_METRONOME,
+                    "Inject a metronome into webrtc to allow task coalescing, "
+                            + " including synchronized decoding."),
+            Flag.baseFeature(BlinkFeatures.THREADED_BODY_LOADER,
+                    "If enabled, reads and decodes navigation body data off the main thread."),
+            Flag.baseFeature("PreconnectOnRedirect"),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

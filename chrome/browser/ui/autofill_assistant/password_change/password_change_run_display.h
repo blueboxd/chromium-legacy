@@ -44,7 +44,11 @@ class PasswordChangeRunDisplay {
   // sibling view methods.
   virtual void SetTopIcon(
       autofill_assistant::password_change::TopIcon top_icon) = 0;
-  virtual void SetTitle(const std::u16string& title) = 0;
+  // Sets the title shown in the side panel. If `accessibility_title` is not set
+  // defaults to `title`.
+  virtual void SetTitle(
+      const std::u16string& title,
+      const std::u16string& accessibility_title = std::u16string()) = 0;
   virtual void SetDescription(const std::u16string& progress_description) = 0;
   virtual void SetProgressBarStep(
       autofill_assistant::password_change::ProgressStep progress_step) = 0;
@@ -73,8 +77,14 @@ class PasswordChangeRunDisplay {
   // Methods used to render the UI state before and after a script run.
   virtual void ShowStartingScreen(const GURL& url) = 0;
   virtual void ShowCompletionScreen(
+      autofill_assistant::password_change::FlowType flow_type,
       base::RepeatingClosure done_button_callback) = 0;
   virtual void ShowErrorScreen() = 0;
+
+  // Pauses and resumes the icon animation of the progress bar.
+  virtual void PauseProgressBarAnimation() = 0;
+  virtual void ResumeProgressBarAnimation() = 0;
+  virtual void SetFocus() = 0;
 
   // Notifies the view that the controller was destroyed so that the view
   // can close itself.

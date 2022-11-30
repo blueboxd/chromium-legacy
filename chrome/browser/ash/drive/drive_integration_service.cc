@@ -1164,9 +1164,9 @@ void DriveIntegrationService::SearchDriveByFileName(
   drive_query->sort_direction = sort_direction;
   drive_query->query_source = query_source;
 
-  auto on_response =
-      base::BindOnce(&DriveIntegrationService::OnSearchDriveByFileName,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+  auto on_response = base::BindOnce(
+      &DriveIntegrationService::OnSearchDriveByFileName,
+      weak_ptr_factory_.GetMutableWeakPtr(), std::move(callback));
 
   GetDriveFsHost()->PerformSearch(
       std::move(drive_query),
@@ -1391,6 +1391,11 @@ void DriveIntegrationService::GetSyncingPaths(
   if (GetDriveFsInterface()) {
     GetDriveFsInterface()->GetSyncingPaths(std::move(callback));
   }
+}
+
+drivefs::SyncStatus DriveIntegrationService::GetSyncStatusForPath(
+    const base::FilePath& drive_path) {
+  return drivefs_holder_->drivefs_host()->GetSyncStatusForPath(drive_path);
 }
 
 void DriveIntegrationService::PollHostedFilePinStates() {

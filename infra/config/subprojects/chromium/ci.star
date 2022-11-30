@@ -99,13 +99,15 @@ luci.gitiles_poller(
     ("win64-chrome", "win"),
 )]
 
+# Any builders that should be monitored by the Chrome-Fuchsia Gardener
+# should be in the "gardener" group.
 consoles.console_view(
     name = "sheriff.fuchsia",
     title = "Fuchsia Sheriff Console",
     ordering = {
-        "*type*": consoles.ordering(short_names = ["a64", "x64"]),
-        None: ["ci", "fuchsia ci", "hardware", "fyi"],
-        "chromium.fyi|13": "*type*",
+        None: ["gardener", "fyi"],
+        "gardener": ["ci", "fuchsia ci", "p/chrome", "hardware"],
+        "fyi": ["arm64", "x64", "clang", "hardware"],
     },
 )
 
@@ -116,18 +118,21 @@ consoles.console_view(
     category = category,
     short_name = short_name,
 ) for name, category, short_name in (
-    ("fuchsia-builder-perf-fyi", "p/chrome|arm64", "perf-bld"),
-    ("fuchsia-builder-perf-x64", "p/chrome|x64", "perf-bld"),
-    ("fuchsia-fyi-arm64-size", "p/chrome|arm64", "size"),
-    ("fuchsia-fyi-astro", "hardware", "ast"),
-    ("fuchsia-fyi-atlas", "hardware", "atl"),
-    ("fuchsia-fyi-sherlock", "hardware", "sher"),
-    ("fuchsia-perf-atlas-fyi", "hardware|perf", "atl"),
-    ("fuchsia-perf-fyi", "hardware|perf", "ast"),
-    ("fuchsia-perf-sherlock-fyi", "hardware|perf", "sher"),
-    ("fuchsia-x64", "p/chrome|x64", "rel"),
+    ("fuchsia-builder-perf-arm64", "gardener|p/chrome|arm64", "perf-bld"),
+    ("fuchsia-builder-perf-x64", "gardener|p/chrome|x64", "perf-bld"),
+    ("fuchsia-fyi-arm64-size", "gardener|p/chrome|arm64", "size"),
+    ("fuchsia-fyi-astro", "gardener|hardware", "ast"),
+    ("fuchsia-fyi-atlas", "fyi|hardware", "atl"),
+    ("fuchsia-fyi-sherlock", "fyi|hardware", "sher"),
+    ("fuchsia-perf-ast", "gardener|hardware|perf", "ast"),
+    ("fuchsia-perf-atlas-fyi", "fyi|hardware|perf", "atl"),
+    ("fuchsia-perf-fyi", "fyi|hardware|perf", "ast"),
+    ("fuchsia-perf-sherlock-fyi", "fyi|hardware|perf", "sher"),
+    ("fuchsia-perf-shk", "gardener|hardware|perf", "sher"),
+    ("fuchsia-x64", "gardener|p/chrome|x64", "rel"),
 )]
 
+exec("./ci/checks.star")
 exec("./ci/chromium.star")
 exec("./ci/chromium.accessibility.star")
 exec("./ci/chromium.android.star")

@@ -13,6 +13,7 @@
 #include "base/notreached.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/logging/log_router.h"
+#import "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #import "components/autofill/ios/browser/autofill_driver_ios.h"
@@ -107,8 +108,15 @@ WebViewAutofillClientIOS::GetAutocompleteHistoryManager() {
   return autocomplete_history_manager_;
 }
 
+CreditCardCVCAuthenticator* WebViewAutofillClientIOS::GetCVCAuthenticator() {
+  if (!cvc_authenticator_) {
+    cvc_authenticator_ = std::make_unique<CreditCardCVCAuthenticator>(this);
+  }
+  return cvc_authenticator_.get();
+}
+
 PrefService* WebViewAutofillClientIOS::GetPrefs() {
-  return const_cast<PrefService*>(base::as_const(*this).GetPrefs());
+  return const_cast<PrefService*>(std::as_const(*this).GetPrefs());
 }
 
 const PrefService* WebViewAutofillClientIOS::GetPrefs() const {
@@ -149,8 +157,14 @@ AddressNormalizer* WebViewAutofillClientIOS::GetAddressNormalizer() {
   return nullptr;
 }
 
-const GURL& WebViewAutofillClientIOS::GetLastCommittedURL() const {
+const GURL& WebViewAutofillClientIOS::GetLastCommittedPrimaryMainFrameURL()
+    const {
   return web_state_->GetLastCommittedURL();
+}
+
+url::Origin WebViewAutofillClientIOS::GetLastCommittedPrimaryMainFrameOrigin()
+    const {
+  return url::Origin::Create(GetLastCommittedPrimaryMainFrameURL());
 }
 
 security_state::SecurityLevel
@@ -248,6 +262,16 @@ bool WebViewAutofillClientIOS::IsFastCheckoutSupported() {
 bool WebViewAutofillClientIOS::IsFastCheckoutTriggerForm(
     const FormData& form,
     const FormFieldData& field) {
+  return false;
+}
+
+bool WebViewAutofillClientIOS::FastCheckoutScriptSupportsConsentlessExecution(
+    const url::Origin& origin) {
+  return false;
+}
+
+bool WebViewAutofillClientIOS::
+    FastCheckoutClientSupportsConsentlessExecution() {
   return false;
 }
 

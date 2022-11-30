@@ -250,6 +250,7 @@
 <translation id="3484914941826596830">Додека фирмверот се ажурира, не исклучувајте го надворешниов уред од струја или не исклучувајте го компјутерот. Може да го минимизирате прозорецов. Ажурирањево може да потрае неколку минути и надворешниот уред можеби нема да работи во ова време.</translation>
 <translation id="3486220673238053218">дефиниција</translation>
 <translation id="3488065109653206955">Делумно активиран</translation>
+<translation id="3510890413042482857">Испрати <ph name="BEGIN_LINK1" />податоци во траги за учинок<ph name="END_LINK1" /></translation>
 <translation id="3517001332549868749">Ажурирање на Chrome OS</translation>
 <translation id="3527036260304016759">Неуспешно - непозната грешка</translation>
 <translation id="3532980081107202182">Преостануваат околу <ph name="MIN_REMAINING" /> мин.</translation>
@@ -469,6 +470,7 @@
 <translation id="5502931783115429516">Android не функционира</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5559898619118303662">Автоматски префрлете се на темна тема на зајдисонце</translation>
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">Скенирај пак</translation>
 <translation id="5583640892426849032">Backspace-копче</translation>

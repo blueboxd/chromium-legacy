@@ -18,10 +18,10 @@ The tables in this file are parsed as action templates for critical user journey
 
 ## Enums Table
 
-| #Enum Name | Values (* = default) |  |  |  |  |  |  |
+| #Enum Name | Values (* = default) |  |  |  |  |  |  |  |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Site | Standalone*  | StandaloneSubSite | MinimalUi | NotPromotable | StandaloneNestedA | StandaloneNestedB | Wco | Isolated | FileHandler | NotInstalled | |
-| InstallableSite | Standalone* | MinimalUi | StandaloneNestedA | StandaloneNestedB | Wco | NotInstalled |  |
+| Site | Standalone* | MinimalUi | NotPromotable | StandaloneNestedA | StandaloneNestedB | Wco | Isolated | FileHandler | NotInstalled | StandaloneNotStartUrl | Screenshots |
+| InstallableSite | Standalone* | MinimalUi | StandaloneNestedA | StandaloneNestedB | Wco | NotInstalled | StandaloneNotStartUrl | Screenshots |
 | Title | StandaloneOriginal | StandaloneUpdated |  |  |  |  |  |
 | Color | Red | Green |  |  |  |  |  |
 | ProfileClient | Client2* | Client1 |  |  |  |  |  |
@@ -37,3 +37,4 @@ The tables in this file are parsed as action templates for critical user journey
 | AskAgainOptions | AskAgain | Remember |
 | ShortcutOptions | WithShortcut | NoShortcut |
 | WindowOptions | Windowed | Browser |
+| InstallMode | WebApp* | WebShortcut |

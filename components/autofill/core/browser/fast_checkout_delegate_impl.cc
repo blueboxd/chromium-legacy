@@ -17,7 +17,11 @@ FastCheckoutDelegateImpl::FastCheckoutDelegateImpl(
   DCHECK(manager);
 }
 
-FastCheckoutDelegateImpl::~FastCheckoutDelegateImpl() = default;
+FastCheckoutDelegateImpl::~FastCheckoutDelegateImpl() {
+  // Invalidate pointers to avoid post hide callbacks.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  HideFastCheckoutUI();
+}
 
 bool FastCheckoutDelegateImpl::TryToShowFastCheckout(
     const FormData& form,
@@ -29,6 +33,14 @@ bool FastCheckoutDelegateImpl::TryToShowFastCheckout(
   // Trigger only if the form is a trigger form for FC.
   if (!manager_->client()->IsFastCheckoutTriggerForm(form, field))
     return false;
+
+  // Do not trigger if `form.main_frame_origin` requires consent but user has
+  // consentless enabled.
+  if (!manager_->client()->FastCheckoutScriptSupportsConsentlessExecution(
+          form.main_frame_origin) &&
+      manager_->client()->FastCheckoutClientSupportsConsentlessExecution()) {
+    return false;
+  }
 
   // UMA drop out metrics are recorded after this point only to avoid collecting
   // unnecessary metrics that would dominate the other data points.

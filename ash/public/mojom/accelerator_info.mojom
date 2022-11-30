@@ -4,6 +4,7 @@
 
 module ash.mojom;
 
+import "mojo/public/mojom/base/string16.mojom";
 import "ui/base/accelerators/mojom/accelerator.mojom";
 
 // AcceleratorInfo is a representation of an Accelerator with more information
@@ -53,14 +54,64 @@ enum AcceleratorState {
   kDisabledByUser,
 };
 
+// Represents the style of layout for an accelerator.
+// TODO(jimmyxgong): Add alternate layout styles.
+enum AcceleratorLayoutStyle {
+  kDefault = 0,
+};
+
+// Enum of top-level accelerator categories. Used in the UI for categorization.
+// TODO(jimmyxgong): These are not the final enums, update once final categories
+// are available.
+enum AcceleratorCategory {
+  kSystem,
+  kWindowsAndDesk,
+  kTabsAndPages,
+  kTextAndInput,
+  kDebug,
+  kDeveloper,
+};
+
+// Enum of secondary-level accelerator categories. Used in the UI for
+// categorization.
+// TODO(jimmyxgong): These are not the final enums, update once final
+// subcategories are available.
+enum AcceleratorSubcategory {
+  kGeneral,
+  kSystemControls,
+  kSystemApps,
+};
+
 // Represents an accelerator in its entirety. Includes the keys, state, type,
 // and whether the accelerator is locked.
 struct AcceleratorInfo {
   // Underlying accelerator struct, contains keycode and modifier.
   ui.mojom.Accelerator accelerator;
+  // The user viewable string of the primary activation key for the accelerator.
+  mojo_base.mojom.String16 key_display;
   AcceleratorType type;
   AcceleratorState state;
   // True if the accelerator can not be customized by the user.
   // False if the accelerator can be customized by the user.
   bool locked;
+};
+
+// Represents layout styling descriptors of an accelerator. Includes the
+// description of the accelerator along with its category identifiers.
+struct AcceleratorLayoutInfo {
+  // Top-level category used for categorization in the UI.
+  AcceleratorCategory category;
+  // Secondary-level category used for categorization in the UI.
+  AcceleratorSubcategory sub_category;
+  // Translated string for the action description.
+  mojo_base.mojom.String16 description;
+  // The way the AcceleratorRow should be styled.
+  AcceleratorLayoutStyle style;
+
+  // The accelerator source, which help differentiate same action id's from
+  // different sources.
+  AcceleratorSource source;
+  // The accelerator id, used as part of the identifier to map
+  // `AcceleratorLayoutInfo` to an `AcceleratorInfo`.
+  uint32 action;
 };

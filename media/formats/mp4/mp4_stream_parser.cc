@@ -59,25 +59,6 @@ EncryptionScheme GetEncryptionScheme(const ProtectionSchemeInfo& sinf) {
   return EncryptionScheme::kUnencrypted;
 }
 
-gfx::ColorVolumeMetadata ConvertMdcvToColorVolumeMetadata(
-    const MasteringDisplayColorVolume& mdcv) {
-  gfx::ColorVolumeMetadata color_volume_metadata;
-
-  color_volume_metadata.primary_r = gfx::ColorVolumeMetadata::Chromaticity(
-      mdcv.display_primaries_rx, mdcv.display_primaries_ry);
-  color_volume_metadata.primary_g = gfx::ColorVolumeMetadata::Chromaticity(
-      mdcv.display_primaries_gx, mdcv.display_primaries_gy);
-  color_volume_metadata.primary_b = gfx::ColorVolumeMetadata::Chromaticity(
-      mdcv.display_primaries_bx, mdcv.display_primaries_by);
-  color_volume_metadata.white_point = gfx::ColorVolumeMetadata::Chromaticity(
-      mdcv.white_point_x, mdcv.white_point_y);
-
-  color_volume_metadata.luminance_max = mdcv.max_display_mastering_luminance;
-  color_volume_metadata.luminance_min = mdcv.min_display_mastering_luminance;
-
-  return color_volume_metadata;
-}
-
 }  // namespace
 
 MP4StreamParser::MP4StreamParser(const std::set<int>& audio_object_types,
@@ -333,10 +314,9 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
 #if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
           audio_format != FOURCC_AC3 && audio_format != FOURCC_EAC3 &&
 #endif
-#if BUILDFLAG(USE_PROPRIETARY_CODECS) && BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
+#if BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
           audio_format != FOURCC_DTSC && audio_format != FOURCC_DTSX &&
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS) &&
-        // BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
 #if BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
           audio_format != FOURCC_MHM1 && audio_format != FOURCC_MHA1 &&
 #endif
@@ -405,7 +385,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
           if (audio_format == FOURCC_DTSX)
             audio_type = kDTSX;
         }
-#endif
+#endif  // BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
         DVLOG(1) << "audio_type 0x" << std::hex << static_cast<int>(audio_type);
         if (audio_object_types_.find(audio_type) == audio_object_types_.end()) {
           MEDIA_LOG(ERROR, media_log_)
@@ -566,8 +546,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
           return false;
       }
       video_config.Initialize(entry.video_codec, entry.video_codec_profile,
-                              VideoDecoderConfig::AlphaMode::kIsOpaque,
-                              VideoColorSpace::REC709(),
+                              entry.alpha_mode, VideoColorSpace::REC709(),
                               CalculateRotation(track->header, moov_->header),
                               coded_size, visible_rect, natural_size,
                               // No decoder-specific buffer needed for AVC;
@@ -579,22 +558,8 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       if (entry.video_color_space.IsSpecified())
         video_config.set_color_space_info(entry.video_color_space);
 
-      if (entry.mastering_display_color_volume ||
-          entry.content_light_level_information) {
-        gfx::HDRMetadata hdr_metadata;
-        if (entry.mastering_display_color_volume) {
-          hdr_metadata.color_volume_metadata = ConvertMdcvToColorVolumeMetadata(
-              *entry.mastering_display_color_volume);
-        }
-
-        if (entry.content_light_level_information) {
-          hdr_metadata.max_content_light_level =
-              entry.content_light_level_information->max_content_light_level;
-          hdr_metadata.max_frame_average_light_level =
-              entry.content_light_level_information
-                  ->max_pic_average_light_level;
-        }
-        video_config.set_hdr_metadata(hdr_metadata);
+      if (entry.hdr_metadata.has_value() && entry.hdr_metadata->IsValid()) {
+        video_config.set_hdr_metadata(entry.hdr_metadata.value());
       }
 
       DVLOG(1) << "video_track_id=" << video_track_id

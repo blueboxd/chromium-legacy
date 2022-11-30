@@ -183,7 +183,8 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
             new TabListMediator.ThumbnailFetcher(new TabListMediator.ThumbnailProvider() {
                 @Override
                 public void getTabThumbnailWithCallback(int tabId, Size thumbnailSize,
-                        Callback<Bitmap> callback, boolean forceUpdate, boolean writeToCache) {
+                        Callback<Bitmap> callback, boolean forceUpdate, boolean writeToCache,
+                        boolean isSelected) {
                     Bitmap bitmap = mShouldReturnBitmap
                             ? Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
                             : null;
@@ -231,7 +232,6 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
     public void setUpTest() throws Exception {
         super.setUpTest();
         MockitoAnnotations.initMocks(this);
-        TabUiTestHelper.applyThemeOverlays(getActivity());
         ViewGroup view = new LinearLayout(getActivity());
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);

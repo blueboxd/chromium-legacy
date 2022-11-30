@@ -11,8 +11,9 @@
 #include "net/base/schemeful_site.h"
 #include "net/first_party_sets/first_party_set_entry.h"
 #include "net/first_party_sets/first_party_set_metadata.h"
+#include "net/first_party_sets/first_party_sets_cache_filter.h"
 #include "net/first_party_sets/first_party_sets_context_config.h"
-#include "net/first_party_sets/public_sets.h"
+#include "net/first_party_sets/global_first_party_sets.h"
 #include "net/first_party_sets/same_party_context.h"
 #include "services/network/public/mojom/first_party_sets.mojom-shared.h"
 
@@ -107,20 +108,25 @@ struct COMPONENT_EXPORT(FIRST_PARTY_SETS_MOJOM_TRAITS)
 
 template <>
 struct COMPONENT_EXPORT(FIRST_PARTY_SETS_MOJOM_TRAITS)
-    StructTraits<network::mojom::PublicFirstPartySetsDataView,
-                 net::PublicSets> {
+    StructTraits<network::mojom::GlobalFirstPartySetsDataView,
+                 net::GlobalFirstPartySets> {
   static const base::flat_map<net::SchemefulSite, net::FirstPartySetEntry>&
-  sets(const net::PublicSets& p) {
-    return p.entries();
+  sets(const net::GlobalFirstPartySets& sets) {
+    return sets.entries();
   }
 
   static const base::flat_map<net::SchemefulSite, net::SchemefulSite>& aliases(
-      const net::PublicSets& p) {
-    return p.aliases();
+      const net::GlobalFirstPartySets& sets) {
+    return sets.aliases();
   }
 
-  static bool Read(network::mojom::PublicFirstPartySetsDataView public_sets,
-                   net::PublicSets* out_public_sets);
+  static const net::FirstPartySetsContextConfig& manual_config(
+      const net::GlobalFirstPartySets& sets) {
+    return sets.manual_config();
+  }
+
+  static bool Read(network::mojom::GlobalFirstPartySetsDataView sets,
+                   net::GlobalFirstPartySets* out_sets);
 };
 
 template <>
@@ -135,6 +141,25 @@ struct COMPONENT_EXPORT(FIRST_PARTY_SETS_MOJOM_TRAITS)
 
   static bool Read(network::mojom::FirstPartySetsContextConfigDataView config,
                    net::FirstPartySetsContextConfig* out_config);
+};
+
+template <>
+struct COMPONENT_EXPORT(FIRST_PARTY_SETS_MOJOM_TRAITS)
+    StructTraits<network::mojom::FirstPartySetsCacheFilterDataView,
+                 net::FirstPartySetsCacheFilter> {
+  static const base::flat_map<net::SchemefulSite, int64_t>& filter(
+      const net::FirstPartySetsCacheFilter& cache_filter) {
+    return cache_filter.filter();
+  }
+
+  static int64_t browser_run_id(
+      const net::FirstPartySetsCacheFilter& cache_filter) {
+    return cache_filter.browser_run_id();
+  }
+
+  static bool Read(
+      network::mojom::FirstPartySetsCacheFilterDataView cache_filter,
+      net::FirstPartySetsCacheFilter* out_cache_filter);
 };
 
 }  // namespace mojo

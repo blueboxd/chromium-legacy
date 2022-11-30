@@ -152,7 +152,7 @@ void PageInfoMainView::EnsureCookieInfo() {
                                                          PageInfoHoverButton>(
           base::BindRepeating(&PageInfoNavigationHandler::OpenCookiesPage,
                               base::Unretained(navigation_handler_)),
-          icon, IDS_PAGE_INFO_COOKIES, std::u16string(),
+          icon, IDS_PAGE_INFO_COOKIES_HEADER, std::u16string(),
           PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIES_SUBPAGE,
           tooltip, std::u16string(),
           PageInfoViewFactory::GetOpenSubpageIcon()));
@@ -348,7 +348,7 @@ void PageInfoMainView::SetIdentityInfo(const IdentityInfo& identity_info) {
   std::unique_ptr<PageInfoUI::SecurityDescription> security_description =
       GetSecurityDescription(identity_info);
 
-  title_->SetText(base::UTF8ToUTF16(identity_info.site_identity));
+  title_->SetText(presenter_->GetSiteOriginOrAppNameToDisplay());
 
   security_container_view_->RemoveAllChildViews();
   if (security_description->summary_style == SecuritySummaryColor::GREEN) {

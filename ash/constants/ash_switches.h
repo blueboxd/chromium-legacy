@@ -90,8 +90,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAuraLegacyPowerButton[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kCellularFirst[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kChildWallpaperLarge[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kChildWallpaperSmall[];
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kCrosHealthdUsesServiceManager[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kCrosRegion[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kCryptohomeRecoveryReauthUrl[];
@@ -103,6 +101,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDefaultWallpaperLarge[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDefaultWallpaperSmall[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDemoModeHighlightsApp[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDemoModeScreensaverApp[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kDemoModeSwaContentDirectory[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDerelictDetectionTimeout[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDerelictIdleTimeout[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDisableArcCpuRestriction[];
@@ -190,6 +190,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kForceHappinessTrackingSystem[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceLaunchBrowser[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceLoginManagerInTests[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceShowCursor[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceShowReleaseTrack[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceSystemCompositorMode[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceTabletPowerButton[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFormFactor[];
@@ -242,6 +244,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeForceTabletFirstRun[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kOobeLargeScreenSpecialScaling[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeScreenshotDirectory[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kOobeShowAccessibilityButtonOnMarketingOptInForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeSkipPostLogin[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeSkipToLogin[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOobeTimerInterval[];
@@ -274,7 +278,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSupportsClamshellAutoRotation[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSuppressMessageCenterPopups[];
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kSystemExtensionsDebug[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kTelemetryExtensionDirectory[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kTestEncryptionMigrationUI[];
@@ -289,6 +292,8 @@ extern const char kTouchscreenUsableWhileScreenOff[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kTpmIsDynamic[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kUnfilteredBluetoothDevices[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kUpdateRequiredAueForTest[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kUseMyFilesInUserDataDirForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kWaitForInitialPolicyFetchForTest[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -324,6 +329,10 @@ bool ShouldTetherHostScansIgnoreWiredConnections();
 
 // Returns true if we should skip all other OOBE pages after user login.
 COMPONENT_EXPORT(ASH_CONSTANTS) bool ShouldSkipOobePostLogin();
+
+// Returns true if we should show a11y button on the marketing opt in screen.
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool ShouldShowAccessibilityButtonOnMarketingOptInForTesting();
 
 // Returns true if the device is of tablet form factor.
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsTabletFormFactor();

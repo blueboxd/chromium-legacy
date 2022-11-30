@@ -82,6 +82,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   void SetIsInHiddenPage(bool);
   void SetIsBeingDisplayed(bool);
   void SetFilterQuality(cc::PaintFlags::FilterQuality filter_quality);
+  void SetHDRMetadata(absl::optional<gfx::HDRMetadata> hdr_metadata);
   void DidDraw();
   void DoPaintInvalidation(const gfx::Rect& dirty_rect);
   cc::Layer* Layer();
@@ -101,9 +102,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
                    size_t row_bytes,
                    int x,
                    int y);
-  void DontUseIdleSchedulingForTesting() {
-    dont_use_idle_scheduling_for_testing_ = true;
-  }
+  void AlwaysMeasureForTesting() { always_measure_for_testing_ = true; }
   void SetCanvasResourceHost(CanvasResourceHost* host);
 
   void Hibernate();
@@ -182,7 +181,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   bool is_hidden_;
   bool is_being_displayed_;
   bool hibernation_scheduled_ = false;
-  bool dont_use_idle_scheduling_for_testing_ = false;
+  bool always_measure_for_testing_ = false;
   bool context_lost_ = false;
   bool lose_context_in_background_ = false;
   bool lose_context_in_background_scheduled_ = false;

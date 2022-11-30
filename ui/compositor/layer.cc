@@ -4,7 +4,6 @@
 
 #include "ui/compositor/layer.h"
 
-#include <algorithm>
 #include <cmath>
 #include <memory>
 #include <utility>
@@ -13,10 +12,12 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
+#include "base/ranges/algorithm.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/mirror_layer.h"
 #include "cc/layers/nine_patch_layer.h"
@@ -29,6 +30,7 @@
 #include "cc/trees/layer_tree_settings.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/layer_animator.h"
@@ -218,14 +220,14 @@ Layer::Layer(LayerType type)
 }
 
 Layer::~Layer() {
+  CHECK(!in_send_damaged_rects_);
+  CHECK(!sending_damaged_rects_for_descendants_);
+
   for (auto& observer : observer_list_)
     observer.LayerDestroyed(this);
 
   // Destroying the animator may cause observers to use the layer. Destroy the
   // animator first so that the layer is still around.
-#if defined(ADDRESS_SANITIZER)
-  destroyed_ = true;
-#endif
   SetAnimator(nullptr);
   if (compositor_)
     compositor_->SetRootLayer(nullptr);
@@ -419,7 +421,7 @@ void Layer::Remove(Layer* child) {
   if (compositor && compositor->animations_are_enabled())
     child->ResetCompositorForAnimatorsInTree(compositor);
 
-  auto i = std::find(children_.begin(), children_.end(), child);
+  auto i = base::ranges::find(children_, child);
   DCHECK(i != children_.end());
   children_.erase(i);
   child->parent_ = nullptr;
@@ -455,9 +457,6 @@ bool Layer::Contains(const Layer* other) const {
 }
 
 void Layer::SetAnimator(LayerAnimator* animator) {
-#if defined(ADDRESS_SANITIZER)
-  CHECK(!destroyed_ || !animator);
-#endif
   Compositor* compositor = GetCompositor();
 
   if (animator_) {
@@ -647,14 +646,24 @@ void Layer::SetMaskLayer(Layer* layer_mask) {
   DCHECK(!layer_mask || layer_mask->content_layer_);
   // We need to de-reference the currently linked object so that no problem
   // arises if the mask layer gets deleted before this object.
-  if (layer_mask_)
+  if (layer_mask_) {
+    // Changing the layer mask while it's in the middle of painting is likely
+    // to lead to very unusual behavior, and not supported.
+    CHECK(!layer_mask_->in_send_damaged_rects_);
     layer_mask_->layer_mask_back_link_ = nullptr;
+  }
   layer_mask_ = layer_mask;
   cc_layer_->SetMaskLayer(layer_mask ? layer_mask->content_layer_.get()
                                      : nullptr);
   // We need to reference the linked object so that it can properly break the
   // link to us when it gets deleted.
   if (layer_mask) {
+    // Changing the layer mask while it's in the middle of painting is likely
+    // to lead to very unusual behavior, and not supported.
+    CHECK(!layer_mask->in_send_damaged_rects_);
+    // TODO(https://crbug.com/1242749): temporary while tracking down crash.
+    // A `layer_mask` of this would lead to recursion.
+    CHECK(layer_mask != this);
     layer_mask->layer_mask_back_link_ = this;
     layer_mask->OnDeviceScaleFactorChanged(device_scale_factor_);
   }
@@ -978,12 +987,7 @@ void Layer::SetSurfaceSize(gfx::Size surface_size_in_dip) {
 }
 
 bool Layer::ContainsMirrorForTest(Layer* mirror) const {
-  const auto it =
-      std::find_if(mirrors_.begin(), mirrors_.end(),
-                   [mirror](const std::unique_ptr<LayerMirror>& mirror_ptr) {
-                     return mirror_ptr.get()->dest() == mirror;
-                   });
-  return it != mirrors_.end();
+  return base::Contains(mirrors_, mirror, &LayerMirror::dest);
 }
 
 void Layer::SetTransferableResource(const viz::TransferableResource& resource,
@@ -1207,6 +1211,8 @@ void Layer::ScheduleDraw() {
 }
 
 void Layer::SendDamagedRects() {
+  CHECK(!in_send_damaged_rects_);
+  base::AutoReset<bool> setter(&in_send_damaged_rects_, true);
   if (layer_mask_)
     layer_mask_->SendDamagedRects();
   if (delegate_)
@@ -1422,9 +1428,9 @@ void Layer::StackRelativeTo(Layer* child, Layer* other, bool above) {
   DCHECK_EQ(this, other->parent());
 
   const size_t child_i =
-      std::find(children_.begin(), children_.end(), child) - children_.begin();
+      base::ranges::find(children_, child) - children_.begin();
   const size_t other_i =
-      std::find(children_.begin(), children_.end(), other) - children_.begin();
+      base::ranges::find(children_, other) - children_.begin();
   if ((above && child_i == other_i + 1) || (!above && child_i + 1 == other_i))
     return;
 
@@ -1446,9 +1452,7 @@ bool Layer::ConvertPointForAncestor(const Layer* ancestor,
   bool result = use_target_transform
                     ? GetTargetTransformRelativeTo(ancestor, &transform)
                     : GetTransformRelativeTo(ancestor, &transform);
-  auto p = gfx::Point3F(*point);
-  transform.TransformPoint(&p);
-  *point = p.AsPointF();
+  *point = transform.MapPoint(*point);
   return result;
 }
 
@@ -1456,13 +1460,17 @@ bool Layer::ConvertPointFromAncestor(const Layer* ancestor,
                                      bool use_target_transform,
                                      gfx::PointF* point) const {
   gfx::Transform transform;
-  bool result = use_target_transform
-                    ? GetTargetTransformRelativeTo(ancestor, &transform)
-                    : GetTransformRelativeTo(ancestor, &transform);
-  auto p = gfx::Point3F(*point);
-  transform.TransformPointReverse(&p);
-  *point = p.AsPointF();
-  return result;
+  if (!(use_target_transform
+            ? GetTargetTransformRelativeTo(ancestor, &transform)
+            : GetTransformRelativeTo(ancestor, &transform))) {
+    return false;
+  }
+  const absl::optional<gfx::PointF> transformed_point =
+      transform.InverseMapPoint(*point);
+  if (!transformed_point.has_value())
+    return false;
+  *point = transformed_point.value();
+  return true;
 }
 
 void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds,
@@ -1749,10 +1757,8 @@ void Layer::ResetCompositorForAnimatorsInTree(Compositor* compositor) {
 }
 
 void Layer::OnMirrorDestroyed(LayerMirror* mirror) {
-  const auto it = std::find_if(mirrors_.begin(), mirrors_.end(),
-      [mirror](const std::unique_ptr<LayerMirror>& mirror_ptr) {
-        return mirror_ptr.get() == mirror;
-      });
+  const auto it =
+      base::ranges::find(mirrors_, mirror, &std::unique_ptr<LayerMirror>::get);
 
   DCHECK(it != mirrors_.end());
   mirrors_.erase(it);
@@ -1820,8 +1826,8 @@ bool Layer::GetTransformRelativeToImpl(const Layer* ancestor,
     const gfx::Transform& layer_transform =
         is_target_transform ? p->GetTargetTransform() : p->transform();
     if (!layer_transform.IsIdentity())
-      transform->ConcatTransform(layer_transform);
-    transform->ConcatTransform(translation);
+      transform->PostConcat(layer_transform);
+    transform->PostConcat(translation);
   }
   return p == ancestor;
 }

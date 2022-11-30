@@ -148,9 +148,9 @@ void AttributionHost::DidRedirectNavigation(
   url::Origin reporting_origin =
       url::Origin::Create(redirect_chain[redirect_chain.size() - 2]);
 
-  data_host_manager->NotifyNavigationRedirectRegistation(
-      navigation_handle->GetImpression()->attribution_src_token, source_header,
-      std::move(reporting_origin), source_origin);
+  data_host_manager->NotifyNavigationRedirectRegistration(
+      navigation_handle->GetImpression()->attribution_src_token,
+      std::move(source_header), std::move(reporting_origin), source_origin);
 }
 
 void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {

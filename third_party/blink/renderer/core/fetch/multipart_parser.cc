@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -303,7 +303,7 @@ bool MultipartParser::ParseHeaderFields(const char** bytes_pointer,
     return false;
 
   wtf_size_t header_size = static_cast<wtf_size_t>(bytes_end - *bytes_pointer);
-  if (!buffered_header_bytes_.IsEmpty()) {
+  if (!buffered_header_bytes_.empty()) {
     buffered_header_bytes_.Append(header_bytes, header_size);
     header_bytes = buffered_header_bytes_.data();
     header_size = buffered_header_bytes_.size();
@@ -314,7 +314,7 @@ bool MultipartParser::ParseHeaderFields(const char** bytes_pointer,
                                          header_fields, &end)) {
     // Store the current header bytes for the next call unless that has
     // already been done.
-    if (buffered_header_bytes_.IsEmpty())
+    if (buffered_header_bytes_.empty())
       buffered_header_bytes_.Append(header_bytes, header_size);
     *bytes_pointer = bytes_end;
     return false;

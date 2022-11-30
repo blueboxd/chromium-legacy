@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -128,7 +128,7 @@ void VisualViewportPaintPropertyTreeBuilder::Update(
     LocalFrameView& main_frame_view,
     VisualViewport& visual_viewport,
     PaintPropertyTreeBuilderContext& full_context) {
-  if (full_context.fragments.IsEmpty())
+  if (full_context.fragments.empty())
     full_context.fragments.push_back(PaintPropertyTreeBuilderFragmentContext());
 
   PaintPropertyTreeBuilderFragmentContext& context = full_context.fragments[0];
@@ -176,7 +176,7 @@ void VisualViewportPaintPropertyTreeBuilder::Update(
 void PaintPropertyTreeBuilder::SetupContextForFrame(
     LocalFrameView& frame_view,
     PaintPropertyTreeBuilderContext& full_context) {
-  if (full_context.fragments.IsEmpty())
+  if (full_context.fragments.empty())
     full_context.fragments.push_back(PaintPropertyTreeBuilderFragmentContext());
 
   PaintPropertyTreeBuilderFragmentContext& context = full_context.fragments[0];
@@ -1591,6 +1591,16 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         mask_state.blend_mode = SkBlendMode::kDstIn;
         mask_state.compositor_element_id = mask_compositor_element_id;
         mask_state.direct_compositing_reasons = mask_direct_compositing_reasons;
+
+        if (const auto* old_mask = properties_->Mask()) {
+          // The mask node's output clip is used in the property tree state
+          // when painting the mask, so the impact of its change should be the
+          // same as a clip change in LocalBorderBoxProperties (see
+          // UpdateLocalBorderBoxContext()).
+          if (old_mask->OutputClip() != mask_state.output_clip)
+            OnUpdateClip(PaintPropertyChangeType::kNodeAddedOrRemoved);
+        }
+
         OnUpdateEffect(properties_->UpdateMask(*properties_->Effect(),
                                                std::move(mask_state)));
       } else {
@@ -1872,8 +1882,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateClipPathClip() {
       if (clip_path_bounding_box_) {
         clip_path_bounding_box_->Offset(
             gfx::Vector2dF(context_.current.paint_offset));
-        if (absl::optional<Path> path =
-                ClipPathClipper::PathBasedClip(object_)) {
+        if (absl::optional<Path> path = ClipPathClipper::PathBasedClip(
+                object_, context_.current.is_in_block_fragmentation)) {
           path->Translate(gfx::Vector2dF(context_.current.paint_offset));
           ClipPaintPropertyNode::State state(
               context_.current.transform, *clip_path_bounding_box_,
@@ -2245,9 +2255,11 @@ void FragmentPaintPropertyTreeBuilder::UpdatePerspective() {
       // The perspective node must not flatten (else nothing will get
       // perspective), but it should still extend the rendering context as
       // most transform nodes do.
+      TransformationMatrix matrix;
+      matrix.ApplyPerspectiveDepth(style.UsedPerspective());
       TransformPaintPropertyNode::State state{
           TransformPaintPropertyNode::TransformAndOrigin(
-              TransformationMatrix().ApplyPerspective(style.UsedPerspective()),
+              matrix,
               gfx::Point3F(PerspectiveOrigin(To<LayoutBox>(object_)) +
                            gfx::Vector2dF(context_.current.paint_offset)))};
       state.flags.flattens_inherited_transform =
@@ -2890,6 +2902,23 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
 
   context_.current.paint_offset += context_.repeating_paint_offset_adjustment;
 
+  // If a transition is in progress, the root transition container is shifted
+  // up and left to be at the origin "as-if all viewport-insetting UI were
+  // hidden". This is done so that the transition container is stable across
+  // navigations where the state of such UI can change (e.g. URL bar hidden ->
+  // shown). Offset painting of content so that it paints at the fixed viewport
+  // origin rather than behind the UI.
+  if (auto* supplement =
+          DocumentTransitionSupplement::FromIfExists(object_.GetDocument())) {
+    if (object_.IsDocumentElement() && !supplement->GetTransition()->IsIdle()) {
+      PhysicalOffset offset = PhysicalOffset(
+          supplement->GetTransition()->GetRootSnapshotPaintOffset());
+      context_.current.paint_offset += offset;
+      context_.absolute_position.paint_offset += offset;
+      context_.fixed_position.paint_offset += offset;
+    }
+  }
+
   context_.current.additional_offset_to_layout_shift_root_delta +=
       context_.pending_additional_offset_to_layout_shift_root_delta;
   context_.pending_additional_offset_to_layout_shift_root_delta =
@@ -2923,6 +2952,8 @@ void FragmentPaintPropertyTreeBuilder::SetNeedsPaintPropertyUpdateIfNeeded() {
   // pending transform update, we need to go ahead and do a regular transform
   // update so that the context (e.g.,
   // |translation_2d_to_layout_shift_root_delta|) is updated properly.
+  // See: ../paint/README.md#Transform-update-optimization for more on
+  // optimized transform updates
   if (object_.GetFrameView()->RemovePendingTransformUpdate(object_))
     object_.GetMutableForPainting().SetOnlyThisNeedsPaintPropertyUpdate();
 
@@ -3243,7 +3274,7 @@ void PaintPropertyTreeBuilder::InitFragmentPaintPropertiesForLegacy(
 
 void PaintPropertyTreeBuilder::InitFragmentPaintPropertiesForNG(
     bool needs_paint_properties) {
-  if (context_.fragments.IsEmpty())
+  if (context_.fragments.empty())
     context_.fragments.push_back(PaintPropertyTreeBuilderFragmentContext());
   else
     context_.fragments.resize(1);
@@ -3258,7 +3289,7 @@ void PaintPropertyTreeBuilder::InitSingleFragmentFromParent(
   FragmentData& first_fragment =
       object_.GetMutableForPainting().FirstFragment();
   first_fragment.ClearNextFragment();
-  if (context_.fragments.IsEmpty()) {
+  if (context_.fragments.empty()) {
     context_.fragments.push_back(PaintPropertyTreeBuilderFragmentContext());
   } else {
     context_.fragments.resize(1);
@@ -3541,7 +3572,7 @@ PaintPropertyTreeBuilder::ContextForFragment(
     LayoutUnit logical_top_in_flow_thread) const {
   DCHECK(!IsInNGFragmentTraversal());
   const auto& parent_fragments = context_.fragments;
-  if (parent_fragments.IsEmpty())
+  if (parent_fragments.empty())
     return PaintPropertyTreeBuilderFragmentContext();
 
   // This will be used in the loop finding matching fragment from ancestor flow

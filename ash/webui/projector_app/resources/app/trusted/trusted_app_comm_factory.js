@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {PostMessageAPIClient} from 'chrome://resources/js/post_message_api_client.m.js';
-import {RequestHandler} from 'chrome://resources/js/post_message_api_request_handler.m.js';
+import {PostMessageAPIClient} from 'chrome://resources/ash/common/post_message_api/post_message_api_client.js';
+import {RequestHandler} from 'chrome://resources/ash/common/post_message_api/post_message_api_request_handler.js';
 
 import {ProjectorBrowserProxy, ProjectorBrowserProxyImpl} from './projector_browser_proxy.js';
 
@@ -108,14 +108,15 @@ export class TrustedAppRequestHandler extends RequestHandler {
       this.browserProxy_.onError(msg);
     });
     this.registerMethod('sendXhr', (values) => {
-      if (!values || values.length != 5) {
+      if (!values || values.length != 7) {
         return {
           success: false,
           error: 'INVALID_ARGUMENTS',
         };
       }
       return this.browserProxy_.sendXhr(
-          values[0], values[1], values[2], values[3], values[4]);
+          values[0], values[1], values[2], values[3], values[4], values[5],
+          values[6]);
     });
     this.registerMethod('shouldDownloadSoda', (args) => {
       return this.browserProxy_.shouldDownloadSoda();

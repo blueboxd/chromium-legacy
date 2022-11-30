@@ -7,6 +7,8 @@
 #include "base/containers/circular_deque.h"
 #include "base/json/values_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
@@ -23,7 +25,9 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+using base::RecordAction;
 using base::StringPiece;
+using base::UserMetricsAction;
 
 namespace password_manager {
 
@@ -104,6 +108,36 @@ base::Value::Dict CreateFlow(
   return flow;
 }
 
+//  Record a UserAction based on how the user performed the password update.
+void RecordUserActionOnPhishedCredentialforUma(
+    PasswordChangeSuccessTracker::EndEvent event) {
+  switch (event) {
+    // Combine automated flow end events for UMA reporting.
+    case PasswordChangeSuccessTracker::EndEvent::
+        kAutomatedFlowGeneratedPasswordChosen:
+    case PasswordChangeSuccessTracker::EndEvent::
+        kAutomatedFlowOwnPasswordChosen:
+      RecordAction(UserMetricsAction(
+          "PasswordProtection.PasswordUpdated.AutomatedFlowPasswordChosen"));
+      break;
+    case PasswordChangeSuccessTracker::EndEvent::
+        kAutomatedFlowResetLinkRequested:
+      RecordAction(
+          UserMetricsAction("PasswordProtection.PasswordUpdated."
+                            "AutomatedFlowResetLinkRequested"));
+      break;
+    // Combine manual flow end events for UMA reporting.
+    case PasswordChangeSuccessTracker::EndEvent::
+        kManualFlowGeneratedPasswordChosen:
+    case PasswordChangeSuccessTracker::EndEvent::kManualFlowOwnPasswordChosen:
+      RecordAction(UserMetricsAction(
+          "PasswordProtection.PasswordUpdated.ManualFlowPasswordChosen"));
+      break;
+    case PasswordChangeSuccessTracker::EndEvent::kTimeout:
+      RecordAction(
+          UserMetricsAction("PasswordProtection.PasswordUpdated.Timeout"));
+  }
+}
 }  // namespace
 
 PasswordChangeMetricsRecorderUma::~PasswordChangeMetricsRecorderUma() = default;
@@ -225,9 +259,9 @@ void PasswordChangeSuccessTrackerImpl::OnChangePasswordFlowStarted(
     const std::string& username,
     StartEvent event_type,
     EntryPoint entry_point) {
-  ListPrefUpdate update(pref_service_,
-                        prefs::kPasswordChangeSuccessTrackerFlows);
-  base::Value::List& flows = update->GetList();
+  ScopedListPrefUpdate update(pref_service_,
+                              prefs::kPasswordChangeSuccessTrackerFlows);
+  base::Value::List& flows = update.Get();
   RemoveFlowsWithTimeout(flows);
 
   flows.Append(
@@ -257,9 +291,9 @@ void PasswordChangeSuccessTrackerImpl::OnChangePasswordFlowModified(
           base::ranges::find(incomplete_manual_flows_, ExtractEtldPlus1(url),
                              &IncompleteFlow::etld_plus_1);
       it != incomplete_manual_flows_.cend()) {
-    ListPrefUpdate update(pref_service_,
-                          prefs::kPasswordChangeSuccessTrackerFlows);
-    base::Value::List& flows = update->GetList();
+    ScopedListPrefUpdate update(pref_service_,
+                                prefs::kPasswordChangeSuccessTrackerFlows);
+    base::Value::List& flows = update.Get();
     RemoveFlowsWithTimeout(flows);
 
     flows.Append(
@@ -273,9 +307,9 @@ void PasswordChangeSuccessTrackerImpl::OnChangePasswordFlowModified(
     const GURL& url,
     const std::string& username,
     StartEvent new_event_type) {
-  ListPrefUpdate update(pref_service_,
-                        prefs::kPasswordChangeSuccessTrackerFlows);
-  base::Value::List& flows = update->GetList();
+  ScopedListPrefUpdate update(pref_service_,
+                              prefs::kPasswordChangeSuccessTrackerFlows);
+  base::Value::List& flows = update.Get();
   RemoveFlowsWithTimeout(flows);
 
   // Currently, this method can only get called if a request link is requested
@@ -309,7 +343,8 @@ void PasswordChangeSuccessTrackerImpl::OnChangePasswordFlowModified(
 void PasswordChangeSuccessTrackerImpl::OnChangePasswordFlowCompleted(
     const GURL& url,
     const std::string& username,
-    EndEvent event_type) {
+    EndEvent event_type,
+    bool phished) {
   // If there are no ongoing change flows, return immediately to avoid disk
   // writes.
   const base::Value::List& read_flows =
@@ -317,9 +352,9 @@ void PasswordChangeSuccessTrackerImpl::OnChangePasswordFlowCompleted(
   if (read_flows.empty())
     return;
 
-  ListPrefUpdate update(pref_service_,
-                        prefs::kPasswordChangeSuccessTrackerFlows);
-  base::Value::List& flows = update->GetList();
+  ScopedListPrefUpdate update(pref_service_,
+                              prefs::kPasswordChangeSuccessTrackerFlows);
+  base::Value::List& flows = update.Get();
   RemoveFlowsWithTimeout(flows);
 
   // In the unlikely case that there are two flows with the same eTLD+1 and
@@ -334,6 +369,9 @@ void PasswordChangeSuccessTrackerImpl::OnChangePasswordFlowCompleted(
                     view.GetEntryPoint(),
                     base::Time::Now() - view.GetStartTime());
       flows.erase(flows.begin() + i);
+      if (phished) {
+        RecordUserActionOnPhishedCredentialforUma(event_type);
+      }
       return;
     }
   }

@@ -58,6 +58,7 @@ namespace {
 
 static const char* const kAcceptLanguageList[] = {
     "af",  // Afrikaans
+    "ak",  // Twi
     "am",  // Amharic
     "an",  // Aragonese
     "ar",  // Arabic
@@ -85,12 +86,14 @@ static const char* const kAcceptLanguageList[] = {
     "de-CH",           // German (Switzerland)
     "de-DE",           // German (Germany)
     "de-LI",           // German (Liechtenstein)
+    "ee",              // Ewe
     "el",              // Greek
     "en",              // English
     "en-AU",           // English (Australia)
     "en-CA",           // English (Canada)
     "en-GB",           // English (UK)
     "en-GB-oxendict",  // English (UK, OED spelling)
+    "en-IE",           // English (Ireland)
     "en-IN",           // English (India)
     "en-NZ",           // English (New Zealand)
     "en-US",           // English (US)
@@ -152,10 +155,12 @@ static const char* const kAcceptLanguageList[] = {
     "kn",      // Kannada
     "ko",      // Korean
     "kok",     // Konkani
+    "kri",     // Krio
     "ku",      // Kurdish
     "ky",      // Kyrgyz
     "la",      // Latin
     "lb",      // Luxembourgish
+    "lg",      // Luganda
     "ln",      // Lingala
     "lo",      // Laothian
     "lt",      // Lithuanian
@@ -175,6 +180,7 @@ static const char* const kAcceptLanguageList[] = {
     "nl",      // Dutch
     "nn",      // Norwegian (Nynorsk)
     "no",      // Norwegian
+    "nso",     // Sepedi
     "ny",      // Nyanja
     "oc",      // Occitan
     "om",      // Oromo
@@ -788,27 +794,23 @@ std::u16string FormatString(const std::u16string& format_string,
                             const std::vector<std::u16string>& replacements,
                             std::vector<size_t>* offsets) {
 #if DCHECK_IS_ON()
-  // Make sure every replacement string is being used, so we don't just
-  // silently fail to insert one. If |offsets| is non-NULL, then don't do this
-  // check as the code may simply want to find the placeholders rather than
-  // actually replacing them.
-  if (!offsets) {
-    // $9 is the highest allowed placeholder.
-    for (size_t i = 0; i < 9; ++i) {
-      bool placeholder_should_exist = i < replacements.size();
+  // Make sure every replacement string is being used, so we don't just silently
+  // fail to insert one.
+  //
+  // $9 is the highest allowed placeholder.
+  for (size_t i = 0; i < 9; ++i) {
+    bool placeholder_should_exist = i < replacements.size();
 
-      std::u16string placeholder = u"$";
-      placeholder += static_cast<char16_t>('1' + static_cast<char>(i));
-      size_t pos = format_string.find(placeholder);
-      if (placeholder_should_exist) {
-        DCHECK_NE(std::string::npos, pos) << " Didn't find a " << placeholder
-                                          << " placeholder in "
-                                          << format_string;
-      } else {
-        DCHECK_EQ(std::string::npos, pos) << " Unexpectedly found a "
-                                          << placeholder << " placeholder in "
-                                          << format_string;
-      }
+    std::u16string placeholder = u"$";
+    placeholder += static_cast<char16_t>('1' + static_cast<char>(i));
+    size_t pos = format_string.find(placeholder);
+    if (placeholder_should_exist) {
+      DCHECK_NE(std::string::npos, pos) << " Didn't find a " << placeholder
+                                        << " placeholder in " << format_string;
+    } else {
+      DCHECK_EQ(std::string::npos, pos)
+          << " Unexpectedly found a " << placeholder << " placeholder in "
+          << format_string;
     }
   }
 #endif

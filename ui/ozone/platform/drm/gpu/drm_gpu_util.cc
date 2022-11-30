@@ -11,6 +11,7 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 
@@ -132,14 +133,15 @@ HardwareDisplayControllerInfoList GetDisplayInfosAndUpdateCrtcs(int fd) {
   return std::move(displays);
 }
 
-void DrmAsValueIntoHelper(const drmModeModeInfo& mode_info,
-                          base::trace_event::TracedValue* value) {
-  value->SetString("name", mode_info.name);
-  value->SetInteger("type", mode_info.type);
-  value->SetInteger("flags", mode_info.flags);
-  value->SetInteger("clock", mode_info.clock);
-  value->SetInteger("hdisplay", mode_info.hdisplay);
-  value->SetInteger("vdisplay", mode_info.vdisplay);
-}
+void DrmWriteIntoTraceHelper(const drmModeModeInfo& mode_info,
+                             perfetto::TracedValue context) {
+  auto dict = std::move(context).WriteDictionary();
 
+  dict.Add("name", mode_info.name);
+  dict.Add("type", mode_info.type);
+  dict.Add("flags", mode_info.flags);
+  dict.Add("clock", mode_info.clock);
+  dict.Add("hdisplay", mode_info.hdisplay);
+  dict.Add("vdisplay", mode_info.vdisplay);
+}
 }  // namespace ui

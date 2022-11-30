@@ -1,12 +1,10 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_layout_algorithm.h"
 
 #include "build/build_config.h"
-#include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_placement.h"
-#include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_properties.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_base_layout_algorithm_test.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -41,13 +39,15 @@ class NGGridLayoutAlgorithmTest
   void SetUp() override { NGBaseLayoutAlgorithmTest::SetUp(); }
 
   void BuildGridItemsAndTrackCollections(NGGridLayoutAlgorithm& algorithm) {
-    auto placement_data = algorithm.PlacementData();
+    const auto& node = algorithm.Node();
+
+    bool has_nested_subgrid;
     auto grid_items =
-        algorithm.Node().GridItemsIncludingSubgridded(&placement_data);
+        node.ConstructGridItems(algorithm.PlacementData(), &has_nested_subgrid);
 
     LayoutUnit unused_intrinsic_block_size;
-    algorithm.ComputeGridGeometry(placement_data, &grid_items, &layout_data_,
-                                  &unused_intrinsic_block_size);
+    algorithm.ComputeGridGeometry(node.CachedPlacementData(), &grid_items,
+                                  &layout_data_, &unused_intrinsic_block_size);
 
     *cached_grid_items_ = grid_items.item_data;
   }
@@ -1596,8 +1596,7 @@ TEST_F(NGGridLayoutAlgorithmTest, SubgridLineNameList) {
   EXPECT_EQ(computed_grid_row_track_list.axis_type,
             GridAxisType::kSubgriddedAxis);
 
-  EXPECT_TRUE(
-      computed_grid_column_track_list.ordered_named_grid_lines.IsEmpty());
+  EXPECT_TRUE(computed_grid_column_track_list.ordered_named_grid_lines.empty());
 
   const OrderedNamedGridLines& ordered_named_grid_row_lines =
       computed_grid_row_track_list.ordered_named_grid_lines;

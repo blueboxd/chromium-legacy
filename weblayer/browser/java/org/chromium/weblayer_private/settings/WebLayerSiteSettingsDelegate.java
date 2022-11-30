@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -154,7 +154,17 @@ public class WebLayerSiteSettingsDelegate
     }
 
     @Override
+    public boolean isPartOfManagedFirstPartySet(String origin) {
+        return false;
+    }
+
+    @Override
     public void setFirstPartySetsDataAccessEnabled(boolean enabled) {}
+
+    @Override
+    public String getFirstPartySetOwner(String memberOrigin) {
+        return null;
+    }
 
     @Override
     public boolean canLaunchClearBrowsingDataDialog() {

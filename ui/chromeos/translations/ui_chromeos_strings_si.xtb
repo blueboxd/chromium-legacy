@@ -23,6 +23,7 @@
 <translation id="117624967391683467">පිටපත් කරන <ph name="FILE_NAME" />...</translation>
 <translation id="1178581264944972037">විරාමය</translation>
 <translation id="1190144681599273207">මෙම ගොනු ලබාගැනීමට ආසන්න වශයෙන් ජංගම දත්ත <ph name="FILE_SIZE" /> භාවිතා වේ.</translation>
+<translation id="1194390763418645112"><ph name="RESTRICTED_DESTINATIONS" /> මගින් ගොනු ප්‍රවේශය</translation>
 <translation id="1201402288615127009">ඊළඟ</translation>
 <translation id="1209796539517632982">ස්වයංක්‍රීය නාම සේවාදායක</translation>
 <translation id="1210831758834677569">ලාඕ</translation>
@@ -61,6 +62,7 @@
 <translation id="1561842594491319104">Chrome උපාංග</translation>
 <translation id="1572585716423026576">බිතුපත ලෙස සකසන්න</translation>
 <translation id="1576937952766665062">බංග්ලා අක්ෂර පරිවර්තනය</translation>
+<translation id="1577977504532381335">පරිපාලක ප්‍රතිපත්තිය සමාලෝචනය කරන්න</translation>
 <translation id="158849752021629804">නිවෙස් ජාලයක් අවශ්‍යයි</translation>
 <translation id="1589128298353575783"><ph name="NUMBER_OF_PB" /> PB</translation>
 <translation id="1620510694547887537">කැමරාව</translation>
@@ -78,7 +80,6 @@
 <translation id="1722487484194605434">අයිතම <ph name="NUMBER_OF_ITEMS" />ක් සිප් කෙරේ...</translation>
 <translation id="1722687688096767818">පැතිකඩ එක් කරමින්...</translation>
 <translation id="1726100011689679555">නම් සේවාදායක</translation>
-<translation id="1726600877401297672">අයිතම <ph name="NUMBER_OF_ITEMS" />ක් කුණු කූඩය වෙත ගෙන යන ලදි</translation>
 <translation id="1729953886957086472">ජර්මානු (ජර්මනිය)</translation>
 <translation id="1730235522912993863">චීන කන්ජි</translation>
 <translation id="1731889557567069540">අයිතම <ph name="NUMBER_OF_ITEMS" />ක් පිටපත් කරන ලදී.</translation>
@@ -112,6 +113,7 @@
 <translation id="1942765061641586207">රූප විභේදනය</translation>
 <translation id="1972984168337863910">ගොනු ප්‍රතිපෝෂණ පැනල් දිග හරින්න</translation>
 <translation id="1995337122023280937">ගොනු ස්ථානයට යන්න</translation>
+<translation id="1999709132469742660">සියලු urls මගින් ගොනු ප්‍රවේශය</translation>
 <translation id="2001796770603320721">Drive හි කළමනාකරණය කරන්න</translation>
 <translation id="2009067268969781306">ධාවකයක් ආකෘති කිරීම එහි ගබඩා කර ඇති සියලුම දත්ත මකා දමයි. මෙම ක්‍රියාව අස් කළ නොහැක.</translation>
 <translation id="2025955442973426285">ටිග්රින්යා</translation>
@@ -142,6 +144,7 @@
 <translation id="2239068707900391003">කෝපි සමග පුද්ගලයා</translation>
 <translation id="2251368349685848079">කුණු කූඩය වෙතින් ප්‍රතිස්ථාපනය කරන්න</translation>
 <translation id="2282155092769082568">ස්වයංවින්‍යාසකරණ URL:</translation>
+<translation id="2284767815536050991">ඉවත් කළ හැකි ආචයනය</translation>
 <translation id="2288278176040912387">තැටි වාදකය</translation>
 <translation id="2291538123825441971">ගොනු <ph name="NUMBER_OF_FILES" />ක් විවෘත කිරීම.</translation>
 <translation id="2303301624314357662"><ph name="FILE_NAME" /> ගොනුව විවෘත කිරීම.</translation>
@@ -154,11 +157,12 @@
 <translation id="2377319039870049694">ලැයිස්තු දසුනට මාරු වන්න</translation>
 <translation id="2377590462528165447">ෆෝල්ඩර <ph name="NUMBER_OF_ITEMS" />ක් ලිනක්ස් සමඟ බෙදා ගත්තා</translation>
 <translation id="2378075407703503998">ගොනු <ph name="SELCTED_FILE_COUNT" /> තෝරා ඇත</translation>
-<translation id="2387120140441437063">කුණු කූඩයට දැමූ ගොනු විවෘත කළ නොහැකිය. කරුණාකර විවෘත කිරීමට පෙර ගොනු ප්‍රතිසාධනය කරන්න.</translation>
+<translation id="2383454254762599978">කුණු කූඩය වෙත ගෙන යන්න</translation>
 <translation id="2387458720915042159">ප්‍රොක්සි සබැඳුම් වර්ගය</translation>
 <translation id="2389832672041313158">බුරුම/මියන්මාරය</translation>
 <translation id="2392369802118427583">සක්‍රිය කරන්න</translation>
 <translation id="240770291734945588"><ph name="SPACE_AVAILABLE" /> තිබේ</translation>
+<translation id="2417486498593892439">ජාලයට පුරනය වන්න</translation>
 <translation id="2425665904502185219">මුළු ගොනු විශාලත්වය</translation>
 <translation id="2428749644083375155">අයිතම <ph name="NUMBER_OF_ITEMS" /> ක් <ph name="FOLDER_NAME" /> වෙත පිටපත් කිරීම</translation>
 <translation id="2448312741937722512">වර්ගය</translation>
@@ -171,6 +175,7 @@
 <translation id="2500392669976258912">ගුජරාටි ශබ්දිම</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">ස්කෑන් කරන්න</translation>
+<translation id="252641322760726369">රාක්කයේ ඇති ඔබේ ගොනු වෙත ඉක්මන් ප්‍රවේශය සඳහා ගොනුවක් ස්පර්ශ කර අල්ලාගෙන <ph name="ICON" /> තට්ටු කර, "<ph name="PIN_COMMAND" />" තෝරන්න.</translation>
 <translation id="2534460670861217804">ආරක්ෂිත HTTP ප්‍රොක්සිය</translation>
 <translation id="2541377937973966830">මෙම ෆෝල්ඩරයේ අන්තර්ගත කියවීමට පමණී. සමහර ක්‍රියාකාරකම් සහාය නොදක්වයි.</translation>
 <translation id="2542049655219295786">Google වගුව</translation>
@@ -207,7 +212,6 @@
 <translation id="2888807692577297075">&lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt; වෙත කිසිඳු අයිතමයක් නොගැලපේ</translation>
 <translation id="2894654529758326923">තොරතුරු</translation>
 <translation id="2902734494705624966">US දිගුකළ</translation>
-<translation id="2906052776158021882">අයිතම <ph name="NUMBER_OF_ITEMS" />ක් කුණු කූඩය වෙත ගෙන යමින්</translation>
 <translation id="290843123675549676">මරාති</translation>
 <translation id="2923240520113693977">ඇස්ටෝනියානු</translation>
 <translation id="2938685643439809023">මොන්ගෝලියානු</translation>
@@ -217,13 +221,13 @@
 <translation id="2958458230122209142">ආචයනය අඩුයි, ඔබේ <ph name="TOTAL_SPACE" /> ක තනි පුද්ගල ආචනයනයෙන් <ph name="REMAINING_PERCENTAGE" />% ක් ඉතුරුයි.</translation>
 <translation id="2977940621473452797">මෙම ගොනුව Macintosh මෘදුකාංගය භාවිත කරන පරිගණකයක් සඳහා සැලසුම් කර ඇත. මෙය ඔබගේ ChromeOS ධාවනය වන උපාංගය සමඟ නොගැළපේ. කරුණාකර ගැළපෙන ප්‍රතිස්ථාපන යෙදුමක් Chrome Web Store හි සොයන්න.</translation>
 <translation id="2984337792991268709">අද <ph name="TODAY_DAYTIME" /></translation>
-<translation id="2994320653639462337">අයිතම <ph name="COUNT" />ක් ප්‍රතිසාධනය කරමින්...</translation>
 <translation id="299638574917407533">ප්‍රංශ (කැනඩාව)</translation>
 <translation id="3003189754374775221"><ph name="NETWORK_COUNT" />න් <ph name="NETWORK_INDEX" /> වැනි ජාලය, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, සංඥා ප්‍රබලතාව <ph name="SIGNAL_STRENGTH" />%, සබඳින්න</translation>
 <translation id="3003633581067744647">සිඟිති රූ දසුනට මාරු වන්න</translation>
 <translation id="3016566519832145558">අවවාදයයි: මෙම ගොනු තාවකාලික වන අතර, තැටි ඉඩ නිදහස් කිරීමට ස්වයංක්‍රියව මකනු ලැබිය හැකිය.</translation>
 <translation id="3029114385395636667">Docs, Sheets සහ Slides නොබැඳිව ලබා ගත හැකි කිරීමට Google Docs Offline සබල කරන්න.</translation>
 <translation id="303198083543495566">භූගෝල විද්‍යාව</translation>
+<translation id="3044404008258011032">මෙම අයිතම ප්‍රතිසාධනය කිරීමට, ඒවා කුණු කූඩයෙන් පිටත නව ෆෝල්ඩරයකට ඇද දමන්න. මෙම අයිතම සඳහා මුල් ෆෝල්ඩරය "<ph name="PARENT_FOLDER_NAME" />" මකා ඇත.</translation>
 <translation id="3047197340186497470">වීන ඩායි</translation>
 <translation id="3067790092342515856">Windows ගොනු</translation>
 <translation id="3083975830683400843">Chromebits</translation>
@@ -234,6 +238,7 @@
 <translation id="3124404833828281817">දවල් සිහින දකින පුද්ගලයා</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3138624403379688522">අවලංගු PIN එකකි. ඔබට උත්සාහයන් <ph name="RETRIES" />ක් ඉතිරිව ඇත.</translation>
+<translation id="3157931365184549694">ප්‍රතිසාධනය</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (දෘඨාංග-පිටුබලය සහිත)</translation>
 <translation id="3188257591659621405">මගේ ගොනු</translation>
 <translation id="3194553149358267393">මෑත ශ්‍රව්‍ය ගොනු නැත</translation>
@@ -271,7 +276,6 @@
 <translation id="3414856743105198592">ඉවත් කළ හැකි මාධ්‍යය හැඩතල ගැන්වීම සියලු දත්ත මැකීමට සුදානම් වේ. ඔබ දිගටම කරගෙන යාමට කැමතිද?</translation>
 <translation id="3437801641691368414">සාදන ලද වේලාව</translation>
 <translation id="343907260260897561">ක්ෂණික කැමරාව</translation>
-<translation id="3452106565701029351">ඉක්මන් ගොනුවලින් ගලවන්න</translation>
 <translation id="3455931012307786678">එස්තෝනියානු</translation>
 <translation id="3475447146579922140">Google පැතුරුම්පත</translation>
 <translation id="3479552764303398839">දැන් නොවේ</translation>
@@ -286,6 +290,7 @@
 <translation id="3549797760399244642">drive.google.com වෙත යන්න...</translation>
 <translation id="3553048479571901246"><ph name="APP_NAME" /> සමඟ ගොනු විවෘත කිරීමට, පළමුව ඒවා Windows ගොනු ෆෝල්ඩරයට පිටපත් කරන්න.</translation>
 <translation id="3556731189587832921">ජාත්‍යන්තර PC යතුරුපුවරුව සමග ඉංග්‍රීසි (එ.ජ.)</translation>
+<translation id="3557414470514932909"><ph name="FILE_NAME" /> කුණු කූඩය වෙත ගෙන යමින්</translation>
 <translation id="3567221313191587603">ගොනුවක් තෝරා, ඔබගේ ගොනුවලට නොබැඳි පිවිසීම සඳහා <ph name="OFFLINE_CHECKBOX_NAME" /> ටොගල ක්‍රියාත්මක කරන්න.</translation>
 <translation id="357479282490346887">ලිතුවේනියානු</translation>
 <translation id="3587482841069643663">සියළු</translation>
@@ -322,6 +327,7 @@
 <translation id="3830674330436234648">පසුධාවනය ලබා ගත නොහැකිය.</translation>
 <translation id="383652340667548381">සයිබීරියානු</translation>
 <translation id="385051799172605136">ආපසු</translation>
+<translation id="3851491607336266896">සම්බන්ධිතයි, සීමිත සම්බන්ධතාවය</translation>
 <translation id="3855472144336161447">ජර්මානු නියෝ 2</translation>
 <translation id="3858860766373142691">නම</translation>
 <translation id="3866249974567520381">විස්තරය</translation>
@@ -337,12 +343,17 @@
 <translation id="3975895378829046965">බංග්ලා ශබ්දිම</translation>
 <translation id="4002066346123236978">සිරස්තලය</translation>
 <translation id="4017788180641807848">Workman යතුරුපුවරුව සමග ඉංග්‍රීසි (එ.ජ.)</translation>
+<translation id="4019998208269143058">ඉක්මන් ගොනු වෙත අමුණන්න</translation>
 <translation id="4040753847560036377">වැරදි PUK එකකි.</translation>
 <translation id="4057991113334098539">සක්‍රිය කරමින්...</translation>
 <translation id="4092890906744441904">අයිරිෂ්</translation>
 <translation id="4124935795427217608">කඟවේනා</translation>
+<translation id="4131235941541910880">ඔබට අවශ්‍ය නොවන අයිතම කුණු කූඩයට ගෙන යන්න</translation>
+<translation id="4153015322587141338">ගොනුවක් මත දකුණු-ක්ලික් කරන්න, රාක්කයේ ඇති ඔබේ ගොනු වෙත ඉක්මන් ප්‍රවේශය සඳහා "<ph name="PIN_COMMAND" />" තෝරන්න.</translation>
+<translation id="4157569377477607576">පරිපාලක ප්‍රතිපත්තිය නිර්දේශ නොකරයි:</translation>
 <translation id="4159731583141908892"><ph name="FILE_NAME" /> ගෙන යන ලදී.</translation>
 <translation id="4176286497474237543">දැන් කුණු කූඩය හිස් කරන්න</translation>
+<translation id="4179621117429069925">මෙම අයිතමය ඔබේ කුණු කූඩයේ ඇත</translation>
 <translation id="4186579485882418952">නොබැඳිව සබල කරන්න</translation>
 <translation id="4193154014135846272">Google ලේඛනය</translation>
 <translation id="4197674956721858839">Zip තේරීම</translation>
@@ -356,6 +367,7 @@
 <translation id="4290535918735525311">ලිනක්ස් සමඟ 1 ෆෝල්ඩරයක් බෙදා ගත්තා</translation>
 <translation id="4299729908419173967">බ්‍රසීලියානු</translation>
 <translation id="4302605047395093221">මෙම උපාංගය භාවිත කරන ඕනෑම කෙනෙකු මෙම ජංගම ජාලයට සම්බන්ධ වීමට PIN අංකය ඇතුළු කළ යුතුය</translation>
+<translation id="4303531889494116116">මෙම ජාලය කාර්යබහුලයි. පසුව නැවත උත්සාහ කරන්න.</translation>
 <translation id="4309915981827077375">සාමාන්‍ය තතු</translation>
 <translation id="432252891123397018">සම්මත යතුරුපුවරුව සමග රුමේනියානු</translation>
 <translation id="4325128273762811722">ස්ලොවේනියානු</translation>
@@ -372,6 +384,7 @@
 <translation id="4387004326333427325">අවසරදීම් සහතිකය දුරස්ථව පිළිකෙව් විය</translation>
 <translation id="4394214039309501350">බාහිර සබැඳිය</translation>
 <translation id="4394980935660306080">මෙම සතියේ මුල</translation>
+<translation id="4398096759193130964">අයිතම ප්‍රතිසාධනය කරන්න නැතහොත් කුණු කූඩයෙන් පිටත නව ෆෝල්ඩරයකට ඇද දමන්න</translation>
 <translation id="4401287888955153199">සියල්ල උපුටා ගන්න</translation>
 <translation id="4410695710508688828">උපුටා ගැනීමේ මෙහෙයුම අසාර්ථක විය. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">ඔබගේ ගොනු සඳහා කෙටි මඟක් තනන්න</translation>
@@ -427,6 +440,7 @@
 <translation id="4790766916287588578">InScript යතුරුපුවරුව සමග හින්දි</translation>
 <translation id="4801956050125744859">දෙකම තබා ගන්න</translation>
 <translation id="4804827417948292437">අලිගැටපේර</translation>
+<translation id="4805966553127040832">අයිතම <ph name="COUNT" />ක් ප්‍රතිසාධනය කරමින්</translation>
 <translation id="4823651846660089135">උපාංගය කියවීමට පමණි</translation>
 <translation id="4826849268470072925">දෙමළ ITRANS</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> අයිතම තෝරා ඇත</translation>
@@ -435,14 +449,17 @@
 <translation id="485316830061041779">ජර්මානු</translation>
 <translation id="4867079195717347957">තීරුව බසින පිළිවෙළට සැකසීමට ක්ලික් කරන්න.</translation>
 <translation id="4873265419374180291">බයිට් <ph name="NUMBER_OF_BYTES" /></translation>
+<translation id="4874569719830985133">සදහටම මකන්න</translation>
 <translation id="4880214202172289027">හඬ සර්පණය</translation>
 <translation id="4881695831933465202">විවෘත කරන්න</translation>
+<translation id="4891091358278567964">මෙම අයිතම ප්‍රතිසාධනය කිරීමට, ඒවා කුණු කූඩයෙන් පිටත නව ෆෝල්ඩරයකට ඇද දමන්න. මෙම අයිතම සඳහා මුල් ෆෝල්ඩර මකා ඇත.</translation>
 <translation id="4900532980794411603">Parallels Desktop සමග බෙදා ගන්න</translation>
 <translation id="4902546322522096650"><ph name="NETWORK_COUNT" />න් <ph name="NETWORK_INDEX" /> වැනි ජාලය, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, සංඥා ප්‍රබලතාව <ph name="SIGNAL_STRENGTH" />%, සබඳින්න</translation>
 <translation id="4906580650526544301"><ph name="NETWORK_COUNT" />න් <ph name="NETWORK_INDEX" /> වැනි ජාලය, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, සංඥා ප්‍රබලතාව <ph name="SIGNAL_STRENGTH" />%, දුරකථන බැටරිය <ph name="BATTERY_STATUS" />%, විස්තර</translation>
 <translation id="4935975195727477204">ගැන්සානියා මල</translation>
 <translation id="4943368462779413526">පාපන්දු</translation>
 <translation id="4961158930123534723">Parallels Desktop සමග එක ෆෝල්ඩරයක් බෙදා ගන්නා ලදි</translation>
+<translation id="496656650103537022"><ph name="FILE_NAME" /> ප්‍රතිස්ථාපනය කරන ලදි</translation>
 <translation id="4969785127455456148">ඇල්බමය</translation>
 <translation id="4973523518332075481">අනුලකුණු <ph name="MAX_LENGTH" /> හෝ ඊට අඩු නමක් භාවිතා කරන්න</translation>
 <translation id="4973970068702235170">සිප් කිරීම අසාර්ථකයි, අනපේක්‍ෂිත දෝෂයයි: <ph name="ERROR_MESSAGE" /></translation>
@@ -461,7 +478,6 @@
 <translation id="5068919226082848014">පීසා</translation>
 <translation id="5081517858322016911">ගොනුවලින් <ph name="TOTAL_FILE_SIZE" /> ක් මකනු ලැබේ</translation>
 <translation id="508423945471810158">අයිතම <ph name="NUMBER_OF_ITEMS" /> ක් <ph name="FOLDER_NAME" /> වෙත ගෙන යාම</translation>
-<translation id="5092200349368278146"><ph name="FILE_NAME" /> කුණු කූඩය වෙත ගෙන යන ලදි</translation>
 <translation id="509429900233858213">දෝශයක් ඇතිවිය.</translation>
 <translation id="5098629044894065541">හීබෲ</translation>
 <translation id="5102922915594634436">සමමුහුර්ත ෆෝල්ඩර කළමනාකරණය කරන්න</translation>
@@ -478,7 +494,6 @@
    එය භාවිතයේ ඇති අතරතුර ඔබගේ උපාංගය ඉවත් කිරීම දත්ත හානියට හේතු විය හැකිය.  කරුණාකර මෙහෙයුම අවසන් වනතුරු රැඳී සිට, අනතුරුව ගොනු යෙදුම භාවිතයෙන් උපාංගය විසර්ජනය කරන්න.</translation>
 <translation id="5163869187418756376">බෙදාගැනීම අසාර්ථකයි. ඔබේ සබඳතාව පිරික්සා නැවත උත්සහ කරන්න.</translation>
 <translation id="516592729076796170">US Programmer Dvorak</translation>
-<translation id="5172749059808361023">සීමා කිරීම් විස්තර</translation>
 <translation id="5177526793333269655">කුඩාරූ දසුන</translation>
 <translation id="5181896909298187506">මෑත ගොනු නැත</translation>
 <translation id="5194713942430106590">තීරුව නැඟෙන පිළිවෙළට සැකසීමට ක්ලික් කරන්න.</translation>
@@ -494,18 +509,20 @@
     <ph name="MARKUP_7" />බෙදා ගෙන, නිර්මාණය කර සහයෝගයෙන් කටයුතු කරන්න<ph name="MARKUP_8" />
     ගොනු මත අනෙක් අය සමඟ එකම තැනකින්.<ph name="MARKUP_9" /></translation>
 <translation id="5275973617553375938">Google Drive වෙතින් නැවත ලබාගත්</translation>
+<translation id="5278111733643988471">මෙම අයිතමය ප්‍රතිසාධනය කිරීමට, එය කුණු කූඩයෙන් පිටත නව ෆෝල්ඩරයකට අදින්න. මෙම අයිතමය සඳහා මුල් ෆෝල්ඩරය "<ph name="PARENT_FOLDER_NAME" />" මකා ඇත.</translation>
 <translation id="5286194356314741248">ස්කෑන් කිරීම</translation>
 <translation id="5288441970121584418">බර්ගර්</translation>
-<translation id="5299998344490869684">ඔබට කුණු කූඩය හිස් කිරීමට අවශ්‍ය බව විශ්වාසද?</translation>
 <translation id="5305688511332277257">කිසිවක් ස්ථාපනය නොවිණ</translation>
 <translation id="5317780077021120954">සුරකින්න</translation>
 <translation id="5318819489018851358">Linux සමග බෙදාගන්න</translation>
 <translation id="5323213332664049067">ලතින් ඇමෙරිකානු</translation>
 <translation id="5330145655348521461">මෙම ගොනු වෙනස් ඩෙස්ක්ටොප් එකක විවෘත කරන ලදි. බැලීමට <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) වෙත ගෙන යන්න.</translation>
 <translation id="5330512191124428349">තොරතුරු ලබා ගන්න</translation>
+<translation id="5337538975554986899"><ph name="NON_RESTRICTED_DESTINATIONS" /> හැර අනෙකුත් සියලු urls මගින් ගොනු ප්‍රවේශය</translation>
 <translation id="535792325654997756">බළලුන් සමග පුද්ගලයා</translation>
 <translation id="5358764674931277">රාමු අනුපාතය</translation>
 <translation id="5363339716524495120">ආදාන භාෂාව චීන වේ</translation>
+<translation id="5364067326287025678">කුණු කූඩයේ කිසිවක් නැත</translation>
 <translation id="5368191757080475556">ලිනක්ස් සමඟ ෆෝල්ඩරය බෙදා ගන්න</translation>
 <translation id="5402367795255837559">බ්‍රේල්</translation>
 <translation id="5411472733320185105">මෙම සත්කාරකයන් සහ වසම් සඳහා ප්‍රොක්සි සැකසුම් භාවිතා නොකරන්න:</translation>
@@ -527,6 +544,7 @@
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> රූපය</translation>
 <translation id="5534520101572674276">විශාලත්වය ගණනය කෙරෙමින්</translation>
 <translation id="554153475311314364">ග්‍රීක අක්ෂර පරිවර්තනය</translation>
+<translation id="5580591966435005537">අතථ්‍ය යන්ත්‍රය</translation>
 <translation id="5583640892426849032">ආපසුයවනය</translation>
 <translation id="5583664733673201137">විරාම ලකුණු පළල පිරී ඇත</translation>
 <translation id="5602622065581044566">ශබ්දිම යතුරුපුවරුව සමග බල්ගේරියානු</translation>
@@ -543,6 +561,7 @@
 <translation id="5691596662111998220">අහෝ, <ph name="FILE_NAME" /> තව දුරටත් නොපවතී.</translation>
 <translation id="5698411045597658393"><ph name="NETWORK_NAME" />, අගුලු හරින්න</translation>
 <translation id="5700087501958648444">ශ්‍රව්‍ය තතු</translation>
+<translation id="5720028165859493293"><ph name="FILE_NAME" /> කුණු කූඩය වෙත ගෙන යන ලදි</translation>
 <translation id="5724172041621205163">පට්ටචොට් යතුරුපුවරුව සමඟ තායි</translation>
 <translation id="5756666464756035725">හංගේරියානු Qwerty</translation>
 <translation id="5763377084591234761">ජර්මානු (ස්විට්සර්ලන්තය)</translation>
@@ -564,7 +583,6 @@
 <translation id="5845721951356578987">හෙදිය</translation>
 <translation id="5861477046012235702">ක්‍රීඩාකරු</translation>
 <translation id="5864471791310927901">DHCP විමසුම අසාර්ථක විය</translation>
-<translation id="5887342613489958822"><ph name="FILE_NAME" /> කුණු කූඩය වෙත ගෙන යමින්</translation>
 <translation id="5896749729057314184">ජාල <ph name="NETWORK_COUNT" />කින් <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, සක්‍රිය නොකළ සංඥා ප්‍රබලතාව <ph name="SIGNAL_STRENGTH" />%, විස්තර</translation>
 <translation id="5911887972742538906">ඔබගේ Linux යෙදුම ස්ථාපනය අතරතුරේදී දෝෂයක් ඇති විය.</translation>
 <translation id="5912396950572065471">ආකෘතිය</translation>
@@ -587,6 +605,7 @@
 <translation id="61118516107968648">CSV පෙළ</translation>
 <translation id="6129953537138746214">හිඩස</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> ගෙනයමින්...</translation>
+<translation id="6133877453787250710">පරිපාලක අධීක්ෂකයින්:</translation>
 <translation id="613750717151263950">එ.ජ. යතුරුපුවරුව සමග ජපන්</translation>
 <translation id="6138894911715675297"><ph name="NETWORK_TYPE" />, ජාලයක් නැත</translation>
 <translation id="6146563240635539929">වීඩියෝ</translation>
@@ -607,11 +626,13 @@
 <translation id="6287852322318138013">මෙම ගොනුව විවෘත කිරීමට යෙදුමක් තෝරන්න</translation>
 <translation id="6295542640242147836">SIM අගුළු දැමීම</translation>
 <translation id="6296410173147755564">වලංගු නොවන PUK</translation>
+<translation id="6308243004861726558">මෙම ගොනුව රහස්‍ය වන අතර පරිපාලක ප්‍රතිපත්තියට යටත් වේ. පහත ගොනු ප්‍රවේශය සහ මාරු කිරීමේ ක්‍රියා අදාළ වේ.</translation>
 <translation id="6312403991423642364">නොදන්නා ජාල දෝෂය</translation>
 <translation id="6317608858038767920">අභිරුචි නම් සේවාදායකය <ph name="INPUT_INDEX" /></translation>
 <translation id="6320212353742551423"><ph name="ARCHIVE_TYPE" /> සංරක්ෂණය</translation>
 <translation id="6321303798550928047">අත වනමින්</translation>
 <translation id="6327785803543103246">වෙබ් ප්‍රොක්සි ස්වයං අනාවරණය</translation>
+<translation id="6337014272874260727">ඉක්මන් ගොනුවලින් ගලවන්න</translation>
 <translation id="6339145975392024142">එක්සත් ජනපද ජාත්‍යන්තර (PC)</translation>
 <translation id="6346310558342052870">පිවිසීම සීමා කර ඇත</translation>
 <translation id="6356685157277930264">ගොනු ප්‍රතිපෝෂණ කවුළුව</translation>
@@ -652,6 +673,7 @@
 <translation id="6751256176799620176">ෆෝල්ඩර 1ක් තෝරන ලදී</translation>
 <translation id="6755827872271341378">ChromeOS Flex උපාංගය</translation>
 <translation id="6790428901817661496">වාදනය කරන්න</translation>
+<translation id="6794539005637808366">අයිතමය ප්‍රතිසාධනය කරන්න හෝ කුණු කූඩයෙන් පිටත නව ෆෝල්ඩරයකට ඇද දමන්න</translation>
 <translation id="6795884519221689054">පැන්ඩා</translation>
 <translation id="6806699711453372963">ලිනක්ස් බෙදාගැනීම කළමනා කරන්න</translation>
 <translation id="6806796368146926706">ජපන් යතුරුපුවරුව සමග අක්ෂරාංක</translation>
@@ -674,11 +696,9 @@
 <translation id="6915678159055240887">ChromeboX</translation>
 <translation id="6918340160281024199">US Workman</translation>
 <translation id="6930242544192836755">කාලසීමාව</translation>
-<translation id="6931302001003657424">ඉක්මන් ගොනු වෙත අමුණන්න</translation>
 <translation id="6935521024859866267">යටිකුරු</translation>
 <translation id="6943836128787782965">HTTP අසාර්ථක විය</translation>
 <translation id="6949408524333579394">සර්බියානු අක්ෂර පරිවර්තනය</translation>
-<translation id="6954309393500027528">මෙම ගොනුව ඇලවීම ඔබගේ පරිපාලක විසින් අවහිර කර ඇත</translation>
 <translation id="6960565108681981554">සක්‍රිය කර නැත. ඔබගේ වාහකය අමතන්න.</translation>
 <translation id="696203921837389374">ජංගම දත්ත ඔස්සේ සමමුහුර්ත කිරීම සබල කරන්න</translation>
 <translation id="6965382102122355670">හරි</translation>
@@ -689,6 +709,7 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6989942356279143254">ස්වීඩන</translation>
 <translation id="6990081529015358884">ඔබගේ ඉඩ අවසන්ව තිබේ</translation>
+<translation id="6993826899923627728">මෙම අයිතම ඔබේ කුණු කූඩයේ ඇත</translation>
 <translation id="6998711733709403587">ෆෝල්ඩර <ph name="SELCTED_FOLDERS_COUNT" />ක් තෝරාගැනිණි</translation>
 <translation id="7008426324576352165">ඔබේ ආයතනය උඩුගත කිරීම සම්පූර්ණ කිරීමට තව ආචයනය අවශ්‍ය කරයි.</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> <ph name="ROOT_SUMMARY" /></translation>
@@ -720,6 +741,7 @@
 <translation id="7248671827512403053">ඉල්ලුම් පත්‍රය</translation>
 <translation id="7256405249507348194">හඳුනා නොගත් දෝෂයකි: <ph name="DESC" /></translation>
 <translation id="7268659760406822741">ලබා ගත හැකි සේවා</translation>
+<translation id="7292816689782057017">පරිපාලක ප්‍රතිපත්තිය සමහර ස්ථානවලට සුරැකීම සීමා කරයි.</translation>
 <translation id="7294063083760278948">තෙළිඟු අක්ෂර පරිවර්තනය</translation>
 <translation id="7295662345261934369">අන් අය සමඟ බෙදා ගන්න</translation>
 <translation id="7297443947353982503">පරිශීලක නම/මුරපදය වැරදී හෝ EAP-අවසරදීම අසාර්ථකයි</translation>
@@ -733,6 +755,7 @@
 <translation id="7408870451288633753">චෙක්</translation>
 <translation id="7417453074306512035">ඉතියෝපික් යතුරු පුවරුව</translation>
 <translation id="7417705661718309329">Google සිතියම්</translation>
+<translation id="7419668828140929293">"<ph name="FILENAME" />" ප්‍රතිසාධනය කරමින්</translation>
 <translation id="7458955835361612701">මෑත රූප නැත</translation>
 <translation id="7460898608667578234">යුක්රේන</translation>
 <translation id="7469894403370665791">මෙම ජාලය වෙත ස්වයංව සම්බන්ධ වන්න</translation>
@@ -750,7 +773,6 @@
 <translation id="7547811415869834682">ලංදේසි</translation>
 <translation id="7551643184018910560">රාක්කය වෙත අමුණන්න</translation>
 <translation id="7553492409867692754">Linux යෙදුම්වලට <ph name="FOLDER_NAME" /> ෆෝල්ඩරය තුළ ගොනු වෙත ප්‍රවේශ වීමට අවසරය දෙන්න</translation>
-<translation id="7575645593344061397">"<ph name="FILENAME" />" ප්‍රතිසාධනය කරමින්...</translation>
 <translation id="7589661784326793847">මොහොතක් රැඳී සිටින්න</translation>
 <translation id="7592775719802218421"><ph name="FILE_NAME" /> නොබැඳිව ලබා ගත හැකි බවට පත් කරමින්</translation>
 <translation id="7600126690270271294">සර්බියානු</translation>
@@ -762,6 +784,7 @@
 <translation id="7655441028674523381">Google ඡායාරූපවලට පහසුවෙන් ප්‍රවේශ වන්න</translation>
 <translation id="7658239707568436148">අවලංගු කරන්න</translation>
 <translation id="7663224033570512922">හින්දි</translation>
+<translation id="7689532716264131859">අයිතම <ph name="NUMBER_OF_ITEMS" />ක් කුණු කූඩය වෙත ගෙන යන ලදි</translation>
 <translation id="7693909743393669729">ධාවකයක් හැඩ ගැන්වීම එහි ගබඩා කර ඇති සියලු දත්ත මකනු ඇති අතර දෘශ්‍යමාන නොවිය හැකි කොටස් ඇතුළුව දැනට පවතින සියලු කොටස් ඉවත් කරනු ඇත. මෙම ක්‍රියාව පසුගමනය කළ නොහැකිය.</translation>
 <translation id="7695430100978772476"><ph name="DRIVE_NAME" /> හැඩතල ගැන්විය නොහැකි විය</translation>
 <translation id="76959938259365003">කුණු කූඩය හිස් කිරීමට අසමත් විය.</translation>
@@ -771,10 +794,12 @@
 <translation id="7711920809702896782">රූප තතු</translation>
 <translation id="7724603315864178912">කැපීම</translation>
 <translation id="7732111077498238432">ජාලය ප්‍රතිපත්තියෙන් පාලනය වේ</translation>
+<translation id="7736003208887389532">මෙම ගොනු ස්ථිරවම මකන්න ද?</translation>
 <translation id="7748626145866214022">ක්‍රියා තීරුවෙහි තවත් විකල්ප තිබේ. ක්‍රියා තීරුවට අවධානය යොමු කිරීමට Alt + A ඔබන්න.</translation>
 <translation id="7760449188139285140">චීන වුබි</translation>
 <translation id="7765158879357617694">චලනය කරන්න</translation>
 <translation id="7774365994322694683">කුරුල්ලා</translation>
+<translation id="7780322752056734036">අයිතම <ph name="NUMBER_OF_ITEMS" />ක් ප්‍රතිසාධනය කරන ලදි</translation>
 <translation id="7781829728241885113">ඊයේ</translation>
 <translation id="7788080748068240085">"<ph name="FILE_NAME" />" නොබැඳිව සුරැකීම සඳහා ඔබ <ph name="MARKUP_1" /> න් <ph name="TOTAL_FILE_SIZE" /> ක අමතර ඉඩක් හිස් කරගත යුතුය:
     <ph name="MARKUP_2" />ඔබට තවදුරටත් නොබැඳිව පිවිසීමට අනවශ්‍ය ගොනු ඉවත් කරන්න<ph name="MARKUP_3" />
@@ -796,6 +821,7 @@
 <translation id="78946041517601018">බෙදාගත් ධාවක</translation>
 <translation id="7903984238293908205">කටගනා</translation>
 <translation id="7908793776359722643">කොටසක් හැඩ ගැන්වීම එහි ගබඩා කර ඇති සියලු දත්ත මකනු ඇත. මෙම ක්‍රියාව පසුගමනය කළ නොහැකිය.</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7925247922861151263">AAA පරීක්ෂණ අසමත්</translation>
 <translation id="7925686952655276919">සමමු සඳහා ජංගම දත්ත භාවිතා කරන්න</translation>
 <translation id="7928710562641958568">උපාංගය බැහැර කරන්න</translation>
@@ -831,8 +857,10 @@
 <translation id="8249296373107784235">අහෝසි කරන්න</translation>
 <translation id="8250690786522693009">ලතින්</translation>
 <translation id="8250920743982581267">ලේඛන</translation>
+<translation id="8255595130163158297">කුණු කූඩයේ ඇති සියලු අයිතම මකා දැමෙනු ඇති අතර ඔබට ඒවා ප්‍රතිසාධනය කිරීමට නොහැකි වනු ඇත.</translation>
 <translation id="8261506727792406068">මකන්න</translation>
 <translation id="8261561378965667560">චීන අරාව</translation>
+<translation id="8262872909443689080">පරිපාලක ප්‍රතිපත්තිය</translation>
 <translation id="8264024885325823677">මෙම සැකසුම ඔබේ පරිපාලකයා විසින් කළමනා කෙරේ.</translation>
 <translation id="8269755669432358899">ගොනු ප්‍රතිපෝෂණ පැනල හකුළන්න</translation>
 <translation id="8280151743281770066">ආර්මේනියානු ශබ්දානුකූල</translation>
@@ -859,7 +887,6 @@
 <translation id="8456681095658380701">වැරදි නමක්</translation>
 <translation id="8457767749626250697">ඔබේ SIM එක අගුළු දමා ඇත</translation>
 <translation id="8459404855768962328">මෙම අයිතමය පිටපත් කිරීම '<ph name="DESTINATION_NAME" />' බෙදා ගත් ෆෝල්ඩරය දැකිය හැකි සියලු දෙනා සමග එය බෙදා ගනු ඇත.</translation>
-<translation id="8461467696380332069">ගොනුවක් මත දකුණු-ක්ලික් කරන්න, රාක්කයේ ඇති ඔබගේ ගොනු වෙත ඉක්මන් ප්‍රවේශය සඳහා "රාක්කයට අමුණන්න" තෝරන්න.</translation>
 <translation id="8461914792118322307">ප්‍රොක්සි</translation>
 <translation id="8463494891489624050">වියට්නාම VIQR</translation>
 <translation id="8475647382427415476">Google Drive හට මේ අවස්ථාවේදී "<ph name="FILENAME" />" සමමුහුර්ත කළ නොහැකි විය. Google Drive පසුව නැවත උත්සාහ කරනු ඇත.</translation>
@@ -896,23 +923,24 @@
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> තෝරන ලදි.</translation>
 <translation id="872537912056138402">ක්‍රොඒෂියානු</translation>
 <translation id="8743164338060742337"><ph name="NETWORK_COUNT" />න් <ph name="NETWORK_INDEX" /> වැනි ජාලය, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /> සංඥා ප්‍රබලතාව <ph name="SIGNAL_STRENGTH" />%, ඔබගේ පරිපාලකයා විසින් කළමනාකරණය කරයි, සබඳින්න</translation>
-<translation id="8750438273876807512">රාක්කයේ ඇති ඔබගේ ගොනු වෙත ඉක්මන් ප්‍රවේශය සඳහා ගොනුවක් ස්පර්ශ කර අල්ලාගෙන <ph name="ICON" /> තට්ටු කර, "රාක්කයට අමුණන්න" තෝරන්න.</translation>
 <translation id="8787254343425541995">බෙදාගත් ජාල සඳහා ප්‍රොක්සි වලට ඉඩදෙන්න</translation>
 <translation id="8790981080411996443">පැලවලට වතුර දමන පුද්ගලයා</translation>
 <translation id="8798099450830957504">පෙරනිමි</translation>
-<translation id="8802459921616481935">කුණු කූඩය වෙත ගෙන යන්න</translation>
 <translation id="8808686172382650546">පූසා</translation>
 <translation id="8810671769985673465">සිප් කිරීම අසාර්ථකයි, අයිතමය පවතියි: "<ph name="FILE_NAME" />"</translation>
 <translation id="8813284582615685103">ස්පාඤ්ඤ (ස්පාඤ්ඤය)</translation>
 <translation id="8834164572807951958">'<ph name="DESTINATION_NAME" />' හි සාමාජිකයන්ට මෙම අයිතමවල පිටපතක් වෙත ප්‍රවේශය ලැබෙනු ඇත.</translation>
+<translation id="8849389110234859568">පරිපාලක ප්‍රතිපත්තිය සමහර ගොනු වෙත ප්‍රවේශය සීමා කරයි.</translation>
 <translation id="8857149712089373752">ශබ්දිම යතුරුපුවරුව සමග නේපාල</translation>
 <translation id="8860454412039442620">Excel පැතුරුම්පත</translation>
 <translation id="8866284467018526531">අරාබි අක්ෂර පරිවර්තනය</translation>
+<translation id="8873014196523807561">මෙම අයිතම ප්‍රතිසාධනය කිරීමට, ඒවා නව ෆෝල්ඩරයකට අදින්න. මෙම අයිතම සමහරක් සඳහා මුල් ෆෝල්ඩර මකා ඇත.</translation>
 <translation id="8874184842967597500">සබඳවී නොමැත</translation>
 <translation id="8900820606136623064">හංගේරියානු</translation>
 <translation id="8903931173357132290">ළමා විය ඉක්මවූ</translation>
 <translation id="8912078710089354287">වලිගය වනන සුනඛයා</translation>
 <translation id="8919081441417203123">ඩෙන්මාර්ක</translation>
+<translation id="8949925099261528566">සම්බන්ධයි, අන්තර්ජාලය නැත</translation>
 <translation id="8965697826696209160">ප්‍රමාණවත් මතකයක් නැත.</translation>
 <translation id="8997962250644902079">චීන (සාම්ප්‍රදායික) පින්යින්</translation>
 <translation id="8998871447376656508">උඩුගත කිරීම සම්පූර්ණ කිරීමට ඔබේ Google Drive තුළ ප්‍රමාණවත් නිදහස් ඉඩ නැත.</translation>
@@ -929,6 +957,7 @@
 <translation id="9100610230175265781">රහස් පදය අවශ්‍යයි</translation>
 <translation id="9110990317705400362">අපි නිරන්තරයෙන්ම ඔබගේ පිරික්සීම වඩාත් ආරක්ෂිත කිරීමට ක්‍රම සොයමින් සිටිමු. කලින්, ඕනෑම වෙබ් අඩවියකට ඔබගේ බ්‍රවුසරය වෙත දිගුවක් එක් කිරීමට ඔබව පෙළඹවීය හැකි විය. Google Chrome නවතම අනුවාදයේ දී, ඔබ ඒවා දිගු පිටුව හරහා එක් කිරීමෙන් මෙම දිගු ස්ථාපනය කිරීමට අවශ්‍ය බව Chrome හට ප්‍රකාශිතවම පැවසිය යුතුයි. <ph name="BEGIN_LINK" />වැඩිදුර හදාරන්න<ph name="END_LINK" /></translation>
 <translation id="9111102763498581341">අගුලු හරන්න</translation>
+<translation id="9116909380156770361"><ph name="RESTRICTED_COMPONENTS" /> වෙත ගොනු මාරු කිරීම</translation>
 <translation id="912419004897138677">කොඩෙක්</translation>
 <translation id="9130775360844693113">'<ph name="DESTINATION_NAME" />' හි සාමාජිකයන්ට මෙම අයිතම වෙත ප්‍රවේශය ලැබෙනු ඇත.</translation>
 <translation id="9131598836763251128">ගොනු එකක් හෝ කිහිපයක් තෝරන්න</translation>
@@ -950,7 +979,9 @@
 <translation id="943972244133411984">වෙනස් කරන ලද්දේ</translation>
 <translation id="945522503751344254">අදහස් හා යෝජනා යවන්න</translation>
 <translation id="947144732524271678"><ph name="FROM_ENTRY_NAME" /> සිට <ph name="TO_ENTRY_NAME" /> දක්වා <ph name="ENTRY_COUNT" /> ඇතුළත් කිරීම් පරාසයක් තේරිණි.</translation>
+<translation id="954194396377670556">පරිපාලක ප්‍රතිපත්තිය වළක්වයි:</translation>
 <translation id="965477715979482472">ඉංග්‍රීසි (දකුණු අප්‍රිකාව)</translation>
+<translation id="976666271385981812">අයිතම <ph name="NUMBER_OF_ITEMS" />ක් කුණු කූඩය වෙත ගෙන යමින්</translation>
 <translation id="981121421437150478">ඕෆ්ලයින්</translation>
 <translation id="988685240266037636">"<ph name="FILE_NAME" />" නමැති ෆෝල්ඩරයක් දැනටමත් පවතියි. ඔබට එය ප්‍රතිස්ථාපන කළ යුතුද?</translation>
 <translation id="992401651319295351">ඔබට උත්සාහයන් <ph name="RETRIES" />ක් ඉතිරිව ඇත. ඔබ නව PIN එකක් පිහිටුවන තුරු ඔබට මෙම ජාලය භාවිත කිරීමට නොහැකි වනු ඇත.</translation>

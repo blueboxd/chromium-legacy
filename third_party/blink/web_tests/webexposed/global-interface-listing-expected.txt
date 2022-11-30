@@ -1873,6 +1873,8 @@ interface Document : Node
     getter onpointerover
     getter onpointerrawupdate
     getter onpointerup
+    getter onpopuphide
+    getter onpopupshow
     getter onprerenderingchange
     getter onprogress
     getter onratechange
@@ -1990,7 +1992,7 @@ interface Document : Node
     method releaseEvents
     method replaceChildren
     method requestStorageAccess
-    method requestStorageAccessForSite
+    method requestStorageAccessForOrigin
     method webkitCancelFullScreen
     method webkitExitFullscreen
     method write
@@ -2085,6 +2087,8 @@ interface Document : Node
     setter onpointerover
     setter onpointerrawupdate
     setter onpointerup
+    setter onpopuphide
+    setter onpopupshow
     setter onprerenderingchange
     setter onprogress
     setter onratechange
@@ -2143,6 +2147,15 @@ interface DocumentFragment : Node
     method querySelector
     method querySelectorAll
     method replaceChildren
+interface DocumentPictureInPicture
+    attribute @@toStringTag
+    getter session
+    method constructor
+    method requestWindow
+interface DocumentPictureInPictureSession
+    attribute @@toStringTag
+    getter window
+    method constructor
 interface DocumentTimeline : AnimationTimeline
     attribute @@toStringTag
     method constructor
@@ -2289,9 +2302,6 @@ interface Element : Node
     getter outerHTML
     getter part
     getter popUp
-    getter popUpHideTarget
-    getter popUpShowTarget
-    getter popUpToggleTarget
     getter prefix
     getter previousElementSibling
     getter role
@@ -2428,9 +2438,6 @@ interface Element : Node
     setter outerHTML
     setter part
     setter popUp
-    setter popUpHideTarget
-    setter popUpShowTarget
-    setter popUpToggleTarget
     setter role
     setter scrollLeft
     setter scrollTop
@@ -2723,6 +2730,7 @@ interface FileSystemHandle
     getter kind
     getter name
     method constructor
+    method getUniqueId
     method isSameEntry
     method move
     method queryPermission
@@ -3122,6 +3130,9 @@ interface HTMLButtonElement : HTMLElement
     getter formTarget
     getter labels
     getter name
+    getter popUpHideTarget
+    getter popUpShowTarget
+    getter popUpToggleTarget
     getter type
     getter validationMessage
     getter validity
@@ -3138,6 +3149,9 @@ interface HTMLButtonElement : HTMLElement
     setter formNoValidate
     setter formTarget
     setter name
+    setter popUpHideTarget
+    setter popUpShowTarget
+    setter popUpToggleTarget
     setter type
     setter value
 interface HTMLCanvasElement : HTMLElement
@@ -3297,6 +3311,8 @@ interface HTMLElement : Element
     getter onpointerover
     getter onpointerrawupdate
     getter onpointerup
+    getter onpopuphide
+    getter onpopupshow
     getter onprogress
     getter onratechange
     getter onreset
@@ -3426,6 +3442,8 @@ interface HTMLElement : Element
     setter onpointerover
     setter onpointerrawupdate
     setter onpointerup
+    setter onpopuphide
+    setter onpopupshow
     setter onprogress
     setter onratechange
     setter onreset
@@ -3775,6 +3793,9 @@ interface HTMLInputElement : HTMLElement
     getter name
     getter pattern
     getter placeholder
+    getter popUpHideTarget
+    getter popUpShowTarget
+    getter popUpToggleTarget
     getter readOnly
     getter required
     getter selectionDirection
@@ -3830,6 +3851,9 @@ interface HTMLInputElement : HTMLElement
     setter name
     setter pattern
     setter placeholder
+    setter popUpHideTarget
+    setter popUpShowTarget
+    setter popUpToggleTarget
     setter readOnly
     setter required
     setter selectionDirection
@@ -5133,20 +5157,27 @@ interface ML
 interface MLContext
     attribute @@toStringTag
     method constructor
+interface MLGraph
+    attribute @@toStringTag
+    method constructor
 interface MLGraphBuilder
     attribute @@toStringTag
     method add
     method averagePool2d
+    method buildAsync
     method clamp
     method constant
     method constructor
     method conv2d
     method div
     method gemm
+    method hardSwish
     method input
     method max
+    method maxPool2d
     method min
     method mul
+    method relu
     method reshape
     method softmax
     method sub
@@ -5242,6 +5273,8 @@ interface MathMLElement : Element
     getter onpointerover
     getter onpointerrawupdate
     getter onpointerup
+    getter onpopuphide
+    getter onpopupshow
     getter onprogress
     getter onratechange
     getter onreset
@@ -5352,6 +5385,8 @@ interface MathMLElement : Element
     setter onpointerover
     setter onpointerrawupdate
     setter onpointerup
+    setter onpopuphide
+    setter onpopupshow
     setter onprogress
     setter onratechange
     setter onreset
@@ -5553,7 +5588,6 @@ interface MediaSource : EventTarget
     attribute @@toStringTag
     getter activeSourceBuffers
     getter duration
-    getter handle
     getter onsourceclose
     getter onsourceended
     getter onsourceopen
@@ -5873,9 +5907,7 @@ interface NavigateEvent : Event
     getter userInitiated
     method constructor
     method intercept
-    method restoreScroll
     method scroll
-    method transitionWhile
 interface Navigation : EventTarget
     attribute @@toStringTag
     getter canGoBack
@@ -5949,6 +5981,7 @@ interface Navigator
     getter deviceMemory
     getter devicePosture
     getter doNotTrack
+    getter documentPictureInPicture
     getter geolocation
     getter hardwareConcurrency
     getter hid
@@ -6546,6 +6579,7 @@ interface PerformanceNavigationTiming : PerformanceResourceTiming
     getter domInteractive
     getter loadEventEnd
     getter loadEventStart
+    getter notRestoredReasons
     getter redirectCount
     getter type
     getter unloadEventEnd
@@ -6573,6 +6607,7 @@ interface PerformanceResourceTiming : PerformanceEntry
     getter connectEnd
     getter connectStart
     getter decodedBodySize
+    getter deliveryType
     getter domainLookupEnd
     getter domainLookupStart
     getter encodedBodySize
@@ -7492,6 +7527,8 @@ interface SVGElement : Element
     getter onpointerover
     getter onpointerrawupdate
     getter onpointerup
+    getter onpopuphide
+    getter onpopupshow
     getter onprogress
     getter onratechange
     getter onreset
@@ -7604,6 +7641,8 @@ interface SVGElement : Element
     setter onpointerover
     setter onpointerrawupdate
     setter onpointerup
+    setter onpopuphide
+    setter onpopupshow
     setter onprogress
     setter onratechange
     setter onreset
@@ -8650,6 +8689,7 @@ interface ShadowRoot : DocumentFragment
     getter onslotchange
     getter pictureInPictureElement
     getter pointerLockElement
+    getter registry
     getter slotAssignment
     getter styleSheets
     method constructor
@@ -8668,6 +8708,9 @@ interface SharedWorker : EventTarget
     getter port
     method constructor
     setter onerror
+interface SoftNavigationEntry : PerformanceEntry
+    attribute @@toStringTag
+    method constructor
 interface SourceBuffer : EventTarget
     attribute @@toStringTag
     getter appendWindowEnd
@@ -11678,8 +11721,6 @@ namespace CSS
     getter crossOriginIsolated
     getter crypto
     getter customElements
-    getter defaultStatus
-    getter defaultstatus
     getter devicePixelRatio
     getter document
     getter event
@@ -11784,6 +11825,8 @@ namespace CSS
     getter onpointerrawupdate
     getter onpointerup
     getter onpopstate
+    getter onpopuphide
+    getter onpopupshow
     getter onprogress
     getter onratechange
     getter onrejectionhandled
@@ -11909,8 +11952,6 @@ namespace CSS
     method webkitRequestFileSystem
     method webkitResolveLocalFileSystemURL
     setter clientInformation
-    setter defaultStatus
-    setter defaultstatus
     setter devicePixelRatio
     setter event
     setter external
@@ -12007,6 +12048,8 @@ namespace CSS
     setter onpointerrawupdate
     setter onpointerup
     setter onpopstate
+    setter onpopuphide
+    setter onpopupshow
     setter onprogress
     setter onratechange
     setter onrejectionhandled

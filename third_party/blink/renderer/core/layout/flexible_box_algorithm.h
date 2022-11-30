@@ -175,7 +175,7 @@ class FlexItem {
   LayoutUnit MainAxisMarginExtent() const;
   LayoutUnit CrossAxisMarginExtent() const;
 
-  LayoutUnit MarginBoxAscent(bool is_wrap_reverse) const;
+  LayoutUnit MarginBoxAscent(bool is_last_baseline, bool is_wrap_reverse) const;
 
   LayoutUnit AvailableAlignmentSpace() const;
 
@@ -227,8 +227,11 @@ class FlexItem {
   // margins). FlexLayoutAlgorithm uses this flag to report back to legacy.
   bool needs_relayout_for_stretch_;
 
+  // The above fields are used by the flex algorithm. The following fields, by
+  // contrast, are just convenient storage.
   NGBlockNode ng_input_node_;
   Member<const NGLayoutResult> layout_result_;
+  absl::optional<LayoutUnit> max_content_contribution_;
 };
 
 class FlexItemVectorView {
@@ -346,8 +349,8 @@ class FlexLine {
   LayoutUnit cross_axis_offset_;
   LayoutUnit cross_axis_extent_;
 
-  LayoutUnit max_major_ascent_;
-  LayoutUnit max_minor_ascent_;
+  LayoutUnit max_major_ascent_ = LayoutUnit::Min();
+  LayoutUnit max_minor_ascent_ = LayoutUnit::Min();
 };
 
 // This class implements the CSS Flexbox layout algorithm:

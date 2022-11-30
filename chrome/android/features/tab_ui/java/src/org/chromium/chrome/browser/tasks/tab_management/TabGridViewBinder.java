@@ -364,8 +364,8 @@ class TabGridViewBinder {
             return;
         }
         // Use placeholder drawable before the real thumbnail is available.
-        thumbnail.setColorThumbnailPlaceHolder(
-                model.get(TabProperties.IS_INCOGNITO), model.get(TabProperties.IS_SELECTED));
+        boolean isSelected = model.get(TabProperties.IS_SELECTED);
+        thumbnail.setColorThumbnailPlaceHolder(model.get(TabProperties.IS_INCOGNITO), isSelected);
 
         final Size cardSize = model.get(TabProperties.GRID_CARD_SIZE);
         final Size thumbnailSize =
@@ -389,9 +389,9 @@ class TabGridViewBinder {
             }
         };
         if (TabUiFeatureUtilities.isLaunchPolishEnabled() && sThumbnailFetcherForTesting != null) {
-            sThumbnailFetcherForTesting.fetch(callback, thumbnailSize);
+            sThumbnailFetcherForTesting.fetch(callback, thumbnailSize, isSelected);
         } else {
-            fetcher.fetch(callback, thumbnailSize);
+            fetcher.fetch(callback, thumbnailSize, isSelected);
         }
     }
 
@@ -456,7 +456,6 @@ class TabGridViewBinder {
     private static void updateColor(
             ViewLookupCachingFrameLayout rootView, boolean isIncognito, boolean isSelected) {
         View cardView = rootView.fastFindViewById(R.id.card_view);
-        View dividerView = rootView.fastFindViewById(R.id.divider_view);
         TextView titleView = (TextView) rootView.fastFindViewById(R.id.tab_title);
         TabGridThumbnailView thumbnail =
                 (TabGridThumbnailView) rootView.fastFindViewById(R.id.tab_thumbnail);
@@ -467,9 +466,6 @@ class TabGridViewBinder {
         final @ColorInt int backgroundColor = TabUiThemeProvider.getCardViewBackgroundColor(
                 cardView.getContext(), isIncognito, isSelected);
         ViewCompat.setBackgroundTintList(cardView, ColorStateList.valueOf(backgroundColor));
-
-        dividerView.setBackgroundColor(
-                TabUiThemeProvider.getDividerColor(dividerView.getContext(), isIncognito));
 
         titleView.setTextColor(TabUiThemeProvider.getTitleTextColor(
                 titleView.getContext(), isIncognito, isSelected));

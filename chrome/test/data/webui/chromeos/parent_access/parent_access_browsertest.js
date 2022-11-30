@@ -23,8 +23,9 @@ var ParentAccessAppTest = class extends PolymerTest {
   }
 };
 
-TEST_F('ParentAccessAppTest', 'TestShowAfterFlow', function() {
-  this.runMochaTest(parent_access_app_tests.TestNames.TestShowAfterFlow);
+TEST_F('ParentAccessAppTest', 'TestShowWebApprovalsAfterFlow', function() {
+  this.runMochaTest(
+      parent_access_app_tests.TestNames.TestShowWebApprovalsAfterFlow);
 });
 
 var ParentAccessControllerTest = class extends testing.Test {
@@ -109,3 +110,28 @@ TEST_F(
       this.runMochaTest(parent_access_ui_handler_tests.TestNames
                             .TestOnParentAccessCallbackReceived);
     });
+
+var ParentAccessWebviewManagerTest = class extends PolymerTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://parent-access/test_loader.html?module=' +
+        'chromeos/parent_access/webview_manager_test.js&host=test';
+  }
+
+  /** @param {string} testName The name of the test to run. */
+  runMochaTest(testName) {
+    runMochaTest(webview_manager_tests.suiteName, testName);
+  }
+};
+
+TEST_F('ParentAccessWebviewManagerTest', 'AccessTokenTest', function() {
+  this.runMochaTest(webview_manager_tests.TestNames.AccessTokenTest);
+});
+
+TEST_F('ParentAccessWebviewManagerTest', 'BlockAccessTokenTest', function() {
+  this.runMochaTest(webview_manager_tests.TestNames.BlockAccessTokenTest);
+});
+
+TEST_F('ParentAccessWebviewManagerTest', 'AllowRequestFnTest', function() {
+  this.runMochaTest(webview_manager_tests.TestNames.AllowRequestFnTest);
+});

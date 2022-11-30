@@ -85,6 +85,26 @@ TEST_F(FaviconUrlParserTest, LegacyParsingSizeParam) {
   EXPECT_EQ(path8, parsed.page_url);
   EXPECT_EQ(16, parsed.size_in_dip);
   EXPECT_EQ(1.0f, parsed.device_scale_factor);
+
+  // Test that negative sizes lead to parsing errors.
+  const std::string path9 = "size/-32/" + url;
+  EXPECT_FALSE(chrome::ParseFaviconPath(
+      path9, chrome::FaviconUrlFormat::kFaviconLegacy, &parsed));
+
+  // Test that size zero leads to parsing errors.
+  const std::string path10 = "size/0/" + url;
+  EXPECT_FALSE(chrome::ParseFaviconPath(
+      path10, chrome::FaviconUrlFormat::kFaviconLegacy, &parsed));
+
+  // Test that negative scale factors lead to parsing errors.
+  const std::string path11 = "size/32@-1.4x/" + url;
+  EXPECT_FALSE(chrome::ParseFaviconPath(
+      path11, chrome::FaviconUrlFormat::kFaviconLegacy, &parsed));
+
+  // Test that scale factor zero leads to parsing errors.
+  const std::string path12 = "size/32@0x/" + url;
+  EXPECT_FALSE(chrome::ParseFaviconPath(
+      path12, chrome::FaviconUrlFormat::kFaviconLegacy, &parsed));
 }
 
 // Test parsing path with 'iconurl' parameter.
@@ -127,6 +147,10 @@ TEST_F(FaviconUrlParserTest, Favicon2ParsingSizeParam) {
   EXPECT_FALSE(chrome::ParseFaviconPath("?size=abc&pageUrl=https%3A%2F%2Fg.com",
                                         chrome::FaviconUrlFormat::kFavicon2,
                                         &parsed));
+
+  EXPECT_FALSE(chrome::ParseFaviconPath("?size=-32&pageUrl=https%3A%2F%2Fg.com",
+                                        chrome::FaviconUrlFormat::kFavicon2,
+                                        &parsed));
 }
 
 TEST_F(FaviconUrlParserTest, Favicon2ParsingScaleFactorParam) {
@@ -137,8 +161,19 @@ TEST_F(FaviconUrlParserTest, Favicon2ParsingScaleFactorParam) {
                                chrome::FaviconUrlFormat::kFavicon2, &parsed));
   EXPECT_EQ(2.1f, parsed.device_scale_factor);
 
+  // Missing 'x' in scale factor (parsing error).
   EXPECT_FALSE(
-      chrome::ParseFaviconPath("?scaleFactor=-1&pageUrl=https%3A%2F%2Fg.com",
+      chrome::ParseFaviconPath("?scaleFactor=2.1&pageUrl=https%3A%2F%2Fg.com",
+                               chrome::FaviconUrlFormat::kFavicon2, &parsed));
+
+  // Negative scale factor (parsing error).
+  EXPECT_FALSE(
+      chrome::ParseFaviconPath("?scaleFactor=-2.1x&pageUrl=https%3A%2F%2Fg.com",
+                               chrome::FaviconUrlFormat::kFavicon2, &parsed));
+
+  // Scale factor zero (parsing error).
+  EXPECT_FALSE(
+      chrome::ParseFaviconPath("?scaleFactor=0x&pageUrl=https%3A%2F%2Fg.com",
                                chrome::FaviconUrlFormat::kFavicon2, &parsed));
 }
 
@@ -194,4 +229,21 @@ TEST_F(FaviconUrlParserTest, Favicon2ParsingShowFallbackMonogram) {
                                "2F%2Fg.com",
                                chrome::FaviconUrlFormat::kFavicon2, &parsed));
   EXPECT_TRUE(parsed.show_fallback_monogram);
+}
+
+TEST_F(FaviconUrlParserTest, Favicon2ParsingForceLightMode) {
+  chrome::ParsedFaviconPath parsed;
+
+  parsed.force_light_mode = true;
+  EXPECT_TRUE(chrome::ParseFaviconPath("?pageUrl=https%3A%2F%2Fg.com",
+                                       chrome::FaviconUrlFormat::kFavicon2,
+                                       &parsed));
+  EXPECT_FALSE(parsed.force_light_mode);
+
+  parsed.force_light_mode = false;
+  EXPECT_TRUE(
+      chrome::ParseFaviconPath("?forceLightMode&pageUrl=https%3A%"
+                               "2F%2Fg.com",
+                               chrome::FaviconUrlFormat::kFavicon2, &parsed));
+  EXPECT_TRUE(parsed.force_light_mode);
 }

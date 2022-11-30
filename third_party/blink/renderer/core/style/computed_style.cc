@@ -271,6 +271,11 @@ static bool DiffAffectsScrollAnimations(const ComputedStyle& old_style,
       (old_style.ScrollTimelineAxis() != new_style.ScrollTimelineAxis())) {
     return true;
   }
+  if ((old_style.ViewTimelineName() != new_style.ViewTimelineName()) ||
+      (old_style.ViewTimelineAxis() != new_style.ViewTimelineAxis()) ||
+      (old_style.ViewTimelineInset() != new_style.ViewTimelineInset())) {
+    return true;
+  }
   return false;
 }
 
@@ -278,10 +283,14 @@ static bool DiffAffectsScrollAnimations(const ComputedStyle& old_style,
 // if they reference a named timeline which appeared/disappeared.
 static bool AffectsScrollAnimations(const ComputedStyle* old_style,
                                     const ComputedStyle* new_style) {
-  if (old_style && !old_style->ScrollTimelineName().IsEmpty())
+  if (old_style && !(old_style->ScrollTimelineName().empty() &&
+                     old_style->ViewTimelineName().empty())) {
     return true;
-  if (new_style && !new_style->ScrollTimelineName().IsEmpty())
+  }
+  if (new_style && !(new_style->ScrollTimelineName().empty() &&
+                     new_style->ViewTimelineName().empty())) {
     return true;
+  }
   return false;
 }
 
@@ -1094,8 +1103,15 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
   if (ComputedStyleBase::UpdatePropertySpecificDifferencesZIndex(*this, other))
     diff.SetZIndexChanged();
 
-  if (UpdatePropertySpecificDifferencesTransform(*this, other))
-    diff.SetTransformChanged();
+  if (ComputedStyleBase::UpdatePropertySpecificDifferencesTransform(*this,
+                                                                    other)) {
+    diff.SetTransformPropertyChanged();
+  }
+
+  if (ComputedStyleBase::UpdatePropertySpecificDifferencesOtherTransform(
+          *this, other)) {
+    diff.SetOtherTransformPropertyChanged();
+  }
 
   if (ComputedStyleBase::UpdatePropertySpecificDifferencesOpacity(*this, other))
     diff.SetOpacityChanged();
@@ -1523,9 +1539,10 @@ void ComputedStyle::ApplyMotionPathTransform(
       path_position.point.y() - anchor_point.y() + origin_shift_y);
   transform.Rotate(path_position.tangent_in_degrees + rotate.angle);
 
-  if (!position.X().IsAuto() || !anchor.X().IsAuto())
+  if (!position.X().IsAuto() || !anchor.X().IsAuto()) {
     // Shift the origin back to transform-origin.
     transform.Translate(-origin_shift_x, -origin_shift_y);
+  }
 }
 
 bool ComputedStyle::TextShadowDataEquivalent(const ComputedStyle& other) const {
@@ -2049,7 +2066,7 @@ const Vector<AtomicString>& ComputedStyle::GetVariableNames() const {
     inherited_variables->CollectNames(names);
   if (auto* non_inherited_variables = NonInheritedVariables())
     non_inherited_variables->CollectNames(names);
-  CopyToVector(names, cache);
+  cache.assign(names);
 
   return cache;
 }
@@ -2305,7 +2322,7 @@ void ComputedStyle::AddAppliedTextDecoration(
   // for a single element (if it has both a simple underline and another
   // decoration), and so this will cause two allocations instead of one,
   // but that is an edge case we're willing to live with.
-  list->data.ShrinkToFit();
+  list->data.shrink_to_fit();
 }
 
 void ComputedStyle::OverrideTextDecorationColors(Color override_color) {

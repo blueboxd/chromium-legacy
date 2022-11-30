@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,8 +120,8 @@ TEST_F(FontCacheTest, FallbackForEmojis) {
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 TEST_F(FontCacheTest, firstAvailableOrFirst) {
-  EXPECT_TRUE(FontCache::FirstAvailableOrFirst("").IsEmpty());
-  EXPECT_TRUE(FontCache::FirstAvailableOrFirst(String()).IsEmpty());
+  EXPECT_TRUE(FontCache::FirstAvailableOrFirst("").empty());
+  EXPECT_TRUE(FontCache::FirstAvailableOrFirst(String()).empty());
 
   EXPECT_EQ("Arial", FontCache::FirstAvailableOrFirst("Arial"));
   EXPECT_EQ("not exist", FontCache::FirstAvailableOrFirst("not exist"));

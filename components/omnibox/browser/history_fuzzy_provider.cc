@@ -167,6 +167,11 @@ void Edit::ApplyTo(std::u16string& text) const {
       text[at] = new_char;
       break;
     }
+    case Kind::TRANSPOSE: {
+      text[at] = text[at + 1];
+      text[at + 1] = new_char;
+      break;
+    }
     case Kind::KEEP:
     default: {
       NOTREACHED();
@@ -209,6 +214,10 @@ std::ostream& operator<<(std::ostream& os, const Edit& edit) {
     }
     case Edit::Kind::REPLACE: {
       os << 'R';
+      break;
+    }
+    case Edit::Kind::TRANSPOSE: {
+      os << 'T';
       break;
     }
     default: {
@@ -277,6 +286,8 @@ void Node::Clear() {
 bool Node::FindCorrections(const std::u16string& text,
                            ToleranceSchedule tolerance_schedule,
                            std::vector<Correction>& corrections) const {
+  const bool enable_transpose =
+      OmniboxFieldTrial::kFuzzyUrlSuggestionsTranspose.Get();
   DVLOG(1) << "FindCorrections(" << text << ", " << tolerance_schedule.limit
            << ")";
   DCHECK(corrections.empty());
@@ -332,6 +343,7 @@ bool Node::FindCorrections(const std::u16string& text,
 
   Step best{nullptr, INT_MAX, SIZE_MAX, INT_MAX, Correction()};
   int i = 0;
+
   // Find and return all equally-distant results as soon as distance increases
   // beyond that of first found results. Length is also considered to
   // avoid producing shorter substring texts.
@@ -388,7 +400,8 @@ bool Node::FindCorrections(const std::u16string& text,
            step.correction.WithEdit({Edit::Kind::DELETE, step.index, '_'})});
     }
     for (const auto& entry : step.node->next) {
-      if (entry.first == text[step.index]) {
+      const char16_t step_text_char = text[step.index];
+      if (entry.first == step_text_char) {
         // Keep
         pq.push({entry.second.get(), step.distance, step.index + 1,
                  step.length + 1, step.correction});
@@ -398,9 +411,9 @@ bool Node::FindCorrections(const std::u16string& text,
                  step.length + 1,
                  step.correction.WithEdit(
                      {Edit::Kind::INSERT, step.index, entry.first})});
+
         // Replace. Note, we do not replace at the same position as a previous
         // insertion because doing so could produce unnecessary duplicates.
-
         const Edit& step_edit =
             step.correction.edit_count > 0
                 ? step.correction.edits[step.correction.edit_count - 1]
@@ -413,9 +426,23 @@ bool Node::FindCorrections(const std::u16string& text,
                    step.correction.WithEdit(
                        {Edit::Kind::REPLACE, step.index, entry.first})});
         }
+
+        // Transpose. Look ahead cost can be balanced by faster
+        // advancement through input text resulting in shorter search.
+        if (enable_transpose && text.size() > step.index + 1 &&
+            text[step.index + 1] == entry.first) {
+          const auto it = entry.second->next.find(step_text_char);
+          if (it != entry.second->next.end()) {
+            pq.push({it->second.get(), step.distance + 1, step.index + 2,
+                     step.length + 2,
+                     step.correction.WithEdit(
+                         {Edit::Kind::TRANSPOSE, step.index, step_text_char})});
+          }
+        }
       }
     }
   }
+
   if (!pq.empty()) {
     DVLOG(1) << "quit early on step with distance " << pq.top().distance;
   }

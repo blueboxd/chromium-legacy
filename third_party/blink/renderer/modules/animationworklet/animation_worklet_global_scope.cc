@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
+#include "third_party/blink/renderer/platform/scheduler/common/features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 #include "v8/include/v8.h"
@@ -49,7 +50,10 @@ AnimationWorkletGlobalScope::AnimationWorkletGlobalScope(
     WorkerThread* thread)
     : WorkletGlobalScope(std::move(creation_params),
                          thread->GetWorkerReportingProxy(),
-                         thread) {}
+                         thread,
+                         /*create_microtask_queue=*/
+                         base::FeatureList::IsEnabled(
+                             scheduler::kMicrotaskQueuePerAnimationWorklet)) {}
 
 AnimationWorkletGlobalScope::~AnimationWorkletGlobalScope() = default;
 
@@ -192,7 +196,7 @@ void AnimationWorkletGlobalScope::registerAnimator(
     return;
   }
 
-  if (name.IsEmpty()) {
+  if (name.empty()) {
     exception_state.ThrowTypeError("The empty string is not a valid name.");
     return;
   }

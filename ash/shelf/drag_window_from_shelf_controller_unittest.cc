@@ -33,6 +33,7 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -54,7 +55,7 @@ namespace {
 // |parent|.
 int IndexOf(aura::Window* child, aura::Window* parent) {
   aura::Window::Windows children = parent->children();
-  auto it = std::find(children.begin(), children.end(), child);
+  auto it = base::ranges::find(children, child);
   DCHECK(it != children.end());
 
   return static_cast<int>(std::distance(children.begin(), it));
@@ -204,9 +205,10 @@ TEST_F(DragWindowFromShelfControllerTest,
   EXPECT_TRUE(window3->IsVisible());
 
   // In splitview mode, the snapped windows will stay visible during dragging.
-  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
-  split_view_controller()->SnapWindow(window2.get(),
-                                      SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(
+      window1.get(), SplitViewController::SnapPosition::kPrimary);
+  split_view_controller()->SnapWindow(
+      window2.get(), SplitViewController::SnapPosition::kSecondary);
 
   // Try to drag a left snapped window
   StartDrag(window1.get(), shelf_bounds.left_center());
@@ -222,10 +224,10 @@ TEST_F(DragWindowFromShelfControllerTest,
   // snapping.
   EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window1.get()));
   EXPECT_EQ(split_view_controller()->GetPositionOfSnappedWindow(window1.get()),
-            SplitViewController::LEFT);
+            SplitViewController::SnapPosition::kPrimary);
   EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window2.get()));
   EXPECT_EQ(split_view_controller()->GetPositionOfSnappedWindow(window2.get()),
-            SplitViewController::RIGHT);
+            SplitViewController::SnapPosition::kSecondary);
   EXPECT_FALSE(split_view_controller()->IsWindowInSplitView(window3.get()));
 
   // Try to drag a right snapped window
@@ -242,10 +244,10 @@ TEST_F(DragWindowFromShelfControllerTest,
   // snapping.
   EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window1.get()));
   EXPECT_EQ(split_view_controller()->GetPositionOfSnappedWindow(window1.get()),
-            SplitViewController::LEFT);
+            SplitViewController::SnapPosition::kPrimary);
   EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window2.get()));
   EXPECT_EQ(split_view_controller()->GetPositionOfSnappedWindow(window2.get()),
-            SplitViewController::RIGHT);
+            SplitViewController::SnapPosition::kSecondary);
   EXPECT_FALSE(split_view_controller()->IsWindowInSplitView(window3.get()));
 }
 
@@ -432,9 +434,10 @@ TEST_F(DragWindowFromShelfControllerTest, RestoreWindowToOriginalBounds) {
 
   // The same thing should happen if splitview mode is active.
   auto window2 = CreateTestWindow();
-  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
-  split_view_controller()->SnapWindow(window2.get(),
-                                      SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(
+      window.get(), SplitViewController::SnapPosition::kPrimary);
+  split_view_controller()->SnapWindow(
+      window2.get(), SplitViewController::SnapPosition::kSecondary);
   StartDrag(window.get(), shelf_bounds.left_center());
   Drag(gfx::Point(0, 200), 0.f, 1.f);
   EXPECT_FALSE(window->layer()->GetTargetTransform().IsIdentity());
@@ -442,7 +445,7 @@ TEST_F(DragWindowFromShelfControllerTest, RestoreWindowToOriginalBounds) {
   EndDrag(gfx::Point(0, 400), absl::nullopt);
   EXPECT_TRUE(window->layer()->GetTargetTransform().IsIdentity());
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_EQ(split_view_controller()->left_window(), window.get());
+  EXPECT_EQ(split_view_controller()->primary_window(), window.get());
 }
 
 // Test if overview is active and splitview is not active, fling in overview may
@@ -529,9 +532,10 @@ TEST_F(DragWindowFromShelfControllerTest, DragOrFlingInSplitView) {
   auto window1 = CreateTestWindow();
   auto window2 = CreateTestWindow();
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
-  split_view_controller()->SnapWindow(window2.get(),
-                                      SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(
+      window1.get(), SplitViewController::SnapPosition::kPrimary);
+  split_view_controller()->SnapWindow(
+      window2.get(), SplitViewController::SnapPosition::kSecondary);
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 
   // If the window is only dragged for a small distance:
@@ -678,14 +682,14 @@ TEST_F(DragWindowFromShelfControllerTest,
             drag_indicators->current_window_dragging_state());
 
   Drag(gfx::Point(0, 200), 0.5f, 0.5f);
-  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapLeft,
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapPrimary,
             drag_indicators->current_window_dragging_state());
 
   Drag(gfx::Point(0, 350), 0.5f, 0.5f);
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromShelf,
             drag_indicators->current_window_dragging_state());
   Drag(gfx::Point(0, 200), 0.5f, 0.5f);
-  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapLeft,
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapPrimary,
             drag_indicators->current_window_dragging_state());
   Drag(gfx::Point(200, 200), 0.5f, 0.5f);
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromShelf,
@@ -1172,8 +1176,8 @@ TEST_F(DragWindowFromShelfControllerTest, DropsIntoOverviewAtCorrectPosition) {
   generator->MoveMouseTo(gfx::ToRoundedPoint(
       GetOverviewItemForWindow(window2.get())->target_bounds().CenterPoint()));
   generator->DragMouseTo(799, 400);
-  EXPECT_EQ(window1.get(), split_view_controller()->left_window());
-  EXPECT_EQ(window2.get(), split_view_controller()->right_window());
+  EXPECT_EQ(window1.get(), split_view_controller()->primary_window());
+  EXPECT_EQ(window2.get(), split_view_controller()->secondary_window());
   ToggleOverview();
   StartDrag(window1.get(), Shelf::ForWindow(Shell::GetPrimaryRootWindow())
                                ->GetIdealBounds()
@@ -1269,9 +1273,10 @@ TEST_F(DragWindowFromShelfControllerTest,
   auto window2 = CreateTestWindow();
 
   // In splitview mode, the snapped windows will stay visible during dragging.
-  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
-  split_view_controller()->SnapWindow(window2.get(),
-                                      SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(
+      window1.get(), SplitViewController::SnapPosition::kPrimary);
+  split_view_controller()->SnapWindow(
+      window2.get(), SplitViewController::SnapPosition::kSecondary);
 
   // Try to drag a left snapped window from shelf, but finally restore to
   // original bounds.
@@ -1281,7 +1286,7 @@ TEST_F(DragWindowFromShelfControllerTest,
   // Ensure that the window still keep its initial snap position.
   EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window1.get()));
   EXPECT_EQ(split_view_controller()->GetPositionOfSnappedWindow(window1.get()),
-            SplitViewController::LEFT);
+            SplitViewController::SnapPosition::kPrimary);
   // Try to drag a right snapped window from shelf, and finally drop to
   // overview.
   StartDrag(window2.get(), shelf_bounds.right_center());
@@ -1302,9 +1307,11 @@ TEST_F(DragWindowFromShelfControllerTest,
   // Ensure that the left window still keep snapped.
   EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window1.get()));
   EXPECT_EQ(split_view_controller()->GetPositionOfSnappedWindow(window1.get()),
-            SplitViewController::LEFT);
-  // Ensure that the right window is still in the overview.
+            SplitViewController::SnapPosition::kPrimary);
+  // Ensure that the right window is still in the overview, and doesn't get
+  // minimized.
   EXPECT_FALSE(split_view_controller()->IsWindowInSplitView(window2.get()));
+  EXPECT_FALSE(WindowState::Get(window2.get())->IsMinimized());
   EXPECT_TRUE(overview_session->IsWindowInOverview(window2.get()));
 }
 
@@ -1446,7 +1453,8 @@ TEST_F(DragWindowFromShelfControllerTest,
 
   // Create a window and snapped to the left in split screen.
   auto window = CreateTestWindow();
-  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(
+      window.get(), SplitViewController::SnapPosition::kPrimary);
 
   // Try to drag the window from shelf.
   StartDrag(window.get(), shelf_bounds.left_center());

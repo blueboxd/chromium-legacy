@@ -1,5 +1,5 @@
 #!/usr/bin/env vpython3
-# Copyright 2021 The Chromium Authors.  All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,11 +13,9 @@ import subprocess
 import sys
 import logging
 
+
 third_party_dir = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from compile_src import compile_src_for_node
-
 
 def check_or_write_file(filepath, content, check):
     if check:

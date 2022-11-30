@@ -54,6 +54,8 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/resources/grit/blink_image_resources.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_canvas_high_dynamic_range_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_canvas_smpte_st_2086_metadata.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_encode_options.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
@@ -121,14 +123,14 @@ namespace {
 // This feature will only take effect if `kTwoCopyCanvasCapture` is also
 // enabled.
 // TODO(https://crbug.com/1298812): Investigate why this fails on Windows.
-const base::Feature kOneCopyCanvasCapture {
-  "OneCopyCanvasCapture",
-#if BUILDFLAG(IS_MAC)
-      base::FEATURE_ENABLED_BY_DEFAULT
+BASE_FEATURE(kOneCopyCanvasCapture,
+             "OneCopyCanvasCapture",
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
+             base::FEATURE_ENABLED_BY_DEFAULT
 #else
-      base::FEATURE_DISABLED_BY_DEFAULT
+             base::FEATURE_DISABLED_BY_DEFAULT
 #endif
-};
+);
 
 // These values come from the WhatWG spec.
 constexpr int kDefaultCanvasWidth = 300;
@@ -440,8 +442,37 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
 void HTMLCanvasElement::configureHighDynamicRange(
     const CanvasHighDynamicRangeOptions* options,
     ExceptionState& exception_state) {
-  // TODO(https://crbug.com/1274220): Implement this.
-  NOTIMPLEMENTED();
+  absl::optional<gfx::HDRMetadata> hdr_metadata;
+  if (options->hasSmpteSt2086Metadata()) {
+    hdr_metadata = gfx::HDRMetadata();
+    auto& color_volume_metadata = hdr_metadata->color_volume_metadata;
+    const auto* v8_metadata = options->smpteSt2086Metadata();
+    color_volume_metadata.primary_r.set_x(v8_metadata->redPrimaryX());
+    color_volume_metadata.primary_r.set_y(v8_metadata->redPrimaryY());
+    color_volume_metadata.primary_g.set_x(v8_metadata->greenPrimaryX());
+    color_volume_metadata.primary_g.set_y(v8_metadata->greenPrimaryY());
+    color_volume_metadata.primary_b.set_x(v8_metadata->bluePrimaryX());
+    color_volume_metadata.primary_b.set_y(v8_metadata->bluePrimaryY());
+    color_volume_metadata.white_point.set_x(v8_metadata->whitePointX());
+    color_volume_metadata.white_point.set_y(v8_metadata->whitePointY());
+    color_volume_metadata.luminance_min = v8_metadata->minimumLuminance();
+    color_volume_metadata.luminance_max = v8_metadata->maximumLuminance();
+  }
+
+  if (IsOffscreenCanvasRegistered()) {
+    // TODO(https://crbug.com/1274220): Implement HDR support for offscreen
+    // canvas.
+    NOTIMPLEMENTED();
+  }
+
+  CanvasResourceHost::SetHDRMetadata(hdr_metadata);
+  if (context_ && (IsWebGL() || IsWebGPU())) {
+    // TODO(https://crbug.com/1274220): Implement HDR support for WebGL and
+    // WebGPU.
+    NOTIMPLEMENTED();
+  } else if (canvas2d_bridge_) {
+    canvas2d_bridge_->SetHDRMetadata(hdr_metadata);
+  }
 }
 
 ScriptPromise HTMLCanvasElement::convertToBlob(
@@ -653,14 +684,14 @@ void HTMLCanvasElement::Reset() {
 
   unsigned w = 0;
   AtomicString value = FastGetAttribute(html_names::kWidthAttr);
-  if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, w) ||
+  if (value.empty() || !ParseHTMLNonNegativeInteger(value, w) ||
       w > 0x7fffffffu) {
     w = kDefaultCanvasWidth;
   }
 
   unsigned h = 0;
   value = FastGetAttribute(html_names::kHeightAttr);
-  if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, h) ||
+  if (value.empty() || !ParseHTMLNonNegativeInteger(value, h) ||
       h > 0x7fffffffu) {
     h = kDefaultCanvasHeight;
   }
@@ -832,10 +863,10 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
     Image* broken_canvas = broken_canvas_and_image_scale_factor.first;
     context.Save();
     context.FillRect(
-        gfx::RectF(r), Color(),
+        gfx::RectF(r), Color::kWhite,
         PaintAutoDarkMode(ComputedStyleRef(),
                           DarkModeFilter::ElementRole::kBackground),
-        SkBlendMode::kClear);
+        SkBlendMode::kSrc);
     // Place the icon near the upper left, like the missing image icon
     // for image elements. Offset it a bit from the upper corner.
     gfx::SizeF icon_size(broken_canvas->Size());
@@ -1101,8 +1132,8 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
     GetDocument()
         .GetTaskRunner(TaskType::kCanvasBlobSerialization)
         ->PostTask(FROM_HERE,
-                   WTF::Bind(&V8BlobCallback::InvokeAndReportException,
-                             WrapPersistent(callback), nullptr, nullptr));
+                   WTF::BindOnce(&V8BlobCallback::InvokeAndReportException,
+                                 WrapPersistent(callback), nullptr, nullptr));
     return;
   }
 
@@ -1139,8 +1170,8 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
     GetDocument()
         .GetTaskRunner(TaskType::kCanvasBlobSerialization)
         ->PostTask(FROM_HERE,
-                   WTF::Bind(&V8BlobCallback::InvokeAndReportException,
-                             WrapPersistent(callback), nullptr, nullptr));
+                   WTF::BindOnce(&V8BlobCallback::InvokeAndReportException,
+                                 WrapPersistent(callback), nullptr, nullptr));
   }
 }
 
@@ -1642,7 +1673,7 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
     NoAllocDirectCallHost* nadc_host =
         context_ ? context_->AsNoAllocDirectCallHost() : nullptr;
     if (nadc_host) {
-      nadc_host->PostDeferrableAction(WTF::Bind(
+      nadc_host->PostDeferrableAction(WTF::BindOnce(
           [](intptr_t delta_bytes) {
             v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
                 delta_bytes);

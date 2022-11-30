@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,9 @@ BlinkTransferableMessage PortalPostMessageHelper::CreateMessage(
 
   transferable_message.sender_origin =
       execution_context->GetSecurityOrigin()->IsolatedCopy();
+
+  transferable_message.sender_agent_cluster_id =
+      execution_context->GetAgentClusterID();
 
   if (ThreadDebugger* debugger =
           ThreadDebugger::From(script_state->GetIsolate())) {

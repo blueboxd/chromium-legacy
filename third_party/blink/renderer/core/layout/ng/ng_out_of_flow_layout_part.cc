@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -326,9 +326,9 @@ void NGOutOfFlowLayoutPart::HandleFragmentation(
 
 #if DCHECK_IS_ON()
   if (column_balancing_info) {
-    DCHECK(!column_balancing_info->columns.IsEmpty());
-    DCHECK(!column_balancing_info->out_of_flow_fragmentainer_descendants
-                .IsEmpty());
+    DCHECK(!column_balancing_info->columns.empty());
+    DCHECK(
+        !column_balancing_info->out_of_flow_fragmentainer_descendants.empty());
   }
 #endif
   base::AutoReset<ColumnBalancingInfo*> balancing_scope(&column_balancing_info_,
@@ -348,16 +348,16 @@ void NGOutOfFlowLayoutPart::HandleFragmentation(
     if (column_balancing_info_) {
       column_balancing_info_->SwapOutOfFlowFragmentainerDescendants(
           &fragmentainer_descendants);
-      DCHECK(!fragmentainer_descendants.IsEmpty());
+      DCHECK(!fragmentainer_descendants.empty());
     } else {
       HandleMulticolsWithPendingOOFs(container_builder_);
       if (container_builder_->HasOutOfFlowFragmentainerDescendants()) {
         container_builder_->SwapOutOfFlowFragmentainerDescendants(
             &fragmentainer_descendants);
-        DCHECK(!fragmentainer_descendants.IsEmpty());
+        DCHECK(!fragmentainer_descendants.empty());
       }
     }
-    if (!fragmentainer_descendants.IsEmpty()) {
+    if (!fragmentainer_descendants.empty()) {
       LogicalOffset fragmentainer_progression = GetFragmentainerProgression(
           *container_builder_, GetFragmentainerType());
       LayoutFragmentainerDescendants(&fragmentainer_descendants,
@@ -394,18 +394,17 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
            !node_style.GridRowEnd().IsAuto();
   };
 
-  auto GridAreaContainingBlockInfo =
-      [&](const LayoutNGGrid& containing_grid,
-          const NGGridLayoutData& grid_layout_data, const NGBoxStrut& borders,
-          const LogicalSize& size)
+  auto GridAreaContainingBlockInfo = [&](const LayoutNGGrid& containing_grid,
+                                         const NGGridLayoutData& layout_data,
+                                         const NGBoxStrut& borders,
+                                         const LogicalSize& size)
       -> NGOutOfFlowLayoutPart::ContainingBlockInfo {
     const auto& grid_style = containing_grid.StyleRef();
-    const auto& placement_data = containing_grid.CachedPlacementData();
-
     GridItemData grid_item(candidate.Node(), grid_style);
+
     return {grid_style.GetWritingDirection(),
             NGGridLayoutAlgorithm::ComputeOutOfFlowItemContainingRect(
-                NGGridPlacement(grid_style, placement_data), grid_layout_data,
+                containing_grid.CachedPlacementData(), layout_data, grid_style,
                 borders, size, &grid_item)};
   };
 
@@ -809,9 +808,9 @@ void NGOutOfFlowLayoutPart::HandleMulticolsWithPendingOOFs(
 
   NGContainerFragmentBuilder::MulticolCollection multicols_with_pending_oofs;
   container_builder->SwapMulticolsWithPendingOOFs(&multicols_with_pending_oofs);
-  DCHECK(!multicols_with_pending_oofs.IsEmpty());
+  DCHECK(!multicols_with_pending_oofs.empty());
 
-  while (!multicols_with_pending_oofs.IsEmpty()) {
+  while (!multicols_with_pending_oofs.empty()) {
     for (auto& multicol : multicols_with_pending_oofs)
       LayoutOOFsInMulticol(NGBlockNode(multicol.key), multicol.value);
     multicols_with_pending_oofs.clear();
@@ -930,7 +929,7 @@ void NGOutOfFlowLayoutPart::LayoutOOFsInMulticol(
     for (const auto& descendant :
          NGFragmentedOutOfFlowData::OutOfFlowPositionedFragmentainerDescendants(
              *multicol_box_fragment)) {
-      if (oof_nodes_to_layout.IsEmpty() &&
+      if (oof_nodes_to_layout.empty() &&
           multicol_info->fixedpos_containing_block.Fragment() &&
           previous_multicol_break_token) {
         // At this point, the multicol offset is the offset from the fixedpos
@@ -1012,7 +1011,7 @@ void NGOutOfFlowLayoutPart::LayoutOOFsInMulticol(
   // remove any such OOF nodes from the nearest multicol's list of OOF
   // descendants during OOF node propagation, which may cause
   // |oof_nodes_to_layout| to be empty. Return early if this is the case.
-  if (oof_nodes_to_layout.IsEmpty())
+  if (oof_nodes_to_layout.empty())
     return;
 
   DCHECK(!limited_multicol_container_builder
@@ -1028,6 +1027,8 @@ void NGOutOfFlowLayoutPart::LayoutOOFsInMulticol(
   NGOutOfFlowLayoutPart inner_part(multicol, limited_multicol_constraint_space,
                                    &limited_multicol_container_builder);
   inner_part.allow_first_tier_oof_cache_ = false;
+  inner_part.outer_container_builder_ =
+      outer_container_builder_ ? outer_container_builder_ : container_builder_;
   inner_part.LayoutFragmentainerDescendants(
       &oof_nodes_to_layout, fragmentainer_progression,
       multicol_info->fixedpos_containing_block.Fragment(), &multicol_children);
@@ -1133,9 +1134,24 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
           .block_size;
 
   NGLogicalAnchorQueryForFragmentation stitched_anchor_queries;
-  stitched_anchor_queries.Update(container_builder_->Children(), *descendants,
-                                 *container_builder_->Node().GetLayoutBox(),
-                                 container_builder_->GetWritingDirection());
+  NGBoxFragmentBuilder* builder_for_anchor_query = container_builder_;
+  if (outer_container_builder_) {
+    // If this is an inner layout of the nested block fragmentation, and if this
+    // block fragmentation context is block fragmented, |multicol_children|
+    // doesn't have correct block offsets of fragmentainers anchor query needs.
+    // Calculate the anchor query from the outer block fragmentation context
+    // instead in order to get the correct offsets.
+    for (const MulticolChildInfo& multicol_child : *multicol_children) {
+      if (multicol_child.parent_break_token) {
+        builder_for_anchor_query = outer_container_builder_;
+        break;
+      }
+    }
+  }
+  stitched_anchor_queries.Update(
+      builder_for_anchor_query->Children(), *descendants,
+      *builder_for_anchor_query->Node().GetLayoutBox(),
+      builder_for_anchor_query->GetWritingDirection());
 
   // |descendants| are sorted by fragmentainers, and then by the layout order,
   // which is pre-order of the box tree. When fragments are pushed to later
@@ -1163,7 +1179,9 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
       // The CSS containing block of the last descendant, to group |descendants|
       // by the CSS containing block.
       const LayoutObject* last_css_containing_block = nullptr;
-      const NGLogicalAnchorQuery* stitched_anchor_query = nullptr;
+      const NGLogicalAnchorQuery* stitched_anchor_query =
+          &NGLogicalAnchorQuery::Empty();
+      DCHECK(stitched_anchor_query);
 
       // Sort the descendants by fragmentainer index in |descendants_to_layout|.
       // This will ensure that the descendants are laid out in the correct
@@ -1196,6 +1214,7 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
         //
         // Note |descendant.containing_block.fragment| is |ContainingBlock|, not
         // the CSS containing block.
+        DCHECK(stitched_anchor_query);
         if (stitched_anchor_queries.ShouldLayoutByContainingBlock()) {
           const LayoutObject* css_containing_block =
               descendant.box->Container();
@@ -1205,7 +1224,7 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
             // if it has anchor query, for the performance reasons to minimize
             // the number of rebuilding fragmentainer fragments.
             if (last_css_containing_block &&
-                (stitched_anchor_query ||
+                (!stitched_anchor_query->IsEmpty() ||
                  stitched_anchor_queries.HasAnchorsOnOutOfFlowObjects())) {
               has_new_descendants_span = true;
               descendants_span = descendants_span.subspan(
@@ -1213,8 +1232,10 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
               break;
             }
             last_css_containing_block = css_containing_block;
-            stitched_anchor_query = stitched_anchor_queries.StitchedAnchorQuery(
-                *css_containing_block);
+            stitched_anchor_query =
+                &stitched_anchor_queries.StitchedAnchorQuery(
+                    *css_containing_block);
+            DCHECK(stitched_anchor_query);
           }
         }
 
@@ -1286,7 +1307,7 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
         // fragmentainer at an index that does not yet exist in
         // |descendants_to_layout|.
         if (index == descendants_to_layout.size() - 1 &&
-            !fragmented_descendants.IsEmpty())
+            !fragmented_descendants.empty())
           descendants_to_layout.resize(index + 2);
       }
       descendants_to_layout.Shrink(0);
@@ -1296,10 +1317,10 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
       // containing block.
       if (!has_new_descendants_span)
         break;
-      stitched_anchor_queries.Update(container_builder_->Children(),
-                                     descendants_span,
-                                     *container_builder_->Node().GetLayoutBox(),
-                                     container_builder_->GetWritingDirection());
+      stitched_anchor_queries.Update(
+          builder_for_anchor_query->Children(), descendants_span,
+          *builder_for_anchor_query->Node().GetLayoutBox(),
+          builder_for_anchor_query->GetWritingDirection());
     }
 
     // Sweep any descendants that might have been bubbled up from the fragment
@@ -1438,10 +1459,14 @@ const NGLayoutResult* NGOutOfFlowLayoutPart::LayoutOOFNode(
     WritingDirectionMode writing_mode_direction =
         node_info.node.Style().GetWritingDirection();
     bool freeze_horizontal = false, freeze_vertical = false;
+    bool ignore_first_inline_freeze =
+        scrollbars_after.InlineSum() && scrollbars_after.BlockSum();
     // If we're in a measure pass, freeze both scrollbars right away, to avoid
     // quadratic time complexity for deeply nested flexboxes.
-    if (ConstraintSpace().CacheSlot() == NGCacheSlot::kMeasure)
+    if (ConstraintSpace().CacheSlot() == NGCacheSlot::kMeasure) {
       freeze_horizontal = freeze_vertical = true;
+      ignore_first_inline_freeze = false;
+    }
     do {
       // Freeze any scrollbars that appeared, and relayout. Repeat until both
       // have appeared, or until the scrollbar situation doesn't change,
@@ -1449,6 +1474,16 @@ const NGLayoutResult* NGOutOfFlowLayoutPart::LayoutOOFNode(
       AddScrollbarFreeze(scrollbars_before, scrollbars_after,
                          writing_mode_direction, &freeze_horizontal,
                          &freeze_vertical);
+      if (ignore_first_inline_freeze) {
+        ignore_first_inline_freeze = false;
+        // We allow to remove the inline-direction scrollbar only once
+        // because the box might have unnecessary scrollbar due to
+        // SetIsFixedInlineSize(true).
+        if (writing_mode_direction.IsHorizontal())
+          freeze_horizontal = false;
+        else
+          freeze_vertical = false;
+      }
       scrollbars_before = scrollbars_after;
       PaintLayerScrollableArea::FreezeScrollbarsRootScope freezer(
           *node_info.node.GetLayoutBox(), freeze_horizontal, freeze_vertical);
@@ -1862,7 +1897,7 @@ void NGOutOfFlowLayoutPart::LayoutOOFsInFragmentainer(
   // no OOF children to be added, we will still need to add an empty
   // fragmentainer in its place. Otherwise, return early since there is no work
   // to do.
-  if (pending_descendants.IsEmpty() && descendants_continued.IsEmpty() &&
+  if (pending_descendants.empty() && descendants_continued.empty() &&
       !is_new_fragment)
     return;
 
@@ -1924,7 +1959,7 @@ void NGOutOfFlowLayoutPart::LayoutOOFsInFragmentainer(
 
     if (container_builder_->Node().IsPaginatedRoot() &&
         !is_known_to_have_more_fragmentainers &&
-        !fragmented_descendants->IsEmpty()) {
+        !fragmented_descendants->empty()) {
       // This will be the last fragmentainer, unless we have regular
       // (i.e. non-repeated) out-of-flow positioned elements that fragmented.
       bool has_descendant_with_break = false;

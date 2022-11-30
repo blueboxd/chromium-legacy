@@ -4,9 +4,22 @@
 
 #include "base/power_monitor/battery_level_provider.h"
 
+#include "base/power_monitor/power_monitor_buildflags.h"
 #include "base/ranges/algorithm.h"
 
 namespace base {
+
+#if !BUILDFLAG(HAS_BATTERY_LEVEL_PROVIDER_IMPL)
+std::unique_ptr<BatteryLevelProvider> BatteryLevelProvider::Create() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // TODO(crbug.com/1373560): ChromeOS doesn't define
+  // `HAS_BATTERY_LEVEL_PROVIDER_IMPL` but still supplies its own
+  // `BatteryLevelProvider`
+  NOTREACHED();
+#endif
+  return nullptr;
+}
+#endif
 
 BatteryLevelProvider::BatteryState BatteryLevelProvider::MakeBatteryState(
     const std::vector<BatteryDetails>& battery_details) {
@@ -18,18 +31,16 @@ BatteryLevelProvider::BatteryState BatteryLevelProvider::MakeBatteryState(
       base::ranges::any_of(battery_details, [](const BatteryDetails& details) {
         return details.is_external_power_connected;
       });
-  state.current_capacity =
-      battery_details.size() == 1
-          ? absl::make_optional(battery_details.front().current_capacity)
-          : absl::nullopt;
-  state.full_charged_capacity =
-      battery_details.size() == 1
-          ? absl::make_optional(battery_details.front().full_charged_capacity)
-          : absl::nullopt;
-  state.charge_unit =
-      battery_details.size() == 1
-          ? absl::make_optional(battery_details.front().charge_unit)
-          : absl::nullopt;
+
+  // Only populate the following fields if there is one battery detail.
+  if (battery_details.size() == 1) {
+    state.current_capacity =
+        absl::make_optional(battery_details.front().current_capacity);
+    state.full_charged_capacity =
+        absl::make_optional(battery_details.front().full_charged_capacity);
+    state.charge_unit =
+        absl::make_optional(battery_details.front().charge_unit);
+  }
   state.capture_time = base::TimeTicks::Now();
 
   return state;

@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_ACCESSIBILITY_ACCESSIBILITY_FEATURE_POD_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/constants/quick_settings_catalogs.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 
 namespace ash {
@@ -28,8 +29,8 @@ class ASH_EXPORT AccessibilityFeaturePodController
 
   // FeaturePodControllerBase:
   FeaturePodButton* CreateButton() override;
+  QsFeatureCatalogName GetCatalogName() override;
   void OnIconPressed() override;
-  SystemTrayItemUmaType GetUmaType() const override;
 
  private:
   // Unowned.

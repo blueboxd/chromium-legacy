@@ -399,10 +399,10 @@ void V4L2VideoEncodeAccelerator::InitializeTask(const Config& config) {
   // Notify VideoEncoderInfo after initialization.
   VideoEncoderInfo encoder_info;
   encoder_info.implementation_name = "V4L2VideoEncodeAccelerator";
-  encoder_info.has_trusted_rate_controller = true;
-  encoder_info.is_hardware_accelerated = true;
-  encoder_info.supports_native_handle = true;
-  encoder_info.supports_simulcast = false;
+  DCHECK(!encoder_info.has_trusted_rate_controller);
+  DCHECK(encoder_info.is_hardware_accelerated);
+  DCHECK(encoder_info.supports_native_handle);
+  DCHECK(!encoder_info.supports_simulcast);
 
   // V4L2VideoEncodeAccelerator doesn't support either temporal-SVC or
   // spatial-SVC. A single stream shall be output at the desired FPS.
@@ -1171,8 +1171,14 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
     DCHECK(!output_queue_->IsStreaming() && !input_queue_->IsStreaming());
     // When VIDIOC_STREAMON can be executed in OUTPUT queue, it is fine to call
     // STREAMON in CAPTURE queue.
-    output_queue_->Streamon();
-    input_queue_->Streamon();
+    if (!output_queue_->Streamon()) {
+      NOTIFY_ERROR(kPlatformFailureError);
+      return;
+    }
+    if (!input_queue_->Streamon()) {
+      NOTIFY_ERROR(kPlatformFailureError);
+      return;
+    }
   }
 }
 
@@ -1400,13 +1406,22 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord(
             reinterpret_cast<std::intptr_t>(frame->data(0));
         user_ptrs[i] = writable_buffer.data() + plane_offset;
       }
-      std::move(input_buf).QueueUserPtr(std::move(user_ptrs));
+
+      if (!std::move(input_buf).QueueUserPtr(std::move(user_ptrs))) {
+        VPLOGF(1) << "Failed to queue a USRPTR buffer to input queue";
+        NOTIFY_ERROR(kPlatformFailureError);
+        return false;
+      }
       frame->AddDestructionObserver(base::BindOnce([](std::vector<uint8_t>) {},
                                                    std::move(writable_buffer)));
       break;
     }
     case V4L2_MEMORY_DMABUF: {
-      std::move(input_buf).QueueDMABuf(gmb_handle.native_pixmap_handle.planes);
+      if (!std::move(input_buf).QueueDMABuf(
+              gmb_handle.native_pixmap_handle.planes)) {
+        VPLOGF(1) << "Failed queue a DMABUF buffer to input queue";
+        return false;
+      }
       // Keep |gmb_handle| alive as long as |frame| is alive so that fds passed
       // to the driver are valid during encoding.
       frame->AddDestructionObserver(base::BindOnce(
@@ -1999,7 +2014,9 @@ void V4L2VideoEncodeAccelerator::DestroyInputBuffers() {
     return;
 
   DCHECK(!input_queue_->IsStreaming());
-  input_queue_->DeallocateBuffers();
+  if (!input_queue_->DeallocateBuffers())
+    VLOGF(1) << "Failed to deallocate V4L2 input buffers";
+
   input_buffer_map_.clear();
 }
 
@@ -2011,7 +2028,8 @@ void V4L2VideoEncodeAccelerator::DestroyOutputBuffers() {
     return;
 
   DCHECK(!output_queue_->IsStreaming());
-  output_queue_->DeallocateBuffers();
+  if (!output_queue_->DeallocateBuffers())
+    VLOGF(1) << "Failed to deallocate V4L2 output buffers";
 }
 
 }  // namespace media

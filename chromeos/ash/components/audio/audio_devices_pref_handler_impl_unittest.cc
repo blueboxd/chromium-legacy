@@ -116,27 +116,27 @@ class AudioDevicesPrefHandlerTest : public testing::TestWithParam<bool> {
     // are set when pref value sets up its internal state.
     std::string preset_key = GetPresetDeviceDeprecatedPrefKey();
     {
-      DictionaryPrefUpdate update(pref_service_.get(),
+      ScopedDictPrefUpdate update(pref_service_.get(),
                                   prefs::kAudioDevicesState);
-      base::Value* pref = update.Get();
-      base::Value state(base::Value::Type::DICTIONARY);
-      state.SetBoolKey("active", kPresetState.active);
-      state.SetBoolKey("activate_by_user", kPresetState.activate_by_user);
-      pref->SetKey(preset_key, std::move(state));
+      base::Value::Dict& pref = update.Get();
+      base::Value::Dict state;
+      state.Set("active", kPresetState.active);
+      state.Set("activate_by_user", kPresetState.activate_by_user);
+      pref.Set(preset_key, std::move(state));
     }
 
     {
-      DictionaryPrefUpdate update(pref_service_.get(),
+      ScopedDictPrefUpdate update(pref_service_.get(),
                                   prefs::kAudioDevicesVolumePercent);
-      base::Value* pref = update.Get();
-      pref->SetDoubleKey(preset_key, kPresetState.sound_level);
+      base::Value::Dict& pref = update.Get();
+      pref.Set(preset_key, kPresetState.sound_level);
     }
 
     {
-      DictionaryPrefUpdate update(pref_service_.get(),
+      ScopedDictPrefUpdate update(pref_service_.get(),
                                   prefs::kAudioDevicesMute);
-      base::Value* pref = update.Get();
-      pref->SetIntKey(preset_key, static_cast<int>(kPresetState.mute));
+      base::Value::Dict& pref = update.Get();
+      pref.Set(preset_key, static_cast<int>(kPresetState.mute));
     }
 
     audio_pref_handler_ = new AudioDevicesPrefHandlerImpl(pref_service_.get());
@@ -177,6 +177,10 @@ class AudioDevicesPrefHandlerTest : public testing::TestWithParam<bool> {
   double GetSoundLevelValue(const AudioDevice& device) {
     return IsInputTest() ? audio_pref_handler_->GetInputGainValue(&device)
                          : audio_pref_handler_->GetOutputVolumeValue(&device);
+  }
+
+  double GetUserPriority(const AudioDevice& device) {
+    return audio_pref_handler_->GetUserPriority(device);
   }
 
   void SetSoundLevelValue(const AudioDevice& device, double value) {
@@ -243,6 +247,9 @@ TEST_P(AudioDevicesPrefHandlerTest, TestDefaultValuesV1) {
 
   EXPECT_FALSE(GetMute(device));
   EXPECT_FALSE(GetMute(secondary_device));
+
+  EXPECT_EQ(0, GetUserPriority(device));
+  EXPECT_EQ(0, GetUserPriority(secondary_device));
 }
 
 TEST_P(AudioDevicesPrefHandlerTest, TestDefaultValuesV2) {
@@ -259,6 +266,9 @@ TEST_P(AudioDevicesPrefHandlerTest, TestDefaultValuesV2) {
 
   EXPECT_FALSE(GetMute(device));
   EXPECT_FALSE(GetMute(secondary_device));
+
+  EXPECT_EQ(0, GetUserPriority(device));
+  EXPECT_EQ(0, GetUserPriority(secondary_device));
 }
 
 TEST_P(AudioDevicesPrefHandlerTest, PrefsRegistered) {
@@ -269,6 +279,10 @@ TEST_P(AudioDevicesPrefHandlerTest, PrefsRegistered) {
   EXPECT_TRUE(pref_service_->FindPreference(prefs::kAudioVolumePercent));
   EXPECT_TRUE(pref_service_->FindPreference(prefs::kAudioMute));
   EXPECT_TRUE(pref_service_->FindPreference(prefs::kAudioDevicesState));
+  EXPECT_TRUE(
+      pref_service_->FindPreference(prefs::kAudioInputDevicesUserPriority));
+  EXPECT_TRUE(
+      pref_service_->FindPreference(prefs::kAudioOutputDevicesUserPriority));
 }
 
 TEST_P(AudioDevicesPrefHandlerTest, SoundLevel) {
@@ -461,6 +475,37 @@ TEST_P(AudioDevicesPrefHandlerTest, InputNoiseCancellationPrefRegistered) {
   EXPECT_FALSE(audio_pref_handler_->GetNoiseCancellationState());
   audio_pref_handler_->SetNoiseCancellationState(true);
   EXPECT_TRUE(audio_pref_handler_->GetNoiseCancellationState());
+}
+
+TEST_P(AudioDevicesPrefHandlerTest, UserPriority) {
+  AudioDevice device = GetDeviceWithVersion(2);
+  EXPECT_EQ(kUserPriorityNone, GetUserPriority(device));
+
+  AudioDevice device2 = GetSecondaryDeviceWithVersion(2);
+  audio_pref_handler_->SetUserPriorityHigherThan(device2, device);
+  EXPECT_EQ(kUserPriorityNone, GetUserPriority(device));
+  EXPECT_EQ(kUserPriorityMin, GetUserPriority(device2));
+
+  audio_pref_handler_->SetUserPriorityHigherThan(device, device2);
+  EXPECT_EQ(2, GetUserPriority(device));
+  EXPECT_EQ(kUserPriorityMin, GetUserPriority(device2));
+
+  AudioDevice device3 = GetDeviceWithSpecialCharactersWithVersion(2);
+
+  audio_pref_handler_->SetUserPriorityHigherThan(device3, device2);
+  EXPECT_EQ(2, GetUserPriority(device3));
+  EXPECT_EQ(3, GetUserPriority(device));
+  EXPECT_EQ(kUserPriorityMin, GetUserPriority(device2));
+
+  audio_pref_handler_->SetUserPriorityHigherThan(device, device3);
+  EXPECT_EQ(2, GetUserPriority(device3));
+  EXPECT_EQ(3, GetUserPriority(device));
+  EXPECT_EQ(kUserPriorityMin, GetUserPriority(device2));
+
+  audio_pref_handler_->SetUserPriorityHigherThan(device3, device);
+  EXPECT_EQ(3, GetUserPriority(device3));
+  EXPECT_EQ(2, GetUserPriority(device));
+  EXPECT_EQ(kUserPriorityMin, GetUserPriority(device2));
 }
 
 }  // namespace ash

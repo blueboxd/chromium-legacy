@@ -241,6 +241,12 @@ public class AccessibilityNodeInfoUtils {
                     || action.equals(ACTION_CONTEXT_CLICK)) {
                 continue;
             }
+            // Scroll actions are dependent on screen size, so ignore them to reduce flakiness
+            if (action.equals(ACTION_SCROLL_FORWARD) || action.equals(ACTION_SCROLL_BACKWARD)
+                    || action.equals(ACTION_SCROLL_DOWN) || action.equals(ACTION_SCROLL_UP)
+                    || action.equals(ACTION_SCROLL_RIGHT) || action.equals(ACTION_SCROLL_LEFT)) {
+                continue;
+            }
 
             actionStrings.add(toString(action.getId()));
         }
@@ -352,8 +358,8 @@ public class AccessibilityNodeInfoUtils {
                 continue;
             }
 
-            // Exclude css display for now
-            // TODO: remove this exclusion and update tests
+            // CSS Display is very noisy and currently unused, so we exclude it here because we
+            // don't have a way to filter it for certain tests.
             if (key.equals(EXTRAS_KEY_CSS_DISPLAY)) {
                 continue;
             }

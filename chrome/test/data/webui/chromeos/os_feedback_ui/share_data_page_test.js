@@ -12,11 +12,12 @@ import {FeedbackAppPreSubmitAction, FeedbackContext} from 'chrome://os-feedback/
 import {setFeedbackServiceProviderForTesting} from 'chrome://os-feedback/mojo_interface_provider.js';
 import {ShareDataPageElement} from 'chrome://os-feedback/share_data_page.js';
 import {mojoString16ToString, stringToMojoString16} from 'chrome://resources/ash/common/mojo_utils.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {assertArrayEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
-import {eventToPromise, flushTasks, isVisible} from '../../test_util.js';
+import {eventToPromise, isVisible} from '../../test_util.js';
 
 /** @type {string} */
 const fakeImageUrl = 'chrome://os_feedback/app_icon_48.png';
@@ -176,6 +177,12 @@ export function shareDataPageTestSuite() {
     // System info label is a localized string in HTML format.
     assertTrue(getElementContent('#sysInfoCheckboxLabel').length > 0);
 
+    // Performance trace label is a localized string in HTML format.
+    assertTrue(getElementContent('#performanceTraceCheckboxLabel').length > 0);
+
+    // Performance trace label is a localized string in HTML format.
+    assertTrue(getElementContent('#performanceTraceCheckboxLabel').length > 0);
+
     // Privacy note is a long localized string in HTML format.
     assertTrue(page.i18nExists('privacyNote'));
     assertEquals(
@@ -242,6 +249,39 @@ export function shareDataPageTestSuite() {
 
     // Change it back otherwise it will effect other tests.
     fakeFeedbackContext.pageUrl.url = 'chrome://tab/';
+  });
+
+  // Test that the performanceTraceContainer section is hidden when the trace id
+  // is zero.
+  test('performanceTraceContainerHidden', async () => {
+    await initializePage();
+    // Trace id will be zero in this context.
+    page.feedbackContext = fakeEmptyFeedbackContext;
+
+    // The performanceTraceContainer section should be hidden
+    const performanceTraceContainer = getElement('#performanceTraceContainer');
+    assertTrue(!!performanceTraceContainer);
+    assertFalse(isVisible(performanceTraceContainer));
+
+    // Now use the context with a non-zero trace id.
+    page.feedbackContext = fakeFeedbackContext;
+    // The performanceTraceContainer section should be visible
+    assertTrue(isVisible(performanceTraceContainer));
+  });
+
+  // Test clicking performanceTraceLink link.
+  test('performanceTraceLink', async () => {
+    await initializePage();
+
+    // Set up performance trace id.
+    page.feedbackContext = fakeFeedbackContext;
+
+    const link = getElement('#performanceTraceLink');
+
+    assertEquals('_blank', link.getAttribute('target'));
+    // Performance trace id is the last number in the URL, which is 1.
+    assertEquals(
+        'chrome://slow_trace/tracing.zip#1', link.getAttribute('href'));
   });
 
   /**
@@ -367,6 +407,112 @@ export function shareDataPageTestSuite() {
 
     assertFalse(!!request.feedbackContext.email);
     assertFalse(request.includeScreenshot);
+  });
+
+  /**
+   * Test that when the send button is clicked, an on-continue is fired.
+   * Case 5: Send performance trace id.
+   */
+  test('SendPerformanceTraceId', async () => {
+    await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
+
+    getElement('#performanceTraceCheckbox').checked = true;
+
+    const report = (await clickSendAndWait(page)).report;
+
+    assertEquals(fakeFeedbackContext.traceId, report.feedbackContext.traceId);
+  });
+
+  /**
+   * Test that when the send button is clicked, an on-continue is fired.
+   * Case 6: Don't send performance trace id.
+   */
+  test('DontSendPerformanceTraceId', async () => {
+    await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
+
+    getElement('#performanceTraceCheckbox').checked = false;
+
+    const report = (await clickSendAndWait(page)).report;
+
+    assertEquals(0, report.feedbackContext.traceId);
+  });
+
+  /**
+   * Test that when the send button is clicked, an on-continue is fired.
+   * Case 7: Report won't have assistant log flags if isInternalAccount
+   * and fromAssistant flag in feedbackContext is false.
+   */
+  test('ReportWillNotHaveAssistantLogIfFromAssistantSetFalse', async () => {
+    await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
+
+    // The report should not have assistant logs by default.
+    getElement('#assistantLogsContainer').hidden = true;
+    assertTrue(getElement('#assiatantLogsCheckbox').checked);
+    const report = (await clickSendAndWait(page)).report;
+
+    assertFalse(report.feedbackContext.assistantDebugInfoAllowed);
+    assertFalse(report.feedbackContext.fromAssistant);
+  });
+
+  /**
+   * Test that when the send button is clicked, an on-continue is fired.
+   * Case 8: Send assistant log if assistant log checkbox is checked,
+   * the report should show assistant Debug Info allowed.
+   */
+  test('SendAssistantLogWithReport', async () => {
+    await initializePage();
+    page.feedbackContext = fakeInternalUserFeedbackContext;
+
+    assertTrue(!!getElement('#assistantLogsContainer'));
+    getElement('#assistantLogsContainer').hidden = false;
+    getElement('#assiatantLogsCheckbox').checked = true;
+
+    const report = (await clickSendAndWait(page)).report;
+    assertTrue(report.feedbackContext.assistantDebugInfoAllowed);
+    assertTrue(report.feedbackContext.fromAssistant);
+  });
+
+  /**
+   * Test that when the send button is clicked, an on-continue is fired.
+   * Case 9: Don't include assistant log if assistant log checkbox is unchecked,
+   * the report should show assistant Debug Info not allowed.
+   */
+  test('SendAssistantLogWithReport', async () => {
+    await initializePage();
+    page.feedbackContext = fakeInternalUserFeedbackContext;
+
+    assertTrue(!!getElement('#assistantLogsContainer'));
+    getElement('#assistantLogsContainer').hidden = false;
+
+    // Uncheck the assistant logs checkbox.
+    getElement('#assiatantLogsCheckbox').checked = false;
+
+    const report = (await clickSendAndWait(page)).report;
+
+    assertFalse(report.feedbackContext.assistantDebugInfoAllowed);
+    assertTrue(report.feedbackContext.fromAssistant);
+  });
+
+  /**
+   * Case 10: Test when user using internal account but feedback is not called
+   * from Assistant, and the report should not have fromAssistant and
+   * assistantDebugInfoAllowed flags set true.
+   */
+  test('SendReportWithInternalAccountButNotFromAssistant', async () => {
+    await initializePage();
+    page.feedbackContext = fakeInternalUserFeedbackContext;
+    page.feedbackContext.fromAssistant = false;
+
+    assertTrue(isVisible(getElement('#assistantLogsContainer')));
+    assertTrue(getElement('#assiatantLogsCheckbox').checked);
+
+    const report = (await clickSendAndWait(page)).report;
+
+    assertFalse(report.feedbackContext.assistantDebugInfoAllowed);
+    assertFalse(report.feedbackContext.fromAssistant);
   });
 
   // Test that the send button will be disabled once clicked.
@@ -673,19 +819,59 @@ export function shareDataPageTestSuite() {
   });
 
   /**
-   * Test that feedbackServiceProvider.openBluetoothLogsInfoDialog is called
-   * when #bluetoothLogsLink link is clicked.
+   * Test that clicking the #bluetoothLogsLink will open the dialog and set the
+   * focus on the close dialog icon button.
    */
-  test('openBluetoothLogsInfoDialog', async () => {
+  test('openBluetoothLogsDialog', async () => {
     await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
 
-    assertEquals(
-        0, feedbackServiceProvider.getOpenBluetoothLogsInfoDialogCallCount());
+    // The bluetooth dialog is not visible as default.
+    const closeDialogButton = getElement('#bluetoothDialogDoneButton');
+    assertFalse(isVisible(closeDialogButton));
 
+    // After clicking the #bluetoothLogsLink, the dialog pops up.
     getElement('#bluetoothLogsInfoLink').click();
+    assertTrue(isVisible(closeDialogButton));
 
-    assertEquals(
-        1, feedbackServiceProvider.getOpenBluetoothLogsInfoDialogCallCount());
+    // The preview dialog's close icon button is focused.
+    assertEquals(closeDialogButton, getDeepActiveElement());
+
+    // Press enter should close the preview dialog.
+    closeDialogButton.dispatchEvent(
+        new KeyboardEvent('keydown', {key: 'Enter'}));
+    await flushTasks();
+
+    // The preview dialog's close icon button is not visible now.
+    assertFalse(isVisible(closeDialogButton));
+  });
+
+  /**
+   * Test that clicking the #assistantLogsLink will open the dialog and set the
+   * focus on the close dialog icon button.
+   */
+  test('openAssistantLogsDialog', async () => {
+    await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
+
+    // The assistant dialog is not visible as default.
+    const closeDialogButton = getElement('#assistantDialogDoneButton');
+    assertFalse(isVisible(closeDialogButton));
+
+    // After clicking the #bluetoothLogsLink, the dialog pops up.
+    getElement('#assistantLogsLink').click();
+    assertTrue(isVisible(closeDialogButton));
+
+    // The preview dialog's close icon button is focused.
+    assertEquals(closeDialogButton, getDeepActiveElement());
+
+    // Press enter should close the preview dialog.
+    closeDialogButton.dispatchEvent(
+        new KeyboardEvent('keydown', {key: 'Enter'}));
+    await flushTasks();
+
+    // The preview dialog's close icon button is not visible now.
+    assertFalse(isVisible(closeDialogButton));
   });
 
   /**

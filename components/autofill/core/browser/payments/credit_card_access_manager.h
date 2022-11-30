@@ -373,6 +373,14 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // of authentication method.
   void ShowUnmaskAuthenticatorSelectionDialog();
 
+  // `record_type` is the credit card record type of the card we are about to
+  // unmask. This function returns true if we should log server card unmask
+  // attempt metrics for `record_type`, and false otherwise. These metrics are
+  // logged if we are attempting to unmask a card that has its information
+  // stored in the server, such as a virtual card or a masked server card.
+  bool ShouldLogServerCardUnmaskAttemptMetrics(
+      CreditCard::RecordType record_type);
+
   // The current form of authentication in progress.
   UnmaskAuthFlowType unmask_auth_flow_type_ = UnmaskAuthFlowType::kNone;
 
@@ -396,7 +404,7 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   raw_ptr<PersonalDataManager> personal_data_manager_;
 
   // For logging metrics.
-  raw_ptr<CreditCardFormEventLogger> form_event_logger_;
+  raw_ptr<CreditCardFormEventLogger, DanglingUntriaged> form_event_logger_;
 
   // Timestamp used for preflight call metrics.
   absl::optional<base::TimeTicks> preflight_call_timestamp_;

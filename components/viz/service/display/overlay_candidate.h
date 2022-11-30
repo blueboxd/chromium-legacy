@@ -72,7 +72,8 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   // Modifies the |candidate|'s |display_rect| to be clipped within |clip_rect|.
   // This function will also update the |uv_rect| based on what clipping was
   // applied to |display_rect|.
-  // |clip_rect| should be in the same space as |candidate|'s |display_rect|.
+  // |clip_rect| should be in the same space as |candidate|'s |display_rect|,
+  // and |candidate| should not have an arbitrary transform.
   static void ApplyClip(OverlayCandidate& candidate,
                         const gfx::RectF& clip_rect);
 

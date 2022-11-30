@@ -13,6 +13,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/no_destructor.h"
+#include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/supervised_user/android/favicon_fetcher.h"
@@ -29,8 +30,11 @@ using base::android::JavaParamRef;
 // We can only have a single local approval in progress at a time on Android
 // as the implementation is a bottom sheet (which is dismissed if it loses
 // focus).
-base::OnceCallback<void(bool)>* GetOnCompletionCallback() {
-  static base::NoDestructor<base::OnceCallback<void(bool)>> callback;
+base::OnceCallback<void(AndroidLocalWebApprovalFlowOutcome)>*
+GetOnCompletionCallback() {
+  static base::NoDestructor<
+      base::OnceCallback<void(AndroidLocalWebApprovalFlowOutcome)>>
+      callback;
   return callback.get();
 }
 
@@ -44,7 +48,7 @@ bool WebsiteParentApproval::IsLocalApprovalSupported() {
 void WebsiteParentApproval::RequestLocalApproval(
     content::WebContents* web_contents,
     const GURL& url,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(AndroidLocalWebApprovalFlowOutcome)> callback) {
   ui::WindowAndroid* window_android =
       web_contents->GetNativeView()->GetWindowAndroid();
 
@@ -56,12 +60,15 @@ void WebsiteParentApproval::RequestLocalApproval(
       url::GURLAndroid::FromNativeGURL(env, url));
 }
 
-void JNI_WebsiteParentApproval_OnCompletion(JNIEnv* env, jboolean jboolean) {
+void JNI_WebsiteParentApproval_OnCompletion(JNIEnv* env,
+                                            jint flow_outcome_value) {
   // Check that we have a callback stored from the local approval request and
   // call it.
   auto* cb = GetOnCompletionCallback();
   DCHECK(cb != nullptr);
-  std::move(*cb).Run(jboolean);
+  AndroidLocalWebApprovalFlowOutcome flow_outcome_enum =
+      static_cast<AndroidLocalWebApprovalFlowOutcome>(flow_outcome_value);
+  std::move(*cb).Run(flow_outcome_enum);
 }
 
 // Triggers the asynchronous favicon request for a provided url.
@@ -75,7 +82,8 @@ static void JNI_WebsiteParentApproval_FetchFavicon(
   GURL url = *(url::GURLAndroid::ToNativeGURL(env, j_url));
 
   FaviconFetcher* faviconFetcher =
-      new FaviconFetcher(ProfileManager::GetActiveUserProfile());
+      new FaviconFetcher(LargeIconServiceFactory::GetForBrowserContext(
+          ProfileManager::GetActiveUserProfile()));
 
   faviconFetcher->FetchFavicon(
       url, true, min_source_size_in_pixel, desired_size_in_pixel,

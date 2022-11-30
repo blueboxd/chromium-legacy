@@ -18,8 +18,9 @@ using NetworkStatePropertiesPtr =
 using ConnectionStateType =
     chromeos::network_config::mojom::ConnectionStateType;
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
+
+namespace network_config = ::chromeos::network_config;
 
 NetworkProviderImpl::NetworkProviderImpl()
     : connection_status_(ConnectionStatus::UNKNOWN) {}
@@ -62,5 +63,4 @@ assistant_client::MdnsResponder* NetworkProviderImpl::GetMdnsResponder() {
   return nullptr;
 }
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant

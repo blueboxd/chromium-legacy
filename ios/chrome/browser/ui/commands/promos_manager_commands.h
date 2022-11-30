@@ -5,13 +5,23 @@
 #ifndef IOS_CHROME_BROWSER_UI_COMMANDS_PROMOS_MANAGER_COMMANDS_H_
 #define IOS_CHROME_BROWSER_UI_COMMANDS_PROMOS_MANAGER_COMMANDS_H_
 
+#import <StoreKit/StoreKit.h>
+
 #import "ios/chrome/browser/promos_manager/constants.h"
+
+@class ShowSigninCommand;
 
 // Commands to show app-wide promos.
 @protocol PromosManagerCommands <NSObject>
 
 // Displays an eligible promo (selected by the Promos Manager) if one exists.
 - (void)maybeDisplayPromo;
+
+// Makes a request to Apple to present the user the App Store Rating Promo.
+- (void)requestAppStoreReview;
+
+// Asks the presenter to display the signin UI configured by `command`.
+- (void)showSignin:(ShowSigninCommand*)command;
 
 @end
 

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -495,8 +495,8 @@ LocalFrameMojoHandler::GetDevicePosture() {
 
   device_posture_provider_service_->AddListenerAndGetCurrentPosture(
       device_posture_receiver_.BindNewPipeAndPassRemote(task_runner),
-      WTF::Bind(&LocalFrameMojoHandler::OnPostureChanged,
-                WrapPersistent(this)));
+      WTF::BindOnce(&LocalFrameMojoHandler::OnPostureChanged,
+                    WrapPersistent(this)));
   return current_device_posture_;
 }
 
@@ -607,9 +607,9 @@ void LocalFrameMojoHandler::NotifyVirtualKeyboardOverlayRect(
   // The rect passed to us from content is in DIP, relative to the main frame.
   // This doesn't take the page's zoom factor into account so we must scale by
   // the inverse of the page zoom in order to get correct client coordinates.
-  // Note that when use-zoom-for-dsf is enabled, WindowToViewportScalar will
-  // be the true device scale factor, and PageZoomFactor will be the combination
-  // of the device scale factor and the zoom percent of the page.
+  // WindowToViewportScalar is the device scale factor while PageZoomFactor is
+  // the combination of the device scale factor and the zoom factor of the
+  // page.
   blink::LocalFrame& local_frame_root = frame_->LocalFrameRoot();
   const float window_to_viewport_factor =
       page->GetChromeClient().WindowToViewportScalar(&local_frame_root, 1.0f);
@@ -733,7 +733,7 @@ void LocalFrameMojoHandler::SaveImageAt(const gfx::Point& window_point) {
 
 void LocalFrameMojoHandler::ReportBlinkFeatureUsage(
     const Vector<mojom::blink::WebFeature>& features) {
-  DCHECK(!features.IsEmpty());
+  DCHECK(!features.empty());
 
   // Assimilate all features used/performed by the browser into UseCounter.
   auto* document = GetDocument();
@@ -1028,7 +1028,7 @@ void LocalFrameMojoHandler::JavaScriptExecuteRequestInIsolatedWorld(
       mojom::blink::UserActivationOption::kDoNotActivate,
       mojom::blink::EvaluationTiming::kSynchronous,
       mojom::blink::LoadEventBlockingOption::kDoNotBlock,
-      WTF::Bind(
+      WTF::BindOnce(
           [](JavaScriptExecuteRequestInIsolatedWorldCallback callback,
              absl::optional<base::Value> value, base::TimeTicks start_time) {
             std::move(callback).Run(value ? std::move(*value) : base::Value());
@@ -1235,6 +1235,23 @@ void LocalFrameMojoHandler::SetNavigationApiHistoryEntriesForRestore(
     navigation_api->SetEntriesForRestore(entry_arrays);
 }
 
+void LocalFrameMojoHandler::NotifyNavigationApiOfDisposedEntries(
+    const WTF::Vector<WTF::String>& keys) {
+  if (NavigationApi* navigation_api =
+          NavigationApi::navigation(*frame_->DomWindow())) {
+    navigation_api->DisposeEntriesForSessionHistoryRemoval(keys);
+  }
+}
+
+void LocalFrameMojoHandler::TraverseCancelled(
+    const String& navigation_api_key,
+    mojom::blink::TraverseCancelledReason reason) {
+  if (NavigationApi* navigation_api =
+          NavigationApi::navigation(*frame_->DomWindow())) {
+    navigation_api->TraverseCancelled(navigation_api_key, reason);
+  }
+}
+
 void LocalFrameMojoHandler::AnimateDoubleTapZoom(const gfx::Point& point,
                                                  const gfx::Rect& rect) {
   frame_->GetPage()->GetChromeClient().AnimateDoubleTapZoom(point, rect);
@@ -1269,6 +1286,26 @@ void LocalFrameMojoHandler::ClosePage(
       false /* need_unload_info_for_new_document */);
 
   std::move(completion_callback).Run();
+}
+
+void LocalFrameMojoHandler::GetFullPageSize(
+    mojom::blink::LocalMainFrame::GetFullPageSizeCallback callback) {
+  // PageZoomFactor takes CSS pixels to device/physical pixels. It includes
+  // both browser ctrl+/- zoom as well as the device scale factor for screen
+  // density. Note: we don't account for pinch-zoom, even though it scales a
+  // CSS pixel, since "device pixels" coming from Blink are also unscaled by
+  // pinch-zoom.
+  float css_to_physical = frame_->PageZoomFactor();
+  float physical_to_css = 1.f / css_to_physical;
+  gfx::Size full_page_size =
+      frame_->View()->GetScrollableArea()->ContentsSize();
+
+  // `content_size` is in physical pixels. Normlisation is needed to convert it
+  // to CSS pixels. Details: https://crbug.com/1181313
+  gfx::Size css_full_page_size =
+      gfx::ScaleToFlooredSize(full_page_size, physical_to_css);
+  std::move(callback).Run(
+      gfx::Size(css_full_page_size.width(), css_full_page_size.height()));
 }
 
 void LocalFrameMojoHandler::PluginActionAt(
@@ -1344,7 +1381,7 @@ void LocalFrameMojoHandler::OnPortalActivated(
   DOMWindowPortalHost::portalHost(*dom_window)->OnPortalActivated();
   frame_->GetPage()->SetInsidePortal(false);
 
-  DCHECK(!data.locked_agent_cluster_id)
+  DCHECK(!data.locked_to_sender_agent_cluster)
       << "portal activation is always cross-agent-cluster and should be "
          "diagnosed early";
   MessagePortArray* ports =

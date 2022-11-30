@@ -30,10 +30,10 @@
 #include "ash/quick_pair/scanning/scanner_broker_impl.h"
 #include "ash/quick_pair/ui/actions.h"
 #include "ash/quick_pair/ui/ui_broker_impl.h"
-#include "ash/services/quick_pair/quick_pair_process.h"
-#include "ash/services/quick_pair/quick_pair_process_manager_impl.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/ash/services/bluetooth_config/fast_pair_delegate.h"
+#include "chromeos/ash/services/quick_pair/quick_pair_process.h"
+#include "chromeos/ash/services/quick_pair/quick_pair_process_manager_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 
 namespace ash {
@@ -109,13 +109,11 @@ Mediator::Mediator(
                    !has_at_least_one_discovery_session_);
   quick_pair_process::SetProcessManager(process_manager_.get());
 
-  if (ash::features::IsBluetoothRevampEnabled()) {
-    // Asynchronously bind to CrosBluetoothConfig so that we don't attempt to
-    // bind to it before it has initialized.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&Mediator::BindToCrosBluetoothConfig,
-                                  weak_ptr_factory_.GetWeakPtr()));
-  }
+  // Asynchronously bind to CrosBluetoothConfig so that we don't attempt to
+  // bind to it before it has initialized.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&Mediator::BindToCrosBluetoothConfig,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 Mediator::~Mediator() {
@@ -173,12 +171,23 @@ void Mediator::OnDeviceFound(scoped_refptr<Device> device) {
 
 void Mediator::OnDeviceLost(scoped_refptr<Device> device) {
   QP_LOG(INFO) << __func__ << ": " << device;
-  ui_broker_->RemoveNotifications();
+  ui_broker_->RemoveNotifications(
+      /*clear_already_shown_discovery_notification_cache=*/false);
   FastPairHandshakeLookup::GetInstance()->Erase(device);
+
+  if (ash::features::
+          IsFastPairPreventNotificationsForRecentlyLostDeviceEnabled()) {
+    ui_broker_->StartDeviceLostTimer(device);
+  }
 }
 
 void Mediator::OnRetroactivePairFound(scoped_refptr<Device> device) {
   QP_LOG(INFO) << __func__ << ": " << device;
+  // SFUL metrics will cause a crash if Fast Pair is disabled when we
+  // retroactive pair, so prevent a notification from popping up.
+  // TODO(b/247148054): Look into moving this elsewhere.
+  if (!feature_status_tracker_->IsFastPairEnabled())
+    return;
   ui_broker_->ShowAssociateAccount(std::move(device));
 }
 
@@ -192,27 +201,45 @@ void Mediator::SetFastPairState(bool is_enabled) {
 
   scanner_broker_->StopScanning(Protocol::kFastPairInitial);
 
-  // Dismiss all UI notifications.
-  ui_broker_->RemoveNotifications();
+  // Dismiss all UI notifications and reset the cache of devices that we prevent
+  // showing notifications for again. We only reset the cache when the Bluetooth
+  // toggle or when the Fast Pair scanning toggle are toggled, or when the user
+  // signs out -> signs in (although sign out/sign in is handled by the
+  // destruction of chrome resetting the cache).
+  ui_broker_->RemoveNotifications(
+      /*clear_already_shown_discovery_notification_cache=*/true);
 }
 
 void Mediator::CancelPairing() {
   QP_LOG(INFO) << __func__ << ": Clearing handshakes and pairiers.";
-  FastPairHandshakeLookup::GetInstance()->Clear();
+  // |pairer_broker_| and its children objects depend on the handshake
+  // instance. Shut them down before destroying the handshakes.
   pairer_broker_->StopPairing();
+  FastPairHandshakeLookup::GetInstance()->Clear();
 }
 
 void Mediator::OnDevicePaired(scoped_refptr<Device> device) {
   QP_LOG(INFO) << __func__ << ": Device=" << device;
-  ui_broker_->RemoveNotifications();
+  ui_broker_->RemoveNotifications(
+      /*clear_already_shown_discovery_notification_cache=*/false);
   scanner_broker_->OnDevicePaired(device);
   fast_pair_repository_->PersistDeviceImages(device);
+
+  if (ash::features::
+          IsFastPairPreventNotificationsForRecentlyLostDeviceEnabled()) {
+    ui_broker_->RemoveDeviceFromAlreadyShownDiscoveryNotificationCache(device);
+  }
 }
 
 void Mediator::OnPairFailure(scoped_refptr<Device> device,
                              PairFailure failure) {
   QP_LOG(INFO) << __func__ << ": Device=" << device << ",Failure=" << failure;
-  ui_broker_->ShowPairingFailed(std::move(device));
+  ui_broker_->ShowPairingFailed(device);
+
+  if (ash::features::
+          IsFastPairPreventNotificationsForRecentlyLostDeviceEnabled()) {
+    ui_broker_->RemoveDeviceFromAlreadyShownDiscoveryNotificationCache(device);
+  }
 }
 
 void Mediator::OnAccountKeyWrite(scoped_refptr<Device> device,
@@ -270,7 +297,8 @@ void Mediator::OnAssociateAccountAction(scoped_refptr<Device> device,
   switch (action) {
     case AssociateAccountAction::kAssoicateAccount:
       pairer_broker_->PairDevice(device);
-      ui_broker_->RemoveNotifications();
+      ui_broker_->RemoveNotifications(
+          /*clear_already_shown_discovery_notification_cache=*/false);
       break;
     case AssociateAccountAction::kLearnMore:
       break;

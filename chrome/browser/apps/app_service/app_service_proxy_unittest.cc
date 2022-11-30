@@ -136,11 +136,6 @@ class AppServiceProxyTest : public testing::Test {
  protected:
   using UniqueReleaser = std::unique_ptr<apps::IconLoader::Releaser>;
 
-  AppServiceProxyTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        kAppServicePreferredAppsWithoutMojom);
-  }
-
   class FakeIconLoader : public apps::IconLoader {
    public:
     void FlushPendingCallbacks() {
@@ -354,6 +349,28 @@ TEST_F(AppServiceProxyTest, ProxyAccessPerProfile) {
   EXPECT_TRUE(guest_proxy);
   EXPECT_NE(guest_proxy, proxy);
 #endif
+}
+
+TEST_F(AppServiceProxyTest, ReinitializeClearsCache) {
+  constexpr char kTestAppId[] = "pwa";
+  TestingProfile profile;
+  AppServiceProxy* const proxy =
+      AppServiceProxyFactory::GetForProfile(&profile);
+
+  {
+    std::vector<AppPtr> apps;
+    AppPtr app = std::make_unique<App>(AppType::kWeb, kTestAppId);
+    apps.push_back(std::move(app));
+    proxy->OnApps(std::move(apps), AppType::kWeb,
+                  /*should_notify_initialized=*/true);
+  }
+
+  EXPECT_EQ(proxy->AppRegistryCache().GetAppType(kTestAppId), AppType::kWeb);
+
+  proxy->ReinitializeForTesting(proxy->profile());
+
+  EXPECT_EQ(proxy->AppRegistryCache().GetAppType(kTestAppId),
+            AppType::kUnknown);
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -632,7 +649,7 @@ TEST_F(AppServiceProxyPreferredAppsTest, PreferredApps) {
 // initialized queues the write for after initialization.
 TEST_F(AppServiceProxyPreferredAppsTest, PreferredAppsWriteBeforeInit) {
   base::RunLoop run_loop_read;
-  proxy()->ReInitializeForTesting(proxy()->profile(),
+  proxy()->ReinitializeForTesting(proxy()->profile(),
                                   run_loop_read.QuitClosure());
   GURL filter_url("https://www.abc.com/");
 
@@ -668,7 +685,7 @@ TEST_F(AppServiceProxyPreferredAppsTest, PreferredAppsPersistency) {
   {
     base::RunLoop run_loop_read;
     base::RunLoop run_loop_write;
-    proxy()->ReInitializeForTesting(proxy()->profile(),
+    proxy()->ReinitializeForTesting(proxy()->profile(),
                                     run_loop_read.QuitClosure(),
                                     run_loop_write.QuitClosure());
     run_loop_read.Run();
@@ -681,7 +698,7 @@ TEST_F(AppServiceProxyPreferredAppsTest, PreferredAppsPersistency) {
   // Create a new impl to initialize preferred apps from the disk.
   {
     base::RunLoop run_loop_read;
-    proxy()->ReInitializeForTesting(proxy()->profile(),
+    proxy()->ReinitializeForTesting(proxy()->profile(),
                                     run_loop_read.QuitClosure());
     run_loop_read.Run();
     EXPECT_EQ(kAppId1,

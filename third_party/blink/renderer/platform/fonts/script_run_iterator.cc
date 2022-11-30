@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,10 @@
 
 #include <algorithm>
 
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "third_party/blink/renderer/platform/text/icu_error.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
@@ -39,8 +41,7 @@ inline bool IsHanScript(UScriptCode script) {
 
 inline UScriptCode FirstHanScript(
     const ScriptRunIterator::UScriptCodeList& list) {
-  const auto* const result =
-      std::find_if(list.begin(), list.end(), IsHanScript);
+  const auto* const result = base::ranges::find_if(list, IsHanScript);
   if (result != list.end())
     return *result;
   return USCRIPT_INVALID_CODE;
@@ -83,7 +84,7 @@ void FixScriptsByEastAsianWidth(UChar32 ch,
                                 ScriptRunIterator::UScriptCodeList* set) {
   // Replace the list only if it is the `COMMON` script. If `COMMON`, there
   // should be only one entry.
-  DCHECK(!set->IsEmpty());
+  DCHECK(!set->empty());
   if (set->size() > 1 || set->front() != USCRIPT_COMMON) {
     DCHECK(!set->Contains(USCRIPT_COMMON));
     return;
@@ -98,7 +99,7 @@ void FixScriptsByEastAsianWidth(UChar32 ch,
     // U+300C in https://www.unicode.org/Public/UNIDATA/ScriptExtensions.txt.
     DEFINE_STATIC_LOCAL(ScriptRunIterator::UScriptCodeList, han_scripts,
                         (GetHanScriptExtensions()));
-    if (UNLIKELY(han_scripts.IsEmpty())) {
+    if (UNLIKELY(han_scripts.empty())) {
       // When |GetHanScriptExtensions| returns an empty list, replacing with it
       // will crash later, which makes the analysis complicated.
       NOTREACHED();
@@ -250,7 +251,7 @@ ScriptRunIterator::ScriptRunIterator(const UChar* text, wtf_size_t length)
     : ScriptRunIterator(text, length, ICUScriptData::Instance()) {}
 
 bool ScriptRunIterator::Consume(unsigned* limit, UScriptCode* script) {
-  if (current_set_.IsEmpty()) {
+  if (current_set_.empty()) {
     return false;
   }
 
@@ -348,7 +349,7 @@ void ScriptRunIterator::CloseBracket(UChar32 ch) {
 // common, and there is no common preferred script and next has a preferred
 // script, set the common preferred script to that of next.
 bool ScriptRunIterator::MergeSets() {
-  if (next_set_->IsEmpty() || current_set_.IsEmpty()) {
+  if (next_set_->empty() || current_set_.empty()) {
     return false;
   }
 
@@ -376,16 +377,15 @@ bool ScriptRunIterator::MergeSets() {
 
   // Neither is common or inherited. If current is a singleton,
   // just see if it exists in the next set. This is the common case.
-  auto* next_it = next_set_->begin();
-  auto* next_end = next_set_->end();
+  bool have_priority = base::Contains(*next_set_, priority_script);
   if (current_set_it == current_end) {
-    return std::find(next_it, next_end, priority_script) != next_end;
+    return have_priority;
   }
 
   // Establish the priority script, if we have one.
   // First try current priority script.
-  bool have_priority =
-      std::find(next_it, next_end, priority_script) != next_end;
+  auto* next_it = next_set_->begin();
+  auto* next_end = next_set_->end();
   if (!have_priority) {
     // So try next priority script.
     // Skip the first current script, we already know it's not there.
@@ -472,7 +472,7 @@ bool ScriptRunIterator::Fetch(wtf_size_t* pos, UChar32* ch) {
 
   U16_NEXT(text_, ahead_pos_, length_, ahead_character_);
   script_data_->GetScripts(ahead_character_, *ahead_set_);
-  if (ahead_set_->IsEmpty()) {
+  if (ahead_set_->empty()) {
     // No scripts for this character. This has already been logged, so
     // we just terminate processing this text.
     return false;

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "third_party/blink/renderer/core/editing/finder/async_find_buffer.h"
@@ -83,9 +83,9 @@ void AsyncFindBuffer::NextIteration(RangeInFlatTree* search_range,
            ->GetTaskRunner(TaskType::kInternalFindInPage)
            .get(),
       FROM_HERE,
-      WTF::Bind(&AsyncFindBuffer::Run, WrapWeakPersistent(this),
-                WrapWeakPersistent(search_range), search_text, options,
-                std::move(completeCallback)));
+      WTF::BindOnce(&AsyncFindBuffer::Run, WrapWeakPersistent(this),
+                    WrapWeakPersistent(search_range), search_text, options,
+                    std::move(completeCallback)));
 }
 
 }  // namespace blink

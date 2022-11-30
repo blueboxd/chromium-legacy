@@ -8,11 +8,9 @@ namespace content {
 
 // Please keep features in alphabetical order.
 
-#if BUILDFLAG(IS_ANDROID)
-CONSTINIT base::Feature kOnShowWithPageVisibility(
-             "OnShowWithPageVisibility",
+BASE_FEATURE(kQueueNavigationsWhileWaitingForCommit,
+             "QueueNavigationsWhileWaitingForPendingCommit",
              base::FEATURE_DISABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_ANDROID)
 
 // Please keep features in alphabetical order.
 

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -294,12 +294,11 @@ CSSStyleValueVector StyleValueFactory::FromString(
     return result;
   }
 
-  if ((property_id == CSSPropertyID::kVariable && !tokens.IsEmpty()) ||
+  if ((property_id == CSSPropertyID::kVariable && !tokens.empty()) ||
       CSSVariableParser::ContainsValidVariableReferences(range)) {
     const auto variable_data = CSSVariableData::Create(
         {range, StringView(css_text)}, false /* is_animation_tainted */,
-        false /* needs variable resolution */, parser_context->BaseURL(),
-        parser_context->Charset());
+        false /* needs variable resolution */);
     CSSStyleValueVector values;
     values.push_back(CSSUnparsedValue::FromCSSVariableData(*variable_data));
     return values;
@@ -342,7 +341,7 @@ CSSStyleValueVector StyleValueFactory::CoerceStyleValuesOrStrings(
         const auto& subvalues = StyleValueFactory::FromString(
             property.PropertyID(), custom_property_name, value->GetAsString(),
             parser_context);
-        if (subvalues.IsEmpty())
+        if (subvalues.empty())
           return CSSStyleValueVector();
 
         DCHECK(!subvalues.Contains(nullptr));

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,7 @@ bool InspectorTaskRunner::AppendTaskDontInterrupt(Task task) {
 InspectorTaskRunner::Task InspectorTaskRunner::TakeNextInterruptingTask() {
   base::AutoLock locker(lock_);
 
-  if (disposed_ || interrupting_task_queue_.IsEmpty())
+  if (disposed_ || interrupting_task_queue_.empty())
     return Task();
 
   return interrupting_task_queue_.TakeFirst();

@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/types/pass_key.h"
@@ -27,24 +28,19 @@ namespace gpu {
 class VulkanCommandPool;
 class VulkanImage;
 
-struct VulkanImageUsageCache {
-  // Maximal usage flags for VK_IMAGE_TILING_OPTIMAL each ResourceFormat.
-  VkImageUsageFlags optimal_tiling_usage[viz::RESOURCE_FORMAT_MAX + 1];
-};
-
 class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
  public:
   static std::unique_ptr<ExternalVkImageBacking> Create(
       scoped_refptr<SharedContextState> context_state,
       VulkanCommandPool* command_pool,
       const Mailbox& mailbox,
-      viz::ResourceFormat format,
+      viz::SharedImageFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
       uint32_t usage,
-      const VulkanImageUsageCache* image_usage_cache,
+      const base::flat_map<VkFormat, VkImageUsageFlags>& image_usage_cache,
       base::span<const uint8_t> pixel_data,
       bool using_gmb = false);
 
@@ -58,12 +54,11 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
-      uint32_t usage,
-      const VulkanImageUsageCache* image_usage_cache);
+      uint32_t usage);
 
   ExternalVkImageBacking(base::PassKey<ExternalVkImageBacking>,
                          const Mailbox& mailbox,
-                         viz::ResourceFormat format,
+                         viz::SharedImageFormat format,
                          const gfx::Size& size,
                          const gfx::ColorSpace& color_space,
                          GrSurfaceOrigin surface_origin,
@@ -135,6 +130,7 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
   // SharedImageBacking implementation.
   SharedImageBackingType GetType() const override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
+  bool UploadFromMemory(const SkPixmap& pixmap) override;
   scoped_refptr<gfx::NativePixmap> GetNativePixmap() override;
 
   // Add semaphores to a pending list for reusing or being released immediately.
@@ -172,8 +168,6 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
       MemoryTypeTracker* tracker) override;
 
  private:
-  // Install a shared memory GMB to the backing.
-  void InstallSharedMemory(SharedMemoryRegionWrapper shared_memory_wrapper);
   // Returns texture_service_id for ProduceGLTexture and GLTexturePassthrough.
   GLuint ProduceGLTextureInternal();
 
@@ -187,10 +181,9 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
   bool ReadPixelsWithCallback(size_t data_size,
                               size_t stride,
                               ReadBufferCallback callback);
-  bool WritePixelsWithData(base::span<const uint8_t> pixel_data, size_t stride);
-  bool WritePixels();
+  bool UploadToVkImage(const SkPixmap& pixmap);
+  void UploadToGLTexture(const SkPixmap& pixmap);
   void CopyPixelsFromGLTextureToVkImage();
-  void CopyPixelsFromShmToGLTexture();
   void CopyPixelsFromVkImageToGLTexture();
 
   scoped_refptr<SharedContextState> context_state_;
@@ -208,13 +201,9 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
   raw_ptr<gles2::Texture> texture_ = nullptr;
   scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
 
-  // GMB related stuff.
-  SharedMemoryRegionWrapper shared_memory_wrapper_;
-
   enum LatestContent {
     kInVkImage = 1 << 0,
-    kInSharedMemory = 1 << 1,
-    kInGLTexture = 1 << 2,
+    kInGLTexture = 1 << 1,
   };
   uint32_t latest_content_ = 0;
 

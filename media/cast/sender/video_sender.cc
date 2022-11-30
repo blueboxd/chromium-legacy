@@ -15,11 +15,13 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/media_switches.h"
 #include "media/cast/common/openscreen_conversion_helpers.h"
+#include "media/cast/common/rtp_time.h"
 #include "media/cast/common/sender_encoded_frame.h"
 #include "media/cast/encoding/video_encoder.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/sender/openscreen_frame_sender.h"
 #include "media/cast/sender/performance_metrics_overlay.h"
+#include "third_party/openscreen/src/cast/streaming/encoded_frame.h"
 #include "third_party/openscreen/src/cast/streaming/sender.h"
 
 namespace media::cast {
@@ -112,7 +114,7 @@ VideoSender::VideoSender(
     const FrameSenderConfig& video_config,
     StatusChangeCallback status_change_cb,
     const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
-    openscreen::cast::Sender* sender,
+    std::unique_ptr<openscreen::cast::Sender> sender,
     PlayoutDelayChangeCB playout_delay_change_cb,
     media::VideoCaptureFeedbackCB feedback_cb,
     FrameSender::GetSuggestedVideoBitrateCB get_bitrate_cb)
@@ -122,7 +124,7 @@ VideoSender::VideoSender(
                   std::move(create_vea_cb),
                   FrameSender::Create(cast_environment,
                                       video_config,
-                                      sender,
+                                      std::move(sender),
                                       *this,
                                       std::move(get_bitrate_cb)),
                   std::move(playout_delay_change_cb),
@@ -146,7 +148,6 @@ VideoSender::VideoSender(
       cast_environment_(cast_environment),
       min_playout_delay_(video_config.min_playout_delay),
       max_playout_delay_(video_config.max_playout_delay),
-      animated_playout_delay_(video_config.animated_playout_delay),
       playout_delay_change_cb_(std::move(playout_delay_change_cb)),
       feedback_cb_(feedback_callback) {
   video_encoder_ = VideoEncoder::Create(cast_environment_, video_config,
@@ -247,9 +248,9 @@ void VideoSender::InsertRawVideoFrame(
       // This is intended to minimize freeze when moving from an interactive
       // session to watching animating content while being limited by end-to-end
       // delay.
-      VLOG(1) << "Ensure playout time is at least " << animated_playout_delay_;
-      if (new_target_delay < animated_playout_delay_)
-        new_target_delay = animated_playout_delay_;
+      VLOG(1) << "Ensure playout time is at least " << min_playout_delay_;
+      if (new_target_delay < min_playout_delay_)
+        new_target_delay = min_playout_delay_;
       VLOG(1) << "New target delay: " << new_target_delay.InMilliseconds();
       playout_delay_change_cb_.Run(new_target_delay);
     }
@@ -367,14 +368,27 @@ void VideoSender::OnEncodedVideoFrame(
     // this can misguide the producer of the input video frames.
     VideoCaptureFeedback feedback;
     feedback.resource_utilization =
-        encoded_frame->dependency == EncodedFrame::KEY
+        encoded_frame->dependency ==
+                openscreen::cast::EncodedFrame::Dependency::kKeyFrame
             ? std::min(1.0, attenuated_utilization)
             : attenuated_utilization;
     if (feedback_cb_)
       feedback_cb_.Run(feedback);
   }
 
-  frame_sender_->EnqueueFrame(std::move(encoded_frame));
+  const RtpTimeTicks rtp_timestamp = encoded_frame->rtp_timestamp;
+  if (!frame_sender_->EnqueueFrame(std::move(encoded_frame))) {
+    // Since we have dropped an already encoded frame, which is much worse than
+    // dropping a raw frame above, we need to flush the encoder and emit a new
+    // keyframe.
+    video_encoder_->EmitFrames();
+    video_encoder_->GenerateKeyFrame();
+
+    TRACE_EVENT_INSTANT2("cast.stream", "Video Frame Drop (already encoded)",
+                         TRACE_EVENT_SCOPE_THREAD, "rtp_timestamp",
+                         rtp_timestamp.lower_32_bits(), "reason",
+                         "openscreen sender did not accept the frame");
+  }
 }
 
 }  // namespace media::cast

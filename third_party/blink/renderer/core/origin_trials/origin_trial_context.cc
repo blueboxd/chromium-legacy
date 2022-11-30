@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -186,7 +186,7 @@ std::unique_ptr<Vector<String>> OriginTrialContext::ParseHeaderValue(
   unsigned len = header_value.length();
   while (pos < len) {
     String token = ExtractTokenOrQuotedString(header_value, pos);
-    if (!token.IsEmpty())
+    if (!token.empty())
       tokens->push_back(token);
     // Make sure tokens are comma-separated.
     if (pos < len && header_value[pos++] != ',')
@@ -198,7 +198,7 @@ std::unique_ptr<Vector<String>> OriginTrialContext::ParseHeaderValue(
 // static
 void OriginTrialContext::AddTokensFromHeader(ExecutionContext* context,
                                              const String& header_value) {
-  if (header_value.IsEmpty())
+  if (header_value.empty())
     return;
   std::unique_ptr<Vector<String>> tokens(ParseHeaderValue(header_value));
   if (!tokens)
@@ -209,7 +209,7 @@ void OriginTrialContext::AddTokensFromHeader(ExecutionContext* context,
 // static
 void OriginTrialContext::AddTokens(ExecutionContext* context,
                                    const Vector<String>* tokens) {
-  if (!tokens || tokens->IsEmpty())
+  if (!tokens || tokens->empty())
     return;
   DCHECK(context && context->GetOriginTrialContext());
   context->GetOriginTrialContext()->AddTokens(*tokens);
@@ -219,7 +219,7 @@ void OriginTrialContext::AddTokens(ExecutionContext* context,
 void OriginTrialContext::ActivateWorkerInheritedFeatures(
     ExecutionContext* context,
     const Vector<OriginTrialFeature>* features) {
-  if (!features || features->IsEmpty())
+  if (!features || features->empty())
     return;
   DCHECK(context && context->GetOriginTrialContext());
   DCHECK(context->IsDedicatedWorkerGlobalScope() ||
@@ -231,7 +231,7 @@ void OriginTrialContext::ActivateWorkerInheritedFeatures(
 void OriginTrialContext::ActivateNavigationFeaturesFromInitiator(
     ExecutionContext* context,
     const Vector<OriginTrialFeature>* features) {
-  if (!features || features->IsEmpty())
+  if (!features || features->empty())
     return;
   DCHECK(context && context->GetOriginTrialContext());
   context->GetOriginTrialContext()->ActivateNavigationFeaturesFromInitiator(
@@ -244,7 +244,7 @@ std::unique_ptr<Vector<String>> OriginTrialContext::GetTokens(
   DCHECK(execution_context);
   const OriginTrialContext* context =
       execution_context->GetOriginTrialContext();
-  if (!context || context->trial_results_.IsEmpty())
+  if (!context || context->trial_results_.empty())
     return nullptr;
 
   auto tokens = std::make_unique<Vector<String>>();
@@ -280,7 +280,7 @@ OriginTrialContext::GetEnabledNavigationFeatures(
 
 std::unique_ptr<Vector<OriginTrialFeature>>
 OriginTrialContext::GetInheritedTrialFeatures() const {
-  if (enabled_features_.IsEmpty()) {
+  if (enabled_features_.empty()) {
     return nullptr;
   }
   std::unique_ptr<Vector<OriginTrialFeature>> result =
@@ -295,7 +295,7 @@ OriginTrialContext::GetInheritedTrialFeatures() const {
 
 std::unique_ptr<Vector<OriginTrialFeature>>
 OriginTrialContext::GetEnabledNavigationFeatures() const {
-  if (enabled_features_.IsEmpty())
+  if (enabled_features_.empty())
     return nullptr;
   std::unique_ptr<Vector<OriginTrialFeature>> result =
       std::make_unique<Vector<OriginTrialFeature>>();
@@ -304,7 +304,7 @@ OriginTrialContext::GetEnabledNavigationFeatures() const {
       result->push_back(feature);
     }
   }
-  return result->IsEmpty() ? nullptr : std::move(result);
+  return result->empty() ? nullptr : std::move(result);
 }
 
 void OriginTrialContext::AddToken(const String& token) {
@@ -329,7 +329,7 @@ void OriginTrialContext::AddTokenInternal(
     const String& token,
     const OriginInfo origin,
     const Vector<OriginInfo>* script_origins) {
-  if (token.IsEmpty())
+  if (token.empty())
     return;
 
   bool enabled = EnableTrialFromToken(token, origin, script_origins);
@@ -341,12 +341,12 @@ void OriginTrialContext::AddTokenInternal(
 }
 
 void OriginTrialContext::AddTokens(const Vector<String>& tokens) {
-  if (tokens.IsEmpty())
+  if (tokens.empty())
     return;
   bool found_valid = false;
   OriginInfo origin_info = GetCurrentOriginInfo();
   for (const String& token : tokens) {
-    if (!token.IsEmpty()) {
+    if (!token.empty()) {
       if (EnableTrialFromToken(token, origin_info))
         found_valid = true;
     }
@@ -596,7 +596,7 @@ bool OriginTrialContext::EnableTrialFromToken(
     const String& token,
     const OriginInfo origin_info,
     const Vector<OriginInfo>* script_origins) {
-  DCHECK(!token.IsEmpty());
+  DCHECK(!token.empty());
   OriginTrialStatus trial_status = OriginTrialStatus::kValidTokenNotProvided;
   StringUTF8Adaptor token_string(token);
   // TODO(https://crbug.com/1153336): Remove explicit validator.

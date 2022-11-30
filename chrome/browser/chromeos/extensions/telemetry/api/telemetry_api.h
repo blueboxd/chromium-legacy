@@ -57,6 +57,27 @@ class OsTelemetryGetBatteryInfoFunction : public TelemetryApiFunctionBase {
   void OnResult(crosapi::mojom::ProbeTelemetryInfoPtr ptr);
 };
 
+class OsTelemetryGetNonRemovableBlockDevicesInfoFunction
+    : public TelemetryApiFunctionBase {
+ public:
+  DECLARE_EXTENSION_FUNCTION("os.telemetry.getNonRemovableBlockDevicesInfo",
+                             OS_TELEMETRY_GETNONREMOVABLEBLOCKDEVICESINFO)
+
+  OsTelemetryGetNonRemovableBlockDevicesInfoFunction();
+  OsTelemetryGetNonRemovableBlockDevicesInfoFunction(
+      const OsTelemetryGetNonRemovableBlockDevicesInfoFunction&) = delete;
+  OsTelemetryGetNonRemovableBlockDevicesInfoFunction& operator=(
+      const OsTelemetryGetNonRemovableBlockDevicesInfoFunction&) = delete;
+
+ private:
+  ~OsTelemetryGetNonRemovableBlockDevicesInfoFunction() override;
+
+  // BaseTelemetryExtensionApiGuardFunction:
+  void RunIfAllowed() override;
+
+  void OnResult(crosapi::mojom::ProbeTelemetryInfoPtr ptr);
+};
+
 class OsTelemetryGetCpuInfoFunction : public TelemetryApiFunctionBase {
  public:
   DECLARE_EXTENSION_FUNCTION("os.telemetry.getCpuInfo", OS_TELEMETRY_GETCPUINFO)
@@ -68,6 +89,27 @@ class OsTelemetryGetCpuInfoFunction : public TelemetryApiFunctionBase {
 
  private:
   ~OsTelemetryGetCpuInfoFunction() override;
+
+  // BaseTelemetryExtensionApiGuardFunction:
+  void RunIfAllowed() override;
+
+  void OnResult(crosapi::mojom::ProbeTelemetryInfoPtr ptr);
+};
+
+class OsTelemetryGetInternetConnectivityInfoFunction
+    : public TelemetryApiFunctionBase {
+ public:
+  DECLARE_EXTENSION_FUNCTION("os.telemetry.getInternetConnectivityInfo",
+                             OS_TELEMETRY_GETINTERNETCONNECTIVITYINFO)
+
+  OsTelemetryGetInternetConnectivityInfoFunction();
+  OsTelemetryGetInternetConnectivityInfoFunction(
+      const OsTelemetryGetInternetConnectivityInfoFunction&) = delete;
+  OsTelemetryGetInternetConnectivityInfoFunction& operator=(
+      const OsTelemetryGetInternetConnectivityInfoFunction&) = delete;
+
+ private:
+  ~OsTelemetryGetInternetConnectivityInfoFunction() override;
 
   // BaseTelemetryExtensionApiGuardFunction:
   void RunIfAllowed() override;
@@ -165,6 +207,24 @@ class OsTelemetryGetStatefulPartitionInfoFunction
 
  private:
   ~OsTelemetryGetStatefulPartitionInfoFunction() override;
+
+  // BaseTelemetryExtensionApiGuardFunction:
+  void RunIfAllowed() override;
+
+  void OnResult(crosapi::mojom::ProbeTelemetryInfoPtr ptr);
+};
+
+class OsTelemetryGetTpmInfoFunction : public TelemetryApiFunctionBase {
+ public:
+  DECLARE_EXTENSION_FUNCTION("os.telemetry.getTpmInfo", OS_TELEMETRY_GETTPMINFO)
+
+  OsTelemetryGetTpmInfoFunction();
+  OsTelemetryGetTpmInfoFunction(const OsTelemetryGetTpmInfoFunction&) = delete;
+  OsTelemetryGetTpmInfoFunction& operator=(
+      const OsTelemetryGetTpmInfoFunction&) = delete;
+
+ private:
+  ~OsTelemetryGetTpmInfoFunction() override;
 
   // BaseTelemetryExtensionApiGuardFunction:
   void RunIfAllowed() override;

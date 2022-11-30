@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ namespace blink {
 
 ModuleRecordProduceCacheData::ModuleRecordProduceCacheData(
     v8::Isolate* isolate,
-    SingleCachedMetadataHandler* cache_handler,
+    CachedMetadataHandler* cache_handler,
     V8CodeCache::ProduceCacheOptions produce_cache_options,
     v8::Local<v8::Module> module)
     : cache_handler_(cache_handler),

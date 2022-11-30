@@ -3,77 +3,67 @@
 // found in the LICENSE file.
 
 #include "ash/shelf/scrollable_shelf_view.h"
+#include "ash/shelf/shelf_menu_model_adapter.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/test/scrollable_shelf_test_base.h"
 #include "ash/test/ash_pixel_diff_test_helper.h"
 #include "ash/test/ash_pixel_test_init_params.h"
+#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/submenu_view.h"
 
 namespace ash {
 
-class ScrollableShelfViewPixelRTLTest
-    : public ScrollableShelfTestBase,
-      public testing::WithParamInterface<bool /*is_rtl=*/> {
+class ScrollableShelfViewPixelRTLTestBase : public ScrollableShelfTestBase {
  public:
-  ScrollableShelfViewPixelRTLTest() {
-    PrepareForPixelDiffTest();
-    if (GetParam()) {
-      pixel_test::InitParams init_params;
-      init_params.under_rtl = true;
-      SetPixelTestInitParam(init_params);
-    }
-  }
-  ScrollableShelfViewPixelRTLTest(const ScrollableShelfViewPixelRTLTest&) =
-      delete;
-  ScrollableShelfViewPixelRTLTest& operator=(
-      const ScrollableShelfViewPixelRTLTest&) = delete;
-  ~ScrollableShelfViewPixelRTLTest() override = default;
-
   // ScrollableShelfTestBase:
   void SetUp() override {
     ScrollableShelfTestBase::SetUp();
-    pixel_test_helper_.InitSkiaGoldPixelDiff("scrollable_shelf_view_pixel");
     AddAppShortcutsUntilOverflow(/*use_alternative_color=*/true);
   }
+};
 
-  AshPixelDiffTestHelper pixel_test_helper_;
+class ScrollableShelfViewPixelRTLTest
+    : public ScrollableShelfViewPixelRTLTestBase,
+      public testing::WithParamInterface<bool /*is_rtl=*/> {
+ public:
+  void SetUp() override {
+    pixel_test::InitParams init_params;
+    if (GetParam())
+      init_params.under_rtl = true;
+    PrepareForPixelDiffTest(/*screenshot_prefix=*/"scrollable_shelf_view_pixel",
+                            init_params);
+
+    ScrollableShelfViewPixelRTLTestBase::SetUp();
+  }
 };
 
 INSTANTIATE_TEST_SUITE_P(RTL, ScrollableShelfViewPixelRTLTest, testing::Bool());
 
 // Verifies the scrollable shelf under overflow.
 TEST_P(ScrollableShelfViewPixelRTLTest, Basics) {
-  EXPECT_TRUE(pixel_test_helper_.CompareUiComponentScreenshot(
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       GetParam() ? "overflow_rtl" : "overflow",
-      AshPixelDiffTestHelper::UiComponent::kShelfWidget));
+      GetPrimaryShelf()->GetWindow()));
 }
 
 class ScrollableShelfViewWithGuestModePixelTest
-    : public ScrollableShelfTestBase,
+    : public ScrollableShelfViewPixelRTLTestBase,
       public testing::WithParamInterface<bool /*use_guest_mode=*/> {
  public:
-  ScrollableShelfViewWithGuestModePixelTest() {
-    set_start_session(false);
-    PrepareForPixelDiffTest();
-  }
-  ScrollableShelfViewWithGuestModePixelTest(
-      const ScrollableShelfViewWithGuestModePixelTest&) = delete;
-  ScrollableShelfViewWithGuestModePixelTest& operator=(
-      const ScrollableShelfViewWithGuestModePixelTest&) = delete;
-  ~ScrollableShelfViewWithGuestModePixelTest() override = default;
-
   // ScrollableShelfTestBase:
   void SetUp() override {
-    ScrollableShelfTestBase::SetUp();
-    pixel_test_helper_.InitSkiaGoldPixelDiff(
-        "scrollable_shelf_view_with_guest_mode_pixel");
+    set_start_session(false);
+    PrepareForPixelDiffTest(
+        /*screenshot_prefix=*/"scrollable_shelf_view_with_guest_mode_pixel",
+        pixel_test::InitParams());
 
+    ScrollableShelfTestBase::SetUp();
     if (GetParam())
       SimulateGuestLogin();
     else
       SimulateUserLogin("user@gmail.com");
     StabilizeUIForPixelTest();
   }
-
-  AshPixelDiffTestHelper pixel_test_helper_;
 };
 
 INSTANTIATE_TEST_SUITE_P(EnableGuestMode,
@@ -88,8 +78,16 @@ TEST_P(ScrollableShelfViewWithGuestModePixelTest, VerifyShelfContextMenu) {
   GetEventGenerator()->MoveMouseTo(shelf_center);
   GetEventGenerator()->PressRightButton();
 
-  EXPECT_TRUE(pixel_test_helper_.ComparePrimaryFullScreen(
-      GetParam() ? "shelf_context_menu_in_guest_mode" : "shelf_context_menu"));
+  // Verify the shelf context menu and the shelf.
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+      GetParam() ? "shelf_context_menu_in_guest_mode" : "shelf_context_menu",
+      GetPrimaryShelf()
+          ->shelf_widget()
+          ->shelf_view_for_testing()
+          ->shelf_menu_model_adapter_for_testing()
+          ->root_for_testing()
+          ->GetSubmenu(),
+      GetPrimaryShelf()->GetWindow()));
 }
 
 }  // namespace ash

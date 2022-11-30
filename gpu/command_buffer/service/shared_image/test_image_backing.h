@@ -16,7 +16,7 @@ class TestImageBacking : public SharedImageBacking {
  public:
   // Constructor which uses a dummy GL texture ID for the backing.
   TestImageBacking(const Mailbox& mailbox,
-                   viz::ResourceFormat format,
+                   viz::SharedImageFormat format,
                    const gfx::Size& size,
                    const gfx::ColorSpace& color_space,
                    GrSurfaceOrigin surface_origin,
@@ -25,7 +25,7 @@ class TestImageBacking : public SharedImageBacking {
                    size_t estimated_size);
   // Constructor which uses a provided GL texture ID for the backing.
   TestImageBacking(const Mailbox& mailbox,
-                   viz::ResourceFormat format,
+                   viz::SharedImageFormat format,
                    const gfx::Size& size,
                    const gfx::ColorSpace& color_space,
                    GrSurfaceOrigin surface_origin,
@@ -45,10 +45,6 @@ class TestImageBacking : public SharedImageBacking {
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override {}
   bool UploadFromMemory(const SkPixmap& pixmap) override;
   bool ReadbackToMemory(SkPixmap& pixmap) override;
-  void OnMemoryDump(const std::string& dump_name,
-                    base::trace_event::MemoryAllocatorDumpGuid client_guid,
-                    base::trace_event::ProcessMemoryDump* pmd,
-                    uint64_t client_tracing_id) override {}
 
   // Helper functions
   GLuint service_id() const { return service_id_; }

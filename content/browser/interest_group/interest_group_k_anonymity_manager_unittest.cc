@@ -21,6 +21,9 @@ namespace content {
 
 namespace {
 
+constexpr base::TimeDelta kJoinInterval = base::Hours(1);
+constexpr base::TimeDelta kQueryInterval = base::Hours(2);
+
 constexpr char kAdURL[] = "https://www.foo.com/ad1.html";
 constexpr char kUpdateURL[] = "https://www.example.com/update";
 
@@ -48,6 +51,10 @@ class TestKAnonymityServiceDelegate : public KAnonymityServiceDelegate {
                                     std::vector<bool>(ids.size(), true)));
     }
   }
+
+  base::TimeDelta GetJoinInterval() override { return kJoinInterval; }
+
+  base::TimeDelta GetQueryInterval() override { return kQueryInterval; }
 
  private:
   bool has_error_;
@@ -104,10 +111,11 @@ class InterestGroupKAnonymityManagerTest : public testing::Test {
 
   std::unique_ptr<InterestGroupManagerImpl> CreateManager(
       bool has_error = false) {
+    delegate_ = std::make_unique<TestKAnonymityServiceDelegate>(has_error);
     return std::make_unique<InterestGroupManagerImpl>(
         temp_directory_.GetPath(), false,
         InterestGroupManagerImpl::ProcessMode::kDedicated, nullptr,
-        std::make_unique<TestKAnonymityServiceDelegate>(has_error));
+        delegate_.get());
   }
 
   base::test::TaskEnvironment& task_environment() { return task_environment_; }
@@ -116,6 +124,7 @@ class InterestGroupKAnonymityManagerTest : public testing::Test {
   base::ScopedTempDir temp_directory_;
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  std::unique_ptr<TestKAnonymityServiceDelegate> delegate_;
 };
 
 TEST_F(InterestGroupKAnonymityManagerTest,
@@ -145,15 +154,13 @@ TEST_F(InterestGroupKAnonymityManagerTest,
 
   // Updated recently so we shouldn't update again.
   manager->QueueKAnonymityUpdateForInterestGroup(*maybe_group);
-
-  // k-anonymity update happens here.
   task_environment().FastForwardBy(base::Minutes(1));
 
   maybe_group = getGroup(manager.get(), owner, name);
   ASSERT_TRUE(maybe_group);
   EXPECT_EQ(last_updated, maybe_group->name_kanon->last_updated);
 
-  task_environment().FastForwardBy(base::Hours(24));
+  task_environment().FastForwardBy(kQueryInterval);
 
   // Updated more than 24 hours ago, so update.
   manager->QueueKAnonymityUpdateForInterestGroup(*maybe_group);
@@ -207,9 +214,9 @@ TEST_F(InterestGroupKAnonymityManagerTest, QueueUpdatePerformsJoinSetForGroup) {
             getLastReported(manager.get(), group_name_url));
   EXPECT_EQ(update_url_reported, getLastReported(manager.get(), kUpdateURL));
 
-  task_environment().FastForwardBy(base::Hours(24));
+  task_environment().FastForwardBy(kJoinInterval);
 
-  // Updated more than 24 hours ago, so update.
+  // Updated more than GetJoinInterval() ago, so update.
   manager->QueueKAnonymityUpdateForInterestGroup(*maybe_group);
   task_environment().RunUntilIdle();
   EXPECT_LT(update_url_reported, getLastReported(manager.get(), kUpdateURL));
@@ -252,7 +259,7 @@ TEST_F(InterestGroupKAnonymityManagerTest, RegisterAdAsWonPerformsJoinSet) {
   // Second update shouldn't have changed the update time (too recent).
   EXPECT_EQ(last_reported, getLastReported(manager.get(), kAdURL));
 
-  task_environment().FastForwardBy(base::Hours(24));
+  task_environment().FastForwardBy(kJoinInterval);
 
   // Updated more than 24 hours ago, so update.
   manager->RegisterAdAsWon(GURL(kAdURL));

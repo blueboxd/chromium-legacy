@@ -34,12 +34,14 @@ using ::testing::ReturnRef;
 using ::testing::SaveArg;
 using DomUpdateCallback =
     autofill_assistant::ExternalActionDelegate::DomUpdateCallback;
-using ProgressStep = autofill_assistant::password_change::ProgressStep;
-using TopIcon = autofill_assistant::password_change::TopIcon;
+using autofill_assistant::password_change::FlowType;
+using autofill_assistant::password_change::ProgressStep;
+using autofill_assistant::password_change::TopIcon;
 
 namespace {
 
 constexpr char kTitle[] = "Sample title";
+constexpr char kAccessibilityTitle[] = "Accessibility sample title";
 constexpr char kDescription[] = "Sample description";
 constexpr char kPromptOutputKey[] = "external_output_key";
 constexpr char kPromptText1[] = "Choice 1";
@@ -147,6 +149,18 @@ autofill_assistant::external::Action CreateAction(
   return action;
 }
 
+autofill_assistant::external::Action CreateAction(
+    const autofill_assistant::password_change::SetFlowTypeSpecification&
+        proto) {
+  autofill_assistant::external::Action action;
+  autofill_assistant::password_change::GenericPasswordChangeSpecification spec;
+  *spec.mutable_set_flow_type() = proto;
+  *action.mutable_info()->mutable_generic_password_change_specification() =
+      spec;
+
+  return action;
+}
+
 }  // namespace
 
 class ApcExternalActionDelegateTest : public ChromeRenderViewHostTestHarness {
@@ -191,27 +205,32 @@ class ApcExternalActionDelegateTest : public ChromeRenderViewHostTestHarness {
 
 TEST_F(ApcExternalActionDelegateTest, StartAndFinishInterrupt) {
   // Simulate state prior to the interrupt.
-  action_delegate()->SetTitle(base::UTF8ToUTF16(base::StringPiece(kTitle)));
+  action_delegate()->SetTitle(
+      base::UTF8ToUTF16(base::StringPiece(kTitle)),
+      base::UTF8ToUTF16(base::StringPiece(kAccessibilityTitle)));
   action_delegate()->SetDescription(
       base::UTF8ToUTF16(base::StringPiece(kDescription)));
   action_delegate()->SetTopIcon(kTopIcon);
   action_delegate()->SetProgressBarStep(kStep);
 
   // The interrupt clears model state apart from the progress step.
-  EXPECT_CALL(*display(), SetTitle(std::u16string()));
+  EXPECT_CALL(*display(), SetTitle(std::u16string(), std::u16string()));
   EXPECT_CALL(*display(), SetDescription(std::u16string()));
   action_delegate()->OnInterruptStarted();
 
   // Simulate calls during interrupt.
-  EXPECT_CALL(*display(), SetTitle(std::u16string(kInterruptTitle)));
+  EXPECT_CALL(*display(),
+              SetTitle(std::u16string(kInterruptTitle), std::u16string()));
   EXPECT_CALL(*display(),
               SetDescription(std::u16string(kInterruptDescription)));
   action_delegate()->SetTitle(kInterruptTitle);
   action_delegate()->SetDescription(kInterruptDescription);
 
   // Expect the state to be restored when the interrupt finishes.
-  EXPECT_CALL(*display(),
-              SetTitle(base::UTF8ToUTF16(base::StringPiece(kTitle))));
+  EXPECT_CALL(
+      *display(),
+      SetTitle(base::UTF8ToUTF16(base::StringPiece(kTitle)),
+               base::UTF8ToUTF16(base::StringPiece(kAccessibilityTitle))));
   EXPECT_CALL(
       *display(),
       SetDescription(base::UTF8ToUTF16(base::StringPiece(kDescription))));
@@ -228,12 +247,15 @@ TEST_F(ApcExternalActionDelegateTest, OnTouchableAreaChangedShowAndHideScrim) {
   // Hides the scrim when `touchable_areas` is not empty.
   touchable_areas.emplace_back();
   EXPECT_CALL(*apc_scrim_manager(), Hide);
+  EXPECT_CALL(*display(), PauseProgressBarAnimation);
+  EXPECT_CALL(*display(), SetFocus);
   action_delegate()->OnTouchableAreaChanged(visual_viewport, touchable_areas,
                                             restricted_areas);
 
   // Shows the scrim when `touchable_areas` is not empty.
   touchable_areas.clear();
   EXPECT_CALL(*apc_scrim_manager(), Show);
+  EXPECT_CALL(*display(), ResumeProgressBarAnimation);
   action_delegate()->OnTouchableAreaChanged(visual_viewport, touchable_areas,
                                             restricted_areas);
 }
@@ -242,23 +264,20 @@ TEST_F(ApcExternalActionDelegateTest, ShowStartingScreen) {
   const GURL url(kUrl);
 
   EXPECT_CALL(*display(), ShowStartingScreen(url));
-
   action_delegate()->ShowStartingScreen(url);
 }
 
 TEST_F(ApcExternalActionDelegateTest, ShowCompletionScreen) {
   base::RepeatingClosure show_completion_screen_callback;
   EXPECT_CALL(*display(),
-              ShowCompletionScreen(show_completion_screen_callback));
+              ShowCompletionScreen(FlowType::FLOW_TYPE_UNSPECIFIED,
+                                   show_completion_screen_callback));
 
   action_delegate()->ShowCompletionScreen(show_completion_screen_callback);
 }
 
 TEST_F(ApcExternalActionDelegateTest, ShowErrorScreen) {
-  const GURL url(kUrl);
-
   EXPECT_CALL(*display(), ShowErrorScreen());
-
   action_delegate()->ShowErrorScreen();
 }
 
@@ -623,8 +642,8 @@ TEST_F(ApcExternalActionDelegateTest, ReceiveUpdateSidePanelAction) {
   EXPECT_CALL(*display(), SetTopIcon(kTopIcon));
   EXPECT_CALL(*display(), SetProgressBarStep(kStep));
   EXPECT_CALL(*display(), SetDescription).Times(0);
-  EXPECT_CALL(*display(),
-              SetTitle(base::UTF8ToUTF16(base::StringPiece(kTitle))));
+  EXPECT_CALL(*display(), SetTitle(base::UTF8ToUTF16(base::StringPiece(kTitle)),
+                                   std::u16string()));
 
   autofill_assistant::external::Result result;
   EXPECT_CALL(result_callback, Run).WillOnce(SaveArg<0>(&result));
@@ -644,4 +663,44 @@ TEST_F(ApcExternalActionDelegateTest, ReceiveUpdateSidePanelAction) {
       result_callback.Get());
 
   EXPECT_TRUE(result.success());
+}
+
+TEST_F(ApcExternalActionDelegateTest, ReceiveSetFlowTypeAction) {
+  base::MockOnceCallback<void(
+      const autofill_assistant::external::Result& result)>
+      result_callback;
+  base::MockOnceCallback<void(DomUpdateCallback)> start_dom_checks_callback;
+
+  autofill_assistant::password_change::SetFlowTypeSpecification spec;
+  spec.set_flow_type(FlowType::FLOW_TYPE_PASSWORD_RESET);
+
+  autofill_assistant::external::Result result;
+  EXPECT_CALL(result_callback, Run).WillOnce(SaveArg<0>(&result));
+
+  // DOM checks will never be started.
+  EXPECT_CALL(start_dom_checks_callback, Run).Times(0);
+
+  action_delegate()->OnActionRequested(CreateAction(spec),
+                                       /*is_interrupt=*/false,
+                                       start_dom_checks_callback.Get(),
+                                       result_callback.Get());
+
+  // Check that the correct value was written into the model and is used when
+  // the completion scren is supposed to be shown.
+  base::RepeatingClosure show_completion_screen_callback;
+  EXPECT_CALL(*display(),
+              ShowCompletionScreen(FlowType::FLOW_TYPE_PASSWORD_RESET,
+                                   show_completion_screen_callback));
+
+  action_delegate()->ShowCompletionScreen(show_completion_screen_callback);
+}
+
+TEST_F(ApcExternalActionDelegateTest, PauseProgressBarAnimation) {
+  EXPECT_CALL(*display(), PauseProgressBarAnimation);
+  action_delegate()->PauseProgressBarAnimation();
+}
+
+TEST_F(ApcExternalActionDelegateTest, ResumeProgressBarAnimation) {
+  EXPECT_CALL(*display(), ResumeProgressBarAnimation);
+  action_delegate()->ResumeProgressBarAnimation();
 }

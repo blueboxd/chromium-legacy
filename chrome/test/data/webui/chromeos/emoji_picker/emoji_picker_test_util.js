@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {assertTrue} from '../../chai_assert.js';
 
 export function assertCloseTo(actual, expected) {
@@ -73,6 +73,16 @@ export async function waitForCondition(condition, message, maxWait = 5000) {
  */
 export function timeout(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Constructs a promise which resolves after 0 seconds.
+ * @return {!Promise} timeout promise.
+ */
+export function completePendingMicrotasks() {
+  return new Promise((resolve) => {
+    setTimeout(resolve, 0);
+  });
 }
 
 /**

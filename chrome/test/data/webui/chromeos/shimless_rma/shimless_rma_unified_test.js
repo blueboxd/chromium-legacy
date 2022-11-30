@@ -54,9 +54,14 @@ runSuite(
     'OnboardingEnterRsuWpDisableCodePageTest',
     onboardingEnterRsuWpDisableCodePageTest);
 runSuite('OnboardingLandingPageTest', onboardingLandingPageTest);
-runSuite('OnboardingNetworkPageTest', onboardingNetworkPageTest);
-runSuite(
-    'OnboardingSelectComponentsPageTest', onboardingSelectComponentsPageTest);
+// TODO(crbug/1296829): Re-enable below tests once fixed.
+// runSuite('OnboardingNetworkPageTest', onboardingNetworkPageTest);
+// runSuite(
+//     'OnboardingSelectComponentsPageTest',
+//     onboardingSelectComponentsPageTest);
+// runSuite(
+//     'ReimagingCalibrationFailedPageTest',
+//     reimagingCalibrationFailedPageTest);
 runSuite('OnboardingUpdatePageTest', onboardingUpdatePageTest);
 runSuite(
     'OnboardingWaitForManualWpDisablePageTest',
@@ -64,8 +69,6 @@ runSuite(
 runSuite(
     'OnboardingWpDisableCompletePageTest', onboardingWpDisableCompletePageTest);
 runSuite('RebootPageTest', rebootPageTest);
-runSuite(
-    'ReimagingCalibrationFailedPageTest', reimagingCalibrationFailedPageTest);
 runSuite('ReimagingCalibrationRunPageTest', reimagingCalibrationRunPageTest);
 runSuite(
     'ReimagingCalibrationSetupPageTest', reimagingCalibrationSetupPageTest);

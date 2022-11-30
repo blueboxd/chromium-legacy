@@ -17,8 +17,6 @@
 #include "ash/components/arc/mojom/enterprise_reporting.mojom.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/components/arc/session/arc_service_manager.h"
-#include "ash/components/settings/cros_settings_names.h"
-#include "ash/components/settings/timezone_settings.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -39,6 +37,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
+#include "chromeos/ash/components/settings/timezone_settings.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/version/version_loader.h"
@@ -426,8 +426,12 @@ bool ChildStatusCollector::IsReportingAppInfoAndActivity() const {
   return false;
 }
 
-void ChildStatusCollector::OnOSVersion(const std::string& version) {
-  os_version_ = version;
+// TODO(https://crbug.com/1364425)
+// Make this function fallible when the optional passed in evaluated to
+// nullptr, instead of returning a dummy string.
+void ChildStatusCollector::OnOSVersion(
+    const absl::optional<std::string>& version) {
+  os_version_ = version.value_or("0.0.0.0");
 }
 
 }  // namespace policy

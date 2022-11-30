@@ -64,9 +64,6 @@
 
 namespace blink {
 
-const base::Feature kAsyncFontAccess{"AsyncFontAccess",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-
 const char kColorEmojiLocale[] = "und-Zsye";
 
 #if BUILDFLAG(IS_ANDROID)
@@ -143,10 +140,10 @@ FontPlatformData* FontCache::SystemFontPlatformData(
     const FontDescription& font_description) {
   const AtomicString& family = FontCache::SystemFontFamily();
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
-  if (family.IsEmpty() || family == font_family_names::kSystemUi)
+  if (family.empty() || family == font_family_names::kSystemUi)
     return nullptr;
 #else
-  DCHECK(!family.IsEmpty() && family != font_family_names::kSystemUi);
+  DCHECK(!family.empty() && family != font_family_names::kSystemUi);
 #endif
   return GetFontPlatformData(font_description, FontFaceCreationParams(family),
                              AlternateFontName::kNoAlternate);

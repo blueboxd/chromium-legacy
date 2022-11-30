@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,10 +85,10 @@ class TestDisplayItemRequiringSeparateChunk : public ForeignLayerDisplayItem {
 TEST_F(PaintChunkerTest, Empty) {
   Vector<PaintChunk> chunks;
   PaintChunker chunker(chunks);
-  EXPECT_TRUE(chunks.IsEmpty());
+  EXPECT_TRUE(chunks.empty());
 
   chunker.ResetChunks(&chunks);
-  EXPECT_TRUE(chunks.IsEmpty());
+  EXPECT_TRUE(chunks.empty());
 }
 
 TEST_F(PaintChunkerTest, SingleNonEmptyRange) {
@@ -109,7 +109,7 @@ TEST_F(PaintChunkerTest, SingleNonEmptyRange) {
   chunker.ResetChunks(&chunks1);
   EXPECT_THAT(chunks, ElementsAre(IsPaintChunk(0, 2, id,
                                                DefaultPaintChunkProperties())));
-  EXPECT_TRUE(chunks1.IsEmpty());
+  EXPECT_TRUE(chunks1.empty());
 }
 
 TEST_F(PaintChunkerTest, SamePropertiesTwiceCombineIntoOneChunk) {
@@ -134,7 +134,7 @@ TEST_F(PaintChunkerTest, SamePropertiesTwiceCombineIntoOneChunk) {
   chunker.ResetChunks(&chunks1);
   EXPECT_THAT(chunks, ElementsAre(IsPaintChunk(0, 3, id,
                                                DefaultPaintChunkProperties())));
-  EXPECT_TRUE(chunks1.IsEmpty());
+  EXPECT_TRUE(chunks1.empty());
 }
 
 TEST_F(PaintChunkerTest, BuildMultipleChunksWithSinglePropertyChanging) {

@@ -27,6 +27,7 @@
 #include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/user_manager/known_user.h"
+#include "components/user_manager/user_directory_integrity_manager.h"
 #include "components/user_manager/user_names.h"
 
 namespace ash {
@@ -35,7 +36,8 @@ AuthSessionAuthenticator::AuthSessionAuthenticator(
     AuthStatusConsumer* consumer,
     std::unique_ptr<SafeModeDelegate> safe_mode_delegate,
     base::RepeatingCallback<void(const AccountId&)> user_recorder,
-    bool is_ephemeral_mount_enforced)
+    bool is_ephemeral_mount_enforced,
+    PrefService* local_state)
     : Authenticator(consumer),
       is_ephemeral_mount_enforced_(is_ephemeral_mount_enforced),
       user_recorder_(std::move(user_recorder)),
@@ -44,7 +46,8 @@ AuthSessionAuthenticator::AuthSessionAuthenticator(
       auth_performer_(
           std::make_unique<AuthPerformer>(UserDataAuthClient::Get())),
       hibernate_manager_(std::make_unique<HibernateManager>()),
-      mount_performer_(std::make_unique<MountPerformer>()) {
+      mount_performer_(std::make_unique<MountPerformer>()),
+      local_state_(local_state) {
   DCHECK(safe_mode_delegate_);
   DCHECK(!user_recorder_.is_null());
 }
@@ -184,6 +187,24 @@ void AuthSessionAuthenticator::OnStartAuthSessionAfterStaleRemoval(
                           /*error=*/absl::nullopt);
 }
 
+void AuthSessionAuthenticator::RecordCreatingNewUser(
+    std::unique_ptr<UserContext> context,
+    AuthOperationCallback callback) {
+  user_manager::UserDirectoryIntegrityManager integrity_manager(local_state_);
+  integrity_manager.RecordCreatingNewUser(context->GetAccountId());
+  std::move(callback).Run(std::move(context),
+                          /*authentication_error=*/absl::nullopt);
+}
+
+void AuthSessionAuthenticator::RecordFirstAuthFactorAdded(
+    std::unique_ptr<UserContext> context,
+    AuthOperationCallback callback) {
+  user_manager::UserDirectoryIntegrityManager integrity_manager(local_state_);
+  integrity_manager.ClearPrefs();
+  std::move(callback).Run(std::move(context),
+                          /*authentication_error=*/absl::nullopt);
+}
+
 void AuthSessionAuthenticator::DoCompleteLogin(
     bool user_exists,
     std::unique_ptr<UserContext> context,
@@ -214,6 +235,9 @@ void AuthSessionAuthenticator::DoCompleteLogin(
       steps.push_back(base::BindOnce(&MountPerformer::MountEphemeralDirectory,
                                      mount_performer_->AsWeakPtr()));
     } else {  // New persistent user
+      steps.push_back(
+          base::BindOnce(&AuthSessionAuthenticator::RecordCreatingNewUser,
+                         weak_factory_.GetWeakPtr()));
       steps.push_back(base::BindOnce(&MountPerformer::CreateNewUser,
                                      mount_performer_->AsWeakPtr()));
       steps.push_back(base::BindOnce(
@@ -237,6 +261,16 @@ void AuthSessionAuthenticator::DoCompleteLogin(
       steps.push_back(base::BindOnce(&AuthFactorEditor::AddContextKnowledgeKey,
                                      auth_factor_editor_->AsWeakPtr()));
     }
+    if (features::IsUseAuthFactorsEnabled()) {
+      // In addition to factors suitable for authentication, fetch a set of
+      // supported factor types for new users.
+      steps.push_back(
+          base::BindOnce(&AuthFactorEditor::GetAuthFactorsConfiguration,
+                         auth_factor_editor_->AsWeakPtr()));
+    }
+    steps.push_back(
+        base::BindOnce(&AuthSessionAuthenticator::RecordFirstAuthFactorAdded,
+                       weak_factory_.GetWeakPtr()));
   } else {  // existing user
     if (!challenge_response_auth) {
       // We are sure that password is correct, so intercept authentication
@@ -289,8 +323,8 @@ void AuthSessionAuthenticator::AuthenticateToLogin(
   DCHECK(context);
   DCHECK(context->GetUserType() == user_manager::USER_TYPE_REGULAR ||
          context->GetUserType() == user_manager::USER_TYPE_CHILD ||
-         context->GetUserType() == user_manager::USER_TYPE_ACTIVE_DIRECTORY);
-
+         context->GetUserType() == user_manager::USER_TYPE_ACTIVE_DIRECTORY ||
+         context->GetUserType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT);
   PrepareForNewAttempt("AuthenticateToLogin", "Returning regular user");
 
   bool challenge_response_auth = !context->GetChallengeResponseKeys().empty();
@@ -307,6 +341,34 @@ void AuthSessionAuthenticator::AuthenticateToLogin(
       AuthSessionIntent::kDecrypt,
       base::BindOnce(&AuthSessionAuthenticator::DoLoginAsExistingUser,
                      weak_factory_.GetWeakPtr()));
+}
+
+void AuthSessionAuthenticator::AuthenticateToUnlock(
+    std::unique_ptr<UserContext> user_context) {
+  DCHECK(user_context);
+  DCHECK(user_context->GetUserType() == user_manager::USER_TYPE_REGULAR ||
+         user_context->GetUserType() == user_manager::USER_TYPE_CHILD ||
+         user_context->GetUserType() ==
+             user_manager::USER_TYPE_ACTIVE_DIRECTORY ||
+         user_context->GetUserType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+  PrepareForNewAttempt("AuthenticateToUnlock", "Returning regular user");
+
+  bool challenge_response_auth =
+      !user_context->GetChallengeResponseKeys().empty();
+
+  // For now we don't support empty passwords:
+  if (user_context->GetKey()->GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN) {
+    if (user_context->GetKey()->GetSecret().empty() &&
+        !challenge_response_auth) {
+      // TODO(crbug.com/1325411): Restore non-empty password check.
+      LOGIN_LOG(ERROR) << "Empty password used in AuthenticateToLogin";
+    }
+  }
+  StartAuthSessionWithChecks(std::move(user_context),
+                             is_ephemeral_mount_enforced_,
+                             AuthSessionIntent::kVerifyOnly,
+                             base::BindOnce(&AuthSessionAuthenticator::DoUnlock,
+                                            weak_factory_.GetWeakPtr()));
 }
 
 void AuthSessionAuthenticator::DoLoginAsExistingUser(
@@ -367,6 +429,57 @@ void AuthSessionAuthenticator::DoLoginAsExistingUser(
     steps.push_back(
         base::BindOnce(&AuthSessionAuthenticator::CheckOwnershipOperation,
                        weak_factory_.GetWeakPtr()));
+  }
+  RunOperationChain(std::move(context), std::move(steps),
+                    std::move(success_callback), std::move(error_callback));
+}
+
+void AuthSessionAuthenticator::DoUnlock(
+    bool user_exists,
+    std::unique_ptr<UserContext> context,
+    absl::optional<AuthenticationError> error) {
+  AuthErrorCallback error_callback =
+      base::BindOnce(&AuthSessionAuthenticator::ProcessCryptohomeError,
+                     weak_factory_.GetWeakPtr(), AuthFailure::UNLOCK_FAILED);
+  if (error.has_value()) {
+    LOGIN_LOG(ERROR) << "Error starting authsession for Regular user for "
+                        "verification intent "
+                     << error.value().get_cryptohome_code();
+    std::move(error_callback).Run(std::move(context), error.value());
+    return;
+  }
+
+  bool is_user_ephemeral =
+      is_ephemeral_mount_enforced_ ||
+      (context->GetUserType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+  LOGIN_LOG(EVENT) << "Regular User Unlock " << user_exists << " "
+                   << is_ephemeral_mount_enforced_ << " " << is_user_ephemeral;
+
+  if (!user_exists && !is_user_ephemeral) {
+    LOGIN_LOG(ERROR)
+        << "User directory does not exist for supposedly existing user";
+    std::move(error_callback)
+        .Run(std::move(context),
+             AuthenticationError{
+                 user_data_auth::CRYPTOHOME_ERROR_ACCOUNT_NOT_FOUND});
+    return;
+  }
+  DCHECK(user_exists || is_user_ephemeral);
+
+  bool challenge_response_auth = !context->GetChallengeResponseKeys().empty();
+
+  AuthSuccessCallback success_callback = base::BindOnce(
+      &AuthSessionAuthenticator::NotifyAuthSuccess, weak_factory_.GetWeakPtr());
+
+  std::vector<AuthOperation> steps;
+  if (challenge_response_auth) {
+    steps.push_back(
+        base::BindOnce(&AuthPerformer::AuthenticateUsingChallengeResponseKey,
+                       auth_performer_->AsWeakPtr()));
+  } else {
+    steps.push_back(
+        base::BindOnce(&AuthPerformer::AuthenticateUsingKnowledgeKey,
+                       auth_performer_->AsWeakPtr()));
   }
   RunOperationChain(std::move(context), std::move(steps),
                     std::move(success_callback), std::move(error_callback));

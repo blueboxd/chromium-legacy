@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 
 #include "gpu/command_buffer/client/webgpu_interface.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
 
 namespace blink {
 
@@ -25,8 +24,8 @@ void DawnObjectBase::setLabel(const String& value) {
   setLabelImpl(value);
 }
 
-void DawnObjectBase::EnsureFlush() {
-  dawn_control_client_->EnsureFlush();
+void DawnObjectBase::EnsureFlush(scheduler::EventLoop& event_loop) {
+  dawn_control_client_->EnsureFlush(event_loop);
 }
 
 void DawnObjectBase::FlushNow() {

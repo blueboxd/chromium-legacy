@@ -41,6 +41,7 @@ struct AuctionConfig;
 
 namespace content {
 
+class InterestGroupAuctionReporter;
 class InterestGroupManagerImpl;
 
 // An InterestGroupAuction Handles running an auction, or a component auction.
@@ -73,7 +74,7 @@ class CONTENT_EXPORT InterestGroupAuction
   struct PostAuctionSignals {
     PostAuctionSignals() = default;
 
-    // For now, top level post auction signals do not have
+    // For now, top-level post auction signals do not have
     // `highest_scoring_other_bid` or `made_highest_scoring_other_bid`.
     PostAuctionSignals(double winning_bid, bool made_winning_bid)
         : winning_bid(winning_bid), made_winning_bid(made_winning_bid) {}
@@ -134,9 +135,8 @@ class CONTENT_EXPORT InterestGroupAuction
     // The seller worklet rejected all bids (of which there was at least one).
     kAllBidsRejected = 7,
 
-    // The winning bidder worklet crashed. The bidder must have successfully
-    // bid, and the seller must have accepted the bid for this to be logged.
-    kWinningBidderWorkletCrashed = 8,
+    // Obsolete:
+    // kWinningBidderWorkletCrashed = 8,
 
     // The seller is not allowed to use the interest group API.
     kSellerRejected = 9,
@@ -145,11 +145,10 @@ class CONTENT_EXPORT InterestGroupAuction
     // top-level auction.
     kComponentLostAuction = 10,
 
-    // The component seller worklet with the winning bidder crashed during the
-    // reporting phase.
-    kWinningComponentSellerWorkletCrashed = 11,
+    // Obsolete:
+    // kWinningComponentSellerWorkletCrashed = 11,
 
-    kMaxValue = kWinningComponentSellerWorkletCrashed
+    kMaxValue = kComponentLostAuction
   };
 
   struct BidState {
@@ -221,8 +220,8 @@ class CONTENT_EXPORT InterestGroupAuction
 
     // URLs of forDebuggingOnly.reportAdAuctionLoss(url) and
     // forDebuggingOnly.reportAdAuctionWin(url) called in generateBid().
-    // They support post auction signal placeholders in their URL string,
-    // for example, "https://example.com/${highestScoringOtherBid}".
+    // They support post auction signal placeholders in their query string, for
+    // example, "https://example.com/?${winningBid}".
     // Placeholders will be replaced by corresponding values. For a component
     // auction, post auction signals are only from the component auction, but
     // not the top-level auction.
@@ -232,8 +231,8 @@ class CONTENT_EXPORT InterestGroupAuction
     // URLs of forDebuggingOnly.reportAdAuctionLoss(url) and
     // forDebuggingOnly.reportAdAuctionWin(url) called in scoreAd(). In the case
     // of a component auction, these are the values from component seller that
-    // the scored ad was created in, and post auction signals are from the
-    // component auction.
+    // the scored ad was created in, and post auction signals are from both the
+    // component auction and top-level auction.
     absl::optional<GURL> seller_debug_loss_report_url;
     absl::optional<GURL> seller_debug_win_report_url;
 
@@ -243,6 +242,11 @@ class CONTENT_EXPORT InterestGroupAuction
     // auction, won it, and was then scored by the top-level seller.
     absl::optional<GURL> top_level_seller_debug_win_report_url;
     absl::optional<GURL> top_level_seller_debug_loss_report_url;
+
+    // The reason this bid was rejected by the auction (i.e., reason why score
+    // was non-positive).
+    auction_worklet::mojom::RejectReason reject_reason =
+        auction_worklet::mojom::RejectReason::kNotAvailable;
   };
 
   // Result of generated a bid. Contains information that needs to score a bid
@@ -442,6 +446,18 @@ class CONTENT_EXPORT InterestGroupAuction
   // bidding and scoring phase has completed successfully.
   ScoredBid* top_bid();
 
+  // Gets the buyer experiment ID in `config` for buyer. Public so that
+  // InterestGroupAuctionReporter can use it.
+  static absl::optional<uint16_t> GetBuyerExperimentId(
+      const blink::AuctionConfig& config,
+      const url::Origin& buyer);
+
+  // Gets the buyer per-buyer-signals ID in `config` for buyer. Public so that
+  // InterestGroupAuctionReporter can use it.
+  static absl::optional<std::string> GetPerBuyerSignals(
+      const blink::AuctionConfig& config,
+      const url::Origin& buyer);
+
  private:
   using AuctionList = std::list<std::unique_ptr<InterestGroupAuction>>;
 
@@ -541,6 +557,7 @@ class CONTENT_EXPORT InterestGroupAuction
   // auction_worklet::mojom::ScoreAdClient implementation:
   void OnScoreAdComplete(
       double score,
+      auction_worklet::mojom::RejectReason reject_reason,
       auction_worklet::mojom::ComponentAuctionModifiedBidParamsPtr
           component_auction_modified_bid_params,
       uint32_t scoring_signals_data_version,
@@ -578,42 +595,7 @@ class CONTENT_EXPORT InterestGroupAuction
   // worklet to report a win. Will ultimately invoke
   // `reporting_phase_callback_`, which will delete the auction.
   void ReportSellerResult(absl::optional<std::string> top_seller_signals);
-  void OnReportSellerResultComplete(
-      const absl::optional<std::string>& signals_for_winner,
-      const absl::optional<GURL>& seller_report_url,
-      const base::flat_map<std::string, GURL>& seller_ad_beacon_map,
-      PrivateAggregationRequests pa_requests,
-      const std::vector<std::string>& error_msgs);
-  void LoadBidderWorkletToReportBidWin(const std::string& signals_for_winner);
-  void ReportBidWin(const std::string& signals_for_winner);
-  void OnReportBidWinComplete(
-      const absl::optional<GURL>& bidder_report_url,
-      const base::flat_map<std::string, GURL>& bidder_ad_beacon_map,
-      PrivateAggregationRequests pa_requests,
-      const std::vector<std::string>& error_msgs);
-
-  // Called when the component SellerWorklet with the bidder that won an
-  // auction has an out-of-band fatal error during the ReportResult() call.
-  void OnWinningComponentSellerWorkletFatalError(
-      AuctionWorkletManager::FatalErrorType fatal_error_type,
-      const std::vector<std::string>& errors);
-
-  // Called when the BidderWorklet that won an auction has an out-of-band
-  // fatal error during the ReportWin() call.
-  void OnWinningBidderWorkletFatalError(
-      AuctionWorkletManager::FatalErrorType fatal_error_type,
-      const std::vector<std::string>& errors);
-
-  // Invoked when the nested component auction with the winning bid's
-  // reporting phase is complete. Completes the reporting phase for `this`.
-  void OnComponentAuctionReportingPhaseComplete(bool success);
-
-  // Called when the final phase of the auction completes. Unconditionally
-  // sets `final_auction_result`, even if `auction_result` is
-  // AuctionResult::kSuccess, unlike other phase completion methods. Appends
-  // `errors` to `errors_`.
-  void OnReportingPhaseComplete(AuctionResult auction_result,
-                                const std::vector<std::string>& errors = {});
+  void OnReportingPhaseComplete();
 
   // -----------------------------------
   // Methods not associated with a phase
@@ -638,10 +620,13 @@ class CONTENT_EXPORT InterestGroupAuction
   // Replaces `${}` placeholders in a debug report URL's query string for post
   // auction signals if exist. Only replaces unescaped placeholder ${}, but
   // not escaped placeholder (i.e., %24%7B%7D).
-  static GURL FillPostAuctionSignals(const GURL& url,
-                                     const PostAuctionSignals& signals,
-                                     const absl::optional<PostAuctionSignals>&
-                                         top_level_signals = absl::nullopt);
+  static GURL FillPostAuctionSignals(
+      const GURL& url,
+      const PostAuctionSignals& signals,
+      const absl::optional<PostAuctionSignals>& top_level_signals =
+          absl::nullopt,
+      const absl::optional<auction_worklet::mojom::RejectReason> reject_reason =
+          absl::nullopt);
 
   // Tracing ID associated with the Auction. A nestable
   // async "Auction" trace
@@ -796,6 +781,12 @@ class CONTENT_EXPORT InterestGroupAuction
   // seller failed to load, since neither the bids nor the bidders were the
   // problem).
   bool all_bids_scored_ = false;
+
+  // Handles the reporting phase of the auction.
+  //
+  // TODO(mmenke): Make this class return the report, so the consumer can wire
+  // it up to the URN loading code.
+  std::unique_ptr<InterestGroupAuctionReporter> reporter_;
 
   // Receivers for OnScoreAd() callbacks. Owns Bids, which have raw pointers to
   // other objects, so must be last, to avoid triggering tooling to check for

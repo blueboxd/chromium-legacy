@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ import java.util.Map;
  * Navigation object will be created and that same object will be used in all
  * of the NavigationCallback methods.
  */
-public class Navigation extends IClientNavigation.Stub {
+class Navigation extends IClientNavigation.Stub {
     private final INavigation mNavigationImpl;
 
     // Constructor for test mocking.

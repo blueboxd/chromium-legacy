@@ -7,13 +7,14 @@ import 'chrome://webui-test/mojo_webui_test_support.js';
 
 import {PasscodeInputElement} from 'chrome://access-code-cast/passcode_input/passcode_input';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {waitAfterNextRender} from 'chrome://webui-test/test_util.js';
+import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
 suite('PasscodeInputElementTest', () => {
   let c2cInput: PasscodeInputElement;
 
   setup(async () => {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
 
     c2cInput = document.createElement('c2c-passcode-input');
     c2cInput.length = 6;

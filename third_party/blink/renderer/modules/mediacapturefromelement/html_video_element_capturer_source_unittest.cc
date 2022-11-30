@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,6 +57,7 @@ class MockWebMediaPlayer : public WebMediaPlayer {
   void OnRequestPictureInPicture() override {}
   WebTimeRanges Buffered() const override { return WebTimeRanges(); }
   WebTimeRanges Seekable() const override { return WebTimeRanges(); }
+  void OnFrozen() override {}
   bool SetSinkId(const WebString& sinkId,
                  WebSetSinkIdCompleteCallback) override {
     return false;

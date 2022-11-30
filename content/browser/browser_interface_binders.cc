@@ -36,7 +36,7 @@
 #include "content/browser/media/midi_host.h"
 #include "content/browser/media/session/media_session_service_impl.h"
 #include "content/browser/ml/ml_service_factory.h"
-#include "content/browser/net/reporting_service_proxy.h"
+#include "content/browser/network/reporting_service_proxy.h"
 #include "content/browser/picture_in_picture/picture_in_picture_service_impl.h"
 #include "content/browser/preloading/prerender/prerender_internals.mojom.h"
 #include "content/browser/preloading/prerender/prerender_internals_ui.h"
@@ -1347,6 +1347,8 @@ void PopulateServiceWorkerBinders(ServiceWorkerHost* host,
 #endif
   map->Add<blink::mojom::BucketManagerHost>(base::BindRepeating(
       &ServiceWorkerHost::CreateBucketManagerHost, base::Unretained(host)));
+  map->Add<blink::mojom::WebUsbService>(base::BindRepeating(
+      &ServiceWorkerHost::BindUsbService, base::Unretained(host)));
 
   // RenderProcessHost binders
   map->Add<media::mojom::VideoDecodePerfHistory>(BindServiceWorkerReceiver(
@@ -1417,10 +1419,13 @@ void PopulateBinderMapWithContext(
   BrowserContext* browser_context =
       host->version()->context()->wrapper()->browser_context();
 
+  const auto service_worker_version_info = host->version()->GetInfo();
+
   // Give the embedder a chance to register binders.
   GetContentClient()
       ->browser()
-      ->RegisterBrowserInterfaceBindersForServiceWorker(browser_context, map);
+      ->RegisterBrowserInterfaceBindersForServiceWorker(
+          browser_context, service_worker_version_info, map);
 }
 
 void PopulateBinderMap(ServiceWorkerHost* host, mojo::BinderMap* map) {

@@ -10,6 +10,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
@@ -251,8 +252,7 @@ class NetworkResponder {
   // Returns true if the network request for path received a response.
   bool ReportSent(const std::string& path) const {
     base::AutoLock auto_lock(lock_);
-    return std::find(sent_reports_.begin(), sent_reports_.end(), path) !=
-           sent_reports_.end();
+    return base::Contains(sent_reports_, path);
   }
 
   // Indicates whether `stored_url_loader_client_` is connected to a receiver.
@@ -3687,21 +3687,12 @@ function scoreAd(
       static_cast<RenderFrameHostImpl*>(main_rfh())
           ->GetPage()
           .fenced_frame_urls_map();
+  FencedFrameURLMappingTestPeer fenced_frame_url_mapping_test_peer(
+      &fenced_frame_urls_map);
 
-  // The map is not full initially.
-  EXPECT_FALSE(fenced_frame_urls_map.IsFull());
-
-  // Fill the map until its size reaches limit.
-  for (size_t i = 0; i < FencedFrameURLMapping::kMaxUrnMappingSize; ++i) {
-    const GURL test_url("https://" + base::NumberToString(i) + ".test");
-    absl::optional<GURL> urn_uuid =
-        fenced_frame_urls_map.AddFencedFrameURL(test_url);
-    ASSERT_TRUE(urn_uuid.has_value());
-    ASSERT_TRUE(fenced_frame_urls_map.IsMapped(urn_uuid.value()));
-  }
-
-  // Number of urn mapping has reached limit.
-  EXPECT_TRUE(fenced_frame_urls_map.IsFull());
+  // Fill the map until its size reaches the limit.
+  GURL url("https://a.test");
+  fenced_frame_url_mapping_test_peer.FillMap(url);
 
   absl::optional<GURL> auction_result =
       RunAdAuctionAndFlush(std::move(auction_config));
@@ -5673,7 +5664,7 @@ TEST_F(AdAuctionServiceImplPrivateAggregationEnabledTest,
 function generateBid(
     interestGroup, auctionSignals, perBuyerSignals, trustedBiddingSignals,
     browserSignals) {
-  privateAggregation.sendHistogramReport({bucket: 1, value: 2});
+  privateAggregation.sendHistogramReport({bucket: 1n, value: 2});
   return {'ad': 'example', 'bid': 1, 'render': 'https://example.com/render'};
 }
 )";
@@ -5764,7 +5755,7 @@ TEST_F(AdAuctionServiceImplPrivateAggregationEnabledTest,
 function generateBid(
     interestGroup, auctionSignals, perBuyerSignals, trustedBiddingSignals,
     browserSignals) {
-  privateAggregation.sendHistogramReport({bucket: 1, value: 2});
+  privateAggregation.sendHistogramReport({bucket: 1n, value: 2});
   return {'ad': 'example', 'bid': 1, 'render': 'https://example.com/render'};
 }
 )";
@@ -5884,7 +5875,7 @@ TEST_F(AdAuctionServiceImplPrivateAggregationDisabledTest,
 function generateBid(
     interestGroup, auctionSignals, perBuyerSignals, trustedBiddingSignals,
     browserSignals) {
-  privateAggregation.sendHistogramReport({bucket: 1, value: 2});
+  privateAggregation.sendHistogramReport({bucket: 1n, value: 2});
   return {'ad': 'example', 'bid': 1, 'render': 'https://example.com/render'};
 }
 )";
@@ -5927,7 +5918,7 @@ TEST_F(AdAuctionServiceImplPrivateAggregationDisabledTest,
 function generateBid(
     interestGroup, auctionSignals, perBuyerSignals, trustedBiddingSignals,
     browserSignals) {
-  privateAggregation.sendHistogramReport({bucket: 1, value: 2});
+  privateAggregation.sendHistogramReport({bucket: 1n, value: 2});
   return {'ad': 'example', 'bid': 1, 'render': 'https://example.com/render'};
 }
 )";

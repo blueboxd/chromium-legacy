@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -752,7 +752,7 @@ void BaseRenderingContext2D::Draw(
 
   if (UNLIKELY(GetState().IsFilterUnresolved())) {
     // Resolving a filter requires allocating garbage-collected objects.
-    PostDeferrableAction(WTF::Bind(
+    PostDeferrableAction(WTF::BindOnce(
         &BaseRenderingContext2D::DrawInternal<CurrentOverdrawOp, DrawFunc,
                                               DrawCoversClipBoundsFunc>,
         WrapPersistent(this), draw_func, draw_covers_clip_bounds, bounds,

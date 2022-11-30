@@ -14,6 +14,7 @@
 #import "components/prefs/pref_service.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "ios/chrome/browser/discover_feed/feed_constants.h"
+#import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
@@ -53,6 +54,8 @@ bool IsSupportedAccessPoint(signin_metrics::AccessPoint access_point) {
     case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
     case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
     case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_POST_DEVICE_RESTORE_SIGNIN_PROMO:
       return true;
     case signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE:
     case signin_metrics::AccessPoint::ACCESS_POINT_NTP_LINK:
@@ -86,6 +89,8 @@ bool IsSupportedAccessPoint(signin_metrics::AccessPoint access_point) {
         ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE:
     case signin_metrics::AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
     case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS_SYNC_OFF_ROW:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_POST_DEVICE_RESTORE_BACKGROUND_SIGNIN:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       return false;
   }
@@ -146,6 +151,10 @@ void RecordImpressionsTilSigninButtonsHistogramForAccessPoint(
         ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE:
     case signin_metrics::AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
     case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS_SYNC_OFF_ROW:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_POST_DEVICE_RESTORE_SIGNIN_PROMO:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_POST_DEVICE_RESTORE_BACKGROUND_SIGNIN:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED() << "Unexpected value for access point "
                    << static_cast<int>(access_point);
@@ -208,6 +217,10 @@ void RecordImpressionsTilDismissHistogramForAccessPoint(
         ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE:
     case signin_metrics::AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
     case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS_SYNC_OFF_ROW:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_POST_DEVICE_RESTORE_SIGNIN_PROMO:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_POST_DEVICE_RESTORE_BACKGROUND_SIGNIN:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED() << "Unexpected value for access point "
                    << static_cast<int>(access_point);
@@ -270,6 +283,10 @@ void RecordImpressionsTilXButtonHistogramForAccessPoint(
         ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE:
     case signin_metrics::AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
     case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS_SYNC_OFF_ROW:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_POST_DEVICE_RESTORE_SIGNIN_PROMO:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_POST_DEVICE_RESTORE_BACKGROUND_SIGNIN:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED() << "Unexpected value for access point "
                    << static_cast<int>(access_point);
@@ -321,6 +338,10 @@ const char* DisplayedCountPreferenceKey(
         ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE:
     case signin_metrics::AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
     case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS_SYNC_OFF_ROW:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_POST_DEVICE_RESTORE_SIGNIN_PROMO:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_POST_DEVICE_RESTORE_BACKGROUND_SIGNIN:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       return nullptr;
   }
@@ -370,6 +391,10 @@ const char* AlreadySeenSigninViewPreferenceKey(
         ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE:
     case signin_metrics::AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
     case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS_SYNC_OFF_ROW:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_POST_DEVICE_RESTORE_SIGNIN_PROMO:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_POST_DEVICE_RESTORE_BACKGROUND_SIGNIN:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       return nullptr;
   }
@@ -383,7 +408,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
 }
 
 // Redefined to be readwrite.
-@property(nonatomic, strong, readwrite) ChromeIdentity* identity;
+@property(nonatomic, strong, readwrite) id<SystemIdentity> identity;
 @property(nonatomic, assign, readwrite, getter=isSigninInProgress)
     BOOL signinInProgress;
 
@@ -451,6 +476,13 @@ const char* AlreadySeenSigninViewPreferenceKey(
       return NO;
   }
 
+  // Always show the feed signin promo if the experimental setting is enabled.
+  if (accessPoint ==
+          signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO &&
+      experimental_flags::ShouldForceFeedSigninPromo()) {
+    return YES;
+  }
+
   // Checks if the user has exceeded the max impression count.
   const int maxDisplayedCount =
       accessPoint ==
@@ -503,14 +535,14 @@ const char* AlreadySeenSigninViewPreferenceKey(
     _accessPoint = accessPoint;
     _presenter = presenter;
 
-    ChromeIdentity* defaultIdentity = [self defaultIdentity];
-    if (defaultIdentity) {
-      [self setIdentity:defaultIdentity];
-    }
-
     _accountManagerServiceObserver =
         std::make_unique<ChromeAccountManagerServiceObserverBridge>(
             self, _accountManagerService);
+
+    id<SystemIdentity> defaultIdentity = [self defaultIdentity];
+    if (defaultIdentity) {
+      self.identity = defaultIdentity;
+    }
   }
   return self;
 }
@@ -630,7 +662,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
 // Returns the identity for the sync promo. This should be the signed in promo,
 // if the user is signed in. If not signed in, the default identity from
 // AccountManagerService.
-- (ChromeIdentity*)defaultIdentity {
+- (id<SystemIdentity>)defaultIdentity {
   if (self.authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
     return self.authService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
   }
@@ -639,14 +671,14 @@ const char* AlreadySeenSigninViewPreferenceKey(
 }
 
 // Sets the Chrome identity to display in the sign-in promo.
-- (void)setIdentity:(ChromeIdentity*)identity {
+- (void)setIdentity:(id<SystemIdentity>)identity {
   _identity = identity;
-  if (!self.identity) {
+  if (!_identity) {
     self.identityAvatar = nil;
   } else {
     self.identityAvatar =
         self.accountManagerService->GetIdentityAvatarWithIdentity(
-            identity, IdentityAvatarSize::SmallSize);
+            _identity, IdentityAvatarSize::SmallSize);
   }
 }
 
@@ -689,7 +721,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
 }
 
 // Starts sign-in process with the Chrome identity from `identity`.
-- (void)showSigninWithIdentity:(ChromeIdentity*)identity
+- (void)showSigninWithIdentity:(id<SystemIdentity>)identity
                    promoAction:(signin_metrics::PromoAction)promoAction {
   self.signinPromoViewState = ios::SigninPromoViewState::UsedAtLeastOnce;
   self.signinInProgress = YES;
@@ -755,14 +787,15 @@ const char* AlreadySeenSigninViewPreferenceKey(
 #pragma mark - ChromeAccountManagerServiceObserver
 
 - (void)identityListChanged {
-  ChromeIdentity* newIdentity = [self defaultIdentity];
-  if (![self.identity isEqual:newIdentity]) {
-    [self setIdentity:newIdentity];
+  id<SystemIdentity> currentIdentity = self.identity;
+  id<SystemIdentity> defaultIdentity = [self defaultIdentity];
+  if (![currentIdentity isEqual:defaultIdentity]) {
+    self.identity = defaultIdentity;
     [self sendConsumerNotificationWithIdentityChanged:YES];
   }
 }
 
-- (void)identityChanged:(ChromeIdentity*)identity {
+- (void)identityChanged:(id<SystemIdentity>)identity {
   [self sendConsumerNotificationWithIdentityChanged:NO];
 }
 

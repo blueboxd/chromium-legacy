@@ -26,8 +26,8 @@ import './safety_check_chrome_cleaner_child.js';
 // </if>
 
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
-import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
-import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
+import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {WebUIListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {flush, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {HatsBrowserProxyImpl, TrustSafetyInteraction} from '../hats_browser_proxy.js';
@@ -35,6 +35,7 @@ import {loadTimeData} from '../i18n_setup.js';
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, SafetyCheckInteractions} from '../metrics_browser_proxy.js';
 import {routes} from '../route.js';
 import {Router} from '../router.js';
+import {NotificationPermission, SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl} from '../site_settings/site_settings_prefs_browser_proxy.js';
 
 import {SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckParentStatus} from './safety_check_browser_proxy.js';
 import {getTemplate} from './safety_check_page.html.js';
@@ -68,22 +69,36 @@ export class SettingsSafetyCheckPageElement extends
       /** UI string to display for the parent status. */
       parentDisplayString_: String,
 
-      /**
-       * Boolean that decides if the entry point for unused site permissions
-       * should be shown.
-       */
-      safetyCheckPermissionsEnabled_: {
+      /** Boolean to check safety check notification permissions enabled . */
+      safetyCheckNotificationPermissionsEnabled_: {
         type: Boolean,
         value() {
-          return loadTimeData.getBoolean('safetyCheckPermissionsEnabled');
+          return loadTimeData.getBoolean(
+              'safetyCheckNotificationPermissionsEnabled');
         },
       },
+
+      /** Boolean to show/hide entry point for unused site permissions. */
+      safetyCheckUnusedSitePermissionsEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean(
+              'safetyCheckUnusedSitePermissionsEnabled');
+        },
+      },
+
+      /* List of notification permission sites. */
+      notificationPermissionSites_: Array,
     };
   }
 
   private parentStatus_: SafetyCheckParentStatus;
   private parentDisplayString_: string;
-  private safetyCheckPermissionsEnabled_: boolean;
+  private safetyCheckNotificationPermissionsEnabled_: boolean;
+  private safetyCheckUnusedSitePermissionsEnabled_: boolean;
+  private notificationPermissionSites_: NotificationPermission[] = [];
+  private siteSettingsBrowserProxy_: SiteSettingsPrefsBrowserProxy =
+      SiteSettingsPrefsBrowserProxyImpl.getInstance();
   private safetyCheckBrowserProxy_: SafetyCheckBrowserProxy =
       SafetyCheckBrowserProxyImpl.getInstance();
   private metricsBrowserProxy_: MetricsBrowserProxy =
@@ -92,7 +107,7 @@ export class SettingsSafetyCheckPageElement extends
   /** Timer ID for periodic update. */
   private updateTimerId_: number = -1;
 
-  override connectedCallback() {
+  override async connectedCallback() {
     super.connectedCallback();
 
     // Register for safety check status updates.
@@ -108,6 +123,15 @@ export class SettingsSafetyCheckPageElement extends
         Router.getInstance().getQueryParameters().has('activateSafetyCheck')) {
       this.runSafetyCheck_();
     }
+
+    // Register for notification permission review list updates.
+    this.addWebUIListener(
+        'notification-permission-review-list-changed',
+        (sites: NotificationPermission[]) =>
+            this.onReviewNotificationPermissionListChanged_(sites));
+
+    this.notificationPermissionSites_ =
+        await this.siteSettingsBrowserProxy_.getNotificationPermissionReview();
   }
 
   /** Triggers the safety check. */
@@ -166,6 +190,16 @@ export class SettingsSafetyCheckPageElement extends
 
   private shouldShowChildren_(): boolean {
     return this.parentStatus_ !== SafetyCheckParentStatus.BEFORE;
+  }
+
+  private onReviewNotificationPermissionListChanged_(
+      sites: NotificationPermission[]) {
+    this.notificationPermissionSites_ = sites;
+  }
+
+  private shouldShowNotificationPermissions_(): boolean {
+    return this.notificationPermissionSites_.length !== 0 &&
+        this.safetyCheckNotificationPermissionsEnabled_;
   }
 }
 

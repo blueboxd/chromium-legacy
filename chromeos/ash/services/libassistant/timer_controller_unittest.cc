@@ -14,12 +14,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 namespace {
 
-using ::chromeos::assistant::AssistantTimerState;
+using assistant::AssistantTimerState;
 using ::testing::Invoke;
 
 // Adds an AlarmTimerEvent of the given |type| to |events|.
@@ -44,10 +43,9 @@ class TimerDelegateMock : public mojom::TimerDelegate {
   ~TimerDelegateMock() override = default;
 
   // mojom::TimerDelegate implementation:
-  MOCK_METHOD(
-      void,
-      OnTimerStateChanged,
-      (const std::vector<::chromeos::assistant::AssistantTimer>& timers));
+  MOCK_METHOD(void,
+              OnTimerStateChanged,
+              (const std::vector<assistant::AssistantTimer>& timers));
 
   mojo::PendingRemote<mojom::TimerDelegate> BindNewPipeAndPassRemote() {
     return receiver_.BindNewPipeAndPassRemote();
@@ -77,7 +75,7 @@ class AssistantTimerControllerTest : public ::testing::Test {
 
   void Init() {
     auto assistant_manager =
-        std::make_unique<assistant::FakeAssistantManager>();
+        std::make_unique<chromeos::assistant::FakeAssistantManager>();
     auto* assistant_manager_internal =
         &assistant_manager->assistant_manager_internal();
     assistant_client_ = std::make_unique<FakeAssistantClient>(
@@ -102,8 +100,8 @@ class AssistantTimerControllerTest : public ::testing::Test {
 
   TimerController& controller() { return controller_; }
 
-  assistant::FakeAlarmTimerManager& fake_alarm_timer_manager() {
-    return *static_cast<assistant::FakeAlarmTimerManager*>(
+  chromeos::assistant::FakeAlarmTimerManager& fake_alarm_timer_manager() {
+    return *static_cast<chromeos::assistant::FakeAlarmTimerManager*>(
         assistant_client_->assistant_manager_internal()
             ->GetAlarmTimerManager());
   }
@@ -185,5 +183,4 @@ TEST_F(AssistantTimerControllerTest, ShouldNotCrashAfterStoppingLibassistant) {
   controller().ResumeTimer("timer-id");
 }
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant

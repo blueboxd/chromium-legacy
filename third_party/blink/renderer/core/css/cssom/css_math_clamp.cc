@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,7 +88,7 @@ void CSSMathClamp::BuildCSSText(Nested,
 
 CSSMathExpressionNode* CSSMathClamp::ToCalcExpressionNode() const {
   CSSMathExpressionOperation::Operands operands;
-  operands.ReserveCapacity(3u);
+  operands.reserve(3u);
   for (const auto& value : {lower_, value_, upper_}) {
     CSSMathExpressionNode* operand = value->ToCalcExpressionNode();
     if (!operand) {

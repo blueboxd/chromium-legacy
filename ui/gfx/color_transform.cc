@@ -144,19 +144,42 @@ float ToLinear(ColorSpace::TransferID id, float v) {
   return 0;
 }
 
-// Return the maximum luminance to be used for tone mapping a PQ signal, with
-// the indicated metadata.
-float GetToneMapPQMaxLuminanceNits(
-    const absl::optional<gfx::HDRMetadata>& hdr_metadata) {
-  if (hdr_metadata) {
-    if (hdr_metadata->max_content_light_level > 0)
-      return hdr_metadata->max_content_light_level;
-    if (hdr_metadata->color_volume_metadata.luminance_max > 0.f) {
-      return hdr_metadata->color_volume_metadata.luminance_max;
+// Returns true if tone mapping will be a non-identity operation. Computes the
+// constants used by the tone mapping algorithm described in
+// https://colab.research.google.com/drive/1hI10nq6L6ru_UFvz7-f7xQaQp0qarz_K
+bool ComputePQToneMapConstants(const gfx::ColorTransform::Options& options,
+                               float& a,
+                               float& b) {
+  // Compute the maximum luminance to be used for tone mapping a PQ signal, with
+  // the indicated metadata.
+  float src_max_lum_nits = 10000.f;
+  if (const auto& hdr_metadata = options.src_hdr_metadata) {
+    if (hdr_metadata->max_content_light_level > 0) {
+      src_max_lum_nits = hdr_metadata->max_content_light_level;
+    } else if (hdr_metadata->color_volume_metadata.luminance_max > 0.f) {
+      src_max_lum_nits = hdr_metadata->color_volume_metadata.luminance_max;
     }
   }
-  // The maximum value that ColorTransformPQToLinear can produce.
-  return 10000.f;
+  const float src_max_lum_relative =
+      src_max_lum_nits / options.sdr_max_luminance_nits;
+
+  if (src_max_lum_relative > options.dst_max_luminance_relative) {
+    a = options.dst_max_luminance_relative /
+        (src_max_lum_relative * src_max_lum_relative);
+    b = 1.f / options.dst_max_luminance_relative;
+    return true;
+  }
+  a = 0;
+  b = 0;
+  return false;
+}
+
+void ComputeHLGToneMapConstants(const gfx::ColorTransform::Options& options,
+                                float& gamma_minus_one) {
+  const float dst_max_luminance_nits =
+      options.sdr_max_luminance_nits * options.dst_max_luminance_relative;
+  gamma_minus_one =
+      1.2f + 0.42f * logf(dst_max_luminance_nits / 1000.f) / logf(10.f) - 1.f;
 }
 
 }  // namespace
@@ -189,13 +212,6 @@ class ColorTransformStep {
   // Return true if this is a null transform.
   virtual bool IsNull() { return false; }
   virtual void Transform(ColorTransform::TriStim* color, size_t num) const = 0;
-  // In the shader, |hdr| will appear before |src|, so any helper functions that
-  // are created should be put in |hdr|. Any helper functions should have
-  // |step_index| included in the function name, to ensure that there are no
-  // naming conflicts.
-  virtual void AppendShaderSource(std::stringstream* hdr,
-                                  std::stringstream* src,
-                                  size_t step_index) const = 0;
   virtual void AppendSkShaderSource(std::stringstream* src) const = 0;
 };
 
@@ -214,8 +230,7 @@ class ColorTransformInternal : public ColorTransform {
       step->Transform(colors, num);
     }
   }
-  std::string GetShaderSource() const override;
-  std::string GetSkShaderSource() const override;
+  sk_sp<SkRuntimeEffect> GetSkRuntimeEffect() const override;
   bool IsIdentity() const override { return steps_.empty(); }
   size_t NumberOfStepsForTesting() const override { return steps_.size(); }
 
@@ -235,9 +250,6 @@ class ColorTransformNull : public ColorTransformStep {
   ColorTransformNull* GetNull() override { return this; }
   bool IsNull() override { return true; }
   void Transform(ColorTransform::TriStim* color, size_t num) const override {}
-  void AppendShaderSource(std::stringstream* hdr,
-                          std::stringstream* src,
-                          size_t step_index) const override {}
   void AppendSkShaderSource(std::stringstream* src) const override {}
 };
 
@@ -260,32 +272,6 @@ class ColorTransformMatrix : public ColorTransformStep {
       auto& color = colors[i];
       SkV4 mapped = matrix_.map(color.x(), color.y(), color.z(), 1);
       color.SetPoint(mapped.x, mapped.y, mapped.z);
-    }
-  }
-
-  void AppendShaderSource(std::stringstream* hdr,
-                          std::stringstream* src,
-                          size_t step_index) const override {
-    *src << "  color = mat3(";
-    *src << matrix_.rc(0, 0) << ", " << matrix_.rc(1, 0) << ", "
-         << matrix_.rc(2, 0) << ",";
-    *src << endl;
-    *src << "               ";
-    *src << matrix_.rc(0, 1) << ", " << matrix_.rc(1, 1) << ", "
-         << matrix_.rc(2, 1) << ",";
-    *src << endl;
-    *src << "               ";
-    *src << matrix_.rc(0, 2) << ", " << matrix_.rc(1, 2) << ", "
-         << matrix_.rc(2, 2) << ")";
-    *src << " * color;" << endl;
-
-    // Only print the translational component if it isn't the identity.
-    if (matrix_.rc(0, 3) != 0.f || matrix_.rc(1, 3) != 0.f ||
-        matrix_.rc(2, 3) != 0.f) {
-      *src << "  color += vec3(";
-      *src << matrix_.rc(0, 3) << ", " << matrix_.rc(1, 3) << ", "
-           << matrix_.rc(2, 3);
-      *src << ");" << endl;
     }
   }
 
@@ -336,27 +322,6 @@ class ColorTransformPerChannelTransferFn : public ColorTransformStep {
         c.set_y(Evaluate(c.y()));
         c.set_z(Evaluate(c.z()));
       }
-    }
-  }
-
-  void AppendShaderSource(std::stringstream* hdr,
-                          std::stringstream* src,
-                          size_t step_index) const override {
-    *hdr << "float TransferFn" << step_index << "(float v) {" << endl;
-    AppendTransferShaderSource(hdr, true /* is_glsl */);
-    *hdr << "  return v;" << endl;
-    *hdr << "}" << endl;
-    if (extended_) {
-      *src << "  color.r = sign(color.r) * TransferFn" << step_index
-           << "(abs(color.r));" << endl;
-      *src << "  color.g = sign(color.g) * TransferFn" << step_index
-           << "(abs(color.g));" << endl;
-      *src << "  color.b = sign(color.b) * TransferFn" << step_index
-           << "(abs(color.b));" << endl;
-    } else {
-      *src << "  color.r = TransferFn" << step_index << "(color.r);" << endl;
-      *src << "  color.g = TransferFn" << step_index << "(color.g);" << endl;
-      *src << "  color.b = TransferFn" << step_index << "(color.b);" << endl;
     }
   }
 
@@ -900,32 +865,6 @@ class ColorTransformFromBT2020CL : public ColorTransformStep {
       YUV[i] = ColorTransform::TriStim(R_Y + Y, Y, B_Y + Y);
     }
   }
-  void AppendShaderSource(std::stringstream* hdr,
-                          std::stringstream* src,
-                          size_t step_index) const override {
-    *hdr << "vec3 BT2020_YUV_to_RYB_Step" << step_index << "(vec3 color) {"
-         << endl;
-    *hdr << "  float Y = color.x;" << endl;
-    *hdr << "  float U = color.y - 0.5;" << endl;
-    *hdr << "  float V = color.z - 0.5;" << endl;
-    *hdr << "  float B_Y = 0.0;" << endl;
-    *hdr << "  float R_Y = 0.0;" << endl;
-    *hdr << "  if (U <= 0.0) {" << endl;
-    *hdr << "    B_Y = U * (-2.0 * -0.9702);" << endl;
-    *hdr << "  } else {" << endl;
-    *hdr << "    B_Y = U * (2.0 * 0.7910);" << endl;
-    *hdr << "  }" << endl;
-    *hdr << "  if (V <= 0.0) {" << endl;
-    *hdr << "    R_Y = V * (-2.0 * -0.8591);" << endl;
-    *hdr << "  } else {" << endl;
-    *hdr << "    R_Y = V * (2.0 * 0.4969);" << endl;
-    *hdr << "  }" << endl;
-    *hdr << "  return vec3(R_Y + Y, Y, B_Y + Y);" << endl;
-    *hdr << "}" << endl;
-
-    *src << "  color.rgb = BT2020_YUV_to_RYB_Step" << step_index
-         << "(color.rgb);" << endl;
-  }
 
   void AppendSkShaderSource(std::stringstream* src) const override {
     NOTREACHED();
@@ -935,10 +874,8 @@ class ColorTransformFromBT2020CL : public ColorTransformStep {
 // Apply the HLG OOTF for a specified maximum luminance.
 class ColorTransformHLGOOTF : public ColorTransformStep {
  public:
-  ColorTransformHLGOOTF(float max_luminance_nits)
-      : gamma_minus_one_(
-            1.2f + 0.42f * logf(max_luminance_nits / 1000.f) / logf(10.f) -
-            1.f) {}
+  explicit ColorTransformHLGOOTF(float gamma_minus_one)
+      : gamma_minus_one_(gamma_minus_one) {}
 
   // The luminance vector in linear space.
   static constexpr float kLr = 0.2627;
@@ -953,28 +890,13 @@ class ColorTransformHLGOOTF : public ColorTransformStep {
         color[i].Scale(powf(L, gamma_minus_one_));
     }
   }
-  void AppendShaderSource(std::stringstream* hdr,
-                          std::stringstream* src,
-                          size_t step_index) const override {
-    *hdr << "vec3 ToneMapStep" << step_index << "(vec3 color) {\n"
-         << "  vec3 result = color;\n"
-         << "  vec3 luma_vec = vec3(" << kLr << ", " << kLg << ", " << kLb
-         << ");\n"
-         << "  float L = dot(color, luma_vec);\n"
-         << "  if (L > 0.0) {\n"
-         << "    result *= pow(L, " << gamma_minus_one_ << ");\n"
-         << "  }\n"
-         << "  return result;\n"
-         << "}\n";
-    *src << "  color.rgb = ToneMapStep" << step_index << "(color.rgb);\n";
-  }
   void AppendSkShaderSource(std::stringstream* src) const override {
     *src << "{\n"
          << "  half4 luma_vec = half4(" << kLr << ", " << kLg << ", " << kLb
          << ", 0.0);\n"
          << "  half L = dot(color, luma_vec);\n"
          << "  if (L > 0.0) {\n"
-         << "    color.rgb *= pow(L, " << gamma_minus_one_ << ");\n"
+         << "    color.rgb *= pow(L, hlg_ootf_gamma_minus_one);\n"
          << "  }\n"
          << "}\n";
   }
@@ -988,10 +910,7 @@ class ColorTransformHLGOOTF : public ColorTransformStep {
 // `output_max_value`.
 class ColorTransformToneMapInRec2020Linear : public ColorTransformStep {
  public:
-  ColorTransformToneMapInRec2020Linear(float input_max_value,
-                                       float output_max_value)
-      : a_(output_max_value / (input_max_value * input_max_value)),
-        b_(1.f / output_max_value) {}
+  ColorTransformToneMapInRec2020Linear(float a, float b) : a_(a), b_(b) {}
 
   // The luminance vector in linear space.
   static constexpr float kLr = 0.2627;
@@ -1006,30 +925,14 @@ class ColorTransformToneMapInRec2020Linear : public ColorTransformStep {
         color[i].Scale((1.f + a_ * L) / (1.f + b_ * L));
     }
   }
-  void AppendShaderSource(std::stringstream* hdr,
-                          std::stringstream* src,
-                          size_t step_index) const override {
-    *hdr << "vec3 ToneMapStep" << step_index << "(vec3 color) {\n"
-         << "  vec3 result = color;\n"
-         << "  vec3 luma_vec = vec3(" << kLr << ", " << kLg << ", " << kLb
-         << ");\n"
-         << "  float L = dot(color, luma_vec);\n"
-         << "  if (L > 0.0) {\n"
-         << "    result *= (1.0 + " << a_ << "*L) / \n"
-         << "              (1.0 + " << b_ << "*L);\n"
-         << "  }\n"
-         << "  return result;\n"
-         << "}\n";
-    *src << "  color.rgb = ToneMapStep" << step_index << "(color.rgb);\n";
-  }
   void AppendSkShaderSource(std::stringstream* src) const override {
     *src << "{\n"
          << "  half4 luma_vec = half4(" << kLr << ", " << kLg << ", " << kLb
          << ", 0.0);\n"
          << "  half L = dot(color, luma_vec);\n"
          << "  if (L > 0.0) {\n"
-         << "    color.rgb *= (1.0 + " << a_ << "*L) / \n"
-         << "                 (1.0 + " << b_ << "*L);\n"
+         << "    color.rgb *= (1.0 + pq_tonemap_a *L) / \n"
+         << "                 (1.0 + pq_tonemap_b *L);\n"
          << "  }\n"
          << "}\n";
   }
@@ -1120,11 +1023,11 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
   if (options.tone_map_pq_and_hlg_to_dst) {
     switch (src.GetTransferID()) {
       case ColorSpace::TransferID::HLG: {
-        const float hdr_max_luminance_nits =
-            options.sdr_max_luminance_nits * options.dst_max_luminance_relative;
         // Apply the HLG OOTF for the specified maximum luminance.
+        float gamma_minus_one = 0.f;
+        ComputeHLGToneMapConstants(options, gamma_minus_one);
         steps_.push_back(
-            std::make_unique<ColorTransformHLGOOTF>(hdr_max_luminance_nits));
+            std::make_unique<ColorTransformHLGOOTF>(gamma_minus_one));
         // Scale the result to the full HDR range.
         steps_.push_back(std::make_unique<ColorTransformMatrix>(
             SkM44::Scale(options.dst_max_luminance_relative,
@@ -1134,19 +1037,16 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
         break;
       }
       case ColorSpace::TransferID::PQ: {
-        const float src_max_luminance_relative =
-            GetToneMapPQMaxLuminanceNits(options.src_hdr_metadata) /
-            options.sdr_max_luminance_nits;
-        if (src_max_luminance_relative > options.dst_max_luminance_relative) {
+        float a = 0.f;
+        float b = 0.f;
+        if (ComputePQToneMapConstants(options, a, b)) {
           const ColorSpace rec2020_linear(
               ColorSpace::PrimaryID::BT2020, ColorSpace::TransferID::LINEAR,
               ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
           steps_.push_back(std::make_unique<ColorTransformMatrix>(
               Invert(rec2020_linear.GetPrimaryMatrix())));
           steps_.push_back(
-              std::make_unique<ColorTransformToneMapInRec2020Linear>(
-                  src_max_luminance_relative,
-                  options.dst_max_luminance_relative));
+              std::make_unique<ColorTransformToneMapInRec2020Linear>(a, b));
           steps_.push_back(std::make_unique<ColorTransformMatrix>(
               rec2020_linear.GetPrimaryMatrix()));
         }
@@ -1232,26 +1132,70 @@ ColorTransformInternal::ColorTransformInternal(const ColorSpace& src,
     Simplify();
 }
 
-std::string ColorTransformInternal::GetShaderSource() const {
-  std::stringstream hdr;
+sk_sp<SkRuntimeEffect> ColorTransformInternal::GetSkRuntimeEffect() const {
   std::stringstream src;
-  InitStringStream(&hdr);
   InitStringStream(&src);
-  src << "vec3 DoColorConversion(vec3 color) {" << endl;
-  size_t step_index = 0;
-  for (const auto& step : steps_)
-    step->AppendShaderSource(&hdr, &src, step_index++);
-  src << "  return color;" << endl;
-  src << "}" << endl;
-  return hdr.str() + src.str();
-}
 
-std::string ColorTransformInternal::GetSkShaderSource() const {
-  std::stringstream src;
-  InitStringStream(&src);
+  src << "uniform half offset;\n"
+      << "uniform half multiplier;\n"
+      << "uniform half pq_tonemap_a;\n"
+      << "uniform half pq_tonemap_b;\n"
+      << "uniform half hlg_ootf_gamma_minus_one;\n"
+      << "\n"
+      << "half4 main(half4 color) {\n"
+      << "  // Un-premultiply alpha\n"
+      << "  if (color.a > 0)\n"
+      << "    color.rgb /= color.a;\n"
+      << "\n"
+      << "  color.rgb -= offset;\n"
+      << "  color.rgb *= multiplier;\n";
+
   for (const auto& step : steps_)
     step->AppendSkShaderSource(&src);
-  return src.str();
+
+  src << "  // premultiply alpha\n"
+         "  color.rgb *= color.a;\n"
+         "  return color;\n"
+         "}\n";
+
+  auto sksl_source = src.str();
+  auto result = SkRuntimeEffect::MakeForColorFilter(
+      SkString(sksl_source.c_str(), sksl_source.size()),
+      /*options=*/{});
+  DCHECK(result.effect) << std::endl
+                        << result.errorText.c_str() << "\n\nShader Source:\n"
+                        << sksl_source;
+  return result.effect;
+}
+
+struct SkShaderUniforms {
+  float offset = 0.f;
+  float multiplier = 0.f;
+  float pq_tonemap_a = 1.f;
+  float pq_tonemap_b = 1.f;
+  float hlg_ootf_gamma_minus_one = 0.f;
+};
+
+// static
+sk_sp<SkData> ColorTransform::GetSkShaderUniforms(const ColorSpace& src,
+                                                  const ColorSpace& dst,
+                                                  float offset,
+                                                  float multiplier,
+                                                  const Options& options) {
+  SkShaderUniforms data;
+  data.offset = offset;
+  data.multiplier = multiplier;
+  switch (src.GetTransferID()) {
+    case ColorSpace::TransferID::PQ:
+      ComputePQToneMapConstants(options, data.pq_tonemap_a, data.pq_tonemap_b);
+      break;
+    case ColorSpace::TransferID::HLG:
+      ComputeHLGToneMapConstants(options, data.hlg_ootf_gamma_minus_one);
+      break;
+    default:
+      break;
+  }
+  return SkData::MakeWithCopy(&data, sizeof(data));
 }
 
 ColorTransformInternal::~ColorTransformInternal() {}

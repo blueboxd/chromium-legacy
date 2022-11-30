@@ -94,6 +94,19 @@ public final class ChromePreferenceKeys {
     /** Assistant voice search keys. */
     public static final String ASSISTANT_VOICE_SEARCH_ENABLED = "Chrome.Assistant.Enabled";
 
+    /** Autofill assistant keys. */
+    /** Whether Autofill Assistant is enabled */
+    public static final String AUTOFILL_ASSISTANT_ENABLED = "autofill_assistant_switch";
+    /** Whether the user has seen a lite-script before or is a first-time user. */
+    public static final String AUTOFILL_ASSISTANT_FIRST_TIME_LITE_SCRIPT_USER =
+            "Chrome.AutofillAssistant.LiteScriptFirstTimeUser";
+    /** Whether the Autofill Assistant onboarding has been accepted. */
+    public static final String AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED =
+            "AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED";
+    /** Whether proactive help is enabled. */
+    public static final String AUTOFILL_ASSISTANT_PROACTIVE_HELP_ENABLED =
+            "Chrome.AutofillAssistant.ProactiveHelp";
+
     public static final String BACKUP_FIRST_BACKUP_DONE = "first_backup_done";
 
     public static final String BOOKMARKS_LAST_MODIFIED_FOLDER_ID = "last_bookmark_folder_id";
@@ -316,8 +329,11 @@ public final class ChromePreferenceKeys {
 
     public static final String FIRST_RUN_CACHED_TOS_ACCEPTED = "first_run_tos_accepted";
     public static final String FIRST_RUN_FLOW_COMPLETE = "first_run_flow";
-    public static final String FIRST_RUN_FLOW_SIGNIN_ACCOUNT_NAME = "first_run_signin_account_name";
-    public static final String FIRST_RUN_FLOW_SIGNIN_COMPLETE = "first_run_signin_complete";
+    // BACKUP_FLOW_SIGNIN_ACCOUNT_NAME used to be employed for the FRE too, thus the "first_run_"
+    // prefix. The string should NOT be changed without some sort of migration.
+    public static final String BACKUP_FLOW_SIGNIN_ACCOUNT_NAME = "first_run_signin_account_name";
+    public static final String LEGACY_FIRST_RUN_AND_BACKUP_SIGNIN_COMPLETE =
+            "first_run_signin_complete";
     public static final String FIRST_RUN_FLOW_SIGNIN_SETUP = "first_run_signin_setup";
     // Needed by ChromeBackupAgent
     public static final String FIRST_RUN_LIGHTWEIGHT_FLOW_COMPLETE = "lightweight_first_run_flow";
@@ -426,7 +442,9 @@ public final class ChromePreferenceKeys {
     /**
      * Key used to save homepage location set by enterprise policy
      */
-    public static final String HOMEPAGE_LOCATION_POLICY = "Chrome.Policy.HomepageLocation";
+    public static final String DEPRECATED_HOMEPAGE_LOCATION_POLICY =
+            "Chrome.Policy.HomepageLocation";
+    public static final String HOMEPAGE_LOCATION_POLICY_GURL = "Chrome.Policy.HomepageLocationGurl";
 
     /**
      * Used for get image descriptions feature, track "Just once"/"Don't ask again" choice.
@@ -607,6 +625,13 @@ public final class ChromePreferenceKeys {
             "Chrome.OfflineMeasurements.SystemStateList";
 
     /**
+     * Serialized GroupsInfo data used by Omnibox Suggestions to present suggestions before
+     * natives are ready.
+     */
+    public static final String OMNIBOX_CACHED_ZERO_SUGGEST_GROUPS_INFO =
+            "Chrome.Omnibox.CachedZeroSuggestGroupsInfo";
+
+    /**
      * Prefix of the preferences to persist pushed notifications when native is not initialized.
      * Each suffix pertains to a specific OptimizationType. All entries are cleared when native is
      * initialized.
@@ -745,9 +770,14 @@ public final class ChromePreferenceKeys {
             "Chrome.QueryTiles.ShowSegmentationResult";
 
     /**
+     * Whether query tiles is already shown on Start surface. Default value is false.
+     */
+    public static final String QUERY_TILES_SHOWN_ON_START_SURFACE =
+            "Chrome.QueryTiles.ShownOnStartSurface";
+
+    /**
      * Keys used to store user actions for behavioral targeting of showing Start surface on startup.
      */
-    public static final String PRIMARY_ACCOUNT_SYNC = "Chrome.StartSurface.PrimaryAccountSync";
     public static final String START_SHOW_ON_STARTUP = "Chrome.StartSurface.ShownOnStartup";
     public static final String START_NEXT_SHOW_ON_STARTUP_DECISION_MS =
             "Chrome.StartSurface.ShownOnStartupDecisionMs";
@@ -970,9 +1000,6 @@ public final class ChromePreferenceKeys {
     public static final KeyPrefix WEB_FEED_INTRO_WEB_FEED_ID_SHOWN_COUNT_PREFIX =
             new KeyPrefix("Chrome.WebFeed.IntroWebFeedIdShownCount.*");
 
-    public static final String LOCK_ICON_IN_ADDRESS_BAR_ENABLED =
-            "omnibox.lock_icon_in_address_bar_enabled";
-
     /** Cached Suggestions and Suggestion Headers. */
     public static final String KEY_ZERO_SUGGEST_LIST_SIZE = "zero_suggest_list_size";
     public static final KeyPrefix KEY_ZERO_SUGGEST_URL_PREFIX = new KeyPrefix("zero_suggest_url*");
@@ -999,13 +1026,6 @@ public final class ChromePreferenceKeys {
             new KeyPrefix("zero_suggest_post_content_type*");
     public static final KeyPrefix KEY_ZERO_SUGGEST_POST_CONTENT_DATA_PREFIX =
             new KeyPrefix("zero_suggest_post_content_data*");
-    public static final String KEY_ZERO_SUGGEST_HEADER_LIST_SIZE = "zero_suggest_header_list_size";
-    public static final KeyPrefix KEY_ZERO_SUGGEST_HEADER_GROUP_ID_PREFIX =
-            new KeyPrefix("zero_suggest_header_group_id*");
-    public static final KeyPrefix KEY_ZERO_SUGGEST_HEADER_GROUP_TITLE_PREFIX =
-            new KeyPrefix("zero_suggest_header_group_title*");
-    public static final KeyPrefix KEY_ZERO_SUGGEST_HEADER_GROUP_COLLAPSED_BY_DEFAULT_PREFIX =
-            new KeyPrefix("zero_suggest_header_group_collapsed_by_default*");
 
     public static final String BLUETOOTH_NOTIFICATION_IDS = "Chrome.Bluetooth.NotificationIds";
     public static final String USB_NOTIFICATION_IDS = "Chrome.USB.NotificationIds";
@@ -1025,6 +1045,8 @@ public final class ChromePreferenceKeys {
                 ADAPTIVE_TOOLBAR_CUSTOMIZATION_SETTINGS,
                 ASSISTANT_VOICE_CONSENT_OUTSIDE_TAPS,
                 ASSISTANT_VOICE_SEARCH_ENABLED,
+                AUTOFILL_ASSISTANT_FIRST_TIME_LITE_SCRIPT_USER,
+                AUTOFILL_ASSISTANT_PROACTIVE_HELP_ENABLED,
                 APP_LAUNCH_LAST_KNOWN_ACTIVE_TAB_STATE,
                 APP_LAUNCH_SEARCH_ENGINE_HAD_LOGO,
                 APPLICATION_OVERRIDE_LANGUAGE,
@@ -1075,7 +1097,8 @@ public final class ChromePreferenceKeys {
                 FLAGS_LAST_CACHED_MINIMAL_BROWSER_FLAGS_TIME_MILLIS,
                 FLAGS_SAFE_MODE_ENABLED,
                 FLAGS_SAFE_MODE_RUNS_LEFT,
-                HOMEPAGE_LOCATION_POLICY,
+                DEPRECATED_HOMEPAGE_LOCATION_POLICY,
+                HOMEPAGE_LOCATION_POLICY_GURL,
                 HOMEPAGE_USE_CHROME_NTP,
                 HOMEPAGE_PARTNER_CUSTOMIZED_DEFAULT_URI,
                 HOMEPAGE_PARTNER_CUSTOMIZED_DEFAULT_GURL,
@@ -1115,6 +1138,7 @@ public final class ChromePreferenceKeys {
                 OFFLINE_MEASUREMENTS_LAST_CHECK_MILLIS,
                 OFFLINE_MEASUREMENTS_SYSTEM_STATE_LIST,
                 OFFLINE_MEASUREMENTS_USER_AGENT_STRING,
+                OMNIBOX_CACHED_ZERO_SUGGEST_GROUPS_INFO,
                 OPEN_HISTORY_COUNT,
                 OPEN_NEW_TAB_PAGE_COUNT,
                 OPEN_RECENT_TABS_COUNT,
@@ -1128,7 +1152,6 @@ public final class ChromePreferenceKeys {
                 PRICE_TRACKING_PRICE_WELCOME_MESSAGE_CARD_SHOW_COUNT,
                 PRICE_TRACKING_TRACK_PRICES_ON_TABS,
                 PRICE_TRACKING_USER_MANAGED_NOTIFICATIONS_TIMESTAMPS,
-                PRIMARY_ACCOUNT_SYNC,
                 PRIVACY_METRICS_REPORTING_PERMITTED_BY_USER,
                 PRIVACY_METRICS_REPORTING_PERMITTED_BY_POLICY,
                 PROMO_IS_DISMISSED.pattern(),
@@ -1138,6 +1161,7 @@ public final class ChromePreferenceKeys {
                 QUERY_TILES_NUM_RECENT_QUERY_TILE_CLICKS,
                 QUERY_TILES_SHOW_ON_NTP,
                 QUERY_TILES_SHOW_SEGMENTATION_RESULT,
+                QUERY_TILES_SHOWN_ON_START_SURFACE,
                 REGULAR_TAB_COUNT,
                 SETTINGS_SAFETY_CHECK_LAST_RUN_TIMESTAMP,
                 SETTINGS_SAFETY_CHECK_RUN_COUNTER,

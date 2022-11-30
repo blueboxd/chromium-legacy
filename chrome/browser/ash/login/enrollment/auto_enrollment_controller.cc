@@ -19,11 +19,11 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_client_impl.h"
-#include "chrome/browser/ash/policy/enrollment/private_membership/fake_private_membership_rlwe_client.h"
-#include "chrome/browser/ash/policy/enrollment/private_membership/private_membership_rlwe_client.h"
-#include "chrome/browser/ash/policy/enrollment/private_membership/private_membership_rlwe_client_impl.h"
-#include "chrome/browser/ash/policy/enrollment/private_membership/psm_rlwe_dmserver_client_impl.h"
-#include "chrome/browser/ash/policy/enrollment/private_membership/psm_rlwe_id_provider_impl.h"
+#include "chrome/browser/ash/policy/enrollment/psm/fake_rlwe_client.h"
+#include "chrome/browser/ash/policy/enrollment/psm/rlwe_client.h"
+#include "chrome/browser/ash/policy/enrollment/psm/rlwe_client_impl.h"
+#include "chrome/browser/ash/policy/enrollment/psm/rlwe_dmserver_client_impl.h"
+#include "chrome/browser/ash/policy/enrollment/psm/rlwe_id_provider_impl.h"
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_state_keys_broker.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/browser_process.h"
@@ -181,11 +181,11 @@ AutoEnrollmentController::AutoEnrollmentController() {
   // whether switches::kEnterpriseUseFakePsmRlweClient is set.
   if (ShouldUseFakePsmRlweClient()) {
     CHECK_IS_TEST();
-    psm_rlwe_client_factory_ = std::make_unique<
-        policy::FakePrivateMembershipRlweClient::FactoryImpl>();
+    psm_rlwe_client_factory_ =
+        std::make_unique<policy::psm::FakeRlweClient::FactoryImpl>();
   } else {
-    psm_rlwe_client_factory_ = std::make_unique<
-        policy::PrivateMembershipRlweClientImpl::FactoryImpl>();
+    psm_rlwe_client_factory_ =
+        std::make_unique<policy::psm::RlweClientImpl::FactoryImpl>();
   }
 }
 
@@ -439,7 +439,7 @@ void AutoEnrollmentController::StartClientForInitialEnrollment() {
       g_browser_process->system_network_context_manager()
           ->GetSharedURLLoaderFactory(),
       serial_number, rlz_brand_code, power_initial, power_limit,
-      std::make_unique<policy::PsmRlweDmserverClientImpl>(
+      std::make_unique<policy::psm::RlweDmserverClientImpl>(
           service,
           g_browser_process->system_network_context_manager()
               ->GetSharedURLLoaderFactory(),

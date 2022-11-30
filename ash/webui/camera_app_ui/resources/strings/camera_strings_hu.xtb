@@ -9,7 +9,7 @@
 <translation id="1300209025925956156">Dokumentum beolvasása</translation>
 <translation id="1309250603447638106">Frissítések letöltése a dokumentumbeolvasáshoz…</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Megtekintésükhöz nyomja le a Keresés + Balra nyíl billentyűparancsot.</translation>
-<translation id="1393338179284529051">Quad HD</translation>
+<translation id="1417314334557041815"><ph name="INDEX" />. oldal szerkesztése</translation>
 <translation id="1430915738399379752">Nyomtatás</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> nincs csatlakoztatva.</translation>
 <translation id="1473110567575736769">Három másodperces időzítő</translation>
@@ -20,8 +20,8 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1627744224761163218">4 × 4</translation>
 <translation id="1664224225747386870">A kamera semmit sem rögzített</translation>
-<translation id="169335673490251151">További oldalak beolvasása</translation>
 <translation id="1838104802459806957">Billentés felfelé</translation>
+<translation id="1843105061469674856">További oldal beolvasása</translation>
 <translation id="1851169887664797861">Újabb kameravezérlők állnak rendelkezésre</translation>
 <translation id="1851616744363735765">SZÜNETEL</translation>
 <translation id="1862930711583847113">Nem lehet exportálni: <ph name="FILE" /></translation>
@@ -46,7 +46,6 @@
 <translation id="2599796128805996109">Hátsó kamera</translation>
 <translation id="2759905922487820242"><ph name="MAXIMAL" />/<ph name="CURRENT" /> mp</translation>
 <translation id="2761536921376153655">Keresés típusa</translation>
-<translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">Tükrözés előnézete</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> csatlakoztatva.</translation>
 <translation id="2904654629665923749">A dokumentumbeolvasás készen áll a használatra</translation>
@@ -80,6 +79,7 @@
 <translation id="414641094616694804">A kamera felbontását nem lehet módosítani</translation>
 <translation id="4269820728363426813">Link másolása</translation>
 <translation id="4281620174117014503">Közepes felbontás</translation>
+<translation id="428234092390943511">Oldal indexképe</translation>
 <translation id="4329152592498422850">Váltás négyzet alakú fotó készítésére</translation>
 <translation id="4340659173795395806">Most már többoldalas PDF-fájlt is létrehozhat</translation>
 <translation id="4383571725254449280">Teljesítménynaplók nyomtatása</translation>
@@ -114,7 +114,6 @@
 <translation id="5916664084637901428">Be</translation>
 <translation id="5975083100439434680">Kicsinyítés</translation>
 <translation id="5976160379964388480">Egyéb</translation>
-<translation id="603973421174355542">Full HD</translation>
 <translation id="6073451960410192870">Felvétel leállítása</translation>
 <translation id="6197807149213783179">Metaadatok mentése</translation>
 <translation id="6233780560267770709">Háromszor hármas</translation>
@@ -137,7 +136,6 @@ Ha visszajelzése a kép vagy a videó minőségével kapcsolatos, kérjük, mel
 <translation id="698156982839284926">3 másodperc</translation>
 <translation id="712848772518857951">Biztosan eltávolít <ph name="COUNT" /> elemet?</translation>
 <translation id="7134221860976209830">Tíz másodperces időzítő</translation>
-<translation id="7150591439198955032">4K</translation>
 <translation id="7191890674911603392">Rögzítés típusa</translation>
 <translation id="7243947652761655814">Videó felbontása</translation>
 <translation id="7337660886763914220">Fájlrendszerbeli hibák.</translation>
@@ -162,7 +160,6 @@ Ha visszajelzése a kép vagy a videó minőségével kapcsolatos, kérjük, mel
 <translation id="8167081290930651932">Mentés fotóként</translation>
 <translation id="8239780215768881278">Pillanatkép készítése a videóból</translation>
 <translation id="8261506727792406068">Törlés</translation>
-<translation id="839162370397157884">Oldal kiválasztása</translation>
 <translation id="8425673304802773841">Billentés lefelé</translation>
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8629662593426079630">360p</translation>

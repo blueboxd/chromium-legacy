@@ -301,6 +301,30 @@ void URLRequestHttpJob::Start() {
 void URLRequestHttpJob::OnGotFirstPartySetMetadata(
     FirstPartySetMetadata first_party_set_metadata) {
   first_party_set_metadata_ = std::move(first_party_set_metadata);
+
+  if (!request()->network_delegate()) {
+    OnGotFirstPartySetCacheFilterMatchInfo(
+        net::FirstPartySetsCacheFilter::MatchInfo());
+    return;
+  }
+  absl::optional<FirstPartySetsCacheFilter::MatchInfo> match_info =
+      request()
+          ->network_delegate()
+          ->GetFirstPartySetsCacheFilterMatchInfoMaybeAsync(
+              SchemefulSite(request()->url()),
+              base::BindOnce(
+                  &URLRequestHttpJob::OnGotFirstPartySetCacheFilterMatchInfo,
+                  weak_factory_.GetWeakPtr()));
+
+  if (match_info.has_value())
+    OnGotFirstPartySetCacheFilterMatchInfo(std::move(match_info.value()));
+}
+
+void URLRequestHttpJob::OnGotFirstPartySetCacheFilterMatchInfo(
+    FirstPartySetsCacheFilter::MatchInfo match_info) {
+  request_info_.fps_cache_filter = match_info.clear_at_run_id;
+  request_info_.browser_run_id = match_info.browser_run_id;
+
   // Privacy mode could still be disabled in SetCookieHeaderAndStart if we are
   // going to send previously saved cookies.
   request_info_.privacy_mode = DeterminePrivacyMode();
@@ -802,7 +826,8 @@ void URLRequestHttpJob::AnnotateAndMoveUserBlockedCookies(
   if (request()->network_delegate()) {
     can_get_cookies =
         request()->network_delegate()->AnnotateAndMoveUserBlockedCookies(
-            *request(), maybe_included_cookies, excluded_cookies);
+            *request(), first_party_set_metadata_, maybe_included_cookies,
+            excluded_cookies);
   }
 
   if (!can_get_cookies) {
@@ -1081,7 +1106,6 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
   } else if (result == ERR_DNS_NAME_HTTPS_ONLY) {
     // If DNS indicated the name is HTTPS-only, synthesize a redirect to either
     // HTTPS or WSS.
-    DCHECK(features::kUseDnsHttpsSvcbHttpUpgrade.Get());
     DCHECK(!request_->url().SchemeIsCryptographic());
 
     base::Time request_time =

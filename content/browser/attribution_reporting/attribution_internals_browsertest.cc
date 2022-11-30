@@ -21,6 +21,7 @@
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
+#include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
@@ -29,6 +30,7 @@
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
@@ -43,6 +45,8 @@
 namespace content {
 
 namespace {
+
+using ::attribution_reporting::mojom::SourceRegistrationError;
 
 using ::testing::_;
 using ::testing::ElementsAre;
@@ -69,7 +73,7 @@ auto InvokeCallback(std::vector<StoredSource> value) {
 auto InvokeCallback(std::vector<AttributionReport> value) {
   return
       [value = std::move(value)](
-          AttributionReport::ReportTypes report_types, int limit,
+          AttributionReport::Types report_types, int limit,
           base::OnceCallback<void(std::vector<AttributionReport>)> callback) {
         std::move(callback).Run(std::move(value));
       };
@@ -99,12 +103,11 @@ class AttributionInternalsWebUiBrowserTest : public ContentBrowserTest {
     ContentBrowserTest::SetUpOnMainThread();
 
     auto manager = std::make_unique<MockAttributionManager>();
-    manager_ = manager.get();
 
-    ON_CALL(*manager_, GetActiveSourcesForWebUI)
+    ON_CALL(*manager, GetActiveSourcesForWebUI)
         .WillByDefault(InvokeCallback(std::vector<StoredSource>{}));
 
-    ON_CALL(*manager_, GetPendingReportsForInternalUse)
+    ON_CALL(*manager, GetPendingReportsForInternalUse)
         .WillByDefault(InvokeCallback(std::vector<AttributionReport>{}));
 
     static_cast<StoragePartitionImpl*>(shell()
@@ -115,7 +118,7 @@ class AttributionInternalsWebUiBrowserTest : public ContentBrowserTest {
   }
 
   void ClickRefreshButton() {
-    EXPECT_TRUE(ExecJsInWebUI("document.getElementById('refresh').click();"));
+    ASSERT_TRUE(ExecJsInWebUI("document.getElementById('refresh').click();"));
   }
 
   // Executing javascript in the WebUI requires using an isolated world in which
@@ -140,19 +143,25 @@ class AttributionInternalsWebUiBrowserTest : public ContentBrowserTest {
       }
     });
     obs.observe(table, {'childList': true});)";
-    EXPECT_TRUE(
+    ASSERT_TRUE(
         ExecJsInWebUI(JsReplace(kObserveEmptyReportsTableScript, title)));
   }
 
-  MockAttributionManager* manager() { return manager_; }
+  MockAttributionManager* manager() {
+    AttributionManager* manager =
+        static_cast<StoragePartitionImpl*>(shell()
+                                               ->web_contents()
+                                               ->GetBrowserContext()
+                                               ->GetDefaultStoragePartition())
+            ->GetAttributionManager();
 
- private:
-  raw_ptr<MockAttributionManager, DanglingUntriaged> manager_;
+    return static_cast<MockAttributionManager*>(manager);
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        NavigationUrl_ResolvedToWebUI) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
   // Execute script to ensure the page has loaded correctly, executing similarly
   // to ExecJsInWebUI().
@@ -164,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        WebUIShownWithManager_MeasurementConsideredEnabled) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
   // Create a mutation observer to wait for the content to render to the dom.
   // Waiting on calls to `MockAttributionManager` is not sufficient because the
@@ -178,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       }
     });
     obs.observe(status, {'childList': true, 'characterData': true});)";
-  EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+  ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
   ClickRefreshButton();
@@ -195,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       .WillRepeatedly(Return(false));
   ScopedContentBrowserClientSetting setting(&browser_client);
 
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
   // Create a mutation observer to wait for the content to render to the dom.
   // Waiting on calls to `MockAttributionManager` is not sufficient because the
@@ -209,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       }
     });
     obs.observe(status, {'childList': true, 'characterData': true});)";
-  EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+  ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
   ClickRefreshButton();
@@ -219,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     AttributionInternalsWebUiBrowserTest,
     WebUIShownWithNoActiveImpression_NoImpressionsDisplayed) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
   static constexpr char wait_script[] = R"(
     let table = document.querySelector('#sourceTable')
@@ -233,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(
       }
     });
     obs.observe(table, {'childList': true});)";
-  EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+  ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
   ClickRefreshButton();
@@ -242,7 +251,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        WebUIShownWithActiveImpression_ImpressionsDisplayed) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
   const base::Time now = base::Time::Now();
 
@@ -266,6 +275,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                    {{"a", {"b", "c"}}}))
                .SetAggregationKeys(
                    *AttributionAggregationKeys::FromKeys({{"a", 1}}))
+               .SetAggregatableDedupKeys({14, 18})
                .BuildStored(),
            SourceBuilder(now + base::Hours(2))
                .SetActiveState(StoredSource::ActiveState::
@@ -311,6 +321,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
           table.children[1].children[12].innerText === "" &&
           table.children[0].children[13].innerText === "" &&
           table.children[1].children[13].innerText === "13, 17" &&
+          table.children[0].children[14].innerText === "" &&
+          table.children[1].children[14].innerText === "14, 18" &&
           table.children[0].children[1].innerText === "Unattributable: noised" &&
           table.children[1].children[1].innerText === "Attributable" &&
           table.children[2].children[1].innerText === "Attributable: reached event-level attribution limit" &&
@@ -323,7 +335,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       }
     });
     obs.observe(table, {'childList': true});)";
-  EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kMaxUint64String,
+  ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kMaxUint64String,
                                       kMaxInt64String, kCompleteTitle)));
 
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
@@ -332,18 +344,50 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
-                       WebUIShownWithNoReports_NoReportsDisplayed) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+                       FailedSourceRegistrationLogShown) {
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+
+  auto reporter1 = url::Origin::Create(GURL("https://a.test"));
+
+  static constexpr char wait_script[] = R"(
+    let table = document.querySelector('#logTable')
+        .shadowRoot.querySelector('tbody');
+
+    let obs = new MutationObserver((_, obs) => {
+      if (table.children.length === 1 &&
+          table.children[0].children.length >= 4 &&
+          table.children[0].children[1].innerText === 'invalid JSON' &&
+          table.children[0].children[2].innerText === 'https://a.test' &&
+          table.children[0].children[3].innerText === '!')  {
+        obs.disconnect();
+        document.title = $1;
+      }
+    });
+    obs.observe(table, {'childList': true});)";
+
+  ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
-  SetTitleOnReportsTableEmpty(kCompleteTitle);
-  ClickRefreshButton();
+
+  manager()->NotifySourceRegistrationFailure(
+      "!", url::Origin::Create(GURL("https://a.test")),
+      SourceRegistrationError::kInvalidJson);
   EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
+                       WebUIShownWithNoReports_NoReportsDisplayed) {
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+
+  TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
+  SetTitleOnReportsTableEmpty(kCompleteTitle);
+  ClickRefreshButton();
+  ASSERT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        WebUIShownWithManager_DebugModeDisabled) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
   // Create a mutation observer to wait for the content to render to the dom.
   // Waiting on calls to `MockAttributionManager` is not sufficient because the
@@ -357,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       }
     });
     obs.observe(status, {'childList': true, 'characterData': true});)";
-  EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+  ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
   ClickRefreshButton();
@@ -369,7 +413,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kAttributionReportingDebugMode);
 
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
   // Create a mutation observer to wait for the content to render to the dom.
   // Waiting on calls to `MockAttributionManager` is not sufficient because the
@@ -383,7 +427,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       }
     });
     obs.observe(status, {'childList': true, 'characterData': true});)";
-  EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+  ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
   ClickRefreshButton();
@@ -392,7 +436,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        WebUIShownWithPendingReports_ReportsDisplayed) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
   const base::Time now = base::Time::Now();
 
@@ -481,7 +525,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
         }
       });
       obs.observe(table, {'childList': true});)";
-    EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+    ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
     ClickRefreshButton();
@@ -515,11 +559,11 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
         }
       });
       obs.observe(table, {'childList': true});)";
-    EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle2)));
+    ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle2)));
 
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle2);
     // Sort by priority ascending.
-    EXPECT_TRUE(
+    ASSERT_TRUE(
         ExecJsInWebUI("document.querySelector('#reportTable')"
                       ".shadowRoot.querySelectorAll('th')[6].click();"));
     EXPECT_EQ(kCompleteTitle2, title_watcher.WaitAndGetTitle());
@@ -552,11 +596,11 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
         }
       });
       obs.observe(table, {'childList': true});)";
-    EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle3)));
+    ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle3)));
 
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle3);
     // Sort by priority descending.
-    EXPECT_TRUE(
+    ASSERT_TRUE(
         ExecJsInWebUI("document.querySelector('#reportTable')"
                       ".shadowRoot.querySelectorAll('th')[6].click();"));
 
@@ -566,7 +610,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        WebUIWithPendingReportsClearStorage_ReportsRemoved) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
   const base::Time now = base::Time::Now();
 
@@ -588,6 +632,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   EXPECT_CALL(*manager(), ClearData)
       .WillOnce([](base::Time delete_begin, base::Time delete_end,
                    StoragePartition::StorageKeyMatcherFunction filter,
+                   BrowsingDataFilterBuilder* filter_builder,
                    bool delete_rate_limit_data,
                    base::OnceClosure done) { std::move(done).Run(); });
 
@@ -604,7 +649,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       }
     });
     obs.observe(table, {'childList': true});)";
-  EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+  ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
   // Wait for the table to rendered.
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
@@ -617,13 +662,13 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   SetTitleOnReportsTableEmpty(kDeleteTitle);
 
   // Click the button.
-  EXPECT_TRUE(ExecJsInWebUI("document.getElementById('clear-data').click();"));
+  ASSERT_TRUE(ExecJsInWebUI("document.getElementById('clear-data').click();"));
   EXPECT_EQ(kDeleteTitle, delete_title_watcher.WaitAndGetTitle());
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        ClearButton_ClearsSourceTable) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
   base::Time now = base::Time::Now();
 
@@ -636,9 +681,10 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       StorableSource::Result::kInternalError);
 
   EXPECT_CALL(*manager(),
-              ClearData(base::Time::Min(), base::Time::Max(), _, true, _))
+              ClearData(base::Time::Min(), base::Time::Max(), _, _, true, _))
       .WillOnce([](base::Time delete_begin, base::Time delete_end,
                    StoragePartition::StorageKeyMatcherFunction filter,
+                   BrowsingDataFilterBuilder* filter_builder,
                    bool delete_rate_limit_data,
                    base::OnceClosure done) { std::move(done).Run(); });
 
@@ -655,7 +701,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       }
     });
     obs.observe(table, {'childList': true});)";
-  EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+  ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
   // Wait for the table to rendered.
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
@@ -676,17 +722,17 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       }
     });
     obs.observe(table, {'childList': true});)";
-  EXPECT_TRUE(
+  ASSERT_TRUE(
       ExecJsInWebUI(JsReplace(kObserveEmptySourcesTableScript, kDeleteTitle)));
 
   // Click the button.
-  EXPECT_TRUE(ExecJsInWebUI("document.getElementById('clear-data').click();"));
+  ASSERT_TRUE(ExecJsInWebUI("document.getElementById('clear-data').click();"));
   EXPECT_EQ(kDeleteTitle, delete_title_watcher.WaitAndGetTitle());
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        WebUISendReports_ReportsRemoved) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
   EXPECT_CALL(*manager(), GetPendingReportsForInternalUse)
       .WillOnce(InvokeCallback(
@@ -746,28 +792,28 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   // The real manager would do this itself, but the test manager requires manual
   // triggering.
-  manager()->NotifyReportsChanged(AttributionReport::ReportType::kEventLevel);
+  manager()->NotifyReportsChanged(AttributionReport::Type::kEventLevel);
 
   ASSERT_EQ(kSentTitle, sent_title_watcher.WaitAndGetTitle());
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        MojoJsBindingsCorrectlyScoped) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
   const std::u16string passed_title = u"passed";
 
   {
     TitleWatcher sent_title_watcher(shell()->web_contents(), passed_title);
-    EXPECT_TRUE(
+    ASSERT_TRUE(
         ExecJsInWebUI("document.title = window.Mojo? 'passed' : 'failed';"));
     EXPECT_EQ(passed_title, sent_title_watcher.WaitAndGetTitle());
   }
 
-  EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
+  ASSERT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
   {
     TitleWatcher sent_title_watcher(shell()->web_contents(), passed_title);
-    EXPECT_TRUE(
+    ASSERT_TRUE(
         ExecJsInWebUI("document.title = window.Mojo? 'failed' : 'passed';"));
     EXPECT_EQ(passed_title, sent_title_watcher.WaitAndGetTitle());
   }
@@ -776,7 +822,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     AttributionInternalsWebUiBrowserTest,
     WebUIShownWithPendingAggregatableReports_ReportsDisplayed) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
   const base::Time now = base::Time::Now();
 
@@ -857,7 +903,7 @@ IN_PROC_BROWSER_TEST_F(
         }
       });
       obs.observe(table, {'childList': true});)";
-    EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+    ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
     ClickRefreshButton();
@@ -867,7 +913,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        TriggersDisplayed) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
   const base::Time now = base::Time::Now();
 
@@ -877,6 +923,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       /*filters=*/AttributionFilterData::CreateForTesting({{"a", {"b"}}}),
       /*not_filters=*/AttributionFilterData::CreateForTesting({{"g", {"h"}}}),
       /*debug_key=*/1,
+      /*aggregatable_dedup_key=*/18,
       {
           AttributionTrigger::EventTriggerData(
               /*data=*/2,
@@ -929,13 +976,14 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
             table.children[0].children[7].innerText === '{ "g": [  "h" ]}' &&
             table.children[0].children[8].innerText === $2 &&
             table.children[0].children[9].innerText === $3 &&
-            table.children[0].children[10].innerText === '{ "a": 123, "b": 456}') {
+            table.children[0].children[10].innerText === '{ "a": 123, "b": 456}' &&
+            table.children[0].children[11].innerText === "18") {
           obs.disconnect();
           document.title = $1;
         }
       });
       obs.observe(table, {'childList': true});)";
-  EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle,
+  ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle,
                                       kWantEventTriggerJSON,
                                       kWantAggregatableTriggerJSON)));
 
@@ -965,7 +1013,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        WebUISendAggregatableReports_ReportsRemoved) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
   EXPECT_CALL(*manager(), GetPendingReportsForInternalUse)
       .WillOnce(InvokeCallback(std::vector<AttributionReport>{}))
@@ -999,7 +1047,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       }
     });
     obs.observe(table, {'childList': true});)";
-  EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+  ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
   // Wait for the table to rendered.
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
@@ -1021,26 +1069,26 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       }
     });
     obs.observe(table, {'childList': true});)";
-  EXPECT_TRUE(
+  ASSERT_TRUE(
       ExecJsInWebUI(JsReplace(kObserveEmptyReportsTableScript, kSentTitle)));
 
-  EXPECT_TRUE(ExecJsInWebUI(
+  ASSERT_TRUE(ExecJsInWebUI(
       R"(document.querySelector('#aggregatableReportTable')
          .shadowRoot.querySelectorAll('input[type="checkbox"]')[1].click();)"));
-  EXPECT_TRUE(ExecJsInWebUI(
+  ASSERT_TRUE(ExecJsInWebUI(
       "document.getElementById('send-aggregatable-reports').click();"));
 
   // The real manager would do this itself, but the test manager requires manual
   // triggering.
   manager()->NotifyReportsChanged(
-      AttributionReport::ReportType::kAggregatableAttribution);
+      AttributionReport::Type::kAggregatableAttribution);
 
   EXPECT_EQ(kSentTitle, sent_title_watcher.WaitAndGetTitle());
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        ToggleDebugReports) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
   const base::Time now = base::Time::Now();
 
@@ -1079,7 +1127,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       });
       obs.observe(table, {'childList': true});
       obs.observe(label, {'characterData': true});)";
-    EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+    ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
     ClickRefreshButton();
@@ -1087,7 +1135,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   }
 
   // Toggle checkbox.
-  EXPECT_TRUE(ExecJsInWebUI(R"(
+  ASSERT_TRUE(ExecJsInWebUI(R"(
       document.querySelector('#show-debug-event-reports input').click();)"));
 
   manager()->NotifyReportSent(
@@ -1117,7 +1165,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       });
       obs.observe(table, {'childList': true});
       obs.observe(label, {'characterData': true});)";
-    EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle2)));
+    ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle2)));
 
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle2);
     ClickRefreshButton();
@@ -1125,7 +1173,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   }
 
   // Toggle checkbox.
-  EXPECT_TRUE(ExecJsInWebUI(R"(
+  ASSERT_TRUE(ExecJsInWebUI(R"(
       document.querySelector('#show-debug-event-reports input').click();)"));
 
   // The debug reports should be visible again and the hidden label should be
@@ -1147,7 +1195,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       });
       obs.observe(table, {'childList': true});
       obs.observe(label, {'characterData': true});)";
-    EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle3)));
+    ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle3)));
 
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle3);
     ClickRefreshButton();

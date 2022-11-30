@@ -1366,10 +1366,6 @@ TEST_F(URLRequestTest, NetworkDelegateProxyError) {
 // Test that when host resolution fails with `ERR_DNS_NAME_HTTPS_ONLY` for
 // "http://" requests, scheme is upgraded to "https://".
 TEST_F(URLRequestTest, DnsNameHttpsOnlyErrorCausesSchemeUpgrade) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeatureWithParameters(
-      features::kUseDnsHttpsSvcb, {{"UseDnsHttpsSvcbHttpUpgrade", "true"}});
-
   EmbeddedTestServer https_server(EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(EmbeddedTestServer::CERT_TEST_NAMES);
   RegisterDefaultHandlers(&https_server);
@@ -1426,10 +1422,6 @@ TEST_F(URLRequestTest, DnsNameHttpsOnlyErrorCausesSchemeUpgrade) {
 
 // Test that DNS-based scheme upgrade supports deferred redirect.
 TEST_F(URLRequestTest, DnsNameHttpsOnlyErrorCausesSchemeUpgradeDeferred) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeatureWithParameters(
-      features::kUseDnsHttpsSvcb, {{"UseDnsHttpsSvcbHttpUpgrade", "true"}});
-
   EmbeddedTestServer https_server(EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(EmbeddedTestServer::CERT_TEST_NAMES);
   RegisterDefaultHandlers(&https_server);
@@ -1492,10 +1484,6 @@ TEST_F(URLRequestTest, DnsNameHttpsOnlyErrorCausesSchemeUpgradeDeferred) {
 // Test that requests with "ws" scheme are upgraded to "wss" when DNS
 // indicates that the name is HTTPS-only.
 TEST_F(URLRequestTest, DnsHttpsRecordPresentCausesWsSchemeUpgrade) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeatureWithParameters(
-      features::kUseDnsHttpsSvcb, {{"UseDnsHttpsSvcbHttpUpgrade", "true"}});
-
   EmbeddedTestServer https_server(EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(EmbeddedTestServer::CERT_TEST_NAMES);
   RegisterDefaultHandlers(&https_server);
@@ -1558,10 +1546,6 @@ TEST_F(URLRequestTest, DnsHttpsRecordPresentCausesWsSchemeUpgrade) {
 #endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
 
 TEST_F(URLRequestTest, DnsHttpsRecordAbsentNoSchemeUpgrade) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeatureWithParameters(
-      features::kUseDnsHttpsSvcb, {{"UseDnsHttpsSvcbHttpUpgrade", "true"}});
-
   EmbeddedTestServer http_server(EmbeddedTestServer::TYPE_HTTP);
   RegisterDefaultHandlers(&http_server);
   ASSERT_TRUE(http_server.Start());
@@ -1984,8 +1968,7 @@ TEST_F(URLRequestTest, DelayedCookieCallbackAsync) {
       url, "AlreadySetCookie=1;Secure", base::Time::Now(),
       absl::nullopt /* server_time */,
       absl::nullopt /* cookie_partition_key */);
-  auto cm = std::make_unique<CookieMonster>(nullptr, nullptr,
-                                            /*first_party_sets_enabled=*/false);
+  auto cm = std::make_unique<CookieMonster>(nullptr, nullptr);
   cm->SetCanonicalCookieAsync(std::move(cookie2), url,
                               net::CookieOptions::MakeAllInclusive(),
                               CookieStore::SetCookiesCallback());
@@ -3191,8 +3174,7 @@ TEST_P(URLRequestSameSiteCookiesTest, SameSiteCookiesSpecialScheme) {
   // Set up special schemes
   auto cad = std::make_unique<TestCookieAccessDelegate>();
   cad->SetIgnoreSameSiteRestrictionsScheme("chrome", true);
-  auto cm = std::make_unique<CookieMonster>(nullptr, nullptr,
-                                            /*first_party_sets_enabled=*/false);
+  auto cm = std::make_unique<CookieMonster>(nullptr, nullptr);
   cm->SetCookieAccessDelegate(std::move(cad));
 
   auto context_builder = CreateTestURLRequestContextBuilder();
@@ -6490,8 +6472,7 @@ TEST_F(URLRequestTestHTTP, PreloadExpectCTHeader) {
 // Tests that Expect CT HTTP headers are processed correctly.
 TEST_F(URLRequestTestHTTP, ExpectCTHeader) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      TransportSecurityState::kDynamicExpectCTFeature);
+  feature_list.InitAndEnableFeature(kDynamicExpectCTFeature);
 
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server.SetSSLConfig(
@@ -6540,8 +6521,7 @@ TEST_F(URLRequestTestHTTP, ExpectCTHeader) {
 // processed.
 TEST_F(URLRequestTestHTTP, MultipleExpectCTHeaders) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      TransportSecurityState::kDynamicExpectCTFeature);
+  feature_list.InitAndEnableFeature(kDynamicExpectCTFeature);
 
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server.SetSSLConfig(
@@ -7978,8 +7958,8 @@ TEST_F(URLRequestTest, NoCookieInclusionStatusWarningIfWouldBeExcludedAnyway) {
   auto& network_delegate = *context_builder->set_network_delegate(
       std::make_unique<FilteringTestNetworkDelegate>());
   network_delegate.SetCookieFilter("blockeduserpreference");
-  context_builder->SetCookieStore(std::make_unique<CookieMonster>(
-      nullptr, nullptr, /*first_party_sets_enabled=*/false));
+  context_builder->SetCookieStore(
+      std::make_unique<CookieMonster>(nullptr, nullptr));
   auto context = context_builder->Build();
   auto& cm = *static_cast<CookieMonster*>(context->cookie_store());
 
@@ -8228,8 +8208,8 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
     auto& filtering_network_delegate = *context_builder->set_network_delegate(
         std::make_unique<FilteringTestNetworkDelegate>());
     filtering_network_delegate.set_block_annotate_cookies();
-    context_builder->SetCookieStore(std::make_unique<CookieMonster>(
-        nullptr, nullptr, /*first_party_sets_enabled=*/false));
+    context_builder->SetCookieStore(
+        std::make_unique<CookieMonster>(nullptr, nullptr));
     auto context = context_builder->Build();
 
     auto* cm = static_cast<CookieMonster*>(context->cookie_store());
@@ -8652,8 +8632,8 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
     auto& filtering_network_delegate = *context_builder->set_network_delegate(
         std::make_unique<FilteringTestNetworkDelegate>());
     filtering_network_delegate.set_block_annotate_cookies();
-    context_builder->SetCookieStore(std::make_unique<CookieMonster>(
-        nullptr, nullptr, /*first_party_sets_enabled=*/false));
+    context_builder->SetCookieStore(
+        std::make_unique<CookieMonster>(nullptr, nullptr));
     auto context = context_builder->Build();
 
     auto* cm = static_cast<CookieMonster*>(context->cookie_store());
@@ -10765,10 +10745,6 @@ static bool UsingBuiltinCertVerifier() {
 #if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   return true;
 #else
-#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
-  if (base::FeatureList::IsEnabled(features::kCertVerifierBuiltinFeature))
-    return true;
-#endif
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
   if (base::FeatureList::IsEnabled(features::kChromeRootStoreUsed))
     return true;
@@ -13133,8 +13109,8 @@ TEST_F(URLRequestTest, SetURLChain) {
 
 TEST_F(URLRequestTest, SetIsolationInfoFromNakTripleNikTripleNak) {
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::vector<base::Feature> enabled_features = {};
-  std::vector<base::Feature> disabled_features = {
+  std::vector<base::test::FeatureRef> enabled_features = {};
+  std::vector<base::test::FeatureRef> disabled_features = {
       net::features::kEnableDoubleKeyNetworkAnonymizationKey,
       net::features::kForceIsolationInfoFrameOriginToTopLevelFrame,
       net::features::kEnableCrossSiteFlagNetworkAnonymizationKey};
@@ -13194,10 +13170,10 @@ TEST_F(URLRequestTest, SetIsolationInfoFromNakTripleNikTripleNak) {
 
 TEST_F(URLRequestTest, SetIsolationInfoFromNakDoubleNikDoubleNak) {
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::vector<base::Feature> enabled_features = {
+  std::vector<base::test::FeatureRef> enabled_features = {
       net::features::kEnableDoubleKeyNetworkAnonymizationKey,
       net::features::kForceIsolationInfoFrameOriginToTopLevelFrame};
-  std::vector<base::Feature> disabled_features = {
+  std::vector<base::test::FeatureRef> disabled_features = {
       net::features::kEnableCrossSiteFlagNetworkAnonymizationKey};
   scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
@@ -13252,9 +13228,9 @@ TEST_F(URLRequestTest, SetIsolationInfoFromNakDoubleNikDoubleNak) {
 
 TEST_F(URLRequestTest, SetIsolationInfoFromNakTripleNikDoubleNak) {
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::vector<base::Feature> enabled_features = {
+  std::vector<base::test::FeatureRef> enabled_features = {
       net::features::kEnableDoubleKeyNetworkAnonymizationKey};
-  std::vector<base::Feature> disabled_features = {
+  std::vector<base::test::FeatureRef> disabled_features = {
       net::features::kForceIsolationInfoFrameOriginToTopLevelFrame,
       net::features::kEnableCrossSiteFlagNetworkAnonymizationKey};
   scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
@@ -13314,10 +13290,10 @@ TEST_F(URLRequestTest, SetIsolationInfoFromNakTripleNikDoubleNak) {
 TEST_F(URLRequestTest,
        SetIsolationInfoFromNakTripleNikDoubleWithCrossSiteFlagNak) {
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::vector<base::Feature> enabled_features = {
+  std::vector<base::test::FeatureRef> enabled_features = {
       net::features::kEnableDoubleKeyNetworkAnonymizationKey,
       net::features::kEnableCrossSiteFlagNetworkAnonymizationKey};
-  std::vector<base::Feature> disabled_features = {
+  std::vector<base::test::FeatureRef> disabled_features = {
       net::features::kForceIsolationInfoFrameOriginToTopLevelFrame};
   scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
@@ -13378,10 +13354,8 @@ class URLRequestMaybeAsyncFirstPartySetsTest
   URLRequestMaybeAsyncFirstPartySetsTest() { CHECK(test_server_.Start()); }
 
   std::unique_ptr<CookieStore> CreateCookieStore() {
-    auto cookie_monster =
-        std::make_unique<CookieMonster>(/*store=*/nullptr,
-                                        /*net_log=*/nullptr,
-                                        /*first_party_sets_enabled=*/true);
+    auto cookie_monster = std::make_unique<CookieMonster>(/*store=*/nullptr,
+                                                          /*net_log=*/nullptr);
     auto cookie_access_delegate = std::make_unique<TestCookieAccessDelegate>();
     cookie_access_delegate->set_invoke_callbacks_asynchronously(
         invoke_callbacks_asynchronously());

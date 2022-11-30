@@ -7,16 +7,32 @@
 #import "base/containers/cxx20_erase_vector.h"
 #import "base/memory/raw_ptr.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
+#import "components/password_manager/core/common/password_manager_pref_names.h"
+#import "components/prefs/pref_service.h"
+#import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
+#import "components/sync/base/passphrase_enums.h"
+#import "components/sync/driver/sync_service_utils.h"
+#import "components/sync/driver/sync_user_settings.h"
+#import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/ui/settings/password/password_exporter.h"
 #import "ios/chrome/browser/ui/settings/password/saved_passwords_presenter_observer.h"
+#import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
+#import "ios/chrome/browser/ui/settings/utils/password_auto_fill_status_manager.h"
+#import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_protocol.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface PasswordSettingsMediator () <PasswordExporterDelegate,
-                                        SavedPasswordsPresenterObserver> {
+using password_manager::prefs::kCredentialsEnableService;
+
+@interface PasswordSettingsMediator () <BooleanObserver,
+                                        IdentityManagerObserverBridgeDelegate,
+                                        PasswordAutoFillStatusObserver,
+                                        PasswordExporterDelegate,
+                                        SavedPasswordsPresenterObserver,
+                                        SyncObserverModelBridge> {
   // A helper object for passing data about saved passwords from a finished
   // password store request to the PasswordManagerViewController.
   std::unique_ptr<SavedPasswordsPresenterObserverBridge>
@@ -24,6 +40,27 @@
 
   // Service which gives us a view on users' saved passwords.
   raw_ptr<password_manager::SavedPasswordsPresenter> _savedPasswordsPresenter;
+
+  // Allows reading and writing user preferences.
+  raw_ptr<PrefService> _prefService;
+
+  // The observable boolean that binds to the password manager setting state.
+  // Saved passwords are only on if the password manager is enabled.
+  PrefBackedBoolean* _passwordManagerEnabled;
+
+  // Provides status of Chrome as iOS AutoFill credential provider (i.e.,
+  // whether or not Chrome passwords can currently be used in other apps).
+  PasswordAutoFillStatusManager* _passwordAutoFillStatusManager;
+
+  // IdentityManager observer.
+  std::unique_ptr<signin::IdentityManagerObserverBridge>
+      _identityManagerObserver;
+
+  // Service providing information about sync status.
+  raw_ptr<syncer::SyncService> _syncService;
+
+  // Sync observer.
+  std::unique_ptr<SyncObserverBridge> _syncObserver;
 }
 
 // Helper object which maintains state about the "Export Passwords..." flow, and
@@ -48,7 +85,11 @@
            savedPasswordsPresenter:
                (raw_ptr<password_manager::SavedPasswordsPresenter>)
                    passwordPresenter
-                     exportHandler:(id<PasswordExportHandler>)exportHandler {
+                     exportHandler:(id<PasswordExportHandler>)exportHandler
+                       prefService:(raw_ptr<PrefService>)prefService
+                   identityManager:
+                       (raw_ptr<signin::IdentityManager>)identityManager
+                       syncService:(raw_ptr<syncer::SyncService>)syncService {
   self = [super init];
   if (self) {
     _passwordExporter =
@@ -60,6 +101,19 @@
             self, _savedPasswordsPresenter);
     _savedPasswordsPresenter->Init();
     _exportHandler = exportHandler;
+    _prefService = prefService;
+    _passwordManagerEnabled = [[PrefBackedBoolean alloc]
+        initWithPrefService:_prefService
+                   prefName:kCredentialsEnableService];
+    _passwordManagerEnabled.observer = self;
+    _passwordAutoFillStatusManager =
+        [PasswordAutoFillStatusManager sharedManager];
+    [_passwordAutoFillStatusManager addObserver:self];
+    _identityManagerObserver =
+        std::make_unique<signin::IdentityManagerObserverBridge>(identityManager,
+                                                                self);
+    _syncService = syncService;
+    _syncObserver = std::make_unique<SyncObserverBridge>(self, syncService);
   }
   return self;
 }
@@ -70,12 +124,19 @@
   // correct initial value for `canExportPasswords` or else the export button
   // will not behave correctly on load.
   self.exporterIsReady = self.passwordExporter.exportState == ExportState::IDLE;
-  [self savedPasswordsDidChange:_savedPasswordsPresenter->GetSavedPasswords()];
+  [self savedPasswordsDidChanged:_savedPasswordsPresenter->GetSavedPasswords()];
 
-  // TODO(crbug.com/1335156): Replace placeholder data with actual data piped
-  // from observing pref and enterprise policy.
-  [self.consumer setSavePasswordsEnabled:YES];
-  [self.consumer setManagedByPolicy:NO];
+  [self.consumer setSavePasswordsEnabled:_passwordManagerEnabled.value];
+
+  // TODO(crbug.com/1082827): In addition to setting this value here, we should
+  // observe for changes (i.e., if policy changes while the screen is open) and
+  // push that to the consumer.
+  [self.consumer setManagedByPolicy:_prefService->IsManagedPreference(
+                                        kCredentialsEnableService)];
+
+  [self passwordAutoFillStatusDidChange];
+
+  [self.consumer setOnDeviceEncryptionState:[self onDeviceEncryptionState]];
 }
 
 - (void)userDidStartExportFlow {
@@ -97,6 +158,17 @@
 
 - (void)userDidCancelExportFlow {
   [self.passwordExporter cancelExport];
+}
+
+- (void)disconnect {
+  DCHECK(_savedPasswordsPresenter);
+  DCHECK(_passwordsPresenterObserver);
+  _savedPasswordsPresenter->RemoveObserver(_passwordsPresenterObserver.get());
+  _passwordsPresenterObserver.reset();
+  [[PasswordAutoFillStatusManager sharedManager] removeObserver:self];
+  [_passwordManagerEnabled stop];
+  _identityManagerObserver.reset();
+  _syncObserver.reset();
 }
 
 #pragma mark - PasswordExporterDelegate
@@ -128,15 +200,62 @@
   [self pushExportStateToConsumerAndUpdate];
 }
 
+#pragma mark - PasswordSettingsDelegate
+
+- (void)savedPasswordSwitchDidChange:(BOOL)enabled {
+  _passwordManagerEnabled.value = enabled;
+}
+
 #pragma mark - SavedPasswordsPresenterObserver
 
-- (void)savedPasswordsDidChange:
+- (void)savedPasswordsDidChanged:
     (password_manager::SavedPasswordsPresenter::SavedPasswordsView)passwords {
   self.hasSavedPasswords = !passwords.empty();
   [self pushExportStateToConsumerAndUpdate];
 }
 
+#pragma mark - BooleanObserver
+
+- (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
+  DCHECK(observableBoolean == _passwordManagerEnabled);
+  [self.consumer setSavePasswordsEnabled:observableBoolean.value];
+}
+
+#pragma mark - PasswordAutoFillStatusObserver
+
+- (void)passwordAutoFillStatusDidChange {
+  if (_passwordAutoFillStatusManager.ready) {
+    [self.consumer setPasswordsInOtherAppsEnabled:_passwordAutoFillStatusManager
+                                                      .autoFillEnabled];
+  }
+}
+
+#pragma mark - IdentityManagerObserverBridgeDelegate
+
+- (void)onPrimaryAccountChanged:
+    (const signin::PrimaryAccountChangeEvent&)event {
+  [self.consumer setOnDeviceEncryptionState:[self onDeviceEncryptionState]];
+}
+
+#pragma mark - SyncObserverModelBridge
+
+- (void)onSyncStateChanged {
+  [self.consumer setOnDeviceEncryptionState:[self onDeviceEncryptionState]];
+}
+
 #pragma mark - Private
+
+// Returns the on-device encryption state according to the sync service.
+- (PasswordSettingsOnDeviceEncryptionState)onDeviceEncryptionState {
+  if (ShouldOfferTrustedVaultOptIn(_syncService)) {
+    return PasswordSettingsOnDeviceEncryptionStateOfferOptIn;
+  }
+  if (_syncService->GetUserSettings()->GetPassphraseType() ==
+      syncer::PassphraseType::kTrustedVaultPassphrase) {
+    return PasswordSettingsOnDeviceEncryptionStateOptedIn;
+  }
+  return PasswordSettingsOnDeviceEncryptionStateNotShown;
+}
 
 // Pushes the current state of the exporter to the consumer and updates its
 // export passwords button.

@@ -15,13 +15,13 @@ import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import './components/oobe_icons.m.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
-import {I18nBehavior} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {I18nBehavior} from 'chrome://resources/ash/common/i18n_behavior.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {$} from 'chrome://resources/js/util.m.js';
+import {$} from 'chrome://resources/js/util.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {Authenticator, AuthMode, AuthParams, SUPPORTED_PARAMS} from './gaia_auth_host/authenticator.m.js';
+import {Authenticator, AuthMode, AuthParams, SUPPORTED_PARAMS} from './gaia_auth_host/authenticator.js';
 
 const clearDataType = {
   appcache: true,

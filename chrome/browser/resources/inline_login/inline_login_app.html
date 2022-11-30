@@ -69,30 +69,30 @@
     <!-- Show welcome screen on Chrome OS to clarify that account will be
          available in ARC. -->
     <if expr="chromeos_ash">
-      <div id="[[View.welcome]]" slot="view">
+      <div id="[[viewEnum_.WELCOME]]" slot="view">
         <welcome-page-app is-available-in-arc="{{isAvailableInArc_}}"
             on-opened-new-window="closeDialog_">
         </welcome-page-app>
       </div>
-      <div id="[[View.arcAccountPicker]]" slot="view">
+      <div id="[[viewEnum_.ARC_ACCOUNT_PICKER]]" slot="view">
         <arc-account-picker-app on-opened-new-window="closeDialog_"
             on-add-account="goToWelcomeScreen_">
         </arc-account-picker-app>
       </div>
-      <div id="[[View.signinBlockedByPolicy]]" slot="view">
+      <div id="[[viewEnum_.SIGNIN_BLOCKED_BY_POLICY]]" slot="view">
         <signin-blocked-by-policy-page email="[[email_]]"
           hosted-domain="[[hostedDomain_]]" device-type="[[deviceType_]]">
         </signin-blocked-by-policy-page>
       </div>
-      <div id="[[View.signinError]]" slot="view">
+      <div id="[[viewEnum_.SIGNIN_ERROR]]" slot="view">
         <signin-error-page>
         </signin-error-page>
       </div>
     </if>
 
-    <div id="[[View.addAccount]]" slot="view">
-      <paper-spinner-lite
-        active="[[isSpinnerActive_(loading_, verifyingAccount_)]]">
+    <div id="[[viewEnum_.ADD_ACCOUNT]]" slot="view">
+      <paper-spinner-lite id="spinner"
+          active="[[isSpinnerActive_(loading_, verifyingAccount_)]]">
       </paper-spinner-lite>
       <if expr="chromeos_ash">
         <p hidden$="[[!verifyingAccount_]]">
@@ -110,7 +110,7 @@
 
 <if expr="chromeos_ash">
   <div class="buttons"
-    hidden$="[[isSpinnerActive_(loading_, verifyingAccount_)]]">
+      hidden$="[[isSpinnerActive_(loading_, verifyingAccount_)]]">
     <cr-button class="back-button"
         aria-label="$i18n{accessibleBackButtonLabel}"
         on-click="handleGoBack_"
@@ -128,7 +128,7 @@
 
     <cr-button class="next-button action-button"
         aria-label="[[getNextButtonLabel_(currentView_, isArcAccountRestrictionsEnabled_)]]"
-        on-tap="onOkButtonClick_"
+        on-click="onOkButtonClick_"
         hidden$="[[!shouldShowOkButton_(currentView_)]]">
       [[getNextButtonLabel_(currentView_, isArcAccountRestrictionsEnabled_)]]
     </cr-button>

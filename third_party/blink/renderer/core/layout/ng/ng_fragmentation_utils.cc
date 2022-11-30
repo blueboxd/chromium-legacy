@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -223,7 +223,7 @@ NGBreakAppeal CalculateBreakAppealInside(
     consider_break_inside_avoidance = true;
   } else {
     appeal = layout_result.BreakAppeal();
-    consider_break_inside_avoidance = break_token && !break_token->IsRepeated();
+    consider_break_inside_avoidance = IsResumingLayout(break_token);
   }
 
   // We don't let break-inside:avoid affect the child's stored break appeal, but
@@ -270,10 +270,10 @@ void SetupSpaceBuilderForFragmentation(const NGConstraintSpace& parent_space,
     return;
 
   builder->SetFragmentainerBlockSize(parent_space.FragmentainerBlockSize());
-  LayoutUnit fragmentainer_offset_at_bfc =
-      parent_space.FragmentainerOffsetAtBfc() + fragmentainer_offset_delta;
-  builder->SetFragmentainerOffsetAtBfc(fragmentainer_offset_at_bfc);
-  if (fragmentainer_offset_at_bfc <= LayoutUnit())
+  LayoutUnit fragmentainer_offset =
+      parent_space.FragmentainerOffset() + fragmentainer_offset_delta;
+  builder->SetFragmentainerOffset(fragmentainer_offset);
+  if (fragmentainer_offset <= LayoutUnit())
     builder->SetIsAtFragmentainerStart();
   builder->SetFragmentationType(parent_space.BlockFragmentationType());
   builder->SetShouldPropagateChildBreakValues();
@@ -320,6 +320,14 @@ void SetupFragmentBuilderForFragmentation(
   // SetHasBlockFragmentation(), but we still need to resume layout correctly,
   // based on the previous break token.
   DCHECK(space.HasBlockFragmentation() || previous_break_token);
+  // If the node itself is monolithic, we shouldn't be here.
+  DCHECK(!node.IsMonolithic() || space.IsAnonymous());
+  // If we turn off fragmentation on a non-monolithic node, we need to treat the
+  // resulting fragment as monolithic. This matters when it comes to determining
+  // the containing block of out-of-flow positioned descendants.
+  builder->SetIsMonolithic(!space.IsAnonymous() &&
+                           space.IsBlockFragmentationForcedOff());
+
   if (space.HasBlockFragmentation())
     builder->SetHasBlockFragmentation();
   builder->SetPreviousBreakToken(previous_break_token);
@@ -352,10 +360,7 @@ void SetupFragmentBuilderForFragmentation(
           builder->InitialBorderBoxSize().inline_size);
       DCHECK(space.HasKnownFragmentainerBlockSize());
 
-      DCHECK(!builder->BfcBlockOffset());
-      LayoutUnit space_left =
-          FragmentainerSpaceAtBfcStart(space) - space.ExpectedBfcBlockOffset();
-
+      LayoutUnit space_left = FragmentainerSpaceLeft(space);
       LayoutUnit previously_consumed_block_size;
       if (previous_break_token) {
         previously_consumed_block_size =
@@ -498,10 +503,15 @@ NGBreakStatus FinishFragmentation(NGBlockNode node,
   if (builder->FoundColumnSpanner() || !space.HasBlockFragmentation())
     return NGBreakStatus::kContinue;
 
+  bool was_broken_by_child = builder->HasInflowChildBreakInside();
+  if (!was_broken_by_child && space.IsNewFormattingContext())
+    was_broken_by_child = builder->HasFloatBreakInside();
+
   if (space_left == kIndefiniteSize) {
     // We don't know how space is available (initial column balancing pass), so
     // we won't break.
-    builder->SetIsAtBlockEnd();
+    if (!was_broken_by_child)
+      builder->SetIsAtBlockEnd();
     return NGBreakStatus::kContinue;
   }
 
@@ -536,11 +546,6 @@ NGBreakStatus FinishFragmentation(NGBlockNode node,
       // IsKnownToFitInFragmentainer() will return true now), we know that we're
       // at the end. If block-size is unconstrained (or at least allowed to grow
       // a bit more), we're only at the end if no in-flow content inside broke.
-
-      bool was_broken_by_child = builder->HasInflowChildBreakInside();
-      if (!was_broken_by_child && space.IsNewFormattingContext())
-        was_broken_by_child = builder->HasFloatBreakInside();
-
       if (!was_broken_by_child || builder->IsKnownToFitInFragmentainer()) {
         if (node.HasNonVisibleBlockOverflow() &&
             builder->HasChildBreakInside()) {
@@ -905,8 +910,8 @@ bool MovePastBreakpoint(const NGConstraintSpace& space,
     // spanner. Otherwise we have to break before it. We don't want empty
     // fragments with nothing useful inside, if it's to be resumed in the next
     // fragmentainer.
-    must_break_before = !layout_result.ColumnSpannerPath() && break_token &&
-                        !break_token->IsRepeated() &&
+    must_break_before = !layout_result.ColumnSpannerPath() &&
+                        IsResumingLayout(break_token) &&
                         !break_token->IsAtBlockEnd();
   }
   if (must_break_before) {
@@ -916,8 +921,7 @@ bool MovePastBreakpoint(const NGConstraintSpace& space,
 
   NGBreakAppeal appeal_inside =
       CalculateBreakAppealInside(space, layout_result);
-  if ((break_token && !break_token->IsRepeated()) ||
-      appeal_inside < kBreakAppealPerfect) {
+  if (IsResumingLayout(break_token) || appeal_inside < kBreakAppealPerfect) {
     // The block child broke inside, either in this fragmentation context, or in
     // an inner one. We now need to decide whether to keep that break, or if it
     // would be better to break before it. Allow breaking inside if it has the
@@ -991,9 +995,8 @@ void UpdateEarlyBreakAtBlockChild(
     NGBoxFragmentBuilder* builder,
     NGFlexColumnBreakInfo* flex_column_break_info) {
   // If the child already broke, it's a little too late to look for breakpoints.
-  DCHECK(!layout_result.PhysicalFragment().BreakToken() ||
-         To<NGBlockBreakToken>(layout_result.PhysicalFragment().BreakToken())
-             ->IsRepeated());
+  DCHECK(!IsResumingLayout(
+      To<NGBlockBreakToken>(layout_result.PhysicalFragment().BreakToken())));
 
   // See if there's a good breakpoint inside the child.
   NGBreakAppeal appeal_inside = kBreakAppealLastResort;
@@ -1332,13 +1335,15 @@ bool CanPaintMultipleFragments(const LayoutObject& layout_object) {
     return true;
 
   // There seems to be many issues preventing us from allowing repeated
-  // scrollable containers, so we need to disallow them. Should we be able to
-  // fix all the issues some day (after removing the legacy layout code), we
-  // could change this policy. But for now we need to forbid this, which also
-  // means that we cannot paint repeated text input form elements (because they
-  // use scrollable containers internally) (if it makes sense at all to repeat
-  // form elements...).
-  if (layout_box->IsScrollContainer())
+  // scrollable containers, so we need to disallow them (unless we're printing,
+  // in which case they're not really scrollable). Should we be able to fix all
+  // the issues some day (after removing the legacy layout code), we could
+  // change this policy. But for now we need to forbid this, which also means
+  // that we cannot paint repeated text input form elements (because they use
+  // scrollable containers internally) (if it makes sense at all to repeat form
+  // elements...).
+  if (layout_box->IsScrollContainer() &&
+      !layout_object.GetDocument().Printing())
     return false;
 
   // It's somewhat problematic and strange to repeat most kinds of

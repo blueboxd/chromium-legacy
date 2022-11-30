@@ -8,12 +8,18 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/commands/omnibox_suggestion_commands.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_keyboard_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_change_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_result_consumer.h"
 #import "ios/chrome/browser/ui/omnibox/popup/content_providing.h"
 
-@protocol ImageRetriever;
+@protocol CarouselItemMenuProvider;
 @protocol FaviconRetriever;
+class LargeIconCache;
+namespace favicon {
+class LargeIconService;
+}
+@protocol ImageRetriever;
 @protocol PopupMatchPreviewDelegate;
 
 // View controller used to display a list of omnibox autocomplete matches in the
@@ -26,6 +32,7 @@
 @interface OmniboxPopupViewController
     : UIViewController <AutocompleteResultConsumer,
                         ContentProviding,
+                        OmniboxKeyboardDelegate,
                         OmniboxReturnDelegate,
                         OmniboxSuggestionCommands,
                         UIScrollViewDelegate>
@@ -37,6 +44,9 @@
 @property(nonatomic, weak) id<PopupMatchPreviewDelegate> matchPreviewDelegate;
 @property(nonatomic, weak) id<ImageRetriever> imageRetriever;
 @property(nonatomic, weak) id<FaviconRetriever> faviconRetriever;
+@property(nonatomic, assign) favicon::LargeIconService* largeIconService;
+@property(nonatomic, assign) LargeIconCache* largeIconCache;
+@property(nonatomic, weak) id<CarouselItemMenuProvider> carouselMenuProvider;
 
 @property(nonatomic, strong)
     NSArray<id<AutocompleteSuggestionGroup>>* currentResult;

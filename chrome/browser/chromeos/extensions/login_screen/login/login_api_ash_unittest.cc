@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/components/settings/cros_settings_names.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
@@ -36,6 +35,7 @@
 #include "chromeos/ash/components/login/auth/public/cryptohome_key_constants.h"
 #include "chromeos/ash/components/login/auth/public/key.h"
 #include "chromeos/ash/components/login/auth/public/user_context.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
@@ -188,11 +188,9 @@ class LoginApiUnittest : public ExtensionApiUnittest {
 
   std::unique_ptr<ScopedTestingProfile> AddPublicAccountUser(
       const std::string& email) {
-    AccountId account_id = AccountId::FromUserEmail(email);
-    user_manager::User* user =
-        fake_chrome_user_manager_->AddPublicAccountUser(account_id);
+    fake_chrome_user_manager_->AddPublicAccountUser(
+        AccountId::FromUserEmail(email));
     TestingProfile* profile = profile_manager()->CreateTestingProfile(email);
-    ash::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user, profile);
 
     return std::make_unique<ScopedTestingProfile>(profile, profile_manager());
   }
@@ -566,12 +564,10 @@ class LoginApiUserSessionUnittest : public LoginApiUnittest {
  protected:
   std::unique_ptr<ScopedTestingProfile> AddRegularUser(
       const std::string& email) {
-    AccountId account_id = AccountId::FromUserEmailGaiaId(email, kGaiaId);
-    user_manager::User* user =
-        fake_chrome_user_manager_->AddUserWithAffiliation(
-            account_id, /* is_affiliated= */ true);
+    fake_chrome_user_manager_->AddUserWithAffiliation(
+        AccountId::FromUserEmailGaiaId(email, kGaiaId),
+        /* is_affiliated= */ true);
     TestingProfile* profile = profile_manager()->CreateTestingProfile(email);
-    ash::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user, profile);
 
     return std::make_unique<ScopedTestingProfile>(profile, profile_manager());
   }

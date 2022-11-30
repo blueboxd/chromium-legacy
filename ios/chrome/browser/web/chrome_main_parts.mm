@@ -191,9 +191,7 @@ void IOSChromeMainParts::PreCreateThreads() {
   CHECK(base::PathService::Get(ios::FILE_LOCAL_STATE, &local_state_path));
   application_context_.reset(new ApplicationContextImpl(
       local_state_task_runner.get(), parsed_command_line_,
-      l10n_util::GetLocaleOverride(),
-      base::SysNSStringToUTF8(
-          [[NSLocale currentLocale] objectForKey:NSLocaleCountryCode])));
+      l10n_util::GetLocaleOverride()));
   DCHECK_EQ(application_context_.get(), GetApplicationContext());
 
   // Check the first run state early; this must be done before IO is disallowed
@@ -404,7 +402,9 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
 
   // Ensure the Fullscren Promos Manager is initialized.
   PromosManager* promos_manager = application_context_->GetPromosManager();
-  promos_manager->Init();
+  if (promos_manager) {
+    promos_manager->Init();
+  }
 }
 
 void IOSChromeMainParts::PostMainMessageLoopRun() {

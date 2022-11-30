@@ -21,6 +21,12 @@ const char kAppStoreRatingDescription[] =
     "When enabled, App Store Rating promo will be presented to eligible "
     "users.";
 
+const char kAppStoreRatingIgnoreEligibilityCheckTestName[] =
+    "Overrides App Store rating trigger requirements.";
+const char kAppStoreRatingIgnoreEligibilityCheckTestDescription[] =
+    "Overrides the app store rating trigger requirements to show the prompt"
+    "on the next startup. Used for testing.";
+
 const char kAutofillBrandingIOSName[] = "Autofill Branding on iOS";
 const char kAutofillBrandingIOSDescription[] =
     "Adds the Chrome logo in the form input suggestions bar. Full color by "
@@ -152,11 +158,6 @@ const char kBubbleRichIPHDescription[] =
     "highlight IPH. When enabled with no option, uses the default bubble "
     "style.";
 
-const char kBookmarkStringName[] = "Bookmark action string";
-const char kBookmarkStringDescription[] =
-    "This flag is used to change the string of the action allowing the user to "
-    "bookmark a page from the overflow menu.";
-
 extern const char kCalendarExperienceKitName[] = "Experience Kit Calendar";
 extern const char kCalendarExperienceKitDescription[] =
     "When enabled, long pressing on dates will trigger Experience Kit Calendar "
@@ -172,6 +173,11 @@ extern const char kMapsExperienceKitName[] = "Experience Kit Maps";
 extern const char kMapsExperienceKitDescription[] =
     "When enabled, long pressing on an address will trigger Experience Kit Maps"
     "location and directions handling";
+
+extern const char kLongPressSurroundingTextName[] =
+    "Enable Long Press Surrounding Text";
+extern const char kLongPressSurroundingTextDescription[] =
+    "When enabled, long pressing a text will analyze larger part of the text.";
 
 const char kContentSuggestionsUIModuleRefreshName[] =
     "Content Suggestions UI Module Refresh";
@@ -339,6 +345,12 @@ const char kEnhancedProtectionPhase2Name[] =
 const char kEnhancedProtectionPhase2Description[] =
     "Enable additional improvements related to Enhanced Safe Browsing";
 
+const char kTailoredSecurityIntegrationName[] =
+    "Enable Tailored Security Integration";
+const char kTailoredSecurityIntegrationDescription[] =
+    "Enable integration between account level enhanced safe browsing and "
+    "chrome enhanced safe browsing";
+
 const char kExpandedTabStripName[] = "Enable expanded tabstrip";
 const char kExpandedTabStripDescription[] =
     "Enables the new expanded tabstrip. Activated by swiping down the tabstrip"
@@ -364,6 +376,12 @@ const char kFullscreenPromosManagerName[] = "Fullscreen Promos Manager";
 const char kFullscreenPromosManagerDescription[] =
     "When enabled, the display of fullscreen promos will be coordinated by a "
     "central manager living at the application level.";
+
+const char kFullscreenPromosManagerSkipInternalLimitsName[] =
+    "Fullscreen Promos Manager (Skip internal Impression Limits)";
+const char kFullscreenPromosManagerSkipInternalLimitsDescription[] =
+    "When enabled, the internal Impression Limits of the Promos Manager will "
+    "be ignored; this is useful for local development.";
 
 const char kFullscreenSmoothScrollingName[] = "Fullscreen Smooth Scrolling";
 const char kFullscreenSmoothScrollingDescription[] =
@@ -430,6 +448,10 @@ const char kIOSSharedHighlightingV2Description[] =
     "Enables improvements to text fragments UI, including a menu for removing "
     "or resharing a highlight.";
 
+const char kKeyboardShortcutsMenuName[] = "Keyboard Shortcuts Menu";
+const char kKeyboardShortcutsMenuDescription[] =
+    "Enables the new keyboard shortcuts menu.";
+
 const char kLockBottomToolbarName[] = "Lock bottom toolbar";
 const char kLockBottomToolbarDescription[] =
     "When enabled, the bottom toolbar will not get collapsed when scrolling "
@@ -480,16 +502,6 @@ const char kNewOverflowMenuAlternateIPHName[] =
     "New Overflow Menu Alternative IPH";
 const char kNewOverflowMenuAlternateIPHDescription[] =
     "Uses the alternative IPH flow for the new overflow menu";
-
-const char kNewOverflowMenuSettingsActionName[] =
-    "Settings action in the new overflow menu";
-const char kNewOverflowMenuSettingsActionDescription[] =
-    "Adds a Settings action to the new overflow menu";
-
-extern const char kNewOverflowMenuSimpleDestinationIconsName[] =
-    "Simple Destination icons in the new overflow menu";
-extern const char kNewOverflowMenuSimpleDestinationIconsDescription[] =
-    "Uses a simple icon style for destination icons in the new overflow menu";
 
 const char kNTPViewHierarchyRepairName[] = "NTP View Hierarchy Repair";
 const char kNTPViewHierarchyRepairDescription[] =
@@ -548,6 +560,20 @@ const char kOmniboxNewImplementationName[] =
 const char kOmniboxNewImplementationDescription[] =
     "Uses a textfield implementation that doesn't use UILabels internally";
 
+const char kOmniboxFocusTriggersContextualWebZeroSuggestName[] =
+    "Omnibox on-focus suggestions for the contextual Web";
+const char kOmniboxFocusTriggersContextualWebZeroSuggestDescription[] =
+    "Enables on-focus suggestions on the Open Web, that are contextual to the "
+    "current URL. Will only work if user is signed-in and syncing, or is "
+    "otherwise eligible to send the current page URL to the suggest server.";
+
+const char kOmniboxFocusTriggersSRPZeroSuggestName[] =
+    "Allow Omnibox contextual web on-focus suggestions on the SRP";
+const char kOmniboxFocusTriggersSRPZeroSuggestDescription[] =
+    "Enables on-focus suggestions on the Search Results page. Requires "
+    "on-focus suggestions for the contextual web to be enabled. Will only work "
+    "if user is signed-in and syncing.";
+
 const char kOmniboxPasteButtonName[] = "Omnibox paste to search button";
 const char kOmniboxPasteButtonDescription[] =
     "Add a paste button when showing clipboard suggestions in the omnibox. iOS "
@@ -564,6 +590,11 @@ const char kOmniboxZeroSuggestPrefetchingName[] =
 const char kOmniboxZeroSuggestPrefetchingDescription[] =
     "Enables prefetching of the zero prefix suggestions for eligible users "
     "on the New Tab page.";
+
+const char kOmniboxZeroSuggestInMemoryCachingName[] =
+    "Omnibox Zero Prefix Suggestion in-memory caching";
+const char kOmniboxZeroSuggestInMemoryCachingDescription[] =
+    "Enables in-memory caching of zero prefix suggestions.";
 
 const char kIOSOmniboxUpdatedPopupUIName[] = "Popup refresh";
 const char kIOSOmniboxUpdatedPopupUIDescription[] =

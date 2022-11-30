@@ -242,26 +242,14 @@ class PasswordsPrivateOptInForAccountStorageFunction
   ResponseAction Run() override;
 };
 
-class PasswordsPrivateGetCompromisedCredentialsFunction
+class PasswordsPrivateGetInsecureCredentialsFunction
     : public ExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.getCompromisedCredentials",
-                             PASSWORDSPRIVATE_GETCOMPROMISEDCREDENTIALS)
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.getInsecureCredentials",
+                             PASSWORDSPRIVATE_GETINSECURECREDENTIALS)
 
  protected:
-  ~PasswordsPrivateGetCompromisedCredentialsFunction() override;
-
-  // ExtensionFunction overrides.
-  ResponseAction Run() override;
-};
-
-class PasswordsPrivateGetWeakCredentialsFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.getWeakCredentials",
-                             PASSWORDSPRIVATE_GETWEAKCREDENTIALS)
-
- protected:
-  ~PasswordsPrivateGetWeakCredentialsFunction() override;
+  ~PasswordsPrivateGetInsecureCredentialsFunction() override;
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;
@@ -421,6 +409,21 @@ class PasswordsPrivateExtendAuthValidityFunction : public ExtensionFunction {
 
  protected:
   ~PasswordsPrivateExtendAuthValidityFunction() override = default;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+};
+
+class PasswordsPrivateSwitchBiometricAuthBeforeFillingStateFunction
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "passwordsPrivate.switchBiometricAuthBeforeFillingState",
+      PASSWORDSPRIVATE_SWITCHBIOMETRICAUTHBEFOREFILLINGSTATE)
+
+ protected:
+  ~PasswordsPrivateSwitchBiometricAuthBeforeFillingStateFunction() override =
+      default;
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;

@@ -4,17 +4,16 @@
 
 #include <tuple>
 
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -124,10 +123,10 @@ class TestConditionWaiter : public apps::BrowserAppInstanceObserver,
     OnAnyEvent();
   }
 
-  void Wait(const std::string& message) {
+  void Wait(const base::Location& from_here, const std::string& message) {
     if (!condition_.Run()) {
       base::test::ScopedRunLoopTimeout timeout(
-          FROM_HERE, TestTimeouts::action_timeout(),
+          from_here, TestTimeouts::action_timeout(),
           base::BindLambdaForTesting(
               [&]() { return "Waiting for: " + message; }));
       run_loop_.Run();
@@ -152,7 +151,8 @@ class TestConditionWaiter : public apps::BrowserAppInstanceObserver,
 };
 
 #define WAIT_FOR(condition)                                                   \
-  WaitForCondition(base::BindLambdaForTesting([&]() { return (condition); }), \
+  WaitForCondition(FROM_HERE,                                                 \
+                   base::BindLambdaForTesting([&]() { return (condition); }), \
                    #condition)
 
 struct ExpectedAppMenuItem {
@@ -170,11 +170,6 @@ std::ostream& operator<<(std::ostream& os, const ExpectedAppMenuItem& i) {
 
 class BrowserAppShelfControllerBrowserTest
     : public crosapi::AshRequiresLacrosBrowserTestBase {
- public:
-  BrowserAppShelfControllerBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(ash::features::kLacrosPrimary);
-  }
-
  protected:
   static constexpr char kURL_A[] = "https://a.example.org";
   static constexpr char kURL_B[] = "https://b.example.org";
@@ -211,13 +206,14 @@ class BrowserAppShelfControllerBrowserTest
     return apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
   }
 
-  void WaitForCondition(TestConditionWaiter::Condition condition,
+  void WaitForCondition(const base::Location& from_here,
+                        TestConditionWaiter::Condition condition,
                         const std::string& message) {
     auto* proxy =
         apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
     TestConditionWaiter(*registry_, proxy->AppRegistryCache(),
                         std::move(condition))
-        .Wait(message);
+        .Wait(from_here, message);
   }
 
   std::string InstallWebApp(const std::string& start_url,
@@ -313,7 +309,6 @@ class BrowserAppShelfControllerBrowserTest
     return SelectResult{action_taken, std::move(app_menu_items)};
   }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
   apps::BrowserAppInstanceRegistry* registry_{nullptr};
 };
 
@@ -605,8 +600,9 @@ IN_PROC_BROWSER_TEST_F(BrowserAppShelfControllerBrowserTest,
   }
 }
 
+// Flakily fails: https://crbug.com/1373054
 IN_PROC_BROWSER_TEST_F(BrowserAppShelfControllerBrowserTest,
-                       ActivateAndMinimizeWindows) {
+                       DISABLED_ActivateAndMinimizeWindows) {
   if (!HasLacrosArgument()) {
     return;
   }
@@ -633,7 +629,10 @@ IN_PROC_BROWSER_TEST_F(BrowserAppShelfControllerBrowserTest,
   // Both are pinned.
   EXPECT_EQ(ShelfStatus(kAppId_A), ash::STATUS_RUNNING);
   EXPECT_EQ(ShelfStatus(kAppId_B), ash::STATUS_RUNNING);
-  // App B is active.
+
+  // App B window is activated.
+  ASSERT_EQ(SelectShelfItem(kAppId_B),
+            (SelectResult{ash::SHELF_ACTION_WINDOW_ACTIVATED, {}}));
   WAIT_FOR(!IsAppActive(kAppId_A) && IsAppActive(kAppId_B));
 
   // App A window is activated.

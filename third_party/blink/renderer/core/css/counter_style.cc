@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -929,7 +929,7 @@ String CounterStyle::GenerateInitialRepresentation(int value) const {
 
 String CounterStyle::IndexesToString(
     const Vector<wtf_size_t>& symbol_indexes) const {
-  if (symbol_indexes.IsEmpty())
+  if (symbol_indexes.empty())
     return String();
 
   StringBuilder result;

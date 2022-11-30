@@ -386,6 +386,9 @@ class CORE_EXPORT WebLocalFrameImpl final
   // Returns if the current frame's NotRestoredReasons has any blocking reasons.
   bool HasBlockingReasons() override;
 
+  const mojom::blink::BackForwardCacheNotRestoredReasonsPtr&
+  GetNotRestoredReasons();
+
   void InitializeCoreFrame(
       Page&,
       FrameOwner*,
@@ -395,6 +398,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       const AtomicString& name,
       WindowAgentFactory*,
       WebFrame* opener,
+      const DocumentToken& document_token,
       std::unique_ptr<blink::WebPolicyContainer> policy_container,
       const StorageKey& storage_key,
       network::mojom::blink::WebSandboxFlags sandbox_flags =
@@ -413,6 +417,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       WebFrame* opener,
       const WebString& name,
       network::mojom::blink::WebSandboxFlags,
+      const DocumentToken& document_token,
       std::unique_ptr<WebPolicyContainer>);
   static WebLocalFrameImpl* CreateProvisional(
       WebLocalFrameClient*,
@@ -538,6 +543,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void RemoveObserver(WebLocalFrameObserver* observer);
 
   void WillSendSubmitEvent(const WebFormElement& form);
+  void DidChangeMobileFriendliness(const MobileFriendliness& mf);
 
  protected:
   // WebLocalFrame protected overrides:
@@ -551,10 +557,6 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   // Sets the local core frame and registers destruction observers.
   void SetCoreFrame(LocalFrame*);
-
-  // Helper function for |HasBlockingReasons()|.
-  bool HasBlockingReasonsHelper(
-      const mojom::BackForwardCacheNotRestoredReasonsPtr&);
 
   // Inherited from WebFrame, but intentionally hidden: it never makes sense
   // to call these on a WebLocalFrameImpl.
@@ -602,10 +604,16 @@ class CORE_EXPORT WebLocalFrameImpl final
       const AtomicString& name,
       WindowAgentFactory*,
       WebFrame* opener,
+      const DocumentToken& document_token,
       std::unique_ptr<PolicyContainer> policy_container,
       const StorageKey& storage_key,
       network::mojom::blink::WebSandboxFlags sandbox_flags =
           network::mojom::blink::WebSandboxFlags::kNone);
+
+  // This function converts mojom::BackForwardCacheNotRestoredReasonsPtr to
+  // mojom::blink::BackForwardCacheNotRestoredReasonsPtr.
+  mojom::blink::BackForwardCacheNotRestoredReasonsPtr ConvertNotRestoredReasons(
+      const mojom::BackForwardCacheNotRestoredReasonsPtr& reasons_struct);
 
   WebLocalFrameClient* client_;
 

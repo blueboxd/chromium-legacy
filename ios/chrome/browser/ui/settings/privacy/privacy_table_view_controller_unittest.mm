@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prefs/browser_prefs.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
+#import "ios/chrome/browser/sync/mock_sync_service_utils.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -46,10 +47,6 @@ using ::testing::Return;
 namespace {
 
 NSString* const kSpdyProxyEnabled = @"SpdyProxyEnabled";
-
-std::unique_ptr<KeyedService> BuildMockSyncService(web::BrowserState* context) {
-  return std::make_unique<syncer::MockSyncService>();
-}
 
 // Checks if the device has Passcode, Face ID, or Touch ID set up.
 BOOL DeviceSupportsAuthentication() {
@@ -71,9 +68,9 @@ struct PrivacyTableViewControllerTestConfig {
 // proper initialization of the feature list before all of its own attributes.
 class WithScopedFeatureList {
  protected:
-  WithScopedFeatureList(
-      std::pair<std::vector<base::Feature>, std::vector<base::Feature>> const&
-          enabled_disabled_features) {
+  WithScopedFeatureList(std::pair<std::vector<base::test::FeatureRef>,
+                                  std::vector<base::test::FeatureRef>> const&
+                            enabled_disabled_features) {
     feature_list_.InitWithFeatures(enabled_disabled_features.first,
                                    enabled_disabled_features.second);
   }
@@ -89,9 +86,11 @@ class PrivacyTableViewControllerTest
   PrivacyTableViewControllerTest()
       : WithScopedFeatureList(EnabledDisabledFeatures()) {}
 
-  std::pair<std::vector<base::Feature>, std::vector<base::Feature>>
+  std::pair<std::vector<base::test::FeatureRef>,
+            std::vector<base::test::FeatureRef>>
   EnabledDisabledFeatures() const {
-    std::pair<std::vector<base::Feature>, std::vector<base::Feature>>
+    std::pair<std::vector<base::test::FeatureRef>,
+              std::vector<base::test::FeatureRef>>
         enabledDisabledFeatures;
 
     // Explicitly enable/disable Enhanced Protection flag.
@@ -119,7 +118,7 @@ class PrivacyTableViewControllerTest
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.AddTestingFactory(
         SyncServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildMockSyncService));
+        base::BindRepeating(&CreateMockSyncService));
     chrome_browser_state_ = test_cbs_builder.Build();
 
     browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());

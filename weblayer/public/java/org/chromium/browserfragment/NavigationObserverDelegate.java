@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,21 +23,28 @@ class NavigationObserverDelegate extends INavigationObserverDelegate.Stub {
     private ObserverList<NavigationObserver> mNavigationObservers =
             new ObserverList<NavigationObserver>();
 
+    public NavigationObserverDelegate() {
+        // Assert on UI thread as ObserverList can only be accessed from one thread.
+        ThreadCheck.ensureOnUiThread();
+    }
+
     /**
-     * Registers a {@link NavigationObserver}.
+     * Registers a {@link NavigationObserver}. Call only from the UI thread.
      *
      * @return true if the observer was added to the list of observers.
      */
     boolean registerObserver(NavigationObserver tabObserver) {
+        ThreadCheck.ensureOnUiThread();
         return mNavigationObservers.addObserver(tabObserver);
     }
 
     /**
-     * Unregisters a {@link NavigationObserver}.
+     * Unregisters a {@link NavigationObserver}. Call only from the UI thread.
      *
      * @return true if the observer was removed from the list of observers.
      */
     boolean unregisterObserver(NavigationObserver tabObserver) {
+        ThreadCheck.ensureOnUiThread();
         return mNavigationObservers.removeObserver(tabObserver);
     }
 

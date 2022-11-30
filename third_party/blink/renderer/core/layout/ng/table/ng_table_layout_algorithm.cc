@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -265,7 +265,7 @@ void ComputeLocationsFromColumns(
     bool* has_collapsed_columns) {
   *has_collapsed_columns = false;
   column_locations->resize(column_constraints.data.size());
-  if (column_locations->IsEmpty())
+  if (column_locations->empty())
     return;
   bool is_first_non_collpased_column = true;
   LayoutUnit column_offset = inline_border_spacing;
@@ -315,15 +315,15 @@ scoped_refptr<const NGTableConstraintSpaceData> CreateConstraintSpaceData(
       style.BorderCollapse() == EBorderCollapse::kCollapse;
   data->column_locations = column_locations;
 
-  data->sections.ReserveCapacity(sections.size());
+  data->sections.reserve(sections.size());
   for (const auto& section : sections)
     data->sections.emplace_back(section.start_row, section.row_count);
-  data->rows.ReserveCapacity(rows.size());
+  data->rows.reserve(rows.size());
   for (const auto& row : rows) {
     data->rows.emplace_back(row.block_size, row.start_cell_index,
                             row.cell_count, row.baseline, row.is_collapsed);
   }
-  data->cells.ReserveCapacity(cell_block_constraints.size());
+  data->cells.reserve(cell_block_constraints.size());
   // Traversing from section is necessary to limit cell's rowspan to the
   // section. The cell does not know what section it is in.
   for (const auto& section : sections) {
@@ -520,7 +520,7 @@ LayoutUnit NGTableLayoutAlgorithm::ComputeTableInlineSize(
       ComputeAssignableTableInlineSize(
           table, space, *column_constraints, caption_constraint,
           undistributable_space, table_border_padding, is_fixed_layout);
-  if (column_constraints->data.IsEmpty()) {
+  if (column_constraints->data.empty()) {
     return ComputeEmptyTableInlineSize(
         space, table.Style(), assignable_table_inline_size,
         undistributable_space, caption_constraint, table_border_padding,
@@ -598,7 +598,7 @@ const NGLayoutResult* NGTableLayoutAlgorithm::Layout() {
       /* shrink_collapsed */ false, &column_locations, &has_collapsed_columns);
 
   LayoutUnit table_inline_size_before_collapse;
-  const bool is_grid_empty = column_locations.IsEmpty();
+  const bool is_grid_empty = column_locations.empty();
   if (is_grid_empty) {
     table_inline_size_before_collapse = ComputeEmptyTableInlineSize(
         ConstraintSpace(), Style(), assignable_table_inline_size,
@@ -889,7 +889,7 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
   const NGTableBreakTokenData* incoming_table_break_data = nullptr;
   LogicalBoxSides border_padding_sides_to_include;
   const LayoutUnit fragmentainer_space_at_start =
-      FragmentainerSpaceAtBfcStart(ConstraintSpace());
+      FragmentainerSpaceLeft(ConstraintSpace());
   LayoutUnit previously_consumed_block_size;
   LayoutUnit previously_consumed_table_box_block_size;
 
@@ -1034,7 +1034,8 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
       border_padding.inline_start + border_spacing.inline_size;
 
   absl::optional<TableBoxExtent> table_box_extent;
-  absl::optional<LayoutUnit> table_baseline;
+  absl::optional<LayoutUnit> first_baseline;
+  absl::optional<LayoutUnit> last_baseline;
 
   bool has_repeated_header = false;
   absl::optional<LayoutUnit> pending_repeated_footer_block_size;
@@ -1258,7 +1259,7 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
     }
     if (ConstraintSpace().HasBlockFragmentation()) {
       LayoutUnit fragmentainer_block_offset =
-          ConstraintSpace().FragmentainerOffsetAtBfc() + child_block_offset;
+          ConstraintSpace().FragmentainerOffset() + child_block_offset;
       NGBreakStatus break_status = BreakBeforeChildIfNeeded(
           ConstraintSpace(), child, *child_result, fragmentainer_block_offset,
           has_container_separation, &container_builder_);
@@ -1276,9 +1277,13 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
     const auto& physical_fragment =
         To<NGPhysicalBoxFragment>(child_result->PhysicalFragment());
     NGBoxFragment fragment(table_writing_direction, physical_fragment);
-    if (child.IsTableSection() && !table_baseline) {
-      if (const auto& section_baseline = fragment.FirstBaseline())
-        table_baseline = *section_baseline + child_block_offset;
+    if (child.IsTableSection()) {
+      if (!first_baseline) {
+        if (const auto& section_first_baseline = fragment.FirstBaseline())
+          first_baseline = child_block_offset + *section_first_baseline;
+      }
+      if (const auto& section_last_baseline = fragment.LastBaseline())
+        last_baseline = child_block_offset + *section_last_baseline;
     }
 
     container_builder_.AddResult(
@@ -1362,7 +1367,7 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
         child_space, entry.GetBreakToken());
 
     LayoutUnit fragmentainer_block_offset =
-        ConstraintSpace().FragmentainerOffsetAtBfc() + offset.block_offset;
+        ConstraintSpace().FragmentainerOffset() + offset.block_offset;
     NGBreakStatus break_status =
         BreakBeforeChildIfNeeded(ConstraintSpace(), grouped_children.footer,
                                  *result, fragmentainer_block_offset,
@@ -1394,12 +1399,18 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
       border_spacing_after_last_section = LayoutUnit();
     } else if (ConstraintSpace().HasKnownFragmentainerBlockSize()) {
       // Truncate trailing border-spacing to fit within the fragmentainer.
-      border_spacing_after_last_section =
+      LayoutUnit new_border_spacing_after_last_section =
           std::min(border_spacing_after_last_section,
                    fragmentainer_space_at_start - child_block_offset -
                        border_padding.block_end);
-      border_spacing_after_last_section =
-          border_spacing_after_last_section.ClampNegativeToZero();
+      new_border_spacing_after_last_section =
+          new_border_spacing_after_last_section.ClampNegativeToZero();
+      if (border_spacing_after_last_section !=
+          new_border_spacing_after_last_section) {
+        container_builder_.SetIsTruncatedByFragmentationLine();
+        border_spacing_after_last_section =
+            new_border_spacing_after_last_section;
+      }
     }
 
     if (!has_ended_table_box_layout) {
@@ -1443,8 +1454,11 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
       Node().GetDOMNode()->HasTagName(mathml_names::kMtableTag)) {
     container_builder_.SetBaselines(
         MathTableBaseline(Style(), child_block_offset));
-  } else if (table_baseline) {
-    container_builder_.SetFirstBaseline(*table_baseline);
+  } else {
+    if (first_baseline)
+      container_builder_.SetFirstBaseline(*first_baseline);
+    if (last_baseline)
+      container_builder_.SetLastBaseline(*last_baseline);
   }
 
   container_builder_.SetIsTableNGPart();

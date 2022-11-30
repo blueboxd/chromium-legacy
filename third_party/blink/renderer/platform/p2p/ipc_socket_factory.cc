@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -647,8 +647,8 @@ void AsyncAddressResolverImpl::Start(const rtc::SocketAddress& addr) {
   addr_ = addr;
 
   resolver_->Start(addr, /*address_family=*/absl::nullopt,
-                   WTF::Bind(&AsyncAddressResolverImpl::OnAddressResolved,
-                             weak_factory_.GetWeakPtr()));
+                   WTF::BindOnce(&AsyncAddressResolverImpl::OnAddressResolved,
+                                 weak_factory_.GetWeakPtr()));
 }
 
 void AsyncAddressResolverImpl::Start(const rtc::SocketAddress& addr,
@@ -659,8 +659,8 @@ void AsyncAddressResolverImpl::Start(const rtc::SocketAddress& addr,
   addr_ = addr;
 
   resolver_->Start(addr, absl::make_optional(address_family),
-                   WTF::Bind(&AsyncAddressResolverImpl::OnAddressResolved,
-                             weak_factory_.GetWeakPtr()));
+                   WTF::BindOnce(&AsyncAddressResolverImpl::OnAddressResolved,
+                                 weak_factory_.GetWeakPtr()));
 }
 
 bool AsyncAddressResolverImpl::GetResolvedAddress(

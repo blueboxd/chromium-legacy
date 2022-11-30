@@ -178,7 +178,7 @@ apps::ConditionValuePtr ConvertArcPatternMatcherToConditionValue(
       // prefixes. Detect and convert these, since prefix matching is easier &
       // cheaper.
       if (IsPrefixOnlyGlob(path.pattern())) {
-        DCHECK_GE(path.pattern().size(), 2);
+        DCHECK_GE(path.pattern().size(), 2u);
         return std::make_unique<apps::ConditionValue>(
             path.pattern().substr(0, path.pattern().size() - 2),
             apps::PatternMatchType::kPrefix);
@@ -208,7 +208,7 @@ apps::mojom::ConditionValuePtr ConvertArcPatternMatcherToMojomConditionValue(
       // prefixes. Detect and convert these, since prefix matching is easier &
       // cheaper.
       if (IsPrefixOnlyGlob(path.pattern())) {
-        DCHECK_GE(path.pattern().size(), 2);
+        DCHECK_GE(path.pattern().size(), 2u);
         return MakeConditionValue(
             path.pattern().substr(0, path.pattern().size() - 2),
             apps::mojom::PatternMatchType::kPrefix);
@@ -724,7 +724,6 @@ arc::IntentFilter ConvertAppServiceToArcIntentFilter(
         return arc::IntentFilter();
     }
   }
-  // TODO(crbug.com/853604): Add support for other category types.
   return arc::IntentFilter(package_name, std::move(actions),
                            std::move(authorities), std::move(paths),
                            std::move(schemes), std::move(mime_types));

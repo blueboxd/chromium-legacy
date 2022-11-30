@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,8 +52,8 @@ ScriptPromise MIDIAccessInitializer::Start() {
   permission_service_->RequestPermission(
       CreateMidiPermissionDescriptor(options_->hasSysex() && options_->sysex()),
       LocalFrame::HasTransientUserActivation(window->GetFrame()),
-      WTF::Bind(&MIDIAccessInitializer::OnPermissionsUpdated,
-                WrapPersistent(this)));
+      WTF::BindOnce(&MIDIAccessInitializer::OnPermissionsUpdated,
+                    WrapPersistent(this)));
 
   return promise;
 }

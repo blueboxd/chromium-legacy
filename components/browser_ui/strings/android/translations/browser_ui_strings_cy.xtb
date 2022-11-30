@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cy">
+<translation id="1005794457625275818">Caniateir cwcis ar gyfer <ph name="FPS_MEMBERS_COUNT" /> o wefannau yn y grŵp <ph name="FPS_OWNER" />, gan gynnwys <ph name="FPS_MEMBER" /></translation>
 <translation id="1006017844123154345">Agor ar-lein</translation>
 <translation id="1044891598689252897">Bydd gwefannau'n gweithio fel arfer</translation>
 <translation id="1124090076051167250">Bydd hyn yn clirio <ph name="DATASIZE" /> o ddata a chwcis sy'n cael eu storio gan wefannau neu gan apiau ar eich sgrîn Hafan.</translation>
@@ -21,6 +22,7 @@
 <translation id="1426410128494586442">Iawn</translation>
 <translation id="1446450296470737166">Caniatáu rheolaeth lawn dros ddyfeisiau MIDI</translation>
 <translation id="1620510694547887537">Camera</translation>
+<translation id="1633720957382884102">Gwefannau Cysylltiedig</translation>
 <translation id="1644574205037202324">Hanes</translation>
 <translation id="1647582022260550163">Ydych chi'n siŵr eich bod am ailosod caniatadau, a chlirio cwcis a data gwefan?</translation>
 <translation id="1660204651932907780">Caniatáu i wefannau chwarae sain (argymhellir)</translation>
@@ -115,6 +117,7 @@
 <translation id="3333961966071413176">Pob cyswllt</translation>
 <translation id="3362437373201486687">Wrthi'n sganio am ddyfeisiau Bluetooth</translation>
 <translation id="3386292677130313581">Gofyn cyn caniatáu i wefannau wybod eich lleoliad (argymhellir)</translation>
+<translation id="3521663503435878242">Gwefannau o dan <ph name="DOMAIN" /></translation>
 <translation id="3538390592868664640">Rhwystro gwefannau rhag creu map 3D o'ch amgylchoedd neu olrhain safle'r camera</translation>
 <translation id="3551268116566418498">Gadael y modd Anhysbys?</translation>
 <translation id="3586500876634962664">Defnyddio camera a meicroffon</translation>
@@ -260,6 +263,7 @@
 <translation id="6554732001434021288">Ymwelwyd ddiwethaf <ph name="NUM_DAYS" /> o ddiwrnodau yn ôl</translation>
 <translation id="6561560012278703671">Defnyddiwch negeseuon tawelach (mae'n rhwystro anogwyr hysbysiadau rhag torri ar eich traws)</translation>
 <translation id="6593061639179217415">Gwefan bwrdd gwaith</translation>
+<translation id="6608211702542341247">Mae'r wefan hon yng ngrŵp <ph name="FPS_OWNER" /> o wefannau sy'n gallu gweld eich gweithgarwch yn y grŵp</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Cynnwys gwarchodedig</translation>
 <translation id="662080504995468778">Aros</translation>
@@ -348,7 +352,6 @@
 <translation id="8380167699614421159">Mae'r wefan hon yn dangos hysbysebion ymwthiol neu gamarweiniol</translation>
 <translation id="8394832520002899662">Tapiwch i ddychwelyd i'r wefan</translation>
 <translation id="8409345997656833551">Cael hysbysiadau pan fydd erthygl yn gallu cael ei dangos yn y wedd syml</translation>
-<translation id="8425213833346101688">Newid</translation>
 <translation id="8428213095426709021">Gosodiadau</translation>
 <translation id="8441146129660941386">Mynd yn ôl</translation>
 <translation id="8444433999583714703">I ganiatáu i <ph name="APP_NAME" /> gael mynediad at eich lleoliad, trowch leoliad ymlaen yn <ph name="BEGIN_LINK" />Gosodiadau Android<ph name="END_LINK" /> hefyd.</translation>
@@ -372,6 +375,7 @@
 <translation id="8751914237388039244">Dewiswch lun</translation>
 <translation id="8801436777607969138">Rhwystro JavaScript ar gyfer gwefan benodol.</translation>
 <translation id="8816026460808729765">Rhwystro gwefannau rhag cael mynediad at synwyryddion</translation>
+<translation id="8823559166155093873">Rhwystro cwcis</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8903921497873541725">Chwyddo</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>

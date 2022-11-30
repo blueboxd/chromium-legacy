@@ -56,6 +56,7 @@ source_set("eg_test_support+eg2") {
   deps = [
     "//base",
     "//base/ios",
+    "//base/test:test_support",
     "//components/variations",
     "//ios/third_party/earl_grey2:test_lib",
     "//ios/third_party/edo",
@@ -63,4 +64,6 @@ source_set("eg_test_support+eg2") {
     "//testing/gtest:gtest",
     "//ui/display",
   ]
+
+  public_deps = [ "//ios/third_party/earl_grey2:test_lib" ]
 }

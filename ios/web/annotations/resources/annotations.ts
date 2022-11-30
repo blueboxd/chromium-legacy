@@ -31,7 +31,7 @@ interface Annotation {
   text: string;
   /** Annotation type. */
   type: string;
-  /** A passed in string that will be sent back to obj in click handler. */
+  /** A passed in string that will be sent back to obj in tap handler. */
   data: string;
 }
 
@@ -44,7 +44,8 @@ interface Annotation {
 class Replacement {
   constructor(
       public index: number, public left: number, public right: number,
-      public text: string, public type: string, public data: string) {}
+      public text: string, public type: string, public annotationText: string,
+      public data: string) {}
 }
 
 /**
@@ -67,13 +68,43 @@ class Section {
   constructor(public node: Node|WeakRef<Node>, public index: number) {}
 }
 
+/**
+ * Monitors DOM mutations between instance construction until a call to
+ * `stopObserving`.
+ */
+class MutationsDuringClickTracker {
+  mutationCount = 0;
+  mutationObserver: MutationObserver;
+
+  // Constructs a new instance given an `initialEvent` and starts listening for
+  // changes to the DOM.
+  constructor(private readonly initialEvent: Event) {
+    this.mutationObserver =
+        new MutationObserver((mutationList: MutationRecord[]) => {
+          this.mutationCount += mutationList.length;
+        });
+    this.mutationObserver.observe(
+        document, {attributes: false, childList: true, subtree: true});
+  }
+
+  // Returns true if event matches the event passed at construction, it wasn't
+  // prevented and no DOM mutations occurred.
+  hasPreventativeActivity(event: Event): boolean {
+    return event !== this.initialEvent || event.defaultPrevented ||
+        this.mutationCount > 0;
+  }
+
+  stopObserving(): void {
+    this.mutationObserver?.disconnect();
+  }
+}
+
 // Used by the `enumerateTextNodes` function below.
 const NON_TEXT_NODE_NAMES = new Set([
   'SCRIPT', 'NOSCRIPT', 'STYLE', 'EMBED', 'OBJECT', 'TEXTAREA', 'IFRAME',
   'INPUT'
 ]);
 
-// TODO(crbug.com/1350973): dark mode
 const highlightTextColor = "#000";
 const highlightBackgroundColor = "rgba(20,111,225,0.25)";
 const decorationStyles = 'border-bottom-width: 1px; ' +
@@ -119,6 +150,9 @@ function decorateAnnotations(annotations: Annotation[]): void {
 
   let failures = 0;
   decorations = [];
+
+  // Last checks when bubbling up event.
+  document.addEventListener('click', handleTopTap.bind(document));
 
   removeOverlappingAnnotations(annotations);
 
@@ -174,7 +208,7 @@ function decorateAnnotations(annotations: Annotation[]): void {
         }
         replacements.push(new Replacement(
             annotationIndex, left, right, nodeText, annotation.type,
-            annotation.data));
+            annotation.text, annotation.data));
         // If annotation is completed, move to next annotation and retry on
         // this node to fit more annotations if needed.
         if (end <= index + length) {
@@ -350,9 +384,44 @@ function getPageText(maxChars: number): string {
   return ''.concat(...parts);
 }
 
-function handleClick(event: Event) {
-  const annotation = event.currentTarget as HTMLElement;
+let mutationDuringClickObserver: MutationsDuringClickTracker|null;
 
+// Initiates a `mutationDuringClickObserver` that will be checked at document
+// level tab handler (`handleTopTap`), where it will be decided if any action
+// bubbling to objc is required (i.e. no DOM change occurs).
+function handleTap(event: Event) {
+  mutationDuringClickObserver = new MutationsDuringClickTracker(event);
+}
+
+// Monitors taps at the top, document level. This checks if it is tap
+// triggered by an annotation and if no DOM mutation have happened while the
+// event is bubbling up. If it's the case, the annotation callback is called.
+function handleTopTap(event: Event) {
+  // Nothing happened to the page between `handleTap` and `handleTopTap`.
+  if (event.target instanceof HTMLElement &&
+      event.target.tagName === 'CHROME_ANNOTATION' &&
+      mutationDuringClickObserver &&
+      !mutationDuringClickObserver.hasPreventativeActivity(event)) {
+    const annotation = event.target;
+
+    highlightAnnotation(annotation);
+
+    sendWebKitMessage('annotations', {
+      command: 'annotations.onClick',
+      data: annotation.dataset['data'],
+      rect: rectFromElement(annotation),
+      text: annotation.dataset['annotation'],
+    });
+  }
+  mutationDuringClickObserver?.stopObserving();
+  mutationDuringClickObserver = null;
+}
+
+/**
+ * Highlights all elements related to the annotation of which `annotation` is an
+ * element of.
+ */
+function highlightAnnotation(annotation: HTMLElement) {
   // Using webkit edit selection kills a second tapping on the element and also
   // causes a merge with the edit menu in some circumstance.
   // Using custom highlight instead.
@@ -368,13 +437,6 @@ function handleClick(event: Event) {
       }
     }
   }
-
-  sendWebKitMessage('annotations', {
-    command: 'annotations.onClick',
-    data: annotation.dataset['data'],
-    rect: rectFromElement(annotation),
-    text: `"${annotation.innerText}"`,
-  });
 }
 
 /**
@@ -426,10 +488,11 @@ function replaceNode(
     const element = document.createElement('chrome_annotation');
     element.setAttribute('data-index', '' + replacement.index);
     element.setAttribute('data-data', replacement.data);
+    element.setAttribute('data-annotation', replacement.annotationText);
     element.innerText = replacement.text;
     element.style.cssText = decorationStyles;
     element.style.borderBottomColor = textColor;
-    element.addEventListener('click', handleClick.bind(element), true);
+    element.addEventListener('click', handleTap.bind(element), true);
     parts.push(element);
     cursor = replacement.right;
   }

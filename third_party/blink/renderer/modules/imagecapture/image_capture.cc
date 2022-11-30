@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -168,7 +168,7 @@ ImageCapture::~ImageCapture() {
   DCHECK(!HasEventListeners());
   // There should be no more outstanding |m_serviceRequests| at this point
   // since each of them holds a persistent handle to this object.
-  DCHECK(service_requests_.IsEmpty());
+  DCHECK(service_requests_.empty());
 }
 
 const AtomicString& ImageCapture::InterfaceName() const {
@@ -206,8 +206,8 @@ ScriptPromise ImageCapture::getPhotoCapabilities(ScriptState* script_state) {
   }
   service_requests_.insert(resolver);
 
-  auto resolver_cb = WTF::Bind(&ImageCapture::ResolveWithPhotoCapabilities,
-                               WrapPersistent(this));
+  auto resolver_cb = WTF::BindOnce(&ImageCapture::ResolveWithPhotoCapabilities,
+                                   WrapPersistent(this));
 
   // m_streamTrack->component()->source()->id() is the renderer "name" of the
   // camera;
@@ -215,9 +215,9 @@ ScriptPromise ImageCapture::getPhotoCapabilities(ScriptState* script_state) {
   // scriptState->getExecutionContext()->getSecurityOrigin()->toString()
   service_->GetPhotoState(
       stream_track_->Component()->Source()->Id(),
-      WTF::Bind(&ImageCapture::OnMojoGetPhotoState, WrapPersistent(this),
-                WrapPersistent(resolver), std::move(resolver_cb),
-                false /* trigger_take_photo */));
+      WTF::BindOnce(&ImageCapture::OnMojoGetPhotoState, WrapPersistent(this),
+                    WrapPersistent(resolver), std::move(resolver_cb),
+                    false /* trigger_take_photo */));
   return promise;
 }
 
@@ -238,8 +238,8 @@ ScriptPromise ImageCapture::getPhotoSettings(ScriptState* script_state) {
   }
   service_requests_.insert(resolver);
 
-  auto resolver_cb =
-      WTF::Bind(&ImageCapture::ResolveWithPhotoSettings, WrapPersistent(this));
+  auto resolver_cb = WTF::BindOnce(&ImageCapture::ResolveWithPhotoSettings,
+                                   WrapPersistent(this));
 
   // m_streamTrack->component()->source()->id() is the renderer "name" of the
   // camera;
@@ -247,9 +247,9 @@ ScriptPromise ImageCapture::getPhotoSettings(ScriptState* script_state) {
   // scriptState->getExecutionContext()->getSecurityOrigin()->toString()
   service_->GetPhotoState(
       stream_track_->Component()->Source()->Id(),
-      WTF::Bind(&ImageCapture::OnMojoGetPhotoState, WrapPersistent(this),
-                WrapPersistent(resolver), std::move(resolver_cb),
-                false /* trigger_take_photo */));
+      WTF::BindOnce(&ImageCapture::OnMojoGetPhotoState, WrapPersistent(this),
+                    WrapPersistent(resolver), std::move(resolver_cb),
+                    false /* trigger_take_photo */));
   return promise;
 }
 
@@ -332,8 +332,8 @@ ScriptPromise ImageCapture::setOptions(ScriptState* script_state,
 
   service_->SetOptions(
       stream_track_->Component()->Source()->Id(), std::move(settings),
-      WTF::Bind(&ImageCapture::OnMojoSetOptions, WrapPersistent(this),
-                WrapPersistent(resolver), trigger_take_photo));
+      WTF::BindOnce(&ImageCapture::OnMojoSetOptions, WrapPersistent(this),
+                    WrapPersistent(resolver), trigger_take_photo));
   return promise;
 }
 
@@ -790,8 +790,8 @@ void ImageCapture::SetMediaTrackConstraints(
 
   service_->SetOptions(
       stream_track_->Component()->Source()->Id(), std::move(settings),
-      WTF::Bind(&ImageCapture::OnMojoSetOptions, WrapPersistent(this),
-                WrapPersistent(resolver), false /* trigger_take_photo */));
+      WTF::BindOnce(&ImageCapture::OnMojoSetOptions, WrapPersistent(this),
+                    WrapPersistent(resolver), false /* trigger_take_photo */));
 }
 
 void ImageCapture::SetPanTiltZoomSettingsFromTrack(
@@ -848,8 +848,8 @@ void ImageCapture::SetPanTiltZoomSettingsFromTrack(
 
   service_->SetOptions(
       stream_track_->Component()->Source()->Id(), std::move(settings),
-      WTF::Bind(&ImageCapture::OnSetPanTiltZoomSettingsFromTrack,
-                WrapPersistent(this), std::move(initialized_callback)));
+      WTF::BindOnce(&ImageCapture::OnSetPanTiltZoomSettingsFromTrack,
+                    WrapPersistent(this), std::move(initialized_callback)));
 }
 
 void ImageCapture::OnSetPanTiltZoomSettingsFromTrack(
@@ -857,8 +857,8 @@ void ImageCapture::OnSetPanTiltZoomSettingsFromTrack(
     bool result) {
   service_->GetPhotoState(
       stream_track_->Component()->Source()->Id(),
-      WTF::Bind(&ImageCapture::UpdateMediaTrackCapabilities,
-                WrapPersistent(this), std::move(done_callback)));
+      WTF::BindOnce(&ImageCapture::UpdateMediaTrackCapabilities,
+                    WrapPersistent(this), std::move(done_callback)));
 }
 
 const MediaTrackConstraintSet* ImageCapture::GetMediaTrackConstraints() const {
@@ -884,7 +884,7 @@ void ImageCapture::GetMediaTrackSettings(MediaTrackSettings* settings) const {
     settings->setFocusMode(settings_->focusMode());
 
   if (settings_->hasPointsOfInterest() &&
-      !settings_->pointsOfInterest().IsEmpty()) {
+      !settings_->pointsOfInterest().empty()) {
     settings->setPointsOfInterest(settings_->pointsOfInterest());
   }
 
@@ -953,15 +953,15 @@ ImageCapture::ImageCapture(ExecutionContext* context,
       service_.BindNewPipeAndPassReceiver(
           context->GetTaskRunner(TaskType::kDOMManipulation)));
 
-  service_.set_disconnect_handler(WTF::Bind(
+  service_.set_disconnect_handler(WTF::BindOnce(
       &ImageCapture::OnServiceConnectionError, WrapWeakPersistent(this)));
 
   // Launch a retrieval of the current photo state, which arrive asynchronously
   // to avoid blocking the main UI thread.
   service_->GetPhotoState(
       stream_track_->Component()->Source()->Id(),
-      WTF::Bind(&ImageCapture::SetPanTiltZoomSettingsFromTrack,
-                WrapPersistent(this), std::move(initialized_callback)));
+      WTF::BindOnce(&ImageCapture::SetPanTiltZoomSettingsFromTrack,
+                    WrapPersistent(this), std::move(initialized_callback)));
 
   ConnectToPermissionService(
       context, permission_service_.BindNewPipeAndPassReceiver(
@@ -1027,7 +1027,7 @@ void ImageCapture::OnMojoGetPhotoState(
   for (const auto& mode : photo_state->fill_light_mode) {
     fill_light_mode.push_back(ToV8FillLightMode(mode));
   }
-  if (!fill_light_mode.IsEmpty())
+  if (!fill_light_mode.empty())
     photo_capabilities_->setFillLightMode(fill_light_mode);
 
   // Update the local track photo_state cache.
@@ -1036,8 +1036,8 @@ void ImageCapture::OnMojoGetPhotoState(
   if (trigger_take_photo) {
     service_->TakePhoto(
         stream_track_->Component()->Source()->Id(),
-        WTF::Bind(&ImageCapture::OnMojoTakePhoto, WrapPersistent(this),
-                  WrapPersistent(resolver)));
+        WTF::BindOnce(&ImageCapture::OnMojoTakePhoto, WrapPersistent(this),
+                      WrapPersistent(resolver)));
     return;
   }
 
@@ -1061,14 +1061,14 @@ void ImageCapture::OnMojoSetOptions(ScriptPromiseResolver* resolver,
   }
 
   auto resolver_cb =
-      WTF::Bind(&ImageCapture::ResolveWithNothing, WrapPersistent(this));
+      WTF::BindOnce(&ImageCapture::ResolveWithNothing, WrapPersistent(this));
 
   // Retrieve the current device status after setting the options.
   service_->GetPhotoState(
       stream_track_->Component()->Source()->Id(),
-      WTF::Bind(&ImageCapture::OnMojoGetPhotoState, WrapPersistent(this),
-                WrapPersistent(resolver), std::move(resolver_cb),
-                trigger_take_photo));
+      WTF::BindOnce(&ImageCapture::OnMojoGetPhotoState, WrapPersistent(this),
+                    WrapPersistent(resolver), std::move(resolver_cb),
+                    trigger_take_photo));
 }
 
 void ImageCapture::OnMojoTakePhoto(ScriptPromiseResolver* resolver,
@@ -1079,7 +1079,7 @@ void ImageCapture::OnMojoTakePhoto(ScriptPromiseResolver* resolver,
                        TRACE_EVENT_SCOPE_PROCESS);
 
   // TODO(mcasas): Should be using a mojo::StructTraits.
-  if (blob->data.IsEmpty()) {
+  if (blob->data.empty()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kUnknownError, "platform error"));
   } else {
@@ -1102,7 +1102,7 @@ void ImageCapture::UpdateMediaTrackCapabilities(
       photo_state->supported_white_balance_modes.size());
   for (const auto& supported_mode : photo_state->supported_white_balance_modes)
     supported_white_balance_modes.push_back(ToString(supported_mode));
-  if (!supported_white_balance_modes.IsEmpty()) {
+  if (!supported_white_balance_modes.empty()) {
     capabilities_->setWhiteBalanceMode(
         std::move(supported_white_balance_modes));
     settings_->setWhiteBalanceMode(
@@ -1114,7 +1114,7 @@ void ImageCapture::UpdateMediaTrackCapabilities(
       photo_state->supported_exposure_modes.size());
   for (const auto& supported_mode : photo_state->supported_exposure_modes)
     supported_exposure_modes.push_back(ToString(supported_mode));
-  if (!supported_exposure_modes.IsEmpty()) {
+  if (!supported_exposure_modes.empty()) {
     capabilities_->setExposureMode(std::move(supported_exposure_modes));
     settings_->setExposureMode(ToString(photo_state->current_exposure_mode));
   }
@@ -1124,13 +1124,13 @@ void ImageCapture::UpdateMediaTrackCapabilities(
       photo_state->supported_focus_modes.size());
   for (const auto& supported_mode : photo_state->supported_focus_modes)
     supported_focus_modes.push_back(ToString(supported_mode));
-  if (!supported_focus_modes.IsEmpty()) {
+  if (!supported_focus_modes.empty()) {
     capabilities_->setFocusMode(std::move(supported_focus_modes));
     settings_->setFocusMode(ToString(photo_state->current_focus_mode));
   }
 
   HeapVector<Member<Point2D>> current_points_of_interest;
-  if (!photo_state->points_of_interest.IsEmpty()) {
+  if (!photo_state->points_of_interest.empty()) {
     for (const auto& point : photo_state->points_of_interest) {
       Point2D* web_point = Point2D::Create();
       web_point->setX(point->x);
@@ -1209,7 +1209,7 @@ void ImageCapture::UpdateMediaTrackCapabilities(
     settings_->setTorch(photo_state->torch);
 
   if (photo_state->supported_background_blur_modes &&
-      !photo_state->supported_background_blur_modes->IsEmpty()) {
+      !photo_state->supported_background_blur_modes->empty()) {
     Vector<bool> supported_background_blur_modes;
     for (auto mode : *photo_state->supported_background_blur_modes)
       supported_background_blur_modes.push_back(ToBooleanMode(mode));
@@ -1308,7 +1308,7 @@ ImageCapture* ImageCapture::Clone() const {
   if (settings_->hasFocusMode())
     clone->settings_->setFocusMode(settings_->focusMode());
   if (settings_->hasPointsOfInterest() &&
-      !settings_->pointsOfInterest().IsEmpty()) {
+      !settings_->pointsOfInterest().empty()) {
     clone->settings_->setPointsOfInterest(settings_->pointsOfInterest());
   }
   if (settings_->hasExposureCompensation()) {

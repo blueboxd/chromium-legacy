@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_document_picture_in_picture_options.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/css/style_sheet_list.h"
@@ -174,9 +175,9 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
       video_element->GetWebMediaPlayer()->NaturalSize(),
       ShouldShowPlayPauseButton(*video_element), std::move(session_observer),
       video_bounds,
-      WTF::Bind(&PictureInPictureControllerImpl::OnEnteredPictureInPicture,
-                WrapPersistent(this), WrapPersistent(video_element),
-                WrapPersistent(resolver)));
+      WTF::BindOnce(&PictureInPictureControllerImpl::OnEnteredPictureInPicture,
+                    WrapPersistent(this), WrapPersistent(video_element),
+                    WrapPersistent(resolver)));
 }
 
 void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
@@ -265,8 +266,8 @@ void PictureInPictureControllerImpl::ExitPictureInPicture(
     return;
 
   video_picture_in_picture_session_->Stop(
-      WTF::Bind(&PictureInPictureControllerImpl::OnExitedPictureInPicture,
-                WrapPersistent(this), WrapPersistent(resolver)));
+      WTF::BindOnce(&PictureInPictureControllerImpl::OnExitedPictureInPicture,
+                    WrapPersistent(this), WrapPersistent(resolver)));
   session_observer_receiver_.reset();
 }
 
@@ -354,7 +355,7 @@ void PictureInPictureControllerImpl::RemoveFromAutoPictureInPictureElementsList(
 
 HTMLVideoElement* PictureInPictureControllerImpl::AutoPictureInPictureElement()
     const {
-  return auto_picture_in_picture_elements_.IsEmpty()
+  return auto_picture_in_picture_elements_.empty()
              ? nullptr
              : auto_picture_in_picture_elements_.back();
 }
@@ -415,7 +416,7 @@ bool PictureInPictureControllerImpl::IsExitAutoPictureInPictureAllowed() const {
 void PictureInPictureControllerImpl::CreateDocumentPictureInPictureWindow(
     ScriptState* script_state,
     LocalDOMWindow& opener,
-    PictureInPictureWindowOptions* options,
+    DocumentPictureInPictureOptions* options,
     ScriptPromiseResolver* resolver,
     ExceptionState& exception_state) {
   if (!LocalFrame::ConsumeTransientUserActivation(opener.GetFrame())) {
@@ -507,7 +508,7 @@ void PictureInPictureControllerImpl::CreateDocumentPictureInPictureWindow(
 
   open_document_pip_task_ = PostCancellableTask(
       *opener.GetTaskRunner(TaskType::kInternalDefault), FROM_HERE,
-      WTF::Bind(
+      WTF::BindOnce(
           &PictureInPictureControllerImpl::ResolveOpenDocumentPictureInPicture,
           WrapPersistent(this)));
 }
@@ -517,6 +518,16 @@ void PictureInPictureControllerImpl::
   // The document PIP window has been destroyed, so the opener is no longer
   // associated with it.  Allow throttling again.
   SetMayThrottleIfUndrawnFrames(true);
+  document_picture_in_picture_session_ = nullptr;
+
+  // If there is an unresolved promise for a document PiP window, reject it now.
+  // Note that we know that it goes with the current session, since we replace
+  // the context observer's context at the same time we replace the session.
+  if (open_document_pip_task_.IsActive()) {
+    open_document_pip_task_.Cancel();
+    open_document_pip_resolver_->Reject();
+    open_document_pip_resolver_ = nullptr;
+  }
 }
 
 void PictureInPictureControllerImpl::PageVisibilityChanged() {

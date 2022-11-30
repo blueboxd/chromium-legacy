@@ -113,7 +113,9 @@ PaymentsClient::UnmaskRequestDetails::operator=(
   }
   context_token = other.context_token;
   otp = other.otp;
-  last_committed_url_origin = other.last_committed_url_origin;
+  last_committed_primary_main_frame_origin =
+      other.last_committed_primary_main_frame_origin;
+  selected_challenge_option = other.selected_challenge_option;
   return *this;
 }
 PaymentsClient::UnmaskRequestDetails::~UnmaskRequestDetails() = default;
@@ -128,11 +130,6 @@ PaymentsClient::UnmaskResponseDetails&
 PaymentsClient::UnmaskResponseDetails::operator=(
     const PaymentsClient::UnmaskResponseDetails& other) {
   real_pan = other.real_pan;
-  if (other.fido_creation_options.has_value()) {
-    fido_creation_options = other.fido_creation_options->Clone();
-  } else {
-    fido_creation_options.reset();
-  }
   if (other.fido_request_options.has_value()) {
     fido_request_options = other.fido_request_options->Clone();
   } else {

@@ -413,6 +413,8 @@ cc_component("cc") {
     "trees/proxy_impl.h",
     "trees/proxy_main.cc",
     "trees/proxy_main.h",
+    "trees/raster_context_provider_wrapper.cc",
+    "trees/raster_context_provider_wrapper.h",
     "trees/render_frame_metadata.cc",
     "trees/render_frame_metadata.h",
     "trees/render_frame_metadata_observer.h",
@@ -904,8 +906,6 @@ cc_test("cc_unittests") {
   }
 
   if (is_fuchsia) {
-    use_cfv1 = false
-
     # TODO(https://crbug.com/1185811): Investigate removing the requirement for
     # job_policy_ambient_mark_vmo_exec for the sake of V8's allocator in tests.
     test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"

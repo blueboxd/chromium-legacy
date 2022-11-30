@@ -36,6 +36,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/test/ash_test_base.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/user_action_tester.h"
@@ -78,8 +79,7 @@ bool IsValidSearchBoxAccessibilityHint(const std::u16string& hint) {
           l10n_util::GetStringUTF16(IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TABS))};
   // Check if the current accessibility text is one of the possible
   // options.
-  return std::find(begin(possible_a11y_text), end(possible_a11y_text), hint) !=
-         possible_a11y_text.end();
+  return base::Contains(possible_a11y_text, hint);
 }
 
 }  // namespace
@@ -160,7 +160,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
       app_list_view_ = new AppListView(&view_delegate_);
       app_list_view_->InitView(GetContext());
       view_ = app_list_view_->search_box_view();
-      app_list_view_->Show(AppListViewState::kPeeking, false);
+      app_list_view_->Show(AppListViewState::kFullscreenAllApps, false);
     }
   }
 
@@ -1171,29 +1171,6 @@ class SearchBoxViewAppListBubbleTest : public AshTestBase {
   base::test::ScopedFeatureList scoped_features_;
 };
 
-TEST_F(SearchBoxViewAppListBubbleTest, AutocompleteAnswerCard) {
-  GetAppListTestHelper()->ShowAppList();
-
-  // Type "he".
-  PressAndReleaseKey(ui::VKEY_H);
-  PressAndReleaseKey(ui::VKEY_E);
-
-  // Simulate "hello" being returned as a search result.
-  AddAnswerCardResult("id", u"hello");
-  AddSearchResult("id", u"world");
-  base::RunLoop().RunUntilIdle();  // Allow observer tasks to run.
-
-  // The text autocompletes to "hello" and selects "llo".
-  SearchBoxView* view = GetAppListTestHelper()->GetBubbleSearchBoxView();
-  EXPECT_EQ(view->search_box()->GetText(), u"hello");
-  EXPECT_EQ(view->search_box()->GetSelectedText(), u"llo");
-
-  GetSearchModel()->DeleteAllResults();
-  base::RunLoop().RunUntilIdle();  // Allow observer tasks to run.
-  EXPECT_EQ(view->search_box()->GetText(), u"he");
-  EXPECT_EQ(view->search_box()->GetSelectedText(), u"");
-}
-
 TEST_F(SearchBoxViewAppListBubbleTest, AutocompleteCategoricalResult) {
   GetAppListTestHelper()->ShowAppList();
 
@@ -1214,6 +1191,41 @@ TEST_F(SearchBoxViewAppListBubbleTest, AutocompleteCategoricalResult) {
   GetSearchModel()->DeleteAllResults();
   base::RunLoop().RunUntilIdle();  // Allow observer tasks to run.
   EXPECT_EQ(view->search_box()->GetText(), u"he");
+  EXPECT_EQ(view->search_box()->GetSelectedText(), u"");
+}
+
+TEST_F(SearchBoxViewAppListBubbleTest, DoNotAutocompleteWithMidQueryCursor) {
+  GetAppListTestHelper()->ShowAppList();
+
+  // Type "calculao".
+  PressAndReleaseKey(ui::VKEY_C);
+  PressAndReleaseKey(ui::VKEY_A);
+  PressAndReleaseKey(ui::VKEY_L);
+  PressAndReleaseKey(ui::VKEY_C);
+  PressAndReleaseKey(ui::VKEY_U);
+  PressAndReleaseKey(ui::VKEY_L);
+  PressAndReleaseKey(ui::VKEY_A);
+  PressAndReleaseKey(ui::VKEY_O);
+
+  // Simulate "calculator" being returned as a search result.
+  AddSearchResult("id", u"calculator");
+  base::RunLoop().RunUntilIdle();  // Allow observer tasks to run.
+
+  // The search box does not autocomplete.
+  SearchBoxView* view = GetAppListTestHelper()->GetBubbleSearchBoxView();
+  EXPECT_EQ(view->search_box()->GetText(), u"calculao");
+  EXPECT_EQ(view->search_box()->GetSelectedText(), u"");
+
+  PressAndReleaseKey(ui::VKEY_LEFT);
+  PressAndReleaseKey(ui::VKEY_T);
+
+  GetSearchModel()->DeleteAllResults();
+  base::RunLoop().RunUntilIdle();  // Allow observer tasks to run.
+  AddSearchResult("id", u"calculator");
+  base::RunLoop().RunUntilIdle();  // Allow observer tasks to run.
+
+  // The search box does not autocomplete.
+  EXPECT_EQ(view->search_box()->GetText(), u"calculato");
   EXPECT_EQ(view->search_box()->GetSelectedText(), u"");
 }
 

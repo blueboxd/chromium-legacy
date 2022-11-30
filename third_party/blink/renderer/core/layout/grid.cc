@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,7 @@ void Grid::SetGridItemPaintOrder(const LayoutBox& item, wtf_size_t order) {
 
 #if DCHECK_IS_ON()
 bool Grid::HasAnyGridItemPaintOrder() const {
-  return !grid_items_indexes_map_.IsEmpty();
+  return !grid_items_indexes_map_.empty();
 }
 #endif
 
@@ -374,7 +374,7 @@ LayoutBox* ListGridIterator::NextGridItem() {
     child_index_ = 0;
     cell_node_ = track->Cells().Head();
     DCHECK(cell_node_);
-    DCHECK(!cell_node_->Items().IsEmpty());
+    DCHECK(!cell_node_->Items().empty());
     return cell_node_->Items()[child_index_++];
   }
 
@@ -390,7 +390,7 @@ LayoutBox* ListGridIterator::NextGridItem() {
       if (!cell_node_)
         return nullptr;
 
-      DCHECK(!cell_node_->Items().IsEmpty());
+      DCHECK(!cell_node_->Items().empty());
       candidate = cell_node_->Items()[child_index_++];
     }
     // Skip items already processed in an earlier cell of the track.

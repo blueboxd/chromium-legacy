@@ -170,10 +170,23 @@ class QuickUnlockPrivateUnitTest
 
  protected:
   void SetUp() override {
+    const auto param = GetParam();
+
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
+
+    // TODO(b/239681292): Add (integration) tests with UseAuthFactors
+    // enabled.
+    disabled_features.push_back(ash::features::kUseAuthFactors);
+
     // Enable/disable PIN auto submit
-    auto param = GetParam();
-    feature_list_.InitWithFeatureState(ash::features::kQuickUnlockPinAutosubmit,
-                                       std::get<1>(param));
+    if (std::get<1>(param)) {
+      enabled_features.push_back(ash::features::kQuickUnlockPinAutosubmit);
+    } else {
+      disabled_features.push_back(ash::features::kQuickUnlockPinAutosubmit);
+    }
+
+    feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
     ash::CryptohomeMiscClient::InitializeFake();
     ash::UserDataAuthClient::InitializeFake();
@@ -584,16 +597,22 @@ class QuickUnlockPrivateUnitTest
   bool TryAuthenticate(const std::string& password) {
     const AccountId account_id =
         AccountId::FromUserEmailGaiaId(kTestUserEmail, kTestUserGaiaId);
+    auto user_context = std::make_unique<ash::UserContext>(
+        user_manager::USER_TYPE_REGULAR, account_id);
+    user_context->SetIsUsingPin(true);
     bool called = false;
     bool success = false;
     base::RunLoop loop;
     ash::quick_unlock::PinBackend::GetInstance()->TryAuthenticate(
-        account_id, ash::Key(password), ash::quick_unlock::Purpose::kAny,
-        base::BindLambdaForTesting([&](bool auth_success) {
-          called = true;
-          success = auth_success;
-          loop.Quit();
-        }));
+        std::move(user_context), ash::Key(password),
+        ash::quick_unlock::Purpose::kAny,
+        base::BindLambdaForTesting(
+            [&](std::unique_ptr<ash::UserContext>,
+                absl::optional<ash::AuthenticationError> error) {
+              called = true;
+              success = !error.has_value();
+              loop.Quit();
+            }));
     loop.Run();
     return success;
   }

@@ -11,7 +11,7 @@
 
 namespace continuous_search {
 
-extern const base::Feature kRelatedSearchesExtraction;
+BASE_DECLARE_FEATURE(kRelatedSearchesExtraction);
 
 // Config for the search results extractor.
 struct Config {

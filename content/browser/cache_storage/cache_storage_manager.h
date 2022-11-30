@@ -74,12 +74,9 @@ class CONTENT_EXPORT CacheStorageManager
 
   static bool IsValidQuotaStorageKey(const blink::StorageKey& storage_key);
 
-  // Open the CacheStorage for the given storage_key and owner.  A reference
+  // Open the CacheStorage for the given bucket_locator and owner. A reference
   // counting handle is returned which can be stored and used similar to a weak
   // pointer.
-  CacheStorageHandle OpenCacheStorage(const blink::StorageKey& storage_key,
-                                      storage::mojom::CacheStorageOwner owner);
-
   CacheStorageHandle OpenCacheStorage(
       const storage::BucketLocator& bucket_locator,
       storage::mojom::CacheStorageOwner owner);
@@ -185,7 +182,7 @@ class CONTENT_EXPORT CacheStorageManager
       storage::mojom::CacheStorageOwner owner,
       storage::mojom::QuotaClient::DeleteBucketDataCallback callback,
       std::unique_ptr<CacheStorage> cache_storage,
-      int64_t origin_size);
+      int64_t bucket_size);
 
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner() const {
     return cache_task_runner_;
@@ -210,6 +207,9 @@ class CONTENT_EXPORT CacheStorageManager
 #if DCHECK_IS_ON()
   bool CacheStoragePathIsUnique(const base::FilePath& path);
 #endif
+  bool ConflictingInstanceExistsInMap(
+      storage::mojom::CacheStorageOwner owner,
+      const storage::BucketLocator& bucket_locator);
 
   // Stores the storage partition (profile) path unless the CacheStorage should
   // be in-memory only, in which case this is empty.

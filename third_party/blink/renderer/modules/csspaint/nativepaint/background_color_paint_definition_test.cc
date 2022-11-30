@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -320,8 +320,8 @@ TEST_F(BackgroundColorPaintDefinitionTest, NoBGColorAnimationFallback) {
   absl::optional<double> progress;
   EXPECT_FALSE(BackgroundColorPaintDefinition::GetBGColorPaintWorkletParams(
       element, &animated_colors, &offsets, &progress));
-  EXPECT_TRUE(animated_colors.IsEmpty());
-  EXPECT_TRUE(offsets.IsEmpty());
+  EXPECT_TRUE(animated_colors.empty());
+  EXPECT_TRUE(offsets.empty());
 }
 
 // Test the case where the composite mode is not replace.

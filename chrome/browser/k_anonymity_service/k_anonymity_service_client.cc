@@ -14,6 +14,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 
+namespace {
+constexpr size_t kMaxQueueSize = 100;
+}  // namespace
+
 KAnonymityServiceClient::PendingJoinRequest::PendingJoinRequest(
     std::string set_id,
     base::OnceCallback<void(bool)> callback)
@@ -28,7 +32,8 @@ KAnonymityServiceClient::KAnonymityServiceClient(Profile* profile)
       enable_ohttp_requests_(base::FeatureList::IsEnabled(
           features::kKAnonymityServiceOHTTPRequests)),
       // Pass the auth server origin as if it is our "top frame".
-      trust_token_answerer_(url::Origin::Create(GURL(kKAnonymityAuthServer)),
+      trust_token_answerer_(url::Origin::Create(GURL(
+                                features::kKAnonymityServiceAuthServer.Get())),
                             profile),
       token_getter_(IdentityManagerFactory::GetForProfile(profile),
                     url_loader_factory_,
@@ -44,6 +49,15 @@ KAnonymityServiceClient::~KAnonymityServiceClient() = default;
 void KAnonymityServiceClient::JoinSet(std::string id,
                                       base::OnceCallback<void(bool)> callback) {
   RecordJoinSetAction(KAnonymityServiceJoinSetAction::kJoinSet);
+
+  // Fail immediately if the queue is full.
+  if (join_queue_.size() >= kMaxQueueSize) {
+    RecordJoinSetAction(KAnonymityServiceJoinSetAction::kJoinSetQueueFull);
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
+    return;
+  }
+
   // Add to the queue. If this is the only request in the queue, start it.
   join_queue_.push_back(
       std::make_unique<PendingJoinRequest>(std::move(id), std::move(callback)));
@@ -116,7 +130,7 @@ void KAnonymityServiceClient::QuerySets(
     base::OnceCallback<void(std::vector<bool>)> callback) {
   RecordQuerySetAction(KAnonymityServiceQuerySetAction::kQuerySet);
   RecordQuerySetSize(set_ids.size());
-  if (!enable_ohttp_requests_) {
+  if (!enable_ohttp_requests_ || set_ids.empty()) {
     // Trigger a "successful" callback.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
@@ -128,4 +142,12 @@ void KAnonymityServiceClient::QuerySets(
   // An empty vector passed to the callback signifies failure.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::vector<bool>()));
+}
+
+base::TimeDelta KAnonymityServiceClient::GetJoinInterval() {
+  return features::kKAnonymityServiceJoinInterval.Get();
+}
+
+base::TimeDelta KAnonymityServiceClient::GetQueryInterval() {
+  return features::kKAnonymityServiceQueryInterval.Get();
 }

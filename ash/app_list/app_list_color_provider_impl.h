@@ -14,10 +14,6 @@ class AppListColorProviderImpl : public AppListColorProvider {
   AppListColorProviderImpl();
   ~AppListColorProviderImpl() override;
   // AppListColorProvider:
-  SkColor GetAppListBackgroundColor(
-      bool is_tablet_mode,
-      SkColor default_color,
-      const views::Widget* app_list_widget) const override;
   SkColor GetSearchBoxBackgroundColor(
       const views::Widget* app_list_widget) const override;
   SkColor GetSearchBoxSecondaryTextColor(
@@ -28,10 +24,6 @@ class AppListColorProviderImpl : public AppListColorProvider {
       const views::Widget* app_list_widget) const override;
   SkColor GetSearchBoxTextColor(
       SkColor default_color,
-      const views::Widget* app_list_widget) const override;
-  SkColor GetSuggestionChipBackgroundColor(
-      const views::Widget* app_list_widget) const override;
-  SkColor GetSuggestionChipTextColor(
       const views::Widget* app_list_widget) const override;
   SkColor GetAppListItemTextColor(
       bool is_in_folder,

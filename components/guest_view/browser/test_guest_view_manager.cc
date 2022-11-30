@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/test/test_timeouts.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "content/public/browser/render_frame_host.h"
@@ -144,6 +145,16 @@ void TestGuestViewManager::WaitUntilAttached(GuestViewBase* guest_view) {
 
   attached_run_loop_ = std::make_unique<base::RunLoop>();
   attached_run_loop_->Run();
+
+  // Completion of the attachment process may be delayed despite AttachGuest
+  // having been called. We need to wait until the attachment is no longer
+  // considered in progress.
+  while (!guest_view->attached()) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
 }
 
 void TestGuestViewManager::WaitForViewGarbageCollected() {
@@ -181,12 +192,15 @@ void TestGuestViewManager::AttachGuest(int embedder_process_id,
                                        int element_instance_id,
                                        int guest_instance_id,
                                        const base::Value::Dict& attach_params) {
+  auto* guest_to_attach =
+      GuestViewBase::FromInstanceID(embedder_process_id, guest_instance_id);
+  if (will_attach_callback_)
+    std::move(will_attach_callback_).Run(guest_to_attach);
+
   GuestViewManager::AttachGuest(embedder_process_id, element_instance_id,
                                 guest_instance_id, attach_params);
 
-  if (waiting_for_attach_ &&
-      (waiting_for_attach_ ==
-       GuestViewBase::FromInstanceID(embedder_process_id, guest_instance_id))) {
+  if (waiting_for_attach_ && (waiting_for_attach_ == guest_to_attach)) {
     attached_run_loop_->Quit();
     waiting_for_attach_ = nullptr;
   }

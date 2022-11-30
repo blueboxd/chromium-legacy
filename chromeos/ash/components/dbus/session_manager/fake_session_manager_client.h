@@ -14,7 +14,7 @@
 #include "base/component_export.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "chromeos/ash/components/dbus/login_manager/arc.pb.h"
+#include "chromeos/ash/components/dbus/arc/arc.pb.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -110,9 +110,11 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   void RequestLockScreen() override;
   void NotifyLockScreenShown() override;
   void NotifyLockScreenDismissed() override;
-  bool RequestBrowserDataMigration(
+  bool BlockingRequestBrowserDataMigration(
       const cryptohome::AccountIdentifier& cryptohome_id,
       const std::string& mode) override;
+  bool BlockingRequestBrowserDataBackwardMigration(
+      const cryptohome::AccountIdentifier& cryptohome_id) override;
   void RetrieveActiveSessions(ActiveSessionsCallback callback) override;
   void RetrieveDevicePolicy(RetrievePolicyCallback callback) override;
   RetrievePolicyResponseType BlockingRetrieveDevicePolicy(
@@ -157,11 +159,10 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
       PsmDeviceActiveSecretCallback callback) override;
 
   void StartArcMiniContainer(
-      const login_manager::StartArcMiniContainerRequest& request,
+      const arc::StartArcMiniInstanceRequest& request,
       chromeos::VoidDBusMethodCallback callback) override;
-  void UpgradeArcContainer(
-      const login_manager::UpgradeArcContainerRequest& request,
-      chromeos::VoidDBusMethodCallback callback) override;
+  void UpgradeArcContainer(const arc::UpgradeArcContainerRequest& request,
+                           chromeos::VoidDBusMethodCallback callback) override;
   void StopArcInstance(const std::string& account_id,
                        bool should_backup_log,
                        chromeos::VoidDBusMethodCallback callback) override;
@@ -238,12 +239,11 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   void set_device_local_account_policy(const std::string& account_id,
                                        const std::string& policy_blob);
 
-  const login_manager::UpgradeArcContainerRequest& last_upgrade_arc_request()
-      const {
+  const arc::UpgradeArcContainerRequest& last_upgrade_arc_request() const {
     return last_upgrade_arc_request_;
   }
-  const login_manager::StartArcMiniContainerRequest
-  last_start_arc_mini_container_request() const {
+  const arc::StartArcMiniInstanceRequest last_start_arc_mini_container_request()
+      const {
     return last_start_arc_mini_container_request_;
   }
 
@@ -355,6 +355,10 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
     return request_browser_data_migration_mode_value_;
   }
 
+  bool request_browser_data_backward_migration_called() const {
+    return request_browser_data_migration_called_;
+  }
+
  private:
   // Called in response to writing owner key file specified in new device
   // policy - used for in-memory fake only.
@@ -433,12 +437,13 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   bool request_browser_data_migration_mode_called_ = false;
   std::string request_browser_data_migration_mode_value_ = "invalid";
 
-  // Contains last request passed to StartArcMiniContainer
-  login_manager::StartArcMiniContainerRequest
-      last_start_arc_mini_container_request_;
+  bool request_browser_data_backward_migration_called_ = false;
 
-  // Contains last requst passed to StartArcInstance
-  login_manager::UpgradeArcContainerRequest last_upgrade_arc_request_;
+  // Contains last request passed to StartArcMiniContainer
+  arc::StartArcMiniInstanceRequest last_start_arc_mini_container_request_;
+
+  // Contains last request passed to StartArcInstance
+  arc::UpgradeArcContainerRequest last_upgrade_arc_request_;
 
   StubDelegate* delegate_ = nullptr;
 

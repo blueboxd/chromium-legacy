@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,9 +103,9 @@ TEST_F(ScriptedAnimationControllerTest, EnqueueWithinTask) {
   TaskOrderObserver observer;
 
   Controller().EnqueueTask(observer.CreateTask(1));
-  Controller().EnqueueTask(WTF::Bind(&EnqueueTask,
-                                     WrapPersistent(&Controller()),
-                                     WTF::Unretained(&observer), 2));
+  Controller().EnqueueTask(WTF::BindOnce(&EnqueueTask,
+                                         WrapPersistent(&Controller()),
+                                         WTF::Unretained(&observer), 2));
   Controller().EnqueueTask(observer.CreateTask(3));
   EXPECT_EQ(0u, observer.Order().size());
 

@@ -180,11 +180,14 @@ class PagePopupChromeClient final : public EmptyChromeClient {
     return popup_->WindowRectInScreen();
   }
 
-  gfx::Rect ViewportToScreen(const gfx::Rect& rect,
-                             const LocalFrameView*) const override {
+  gfx::Rect LocalRootToScreenDIPs(const gfx::Rect& rect_in_local_root,
+                                  const LocalFrameView* view) const override {
+    DCHECK(view);
+    DCHECK_EQ(view->GetChromeClient(), this);
+
     gfx::Rect window_rect = popup_->WindowRectInScreen();
     gfx::Rect rect_in_dips =
-        popup_->widget_base_->BlinkSpaceToEnclosedDIPs(rect);
+        popup_->widget_base_->BlinkSpaceToEnclosedDIPs(rect_in_local_root);
     rect_in_dips.Offset(window_rect.x(), window_rect.y());
     return rect_in_dips;
   }
@@ -348,7 +351,7 @@ WebPagePopupImpl::WebPagePopupImpl(
           /*is_embedded=*/false,
           /*is_for_scalable_page=*/true)) {
   DCHECK(popup_client_);
-  popup_widget_host_.set_disconnect_handler(WTF::Bind(
+  popup_widget_host_.set_disconnect_handler(WTF::BindOnce(
       &WebPagePopupImpl::WidgetHostDisconnected, WTF::Unretained(this)));
   if (auto* main_frame_widget = opener_web_view->MainFrameViewWidget()) {
     if (auto* device_emulator = main_frame_widget->DeviceEmulator()) {
@@ -400,7 +403,8 @@ WebPagePopupImpl::WebPagePopupImpl(
   }
 
   // TODO(https://crbug.com/1355751) Initialize `storage_key`.
-  frame->Init(/*opener=*/nullptr, /*policy_container=*/nullptr, StorageKey());
+  frame->Init(/*opener=*/nullptr, DocumentToken(), /*policy_container=*/nullptr,
+              StorageKey());
   frame->View()->SetParentVisible(true);
   frame->View()->SetSelfVisible(true);
 
@@ -421,7 +425,7 @@ WebPagePopupImpl::WebPagePopupImpl(
       popup_client_->OwnerElement().getBoundingClientRect();
   popup_widget_host_->ShowPopup(
       initial_rect_, GetAnchorRectInScreen(),
-      WTF::Bind(&WebPagePopupImpl::DidShowPopup, WTF::Unretained(this)));
+      WTF::BindOnce(&WebPagePopupImpl::DidShowPopup, WTF::Unretained(this)));
   should_defer_setting_window_rect_ = false;
   widget_base_->SetPendingWindowRect(initial_rect_);
 
@@ -622,7 +626,7 @@ void WebPagePopupImpl::SetWindowRect(const gfx::Rect& rect_in_screen) {
     widget_base_->SetPendingWindowRect(window_rect);
     popup_widget_host_->SetPopupBounds(
         window_rect,
-        WTF::Bind(&WebPagePopupImpl::DidSetBounds, WTF::Unretained(this)));
+        WTF::BindOnce(&WebPagePopupImpl::DidSetBounds, WTF::Unretained(this)));
   } else {
     initial_rect_ = window_rect;
   }
@@ -863,8 +867,9 @@ gfx::Rect WebPagePopupImpl::OwnerWindowRectInScreen() const {
 gfx::Rect WebPagePopupImpl::GetAnchorRectInScreen() const {
   LocalFrameView* view = popup_client_->OwnerElement().GetDocument().View();
   DCHECK(view);
-  return popup_client_->GetChromeClient().ViewportToScreen(
-      popup_client_->OwnerElement().VisibleBoundsInVisualViewport(), view);
+
+  return view->GetFrame().GetChromeClient().LocalRootToScreenDIPs(
+      popup_client_->OwnerElement().VisibleBoundsInLocalRoot(), view);
 }
 
 WebInputEventResult WebPagePopupImpl::DispatchBufferedTouchEvents() {

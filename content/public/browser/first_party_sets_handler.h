@@ -13,9 +13,14 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "content/common/content_export.h"
-#include "net/base/schemeful_site.h"
 #include "net/first_party_sets/first_party_sets_context_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace net {
+class FirstPartySetEntry;
+class GlobalFirstPartySets;
+class SchemefulSite;
+}
 
 namespace content {
 
@@ -52,12 +57,12 @@ class CONTENT_EXPORT FirstPartySetsHandler {
   template <typename T>
   class IssueWithMetadata {
    public:
-    IssueWithMetadata<T>(
+    IssueWithMetadata(
         const T& issue_type,
         const std::vector<absl::variant<int, std::string>>& issue_path)
         : issue_type_(issue_type), issue_path_(issue_path) {}
-    ~IssueWithMetadata<T>() = default;
-    IssueWithMetadata<T>(const IssueWithMetadata<T>&) = default;
+    ~IssueWithMetadata() = default;
+    IssueWithMetadata(const IssueWithMetadata<T>&) = default;
 
     bool operator==(const IssueWithMetadata<T>& other) const {
       return std::tie(issue_type_, issue_path_) ==
@@ -88,7 +93,6 @@ class CONTENT_EXPORT FirstPartySetsHandler {
 
   using ParseError = IssueWithMetadata<ParseErrorType>;
   using ParseWarning = IssueWithMetadata<ParseWarningType>;
-
   virtual ~FirstPartySetsHandler() = default;
 
   // Returns the singleton instance.
@@ -131,15 +135,31 @@ class CONTENT_EXPORT FirstPartySetsHandler {
   // Resets the state on the instance for testing.
   virtual void ResetForTesting() = 0;
 
+  // Allows tests to override the post-initalization global First-Party Sets.
+  virtual void SetGlobalSetsForTesting(
+      net::GlobalFirstPartySets global_sets) = 0;
+
+  // Looks up `site` in the global First-Party Sets and `config` to find its
+  // associated FirstPartySetEntry.
+  //
+  // This will return nullopt if:
+  // - First-Party Sets is disabled or
+  // - the list of First-Party Sets isn't initialized yet or
+  // - `site` isn't in the global First-Party Sets or `config`
+  virtual absl::optional<net::FirstPartySetEntry> FindEntry(
+      const net::SchemefulSite& site,
+      const net::FirstPartySetsContextConfig& config) const = 0;
+
   // Computes a representation of the changes that need to be made to the
   // browser's list of First-Party Sets to respect the `policy` value of the
-  // First-Party Sets Overrides enterprise policy.
+  // First-Party Sets Overrides enterprise policy. If `policy` is nullptr,
+  // `callback` is immediately invoked with an empty config.
   //
-  // The customization is will be returned via `callback` since the
-  // customization must be computed after the list of First-Party Sets is
-  // initialized, which occurs asynchronously.
-  virtual void GetCustomizationForPolicy(
-      const base::Value::Dict& policy,
+  // Otherwise, the context config will be returned via `callback` since the
+  // context config must be computed after the list of First-Party Sets is
+  // initialized which occurs asynchronously.
+  virtual void GetContextConfigForPolicy(
+      const base::Value::Dict* policy,
       base::OnceCallback<void(net::FirstPartySetsContextConfig)> callback) = 0;
 
   // Clear site state of sites that have a FPS membership change for the browser
@@ -148,17 +168,18 @@ class CONTENT_EXPORT FirstPartySetsHandler {
   //
   // `browser_context_getter` is needed to get a BrowsingDataRemover to handle
   // the clearing work. `context_config` should be the return value from
-  // `GetCustomizationForPolicy` if an Overrides enterprise policy is provided,
+  // `GetContextConfigForPolicy` if an Overrides enterprise policy is provided,
   // or null if one is not provided. `callback` will be invoked once the
-  // clearing is done. If non-null, `policy_customization` must live until
-  // callback is called.
+  // clearing is done.
   //
   // Embedder must call this before First-Party Sets queries can be answered.
+  //
+  // If the First-Party Sets feature is disabled, this is a no-op.
   virtual void ClearSiteDataOnChangedSetsForContext(
       base::RepeatingCallback<BrowserContext*()> browser_context_getter,
       const std::string& browser_context_id,
-      const net::FirstPartySetsContextConfig* context_config,
-      base::OnceClosure callback) = 0;
+      net::FirstPartySetsContextConfig context_config,
+      base::OnceCallback<void(net::FirstPartySetsContextConfig)> callback) = 0;
 };
 
 }  // namespace content

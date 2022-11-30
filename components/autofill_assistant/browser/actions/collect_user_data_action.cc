@@ -4,7 +4,6 @@
 
 #include "components/autofill_assistant/browser/actions/collect_user_data_action.h"
 
-#include <algorithm>
 #include <array>
 #include <set>
 #include <string>
@@ -14,6 +13,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/i18n/case_conversion.h"
@@ -258,23 +258,12 @@ void SetInitialUserDataForAdditionalSection(
   }
 }
 
-void AddAutofillEntryToDataModel(autofill::ServerFieldType type,
-                                 AutofillEntryProto entry,
-                                 const std::string& locale,
-                                 autofill::AutofillDataModel* model) {
-  if (entry.raw()) {
-    model->SetRawInfo(type, base::UTF8ToUTF16(entry.value()));
-  } else {
-    model->SetInfo(type, base::UTF8ToUTF16(entry.value()), locale);
-  }
-}
-
 void AddProtoDataToAutofillDataModel(
     const google::protobuf::Map<int32_t, AutofillEntryProto>& data,
     const std::string& locale,
     autofill::AutofillDataModel* model) {
   for (const auto& it : data) {
-    AddAutofillEntryToDataModel(
+    user_data::AddAutofillEntryToDataModel(
         static_cast<autofill::ServerFieldType>(it.first), it.second, locale,
         model);
   }
@@ -467,12 +456,10 @@ void CollectUserDataAction::InternalProcessAction(
   // If Chrome password manager logins are requested, we need to asynchronously
   // obtain them before showing the UI.
   auto collect_user_data = proto_.collect_user_data();
-  auto password_manager_option = base::ranges::find_if(
-      collect_user_data.login_details().login_options(),
-      [&](const LoginDetailsProto::LoginOptionProto& option) {
-        return option.type_case() ==
-               LoginDetailsProto::LoginOptionProto::kPasswordManager;
-      });
+  auto password_manager_option =
+      base::ranges::find(collect_user_data.login_details().login_options(),
+                         LoginDetailsProto::LoginOptionProto::kPasswordManager,
+                         &LoginDetailsProto::LoginOptionProto::type_case);
   bool requests_pwm_logins =
       password_manager_option !=
       collect_user_data.login_details().login_options().end();
@@ -644,8 +631,10 @@ void CollectUserDataAction::OnShowToUser(UserData* user_data,
 
 void CollectUserDataAction::UpdateUserData(UserData* user_data) {
   if (proto_.collect_user_data().has_data_source()) {
+    delegate_->SetCollectUserDataUiState(/*loading=*/true,
+                                         UserDataEventField::NONE);
     delegate_->RequestUserData(
-        UserDataEventField::NONE, *collect_user_data_options_,
+        *collect_user_data_options_,
         base::BindOnce(&CollectUserDataAction::OnRequestUserData,
                        weak_ptr_factory_.GetWeakPtr(),
                        /* is_initial_request= */ true, user_data));
@@ -914,8 +903,9 @@ void CollectUserDataAction::ReloadUserData(UserDataEventField event_field,
   metrics_data_.personal_data_changed = true;
   collect_user_data_options_->reload_data_callback = base::BindOnce(
       &CollectUserDataAction::ReloadUserData, weak_ptr_factory_.GetWeakPtr());
+  delegate_->SetCollectUserDataUiState(/*loading=*/true, event_field);
   delegate_->RequestUserData(
-      event_field, *collect_user_data_options_,
+      *collect_user_data_options_,
       base::BindOnce(&CollectUserDataAction::OnRequestUserData,
                      weak_ptr_factory_.GetWeakPtr(),
                      /* is_initial_request= */ false, user_data));
@@ -1585,7 +1575,7 @@ void CollectUserDataAction::UpdateUserDataFromProto(
     }
     for (const auto& phone_number_data : proto_data.available_phone_numbers()) {
       auto profile = std::make_unique<autofill::AutofillProfile>();
-      AddAutofillEntryToDataModel(
+      user_data::AddAutofillEntryToDataModel(
           autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER,
           phone_number_data.value(), proto_data.locale(), profile.get());
       auto phone_number = std::make_unique<PhoneNumber>(std::move(profile));
@@ -1680,12 +1670,10 @@ void CollectUserDataAction::UpdateUserDataFromProto(
       // Note: If the incoming card did not set a network GetPaymentRequestData
       // will fall back to "generic".
       if (!collect_user_data_options_->supported_basic_card_networks.empty() &&
-          std::find(
-              collect_user_data_options_->supported_basic_card_networks.begin(),
-              collect_user_data_options_->supported_basic_card_networks.end(),
+          !base::Contains(
+              collect_user_data_options_->supported_basic_card_networks,
               autofill::data_util::GetPaymentRequestData(credit_card->network())
-                  .basic_card_issuer_network) ==
-              collect_user_data_options_->supported_basic_card_networks.end()) {
+                  .basic_card_issuer_network)) {
         continue;
       }
 
@@ -1861,12 +1849,10 @@ void CollectUserDataAction::UpdatePersonalDataManagerCards(
   for (const auto* card : personal_data_manager->GetCreditCardsToSuggest(
            /* include_server_cards= */ true)) {
     if (!collect_user_data_options_->supported_basic_card_networks.empty() &&
-        std::find(
-            collect_user_data_options_->supported_basic_card_networks.begin(),
-            collect_user_data_options_->supported_basic_card_networks.end(),
+        !base::Contains(
+            collect_user_data_options_->supported_basic_card_networks,
             autofill::data_util::GetPaymentRequestData(card->network())
-                .basic_card_issuer_network) ==
-            collect_user_data_options_->supported_basic_card_networks.end()) {
+                .basic_card_issuer_network)) {
       continue;
     }
 

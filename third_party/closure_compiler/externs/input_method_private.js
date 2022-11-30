@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,10 @@
 // Please run the closure compiler before committing changes.
 // See https://chromium.googlesource.com/chromium/src/+/main/docs/closure_compilation.md
 
-/** @fileoverview Externs generated from namespace: inputMethodPrivate */
+/**
+ * @fileoverview Externs generated from namespace: inputMethodPrivate
+ * @externs
+ */
 
 /** @const */
 chrome.inputMethodPrivate = {};
@@ -121,6 +124,7 @@ chrome.inputMethodPrivate.InputContext;
  *   enableSoundOnKeypress: (boolean|undefined),
  *   physicalKeyboardAutoCorrectionLevel: (number|undefined),
  *   physicalKeyboardEnableCapitalization: (boolean|undefined),
+ *   physicalKeyboardEnableDiacriticsOnLongpress: (boolean|undefined),
  *   virtualKeyboardAutoCorrectionLevel: (number|undefined),
  *   virtualKeyboardEnableCapitalization: (boolean|undefined),
  *   xkbLayout: (string|undefined),
@@ -438,6 +442,12 @@ chrome.inputMethodPrivate.onAutocorrect = function(parameters) {};
  *     operation completes. On failure, $(ref:runtime.lastError) is set.
  */
 chrome.inputMethodPrivate.getTextFieldBounds = function(parameters, callback) {};
+
+/**
+ * Notifies Chrome that the current input method is ready to accept key events
+ * from Tast.
+ */
+chrome.inputMethodPrivate.notifyInputMethodReadyForTesting = function() {};
 
 /**
  * Fired when the caret bounds change.

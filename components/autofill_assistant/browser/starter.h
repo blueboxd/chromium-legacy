@@ -19,10 +19,10 @@
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/platform_dependencies.h"
+#include "components/autofill_assistant/browser/public/headless_onboarding_result.h"
 #include "components/autofill_assistant/browser/public/runtime_manager.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/starter_heuristic.h"
-#include "components/autofill_assistant/browser/starter_heuristic_configs/legacy_starter_heuristic_config.h"
 #include "components/autofill_assistant/browser/starter_heuristic_configs/starter_heuristic_config.h"
 #include "components/autofill_assistant/browser/starter_platform_delegate.h"
 #include "components/autofill_assistant/browser/startup_util.h"
@@ -34,6 +34,18 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill_assistant {
+
+struct OnboardingState {
+  absl::optional<bool> onboarding_shown = absl::nullopt;
+  bool onboarding_skipped = false;
+  absl::optional<OnboardingResult> onboarding_result = absl::nullopt;
+
+  bool operator==(const OnboardingState& other) const {
+    return onboarding_shown == other.onboarding_shown &&
+           onboarding_skipped == other.onboarding_skipped &&
+           onboarding_result == other.onboarding_result;
+  }
+};
 
 // Starts autofill-assistant flows. Uses a platform delegate to show UI and
 // access platform-dependent features.
@@ -69,6 +81,7 @@ class Starter : public content::WebContentsObserver,
   void CanStart(
       std::unique_ptr<TriggerContext> trigger_context,
       base::OnceCallback<void(bool success,
+                              const OnboardingState& onboarding_state,
                               absl::optional<GURL> url,
                               std::unique_ptr<TriggerContext> trigger_contexts)>
           preconditions_checked_callback);
@@ -146,7 +159,8 @@ class Starter : public content::WebContentsObserver,
   // Called at the end of each |Start| invocation.
   void OnStartDone(
       bool start_script,
-      absl::optional<TriggerScriptProto> trigger_script = absl::nullopt);
+      absl::optional<TriggerScriptProto> trigger_script = absl::nullopt,
+      OnboardingState onboarding_state = {});
 
   // Called when the heuristic result for |url| is available.
   void OnHeuristicMatch(const GURL& url,
@@ -174,10 +188,12 @@ class Starter : public content::WebContentsObserver,
 
   // Calls |preconditions_checked_callback_| to notify whether the checks were
   // successful.
-  void ReportPreconditionsChecked(bool start_script);
+  void ReportPreconditionsChecked(bool start_script,
+                                  OnboardingState onboarding_state);
 
   void RecordNavigatedAwayMetrics(ukm::SourceId source_id,
-                                  bool is_error_document) const;
+                                  bool is_error_document,
+                                  bool is_trigger_script) const;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
@@ -221,6 +237,7 @@ class Starter : public content::WebContentsObserver,
   scoped_refptr<StarterHeuristic> starter_heuristic_;
   const raw_ptr<const base::TickClock> tick_clock_;
   base::OnceCallback<void(bool success,
+                          const OnboardingState& onboarding_state,
                           absl::optional<GURL> url,
                           std::unique_ptr<TriggerContext> trigger_contexts)>
       preconditions_checked_callback_;

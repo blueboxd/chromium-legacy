@@ -181,15 +181,12 @@ class PasswordsPrivateDelegate : public KeyedService {
   virtual void SetAccountStorageOptIn(bool opt_in,
                                       content::WebContents* web_contents) = 0;
 
-  // Obtains information about compromised credentials. This includes the last
-  // time a check was run, as well as all compromised credentials that are
-  // present in the password store.
+  // Obtains information about insecure credentials. This includes the last
+  // time a check was run, as well as all insecure credentials that are present
+  // in the password store. Credential is considered insecure if it is
+  // compromised (leaked or phished) or has reused or weak password.
   virtual std::vector<api::passwords_private::PasswordUiEntry>
-  GetCompromisedCredentials() = 0;
-
-  // Obtains information about weak credentials.
-  virtual std::vector<api::passwords_private::PasswordUiEntry>
-  GetWeakCredentials() = 0;
+  GetInsecureCredentials() = 0;
 
   // Attempts to mute |credential| from the password store. Returns whether
   // the mute succeeded.
@@ -237,6 +234,11 @@ class PasswordsPrivateDelegate : public KeyedService {
 
   // Restarts the authentication timer if it is running.
   virtual void ExtendAuthValidity() = 0;
+
+  // Switches Biometric authentication before filling state after
+  // successful authentication.
+  virtual void SwitchBiometricAuthBeforeFillingState(
+      content::WebContents* web_contents) = 0;
 };
 
 }  // namespace extensions

@@ -103,8 +103,10 @@ void SoftwareRenderer::BeginDrawingFrame() {
 
 void SoftwareRenderer::FinishDrawingFrame() {
   TRACE_EVENT0("viz", "SoftwareRenderer::FinishDrawingFrame");
-  current_framebuffer_canvas_.reset();
+  // `current_canvas_` may be pointing to `current_framebuffer_canvas_`. Make
+  // sure to reset it before destroying `current_framebuffer_canvas_`.
   current_canvas_ = nullptr;
+  current_framebuffer_canvas_.reset();
 
   if (root_canvas_)
     output_device_->EndPaint();
@@ -136,11 +138,13 @@ void SoftwareRenderer::EnsureScissorTestDisabled() {
 void SoftwareRenderer::BindFramebufferToOutputSurface() {
   DCHECK(!root_canvas_);
 
-  current_framebuffer_canvas_.reset();
   root_canvas_ = output_device_->BeginPaint(current_frame()->root_damage_rect);
   if (!root_canvas_)
     output_device_->EndPaint();
+  // `current_canvas_` may be pointing to `current_framebuffer_canvas_`. Make
+  // sure to re-assign it before destroying `current_framebuffer_canvas_`
   current_canvas_ = root_canvas_;
+  current_framebuffer_canvas_.reset();
 }
 
 void SoftwareRenderer::BindFramebufferToTexture(
@@ -185,10 +189,10 @@ void SoftwareRenderer::SetClipRRect(const gfx::RRectF& rrect) {
   if (!current_canvas_)
     return;
 
-  gfx::Transform screen_transform =
-      current_frame()->window_matrix * current_frame()->projection_matrix;
   SkRRect result;
-  if (SkRRect(rrect).transform(screen_transform.matrix().asM33(), &result)) {
+  if (SkRRect(rrect).transform(gfx::AxisTransform2dToSkMatrix(
+                                   current_frame()->target_to_device_transform),
+                               &result)) {
     // Skia applies the current matrix to clip rects so we reset it temporarily.
     SkMatrix current_matrix = current_canvas_->getTotalMatrix();
     current_canvas_->resetMatrix();
@@ -268,13 +272,12 @@ void SoftwareRenderer::DoDrawQuad(const DrawQuad* quad,
   QuadRectTransform(&quad_rect_matrix,
                     quad->shared_quad_state->quad_to_target_transform,
                     gfx::RectF(quad->rect));
-  gfx::Transform contents_device_transform =
-      current_frame()->window_matrix * current_frame()->projection_matrix *
-      quad_rect_matrix;
+  gfx::Transform contents_device_transform = quad_rect_matrix;
+  contents_device_transform.PostConcat(
+      current_frame()->target_to_device_transform);
   contents_device_transform.FlattenTo2d();
-  SkMatrix sk_device_matrix;
-  gfx::TransformToFlattenedSkMatrix(contents_device_transform,
-                                    &sk_device_matrix);
+  SkMatrix sk_device_matrix =
+      gfx::TransformToFlattenedSkMatrix(contents_device_transform);
   current_canvas_->setMatrix(sk_device_matrix);
 
   current_paint_.reset();
@@ -801,9 +804,9 @@ sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
   QuadRectTransform(&quad_rect_matrix,
                     quad->shared_quad_state->quad_to_target_transform,
                     gfx::RectF(quad->rect));
-  gfx::Transform contents_device_transform =
-      current_frame()->window_matrix * current_frame()->projection_matrix *
-      quad_rect_matrix;
+  gfx::Transform contents_device_transform = quad_rect_matrix;
+  contents_device_transform.PostConcat(
+      current_frame()->target_to_device_transform);
   contents_device_transform.FlattenTo2d();
 
   absl::optional<gfx::RRectF> backdrop_filter_bounds;
@@ -820,7 +823,7 @@ sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
     return nullptr;
 
   SkMatrix filter_backdrop_transform =
-      contents_device_transform_inverse.matrix().asM33();
+      gfx::TransformToFlattenedSkMatrix(contents_device_transform_inverse);
   filter_backdrop_transform.preTranslate(backdrop_rect.x(), backdrop_rect.y());
 
   SkBitmap backdrop_bitmap = GetBackdropBitmap(backdrop_rect);
@@ -872,7 +875,8 @@ sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
 
   // Clip the filtered image to the (rounded) bounding box of the element.
   if (backdrop_filter_bounds) {
-    canvas.setMatrix(backdrop_filter_bounds_transform.matrix().asM33());
+    canvas.setMatrix(
+        gfx::TransformToFlattenedSkMatrix(backdrop_filter_bounds_transform));
     canvas.clipRRect(SkRRect(*backdrop_filter_bounds), SkClipOp::kIntersect,
                      true /* antialias */);
     canvas.resetMatrix();

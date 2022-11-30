@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,8 +87,8 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exception_state,
                                    MediaStream* stream,
                                    uint32_t* audio_bits_per_second,
                                    uint32_t* video_bits_per_second) {
-  const bool use_video = !stream->getVideoTracks().IsEmpty();
-  const bool use_audio = !stream->getAudioTracks().IsEmpty();
+  const bool use_video = !stream->getVideoTracks().empty();
+  const bool use_audio = !stream->getAudioTracks().empty();
 
   // Clamp incoming values into a signed integer's range.
   // TODO(mcasas): This section would no be needed if the bit rates are signed
@@ -477,8 +477,8 @@ void MediaRecorder::ScheduleDispatchEvent(Event* event) {
       // https://www.w3.org/TR/mediastream-recording/
       context->GetTaskRunner(TaskType::kDOMManipulation)
           ->PostTask(FROM_HERE,
-                     WTF::Bind(&MediaRecorder::DispatchScheduledEvent,
-                               WrapPersistent(this)));
+                     WTF::BindOnce(&MediaRecorder::DispatchScheduledEvent,
+                                   WrapPersistent(this)));
     }
   }
 }

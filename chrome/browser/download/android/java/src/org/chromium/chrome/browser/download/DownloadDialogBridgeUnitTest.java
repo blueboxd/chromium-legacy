@@ -28,10 +28,8 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.download.dialogs.DownloadLocationDialogCoordinator;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.net.ConnectionType;
@@ -65,9 +63,6 @@ public class DownloadDialogBridgeUnitTest {
 
     @Rule
     public TestRule mFeaturesProcessor = new Features.JUnitProcessor();
-
-    @Rule
-    public TestRule mCommandLineFlagsRule = CommandLineFlags.getTestRule();
 
     @Mock
     private DownloadDialogBridge.Natives mNativeMock;
@@ -104,7 +99,7 @@ public class DownloadDialogBridgeUnitTest {
 
     private void showDialog() {
         mBridge.showDialog(mActivity, mModalDialogManager, mPrefService, TOTAL_BYTES,
-                CONNECTION_TYPE, LOCATION_DIALOG_TYPE, SUGGESTED_PATH, true, isIncognito);
+                CONNECTION_TYPE, LOCATION_DIALOG_TYPE, SUGGESTED_PATH, isIncognito);
     }
 
     private void locationDialogWillReturn(String newPath) {
@@ -118,8 +113,7 @@ public class DownloadDialogBridgeUnitTest {
     }
 
     @Test
-    @Features.DisableFeatures({ChromeFeatureList.DOWNLOAD_LATER})
-    public void testShowDialog_disableDownloadLater() {
+    public void testShowDialog() {
         doAnswer(invocation -> {
             mBridge.onDownloadLocationDialogComplete(NEW_SUGGESTED_PATH);
             return null;
@@ -132,9 +126,7 @@ public class DownloadDialogBridgeUnitTest {
         verify(mLocationDialog)
                 .showDialog(any(), any(), eq(TOTAL_BYTES), eq(LOCATION_DIALOG_TYPE),
                         eq(SUGGESTED_PATH), eq(isIncognito));
-        verify(mNativeMock)
-                .onComplete(anyLong(), any(), eq(NEW_SUGGESTED_PATH), eq(false),
-                        eq(INVALID_START_TIME));
+        verify(mNativeMock).onComplete(anyLong(), any(), eq(NEW_SUGGESTED_PATH));
     }
 
     @Test
@@ -144,8 +136,7 @@ public class DownloadDialogBridgeUnitTest {
     }
 
     @Test
-    @Features.DisableFeatures({ChromeFeatureList.DOWNLOAD_LATER})
-    public void testLocationDialogCanceled_disableDownloadLater() {
+    public void testLocationDialogCanceled() {
         doAnswer(invocation -> {
             mBridge.onDownloadLocationDialogCanceled();
             return null;

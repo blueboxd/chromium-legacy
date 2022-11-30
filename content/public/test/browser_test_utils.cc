@@ -30,6 +30,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind.h"
+#include "base/test/test_future.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -119,6 +120,7 @@
 #include "third_party/blink/public/common/frame/frame_visual_properties.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -1184,6 +1186,14 @@ void SimulateGestureScrollSequence(WebContents* web_contents,
   SimulateGestureScrollSequence(widget_host, point, delta);
 }
 
+void SimulateGestureEvent(RenderWidgetHost* render_widget_host,
+                          const blink::WebGestureEvent& gesture_event,
+                          const ui::LatencyInfo& latency) {
+  RenderWidgetHostViewBase* view =
+      static_cast<RenderWidgetHostViewBase*>(render_widget_host->GetView());
+  view->ProcessGestureEvent(gesture_event, latency);
+}
+
 void SimulateGestureEvent(WebContents* web_contents,
                           const blink::WebGestureEvent& gesture_event,
                           const ui::LatencyInfo& latency) {
@@ -2048,34 +2058,24 @@ std::string GetCookies(BrowserContext* browser_context,
                        const GURL& url,
                        net::CookieOptions::SameSiteCookieContext context,
                        net::CookiePartitionKeyCollection key_collection) {
-  std::string cookies;
-  base::RunLoop run_loop;
   mojo::Remote<network::mojom::CookieManager> cookie_manager;
   browser_context->GetDefaultStoragePartition()
       ->GetNetworkContext()
       ->GetCookieManager(cookie_manager.BindNewPipeAndPassReceiver());
   net::CookieOptions options;
   options.set_same_site_cookie_context(context);
-  cookie_manager->GetCookieList(
-      url, options, key_collection,
-      base::BindOnce(
-          [](std::string* cookies_out, base::RunLoop* run_loop,
-             const net::CookieAccessResultList& cookies,
-             const net::CookieAccessResultList& excluded_cookies) {
-            *cookies_out = net::CanonicalCookie::BuildCookieLine(cookies);
-            run_loop->Quit();
-          },
-          &cookies, &run_loop));
-  run_loop.Run();
-  return cookies;
+  base::test::TestFuture<const net::CookieAccessResultList&,
+                         const net::CookieAccessResultList&>
+      future;
+  cookie_manager->GetCookieList(url, options, key_collection,
+                                future.GetCallback());
+  return net::CanonicalCookie::BuildCookieLine(std::get<0>(future.Get()));
 }
 
 std::vector<net::CanonicalCookie> GetCanonicalCookies(
     BrowserContext* browser_context,
     const GURL& url,
     net::CookiePartitionKeyCollection key_collection) {
-  std::vector<net::CanonicalCookie> cookies;
-  base::RunLoop run_loop;
   mojo::Remote<network::mojom::CookieManager> cookie_manager;
   browser_context->GetDefaultStoragePartition()
       ->GetNetworkContext()
@@ -2084,19 +2084,12 @@ std::vector<net::CanonicalCookie> GetCanonicalCookies(
   net::CookieOptions options;
   options.set_same_site_cookie_context(
       net::CookieOptions::SameSiteCookieContext::MakeInclusive());
-  cookie_manager->GetCookieList(
-      url, options, key_collection,
-      base::BindOnce(
-          [](base::RunLoop* run_loop,
-             std::vector<net::CanonicalCookie>* cookies_out,
-             const net::CookieAccessResultList& cookies,
-             const net::CookieAccessResultList& excluded_cookies) {
-            *cookies_out = net::cookie_util::StripAccessResults(cookies);
-            run_loop->Quit();
-          },
-          &run_loop, &cookies));
-  run_loop.Run();
-  return cookies;
+  base::test::TestFuture<const net::CookieAccessResultList&,
+                         const net::CookieAccessResultList&>
+      future;
+  cookie_manager->GetCookieList(url, options, key_collection,
+                                future.GetCallback());
+  return net::cookie_util::StripAccessResults(std::get<0>(future.Get()));
 }
 
 bool SetCookie(BrowserContext* browser_context,
@@ -2104,8 +2097,6 @@ bool SetCookie(BrowserContext* browser_context,
                const std::string& value,
                net::CookieOptions::SameSiteCookieContext context,
                net::SamePartyContext::Type party_context) {
-  bool result = false;
-  base::RunLoop run_loop;
   mojo::Remote<network::mojom::CookieManager> cookie_manager;
   browser_context->GetDefaultStoragePartition()
       ->GetNetworkContext()
@@ -2119,40 +2110,48 @@ bool SetCookie(BrowserContext* browser_context,
   options.set_include_httponly();
   options.set_same_site_cookie_context(context);
   options.set_same_party_context(net::SamePartyContext(party_context));
-  cookie_manager->SetCanonicalCookie(
-      *cc.get(), url, options,
-      base::BindOnce(
-          [](bool* result, base::RunLoop* run_loop,
-             net::CookieAccessResult set_cookie_access_result) {
-            *result = set_cookie_access_result.status.IsInclude();
-            run_loop->Quit();
-          },
-          &result, &run_loop));
-  run_loop.Run();
-  return result;
+  base::test::TestFuture<net::CookieAccessResult> future;
+  cookie_manager->SetCanonicalCookie(*cc.get(), url, options,
+                                     future.GetCallback());
+  return future.Get().status.IsInclude();
+}
+
+bool SetPartitionedCookie(BrowserContext* browser_context,
+                          const GURL& url,
+                          const std::string& value,
+                          const net::CookiePartitionKey& cookie_partition_key,
+                          net::CookieOptions::SameSiteCookieContext context,
+                          net::SamePartyContext::Type party_context) {
+  DCHECK(base::Contains(value, ";Partitioned"));
+  mojo::Remote<network::mojom::CookieManager> cookie_manager;
+  browser_context->GetDefaultStoragePartition()
+      ->GetNetworkContext()
+      ->GetCookieManager(cookie_manager.BindNewPipeAndPassReceiver());
+  std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
+      url, value, base::Time::Now(), absl::nullopt /* server_time */,
+      cookie_partition_key));
+  DCHECK(cc);
+
+  net::CookieOptions options;
+  options.set_include_httponly();
+  options.set_same_site_cookie_context(context);
+  options.set_same_party_context(net::SamePartyContext(party_context));
+  base::test::TestFuture<net::CookieAccessResult> future;
+  cookie_manager->SetCanonicalCookie(*cc, url, options, future.GetCallback());
+  return future.Get().status.IsInclude();
 }
 
 uint32_t DeleteCookies(BrowserContext* browser_context,
                        network::mojom::CookieDeletionFilter filter) {
-  base::RunLoop run_loop;
   mojo::Remote<network::mojom::CookieManager> cookie_manager;
   browser_context->GetDefaultStoragePartition()
       ->GetNetworkContext()
       ->GetCookieManager(cookie_manager.BindNewPipeAndPassReceiver());
 
-  uint32_t result = 0U;
+  base::test::TestFuture<uint32_t> future;
   cookie_manager->DeleteCookies(
-      network::mojom::CookieDeletionFilter::New(filter),
-      base::BindOnce(
-          [](uint32_t* result, base::RunLoop* run_loop,
-             uint32_t cookies_cleared) {
-            *result = cookies_cleared;
-            run_loop->Quit();
-          },
-          &result, &run_loop));
-
-  run_loop.Run();
-  return result;
+      network::mojom::CookieDeletionFilter::New(filter), future.GetCallback());
+  return future.Get();
 }
 
 void FetchHistogramsFromChildProcesses() {
@@ -3867,10 +3866,35 @@ void UpdateUserActivationStateInterceptor::UpdateUserActivationState(
                                                       notification_type);
 }
 
-WebContents* GetEmbedderForGuest(content::WebContents* guest) {
-  CHECK(guest);
-  return static_cast<WebContentsImpl*>(guest)->GetOuterWebContents();
+// static
+void BlobURLStoreInterceptor::Intercept(
+    GURL target_url,
+    mojo::SelfOwnedAssociatedReceiverRef<blink::mojom::BlobURLStore> receiver) {
+  auto interceptor = base::WrapUnique(new BlobURLStoreInterceptor(target_url));
+  auto* raw_interceptor = interceptor.get();
+  auto impl = receiver->SwapImplForTesting(std::move(interceptor));
+  raw_interceptor->url_store_ = std::move(impl);
 }
+
+blink::mojom::BlobURLStore* BlobURLStoreInterceptor::GetForwardingInterface() {
+  return url_store_.get();
+}
+
+void BlobURLStoreInterceptor::Register(
+    mojo::PendingRemote<blink::mojom::Blob> blob,
+    const GURL& url,
+    // TODO(https://crbug.com/1224926): Remove these once experiment is over.
+    const base::UnguessableToken& unsafe_agent_cluster_id,
+    const absl::optional<net::SchemefulSite>& unsafe_top_level_site,
+    RegisterCallback callback) {
+  GetForwardingInterface()->Register(
+      std::move(blob), target_url_, unsafe_agent_cluster_id,
+      unsafe_top_level_site, std::move(callback));
+}
+
+BlobURLStoreInterceptor::BlobURLStoreInterceptor(GURL target_url)
+    : target_url_(target_url) {}
+BlobURLStoreInterceptor::~BlobURLStoreInterceptor() = default;
 
 namespace {
 

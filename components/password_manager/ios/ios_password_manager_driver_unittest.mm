@@ -73,7 +73,7 @@ class IOSPasswordManagerDriverTest : public PlatformTest {
     password_controller_ = OCMStrictClassMock([SharedPasswordController class]);
 
     IOSPasswordManagerDriverFactory::CreateForWebState(
-        password_controller_, &password_manager_, &web_state_);
+        &web_state_, password_controller_, &password_manager_);
 
     driver_ = IOSPasswordManagerDriverFactory::FromWebStateAndWebFrame(
         &web_state_, frame);
@@ -107,9 +107,9 @@ TEST_F(IOSPasswordManagerDriverTest, IsInPrimaryMainFrame) {
 TEST_F(IOSPasswordManagerDriverTest, SetPasswordFillData) {
   autofill::PasswordFormFillData form_data;
 
-  OCMExpect([password_controller_ fillPasswordForm:form_data
-                                           inFrame:driver_->web_frame()
-                                 completionHandler:nil]);
+  OCMExpect([password_controller_
+      processPasswordFormFillData:form_data
+                          inFrame:driver_->web_frame()]);
   driver_->SetPasswordFillData(form_data);
   [password_controller_ verify];
 }

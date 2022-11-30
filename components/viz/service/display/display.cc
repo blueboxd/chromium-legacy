@@ -5,6 +5,7 @@
 #include "components/viz/service/display/display.h"
 
 #include <stddef.h>
+
 #include <algorithm>
 #include <limits>
 #include <utility>
@@ -13,6 +14,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
@@ -212,9 +214,9 @@ bool ReduceComplexity(const cc::Region& region,
 
   reduced_region->clear();
   for (gfx::Rect r : region) {
-    auto it =
-        std::find_if(reduced_region->begin(), reduced_region->end(),
-                     [&r](const gfx::Rect& a) { return a.SharesEdgeWith(r); });
+    auto it = base::ranges::find_if(*reduced_region, [&r](const gfx::Rect& a) {
+      return a.SharesEdgeWith(r);
+    });
     if (it != reduced_region->end()) {
       it->Union(r);
       continue;
@@ -596,8 +598,7 @@ void DebugDrawFrame(const AggregatedFrame& frame) {
 
   for (auto* quad : root_render_pass.quad_list) {
     auto& transform = quad->shared_quad_state->quad_to_target_transform;
-    auto display_rect = gfx::RectF(quad->rect);
-    transform.TransformRect(&display_rect);
+    auto display_rect = transform.MapRect(gfx::RectF(quad->rect));
     DBG_DRAW_TEXT_OPT("frame.root.material", DBG_OPT_GREEN,
                       display_rect.origin(),
                       base::NumberToString(static_cast<int>(quad->material)));

@@ -161,7 +161,12 @@
   <message name="IDS_DOMAIN_SETTINGS_TITLE" desc="Title of the domain-level Site Settings page.">
     Settings for <ph name="DOMAIN">%1$s<ex>google.com</ex></ph>
   </message>
-
+  <message name="IDS_DOMAIN_SETTINGS_SITES_IN_GROUP" desc="Title for the section that lists sites in the group for a given domain.">
+    Sites under <ph name="DOMAIN">%1$s<ex>google.com</ex></ph>
+  </message>
+  <message name="IDS_COOKIES_COUNT" desc="Used to display how many cookies are associated with a given site/domain.">
+    {COOKIES, plural, =1 {# cookie} other {# cookies}}
+  </message>
   <!-- Site settings: Possible permission values for a single site -->
 
   <message name="IDS_WEBSITE_SETTINGS_SITE_CATEGORY" desc="The headline above the website name on the website details page.">
@@ -169,6 +174,9 @@
   </message>
   <message name="IDS_WEBSITE_SETTINGS_USAGE_CATEGORY" desc="The headline above the usage stats (how much storage the site is using) on the website details page.">
     Usage
+  </message>
+  <message name="IDS_WEBSITE_SETTINGS_RELATED_SITES" desc="The headline above the related sites (First Party Sets) on the website details page.">
+    Related sites
   </message>
   <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_CATEGORY" desc="The headline above all the permissions on the website details page.">
     Permissions
@@ -399,6 +407,15 @@
   </message>
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_FPS_TOGGLE_DESCRIPTION" desc="First Party Sets toggle description in the cookie site settings subpage.">
     Related sites use cookies to help with things like keeping you signed in
+  </message>
+  <message name="IDS_ALLSITES_FPS_SUMMARY" desc="First Party Sets cookie info, shown as site summary in the all sites settings page.">
+    Cookies allowed for <ph name="FPS_MEMBERS_COUNT">%1$s<ex>9</ex></ph> sites in the <ph name="FPS_OWNER">%2$s<ex>gannette.com</ex></ph> group, including <ph name="FPS_MEMBER">%3$s<ex>freep.com</ex></ph>
+  </message>
+  <message name="IDS_COOKIE_INFO_FPS_TITLE" desc="First Party Sets title in the cookies info page.">
+      Related sites
+   </message>
+  <message name="IDS_COOKIE_INFO_FPS_SUMMARY" desc="First Party Sets summary in the cookies info page.">
+    This site is in <ph name="FPS_OWNER">%1$s<ex>google.com</ex></ph>'s group of sites that can see your activity in the group
   </message>
 
   <!-- Desktop Site -->

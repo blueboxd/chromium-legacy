@@ -13,6 +13,7 @@
 #include "components/exo/touch_delegate.h"
 #include "components/exo/touch_stylus_delegate.h"
 #include "components/exo/wm_helper.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
@@ -28,9 +29,8 @@ gfx::PointF EventLocationInWindow(ui::TouchEvent* event, aura::Window* window) {
 
   gfx::Transform transform;
   target->GetTargetTransformRelativeTo(root, &transform);
-  auto point = gfx::Point3F(event->root_location_f());
-  transform.TransformPointReverse(&point);
-  return point.AsPointF();
+  gfx::PointF point = event->root_location_f();
+  return transform.InverseMapPoint(point).value_or(point);
 }
 
 }  // namespace

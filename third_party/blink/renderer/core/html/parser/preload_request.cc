@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ PreloadRequest::ExclusionInfo::~ExclusionInfo() = default;
 bool PreloadRequest::ExclusionInfo::ShouldExclude(
     const KURL& base_url,
     const String& resource_url) const {
-  if (resources_.IsEmpty() && scopes_.IsEmpty())
+  if (resources_.empty() && scopes_.empty())
     return false;
   KURL url = KURL(base_url.IsEmpty() ? document_url_ : base_url, resource_url);
   if (resources_.Contains(url))
@@ -74,7 +74,7 @@ std::unique_ptr<PreloadRequest> PreloadRequest::CreateIfNeeded(
   // data URLs if the document's URL is a data URL. We don't want to create
   // extra resource requests with data URLs to avoid copy / initialization
   // overhead, which can be significant for large URLs.
-  if (resource_url.IsEmpty() || resource_url.StartsWith("#") ||
+  if (resource_url.empty() || resource_url.StartsWith("#") ||
       ProtocolIs(resource_url, "data")) {
     return nullptr;
   }
@@ -149,8 +149,8 @@ Resource* PreloadRequest::Start(Document* document) {
     params.SetDecoderOptions(TextResourceDecoderOptions::CreateUTF8Decode());
   } else if (resource_type_ == ResourceType::kScript ||
              resource_type_ == ResourceType::kCSSStyleSheet) {
-    params.SetCharset(charset_.IsEmpty() ? document->Encoding()
-                                         : WTF::TextEncoding(charset_));
+    params.SetCharset(charset_.empty() ? document->Encoding()
+                                       : WTF::TextEncoding(charset_));
   }
   FetchParameters::SpeculativePreloadType speculative_preload_type =
       FetchParameters::SpeculativePreloadType::kInDocument;

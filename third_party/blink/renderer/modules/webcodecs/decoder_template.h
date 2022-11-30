@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -212,6 +212,10 @@ class MODULES_EXPORT DecoderTemplate
 
   // Monotonic increasing generation counter for calls to ResetAlgorithm().
   uint32_t reset_generation_ = 0;
+
+  // Set on Shutdown(), used to generate accurate abort messages.
+  bool shutting_down_ = false;
+  bool shutting_down_due_to_error_ = false;
 
   // Which state the codec is in, determining which calls we can receive.
   V8CodecState state_;

@@ -177,17 +177,10 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // is no history related to the frame, nothing happens and this returns false.
   bool ReloadFrame(FrameTreeNode* frame_tree_node);
 
-  // Navigates to a specified offset from the "current entry". Currently records
-  // a histogram indicating whether the session history navigation would only
-  // affect frames within the subtree of |sandbox_frame_tree_node_id|, which
-  // initiated the navigation. Navigating via this function is considered
-  // renderer-initiated, since it is only invoked when the renderer requests a
-  // history traversal.
-  void GoToOffsetInSandboxedFrame(int offset, int sandbox_frame_tree_node_id);
-
   // Navigates to the specified offset from the "current entry" and marks the
   // navigations as initiated by the renderer.
-  void GoToOffsetFromRenderer(int offset);
+  // |initiator_rfh| is the frame that requested the navigation.
+  void GoToOffsetFromRenderer(int offset, RenderFrameHostImpl* initiator_rfh);
 
 #if BUILDFLAG(IS_ANDROID)
   // The difference between (Can)GoToOffsetWithSkipping and
@@ -221,16 +214,18 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       const absl::optional<blink::Impression>& impression,
       base::TimeTicks navigation_start_time,
       bool is_embedder_initiated_fenced_frame_navigation = false,
-      bool is_unfenced_top_navigation = false);
+      bool is_unfenced_top_navigation = false,
+      bool force_new_browsing_instance = false);
 
   // Navigates to the history entry associated with the given navigation API
   // |key|. Searches |entries_| for a FrameNavigationEntry associated with
-  // |node| that has |key| as its navigation API key. Searches back from the
-  // current index, then forward, so if there are multiple entries with the same
-  // key, the nearest to current should be selected. Stops searching in the
-  // current direction if it finds a NavigationEntry without a
-  // FrameNavigationEntry for |node|, or if the FrameNavigationEntry doesn't
-  // match origin or site instance.
+  // |initiator_rfh|'s FrameTreeNode that has |key| as its navigation API key.
+  // Searches back from the current index, then forward, so if there are
+  // multiple entries with the same key, the nearest to current should be
+  // selected. Stops searching in the current direction if it finds a
+  // NavigationEntry without a FrameNavigationEntry for |initiator_rfh|'s
+  // FrameTreeNode, or if the FrameNavigationEntry doesn't match origin or site
+  // instance.
   //
   // If no matching entry is found, the navigation is dropped. The renderer
   // should only send the navigation to the browser if it believes the entry is
@@ -238,14 +233,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // |entries_|, or due to a race condition) or compromised.
   // If a matching entry is found, navigate to that entry and proceed like any
   // other history navigation.
-  //
-  // |sandboxed_source_frame_tree_node_id| is set to something besides
-  // FrameTreeNode::kFrameTreeNodeInvalidId when the source frame is not allowed
-  // to navigate frames outside its subtree, because of sandboxing. It then is
-  // used by the appropriate checks which will drop the navigation if it would
-  // result in a navigation outside its subtree.
-  void NavigateToNavigationApiKey(FrameTreeNode* node,
-                                  int sandboxed_source_frame_tree_node_id,
+  void NavigateToNavigationApiKey(RenderFrameHostImpl* initiator_rfh,
                                   const std::string& key);
 
   // Whether this is the initial navigation in an unmodified new tab.  In this
@@ -469,6 +457,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       NavigationControllerBrowserTest,
       PostThenBrowserInitiatedFragmentNavigationThenReload);
   FRIEND_TEST_ALL_PREFIXES(NavigationControllerBrowserTest, PostSubframe);
+  FRIEND_TEST_ALL_PREFIXES(NavigationControllerBrowserTest,
+                           ResetPendingLoadTypeWhenCancelPendingReload);
   FRIEND_TEST_ALL_PREFIXES(NavigationControllerDisableHistoryIntervention,
                            GoToOffsetWithSkippingDisableHistoryIntervention);
   FRIEND_TEST_ALL_PREFIXES(NavigationControllerHistoryInterventionBrowserTest,
@@ -486,6 +476,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
     kSameDocument,
     kDifferentDocument,
   };
+
+  enum class Direction { kForward, kBack };
 
   // Helper class to smooth out runs of duplicate timestamps while still
   // allowing time to jump backwards.
@@ -518,21 +510,52 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
     const bool was_disallowed_;
   };
 
-  // Navigates in session history to the given index. If
-  // |sandbox_frame_tree_node_id| is valid, then this request came
-  // from a sandboxed iframe with top level navigation disallowed. This
-  // is currently only used for tracking metrics.
+  // Records which navigation API keys are associated with live frames.
+  // On destruction, does a final pass to filter out any keys that are still
+  // present in |entries_|, then sends the removed navigation API keys to the
+  // renderer so that the navigation API can fire dispose events for the
+  // entries associated with those keys.
+  class RemovedEntriesTracker {
+   public:
+    explicit RemovedEntriesTracker(
+        base::SafeRef<NavigationControllerImpl> controller);
+    ~RemovedEntriesTracker();
+
+   private:
+    // Walk both directions from the last committed entry to find the navigation
+    // API keys of any FNEs that could be known by currently live documents.
+    // These FNEs are contiguous, so the walk can stop for a given frame when it
+    // reaches an FNE whose API key is no longer known to the current document.
+    void PopulateKeySet(Direction direction);
+    base::SafeRef<NavigationControllerImpl> controller_;
+    // Preprocessed maps used in PopulateKeySet(), mapping frame names
+    // to their respective FrameTreeNodes, and FrameTreeNode ids to their
+    // current document sequences numbers.
+    std::map<std::string, FrameTreeNode*> names_to_nodes_;
+    std::map<int, int64_t> frame_tree_node_id_to_doc_seq_nos_;
+
+    // The output of PopulateKeySet(), which maps FrameTreeNode ids to the keys
+    // that frame knows about in the renderer. Used in the destructor.
+    std::map<int, std::set<std::string>> frame_tree_node_id_to_keys_;
+  };
+
+  // Navigates in session history to the given index.
+  // |initiator_rfh| is nullptr for browser-initiated navigations.
+  // If this navigation originated from the navigation API, |navigation_api_key|
+  // will be set and indicate the navigation api key that |initiator_rfh|
+  // asked to be navigated to.
   void GoToIndex(int index,
-                 int sandbox_frame_tree_node_id,
-                 bool is_browser_initiated);
+                 RenderFrameHostImpl* initiator_rfh,
+                 const std::string* navigation_api_key);
 
   // Starts a navigation to an already existing pending NavigationEntry.
-  // Currently records a histogram indicating whether the session history
-  // navigation would only affect frames within the subtree of
-  // |sandbox_frame_tree_node_id|, which initiated the navigation.
+  // |initiator_rfh| is nullptr for browser-initiated navigations.
+  // If this navigation originated from the navigation API, |navigation_api_key|
+  // will be set and indicate the navigation api key that |initiator_rfh|
+  // asked to be navigated to.
   void NavigateToExistingPendingEntry(ReloadType reload_type,
-                                      int sandboxed_source_frame_tree_node_id,
-                                      bool is_browser_initiated);
+                                      RenderFrameHostImpl* initiator_rfh,
+                                      const std::string* navigation_api_key);
 
   // Helper function used by FindFramesToNavigate to determine the appropriate
   // action to take for a particular frame while navigating to
@@ -769,7 +792,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
   // Used by PopulateNavigationApiHistoryEntryVectors to initialize a single
   // vector.
-  enum class Direction { kForward, kBack };
   std::vector<blink::mojom::NavigationApiHistoryEntryPtr>
   PopulateSingleNavigationApiHistoryEntryVector(
       Direction direction,

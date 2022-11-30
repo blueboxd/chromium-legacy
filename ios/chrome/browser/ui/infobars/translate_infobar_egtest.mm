@@ -12,7 +12,6 @@
 #import "base/test/ios/wait_util.h"
 #import "components/translate/core/browser/translate_pref_names.h"
 #import "components/translate/core/common/translate_constants.h"
-#import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/translate/translate_app_interface.h"
 #import "ios/chrome/browser/ui/badges/badge_constants.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_constants.h"
@@ -20,6 +19,7 @@
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_modal_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
+#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
@@ -105,7 +105,7 @@ const char kFrenchPageWithLinkPath[] = "/frenchpagewithlink/";
 const char kFrenchPageNoTranslateContent[] = "/frenchpagenotranslatecontent/";
 const char kFrenchPageNoTranslateValue[] = "/frenchpagenotranslatevalue/";
 const char kTranslateScriptPath[] = "/translatescript/";
-const char kTranslateScript[] = "Fake Translate Script";
+const char kTranslateScript[] = "Fake_Translate_Script";
 
 // Body text for /languagepath/.
 const char kLanguagePathText[] = "Some text here.";
@@ -656,7 +656,7 @@ void TestResponseProvider::GetLanguageResponse(
 
   // Wait for banner to dismiss.
   BOOL showOriginalBannerDismiss = WaitUntilConditionOrTimeout(
-      kInfobarBannerLongPresentationDurationInSeconds + 1.0, ^{
+      kInfobarBannerLongPresentationDuration + base::Seconds(1), ^{
         NSError* error = nil;
         [[EarlGrey
             selectElementWithMatcher:
@@ -900,8 +900,7 @@ void TestResponseProvider::GetLanguageResponse(
 
 // Tests that the "Never Translate this site" option dismisses the infobar and
 // updates the prefs accordingly.
-// TODO(crbug.com/1352108): Re-enable
-- (void)DISABLED_testInfobarNeverTranslateSite {
+- (void)testInfobarNeverTranslateSite {
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));

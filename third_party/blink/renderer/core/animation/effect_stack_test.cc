@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -300,7 +300,7 @@ TEST_F(AnimationEffectStackTest, AffectedPropertiesDefaultPriority) {
 
   EXPECT_TRUE(
       effect_stack.AffectedProperties(KeyframeEffect::kTransitionPriority)
-          .IsEmpty());
+          .empty());
 
   auto set = effect_stack.AffectedProperties(KeyframeEffect::kDefaultPriority);
   ASSERT_EQ(3u, set.size());
@@ -323,7 +323,7 @@ TEST_F(AnimationEffectStackTest, AffectedPropertiesTransitionPriority) {
       body->GetElementAnimations()->GetEffectStack();
 
   EXPECT_TRUE(effect_stack.AffectedProperties(KeyframeEffect::kDefaultPriority)
-                  .IsEmpty());
+                  .empty());
 
   auto set =
       effect_stack.AffectedProperties(KeyframeEffect::kTransitionPriority);

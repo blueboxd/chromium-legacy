@@ -15,6 +15,7 @@ source_set("promos") {
   ]
   frameworks = [ "UIKit.framework" ]
   public_deps = [
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/common/ui/confirmation_alert",
     "//ios/chrome/common/ui/promo_style:promo_style",
   ]
@@ -31,7 +32,6 @@ source_set("promos_manager_scene_agent") {
     "promos_manager_scene_agent.mm",
   ]
   deps = [
-    "//base",
     "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/main:observing_scene_agent",
@@ -42,6 +42,7 @@ source_set("promos_manager_scene_agent") {
 source_set("promos_manager") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "promos_manager_coordinator+internal.h",
     "promos_manager_coordinator.h",
     "promos_manager_coordinator.mm",
     "promos_manager_mediator.h",
@@ -57,14 +58,46 @@ source_set("promos_manager") {
   ]
   deps = [
     ":promos_manager_scene_agent",
-    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/application_context",
+    "//ios/chrome/browser/flags:system_flags",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/promos_manager:constants",
+    "//ios/chrome/browser/ui/app_store_rating",
+    "//ios/chrome/browser/ui/app_store_rating:features",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/post_restore_signin",
     "//ios/chrome/browser/ui/post_restore_signin:features",
     "//ios/chrome/common/ui/confirmation_alert",
     "//ios/chrome/common/ui/promo_style:promo_style",
     "//ui/base",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "promos_manager_coordinator_unittest.h",
+    "promos_manager_coordinator_unittest.mm",
+  ]
+  deps = [
+    ":promos",
+    ":promos_manager",
+    "//base",
+    "//base/test:test_support",
+    "//components/prefs",
+    "//components/prefs:test_support",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/main:test_support",
+    "//ios/chrome/browser/prefs:pref_names",
+    "//ios/chrome/browser/promos_manager:features",
+    "//ios/chrome/browser/promos_manager:promos_manager",
+    "//ios/chrome/common/ui/confirmation_alert",
+    "//ios/chrome/common/ui/promo_style",
+    "//ios/chrome/test:test_support",
+    "//testing/gtest",
+    "//third_party/ocmock",
   ]
 }

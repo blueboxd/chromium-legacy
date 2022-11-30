@@ -5,13 +5,18 @@
 import 'chrome://diagnostics/input_list.js';
 
 import {DiagnosticsBrowserProxyImpl} from 'chrome://diagnostics/diagnostics_browser_proxy.js';
-import {ConnectionType, KeyboardInfo, MechanicalLayout, NavigationView, NumberPadPresence, PhysicalLayout, TopRightKey, TopRowKey, TouchDeviceInfo, TouchDeviceType} from 'chrome://diagnostics/diagnostics_types.js';
+import {NavigationView} from 'chrome://diagnostics/diagnostics_types.js';
 import {fakeKeyboards, fakeTouchDevices} from 'chrome://diagnostics/fake_data.js';
 import {FakeInputDataProvider} from 'chrome://diagnostics/fake_input_data_provider.js';
+import {InputCardElement} from 'chrome://diagnostics/input_card.js';
+import {ConnectionType, KeyboardInfo, MechanicalLayout, NumberPadPresence, PhysicalLayout, TopRightKey, TopRowKey, TouchDeviceInfo, TouchDeviceType} from 'chrome://diagnostics/input_data_provider.mojom-webui.js';
+import {InputListElement} from 'chrome://diagnostics/input_list.js';
 import {setInputDataProviderForTesting} from 'chrome://diagnostics/mojo_interface_provider.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {assertArrayEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {flushTasks, isVisible} from '../../test_util.js';
+import {isVisible} from '../../test_util.js';
 
 import {TestDiagnosticsBrowserProxy} from './test_diagnostics_browser_proxy.js';
 
@@ -30,7 +35,7 @@ export function inputListTestSuite() {
     setInputDataProviderForTesting(provider);
 
     diagnosticsBrowserProxy = new TestDiagnosticsBrowserProxy();
-    DiagnosticsBrowserProxyImpl.instance_ = diagnosticsBrowserProxy;
+    DiagnosticsBrowserProxyImpl.setInstance(diagnosticsBrowserProxy);
   });
 
   setup(() => {
@@ -59,7 +64,8 @@ export function inputListTestSuite() {
 
   /** @return {!InputCardElement} */
   function getCardByDeviceType(deviceType) {
-    const card = inputListElement.$$(`input-card[device-type="${deviceType}"]`);
+    const card = inputListElement.shadowRoot.querySelector(
+        `input-card[device-type="${deviceType}"]`);
     return /** @type {!InputCardElement} */ (card);
   }
 
@@ -116,12 +122,14 @@ export function inputListTestSuite() {
 
   test('KeyboardTesterShow', async () => {
     await initializeInputList([fakeKeyboards[0]], []);
-    const testButton = getCardByDeviceType('keyboard').$$('cr-button');
+    const testButton =
+        getCardByDeviceType('keyboard').shadowRoot.querySelector('cr-button');
     assertTrue(!!testButton);
     testButton.click();
     await flushTasks();
 
-    const keyboardTester = inputListElement.$$('keyboard-tester');
+    const keyboardTester =
+        inputListElement.shadowRoot.querySelector('keyboard-tester');
     assertTrue(keyboardTester.isOpen());
   });
 
@@ -171,6 +179,35 @@ export function inputListTestSuite() {
     assertEquals(fakeTouchDevices[1].name, touchscreenCard.devices[0].name);
   });
 
+  test('TouchscreenTesterShowAndClose', async () => {
+    await initializeInputList([], [fakeTouchDevices[1]]);
+
+    const resolver = new PromiseResolver();
+    let requestFullscreenCalled = 0;
+
+    const touchscreenTester =
+        inputListElement.shadowRoot.querySelector('touchscreen-tester');
+    const introDialog = touchscreenTester.getDialog('intro-dialog');
+
+    // Mock requestFullscreen function since this API can only be initiated by a
+    // user gesture.
+    introDialog.requestFullscreen = () => {
+      requestFullscreenCalled++;
+      resolver.resolve();
+    };
+
+    const testButton = getCardByDeviceType('touchscreen')
+                           .shadowRoot.querySelector('cr-button');
+    assertTrue(!!testButton);
+    testButton.click();
+    await flushTasks();
+    assertEquals(1, requestFullscreenCalled);
+    assertTrue(introDialog.open);
+
+    touchscreenTester.shadowRoot.dispatchEvent(new Event('fullscreenchange'));
+    assertFalse(introDialog.open);
+  });
+
   test('EmptySectionsHidden', async () => {
     await initializeInputList([], []);
     assertFalse(isVisible(getCardByDeviceType('keyboard')));
@@ -212,13 +249,13 @@ export function inputListTestSuite() {
 
     assertEquals(0, diagnosticsBrowserProxy.getCallCount('recordNavigation'));
 
-    diagnosticsBrowserProxy.setPreviousView(NavigationView.kSystem);
+    diagnosticsBrowserProxy.setPreviousView(NavigationView.SYSTEM);
     inputListElement.onNavigationPageChanged({isActive: true});
 
     await flushTasks();
     assertEquals(1, diagnosticsBrowserProxy.getCallCount('recordNavigation'));
     assertArrayEquals(
-        [NavigationView.kSystem, NavigationView.kInput],
+        [NavigationView.SYSTEM, NavigationView.INPUT],
         /** @type {!Array<!NavigationView>} */
         (diagnosticsBrowserProxy.getArgs('recordNavigation')[0]));
   });

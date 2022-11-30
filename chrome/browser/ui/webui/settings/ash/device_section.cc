@@ -40,6 +40,14 @@
 
 namespace chromeos {
 namespace settings {
+
+// TODO(https://crbug.com/1164001): remove after migrating to ash.
+namespace mojom {
+using ::ash::settings::mojom::SearchResultDefaultRank;
+using ::ash::settings::mojom::SearchResultIcon;
+using ::ash::settings::mojom::SearchResultType;
+}  // namespace mojom
+
 namespace {
 
 const std::vector<SearchConcept>& GetDeviceSearchConcepts() {
@@ -912,16 +920,11 @@ void DeviceSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 }
 
 void DeviceSection::AddHandlers(content::WebUI* web_ui) {
-  web_ui->AddMessageHandler(
-      std::make_unique<chromeos::settings::DisplayHandler>());
-  web_ui->AddMessageHandler(
-      std::make_unique<chromeos::settings::KeyboardHandler>());
-  web_ui->AddMessageHandler(
-      std::make_unique<chromeos::settings::PointerHandler>());
-  web_ui->AddMessageHandler(
-      std::make_unique<chromeos::settings::PowerHandler>(pref_service_));
-  web_ui->AddMessageHandler(
-      std::make_unique<chromeos::settings::StylusHandler>());
+  web_ui->AddMessageHandler(std::make_unique<DisplayHandler>());
+  web_ui->AddMessageHandler(std::make_unique<KeyboardHandler>());
+  web_ui->AddMessageHandler(std::make_unique<PointerHandler>());
+  web_ui->AddMessageHandler(std::make_unique<PowerHandler>(pref_service_));
+  web_ui->AddMessageHandler(std::make_unique<StylusHandler>());
 }
 
 int DeviceSection::GetSectionNameMessageId() const {

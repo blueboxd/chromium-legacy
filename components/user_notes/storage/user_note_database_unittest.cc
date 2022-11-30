@@ -4,13 +4,13 @@
 
 #include "components/user_notes/storage/user_note_database.h"
 
-#include <algorithm>
 #include <vector>
 
 #include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "base/ranges/algorithm.h"
 #include "components/user_notes/model/user_note_model_test_utils.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
@@ -164,8 +164,9 @@ TEST_F(UserNoteDatabaseTest, CreateNote) {
       new UserNote(note_id, GetTestUserNoteMetadata(), GetTestUserNoteBody(),
                    GetTestUserNotePageTarget());
 
-  bool create_note = user_note_db.UpdateNote(user_note, u"new test note",
-                                             /*is_creation=*/true);
+  bool create_note =
+      user_note_db.UpdateNote(UserNote::Clone(user_note), u"new test note",
+                              /*is_creation=*/true);
   EXPECT_TRUE(create_note);
 
   check_notes_body_from_db(&user_note_db, note_id, u"new test note");
@@ -181,10 +182,11 @@ TEST_F(UserNoteDatabaseTest, UpdateNote) {
       new UserNote(note_id, GetTestUserNoteMetadata(), GetTestUserNoteBody(),
                    GetTestUserNotePageTarget());
 
-  bool create_note = user_note_db.UpdateNote(user_note, u"new test note",
-                                             /*is_creation=*/true);
-  bool update_note =
-      user_note_db.UpdateNote(user_note, u"edit test note", false);
+  bool create_note =
+      user_note_db.UpdateNote(UserNote::Clone(user_note), u"new test note",
+                              /*is_creation=*/true);
+  bool update_note = user_note_db.UpdateNote(UserNote::Clone(user_note),
+                                             u"edit test note", false);
   EXPECT_TRUE(create_note);
   EXPECT_TRUE(update_note);
 
@@ -201,8 +203,9 @@ TEST_F(UserNoteDatabaseTest, DeleteNote) {
       new UserNote(note_id, GetTestUserNoteMetadata(), GetTestUserNoteBody(),
                    GetTestUserNotePageTarget());
 
-  bool create_note = user_note_db.UpdateNote(user_note, u"new test note",
-                                             /*is_creation=*/true);
+  bool create_note =
+      user_note_db.UpdateNote(UserNote::Clone(user_note), u"new test note",
+                              /*is_creation=*/true);
   EXPECT_TRUE(create_note);
   bool delete_note = user_note_db.DeleteNote(note_id);
   EXPECT_TRUE(delete_note);
@@ -232,8 +235,8 @@ TEST_F(UserNoteDatabaseTest, GetNotesById) {
     UserNote* user_note =
         new UserNote(note_id, GetTestUserNoteMetadata(), GetTestUserNoteBody(),
                      std::move(test_target));
-    bool create_note =
-        user_note_db.UpdateNote(user_note, body, /*is_creation=*/true);
+    bool create_note = user_note_db.UpdateNote(UserNote::Clone(user_note), body,
+                                               /*is_creation=*/true);
     EXPECT_TRUE(create_note);
     delete user_note;
   }
@@ -243,7 +246,7 @@ TEST_F(UserNoteDatabaseTest, GetNotesById) {
   EXPECT_EQ(3u, notes.size());
 
   for (std::unique_ptr<UserNote>& note : notes) {
-    const auto& vector_it = std::find(ids.begin(), ids.end(), note->id());
+    const auto& vector_it = base::ranges::find(ids, note->id());
     EXPECT_NE(vector_it, ids.end());
     EXPECT_NE(id_set.find(note->id()), id_set.end());
     int i = vector_it - ids.begin();
@@ -268,8 +271,9 @@ TEST_F(UserNoteDatabaseTest, DeleteAllNotes) {
     UserNote* user_note =
         new UserNote(note_id, GetTestUserNoteMetadata(), GetTestUserNoteBody(),
                      GetTestUserNotePageTarget());
-    bool create_note = user_note_db.UpdateNote(user_note, u"new test note",
-                                               /*is_creation=*/true);
+    bool create_note =
+        user_note_db.UpdateNote(UserNote::Clone(user_note), u"new test note",
+                                /*is_creation=*/true);
     EXPECT_TRUE(create_note);
     delete user_note;
   }
@@ -292,8 +296,9 @@ TEST_F(UserNoteDatabaseTest, DeleteAllForOrigin) {
     UserNote* user_note =
         new UserNote(note_id, GetTestUserNoteMetadata(), GetTestUserNoteBody(),
                      GetTestUserNotePageTarget("https://www.test.com"));
-    bool create_note = user_note_db.UpdateNote(user_note, u"new test note",
-                                               /*is_creation=*/true);
+    bool create_note =
+        user_note_db.UpdateNote(UserNote::Clone(user_note), u"new test note",
+                                /*is_creation=*/true);
     EXPECT_TRUE(create_note);
     delete user_note;
   }
@@ -318,8 +323,9 @@ TEST_F(UserNoteDatabaseTest, DeleteAllForUrl) {
     UserNote* user_note =
         new UserNote(note_id, GetTestUserNoteMetadata(), GetTestUserNoteBody(),
                      GetTestUserNotePageTarget("https://www.test.com"));
-    bool create_note = user_note_db.UpdateNote(user_note, u"new test note",
-                                               /*is_creation=*/true);
+    bool create_note =
+        user_note_db.UpdateNote(UserNote::Clone(user_note), u"new test note",
+                                /*is_creation=*/true);
     EXPECT_TRUE(create_note);
     delete user_note;
   }
@@ -348,8 +354,9 @@ TEST_F(UserNoteDatabaseTest, GetNoteMetadataForUrls) {
     UserNote* user_note =
         new UserNote(note_id, std::move(note_metadata), GetTestUserNoteBody(),
                      GetTestUserNotePageTarget("https://www.test.com"));
-    bool create_note = user_note_db.UpdateNote(user_note, u"new test note",
-                                               /*is_creation=*/true);
+    bool create_note =
+        user_note_db.UpdateNote(UserNote::Clone(user_note), u"new test note",
+                                /*is_creation=*/true);
     EXPECT_TRUE(create_note);
     delete user_note;
   }

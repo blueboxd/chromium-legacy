@@ -334,6 +334,14 @@ void ReplacePlaceholdersInCallback(
                                        placeholders);
           }
           return;
+        case ComputeValueProto::kArrayLength:
+          if (in_out_proto->compute_value().array_length().has_value()) {
+            ReplacePlaceholdersInValue(in_out_proto->mutable_compute_value()
+                                           ->mutable_array_length()
+                                           ->mutable_value(),
+                                       placeholders);
+          }
+          return;
         case ComputeValueProto::KIND_NOT_SET:
           return;
       }
@@ -454,6 +462,22 @@ void ReplacePlaceholdersInCallback(
       for (auto& callback :
            *in_out_proto->mutable_for_each()->mutable_callbacks()) {
         ReplacePlaceholdersInCallback(&callback, placeholders);
+      }
+      return;
+    case CallbackProto::kRequestBackendData:
+      if (in_out_proto->request_backend_data()
+              .has_output_success_model_identifier()) {
+        ReplaceInPlace(in_out_proto->mutable_request_backend_data()
+                           ->mutable_output_success_model_identifier(),
+                       placeholders);
+      }
+      if (in_out_proto->request_backend_data()
+              .request_phone_numbers()
+              .has_output_profiles_model_identifier()) {
+        ReplaceInPlace(in_out_proto->mutable_request_backend_data()
+                           ->mutable_request_phone_numbers()
+                           ->mutable_output_profiles_model_identifier(),
+                       placeholders);
       }
       return;
     case CallbackProto::kShowInfoPopup:

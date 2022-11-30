@@ -81,6 +81,8 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     RunCommand("enter_test_mode", {Param("url", url.spec())});
   }
 
+  void ExitTestMode() const override { RunCommand("exit_test_mode"); }
+
   void SetGroupPolicies(const base::Value::Dict& values) const override {
     RunCommand("set_group_policies",
                {Param("values", StringFromValue(base::Value(values.Clone())))});
@@ -296,9 +298,11 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     RunCommand("uninstall_app", {Param("app_id", app_id)});
   }
 
-  void RunOfflineInstall(bool is_silent_install) override {
+  void RunOfflineInstall(bool is_legacy_install,
+                         bool is_silent_install) override {
     RunCommand("run_offline_install",
-               {Param("silent", is_silent_install ? "true" : "false")});
+               {Param("legacy_install", is_legacy_install ? "true" : "false"),
+                Param("silent", is_silent_install ? "true" : "false")});
   }
 
  private:

@@ -184,7 +184,6 @@ static_library("common_lib") {
     "//chrome/common/profiler",
     "//chrome/common/search:mojo_bindings",
     "//chrome/installer/util:with_no_strings",
-    "//components/cast_certificate",
     "//components/cdm/common",
     "//components/client_hints/common",
     "//components/cloud_devices/common",
@@ -584,7 +583,6 @@ static_library("constants") {
   ]
 
   deps = [
-    ":channel_info",
     ":version_header",
     "//base",
     "//base/third_party/dynamic_annotations",
@@ -627,6 +625,7 @@ static_library("constants") {
     public_deps += [ "//chromeos/crosapi/mojom" ]
   } else if (is_linux || is_chromeos) {
     sources += [ "chrome_paths_linux.cc" ]
+    deps += [ ":channel_info" ]
   }
   if (is_mac) {
     sources += [ "chrome_paths_mac.mm" ]

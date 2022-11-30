@@ -41,6 +41,8 @@ public class LocationBarLayout extends FrameLayout {
     protected ImageButton mMicButton;
     protected ImageButton mLensButton;
     protected UrlBar mUrlBar;
+    protected View mStatusViewLeftSpace;
+    protected View mStatusViewRightSpace;
 
     protected UrlBarCoordinator mUrlCoordinator;
     protected AutocompleteCoordinator mAutocompleteCoordinator;
@@ -73,6 +75,8 @@ public class LocationBarLayout extends FrameLayout {
         mMicButton = findViewById(R.id.mic_button);
         mLensButton = findViewById(R.id.lens_camera_button);
         mUrlActionContainer = (LinearLayout) findViewById(R.id.url_action_container);
+        mStatusViewLeftSpace = findViewById(R.id.location_bar_status_view_left_space);
+        mStatusViewRightSpace = findViewById(R.id.location_bar_status_view_right_space);
     }
 
     /**
@@ -187,7 +191,10 @@ public class LocationBarLayout extends FrameLayout {
                     MarginLayoutParamsCompat.getMarginStart(urlActionContainerLayoutParams)
                     + MarginLayoutParamsCompat.getMarginEnd(urlActionContainerLayoutParams);
         }
-        urlContainerMarginEnd += mStatusCoordinator.getAdditionalUrlContainerMarginEnd();
+        urlContainerMarginEnd += mStatusCoordinator.isSearchEngineStatusIconVisible()
+                        && mStatusCoordinator.shouldDisplaySearchEngineIcon()
+                ? getEndPaddingPixelSizeOnFocusDelta()
+                : 0;
         // Account for the URL action container end padding on tablets.
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())) {
             urlContainerMarginEnd +=
@@ -296,6 +303,80 @@ public class LocationBarLayout extends FrameLayout {
 
     /* package */ void setUrlActionContainerVisibility(int visibility) {
         mUrlActionContainer.setVisibility(visibility);
+    }
+
+    /** Returns the increase in StatusView end padding, when the Url bar is focused. */
+    public int getEndPaddingPixelSizeOnFocusDelta() {
+        return getResources().getDimensionPixelSize(R.dimen.location_bar_icon_end_padding_focused)
+                - getResources().getDimensionPixelSize(R.dimen.location_bar_icon_end_padding);
+    }
+
+    /**
+     * Expand the left and right space besides the status view, and increase the location bar
+     * vertical padding based on current animation progress percent.
+     *
+     * @param percent The current animation progress percent.
+     */
+    protected void setUrlFocusChangePercent(float percent) {
+        setStatusViewLeftSpacePercent(percent);
+        setStatusViewRightSpacePercent(percent);
+        setLocationBarPaddingPercent(percent);
+    }
+
+    /**
+     * Set the status view's left space's width based on current animation progress percent.
+     *
+     * @param percent The animation progress percent.
+     */
+    protected void setStatusViewLeftSpacePercent(float percent) {
+        if (!OmniboxFeatures.shouldShowModernizeVisualUpdate(getContext())) {
+            return;
+        }
+
+        // Set the left space expansion width.
+        ViewGroup.LayoutParams leftSpacingParams = mStatusViewLeftSpace.getLayoutParams();
+        leftSpacingParams.width = (int) (getResources().getDimensionPixelSize(
+                                                 R.dimen.location_bar_status_view_left_space_width)
+                * percent);
+        mStatusViewLeftSpace.setLayoutParams(leftSpacingParams);
+    }
+
+    /**
+     * Set the status view's right space's width based on current animation progress percent.
+     *
+     * @param percent The animation progress percent.
+     */
+    protected void setStatusViewRightSpacePercent(float percent) {
+        // Status view's right space does not need to expand for tablets.
+        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())) {
+            return;
+        }
+
+        // Set the right space expansion width.
+        ViewGroup.LayoutParams rightSpacingParams = mStatusViewRightSpace.getLayoutParams();
+        rightSpacingParams.width = (int) (getEndPaddingPixelSizeOnFocusDelta() * percent);
+        mStatusViewRightSpace.setLayoutParams(rightSpacingParams);
+    }
+
+    /**
+     * Set the location bar's padding based on current animation progress percent.
+     *
+     * @param percent The current animation progress percent.
+     */
+    protected void setLocationBarPaddingPercent(float percent) {
+        // The height increase should only be applied to omnibox phase 2 feature enabled and active
+        // color parameter enabled at the same time
+        if (!(OmniboxFeatures.shouldShowModernizeVisualUpdate(getContext())
+                    && OmniboxFeatures.shouldShowActiveColorOnOmnibox())) {
+            return;
+        }
+
+        int verticalPadding =
+                (int) (getResources().getDimensionPixelSize(
+                               R.dimen.location_bar_vertical_padding_phase2_active_color)
+                        * percent);
+
+        setPaddingRelative(getPaddingStart(), verticalPadding, getPaddingEnd(), verticalPadding);
     }
 
     public void notifyVoiceRecognitionCanceled() {}

@@ -170,7 +170,7 @@ void ScriptLoader::ChildrenChanged() {
 // <spec step="C">The script element is connected and has a src attribute set
 // where previously the element had no such attribute.</spec>
 void ScriptLoader::HandleSourceAttribute(const String& source_url) {
-  if (!parser_inserted_ && element_->IsConnected() && !source_url.IsEmpty()) {
+  if (!parser_inserted_ && element_->IsConnected() && !source_url.empty()) {
     PendingScript* pending_script = PrepareScript(
         ParserBlockingInlineOption::kDeny, TextPosition::MinimumPosition());
     DCHECK(!pending_script);
@@ -214,7 +214,7 @@ bool IsValidClassicScriptTypeAndLanguage(const String& type,
     //
     // <spec step="8.C">el has neither a type attribute nor a language
     // attribute</spec>
-    if (language.IsEmpty())
+    if (language.empty())
       return true;
 
     // <spec step="8">... Otherwise, el has a non-empty language attribute; let
@@ -222,7 +222,7 @@ bool IsValidClassicScriptTypeAndLanguage(const String& type,
     // value of el's language attribute.</spec>
     if (MIMETypeRegistry::IsSupportedJavaScriptMIMEType("text/" + language))
       return true;
-  } else if (type.IsEmpty()) {
+  } else if (type.empty()) {
     // <spec step="8.A">el has a type attribute whose value is the empty
     // string;</spec>
     return true;
@@ -305,6 +305,13 @@ bool IsEligibleForDelay(const Resource& resource,
   if (resource.IsLinkPreload())
     return false;
 
+  // Most LCP elements are provided by the main frame, and delaying subframe's
+  // resources seems not to improve LCP.
+  static const bool main_frame_only =
+      features::kDelayAsyncScriptExecutionMainFrameOnlyParam.Get();
+  if (main_frame_only && !element_document.IsInOutermostMainFrame())
+    return false;
+
   static const base::TimeDelta feature_limit =
       features::kDelayAsyncScriptExecutionFeatureLimitParam.Get();
   if (!feature_limit.is_zero() &&
@@ -328,6 +335,49 @@ bool IsEligibleForDelay(const Resource& resource,
           (UrlMatcher(features::kDelayAsyncScriptAllowList.Get())));
       return url_matcher.Match(resource.Url());
   }
+}
+
+// [Intervention, LowPriorityScriptLoading, crbug.com/1365763]
+bool IsEligibleForLowPriorityScriptLoading(const Document& element_document,
+                                           const ScriptElementBase& element,
+                                           const KURL& url) {
+  static const bool enabled =
+      base::FeatureList::IsEnabled(features::kLowPriorityScriptLoading);
+  if (!enabled)
+    return false;
+
+  if (!IsEligibleCommon(element_document))
+    return false;
+
+  if (element.IsPotentiallyRenderBlocking())
+    return false;
+
+  // Most LCP elements are provided by the main frame, and delaying subframe's
+  // resources seems not to improve LCP.
+  static const bool main_frame_only =
+      features::kLowPriorityScriptLoadingMainFrameOnlyParam.Get();
+  if (main_frame_only && !element_document.IsInOutermostMainFrame())
+    return false;
+
+  static const base::TimeDelta feature_limit =
+      features::kLowPriorityScriptLoadingFeatureLimitParam.Get();
+  if (!feature_limit.is_zero() &&
+      element_document.GetStartTime().Elapsed() > feature_limit) {
+    return false;
+  }
+
+  static const bool cross_site_only =
+      features::kLowPriorityScriptLoadingCrossSiteOnlyParam.Get();
+  if (cross_site_only && IsSameSite(url, element_document))
+    return false;
+
+  DEFINE_STATIC_LOCAL(
+      UrlMatcher, deny_list,
+      (UrlMatcher(features::kLowPriorityScriptLoadingDenyListParam.Get())));
+  if (deny_list.Match(url))
+    return false;
+
+  return true;
 }
 
 // [Intervention, SelectiveInOrderScript, crbug.com/1356396]
@@ -490,7 +540,7 @@ PendingScript* ScriptLoader::PrepareScript(
 
   // <spec step="6">If el has no src attribute, and source text is the empty
   // string, then return.</spec>
-  if (!element_->HasSourceAttribute() && source_text.IsEmpty())
+  if (!element_->HasSourceAttribute() && source_text.empty())
     return nullptr;
 
   // <spec step="7">If el is not connected, then return.</spec>
@@ -514,13 +564,6 @@ PendingScript* ScriptLoader::PrepareScript(
       break;
 
     case ScriptTypeAtPrepare::kWebBundle:
-      if (!RuntimeEnabledFeatures::SubresourceWebBundlesEnabled(
-              element_document.GetExecutionContext())) {
-        script_type_ = ScriptTypeAtPrepare::kInvalid;
-        return nullptr;
-      }
-      break;
-
     case ScriptTypeAtPrepare::kClassic:
     case ScriptTypeAtPrepare::kModule:
     case ScriptTypeAtPrepare::kImportMap:
@@ -616,7 +659,7 @@ PendingScript* ScriptLoader::PrepareScript(
   // the empty string.</spec>
   String integrity_attr = element_->IntegrityAttributeValue();
   IntegrityMetadataSet integrity_metadata;
-  if (!integrity_attr.IsEmpty()) {
+  if (!integrity_attr.empty()) {
     SubresourceIntegrity::IntegrityFeatures integrity_features =
         SubresourceIntegrityHelper::GetFeatures(
             element_->GetExecutionContext());
@@ -632,7 +675,7 @@ PendingScript* ScriptLoader::PrepareScript(
   String referrerpolicy_attr = element_->ReferrerPolicyAttributeValue();
   network::mojom::ReferrerPolicy referrer_policy =
       network::mojom::ReferrerPolicy::kDefault;
-  if (!referrerpolicy_attr.IsEmpty()) {
+  if (!referrerpolicy_attr.empty()) {
     SecurityPolicy::ReferrerPolicyFromString(
         referrerpolicy_attr, kDoNotSupportReferrerPolicyLegacyKeywords,
         &referrer_policy);
@@ -703,8 +746,8 @@ PendingScript* ScriptLoader::PrepareScript(
                   "https://crbug.com/927119"));
         element_document.GetTaskRunner(TaskType::kDOMManipulation)
             ->PostTask(FROM_HERE,
-                       WTF::Bind(&ScriptElementBase::DispatchErrorEvent,
-                                 WrapPersistent(element_.Get())));
+                       WTF::BindOnce(&ScriptElementBase::DispatchErrorEvent,
+                                     WrapPersistent(element_.Get())));
         return nullptr;
 
       case Modulator::AcquiringImportMapsState::kAcquiring:
@@ -733,11 +776,11 @@ PendingScript* ScriptLoader::PrepareScript(
 
     // <spec step="29.2">If src is the empty string, then queue a task to fire
     // an event named error at el, and return.</spec>
-    if (src.IsEmpty()) {
+    if (src.empty()) {
       element_document.GetTaskRunner(TaskType::kDOMManipulation)
           ->PostTask(FROM_HERE,
-                     WTF::Bind(&ScriptElementBase::DispatchErrorEvent,
-                               WrapPersistent(element_.Get())));
+                     WTF::BindOnce(&ScriptElementBase::DispatchErrorEvent,
+                                   WrapPersistent(element_.Get())));
       return nullptr;
     }
 
@@ -753,8 +796,8 @@ PendingScript* ScriptLoader::PrepareScript(
     if (!url.IsValid()) {
       element_document.GetTaskRunner(TaskType::kDOMManipulation)
           ->PostTask(FROM_HERE,
-                     WTF::Bind(&ScriptElementBase::DispatchErrorEvent,
-                               WrapPersistent(element_.Get())));
+                     WTF::BindOnce(&ScriptElementBase::DispatchErrorEvent,
+                                   WrapPersistent(element_.Get())));
       return nullptr;
     }
 
@@ -800,8 +843,8 @@ PendingScript* ScriptLoader::PrepareScript(
             "External import maps are not yet supported."));
         element_document.GetTaskRunner(TaskType::kDOMManipulation)
             ->PostTask(FROM_HERE,
-                       WTF::Bind(&ScriptElementBase::DispatchErrorEvent,
-                                 WrapPersistent(element_.Get())));
+                       WTF::BindOnce(&ScriptElementBase::DispatchErrorEvent,
+                                     WrapPersistent(element_.Get())));
         return nullptr;
 
       case ScriptTypeAtPrepare::kSpeculationRules:
@@ -819,8 +862,8 @@ PendingScript* ScriptLoader::PrepareScript(
             "External webbundle is not yet supported."));
         element_document.GetTaskRunner(TaskType::kDOMManipulation)
             ->PostTask(FROM_HERE,
-                       WTF::Bind(&ScriptElementBase::DispatchErrorEvent,
-                                 WrapPersistent(element_.Get())));
+                       WTF::BindOnce(&ScriptElementBase::DispatchErrorEvent,
+                                     WrapPersistent(element_.Get())));
         return nullptr;
 
       case ScriptTypeAtPrepare::kClassic: {
@@ -834,7 +877,7 @@ PendingScript* ScriptLoader::PrepareScript(
         //
         // TODO(hiroshige): Should we handle failure in getting an encoding?
         WTF::TextEncoding encoding;
-        if (!element_->CharsetAttributeValue().IsEmpty())
+        if (!element_->CharsetAttributeValue().empty())
           encoding = WTF::TextEncoding(element_->CharsetAttributeValue());
         else
           encoding = element_document.Encoding();
@@ -846,7 +889,12 @@ PendingScript* ScriptLoader::PrepareScript(
         FetchParameters::DeferOption defer = FetchParameters::kNoDefer;
         if (!parser_inserted_ || element_->AsyncAttributeValue() ||
             element_->DeferAttributeValue()) {
-          defer = FetchParameters::kLazyLoad;
+          if (!IsEligibleForLowPriorityScriptLoading(element_document,
+                                                     *element_, url)) {
+            defer = FetchParameters::kLazyLoad;
+          } else {
+            defer = FetchParameters::kIdleLoad;
+          }
         }
         ClassicPendingScript* pending_script = ClassicPendingScript::Fetch(
             url, element_document, options, cross_origin, encoding, element_,
@@ -920,8 +968,6 @@ PendingScript* ScriptLoader::PrepareScript(
         return nullptr;
       }
       case ScriptTypeAtPrepare::kWebBundle: {
-        DCHECK(RuntimeEnabledFeatures::SubresourceWebBundlesEnabled(
-            context_window));
         DCHECK(!script_web_bundle_);
 
         absl::variant<ScriptWebBundle*, ScriptWebBundleError>
@@ -965,8 +1011,8 @@ PendingScript* ScriptLoader::PrepareScript(
         // document's list of speculation rule sets.
         DCHECK(RuntimeEnabledFeatures::SpeculationRulesEnabled(context_window));
         String parse_error;
-        if (auto* rule_set = SpeculationRuleSet::ParseInline(
-                source_text, base_url, &parse_error)) {
+        if (auto* rule_set = SpeculationRuleSet::Parse(source_text, base_url,
+                                                       &parse_error)) {
           speculation_rule_set_ = rule_set;
           DocumentSpeculationRules::From(element_document).AddRuleSet(rule_set);
         }

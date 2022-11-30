@@ -14,32 +14,74 @@
 #include "remoting/host/chromeos/skia_bitmap_desktop_frame.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace remoting {
+
+namespace {
+
+webrtc::DesktopRect ToDesktopRect(gfx::Rect rect) {
+  return webrtc::DesktopRect::MakeLTRB(rect.x(), rect.y(), rect.right(),
+                                       rect.bottom());
+}
+
+}  // namespace
+
+AshMojomVideoConsumer::UpdatedRegionAggregator::UpdatedRegionAggregator() =
+    default;
+AshMojomVideoConsumer::UpdatedRegionAggregator::~UpdatedRegionAggregator() =
+    default;
+
+webrtc::DesktopRegion
+AshMojomVideoConsumer::UpdatedRegionAggregator::TakeUpdatedRegion() {
+  webrtc::DesktopRegion desktop_region{desktop_region_};
+  desktop_region_.Clear();
+  return desktop_region;
+}
+
+void AshMojomVideoConsumer::UpdatedRegionAggregator::AddUpdatedRect(
+    webrtc::DesktopRect updated_rect) {
+  desktop_region_.AddRect(updated_rect);
+}
+
+void AshMojomVideoConsumer::UpdatedRegionAggregator::HandleSizeChange(
+    gfx::Size new_size) {
+  if (new_size == current_frame_size_) {
+    return;
+  }
+
+  current_frame_size_ = new_size;
+  // desktop_region_ must be cleared to make sure no aggregated updated_rect of
+  // a different frame size is used. Not clearing it will lead to crashes.
+  // desktop_region_ is reset to DesktopRegion of the new size.
+  desktop_region_.SetRect(webrtc::DesktopRect::MakeWH(
+      current_frame_size_.width(), current_frame_size_.height()));
+}
+
 class AshMojomVideoConsumer::Frame {
  public:
   Frame();
-  Frame(
-      media::mojom::VideoFrameInfoPtr info,
-      base::ReadOnlySharedMemoryMapping pixels,
-      gfx::Rect content_rect,
-      mojo::PendingRemote<FrameSinkVideoConsumerFrameCallbacks> done_callback);
+  Frame(media::mojom::VideoFrameInfoPtr info,
+        base::ReadOnlySharedMemoryMapping pixels,
+        gfx::Rect content_rect,
+        mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+            done_callback);
   Frame(Frame&&);
   Frame& operator=(Frame&&);
   ~Frame();
 
-  std::unique_ptr<webrtc::DesktopFrame> ToDesktopFrame() const;
+  std::unique_ptr<webrtc::DesktopFrame> ToDesktopFrame(gfx::Point origin) const;
 
  private:
   std::unique_ptr<SkBitmap> CreateSkBitmap() const;
   bool IsValidFrame() const;
-  webrtc::DesktopRect GetUpdatedRect() const;
   int GetDpi() const;
 
   media::mojom::VideoFrameInfoPtr info_;
   base::ReadOnlySharedMemoryMapping pixels_;
   gfx::Rect content_rect_;
-  mojo::Remote<FrameSinkVideoConsumerFrameCallbacks> done_callback_remote_;
+  mojo::Remote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+      done_callback_remote_;
 };
 
 AshMojomVideoConsumer::Frame::Frame(Frame&&) = default;
@@ -50,7 +92,7 @@ AshMojomVideoConsumer::Frame::Frame(
     media::mojom::VideoFrameInfoPtr info,
     base::ReadOnlySharedMemoryMapping pixels,
     gfx::Rect content_rect,
-    mojo::PendingRemote<FrameSinkVideoConsumerFrameCallbacks>
+    mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
         done_callback_remote)
     : info_(std::move(info)),
       pixels_(std::move(pixels)),
@@ -74,26 +116,17 @@ std::unique_ptr<SkBitmap> AshMojomVideoConsumer::Frame::CreateSkBitmap() const {
 }
 
 std::unique_ptr<webrtc::DesktopFrame>
-AshMojomVideoConsumer::Frame::ToDesktopFrame() const {
+AshMojomVideoConsumer::Frame::ToDesktopFrame(gfx::Point origin) const {
   if (!IsValidFrame()) {
     return nullptr;
   }
-  int dpi = GetDpi();
+
   std::unique_ptr<webrtc::DesktopFrame> frame(
       SkiaBitmapDesktopFrame::Create(CreateSkBitmap()));
-
-  frame->set_dpi(webrtc::DesktopVector(dpi, dpi));
-  frame->mutable_updated_region()->SetRect(GetUpdatedRect());
+  frame->set_top_left(webrtc::DesktopVector(origin.x(), origin.y()));
+  frame->set_dpi(webrtc::DesktopVector(GetDpi(), GetDpi()));
 
   return frame;
-}
-
-webrtc::DesktopRect AshMojomVideoConsumer::Frame::GetUpdatedRect() const {
-  auto updated_rect =
-      info_->metadata.capture_update_rect.value_or(content_rect_);
-  return webrtc::DesktopRect::MakeLTRB(updated_rect.x(), updated_rect.y(),
-                                       updated_rect.right(),
-                                       updated_rect.bottom());
 }
 
 int AshMojomVideoConsumer::Frame::GetDpi() const {
@@ -135,24 +168,38 @@ AshMojomVideoConsumer::Bind() {
   return receiver_.BindNewPipeAndPassRemote();
 }
 
-std::unique_ptr<webrtc::DesktopFrame> AshMojomVideoConsumer::GetLatestFrame() {
+std::unique_ptr<webrtc::DesktopFrame> AshMojomVideoConsumer::GetLatestFrame(
+    gfx::Point origin) {
   if (!latest_frame_) {
     return nullptr;
   }
 
-  return latest_frame_->ToDesktopFrame();
+  auto desktop_frame = latest_frame_->ToDesktopFrame(origin);
+  if (!desktop_frame) {
+    return nullptr;
+  }
+
+  desktop_frame->mutable_updated_region()->AddRegion(
+      updated_region_aggregator_.TakeUpdatedRegion());
+
+  return desktop_frame;
 }
 
 void AshMojomVideoConsumer::OnFrameCaptured(
     media::mojom::VideoBufferHandlePtr data,
     media::mojom::VideoFrameInfoPtr info,
     const gfx::Rect& content_rect,
-    mojo::PendingRemote<FrameSinkVideoConsumerFrameCallbacks> callbacks) {
+    mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+        callbacks) {
   DCHECK(data->is_read_only_shmem_region());
   base::ReadOnlySharedMemoryRegion& shared_memory_region =
       data->get_read_only_shmem_region();
 
   DCHECK(shared_memory_region.IsValid());
+
+  auto updated_rect = info->metadata.capture_update_rect.value_or(content_rect);
+  updated_region_aggregator_.AddUpdatedRect(ToDesktopRect(updated_rect));
+  updated_region_aggregator_.HandleSizeChange(content_rect.size());
 
   latest_frame_ =
       std::make_unique<Frame>(std::move(info), shared_memory_region.Map(),

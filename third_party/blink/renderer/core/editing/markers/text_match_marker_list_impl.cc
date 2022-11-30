@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,7 @@ DocumentMarker::MarkerType TextMatchMarkerListImpl::MarkerType() const {
 }
 
 bool TextMatchMarkerListImpl::IsEmpty() const {
-  return markers_.IsEmpty();
+  return markers_.empty();
 }
 
 void TextMatchMarkerListImpl::Add(DocumentMarker* marker) {

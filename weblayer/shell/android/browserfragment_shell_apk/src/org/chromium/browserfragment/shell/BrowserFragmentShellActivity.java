@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.chromium.base.Log;
 import org.chromium.browserfragment.Browser;
 import org.chromium.browserfragment.BrowserFragment;
+import org.chromium.browserfragment.CookieManager;
 import org.chromium.browserfragment.FragmentParams;
 import org.chromium.browserfragment.Navigation;
 import org.chromium.browserfragment.NavigationObserver;
@@ -148,6 +149,7 @@ public class BrowserFragmentShellActivity extends AppCompatActivity {
                                 "Navigation: url:" + navigation.getUri()
                                         + ", HTTP-StatusCode: " + navigation.getStatusCode()
                                         + ", samePage: " + navigation.isSameDocument());
+                        tab.executeScript("console.log('injected JS after 1P validation')", true);
                     }
 
                     @Override
@@ -210,6 +212,37 @@ public class BrowserFragmentShellActivity extends AppCompatActivity {
                     }, "x", Arrays.asList("*"));
                 }
             }
+            @Override
+            public void onFailure(Throwable thrown) {}
+        }, mContext.getMainExecutor());
+
+        ListenableFuture<CookieManager> cookieManagerFuture = fragment.getCookieManager();
+        Futures.addCallback(cookieManagerFuture, new FutureCallback<CookieManager>() {
+            @Override
+            public void onSuccess(CookieManager cookieManager) {
+                ListenableFuture<Void> setCookieFuture =
+                        cookieManager.setCookie("https://sadchonks.com", "foo=bar123");
+                Futures.addCallback(setCookieFuture, new FutureCallback<Void>() {
+                    @Override
+                    public void onSuccess(Void v) {
+                        ListenableFuture<String> cookieFuture =
+                                cookieManager.getCookie("https://sadchonks.com");
+                        Futures.addCallback(cookieFuture, new FutureCallback<String>() {
+                            @Override
+                            public void onSuccess(String value) {
+                                Log.w(TAG, "cookie: " + value);
+                            }
+
+                            @Override
+                            public void onFailure(Throwable thrown) {}
+                        }, mContext.getMainExecutor());
+                    }
+
+                    @Override
+                    public void onFailure(Throwable thrown) {}
+                }, mContext.getMainExecutor());
+            }
+
             @Override
             public void onFailure(Throwable thrown) {}
         }, mContext.getMainExecutor());

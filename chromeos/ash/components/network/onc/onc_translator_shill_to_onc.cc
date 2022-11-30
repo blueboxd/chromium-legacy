@@ -6,6 +6,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
@@ -126,6 +127,7 @@ class ShillToONCTranslator {
   void TranslateWiFiWithState();
   void TranslateCellularWithState();
   void TranslateCellularDevice();
+  void TranslateApnProperties();
   void TranslateNetworkWithState();
   void TranslateIPConfig();
   void TranslateSavedOrStaticIPConfig();
@@ -236,6 +238,9 @@ base::Value ShillToONCTranslator::CreateTranslatedONCObject() {
     TranslateStaticIPConfig();
   } else if (onc_signature_ == &chromeos::onc::kEAPSignature) {
     TranslateEap();
+  } else if (ash::features::IsApnRevampEnabled() &&
+             onc_signature_ == &chromeos::onc::kCellularApnSignature) {
+    TranslateApnProperties();
   } else {
     CopyPropertiesAccordingToSignature();
   }
@@ -582,6 +587,27 @@ void ShillToONCTranslator::TranslateCellularDevice() {
   }
 }
 
+// TODO(b/162365553) Add translation for the other APN properties when they are
+// added to Shill
+void ShillToONCTranslator::TranslateApnProperties() {
+  DCHECK(ash::features::IsApnRevampEnabled());
+  CopyPropertiesAccordingToSignature();
+  std::string shill_apn_ip_type =
+      FindStringKeyOrEmpty(shill_dictionary_, shill::kApnIpTypeProperty);
+  std::string ip_type;
+  if (shill_apn_ip_type == shill::kApnIpTypeV4) {
+    ip_type = ::onc::cellular_apn::kIpTypeIpv4;
+  } else if (shill_apn_ip_type == shill::kApnIpTypeV6) {
+    ip_type = ::onc::cellular_apn::kIpTypeIpv6;
+  } else if (shill_apn_ip_type == shill::kApnIpTypeV4V6) {
+    ip_type = ::onc::cellular_apn::kIpTypeIpv4Ipv6;
+  } else {
+    return;  // Ignore unhandled ApnIpType types
+  }
+
+  onc_object_.SetKey(::onc::cellular_apn::kIpType, base::Value(ip_type));
+}
+
 void ShillToONCTranslator::TranslateNetworkWithState() {
   CopyPropertiesAccordingToSignature();
 
@@ -694,13 +720,13 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
     }
     const base::Value* name_servers =
         static_ipconfig->FindListKey(shill::kNameServersProperty);
-    if (name_servers && !name_servers->GetListDeprecated().empty()) {
+    if (name_servers && !name_servers->GetList().empty()) {
       onc_object_.SetKey(
           ::onc::network_config::kNameServersConfigType,
           base::Value(::onc::network_config::kIPConfigTypeStatic));
     }
     if ((ip_address && !ip_address->empty()) ||
-        (name_servers && !name_servers->GetListDeprecated().empty())) {
+        (name_servers && !name_servers->GetList().empty())) {
       TranslateAndAddNestedObject(::onc::network_config::kStaticIPConfig,
                                   *static_ipconfig);
     }
@@ -824,8 +850,7 @@ void ShillToONCTranslator::TranslateEap() {
   if (subject_alternative_name_match) {
     base::Value deserialized_dicts(base::Value::Type::LIST);
     std::string error_msg;
-    for (const base::Value& san :
-         subject_alternative_name_match->GetListDeprecated()) {
+    for (const base::Value& san : subject_alternative_name_match->GetList()) {
       JSONStringValueDeserializer deserializer(san.GetString());
       auto deserialized_dict =
           deserializer.Deserialize(/*error_code=*/nullptr, &error_msg);
@@ -899,7 +924,7 @@ void ShillToONCTranslator::TranslateAndAddListOfObjects(
   }
   DCHECK(field_signature->value_signature->onc_array_entry_signature);
   base::Value result(base::Value::Type::LIST);
-  for (const auto& it : list.GetListDeprecated()) {
+  for (const auto& it : list.GetList()) {
     if (!it.is_dict())
       continue;
     ShillToONCTranslator nested_translator(
@@ -914,7 +939,7 @@ void ShillToONCTranslator::TranslateAndAddListOfObjects(
   }
   // If there are no entries in the list, there is no need to expose this
   // field.
-  if (result.GetListDeprecated().empty())
+  if (result.GetList().empty())
     return;
   onc_object_.SetKey(onc_field_name, std::move(result));
 }

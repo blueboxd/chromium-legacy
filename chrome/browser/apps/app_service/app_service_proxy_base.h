@@ -84,7 +84,7 @@ class AppServiceProxyBase : public KeyedService,
   AppServiceProxyBase& operator=(const AppServiceProxyBase&) = delete;
   ~AppServiceProxyBase() override;
 
-  void ReInitializeForTesting(
+  void ReinitializeForTesting(
       Profile* profile,
       base::OnceClosure read_completed_for_testing = base::OnceClosure(),
       base::OnceClosure write_completed_for_testing = base::OnceClosure());
@@ -273,8 +273,6 @@ class AppServiceProxyBase : public KeyedService,
   // Opens native settings for the app with |app_id|.
   void OpenNativeSettings(const std::string& app_id);
 
-  virtual void FlushMojoCallsForTesting() = 0;
-
   apps::IconLoader* OverrideInnerIconLoaderForTesting(
       apps::IconLoader* icon_loader);
 
@@ -305,10 +303,6 @@ class AppServiceProxyBase : public KeyedService,
   void AddPreferredApp(const std::string& app_id, const GURL& url);
   // Adds a preferred app for |intent|.
   void AddPreferredApp(const std::string& app_id, const IntentPtr& intent);
-  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
-  // interface.
-  void AddPreferredApp(const std::string& app_id,
-                       const apps::mojom::IntentPtr& intent);
 
   // Sets |app_id| as the preferred app for all of its supported links ('view'
   // intent filters with a scheme and host). Any existing preferred apps for
@@ -436,10 +430,6 @@ class AppServiceProxyBase : public KeyedService,
   void OnCapabilityAccesses(
       std::vector<apps::mojom::CapabilityAccessPtr> deltas) override;
   void Clone(mojo::PendingReceiver<apps::mojom::Subscriber> receiver) override;
-  void OnPreferredAppsChanged(
-      apps::mojom::PreferredAppChangesPtr changes) override;
-  void InitializePreferredApps(
-      std::vector<apps::mojom::PreferredAppPtr> mojom_preferred_apps) override;
 
   IntentFilterPtr FindBestMatchingFilter(const IntentPtr& intent);
   // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom

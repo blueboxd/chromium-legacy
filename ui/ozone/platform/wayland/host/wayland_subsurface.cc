@@ -52,7 +52,7 @@ WaylandSubsurface::WaylandSubsurface(WaylandConnection* connection,
 WaylandSubsurface::~WaylandSubsurface() = default;
 
 gfx::AcceleratedWidget WaylandSubsurface::GetWidget() const {
-  return wayland_surface_.GetWidget();
+  return wayland_surface_.get_widget();
 }
 
 void WaylandSubsurface::Show() {
@@ -93,7 +93,7 @@ void WaylandSubsurface::CreateSubsurface() {
   // contained in |parent_|'s. Setting input_region to empty allows |parent_| to
   // dispatch all of the input to platform window.
   gfx::Rect region_px;
-  wayland_surface()->SetInputRegion(&region_px);
+  wayland_surface()->set_input_region(&region_px);
 
   if (connection_->surface_augmenter()) {
     // |augmented_subsurface| might be null if the protocol's version is not

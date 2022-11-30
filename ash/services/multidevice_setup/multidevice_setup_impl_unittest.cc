@@ -6,7 +6,6 @@
 #include <memory>
 #include <vector>
 
-#include "ash/components/multidevice/remote_device_test_util.h"
 #include "ash/constants/ash_features.h"
 #include "ash/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "ash/services/device_sync/public/cpp/fake_gcm_device_info_provider.h"
@@ -44,6 +43,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "chromeos/ash/components/multidevice/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -920,8 +920,8 @@ class MultiDeviceSetupImplTest : public ::testing::TestWithParam<bool> {
 
  private:
   void SetDeviceSyncFeatureFlags(bool use_v1) {
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
 
     // These flags have no direct effect; however, v2 Enrollment and v2
     // DeviceSync are prerequisites for disabling v1 DeviceSync.

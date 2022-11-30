@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ import androidx.annotation.NonNull;
  * 3) navigationCompleted() or navigationFailed()
  * 4) onFirstContentfulPaint().
  */
-public abstract class NavigationCallback {
+abstract class NavigationCallback {
     /**
      * Called when a navigation started in the Tab. |navigation| is unique to a
      * specific navigation. The same |navigation| will be  provided on subsequent calls to

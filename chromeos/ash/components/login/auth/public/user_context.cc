@@ -4,7 +4,10 @@
 
 #include "chromeos/ash/components/login/auth/public/user_context.h"
 
-#include "chromeos/ash/components/login/auth/public/auth_factors_data.h"
+#include "ash/constants/ash_features.h"
+#include "base/check.h"
+#include "chromeos/ash/components/login/auth/public/auth_session_intent.h"
+#include "chromeos/ash/components/login/auth/public/session_auth_factors.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
@@ -300,16 +303,42 @@ void UserContext::ResetAuthSessionId() {
   authsession_id_.clear();
 }
 
-void UserContext::SetAuthFactorsData(AuthFactorsData data) {
-  auth_factors_data_ = std::move(data);
+void UserContext::SetSessionAuthFactors(SessionAuthFactors data) {
+  session_auth_factors_ = std::move(data);
 }
 
-const AuthFactorsData& UserContext::GetAuthFactorsData() const {
-  return auth_factors_data_;
+const SessionAuthFactors& UserContext::GetAuthFactorsData() const {
+  return session_auth_factors_;
+}
+
+void UserContext::SetAuthFactorsConfiguration(
+    AuthFactorsConfiguration auth_factors) {
+  auth_factors_configuration_ = std::move(auth_factors);
+}
+
+void UserContext::ClearAuthFactorsConfiguration() {
+  auth_factors_configuration_ = absl::nullopt;
+}
+
+const AuthFactorsConfiguration& UserContext::GetAuthFactorsConfiguration() {
+  DCHECK(features::IsUseAuthFactorsEnabled());
+  if (!auth_factors_configuration_.has_value()) {
+    // Crash with debug assertions, try to stay alive otherwise. This method
+    // could be const if we didn't set auth_factors_configuration_ if
+    // necessary.
+    DCHECK(false) << "AuthFactorsConfiguration has not been set";
+    auth_factors_configuration_ = AuthFactorsConfiguration();
+  }
+
+  return *auth_factors_configuration_;
 }
 
 const std::string& UserContext::GetAuthSessionId() const {
   return authsession_id_;
+}
+
+void UserContext::AddAuthorizedIntent(const AuthSessionIntent auth_intent) {
+  authorized_for_.Put(auth_intent);
 }
 
 void UserContext::ClearSecrets() {

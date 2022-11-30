@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,10 +11,10 @@ namespace ash::string_matching {
 
 namespace {
 
-using constants::kIsFrontOfTokenCharScore;
-using constants::kIsPrefixCharScore;
-using constants::kIsWeakHitCharScore;
-using constants::kNoMatchScore;
+using prefix_matcher_constants::kIsFrontOfTokenCharScore;
+using prefix_matcher_constants::kIsPrefixCharScore;
+using prefix_matcher_constants::kIsWeakHitCharScore;
+using prefix_matcher_constants::kNoMatchScore;
 
 constexpr double kAbsError = 1e-5;
 
@@ -72,27 +72,27 @@ TEST_F(PrefixMatcherTest, ExactPrefixMatchNonFirstToken) {
   EXPECT_NEAR(pm.relevance(), expected_score, kAbsError);
 }
 
-TEST_F(PrefixMatcherTest, AcronymMatchConsecutiveTokensWithFirstTokenMatch) {
+TEST_F(PrefixMatcherTest, AcronymMatchFirstTokenMatchConsideredNonMatch) {
   TokenizedString query(u"abc");
   TokenizedString text(u"axx bxx cxx dxx exx");
 
   PrefixMatcher pm(query, text);
   pm.Match();
-  double expected_score = kIsPrefixCharScore + (kIsFrontOfTokenCharScore * 2);
+  double expected_score = kNoMatchScore;
   EXPECT_NEAR(pm.relevance(), expected_score, kAbsError);
 }
 
-TEST_F(PrefixMatcherTest, AcronymMatchConsecutiveTokensWithNonFirstTokenMatch) {
+TEST_F(PrefixMatcherTest, AcronymMatchNonFirstTokenMatchConsideredNonMatch) {
   TokenizedString query(u"bcd");
   TokenizedString text(u"axx bxx cxx dxx exx");
 
   PrefixMatcher pm(query, text);
   pm.Match();
-  double expected_score = kIsFrontOfTokenCharScore * 3;
+  double expected_score = kNoMatchScore;
   EXPECT_NEAR(pm.relevance(), expected_score, kAbsError);
 }
 
-TEST_F(PrefixMatcherTest, AcronymMatchNonConsecutiveTokens) {
+TEST_F(PrefixMatcherTest, AcronymMatchNonConsecutiveConsideredNonMatch) {
   TokenizedString query(u"acd");
   TokenizedString text(u"axx bxx cxx dxx exx");
 
@@ -102,18 +102,14 @@ TEST_F(PrefixMatcherTest, AcronymMatchNonConsecutiveTokens) {
   EXPECT_NEAR(pm.relevance(), expected_score, kAbsError);
 }
 
-// TODO(crbug.com/1336160): Fully separate acronym matching from prefix
-// matching.
-TEST_F(PrefixMatcherTest, MixedAcronymAndPrefixMatching) {
+TEST_F(PrefixMatcherTest, MixedAcronymAndPrefixMatchingConsideredNonMatch) {
   TokenizedString query(u"adefg");
   TokenizedString text(u"abc def ghi");
 
   PrefixMatcher pm(query, text);
   pm.Match();
-  // Individual character's score contributions in order of matched letters (a,
-  // d, e, f, g).
-  double expected_score = kIsPrefixCharScore + kIsFrontOfTokenCharScore +
-                          (kIsWeakHitCharScore * 2) + kIsFrontOfTokenCharScore;
+
+  double expected_score = kNoMatchScore;
   EXPECT_NEAR(pm.relevance(), expected_score, kAbsError);
 }
 
@@ -134,6 +130,102 @@ TEST_F(PrefixMatcherTest, NonFinalPartialTokenConsideredNonMatch) {
   PrefixMatcher pm(query, text);
   pm.Match();
   double expected_score = kNoMatchScore;
+  EXPECT_NEAR(pm.relevance(), expected_score, kAbsError);
+}
+
+TEST_F(PrefixMatcherTest, ExactPrefixMatchDiscrete) {
+  TokenizedString query(u"abc ghi");
+  TokenizedString text(u"abc def ghi");
+
+  PrefixMatcher pm(query, text);
+  pm.Match();
+  double expected_score = kIsPrefixCharScore * 3 + kIsFrontOfTokenCharScore +
+                          kIsWeakHitCharScore * 2;
+  EXPECT_NEAR(pm.relevance(), expected_score, kAbsError);
+}
+
+TEST_F(PrefixMatcherTest, ExactPrefixMatchDiscreteNonFirstToken) {
+  TokenizedString query(u"abc ghi");
+  TokenizedString text(u"jkl abc def ghi");
+
+  PrefixMatcher pm(query, text);
+  pm.Match();
+  double expected_score =
+      kIsFrontOfTokenCharScore * 2 + kIsWeakHitCharScore * 4;
+  EXPECT_NEAR(pm.relevance(), expected_score, kAbsError);
+}
+
+TEST_F(PrefixMatcherTest, ExactPrefixMatchOrderVariation) {
+  TokenizedString query(u"ghi abc");
+  TokenizedString text(u"abc ghi");
+
+  PrefixMatcher pm(query, text);
+  pm.Match();
+  double expected_score =
+      kIsFrontOfTokenCharScore * 2 + kIsWeakHitCharScore * 4;
+  EXPECT_NEAR(pm.relevance(), expected_score, kAbsError);
+}
+
+TEST_F(PrefixMatcherTest, ExactPrefixMatchOrderVariationNonFirstToken) {
+  TokenizedString query(u"ghi abc");
+  TokenizedString text(u"jkl abc ghi");
+
+  PrefixMatcher pm(query, text);
+  pm.Match();
+  double expected_score =
+      kIsFrontOfTokenCharScore * 2 + kIsWeakHitCharScore * 4;
+  EXPECT_NEAR(pm.relevance(), expected_score, kAbsError);
+}
+
+TEST_F(PrefixMatcherTest, ExactPrefixMatchOrderVariationAndDiscrete) {
+  TokenizedString query(u"ghi abc");
+  TokenizedString text(u"jkl abc def ghi");
+
+  PrefixMatcher pm(query, text);
+  pm.Match();
+  double expected_score =
+      kIsFrontOfTokenCharScore * 2 + kIsWeakHitCharScore * 4;
+  EXPECT_NEAR(pm.relevance(), expected_score, kAbsError);
+}
+
+TEST_F(PrefixMatcherTest, SentencePrefixMatch) {
+  TokenizedString query(u"abcd");
+  TokenizedString text(u"a bcd e");
+
+  PrefixMatcher pm(query, text);
+  pm.Match();
+  double expected_score = kIsPrefixCharScore * 4;
+  EXPECT_NEAR(pm.relevance(), expected_score, kAbsError);
+}
+
+TEST_F(PrefixMatcherTest, SentencePrefixMatchNotInFront) {
+  TokenizedString query(u"abcd");
+  TokenizedString text(u"fgh a bcd e");
+
+  PrefixMatcher pm(query, text);
+  pm.Match();
+  double expected_score = (kIsFrontOfTokenCharScore + kIsWeakHitCharScore) * 2;
+  EXPECT_NEAR(pm.relevance(), expected_score, kAbsError);
+}
+
+TEST_F(PrefixMatcherTest, CaseSentencePrefixMatchPreferred) {
+  TokenizedString query(u"abc def");
+  TokenizedString text(u"abcdef abc def");
+
+  PrefixMatcher pm(query, text);
+  pm.Match();
+  double expected_score = kIsPrefixCharScore * 6;
+  EXPECT_NEAR(pm.relevance(), expected_score, kAbsError);
+}
+
+TEST_F(PrefixMatcherTest, CaseTokenPrefixMatchPreferred) {
+  TokenizedString query(u"abc def");
+  TokenizedString text(u"def abc abcdef");
+
+  PrefixMatcher pm(query, text);
+  pm.Match();
+  double expected_score =
+      kIsFrontOfTokenCharScore * 2 + kIsWeakHitCharScore * 4;
   EXPECT_NEAR(pm.relevance(), expected_score, kAbsError);
 }
 

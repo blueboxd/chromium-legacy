@@ -18,7 +18,8 @@ suite('SitePermissionsSiteGroupElement', function() {
   let element: SitePermissionsSiteGroupElement;
 
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     element = document.createElement('site-permissions-site-group');
     document.body.appendChild(element);
   });
@@ -31,12 +32,12 @@ suite('SitePermissionsSiteGroupElement', function() {
         {
           siteSet: chrome.developerPrivate.SiteSet.USER_PERMITTED,
           numExtensions: 0,
-          site: 'https://images.google.ca',
+          site: 'images.google.ca',
         },
         {
           siteSet: chrome.developerPrivate.SiteSet.USER_PERMITTED,
           numExtensions: 0,
-          site: 'http://google.ca',
+          site: 'google.ca',
         },
       ],
     };
@@ -55,8 +56,8 @@ suite('SitePermissionsSiteGroupElement', function() {
     const expandedSites =
         element.shadowRoot!.querySelectorAll<HTMLElement>('.site');
 
-    assertEquals('https://images.google.ca', expandedSites[0]!.innerText);
-    assertEquals('http://google.ca', expandedSites[1]!.innerText);
+    assertEquals('images.google.ca', expandedSites[0]!.innerText);
+    assertEquals('google.ca', expandedSites[1]!.innerText);
   });
 
   test('no subtext shown for sites from different sets', async function() {
@@ -67,12 +68,12 @@ suite('SitePermissionsSiteGroupElement', function() {
         {
           siteSet: chrome.developerPrivate.SiteSet.USER_PERMITTED,
           numExtensions: 0,
-          site: 'https://images.google.ca',
+          site: 'images.google.ca',
         },
         {
           siteSet: chrome.developerPrivate.SiteSet.USER_RESTRICTED,
           numExtensions: 0,
-          site: 'http://google.ca',
+          site: 'google.ca',
         },
       ],
     };
@@ -101,12 +102,12 @@ suite('SitePermissionsSiteGroupElement', function() {
       sites: [{
         siteSet: chrome.developerPrivate.SiteSet.USER_PERMITTED,
         numExtensions: 0,
-        site: 'https://a.example.com',
+        site: 'a.example.com',
       }],
     };
     flush();
 
-    assertEquals('https://a.example.com', element.$.etldOrSite.innerText);
+    assertEquals('a.example.com', element.$.etldOrSite.innerText);
     assertEquals(PERMITTED_TEXT, element.$.etldOrSiteSubtext.innerText);
 
     assertFalse(isVisible(
@@ -122,7 +123,7 @@ suite('SitePermissionsSiteGroupElement', function() {
           sites: [{
             siteSet: chrome.developerPrivate.SiteSet.USER_PERMITTED,
             numExtensions: 0,
-            site: 'https://a.example.com',
+            site: 'a.example.com',
           }],
         };
         flush();
@@ -138,7 +139,7 @@ suite('SitePermissionsSiteGroupElement', function() {
             'site-permissions-edit-permissions-dialog');
         assertTrue(!!dialog);
         assertTrue(dialog.$.dialog.open);
-        assertEquals('https://a.example.com', dialog.site);
+        assertEquals('a.example.com', dialog.site);
         assertEquals(
             chrome.developerPrivate.SiteSet.USER_PERMITTED,
             dialog.originalSiteSet);
@@ -154,12 +155,12 @@ suite('SitePermissionsSiteGroupElement', function() {
             {
               siteSet: chrome.developerPrivate.SiteSet.USER_PERMITTED,
               numExtensions: 0,
-              site: 'https://images.google.ca',
+              site: 'images.google.ca',
             },
             {
               siteSet: chrome.developerPrivate.SiteSet.USER_RESTRICTED,
               numExtensions: 0,
-              site: 'http://google.ca',
+              site: 'google.ca',
             },
           ],
         };
@@ -180,7 +181,7 @@ suite('SitePermissionsSiteGroupElement', function() {
             'site-permissions-edit-permissions-dialog');
         assertTrue(!!dialog);
         assertTrue(dialog.$.dialog.open);
-        assertEquals('http://google.ca', dialog.site);
+        assertEquals('google.ca', dialog.site);
         assertEquals(
             chrome.developerPrivate.SiteSet.USER_RESTRICTED,
             dialog.originalSiteSet);

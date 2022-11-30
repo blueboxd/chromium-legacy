@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
@@ -176,7 +177,7 @@ void ExternalProviderImpl::SetPrefs(
         InstallStageTracker::InstallCreationStage::SEEN_BY_EXTERNAL_PROVIDER);
   }
 
-  prefs_ = std::make_unique<base::Value::Dict>(std::move(prefs->GetDict()));
+  prefs_ = std::make_unique<base::Value::Dict>(std::move(*prefs).TakeDict());
   ready_ = true;  // Queries for extensions are allowed from this point.
 
   NotifyServiceOnExternalExtensionsFound();
@@ -231,7 +232,7 @@ void ExternalProviderImpl::UpdatePrefs(
       removed_extensions.insert(extension_id);
   }
 
-  prefs_ = std::make_unique<base::Value::Dict>(std::move(prefs->GetDict()));
+  prefs_ = std::make_unique<base::Value::Dict>(std::move(*prefs).TakeDict());
 
   std::vector<ExternalInstallInfoUpdateUrl> external_update_url_extensions;
   std::vector<ExternalInstallInfoFile> external_file_extensions;
@@ -659,8 +660,9 @@ void ExternalProviderImpl::CreateExternalProviders(
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  policy::BrowserPolicyConnectorAsh* connector =
+  policy::BrowserPolicyConnectorAsh* const connector =
       g_browser_process->platform_part()->browser_policy_connector_ash();
+  DCHECK(connector);
   bool is_chrome_os_public_session = false;
   const user_manager::User* user =
       ash::ProfileHelper::Get()->GetUserByProfile(profile);
@@ -716,9 +718,7 @@ void ExternalProviderImpl::CreateExternalProviders(
       ManifestLocation location = ManifestLocation::kExternalPolicy;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-      policy::BrowserPolicyConnectorAsh* const connector =
-          g_browser_process->platform_part()->browser_policy_connector_ash();
-      if (!connector || !connector->IsDeviceEnterpriseManaged())
+      if (!connector->IsDeviceEnterpriseManaged())
         location = ManifestLocation::kExternalPref;
 #endif
 

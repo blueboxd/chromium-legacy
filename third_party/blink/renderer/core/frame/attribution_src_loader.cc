@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -282,9 +282,9 @@ AttributionSrcLoader::CreateAndSendRequest(const KURL& src_url,
 
   if (document->IsPrerendering()) {
     document->AddPostPrerenderingActivationStep(
-        WTF::Bind(base::IgnoreResult(&AttributionSrcLoader::DoRegistration),
-                  WrapPersistentIfNeeded(this), src_url, src_type,
-                  associated_with_navigation));
+        WTF::BindOnce(base::IgnoreResult(&AttributionSrcLoader::DoRegistration),
+                      WrapPersistentIfNeeded(this), src_url, src_type,
+                      associated_with_navigation));
     return nullptr;
   }
 

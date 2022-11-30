@@ -31,6 +31,7 @@
 #import "components/sync/driver/sync_service.h"
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/commerce/price_alert_util.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/net/crurl.h"
@@ -80,6 +81,7 @@
 #import "ios/chrome/browser/ui/settings/language/language_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_coordinator.h"
+#import "ios/chrome/browser/ui/settings/price_notifications/price_notifications_coordinator.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_coordinator.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_constants.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_coordinator.h"
@@ -138,6 +140,7 @@ NSString* const kSettingsLanguageSettingsImageName =
 NSString* const kSettingsContentSettingsImageName =
     @"settings_content_settings";
 NSString* const kSettingsBandwidthImageName = @"settings_bandwidth";
+NSString* const kSettingsBellImageName = @"settings_bell";
 NSString* const kSettingsAboutChromeImageName = @"settings_about_chrome";
 NSString* const kSettingsDebugImageName = @"settings_debug";
 NSString* const kSettingsArticleSuggestionsImageName =
@@ -203,6 +206,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
     PasswordsCoordinatorDelegate,
     PopoverLabelViewControllerDelegate,
     PrefObserverDelegate,
+    PriceNotificationsCoordinatorDelegate,
     PrivacyCoordinatorDelegate,
     SafetyCheckCoordinatorDelegate,
     SettingsControllerProtocol,
@@ -248,6 +252,9 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   GoogleServicesSettingsCoordinator* _googleServicesSettingsCoordinator;
   ManageSyncSettingsCoordinator* _manageSyncSettingsCoordinator;
 
+  // Price notifications coordinator.
+  PriceNotificationsCoordinator* _priceNotificationsCoordinator;
+
   // Privacy coordinator.
   PrivacyCoordinator* _privacyCoordinator;
 
@@ -258,7 +265,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   PasswordsCoordinator* _passwordsCoordinator;
 
   // Identity object and observer used for Account Item refresh.
-  ChromeIdentity* _identity;
+  id<SystemIdentity> _identity;
   std::unique_ptr<ChromeAccountManagerServiceObserverBridge>
       _accountManagerServiceObserver;
 
@@ -478,6 +485,10 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
 
   // Advanced Section
   [model addSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
+  if (IsPriceNotificationsEnabled()) {
+    [model addItem:[self priceNotificationsItem]
+        toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
+  }
   [model addItem:[self voiceSearchDetailItem]
       toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
   [model addItem:[self safetyCheckDetailItem]
@@ -774,13 +785,23 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
     return _syncItem;
   }
 
-  TableViewDetailIconItem* syncItem =
-      [self detailItemWithType:SettingsItemTypeGoogleSync
-                             text:l10n_util::GetNSString(
-                                      IDS_IOS_GOOGLE_SYNC_SETTINGS_TITLE)
-                       detailText:nil
-                    iconImageName:nil
-          accessibilityIdentifier:kSettingsGoogleSyncAndServicesCellId];
+  TableViewDetailIconItem* syncItem = nil;
+  if (UseSymbols()) {
+    syncItem = [self detailItemWithType:SettingsItemTypeGoogleSync
+                                   text:l10n_util::GetNSString(
+                                            IDS_IOS_GOOGLE_SYNC_SETTINGS_TITLE)
+                             detailText:nil
+                                 symbol:nil
+                  symbolBackgroundColor:nil
+                accessibilityIdentifier:kSettingsGoogleSyncAndServicesCellId];
+  } else {
+    syncItem = [self detailItemWithType:SettingsItemTypeGoogleSync
+                                   text:l10n_util::GetNSString(
+                                            IDS_IOS_GOOGLE_SYNC_SETTINGS_TITLE)
+                             detailText:nil
+                          iconImageName:nil
+                accessibilityIdentifier:kSettingsGoogleSyncAndServicesCellId];
+  }
   [self updateSyncItem:syncItem];
   _syncItem = syncItem;
 
@@ -1035,6 +1056,26 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   return _safetyCheckItem;
 }
 
+- (TableViewItem*)priceNotificationsItem {
+  NSString* title = l10n_util::GetNSString(IDS_IOS_PRICE_NOTIFICATIONS_TITLE);
+
+  // TODO(crbug.com/1363175): Replace kSettingsPrivacyImageName.
+  if (UseSymbols()) {
+    return [self detailItemWithType:SettingsItemTypePriceNotifications
+                               text:title
+                         detailText:nil
+                             symbol:DefaultSettingsRootSymbol(kBellSymbol)
+              symbolBackgroundColor:[UIColor colorNamed:kPink500Color]
+            accessibilityIdentifier:kSettingsPriceNotificationsId];
+  }
+
+  return [self detailItemWithType:SettingsItemTypePriceNotifications
+                             text:title
+                       detailText:nil
+                    iconImageName:kSettingsBellImageName
+          accessibilityIdentifier:kSettingsPriceNotificationsId];
+}
+
 - (TableViewItem*)privacyDetailItem {
   NSString* title = nil;
   if (base::FeatureList::IsEnabled(safe_browsing::kEnhancedProtection)) {
@@ -1130,13 +1171,14 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
 
 - (TableViewItem*)contentSettingsDetailItem {
   if (UseSymbols()) {
-    return [self detailItemWithType:SettingsItemTypeContentSettings
-                               text:l10n_util::GetNSString(
-                                        IDS_IOS_CONTENT_SETTINGS_TITLE)
-                         detailText:nil
-                             symbol:DefaultSettingsRootSymbol(kGearShapeSymbol)
-              symbolBackgroundColor:[UIColor colorNamed:kGrey400Color]
-            accessibilityIdentifier:kSettingsContentSettingsCellId];
+    return [self
+             detailItemWithType:SettingsItemTypeContentSettings
+                           text:l10n_util::GetNSString(
+                                    IDS_IOS_CONTENT_SETTINGS_TITLE)
+                     detailText:nil
+                         symbol:DefaultSettingsRootSymbol(kSettingsFilledSymbol)
+          symbolBackgroundColor:[UIColor colorNamed:kGrey400Color]
+        accessibilityIdentifier:kSettingsContentSettingsCellId];
   }
 
   return [self detailItemWithType:SettingsItemTypeContentSettings
@@ -1452,7 +1494,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   return cell;
 }
 
-#pragma mark UITableViewDelegate
+#pragma mark - UITableViewDelegate
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
@@ -1542,6 +1584,10 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
       base::RecordAction(base::UserMetricsAction("AutofillAddressesViewed"));
       controller = [[AutofillProfileTableViewController alloc]
           initWithBrowserState:_browserState];
+      break;
+    case SettingsItemTypePriceNotifications:
+      DCHECK(IsPriceNotificationsEnabled());
+      [self showPriceNotifications];
       break;
     case SettingsItemTypeVoiceSearch:
       base::RecordAction(base::UserMetricsAction("Settings.VoiceSearch"));
@@ -1783,6 +1829,17 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   [self reconfigureCellsForItems:@[ _safetyCheckItem ]];
 }
 
+// Shows Price Notifications screen.
+- (void)showPriceNotifications {
+  DCHECK(!_priceNotificationsCoordinator);
+  DCHECK(self.navigationController);
+  _priceNotificationsCoordinator = [[PriceNotificationsCoordinator alloc]
+      initWithBaseNavigationController:self.navigationController
+                               browser:_browser];
+  _priceNotificationsCoordinator.delegate = self;
+  [_priceNotificationsCoordinator start];
+}
+
 // Shows Privacy screen.
 - (void)showPrivacy {
   DCHECK(!_privacyCoordinator);
@@ -1827,7 +1884,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   identityAccountItem.image =
       self.accountManagerService->GetIdentityAvatarWithIdentity(
           _identity, IdentityAvatarSize::TableViewIcon);
-  identityAccountItem.text = [_identity userFullName];
+  identityAccountItem.text = _identity.userFullName;
   identityAccountItem.detailText = _identity.userEmail;
 }
 
@@ -1892,7 +1949,6 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
         googleSyncItem.iconBackgroundColor = [UIColor colorNamed:kRed500Color];
         googleSyncItem.iconTintColor = UIColor.whiteColor;
         googleSyncItem.iconCornerRadius = kColorfulBackgroundSymbolCornerRadius;
-
       } else {
         googleSyncItem.iconImage = [UIImage imageNamed:kSyncErrorImageName];
       }
@@ -1971,7 +2027,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
 
 #pragma mark Sign in
 
-- (void)showSignInWithIdentity:(ChromeIdentity*)identity
+- (void)showSignInWithIdentity:(id<SystemIdentity>)identity
                    promoAction:(signin_metrics::PromoAction)promoAction
                     completion:(ShowSigninCommandCompletionCallback)completion {
   DCHECK(!self.isSigninInProgress);
@@ -2025,6 +2081,9 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   [_passwordsCoordinator stop];
   _passwordsCoordinator.delegate = nil;
   _passwordsCoordinator = nil;
+
+  [_priceNotificationsCoordinator stop];
+  _priceNotificationsCoordinator = nil;
 
   [_privacyCoordinator stop];
   _privacyCoordinator = nil;
@@ -2082,7 +2141,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
 
 #pragma mark - ChromeAccountManagerServiceObserver
 
-- (void)identityChanged:(ChromeIdentity*)identity {
+- (void)identityChanged:(id<SystemIdentity>)identity {
   if ([_identity isEqual:identity]) {
     [self reloadAccountCell];
   }
@@ -2250,7 +2309,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
 }
 
 - (void)signinPromoViewMediator:(SigninPromoViewMediator*)mediator
-    shouldOpenSigninWithIdentity:(ChromeIdentity*)identity
+    shouldOpenSigninWithIdentity:(id<SystemIdentity>)identity
                      promoAction:(signin_metrics::PromoAction)promoAction
                       completion:
                           (ShowSigninCommandCompletionCallback)completion {
@@ -2290,6 +2349,15 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   [_passwordsCoordinator stop];
   _passwordsCoordinator.delegate = nil;
   _passwordsCoordinator = nil;
+}
+
+#pragma mark - PriceNotificationsDelegate
+
+- (void)priceNotificationsCoordinatorDidRemove:
+    (PriceNotificationsCoordinator*)coordinator {
+  DCHECK_EQ(_priceNotificationsCoordinator, coordinator);
+  [_priceNotificationsCoordinator stop];
+  _priceNotificationsCoordinator = nil;
 }
 
 #pragma mark - PrivacyCoordinatorDelegate

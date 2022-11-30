@@ -57,7 +57,7 @@ using ::testing::ValuesIn;
 using ::testing::WithArg;
 
 std::unique_ptr<base::test::ScopedFeatureList> CreateScopedFeatureList(
-    base::Feature feature,
+    const base::Feature& feature,
     bool feature_enabled) {
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list->InitWithFeatureState(feature, feature_enabled);
@@ -214,7 +214,8 @@ TEST_F(TriggerScriptCoordinatorTest, StartSendsOnlyApprovedFields) {
       });
 
   fake_platform_delegate_.fake_common_dependencies_->locale_.assign("fr-CH");
-  fake_platform_delegate_.fake_common_dependencies_->country_code_.assign("CH");
+  fake_platform_delegate_.fake_common_dependencies_->latest_country_code_
+      .assign("CH");
   coordinator_->Start(GURL(kFakeDeepLink),
                       std::make_unique<TriggerContext>(
                           /* params = */ std::make_unique<ScriptParameters>(

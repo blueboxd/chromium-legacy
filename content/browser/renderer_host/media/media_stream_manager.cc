@@ -389,16 +389,20 @@ void SendVideoCaptureLogMessage(const std::string& message) {
 
 // Returns MediaStreamDevices for getDisplayMedia() calls.
 // Returns a video device built with DesktopMediaID with fake initializers if
-// |kUseFakeDeviceForMediaStream| is set. Returns a video device with
-// default DesktopMediaID otherwise.
+// |kUseFakeDeviceForMediaStream| is set and |preferred_display_surface| is no
+// preference. Otherwise, if |preferred_display_surface| specifies a screen,
+// window, or tab, returns a video device with matching DesktopMediaID. Returns
+// a video device with default DesktopMediaID otherwise.
 // Returns an audio device with default device parameters.
-// If |kUseFakeDeviceForMediaStream| specifies a browser window, use
-// |render_process_id| and |render_frame_id| as the browser window identifier.
+// If |kUseFakeDeviceForMediaStream| specifies a
+// browser window, use |render_process_id| and |render_frame_id| as the browser
+// window identifier.
 MediaStreamDevices DisplayMediaDevicesFromFakeDeviceConfig(
     blink::mojom::MediaStreamType media_type,
     bool request_audio,
     int render_process_id,
-    int render_frame_id) {
+    int render_frame_id,
+    blink::mojom::PreferredDisplaySurface preferred_display_surface) {
   MediaStreamDevices devices;
   DesktopMediaID::Type desktop_media_type = DesktopMediaID::TYPE_SCREEN;
   DesktopMediaID::Id desktop_media_id_id = DesktopMediaID::kNullId;
@@ -435,6 +439,23 @@ MediaStreamDevices DisplayMediaDevicesFromFakeDeviceConfig(
           break;
       }
     }
+  }
+  switch (preferred_display_surface) {
+    case blink::mojom::PreferredDisplaySurface::NO_PREFERENCE:
+      break;
+    case blink::mojom::PreferredDisplaySurface::MONITOR:
+      desktop_media_type = DesktopMediaID::TYPE_SCREEN;
+      display_surface = media::mojom::DisplayCaptureSurfaceType::MONITOR;
+      break;
+    case blink::mojom::PreferredDisplaySurface::WINDOW:
+      desktop_media_type = DesktopMediaID::TYPE_WINDOW;
+      display_surface = media::mojom::DisplayCaptureSurfaceType::WINDOW;
+      break;
+    case blink::mojom::PreferredDisplaySurface::BROWSER:
+      desktop_media_type = DesktopMediaID::TYPE_WEB_CONTENTS;
+      display_surface = media::mojom::DisplayCaptureSurfaceType::BROWSER;
+      web_contents_id = {render_process_id, render_frame_id};
+      break;
   }
   DesktopMediaID media_id(desktop_media_type, desktop_media_id_id,
                           web_contents_id);
@@ -2070,48 +2091,8 @@ void MediaStreamManager::PostRequestToUI(
   if (blink::IsVideoInputMediaType(video_type))
     request->SetState(video_type, MEDIA_REQUEST_STATE_PENDING_APPROVAL);
 
-  // If using the fake UI, it will just auto-select from the available devices.
-  // The fake UI doesn't work for desktop sharing requests since we can't see
-  // its devices from here; always use the real UI for such requests. The
-  // processing below for MEDIA_GUM_DESKTOP_VIDEO_CAPTURE is for
-  // media_stream_dispatcher_host_unittest only.
-  if (fake_ui_factory_ &&
-      (request->video_type() != MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE ||
-       !base::CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kUseFakeUIForMediaStream))) {
-    MediaStreamDevices devices;
-    if (request->video_type() == MediaStreamType::DISPLAY_VIDEO_CAPTURE ||
-        request->video_type() ==
-            MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB ||
-        request->video_type() == MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET) {
-      devices = DisplayMediaDevicesFromFakeDeviceConfig(
-          request->video_type(),
-          request->audio_type() == MediaStreamType::DISPLAY_AUDIO_CAPTURE,
-          request->requesting_process_id, request->requesting_frame_id);
-    } else if (request->video_type() ==
-               MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE) {
-      // Cache the |label| in the device name field, for unit test purpose only.
-      devices.push_back(MediaStreamDevice(
-          MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE,
-          DesktopMediaID(DesktopMediaID::TYPE_SCREEN, DesktopMediaID::kNullId)
-              .ToString(),
-          label));
-    } else {
-      MediaStreamDevices audio_devices = ConvertToMediaStreamDevices(
-          request->audio_type(),
-          enumeration[static_cast<size_t>(MediaDeviceType::MEDIA_AUDIO_INPUT)]);
-      MediaStreamDevices video_devices = ConvertToMediaStreamDevices(
-          request->video_type(),
-          enumeration[static_cast<size_t>(MediaDeviceType::MEDIA_VIDEO_INPUT)]);
-      devices.reserve(audio_devices.size() + video_devices.size());
-      devices.insert(devices.end(), audio_devices.begin(), audio_devices.end());
-      devices.insert(devices.end(), video_devices.begin(), video_devices.end());
-    }
-
-    std::unique_ptr<FakeMediaStreamUIProxy> fake_ui = fake_ui_factory_.Run();
-    fake_ui->SetAvailableDevices(devices);
-
-    request->ui_proxy = std::move(fake_ui);
+  if (ShouldUseFakeUIProxy(request->video_type())) {
+    request->ui_proxy = MakeFakeUIProxy(label, enumeration, request);
   } else if (!request->ui_proxy) {
     request->ui_proxy = MediaStreamUIProxy::Create();
   }
@@ -3026,9 +3007,11 @@ void MediaStreamManager::Aborted(
 
 void MediaStreamManager::UseFakeUIFactoryForTests(
     base::RepeatingCallback<std::unique_ptr<FakeMediaStreamUIProxy>(void)>
-        fake_ui_factory) {
+        fake_ui_factory,
+    bool use_for_gum_desktop_capture) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   fake_ui_factory_ = std::move(fake_ui_factory);
+  use_fake_ui_for_gum_desktop_capture_ = use_for_gum_desktop_capture;
 }
 
 // static
@@ -4065,6 +4048,54 @@ void MediaStreamManager::OnCaptureHandleChange(
   if (request->device_capture_handle_change_cb) {
     request->device_capture_handle_change_cb.Run(label, *device);
   }
+}
+
+bool MediaStreamManager::ShouldUseFakeUIProxy(
+    MediaStreamType stream_type) const {
+  return fake_ui_factory_ &&
+         (stream_type != MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE ||
+          use_fake_ui_for_gum_desktop_capture_);
+}
+
+std::unique_ptr<MediaStreamUIProxy> MediaStreamManager::MakeFakeUIProxy(
+    const std::string& label,
+    const MediaDeviceEnumeration& enumeration,
+    DeviceRequest* request) {
+  // Just auto-select from the available devices.
+  MediaStreamDevices devices;
+  if (request->video_type() == MediaStreamType::DISPLAY_VIDEO_CAPTURE ||
+      request->video_type() ==
+          MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB ||
+      request->video_type() == MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET) {
+    devices = DisplayMediaDevicesFromFakeDeviceConfig(
+        request->video_type(),
+        request->audio_type() == MediaStreamType::DISPLAY_AUDIO_CAPTURE,
+        request->requesting_process_id, request->requesting_frame_id,
+        request->controls.preferred_display_surface);
+  } else if (request->video_type() ==
+             MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE) {
+    // Cache the |label| in the device name field, for unit test purpose only.
+    devices.emplace_back(
+        MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE,
+        DesktopMediaID(DesktopMediaID::TYPE_SCREEN, DesktopMediaID::kNullId)
+            .ToString(),
+        label);
+  } else {
+    MediaStreamDevices audio_devices = ConvertToMediaStreamDevices(
+        request->audio_type(),
+        enumeration[static_cast<size_t>(MediaDeviceType::MEDIA_AUDIO_INPUT)]);
+    MediaStreamDevices video_devices = ConvertToMediaStreamDevices(
+        request->video_type(),
+        enumeration[static_cast<size_t>(MediaDeviceType::MEDIA_VIDEO_INPUT)]);
+    devices.reserve(audio_devices.size() + video_devices.size());
+    devices.insert(devices.end(), audio_devices.begin(), audio_devices.end());
+    devices.insert(devices.end(), video_devices.begin(), video_devices.end());
+  }
+
+  std::unique_ptr<FakeMediaStreamUIProxy> fake_ui = fake_ui_factory_.Run();
+  fake_ui->SetAvailableDevices(devices);
+
+  return fake_ui;
 }
 
 }  // namespace content

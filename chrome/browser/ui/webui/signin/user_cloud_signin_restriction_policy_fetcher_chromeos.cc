@@ -6,7 +6,9 @@
 
 #include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/policy_switches.h"
@@ -22,6 +24,9 @@ namespace ash {
 
 namespace {
 
+constexpr char kSecondaryGoogleAccountUsageLatencyHistogramName[] =
+    "Enterprise.SecondaryGoogleAccountUsage.PolicyFetch.ResponseLatency";
+
 const char kAuthorizationHeaderFormat[] = "Bearer %s";
 const char kSecureConnectApiGetSecondaryGoogleAccountUsageUrl[] =
     "https://secureconnect-pa.clients6.google.com/"
@@ -31,7 +36,7 @@ const char kJsonContentType[] = "application/json";
 // Presence of this key in the user info response indicates whether the user is
 // on a hosted domain.
 const char kHostedDomainKey[] = "hd";
-constexpr net::NetworkTrafficAnnotationTag annotation =
+constexpr net::NetworkTrafficAnnotationTag kAnnotation =
     net::DefineNetworkTrafficAnnotation(
         "managed_acccount_signin_restrictions_secure_connect_chromeos",
         R"(
@@ -73,9 +78,8 @@ std::unique_ptr<network::SimpleURLLoader> CreateUrlLoader(
       base::StringPrintf(kAuthorizationHeaderFormat, access_token.c_str()));
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
-  auto url_loader =
-      network::SimpleURLLoader::Create(std::move(resource_request), annotation);
-  return url_loader;
+  return network::SimpleURLLoader::Create(std::move(resource_request),
+                                          annotation);
 }
 
 }  // namespace
@@ -180,10 +184,12 @@ void UserCloudSigninRestrictionPolicyFetcherChromeOS::OnGetUserInfoFailure(
 
 void UserCloudSigninRestrictionPolicyFetcherChromeOS::
     GetSecondaryGoogleAccountUsageInternal() {
+  policy_fetch_start_time_ = base::TimeTicks::Now();
   // Each url loader can only be used for one request.
+  DCHECK(!url_loader_);
   url_loader_ =
       CreateUrlLoader(GURL(GetSecureConnectApiGetAccountSigninRestrictionUrl()),
-                      access_token_, annotation);
+                      access_token_, kAnnotation);
   // base::Unretained is safe here because `url_loader_` is owned by `this`.
   url_loader_->DownloadToString(
       url_loader_factory_.get(),
@@ -196,6 +202,9 @@ void UserCloudSigninRestrictionPolicyFetcherChromeOS::
 void UserCloudSigninRestrictionPolicyFetcherChromeOS::
     OnSecondaryGoogleAccountUsageResult(
         std::unique_ptr<std::string> response_body) {
+  base::UmaHistogramMediumTimes(
+      kSecondaryGoogleAccountUsageLatencyHistogramName,
+      base::TimeTicks::Now() - policy_fetch_start_time_);
   absl::optional<std::string> restriction;
   Status status = Status::kUnknownError;
   std::unique_ptr<network::SimpleURLLoader> url_loader = std::move(url_loader_);
@@ -205,7 +214,8 @@ void UserCloudSigninRestrictionPolicyFetcherChromeOS::
   if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers)
     response_code = url_loader->ResponseInfo()->headers->response_code();
 
-  if (url_loader->NetError() != net::OK) {
+  // Check for network or HTTP errors.
+  if (url_loader->NetError() != net::OK || !response_body) {
     if (response_code) {
       LOG(ERROR) << "SecondaryGoogleAccountUsage request "
                     "failed with HTTP code: "
@@ -219,11 +229,17 @@ void UserCloudSigninRestrictionPolicyFetcherChromeOS::
                  << url_loader->NetError();
       status = Status::kNetworkError;
     }
-  } else if (error.state() == GoogleServiceAuthError::NONE) {
+    std::move(callback_).Run(status, restriction, hosted_domain_);
+    return;
+  }
+
+  if (error.state() == GoogleServiceAuthError::NONE) {
     auto result = base::JSONReader::Read(*response_body, base::JSON_PARSE_RFC);
-    constexpr base::StringPiece policy_value_key = "policyValue";
-    if (response_body && result && result->FindStringKey(policy_value_key)) {
-      restriction = *result->FindStringKey(policy_value_key);
+    const std::string* policy_value =
+        result ? result->FindStringKey("policyValue") : nullptr;
+
+    if (policy_value) {
+      restriction = *policy_value;
       status = Status::kSuccess;
     } else {
       LOG(ERROR) << "Failed to parse SecondaryGoogleAccountUsage response";

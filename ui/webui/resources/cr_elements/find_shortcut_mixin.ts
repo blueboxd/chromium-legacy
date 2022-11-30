@@ -4,10 +4,10 @@
 
 import {dedupingMixin, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {assert, assertNotReached} from '../js/assert.m.js';
+import {assert, assertNotReached} from '../js/assert.js';
 import {isMac} from '../js/cr.m.js';
-import {KeyboardShortcutList} from '../js/cr/ui/keyboard_shortcut_list.js';
-import {isTextInputElement} from '../js/util.m.js';
+import {KeyboardShortcutList} from '../js/keyboard_shortcut_list.js';
+import {isTextInputElement} from '../js/util.js';
 
 /**
  * @fileoverview Listens for a find keyboard shortcut (i.e. Ctrl/Cmd+f or /)

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/chromeos/parent_access/parent_access_dialog.h"
 
-#include <memory>
-#include <string>
 #include <utility>
 
 #include "chrome/browser/profiles/profile.h"
@@ -25,23 +23,26 @@ constexpr int kDialogWidthDp = 600;
 
 }  // namespace
 
-// static
-ParentAccessDialog::ShowError ParentAccessDialog::Show(
-    parent_access_ui::mojom::ParentAccessParamsPtr params) {
-  ParentAccessDialog* current_instance = GetInstance();
-  if (current_instance) {
-    return ShowError::kDialogAlreadyVisible;
-  }
+ParentAccessDialogProvider::ShowError ParentAccessDialogProvider::Show(
+    parent_access_ui::mojom::ParentAccessParamsPtr params,
+    ParentAccessDialog::Callback callback) {
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   if (!profile->IsChild()) {
-    return ShowError::kNotAChildUser;
+    return ParentAccessDialogProvider::ShowError::kNotAChildUser;
   }
 
-  // Note:  |current_instance|'s memory is freed when
+  if (ParentAccessDialog::GetInstance()) {
+    return ParentAccessDialogProvider::ShowError::kDialogAlreadyVisible;
+  }
+
+  DCHECK(ParentAccessDialog::GetInstance() == nullptr);
+  // Note:  |dialog_|'s memory is freed when
   // SystemWebDialogDelegate::OnDialogClosed() is called.
-  current_instance = new ParentAccessDialog(std::move(params));
-  current_instance->ShowSystemDialogForBrowserContext(profile);
-  return ShowError::kNone;
+  ParentAccessDialog* dialog =
+      new ParentAccessDialog(std::move(params), std::move(callback));
+
+  dialog->ShowSystemDialogForBrowserContext(profile);
+  return ParentAccessDialogProvider::ShowError::kNone;
 }
 
 // static
@@ -67,17 +68,33 @@ ParentAccessDialog::CloneParentAccessParams() {
   return parent_access_params_->Clone();
 }
 
+void ParentAccessDialog::SetResultAndClose(
+    std::unique_ptr<ParentAccessDialog::Result> result) {
+  DCHECK(!result_);
+  result_ = std::move(result);
+  // This will trigger dialog destruction, which will in turn result in the
+  // callback being called.
+  Close();
+}
+
 parent_access_ui::mojom::ParentAccessParams*
 ParentAccessDialog::GetParentAccessParamsForTest() {
   return parent_access_params_.get();
 }
 
 ParentAccessDialog::ParentAccessDialog(
-    parent_access_ui::mojom::ParentAccessParamsPtr params)
+    parent_access_ui::mojom::ParentAccessParamsPtr params,
+    ParentAccessDialog::Callback callback)
     : SystemWebDialogDelegate(GURL(chrome::kChromeUIParentAccessURL),
                               /*title=*/std::u16string()),
-      parent_access_params_(std::move(params)) {}
+      parent_access_params_(std::move(params)),
+      callback_(std::move(callback)) {}
 
-ParentAccessDialog::~ParentAccessDialog() = default;
+ParentAccessDialog::~ParentAccessDialog() {
+  std::move(callback_).Run(
+      result_ ? std::move(result_)
+              /* default status is kCancelled */
+              : std::make_unique<ParentAccessDialog::Result>());
+}
 
 }  // namespace chromeos

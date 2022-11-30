@@ -163,12 +163,12 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, GLSkiaGL) {
 
   // Create a backing using mailbox.
   auto mailbox = Mailbox::GenerateForSharedImage();
-  auto format = viz::ResourceFormat::RGBA_8888;
+  auto format = viz::SharedImageFormat::kRGBA_8888;
   gfx::Size size(1, 1);
   auto color_space = gfx::ColorSpace::CreateSRGB();
   GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
   SkAlphaType alpha_type = kPremul_SkAlphaType;
-  uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY;
+  uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY_READ;
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, surface_handle, size, color_space, surface_origin,
@@ -223,7 +223,7 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, InitialData) {
     return;
 
   auto mailbox = Mailbox::GenerateForSharedImage();
-  auto format = viz::ResourceFormat::RGBA_8888;
+  auto format = viz::SharedImageFormat::kRGBA_8888;
   gfx::Size size(4, 4);
 
   std::vector<uint8_t> initial_data(size.width() * size.height() * 4);
@@ -235,7 +235,7 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, InitialData) {
   auto color_space = gfx::ColorSpace::CreateSRGB();
   GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
   SkAlphaType alpha_type = kPremul_SkAlphaType;
-  uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY;
+  uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY_READ;
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, size, color_space, surface_origin, alpha_type, usage,
       initial_data);
@@ -261,7 +261,8 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, InvalidFormat) {
     return;
 
   auto mailbox = Mailbox::GenerateForSharedImage();
-  auto format = viz::ResourceFormat::YUV_420_BIPLANAR;
+  auto format = viz::SharedImageFormat::SinglePlane(
+      viz::ResourceFormat::YUV_420_BIPLANAR);
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
   GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
@@ -280,7 +281,7 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, InvalidSize) {
     return;
 
   auto mailbox = Mailbox::GenerateForSharedImage();
-  auto format = viz::ResourceFormat::RGBA_8888;
+  auto format = viz::SharedImageFormat::kRGBA_8888;
   gfx::Size size(0, 0);
   auto color_space = gfx::ColorSpace::CreateSRGB();
   GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
@@ -304,7 +305,7 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, EstimatedSize) {
     return;
 
   auto mailbox = Mailbox::GenerateForSharedImage();
-  auto format = viz::ResourceFormat::RGBA_8888;
+  auto format = viz::SharedImageFormat::kRGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
   GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
@@ -494,18 +495,18 @@ GlLegacySharedImage::GlLegacySharedImage(
     SharedImageRepresentationFactory* shared_image_representation_factory)
     : size_(256, 256) {
   mailbox_ = Mailbox::GenerateForSharedImage();
-  auto format = viz::ResourceFormat::RGBA_8888;
+  auto format = viz::SharedImageFormat::kRGBA_8888;
   auto color_space = gfx::ColorSpace::CreateSRGB();
   GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
   SkAlphaType alpha_type = kPremul_SkAlphaType;
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   GLenum expected_target = GL_TEXTURE_2D;
 
-  // SHARED_IMAGE_USAGE_DISPLAY for skia read and SHARED_IMAGE_USAGE_RASTER for
-  // skia write.
+  // SHARED_IMAGE_USAGE_DISPLAY_READ for skia read and SHARED_IMAGE_USAGE_RASTER
+  // for skia write.
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_RASTER;
   if (!is_thread_safe)
-    usage |= SHARED_IMAGE_USAGE_DISPLAY;
+    usage |= SHARED_IMAGE_USAGE_DISPLAY_READ;
   backing_ = backing_factory->CreateSharedImage(
       mailbox_, format, surface_handle, size_, color_space, surface_origin,
       alpha_type, usage, is_thread_safe);

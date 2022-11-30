@@ -156,7 +156,7 @@ String SVGElement::title() const {
 
   if (InUseShadowTree()) {
     String use_title(OwnerShadowHost()->title());
-    if (!use_title.IsEmpty())
+    if (!use_title.empty())
       return use_title;
   }
 
@@ -290,7 +290,7 @@ void SVGElement::ClearAnimatedMotionTransform() {
 }
 
 bool SVGElement::HasNonCSSPropertyAnimations() const {
-  if (HasSVGRareData() && !SvgRareData()->WebAnimatedAttributes().IsEmpty())
+  if (HasSVGRareData() && !SvgRareData()->WebAnimatedAttributes().empty())
     return true;
   if (GetSMILAnimations() && GetSMILAnimations()->HasAnimations())
     return true;
@@ -322,7 +322,7 @@ AffineTransform SVGElement::CalculateTransform(
 
   // Apply any "motion transform" contribution if requested (and existing.)
   if (apply_motion_transform == kIncludeMotionTransform && HasSVGRareData())
-    matrix.PreMultiply(*SvgRareData()->AnimateMotionTransform());
+    matrix.PostConcat(*SvgRareData()->AnimateMotionTransform());
 
   return matrix;
 }
@@ -584,7 +584,11 @@ SVGElement* SVGElement::viewportElement() const {
 
 void SVGElement::AddInstance(SVGElement* instance) {
   DCHECK(instance);
-  DCHECK(instance->InUseShadowTree());
+  // Called during the <use> shadow tree building's post-processing step, just
+  // after the target<->instance association.
+  DCHECK(!instance->isConnected());
+  DCHECK(instance->HasSVGRareData());
+  DCHECK_EQ(instance->SvgRareData()->CorrespondingElement(), this);
 
   HeapHashSet<WeakMember<SVGElement>>& instances =
       EnsureSVGRareData()->ElementInstances();
@@ -595,8 +599,11 @@ void SVGElement::AddInstance(SVGElement* instance) {
 
 void SVGElement::RemoveInstance(SVGElement* instance) {
   DCHECK(instance);
-  // Called during instance->RemovedFrom() after removal from shadow tree
+  // Called during instance->RemovedFrom() after removal from shadow tree,
+  // before the target<->instance association is severed.
   DCHECK(!instance->isConnected());
+  DCHECK(instance->HasSVGRareData());
+  DCHECK_EQ(instance->SvgRareData()->CorrespondingElement(), this);
 
   HeapHashSet<WeakMember<SVGElement>>& instances =
       SvgRareData()->ElementInstances();
@@ -657,6 +664,10 @@ void SVGElement::ParseAttribute(const AttributeModificationParams& params) {
   if (params.name == html_names::kNonceAttr) {
     if (params.new_value != g_empty_atom)
       setNonce(params.new_value);
+  } else if (params.name.Matches(xml_names::kLangAttr)) {
+    PseudoStateChanged(CSSSelector::kPseudoLang);
+  } else if (params.name == svg_names::kLangAttr) {
+    PseudoStateChanged(CSSSelector::kPseudoLang);
   }
 
   const AtomicString& event_name =
@@ -687,7 +698,7 @@ AnimatedPropertyType SVGElement::AnimatedPropertyTypeForCSSAttribute(
     const QualifiedName& attribute_name) {
   DEFINE_STATIC_LOCAL(AttributeToPropertyTypeMap, css_property_map, ());
 
-  if (css_property_map.IsEmpty()) {
+  if (css_property_map.empty()) {
     // Fill the map for the first use.
     struct AttrToTypeEntry {
       const QualifiedName& attr;
@@ -779,6 +790,10 @@ bool SVGElement::IsAnimatableCSSProperty(const QualifiedName& attr_name) {
 bool SVGElement::IsPresentationAttribute(const QualifiedName& name) const {
   if (const SVGAnimatedPropertyBase* property = PropertyFromAttribute(name))
     return property->HasPresentationAttributeMapping();
+  if (RuntimeEnabledFeatures::LangAttributeAwareSvgTextEnabled() &&
+      (name.Matches(xml_names::kLangAttr) || name == svg_names::kLangAttr)) {
+    return true;
+  }
   return CssPropertyIdForSVGAttributeName(GetExecutionContext(), name) >
          CSSPropertyID::kInvalid;
 }
@@ -789,8 +804,17 @@ void SVGElement::CollectStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   CSSPropertyID property_id =
       CssPropertyIdForSVGAttributeName(GetExecutionContext(), name);
-  if (property_id > CSSPropertyID::kInvalid)
+  if (property_id > CSSPropertyID::kInvalid) {
     AddPropertyToPresentationAttributeStyle(style, property_id, value);
+  } else if (name.Matches(xml_names::kLangAttr)) {
+    if (RuntimeEnabledFeatures::LangAttributeAwareSvgTextEnabled())
+      MapLanguageAttributeToLocale(value, style);
+  } else if (name == svg_names::kLangAttr) {
+    if (RuntimeEnabledFeatures::LangAttributeAwareSvgTextEnabled() &&
+        !FastHasAttribute(xml_names::kLangAttr)) {
+      MapLanguageAttributeToLocale(value, style);
+    }
+  }
 }
 
 bool SVGElement::HaveLoadedRequiredResources() {
@@ -954,7 +978,7 @@ void SVGElement::UpdateWebAnimatedAttributeOnBaseValChange(
   if (!HasSVGRareData())
     return;
   const auto& animated_attributes = SvgRareData()->WebAnimatedAttributes();
-  if (animated_attributes.IsEmpty() || !animated_attributes.Contains(attribute))
+  if (animated_attributes.empty() || !animated_attributes.Contains(attribute))
     return;
   // TODO(alancutter): Only mark attributes as dirty if their animation depends
   // on the underlying value.
@@ -1080,7 +1104,7 @@ void SVGElement::InvalidateInstances() {
     return;
 
   const HeapHashSet<WeakMember<SVGElement>>& set = InstancesForElement();
-  if (set.IsEmpty())
+  if (set.empty())
     return;
 
   // Mark all use elements referencing 'element' for rebuilding
@@ -1100,7 +1124,7 @@ void SVGElement::SetNeedsStyleRecalcForInstances(
     StyleChangeType change_type,
     const StyleChangeReasonForTracing& reason) {
   const HeapHashSet<WeakMember<SVGElement>>& set = InstancesForElement();
-  if (set.IsEmpty())
+  if (set.empty())
     return;
 
   for (SVGElement* instance : set)
@@ -1254,8 +1278,8 @@ void SVGElement::RebuildAllIncomingReferences() {
       SvgRareData()->IncomingReferences();
 
   // Iterate on a snapshot as |incoming_references| may be altered inside loop.
-  HeapVector<Member<SVGElement>> incoming_references_snapshot;
-  CopyToVector(incoming_references, incoming_references_snapshot);
+  HeapVector<Member<SVGElement>> incoming_references_snapshot(
+      incoming_references);
 
   // Force rebuilding the |source_element| so it knows about this change.
   const SvgAttributeChangedParams params(

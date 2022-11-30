@@ -406,8 +406,12 @@ BrowserContext::GetFederatedIdentitySharingPermissionContext() {
   return nullptr;
 }
 
-std::unique_ptr<KAnonymityServiceDelegate>
-BrowserContext::CreateKAnonymityServiceDelegate() {
+KAnonymityServiceDelegate* BrowserContext::GetKAnonymityServiceDelegate() {
+  return nullptr;
+}
+
+OriginTrialsControllerDelegate*
+BrowserContext::GetOriginTrialsControllerDelegate() {
   return nullptr;
 }
 

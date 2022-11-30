@@ -18,8 +18,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 // Implementation of power management features for libassistant.
 //
@@ -44,7 +43,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) PowerManagerProviderImpl
 
   ~PowerManagerProviderImpl() override;
 
-  void Initialize(chromeos::libassistant::mojom::PlatformDelegate* delegate);
+  void Initialize(mojom::PlatformDelegate* delegate);
 
   // assistant_client::PowerManagerProvider overrides. These are called from
   // libassistant threads.
@@ -61,8 +60,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) PowerManagerProviderImpl
   }
 
  private:
-  using CallbackAndTimer =
-      std::pair<assistant_client::Callback0, std::unique_ptr<NativeTimer>>;
+  using CallbackAndTimer = std::pair<assistant_client::Callback0,
+                                     std::unique_ptr<chromeos::NativeTimer>>;
 
   // Returns time ticks from boot including time ticks during sleeping.
   base::TimeTicks GetCurrentBootTime();
@@ -109,7 +108,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) PowerManagerProviderImpl
   const scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
 
   // Owned by |PlatformApi|. Used to initialize |wake_lock_|.
-  chromeos::libassistant::mojom::PlatformDelegate* platform_delegate_ = nullptr;
+  mojom::PlatformDelegate* platform_delegate_ = nullptr;
 
   // Clock to use to calculate time ticks. Set and used only for testing.
   const base::TickClock* tick_clock_ = nullptr;
@@ -117,7 +116,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) PowerManagerProviderImpl
   base::WeakPtrFactory<PowerManagerProviderImpl> weak_factory_;
 };
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant
 
 #endif  // CHROMEOS_ASH_SERVICES_LIBASSISTANT_POWER_MANAGER_PROVIDER_IMPL_H_

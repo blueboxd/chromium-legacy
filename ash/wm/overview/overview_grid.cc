@@ -322,8 +322,8 @@ float GetWantedDropTargetOpacity(
   switch (window_dragging_state) {
     case SplitViewDragIndicators::WindowDraggingState::kNoDrag:
     case SplitViewDragIndicators::WindowDraggingState::kOtherDisplay:
-    case SplitViewDragIndicators::WindowDraggingState::kToSnapLeft:
-    case SplitViewDragIndicators::WindowDraggingState::kToSnapRight:
+    case SplitViewDragIndicators::WindowDraggingState::kToSnapPrimary:
+    case SplitViewDragIndicators::WindowDraggingState::kToSnapSecondary:
       return 0.f;
     case SplitViewDragIndicators::WindowDraggingState::kFromOverview:
     case SplitViewDragIndicators::WindowDraggingState::kFromTop:
@@ -450,7 +450,7 @@ OverviewGrid::OverviewGrid(aura::Window* root_window,
     window_list_.push_back(
         std::make_unique<OverviewItem>(window, overview_session_, this));
 
-    UpdateNumIncognitoUnsupportedWindows(window, /*increment*/true);
+    UpdateNumIncognitoUnsupportedWindows(window, /*increment*/ true);
   }
 }
 
@@ -647,7 +647,7 @@ void OverviewGrid::AddItem(aura::Window* window,
   DCHECK(!GetOverviewItemContaining(window));
   DCHECK_LE(index, window_list_.size());
 
-  UpdateNumIncognitoUnsupportedWindows(window, /*increment*/true);
+  UpdateNumIncognitoUnsupportedWindows(window, /*increment*/ true);
 
   window_list_.insert(
       window_list_.begin() + index,
@@ -714,7 +714,7 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item,
   DCHECK(iter != window_list_.rend());
 
   UpdateNumIncognitoUnsupportedWindows(overview_item->GetWindow(),
-                                       /*increment*/false);
+                                       /*increment*/ false);
 
   // This can also be called when shutting down |this|, at which the item will
   // be cleaning up and its associated view may be nullptr. |overview_item|
@@ -776,6 +776,7 @@ void OverviewGrid::RemoveAllItemsForDesksTemplatesLaunch() {
   window_list_.clear();
   num_incognito_windows_ = 0;
   num_unsupported_windows_ = 0;
+  EnableSaveDeskButtonContainer();
 }
 
 void OverviewGrid::AddDropTargetForDraggingFromThisGrid(
@@ -935,7 +936,7 @@ void OverviewGrid::OnWindowDragContinued(
       GetTargetWindowOnLocation(location_in_screen, /*ignored_item=*/nullptr);
 
   if (SplitViewDragIndicators::GetSnapPosition(window_dragging_state) !=
-      SplitViewController::NONE) {
+      SplitViewController::SnapPosition::kNone) {
     // If the dragged window is currently dragged into preview window area,
     // hide the highlight.
     overview_session_->highlight_controller()->HideTabDragHighlight();
@@ -1730,10 +1731,25 @@ void OverviewGrid::CommitNameChanges() {
     SavedDeskNameView::CommitChanges(saved_desk_library_widget_.get());
 }
 
-void OverviewGrid::ShowDesksTemplatesGrid(bool was_zero_state) {
+void OverviewGrid::ShowDesksTemplatesGrid() {
+  // TODO(crbug.com/1363382): This bool is defined here, way above where it is
+  // actually used, because `IsZeroState` will return false if the saved desk
+  // library is visible. See corresponding TODO in `DesksBarView`.
+  DCHECK(desks_bar_view_);
+  const bool was_zero_state = desks_bar_view_->IsZeroState();
+
   if (!saved_desk_library_widget_) {
     saved_desk_library_widget_ =
         SavedDeskLibraryView::CreateSavedDeskLibraryWidget(root_window_);
+
+    // Compute bounds for the library using the expanded height of the desk
+    // bar. `GetGridEffectiveBounds` will not be the correct bounds for the
+    // library if we are currently in the zero state mode.
+    gfx::Rect library_bounds = bounds_;
+    library_bounds.Inset(gfx::Insets::TLBR(
+        DesksBarView::GetExpandedBarHeight(root_window_), 0, 0, 0));
+
+    saved_desk_library_widget_->SetBounds(library_bounds);
   }
 
   for (auto& overview_mode_item : window_list_)
@@ -1979,6 +1995,14 @@ void OverviewGrid::UpdateSaveDeskButtons() {
                             ->GetPreferredSize()));
 }
 
+void OverviewGrid::EnableSaveDeskButtonContainer() {
+  if (!save_desk_button_container_widget_ ||
+      overview_session_->is_shutting_down()) {
+    return;
+  }
+  save_desk_button_container_widget_->GetContentsView()->SetEnabled(true);
+}
+
 bool OverviewGrid::IsSaveDeskButtonContainerVisible() const {
   // The widget may be visible but in the process of fading away. We treat that
   // as not visible.
@@ -2083,7 +2107,6 @@ void OverviewGrid::OnScreenCopiedBeforeRotation() {
   Shell::Get()->overview_controller()->PauseOcclusionTracker();
 
   for (auto& window : window_list()) {
-    window->set_disable_mask(true);
     window->UpdateRoundedCornersAndShadow();
     window->StopWidgetAnimation();
   }
@@ -2092,8 +2115,6 @@ void OverviewGrid::OnScreenCopiedBeforeRotation() {
 void OverviewGrid::OnScreenRotationAnimationFinished(
     ScreenRotationAnimator* animator,
     bool canceled) {
-  for (auto& window : window_list())
-    window->set_disable_mask(false);
   Shell::Get()->overview_controller()->DelayedUpdateRoundedCornersAndShadow();
   Shell::Get()->overview_controller()->UnpauseOcclusionTracker(
       kOcclusionUnpauseDurationForRotation);
@@ -2478,15 +2499,27 @@ void OverviewGrid::UpdateCannotSnapWarningVisibility(bool animate) {
 }
 
 void OverviewGrid::OnSaveDeskAsTemplateButtonPressed() {
+  auto* container = save_desk_button_container_widget_->GetContentsView();
+  // Disable the save desk button container after the first click to prevent
+  // unwanted clicks/user interaction.
+  if (!container->GetEnabled())
+    return;
+  container->SetEnabled(false);
+
   overview_session_->saved_desk_presenter()->MaybeSaveActiveDeskAsTemplate(
-      DeskTemplateType::kTemplate,
-      save_desk_button_container_widget_->GetNativeWindow()->GetRootWindow());
+      DeskTemplateType::kTemplate, root_window());
 }
 
 void OverviewGrid::OnSaveDeskForLaterButtonPressed() {
+  auto* container = save_desk_button_container_widget_->GetContentsView();
+  // Disable the save desk button container after the first click to prevent
+  // unwanted clicks/user interaction.
+  if (!container->GetEnabled())
+    return;
+  container->SetEnabled(false);
+
   overview_session_->saved_desk_presenter()->MaybeSaveActiveDeskAsTemplate(
-      DeskTemplateType::kSaveAndRecall,
-      save_desk_button_container_widget_->GetNativeWindow()->GetRootWindow());
+      DeskTemplateType::kSaveAndRecall, root_window());
 }
 
 void OverviewGrid::OnDesksTemplatesGridFadedOut() {

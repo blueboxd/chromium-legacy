@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -150,8 +150,8 @@ void AnnotationAgentContainerImpl::CreateAgentFromSelection(
   DCHECK(annotation_agent_generator_);
   annotation_agent_generator_->GetForCurrentSelection(
       type,
-      WTF::Bind(&AnnotationAgentContainerImpl::DidFinishSelectorGeneration,
-                WrapWeakPersistent(this), std::move(callback)));
+      WTF::BindOnce(&AnnotationAgentContainerImpl::DidFinishSelectorGeneration,
+                    WrapWeakPersistent(this), std::move(callback)));
 }
 
 // TODO(cheickcisse@): Move shared highlighting enums, also used in user note to
@@ -199,11 +199,11 @@ void AnnotationAgentContainerImpl::DidFinishSelectorGeneration(
       pending_agent_receiver.InitWithNewPipeAndPassRemote();
   selector_creation_result->serialized_selector =
       annotation_selector->Serialize();
-  DCHECK(!selector_creation_result->serialized_selector.IsEmpty())
+  DCHECK(!selector_creation_result->serialized_selector.empty())
       << "User note creation received an empty selector for mojo binding "
          "result";
   selector_creation_result->selected_text = selected_text;
-  DCHECK(!selector_creation_result->selected_text.IsEmpty())
+  DCHECK(!selector_creation_result->selected_text.empty())
       << "User note creation received an empty text for mojo binding result";
 
   std::move(callback).Run(std::move(selector_creation_result), error,
@@ -237,7 +237,7 @@ bool AnnotationAgentContainerImpl::ShouldPreemptivelyGenerate() {
     return false;
   }
 
-  if (frame->Selection().SelectedText().IsEmpty())
+  if (frame->Selection().SelectedText().empty())
     return false;
 
   if (frame->IsOutermostMainFrame())

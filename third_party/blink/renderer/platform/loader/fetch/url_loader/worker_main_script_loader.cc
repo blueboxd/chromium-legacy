@@ -1,9 +1,10 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/loader/fetch/url_loader/worker_main_script_loader.h"
 
+#include "services/network/public/cpp/header_util.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/referrer_utils.h"
@@ -81,7 +82,7 @@ void WorkerMainScriptLoader::Start(
       ResourceLoadObserver::ResponseSource::kNotFromMemoryCache);
 
   if (resource_response_.IsHTTP() &&
-      !cors::IsOkStatus(resource_response_.HttpStatusCode())) {
+      !network::IsSuccessfulStatus(resource_response_.HttpStatusCode())) {
     client_->OnFailedLoadingWorkerMainScript();
     resource_load_observer_->DidFailLoading(
         initial_request_.Url(), initial_request_.InspectorId(),
@@ -94,7 +95,7 @@ void WorkerMainScriptLoader::Start(
   }
 
   script_encoding_ =
-      resource_response_.TextEncodingName().IsEmpty()
+      resource_response_.TextEncodingName().empty()
           ? UTF8Encoding()
           : WTF::TextEncoding(resource_response_.TextEncodingName());
 
@@ -174,8 +175,7 @@ void WorkerMainScriptLoader::OnComplete(
   NotifyCompletionIfAppropriate();
 }
 
-SingleCachedMetadataHandler*
-WorkerMainScriptLoader::CreateCachedMetadataHandler() {
+CachedMetadataHandler* WorkerMainScriptLoader::CreateCachedMetadataHandler() {
   // Currently we support the metadata caching only for HTTP family.
   if (!initial_request_url_.ProtocolIsInHTTPFamily() ||
       !resource_response_.CurrentRequestUrl().ProtocolIsInHTTPFamily()) {

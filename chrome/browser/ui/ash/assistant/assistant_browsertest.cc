@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/test/app_list_test_api.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
@@ -21,11 +20,11 @@
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "content/public/test/browser_test.h"
 
-namespace chromeos {
-namespace assistant {
+namespace ash::assistant {
+
 namespace {
 
-using ::ash::CrasAudioHandler;
+using test::ExpectResult;
 
 // Please remember to set auth token when running in |kProxy| mode.
 constexpr auto kMode = FakeS3Mode::kReplay;
@@ -51,16 +50,12 @@ inline constexpr char kDlcLoadStatusHistogram[] =
 
 }  // namespace
 
-using ::ash::assistant::test::ExpectResult;
-
 class AssistantBrowserTest : public MixinBasedInProcessBrowserTest,
                              public testing::WithParamInterface<bool> {
  public:
   AssistantBrowserTest() {
-    if (GetParam()) {
-      feature_list_.InitAndEnableFeature(
-          chromeos::assistant::features::kEnableLibAssistantDlc);
-    }
+    if (GetParam())
+      feature_list_.InitAndEnableFeature(features::kEnableLibAssistantDlc);
 
     // Do not log to file in test. Otherwise multiple tests may create/delete
     // the log file at the same time. See http://crbug.com/1307868.
@@ -79,12 +74,9 @@ class AssistantBrowserTest : public MixinBasedInProcessBrowserTest,
     if (!tester()->IsVisible())
       tester()->PressAssistantKey();
 
-    // Make sure that the app list bubble finished showing when productivity
-    // launcher is enabled.
-    if (ash::features::IsProductivityLauncherEnabled()) {
-      ash::AppListTestApi().WaitForBubbleWindow(
-          /*wait_for_opening_animation=*/false);
-    }
+    // Make sure that the app list bubble finished showing.
+    AppListTestApi().WaitForBubbleWindow(
+        /*wait_for_opening_animation=*/false);
   }
 
   void CloseAssistantUi() {
@@ -160,16 +152,13 @@ IN_PROC_BROWSER_TEST_P(AssistantBrowserTest,
 
   tester()->PressAssistantKey();
 
-  // Make sure that the app list bubble finished showing when productivity
-  // launcher is enabled (the app list view gets created asynchronously for
-  // productivity launcher).
-  if (ash::features::IsProductivityLauncherEnabled()) {
-    ash::AppListTestApi().WaitForBubbleWindow(
-        /*wait_for_opening_animation=*/false);
-  }
+  // Make sure that the app list bubble finished showing (the app list view gets
+  // created asynchronously).
+  AppListTestApi().WaitForBubbleWindow(
+      /*wait_for_opening_animation=*/false);
 
   EXPECT_TRUE(tester()->IsVisible());
-  if (chromeos::assistant::features::IsLibAssistantDlcEnabled()) {
+  if (features::IsLibAssistantDlcEnabled()) {
     histogram_tester()->ExpectTotalCount(kDlcInstallResultHistogram, 1);
     histogram_tester()->ExpectTotalCount(kDlcLoadStatusHistogram, 1);
   }
@@ -334,5 +323,4 @@ INSTANTIATE_TEST_SUITE_P(/* no label */,
                          AssistantBrowserTest,
                          /*values=*/testing::Bool());
 
-}  // namespace assistant
-}  // namespace chromeos
+}  // namespace ash::assistant

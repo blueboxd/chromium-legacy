@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,10 @@ WebNavigationParams::WebNavigationParams()
 WebNavigationParams::~WebNavigationParams() = default;
 
 WebNavigationParams::WebNavigationParams(
+    const blink::DocumentToken& document_token,
     const base::UnguessableToken& devtools_navigation_token)
     : http_method(http_names::kGET),
+      document_token(document_token),
       devtools_navigation_token(devtools_navigation_token) {}
 
 // static

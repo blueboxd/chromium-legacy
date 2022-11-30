@@ -7,6 +7,8 @@ source_set("coordinator") {
   sources = [
     "lens_coordinator.h",
     "lens_coordinator.mm",
+    "lens_modal_animator.h",
+    "lens_modal_animator.mm",
   ]
   deps = [
     ":lens_entrypoint",
@@ -17,6 +19,8 @@ source_set("coordinator") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/url_loading",
+    "//ios/chrome/browser/web:web",
+    "//ios/chrome/browser/web_state_list",
     "//ios/public/provider/chrome/browser/lens:lens_api",
     "//ios/web/public/navigation",
   ]

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,7 @@ ScriptPromise FileSystemDirectoryIterator::next(ScriptState* script_state) {
     return result;
   }
 
-  if (!entries_.IsEmpty()) {
+  if (!entries_.empty()) {
     FileSystemHandle* handle = entries_.TakeFirst();
     ScriptValue result;
     switch (mode_) {

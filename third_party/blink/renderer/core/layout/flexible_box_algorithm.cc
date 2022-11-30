@@ -180,7 +180,8 @@ LayoutUnit FlexItem::CrossAxisMarginExtent() const {
                                         : physical_margins_.HorizontalSum();
 }
 
-LayoutUnit FlexItem::MarginBoxAscent(bool is_wrap_reverse) const {
+LayoutUnit FlexItem::MarginBoxAscent(bool is_last_baseline,
+                                     bool is_wrap_reverse) const {
   if (box_) {
     LayoutUnit ascent(box_->FirstLineBoxBaseline());
     if (ascent == -1)
@@ -195,8 +196,10 @@ LayoutUnit FlexItem::MarginBoxAscent(bool is_wrap_reverse) const {
 
   const auto font_baseline = algorithm_->StyleRef().GetFontBaseline();
   LayoutUnit baseline =
-      baseline_fragment.FirstBaselineOrSynthesize(font_baseline);
-  if (is_wrap_reverse)
+      is_last_baseline
+          ? baseline_fragment.LastBaselineOrSynthesize(font_baseline)
+          : baseline_fragment.FirstBaselineOrSynthesize(font_baseline);
+  if (is_wrap_reverse != is_last_baseline)
     baseline = baseline_fragment.BlockSize() - baseline;
 
   return baseline_group_ == BaselineGroup::kMajor
@@ -572,8 +575,11 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_start_offset,
     flex_item.UpdateAutoMarginsInMainAxis(auto_margin_offset);
 
     LayoutUnit child_cross_axis_margin_box_extent;
-    if (flex_item.Alignment() == ItemPosition::kBaseline) {
-      LayoutUnit ascent = flex_item.MarginBoxAscent(is_wrap_reverse);
+    const auto alignment = flex_item.Alignment();
+    if (alignment == ItemPosition::kBaseline ||
+        alignment == ItemPosition::kLastBaseline) {
+      LayoutUnit ascent = flex_item.MarginBoxAscent(
+          alignment == ItemPosition::kLastBaseline, is_wrap_reverse);
       LayoutUnit descent =
           (flex_item.CrossAxisMarginExtent() + flex_item.cross_axis_size_) -
           ascent;
@@ -824,7 +830,7 @@ bool FlexLayoutAlgorithm::ShouldApplyMinSizeAutoForChild(
 }
 
 LayoutUnit FlexLayoutAlgorithm::IntrinsicContentBlockSize() const {
-  if (flex_lines_.IsEmpty())
+  if (flex_lines_.empty())
     return LayoutUnit();
 
   if (IsColumnFlow()) {
@@ -849,7 +855,7 @@ void FlexLayoutAlgorithm::AlignFlexLines(
       gap_between_lines_ == 0) {
     return;
   }
-  if (flex_lines_.IsEmpty() || !IsMultiline())
+  if (flex_lines_.empty() || !IsMultiline())
     return;
   LayoutUnit available_cross_axis_space =
       cross_axis_content_extent - (flex_lines_.size() - 1) * gap_between_lines_;
@@ -905,9 +911,11 @@ void FlexLayoutAlgorithm::AlignChildren() {
       }
       LayoutUnit available_space = flex_item.AvailableAlignmentSpace();
       LayoutUnit baseline_offset;
-      if (position == ItemPosition::kBaseline) {
+      if (position == ItemPosition::kBaseline ||
+          position == ItemPosition::kLastBaseline) {
         bool is_major = flex_item.baseline_group_ == BaselineGroup::kMajor;
-        LayoutUnit ascent = flex_item.MarginBoxAscent(is_wrap_reverse);
+        LayoutUnit ascent = flex_item.MarginBoxAscent(
+            position == ItemPosition::kLastBaseline, is_wrap_reverse);
         LayoutUnit max_ascent = is_major ? line_context.max_major_ascent_
                                          : line_context.max_minor_ascent_;
 
@@ -934,13 +942,13 @@ void FlexLayoutAlgorithm::FlipForWrapReverse(
         line_context.cross_axis_offset_ - cross_axis_start_edge;
     LayoutUnit new_offset = cross_axis_content_size - original_offset -
                             line_context.cross_axis_extent_;
+    LayoutUnit delta = new_offset - original_offset;
     if (flex_line_outputs) {
-      line_context.cross_axis_offset_ = new_offset;
-      (*flex_line_outputs)[i].cross_axis_offset = new_offset;
+      line_context.cross_axis_offset_ += delta;
+      (*flex_line_outputs)[i].cross_axis_offset += delta;
     }
-    LayoutUnit wrap_reverse_difference = new_offset - original_offset;
     for (FlexItem& flex_item : line_context.line_items_)
-      flex_item.offset_->cross_axis_offset += wrap_reverse_difference;
+      flex_item.offset_->cross_axis_offset += delta;
   }
 }
 
@@ -1216,7 +1224,7 @@ void FlexLayoutAlgorithm::LayoutColumnReverse(
     LayoutUnit border_scrollbar_padding_before) {
   DCHECK(IsColumnFlow());
   DCHECK(Style()->ResolvedIsColumnReverseFlexDirection());
-  DCHECK(all_items_.IsEmpty() || IsNGFlexBox())
+  DCHECK(all_items_.empty() || IsNGFlexBox())
       << "This method relies on NG having passed in 0 for initial main axis "
          "offset for column-reverse flex boxes. That needs to be fixed if this "
          "method is to be used in legacy.";
@@ -1241,7 +1249,7 @@ void FlexLayoutAlgorithm::LayoutColumnReverse(
 }
 
 bool FlexLayoutAlgorithm::IsNGFlexBox() const {
-  DCHECK(!all_items_.IsEmpty())
+  DCHECK(!all_items_.empty())
       << "You can't call IsNGFlexBox before adding items.";
   // The FlexItems created by legacy will have an empty ng_input_node. An NG
   // FlexItem's ng_input_node will have a LayoutBox.
@@ -1255,7 +1263,8 @@ FlexItem* FlexLayoutAlgorithm::FlexItemAtIndex(wtf_size_t line_index,
     line_index = flex_lines_.size() - line_index - 1;
 
   DCHECK_LT(item_index, flex_lines_[line_index].line_items_.size());
-  if (Style()->ResolvedIsColumnReverseFlexDirection())
+  if (Style()->ResolvedIsColumnReverseFlexDirection() ||
+      Style()->ResolvedIsRowReverseFlexDirection())
     item_index = flex_lines_[line_index].line_items_.size() - item_index - 1;
   return const_cast<FlexItem*>(
       &flex_lines_[line_index].line_items_[item_index]);

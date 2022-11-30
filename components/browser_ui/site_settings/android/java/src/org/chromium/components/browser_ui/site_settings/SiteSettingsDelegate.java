@@ -141,9 +141,22 @@ public interface SiteSettingsDelegate {
     boolean isFirstPartySetsDataAccessManaged();
 
     /***
+     * @param origin to check.
+     * @return true if the origin is part of the managed FirstPartySet.
+     */
+    boolean isPartOfManagedFirstPartySet(String origin);
+
+    /***
      * @return Enables/disables First Party Sets data access.
      */
     void setFirstPartySetsDataAccessEnabled(boolean enabled);
+
+    /**
+     * Gets the First Party Sets owner hostname given a FPS member origin.
+     * @param memberOrigin FPS member origin.
+     * @return A string containing the owner hostname, null if it doesn't exist.
+     */
+    String getFirstPartySetOwner(String memberOrigin);
 
     /**
      * Returns whether the current implementation of the delegate is able to launch the Clear

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@ class AudioTrackPcmEncoder : public AudioTrackEncoder {
   void OnSetFormat(const media::AudioParameters& params) override;
   void EncodeAudio(std::unique_ptr<media::AudioBus> input_bus,
                    base::TimeTicks capture_time) override;
+  void Shutdown() override {}
 
  private:
   ~AudioTrackPcmEncoder() override {}

@@ -32,6 +32,18 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/crosapi/mojom/device_settings_service.mojom.h"
+#include "chromeos/startup/browser_init_params.h"
+#endif
+
 using ::base::test::TestFuture;
 using ::device::mojom::UsbDeviceInfoPtr;
 using ::testing::_;
@@ -49,7 +61,13 @@ constexpr int kDeviceIdWildcard = -1;
 
 class UsbChooserContextTest : public testing::Test {
  public:
-  UsbChooserContextTest() {}
+  UsbChooserContextTest() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    profile_.ScopedCrosSettingsTestHelper()
+        ->ReplaceDeviceSettingsProviderWithStub();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  }
+
   ~UsbChooserContextTest() override {
     // When UsbChooserContext is destroyed, OnDeviceManagerConnectionError will
     // be called for each device observer.
@@ -64,6 +82,11 @@ class UsbChooserContextTest : public testing::Test {
       EXPECT_CALL(*entry.second, OnPermissionRevoked).Times(AnyNumber());
       EXPECT_CALL(*entry.second, OnObjectPermissionChanged).Times(AnyNumber());
     }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    profile_.ScopedCrosSettingsTestHelper()
+        ->RestoreRealDeviceSettingsProvider();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
 
  protected:
@@ -1263,6 +1286,67 @@ TEST_F(UsbChooserContextTest, MassStorageHidden) {
       }));
   loop.Run();
 }
+
+#if BUILDFLAG(IS_CHROMEOS)
+TEST_F(UsbChooserContextTest, MassStorageShownWhenDetachable) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  base::Value::List allowlist;
+  base::Value::Dict ids;
+  ids.Set(ash::kUsbDetachableAllowlistKeyVid, 1234);
+  ids.Set(ash::kUsbDetachableAllowlistKeyPid, 1);
+  allowlist.Append(std::move(ids));
+
+  profile()->ScopedCrosSettingsTestHelper()->GetStubbedProvider()->Set(
+      ash::kUsbDetachableAllowlist, base::Value(std::move(allowlist)));
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  auto allowlist = crosapi::mojom::UsbDetachableAllowlist::New();
+  auto device_id = crosapi::mojom::UsbDeviceId::New();
+  device_id->has_vendor_id = true;
+  device_id->vendor_id = 1234;
+  device_id->has_product_id = true;
+  device_id->product_id = 1;
+  allowlist->usb_device_ids.push_back(std::move(device_id));
+
+  auto params = crosapi::mojom::BrowserInitParams::New();
+  params->device_settings = crosapi::mojom::DeviceSettings::New();
+  params->device_settings->usb_detachable_allow_list = std::move(allowlist);
+  chromeos::BrowserInitParams::SetInitParamsForTests(std::move(params));
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+  GURL kUrl("https://www.google.com");
+  const auto origin = url::Origin::Create(kUrl);
+
+  // Mass storage devices should be hidden unless they are listed in the
+  // UsbDetachableAllowlist policy.
+  std::vector<device::mojom::UsbConfigurationInfoPtr> storage_configs;
+  storage_configs.push_back(
+      device::FakeUsbDeviceInfo::CreateConfiguration(0x08, 0x06, 0x50));
+  UsbDeviceInfoPtr detachable_storage_device_info =
+      device_manager_.CreateAndAddDevice(1234, 1, "vendor1",
+                                         "detachable storage", "123ABC",
+                                         std::move(storage_configs));
+
+  storage_configs.clear();
+  storage_configs.push_back(
+      device::FakeUsbDeviceInfo::CreateConfiguration(0x08, 0x06, 0x50));
+  UsbDeviceInfoPtr storage_device_info = device_manager_.CreateAndAddDevice(
+      1234, 2, "vendor1", "storage", "456DEF", std::move(storage_configs));
+
+  UsbChooserContext* chooser_context = GetChooserContext(profile());
+
+  base::RunLoop loop;
+  chooser_context->GetDevices(
+      base::BindLambdaForTesting([&](std::vector<UsbDeviceInfoPtr> devices) {
+        EXPECT_EQ(1u, devices.size());
+        EXPECT_EQ(detachable_storage_device_info->product_name,
+                  devices[0]->product_name);
+        loop.Quit();
+      }));
+  loop.Run();
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 TEST_F(UsbChooserContextTest, DeviceWithNoInterfaceVisible) {
   GURL url("https://www.google.com");

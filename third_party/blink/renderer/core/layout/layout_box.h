@@ -49,6 +49,7 @@ class LayoutBlockFlow;
 class LayoutMultiColumnSpannerPlaceholder;
 class NGBoxFragmentBuilder;
 class NGBlockBreakToken;
+class NGColumnSpannerPath;
 class NGConstraintSpace;
 class NGEarlyBreak;
 class NGLayoutResult;
@@ -291,8 +292,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   LayoutUnit LogicalLeft() const {
     NOT_DESTROYED();
-    return StyleRef().IsHorizontalWritingMode() ? frame_rect_.X()
-                                                : frame_rect_.Y();
+    auto location = Location();
+    return StyleRef().IsHorizontalWritingMode() ? location.X() : location.Y();
   }
   LayoutUnit LogicalRight() const {
     NOT_DESTROYED();
@@ -300,8 +301,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
   LayoutUnit LogicalTop() const {
     NOT_DESTROYED();
-    return StyleRef().IsHorizontalWritingMode() ? frame_rect_.Y()
-                                                : frame_rect_.X();
+    auto location = Location();
+    return StyleRef().IsHorizontalWritingMode() ? location.Y() : location.X();
   }
   LayoutUnit LogicalBottom() const {
     NOT_DESTROYED();
@@ -394,13 +395,14 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
 
   // See frame_rect_.
-  LayoutPoint Location() const {
+  virtual LayoutPoint Location() const {
     NOT_DESTROYED();
     return frame_rect_.Location();
   }
   LayoutSize LocationOffset() const {
     NOT_DESTROYED();
-    return LayoutSize(frame_rect_.X(), frame_rect_.Y());
+    auto location = Location();
+    return LayoutSize(location.X(), location.Y());
   }
   LayoutSize Size() const {
     NOT_DESTROYED();
@@ -444,7 +446,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // See frame_rect_.
   LayoutRect FrameRect() const {
     NOT_DESTROYED();
-    return frame_rect_;
+    return LayoutRect(Location(), Size());
   }
   void SetFrameRect(const LayoutRect& rect) {
     NOT_DESTROYED();
@@ -855,8 +857,14 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     else
       return BorderTop() + ComputeScrollbarsInternal(kClampToContentBox).top;
   }
+
+  // Size without borders and scrollbars.
   LayoutUnit ClientWidth() const;
   LayoutUnit ClientHeight() const;
+  // Similar to ClientWidth() and ClientHeight(), but based on the specified
+  // border-box size.
+  LayoutUnit ClientWidthFrom(LayoutUnit width) const;
+  LayoutUnit ClientHeightFrom(LayoutUnit height) const;
   DISABLE_CFI_PERF LayoutUnit ClientLogicalWidth() const {
     NOT_DESTROYED();
     return IsHorizontalWritingMode() ? ClientWidth() : ClientHeight();
@@ -1182,7 +1190,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   void InvalidateItems(const NGLayoutResult&);
 
-  void SetCachedLayoutResult(const NGLayoutResult*);
+  void SetCachedLayoutResult(const NGLayoutResult*, wtf_size_t index);
 
   // Store one layout result (with its physical fragment) at the specified
   // index.
@@ -1235,8 +1243,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     SetShouldDoFullPaintInvalidation();
   }
 
-  const NGLayoutResult* GetCachedLayoutResult() const;
+  const NGLayoutResult* GetCachedLayoutResult(const NGBlockBreakToken*) const;
   const NGLayoutResult* GetCachedMeasureResult() const;
+
+  // Call in situations where we know that there's at most one fragment. A
+  // DCHECK will fail if there are multiple fragments.
+  const NGLayoutResult* GetSingleCachedLayoutResult() const;
 
   // Returns the last layout result for this block flow with the given
   // constraint space and break token, or null if it is not up-to-date or
@@ -1252,6 +1264,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       const NGConstraintSpace&,
       const NGBlockBreakToken*,
       const NGEarlyBreak*,
+      const NGColumnSpannerPath*,
       absl::optional<NGFragmentGeometry>* initial_fragment_geometry,
       NGLayoutCacheStatus* out_cache_status);
 
@@ -1264,7 +1277,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
         : layout_results_(layout_results) {}
 
     wtf_size_t Size() const { return layout_results_.size(); }
-    bool IsEmpty() const { return layout_results_.IsEmpty(); }
+    bool IsEmpty() const { return layout_results_.empty(); }
 
     bool HasFragmentItems() const;
 
@@ -2397,12 +2410,13 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       const LayoutBox* container_box) const {
     NOT_DESTROYED();
     DCHECK_EQ(container_box, LocationContainer());
+    LayoutPoint location = Location();
     if (LIKELY(!container_box || !container_box->HasFlippedBlocksWritingMode()))
-      return PhysicalOffset(Location());
+      return PhysicalOffset(location);
 
     return PhysicalOffset(
-        container_box->Size().Width() - Size().Width() - Location().X(),
-        Location().Y());
+        container_box->Size().Width() - Size().Width() - location.X(),
+        location.Y());
   }
 
   bool BackgroundClipBorderBoxIsEquivalentToPaddingBox() const;
@@ -2438,14 +2452,14 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   friend class LayoutBoxTest;
 
  private:
-  LogicalToPhysicalSetter<LayoutUnit, LayoutBox> LogicalMarginToPhysicalSetter(
-      const ComputedStyle* override_style) {
+  LogicalToPhysicalSetter<LayoutUnit, LayoutRectOutsets>
+  LogicalMarginToPhysicalSetter(const ComputedStyle* override_style) {
     NOT_DESTROYED();
     const auto& style = override_style ? *override_style : StyleRef();
-    return LogicalToPhysicalSetter<LayoutUnit, LayoutBox>(
-        style.GetWritingDirection(), *this, &LayoutBox::SetMarginTop,
-        &LayoutBox::SetMarginRight, &LayoutBox::SetMarginBottom,
-        &LayoutBox::SetMarginLeft);
+    return LogicalToPhysicalSetter<LayoutUnit, LayoutRectOutsets>(
+        style.GetWritingDirection(), this->margin_box_outsets_,
+        &LayoutRectOutsets::SetTop, &LayoutRectOutsets::SetRight,
+        &LayoutRectOutsets::SetBottom, &LayoutRectOutsets::SetLeft);
   }
 
   std::unique_ptr<BoxOverflowModel> overflow_;

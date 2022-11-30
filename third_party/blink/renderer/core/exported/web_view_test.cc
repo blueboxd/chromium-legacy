@@ -488,7 +488,8 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
 
   frame_test_helpers::TestWebFrameClient web_frame_client;
   WebLocalFrame* frame = WebLocalFrame::CreateMainFrame(
-      web_view, &web_frame_client, nullptr, LocalFrameToken(), nullptr);
+      web_view, &web_frame_client, nullptr, LocalFrameToken(), DocumentToken(),
+      nullptr);
   web_frame_client.Bind(frame);
 
   frame_test_helpers::TestWebFrameWidget* widget =
@@ -2737,7 +2738,8 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
       /*page_base_background_color=*/absl::nullopt));
   frame_test_helpers::TestWebFrameClient web_frame_client;
   WebLocalFrame* local_frame = WebLocalFrame::CreateMainFrame(
-      web_view, &web_frame_client, nullptr, LocalFrameToken(), nullptr);
+      web_view, &web_frame_client, nullptr, LocalFrameToken(), DocumentToken(),
+      nullptr);
   web_frame_client.Bind(local_frame);
   WebNonCompositedWidgetClient widget_client;
   frame_test_helpers::TestWebFrameWidget* widget =
@@ -4087,7 +4089,9 @@ class CreateChildCounterFrameClient
       const FramePolicy&,
       const WebFrameOwnerProperties&,
       FrameOwnerElementType,
-      WebPolicyContainerBindParams policy_container_bind_params) override;
+      WebPolicyContainerBindParams policy_container_bind_params,
+      base::FunctionRef<void(WebLocalFrame*, const DocumentToken&)>
+          complete_initialization) override;
 
   int Count() const { return count_; }
 
@@ -4102,11 +4106,14 @@ WebLocalFrame* CreateChildCounterFrameClient::CreateChildFrame(
     const FramePolicy& frame_policy,
     const WebFrameOwnerProperties& frame_owner_properties,
     FrameOwnerElementType frame_owner_element_type,
-    WebPolicyContainerBindParams policy_container_bind_params) {
+    WebPolicyContainerBindParams policy_container_bind_params,
+    base::FunctionRef<void(WebLocalFrame*, const DocumentToken&)>
+        complete_initialization) {
   ++count_;
   return TestWebFrameClient::CreateChildFrame(
       scope, name, fallback_name, frame_policy, frame_owner_properties,
-      frame_owner_element_type, std::move(policy_container_bind_params));
+      frame_owner_element_type, std::move(policy_container_bind_params),
+      complete_initialization);
 }
 
 TEST_F(WebViewTest, ChangeDisplayMode) {
@@ -5177,13 +5184,15 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
   // visual viewport clipping.
   TransformationMatrix matrix =
       dev_tools_emulator->ForceViewportForTesting(gfx::PointF(50, 55), 2.f);
-  expected_matrix.MakeIdentity().Scale(2.f).Translate(-50, -55);
+  expected_matrix = TransformationMatrix::MakeScale(2.f);
+  expected_matrix.Translate(-50, -55);
   EXPECT_EQ(expected_matrix, matrix);
 
   // Setting new override discards previous one.
   matrix = dev_tools_emulator->ForceViewportForTesting(gfx::PointF(5.4f, 10.5f),
                                                        1.5f);
-  expected_matrix.MakeIdentity().Scale(1.5f).Translate(-5.4f, -10.5f);
+  expected_matrix = TransformationMatrix::MakeScale(1.5f);
+  expected_matrix.Translate(-5.4f, -10.5f);
   EXPECT_EQ(expected_matrix, matrix);
 
   // Clearing override restores original transform, visible rect and
@@ -5206,14 +5215,16 @@ TEST_F(WebViewTest, ViewportOverrideIntegratesDeviceMetricsOffsetAndScale) {
   DeviceEmulationParams emulation_params;
   emulation_params.scale = 2.f;
   web_view_impl->EnableDeviceEmulation(emulation_params);
-  expected_matrix.MakeIdentity().Scale(2.f);
+  expected_matrix = TransformationMatrix::MakeScale(2.f);
   EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
 
   // Device metrics offset and scale are applied before viewport override.
   emulation_params.viewport_offset = gfx::PointF(5, 10);
   emulation_params.viewport_scale = 1.5f;
   web_view_impl->EnableDeviceEmulation(emulation_params);
-  expected_matrix.MakeIdentity().Scale(1.5f).Translate(-5, -10).Scale(2.f);
+  expected_matrix = TransformationMatrix::MakeScale(1.5f);
+  expected_matrix.Translate(-5, -10);
+  expected_matrix.Scale(2.f);
   EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
 }
 
@@ -5241,31 +5252,28 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
   emulation_params.viewport_offset = gfx::PointF(50, 55);
   emulation_params.viewport_scale = 2.f;
   web_view_impl->EnableDeviceEmulation(emulation_params);
-  expected_matrix.MakeIdentity()
-      .Scale(2.f)
-      .Translate(-50, -55)
-      .Translate(100, 150)
-      .Scale(1. / 1.5f);
+  expected_matrix = TransformationMatrix::MakeScale(2.f);
+  expected_matrix.Translate(-50, -55);
+  expected_matrix.Translate(100, 150);
+  expected_matrix.Scale(1. / 1.5f);
   EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
 
   // Transform adapts to scroll changes.
   frame_view->LayoutViewport()->SetScrollOffset(
       ScrollOffset(50, 55), mojom::blink::ScrollType::kProgrammatic,
       mojom::blink::ScrollBehavior::kInstant);
-  expected_matrix.MakeIdentity()
-      .Scale(2.f)
-      .Translate(-50, -55)
-      .Translate(50, 55)
-      .Scale(1. / 1.5f);
+  expected_matrix = TransformationMatrix::MakeScale(2.f);
+  expected_matrix.Translate(-50, -55);
+  expected_matrix.Translate(50, 55);
+  expected_matrix.Scale(1. / 1.5f);
   EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
 
   // Transform adapts to page scale changes.
   web_view_impl->SetPageScaleFactor(2.f);
-  expected_matrix.MakeIdentity()
-      .Scale(2.f)
-      .Translate(-50, -55)
-      .Translate(50, 55)
-      .Scale(1. / 2.f);
+  expected_matrix = TransformationMatrix::MakeScale(2.f);
+  expected_matrix.Translate(-50, -55);
+  expected_matrix.Translate(50, 55);
+  expected_matrix.Scale(1. / 2.f);
   EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
 }
 

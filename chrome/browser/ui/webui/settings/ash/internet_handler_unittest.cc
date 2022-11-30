@@ -11,9 +11,7 @@
 #include "content/public/test/test_web_ui.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
-
-namespace settings {
+namespace ash::settings {
 
 namespace {
 
@@ -50,8 +48,8 @@ class InternetHandlerTest : public BrowserWithTestWindowTest {
     handler_->RegisterMessages();
     handler_->AllowJavascriptForTesting();
 
-    fake_tracker_ = std::make_unique<
-        chromeos::tether::FakeGmsCoreNotificationsStateTracker>();
+    fake_tracker_ =
+        std::make_unique<tether::FakeGmsCoreNotificationsStateTracker>();
     handler_->SetGmsCoreNotificationsStateTrackerForTesting(
         fake_tracker_.get());
   }
@@ -76,15 +74,13 @@ class InternetHandlerTest : public BrowserWithTestWindowTest {
     EXPECT_EQ(kSendDeviceNamesMessageType, last_call_data->arg1()->GetString());
 
     std::vector<std::string> actual_device_names;
-    for (const auto& device_name_value :
-         last_call_data->arg2()->GetListDeprecated())
+    for (const auto& device_name_value : last_call_data->arg2()->GetList())
       actual_device_names.push_back(device_name_value.GetString());
     EXPECT_EQ(expected_device_names, actual_device_names);
   }
 
   std::unique_ptr<content::TestWebUI> web_ui_;
-  std::unique_ptr<chromeos::tether::FakeGmsCoreNotificationsStateTracker>
-      fake_tracker_;
+  std::unique_ptr<tether::FakeGmsCoreNotificationsStateTracker> fake_tracker_;
   std::unique_ptr<TestInternetHandler> handler_;
 };
 
@@ -120,6 +116,4 @@ TEST_F(InternetHandlerTest, TestSendsDeviceNames_StartsWithDevices) {
       1u /* expected_num_updates */);
 }
 
-}  // namespace settings
-
-}  // namespace chromeos
+}  // namespace ash::settings

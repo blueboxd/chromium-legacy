@@ -110,15 +110,11 @@ public class LibraryLoader {
 
     // Whether to use the Chromium linker vs. the system linker.
     // Avoids locking: should be initialized very early.
-    private boolean mUseChromiumLinker;
+    private boolean mUseChromiumLinker = NativeLibraries.sUseLinker;
 
     // Whether to use ModernLinker vs. LegacyLinker.
     // Avoids locking: should be initialized very early.
-    private boolean mUseModernLinker;
-
-    // Whether the |mUseChromiumLinker| and |mUseModernLinker| configuration has been set.
-    // Avoids locking: should be initialized very early.
-    private boolean mConfigurationSet;
+    private boolean mUseModernLinker = NativeLibraries.sUseModernLinker;
 
     // The type of process the shared library is loaded in. Gets passed to native after loading.
     // Avoids locking: should be initialized very early.
@@ -426,7 +422,9 @@ public class LibraryLoader {
     }
 
     @VisibleForTesting
-    protected LibraryLoader() {}
+    protected LibraryLoader() {
+        if (DEBUG) logLinkersUsed();
+    }
 
     /**
      * Set the {@link LibraryProcessType} for this process.
@@ -474,23 +472,9 @@ public class LibraryLoader {
      */
     public void setLinkerImplementation(boolean useChromiumLinker, boolean useModernLinker) {
         assert !mInitialized;
-
         mUseChromiumLinker = useChromiumLinker;
         mUseModernLinker = useModernLinker;
         if (DEBUG) logLinkersUsed();
-        mConfigurationSet = true;
-    }
-
-    @GuardedBy("mLock")
-    private void setLinkerImplementationIfNeededAlreadyLocked() {
-        if (mConfigurationSet) return;
-
-        // Cannot use initial values for the fields below, as this makes robolectric tests fail,
-        // since they don't have a NativeLibraries class.
-        mUseChromiumLinker = NativeLibraries.sUseLinker;
-        mUseModernLinker = NativeLibraries.sUseModernLinker;
-        if (DEBUG) logLinkersUsed();
-        mConfigurationSet = true;
     }
 
     private void logLinkersUsed() {
@@ -640,7 +624,6 @@ public class LibraryLoader {
      */
     public void preloadNowOverridePackageName(String packageName) {
         synchronized (mLock) {
-            setLinkerImplementationIfNeededAlreadyLocked();
             if (useChromiumLinker()) return;
             preloadAlreadyLocked(packageName, /* inZygote= */ false);
         }
@@ -660,14 +643,23 @@ public class LibraryLoader {
 
     /**
      * Checks whether the native library is fully loaded.
+     *
+     * @deprecated: please avoid using in new code:
+     * https://crsrc.org/c/base/android/jni_generator/README.md#testing-for-readiness-use-get
      */
+    @Deprecated
+    @VisibleForTesting
     public boolean isLoaded() {
         return mLoadState == LoadState.LOADED;
     }
 
     /**
      * Checks whether the native library is fully loaded and initialized.
+     *
+     * @deprecated: please avoid using in new code:
+     * https://chromium.googlesource.com/chromium/src/+/main/base/android/jni_generator/README.md#testing-for-readiness_use
      */
+    @Deprecated
     public boolean isInitialized() {
         return mInitialized && isLoaded();
     }
@@ -844,7 +836,6 @@ public class LibraryLoader {
         try (TraceEvent te = TraceEvent.scoped("LibraryLoader.loadMainDexAlreadyLocked")) {
             assert !mInitialized;
             assert mLibraryProcessType != LibraryProcessType.PROCESS_UNINITIALIZED || inZygote;
-            setLinkerImplementationIfNeededAlreadyLocked();
 
             UptimeMillisTimer uptimeTimer = new UptimeMillisTimer();
             CurrentThreadTimeMillisTimer threadTimeTimer = new CurrentThreadTimeMillisTimer();
@@ -1009,8 +1000,12 @@ public class LibraryLoader {
     /**
      * Overrides the library loader (normally with a mock) for testing.
      *
+     * @deprecated: please avoid using in new code:
+     * https://chromium.googlesource.com/chromium/src/+/main/base/android/jni_generator/README.md#testing-for-readiness_use
+     *
      * @param loader the mock library loader.
      */
+    @Deprecated
     @VisibleForTesting
     public static void setLibraryLoaderForTesting(LibraryLoader loader) {
         sInstance = loader;
@@ -1041,10 +1036,15 @@ public class LibraryLoader {
      * This sets the LibraryLoader internal state to its fully initialized state and should *only*
      * be used by clients like NativeTests which manually load their native libraries without using
      * the LibraryLoader.
+     *
+     * Don't use in new code. Tests that require this call should be migrated to
+     * NativeUnitTest.
+     * https://chromium.googlesource.com/chromium/src/+/main/base/android/jni_generator/README.md#testing-for-readiness_use
      */
-    public void setLibrariesLoadedForNativeTests() {
-        mLoadState = LoadState.LOADED;
-        mInitialized = true;
+    protected static void setLibrariesLoadedForNativeTests() {
+        LibraryLoader self = getInstance();
+        self.mLoadState = LoadState.LOADED;
+        self.mInitialized = true;
     }
 
     public static void setBrowserProcessStartupBlockedForTesting() {

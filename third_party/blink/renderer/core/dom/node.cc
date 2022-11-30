@@ -127,7 +127,6 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
@@ -158,20 +157,6 @@ ScrollCustomizationCallbacks& GetScrollCustomizationCallbacks() {
                       scroll_customization_callbacks,
                       (MakeGarbageCollected<ScrollCustomizationCallbacks>()));
   return *scroll_customization_callbacks;
-}
-
-// TODO(crbug.com/545926): Unsafe hack to avoid triggering the
-// ThreadRestrictionVerifier on StringImpl. This should be fixed completely, and
-// we should always avoid accessing these strings from the impl thread.
-// Currently code that calls into this method from the impl thread tries to make
-// sure that the main thread is not running at this time.
-void AppendUnsafe(StringBuilder& builder, const String& off_thread_string) {
-  StringImpl* impl = off_thread_string.Impl();
-  if (impl) {
-    WTF::VisitCharacters(*impl, [&](const auto* chars, unsigned length) {
-      builder.Append(chars, length);
-    });
-  }
 }
 
 }  // namespace
@@ -1344,7 +1329,7 @@ void Node::SetNeedsReattachLayoutTree() {
 
 void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
                                const StyleChangeReasonForTracing& reason) {
-  DCHECK(!GetDocument().GetStyleEngine().InRebuildLayoutTree());
+  DCHECK(GetDocument().GetStyleEngine().MarkStyleDirtyAllowed());
   DCHECK(!GetDocument().InPostLifecycleSteps());
   DCHECK(change_type != kNoStyleChange);
   DCHECK(IsElementNode() || IsTextNode());
@@ -1881,7 +1866,7 @@ bool Node::isDefaultNamespace(
   // https://dom.spec.whatwg.org/#dom-node-isdefaultnamespace
 
   // 1. If namespace is the empty string, then set it to null.
-  const AtomicString& namespace_uri = namespace_uri_maybe_empty.IsEmpty()
+  const AtomicString& namespace_uri = namespace_uri_maybe_empty.empty()
                                           ? g_null_atom
                                           : namespace_uri_maybe_empty;
 
@@ -1899,7 +1884,7 @@ const AtomicString& Node::lookupPrefix(
   // Implemented according to
   // https://dom.spec.whatwg.org/#dom-node-lookupprefix
 
-  if (namespace_uri.IsEmpty() || namespace_uri.IsNull())
+  if (namespace_uri.empty() || namespace_uri.IsNull())
     return g_null_atom;
 
   const Element* context;
@@ -1936,7 +1921,7 @@ const AtomicString& Node::lookupNamespaceURI(
 
   // 1. If prefix is the empty string, then set it to null.
   String prefix = specified_prefix;
-  if (!specified_prefix.IsNull() && specified_prefix.IsEmpty())
+  if (!specified_prefix.IsNull() && specified_prefix.empty())
     prefix = String();
 
   // 2. Return the result of running locate a namespace for the context object
@@ -1960,12 +1945,12 @@ const AtomicString& Node::lookupNamespaceURI(
       AttributeCollection attributes = element.Attributes();
       for (const Attribute& attr : attributes) {
         if (attr.Prefix() == g_xmlns_atom && attr.LocalName() == prefix) {
-          if (!attr.Value().IsEmpty())
+          if (!attr.Value().empty())
             return attr.Value();
           return g_null_atom;
         }
         if (attr.LocalName() == g_xmlns_atom && prefix.IsNull()) {
-          if (!attr.Value().IsEmpty())
+          if (!attr.Value().empty())
             return attr.Value();
           return g_null_atom;
         }
@@ -2065,13 +2050,13 @@ void Node::setTextContent(const String& text) {
       // See crbug.com/352836 also.
       // No need to do anything if the text is identical.
       if (container->HasOneTextChild() &&
-          To<Text>(container->firstChild())->data() == text && !text.IsEmpty())
+          To<Text>(container->firstChild())->data() == text && !text.empty())
         return;
 
       ChildListMutationScope mutation(*this);
       // Note: This API will not insert empty text nodes:
       // https://dom.spec.whatwg.org/#dom-node-textcontent
-      if (text.IsEmpty()) {
+      if (text.empty()) {
         container->RemoveChildren(kDispatchSubtreeModifiedEvent);
       } else {
         container->RemoveChildren(kOmitSubtreeModifiedEvent);
@@ -2272,11 +2257,11 @@ void Node::RemovedFrom(ContainerNode& insertion_point) {
 
 String Node::DebugName() const {
   StringBuilder name;
-  AppendUnsafe(name, DebugNodeName());
+  name.Append(DebugNodeName());
   if (const auto* this_element = DynamicTo<Element>(this)) {
     if (this_element->HasID()) {
       name.Append(" id=\'");
-      AppendUnsafe(name, this_element->GetIdAttribute());
+      name.Append(this_element->GetIdAttribute());
       name.Append('\'');
     }
 
@@ -2285,7 +2270,7 @@ String Node::DebugName() const {
       for (wtf_size_t i = 0; i < this_element->ClassNames().size(); ++i) {
         if (i > 0)
           name.Append(' ');
-        AppendUnsafe(name, this_element->ClassNames()[i]);
+        name.Append(this_element->ClassNames()[i]);
       }
       name.Append('\'');
     }
@@ -2304,7 +2289,7 @@ static void DumpAttributeDesc(const Node& node,
   if (!element)
     return;
   const AtomicString& value = element->getAttribute(name);
-  if (value.IsEmpty())
+  if (value.empty())
     return;
   builder.Append(' ');
   builder.Append(name.ToString());
@@ -2344,7 +2329,7 @@ String Node::ToString() const {
     return builder.ReleaseString();
   } else if (const auto* element = DynamicTo<Element>(this)) {
     const AtomicString& pseudo = element->ShadowPseudoId();
-    if (!pseudo.IsEmpty()) {
+    if (!pseudo.empty()) {
       builder.Append(" ::");
       builder.Append(pseudo);
     }
@@ -2389,7 +2374,7 @@ void Node::PrintNodePathTo(std::ostream& stream) const {
 
         const auto* element = To<Element>(node);
         const AtomicString& idattr = element->GetIdAttribute();
-        bool has_id_attr = !idattr.IsNull() && !idattr.IsEmpty();
+        bool has_id_attr = !idattr.IsNull() && !idattr.empty();
         if (node->previousSibling() || node->nextSibling()) {
           int count = 0;
           for (const Node* previous = node->previousSibling(); previous;

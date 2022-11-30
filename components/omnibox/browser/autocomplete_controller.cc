@@ -149,19 +149,30 @@ void RecordMatchDeletion(const AutocompleteMatch& match) {
   }
 }
 
-// Return if preservation is enabled for sync/async updates, and this is a
-// sync/async update. Sync updates may have a minimum input length as well.
-bool ShouldPreserveDefault(bool in_start, size_t input_length) {
+// Return if the default suggestion should be preserved.
+bool ShouldPreserveDefault(bool in_start, const AutocompleteInput& input) {
+  // Don't preserve default in keyword mode to avoid e.g. the 'google.com'
+  // suggestion being preserved and kicking the user out of keyword mode when
+  // they type 'google.com  '.
+  static bool exclude_keyword_inputs =
+      OmniboxFieldTrial::
+          kAutocompleteStabilityPreserveDefaultExcludeKeywordInputs.Get();
+  if (exclude_keyword_inputs && input.prefer_keyword())
+    return false;
+
+  // Check if preservation is enabled for sync/async updates.
   if (in_start) {
     static const int min_input_length =
         OmniboxFieldTrial::
             kAutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength
                 .Get();
     return min_input_length >= 0 &&
-           input_length >= static_cast<size_t>(min_input_length);
+           input.text().length() >= static_cast<size_t>(min_input_length);
   } else {
-    return OmniboxFieldTrial::
-        kAutocompleteStabilityPreserveDefaultForAsyncUpdates.Get();
+    static bool for_async_updates =
+        OmniboxFieldTrial::kAutocompleteStabilityPreserveDefaultForAsyncUpdates
+            .Get();
+    return for_async_updates;
   }
 }
 
@@ -909,6 +920,10 @@ void AutocompleteController::UpdateResult(
   AutocompleteResult old_matches_to_reuse;
   old_matches_to_reuse.Swap(&result_);
 
+  // Add default static suggestion groups.
+  static auto prebuilt_suggestion_groups_map = omnibox::BuildDefaultGroups();
+  result_.MergeSuggestionGroupsMap(prebuilt_suggestion_groups_map);
+
   for (const auto& provider : providers_) {
     if (!ShouldRunProvider(provider.get()))
       continue;
@@ -930,24 +945,15 @@ void AutocompleteController::UpdateResult(
   // Sort the matches and trim to a small number of "best" matches.
   // Conditionally preserve the default match.
   const AutocompleteMatch* preserve_default_match = nullptr;
-  if (last_default_match &&
-      ShouldPreserveDefault(in_start_, input_.text().length())) {
+  if (last_default_match && ShouldPreserveDefault(in_start_, input_))
     preserve_default_match = &last_default_match.value();
-  }
-  result_.SortAndCull(input_, template_url_service_, preserve_default_match);
 
-  // Only produce Pedals for the default focus case (not on focus or on delete).
-  if (input_.focus_type() == metrics::OmniboxFocusType::INTERACTION_DEFAULT) {
-    // TODO(tommycli): It sure seems like this should be moved down below
-    // `TransferOldMatches()` along with all the other annotation code.
-    result_.AttachPedalsToMatches(input_, *provider_client_);
-  }
-
-  // Need to validate before invoking `TransferOldMatches()` as the old matches
-  // are not valid against the current input.
-#if DCHECK_IS_ON()
-  result_.Validate();
-#endif  // DCHECK_IS_ON()
+  static bool single_sort_and_cull_pass =
+      base::FeatureList::IsEnabled(omnibox::kSingleSortAndCullPass);
+  // If `done_`, the below `SortAndCull()` is skipped, so this is the single
+  // pass.
+  if (!single_sort_and_cull_pass || done_)
+    result_.SortAndCull(input_, template_url_service_, preserve_default_match);
 
   if (!done_) {
     // This conditional needs to match the conditional in Start that invokes
@@ -962,6 +968,10 @@ void AutocompleteController::UpdateResult(
     }
   }
 
+#if DCHECK_IS_ON()
+  result_.Validate();
+#endif  // DCHECK_IS_ON()
+
   // Will log metrics for how many matches changed. Will also log timing metrics
   // for the current request if it's complete; otherwise, will just update
   // timestamps of when the last update changing any or the default suggestion
@@ -970,6 +980,11 @@ void AutocompleteController::UpdateResult(
                           result_.GetMatchDedupComparators());
 
   // Below are all annotations after the match list is ready.
+
+  // Only produce Pedals for the default focus case (not on focus or on delete).
+  if (input_.focus_type() == metrics::OmniboxFocusType::INTERACTION_DEFAULT)
+    result_.AttachPedalsToMatches(input_, *provider_client_);
+
 #if !BUILDFLAG(IS_IOS)
   // HistoryClusters is not enabled on iOS.
   AttachHistoryClustersActions(provider_client_->GetHistoryClustersService(),

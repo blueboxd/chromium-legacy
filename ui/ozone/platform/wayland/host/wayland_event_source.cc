@@ -4,7 +4,6 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 
-#include <algorithm>
 #include <memory>
 
 #include "base/bind.h"
@@ -12,6 +11,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -444,7 +444,6 @@ void WaylandEventSource::OnTouchPressEvent(
   PointerDetails details(EventPointerType::kTouch, id);
   TouchEvent event(ET_TOUCH_PRESSED, location, location, timestamp, details,
                    keyboard_modifiers_);
-  DCHECK_EQ(dispatch_policy, wl::EventDispatchPolicy::kOnFrame);
   touch_frames_.push_back(
       std::make_unique<FrameData>(event, base::NullCallback()));
 }
@@ -683,6 +682,17 @@ void WaylandEventSource::OnPointerStylusToolChanged(
       .force = std::numeric_limits<float>::quiet_NaN()};
 }
 
+void WaylandEventSource::OnPointerStylusForceChanged(float force) {
+  DCHECK(last_pointer_stylus_tool_.has_value());
+  last_pointer_stylus_tool_->force = force;
+}
+
+void WaylandEventSource::OnPointerStylusTiltChanged(
+    const gfx::Vector2dF& tilt) {
+  DCHECK(last_pointer_stylus_tool_.has_value());
+  last_pointer_stylus_tool_->tilt = tilt;
+}
+
 const WaylandWindow* WaylandEventSource::GetPointerTarget() const {
   return window_manager_->GetCurrentPointerFocusedWindow();
 }
@@ -720,10 +730,9 @@ void WaylandEventSource::HandleTouchFocusChange(WaylandWindow* window,
 // Focus must not be unset if there is another touch point within |window|.
 bool WaylandEventSource::ShouldUnsetTouchFocus(WaylandWindow* win,
                                                PointerId id) {
-  auto result = std::find_if(
-      touch_points_.begin(), touch_points_.end(),
-      [win, id](auto& p) { return p.second->window == win && p.first != id; });
-  return result == touch_points_.end();
+  return base::ranges::none_of(touch_points_, [win, id](auto& p) {
+    return p.second->window == win && p.first != id;
+  });
 }
 
 gfx::Vector2dF WaylandEventSource::ComputeFlingVelocity() {

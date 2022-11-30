@@ -12,8 +12,7 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace network {
-namespace cors {
+namespace network::cors {
 namespace {
 
 using CorsTest = testing::Test;
@@ -281,6 +280,11 @@ TEST_F(CorsTest, SafelistedAcceptLanguage) {
 TEST_F(CorsTest, SafelistedSecCHPrefersColorScheme) {
   EXPECT_TRUE(IsCorsSafelistedHeader("Sec-CH-Prefers-Color-Scheme",
                                      "\"Prefers-Color-Scheme!\""));
+}
+
+TEST_F(CorsTest, SafelistedSecCHPrefersReducedMotion) {
+  EXPECT_TRUE(IsCorsSafelistedHeader("Sec-CH-Prefers-Reduced-Motion",
+                                     "\"Prefers-Reduced-Motion!\""));
 }
 
 TEST_F(CorsTest, SafelistedSecCHUA) {
@@ -577,5 +581,4 @@ TEST_F(CorsTest, IsForbiddenMethod) {
 }
 
 }  // namespace
-}  // namespace cors
-}  // namespace network
+}  // namespace network::cors

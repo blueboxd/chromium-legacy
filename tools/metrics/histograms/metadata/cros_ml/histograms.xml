@@ -34,7 +34,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.CpuUsageMilliPercent"
-    units="1/1000ths of %" expires_after="2023-01-29">
+    units="1/1000ths of %" expires_after="2023-04-02">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <summary>
@@ -145,8 +145,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.MojoConnectionEvent"
-    enum="MachineLearningServiceMojoConnectionEvent" expires_after="2022-10-10">
+    enum="MachineLearningServiceMojoConnectionEvent" expires_after="2023-03-12">
   <owner>alanlxl@chromium.org</owner>
+  <owner>honglinyu@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <summary>
     Events related to the connection and disconnection of the Mojo IPC channel
@@ -166,7 +167,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.PeakTotalMemoryKb" units="KB"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>honglinyu@chromium.org</owner>
@@ -206,7 +207,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.TextSuggester.Suggest.Event"
-    enum="BooleanError" expires_after="2023-01-31">
+    enum="BooleanError" expires_after="2023-04-09">
   <owner>curtismcmullan@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <summary>
@@ -225,7 +226,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.TotalMemoryKb" units="KB"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>honglinyu@chromium.org</owner>
@@ -250,7 +251,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="MachineLearningService.WebPlatformHandwritingModel.LoadModelResult.Event"
     enum="MachineLearningServiceLoadHandwritingModelResultEvent"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <owner>charleszhao@chromium.org</owner>

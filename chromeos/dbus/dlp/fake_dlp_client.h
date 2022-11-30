@@ -29,9 +29,9 @@ class COMPONENT_EXPORT(DLP) FakeDlpClient : public DlpClient,
   void AddFile(const dlp::AddFileRequest request,
                AddFileCallback callback) override;
   void GetFilesSources(const dlp::GetFilesSourcesRequest request,
-                       GetFilesSourcesCallback callback) const override;
+                       GetFilesSourcesCallback callback) override;
   void CheckFilesTransfer(const dlp::CheckFilesTransferRequest request,
-                          CheckFilesTransferCallback callback) const override;
+                          CheckFilesTransferCallback callback) override;
   void RequestFileAccess(const dlp::RequestFileAccessRequest request,
                          RequestFileAccessCallback callback) override;
   bool IsAlive() const override;
@@ -44,6 +44,8 @@ class COMPONENT_EXPORT(DLP) FakeDlpClient : public DlpClient,
       dlp::CheckFilesTransferResponse response) override;
   void SetFileAccessAllowed(bool allowed) override;
   void SetIsAlive(bool is_alive) override;
+  void SetAddFileMock(AddFileCall mock) override;
+  void SetGetFilesSourceMock(GetFilesSourceCall mock) override;
 
  private:
   int set_dlp_files_policy_count_ = 0;
@@ -53,6 +55,8 @@ class COMPONENT_EXPORT(DLP) FakeDlpClient : public DlpClient,
   absl::optional<std::string> fake_source_;
   absl::optional<dlp::CheckFilesTransferResponse>
       check_files_transfer_response_;
+  absl::optional<AddFileCall> add_file_mock_;
+  absl::optional<GetFilesSourceCall> get_files_source_mock_;
 };
 
 }  // namespace chromeos

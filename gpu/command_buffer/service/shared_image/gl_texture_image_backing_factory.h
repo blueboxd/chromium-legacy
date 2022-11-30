@@ -31,16 +31,20 @@ struct Mailbox;
 class GPU_GLES2_EXPORT GLTextureImageBackingFactory
     : public GLCommonImageBackingFactory {
  public:
+  // The `for_cpu_upload_usage` parameter controls if this factory accepts
+  // `SHARED_IMAGE_USAGE_CPU_UPLOAD`. It is strict, if true the usage must
+  // include CPU upload and if false it must not.
   GLTextureImageBackingFactory(const GpuPreferences& gpu_preferences,
                                const GpuDriverBugWorkarounds& workarounds,
                                const gles2::FeatureInfo* feature_info,
-                               gl::ProgressReporter* progress_reporter);
+                               gl::ProgressReporter* progress_reporter,
+                               bool for_cpu_upload_usage);
   ~GLTextureImageBackingFactory() override;
 
   // SharedImageBackingFactory implementation.
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
-      viz::ResourceFormat format,
+      viz::SharedImageFormat format,
       SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
@@ -50,7 +54,7 @@ class GPU_GLES2_EXPORT GLTextureImageBackingFactory
       bool is_thread_safe) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
-      viz::ResourceFormat format,
+      viz::SharedImageFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
@@ -70,7 +74,7 @@ class GPU_GLES2_EXPORT GLTextureImageBackingFactory
       SkAlphaType alpha_type,
       uint32_t usage) override;
   bool IsSupported(uint32_t usage,
-                   viz::ResourceFormat format,
+                   viz::SharedImageFormat format,
                    const gfx::Size& size,
                    bool thread_safe,
                    gfx::GpuMemoryBufferType gmb_type,
@@ -82,14 +86,14 @@ class GPU_GLES2_EXPORT GLTextureImageBackingFactory
       GLenum target,
       GLuint service_id,
       bool is_cleared,
-      viz::ResourceFormat format,
+      viz::SharedImageFormat format,
       const gfx::Size& size,
       uint32_t usage);
 
  private:
   std::unique_ptr<SharedImageBacking> CreateSharedImageInternal(
       const Mailbox& mailbox,
-      viz::ResourceFormat format,
+      viz::SharedImageFormat format,
       SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
@@ -97,6 +101,8 @@ class GPU_GLES2_EXPORT GLTextureImageBackingFactory
       SkAlphaType alpha_type,
       uint32_t usage,
       base::span<const uint8_t> pixel_data);
+
+  const bool for_cpu_upload_usage_;
 };
 
 }  // namespace gpu

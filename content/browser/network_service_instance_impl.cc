@@ -36,8 +36,8 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/buildflags.h"
 #include "content/browser/first_party_sets/first_party_sets_handler_impl.h"
-#include "content/browser/net/http_cache_backend_file_operations_factory.h"
-#include "content/browser/net/socket_broker_impl.h"
+#include "content/browser/network/http_cache_backend_file_operations_factory.h"
+#include "content/browser/network/socket_broker_impl.h"
 #include "content/browser/network_sandbox_grant_result.h"
 #include "content/browser/network_service_client.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -52,7 +52,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/features.h"
-#include "net/first_party_sets/public_sets.h"
+#include "net/first_party_sets/global_first_party_sets.h"
 #include "net/log/net_log_util.h"
 #include "sandbox/policy/features.h"
 #include "services/cert_verifier/cert_verifier_service_factory.h"
@@ -72,7 +72,7 @@
 #endif
 
 #if BUILDFLAG(IS_WIN)
-#include "content/browser/net/network_service_process_tracker_win.h"
+#include "content/browser/network/network_service_process_tracker_win.h"
 #endif
 
 namespace content {
@@ -121,14 +121,14 @@ std::unique_ptr<network::NetworkService>& GetLocalNetworkService() {
 // On Chrome OS, the Network Service must run on the IO thread because
 // ProfileIOData and NetworkContext both try to set up NSS, which has to be
 // called from the IO thread.
-const base::Feature kNetworkServiceDedicatedThread {
-  "NetworkServiceDedicatedThread",
+BASE_FEATURE(kNetworkServiceDedicatedThread,
+             "NetworkServiceDedicatedThread",
 #if BUILDFLAG(IS_CHROMEOS)
-      base::FEATURE_DISABLED_BY_DEFAULT
+             base::FEATURE_DISABLED_BY_DEFAULT
 #else
-      base::FEATURE_ENABLED_BY_DEFAULT
+             base::FEATURE_ENABLED_BY_DEFAULT
 #endif
-};
+);
 
 base::Thread& GetNetworkServiceDedicatedThread() {
   static base::NoDestructor<base::Thread> thread{"NetworkService"};
@@ -301,7 +301,15 @@ void CreateNetworkContextInternal(
   auto* network_service = GetNetworkService();
 
 #if BUILDFLAG(USE_SOCKET_BROKER)
-  if (GetContentClient()->browser()->ShouldSandboxNetworkService() &&
+  // If the browser has started shutting down, it is possible that either a)
+  // `g_client` was never created if shutdown started before the network service
+  // was created, or b) the network service might have crashed meaning
+  // `g_client` is the client for the already-crashed Network Service, and a new
+  // network service never started. It's not safe to bind the socket broker in
+  // either of these cases so skip the binding since the browser is shutting
+  // down anyway.
+  if (!GetContentClient()->browser()->IsShuttingDown() &&
+      GetContentClient()->browser()->ShouldSandboxNetworkService() &&
       !params->socket_broker) {
     params->socket_broker = g_client->BindSocketBroker();
   }
@@ -622,9 +630,9 @@ network::mojom::NetworkService* GetNetworkService() {
       }
 
       if (FirstPartySetsHandlerImpl::GetInstance()->IsEnabled()) {
-        if (absl::optional<net::PublicSets> sets =
+        if (absl::optional<net::GlobalFirstPartySets> sets =
                 FirstPartySetsHandlerImpl::GetInstance()->GetSets(
-                    base::BindOnce([](net::PublicSets sets) {
+                    base::BindOnce([](net::GlobalFirstPartySets sets) {
                       GetNetworkService()->SetFirstPartySets(std::move(sets));
                     }));
             sets.has_value()) {

@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -397,8 +397,6 @@ component("platform") {
     "bindings/extensions_registry.h",
     "bindings/idl_member_installer.cc",
     "bindings/idl_member_installer.h",
-    "bindings/microtask.cc",
-    "bindings/microtask.h",
     "bindings/multi_worlds_v8_reference.cc",
     "bindings/multi_worlds_v8_reference.h",
     "bindings/name_client.h",
@@ -923,6 +921,8 @@ component("platform") {
     "graphics/gpu/webgpu_resource_provider_cache.h",
     "graphics/gpu/webgpu_swap_buffer_provider.cc",
     "graphics/gpu/webgpu_swap_buffer_provider.h",
+    "graphics/gpu/webgpu_texture_alpha_clearer.cc",
+    "graphics/gpu/webgpu_texture_alpha_clearer.h",
     "graphics/gpu/xr_frame_transport.cc",
     "graphics/gpu/xr_frame_transport.h",
     "graphics/gpu/xr_webgl_drawing_buffer.cc",
@@ -1683,7 +1683,6 @@ component("platform") {
     "//third_party/blink/renderer/platform/wtf",
     "//third_party/ced",
     "//third_party/emoji-segmenter",
-    "//third_party/harfbuzz-ng:hb_scoped_util",
     "//third_party/icu",
     "//third_party/libyuv",
     "//third_party/one_euro_filter",
@@ -1885,6 +1884,7 @@ static_library("test_support") {
     "testing/testing_platform_support.h",
     "testing/testing_platform_support_with_mock_scheduler.cc",
     "testing/testing_platform_support_with_mock_scheduler.h",
+    "testing/transformation_matrix_test_helpers.h",
     "testing/unit_test_helpers.cc",
     "testing/unit_test_helpers.h",
     "testing/url_test_helpers.cc",
@@ -1927,6 +1927,7 @@ static_library("test_support") {
     "//third_party/blink/renderer/platform/loader:test_support",
     "//third_party/blink/renderer/platform/media:test_support",
     "//third_party/blink/renderer/platform/scheduler:test_support",
+    "//ui/gfx:test_support",
   ]
 
   deps = [
@@ -1953,7 +1954,6 @@ test("blink_platform_unittests") {
   deps = [ ":blink_platform_unittests_sources" ]
 
   if (is_fuchsia) {
-    use_cfv1 = false
     additional_manifest_fragments = [
       "//build/config/fuchsia/test/test_fonts.shard.test-cml",
       "//build/config/fuchsia/test/mark_vmo_executable.shard.test-cml",
@@ -2176,7 +2176,6 @@ source_set("blink_platform_unittests_sources") {
     "transforms/rotation_test.cc",
     "transforms/transform_operations_test.cc",
     "transforms/transformation_matrix_test.cc",
-    "transforms/transformation_matrix_test_helpers.h",
     "video_capture/gpu_memory_buffer_test_support.cc",
     "video_capture/gpu_memory_buffer_test_support.h",
     "video_capture/video_capture_impl_test.cc",
@@ -2245,6 +2244,7 @@ source_set("blink_platform_unittests_sources") {
     "//build:chromeos_buildflags",
     "//cc",
     "//cc:test_support",
+    "//gin:gin",
     "//media:test_support",
     "//media/capture/mojom:video_capture",
     "//mojo/core/embedder",
@@ -2359,6 +2359,7 @@ test("blink_platform_perftests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//gin:gin",
     "//mojo/public/cpp/bindings/tests:for_blink_tests",
     "//mojo/public/cpp/test_support:test_utils",
     "//mojo/public/interfaces/bindings/tests:test_interfaces_blink",
@@ -2409,6 +2410,7 @@ test("blink_fuzzer_unittests") {
   deps = [
     ":test_support",
     "//base/test:test_support",
+    "//gin:gin",
     "//mojo/core/embedder:embedder",
     "//third_party/blink/public:test_support",
   ]
@@ -2422,7 +2424,6 @@ test("blink_fuzzer_unittests") {
   }
 
   if (is_fuchsia) {
-    use_cfv1 = false
     deps += [ "//skia:test_fonts_cfv2" ]
     test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
     additional_manifest_fragments = [

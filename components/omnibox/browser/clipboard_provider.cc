@@ -42,9 +42,10 @@ namespace {
 
 const size_t kMaxClipboardSuggestionShownNumTimesSimpleSize = 20;
 
-// Clipboard suggestions should be placed above search and url suggestions
-// (including MostVisited tiles), but below query tiles.
-const int kClipboardMatchRelevanceScore = 1501;
+// Clipboard suggestion is placed in a dedicated SECTION_MOBILE_CLIPBOARD.
+// It is the only occupant of this section, making its relevance score not
+// important.
+const int kClipboardMatchRelevanceScore = 1;
 
 bool IsMatchDeletionEnabled() {
   return base::FeatureList::IsEnabled(
@@ -118,7 +119,6 @@ void RecordDeletingClipboardSuggestionMetrics(
                                  clipboard_contents_age);
   }
 }
-
 }  // namespace
 
 ClipboardProvider::ClipboardProvider(AutocompleteProviderClient* client,
@@ -248,14 +248,6 @@ void ClipboardProvider::AddCreatedMatchWithTracking(
   } else {
     current_url_suggested_ = match.destination_url;
     current_url_suggested_times_ = 1;
-  }
-
-  // If the omnibox is not empty, add a default match.
-  // This match will be opened when the user presses "Enter".
-  if (!input.text().empty()) {
-    AutocompleteMatch verbatim_match = VerbatimMatchForURL(
-        this, client_, input, input.current_url(), input.current_title(), -1);
-    matches_.push_back(verbatim_match);
   }
 
   RecordCreatingClipboardSuggestionMetrics(current_url_suggested_times_,
@@ -447,6 +439,7 @@ AutocompleteMatch ClipboardProvider::NewBlankURLMatch() {
                           IsMatchDeletionEnabled(),
                           AutocompleteMatchType::CLIPBOARD_URL);
 
+  match.suggestion_group_id = omnibox::GROUP_MOBILE_CLIPBOARD;
   match.description.assign(l10n_util::GetStringUTF16(IDS_LINK_FROM_CLIPBOARD));
   if (!match.description.empty())
     match.description_class.push_back({0, ACMatchClassification::NONE});
@@ -468,6 +461,7 @@ AutocompleteMatch ClipboardProvider::NewBlankTextMatch() {
                           IsMatchDeletionEnabled(),
                           AutocompleteMatchType::CLIPBOARD_TEXT);
 
+  match.suggestion_group_id = omnibox::GROUP_MOBILE_CLIPBOARD;
   match.description.assign(l10n_util::GetStringUTF16(IDS_TEXT_FROM_CLIPBOARD));
   if (!match.description.empty())
     match.description_class.push_back({0, ACMatchClassification::NONE});
@@ -491,6 +485,7 @@ AutocompleteMatch ClipboardProvider::NewBlankImageMatch() {
                           IsMatchDeletionEnabled(),
                           AutocompleteMatchType::CLIPBOARD_IMAGE);
 
+  match.suggestion_group_id = omnibox::GROUP_MOBILE_CLIPBOARD;
   match.description.assign(l10n_util::GetStringUTF16(IDS_IMAGE_FROM_CLIPBOARD));
   if (!match.description.empty())
     match.description_class.push_back({0, ACMatchClassification::NONE});

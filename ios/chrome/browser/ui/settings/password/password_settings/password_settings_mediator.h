@@ -10,11 +10,20 @@
 #import "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_export_handler.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_consumer.h"
+#import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_delegate.h"
+
+namespace signin {
+class IdentityManager;
+}
+
+namespace syncer {
+class SyncService;
+}
 
 @protocol ReauthenticationProtocol;
 
 // Mediator for the Password Settings screen.
-@interface PasswordSettingsMediator : NSObject
+@interface PasswordSettingsMediator : NSObject <PasswordSettingsDelegate>
 
 @property(nonatomic, weak) id<PasswordSettingsConsumer> consumer;
 
@@ -30,6 +39,10 @@
                (raw_ptr<password_manager::SavedPasswordsPresenter>)
                    passwordPresenter
                      exportHandler:(id<PasswordExportHandler>)exportHandler
+                       prefService:(raw_ptr<PrefService>)prefService
+                   identityManager:
+                       (raw_ptr<signin::IdentityManager>)identityManager
+                       syncService:(raw_ptr<syncer::SyncService>)syncService
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
@@ -42,6 +55,9 @@
 
 // Indicates that the user canceled the export flow while it was processing.
 - (void)userDidCancelExportFlow;
+
+// Detaches observers.
+- (void)disconnect;
 
 @end
 

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/threading/thread_checker.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_sample_collector.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/content_security_notifier.mojom-blink.h"
@@ -443,10 +444,8 @@ void WorkerOrWorkletGlobalScope::Dispose() {
     resource_fetcher->StopFetching();
     resource_fetcher->ClearContext();
   }
-}
-
-void WorkerOrWorkletGlobalScope::SetModulator(Modulator* modulator) {
-  modulator_ = modulator;
+  IdentifiabilitySampleCollector::Get()->FlushSource(UkmRecorder(),
+                                                     UkmSourceID());
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -567,7 +566,6 @@ void WorkerOrWorkletGlobalScope::Trace(Visitor* visitor) const {
   visitor->Trace(resource_fetchers_);
   visitor->Trace(subresource_filter_);
   visitor->Trace(script_controller_);
-  visitor->Trace(modulator_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContext::Trace(visitor);
 }

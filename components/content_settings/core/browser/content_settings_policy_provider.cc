@@ -100,9 +100,9 @@ constexpr PrefsForManagedContentSettingsMapEntry
         {prefs::kManagedWebHidBlockedForUrls, ContentSettingsType::HID_GUARD,
          CONTENT_SETTING_BLOCK},
         {prefs::kManagedWindowPlacementAllowedForUrls,
-         ContentSettingsType::WINDOW_PLACEMENT, CONTENT_SETTING_ALLOW},
+         ContentSettingsType::WINDOW_MANAGEMENT, CONTENT_SETTING_ALLOW},
         {prefs::kManagedWindowPlacementBlockedForUrls,
-         ContentSettingsType::WINDOW_PLACEMENT, CONTENT_SETTING_BLOCK},
+         ContentSettingsType::WINDOW_MANAGEMENT, CONTENT_SETTING_BLOCK},
         {prefs::kManagedLocalFontsAllowedForUrls,
          ContentSettingsType::LOCAL_FONTS, CONTENT_SETTING_ALLOW},
         {prefs::kManagedLocalFontsBlockedForUrls,
@@ -229,7 +229,7 @@ const PolicyProvider::PrefsForManagedDefaultMapEntry
          prefs::kManagedDefaultJavaScriptJitSetting},
         {ContentSettingsType::HID_GUARD,
          prefs::kManagedDefaultWebHidGuardSetting},
-        {ContentSettingsType::WINDOW_PLACEMENT,
+        {ContentSettingsType::WINDOW_MANAGEMENT,
          prefs::kManagedDefaultWindowPlacementSetting},
         {ContentSettingsType::LOCAL_FONTS,
          prefs::kManagedDefaultLocalFontsSetting},
@@ -291,8 +291,7 @@ void PolicyProvider::GetContentSettingsFromPreferences(
       return;
     }
 
-    base::Value::ConstListView pattern_str_list =
-        pref->GetValue()->GetListDeprecated();
+    const base::Value::List& pattern_str_list = pref->GetValue()->GetList();
     for (size_t i = 0; i < pattern_str_list.size(); ++i) {
       if (!pattern_str_list[i].is_string()) {
         NOTREACHED() << "Could not read content settings pattern #" << i
@@ -374,7 +373,7 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
   //   }
   // }
   std::unordered_map<std::string, base::DictionaryValue> filters_map;
-  for (const auto& pattern_filter_str : pref->GetValue()->GetListDeprecated()) {
+  for (const auto& pattern_filter_str : pref->GetValue()->GetList()) {
     if (!pattern_filter_str.is_string()) {
       NOTREACHED();
       continue;

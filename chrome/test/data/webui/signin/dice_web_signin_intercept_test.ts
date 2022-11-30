@@ -7,9 +7,9 @@ import 'chrome://signin-dice-web-intercept/dice_web_signin_intercept_app.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {DiceWebSigninInterceptAppElement} from 'chrome://signin-dice-web-intercept/dice_web_signin_intercept_app.js';
 import {DiceWebSigninInterceptBrowserProxyImpl, InterceptionParameters} from 'chrome://signin-dice-web-intercept/dice_web_signin_intercept_browser_proxy.js';
-
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {isChildVisible, waitAfterNextRender} from 'chrome://webui-test/test_util.js';
+import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
+import {isChildVisible} from 'chrome://webui-test/test_util.js';
 
 import {TestDiceWebSigninInterceptBrowserProxy} from './test_dice_web_signin_intercept_browser_proxy.js';
 
@@ -47,7 +47,8 @@ suite('DiceWebSigninInterceptTest', function() {
     browserProxy = new TestDiceWebSigninInterceptBrowserProxy();
     browserProxy.setInterceptionParameters(PARAMETERS);
     DiceWebSigninInterceptBrowserProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     app = document.createElement('dice-web-signin-intercept-app');
     document.body.append(app);
     await waitAfterNextRender(app);
@@ -168,7 +169,8 @@ suite('DiceWebSigninInterceptTestV2', function() {
     browserProxy = new TestDiceWebSigninInterceptBrowserProxy();
     browserProxy.setInterceptionParameters(PARAMETERS);
     DiceWebSigninInterceptBrowserProxyImpl.setInstance(browserProxy);
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     app = document.createElement('dice-web-signin-intercept-app');
     document.body.append(app);
     await waitAfterNextRender(app);

@@ -14,13 +14,10 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/guid.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
-#include "base/strings/escape.h"
-#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -37,6 +34,7 @@
 #include "content/browser/file_system_access/file_system_access_file_handle_impl.h"
 #include "content/browser/file_system_access/file_system_access_file_writer_impl.h"
 #include "content/browser/file_system_access/file_system_access_transfer_token_impl.h"
+#include "content/browser/file_system_access/file_system_access_write_lock_manager.h"
 #include "content/browser/file_system_access/file_system_chooser.h"
 #include "content/browser/file_system_access/fixed_file_system_access_permission_grant.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -45,6 +43,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "crypto/secure_hash.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/base/filename_util.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
@@ -54,7 +53,6 @@
 #include "storage/browser/file_system/file_system_util.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/file_system/file_system_types.h"
-#include "storage/common/file_system/file_system_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_capacity_allocation_host.mojom.h"
@@ -233,8 +231,7 @@ bool IsValidIdChar(const char c) {
 }
 
 bool IsValidId(const std::string& id) {
-  return id.size() <= 32 &&
-         base::ranges::find_if_not(id, &IsValidIdChar) == id.end();
+  return id.size() <= 32 && base::ranges::all_of(id, &IsValidIdChar);
 }
 
 ui::SelectFileDialog::Type GetSelectFileDialogType(
@@ -678,6 +675,55 @@ void FileSystemAccessManagerImpl::ResolveDataTransferTokenWithFileType(
     HandleType file_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  if (!permission_context_) {
+    DidVerifySensitiveDirectoryAccessForDataTransfer(
+        binding_context, file_path, url, file_type,
+        std::move(token_resolved_callback), SensitiveEntryResult::kAllowed);
+    return;
+  }
+
+  // Drag-and-dropped files cannot be from a sandboxed file system.
+  DCHECK(url.type() == storage::FileSystemType::kFileSystemTypeLocal ||
+         url.type() == storage::FileSystemType::kFileSystemTypeExternal);
+  PathType path_type =
+      url.type() == storage::FileSystemType::kFileSystemTypeLocal
+          ? PathType::kLocal
+          : PathType::kExternal;
+  // TODO(https://crbug.com/1370433): Update ConfirmSensitiveEntryAccess() to
+  // take a UserAction and show a prompt specific to D&D accordingly. For now,
+  // run the same security checks and show the same prompt for D&D as for the
+  // file picker.
+  ui::SelectFileDialog::Type dialog_type =
+      file_type == HandleType::kFile
+          ? ui::SelectFileDialog::Type::SELECT_OPEN_FILE
+          : ui::SelectFileDialog::Type::SELECT_UPLOAD_FOLDER;
+  permission_context_->ConfirmSensitiveEntryAccess(
+      binding_context.storage_key.origin(), path_type, file_path, file_type,
+      dialog_type, binding_context.frame_id,
+      base::BindOnce(&FileSystemAccessManagerImpl::
+                         DidVerifySensitiveDirectoryAccessForDataTransfer,
+                     weak_factory_.GetWeakPtr(), binding_context, file_path,
+                     url, file_type, std::move(token_resolved_callback)));
+}
+
+void FileSystemAccessManagerImpl::
+    DidVerifySensitiveDirectoryAccessForDataTransfer(
+        const BindingContext& binding_context,
+        const base::FilePath& file_path,
+        const storage::FileSystemURL& url,
+        HandleType file_type,
+        GetEntryFromDataTransferTokenCallback token_resolved_callback,
+        SensitiveEntryResult result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (result != SensitiveEntryResult::kAllowed) {
+    std::move(token_resolved_callback)
+        .Run(file_system_access_error::FromStatus(
+                 blink::mojom::FileSystemAccessStatus::kOperationAborted),
+             blink::mojom::FileSystemAccessEntryPtr());
+    return;
+  }
+
   SharedHandleState shared_handle_state =
       GetSharedHandleStateForPath(file_path, binding_context.storage_key,
                                   file_type, UserAction::kDragAndDrop);
@@ -695,7 +741,8 @@ void FileSystemAccessManagerImpl::ResolveDataTransferTokenWithFileType(
         file_path.BaseName().AsUTF8Unsafe());
   }
 
-  std::move(token_resolved_callback).Run(std::move(entry));
+  std::move(token_resolved_callback)
+      .Run(file_system_access_error::Ok(), std::move(entry));
 }
 
 void FileSystemAccessManagerImpl::GetFileHandleFromToken(
@@ -1523,6 +1570,42 @@ FileSystemAccessManagerImpl::GetSharedHandleStateForPath(
     }
   }
   return SharedHandleState(std::move(read_grant), std::move(write_grant));
+}
+
+base::GUID FileSystemAccessManagerImpl::GetUniqueId(
+    const FileSystemAccessFileHandleImpl& file) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(https://crbug.com/1342961): This is a temporary hack to put something
+  // that works behind a flag. Persist handle IDs such that they're stable
+  // across browsing sessions.
+
+  auto it = file_ids_.find(file.url());
+  if (it != file_ids_.end()) {
+    return it->second;
+  }
+
+  // Generate and store a new guid for this file.
+  auto guid = base::GUID::GenerateRandomV4();
+  file_ids_[file.url()] = guid;
+  return guid;
+}
+
+base::GUID FileSystemAccessManagerImpl::GetUniqueId(
+    const FileSystemAccessDirectoryHandleImpl& directory) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(https://crbug.com/1342961): This is a temporary hack to put something
+  // that works behind a flag. Persist handle IDs such that they're stable
+  // across browsing sessions.
+
+  auto it = directory_ids_.find(directory.url());
+  if (it != directory_ids_.end()) {
+    return it->second;
+  }
+
+  // Generate and store a new guid for this directory.
+  auto guid = base::GUID::GenerateRandomV4();
+  directory_ids_[directory.url()] = guid;
+  return guid;
 }
 
 void FileSystemAccessManagerImpl::CleanupAccessHandleCapacityAllocation(

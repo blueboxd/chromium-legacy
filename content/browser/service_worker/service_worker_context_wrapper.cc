@@ -74,8 +74,9 @@ namespace {
 #if BUILDFLAG(IS_ANDROID)
 // Enables running ServiceWorkerStorageControl on IO thread instead of UI thread
 // on Android.
-const base::Feature kServiceWorkerStorageControlOnIOThread{
-    "ServiceWorkerStorageControlOnIOThread", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kServiceWorkerStorageControlOnIOThread,
+             "ServiceWorkerStorageControlOnIOThread",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 void DidFindRegistrationForStartActiveWorker(
@@ -700,6 +701,10 @@ void ServiceWorkerContextWrapper::StartServiceWorkerAndDispatchMessage(
             FROM_HERE, base::BindOnce(std::move(callback), success));
       },
       std::move(result_callback));
+
+  // As we don't track tasks between workers and renderers, we can nullify the
+  // message's parent task ID.
+  message.parent_task_id = absl::nullopt;
 
   // TODO(https://crbug.com/1295029): Don't post task to the UI thread. Instead,
   // make all call sites run on the UI thread.
@@ -1397,7 +1402,7 @@ void ServiceWorkerContextWrapper::DidGetAllRegistrationsForGetAllOrigins(
     auto it = origins.find(origin);
     if (it == origins.end()) {
       origins[origin] = StorageUsageInfo(
-          url::Origin::Create(origin),
+          blink::StorageKey(url::Origin::Create(origin)),
           registration_info.stored_version_size_bytes, base::Time());
     } else {
       it->second.total_size_bytes +=
@@ -1576,14 +1581,15 @@ void ServiceWorkerContextWrapper::SetLoaderFactoryForUpdateCheckForTest(
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
-ServiceWorkerContextWrapper::GetLoaderFactoryForUpdateCheck(const GURL& scope) {
+ServiceWorkerContextWrapper::GetLoaderFactoryForUpdateCheck(
+    const GURL& scope,
+    network::mojom::ClientSecurityStatePtr client_security_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(https://crbug.com/1211361): Do we want to instrument this with
   // devtools? It is currently not recorded at all.
-  // TODO(https://crbug.com/1239551): pass in proper client security state
   return GetLoaderFactoryForBrowserInitiatedRequest(
       scope,
-      /*version_id=*/absl::nullopt, /*client_security_state=*/nullptr);
+      /*version_id=*/absl::nullopt, std::move(client_security_state));
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

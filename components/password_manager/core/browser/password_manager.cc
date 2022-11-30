@@ -147,7 +147,7 @@ bool HasSingleUsernameVote(const FormPredictions& form) {
 bool HasNewPasswordVote(const FormPredictions& form) {
   if (!base::FeatureList::IsEnabled(
           password_manager::features::
-              KEnablePasswordGenerationForClearTextFields))
+              kEnablePasswordGenerationForClearTextFields))
     return false;
   for (const auto& field : form.fields) {
     if (field.type == ACCOUNT_CREATION_PASSWORD || field.type == NEW_PASSWORD)
@@ -302,6 +302,10 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kPasswordChangeSuccessTrackerFlows);
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  registry->RegisterIntegerPref(
+      prefs::kBiometricAuthBeforeFillingPromoShownCounter, 0);
+  registry->RegisterBooleanPref(prefs::kHasUserInteractedWithBiometricAuthPromo,
+                                false);
   registry->RegisterBooleanPref(prefs::kBiometricAuthenticationBeforeFilling,
                                 false);
 #endif
@@ -985,15 +989,7 @@ void PasswordManager::OnPasswordFormsRendered(
   visible_forms_data_.insert(visible_forms_data_.end(),
                              visible_forms_data.begin(),
                              visible_forms_data.end());
-  if (
-#if BUILDFLAG(IS_IOS)
-      // On iOS, drivers are bound to WebFrames, but some pages (e.g. files)
-      // do not lead to creating WebFrame objects, therefore. If the driver is
-      // missing, the current page has no password forms, but we still are
-      // interested in detecting a submisison.
-      driver &&
-#endif
-      !driver->IsInPrimaryMainFrame() &&
+  if (!driver->IsInPrimaryMainFrame() &&
       submitted_manager->driver_id() != driver->GetId()) {
     // Frames different from the main frame and the frame of the submitted form
     // are unlikely relevant to success of submission.

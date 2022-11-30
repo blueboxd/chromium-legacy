@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -242,7 +242,7 @@ void ConvertRequestDeviceOptions(
   result->accept_all_devices = options->acceptAllDevices();
 
   if (options->hasFilters()) {
-    if (options->filters().IsEmpty()) {
+    if (options->filters().empty()) {
       exception_state.ThrowTypeError(
           "'filters' member must be non-empty to find any devices.");
       return;
@@ -309,9 +309,9 @@ ScriptPromise Bluetooth::getAvailability(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   service_->GetAvailability(
-      WTF::Bind([](ScriptPromiseResolver* resolver,
-                   bool result) { resolver->Resolve(result); },
-                WrapPersistent(resolver)));
+      WTF::BindOnce([](ScriptPromiseResolver* resolver,
+                       bool result) { resolver->Resolve(result); },
+                    WrapPersistent(resolver)));
   return promise;
 }
 
@@ -369,9 +369,9 @@ ScriptPromise Bluetooth::getDevices(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  service_->GetDevices(WTF::Bind(&Bluetooth::GetDevicesCallback,
-                                 WrapPersistent(this),
-                                 WrapPersistent(resolver)));
+  service_->GetDevices(WTF::BindOnce(&Bluetooth::GetDevicesCallback,
+                                     WrapPersistent(this),
+                                     WrapPersistent(resolver)));
   return promise;
 }
 
@@ -418,8 +418,8 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
 
   service_->RequestDevice(
       std::move(device_options),
-      WTF::Bind(&Bluetooth::RequestDeviceCallback, WrapPersistent(this),
-                WrapPersistent(resolver)));
+      WTF::BindOnce(&Bluetooth::RequestDeviceCallback, WrapPersistent(this),
+                    WrapPersistent(resolver)));
   return promise;
 }
 
@@ -438,7 +438,7 @@ static void ConvertRequestLEScanOptions(
   result->keep_repeated_devices = options->keepRepeatedDevices();
 
   if (options->hasFilters()) {
-    if (options->filters().IsEmpty()) {
+    if (options->filters().empty()) {
       exception_state.ThrowTypeError(
           "'filters' member must be non-empty to find any devices.");
       return;
@@ -537,8 +537,9 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
   auto scan_options_copy = scan_options->Clone();
   service_->RequestScanningStart(
       std::move(client), std::move(scan_options),
-      WTF::Bind(&Bluetooth::RequestScanningCallback, WrapPersistent(this),
-                WrapPersistent(resolver), id, std::move(scan_options_copy)));
+      WTF::BindOnce(&Bluetooth::RequestScanningCallback, WrapPersistent(this),
+                    WrapPersistent(resolver), id,
+                    std::move(scan_options_copy)));
 
   return promise;
 }

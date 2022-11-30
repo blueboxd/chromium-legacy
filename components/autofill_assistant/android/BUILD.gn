@@ -36,6 +36,7 @@ android_library("java") {
     "//components/policy/android:policy_java",
     "//components/signin/public/android:java",
     "//components/url_formatter/android:url_formatter_java",
+    "//components/user_prefs/android:java",
     "//components/version_info/android:version_constants_java",
     "//content/public/android:content_java",
     "//mojo/public/java:bindings_java",
@@ -192,7 +193,9 @@ android_library("public_java") {
     "//components/module_installer/android:module_installer_java",
     "//components/module_installer/android:module_interface_java",
     "//components/payments/content/android:java_resources",
+    "//components/prefs/android:java",
     "//components/signin/public/android:java",
+    "//components/user_prefs/android:java",
     "//content/public/android:content_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//ui/android:ui_java",
@@ -210,7 +213,7 @@ android_library("public_java") {
     "public/java/src/org/chromium/components/autofill_assistant/AutofillAssistantMetrics.java",
     "public/java/src/org/chromium/components/autofill_assistant/AutofillAssistantModuleEntry.java",
     "public/java/src/org/chromium/components/autofill_assistant/AutofillAssistantModuleEntryProvider.java",
-    "public/java/src/org/chromium/components/autofill_assistant/AutofillAssistantPreferencesUtil.java",
+    "public/java/src/org/chromium/components/autofill_assistant/AutofillAssistantPreferenceManager.java",
     "public/java/src/org/chromium/components/autofill_assistant/AutofillAssistantPublicTags.java",
     "public/java/src/org/chromium/components/autofill_assistant/Starter.java",
     "public/java/src/org/chromium/components/autofill_assistant/TriggerContext.java",
@@ -234,6 +237,7 @@ android_library("public_dependencies_java") {
     "//components/favicon/android:java",
     "//components/image_fetcher:java",
     "//components/payments/content/android:java_resources",
+    "//components/prefs/android:java",
     "//components/signin/public/android:java",
     "//content/public/android:content_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
@@ -475,33 +479,17 @@ java_strings_grd("java_strings_grd") {
                 [ "values-{{source_name_part}}/android_chrome_autofill_assistant_strings.xml" ])
 }
 
-if (!incremental_install) {
-  zip("password_change_tests_runner") {
-    testonly = true
-    inputs = [
-      "$root_build_dir/test_runner/ChromePublicTest.apk",
-      "$root_build_dir/test_runner/ChromiumNetTestSupport.apk",
-      "$root_build_dir/test_runner/config_example.cfg",
-      "$root_build_dir/test_runner/parse_logs.py",
-      "$root_build_dir/test_runner/runner.py",
-    ]
-    output = "$root_build_dir/test_runner/password_change_tests_runner.zip"
-    deps = [ ":copy_password_change_tests_runner" ]
-  }
+robolectric_library("junit") {
+  testonly = true
 
-  copy("copy_password_change_tests_runner") {
-    testonly = true
-    sources = [
-      "$root_build_dir/apks/ChromePublicTest.apk",
-      "$root_build_dir/apks/ChromiumNetTestSupport.apk",
-      "internal/tools/password_change_tests_runner/config_example.cfg",
-      "internal/tools/password_change_tests_runner/parse_logs.py",
-      "internal/tools/password_change_tests_runner/runner.py",
-    ]
-    outputs = [ "$root_out_dir/test_runner/{{source_file_part}}" ]
-    deps = [
-      "//chrome/android:chrome_public_test_apk__test_apk__create",
-      "//net/android:net_test_support_apk__create",
-    ]
-  }
+  sources = [ "public/junit/src/org/chromium/components/autofill_assistant/AutofillAssistantPreferenceManagerTest.java" ]
+
+  deps = [
+    ":public_java",
+    "//base:base_java_test_support",
+    "//base:base_junit_test_support",
+    "//components/prefs/android:java",
+    "//third_party/junit:junit",
+    "//third_party/mockito:mockito_java",
+  ]
 }

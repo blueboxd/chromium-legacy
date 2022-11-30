@@ -56,6 +56,8 @@ component("gfx") {
     "break_list.h",
     "color_analysis.cc",
     "color_analysis.h",
+    "color_conversions.cc",
+    "color_conversions.h",
     "decorated_text.cc",
     "decorated_text.h",
     "delegated_ink_metadata.cc",
@@ -129,6 +131,7 @@ component("gfx") {
     "text_elider.h",
     "text_utils.cc",
     "text_utils.h",
+    "ubidi_deleter.h",
     "ui_gfx_exports.cc",
     "utf16_indexing.cc",
     "utf16_indexing.h",
@@ -658,6 +661,7 @@ static_library("test_support") {
   public_deps = [ ":gfx" ]
 
   deps = [
+    ":gfx_export",
     "//base",
     "//base/test:test_support",
     "//skia",
@@ -682,6 +686,7 @@ test("gfx_unittests") {
     "font_names_testing.h",
     "font_unittest.cc",
     "geometry/linear_gradient_unittest.cc",
+    "geometry/mask_filter_info_unittest.cc",
     "geometry/rrect_f_unittest.cc",
     "geometry/transform_operations_unittest.cc",
     "geometry/transform_unittest.cc",
@@ -743,6 +748,7 @@ test("gfx_unittests") {
       "codec/jpeg_codec_unittest.cc",
       "codec/png_codec_unittest.cc",
       "color_analysis_unittest.cc",
+      "color_conversions_unittest.cc",
       "color_space_unittest.cc",
       "color_transform_unittest.cc",
       "color_utils_unittest.cc",
@@ -896,7 +902,6 @@ test("gfx_unittests") {
   }
 
   if (is_fuchsia) {
-    use_cfv1 = false
     deps += [ "//skia:test_fonts_cfv2" ]
     additional_manifest_fragments =
         [ "//build/config/fuchsia/test/test_fonts.shard.test-cml" ]

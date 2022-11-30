@@ -92,6 +92,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="API.StorageAccess.RequestStorageAccessForOrigin"
+    enum="RequestStorageResult" expires_after="2023-03-12">
+  <owner>cfredric@chromium.org</owner>
+  <owner>mreichhoff@chromium.org</owner>
+  <owner>brandm@microsoft.com</owner>
+  <summary>
+    Records invocations of document.requestStorageAccessForOrigin and reasons
+    the request was approved or rejected. Recorded for every call to the
+    function, regardless of outcome. Note that
+    API.StorageAccess.RequestStorageAccess is similar, but for the other variant
+    of this API.
+  </summary>
+</histogram>
+
 <histogram name="Clipboard.ExtensionContentScriptReadHasUserActivation"
     units="proportion" expires_after="2021-08-09">
   <obsolete>
@@ -451,7 +465,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.InterestGroup.DBErrors" units="count"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -831,7 +845,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.SharedStorage.OnShutdown.NumSqlErrors" units="Errors"
-    expires_after="2023-01-31">
+    expires_after="2023-04-09">
   <owner>cammie@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
@@ -857,7 +871,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.SharedStorage.OnShutdown.RecoveryOnDiskAttempted"
-    units="BooleanRecoveryOnDiskAttempted" expires_after="2023-01-31">
+    units="BooleanRecoveryOnDiskAttempted" expires_after="2023-04-09">
   <owner>cammie@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
@@ -1024,6 +1038,21 @@ chromium-metrics-reviews@google.com.
     successfully completed. Does not measure the timing of calls that end in an
     error. Recorded in
     `shared_storage_worklet::SharedStorage::OnLengthOperationFinished()`.
+  </summary>
+</histogram>
+
+<histogram name="Storage.SharedStorage.Worklet.Timing.RemainingBudget"
+    units="ms" expires_after="2023-07-31">
+  <owner>cammie@chromium.org</owner>
+  <owner>yaoxia@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Measures the time from start of the call to
+    `shared_storage_worklet::SharedStorage::RemainingBudget()` to when the
+    callback has successfully completed. Does not measure the timing of calls
+    that end in an error. Recorded in
+    `shared_storage_worklet::SharedStorage::OnVoidOperationFinished()` via
+    `LogTimingHistogramForVoidOperation()`.
   </summary>
 </histogram>
 

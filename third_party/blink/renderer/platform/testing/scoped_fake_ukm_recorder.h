@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,12 +27,11 @@ class ScopedFakeUkmRecorder : public ukm::mojom::UkmRecorderInterface {
   void UpdateSourceURL(int64_t source_id, const std::string& url) override;
 
   void ResetRecorder();
+  void SetHandle(mojo::ScopedMessagePipeHandle handle);
 
   ukm::TestUkmRecorder* recorder() { return recorder_.get(); }
 
  private:
-  void SetHandle(mojo::ScopedMessagePipeHandle handle);
-
   std::unique_ptr<mojo::Receiver<ukm::mojom::UkmRecorderInterface>> receiver_;
   std::unique_ptr<ukm::TestUkmRecorder> recorder_;
 };

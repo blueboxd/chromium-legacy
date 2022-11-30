@@ -12,7 +12,9 @@
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_sink_service_factory.h"
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_test_helpers.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/access_code_cast/access_code_cast.mojom.h"
 #include "chrome/browser/ui/webui/access_code_cast/access_code_cast_dialog.h"
@@ -27,11 +29,13 @@
 #include "components/media_router/browser/test/mock_media_router.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "components/sync/test/test_sync_service.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,7 +45,7 @@ namespace media_router {
 // Base class that generates an access code cast dialog and all objects that are
 // required for interacting with the dialog.
 class AccessCodeCastIntegrationBrowserTest
-    : public MixinBasedInProcessBrowserTest {
+    : public SupportsTestDialog<MixinBasedInProcessBrowserTest> {
  public:
   AccessCodeCastIntegrationBrowserTest();
   ~AccessCodeCastIntegrationBrowserTest() override;
@@ -54,7 +58,8 @@ class AccessCodeCastIntegrationBrowserTest
   // Makes user signed-in with the stub account's email and sets the
   // |consent_level| for that account.
   void SetUpPrimaryAccountWithHostedDomain(signin::ConsentLevel consent_level,
-                                           Profile* profile);
+                                           Profile* profile,
+                                           bool sign_in_account = true);
 
   void EnableAccessCodeCasting();
 
@@ -62,6 +67,10 @@ class AccessCodeCastIntegrationBrowserTest
   // test case is added that uses this function, make sure to add that test case
   // to  //testing/buildbot/filters/ozone-linux.wayland_browser_tests.filter
   content::WebContents* ShowDialog();
+
+  // TestBrowserDialog:
+  void ShowUi(const std::string& name) override;
+
   void CloseDialog(content::WebContents* dialog_contents);
 
   void SetAccessCode(std::string access_code,
@@ -135,9 +144,17 @@ class AccessCodeCastIntegrationBrowserTest
     return impl_;
   }
 
+  syncer::TestSyncService* sync_service(Profile* profile) {
+    return static_cast<syncer::TestSyncService*>(
+        SyncServiceFactory::GetForProfile(profile));
+  }
+
  private:
   base::test::ScopedFeatureList feature_list_;
   base::CallbackListSubscription subscription_;
+
+  std::unique_ptr<network::TestNetworkConnectionTracker>
+      network_connection_tracker_;
 
  protected:
   raw_ptr<media_router::MockMediaRouter> media_router_ = nullptr;

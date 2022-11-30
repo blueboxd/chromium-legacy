@@ -26,8 +26,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace ash {
-namespace personalization_app {
+namespace ash::personalization_app {
 
 namespace {
 
@@ -47,8 +46,6 @@ SearchHandler::SearchHandler(
           local_search_service_proxy,
           pref_service,
           std::move(enterprise_policy_delegate))) {
-  DCHECK(ash::features::IsPersonalizationHubEnabled())
-      << "Personalization search requires personalization hub feature";
   local_search_service_proxy.GetIndex(
       local_search_service::IndexId::kPersonalization,
       local_search_service::Backend::kLinearMap,
@@ -138,5 +135,4 @@ void SearchHandler::OnLocalSearchDone(
   std::move(callback).Run(std::move(search_results));
 }
 
-}  // namespace personalization_app
-}  // namespace ash
+}  // namespace ash::personalization_app

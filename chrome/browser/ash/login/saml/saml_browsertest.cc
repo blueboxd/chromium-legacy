@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
@@ -54,6 +53,7 @@
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/enterprise/connectors/connectors_prefs.h"
+#include "chrome/browser/enterprise/connectors/device_trust/common/metrics_utils.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_features.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
@@ -84,6 +84,7 @@
 #include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "chromeos/ash/components/login/auth/public/key.h"
 #include "chromeos/ash/components/login/auth/public/saml_password_attributes.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/account_id/account_id.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -106,6 +107,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/common/features/feature_channel.h"
 #include "google_apis/gaia/fake_gaia.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -181,6 +183,8 @@ constexpr char kAffiliationID[] = "some-affiliation-id";
 
 constexpr char kDeviceTrustMatchHistogramName[] =
     "Enterprise.VerifiedAccess.SAML.DeviceTrustMatchesEndpoints";
+constexpr char kDeviceTrustAttestationFunnelStep[] =
+    "Enterprise.DeviceTrust.Attestation.Funnel";
 
 // A FakeUserDataAuthClient that stores the salted and hashed secret passed
 // to MountEx().
@@ -196,6 +200,8 @@ class SecretInterceptingFakeUserDataAuthClient : public FakeUserDataAuthClient {
   void AuthenticateAuthSession(
       const ::user_data_auth::AuthenticateAuthSessionRequest& request,
       AuthenticateAuthSessionCallback callback) override;
+  void AddAuthFactor(const ::user_data_auth::AddAuthFactorRequest& request,
+                     AddAuthFactorCallback callback) override;
   void AddCredentials(const ::user_data_auth::AddCredentialsRequest& request,
                       AddCredentialsCallback callback) override;
   void Mount(const ::user_data_auth::MountRequest& request,
@@ -222,6 +228,15 @@ void SecretInterceptingFakeUserDataAuthClient::AddCredentials(
     AddCredentialsCallback callback) {
   salted_hashed_secret_ = request.authorization().key().secret();
   FakeUserDataAuthClient::AddCredentials(request, std::move(callback));
+}
+
+void SecretInterceptingFakeUserDataAuthClient::AddAuthFactor(
+    const ::user_data_auth::AddAuthFactorRequest& request,
+    AddAuthFactorCallback callback) {
+  CHECK(request.auth_factor().type() ==
+        user_data_auth::AUTH_FACTOR_TYPE_PASSWORD);
+  salted_hashed_secret_ = request.auth_input().password_input().secret();
+  FakeUserDataAuthClient::AddAuthFactor(request, std::move(callback));
 }
 
 void SecretInterceptingFakeUserDataAuthClient::Mount(
@@ -373,19 +388,19 @@ class SamlTestBase : public OobeBaseTest {
 };
 
 // The first value of the parameter runs the tests with
-// kUseAuthsessionAuthentication feature and the second value with
+// kUseAuthFactors feature and the second value with
 // kCheckPasswordsAgainstCryptohomeHelper
 class SamlTestWithFeatures
     : public SamlTestBase,
       public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   SamlTestWithFeatures() {
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
     if (std::get<0>(GetParam())) {
-      enabled_features.push_back(features::kUseAuthsessionAuthentication);
+      enabled_features.push_back(features::kUseAuthFactors);
     } else {
-      disabled_features.push_back(features::kUseAuthsessionAuthentication);
+      disabled_features.push_back(features::kUseAuthFactors);
     }
     if (std::get<1>(GetParam())) {
       enabled_features.push_back(
@@ -402,7 +417,7 @@ class SamlTestWithFeatures
 };
 
 // The first value of the parameter runs the tests with
-// kUseAuthsessionAuthentication feature.
+// UseAuthFactors feature.
 class ImprovedScrapingTestBase
     : public SamlTestBase,
       public testing::WithParamInterface<std::tuple<bool>> {
@@ -419,12 +434,12 @@ class ImprovedScrapingTestBase
 ImprovedScrapingTestBase::ImprovedScrapingTestBase() = default;
 
 void ImprovedScrapingTestBase::SetFeatures(bool enable_improved_scraping) {
-  std::vector<base::Feature> enabled_features;
-  std::vector<base::Feature> disabled_features;
+  std::vector<base::test::FeatureRef> enabled_features;
+  std::vector<base::test::FeatureRef> disabled_features;
   if (std::get<0>(GetParam())) {
-    enabled_features.push_back(features::kUseAuthsessionAuthentication);
+    enabled_features.push_back(features::kUseAuthFactors);
   } else {
-    disabled_features.push_back(features::kUseAuthsessionAuthentication);
+    disabled_features.push_back(features::kUseAuthFactors);
   }
   if (enable_improved_scraping) {
     enabled_features.push_back(
@@ -499,11 +514,11 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, IdpRequiresHttpAuth) {
   // WebContents.
   WaitForGaiaPageLoad();
 
-  content::WebContents* gaia_frame_web_contents =
-      signin::GetAuthFrameWebContents(GetLoginUI()->GetWebContents(),
-                                      gaia_frame_parent_);
+  extensions::WebViewGuest* gaia_guest = signin::GetAuthWebViewGuest(
+      GetLoginUI()->GetWebContents(), gaia_frame_parent_);
+  ASSERT_TRUE(gaia_guest);
   content::NavigationController* gaia_frame_navigation_controller =
-      &(gaia_frame_web_contents->GetController());
+      &gaia_guest->GetController();
 
   // Start observing before initiating SAML sign-in.
   content::DOMMessageQueue message_queue(GetLoginUI()->GetWebContents());
@@ -879,9 +894,8 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, UseAutenticatedUserEmailAddress) {
 
 // Verifies that if the authenticated user's e-mail address cannot be retrieved,
 // an error message is shown.
-// TODO(crbug.com/1348198): Flaky.
 IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures,
-                       DISABLED_FailToRetrieveAutenticatedUserEmailAddress) {
+                       FailToRetrieveAutenticatedUserEmailAddress) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   StartSamlAndWaitForIdpPageLoad(
       saml_test_users::kFirstUserCorpExampleComEmail);
@@ -1882,7 +1896,7 @@ void SAMLDeviceAttestationTest::SetUpInProcessBrowserTestFixture() {
   settings_provider_ = settings_helper_.device_settings();
 
   ON_CALL(mock_attestation_flow_, GetCertificate)
-      .WillByDefault(WithArgs<5>(Invoke(FakeGetCertificateCallbackTrue)));
+      .WillByDefault(WithArgs<6>(Invoke(FakeGetCertificateCallbackTrue)));
 
   // By default make it reply that the certificate is already uploaded.
   ON_CALL(mock_cert_uploader_, WaitForUploadComplete)
@@ -1925,6 +1939,8 @@ class SAMLDeviceAttestationEnrolledTest : public SAMLDeviceAttestationTest {
   SAMLDeviceAttestationEnrolledTest() {
     device_state_.SetState(
         DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED);
+    scoped_feature_list_.InitAndEnableFeature(
+        enterprise_connectors::kDeviceTrustConnectorEnabled);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -1932,6 +1948,7 @@ class SAMLDeviceAttestationEnrolledTest : public SAMLDeviceAttestationTest {
     stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::HistogramTester histogram_tester_;
 };
 
@@ -2068,7 +2085,8 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationEnrolledTest,
 }
 
 // Verify that device attestation is not available for URLs that also match the
-// ones on the DeviceContextAwareAccessSignalsAllowlist
+// ones on the DeviceContextAwareAccessSignalsAllowlist. Instead, device trust
+// is doing the attestation handshake.
 IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationEnrolledTest,
                        PolicyDeviceTrustMatchError) {
   SetAllowedUrlsPolicy({fake_saml_idp()->GetIdpHost()});
@@ -2083,9 +2101,16 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationEnrolledTest,
     return;
   }
 
-  histogram_tester_.ExpectBucketCount(kDeviceTrustMatchHistogramName, true, 1);
+  // TODO(b/249082222) kDeviceTrustMatchHistogramName should get called once
+  // with value "true"
+  histogram_tester_.ExpectTotalCount(kDeviceTrustMatchHistogramName, 0);
 
-  ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
+  ASSERT_EQ(fake_saml_idp()->GetChallengeResponseCount(), 1);
+
+  histogram_tester_.ExpectBucketCount(
+      kDeviceTrustAttestationFunnelStep,
+      enterprise_connectors::DTAttestationFunnelStep::kChallengeResponseSent,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationEnrolledTest, TimeoutError) {
@@ -2116,29 +2141,71 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationEnrolledTest, TimeoutError) {
   ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
 }
 
-class SAMLDeviceTrustTest : public SAMLDeviceAttestationTest {
+class SAMLDeviceTrustTest
+    : public SAMLDeviceAttestationTest,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   SAMLDeviceTrustTest() {
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
+    if (std::get<0>(GetParam())) {
+      enabled_features.push_back(
+          enterprise_connectors::kDeviceTrustConnectorEnabled);
+    } else {
+      disabled_features.push_back(
+          enterprise_connectors::kDeviceTrustConnectorEnabled);
+    }
+
+    if (std::get<1>(GetParam())) {
+      enabled_features.push_back(
+          ash::features::kLoginScreenDeviceTrustConnectorEnabled);
+    } else {
+      disabled_features.push_back(
+          ash::features::kLoginScreenDeviceTrustConnectorEnabled);
+    }
+
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
     device_state_.SetState(
         DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED);
-    scoped_feature_list_.InitAndEnableFeature(
-        enterprise_connectors::kDeviceTrustConnectorEnabled);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
     SAMLDeviceAttestationTest::SetUpInProcessBrowserTestFixture();
-    stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
+    // Enable device trust feature.
+    settings_provider_->SetBoolean(kDeviceAttestationEnabled, true);
+  }
+
+  void ExpectDeviceTrustSuccessful(bool expected) {
+    ASSERT_EQ(fake_saml_idp()->DeviceTrustHeaderRecieved(), expected);
+    ASSERT_EQ(fake_saml_idp()->IsLastChallengeResponseExists(), expected);
+
+    histogram_tester_.ExpectBucketCount(
+        kDeviceTrustAttestationFunnelStep,
+        enterprise_connectors::DTAttestationFunnelStep::kChallengeResponseSent,
+        expected ? 1 : 0);
+  }
+
+  bool login_screen_device_trust_enabled() {
+    return std::get<0>(GetParam()) && std::get<1>(GetParam());
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::HistogramTester histogram_tester_;
 };
 
-// Verify that Device Trust sends the header for a matching URL.
-IN_PROC_BROWSER_TEST_F(SAMLDeviceTrustTest, SendHeaderForMatchingURL) {
+class SAMLDeviceTrustEnrolledTest : public SAMLDeviceTrustTest {
+  void SetUpInProcessBrowserTestFixture() override {
+    SAMLDeviceTrustTest::SetUpInProcessBrowserTestFixture();
+    stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
+  }
+};
+
+// Verify that device trust is not available when device is not enterprise
+// enrolled.
+IN_PROC_BROWSER_TEST_P(SAMLDeviceTrustTest, NotEnterpriseEnrolledError) {
   SetDeviceContextAwareAccessSignalsAllowlistPolicy(
       {fake_saml_idp()->GetIdpHost()});
-  settings_provider_->SetBoolean(kDeviceAttestationEnabled, true);
 
   StartSamlAndWaitForIdpPageLoad(
       saml_test_users::kSixthUserCorpExampleTestEmail);
@@ -2147,7 +2214,126 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceTrustTest, SendHeaderForMatchingURL) {
     return;
   }
 
-  ASSERT_TRUE(fake_saml_idp()->DeviceTrustHeaderRecieved());
+  ASSERT_FALSE(fake_saml_idp()->DeviceTrustHeaderRecieved());
+}
+
+// Verify that device trust is not available when
+// DeviceLoginScreenContextAwareAccessSignalsAllowlistPolicy policy is not set.
+IN_PROC_BROWSER_TEST_P(SAMLDeviceTrustEnrolledTest, DefaultPolicy) {
+  // Leave policy unset.
+
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kSixthUserCorpExampleTestEmail);
+
+  ASSERT_FALSE(fake_saml_idp()->DeviceTrustHeaderRecieved());
+}
+
+// Verify that device trust is not available when
+// DeviceLoginScreenContextAwareAccessSignalsAllowlistPolicy policy is set to
+// empty list of allowed URLs.
+IN_PROC_BROWSER_TEST_P(SAMLDeviceTrustEnrolledTest, EmptyPolicy) {
+  SetDeviceContextAwareAccessSignalsAllowlistPolicy({/* empty list */});
+
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kSixthUserCorpExampleTestEmail);
+
+  ASSERT_FALSE(fake_saml_idp()->DeviceTrustHeaderRecieved());
+}
+
+// Verify that device trust is not available when device trust is
+// not enabled.
+IN_PROC_BROWSER_TEST_P(SAMLDeviceTrustEnrolledTest,
+                       DeviceTrustNotEnabledError) {
+  SetDeviceContextAwareAccessSignalsAllowlistPolicy(
+      {fake_saml_idp()->GetIdpHost()});
+  settings_provider_->SetBoolean(kDeviceAttestationEnabled, false);
+
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kSixthUserCorpExampleTestEmail);
+
+  if (Test::HasFailure()) {
+    return;
+  }
+
+  ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
+}
+
+// Verify that device trust is available for URLs that match a pattern
+// from allowed URLs list.
+IN_PROC_BROWSER_TEST_P(SAMLDeviceTrustEnrolledTest, PolicyRegexSuccess) {
+  SetDeviceContextAwareAccessSignalsAllowlistPolicy(
+      {fake_saml_idp()->GetIdpDomain()});
+
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kSixthUserCorpExampleTestEmail);
+
+  if (Test::HasFailure()) {
+    return;
+  }
+
+  ExpectDeviceTrustSuccessful(login_screen_device_trust_enabled());
+}
+
+// Verify that Device trust sends the header for a matching URL.
+IN_PROC_BROWSER_TEST_P(SAMLDeviceTrustEnrolledTest, SendHeaderForMatchingURL) {
+  SetDeviceContextAwareAccessSignalsAllowlistPolicy(
+      {fake_saml_idp()->GetIdpHost()});
+
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kSixthUserCorpExampleTestEmail);
+
+  if (Test::HasFailure()) {
+    return;
+  }
+
+  ASSERT_EQ(fake_saml_idp()->DeviceTrustHeaderRecieved(),
+            login_screen_device_trust_enabled());
+}
+
+// Verify that Device trust doesn't sends the header for a non matching URL.
+IN_PROC_BROWSER_TEST_P(SAMLDeviceTrustEnrolledTest,
+                       HeaderNotSentForNonMatchingURL) {
+  SetDeviceContextAwareAccessSignalsAllowlistPolicy({"example2.com"});
+
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kSixthUserCorpExampleTestEmail);
+
+  if (Test::HasFailure()) {
+    return;
+  }
+
+  ASSERT_FALSE(fake_saml_idp()->DeviceTrustHeaderRecieved());
+}
+
+// Verify that Device trust sends the challenge-response for a matching URL.
+IN_PROC_BROWSER_TEST_P(SAMLDeviceTrustEnrolledTest, Success) {
+  SetDeviceContextAwareAccessSignalsAllowlistPolicy(
+      {fake_saml_idp()->GetIdpHost()});
+
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kSixthUserCorpExampleTestEmail);
+
+  if (Test::HasFailure()) {
+    return;
+  }
+
+  ExpectDeviceTrustSuccessful(login_screen_device_trust_enabled());
+}
+
+// Verify that device trust works in case of multiple items in allowed
+// URLs list.
+IN_PROC_BROWSER_TEST_P(SAMLDeviceTrustEnrolledTest, PolicyTwoEntriesSuccess) {
+  SetDeviceContextAwareAccessSignalsAllowlistPolicy(
+      {fake_saml_idp()->GetIdpHost()});
+
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kSixthUserCorpExampleTestEmail);
+
+  if (Test::HasFailure()) {
+    return;
+  }
+
+  ExpectDeviceTrustSuccessful(login_screen_device_trust_enabled());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -2161,5 +2347,15 @@ INSTANTIATE_TEST_SUITE_P(All,
 INSTANTIATE_TEST_SUITE_P(All,
                          SamlTestWithoutImprovedScraping,
                          ::testing::Combine(::testing::Bool()));
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SAMLDeviceTrustTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SAMLDeviceTrustEnrolledTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
 
 }  // namespace ash

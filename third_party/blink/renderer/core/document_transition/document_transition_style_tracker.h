@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,29 @@ class PseudoElement;
 class DocumentTransitionStyleTracker
     : public GarbageCollected<DocumentTransitionStyleTracker> {
  public:
+  // Properties that transition on container elements.
+  struct ContainerProperties {
+    ContainerProperties() = default;
+    ContainerProperties(const LayoutSize& size,
+                        const TransformationMatrix& matrix)
+        : border_box_size_in_css_space(size), snapshot_matrix(matrix) {}
+
+    bool operator==(const ContainerProperties& other) const {
+      return border_box_size_in_css_space ==
+                 other.border_box_size_in_css_space &&
+             snapshot_matrix == other.snapshot_matrix;
+    }
+    bool operator!=(const ContainerProperties& other) const {
+      return !(*this == other);
+    }
+
+    LayoutSize border_box_size_in_css_space;
+
+    // Transforms a point from local space into the snapshot viewport. For
+    // details of the snapshot viewport, see README.md.
+    TransformationMatrix snapshot_matrix;
+  };
+
   explicit DocumentTransitionStyleTracker(Document& document);
   ~DocumentTransitionStyleTracker();
 
@@ -129,6 +152,18 @@ class DocumentTransitionStyleTracker
 
   VectorOf<Element> GetTransitioningElements() const;
 
+  // In physical pixels. Returns the snapshot viewport rect, relative to the
+  // fixed viewport origin. See README.md for a detailed description of the
+  // snapshot viewport.
+  gfx::Rect GetSnapshotViewportRect() const;
+
+  // In physical pixels. Returns the offset within the root snapshot which
+  // should be used as the paint origin. The root snapshot fills the snapshot
+  // viewport, which is overlaid by viewport-insetting UI widgets such as the
+  // mobile URL bar. Because of this, we offset paint so that content is
+  // painted where it appears on the screen (rather than under the UI).
+  gfx::Vector2d GetRootSnapshotPaintOffset() const;
+
  private:
   class ImageWrapperPseudoElement;
 
@@ -147,12 +182,11 @@ class DocumentTransitionStyleTracker
 
     // Computed info for each element participating in the transition for the
     // |target_element|. This information is mirrored into the UA stylesheet.
-    LayoutSize border_box_size_in_css_space;
-    TransformationMatrix viewport_matrix;
+    // This is stored in a vector to be able to stack animations.
+    Vector<ContainerProperties> container_properties;
 
     // Computed info cached before the DOM switches to the new state.
-    LayoutSize cached_border_box_size_in_css_space;
-    TransformationMatrix cached_viewport_matrix;
+    ContainerProperties cached_container_properties;
 
     // Valid if there is an element in the old DOM generating a snapshot.
     viz::SharedElementResourceId old_snapshot_id;

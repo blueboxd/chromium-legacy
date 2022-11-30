@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 
 namespace blink {
@@ -16,7 +17,7 @@ TEST(PerformanceEntryTest, GetNavigationId) {
 
   EXPECT_EQ(1u, PerformanceEntry::GetNavigationId(scope.GetScriptState()));
 
-  scope.GetFrame().IncrementNavigationId();
+  scope.GetFrame().DomWindow()->IncrementNavigationId();
   EXPECT_EQ(2u, PerformanceEntry::GetNavigationId(scope.GetExecutionContext()));
 }
 }  // namespace blink

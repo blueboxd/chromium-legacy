@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ namespace blink {
 
 static bool StyleSheetTypeIsSupported(const String& type) {
   String trimmed_type = ContentType(type).GetType();
-  return trimmed_type.IsEmpty() ||
+  return trimmed_type.empty() ||
          MIMETypeRegistry::IsSupportedStyleSheetMIMEType(trimmed_type);
 }
 
@@ -62,8 +62,8 @@ void LinkStyle::NotifyFinished(Resource* resource) {
   // See the comment in pending_script.cc about why this check is necessary
   // here, instead of in the resource fetcher. https://crbug.com/500701.
   if ((!cached_style_sheet->ErrorOccurred() &&
-       !owner_->FastGetAttribute(html_names::kIntegrityAttr).IsEmpty() &&
-       !cached_style_sheet->IntegrityMetadata().IsEmpty()) ||
+       !owner_->FastGetAttribute(html_names::kIntegrityAttr).empty() &&
+       !cached_style_sheet->IntegrityMetadata().empty()) ||
       resource->IsLinkPreload()) {
     ResourceIntegrityDisposition disposition =
         cached_style_sheet->IntegrityDisposition();
@@ -263,14 +263,14 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
   loading_ = true;
 
   String title = owner_->title();
-  if (!title.IsEmpty() && !owner_->IsAlternate() &&
+  if (!title.empty() && !owner_->IsAlternate() &&
       disabled_state_ != kEnabledViaScript && owner_->IsInDocumentTree()) {
     GetDocument().GetStyleEngine().SetPreferredStylesheetSetNameIfNotSet(title);
   }
 
   bool media_query_matches = true;
   LocalFrame* frame = LoadingFrame();
-  if (!owner_->Media().IsEmpty() && frame) {
+  if (!owner_->Media().empty() && frame) {
     MediaQuerySet* media =
         MediaQuerySet::Create(owner_->Media(), GetExecutionContext());
     MediaQueryEvaluator evaluator(frame);
@@ -364,7 +364,7 @@ void LinkStyle::SetSheetTitle(const String& title) {
   if (sheet_)
     sheet_->SetTitle(title);
 
-  if (title.IsEmpty() || !IsUnset() || owner_->IsAlternate())
+  if (title.empty() || !IsUnset() || owner_->IsAlternate())
     return;
 
   const KURL& href = owner_->GetNonEmptyURLAttribute(html_names::kHrefAttr);

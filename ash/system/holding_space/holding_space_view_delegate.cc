@@ -18,10 +18,10 @@
 #include "ash/system/holding_space/holding_space_item_view.h"
 #include "ash/system/holding_space/holding_space_tray.h"
 #include "ash/system/holding_space/holding_space_tray_bubble.h"
-#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "net/base/mime_util.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -32,6 +32,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/color/color_id.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/view.h"
 
@@ -81,13 +82,6 @@ std::vector<HoldingSpaceItemView*> GetViewsInRange(
   DCHECK(found_start);
   DCHECK(found_end);
   return range;
-}
-
-// Attempts to open the holding space items associated with the given `views`.
-void OpenItems(const std::vector<const HoldingSpaceItemView*>& views) {
-  DCHECK_GE(views.size(), 1u);
-  HoldingSpaceController::Get()->client()->OpenItems(GetItems(views),
-                                                     base::DoNothing());
 }
 
 }  // namespace
@@ -194,7 +188,7 @@ bool HoldingSpaceViewDelegate::OnHoldingSpaceItemViewAccessibleAction(
   if (action_data.action == ax::mojom::Action::kDoDefault) {
     if (!view->selected())
       SetSelection(view);
-    OpenItems(GetSelection());
+    OpenItemsAndScheduleClose(GetSelection());
     return true;
   }
   // When showing the context menu via accessible action (e.g. Search + M),
@@ -245,7 +239,7 @@ bool HoldingSpaceViewDelegate::OnHoldingSpaceItemViewGestureEvent(
   // the child bubble which clears selection state.
   if (GetSelection().empty()) {
     SetSelection(view);
-    OpenItems(GetSelection());
+    OpenItemsAndScheduleClose(GetSelection());
     return true;
   }
 
@@ -265,7 +259,7 @@ bool HoldingSpaceViewDelegate::OnHoldingSpaceItemViewKeyPressed(
   if (event.key_code() == ui::KeyboardCode::VKEY_RETURN) {
     if (!view->selected())
       SetSelection(view);
-    OpenItems(GetSelection());
+    OpenItemsAndScheduleClose(GetSelection());
     return true;
   }
   return false;
@@ -355,7 +349,7 @@ void HoldingSpaceViewDelegate::OnHoldingSpaceItemViewMouseReleased(
   // `view` being clicked is already part of the selection.
   if (event.flags() & ui::EF_IS_DOUBLE_CLICK) {
     DCHECK(view->selected());
-    OpenItems(GetSelection());
+    OpenItemsAndScheduleClose(GetSelection());
     return;
   }
 
@@ -395,7 +389,7 @@ bool HoldingSpaceViewDelegate::OnHoldingSpaceTrayBubbleKeyPressed(
   // The ENTER key should open all selected holding space items.
   if (event.key_code() == ui::KeyboardCode::VKEY_RETURN) {
     if (!GetSelection().empty()) {
-      OpenItems(GetSelection());
+      OpenItemsAndScheduleClose(GetSelection());
       return true;
     }
   }
@@ -508,19 +502,26 @@ void HoldingSpaceViewDelegate::ExecuteCommand(int command, int event_flags) {
     case HoldingSpaceCommandId::kPinItem:
       client->PinItems(items);
       break;
-    case HoldingSpaceCommandId::kRemoveItem:
+    case HoldingSpaceCommandId::kRemoveItem: {
+      std::vector<base::FilePath> suggested_file_paths;
       HoldingSpaceController::Get()->model()->RemoveIf(base::BindRepeating(
           [](const std::vector<const HoldingSpaceItem*>& items,
+             std::vector<base::FilePath>& suggested_file_paths,
              const HoldingSpaceItem* item) {
             const bool remove = base::Contains(items, item);
             if (remove) {
+              if (HoldingSpaceItem::IsSuggestion(item->type()))
+                suggested_file_paths.push_back(item->file_path());
               holding_space_metrics::RecordItemAction(
                   {item}, holding_space_metrics::ItemAction::kRemove);
             }
             return remove;
           },
-          std::cref(items)));
+          std::cref(items), std::ref(suggested_file_paths)));
+      HoldingSpaceController::Get()->client()->RemoveFileSuggestions(
+          suggested_file_paths);
       break;
+    }
     case HoldingSpaceCommandId::kShowInFolder:
       DCHECK_EQ(items.size(), 1u);
       client->ShowItemInFolder(*items.front(), base::DoNothing());
@@ -780,6 +781,23 @@ void HoldingSpaceViewDelegate::UpdateSelectionUi() {
 
   selection_ui_ = selection_ui;
   selection_ui_changed_callbacks_.Notify();
+}
+
+void HoldingSpaceViewDelegate::OpenItemsAndScheduleClose(
+    const std::vector<const HoldingSpaceItemView*>& views) {
+  DCHECK_GE(views.size(), 1u);
+  // This `PostTask()` will result in the destruction of the view delegate if it
+  // has not already been destroyed.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](const base::WeakPtr<HoldingSpaceViewDelegate>& weak_ptr) {
+            if (weak_ptr)
+              weak_ptr->bubble_->tray()->CloseBubble();
+          },
+          weak_factory_.GetMutableWeakPtr()));
+  HoldingSpaceController::Get()->client()->OpenItems(GetItems(views),
+                                                     base::DoNothing());
 }
 
 }  // namespace ash

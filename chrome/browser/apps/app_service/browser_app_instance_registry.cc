@@ -59,6 +59,20 @@ BrowserAppInstanceRegistry::GetBrowserWindowInstanceById(
   });
 }
 
+aura::Window* BrowserAppInstanceRegistry::GetWindowByInstanceId(
+    const base::UnguessableToken& id) const {
+  if (const BrowserAppInstance* instance = GetAppInstanceById(id)) {
+    return instance->window;
+  }
+
+  if (const BrowserWindowInstance* instance =
+          GetBrowserWindowInstanceById(id)) {
+    return instance->window;
+  }
+
+  return nullptr;
+}
+
 std::set<const BrowserWindowInstance*>
 BrowserAppInstanceRegistry::GetLacrosBrowserWindowInstances() const {
   std::set<const BrowserWindowInstance*> result;
@@ -109,14 +123,8 @@ void BrowserAppInstanceRegistry::ActivateInstance(
 
 void BrowserAppInstanceRegistry::MinimizeInstance(
     const base::UnguessableToken& id) {
-  if (const BrowserAppInstance* instance = GetAppInstanceById(id)) {
-    MinimizeWindow(instance->window);
-    return;
-  }
-
-  if (const BrowserWindowInstance* instance =
-          GetBrowserWindowInstanceById(id)) {
-    MinimizeWindow(instance->window);
+  if (aura::Window* window = GetWindowByInstanceId(id)) {
+    MinimizeWindow(window);
   }
 }
 
@@ -401,11 +409,11 @@ void BrowserAppInstanceRegistry::LacrosAppInstanceAddedOrUpdated(
     }
   } else {
     auto id = update.id;
-    auto& instance = AddInstance(
+    auto& new_instance = AddInstance(
         lacros_app_instances_, id,
         std::make_unique<BrowserAppInstance>(std::move(update), window));
     for (auto& observer : observers_) {
-      observer.OnBrowserAppAdded(instance);
+      observer.OnBrowserAppAdded(new_instance);
     }
   }
 }

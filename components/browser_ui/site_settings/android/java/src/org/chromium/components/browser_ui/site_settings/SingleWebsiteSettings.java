@@ -32,6 +32,7 @@ import org.chromium.components.browser_ui.settings.ChromeImageViewPreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.browser_ui.settings.TextMessagePreference;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
@@ -83,6 +84,8 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
     public static final String PREF_SITE_HEADING = "site_heading";
     public static final String PREF_SITE_TITLE = "site_title";
     public static final String PREF_USAGE = "site_usage";
+    public static final String PREF_RELATED_SITES_HEADER = "related_sites_header";
+    public static final String PREF_RELATED_SITES = "related_sites";
     public static final String PREF_PERMISSIONS_HEADER = "site_permissions";
     public static final String PREF_OS_PERMISSIONS_WARNING = "os_permissions_warning";
     public static final String PREF_OS_PERMISSIONS_WARNING_EXTRA = "os_permissions_warning_extra";
@@ -170,6 +173,8 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
             PREF_SITE_HEADING,
             PREF_SITE_TITLE,
             PREF_USAGE,
+            PREF_RELATED_SITES_HEADER,
+            PREF_RELATED_SITES,
             PREF_PERMISSIONS_HEADER,
             PREF_CLEAR_DATA,
     };
@@ -383,6 +388,7 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
             WebsiteAddress address, Collection<Website> websites) {
         String origin = address.getOrigin();
         String host = Uri.parse(origin).getHost();
+        String domainAndRegistry = address.getDomainAndRegistry();
         Website merged = new Website(address, null);
         // This loop looks expensive, but the amount of data is likely to be relatively small
         // because most sites have very few permissions.
@@ -407,6 +413,10 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
                 if (host.equals(storageInfo.getHost())) {
                     merged.addStorageInfo(storageInfo);
                 }
+            }
+            if (merged.getFPSCookieInfo() == null && other.getFPSCookieInfo() != null
+                    && domainAndRegistry.equals(other.getAddress().getDomainAndRegistry())) {
+                merged.setFPSCookieInfo(other.getFPSCookieInfo());
             }
             for (ChosenObjectInfo objectInfo : other.getChosenObjectInfo()) {
                 if (origin.equals(objectInfo.getOrigin())) {
@@ -462,6 +472,7 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
         setupResetSitePreference();
         setUpClearDataPreference();
         setUpOsWarningPreferences();
+        setupRelatedSitesPreferences();
 
         setUpAdsInformationalBanner();
 
@@ -812,6 +823,32 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
             } else if (osWarningExtra.getTitle() == null) {
                 preferenceScreen.removePreference(osWarningExtra);
             }
+        }
+    }
+
+    private void setupRelatedSitesPreferences() {
+        var relatedSitesHeader = findPreference(PREF_RELATED_SITES_HEADER);
+        TextMessagePreference relatedSitesText = findPreference(PREF_RELATED_SITES);
+        boolean shouldRelatedSitesPrefBeVisible =
+                getSiteSettingsDelegate().isPrivacySandboxFirstPartySetsUIFeatureEnabled()
+                && getSiteSettingsDelegate().isFirstPartySetsDataAccessEnabled()
+                && mSite.getFPSCookieInfo() != null;
+        relatedSitesHeader.setVisible(shouldRelatedSitesPrefBeVisible);
+        relatedSitesText.setVisible(shouldRelatedSitesPrefBeVisible);
+
+        if (shouldRelatedSitesPrefBeVisible) {
+            var fpsInfo = mSite.getFPSCookieInfo();
+            relatedSitesText.setTitle(getContext().getString(R.string.allsites_fps_summary,
+                    Integer.toString(fpsInfo.getMembersCount()), fpsInfo.getOwner(),
+                    mSite.getAddress().getDomainAndRegistry()));
+            relatedSitesText.setManagedPreferenceDelegate(new ForwardingManagedPreferenceDelegate(
+                    getSiteSettingsDelegate().getManagedPreferenceDelegate()) {
+                @Override
+                public boolean isPreferenceControlledByPolicy(Preference preference) {
+                    return getSiteSettingsDelegate().isPartOfManagedFirstPartySet(
+                            mSite.getAddress().getOrigin());
+                }
+            });
         }
     }
 

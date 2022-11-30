@@ -186,6 +186,7 @@ void NetworkServiceNetworkDelegate::OnPACScriptError(
 
 bool NetworkServiceNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
     const net::URLRequest& request,
+    const net::FirstPartySetMetadata& first_party_set_metadata,
     net::CookieAccessResultList& maybe_included_cookies,
     net::CookieAccessResultList& excluded_cookies) {
   if (!network_context_->cookie_manager()
@@ -193,7 +194,8 @@ bool NetworkServiceNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
            .AnnotateAndMoveUserBlockedCookies(
                request.url(), request.site_for_cookies(),
                base::OptionalToPtr(request.isolation_info().top_frame_origin()),
-               maybe_included_cookies, excluded_cookies)) {
+               first_party_set_metadata, maybe_included_cookies,
+               excluded_cookies)) {
     // CookieSettings has already moved and annotated the cookies.
     return false;
   }
@@ -323,6 +325,16 @@ bool NetworkServiceNetworkDelegate::OnCanUseReportingClient(
       ->cookie_settings()
       .IsFullCookieAccessAllowed(origin.GetURL(), origin.GetURL(),
                                  QueryReason::kSiteStorage);
+}
+
+absl::optional<net::FirstPartySetsCacheFilter::MatchInfo>
+NetworkServiceNetworkDelegate::
+    OnGetFirstPartySetsCacheFilterMatchInfoMaybeAsync(
+        const net::SchemefulSite& request_site,
+        base::OnceCallback<void(net::FirstPartySetsCacheFilter::MatchInfo)>
+            callback) const {
+  return network_context_->first_party_sets_access_delegate()
+      .GetCacheFilterMatchInfo(request_site, std::move(callback));
 }
 
 int NetworkServiceNetworkDelegate::HandleClearSiteDataHeader(

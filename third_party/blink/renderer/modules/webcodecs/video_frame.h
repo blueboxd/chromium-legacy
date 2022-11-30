@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ class VideoFrameBufferInit;
 class VideoFrameCopyToOptions;
 class VideoFrameInit;
 
-extern const MODULES_EXPORT base::Feature kRemoveWebCodecsSpecViolations;
+MODULES_EXPORT BASE_DECLARE_FEATURE(kRemoveWebCodecsSpecViolations);
 
 class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
                                         public CanvasImageSource,

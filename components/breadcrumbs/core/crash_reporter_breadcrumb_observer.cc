@@ -9,6 +9,7 @@
 
 #include "base/containers/adapters.h"
 #include "base/no_destructor.h"
+#include "components/breadcrumbs/core/breadcrumb_manager.h"
 #include "components/breadcrumbs/core/crash_reporter_breadcrumb_constants.h"
 #include "components/crash/core/common/crash_key.h"
 
@@ -34,42 +35,17 @@ CrashReporterBreadcrumbObserver::GetInstance() {
   return *instance;
 }
 
-void CrashReporterBreadcrumbObserver::ObserveBreadcrumbManager(
-    BreadcrumbManager* breadcrumb_manager) {
-  breadcrumb_manager_observations_.AddObservation(breadcrumb_manager);
-}
-
-void CrashReporterBreadcrumbObserver::StopObservingBreadcrumbManager(
-    BreadcrumbManager* breadcrumb_manager) {
-  breadcrumb_manager_observations_.RemoveObservation(breadcrumb_manager);
-}
-
-void CrashReporterBreadcrumbObserver::ObserveBreadcrumbManagerService(
-    BreadcrumbManagerKeyedService* breadcrumb_manager_service) {
-  breadcrumb_manager_service_observations_.AddObservation(
-      breadcrumb_manager_service);
-}
-
-void CrashReporterBreadcrumbObserver::StopObservingBreadcrumbManagerService(
-    BreadcrumbManagerKeyedService* breadcrumb_manager_service) {
-  // |breadcrumb_manager_service| may not be observed, because the incognito
-  // BrowserState deletes itself before initializing on iOS (see
-  // scene_controller::destroyAndRebuildIncognitoBrowserState).
-  if (breadcrumb_manager_service_observations_.IsObservingSource(
-          breadcrumb_manager_service)) {
-    breadcrumb_manager_service_observations_.RemoveObservation(
-        breadcrumb_manager_service);
-  }
-}
-
 void CrashReporterBreadcrumbObserver::SetPreviousSessionEvents(
     const std::vector<std::string>& events) {
   breadcrumbs_.insert(breadcrumbs_.begin(), events.begin(), events.end());
   UpdateBreadcrumbEventsCrashKey();
 }
 
-void CrashReporterBreadcrumbObserver::EventAdded(BreadcrumbManager* manager,
-                                                 const std::string& event) {
+void CrashReporterBreadcrumbObserver::ResetForTesting() {
+  breadcrumbs_.clear();
+}
+
+void CrashReporterBreadcrumbObserver::EventAdded(const std::string& event) {
   breadcrumbs_.push_back(event);
   UpdateBreadcrumbEventsCrashKey();
 }

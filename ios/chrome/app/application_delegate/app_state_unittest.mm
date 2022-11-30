@@ -20,13 +20,11 @@
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
 #import "ios/chrome/app/application_delegate/mock_tab_opener.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
-#import "ios/chrome/app/application_delegate/tab_switching.h"
 #import "ios/chrome/app/application_delegate/user_activity_handler.h"
 #import "ios/chrome/app/enterprise_app_agent.h"
 #import "ios/chrome/app/main_application_delegate.h"
 #import "ios/chrome/app/safe_mode_app_state_agent.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/crash_report/crash_helper.h"
 #import "ios/chrome/browser/device_sharing/device_sharing_manager.h"
 #import "ios/chrome/browser/flags/system_flags.h"
@@ -46,6 +44,8 @@
 #import "ios/chrome/browser/ui/main/test/stub_browser_interface_provider.h"
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_coordinator.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
+#import "ios/chrome/browser/url/chrome_url_constants.h"
+#import "ios/chrome/common/crash_report/crash_helper.h"
 #import "ios/chrome/test/block_cleanup_test.h"
 #import "ios/chrome/test/providers/app_distribution/test_app_distribution.h"
 #import "ios/chrome/test/scoped_key_window.h"
@@ -108,6 +108,9 @@
     case InitStageBrowserBasic:
       break;
     case InitStageSafeMode:
+      break;
+    case InitStageVariationsSeed:
+      [appState queueTransitionToNextInitStage];
       break;
     case InitStageBrowserObjectsForBackgroundHandlers:
       [appState queueTransitionToNextInitStage];
@@ -796,6 +799,10 @@ TEST_F(AppStateTest, applicationWillEnterForegroundFromBackground) {
 
 // Tests that -applicationDidEnterBackground calls the metrics mediator.
 TEST_F(AppStateTest, applicationDidEnterBackgroundIncognito) {
+  // This is a breakpad only test and can be deprecated once Breakpad is
+  // removed.
+  if (crash_helper::common::CanUseCrashpad())
+    return;
   swizzleSafeModeShouldStart(NO);
   [[getStartupInformationMock() stub] setIsFirstRun:YES];
   [[[getStartupInformationMock() stub] andReturnValue:@YES] isFirstRun];

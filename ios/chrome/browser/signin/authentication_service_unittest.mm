@@ -39,6 +39,7 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/sync/mock_sync_service_utils.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_mock.h"
@@ -62,11 +63,7 @@ using testing::Return;
 
 namespace {
 
-std::unique_ptr<KeyedService> BuildMockSyncService(web::BrowserState* context) {
-  return std::make_unique<syncer::MockSyncService>();
-}
-
-CoreAccountId GetAccountId(ChromeIdentity* identity) {
+CoreAccountId GetAccountId(id<SystemIdentity> identity) {
   return CoreAccountId(base::SysNSStringToUTF8([identity gaiaID]));
 }
 
@@ -103,7 +100,7 @@ class AuthenticationServiceTest : public PlatformTest {
     TestChromeBrowserState::Builder builder;
     builder.SetPrefService(CreatePrefService());
     builder.AddTestingFactory(SyncServiceFactory::GetInstance(),
-                              base::BindRepeating(&BuildMockSyncService));
+                              base::BindRepeating(&CreateMockSyncService));
     builder.AddTestingFactory(
         SyncSetupServiceFactory::GetInstance(),
         base::BindRepeating(&SyncSetupServiceMock::CreateKeyedService));
@@ -143,7 +140,7 @@ class AuthenticationServiceTest : public PlatformTest {
     authentication_service()->OnApplicationWillEnterForeground();
   }
 
-  void FireAccessTokenRefreshFailed(ChromeIdentity* identity,
+  void FireAccessTokenRefreshFailed(id<SystemIdentity> identity,
                                     NSDictionary* user_info) {
     authentication_service()->OnAccessTokenRefreshFailed(identity, user_info);
   }
@@ -152,12 +149,12 @@ class AuthenticationServiceTest : public PlatformTest {
     authentication_service()->OnIdentityListChanged(notify_user);
   }
 
-  void SetCachedMDMInfo(ChromeIdentity* identity, NSDictionary* user_info) {
+  void SetCachedMDMInfo(id<SystemIdentity> identity, NSDictionary* user_info) {
     authentication_service()->cached_mdm_infos_[GetAccountId(identity)] =
         user_info;
   }
 
-  bool HasCachedMDMInfo(ChromeIdentity* identity) {
+  bool HasCachedMDMInfo(id<SystemIdentity> identity) {
     return authentication_service()->cached_mdm_infos_.count(
                GetAccountId(identity)) > 0;
   }
@@ -629,7 +626,7 @@ TEST_F(AuthenticationServiceTest, HandleMDMBlockedNotification) {
   ON_CALL(*identity_service(), GetMDMDeviceStatus(user_info1))
       .WillByDefault(Return(1));
 
-  auto handle_mdm_notification_callback = [](ChromeIdentity*, NSDictionary*,
+  auto handle_mdm_notification_callback = [](id<SystemIdentity>, NSDictionary*,
                                              ios::MDMStatusCallback callback) {
     callback(true /* is_blocked */);
     return true;

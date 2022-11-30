@@ -48,11 +48,6 @@ public class SyncConsentFirstRunFragment
     }
 
     @Override
-    protected boolean showTangibleSyncConsentView() {
-        return false;
-    }
-
-    @Override
     protected void onSyncRefused() {
         if (mIsChild
                 && !ChromeFeatureList.isEnabled(
@@ -62,8 +57,6 @@ public class SyncConsentFirstRunFragment
             getPageDelegate().abortFirstRunExperience();
         } else {
             SigninPreferencesManager.getInstance().temporarilySuppressNewTabPagePromos();
-            FirstRunSignInProcessor.setFirstRunFlowSignInAccountName(null);
-            FirstRunSignInProcessor.setFirstRunFlowSignInSetup(false);
             getPageDelegate().recordFreProgressHistogram(MobileFreProgress.SYNC_CONSENT_DISMISSED);
             getPageDelegate().advanceToNextPage();
         }
@@ -79,20 +72,9 @@ public class SyncConsentFirstRunFragment
                     MobileFreProgress.SYNC_CONSENT_SETTINGS_LINK_CLICK);
         }
 
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.ENABLE_SYNC_IMMEDIATELY_IN_FRE)) {
-            // Enabling sync is deferred to FirstRunSignInProcessor.start().
-            FirstRunSignInProcessor.setFirstRunFlowSignInAccountName(accountName);
-            FirstRunSignInProcessor.setFirstRunFlowSignInSetup(settingsClicked);
-            getPageDelegate().advanceToNextPage();
-            callback.run();
-            return;
-        }
-
-        // Enable sync now. Leave the account pref empty in FirstRunSignInProcessor, so start()
-        // doesn't try to do it a second time. Only set the advanced setup pref later in
+        // Enable sync now. Only call FirstRunSignInProcessor.scheduleOpeningSettings() later in
         // closeAndMaybeOpenSyncSettings(), because settings shouldn't open if
         // signinAndEnableSync() fails.
-        FirstRunSignInProcessor.setFirstRunFlowSignInAccountName(null);
         if (!getPageDelegate().getProperties().getBoolean(IS_CHILD_ACCOUNT, false)) {
             signinAndEnableSync(accountName, settingsClicked, callback);
             return;
@@ -124,10 +106,11 @@ public class SyncConsentFirstRunFragment
 
     @Override
     protected void closeAndMaybeOpenSyncSettings(boolean settingsClicked) {
-        assert ChromeFeatureList.isEnabled(ChromeFeatureList.ENABLE_SYNC_IMMEDIATELY_IN_FRE);
-        // Now that signinAndEnableSync() succeeded, signal whether FirstRunSignInProcessor.start()
-        // should open settings.
-        FirstRunSignInProcessor.setFirstRunFlowSignInSetup(settingsClicked);
+        // Now that signinAndEnableSync() succeeded, signal whether FirstRunSignInProcessor should
+        // open settings.
+        if (settingsClicked) {
+            FirstRunSignInProcessor.scheduleOpeningSettings();
+        }
         getPageDelegate().advanceToNextPage();
     }
 

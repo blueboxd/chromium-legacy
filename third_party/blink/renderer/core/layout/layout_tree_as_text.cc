@@ -80,7 +80,7 @@ static String GetTagName(Node* n) {
     return "COMMENT";
   if (const auto* element = DynamicTo<Element>(n)) {
     const AtomicString& pseudo = element->ShadowPseudoId();
-    if (!pseudo.IsEmpty())
+    if (!pseudo.empty())
       return "::" + pseudo;
   }
   return n->nodeName();
@@ -166,7 +166,7 @@ void LayoutTreeAsText::WriteLayoutObject(WTF::TextStream& ts,
 
   if (o.GetNode()) {
     String tag_name = GetTagName(o.GetNode());
-    if (!tag_name.IsEmpty())
+    if (!tag_name.empty())
       ts << " {" << tag_name << "}";
   }
 
@@ -276,7 +276,7 @@ void LayoutTreeAsText::WriteLayoutObject(WTF::TextStream& ts,
 
   if (o.IsListMarkerForNormalContent()) {
     String text = To<LayoutListMarker>(o).GetText();
-    if (!text.IsEmpty()) {
+    if (!text.empty()) {
       if (text.length() != 1) {
         text = QuoteAndEscapeNonPrintables(text);
       } else {
@@ -738,14 +738,14 @@ void LayoutTreeAsText::WriteLayers(WTF::TextStream& ts,
 
   const auto& neg_list = ChildLayers(layer, kNegativeZOrderChildren);
   PhysicalRect layer_bounds(layer_offset, layer->Size());
-  bool paints_background_separately = !neg_list.IsEmpty();
+  bool paints_background_separately = !neg_list.empty();
   if (should_dump && paints_background_separately) {
     Write(ts, *layer, layer_bounds, background_rect.Rect(),
           foreground_rect.Rect(), kLayerPaintPhaseBackground, indent, behavior,
           marked_layer);
   }
 
-  if (should_dump_children && !neg_list.IsEmpty()) {
+  if (should_dump_children && !neg_list.empty()) {
     int curr_indent = indent;
     if (behavior & kLayoutAsTextShowLayerNesting) {
       WriteIndent(ts, indent);
@@ -767,7 +767,7 @@ void LayoutTreeAsText::WriteLayers(WTF::TextStream& ts,
   }
 
   const auto& normal_flow_list = ChildLayers(layer, kNormalFlowChildren);
-  if (should_dump_children && !normal_flow_list.IsEmpty()) {
+  if (should_dump_children && !normal_flow_list.empty()) {
     int curr_indent = indent;
     if (behavior & kLayoutAsTextShowLayerNesting) {
       WriteIndent(ts, indent);
@@ -781,7 +781,7 @@ void LayoutTreeAsText::WriteLayers(WTF::TextStream& ts,
   }
 
   const auto& pos_list = ChildLayers(layer, kPositiveZOrderChildren);
-  if (should_dump_children && !pos_list.IsEmpty()) {
+  if (should_dump_children && !pos_list.empty()) {
     int curr_indent = indent;
     if (behavior & kLayoutAsTextShowLayerNesting) {
       WriteIndent(ts, indent);

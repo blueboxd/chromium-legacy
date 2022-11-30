@@ -9,7 +9,7 @@
 <translation id="1300209025925956156">Skanowanie dokumentu</translation>
 <translation id="1309250603447638106">Pobieram aktualizacje dotyczące skanowania dokumentów</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Wyszukaj + strzałka w lewo, aby przejść.</translation>
-<translation id="1393338179284529051">Quad HD</translation>
+<translation id="1417314334557041815">Edytuj stronę <ph name="INDEX" /></translation>
 <translation id="1430915738399379752">Drukuj</translation>
 <translation id="1467231725790366244">Odłączono kamerę <ph name="CAMERA" />.</translation>
 <translation id="1473110567575736769">3-sekundowy samowyzwalacz</translation>
@@ -20,8 +20,8 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Nic nie zostało nagrane</translation>
-<translation id="169335673490251151">Skanuj dodatkowe strony</translation>
 <translation id="1838104802459806957">Przechyl do góry</translation>
+<translation id="1843105061469674856">Skanuj dodatkową stronę</translation>
 <translation id="1851169887664797861">Dostępne dodatkowe ustawienia aparatu</translation>
 <translation id="1851616744363735765">WSTRZYMANO</translation>
 <translation id="1862930711583847113">Nie udało się wyeksportować pliku <ph name="FILE" /></translation>
@@ -46,7 +46,6 @@
 <translation id="2599796128805996109">Tylny aparat</translation>
 <translation id="2759905922487820242"><ph name="CURRENT" /> / <ph name="MAXIMAL" /> s</translation>
 <translation id="2761536921376153655">Typ skanowania</translation>
-<translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">Podgląd odbicia lustrzanego</translation>
 <translation id="2879583609344924966">Podłączono kamerę <ph name="CAMERA" />.</translation>
 <translation id="2904654629665923749">Dostępne jest skanowanie dokumentów</translation>
@@ -80,6 +79,7 @@
 <translation id="414641094616694804">Ta kamera nie umożliwia zmiany rozdzielczości</translation>
 <translation id="4269820728363426813">Kopiuj adres linku</translation>
 <translation id="4281620174117014503">Rozdzielczość średnia</translation>
+<translation id="428234092390943511">Miniatura strony</translation>
 <translation id="4329152592498422850">Przełącz, by zrobić kwadratowe zdjęcie</translation>
 <translation id="4340659173795395806">Możesz teraz utworzyć wielostronicowy plik PDF</translation>
 <translation id="4383571725254449280">Drukuj dzienniki wydajności</translation>
@@ -114,7 +114,6 @@
 <translation id="5916664084637901428">Włączone</translation>
 <translation id="5975083100439434680">Pomniejsz</translation>
 <translation id="5976160379964388480">Pozostałe</translation>
-<translation id="603973421174355542">Full HD</translation>
 <translation id="6073451960410192870">Zatrzymaj nagrywanie</translation>
 <translation id="6197807149213783179">Zapisz metadane</translation>
 <translation id="6233780560267770709">3 na 3</translation>
@@ -137,7 +136,6 @@ Jeśli dotyczyła ona jakości zdjęć lub filmów, zamieść tutaj przykładowe
 <translation id="698156982839284926">3 sekundy</translation>
 <translation id="712848772518857951">Czy na pewno chcesz usunąć te elementy (<ph name="COUNT" />)?</translation>
 <translation id="7134221860976209830">10-sekundowy samowyzwalacz</translation>
-<translation id="7150591439198955032">4K</translation>
 <translation id="7191890674911603392">Typ rekordu</translation>
 <translation id="7243947652761655814">Rozdzielczość wideo</translation>
 <translation id="7337660886763914220">Błędy systemu plików.</translation>
@@ -162,7 +160,6 @@ Jeśli dotyczyła ona jakości zdjęć lub filmów, zamieść tutaj przykładowe
 <translation id="8167081290930651932">Zapisz jako zdjęcie</translation>
 <translation id="8239780215768881278">Zapisz stopklatkę</translation>
 <translation id="8261506727792406068">Usuń</translation>
-<translation id="839162370397157884">Wybierz stronę</translation>
 <translation id="8425673304802773841">Pochyl w dół</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="8629662593426079630">360p</translation>

@@ -51,7 +51,7 @@ scoped_refptr<gl::GLImageIOSurface> CreateGLImage(const gfx::Size& size,
                                                   gfx::BufferFormat format,
                                                   bool video) {
   scoped_refptr<gl::GLImageIOSurface> gl_image(
-      gl::GLImageIOSurface::Create(size, GL_RGBA));
+      gl::GLImageIOSurface::Create(size));
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
       gfx::CreateIOSurface(size, format));
   if (video) {
@@ -59,7 +59,8 @@ scoped_refptr<gl::GLImageIOSurface> CreateGLImage(const gfx::Size& size,
     CVPixelBufferCreateWithIOSurface(nullptr, io_surface, nullptr,
                                      cv_pixel_buffer.InitializeInto());
     gl_image->InitializeWithCVPixelBuffer(cv_pixel_buffer, 0,
-                                          gfx::GenericSharedMemoryId(), format);
+                                          gfx::GenericSharedMemoryId(), format,
+                                          gfx::ColorSpace::CreateREC709());
   } else {
     gl_image->Initialize(io_surface, 0, gfx::GenericSharedMemoryId(), format);
   }

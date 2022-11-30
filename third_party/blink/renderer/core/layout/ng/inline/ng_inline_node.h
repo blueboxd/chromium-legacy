@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -115,11 +115,6 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
 
   bool UseFirstLineStyle() const;
   void CheckConsistency() const;
-
-  bool ShouldReportLetterSpacingUseCounterForTesting(
-      const LayoutObject* layout_object,
-      bool first_line,
-      const LayoutBlockFlow* block_flow);
 
   // This function is available after PrepareLayout(), only for SVG <text>.
   const Vector<std::pair<unsigned, NGSvgCharacterData>>& SvgCharacterDataList()

@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -615,15 +616,17 @@ class RenderFrameHostFactoryForBeforeUnloadInterceptor
       int32_t routing_id,
       mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
       const blink::LocalFrameToken& frame_token,
+      const blink::DocumentToken& document_token,
       bool renderer_initiated_creation,
       RenderFrameHostImpl::LifecycleStateImpl lifecycle_state,
       scoped_refptr<BrowsingContextState> browsing_context_state) override {
     return base::WrapUnique(new RenderFrameHostImplForBeforeUnloadInterceptor(
         site_instance, std::move(render_view_host), delegate, frame_tree,
         frame_tree_node, routing_id, std::move(frame_remote), frame_token,
-        renderer_initiated_creation, lifecycle_state,
+        document_token, renderer_initiated_creation, lifecycle_state,
         std::move(browsing_context_state),
-        frame_tree_node->frame_owner_element_type()));
+        frame_tree_node->frame_owner_element_type(), frame_tree_node->parent(),
+        frame_tree_node->fenced_frame_status()));
   }
 };
 
@@ -3112,11 +3115,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   ASSERT_TRUE(NavigateToURL(shell(), main_url));
 
   RenderFrameHostImpl* main_frame = web_contents()->GetPrimaryMainFrame();
-  EXPECT_TRUE(main_frame->AccessibilityIsMainFrame());
+  EXPECT_TRUE(main_frame->AccessibilityIsRootFrame());
 
   ASSERT_EQ(1u, main_frame->child_count());
   RenderFrameHostImpl* iframe = main_frame->child_at(0)->current_frame_host();
-  EXPECT_FALSE(iframe->AccessibilityIsMainFrame());
+  EXPECT_FALSE(iframe->AccessibilityIsRootFrame());
 }
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
@@ -5029,10 +5032,7 @@ ObjectData kInnerObject{10, {"getInnerId"}};
 class MockInnerObject : public blink::mojom::RemoteObject {
  public:
   void HasMethod(const std::string& name, HasMethodCallback callback) override {
-    bool has_method =
-        std::find(kInnerObject.methods.begin(), kInnerObject.methods.end(),
-                  name) != kInnerObject.methods.end();
-    std::move(callback).Run(has_method);
+    std::move(callback).Run(base::Contains(kInnerObject.methods, name));
   }
   void GetMethods(GetMethodsCallback callback) override {
     std::move(callback).Run(kInnerObject.methods);
@@ -5058,10 +5058,7 @@ class MockObject : public blink::mojom::RemoteObject {
       mojo::PendingReceiver<blink::mojom::RemoteObject> receiver)
       : receiver_(this, std::move(receiver)) {}
   void HasMethod(const std::string& name, HasMethodCallback callback) override {
-    bool has_method =
-        std::find(kMainObject.methods.begin(), kMainObject.methods.end(),
-                  name) != kMainObject.methods.end();
-    std::move(callback).Run(has_method);
+    std::move(callback).Run(base::Contains(kMainObject.methods, name));
   }
 
   void GetMethods(GetMethodsCallback callback) override {

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -145,7 +145,7 @@ class TestAdTracker : public AdTracker {
                                 ResourceType resource_type,
                                 const FetchInitiatorInfo& initiator_info,
                                 bool ad_request) override {
-    if (!ad_suffix_.IsEmpty() && request_url.GetString().EndsWith(ad_suffix_)) {
+    if (!ad_suffix_.empty() && request_url.GetString().EndsWith(ad_suffix_)) {
       ad_request = true;
     }
 

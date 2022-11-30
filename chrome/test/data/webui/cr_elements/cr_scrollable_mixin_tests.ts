@@ -9,7 +9,7 @@ import {CrScrollableMixin} from 'chrome://resources/cr_elements/cr_scrollable_mi
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import {flush, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {waitBeforeNextRender} from 'chrome://webui-test/test_util.js';
+import {waitBeforeNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
 // clang-format on
 
@@ -54,7 +54,8 @@ suite('cr-scrollable-mixin', function() {
   let ironList: IronListElement;
 
   setup(function(done) {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
 
     testElement = document.createElement('test-element') as TestElement;
     document.body.appendChild(testElement);

@@ -22,6 +22,7 @@ const char kManagerService[] = "org.chromium.bluetooth.Manager";
 const char kAdapterInterface[] = "org.chromium.bluetooth.Bluetooth";
 const char kGattInterface[] = "org.chromium.bluetooth.BluetoothGatt";
 const char kManagerInterface[] = "org.chromium.bluetooth.Manager";
+const char kExperimentalInterface[] = "org.chromium.bluetooth.Experimental";
 const char kManagerObject[] = "/org/chromium/bluetooth/Manager";
 const char kAdapterObjectFormat[] = "/org/chromium/bluetooth/hci%d/adapter";
 const char kGattObjectFormat[] = "/org/chromium/bluetooth/hci%d/gatt";
@@ -159,6 +160,39 @@ const char kOnConnectionUpdated[] = "OnConnectionUpdated";
 const char kOnServiceChanged[] = "OnServiceChanged";
 }  // namespace gatt
 
+namespace advertiser {
+const char kRegisterCallback[] = "RegisterAdvertiserCallback";
+const char kStartAdvertisingSet[] = "StartAdvertisingSet";
+const char kStopAdvertisingSet[] = "StopAdvertisingSet";
+const char kGetOwnAddress[] = "GetOwnAddress";
+const char kEnableAdvertisingSet[] = "EnableAdvertisingSet";
+const char kSetAdvertisingData[] = "SetAdvertisingData";
+const char kSetScanResponseData[] = "SetScanResponseData";
+const char kSetAdvertisingParameters[] = "SetAdvertisingParameters";
+const char kSetPeriodicAdvertisingParameters[] =
+    "SetPeriodicAdvertisingParameters";
+const char kSetPeriodicAdvertisingData[] = "SetPeriodicAdvertisingData";
+const char kSetPeriodicAdvertisingEnable[] = "SetPeriodicAdvertisingEnable";
+
+const char kCallbackInterface[] =
+    "org.chromium.bluetooth.AdvertisingSetCallback";
+const char kOnAdvertisingSetStarted[] = "OnAdvertisingSetStarted";
+const char kOnOwnAddressRead[] = "OnOwnAddressRead";
+const char kOnAdvertisingSetStopped[] = "OnAdvertisingSetStopped";
+const char kOnAdvertisingEnabled[] = "OnAdvertisingEnabled";
+const char kOnAdvertisingDataSet[] = "OnAdvertisingDataSet";
+const char kOnScanResponseDataSet[] = "OnScanResponseDataSet";
+const char kOnAdvertisingParametersUpdated[] = "OnAdvertisingParametersUpdated";
+const char kOnPeriodicAdvertisingParametersUpdated[] =
+    "OnPeriodicAdvertisingParametersUpdated";
+const char kOnPeriodicAdvertisingDataSet[] = "OnPeriodicAdvertisingDataSet";
+const char kOnPeriodicAdvertisingEnabled[] = "OnPeriodicAdvertisingEnabled";
+}  // namespace advertiser
+
+namespace experimental {
+const char kSetLLPrivacy[] = "SetLLPrivacy";
+}  // namespace experimental
+
 namespace {
 constexpr char kDeviceIdNameKey[] = "name";
 constexpr char kDeviceIdAddressKey[] = "address";
@@ -188,98 +222,93 @@ std::string Error::ToString() {
 }
 
 template <>
-const DBusTypeInfo& GetDBusTypeInfo<bool>() {
+const DBusTypeInfo& GetDBusTypeInfo(const bool*) {
   static DBusTypeInfo info{"b", "bool"};
   return info;
 }
 
 template <>
-const DBusTypeInfo& GetDBusTypeInfo<uint8_t>() {
+const DBusTypeInfo& GetDBusTypeInfo(const uint8_t*) {
   static DBusTypeInfo info{"y", "uint8_t"};
   return info;
 }
 
 template <>
-const DBusTypeInfo& GetDBusTypeInfo<int8_t>() {
-  static DBusTypeInfo info{"y", "int8"};
+const DBusTypeInfo& GetDBusTypeInfo(const int8_t*) {
+  static DBusTypeInfo info{"n", "int8"};
   return info;
 }
 
 template <>
-const DBusTypeInfo& GetDBusTypeInfo<uint16_t>() {
+const DBusTypeInfo& GetDBusTypeInfo(const uint16_t*) {
   static DBusTypeInfo info{"q", "uint16"};
   return info;
 }
 
 template <>
-const DBusTypeInfo& GetDBusTypeInfo<int16_t>() {
+const DBusTypeInfo& GetDBusTypeInfo(const int16_t*) {
   static DBusTypeInfo info{"n", "int16"};
   return info;
 }
 
 template <>
-const DBusTypeInfo& GetDBusTypeInfo<uint32_t>() {
+const DBusTypeInfo& GetDBusTypeInfo(const uint32_t*) {
   static DBusTypeInfo info{"u", "uint32"};
   return info;
 }
 
 template <>
-const DBusTypeInfo& GetDBusTypeInfo<int32_t>() {
+const DBusTypeInfo& GetDBusTypeInfo(const int32_t*) {
   static DBusTypeInfo info{"i", "int32"};
   return info;
 }
 
 template <>
-const DBusTypeInfo& GetDBusTypeInfo<uint64_t>() {
+const DBusTypeInfo& GetDBusTypeInfo(const uint64_t*) {
   static DBusTypeInfo info{"t", "uint64"};
   return info;
 }
 
 template <>
-const DBusTypeInfo& GetDBusTypeInfo<int64_t>() {
+const DBusTypeInfo& GetDBusTypeInfo(const int64_t*) {
   static DBusTypeInfo info{"x", "int64"};
   return info;
 }
 
 template <>
-const DBusTypeInfo& GetDBusTypeInfo<double>() {
+const DBusTypeInfo& GetDBusTypeInfo(const double*) {
   static DBusTypeInfo info{"d", "double"};
   return info;
 }
 
 template <>
-const DBusTypeInfo& GetDBusTypeInfo<std::string>() {
+const DBusTypeInfo& GetDBusTypeInfo(const std::string*) {
   static DBusTypeInfo info{"s", "string"};
   return info;
 }
 
 template <>
-const DBusTypeInfo& GetDBusTypeInfo<dbus::ObjectPath>() {
+const DBusTypeInfo& GetDBusTypeInfo(const dbus::ObjectPath*) {
   static DBusTypeInfo info{"o", "object_path"};
   return info;
 }
 
 template <>
-const DBusTypeInfo& GetDBusTypeInfo<base::ScopedFD>() {
+const DBusTypeInfo& GetDBusTypeInfo(const base::ScopedFD*) {
   static DBusTypeInfo info{"h", "FD"};
   return info;
 }
 
 template <>
-const DBusTypeInfo& GetDBusTypeInfo<FlossDeviceId>() {
+const DBusTypeInfo& GetDBusTypeInfo(const FlossDeviceId*) {
   static DBusTypeInfo info{"a{sv}", "FlossDeviceId"};
   return info;
 }
 
 template <>
-const DBusTypeInfo& GetDBusTypeInfo<device::BluetoothUUID>() {
+DEVICE_BLUETOOTH_EXPORT const DBusTypeInfo& GetDBusTypeInfo(
+    const device::BluetoothUUID*) {
   static DBusTypeInfo info{"ay", "BluetoothUUID"};
-  return info;
-}
-
-template <>
-const DBusTypeInfo& GetDBusTypeInfo<std::vector<uint8_t>>() {
-  static DBusTypeInfo info{"ay", "std::vector<uint8_t>"};
   return info;
 }
 
@@ -358,6 +387,26 @@ template <>
 bool FlossDBusClient::ReadDBusParam(dbus::MessageReader* reader,
                                     uint8_t* value) {
   return reader->PopByte(value);
+}
+
+// static
+template <>
+bool FlossDBusClient::ReadDBusParam(dbus::MessageReader* reader,
+                                    int8_t* value) {
+  int16_t val;
+  bool success;
+
+  success = reader->PopInt16(&val);
+  *value = static_cast<int8_t>(val);
+
+  return success;
+}
+
+// static
+template <>
+bool FlossDBusClient::ReadDBusParam(dbus::MessageReader* reader,
+                                    uint16_t* value) {
+  return reader->PopUint16(value);
 }
 
 // static
@@ -511,6 +560,24 @@ void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
   writer->AppendByte(data);
 }
 
+template <>
+void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
+                                     const int8_t& data) {
+  return writer->AppendInt16(static_cast<int16_t>(data));
+}
+
+template <>
+void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
+                                     const uint16_t& data) {
+  return writer->AppendUint16(data);
+}
+
+template <>
+void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
+                                     const int16_t& data) {
+  return writer->AppendInt16(data);
+}
+
 template void FlossDBusClient::WriteDBusParam<uint32_t>(
     dbus::MessageWriter* writer,
     const absl::optional<uint32_t>& data);
@@ -540,8 +607,9 @@ void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
 }
 
 template <>
-void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
-                                     const device::BluetoothUUID& uuid) {
+DEVICE_BLUETOOTH_EXPORT void FlossDBusClient::WriteDBusParam(
+    dbus::MessageWriter* writer,
+    const device::BluetoothUUID& uuid) {
   WriteDBusParam(writer, uuid.GetBytes());
 }
 

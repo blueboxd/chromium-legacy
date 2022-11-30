@@ -40,8 +40,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/commands/fetch_manifest_and_install_command.h"
-#include "chrome/browser/web_applications/commands/web_app_command.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/manifest_update_task.h"
@@ -55,7 +53,7 @@
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_callback_app_identity.h"
-#include "chrome/browser/web_applications/web_app_command_manager.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
@@ -101,6 +99,8 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_family.h"
+#include "ui/views/widget/any_widget_observer.h"
+#include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -438,20 +438,18 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
 
     AppId app_id;
     base::RunLoop run_loop;
-    GetProvider().command_manager().ScheduleCommand(
-        std::make_unique<FetchManifestAndInstallCommand>(
-            &GetProvider().install_finalizer(), &GetProvider().registrar(),
-            webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
-            browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
-            /*bypass_service_worker_check=*/false,
-            base::BindOnce(test::TestAcceptDialogCallback),
-            base::BindLambdaForTesting([&](const AppId& new_app_id,
-                                           webapps::InstallResultCode code) {
+    GetProvider().scheduler().FetchManifestAndInstall(
+        webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
+        browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
+        /*bypass_service_worker_check=*/false,
+        base::BindOnce(test::TestAcceptDialogCallback),
+        base::BindLambdaForTesting(
+            [&](const AppId& new_app_id, webapps::InstallResultCode code) {
               EXPECT_EQ(code, webapps::InstallResultCode::kSuccessNewInstall);
               app_id = new_app_id;
               run_loop.Quit();
             }),
-            /*use_fallback=*/true, WebAppInstallFlow::kInstallSite));
+        /*use_fallback=*/true);
 
     run_loop.Run();
     return app_id;
@@ -623,8 +621,8 @@ class ManifestUpdateManagerBrowserTest_UpdateDialog
       public testing::WithParamInterface<UpdateDialogParam> {
  public:
   ManifestUpdateManagerBrowserTest_UpdateDialog() {
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
     if (IsUpdateDialogEnabled()) {
       enabled_features.push_back(features::kPwaUpdateDialogForName);
       enabled_features.push_back(features::kPwaUpdateDialogForIcon);
@@ -4019,15 +4017,23 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
   app_id = app_ids[0];
   EXPECT_EQ(override_title, GetProvider().registrar().GetAppShortName(app_id));
 
+  // Simulate the user accepting the App Identity update dialog (if it appears).
+  chrome::SetAutoAcceptAppIdentityUpdateForTesting(true);
+
+  views::AnyWidgetObserver observer(views::test::AnyWidgetTestPasskey{});
+  observer.set_shown_callback(
+      base::BindLambdaForTesting([&](views::Widget* widget) {
+        // If the App Identity dialog was shown for the shortcut app, then
+        // something is wrong.
+        ASSERT_FALSE(widget->GetName() ==
+                     "WebAppIdentityUpdateConfirmationView");
+      }));
+
   // Now navigate to the same url and allow the update mechanism to run.
   UpdateCheckResultAwaiter result_awaiter(browser(), app_url);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), app_url));
   EXPECT_EQ(std::move(result_awaiter).AwaitNextResult(),
             ManifestUpdateResult::kAppUpToDate);
-
-  // If the App Identity dialog was shown for the shortcut app, then something
-  // is wrong.
-  ASSERT_FALSE(chrome::AppIdentityUpdateDialogWasRequestedForTesting());
 }
 
 using ManifestUpdateManagerBrowserTest_ManifestId =
@@ -4358,8 +4364,8 @@ class ManifestUpdateManagerBrowserTest_AppIdentityParameterized
           std::tuple<AppIdTestParam, AppIdTestParam, AppIdTestParam>> {
  public:
   ManifestUpdateManagerBrowserTest_AppIdentityParameterized() {
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
     if (IsAppIdentityUpdateDialogForIconEnabled()) {
       enabled_features.push_back(features::kPwaUpdateDialogForIcon);
     } else {

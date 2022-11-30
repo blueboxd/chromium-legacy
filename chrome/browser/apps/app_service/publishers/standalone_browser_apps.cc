@@ -163,14 +163,17 @@ void StandaloneBrowserApps::Launch(const std::string& app_id,
                                    LaunchSource launch_source,
                                    WindowInfoPtr window_info) {
   DCHECK_EQ(app_constants::kLacrosAppId, app_id);
-  crosapi::BrowserManager::Get()->NewTab(
-      /*should_trigger_session_restore=*/true);
+  crosapi::BrowserManager::Get()->Launch();
 }
 
 void StandaloneBrowserApps::LaunchAppWithParams(AppLaunchParams&& params,
                                                 LaunchCallback callback) {
-  Launch(params.app_id, ui::EF_NONE, apps::mojom::LaunchSource::kUnknown,
-         nullptr);
+  if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
+    Launch(params.app_id, ui::EF_NONE, LaunchSource::kUnknown, nullptr);
+  } else {
+    Launch(params.app_id, ui::EF_NONE, apps::mojom::LaunchSource::kUnknown,
+           nullptr);
+  }
   // TODO(crbug.com/1244506): Add launch return value.
   std::move(callback).Run(LaunchResult());
 }
@@ -201,8 +204,7 @@ void StandaloneBrowserApps::Launch(const std::string& app_id,
                                    apps::mojom::LaunchSource launch_source,
                                    apps::mojom::WindowInfoPtr window_info) {
   DCHECK_EQ(app_constants::kLacrosAppId, app_id);
-  crosapi::BrowserManager::Get()->NewTab(
-      /*should_trigger_session_restore=*/true);
+  crosapi::BrowserManager::Get()->Launch();
 }
 
 void StandaloneBrowserApps::GetMenuModel(const std::string& app_id,

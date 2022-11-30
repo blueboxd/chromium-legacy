@@ -279,7 +279,7 @@ void HTMLIFrameElement::ParseAttribute(
     if (allow_ != value) {
       allow_ = value;
       UpdateContainerPolicy();
-      if (!value.IsEmpty()) {
+      if (!value.empty()) {
         UseCounter::Count(GetDocument(),
                           WebFeature::kFeaturePolicyAllowAttribute);
       }
@@ -340,7 +340,7 @@ DocumentPolicyFeatureState HTMLIFrameElement::ConstructRequiredPolicy() const {
           GetExecutionContext()))
     return {};
 
-  if (!required_policy_.IsEmpty()) {
+  if (!required_policy_.empty()) {
     UseCounter::Count(
         GetDocument(),
         mojom::blink::WebFeature::kDocumentPolicyIframePolicyAttribute);
@@ -562,8 +562,7 @@ void HTMLIFrameElement::DidChangeAttributes() {
   DCHECK_LE(csp.size(), 1u);
 
   auto attributes = mojom::blink::IframeAttributes::New();
-  attributes->parsed_csp_attribute =
-      csp.IsEmpty() ? nullptr : std::move(csp[0]);
+  attributes->parsed_csp_attribute = csp.empty() ? nullptr : std::move(csp[0]);
   attributes->anonymous = anonymous_;
 
   attributes->id = ConvertToReportValue(id_);

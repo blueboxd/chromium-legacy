@@ -4,7 +4,7 @@
 
 //! Utilities to process `cargo metadata` dependency graph.
 
-use crate::crates::{self, Epoch, NormalizedName};
+use crate::crates::{self, Epoch};
 use crate::platforms::{self, Platform, PlatformSet};
 
 use std::collections::{hash_map::Entry, HashMap, HashSet};
@@ -12,23 +12,18 @@ use std::iter;
 use std::path::PathBuf;
 
 pub use cargo_metadata::DependencyKind;
-pub use cargo_metadata::Version;
+pub use semver::Version;
 
-/// A single transitive third-party dependency. Includes information needed for
-/// generating build files later.
+/// A single transitive dependency of a root crate. Includes information needed
+/// for generating build files later.
 #[derive(Clone, Debug)]
-pub struct ThirdPartyDep {
+pub struct Package {
     /// The package name as used by cargo.
     pub package_name: String,
-    /// The normalized name we use in vendored crate paths.
-    pub normalized_name: NormalizedName,
     /// The package version as used by cargo.
     pub version: Version,
-    /// The epoch derived from the dependency version. Used for our vendored
-    /// third-party crates.
-    pub epoch: Epoch,
     /// This package's dependencies. Each element cross-references another
-    /// `ThirdPartyDep` by name and epoch.
+    /// `Package` by name and version.
     pub dependencies: Vec<DepOfDep>,
     /// Same as the above, but for build script deps.
     pub build_dependencies: Vec<DepOfDep>,
@@ -49,29 +44,44 @@ pub struct ThirdPartyDep {
     /// human consumption when debugging missing packages.
     pub dependency_path: Vec<String>,
     /// Whether the source is a local path. Is `false` if cargo resolved this
-    /// dependency from online (crates.io or git). This should be `true` for all
-    /// valid packages. Returning `false` for a dependency allows better error
-    /// messages later.
+    /// dependency from a registry (e.g. crates.io) or git. If `false` the
+    /// package may still be locally vendored through cargo configuration (see
+    /// https://doc.rust-lang.org/cargo/reference/source-replacement.html)
     pub is_local: bool,
+    /// Whether this package is a member of the cargo workspace the metadata
+    /// came from, as opposed to a third-party dependency.
+    pub is_workspace_member: bool,
 }
 
-impl ThirdPartyDep {
-    pub fn crate_id(&self) -> crates::ThirdPartyCrate {
-        crates::ThirdPartyCrate { name: self.package_name.clone(), epoch: self.epoch }
+impl Package {
+    pub fn third_party_crate_id(&self) -> crates::ChromiumVendoredCrate {
+        crates::ChromiumVendoredCrate {
+            name: self.package_name.clone(),
+            epoch: Epoch::from_version(&self.version),
+        }
     }
 }
 
-/// A dependency of a `ThirdPartyDep`. Cross-references another `ThirdPartyDep`
-/// entry in the resolved list.
+/// A dependency of a `Package`. Cross-references another `Package` entry in the
+/// resolved list.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct DepOfDep {
-    /// The normalized name of this dependency.
-    pub normalized_name: NormalizedName,
-    /// The requested epoch of this dependency.
-    pub epoch: Epoch,
+    /// This dependency's package name as used by cargo.
+    pub package_name: String,
+    /// The resolved version of this dependency.
+    pub version: Version,
     /// A platform constraint for this dependency, or `None` if it's used on all
     /// platforms.
     pub platform: Option<Platform>,
+}
+
+impl DepOfDep {
+    pub fn third_party_crate_id(&self) -> crates::ChromiumVendoredCrate {
+        crates::ChromiumVendoredCrate {
+            name: self.package_name.clone(),
+            epoch: Epoch::from_version(&self.version),
+        }
+    }
 }
 
 /// Information specific to the dependency kind: for normal, build script, or
@@ -108,6 +118,14 @@ pub struct BinTarget {
 pub enum LibType {
     /// A normal Rust rlib library.
     Rlib,
+    /// A Rust dynamic library. See
+    /// https://doc.rust-lang.org/reference/linkage.html for details and the
+    /// distinction between dylib and cdylib.
+    Dylib,
+    /// A C-compatible dynamic library. See
+    /// https://doc.rust-lang.org/reference/linkage.html for details and the
+    /// distinction between dylib and cdylib.
+    Cdylib,
     /// A procedural macro.
     ProcMacro,
 }
@@ -116,6 +134,8 @@ impl std::fmt::Display for LibType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match *self {
             Self::Rlib => f.write_str("rlib"),
+            Self::Dylib => f.write_str("dylib"),
+            Self::Cdylib => f.write_str("cdylib"),
             Self::ProcMacro => f.write_str("proc-macro"),
         }
     }
@@ -126,7 +146,16 @@ impl std::fmt::Display for LibType {
 /// package may have multiple crates, each of which corresponds to a single
 /// rustc invocation: e.g. a package may have a lib crate as well as multiple
 /// binary crates.
-pub fn collect_dependencies(metadata: &cargo_metadata::Metadata) -> Vec<ThirdPartyDep> {
+///
+/// Optionally, `roots` specifies from which packages to traverse the dependency
+/// graph (likely the root packages to generate build files for). This overrides
+/// the usual behavior, which traverses from all workspace members and the root
+/// workspace package. The package names in `roots` should still only contain
+/// workspace members.
+pub fn collect_dependencies(
+    metadata: &cargo_metadata::Metadata,
+    roots: Option<Vec<String>>,
+) -> Vec<Package> {
     // The metadata is split into two parts:
     // 1. A list of packages and associated info: targets (e.g. lib, bin,
     //    tests), source path, etc. This includes all workspace members and all
@@ -166,10 +195,19 @@ pub fn collect_dependencies(metadata: &cargo_metadata::Metadata) -> Vec<ThirdPar
         dependencies: HashMap::new(),
     };
 
+    let traversal_roots: Vec<&cargo_metadata::PackageId> = match roots {
+        Some(roots) => metadata
+            .packages
+            .iter()
+            .filter_map(|pkg| if roots.contains(&pkg.name) { Some(&pkg.id) } else { None })
+            .collect(),
+        None => dep_graph.roots.clone(),
+    };
+
     // Do a depth-first traversal of the graph to find all relevant
     // dependencies. Start from each workspace package ("chromium" and
     // additional binary members used in the build).
-    for root_id in dep_graph.roots.iter() {
+    for root_id in traversal_roots.iter() {
         let node_map: &HashMap<&cargo_metadata::PackageId, &cargo_metadata::Node> =
             &dep_graph.nodes;
         explore_node(&mut traversal_state, node_map.get(*root_id).unwrap());
@@ -179,15 +217,12 @@ pub fn collect_dependencies(metadata: &cargo_metadata::Metadata) -> Vec<ThirdPar
     // out for processing.
     let mut dependencies = traversal_state.dependencies;
 
-    // Fill in the per-package data for each dependency. Check that there are no
-    // duplicate (package, epoch) pairs while we do so.
-    let mut version_set = HashSet::<(&NormalizedName, Epoch)>::new();
+    // Fill in the per-package data for each dependency.
     for (id, dep) in dependencies.iter_mut() {
         let node: &cargo_metadata::Node = traversal_state.dep_graph.nodes.get(id).unwrap();
         let package: &cargo_metadata::Package = traversal_state.dep_graph.packages.get(id).unwrap();
 
         dep.package_name = package.name.clone();
-        dep.normalized_name = NormalizedName::from_crate_name(&package.name);
 
         // TODO(crbug.com/1291994): Resolve features independently per kind
         // and platform. This may require using the unstable unit-graph feature:
@@ -240,7 +275,6 @@ pub fn collect_dependencies(metadata: &cargo_metadata::Metadata) -> Vec<ThirdPar
         }
 
         dep.version = package.version.clone();
-        dep.epoch = Epoch::from_version(&package.version);
 
         // Collect this package's list of resolved dependencies which will be
         // needed for build file generation later.
@@ -252,8 +286,8 @@ pub fn collect_dependencies(metadata: &cargo_metadata::Metadata) -> Vec<ThirdPar
                 platform = platforms::filter_unsupported_platform_terms(p);
             }
             let dep_of_dep = DepOfDep {
-                normalized_name: NormalizedName::from_crate_name(&dep_pkg.name),
-                epoch: Epoch::from_version(&dep_pkg.version),
+                package_name: dep_pkg.name.clone(),
+                version: dep_pkg.version.clone(),
                 platform,
             };
 
@@ -265,13 +299,12 @@ pub fn collect_dependencies(metadata: &cargo_metadata::Metadata) -> Vec<ThirdPar
             }
         }
 
-        // Make sure the package comes from our vendored source. If not, report the
-        // error for later.
+        // Make sure the package comes from our vendored source. If not, report
+        // the error for later.
         dep.is_local = package.source == None;
 
-        if !version_set.insert((&dep.normalized_name, dep.epoch)) {
-            panic!("found another package version with the same name and epoch: {:?}", dep);
-        }
+        // Determine whether it's a workspace member or third-party dependency.
+        dep.is_workspace_member = dep_graph.workspace_members.contains(&package.id);
     }
 
     // Return a flat list of dependencies.
@@ -289,7 +322,7 @@ struct TraversalState<'a> {
     /// The path of package IDs to the current node. For human consumption.
     path: Vec<String>,
     /// The final set of dependencies.
-    dependencies: HashMap<&'a cargo_metadata::PackageId, ThirdPartyDep>,
+    dependencies: HashMap<&'a cargo_metadata::PackageId, Package>,
 }
 
 /// Recursively explore a particular node in the dependency graph. Fills data in
@@ -302,11 +335,9 @@ fn explore_node<'a>(state: &mut TraversalState<'a>, node: &'a cargo_metadata::No
 
     // Helper to insert a placeholder `Dependency` into a map. We fill in the
     // fields later.
-    let init_dep = |path| ThirdPartyDep {
+    let init_dep = |path| Package {
         package_name: String::new(),
-        normalized_name: NormalizedName::from_crate_name(""),
         version: Version::new(0, 0, 0),
-        epoch: Epoch::Minor(1),
         dependencies: Vec::new(),
         build_dependencies: Vec::new(),
         dev_dependencies: Vec::new(),
@@ -316,6 +347,7 @@ fn explore_node<'a>(state: &mut TraversalState<'a>, node: &'a cargo_metadata::No
         build_script: None,
         dependency_path: path,
         is_local: false,
+        is_workspace_member: false,
     };
 
     state.path.push(node.id.repr.clone());
@@ -330,7 +362,7 @@ fn explore_node<'a>(state: &mut TraversalState<'a>, node: &'a cargo_metadata::No
         explore_node(state, target_node);
 
         // Merge this with the existing entry for the dep.
-        let dep: &mut ThirdPartyDep =
+        let dep: &mut Package =
             state.dependencies.entry(dep_edge.pkg).or_insert_with(|| init_dep(state.path.clone()));
         let info: &mut PerKindInfo = dep
             .dependency_kinds
@@ -391,6 +423,7 @@ fn iter_node_deps(node: &cargo_metadata::Node) -> impl Iterator<Item = Dependenc
 struct MetadataGraph<'a> {
     nodes: HashMap<&'a cargo_metadata::PackageId, &'a cargo_metadata::Node>,
     packages: HashMap<&'a cargo_metadata::PackageId, &'a cargo_metadata::Package>,
+    workspace_members: HashSet<&'a cargo_metadata::PackageId>,
     roots: Vec<&'a cargo_metadata::PackageId>,
 }
 
@@ -413,7 +446,12 @@ fn build_graph<'a>(metadata: &'a cargo_metadata::Metadata) -> MetadataGraph<'a> 
         .chain(metadata.workspace_members.iter())
         .collect();
 
-    MetadataGraph { nodes: graph, packages, roots }
+    MetadataGraph {
+        nodes: graph,
+        packages,
+        workspace_members: metadata.workspace_members.iter().collect(),
+        roots,
+    }
 }
 
 /// A crate target type we support.
@@ -426,18 +464,14 @@ enum TargetType {
 
 impl TargetType {
     fn from_name(name: &str) -> Option<Self> {
-        if name == "lib" || name == "rlib" {
-            Some(Self::Lib(LibType::Rlib))
-        } else if name == "bin" {
-            Some(Self::Bin)
-        } else if name == "custom-build" {
-            Some(Self::BuildScript)
-        } else if name == "proc-macro" {
-            Some(Self::Lib(LibType::ProcMacro))
-        } else if name == "dylib" || name == "cdylib" {
-            panic!("unsupported lib target type {:?}", name)
-        } else {
-            None
+        match name {
+            "lib" | "rlib" => Some(Self::Lib(LibType::Rlib)),
+            "dylib" => Some(Self::Lib(LibType::Dylib)),
+            "cdylib" => Some(Self::Lib(LibType::Cdylib)),
+            "bin" => Some(Self::Bin),
+            "custom-build" => Some(Self::BuildScript),
+            "proc-macro" => Some(Self::Lib(LibType::ProcMacro)),
+            _ => None,
         }
     }
 }

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PERMISSIONS_PERMISSION_PROMPT_BUBBLE_H_
 #define CHROME_BROWSER_UI_VIEWS_PERMISSIONS_PERMISSION_PROMPT_BUBBLE_H_
 
+#include "chip_controller.h"
 #include "chrome/browser/ui/views/permissions/permission_prompt_bubble_view.h"
 #include "chrome/browser/ui/views/permissions/permission_prompt_desktop.h"
 
@@ -31,7 +32,7 @@ class PermissionPromptBubble : public PermissionPromptDesktop,
   void OnWidgetDestroying(views::Widget* widget) override;
 
   // permissions::PermissionPrompt:
-  void UpdateAnchor() override;
+  bool UpdateAnchor() override;
   permissions::PermissionPromptDisposition GetPromptDisposition()
       const override;
 

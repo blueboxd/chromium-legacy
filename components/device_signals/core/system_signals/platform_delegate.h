@@ -12,10 +12,6 @@
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-#include "components/device_signals/core/system_signals/platform_utils.h"
-#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-
 namespace base {
 class FilePath;
 }  // namespace base
@@ -64,6 +60,8 @@ class PlatformDelegate {
 
     absl::optional<std::string> name = absl::nullopt;
     absl::optional<std::string> version = absl::nullopt;
+
+    bool operator==(const ProductMetadata& other) const;
   };
 
   // Returns product metadata for a given `file_path`.
@@ -72,11 +70,11 @@ class PlatformDelegate {
   virtual absl::optional<ProductMetadata> GetProductMetadata(
       const base::FilePath& file_path);
 
-  // Returns the public key SHA256 hash of the certificate used to sign an
-  // executable file located at `file_path`. Returns absl::nullopt if no
-  // public key can be retrieved.
-  virtual absl::optional<std::string> GetSigningCertificatePublicKeyHash(
-      const base::FilePath& file_path);
+  // Returns the public key SHA256 hashes of the certificates used to sign an
+  // executable file located at `file_path`. Returns absl::nullopt if
+  // unsupported on the current platform.
+  virtual absl::optional<std::vector<std::string>>
+  GetSigningCertificatesPublicKeyHashes(const base::FilePath& file_path);
 };
 
 }  // namespace device_signals

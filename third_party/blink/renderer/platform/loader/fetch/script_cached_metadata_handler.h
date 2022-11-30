@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ class CachedMetadataSender;
 // the handler is rejected if e.g. the disk cache entry has been updated and the
 // handler refers to an older response.
 class PLATFORM_EXPORT ScriptCachedMetadataHandler
-    : public SingleCachedMetadataHandler {
+    : public CachedMetadataHandler {
  public:
   ScriptCachedMetadataHandler(const WTF::TextEncoding&,
                               std::unique_ptr<CachedMetadataSender>);

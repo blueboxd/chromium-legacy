@@ -8,7 +8,6 @@
 #include <sstream>
 #include <utility>
 
-#include "ash/components/multidevice/logging/logging.h"
 #include "ash/services/secure_channel/background_eid_generator.h"
 #include "ash/services/secure_channel/ble_weave_packet_generator.h"
 #include "ash/services/secure_channel/ble_weave_packet_receiver.h"
@@ -23,6 +22,7 @@
 #include "base/task/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
+#include "chromeos/ash/components/multidevice/logging/logging.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 
 namespace ash::secure_channel::weave {
@@ -645,7 +645,8 @@ void BluetoothLowEnergyWeaveClientConnection::OnNotifySessionError(
       BluetoothRemoteDeviceGattServiceGattErrorCodeToGattServiceOperationResult(
           error));
   PA_LOG(ERROR) << "Cannot start notification session for "
-                << GetDeviceInfoLogString() << ". Error: " << error << ".";
+                << GetDeviceInfoLogString()
+                << ". Error: " << static_cast<int>(error) << ".";
   DestroyConnection(
       BleWeaveConnectionResult::
           BLE_WEAVE_CONNECTION_RESULT_ERROR_STARTING_NOTIFY_SESSION);
@@ -1014,28 +1015,28 @@ BluetoothLowEnergyWeaveClientConnection::
     BluetoothRemoteDeviceGattServiceGattErrorCodeToGattServiceOperationResult(
         device::BluetoothGattService::GattErrorCode error_code) {
   switch (error_code) {
-    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_UNKNOWN:
+    case device::BluetoothGattService::GattErrorCode::kUnknown:
       return GattServiceOperationResult::
           GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_UNKNOWN;
-    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_FAILED:
+    case device::BluetoothGattService::GattErrorCode::kFailed:
       return GattServiceOperationResult::
           GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_FAILED;
-    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_IN_PROGRESS:
+    case device::BluetoothGattService::GattErrorCode::kInProgress:
       return GattServiceOperationResult::
           GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_IN_PROGRESS;
-    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_INVALID_LENGTH:
+    case device::BluetoothGattService::GattErrorCode::kInvalidLength:
       return GattServiceOperationResult::
           GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_INVALID_LENGTH;
-    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_PERMITTED:
+    case device::BluetoothGattService::GattErrorCode::kNotPermitted:
       return GattServiceOperationResult::
           GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_NOT_PERMITTED;
-    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_AUTHORIZED:
+    case device::BluetoothGattService::GattErrorCode::kNotAuthorized:
       return GattServiceOperationResult::
           GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_NOT_AUTHORIZED;
-    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_PAIRED:
+    case device::BluetoothGattService::GattErrorCode::kNotPaired:
       return GattServiceOperationResult::
           GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_NOT_PAIRED;
-    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_SUPPORTED:
+    case device::BluetoothGattService::GattErrorCode::kNotSupported:
       return GattServiceOperationResult::
           GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_NOT_SUPPORTED;
     default:

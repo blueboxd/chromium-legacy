@@ -63,7 +63,7 @@ OzoneImageBackingFactory::~OzoneImageBackingFactory() = default;
 std::unique_ptr<OzoneImageBacking>
 OzoneImageBackingFactory::CreateSharedImageInternal(
     const Mailbox& mailbox,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
@@ -100,7 +100,7 @@ OzoneImageBackingFactory::CreateSharedImageInternal(
 
 std::unique_ptr<SharedImageBacking> OzoneImageBackingFactory::CreateSharedImage(
     const Mailbox& mailbox,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
@@ -116,7 +116,7 @@ std::unique_ptr<SharedImageBacking> OzoneImageBackingFactory::CreateSharedImage(
 
 std::unique_ptr<SharedImageBacking> OzoneImageBackingFactory::CreateSharedImage(
     const Mailbox& mailbox,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
@@ -170,9 +170,10 @@ std::unique_ptr<SharedImageBacking> OzoneImageBackingFactory::CreateSharedImage(
   const viz::ResourceFormat plane_format =
       viz::GetResourceFormat(GetPlaneBufferFormat(plane, buffer_format));
   auto backing = std::make_unique<OzoneImageBacking>(
-      mailbox, plane_format, plane, plane_size, color_space, surface_origin,
-      alpha_type, usage, shared_context_state_.get(), std::move(pixmap),
-      dawn_procs_, workarounds_, use_passthrough_);
+      mailbox, viz::SharedImageFormat::SinglePlane(plane_format), plane,
+      plane_size, color_space, surface_origin, alpha_type, usage,
+      shared_context_state_.get(), std::move(pixmap), dawn_procs_, workarounds_,
+      use_passthrough_);
   backing->SetCleared();
 
   return backing;
@@ -180,7 +181,7 @@ std::unique_ptr<SharedImageBacking> OzoneImageBackingFactory::CreateSharedImage(
 
 bool OzoneImageBackingFactory::IsSupported(
     uint32_t usage,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     const gfx::Size& size,
     bool thread_safe,
     gfx::GpuMemoryBufferType gmb_type,
@@ -191,7 +192,8 @@ bool OzoneImageBackingFactory::IsSupported(
   }
 
   bool used_by_skia = (usage & SHARED_IMAGE_USAGE_RASTER) ||
-                      (usage & SHARED_IMAGE_USAGE_DISPLAY);
+                      (usage & SHARED_IMAGE_USAGE_DISPLAY_READ) ||
+                      (usage & SHARED_IMAGE_USAGE_DISPLAY_WRITE);
   bool used_by_vulkan =
       used_by_skia && gr_context_type == GrContextType::kVulkan;
   bool used_by_webgpu = usage & SHARED_IMAGE_USAGE_WEBGPU;
@@ -203,22 +205,26 @@ bool OzoneImageBackingFactory::IsSupported(
   if (used_by_webgpu && !CanImportNativePixmapToWebGPU()) {
     return false;
   }
-  ui::GLOzone* gl_ozone = ui::OzonePlatform::GetInstance()
-                              ->GetSurfaceFactoryOzone()
-                              ->GetCurrentGLOzone();
+  auto* factory = ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
+  if (!factory->CanCreateNativePixmapForFormat(viz::BufferFormat(format)))
+    return false;
+
+  ui::GLOzone* gl_ozone = factory->GetCurrentGLOzone();
   if (used_by_gl && (!gl_ozone || !gl_ozone->CanImportNativePixmap())) {
     return false;
   }
 
 #if BUILDFLAG(IS_FUCHSIA)
-  DCHECK_EQ(gr_context_type, GrContextType::kVulkan);
+  if (gr_context_type != GrContextType::kVulkan) {
+    return false;
+  }
 
   // For now just use OzoneImageBacking for primary plane buffers.
   // TODO(crbug.com/1310026): When Vulkan/GL interop is supported on Fuchsia
   // OzoneImageBacking should be used for all scanout buffers.
-  constexpr uint32_t kPrimaryPlaneUsageFlags = SHARED_IMAGE_USAGE_DISPLAY |
-                                               SHARED_IMAGE_USAGE_SCANOUT |
-                                               SHARED_IMAGE_USAGE_RASTER;
+  constexpr uint32_t kPrimaryPlaneUsageFlags =
+      SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_DISPLAY_WRITE |
+      SHARED_IMAGE_USAGE_SCANOUT | SHARED_IMAGE_USAGE_RASTER;
   if (usage != kPrimaryPlaneUsageFlags || gmb_type != gfx::EMPTY_BUFFER) {
     return false;
   }

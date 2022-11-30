@@ -198,8 +198,8 @@ void MediaStreamSource::SetReadyState(ReadyState ready_state) {
     // until the callback is executed.
     Vector<base::OnceClosure> observer_callbacks;
     for (const auto& it : observers_) {
-      observer_callbacks.push_back(WTF::Bind(&Observer::SourceChangedState,
-                                             WrapWeakPersistent(it.Get())));
+      observer_callbacks.push_back(WTF::BindOnce(&Observer::SourceChangedState,
+                                                 WrapWeakPersistent(it.Get())));
     }
     for (auto& observer_callback : observer_callbacks) {
       std::move(observer_callback).Run();
@@ -325,8 +325,7 @@ void MediaStreamSource::OnDeviceCaptureHandleChange(
 
   // Observers may dispatch events which create and add new Observers;
   // take a snapshot so as to safely iterate.
-  HeapVector<Member<Observer>> observers;
-  CopyToVector(observers_, observers);
+  HeapVector<Member<Observer>> observers(observers_);
   for (auto observer : observers) {
     observer->SourceChangedCaptureHandle();
   }

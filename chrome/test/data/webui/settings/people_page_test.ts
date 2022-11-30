@@ -7,7 +7,7 @@ import 'chrome://settings/lazy_load.js';
 
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 // <if expr="not is_chromeos">
-import {listenOnce} from 'chrome://resources/js/util.m.js';
+import {listenOnce} from 'chrome://resources/js/util.js';
 // </if>
 
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -23,7 +23,8 @@ import {pageVisibility, ProfileInfoBrowserProxyImpl, Router, routes, SettingsPeo
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 // <if expr="not is_chromeos">
 import {assertLT} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks, waitBeforeNextRender} from 'chrome://webui-test/test_util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
+import {waitBeforeNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
 // </if>
 
@@ -58,7 +59,8 @@ suite('ProfileInfoTests', function() {
     syncBrowserProxy = new TestSyncBrowserProxy();
     SyncBrowserProxyImpl.setInstance(syncBrowserProxy);
 
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     peoplePage = document.createElement('settings-people-page');
     peoplePage.pageVisibility = pageVisibility;
     document.body.appendChild(peoplePage);
@@ -110,7 +112,8 @@ suite('SigninDisallowedTests', function() {
     profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
     ProfileInfoBrowserProxyImpl.setInstance(profileInfoBrowserProxy);
 
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     peoplePage = document.createElement('settings-people-page');
     peoplePage.pageVisibility = pageVisibility;
     document.body.appendChild(peoplePage);
@@ -148,7 +151,8 @@ suite('SyncStatusTests', function() {
     profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
     ProfileInfoBrowserProxyImpl.setInstance(profileInfoBrowserProxy);
 
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     peoplePage = document.createElement('settings-people-page');
     peoplePage.pageVisibility = pageVisibility;
     document.body.appendChild(peoplePage);
@@ -451,7 +455,8 @@ suite('SyncSettings', function() {
     profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
     ProfileInfoBrowserProxyImpl.setInstance(profileInfoBrowserProxy);
 
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     peoplePage = document.createElement('settings-people-page');
     peoplePage.pageVisibility = pageVisibility;
     document.body.appendChild(peoplePage);

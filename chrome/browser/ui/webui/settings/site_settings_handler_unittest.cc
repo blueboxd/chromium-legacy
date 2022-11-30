@@ -26,9 +26,12 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/browsing_topics/browsing_topics_service_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/permissions/notification_permission_review_service_factory.h"
+#include "chrome/browser/permissions/notifications_engagement_service_factory.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/privacy_sandbox/mock_privacy_sandbox_service.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
@@ -42,6 +45,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/browsing_data/content/browsing_data_model.h"
+#include "components/browsing_data/content/fake_browsing_data_model.h"
 #include "components/browsing_data/content/mock_cookie_helper.h"
 #include "components/browsing_data/content/mock_local_storage_helper.h"
 #include "components/browsing_topics/browsing_topics_service.h"
@@ -65,6 +70,7 @@
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
+#include "components/site_engagement/content/site_engagement_score.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -284,6 +290,26 @@ class SiteSettingsHandlerTest : public testing::Test,
     }
   }
 
+  void RecordNotification(permissions::NotificationsEngagementService* service,
+                          GURL url,
+                          int daily_avarage_count) {
+    base::Time date = base::Time::Now();
+    base::Time::Exploded date_exploded;
+    date.LocalExplode(&date_exploded);
+    int day_of_week = date_exploded.day_of_week;
+
+    // Notification count holds in buckets for each monday. So to calculate
+    // necessary notification count, here the day_of_week is calculated.
+    int total_count = day_of_week * daily_avarage_count;
+    service->RecordNotificationDisplayed(url, total_count);
+  }
+
+  base::Time GetReferenceTime() {
+    base::Time time;
+    EXPECT_TRUE(base::Time::FromString("Sat, 1 Sep 2018 11:00:00 GMT", &time));
+    return time;
+  }
+
   TestingProfile* profile() { return profile_.get(); }
   TestingProfile* incognito_profile() { return incognito_profile_; }
   content::TestWebUI* web_ui() { return &web_ui_; }
@@ -500,7 +526,8 @@ class SiteSettingsHandlerTest : public testing::Test,
   void ValidateUsageInfo(const std::string& expected_usage_host,
                          const std::string& expected_usage_string,
                          const std::string& expected_cookie_string,
-                         const std::string& expected_fps_member_count_string) {
+                         const std::string& expected_fps_member_count_string,
+                         const bool expected_fps_policy) {
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
     EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
 
@@ -518,6 +545,9 @@ class SiteSettingsHandlerTest : public testing::Test,
 
     ASSERT_TRUE(data.arg_nth(4)->is_string());
     EXPECT_EQ(expected_fps_member_count_string, data.arg_nth(4)->GetString());
+
+    ASSERT_TRUE(data.arg_nth(5)->is_bool());
+    EXPECT_EQ(expected_fps_policy, data.arg_nth(5)->GetBool());
   }
 
   void CreateIncognitoProfile() {
@@ -533,7 +563,7 @@ class SiteSettingsHandlerTest : public testing::Test,
 
   // TODO(https://crbug.com/835712): Currently only set up the cookies and local
   // storage nodes, will update all other nodes in the future.
-  void SetUpCookiesTreeModel() {
+  void SetupModels() {
     scoped_refptr<browsing_data::MockCookieHelper>
         mock_browsing_data_cookie_helper;
     scoped_refptr<browsing_data::MockLocalStorageHelper>
@@ -562,10 +592,6 @@ class SiteSettingsHandlerTest : public testing::Test,
             "https://www.example.com/"),
         2);
 
-    mock_browsing_data_local_storage_helper->AddLocalStorageForStorageKey(
-        blink::StorageKey::CreateFromStringForTesting(
-            "https://www.google.com/"),
-        50000000000);
     mock_browsing_data_local_storage_helper->Notify();
 
     mock_browsing_data_cookie_helper->AddCookieSamples(
@@ -608,13 +634,23 @@ class SiteSettingsHandlerTest : public testing::Test,
 
     mock_browsing_data_cookie_helper->Notify();
 
-    handler()->SetCookiesTreeModelForTesting(
-        std::move(mock_cookies_tree_model));
+    auto fake_browsing_data_model = std::make_unique<FakeBrowsingDataModel>();
+    fake_browsing_data_model->AddBrowsingData(
+        url::Origin::Create(GURL("https://www.google.com")),
+        BrowsingDataModel::StorageType::kTrustTokens, 50000000000);
+
+    handler()->SetModelsForTesting(std::move(mock_cookies_tree_model),
+                                   std::move(fake_browsing_data_model));
   }
 
   base::Value::List GetOnStorageFetchedSentList() {
     handler()->ClearAllSitesMapForTesting();
-    handler()->OnStorageFetched();
+
+    base::Value::List get_all_sites_args;
+    get_all_sites_args.Append(kCallbackId);
+    handler()->HandleGetAllSites(get_all_sites_args);
+    handler()->ServicePendingRequests();
+
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
     return data.arg2()->GetList().Clone();
   }
@@ -628,6 +664,34 @@ class SiteSettingsHandlerTest : public testing::Test,
       }
     }
     return nodes;
+  }
+
+  void SetupDefaultFirstPartySets(MockPrivacySandboxService* mock_service) {
+    EXPECT_CALL(*mock_service, GetFirstPartySetOwner(_))
+        .WillRepeatedly(
+            [&](const GURL& url) -> absl::optional<net::SchemefulSite> {
+              auto first_party_sets = GetTestFirstPartySets();
+              if (first_party_sets.count(net::SchemefulSite(url))) {
+                return first_party_sets[net::SchemefulSite(url)];
+              }
+
+              return absl::nullopt;
+            });
+  }
+
+  base::flat_map<net::SchemefulSite, net::SchemefulSite>
+  GetTestFirstPartySets() {
+    base::flat_map<net::SchemefulSite, net::SchemefulSite> first_party_sets = {
+        {ConvertEtldToSchemefulSite("google.com"),
+         ConvertEtldToSchemefulSite("google.com")},
+        {ConvertEtldToSchemefulSite("google.com.au"),
+         ConvertEtldToSchemefulSite("google.com")},
+        {ConvertEtldToSchemefulSite("example.com"),
+         ConvertEtldToSchemefulSite("example.com")},
+        {ConvertEtldToSchemefulSite("unrelated.com"),
+         ConvertEtldToSchemefulSite("unrelated.com")}};
+
+    return first_party_sets;
   }
 
   // Content setting group name for the relevant ContentSettingsType.
@@ -971,11 +1035,11 @@ TEST_F(SiteSettingsHandlerTest, GetRecentSitePermissions) {
 }
 
 TEST_F(SiteSettingsHandlerTest, OnStorageFetched) {
-  SetUpCookiesTreeModel();
+  SetupModels();
 
   handler()->ClearAllSitesMapForTesting();
-
   handler()->OnStorageFetched();
+
   const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
   EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
 
@@ -1144,7 +1208,7 @@ TEST_F(SiteSettingsHandlerTest, OnStorageFetched) {
 TEST_F(SiteSettingsHandlerTest, InstalledApps) {
   InstallWebApp(profile(), GURL("http://abc.example.com/path"));
 
-  SetUpCookiesTreeModel();
+  SetupModels();
 
   base::Value::List storage_and_cookie_list = GetOnStorageFetchedSentList();
   EXPECT_EQ(4U, storage_and_cookie_list.size());
@@ -2537,9 +2601,9 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
 }
 
 TEST_F(SiteSettingsHandlerTest, HandleClearEtldPlus1DataAndCookies) {
-  SetUpCookiesTreeModel();
+  SetupModels();
 
-  EXPECT_EQ(31u,
+  EXPECT_EQ(28u,
             handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
 
   auto verify_site_group = [](const base::Value& site_group,
@@ -2581,7 +2645,7 @@ TEST_F(SiteSettingsHandlerTest, HandleClearEtldPlus1DataAndCookies) {
     }
   }
 
-  EXPECT_EQ(22u,
+  EXPECT_EQ(19u,
             handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
 
   storage_and_cookie_list = GetOnStorageFetchedSentList();
@@ -2637,15 +2701,20 @@ TEST_F(SiteSettingsHandlerTest, HandleClearEtldPlus1DataAndCookies) {
 }
 
 TEST_P(SiteSettingsHandlerTest, HandleClearUnpartitionedUsage) {
-  SetUpCookiesTreeModel();
+  SetupModels();
 
-  EXPECT_EQ(31u,
+  EXPECT_EQ(28u,
             handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+  EXPECT_EQ(1, std::distance(handler()->browsing_data_model_->begin(),
+                             handler()->browsing_data_model_->end()));
 
   base::Value::List args;
   args.Append(GetParam() ? "https://www.example.com/"
                          : "http://www.example.com/");
   handler()->HandleClearUnpartitionedUsage(args);
+
+  EXPECT_EQ(1, std::distance(handler()->browsing_data_model_->begin(),
+                             handler()->browsing_data_model_->end()));
 
   // Confirm that only the unpartitioned items for example.com have been
   // cleared.
@@ -2680,12 +2749,19 @@ TEST_P(SiteSettingsHandlerTest, HandleClearUnpartitionedUsage) {
   const auto& cookie_node = cookies_node->children()[0];
   const auto& cookie = cookie_node->GetDetailedInfo().cookie;
   EXPECT_TRUE(cookie->IsPartitioned());
+
+  args = base::Value::List();
+  args.Append("https://www.google.com/");
+  handler()->HandleClearUnpartitionedUsage(args);
+
+  EXPECT_EQ(0, std::distance(handler()->browsing_data_model_->begin(),
+                             handler()->browsing_data_model_->end()));
 }
 
 TEST_F(SiteSettingsHandlerTest, ClearClientHints) {
   // Confirm that when the user clears unpartitioned storage, or the eTLD+1
   // group, client hints are also cleared.
-  SetUpCookiesTreeModel();
+  SetupModels();
   handler()->OnStorageFetched();
 
   GURL hosts[] = {GURL("https://example.com/"), GURL("https://www.example.com"),
@@ -2768,7 +2844,7 @@ TEST_F(SiteSettingsHandlerTest, ClearClientHints) {
 TEST_F(SiteSettingsHandlerTest, ClearReducedAcceptLanguage) {
   // Confirm that when the user clears unpartitioned storage, or the eTLD+1
   // group, reduce accept language are also cleared.
-  SetUpCookiesTreeModel();
+  SetupModels();
   handler()->OnStorageFetched();
 
   GURL hosts[] = {GURL("https://example.com/"), GURL("https://www.example.com"),
@@ -2847,9 +2923,11 @@ TEST_F(SiteSettingsHandlerTest, ClearReducedAcceptLanguage) {
 TEST_F(SiteSettingsHandlerTest, HandleClearPartitionedUsage) {
   // Confirm that removing unpartitioned storage correctly removes the
   // appropriate nodes.
-  SetUpCookiesTreeModel();
-  EXPECT_EQ(31u,
+  SetupModels();
+  EXPECT_EQ(28u,
             handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+  EXPECT_EQ(1, std::distance(handler()->browsing_data_model_->begin(),
+                             handler()->browsing_data_model_->end()));
 
   base::Value::List args;
   args.Append("https://www.example.com/");
@@ -2881,6 +2959,12 @@ TEST_F(SiteSettingsHandlerTest, HandleClearPartitionedUsage) {
                 CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGES);
     }
   }
+
+  // Should not have affected the browsing data model.
+  // TODO(crbug.com/1271155): Update when partitioned storage is represented
+  // by the browsing data model.
+  EXPECT_EQ(1, std::distance(handler()->browsing_data_model_->begin(),
+                             handler()->browsing_data_model_->end()));
 }
 
 TEST_F(SiteSettingsHandlerTest, CookieSettingDescription) {
@@ -2988,7 +3072,7 @@ TEST_F(SiteSettingsHandlerTest, HandleGetFpsMembershipLabel) {
   EXPECT_EQ("cr.webUIResponse", data.function_name());
   EXPECT_EQ("getFpsMembershipLabel", data.arg1()->GetString());
   ASSERT_TRUE(data.arg2()->GetBool());
-  EXPECT_EQ("Allowed for 5 google.com sites", data.arg3()->GetString());
+  EXPECT_EQ("5 sites in google.com's group", data.arg3()->GetString());
 }
 
 TEST_F(SiteSettingsHandlerTest, HandleGetFormattedBytes) {
@@ -3008,49 +3092,56 @@ TEST_F(SiteSettingsHandlerTest, HandleGetFormattedBytes) {
 }
 
 TEST_F(SiteSettingsHandlerTest, HandleGetUsageInfo) {
-  base::flat_map<net::SchemefulSite, net::SchemefulSite> first_party_sets = {
-      {ConvertEtldToSchemefulSite("google.com"),
-       ConvertEtldToSchemefulSite("google.com")},
-      {ConvertEtldToSchemefulSite("google.com.au"),
-       ConvertEtldToSchemefulSite("google.com")},
-      {ConvertEtldToSchemefulSite("unrelated.com"),
-       ConvertEtldToSchemefulSite("unrelated.com")},
-  };
+  SetupDefaultFirstPartySets(mock_privacy_sandbox_service());
 
-  EXPECT_CALL(*mock_privacy_sandbox_service(), GetFirstPartySets())
-      .Times(3)
-      .WillRepeatedly(Return(first_party_sets));
+  EXPECT_CALL(*mock_privacy_sandbox_service(), IsPartOfManagedFirstPartySet(_))
+      .Times(1)
+      .WillOnce(Return(false));
+  EXPECT_CALL(
+      *mock_privacy_sandbox_service(),
+      IsPartOfManagedFirstPartySet(ConvertEtldToSchemefulSite("example.com")))
+      .Times(2)
+      .WillRepeatedly(Return(true));
 
   // Confirm that usage info only returns unpartitioned storage.
-  SetUpCookiesTreeModel();
+  SetupModels();
 
-  EXPECT_EQ(31u,
+  EXPECT_EQ(28u,
             handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+  EXPECT_EQ(1, std::distance(handler()->browsing_data_model_->begin(),
+                             handler()->browsing_data_model_->end()));
 
   base::Value::List args;
   args.Append("www.example.com");
   handler()->HandleFetchUsageTotal(args);
-  handler()->OnGetUsageInfo();
-  ValidateUsageInfo("www.example.com", "2 B", "1 cookie", "");
+  handler()->ServicePendingRequests();
+  ValidateUsageInfo("www.example.com", "2 B", "1 cookie",
+                    "1 site in example.com's group", true);
 
   args.clear();
   args.Append("example.com");
   handler()->HandleFetchUsageTotal(args);
-  handler()->OnGetUsageInfo();
-  ValidateUsageInfo("example.com", "", "1 cookie", "");
+  handler()->ServicePendingRequests();
+  ValidateUsageInfo("example.com", "", "1 cookie",
+                    "1 site in example.com's group", true);
 
   args.clear();
   args.Append("google.com");
   handler()->HandleFetchUsageTotal(args);
-  handler()->OnGetUsageInfo();
+  handler()->ServicePendingRequests();
   ValidateUsageInfo("google.com", "", "2 cookies",
-                    "Allowed for 2 google.com sites");
+                    "2 sites in google.com's group", false);
+  args.clear();
+  args.Append("ungrouped.com");
+  handler()->HandleFetchUsageTotal(args);
+  handler()->ServicePendingRequests();
+  ValidateUsageInfo("ungrouped.com", "", "1 cookie", "", false);
 }
 
 TEST_F(SiteSettingsHandlerTest, NonTreeModelDeletion) {
   // Confirm that a BrowsingDataRemover task is started to remove Privacy
   // Sandbox APIs that are not integrated with the tree model.
-  SetUpCookiesTreeModel();
+  SetupModels();
 
   base::Value::List storage_and_cookie_list = GetOnStorageFetchedSentList();
   EXPECT_EQ(4U, storage_and_cookie_list.size());
@@ -3066,7 +3157,8 @@ TEST_F(SiteSettingsHandlerTest, NonTreeModelDeletion) {
   handler()->HandleClearEtldPlus1DataAndCookies(args);
 
   auto* browsing_data_remover = profile()->GetBrowsingDataRemover();
-  EXPECT_EQ(content::BrowsingDataRemover::DATA_TYPE_PRIVACY_SANDBOX,
+  EXPECT_EQ(content::BrowsingDataRemover::DATA_TYPE_PRIVACY_SANDBOX &
+                ~content::BrowsingDataRemover::DATA_TYPE_TRUST_TOKENS,
             browsing_data_remover->GetLastUsedRemovalMaskForTesting());
   EXPECT_EQ(base::Time::Min(),
             browsing_data_remover->GetLastUsedBeginTimeForTesting());
@@ -3075,17 +3167,8 @@ TEST_F(SiteSettingsHandlerTest, NonTreeModelDeletion) {
 }
 
 TEST_F(SiteSettingsHandlerTest, FirstPartySetsMembership) {
-  base::flat_map<net::SchemefulSite, net::SchemefulSite> first_party_sets = {
-      {ConvertEtldToSchemefulSite("example.com"),
-       ConvertEtldToSchemefulSite("example.com")},
-      {ConvertEtldToSchemefulSite("google.com"),
-       ConvertEtldToSchemefulSite("google.com")},
-      {ConvertEtldToSchemefulSite("google.com.au"),
-       ConvertEtldToSchemefulSite("google.com")},
-  };
+  SetupDefaultFirstPartySets(mock_privacy_sandbox_service());
 
-  EXPECT_CALL(*mock_privacy_sandbox_service(), GetFirstPartySets())
-      .WillOnce(Return(first_party_sets));
   EXPECT_CALL(*mock_privacy_sandbox_service(), IsPartOfManagedFirstPartySet(_))
       .Times(2)
       .WillRepeatedly(Return(false));
@@ -3095,7 +3178,7 @@ TEST_F(SiteSettingsHandlerTest, FirstPartySetsMembership) {
       .Times(1)
       .WillOnce(Return(true));
 
-  SetUpCookiesTreeModel();
+  SetupModels();
 
   handler()->ClearAllSitesMapForTesting();
 
@@ -3110,6 +3193,170 @@ TEST_F(SiteSettingsHandlerTest, FirstPartySetsMembership) {
   const base::Value::List& storage_and_cookie_list = data.arg2()->GetList();
   EXPECT_EQ(4U, storage_and_cookie_list.size());
 
+  auto first_party_sets = GetTestFirstPartySets();
+
   ValidateSitesWithFps(storage_and_cookie_list, first_party_sets);
+}
+
+TEST_F(SiteSettingsHandlerTest,
+       HandleIgnoreOriginForNotificationPermissionReview) {
+  HostContentSettingsMap* content_settings =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  ContentSettingsForOneType ignored_patterns;
+  content_settings->GetSettingsForOneType(
+      ContentSettingsType::NOTIFICATION_PERMISSION_REVIEW, &ignored_patterns);
+  ASSERT_EQ(0U, ignored_patterns.size());
+
+  base::Value::List args;
+  args.Append("https://www.google.com:443");
+  handler()->HandleIgnoreOriginForNotificationPermissionReview(args);
+
+  // Check there is 1 origin in ignore list.
+  content_settings->GetSettingsForOneType(
+      ContentSettingsType::NOTIFICATION_PERMISSION_REVIEW, &ignored_patterns);
+  ASSERT_EQ(1U, ignored_patterns.size());
+}
+
+TEST_F(SiteSettingsHandlerTest, HandleBlockNotificationPermissionForOrigin) {
+  base::Value::List args;
+  args.Append("https://www.google.com:443");
+  handler()->HandleBlockNotificationPermissionForOrigin(args);
+
+  // Check the permission for the origin is block.
+  HostContentSettingsMap* content_settings =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  ContentSettingsForOneType notification_permissions;
+  content_settings->GetSettingsForOneType(ContentSettingsType::NOTIFICATIONS,
+                                          &notification_permissions);
+  auto type = content_settings->GetContentSetting(
+      GURL("https://www.google.com:443"), GURL(),
+      ContentSettingsType::NOTIFICATIONS);
+  ASSERT_EQ(CONTENT_SETTING_BLOCK, type);
+}
+
+TEST_F(SiteSettingsHandlerTest, HandleAllowNotificationPermissionForOrigin) {
+  base::Value::List args;
+  args.Append("https://www.google.com:443");
+  handler()->HandleAllowNotificationPermissionForOrigin(args);
+
+  // Check the permission for the origin is block.
+  HostContentSettingsMap* content_settings =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  ContentSettingsForOneType notification_permissions;
+  content_settings->GetSettingsForOneType(ContentSettingsType::NOTIFICATIONS,
+                                          &notification_permissions);
+  auto type = content_settings->GetContentSetting(
+      GURL("https://www.google.com:443"), GURL(),
+      ContentSettingsType::NOTIFICATIONS);
+  ASSERT_EQ(CONTENT_SETTING_ALLOW, type);
+}
+
+TEST_F(SiteSettingsHandlerTest, HandleResetNotificationPermissionForOrigin) {
+  HostContentSettingsMap* content_settings =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  ContentSettingsForOneType notification_permissions;
+  content_settings->SetContentSettingCustomScope(
+      ContentSettingsPattern::FromString("https://www.google.com:443"),
+      ContentSettingsPattern::Wildcard(), ContentSettingsType::NOTIFICATIONS,
+      CONTENT_SETTING_ALLOW);
+
+  base::Value::List args;
+  args.Append("https://www.google.com:443");
+  handler()->HandleResetNotificationPermissionForOrigin(args);
+
+  // Check the permission for the origin is reset.
+  auto type = content_settings->GetContentSetting(
+      GURL("https://www.google.com:443"), GURL(),
+      ContentSettingsType::NOTIFICATIONS);
+  ASSERT_EQ(CONTENT_SETTING_ASK, type);
+}
+
+// TODO(crbug.com/137935): Re-enable this test.
+TEST_F(SiteSettingsHandlerTest,
+       DISABLED_PopulateNotificationPermissionReviewData) {
+  // Add a couple of notification permission and check they appear in review
+  // list.
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  GURL urls[] = {GURL("https://google.com:443"),
+                 GURL("https://www.youtube.com:443"),
+                 GURL("https://www.example.com:443")};
+
+  map->SetContentSettingDefaultScope(urls[0], GURL(),
+                                     ContentSettingsType::NOTIFICATIONS,
+                                     CONTENT_SETTING_ALLOW);
+  map->SetContentSettingDefaultScope(urls[1], GURL(),
+                                     ContentSettingsType::NOTIFICATIONS,
+                                     CONTENT_SETTING_ALLOW);
+  map->SetContentSettingDefaultScope(urls[2], GURL(),
+                                     ContentSettingsType::NOTIFICATIONS,
+                                     CONTENT_SETTING_ALLOW);
+
+  // Record initial display date to enable comparing dictionaries for
+  // NotificationEngagementService.
+  auto* notification_engagement_service =
+      NotificationsEngagementServiceFactory::GetForProfile(profile());
+  std::string displayedDate =
+      notification_engagement_service->GetBucketLabelForLastMonday(
+          base::Time::Now());
+
+  auto* site_engagement_service =
+      site_engagement::SiteEngagementServiceFactory::GetForProfile(profile());
+
+  // Set a host to have minimum engagement. This should be in review list.
+  RecordNotification(notification_engagement_service, urls[0], 1);
+  site_engagement::SiteEngagementScore score =
+      site_engagement_service->CreateEngagementScore(urls[0]);
+  score.Reset(0.5, GetReferenceTime());
+  score.Commit();
+  EXPECT_EQ(blink::mojom::EngagementLevel::MINIMAL,
+            site_engagement_service->GetEngagementLevel(urls[0]));
+
+  // Set a host to have large number of notifications, but low engagement. This
+  // should be in review list.
+  RecordNotification(notification_engagement_service, urls[1], 4);
+  site_engagement_service->AddPointsForTesting(urls[1], 1.0);
+  EXPECT_EQ(blink::mojom::EngagementLevel::LOW,
+            site_engagement_service->GetEngagementLevel(urls[1]));
+
+  // Set a host to have medium engagement and high notification count. This
+  // should not be in review list.
+  RecordNotification(notification_engagement_service, urls[2], 4);
+  site_engagement_service->AddPointsForTesting(urls[2], 50.0);
+  EXPECT_EQ(blink::mojom::EngagementLevel::MEDIUM,
+            site_engagement_service->GetEngagementLevel(urls[2]));
+
+  const auto& notification_permissions =
+      handler()->PopulateNotificationPermissionReviewData();
+  // Check there are 2 notification permissions in the list.
+  EXPECT_EQ(2UL, notification_permissions.size());
+  // Check minimal engagement item is in the list.
+  EXPECT_EQ("https://google.com:443",
+            *notification_permissions[0].FindStringKey(site_settings::kOrigin));
+  // Check low engagement item is in the list.
+  EXPECT_EQ("https://www.youtube.com:443",
+            *notification_permissions[1].FindStringKey(site_settings::kOrigin));
+}
+
+TEST_F(SiteSettingsHandlerTest,
+       HandleUndoIgnoreOriginForNotificationPermissionReview) {
+  base::Value::List args;
+  args.Append("https://www.google.com:443");
+  handler()->HandleIgnoreOriginForNotificationPermissionReview(args);
+
+  // Check there is 1 origin in ignore list.
+  HostContentSettingsMap* content_settings =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  ContentSettingsForOneType ignored_patterns;
+  ASSERT_EQ(0U, ignored_patterns.size());
+  content_settings->GetSettingsForOneType(
+      ContentSettingsType::NOTIFICATION_PERMISSION_REVIEW, &ignored_patterns);
+  ASSERT_EQ(1U, ignored_patterns.size());
+
+  // Check there are no origins in ignore list.
+  handler()->HandleUndoIgnoreOriginForNotificationPermissionReview(args);
+  content_settings->GetSettingsForOneType(
+      ContentSettingsType::NOTIFICATION_PERMISSION_REVIEW, &ignored_patterns);
+  ASSERT_EQ(0U, ignored_patterns.size());
 }
 }  // namespace settings

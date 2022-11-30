@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "services/network/public/cpp/header_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
@@ -311,7 +312,7 @@ Response* Response::Create(ScriptState* script_state,
     // "4. If |Content-Type| is non-null and |r|'s response's header list
     // contains no header named `Content-Type`, append `Content-Type`/
     // |Content-Type| to |r|'s response's header list."
-    if (!content_type.IsEmpty() &&
+    if (!content_type.empty() &&
         !r->response_->HeaderList()->Has("Content-Type"))
       r->response_->HeaderList()->Append("Content-Type", content_type);
   }
@@ -503,7 +504,7 @@ uint16_t Response::status() const {
 bool Response::ok() const {
   // "The ok attribute's getter must return true
   // if response's status is in the range 200 to 299, and false otherwise."
-  return cors::IsOkStatus(status());
+  return network::IsSuccessfulStatus(status());
 }
 
 String Response::statusText() const {

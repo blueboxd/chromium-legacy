@@ -9,33 +9,49 @@
 
 #include "base/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
+#include "base/timer/mock_timer.h"
+#include "chrome/browser/ui/autofill_assistant/password_change/apc_utils.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/mock_assistant_display_delegate.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/mock_password_change_run_controller.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/password_change_run_display.h"
+#include "chrome/grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/test/button_test_api.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
+#include "url/gurl.h"
 
+using autofill_assistant::password_change::TopIcon;
 using PromptChoice = PasswordChangeRunDisplay::PromptChoice;
 using testing::IsEmpty;
+using testing::SizeIs;
 using testing::StrictMock;
 
 namespace {
 
 constexpr char16_t kTitle[] = u"A title";
+constexpr char16_t kAccessibilityTitle[] = u"An accessibility title";
 constexpr char16_t kDescription[] = u"And a description";
 constexpr char16_t kPromptText1[] = u"Choice 1";
 constexpr char16_t kPromptText2[] = u"Choice 2";
 constexpr bool kHighlighted1 = true;
 constexpr bool kHighlighted2 = false;
 constexpr char16_t kPassword[] = u"veryComplicatedPassword!";
+constexpr char kSampleUrl[] = "https://www.example.de";
+constexpr char16_t kSampleUrlFormatted[] = u"example.de";
 
 std::vector<PromptChoice> CreatePromptChoices() {
   return std::vector<PromptChoice>{
@@ -87,6 +103,13 @@ class PasswordChangeRunViewTest : public views::ViewsTestBase {
     views::ViewsTestBase::TearDown();
   }
 
+  views::ImageView* GetTopIcon() {
+    return view() ? static_cast<views::ImageView*>(
+                        view()->GetViewByID(static_cast<int>(
+                            PasswordChangeRunView::ChildrenViewsIds::kTopIcon)))
+                  : nullptr;
+  }
+
   views::View* GetBody() {
     return view() ? view()->GetViewByID(static_cast<int>(
                         PasswordChangeRunView::ChildrenViewsIds::kBody))
@@ -94,19 +117,17 @@ class PasswordChangeRunViewTest : public views::ViewsTestBase {
   }
 
   views::View* GetButtonContainer() {
-    if (view()) {
-      return view()->GetViewByID(static_cast<int>(
-          PasswordChangeRunView::ChildrenViewsIds::kButtonContainer));
-    }
-    return nullptr;
+    return view()
+               ? view()->GetViewByID(static_cast<int>(
+                     PasswordChangeRunView::ChildrenViewsIds::kButtonContainer))
+               : nullptr;
   }
 
   views::View* GetTitleContainer() {
-    if (view()) {
-      return view()->GetViewByID(static_cast<int>(
-          PasswordChangeRunView::ChildrenViewsIds::kTitleContainer));
-    }
-    return nullptr;
+    return view()
+               ? view()->GetViewByID(static_cast<int>(
+                     PasswordChangeRunView::ChildrenViewsIds::kTitleContainer))
+               : nullptr;
   }
 
   MockAssistantDisplayDelegate* display_delegate() {
@@ -115,6 +136,12 @@ class PasswordChangeRunViewTest : public views::ViewsTestBase {
   MockPasswordChangeRunController* controller() { return &controller_; }
   PasswordChangeRunView* view() {
     return static_cast<PasswordChangeRunView*>(view_);
+  }
+
+  ui::ImageModel GetExpectedTopIconModel(TopIcon top_icon) {
+    return ui::ImageModel::FromVectorIcon(
+        GetApcTopIconFromEnum(top_icon, /*dark_mode=*/false),
+        ui::kColorWindowBackground, /*icon_size=*/96);
   }
 
  private:
@@ -136,14 +163,37 @@ TEST_F(PasswordChangeRunViewTest, CreateAndSetInTheProvidedDisplay) {
                                    display_delegate());
 }
 
+TEST_F(PasswordChangeRunViewTest, SetTopIcon) {
+  views::ImageView* icon = GetTopIcon();
+  ASSERT_TRUE(icon);
+
+  // The open site settings icon is shown by default.
+  EXPECT_EQ(icon->GetImageModel(),
+            GetExpectedTopIconModel(TopIcon::TOP_ICON_OPEN_SITE_SETTINGS));
+
+  view()->SetTopIcon(TopIcon::TOP_ICON_CHOOSE_NEW_PASSWORD);
+  EXPECT_NE(icon->GetImageModel(),
+            GetExpectedTopIconModel(TopIcon::TOP_ICON_OPEN_SITE_SETTINGS));
+  EXPECT_EQ(icon->GetImageModel(),
+            GetExpectedTopIconModel(TopIcon::TOP_ICON_CHOOSE_NEW_PASSWORD));
+
+  view()->SetTopIcon(TopIcon::TOP_ICON_ERROR_OCCURRED);
+  EXPECT_EQ(icon->GetImageModel(),
+            GetExpectedTopIconModel(TopIcon::TOP_ICON_ERROR_OCCURRED));
+}
+
 TEST_F(PasswordChangeRunViewTest, CreateBasePromptAndClick) {
+  auto mock_timer = std::make_unique<base::MockOneShotTimer>();
+  base::MockOneShotTimer* timer_ptr = mock_timer.get();
+  view()->SetFocusOnButtonTimerForTest(std::move(mock_timer));
   std::vector<PromptChoice> choices = CreatePromptChoices();
+
   view()->ShowBasePrompt(kDescription, choices);
 
   views::View* container = GetButtonContainer();
   ASSERT_TRUE(container);
 
-  ASSERT_EQ(container->children().size(), choices.size());
+  ASSERT_THAT(container->children(), SizeIs(choices.size()));
   for (size_t index = 0; index < choices.size(); ++index) {
     views::Button* button =
         views::Button::AsButton(container->children()[index]);
@@ -152,10 +202,35 @@ TEST_F(PasswordChangeRunViewTest, CreateBasePromptAndClick) {
               choices[index].text);
     EXPECT_EQ(static_cast<views::MdTextButton*>(button)->GetProminent(),
               choices[index].highlighted);
+    ASSERT_FALSE(button->GetViewAccessibility().IsFocusedForTesting());
+  }
+
+  // Highlighted button gets focus after timed task is complete.
+  timer_ptr->Fire();
+  for (size_t index = 0; index < choices.size(); ++index) {
+    views::Button* button =
+        views::Button::AsButton(container->children()[index]);
+    ASSERT_TRUE(static_cast<views::MdTextButton*>(button)->GetProminent()
+                    ? button->GetViewAccessibility().IsFocusedForTesting()
+                    : !button->GetViewAccessibility().IsFocusedForTesting());
   }
 
   EXPECT_CALL(*controller(), OnBasePromptChoiceSelected(0));
   SimulateButtonClick(container->children()[0]);
+}
+
+TEST_F(PasswordChangeRunViewTest, CreateBasePromptAndClickClearsFocusTimer) {
+  auto mock_timer = std::make_unique<base::MockOneShotTimer>();
+  base::MockOneShotTimer* timer_ptr = mock_timer.get();
+  view()->SetFocusOnButtonTimerForTest(std::move(mock_timer));
+  std::vector<PromptChoice> choices = CreatePromptChoices();
+
+  view()->ShowBasePrompt(kDescription, choices);
+  EXPECT_TRUE(timer_ptr->IsRunning());
+
+  view()->ClearPrompt();
+  // Clearing the prompt stops the timer.
+  EXPECT_FALSE(timer_ptr->IsRunning());
 }
 
 TEST_F(PasswordChangeRunViewTest, CreateBasePromptWithoutButton) {
@@ -203,6 +278,10 @@ TEST_F(PasswordChangeRunViewTest, CreateBasePromptWithEmptyText) {
 }
 
 TEST_F(PasswordChangeRunViewTest, CreateSuggestedPasswordPromptAndAccept) {
+  auto mock_timer = std::make_unique<base::MockOneShotTimer>();
+  base::MockOneShotTimer* timer_ptr = mock_timer.get();
+  view()->SetFocusOnButtonTimerForTest(std::move(mock_timer));
+
   std::vector<PromptChoice> choices = CreatePromptChoices();
   view()->ShowUseGeneratedPasswordPrompt(kTitle, kPassword, kDescription,
                                          choices[0], choices[1]);
@@ -210,15 +289,31 @@ TEST_F(PasswordChangeRunViewTest, CreateSuggestedPasswordPromptAndAccept) {
   views::View* button_container = GetButtonContainer();
   ASSERT_TRUE(button_container);
   // There should be two buttons.
-  ASSERT_EQ(button_container->children().size(), 2u);
+  ASSERT_THAT(button_container->children(), SizeIs(2u));
   // Clicking the second button should accept the suggested password.
   EXPECT_CALL(*controller(), OnGeneratedPasswordSelected(true));
+
+  // Accept suggested password button gets focus after timed task is complete.
+  ASSERT_FALSE(button_container->children()[1]
+                   ->GetViewAccessibility()
+                   .IsFocusedForTesting());
+  ASSERT_FALSE(button_container->children()[1]
+                   ->GetViewAccessibility()
+                   .IsFocusedForTesting());
+  timer_ptr->Fire();
+  ASSERT_TRUE(button_container->children()[1]
+                  ->GetViewAccessibility()
+                  .IsFocusedForTesting());
+  ASSERT_FALSE(button_container->children()[0]
+                   ->GetViewAccessibility()
+                   .IsFocusedForTesting());
+
   SimulateButtonClick(button_container->children()[1]);
 
   // There should be two labels in the title container.
   views::View* title_container = GetTitleContainer();
   ASSERT_TRUE(title_container);
-  ASSERT_EQ(title_container->children().size(), 2u);
+  ASSERT_THAT(title_container->children(), SizeIs(2u));
   // The second label should contain the suggested password.
   EXPECT_EQ(
       static_cast<views::Label*>(title_container->children()[1])->GetText(),
@@ -233,4 +328,92 @@ TEST_F(PasswordChangeRunViewTest, ClearPrompt) {
 
   view()->ClearPrompt();
   ASSERT_FALSE(GetButtonContainer());
+}
+
+TEST_F(PasswordChangeRunViewTest, ShowStartingScreen) {
+  view()->ShowStartingScreen(GURL(kSampleUrl));
+
+  views::View* title_container = GetTitleContainer();
+  ASSERT_TRUE(title_container);
+  ASSERT_THAT(title_container->children(), SizeIs(1u));
+  EXPECT_EQ(static_cast<views::Label*>(title_container->children().front())
+                ->GetText(),
+            l10n_util::GetStringFUTF16(
+                IDS_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_STARTING_SCREEN_TITLE,
+                kSampleUrlFormatted));
+
+  views::View* body = GetBody();
+  ASSERT_TRUE(body);
+  EXPECT_THAT(body->children(), IsEmpty());
+
+  views::ImageView* icon = GetTopIcon();
+  ASSERT_TRUE(icon);
+  EXPECT_EQ(icon->GetImageModel(),
+            GetExpectedTopIconModel(TopIcon::TOP_ICON_OPEN_SITE_SETTINGS));
+}
+
+TEST_F(PasswordChangeRunViewTest, ShowErrorScreen) {
+  view()->ShowErrorScreen();
+
+  views::View* title_container = GetTitleContainer();
+  ASSERT_TRUE(title_container);
+  ASSERT_THAT(title_container->children(), SizeIs(1u));
+  EXPECT_EQ(static_cast<views::Label*>(title_container->children().front())
+                ->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_ERROR_SCREEN_TITLE));
+
+  views::View* body = GetBody();
+  ASSERT_TRUE(body);
+  ASSERT_THAT(body->children(), SizeIs(2u));
+  // The first one is a separator and the second one is a label.
+  EXPECT_EQ(
+      static_cast<views::Label*>(body->children()[1])->GetText(),
+      l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_ERROR_SCREEN_DESCRIPTION));
+
+  views::ImageView* icon = GetTopIcon();
+  ASSERT_TRUE(icon);
+  EXPECT_EQ(icon->GetImageModel(),
+            GetExpectedTopIconModel(TopIcon::TOP_ICON_ERROR_OCCURRED));
+}
+
+TEST_F(PasswordChangeRunViewTest, SetTitle) {
+  view()->SetTitle(kTitle);
+
+  views::View* title_container = GetTitleContainer();
+  ASSERT_TRUE(title_container);
+  ASSERT_THAT(title_container->children(), SizeIs(1u));
+  EXPECT_EQ(static_cast<views::Label*>(title_container->children().front())
+                ->GetText(),
+            kTitle);
+}
+
+TEST_F(PasswordChangeRunViewTest, SetTitleWithAccessibility) {
+  views::Label* title;
+  // When not present, accessible name is the same as the title.
+  view()->SetTitle(kTitle);
+  title = static_cast<views::Label*>(GetTitleContainer()->children().front());
+  EXPECT_EQ(title->GetText(), kTitle);
+  EXPECT_EQ(title->GetAccessibleName(), kTitle);
+
+  // Otherwise use accessible name.
+  // When not present, accessible name is the same as the title.
+  view()->SetTitle(kTitle, kAccessibilityTitle);
+  title = static_cast<views::Label*>(GetTitleContainer()->children().front());
+  EXPECT_EQ(title->GetText(), kTitle);
+  EXPECT_EQ(title->GetAccessibleName(), kAccessibilityTitle);
+}
+
+TEST_F(PasswordChangeRunViewTest, SetDescription) {
+  view()->SetDescription(kDescription);
+
+  views::View* body = GetBody();
+  ASSERT_TRUE(body);
+  ASSERT_THAT(body->children(), SizeIs(2u));
+  EXPECT_EQ(static_cast<views::Label*>(body->children()[1])->GetText(),
+            kDescription);
+
+  view()->SetDescription(std::u16string());
+  ASSERT_THAT(body->children(), IsEmpty());
 }

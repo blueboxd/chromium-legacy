@@ -6,7 +6,6 @@
 
 #include <aura-shell-client-protocol.h>
 #include <xdg-decoration-unstable-v1-client-protocol.h>
-#include <xdg-shell-client-protocol.h>
 #include <xdg-shell-unstable-v6-client-protocol.h>
 
 #include "base/logging.h"
@@ -88,8 +87,7 @@ XDGToplevelWrapperImpl::XDGToplevelWrapperImpl(
     WaylandConnection* connection)
     : xdg_surface_wrapper_(std::move(surface)),
       wayland_window_(wayland_window),
-      connection_(connection),
-      decoration_mode_(DecorationMode::kNone) {}
+      connection_(connection) {}
 
 XDGToplevelWrapperImpl::~XDGToplevelWrapperImpl() = default;
 
@@ -100,12 +98,16 @@ bool XDGToplevelWrapperImpl::Initialize() {
   }
 
   static constexpr xdg_toplevel_listener xdg_toplevel_listener = {
-      &ConfigureTopLevel,
-      &CloseTopLevel,
-      // Since v4
-      &ConfigureBounds,
-      // Since v5
-      &WmCapabilities,
+    &ConfigureTopLevel,
+    &CloseTopLevel,
+#if defined(XDG_TOPLEVEL_CONFIGURE_BOUNDS_SINCE_VERSION)
+    // Since v4
+    &ConfigureBounds,
+#endif
+#if defined(XDG_TOPLEVEL_WM_CAPABILITIES_SINCE_VERSION)
+    // Since v5
+    &WmCapabilities,
+#endif
   };
 
   if (!xdg_surface_wrapper_)
@@ -321,6 +323,7 @@ void XDGToplevelWrapperImpl::CloseTopLevel(void* data,
   surface->wayland_window_->OnCloseRequest();
 }
 
+#if defined(XDG_TOPLEVEL_CONFIGURE_BOUNDS_SINCE_VERSION)
 // static
 void XDGToplevelWrapperImpl::ConfigureBounds(void* data,
                                              struct xdg_toplevel* xdg_toplevel,
@@ -328,17 +331,20 @@ void XDGToplevelWrapperImpl::ConfigureBounds(void* data,
                                              int32_t height) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
+#endif
 
+#if defined(XDG_TOPLEVEL_WM_CAPABILITIES_SINCE_VERSION)
 // static
 void XDGToplevelWrapperImpl::WmCapabilities(void* data,
                                             struct xdg_toplevel* xdg_toplevel,
                                             struct wl_array* capabilities) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
+#endif
 
 void XDGToplevelWrapperImpl::SetTopLevelDecorationMode(
     DecorationMode requested_mode) {
-  if (!zxdg_toplevel_decoration_ || requested_mode == decoration_mode_)
+  if (!zxdg_toplevel_decoration_ || requested_mode == decoration_mode())
     return;
 
   zxdg_toplevel_decoration_v1_set_mode(zxdg_toplevel_decoration_.get(),
@@ -352,7 +358,7 @@ void XDGToplevelWrapperImpl::ConfigureDecoration(
     uint32_t mode) {
   auto* surface = static_cast<XDGToplevelWrapperImpl*>(data);
   DCHECK(surface);
-  surface->decoration_mode_ = ToDecorationMode(mode);
+  surface->set_decoration_mode(ToDecorationMode(mode));
 }
 
 void XDGToplevelWrapperImpl::InitializeXdgDecoration() {
@@ -416,22 +422,26 @@ void XDGToplevelWrapperImpl::Unlock() {
 
 void XDGToplevelWrapperImpl::RequestWindowBounds(const gfx::Rect& bounds) {
   DCHECK(SupportsScreenCoordinates());
-  uint32_t id = wayland_window_->GetPreferredEnteredOutputId();
-  auto* output = connection_->wayland_output_manager()->GetOutput(id);
-  if (!output) {
-    // output can be null when the surfae is just created. output should
-    // probably be inferred in that case.
-    LOG(WARNING) << "Output Not found for id=" << id;
-    output = connection_->wayland_output_manager()->GetPrimaryOutput();
-  }
-  // `output` can be null in unit tests where it doesn't wait for output events.
-  if (!output)
+  const auto entered_id = wayland_window_->GetPreferredEnteredOutputId();
+  const WaylandOutputManager* manager = connection_->wayland_output_manager();
+  WaylandOutput* entered_output = entered_id.has_value()
+                                      ? manager->GetOutput(entered_id.value())
+                                      : manager->GetPrimaryOutput();
+
+  // Output can be null when the surface has been just created. It should
+  // probably be inferred in that case.
+  LOG_IF(WARNING, !entered_id.has_value()) << "No output has been entered yet.";
+
+  // `entered_output` can be null in unit tests, where it doesn't wait for
+  // output events.
+  if (!entered_output)
     return;
+
   if (aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
                             ZAURA_TOPLEVEL_SET_WINDOW_BOUNDS_SINCE_VERSION) {
-    zaura_toplevel_set_window_bounds(aura_toplevel_.get(), bounds.x(),
-                                     bounds.y(), bounds.width(),
-                                     bounds.height(), output->get_output());
+    zaura_toplevel_set_window_bounds(
+        aura_toplevel_.get(), bounds.x(), bounds.y(), bounds.width(),
+        bounds.height(), entered_output->get_output());
   }
 }
 
@@ -476,6 +486,27 @@ void XDGToplevelWrapperImpl::SetZOrder(ZOrderLevel z_order) {
                             ZAURA_TOPLEVEL_SET_Z_ORDER_SINCE_VERSION) {
     zaura_toplevel_set_z_order(aura_toplevel_.get(),
                                ToZauraToplevelZOrderLevel(z_order));
+  }
+}
+
+bool XDGToplevelWrapperImpl::SupportsActivation() {
+  static_assert(
+      ZAURA_TOPLEVEL_ACTIVATE_SINCE_VERSION ==
+          ZAURA_TOPLEVEL_DEACTIVATE_SINCE_VERSION,
+      "Support for activation and deactivation was added in the same version.");
+  return aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
+                               ZAURA_TOPLEVEL_ACTIVATE_SINCE_VERSION;
+}
+
+void XDGToplevelWrapperImpl::Activate() {
+  if (aura_toplevel_ && SupportsActivation()) {
+    zaura_toplevel_activate(aura_toplevel_.get());
+  }
+}
+
+void XDGToplevelWrapperImpl::Deactivate() {
+  if (aura_toplevel_ && SupportsActivation()) {
+    zaura_toplevel_deactivate(aura_toplevel_.get());
   }
 }
 

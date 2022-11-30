@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,9 +109,6 @@ String SerializeServers(
 String SerializePeerConnectionMediaConstraints(
     const webrtc::PeerConnectionInterface::RTCConfiguration& config) {
   StringBuilder builder;
-  if (config.disable_ipv6) {
-    builder.Append("googIPv6: false");
-  }
 #if BUILDFLAG(IS_FUCHSIA)
   if (config.enable_dtls_srtp.has_value()) {
     if (builder.length())
@@ -1129,7 +1126,7 @@ void PeerConnectionTracker::TrackSessionId(RTCPeerConnectionHandler* pc_handler,
                                            const String& session_id) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   DCHECK(pc_handler);
-  DCHECK(!session_id.IsEmpty());
+  DCHECK(!session_id.empty());
   const int local_id = GetLocalIDForHandler(pc_handler);
   if (local_id == -1) {
     return;
@@ -1171,12 +1168,12 @@ void PeerConnectionTracker::TrackGetUserMediaSuccess(
   // Serialize audio and video track information (id and label) or an
   // empty string when there is no such track.
   String audio_track_info =
-      stream->getAudioTracks().IsEmpty()
+      stream->getAudioTracks().empty()
           ? String("")
           : String("id:") + stream->getAudioTracks()[0]->id() +
                 String(" label:") + stream->getAudioTracks()[0]->label();
   String video_track_info =
-      stream->getVideoTracks().IsEmpty()
+      stream->getVideoTracks().empty()
           ? String("")
           : String("id:") + stream->getVideoTracks()[0]->id() +
                 String(" label:") + stream->getVideoTracks()[0]->label();

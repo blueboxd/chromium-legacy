@@ -109,6 +109,7 @@ static_library("performance_manager") {
     "performance_manager_registry_impl.h",
     "performance_manager_tab_helper.cc",
     "performance_manager_tab_helper.h",
+    "power/battery_level_provider_creator.cc",
     "process_node_source.cc",
     "process_node_source.h",
     "public/decorators/page_live_state_decorator.h",
@@ -143,6 +144,7 @@ static_library("performance_manager") {
     "public/performance_manager_main_thread_observer.h",
     "public/performance_manager_owned.h",
     "public/performance_manager_registered.h",
+    "public/power/battery_level_provider_creator.h",
     "public/render_frame_host_proxy.h",
     "public/render_process_host_id.h",
     "public/render_process_host_proxy.h",
@@ -189,6 +191,7 @@ static_library("performance_manager") {
 
   deps = [
     "//build:chromeos_buildflags",
+    "//components/content_settings/core/common",
     "//components/metrics",
     "//components/pref_registry:pref_registry",
     "//components/prefs:prefs",
@@ -242,6 +245,20 @@ static_library("performance_manager") {
     public_deps += [
       ":site_data_proto",
       "//third_party/leveldatabase",
+    ]
+  }
+
+  if (is_chromeos_ash) {
+    deps += [
+      "//chromeos/dbus/power",
+      "//chromeos/dbus/power:power_manager_proto",
+    ]
+
+    sources += [
+      "power/battery_level_provider_chromeos.cc",
+      "power/battery_level_provider_chromeos.h",
+      "power/dbus_power_manager_sampling_event_source.cc",
+      "power/dbus_power_manager_sampling_event_source.h",
     ]
   }
 }
@@ -336,6 +353,15 @@ source_set("unit_tests") {
       # TODO(crbug.com/1225070): Consider using this policy on Android.
       "graph/policies/bfcache_policy_unittest.cc",
     ]
+  }
+
+  if (is_chromeos_ash) {
+    deps += [
+      "//chromeos/dbus/power",
+      "//chromeos/dbus/power:power_manager_proto",
+    ]
+
+    sources += [ "power/battery_level_provider_chromeos_unittest.cc" ]
   }
 }
 

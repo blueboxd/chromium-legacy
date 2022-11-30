@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,7 @@ void TextPainter::Paint(unsigned start_offset,
                               auto_dark_mode);
   }
 
-  if (!emphasis_mark_.IsEmpty()) {
+  if (!emphasis_mark_.empty()) {
     if (combined_text_) {
       graphics_context_.ConcatCTM(Rotation(text_frame_rect_, kClockwise));
       PaintEmphasisMarkForCombinedText(

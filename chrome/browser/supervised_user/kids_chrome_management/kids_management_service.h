@@ -6,18 +6,16 @@
 #define CHROME_BROWSER_SUPERVISED_USER_KIDS_CHROME_MANAGEMENT_KIDS_MANAGEMENT_SERVICE_H_
 
 #include "base/memory/singleton.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_context.h"
-
-namespace chrome::kids {
 
 // A keyed service aggregating services for respective RPCs in
 // KidsManagementAPI.
 class KidsManagementService : public KeyedService {};
 
 // The framework binding for the KidsManagementAPI service.
-class KidsManagementServiceFactory : public BrowserContextKeyedServiceFactory {
+class KidsManagementServiceFactory : public ProfileKeyedServiceFactory {
  public:
   static KidsManagementService* GetForProfile(Profile* profile);
   static KidsManagementServiceFactory* GetInstance();
@@ -36,6 +34,5 @@ class KidsManagementServiceFactory : public BrowserContextKeyedServiceFactory {
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 };
-}  // namespace chrome::kids
 
 #endif  // CHROME_BROWSER_SUPERVISED_USER_KIDS_CHROME_MANAGEMENT_KIDS_MANAGEMENT_SERVICE_H_

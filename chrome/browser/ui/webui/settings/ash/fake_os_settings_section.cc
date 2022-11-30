@@ -8,8 +8,12 @@
 
 #include "chrome/grit/generated_resources.h"
 
-namespace chromeos {
-namespace settings {
+namespace ash::settings {
+
+namespace mojom {
+using ::chromeos::settings::mojom::Section;
+using ::chromeos::settings::mojom::Setting;
+}  // namespace mojom
 
 FakeOsSettingsSection::FakeOsSettingsSection(mojom::Section section)
     : section_(section) {}
@@ -54,5 +58,4 @@ std::string FakeOsSettingsSection::ModifySearchResultUrl(
   return ss.str();
 }
 
-}  // namespace settings
-}  // namespace chromeos
+}  // namespace ash::settings

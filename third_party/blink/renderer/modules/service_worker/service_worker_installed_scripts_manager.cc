@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -204,9 +204,9 @@ class Internal : public mojom::blink::ServiceWorkerInstalledScriptsManager {
     auto receivers = std::make_unique<BundledReceivers>(
         std::move(script_info->meta_data), script_info->meta_data_size,
         std::move(script_info->body), script_info->body_size, task_runner_);
-    receivers->Start(WTF::Bind(&Internal::OnScriptReceived,
-                               weak_factory_.GetWeakPtr(),
-                               std::move(script_info)));
+    receivers->Start(WTF::BindOnce(&Internal::OnScriptReceived,
+                                   weak_factory_.GetWeakPtr(),
+                                   std::move(script_info)));
     DCHECK(!running_receivers_.Contains(script_url));
     running_receivers_.insert(script_url, std::move(receivers));
   }
@@ -306,7 +306,7 @@ ServiceWorkerInstalledScriptsManager::GetScriptData(const KURL& script_url) {
   std::unique_ptr<TextResourceDecoder> decoder =
       std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
           TextResourceDecoderOptions::kPlainTextContent,
-          raw_script_data->Encoding().IsEmpty()
+          raw_script_data->Encoding().empty()
               ? UTF8Encoding()
               : WTF::TextEncoding(raw_script_data->Encoding())));
 

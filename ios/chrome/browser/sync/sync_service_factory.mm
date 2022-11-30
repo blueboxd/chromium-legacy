@@ -12,7 +12,6 @@
 #import "components/autofill/core/browser/personal_data_manager.h"
 #import "components/keyed_service/ios/browser_state_dependency_manager.h"
 #import "components/network_time/network_time_tracker.h"
-#import "components/policy/core/common/policy_map.h"
 #import "components/sync/base/command_line_switches.h"
 #import "components/sync/base/sync_util.h"
 #import "components/sync/driver/sync_service.h"
@@ -22,18 +21,17 @@
 #import "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/bookmark_sync_service_factory.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/consent_auditor/consent_auditor_factory.h"
 #import "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
 #import "ios/chrome/browser/history/history_service_factory.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
-#import "ios/chrome/browser/policy/browser_state_policy_connector.h"
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/signin/about_signin_internals_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/signin/trusted_vault_client_backend_factory.h"
-#import "ios/chrome/browser/sync/consent_auditor_factory.h"
 #import "ios/chrome/browser/sync/device_info_sync_service_factory.h"
 #import "ios/chrome/browser/sync/ios_chrome_sync_client.h"
 #import "ios/chrome/browser/sync/ios_user_event_service_factory.h"
@@ -123,6 +121,8 @@ std::unique_ptr<KeyedService> SyncServiceFactory::BuildServiceInstanceFor(
   ChromeBrowserState* browser_state =
       ChromeBrowserState::FromBrowserState(context);
 
+  DCHECK(!browser_state->IsOffTheRecord());
+
   // Always create the GCMProfileService instance such that we can listen to
   // the profile notifications and purge the GCM store when the profile is
   // being signed out.
@@ -133,6 +133,9 @@ std::unique_ptr<KeyedService> SyncServiceFactory::BuildServiceInstanceFor(
   ios::AboutSigninInternalsFactory::GetForBrowserState(browser_state);
 
   syncer::SyncServiceImpl::InitParams init_params;
+  // On non-iOS platforms, there are some "uninteresting" types of profiles such
+  // as guest or system profiles. There's no such thing on iOS.
+  init_params.is_regular_profile_for_uma = true;
   init_params.identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state);
   init_params.start_behavior = syncer::SyncServiceImpl::MANUAL_START;
@@ -143,10 +146,6 @@ std::unique_ptr<KeyedService> SyncServiceFactory::BuildServiceInstanceFor(
       GetApplicationContext()->GetNetworkConnectionTracker();
   init_params.channel = ::GetChannel();
   init_params.debug_identifier = browser_state->GetDebugName();
-  BrowserStatePolicyConnector* policy_connector =
-      browser_state->GetPolicyConnector();
-  init_params.policy_service =
-      policy_connector ? policy_connector->GetPolicyService() : nullptr;
 
   auto sync_service =
       std::make_unique<syncer::SyncServiceImpl>(std::move(init_params));

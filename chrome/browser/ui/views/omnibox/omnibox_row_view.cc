@@ -17,7 +17,7 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_popup_selection.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
-#include "components/omnibox/browser/suggestion_group.h"
+#include "components/omnibox/browser/suggestion_group_util.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -246,7 +246,7 @@ class OmniboxRowView::HeaderView : public views::View {
   raw_ptr<views::ToggleImageButton> header_toggle_button_;
 
   // The group ID associated with this header.
-  omnibox::GroupId suggestion_group_id_ = omnibox::GroupId::INVALID;
+  omnibox::GroupId suggestion_group_id_ = omnibox::GROUP_INVALID;
 
   // The unmodified header text for this header.
   std::u16string header_text_;

@@ -71,14 +71,14 @@ std::pair<std::string, GURL> GetShownOriginAndLinkUrl(
 
 std::string GetShownOrigin(const CredentialUIEntry& credential) {
   FacetURI facet_uri =
-      FacetURI::FromPotentiallyInvalidSpec(credential.signon_realm);
+      FacetURI::FromPotentiallyInvalidSpec(credential.GetFirstSignonRealm());
   return GetShownOrigin(facet_uri, credential.GetDisplayName(),
                         credential.GetURL());
 }
 
 GURL GetShownUrl(const CredentialUIEntry& credential) {
   FacetURI facet_uri =
-      FacetURI::FromPotentiallyInvalidSpec(credential.signon_realm);
+      FacetURI::FromPotentiallyInvalidSpec(credential.GetFirstSignonRealm());
   return GetShownURL(facet_uri, credential.GetURL());
 }
 
@@ -142,7 +142,7 @@ std::vector<std::u16string> GetUsernamesForRealm(
                                   ? PasswordForm::Store::kAccountStore
                                   : PasswordForm::Store::kProfileStore;
   for (const auto& credential : credentials) {
-    if (credential.signon_realm == signon_realm &&
+    if (credential.GetFirstSignonRealm() == signon_realm &&
         credential.stored_in.contains(store)) {
       usernames.push_back(credential.username);
     }
@@ -155,6 +155,8 @@ int GetPlatformAuthenticatorLabel() {
   return IDS_PASSWORD_MANAGER_USE_WINDOWS_HELLO;
 #elif BUILDFLAG(IS_MAC)
   return IDS_PASSWORD_MANAGER_USE_TOUCH_ID;
+#elif BUILDFLAG(IS_ANDROID)
+  return IDS_PASSWORD_MANAGER_USE_SCREEN_LOCK;
 #else
   return IDS_PASSWORD_MANAGER_USE_GENERIC_DEVICE;
 #endif

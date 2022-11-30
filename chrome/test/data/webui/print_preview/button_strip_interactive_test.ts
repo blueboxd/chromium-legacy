@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {Destination, DestinationOrigin, PrintPreviewButtonStripElement, State} from 'chrome://print/print_preview.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
 const button_strip_interactive_test = {
@@ -20,7 +20,8 @@ suite(button_strip_interactive_test.suiteName, function() {
   let buttonStrip: PrintPreviewButtonStripElement;
 
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     buttonStrip = document.createElement('print-preview-button-strip');
     buttonStrip.destination = new Destination(
         'FooDevice',

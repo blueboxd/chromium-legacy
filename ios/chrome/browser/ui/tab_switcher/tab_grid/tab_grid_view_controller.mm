@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_view_controller.h"
 
 #import "base/bind.h"
+#import "base/logging.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
@@ -1576,12 +1577,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)configureDoneButtonBasedOnPage:(TabGridPage)page {
-  GridViewController* gridViewController =
-      [self gridViewControllerForPage:page];
-  if (!gridViewController) {
-    NOTREACHED() << "The done button should not be configured based on the "
-                    "contents of the recent tabs page.";
-  }
+  const BOOL tabsPresent = [self tabsPresentForPage:page];
 
   if (!self.closeAllConfirmationDisplayed)
     self.topToolbar.pageControl.userInteractionEnabled = YES;
@@ -1591,11 +1587,23 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   BOOL incognitoTabsNeedsAuth =
       (self.currentPage == TabGridPageIncognitoTabs &&
        self.incognitoTabsViewController.contentNeedsAuthentication);
-  BOOL doneEnabled = !gridViewController.gridEmpty &&
+  BOOL doneEnabled = tabsPresent &&
                      self.topToolbar.pageControl.userInteractionEnabled &&
                      !incognitoTabsNeedsAuth;
   [self.topToolbar setDoneButtonEnabled:doneEnabled];
   [self.bottomToolbar setDoneButtonEnabled:doneEnabled];
+}
+
+// YES if there are tabs present on `page`. For `TabGridPageRemoteTabs`, YES
+// if there are tabs on either of the other pages.
+- (BOOL)tabsPresentForPage:(TabGridPage)page {
+  if (page == TabGridPageRemoteTabs) {
+    return !(
+        [self gridViewControllerForPage:TabGridPageRegularTabs].gridEmpty &&
+        [self gridViewControllerForPage:TabGridPageIncognitoTabs].gridEmpty);
+  }
+
+  return ![self gridViewControllerForPage:page].gridEmpty;
 }
 
 // Disables the done button on bottom toolbar if a disabled tab view is

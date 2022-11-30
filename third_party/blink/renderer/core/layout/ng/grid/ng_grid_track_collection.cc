@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,8 +89,8 @@ NGGridBlockTrackCollection::NGGridBlockTrackCollection(
   const wtf_size_t repeater_count = explicit_tracks_.RepeaterCount();
 
   // Add extra capacity for the extra lines needed for named grids.
-  start_lines_.ReserveCapacity(repeater_count + 1);
-  end_lines_.ReserveCapacity(repeater_count + 1);
+  start_lines_.reserve(repeater_count + 1);
+  end_lines_.reserve(repeater_count + 1);
 
   wtf_size_t current_repeater_start_line = start_offset_;
   for (wtf_size_t i = 0; i < repeater_count; ++i) {
@@ -138,7 +138,7 @@ void NGGridBlockTrackCollection::EnsureTrackCoverage(
 }
 
 void NGGridBlockTrackCollection::FinalizeRanges() {
-  DCHECK(ranges_.IsEmpty());
+  DCHECK(ranges_.empty());
 
   // Sort start and ending tracks from low to high.
   if (track_indices_need_sort_) {
@@ -525,7 +525,7 @@ bool NGGridLayoutTrackCollection::RangeHasTrackSpanProperty(
 }
 
 wtf_size_t NGGridLayoutTrackCollection::EndLineOfImplicitGrid() const {
-  if (ranges_.IsEmpty())
+  if (ranges_.empty())
     return 0;
   const auto& last_range = ranges_.back();
   return last_range.start_line + last_range.track_count;
@@ -538,7 +538,7 @@ bool NGGridLayoutTrackCollection::IsGridLineWithinImplicitGrid(
 }
 
 wtf_size_t NGGridLayoutTrackCollection::GetSetCount() const {
-  if (ranges_.IsEmpty())
+  if (ranges_.empty())
     return 0;
   const auto& last_range = ranges_.back();
   return last_range.begin_set_index + last_range.set_count;
@@ -651,7 +651,7 @@ NGGridLayoutTrackCollection::CreateSubgridCollection(
         sets_geometry_[i].track_count);
   }
 
-  if (!major_baselines_.IsEmpty()) {
+  if (!major_baselines_.empty()) {
     DCHECK_LE(end_set_index, major_baselines_.size());
     DCHECK_LE(end_set_index, minor_baselines_.size());
 
@@ -720,7 +720,7 @@ NGGridSizingTrackCollection::GetSetIterator(wtf_size_t begin_set_index,
 bool NGGridSizingTrackCollection::IsSpanningIndefiniteSet(
     wtf_size_t begin_set_index,
     wtf_size_t end_set_index) const {
-  if (last_indefinite_indices_.IsEmpty())
+  if (last_indefinite_indices_.empty())
     return false;
 
   DCHECK_LT(begin_set_index, end_set_index);
@@ -733,7 +733,7 @@ bool NGGridSizingTrackCollection::IsSpanningIndefiniteSet(
 }
 
 LayoutUnit NGGridSizingTrackCollection::TotalTrackSize() const {
-  if (sets_.IsEmpty())
+  if (sets_.empty())
     return LayoutUnit();
 
   LayoutUnit total_track_size;
@@ -788,8 +788,8 @@ void NGGridSizingTrackCollection::SetIndefiniteGrowthLimitsToBaseSize() {
 
 void NGGridSizingTrackCollection::ResetBaselines() {
   const wtf_size_t set_count = sets_.size();
-  major_baselines_ = Vector<LayoutUnit>(set_count);
-  minor_baselines_ = Vector<LayoutUnit>(set_count);
+  major_baselines_ = Vector<LayoutUnit>(set_count, LayoutUnit::Min());
+  minor_baselines_ = Vector<LayoutUnit>(set_count, LayoutUnit::Min());
 }
 
 void NGGridSizingTrackCollection::SetMajorBaseline(

@@ -6,9 +6,11 @@ package org.chromium.chrome.browser.ui.fast_checkout;
 
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
 
 import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
+import androidx.annotation.Px;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 
 import org.chromium.chrome.browser.ui.fast_checkout.FastCheckoutProperties.DetailItemType;
@@ -34,17 +36,25 @@ import org.chromium.ui.modelutil.PropertyModel;
  * to events like clicks.
  */
 public class FastCheckoutMediator {
+    private static final float MAX_VISIBLE_ADDRESSES = 2.5f;
+    private static final float MAX_VISIBLE_CREDIT_CARDS = 3.5f;
+
     private PropertyModel mModel;
     private FastCheckoutComponent.Delegate mDelegate;
     private BottomSheetController mBottomSheetController;
     private BottomSheetObserver mBottomSheetClosedObserver;
     private BottomSheetObserver mBottomSheetDismissedObserver;
+    private @Px int mAddressItemHeight;
+    private @Px int mCreditCardItemHeight;
 
     void initialize(FastCheckoutComponent.Delegate delegate, PropertyModel model,
-            BottomSheetController bottomSheetController) {
+            BottomSheetController bottomSheetController, @Px int addressItemHeight,
+            @Px int creditCardItemHeight) {
         mModel = model;
         mDelegate = delegate;
         mBottomSheetController = bottomSheetController;
+        mAddressItemHeight = addressItemHeight;
+        mCreditCardItemHeight = creditCardItemHeight;
 
         mBottomSheetClosedObserver = new EmptyBottomSheetObserver() {
             @Override
@@ -66,8 +76,11 @@ public class FastCheckoutMediator {
         };
 
         mModel.set(FastCheckoutProperties.HOME_SCREEN_DELEGATE, createHomeScreenDelegate());
-        mModel.set(FastCheckoutProperties.DETAIL_SCREEN_BACK_CLICK_HANDLER,
-                () -> setCurrentScreen(FastCheckoutProperties.ScreenType.HOME_SCREEN));
+        mModel.set(FastCheckoutProperties.DETAIL_SCREEN_BACK_CLICK_HANDLER, () -> {
+            setCurrentScreen(FastCheckoutProperties.ScreenType.HOME_SCREEN);
+            FastCheckoutUserActions.NAVIGATED_BACK_HOME.log();
+        });
+        FastCheckoutUserActions.INITIALIZED.log();
     }
 
     /** Returns an implementation the {@link HomeScreenCoordinator.Delegate} interface. */
@@ -78,6 +91,7 @@ public class FastCheckoutMediator {
                 if (!mModel.get(FastCheckoutProperties.VISIBLE)) {
                     return; // Dismiss only if not dismissed yet.
                 }
+                FastCheckoutUserActions.ACCEPTED.log();
                 FastCheckoutAutofillProfile profile =
                         mModel.get(FastCheckoutProperties.SELECTED_PROFILE);
                 FastCheckoutCreditCard creditCard =
@@ -88,22 +102,15 @@ public class FastCheckoutMediator {
             };
 
             @Override
-            public void onDismiss() {
-                if (!mModel.get(FastCheckoutProperties.VISIBLE)) {
-                    return; // Dismiss only if not dismissed yet.
-                }
-                mModel.set(FastCheckoutProperties.VISIBLE, false);
-                mDelegate.onDismissed();
-            }
-
-            @Override
             public void onShowAddressesList() {
                 setCurrentScreen(FastCheckoutProperties.ScreenType.AUTOFILL_PROFILE_SCREEN);
+                FastCheckoutUserActions.NAVIGATED_TO_ADDRESSES.log();
             }
 
             @Override
             public void onShowCreditCardList() {
                 setCurrentScreen(FastCheckoutProperties.ScreenType.CREDIT_CARD_SCREEN);
+                FastCheckoutUserActions.NAVIGATED_TO_CREDIT_CARDS.log();
             }
         };
     }
@@ -112,6 +119,7 @@ public class FastCheckoutMediator {
             FastCheckoutAutofillProfile[] profiles, FastCheckoutCreditCard[] creditCards) {
         setAutofillProfileItems(profiles);
         setCreditCardItems(creditCards);
+        setCurrentScreen(mModel.get(FastCheckoutProperties.CURRENT_SCREEN));
 
         // It is possible that FC onboarding has been just accepted but the bottom sheet is still
         // showing. If that's the case we try hiding it and then show FC bottom sheet.
@@ -151,7 +159,7 @@ public class FastCheckoutMediator {
         if (!mModel.get(FastCheckoutProperties.VISIBLE)) {
             return; // Dismiss only if not dismissed yet.
         }
-        // TODO(crbug.com/1334642): Record dismissal metrics.
+        FastCheckoutUserActions.DISMISSED.log();
         mModel.set(FastCheckoutProperties.VISIBLE, false);
         mDelegate.onDismissed();
     }
@@ -203,7 +211,11 @@ public class FastCheckoutMediator {
         profileItems.add(new ListItem(DetailItemType.FOOTER,
                 FooterItemProperties.create(
                         /*label=*/R.string.fast_checkout_detail_screen_add_autofill_profile_text,
-                        /*onClickHandler=*/() -> mDelegate.openAutofillProfileSettings())));
+                        /*onClickHandler=*/() -> {
+                            mDelegate.openAutofillProfileSettings();
+                            FastCheckoutUserActions.NAVIGATED_TO_ADDRESSES_SETTINGS_VIA_FOOTER
+                                    .log();
+                        })));
 
         setSelectedAutofillProfile(newSelection);
     }
@@ -215,6 +227,7 @@ public class FastCheckoutMediator {
      */
     public void setSelectedAutofillProfile(FastCheckoutAutofillProfile selectedProfile) {
         assert selectedProfile != null;
+        boolean isInitialSelection = mModel.get(FastCheckoutProperties.SELECTED_PROFILE) == null;
         mModel.set(FastCheckoutProperties.SELECTED_PROFILE, selectedProfile);
 
         int foundProfiles = 0;
@@ -225,9 +238,17 @@ public class FastCheckoutMediator {
             }
             boolean isSelected = selectedProfile.equals(
                     item.model.get(AutofillProfileItemProperties.AUTOFILL_PROFILE));
+            boolean wasSelected = item.model.get(AutofillProfileItemProperties.IS_SELECTED);
             item.model.set(AutofillProfileItemProperties.IS_SELECTED, isSelected);
             if (isSelected) {
                 ++foundProfiles;
+                if (!isInitialSelection) {
+                    if (wasSelected) {
+                        FastCheckoutUserActions.SELECTED_SAME_ADDRESS.log();
+                    } else {
+                        FastCheckoutUserActions.SELECTED_DIFFERENT_ADDRESS.log();
+                    }
+                }
             }
         }
 
@@ -270,7 +291,11 @@ public class FastCheckoutMediator {
         cardItems.add(new ListItem(DetailItemType.FOOTER,
                 FooterItemProperties.create(
                         /*label=*/R.string.fast_checkout_detail_screen_add_credit_card_text,
-                        /*onClickHandler=*/() -> mDelegate.openCreditCardSettings())));
+                        /*onClickHandler=*/() -> {
+                            mDelegate.openCreditCardSettings();
+                            FastCheckoutUserActions.NAVIGATED_TO_CREDIT_CARDS_SETTINGS_VIA_FOOTER
+                                    .log();
+                        })));
 
         setSelectedCreditCard(newSelection);
     }
@@ -282,6 +307,8 @@ public class FastCheckoutMediator {
      */
     public void setSelectedCreditCard(FastCheckoutCreditCard selectedCreditCard) {
         assert selectedCreditCard != null;
+        boolean isInitialSelection =
+                mModel.get(FastCheckoutProperties.SELECTED_CREDIT_CARD) == null;
         mModel.set(FastCheckoutProperties.SELECTED_CREDIT_CARD, selectedCreditCard);
 
         int foundCards = 0;
@@ -292,9 +319,17 @@ public class FastCheckoutMediator {
             }
             boolean isSelected =
                     selectedCreditCard.equals(item.model.get(CreditCardItemProperties.CREDIT_CARD));
+            boolean wasSelected = item.model.get(CreditCardItemProperties.IS_SELECTED);
             item.model.set(CreditCardItemProperties.IS_SELECTED, isSelected);
             if (isSelected) {
                 ++foundCards;
+                if (!isInitialSelection) {
+                    if (wasSelected) {
+                        FastCheckoutUserActions.SELECTED_SAME_CREDIT_CARD.log();
+                    } else {
+                        FastCheckoutUserActions.SELECTED_DIFFERENT_CREDIT_CARD.log();
+                    }
+                }
             }
         }
 
@@ -311,24 +346,75 @@ public class FastCheckoutMediator {
         if (screenType == FastCheckoutProperties.ScreenType.AUTOFILL_PROFILE_SCREEN) {
             mModel.set(FastCheckoutProperties.DETAIL_SCREEN_TITLE,
                     R.string.fast_checkout_autofill_profile_sheet_title);
+            mModel.set(FastCheckoutProperties.DETAIL_SCREEN_TITLE_DESCRIPTION,
+                    R.string.fast_checkout_autofill_profile_sheet_title_description);
             mModel.set(FastCheckoutProperties.DETAIL_SCREEN_SETTINGS_MENU_TITLE,
                     R.string.fast_checkout_autofill_profile_settings_button_description);
             mModel.set(FastCheckoutProperties.DETAIL_SCREEN_SETTINGS_CLICK_HANDLER,
-                    createSettingsOnClickListener(() -> mDelegate.openAutofillProfileSettings()));
+                    createSettingsOnClickListener(() -> {
+                        mDelegate.openAutofillProfileSettings();
+                        FastCheckoutUserActions.NAVIGATED_TO_ADDRESSES_SETTINGS_VIA_ICON.log();
+                    }));
             mModel.set(FastCheckoutProperties.DETAIL_SCREEN_MODEL_LIST,
                     mModel.get(FastCheckoutProperties.PROFILE_MODEL_LIST));
+            mModel.set(FastCheckoutProperties.DETAIL_SCREEN_LIST_HEIGHT_IN_PX,
+                    computeAddressListSheetHeight());
         } else if (screenType == ScreenType.CREDIT_CARD_SCREEN) {
             mModel.set(FastCheckoutProperties.DETAIL_SCREEN_TITLE,
                     R.string.fast_checkout_credit_card_sheet_title);
+            mModel.set(FastCheckoutProperties.DETAIL_SCREEN_TITLE_DESCRIPTION,
+                    R.string.fast_checkout_credit_card_sheet_title_description);
             mModel.set(FastCheckoutProperties.DETAIL_SCREEN_SETTINGS_MENU_TITLE,
                     R.string.fast_checkout_credit_card_settings_button_description);
             mModel.set(FastCheckoutProperties.DETAIL_SCREEN_SETTINGS_CLICK_HANDLER,
-                    createSettingsOnClickListener(() -> mDelegate.openCreditCardSettings()));
+                    createSettingsOnClickListener(() -> {
+                        mDelegate.openCreditCardSettings();
+                        FastCheckoutUserActions.NAVIGATED_TO_CREDIT_CARDS_SETTINGS_VIA_ICON.log();
+                    }));
             mModel.set(FastCheckoutProperties.DETAIL_SCREEN_MODEL_LIST,
                     mModel.get(FastCheckoutProperties.CREDIT_CARD_MODEL_LIST));
+            mModel.set(FastCheckoutProperties.DETAIL_SCREEN_LIST_HEIGHT_IN_PX,
+                    computeCreditCardListSheetHeight());
         }
 
         mModel.set(FastCheckoutProperties.CURRENT_SCREEN, screenType);
+    }
+
+    /**
+     * Computes the height of the detail address list.
+     *
+     * If there are 1 or 2 items, it shows all items fully. For 3+ suggestions, it shows the
+     * first 2.5 suggestions to encourage scrolling.
+     */
+    private @Px int computeAddressListSheetHeight() {
+        // Remove the "Add item" button at the end of the list.
+        int numItems = mModel.get(FastCheckoutProperties.PROFILE_MODEL_LIST).size() - 1;
+        // When there are more than {@link MAX_VISIBLE_ADDRESSES} items, resize the list
+        // so that only {@link MAX_VISIBLE_ADDRESSES} items and part of the next one are visible.
+        if (numItems > MAX_VISIBLE_ADDRESSES) {
+            return Math.round((float) mAddressItemHeight * MAX_VISIBLE_ADDRESSES);
+        }
+        // Otherwise display all the items.
+        return FrameLayout.LayoutParams.WRAP_CONTENT;
+    }
+
+    /**
+     * Computes the height of the detail credit card list.
+     *
+     * if there are less than 4 items, it shows all items fully. For 4+ suggestions, it shows the
+     * first 3.5 suggestions to encourage scrolling.
+     */
+    private @Px int computeCreditCardListSheetHeight() {
+        // Remove the "Add item" button at the end of the list.
+        int numItems = mModel.get(FastCheckoutProperties.CREDIT_CARD_MODEL_LIST).size() - 1;
+        // When there are more than {@link MAX_VISIBLE_CREDIT_CARDS} items, resize the
+        // list so that only {@link MAX_VISIBLE_CREDIT_CARDS} items and part of the next one are
+        // visible.
+        if (numItems > MAX_VISIBLE_CREDIT_CARDS) {
+            return Math.round((float) mCreditCardItemHeight * MAX_VISIBLE_CREDIT_CARDS);
+        }
+        // Otherwise display all the items.
+        return FrameLayout.LayoutParams.WRAP_CONTENT;
     }
 
     /**
@@ -354,7 +440,7 @@ public class FastCheckoutMediator {
      */
     @MainThread
     public void destroy() {
-        // TODO(crbug.com/1334642): Record as part of the dismissal metrics.
+        FastCheckoutUserActions.DESTROYED.log();
         mModel.set(FastCheckoutProperties.VISIBLE, false);
     }
 }

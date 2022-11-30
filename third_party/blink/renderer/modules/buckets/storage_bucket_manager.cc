@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,7 @@ bool IsValidName(const String& name) {
   if (!name.ContainsOnlyASCIIOrEmpty())
     return false;
 
-  if (name.IsEmpty() || name.length() >= 64)
+  if (name.empty() || name.length() >= 64)
     return false;
 
   // | name | must only contain lowercase latin letters, digits 0-9, or special
@@ -115,9 +115,10 @@ ScriptPromise StorageBucketManager::open(ScriptState* script_state,
   mojom::blink::BucketPoliciesPtr bucket_policies =
       ToMojoBucketPolicies(options);
   GetBucketManager(script_state)
-      ->OpenBucket(name, std::move(bucket_policies),
-                   WTF::Bind(&StorageBucketManager::DidOpen,
-                             WrapPersistent(this), WrapPersistent(resolver)));
+      ->OpenBucket(
+          name, std::move(bucket_policies),
+          WTF::BindOnce(&StorageBucketManager::DidOpen, WrapPersistent(this),
+                        WrapPersistent(resolver)));
   return promise;
 }
 
@@ -134,8 +135,8 @@ ScriptPromise StorageBucketManager::keys(ScriptState* script_state,
   }
 
   GetBucketManager(script_state)
-      ->Keys(WTF::Bind(&StorageBucketManager::DidGetKeys, WrapPersistent(this),
-                       WrapPersistent(resolver)));
+      ->Keys(WTF::BindOnce(&StorageBucketManager::DidGetKeys,
+                           WrapPersistent(this), WrapPersistent(resolver)));
   return promise;
 }
 
@@ -160,9 +161,9 @@ ScriptPromise StorageBucketManager::Delete(ScriptState* script_state,
   }
 
   GetBucketManager(script_state)
-      ->DeleteBucket(name,
-                     WTF::Bind(&StorageBucketManager::DidDelete,
-                               WrapPersistent(this), WrapPersistent(resolver)));
+      ->DeleteBucket(
+          name, WTF::BindOnce(&StorageBucketManager::DidDelete,
+                              WrapPersistent(this), WrapPersistent(resolver)));
   return promise;
 }
 

@@ -17,11 +17,41 @@ try_.defaults.set(
     os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.gpu.SERVICE_ACCOUNT,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 consoles.list_view(
     name = "tryserver.chromium.dawn",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+)
+
+try_.builder(
+    name = "dawn-android-arm-deps-rel",
+    branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Dawn Android arm DEPS Release (Pixel 4)",
+    ],
+    main_list_view = "try",
+    tryjob = try_.job(
+        location_regexp = [
+            ".+/[+]/content/test/gpu/.+",
+            ".+/[+]/gpu/.+",
+            ".+/[+]/testing/buildbot/chromium.dawn.json",
+            ".+/[+]/third_party/blink/renderer/modules/webgpu/.+",
+            ".+/[+]/third_party/blink/web_tests/external/wpt/webgpu/.+",
+            ".+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+",
+            ".+/[+]/third_party/blink/web_tests/WebGPUExpectations",
+            ".+/[+]/third_party/dawn/.+",
+            ".+/[+]/third_party/webgpu-cts/.+",
+            ".+/[+]/tools/clang/scripts/update.py",
+            ".+/[+]/ui/gl/features.gni",
+        ],
+    ),
+    test_presentation = resultdb.test_presentation(
+        grouping_keys = ["status", "v.test_suite", "v.gpu"],
+    ),
 )
 
 try_.builder(
@@ -34,18 +64,18 @@ try_.builder(
     ],
     main_list_view = "try",
     tryjob = try_.job(
-        location_filters = [
-            "content/test/gpu/.+",
-            "gpu/.+",
-            "testing/buildbot/chromium.dawn.json",
-            "third_party/blink/renderer/modules/webgpu/.+",
-            "third_party/blink/web_tests/external/wpt/webgpu/.+",
-            "third_party/blink/web_tests/wpt_internal/webgpu/.+",
-            "third_party/blink/web_tests/WebGPUExpectations",
-            "third_party/dawn/.+",
-            "third_party/webgpu-cts/.+",
-            "tools/clang/scripts/update.py",
-            "ui/gl/features.gni",
+        location_regexp = [
+            ".+/[+]/content/test/gpu/.+",
+            ".+/[+]/gpu/.+",
+            ".+/[+]/testing/buildbot/chromium.dawn.json",
+            ".+/[+]/third_party/blink/renderer/modules/webgpu/.+",
+            ".+/[+]/third_party/blink/web_tests/external/wpt/webgpu/.+",
+            ".+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+",
+            ".+/[+]/third_party/blink/web_tests/WebGPUExpectations",
+            ".+/[+]/third_party/dawn/.+",
+            ".+/[+]/third_party/webgpu-cts/.+",
+            ".+/[+]/tools/clang/scripts/update.py",
+            ".+/[+]/ui/gl/features.gni",
         ],
     ),
     test_presentation = resultdb.test_presentation(
@@ -64,18 +94,18 @@ try_.builder(
     main_list_view = "try",
     os = os.MAC_ANY,
     tryjob = try_.job(
-        location_filters = [
-            "content/test/gpu/.+",
-            "gpu/.+",
-            "testing/buildbot/chromium.dawn.json",
-            "third_party/blink/renderer/modules/webgpu/.+",
-            "third_party/blink/web_tests/external/wpt/webgpu/.+",
-            "third_party/blink/web_tests/wpt_internal/webgpu/.+",
-            "third_party/blink/web_tests/WebGPUExpectations",
-            "third_party/dawn/.+",
-            "third_party/webgpu-cts/.+",
-            "tools/clang/scripts/update.py",
-            "ui/gl/features.gni",
+        location_regexp = [
+            ".+/[+]/content/test/gpu/.+",
+            ".+/[+]/gpu/.+",
+            ".+/[+]/testing/buildbot/chromium.dawn.json",
+            ".+/[+]/third_party/blink/renderer/modules/webgpu/.+",
+            ".+/[+]/third_party/blink/web_tests/external/wpt/webgpu/.+",
+            ".+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+",
+            ".+/[+]/third_party/blink/web_tests/WebGPUExpectations",
+            ".+/[+]/third_party/dawn/.+",
+            ".+/[+]/third_party/webgpu-cts/.+",
+            ".+/[+]/tools/clang/scripts/update.py",
+            ".+/[+]/ui/gl/features.gni",
         ],
     ),
     test_presentation = resultdb.test_presentation(
@@ -94,18 +124,18 @@ try_.builder(
     main_list_view = "try",
     os = os.WINDOWS_ANY,
     tryjob = try_.job(
-        location_filters = [
-            "content/test/gpu/.+",
-            "gpu/.+",
-            "testing/buildbot/chromium.dawn.json",
-            "third_party/blink/renderer/modules/webgpu/.+",
-            "third_party/blink/web_tests/external/wpt/webgpu/.+",
-            "third_party/blink/web_tests/wpt_internal/webgpu/.+",
-            "third_party/blink/web_tests/WebGPUExpectations",
-            "third_party/dawn/.+",
-            "third_party/webgpu-cts/.+",
-            "tools/clang/scripts/update.py",
-            "ui/gl/features.gni",
+        location_regexp = [
+            ".+/[+]/content/test/gpu/.+",
+            ".+/[+]/gpu/.+",
+            ".+/[+]/testing/buildbot/chromium.dawn.json",
+            ".+/[+]/third_party/blink/renderer/modules/webgpu/.+",
+            ".+/[+]/third_party/blink/web_tests/external/wpt/webgpu/.+",
+            ".+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+",
+            ".+/[+]/third_party/blink/web_tests/WebGPUExpectations",
+            ".+/[+]/third_party/dawn/.+",
+            ".+/[+]/third_party/webgpu-cts/.+",
+            ".+/[+]/tools/clang/scripts/update.py",
+            ".+/[+]/ui/gl/features.gni",
         ],
     ),
     test_presentation = resultdb.test_presentation(
@@ -124,20 +154,30 @@ try_.builder(
     main_list_view = "try",
     os = os.WINDOWS_ANY,
     tryjob = try_.job(
-        location_filters = [
-            "content/test/gpu/.+",
-            "gpu/.+",
-            "testing/buildbot/chromium.dawn.json",
-            "third_party/blink/renderer/modules/webgpu/.+",
-            "third_party/blink/web_tests/external/wpt/webgpu/.+",
-            "third_party/blink/web_tests/wpt_internal/webgpu/.+",
-            "third_party/blink/web_tests/WebGPUExpectations",
-            "third_party/dawn/.+",
-            "third_party/webgpu-cts/.+",
-            "tools/clang/scripts/update.py",
-            "ui/gl/features.gni",
+        location_regexp = [
+            ".+/[+]/content/test/gpu/.+",
+            ".+/[+]/gpu/.+",
+            ".+/[+]/testing/buildbot/chromium.dawn.json",
+            ".+/[+]/third_party/blink/renderer/modules/webgpu/.+",
+            ".+/[+]/third_party/blink/web_tests/external/wpt/webgpu/.+",
+            ".+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+",
+            ".+/[+]/third_party/blink/web_tests/WebGPUExpectations",
+            ".+/[+]/third_party/dawn/.+",
+            ".+/[+]/third_party/webgpu-cts/.+",
+            ".+/[+]/tools/clang/scripts/update.py",
+            ".+/[+]/ui/gl/features.gni",
         ],
     ),
+    test_presentation = resultdb.test_presentation(
+        grouping_keys = ["status", "v.test_suite", "v.gpu"],
+    ),
+)
+
+try_.builder(
+    name = "android-dawn-arm-rel",
+    mirrors = [
+        "ci/Dawn Android arm Release (Pixel 4)",
+    ],
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],
     ),

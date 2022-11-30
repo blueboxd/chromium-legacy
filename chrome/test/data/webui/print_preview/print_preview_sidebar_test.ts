@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 import {NativeLayerImpl, PrintPreviewModelElement, PrintPreviewSidebarElement} from 'chrome://print/print_preview.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {assertEquals} from 'chrome://webui-test/chai_assert.js';
-import {fakeDataBind} from 'chrome://webui-test/test_util.js';
+import {fakeDataBind} from 'chrome://webui-test/polymer_test_util.js';
 
 // <if expr="is_chromeos">
 import {setNativeLayerCrosInstance} from './native_layer_cros_stub.js';
@@ -42,7 +42,8 @@ suite(print_preview_sidebar_test.suiteName, function() {
     // </if>
     nativeLayer.setLocalDestinationCapabilities(getCddTemplate('FooDevice'));
 
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     model = document.createElement('print-preview-model');
     document.body.appendChild(model);
 

@@ -28,7 +28,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
-namespace chromeos::settings {
+namespace ash::settings {
 
 namespace {
 
@@ -91,8 +91,6 @@ const char kSavedDevicesTotalUxLoadTimeMetricName[] =
     "Bluetooth.ChromeOS.FastPair.SavedDevices.TotalUxLoadTime";
 const char kSavedDevicesCountMetricName[] =
     "Bluetooth.ChromeOS.FastPair.SavedDevices.DeviceCount";
-const char kSavedDeviceGetFastPairRepositoryResultMetricName[] =
-    "Bluetooth.ChromeOS.FastPair.SavedDevices.GetFastPairRepository.Result";
 
 nearby::fastpair::FastPairDevice CreateFastPairDevice(
     const std::string device_name,
@@ -134,7 +132,7 @@ bool VerifyDeviceInList(const base::Value& device,
 class TestFastPairSavedDevicesHandler : public FastPairSavedDevicesHandler {
  public:
   explicit TestFastPairSavedDevicesHandler(
-      std::unique_ptr<ash::quick_pair::FastPairImageDecoder> image_decoder)
+      std::unique_ptr<quick_pair::FastPairImageDecoder> image_decoder)
       : FastPairSavedDevicesHandler(std::move(image_decoder)) {}
   ~TestFastPairSavedDevicesHandler() override = default;
 
@@ -161,7 +159,7 @@ class FastPairSavedDevicesHandlerTest : public testing::Test {
 
     test_image_ = gfx::test::CreateImage(100, 100);
     auto mock_decoder =
-        std::make_unique<ash::quick_pair::MockFastPairImageDecoder>();
+        std::make_unique<quick_pair::MockFastPairImageDecoder>();
     mock_decoder_ = mock_decoder.get();
     // On call to DecodeImage, run the third argument callback with test_image_.
     ON_CALL(*mock_decoder, DecodeImage(testing::_, testing::_, testing::_))
@@ -172,7 +170,7 @@ class FastPairSavedDevicesHandlerTest : public testing::Test {
     handler_->set_web_ui(test_web_ui_.get());
     handler_->RegisterMessages();
     fast_pair_repository_ =
-        std::make_unique<ash::quick_pair::FakeFastPairRepository>();
+        std::make_unique<quick_pair::FakeFastPairRepository>();
   }
 
   content::TestWebUI* test_web_ui() { return test_web_ui_.get(); }
@@ -280,10 +278,9 @@ class FastPairSavedDevicesHandlerTest : public testing::Test {
  protected:
   base::test::TaskEnvironment task_environment_;
   base::HistogramTester histogram_tester_;
-  std::unique_ptr<ash::quick_pair::FakeFastPairRepository>
-      fast_pair_repository_;
+  std::unique_ptr<quick_pair::FakeFastPairRepository> fast_pair_repository_;
   gfx::Image test_image_;
-  ash::quick_pair::MockFastPairImageDecoder* mock_decoder_;
+  quick_pair::MockFastPairImageDecoder* mock_decoder_;
   std::unique_ptr<content::TestWebUI> test_web_ui_;
   std::unique_ptr<TestFastPairSavedDevicesHandler> handler_;
   base::WeakPtrFactory<FastPairSavedDevicesHandlerTest> weak_ptr_factory_{this};
@@ -317,46 +314,6 @@ TEST_F(FastPairSavedDevicesHandlerTest, GetSavedDevices) {
       /*account_key3=*/kAccountKey3);
   histogram_tester().ExpectTotalCount(kSavedDevicesTotalUxLoadTimeMetricName,
                                       1);
-}
-
-TEST_F(FastPairSavedDevicesHandlerTest, NoRepository) {
-  histogram_tester().ExpectTotalCount(
-      kSavedDeviceGetFastPairRepositoryResultMetricName, 0);
-  InitializeSavedDevicesList(
-      /*device_name1=*/kDeviceName1, /*device_image_bytes1=*/kImageBytes1,
-      /*account_key1=*/kAccountKey1, /*device_name2=*/kDeviceName2,
-      /*device_image_bytes2=*/kImageBytes2, /*account_key2=*/kAccountKey2,
-      /*device_name3=*/kDeviceName3, /*device_image_bytes3=*/kImageBytes3,
-      /*account_key3=*/kAccountKey3,
-      /*opt_in_status=*/nearby::fastpair::OptInStatus::STATUS_OPTED_IN);
-  fast_pair_repository_.reset();
-  LoadPage();
-  base::RunLoop().RunUntilIdle();
-
-  VerifyOptInStatus(*test_web_ui()->call_data()[0],
-                    nearby::fastpair::OptInStatus::
-                        STATUS_ERROR_RETRIEVING_FROM_FOOTPRINTS_SERVER);
-  histogram_tester().ExpectTotalCount(
-      kSavedDeviceGetFastPairRepositoryResultMetricName, 1);
-}
-
-TEST_F(FastPairSavedDevicesHandlerTest, HasRepository) {
-  histogram_tester().ExpectTotalCount(
-      kSavedDeviceGetFastPairRepositoryResultMetricName, 0);
-  InitializeSavedDevicesList(
-      /*device_name1=*/kDeviceName1, /*device_image_bytes1=*/kImageBytes1,
-      /*account_key1=*/kAccountKey1, /*device_name2=*/kDeviceName2,
-      /*device_image_bytes2=*/kImageBytes2, /*account_key2=*/kAccountKey2,
-      /*device_name3=*/kDeviceName3, /*device_image_bytes3=*/kImageBytes3,
-      /*account_key3=*/kAccountKey3,
-      /*opt_in_status=*/nearby::fastpair::OptInStatus::STATUS_OPTED_IN);
-  LoadPage();
-  base::RunLoop().RunUntilIdle();
-
-  VerifyOptInStatus(*test_web_ui()->call_data()[0],
-                    nearby::fastpair::OptInStatus::STATUS_OPTED_IN);
-  histogram_tester().ExpectTotalCount(
-      kSavedDeviceGetFastPairRepositoryResultMetricName, 1);
 }
 
 // TODO(crbug.com/1362118): Fix flaky test.
@@ -661,4 +618,4 @@ TEST_F(FastPairSavedDevicesHandlerTest, RemoveSavedDevice) {
                                        /*num_devices=*/3, 1);
 }
 
-}  // namespace chromeos::settings
+}  // namespace ash::settings

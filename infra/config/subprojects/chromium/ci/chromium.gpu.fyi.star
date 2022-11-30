@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 """Definitions of builders in the chromium.gpu.fyi builder group."""
 
+load("//lib/args.star", "args")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builders.star", "goma", "reclient", "sheriff_rotations")
 load("//lib/ci.star", "ci")
@@ -21,6 +22,9 @@ ci.defaults.set(
     service_account = ci.gpu.SERVICE_ACCOUNT,
     sheriff_rotations = sheriff_rotations.CHROMIUM_GPU,
     thin_tester_cores = 2,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 consoles.console_view(
@@ -137,6 +141,7 @@ ci.thin_tester(
         short_name = "N5X",
     ),
     triggered_by = ["GPU FYI Android arm64 Builder"],
+    sheriff_rotations = args.ignore_default(None),
 )
 
 ci.thin_tester(
@@ -301,6 +306,42 @@ ci.gpu.linux_builder(
 
 ci.gpu.linux_builder(
     name = "ChromeOS FYI Release (kevin)",
+    console_view_entry = consoles.console_view_entry(
+        category = "ChromeOS|ARM",
+        short_name = "kvn",
+    ),
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+)
+
+ci.gpu.linux_builder(
+    name = "ChromeOS FYI Release Skylab (kevin)",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "arm",
+                "chromeos",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_arch = builder_config.target_arch.ARM,
+            target_bits = 32,
+            target_cros_boards = [
+                "kevin",
+            ],
+            target_platform = builder_config.target_platform.CHROMEOS,
+        ),
+        run_tests_serially = True,
+        skylab_upload_location = builder_config.skylab_upload_location(
+            gs_bucket = "lacros-arm64-generic-rel-skylab-try",
+            gs_extra = "chromeos_gpu",
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "ChromeOS|ARM",
         short_name = "kvn",

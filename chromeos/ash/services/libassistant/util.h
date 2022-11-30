@@ -9,6 +9,10 @@
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+namespace ash::assistant {
+struct AndroidAppInfo;
+}
+
 namespace assistant {
 namespace api {
 class Interaction;
@@ -19,15 +23,11 @@ namespace base {
 class FilePath;
 }  // namespace base
 
-namespace chromeos {
-namespace assistant {
-struct AndroidAppInfo;
+namespace chromeos::assistant {
 struct DeviceSetting;
-}  // namespace assistant
-}  // namespace chromeos
+}
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 // Creates the configuration for libassistant.
 std::string CreateLibAssistantConfig(
@@ -39,7 +39,7 @@ base::FilePath GetBaseAssistantDir();
 
 ::assistant::api::Interaction CreateVerifyProviderResponseInteraction(
     const int interaction_id,
-    const std::vector<chromeos::assistant::AndroidAppInfo>& apps_info);
+    const std::vector<assistant::AndroidAppInfo>& apps_info);
 
 ::assistant::api::Interaction CreateGetDeviceSettingInteraction(
     int interaction_id,
@@ -74,7 +74,6 @@ base::FilePath GetBaseAssistantDir();
 ::assistant::api::Interaction CreateTextQueryInteraction(
     const std::string& query);
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant
 
 #endif  // CHROMEOS_ASH_SERVICES_LIBASSISTANT_UTIL_H_

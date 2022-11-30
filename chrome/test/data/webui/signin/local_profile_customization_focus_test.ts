@@ -9,7 +9,8 @@ import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks, waitBeforeNextRender, whenAttributeIs, whenCheck} from 'chrome://webui-test/test_util.js';
+import {flushTasks, waitBeforeNextRender} from 'chrome://webui-test/polymer_test_util.js';
+import {whenAttributeIs, whenCheck} from 'chrome://webui-test/test_util.js';
 
 import {TestManageProfilesBrowserProxy} from './test_manage_profiles_browser_proxy.js';
 
@@ -18,7 +19,8 @@ suite('LocalProfileCustomizationFocusTest', function() {
   let browserProxy: TestManageProfilesBrowserProxy;
 
   async function resetTestElement(route: Routes) {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     navigateTo(route);
     testElement = document.createElement('profile-picker-app');
     document.body.appendChild(testElement);
@@ -26,6 +28,9 @@ suite('LocalProfileCustomizationFocusTest', function() {
   }
 
   setup(function() {
+    loadTimeData.overrideValues({
+      isLocalProfileCreationDialogEnabled: false,
+    });
     browserProxy = new TestManageProfilesBrowserProxy();
     ManageProfilesBrowserProxyImpl.setInstance(browserProxy);
     return resetTestElement(Routes.MAIN);
@@ -69,7 +74,7 @@ suite('LocalProfileCustomizationFocusTest', function() {
 
   test('ProfileCreationFlowWithSigninPromo', async function() {
     assertTrue(loadTimeData.getValue('isBrowserSigninAllowed'));
-    navigateTo(Routes.NEW_PROFILE);
+    await resetTestElement(Routes.NEW_PROFILE);
     await setupProfileCreation();
     const choice = testElement.shadowRoot!.querySelector('profile-type-choice');
     assertTrue(!!choice);

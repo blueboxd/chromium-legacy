@@ -7,15 +7,23 @@
 #include <string>
 #include <utility>
 
+#include "base/base_paths.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/process_iterator.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+#include "chrome/updater/constants.h"
 #include "chrome/updater/policy/manager.h"
 #include "chrome/updater/policy/service.h"
+#include "chrome/updater/updater_scope.h"
+#include "chrome/updater/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater::test {
 
@@ -47,6 +55,42 @@ std::string GetTestName() {
   return test_info ? base::StrCat(
                          {test_info->test_suite_name(), ".", test_info->name()})
                    : "?.?";
+}
+
+absl::optional<base::FilePath> GetOverrideFilePath(UpdaterScope scope) {
+  const absl::optional<base::FilePath> data_dir = GetBaseDataDirectory(scope);
+  return data_dir
+             ? absl::make_optional(data_dir->AppendASCII(kDevOverrideFileName))
+             : absl::nullopt;
+}
+
+bool DeleteFileAndEmptyParentDirectories(
+    const absl::optional<base::FilePath>& file_path) {
+  struct Local {
+    // Deletes recursively `dir` and its parents up, if dir is empty
+    // and until one non-empty parent directory is found.
+    static bool DeleteDirsIfEmpty(const base::FilePath& dir) {
+      if (!base::DirectoryExists(dir) || !base::IsDirectoryEmpty(dir))
+        return true;
+      if (!base::DeleteFile(dir))
+        return false;
+      return DeleteDirsIfEmpty(dir.DirName());
+    }
+  };
+
+  if (!file_path || !base::DeleteFile(*file_path))
+    return false;
+  return Local::DeleteDirsIfEmpty(file_path->DirName());
+}
+
+base::FilePath GetUpdaterTestPath() {
+  base::FilePath out_dir;
+  CHECK(base::PathService::Get(base::DIR_EXE, &out_dir));
+#if BUILDFLAG(IS_WIN)
+  return out_dir.Append(FILE_PATH_LITERAL("updater_test.exe"));
+#else
+  return out_dir.Append(FILE_PATH_LITERAL("updater_test"));
+#endif
 }
 
 }  // namespace updater::test

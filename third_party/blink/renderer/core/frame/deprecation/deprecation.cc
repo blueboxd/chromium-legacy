@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -128,9 +128,6 @@ const DeprecationInfo GetDeprecationInfo(WebFeature feature) {
       return DeprecationInfo::WithTranslation(
           feature,
           DeprecationIssueType::kInsecurePrivateNetworkSubresourceRequest);
-    case WebFeature::kLegacyConstraintGoogIPv6:
-      return DeprecationInfo::WithTranslation(
-          feature, DeprecationIssueType::kLegacyConstraintGoogIPv6);
     case WebFeature::kLocalCSSFileExtensionRejected:
       return DeprecationInfo::WithTranslation(
           feature, DeprecationIssueType::kLocalCSSFileExtensionRejected);
@@ -159,6 +156,12 @@ const DeprecationInfo GetDeprecationInfo(WebFeature feature) {
     case WebFeature::kOpenWebDatabaseInsecureContext:
       return DeprecationInfo::WithTranslation(
           feature, DeprecationIssueType::kOpenWebDatabaseInsecureContext);
+    case WebFeature::kPaymentInstruments:
+      return DeprecationInfo::WithTranslation(
+          feature, DeprecationIssueType::kPaymentInstruments);
+    case WebFeature::kPaymentRequestCSPViolation:
+      return DeprecationInfo::WithTranslation(
+          feature, DeprecationIssueType::kPaymentRequestCSPViolation);
     case WebFeature::kPersistentQuotaType:
       return DeprecationInfo::WithTranslation(
           feature, DeprecationIssueType::kPersistentQuotaType);
@@ -236,12 +239,6 @@ const DeprecationInfo GetDeprecationInfo(WebFeature feature) {
     case WebFeature::kIdentityInCanMakePaymentEvent:
       return DeprecationInfo::WithTranslation(
           feature, DeprecationIssueType::kIdentityInCanMakePaymentEvent);
-    case WebFeature::kNavigateEventTransitionWhile:
-      return DeprecationInfo::WithTranslation(
-          feature, DeprecationIssueType::kNavigateEventTransitionWhile);
-    case WebFeature::kNavigateEventRestoreScroll:
-      return DeprecationInfo::WithTranslation(
-          feature, DeprecationIssueType::kNavigateEventRestoreScroll);
     case WebFeature::kExplicitOverflowVisibleOnReplacedElement:
       return DeprecationInfo::WithTranslation(
           feature, DeprecationIssueType::kOverflowVisibleOnReplacedElement);

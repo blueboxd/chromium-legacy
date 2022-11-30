@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,10 +140,10 @@ class MediaRecorderHandlerFixture : public ScopedMockOverlayScrollbars {
 
   bool recording() const { return media_recorder_handler_->recording_; }
   bool hasVideoRecorders() const {
-    return !media_recorder_handler_->video_recorders_.IsEmpty();
+    return !media_recorder_handler_->video_recorders_.empty();
   }
   bool hasAudioRecorders() const {
-    return !media_recorder_handler_->audio_recorders_.IsEmpty();
+    return !media_recorder_handler_->audio_recorders_.empty();
   }
 
   void OnVideoFrameForTesting(scoped_refptr<media::VideoFrame> frame) {

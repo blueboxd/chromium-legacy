@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,8 +95,8 @@ void HtmlVideoElementCapturerSource::StartCapture(
 
   running_callback_.Run(RunState::kRunning);
   task_runner_->PostTask(
-      FROM_HERE, WTF::Bind(&HtmlVideoElementCapturerSource::sendNewFrame,
-                           weak_factory_.GetWeakPtr()));
+      FROM_HERE, WTF::BindOnce(&HtmlVideoElementCapturerSource::sendNewFrame,
+                               weak_factory_.GetWeakPtr()));
 }
 
 void HtmlVideoElementCapturerSource::StopCapture() {

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -208,11 +208,11 @@ Vector<HighlightLayer> NGHighlightOverlay::ComputeLayers(
     if (!result.Contains(layer))
       result.push_back(layer);
   }
-  if (!grammar.IsEmpty())
+  if (!grammar.empty())
     result.emplace_back(HighlightLayerType::kGrammar);
-  if (!spelling.IsEmpty())
+  if (!spelling.empty())
     result.emplace_back(HighlightLayerType::kSpelling);
-  if (!target.IsEmpty())
+  if (!target.empty())
     result.emplace_back(HighlightLayerType::kTargetText);
   if (selection)
     result.emplace_back(HighlightLayerType::kSelection);
@@ -228,6 +228,7 @@ Vector<HighlightLayer> NGHighlightOverlay::ComputeLayers(
 Vector<HighlightEdge> NGHighlightOverlay::ComputeEdges(
     const Node* node,
     const HighlightRegistry* registry,
+    bool is_generated_text_fragment,
     const NGTextFragmentPaintInfo& originating,
     const LayoutSelectionStatus* selection,
     const DocumentMarkerVector& custom,
@@ -255,9 +256,17 @@ Vector<HighlightEdge> NGHighlightOverlay::ComputeEdges(
   // stored in terms of Text nodes anyway, so this check should never fail.
   const auto* text_node = DynamicTo<Text>(node);
   if (!text_node) {
-    DCHECK(custom.IsEmpty() && grammar.IsEmpty() && spelling.IsEmpty() &&
-           target.IsEmpty())
+    DCHECK(custom.empty() && grammar.empty() && spelling.empty() &&
+           target.empty())
         << "markers can not be painted without a valid Text node";
+  } else if (is_generated_text_fragment) {
+    // Custom highlights and marker-based highlights are defined in terms of
+    // DOM ranges in a Text node. Generated text either has no Text node or does
+    // not derive its content from the Text node (e.g. ellipsis, soft hyphens).
+    // TODO(crbug.com/17528) handle ::first-letter
+    DCHECK(custom.empty() && grammar.empty() && spelling.empty() &&
+           target.empty())
+        << "no marker can ever apply to fragment items with generated text";
   } else {
     // We can save time by skipping marker-based highlights that are outside the
     // originating fragment (e.g. on a different line), but we can only compare
@@ -361,7 +370,7 @@ Vector<HighlightPart> NGHighlightOverlay::ComputeParts(
   Vector<HighlightPart> result{};
   Vector<bool> active(layers.size());
   absl::optional<unsigned> prev_offset{};
-  if (edges.IsEmpty()) {
+  if (edges.empty()) {
     result.push_back(HighlightPart{originating_layer,
                                    originating.from,
                                    originating.to,

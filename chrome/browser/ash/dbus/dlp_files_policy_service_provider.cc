@@ -30,9 +30,11 @@ policy::DlpFilesController::FileAction MapProtoToFileAction(
     dlp::FileAction file_action) {
   switch (file_action) {
     case dlp::FileAction::UPLOAD:
-    // TODO(crbug.com/1356109): Return upload FileAction.
+      return policy::DlpFilesController::FileAction::kUpload;
     case dlp::FileAction::OPEN:
     // TODO(crbug.com/1356109): Return open FileAction.
+    // TODO(crbug.com/1356109): Add copy FileAction.
+    // TODO(crbug.com/1356109): Add move FileAction.
     case dlp::FileAction::TRANSFER:
       return policy::DlpFilesController::FileAction::kTransfer;
   }

@@ -30,6 +30,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/functional/function_ref.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/process_handle.h"
 #include "cc/layers/picture_layer.h"
@@ -174,6 +175,7 @@
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
@@ -633,7 +635,7 @@ static absl::optional<DocumentMarker::MarkerType> MarkerTypeFrom(
 
 static absl::optional<DocumentMarker::MarkerTypes> MarkerTypesFrom(
     const String& marker_type) {
-  if (marker_type.IsEmpty() || EqualIgnoringASCIICase(marker_type, "all"))
+  if (marker_type.empty() || EqualIgnoringASCIICase(marker_type, "all"))
     return DocumentMarker::MarkerTypes::All();
   absl::optional<DocumentMarker::MarkerType> type = MarkerTypeFrom(marker_type);
   if (!type)
@@ -881,7 +883,7 @@ bool Internals::isLoading(const String& url) {
   const String cache_identifier =
       document_->Fetcher()->GetCacheIdentifier(full_url);
   Resource* resource =
-      GetMemoryCache()->ResourceForURL(full_url, cache_identifier);
+      MemoryCache::Get()->ResourceForURL(full_url, cache_identifier);
   // We check loader() here instead of isLoading(), because a multipart
   // ImageResource lies isLoading() == false after the first part is loaded.
   return resource && resource->Loader();
@@ -894,7 +896,7 @@ bool Internals::isLoadingFromMemoryCache(const String& url) {
   const String cache_identifier =
       document_->Fetcher()->GetCacheIdentifier(full_url);
   Resource* resource =
-      GetMemoryCache()->ResourceForURL(full_url, cache_identifier);
+      MemoryCache::Get()->ResourceForURL(full_url, cache_identifier);
   return resource && resource->GetStatus() == ResourceStatus::kCached;
 }
 
@@ -907,8 +909,8 @@ ScriptPromise Internals::getInitialResourcePriority(ScriptState* script_state,
   KURL resource_url = url_test_helpers::ToKURL(url.Utf8());
   DCHECK(document);
 
-  auto callback = WTF::Bind(&Internals::ResolveResourcePriority,
-                            WrapPersistent(this), WrapPersistent(resolver));
+  auto callback = WTF::BindOnce(&Internals::ResolveResourcePriority,
+                                WrapPersistent(this), WrapPersistent(resolver));
   ResourceFetcher::AddPriorityObserverForTesting(resource_url,
                                                  std::move(callback));
 
@@ -1092,7 +1094,7 @@ String Internals::elementLayoutTreeAsText(Element* element,
   element->GetDocument().View()->UpdateAllLifecyclePhasesForTest();
 
   String representation = ExternalRepresentation(element);
-  if (representation.IsEmpty()) {
+  if (representation.empty()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
         "The element provided has no external representation.");
@@ -1502,19 +1504,19 @@ static absl::optional<ImeTextSpanUnderlineStyle> UnderlineStyleFrom(
 
 namespace {
 
-void addStyleableMarkerHelper(const Range* range,
+void AddStyleableMarkerHelper(const Range* range,
                               const String& underline_color_value,
                               const String& thickness_value,
                               const String& underline_style_value,
                               const String& text_color_value,
                               const String& background_color_value,
                               ExceptionState& exception_state,
-                              std::function<void(const EphemeralRange&,
-                                                 Color,
-                                                 ImeTextSpanThickness,
-                                                 ImeTextSpanUnderlineStyle,
-                                                 Color,
-                                                 Color)> create_marker) {
+                              base::FunctionRef<void(const EphemeralRange&,
+                                                     Color,
+                                                     ImeTextSpanThickness,
+                                                     ImeTextSpanUnderlineStyle,
+                                                     Color,
+                                                     Color)> create_marker) {
   DCHECK(range);
   range->OwnerDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
@@ -1562,7 +1564,7 @@ void Internals::addCompositionMarker(const Range* range,
                                      ExceptionState& exception_state) {
   DocumentMarkerController& document_marker_controller =
       range->OwnerDocument().Markers();
-  addStyleableMarkerHelper(
+  AddStyleableMarkerHelper(
       range, underline_color_value, thickness_value, underline_style_value,
       text_color_value, background_color_value, exception_state,
       [&document_marker_controller](const EphemeralRange& range,
@@ -1587,7 +1589,7 @@ void Internals::addActiveSuggestionMarker(const Range* range,
   String text_color_value = "transparent";
   DocumentMarkerController& document_marker_controller =
       range->OwnerDocument().Markers();
-  addStyleableMarkerHelper(
+  AddStyleableMarkerHelper(
       range, underline_color_value, thickness_value, underline_style_value,
       text_color_value, background_color_value, exception_state,
       [&document_marker_controller](const EphemeralRange& range,
@@ -1620,7 +1622,7 @@ void Internals::addSuggestionMarker(
 
   DocumentMarkerController& document_marker_controller =
       range->OwnerDocument().Markers();
-  addStyleableMarkerHelper(
+  AddStyleableMarkerHelper(
       range, underline_color_value, thickness_value, underline_style_value,
       text_color_value, background_color_value, exception_state,
       [&document_marker_controller, &suggestions, &suggestion_highlight_color](
@@ -1763,12 +1765,12 @@ void Internals::setSuggestedValue(Element* element,
 
   if (auto* select = DynamicTo<HTMLSelectElement>(*element)) {
     // A Null string resets the suggested value.
-    select->SetSuggestedValue(value.IsEmpty() ? String() : value);
+    select->SetSuggestedValue(value.empty() ? String() : value);
   }
 
   To<HTMLFormControlElement>(element)->SetAutofillState(
-      value.IsEmpty() ? WebAutofillState::kNotFilled
-                      : WebAutofillState::kPreviewed);
+      value.empty() ? WebAutofillState::kNotFilled
+                    : WebAutofillState::kPreviewed);
 }
 
 void Internals::setAutofilledValue(Element* element,
@@ -1799,10 +1801,10 @@ void Internals::setAutofilledValue(Element* element,
 
   if (auto* select = DynamicTo<HTMLSelectElement>(*element)) {
     select->SetAutofillValue(
-        value.IsEmpty() ? String()  // Null string resets the autofill state.
-                        : value,
-        value.IsEmpty() ? WebAutofillState::kNotFilled
-                        : WebAutofillState::kAutofilled);
+        value.empty() ? String()  // Null string resets the autofill state.
+                      : value,
+        value.empty() ? WebAutofillState::kNotFilled
+                      : WebAutofillState::kAutofilled);
   }
 }
 
@@ -2364,12 +2366,11 @@ StaticNodeList* Internals::nodesFromRect(
   if (allow_child_frame_content)
     hit_type |= HitTestRequest::kAllowChildFrameContent;
 
-  HeapVector<Member<Node>> matches;
   HitTestRequest request(hit_type);
   HitTestLocation location(rect);
   HitTestResult result(request, location);
   frame->ContentLayoutObject()->HitTest(location, result);
-  CopyToVector(result.ListBasedTestResult(), matches);
+  HeapVector<Member<Node>> matches(result.ListBasedTestResult());
 
   return StaticNodeList::Adopt(matches);
 }
@@ -2542,9 +2543,10 @@ DOMRectList* Internals::nonFastScrollableRects(
       transform_tree.UpdateTransforms(layer->transform_tree_index());
       const gfx::Transform& to_screen =
           transform_tree.ToScreen(layer->transform_tree_index());
-      to_screen.TransformRect(&layer_rect);
+      gfx::Rect screen_rect =
+          gfx::ToEnclosingRect(to_screen.MapRect(layer_rect));
 
-      layer_non_fast_scrollable_rects.push_back(ToEnclosingRect(layer_rect));
+      layer_non_fast_scrollable_rects.push_back(screen_rect);
     }
   }
 
@@ -2552,7 +2554,7 @@ DOMRectList* Internals::nonFastScrollableRects(
 }
 
 void Internals::evictAllResources() const {
-  GetMemoryCache()->EvictResources();
+  MemoryCache::Get()->EvictResources();
 }
 
 String Internals::counterValue(Element* element) {
@@ -3545,10 +3547,11 @@ String Internals::selectedTextForClipboard() {
   return GetFrame()->Selection().SelectedTextForClipboard();
 }
 
-void Internals::setVisualViewportOffset(int x, int y) {
+void Internals::setVisualViewportOffset(int css_x, int css_y) {
   if (!GetFrame())
     return;
-  gfx::PointF offset(x, y);
+  float zoom = GetFrame()->PageZoomFactor();
+  gfx::PointF offset(css_x * zoom, css_y * zoom);
   GetFrame()->GetPage()->GetVisualViewport().SetLocation(offset);
 }
 
@@ -3864,7 +3867,7 @@ ReadableStream* Internals::createReadableStream(
     const String& optimizer,
     ExceptionState& exception_state) {
   TestReadableStreamSource::Type type;
-  if (optimizer.IsEmpty()) {
+  if (optimizer.empty()) {
     type = TestReadableStreamSource::Type::kWithNullOptimizer;
   } else if (optimizer == "perform-null") {
     type = TestReadableStreamSource::Type::kWithPerformNullOptimizer;
@@ -3891,7 +3894,7 @@ ScriptValue Internals::createWritableStreamAndSink(
     const String& optimizer,
     ExceptionState& exception_state) {
   TestWritableStreamSink::Type type;
-  if (optimizer.IsEmpty()) {
+  if (optimizer.empty()) {
     type = TestWritableStreamSink::Type::kWithNullOptimizer;
   } else if (optimizer == "perform-null") {
     type = TestWritableStreamSink::Type::kWithPerformNullOptimizer;

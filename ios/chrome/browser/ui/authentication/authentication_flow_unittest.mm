@@ -10,13 +10,14 @@
 #import "base/memory/ptr_util.h"
 #import "base/test/ios/wait_util.h"
 #import "base/test/metrics/histogram_tester.h"
-#import "base/test/scoped_command_line.h"
+#import "base/test/scoped_feature_list.h"
 #import "components/pref_registry/pref_registry_syncable.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/sync_preferences/pref_service_mock_factory.h"
 #import "components/sync_preferences/pref_service_syncable.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/main/test_browser.h"
+#import "ios/chrome/browser/policy/cloud/user_policy_constants.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_switch.h"
 #import "ios/chrome/browser/prefs/browser_prefs.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -64,7 +65,7 @@ class AuthenticationFlowTest : public PlatformTest {
     ChromeAccountManagerService* account_manager_service =
         ChromeAccountManagerServiceFactory::GetForBrowserState(
             browser_state_.get());
-    NSArray<ChromeIdentity*>* identities =
+    NSArray<id<SystemIdentity>>* identities =
         account_manager_service->GetAllIdentities();
     identity1_ = identities[0];
     identity2_ = identities[1];
@@ -98,7 +99,7 @@ class AuthenticationFlowTest : public PlatformTest {
   // Creates a new AuthenticationFlow with default values for fields that are
   // not directly useful.
   void CreateAuthenticationFlow(PostSignInAction postSignInAction,
-                                ChromeIdentity* identity) {
+                                id<SystemIdentity> identity) {
     view_controller_ = [OCMockObject niceMockForClass:[UIViewController class]];
     authentication_flow_ =
         [[AuthenticationFlow alloc] initWithBrowser:browser_.get()
@@ -122,7 +123,7 @@ class AuthenticationFlowTest : public PlatformTest {
     [performer_ verify];
   }
 
-  void SetSigninSuccessExpectations(ChromeIdentity* identity,
+  void SetSigninSuccessExpectations(id<SystemIdentity> identity,
                                     NSString* hosted_domain) {
     [[performer_ expect] signInIdentity:identity
                        withHostedDomain:hosted_domain
@@ -134,9 +135,9 @@ class AuthenticationFlowTest : public PlatformTest {
   AuthenticationFlow* authentication_flow_ = nullptr;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<Browser> browser_;
-  ChromeIdentity* identity1_ = nullptr;
-  ChromeIdentity* identity2_ = nullptr;
-  ChromeIdentity* managed_identity_ = nullptr;
+  id<SystemIdentity> identity1_ = nil;
+  id<SystemIdentity> identity2_ = nil;
+  id<SystemIdentity> managed_identity_ = nil;
   OCMockObject* performer_ = nil;
   signin_ui::CompletionCallback sign_in_completion_;
   UIViewController* view_controller_;
@@ -398,9 +399,8 @@ TEST_F(AuthenticationFlowTest, TestSyncAfterSigninAndSync) {
 // enabled and the user policy feature is enabled for the browser.
 TEST_F(AuthenticationFlowTest,
        TestRegisterAndFetchUserPolicyWithManagedAccountWhenEligible) {
-  base::test::ScopedCommandLine command_line;
-
-  policy::EnableUserPolicy();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({policy::kUserPolicy}, {});
 
   CreateAuthenticationFlow(POST_SIGNIN_ACTION_COMMIT_SYNC, managed_identity_);
 
@@ -449,7 +449,8 @@ TEST_F(AuthenticationFlowTest,
 // sync.
 TEST_F(AuthenticationFlowTest,
        TestSkipFetchUserPolicyWithManagedAccountWhenRegistrationFailed) {
-  policy::EnableUserPolicy();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({policy::kUserPolicy}, {});
 
   CreateAuthenticationFlow(POST_SIGNIN_ACTION_COMMIT_SYNC, managed_identity_);
 
@@ -495,9 +496,8 @@ TEST_F(AuthenticationFlowTest,
 // authentication flow. The user should sill be able to sign-in and
 // sync.
 TEST_F(AuthenticationFlowTest, TestCanSyncWithUserPolicyFetchFailure) {
-  base::test::ScopedCommandLine command_line;
-
-  policy::EnableUserPolicy();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({policy::kUserPolicy}, {});
 
   CreateAuthenticationFlow(POST_SIGNIN_ACTION_COMMIT_SYNC, managed_identity_);
 

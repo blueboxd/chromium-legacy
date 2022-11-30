@@ -12,16 +12,19 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#if !BUILDFLAG(IS_IOS)
 #include "components/autofill_assistant/browser/public/prefs.h"
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#endif  // !BUILDFLAG(IS_IOS)
 
 namespace password_manager {
 
 PasswordFeatureManagerImpl::PasswordFeatureManagerImpl(
     PrefService* pref_service,
+    PrefService* local_state,
     const syncer::SyncService* sync_service)
-    : pref_service_(pref_service), sync_service_(sync_service) {}
+    : pref_service_(pref_service),
+      local_state_(local_state),
+      sync_service_(sync_service) {}
 
 bool PasswordFeatureManagerImpl::IsGenerationEnabled() const {
   switch (password_manager_util::GetPasswordSyncState(sync_service_)) {
@@ -38,14 +41,12 @@ bool PasswordFeatureManagerImpl::
     AreRequirementsForAutomatedPasswordChangeFulfilled() const {
   // Only offer APC if Autofill Assistant is not disabled (by user choice
   // or by enterprise policy).
-  // TODO(crbug.com/1359959): Also enable for Android once prefs are migrated to
-  // profile prefs.
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#if !BUILDFLAG(IS_IOS)
   if (!pref_service_->GetBoolean(
           autofill_assistant::prefs::kAutofillAssistantEnabled)) {
     return false;
   }
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#endif  // !BUILDFLAG(IS_IOS)
 
   // TODO(crbug.com/1349782): Re-enable for account store users once
   // adjustments to script fetchers and WebsiteLoginManager are made.
@@ -123,6 +124,30 @@ void PasswordFeatureManagerImpl::RecordMoveOfferedToNonOptedInUser() {
 int PasswordFeatureManagerImpl::GetMoveOfferedToNonOptedInUserCount() const {
   return features_util::GetMoveOfferedToNonOptedInUserCount(pref_service_,
                                                             sync_service_);
+}
+
+bool PasswordFeatureManagerImpl::IsBiometricAuthenticationBeforeFillingEnabled()
+    const {
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  // This checking order is important to ensure balanced experiment groups.
+  // First check for `kHadBiometricsAvailable` ensures that user have biometric
+  // scanner on their devices, shrinking down the amount of affected users.
+  // Check for the feature flag happens for everyone no matter whether they
+  // are/aren't using this feature, assuming they could use it(biometric scanner
+  // is available). Final check `kBiometricAuthenticationBeforeFilling` ensures
+  // that toggle in settings that manages this feature is turned on.
+  return local_state_ &&
+         local_state_->GetBoolean(
+             password_manager::prefs::kHadBiometricsAvailable) &&
+         base::FeatureList::IsEnabled(
+             password_manager::features::kBiometricAuthenticationForFilling) &&
+         pref_service_ &&
+         pref_service_->GetBoolean(
+             password_manager::prefs::kBiometricAuthenticationBeforeFilling);
+#else
+  NOTREACHED();
+  return false;
+#endif
 }
 
 }  // namespace password_manager

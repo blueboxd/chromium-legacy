@@ -27,6 +27,7 @@
 #include "base/time/time.h"
 #include "base/types/pass_key.h"
 #include "build/build_config.h"
+#include "cc/tiles/gpu_image_decode_cache.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/agent_scheduling_group.mojom.h"
 #include "content/common/content_export.h"
@@ -70,6 +71,11 @@ class SingleThreadTaskRunner;
 class Thread;
 class WaitableEvent;
 }
+
+namespace cc {
+class RasterContextProviderWrapper;
+class RasterDarkModeFilter;
+}  // namespace cc
 
 namespace gpu {
 class GpuChannelHost;
@@ -160,10 +166,10 @@ class CONTENT_EXPORT RenderThreadImpl
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void RemoveRoute(int32_t routing_id) override;
   int GenerateRoutingID() override;
-  bool GenerateFrameRoutingID(
-      int32_t& routing_id,
-      blink::LocalFrameToken& frame_token,
-      base::UnguessableToken& devtools_frame_token) override;
+  bool GenerateFrameRoutingID(int32_t& routing_id,
+                              blink::LocalFrameToken& frame_token,
+                              base::UnguessableToken& devtools_frame_token,
+                              blink::DocumentToken& document_token) override;
   void AddFilter(IPC::MessageFilter* filter) override;
   void RemoveFilter(IPC::MessageFilter* filter) override;
   void AddObserver(RenderThreadObserver* observer) override;
@@ -291,8 +297,9 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // Returns a worker context provider that will be bound on the compositor
   // thread.
-  scoped_refptr<viz::RasterContextProvider>
-  SharedCompositorWorkerContextProvider();
+  scoped_refptr<cc::RasterContextProviderWrapper>
+  SharedCompositorWorkerContextProvider(
+      cc::RasterDarkModeFilter* dark_mode_filter);
 
   media::GpuVideoAcceleratorFactories* GetGpuFactories();
 
@@ -519,7 +526,8 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<viz::RasterContextProvider>
       video_frame_compositor_context_provider_;
 
-  scoped_refptr<viz::RasterContextProvider> shared_worker_context_provider_;
+  scoped_refptr<cc::RasterContextProviderWrapper>
+      shared_worker_context_provider_wrapper_;
 
   HistogramCustomizer histogram_customizer_;
 

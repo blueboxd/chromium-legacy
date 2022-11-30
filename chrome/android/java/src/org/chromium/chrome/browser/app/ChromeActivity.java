@@ -38,6 +38,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.BundleUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
@@ -81,7 +82,6 @@ import org.chromium.chrome.browser.app.tab_activity_glue.TabReparentingControlle
 import org.chromium.chrome.browser.app.tabmodel.AsyncTabParamsManagerSingleton;
 import org.chromium.chrome.browser.app.tabmodel.TabModelOrchestrator;
 import org.chromium.chrome.browser.back_press.BackPressManager;
-import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.PowerBookmarkUtils;
 import org.chromium.chrome.browser.bookmarks.TabBookmarker;
@@ -218,6 +218,7 @@ import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.page_info.PageInfoController.OpenedFromSource;
 import org.chromium.components.policy.CombinedPolicyProvider;
 import org.chromium.components.policy.CombinedPolicyProvider.PolicyChangeListener;
+import org.chromium.components.prefs.PrefService;
 import org.chromium.components.profile_metrics.BrowserProfileType;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.PassphraseType;
@@ -289,7 +290,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     protected TabModelSelectorProfileSupplier mTabModelProfileSupplier =
             new TabModelSelectorProfileSupplier(mTabModelSelectorSupplier);
-    protected ObservableSupplierImpl<BookmarkBridge> mBookmarkBridgeSupplier =
+    protected ObservableSupplierImpl<BookmarkModel> mBookmarkModelSupplier =
             new ObservableSupplierImpl<>();
     protected ObservableSupplierImpl<TabBookmarker> mTabBookmarkerSupplier =
             new ObservableSupplierImpl<>();
@@ -471,9 +472,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // There's no corresponding call to removeObserver() for this addObserver() because
         // mTabModelProfileSupplier has the same lifecycle as this activity.
         mTabModelProfileSupplier.addObserver((profile) -> {
-            BookmarkBridge oldBridge = mBookmarkBridgeSupplier.get();
+            BookmarkModel oldBridge = mBookmarkModelSupplier.get();
             if (oldBridge != null) oldBridge.destroy();
-            mBookmarkBridgeSupplier.set(profile == null ? null : new BookmarkBridge(profile));
+            mBookmarkModelSupplier.set(profile == null ? null : new BookmarkModel(profile));
         });
 
         super.performPreInflationStartup();
@@ -519,7 +520,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // a recommended pattern.
         // clang-format off
         return new RootUiCoordinator(this, null, getShareDelegateSupplier(),
-                getActivityTabProvider(), mTabModelProfileSupplier, mBookmarkBridgeSupplier,
+                getActivityTabProvider(), mTabModelProfileSupplier, mBookmarkModelSupplier,
                 mTabBookmarkerSupplier, getContextualSearchManagerSupplier(),
                 getTabModelSelectorSupplier(), new OneshotSupplierImpl<>(),
                 new OneshotSupplierImpl<>(), new OneshotSupplierImpl<>(),
@@ -659,7 +660,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                             getTabModelSelectorSupplier(), mTabModelProfileSupplier,
                             new ShareDelegateImpl.ShareSheetDelegate(), isCustomTab());
             mShareDelegateSupplier.set(shareDelegate);
-            TabBookmarker tabBookmarker = new TabBookmarker(this, mBookmarkBridgeSupplier,
+            TabBookmarker tabBookmarker = new TabBookmarker(this, mBookmarkModelSupplier,
                     mRootUiCoordinator::getBottomSheetController, this::getSnackbarManager,
                     isCustomTab());
             mTabBookmarkerSupplier.set(tabBookmarker);
@@ -799,11 +800,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         mInsetObserverViewSupplier.set(InsetObserverView.create(this));
         rootView.addView(mInsetObserverViewSupplier.get(), 0);
 
-        if (ChromeFeatureList.sOSKResizesVisualViewport.isEnabled()) {
-            getWindowAndroid().getApplicationBottomInsetProvider().addStackingSupplier(
-                    mInsetObserverViewSupplier.get().getSupplierForBottomInset());
-        }
-
         super.onInitialLayoutInflationComplete();
     }
 
@@ -918,7 +914,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new AppMenuPropertiesDelegateImpl(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
-                getWindow().getDecorView(), null, null, mBookmarkBridgeSupplier,
+                getWindow().getDecorView(), null, null, mBookmarkModelSupplier,
                 /*incognitoReauthControllerOneshotSupplier=*/null);
     }
 
@@ -958,7 +954,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         getTabContentManager().initWithNative();
         mCompositorViewHolderSupplier.get().onNativeLibraryReady(
-                getWindowAndroid(), getTabContentManager());
+                getWindowAndroid(), getTabContentManager(), getPrefService());
 
         // TODO(1107916): Move contextual search initialization to the RootUiCoordinator.
         if (ContextualSearchFieldTrial.isEnabled()) {
@@ -1589,10 +1585,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         destroyTabModels();
 
-        if (mBookmarkBridgeSupplier != null) {
-            BookmarkBridge bookmarkBridge = mBookmarkBridgeSupplier.get();
-            if (bookmarkBridge != null) bookmarkBridge.destroy();
-            mBookmarkBridgeSupplier = null;
+        if (mBookmarkModelSupplier != null) {
+            BookmarkModel bookmarkModel = mBookmarkModelSupplier.get();
+            if (bookmarkModel != null) bookmarkModel.destroy();
+            mBookmarkModelSupplier = null;
         }
 
         if (mShareDelegateSupplier != null) {
@@ -2062,11 +2058,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         compositorViewHolder.setInsetObserverView(mInsetObserverViewSupplier.get());
         compositorViewHolder.setAutofillUiBottomInsetSupplier(
                 mManualFillingComponentSupplier.get().getBottomInsetSupplier());
-
-        if (ChromeFeatureList.sOSKResizesVisualViewport.isEnabled()) {
-            getWindowAndroid().getApplicationBottomInsetProvider().addStackingSupplier(
-                    mManualFillingComponentSupplier.get().getBottomInsetSupplier());
-        }
+        compositorViewHolder.setApplicationViewportInsetSupplier(
+                getWindowAndroid().getApplicationBottomInsetProvider());
 
         compositorViewHolder.setTopUiThemeColorProvider(
                 mRootUiCoordinator.getTopUiThemeColorProvider());
@@ -2284,6 +2277,15 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             return;
         }
 
+        // This only intercepts back press when back press refactor is disabled on T+. Otherwise,
+        // back press is intercepted in FindToolbarManager internally.
+        if (BuildInfo.isAtLeastT() && mRootUiCoordinator.getFindToolbarManager() != null
+                && mRootUiCoordinator.getFindToolbarManager().isShowing()) {
+            BackPressManager.record(BackPressHandler.Type.FIND_TOOLBAR);
+            mRootUiCoordinator.getFindToolbarManager().hideToolbar();
+            return;
+        }
+
         handleBackPressed();
     }
 
@@ -2497,7 +2499,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             // TODO(crbug.com/1268976): Extract this code into a one-liner.
             List<BookmarkId> bookmarkIds =
                     PowerBookmarkUtils.getBookmarkIdsWithSharedClusterIdForTab(
-                            currentTab, mBookmarkBridgeSupplier.get());
+                            currentTab, mBookmarkModelSupplier.get());
             SubscriptionsManager subscriptionsManager = null;
             if (ShoppingFeatures.isShoppingListEnabled()) {
                 subscriptionsManager = new CommerceSubscriptionsServiceFactory()
@@ -2505,7 +2507,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                                                .getSubscriptionsManager();
             }
             PowerBookmarkUtils.setPriceTrackingEnabledWithSnackbars(subscriptionsManager,
-                    mBookmarkBridgeSupplier.get(), bookmarkIds,
+                    mBookmarkModelSupplier.get(), bookmarkIds,
                     /*enabled=*/false, mSnackbarManager, getResources());
             RecordUserAction.record("MobileMenuDisablePriceTracking");
             return true;
@@ -2919,8 +2921,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @VisibleForTesting
     @Nullable
-    public BookmarkBridge getBookmarkBridgeForTesting() {
-        return mBookmarkBridgeSupplier.get();
+    public BookmarkModel getBookmarkModelForTesting() {
+        return mBookmarkModelSupplier.get();
     }
 
     @VisibleForTesting
@@ -2962,5 +2964,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     public CompositorViewHolder getCompositorViewHolderForTesting() {
         return mCompositorViewHolderSupplier.get();
+    }
+
+    private static PrefService getPrefService() {
+        return UserPrefs.get(Profile.getLastUsedRegularProfile());
     }
 }

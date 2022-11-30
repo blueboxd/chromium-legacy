@@ -13,7 +13,8 @@ import {PasswordViewElement} from 'chrome://settings/lazy_load.js';
 import {buildRouter, PasswordManagerImpl, Router, routes} from 'chrome://settings/settings.js';
 import {SettingsRoutes} from 'chrome://settings/settings_routes.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks, isVisible} from 'chrome://webui-test/test_util.js';
+import {isVisible} from 'chrome://webui-test/test_util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {createPasswordEntry} from './passwords_and_autofill_fake_data.js';
 import {TestPasswordManagerProxy} from './test_password_manager_proxy.js';
@@ -93,7 +94,8 @@ suite('PasswordViewTest', function() {
     Router.resetInstanceForTesting(buildRouter());
     routes.PASSWORD_VIEW =
         (Router.getInstance().getRoutes() as SettingsRoutes).PASSWORD_VIEW;
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     passwordManager = new TestPasswordManagerProxy();
     PasswordManagerImpl.setInstance(passwordManager);
   });

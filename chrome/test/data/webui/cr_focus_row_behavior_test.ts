@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {FocusRowBehavior} from 'chrome://resources/ash/common/focus_row_behavior.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.js';
 import {down, pressAndReleaseKeyOn, up} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {html, PolymerElement, mixinBehaviors} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {eventToPromise, waitAfterNextRender} from 'chrome://webui-test/test_util.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
 import {assertFalse, assertTrue, assertEquals} from 'chrome://webui-test/chai_assert.js';
+
+import {waitAfterNextRender} from './polymer_test_util.js';
 
 // clang-format on
 
@@ -82,7 +84,8 @@ suite('cr-focus-row-behavior-test', function() {
   let testElement: TestFocusRowBehaviorElement;
 
   setup(async function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
 
     testElement = document.createElement('test-focus-row-behavior-element');
     document.body.appendChild(testElement);

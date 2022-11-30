@@ -17,7 +17,6 @@
 #include "ash/quick_pair/repository/fast_pair/pending_write_store.h"
 #include "ash/quick_pair/repository/fast_pair/proto_conversions.h"
 #include "ash/quick_pair/repository/fast_pair/saved_device_registry.h"
-#include "ash/services/quick_pair/public/cpp/account_key_filter.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/base64.h"
@@ -32,6 +31,7 @@
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
+#include "chromeos/ash/services/quick_pair/public/cpp/account_key_filter.h"
 #include "components/prefs/testing_pref_service.h"
 #include "crypto/sha2.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -1156,6 +1156,21 @@ TEST_F(FastPairRepositoryImplTest, IsHashCorrect) {
                                                 callback.Get());
 
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(FastPairRepositoryImplTest,
+       AddDeviceToFootprints_RemoveDeviceFromPendingWriteStore) {
+  auto device = base::MakeRefCounted<Device>(kValidModelId, kTestBLEAddress,
+                                             Protocol::kFastPairInitial);
+  device->set_classic_address(kTestClassicAddress1);
+  fast_pair_repository_->AssociateAccountKey(device, kAccountKey1);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(footprints_fetcher_->ContainsKey(kAccountKey1));
+  ASSERT_TRUE(
+      saved_device_registry_->IsAccountKeySavedToRegistry(kAccountKey1));
+
+  // After a successful Footprints add, pending adds list should be empty
+  ASSERT_EQ(0u, pending_write_store_->GetPendingAdds().size());
 }
 
 }  // namespace quick_pair

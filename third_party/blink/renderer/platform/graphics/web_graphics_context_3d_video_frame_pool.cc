@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -217,14 +217,14 @@ void ApplyMetadataAndRunCallback(
   std::move(orig_callback).Run(std::move(wrapped));
 }
 
-const base::Feature kGpuMemoryBufferReadbackFromTexture {
-  "GpuMemoryBufferReadbackFromTexture",
+BASE_FEATURE(kGpuMemoryBufferReadbackFromTexture,
+             "GpuMemoryBufferReadbackFromTexture",
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
+             base::FEATURE_ENABLED_BY_DEFAULT
 #else
-      base::FEATURE_DISABLED_BY_DEFAULT
+             base::FEATURE_DISABLED_BY_DEFAULT
 #endif
-};
+);
 
 #if BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 bool IsRK3399Board() {
@@ -281,8 +281,8 @@ bool WebGraphicsContext3DVideoFramePool::ConvertVideoFrame(
           ? kTopLeft_GrSurfaceOrigin
           : kBottomLeft_GrSurfaceOrigin,
       src_video_frame->mailbox_holder(0), dst_color_space,
-      WTF::Bind(ApplyMetadataAndRunCallback, src_video_frame,
-                std::move(callback)));
+      WTF::BindOnce(ApplyMetadataAndRunCallback, src_video_frame,
+                    std::move(callback)));
 }
 
 // static

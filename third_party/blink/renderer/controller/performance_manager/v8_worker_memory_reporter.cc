@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -150,16 +150,16 @@ void V8WorkerMemoryReporter::GetMemoryUsage(ResultCallback callback,
       main_thread_task_runner, worker_memory_reporter->GetWeakPtr(), mode);
   if (worker_count == 0) {
     main_thread_task_runner->PostTask(
-        FROM_HERE, WTF::Bind(&V8WorkerMemoryReporter::InvokeCallback,
-                             std::move(worker_memory_reporter)));
+        FROM_HERE, WTF::BindOnce(&V8WorkerMemoryReporter::InvokeCallback,
+                                 std::move(worker_memory_reporter)));
     return;
   }
   worker_memory_reporter->SetWorkerCount(worker_count);
   // Transfer the ownership of the instance to the timeout task.
   main_thread_task_runner->PostDelayedTask(
       FROM_HERE,
-      WTF::Bind(&V8WorkerMemoryReporter::OnTimeout,
-                std::move(worker_memory_reporter)),
+      WTF::BindOnce(&V8WorkerMemoryReporter::OnTimeout,
+                    std::move(worker_memory_reporter)),
       kTimeout);
 }
 

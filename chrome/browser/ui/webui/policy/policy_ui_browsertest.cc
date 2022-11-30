@@ -177,9 +177,7 @@ void SetChromeMetaData(base::DictionaryValue* expected) {
   expected->SetPath({prefix, "application"}, base::Value(""));
   expected->SetPath({prefix, "version"}, base::Value(""));
   expected->SetPath({prefix, "revision"}, base::Value(""));
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  expected->SetPath({prefix, "platform"}, base::Value(""));
-#else
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   expected->SetPath({prefix, "OS"}, base::Value(""));
 #endif
 }
@@ -259,7 +257,8 @@ class TestSelectFileDialog : public ui::SelectFileDialog {
                       int file_type_index,
                       const base::FilePath::StringType& default_extension,
                       gfx::NativeWindow owning_window,
-                      void* params) override {
+                      void* params,
+                      const GURL* caller) override {
     listener_->FileSelected(export_policies_test_file_path, 0, nullptr);
   }
 
@@ -346,15 +345,14 @@ void PolicyUITest::VerifyPolicies(
   absl::optional<base::Value> value_ptr = base::JSONReader::Read(json);
   ASSERT_TRUE(value_ptr);
   ASSERT_TRUE(value_ptr->is_list());
-  base::Value::ConstListView actual_policies = value_ptr->GetListDeprecated();
+  const base::Value::List& actual_policies = value_ptr->GetList();
 
   // Verify that the cells contain the expected strings for all policies.
   ASSERT_EQ(expected_policies.size(), actual_policies.size());
   for (size_t i = 0; i < expected_policies.size(); ++i) {
     const std::vector<std::string> expected_policy = expected_policies[i];
     ASSERT_TRUE(actual_policies[i].is_list());
-    base::Value::ConstListView actual_policy =
-        actual_policies[i].GetListDeprecated();
+    const base::Value::List& actual_policy = actual_policies[i].GetList();
     ASSERT_EQ(expected_policy.size(), actual_policy.size());
     for (size_t j = 0; j < expected_policy.size(); ++j) {
       const std::string* value = actual_policy[j].GetIfString();

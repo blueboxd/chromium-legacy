@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,8 @@ class CORE_EXPORT HTMLParserMetrics {
   void AddInput(unsigned length);
 
   void ReportMetricsAtParseEnd();
+
+  unsigned chunk_count() const { return chunk_count_; }
 
  private:
   void ReportUMAs();

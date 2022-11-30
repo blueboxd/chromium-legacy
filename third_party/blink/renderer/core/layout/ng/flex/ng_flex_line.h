@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,6 +47,8 @@ struct NGFlexLine {
 
   LayoutUnit line_cross_size;
   LayoutUnit cross_axis_offset;
+  LayoutUnit major_baseline;
+  LayoutUnit minor_baseline;
   LayoutUnit item_offset_adjustment;
   bool has_seen_all_children = false;
   HeapVector<NGFlexItem> line_items;

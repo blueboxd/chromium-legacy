@@ -199,39 +199,29 @@ translate::TranslateManager* ChromeTranslateClient::GetManagerFromWebContents(
 void ChromeTranslateClient::GetTranslateLanguages(
     content::WebContents* web_contents,
     std::string* source,
-    std::string* target) {
+    std::string* target,
+    bool for_display) {
   DCHECK(source != nullptr);
   DCHECK(target != nullptr);
 
   *source = translate::TranslateDownloadManager::GetLanguageCode(
       GetLanguageState().source_language());
 
-  // If the page is translated, always return the current target language. This
-  // ensures that reshowing the UI on a translated page maintains the correct
-  // target language that the page is currently translated into.
-  if (GetLanguageState().IsPageTranslated()) {
-    *target = GetLanguageState().current_language();
-    return;
-  }
-
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   std::unique_ptr<translate::TranslatePrefs> translate_prefs =
       CreateTranslatePrefs(profile->GetPrefs());
-  if (!profile->IsOffTheRecord()) {
-    std::string auto_translate_language =
-        translate::TranslateManager::GetAutoTargetLanguage(
-            *source, translate_prefs.get());
-    if (!auto_translate_language.empty()) {
-      *target = auto_translate_language;
-      return;
-    }
+  if (for_display) {
+    *target = translate_manager_->GetTargetLanguageForDisplay(
+        translate_prefs.get(), LanguageModelManagerFactory::GetInstance()
+                                   ->GetForBrowserContext(profile)
+                                   ->GetPrimaryModel());
+  } else {
+    *target = translate_manager_->GetTargetLanguage(
+        translate_prefs.get(), LanguageModelManagerFactory::GetInstance()
+                                   ->GetForBrowserContext(profile)
+                                   ->GetPrimaryModel());
   }
-
-  *target = translate::TranslateManager::GetTargetLanguage(
-      translate_prefs.get(), LanguageModelManagerFactory::GetInstance()
-                                 ->GetForBrowserContext(profile)
-                                 ->GetPrimaryModel());
 }
 
 translate::TranslateManager* ChromeTranslateClient::GetTranslateManager() {

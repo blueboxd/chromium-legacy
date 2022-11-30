@@ -92,6 +92,34 @@
   E_CPONLY(kColorRefNeutralVariant99) \
   E_CPONLY(kColorRefNeutralVariant100) \
   \
+  /* UI system color tokens */ \
+  E_CPONLY(kColorSysPrimary) \
+  E_CPONLY(kColorSysOnPrimary) \
+  E_CPONLY(kColorSysPrimaryContainer) \
+  E_CPONLY(kColorSysOnPrimaryContainer) \
+  E_CPONLY(kColorSysSecondary) \
+  E_CPONLY(kColorSysOnSecondary) \
+  E_CPONLY(kColorSysSecondaryContainer) \
+  E_CPONLY(kColorSysOnSecondaryContainer) \
+  E_CPONLY(kColorSysTertiary) \
+  E_CPONLY(kColorSysOnTertiary) \
+  E_CPONLY(kColorSysTertiaryContainer) \
+  E_CPONLY(kColorSysOnTertiaryContainer) \
+  E_CPONLY(kColorSysError) \
+  E_CPONLY(kColorSysOnError) \
+  E_CPONLY(kColorSysErrorContainer) \
+  E_CPONLY(kColorSysOnErrorContainer) \
+  E_CPONLY(kColorSysSurfaceVariant) \
+  E_CPONLY(kColorSysOnSurfaceVariant) \
+  E_CPONLY(kColorSysOutline) \
+  E_CPONLY(kColorSysScrim) \
+  E_CPONLY(kColorSysSeparator) \
+  E_CPONLY(kColorSysSurface) \
+  E_CPONLY(kColorSysSurface1) \
+  E_CPONLY(kColorSysSurface2) \
+  E_CPONLY(kColorSysSurface3) \
+  E_CPONLY(kColorSysSurface4) \
+  E_CPONLY(kColorSysSurface5) \
   /* Core color concepts */ \
   /* The kColorAccent color id is used in color_provider_css_colors_test.ts. \
   If changing the variable name, the variable name in the test needs to be \
@@ -209,6 +237,9 @@
   E_CPONLY(kColorOverlayScrollbarStrokeHoveredLight) \
   E_CPONLY(kColorProgressBar) \
   E_CPONLY(kColorProgressBarPaused) \
+  E_CPONLY(kColorReadAnythingForegroundDark) \
+  E_CPONLY(kColorReadAnythingForegroundLight) \
+  E_CPONLY(kColorReadAnythingForegroundYellow) \
   E_CPONLY(kColorSeparator) \
   E_CPONLY(kColorShadowBase) \
   E_CPONLY(kColorShadowValueAmbientShadowElevationSixteen) \

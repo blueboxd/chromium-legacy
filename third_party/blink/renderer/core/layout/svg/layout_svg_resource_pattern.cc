@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2006 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
- * Copyright 2014 The Chromium Authors. All rights reserved.
+ * Copyright 2014 The Chromium Authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -170,7 +170,7 @@ std::unique_ptr<PatternData> LayoutSVGResourcePattern::BuildPatternData(
 
   // Compute pattern space transformation.
   pattern_data->transform.Translate(tile_bounds.x(), tile_bounds.y());
-  pattern_data->transform.PreMultiply(attributes.PatternTransform());
+  pattern_data->transform.PostConcat(attributes.PatternTransform());
 
   return pattern_data;
 }

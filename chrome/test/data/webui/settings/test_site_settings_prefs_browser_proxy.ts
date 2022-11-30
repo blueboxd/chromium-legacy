@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {AppProtocolEntry, ChooserType, ContentSetting, ContentSettingsTypes, HandlerEntry, NotificationPermission, ProtocolEntry, RawChooserException, RawSiteException, RecentSitePermissions, SiteGroup, SiteSettingSource, SiteSettingsPrefsBrowserProxy, ZoomLevelEntry} from 'chrome://settings/lazy_load.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
@@ -67,7 +67,12 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy
       'recordAction',
       'getCookieSettingDescription',
       'getRecentSitePermissions',
-      'getReviewNotificationPermissions',
+      'getNotificationPermissionReview',
+      'blockNotificationPermissionForOrigin',
+      'ignoreNotificationPermissionForOrigin',
+      'resetNotificationPermissionForOrigin',
+      'allowNotificationPermissionForOrigin',
+      'undoIgnoreNotificationPermissionForOrigin',
     ]);
 
 
@@ -100,7 +105,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy
       ContentSettingsTypes.SOUND,
       ContentSettingsTypes.USB_DEVICES,
       ContentSettingsTypes.VR,
-      ContentSettingsTypes.WINDOW_PLACEMENT,
+      ContentSettingsTypes.WINDOW_MANAGEMENT,
     ];
 
     this.prefs_ = createSiteSettingsPrefs([], [], []);
@@ -601,13 +606,33 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy
     this.methodCalled('setProtocolHandlerDefault', value);
   }
 
-  getReviewNotificationPermissions(): Promise<NotificationPermission[]> {
-    this.methodCalled('getReviewNotificationPermissions');
+  getNotificationPermissionReview(): Promise<NotificationPermission[]> {
+    this.methodCalled('getNotificationPermissionReview');
     return Promise.resolve(this.reviewNotificationList_.slice());
   }
 
-  setReviewNotificationPermissions(reviewNotificationList:
-                                       NotificationPermission[]) {
+  setNotificationPermissionReview(reviewNotificationList:
+                                      NotificationPermission[]) {
     this.reviewNotificationList_ = reviewNotificationList;
+  }
+
+  blockNotificationPermissionForOrigin(origin: string): void {
+    this.methodCalled('blockNotificationPermissionForOrigin', origin);
+  }
+
+  ignoreNotificationPermissionForOrigin(origin: string): void {
+    this.methodCalled('ignoreNotificationPermissionForOrigin', origin);
+  }
+
+  resetNotificationPermissionForOrigin(origin: string): void {
+    this.methodCalled('resetNotificationPermissionForOrigin', origin);
+  }
+
+  allowNotificationPermissionForOrigin(origin: string): void {
+    this.methodCalled('allowNotificationPermissionForOrigin', origin);
+  }
+
+  undoIgnoreNotificationPermissionForOrigin(origin: string): void {
+    this.methodCalled('undoIgnoreNotificationPermissionForOrigin', origin);
   }
 }

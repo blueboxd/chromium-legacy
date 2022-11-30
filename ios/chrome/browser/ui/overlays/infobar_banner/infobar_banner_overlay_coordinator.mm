@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/ui/overlays/infobar_banner/permissions/permissions_infobar_banner_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/reading_list/reading_list_infobar_banner_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/save_card/save_card_infobar_banner_overlay_mediator.h"
+#import "ios/chrome/browser/ui/overlays/infobar_banner/sync_error/sync_error_infobar_banner_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/tailored_security/tailored_security_infobar_banner_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/translate/translate_infobar_banner_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator+subclassing.h"
@@ -59,6 +60,7 @@
     [AddToReadingListInfobarBannerOverlayMediator class],
     [PermissionsBannerOverlayMediator class],
     [TailoredSecurityInfobarBannerOverlayMediator class],
+    [SyncErrorInfobarBannerOverlayMediator class],
   ];
 }
 
@@ -124,13 +126,12 @@
   if (!UIAccessibilityIsVoiceOverRunning()) {
     // Auto-dismiss the banner after timeout if VoiceOver is off (banner should
     // persist until user explicitly swipes it away).
-    NSTimeInterval timeout =
-        config->is_high_priority()
-            ? kInfobarBannerLongPresentationDurationInSeconds
-            : kInfobarBannerDefaultPresentationDurationInSeconds;
+    const base::TimeDelta timeout =
+        config->is_high_priority() ? kInfobarBannerLongPresentationDuration
+                                   : kInfobarBannerDefaultPresentationDuration;
     [self performSelector:@selector(dismissBannerIfReady)
                withObject:nil
-               afterDelay:timeout];
+               afterDelay:timeout.InSecondsF()];
   }
 }
 
@@ -141,15 +142,10 @@
   // stopAnimated: executions.
   self.started = NO;
   __weak InfobarBannerOverlayCoordinator* weakSelf = self;
-  [self.baseViewController
-      dismissViewControllerAnimated:animated
-                         completion:^{
-                           InfobarBannerOverlayCoordinator* strongSelf =
-                               weakSelf;
-                           if (strongSelf) {
-                             [strongSelf finishDismissal];
-                           }
-                         }];
+  [self.baseViewController dismissViewControllerAnimated:animated
+                                              completion:^{
+                                                [weakSelf finishDismissal];
+                                              }];
 }
 
 - (UIViewController*)viewController {

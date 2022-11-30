@@ -7,28 +7,27 @@
 #include <memory>
 #include <utility>
 
-#include "ash/components/multidevice/logging/logging.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "base/values.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_key_names.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_tpm_key_manager.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
+#include "chromeos/ash/components/multidevice/logging/logging.h"
 #include "components/account_id/account_id.h"
 
 namespace ash {
 
-EasyUnlockKeyManager::EasyUnlockKeyManager() {}
+EasyUnlockKeyManager::EasyUnlockKeyManager() = default;
 
-EasyUnlockKeyManager::~EasyUnlockKeyManager() {}
+EasyUnlockKeyManager::~EasyUnlockKeyManager() = default;
 
 void EasyUnlockKeyManager::RefreshKeys(const UserContext& user_context,
                                        const base::Value::List& remote_devices,
                                        RefreshKeysCallback callback) {
   EasyUnlockTpmKeyManager* tpm_key_manager =
-      EasyUnlockTpmKeyManagerFactory::GetInstance()->GetForUser(
-          user_context.GetAccountId().GetUserEmail());
+      EasyUnlockTpmKeyManagerFactory::GetInstance()->GetForAccountId(
+          user_context.GetAccountId());
   if (!tpm_key_manager) {
     PA_LOG(ERROR) << "No TPM key manager.";
     std::move(callback).Run(false);
@@ -63,8 +62,8 @@ void EasyUnlockKeyManager::RefreshKeysWithTpmKeyPresent(
     base::Value::List remote_devices,
     RefreshKeysCallback callback) {
   EasyUnlockTpmKeyManager* tpm_key_manager =
-      EasyUnlockTpmKeyManagerFactory::GetInstance()->GetForUser(
-          user_context.GetAccountId().GetUserEmail());
+      EasyUnlockTpmKeyManagerFactory::GetInstance()->GetForAccountId(
+          user_context.GetAccountId());
   const std::string tpm_public_key =
       tpm_key_manager->GetPublicTpmKey(user_context.GetAccountId());
 
@@ -94,37 +93,36 @@ void EasyUnlockKeyManager::GetDeviceDataList(
 void EasyUnlockKeyManager::DeviceDataToRemoteDeviceDictionary(
     const AccountId& account_id,
     const EasyUnlockDeviceKeyData& data,
-    base::DictionaryValue* dict) {
-  dict->SetStringKey(key_names::kKeyBluetoothAddress, data.bluetooth_address);
-  dict->SetStringKey(key_names::kKeyPsk, data.psk);
-  base::DictionaryValue permit_record;
-  dict->SetKey(key_names::kKeyPermitRecord, std::move(permit_record));
-  dict->SetStringPath(key_names::kKeyPermitId, data.public_key);
-  dict->SetStringPath(key_names::kKeyPermitData, data.public_key);
-  dict->SetStringPath(key_names::kKeyPermitType, key_names::kPermitTypeLicence);
-  dict->SetStringPath(key_names::kKeyPermitPermitId,
-                      base::StringPrintf(key_names::kPermitPermitIdFormat,
-                                         account_id.GetUserEmail().c_str()));
-  dict->SetStringKey(key_names::kKeySerializedBeaconSeeds,
-                     data.serialized_beacon_seeds);
-  dict->SetBoolKey(key_names::kKeyUnlockKey, data.unlock_key);
+    base::Value::Dict* dict) {
+  dict->Set(key_names::kKeyBluetoothAddress, data.bluetooth_address);
+  dict->Set(key_names::kKeyPsk, data.psk);
+  base::Value::Dict permit_record;
+  dict->Set(key_names::kKeyPermitRecord, std::move(permit_record));
+  dict->Set(key_names::kKeyPermitId, data.public_key);
+  dict->Set(key_names::kKeyPermitData, data.public_key);
+  dict->Set(key_names::kKeyPermitType, key_names::kPermitTypeLicence);
+  dict->Set(key_names::kKeyPermitPermitId,
+            base::StringPrintf(key_names::kPermitPermitIdFormat,
+                               account_id.GetUserEmail().c_str()));
+  dict->Set(key_names::kKeySerializedBeaconSeeds, data.serialized_beacon_seeds);
+  dict->Set(key_names::kKeyUnlockKey, data.unlock_key);
 }
 
 // static
 bool EasyUnlockKeyManager::RemoteDeviceDictionaryToDeviceData(
-    const base::DictionaryValue& dict,
+    const base::Value::Dict& dict,
     EasyUnlockDeviceKeyData* data) {
   const std::string* bluetooth_address_ptr =
-      dict.FindStringKey(key_names::kKeyBluetoothAddress);
+      dict.FindString(key_names::kKeyBluetoothAddress);
   const std::string* public_key_ptr =
-      dict.FindStringPath(key_names::kKeyPermitId);
-  const std::string* psk_ptr = dict.FindStringKey(key_names::kKeyPsk);
+      dict.FindStringByDottedPath(key_names::kKeyPermitId);
+  const std::string* psk_ptr = dict.FindString(key_names::kKeyPsk);
 
   if (!bluetooth_address_ptr || !public_key_ptr || !psk_ptr)
     return false;
 
   const std::string* serialized_beacon_seeds =
-      dict.FindStringKey(key_names::kKeySerializedBeaconSeeds);
+      dict.FindString(key_names::kKeySerializedBeaconSeeds);
   if (serialized_beacon_seeds) {
     data->serialized_beacon_seeds = *serialized_beacon_seeds;
   } else {
@@ -140,7 +138,7 @@ bool EasyUnlockKeyManager::RemoteDeviceDictionaryToDeviceData(
   // it's an older Dictionary that didn't include this `unlock_key` field --
   // only one device was persisted, and it was implicitly assumed to be the
   // unlock key -- thus `unlock_key` should default to being true.
-  data->unlock_key = dict.FindBoolPath(key_names::kKeyUnlockKey).value_or(true);
+  data->unlock_key = dict.FindBool(key_names::kKeyUnlockKey).value_or(true);
   data->bluetooth_address.swap(bluetooth_address);
   data->public_key.swap(public_key);
   data->psk.swap(psk);
@@ -154,7 +152,7 @@ void EasyUnlockKeyManager::DeviceDataListToRemoteDeviceList(
     base::Value::List* device_list) {
   device_list->clear();
   for (const auto& data : data_list) {
-    base::DictionaryValue device_dict;
+    base::Value::Dict device_dict;
     DeviceDataToRemoteDeviceDictionary(account_id, data, &device_dict);
     device_list->Append(std::move(device_dict));
   }
@@ -166,12 +164,11 @@ bool EasyUnlockKeyManager::RemoteDeviceRefListToDeviceDataList(
     EasyUnlockDeviceKeyDataList* data_list) {
   EasyUnlockDeviceKeyDataList parsed_devices;
   for (const auto& entry : device_list) {
-    const base::DictionaryValue* dict;
-    if (!entry.GetAsDictionary(&dict) || !dict)
+    if (!entry.is_dict())
       return false;
 
     EasyUnlockDeviceKeyData data;
-    if (!RemoteDeviceDictionaryToDeviceData(*dict, &data))
+    if (!RemoteDeviceDictionaryToDeviceData(entry.GetDict(), &data))
       return false;
 
     parsed_devices.push_back(data);

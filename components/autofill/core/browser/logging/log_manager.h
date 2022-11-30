@@ -10,6 +10,7 @@
 #include <type_traits>
 
 #include "base/callback.h"
+#include "base/types/pass_key.h"
 #include "components/autofill/core/browser/logging/log_buffer_submitter.h"
 #include "components/autofill/core/common/logging/log_macros.h"
 
@@ -20,13 +21,40 @@ class Value;
 namespace autofill {
 
 class LogRouter;
+class RoutingLogManager;
+class BufferingLogManager;
 
 // This interface is used by the password management code to receive and display
 // logs about progress of actions like saving a password.
 class LogManager {
  public:
+  // Returns the production code implementation of LogManager. If |log_router|
+  // is null, the manager will do nothing. |notification_callback| will be
+  // called every time the activity status of logging changes.
+  static std::unique_ptr<RoutingLogManager> Create(
+      LogRouter* log_router,
+      base::RepeatingClosure notification_callback);
+
+  static std::unique_ptr<BufferingLogManager> CreateBuffering();
+
   virtual ~LogManager() = default;
 
+  // Returns true if logs recorded via LogTextMessage will be displayed, and
+  // false otherwise.
+  virtual bool IsLoggingActive() const = 0;
+
+  // This is the preferred way to submitting log entries.
+  virtual LogBufferSubmitter Log() = 0;
+
+  // Emits the log entry.
+  virtual void ProcessLog(base::Value::Dict node,
+                          base::PassKey<LogBufferSubmitter>) = 0;
+};
+
+// This LogManager subclass can be connected to a LogRouter, which in turn
+// passes logs to LogReceivers.
+class RoutingLogManager : public LogManager {
+ public:
   // This method is called by a LogRouter, after the LogManager registers with
   // one. If |router_can_be_used| is true, logs can be sent to LogRouter after
   // the return from OnLogRouterAvailabilityChanged and will reach at least one
@@ -37,27 +65,15 @@ class LogManager {
   // The owner of the LogManager can call this to start or end suspending the
   // logging, by setting |suspended| to true or false, respectively.
   virtual void SetSuspended(bool suspended) = 0;
+};
 
-  // Forward |text| for display to the LogRouter (if registered with one).
-  virtual void LogTextMessage(const std::string& text) const = 0;
-
-  // Forward a DOM structured log entry to the LogRouter (if registered with
-  // one).
-  virtual void LogEntry(const base::Value::Dict& entry) const = 0;
-
-  // Returns true if logs recorded via LogTextMessage will be displayed, and
-  // false otherwise.
-  virtual bool IsLoggingActive() const = 0;
-
-  // Returns the production code implementation of LogManager. If |log_router|
-  // is null, the manager will do nothing. |notification_callback| will be
-  // called every time the activity status of logging changes.
-  static std::unique_ptr<LogManager> Create(
-      LogRouter* log_router,
-      base::RepeatingClosure notification_callback);
-
-  // This is the preferred way to submitting log entries.
-  virtual LogBufferSubmitter Log() = 0;
+// This LogManager subclass stores logs in a buffer, which can eventually be
+// flushed to another LogManager. It facilitates logging across in sequences
+// outside of the main thread in a thread-safe way.
+class BufferingLogManager : public LogManager {
+ public:
+  // Passes the buffering log since the last Flush() to `destination`.
+  virtual void Flush(LogManager& destination) = 0;
 };
 
 inline LogBuffer::IsActive IsLoggingActive(LogManager* log_manager) {

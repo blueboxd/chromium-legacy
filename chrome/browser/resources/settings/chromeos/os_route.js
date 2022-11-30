@@ -70,11 +70,9 @@ function createOSSettingsRoutes() {
   r.BLUETOOTH_DEVICES = createSubpage(
       r.BLUETOOTH, routesMojomWebui.BLUETOOTH_DEVICES_SUBPAGE_PATH,
       Subpage.kBluetoothDevices);
-  if (loadTimeData.getBoolean('enableBluetoothRevamp')) {
-    r.BLUETOOTH_DEVICE_DETAIL = createSubpage(
-        r.BLUETOOTH, routesMojomWebui.BLUETOOTH_DEVICE_DETAIL_SUBPAGE_PATH,
-        Subpage.kBluetoothDeviceDetail);
-  }
+  r.BLUETOOTH_DEVICE_DETAIL = createSubpage(
+      r.BLUETOOTH, routesMojomWebui.BLUETOOTH_DEVICE_DETAIL_SUBPAGE_PATH,
+      Subpage.kBluetoothDeviceDetail);
   if (loadTimeData.getBoolean('enableSavedDevicesFlag')) {
     r.BLUETOOTH_SAVED_DEVICES = createSubpage(
         r.BLUETOOTH, routesMojomWebui.BLUETOOTH_SAVED_DEVICES_SUBPAGE_PATH,
@@ -106,18 +104,11 @@ function createOSSettingsRoutes() {
     r.ACCOUNT_MANAGER = createSubpage(
         r.OS_PEOPLE, routesMojomWebui.MY_ACCOUNTS_SUBPAGE_PATH,
         Subpage.kMyAccounts);
-    if (loadTimeData.getBoolean('syncSettingsCategorizationEnabled')) {
-      r.OS_SYNC = createSubpage(
-          r.OS_PEOPLE, routesMojomWebui.SYNC_SUBPAGE_PATH, Subpage.kSync);
-    }
+    r.OS_SYNC = createSubpage(
+        r.OS_PEOPLE, routesMojomWebui.SYNC_SUBPAGE_PATH, Subpage.kSync);
     r.SYNC = createSubpage(
         r.OS_PEOPLE, routesMojomWebui.SYNC_SETUP_SUBPAGE_PATH,
         Subpage.kSyncSetup);
-    if (!loadTimeData.getBoolean('syncSettingsCategorizationEnabled')) {
-      r.SYNC_ADVANCED = createSubpage(
-          r.SYNC, routesMojomWebui.SYNC_DEPRECATED_ADVANCED_SUBPAGE_PATH,
-          Subpage.kSyncDeprecatedAdvanced);
-    }
   }
 
   // Kerberos section.
@@ -335,6 +326,10 @@ function createOSSettingsRoutes() {
   r.OS_LANGUAGES_EDIT_DICTIONARY = createSubpage(
       r.OS_LANGUAGES_INPUT, routesMojomWebui.EDIT_DICTIONARY_SUBPAGE_PATH,
       Subpage.kEditDictionary);
+  r.OS_LANGUAGES_JAPANESE_MANAGE_USER_DICTIONARY = createSubpage(
+      r.OS_LANGUAGES_INPUT,
+      routesMojomWebui.JAPANESE_MANAGE_USER_DICTIONARY_SUBPAGE_PATH,
+      Subpage.kJapaneseManageUserDictionary);
   r.OS_LANGUAGES_SMART_INPUTS = createSubpage(
       r.OS_LANGUAGES, routesMojomWebui.SMART_INPUTS_SUBPAGE_PATH,
       Subpage.kSmartInputs);

@@ -66,18 +66,6 @@ FetchCapabilitiesResult ComputeFetchCapabilitiesResult(
 
 }  // namespace
 
-void ChromeIdentityService::Observer::OnAccessTokenRefreshFailed(
-    ChromeIdentity* identity,
-    NSDictionary* user_info) {
-  OnAccessTokenRefreshFailed(static_cast<id<SystemIdentity>>(identity),
-                             user_info);
-}
-
-void ChromeIdentityService::Observer::OnProfileUpdate(
-    ChromeIdentity* identity) {
-  OnProfileUpdate(static_cast<id<SystemIdentity>>(identity));
-}
-
 ChromeIdentityService::ChromeIdentityService() {}
 
 ChromeIdentityService::~ChromeIdentityService() {
@@ -115,18 +103,6 @@ ChromeIdentityInteractionManager*
 ChromeIdentityService::CreateChromeIdentityInteractionManager() const {
   NOTREACHED() << "Subclasses must override this";
   return nil;
-}
-
-void ChromeIdentityService::IterateOverIdentities(
-    IdentityIteratorCallback callback) {
-  // This helper method needs to be kept until all client code has been
-  // converted to use the iterator taking id<SystemIdentity> instead.
-  IterateOverIdentities(base::BindRepeating(
-      [](IdentityIteratorCallback callback, id<SystemIdentity> identity) {
-        return callback.Run(
-            base::mac::ObjCCastStrict<ChromeIdentity>(identity));
-      },
-      std::move(callback)));
 }
 
 void ChromeIdentityService::IterateOverIdentities(
@@ -233,21 +209,13 @@ void ChromeIdentityService::FireIdentityListChanged(bool notify_user) {
 void ChromeIdentityService::FireAccessTokenRefreshFailed(
     id<SystemIdentity> identity,
     NSDictionary* user_info) {
-  // Need to cast to ChromeIdentity* until all observers have been converted
-  // to override the method taking an id<SystemIdentity>.
-  ChromeIdentity* chrome_identity =
-      base::mac::ObjCCastStrict<ChromeIdentity>(identity);
   for (auto& observer : observer_list_)
-    observer.OnAccessTokenRefreshFailed(chrome_identity, user_info);
+    observer.OnAccessTokenRefreshFailed(identity, user_info);
 }
 
 void ChromeIdentityService::FireProfileDidUpdate(id<SystemIdentity> identity) {
-  // Need to cast to ChromeIdentity* until all observers have been converted
-  // to override the method taking an id<SystemIdentity>.
-  ChromeIdentity* chrome_identity =
-      base::mac::ObjCCastStrict<ChromeIdentity>(identity);
   for (auto& observer : observer_list_)
-    observer.OnProfileUpdate(chrome_identity);
+    observer.OnProfileUpdate(identity);
 }
 
 void ChromeIdentityService::FetchCapability(id<SystemIdentity> identity,

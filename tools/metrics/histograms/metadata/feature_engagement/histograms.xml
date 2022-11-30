@@ -53,6 +53,7 @@ chromium-metrics-reviews@google.com.
                the Autofill dropdown to educate users virtual cards come with
                better security"/>
   <variant name="IPH_BadgedReadingList" summary="badged reading list"/>
+  <variant name="IPH_BatterySaverMode" summary="battery saver mode"/>
   <variant name="IPH_Bookmark" summary="bookmark"/>
   <variant name="IPH_BottomToolbarTip" summary="bottom toolbar"/>
   <variant name="IPH_ChromeDuet"
@@ -144,6 +145,9 @@ chromium-metrics-reviews@google.com.
   <variant name="IPH_GlobalMediaControls" summary="the Global Media Controls"/>
   <variant name="IPH_GMCCastStartStop"
       summary="Cast start stop in the Zenith dialog"/>
+  <variant name="IPH_HighEfficiencyInfoMode" summary="High efficiency info"/>
+  <variant name="IPH_HighEfficiencyMode"
+      summary="encourages users to turn on high efficiency mode"/>
   <variant name="IPH_IdentityDisc" summary="Identity Disc"/>
   <variant name="IPH_IncognitoWindow" summary="incognito window"/>
   <variant name="IPH_InstanceSwitcher" summary="instance switcher"/>
@@ -171,6 +175,8 @@ chromium-metrics-reviews@google.com.
       summary="passwords account storage"/>
   <variant name="IPH_PasswordSuggestions"
       summary="the Autofill password suggestions on iOS"/>
+  <variant name="IPH_PerformanceNewBadge"
+      summary="New badge shows next to performance item on the app menu"/>
   <variant name="IPH_PreviewsOmniboxUI"
       summary="the Previews UI in the Android Omnibox"/>
   <variant name="IPH_PriceDropNTP"
@@ -255,7 +261,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="InProductHelp.Config.ParsingEvent" enum="ConfigParsingEvent"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>nyquist@chromium.org</owner>
   <summary>
     Records if in-product help configuration is parsed correctly, and the
@@ -427,7 +433,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.TextBubble.ShownTime" units="ms"
-    expires_after="2023-02-05">
+    expires_after="2023-04-09">
   <owner>haileywang@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>

@@ -4,11 +4,13 @@
 
 #import "ios/chrome/browser/ui/authentication/signin_sync/signin_sync_coordinator.h"
 
+#import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_functions.h"
 #import "components/sync/driver/sync_service.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/app_state_observer.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/consent_auditor/consent_auditor_factory.h"
 #import "ios/chrome/browser/first_run/first_run_metrics.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/policy/policy_watcher_browser_agent.h"
@@ -19,7 +21,6 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/constants.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/sync/consent_auditor_factory.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -84,7 +85,7 @@
 @property(nonatomic, readonly) BOOL firstRun;
 // The consent string ids that were pushed that are related to the text for
 // sync.
-@property(nonatomic, assign, readonly) NSMutableArray* consentStringIDs;
+@property(nonatomic, strong, readonly) NSMutableArray* consentStringIDs;
 // Coordinator for showing advanced settings on top of the screen.
 @property(nonatomic, strong)
     SigninCoordinator* advancedSettingsSigninCoordinator;
@@ -119,6 +120,7 @@
         SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
     AppState* appState = sceneState.appState;
     _firstRun = appState.initStage == InitStageFirstRun;
+    _consentStringIDs = [NSMutableArray array];
     // Make sure that the coordinator is only used for the FRE which is the
     // only context that is supported at the moment. The coordinator may be
     // used outside of the FRE but this case isn't supported yet.
@@ -334,9 +336,10 @@
 }
 
 - (void)identityChooserCoordinator:(IdentityChooserCoordinator*)coordinator
-                 didSelectIdentity:(ChromeIdentity*)identity {
+                 didSelectIdentity:(id<SystemIdentity>)identity {
   CHECK_EQ(self.identityChooserCoordinator, coordinator);
-  self.mediator.selectedIdentity = identity;
+  self.mediator.selectedIdentity =
+      base::mac::ObjCCastStrict<ChromeIdentity>(identity);
 }
 
 #pragma mark - PolicyWatcherBrowserAgentObserving

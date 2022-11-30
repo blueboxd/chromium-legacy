@@ -14,7 +14,7 @@ import {eventToPromise, isChildVisible} from 'chrome://webui-test/test_util.js';
 
 import {TestLocalDataBrowserProxy} from './test_local_data_browser_proxy.js';
 import {TestSiteSettingsPrefsBrowserProxy} from './test_site_settings_prefs_browser_proxy.js';
-import { createOriginInfo,createSiteGroup} from './test_util.js';
+import {createOriginInfo,createSiteGroup} from './test_util.js';
 
 // clang-format on
 
@@ -63,7 +63,8 @@ suite('SiteEntry_DisabledConsolidatedControls', function() {
     SiteSettingsPrefsBrowserProxyImpl.setInstance(browserProxy);
     LocalDataBrowserProxyImpl.setInstance(localDataBrowserProxy);
 
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     testElement = document.createElement('site-entry');
     document.body.appendChild(testElement);
   });
@@ -87,6 +88,8 @@ suite('SiteEntry_DisabledConsolidatedControls', function() {
     assertFalse(testElement.$.expandIcon.hidden);
     assertEquals(
         'false', testElement.$.toggleButton.getAttribute('aria-expanded'));
+    assertEquals(
+        'false', testElement.$.expandIcon.getAttribute('aria-expanded'));
     const originList = testElement.$.originList.get();
     assertTrue(originList.classList.contains('iron-collapse-closed'));
     assertEquals('true', originList.getAttribute('aria-hidden'));
@@ -94,6 +97,8 @@ suite('SiteEntry_DisabledConsolidatedControls', function() {
     testElement.$.toggleButton.click();
     assertEquals(
         'true', testElement.$.toggleButton.getAttribute('aria-expanded'));
+    assertEquals(
+        'true', testElement.$.expandIcon.getAttribute('aria-expanded'));
     assertTrue(originList.classList.contains('iron-collapse-opened'));
     assertEquals('false', originList.getAttribute('aria-hidden'));
   });
@@ -484,7 +489,8 @@ suite('SiteEntry_EnabledConsolidatedControls', function() {
     SiteSettingsPrefsBrowserProxyImpl.setInstance(browserProxy);
     LocalDataBrowserProxyImpl.setInstance(localDataBrowserProxy);
 
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     testElement = document.createElement('site-entry');
     document.body.appendChild(testElement);
   });
@@ -626,7 +632,7 @@ suite('SiteEntry_EnabledConsolidatedControls', function() {
     // Assert first party set membership information is set correctly.
     assertFalse(fpsMembershipLabel.hidden);
     assertEquals(
-        '· Allowed for 1 foo.com site', fpsMembershipLabel.innerText.trim());
+        '· 1 site in foo.com\'s group', fpsMembershipLabel.innerText.trim());
   });
 
   test('first party set policy shown when managed key is true', function() {

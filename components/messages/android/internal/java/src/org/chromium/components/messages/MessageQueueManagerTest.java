@@ -33,6 +33,8 @@ import org.mockito.Mockito;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.ActivityState;
+import org.chromium.base.FeatureList;
+import org.chromium.base.FeatureList.TestValues;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -62,12 +64,12 @@ public class MessageQueueManagerTest {
 
     private class EmptyMessageStateHandler implements MessageStateHandler {
         @Override
-        public Animator show(int fromIndex, int endIndex) {
+        public Animator show(int fromIndex, int toIndex) {
             return new AnimatorSet();
         }
 
         @Override
-        public Animator hide(int fromIndex, int endIndex, boolean animate) {
+        public Animator hide(int fromIndex, int toIndex, boolean animate) {
             return new AnimatorSet();
         }
 
@@ -117,6 +119,10 @@ public class MessageQueueManagerTest {
 
     @Before
     public void setUp() {
+        var testValues = new TestValues();
+        testValues.addFeatureFlagOverride(
+                MessageFeatureList.MESSAGES_FOR_ANDROID_STACKING_ANIMATION, false);
+        FeatureList.setTestValues(testValues);
         MessageContainer container = Mockito.mock(MessageContainer.class);
         doAnswer(invocation -> {
             Runnable runnable = invocation.getArgument(0);

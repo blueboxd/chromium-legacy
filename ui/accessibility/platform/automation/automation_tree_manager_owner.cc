@@ -3,12 +3,21 @@
 // found in the LICENSE file.
 
 #include "ui/accessibility/platform/automation/automation_tree_manager_owner.h"
+#include <set>
+#include "base/containers/cxx20_erase.h"
+#include "base/containers/flat_tree.h"
+#include "base/i18n/string_search.h"
+#include "ui/accessibility/ax_enum_util.h"
+#include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_event.h"
+#include "ui/accessibility/ax_event_generator.h"
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_position.h"
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_text_utils.h"
+#include "ui/accessibility/platform/automation/automation_api_util.h"
 #include "ui/accessibility/platform/automation/automation_ax_tree_wrapper.h"
+#include "ui/accessibility/platform/automation/automation_v8_bindings.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace ui {
@@ -16,6 +25,123 @@ namespace ui {
 AutomationTreeManagerOwner::AutomationTreeManagerOwner() = default;
 
 AutomationTreeManagerOwner::~AutomationTreeManagerOwner() = default;
+
+void AutomationTreeManagerOwner::SendNodesRemovedEvent(
+    AXTree* tree,
+    const std::vector<int>& ids) {
+  AXTreeID tree_id = tree->GetAXTreeID();
+  GetAutomationV8Bindings()->SendNodesRemovedEvent(tree_id, ids);
+}
+
+bool AutomationTreeManagerOwner::SendTreeChangeEvent(
+    ax::mojom::Mutation change_type,
+    AXTree* tree,
+    AXNode* node) {
+  // Don't send tree change events when it's not the active profile.
+  if (!is_active_profile_)
+    return false;
+
+  // Notify custom bindings when there's an unloaded tree; js will enable the
+  // renderer and wait for it to load.
+  std::string child_tree_id_str;
+  if (node->GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
+                               &child_tree_id_str)) {
+    AXTreeID child_tree_id = AXTreeID::FromString(child_tree_id_str);
+    auto* tree_wrapper = GetAutomationAXTreeWrapperFromTreeID(child_tree_id);
+    if (!tree_wrapper || !tree_wrapper->ax_tree()->data().loaded)
+      GetAutomationV8Bindings()->SendChildTreeIDEvent(child_tree_id);
+  }
+
+  if (!ShouldSendTreeChangeEvent(change_type, tree, node))
+    return false;
+
+  AXTreeID tree_id = tree->GetAXTreeID();
+  bool did_send_event = false;
+  for (const auto& observer : tree_change_observers_) {
+    switch (observer.filter) {
+      case TreeChangeObserverFilter::kNoTreeChanges:
+      default:
+        continue;
+      case TreeChangeObserverFilter::kLiveRegionTreeChanges:
+        if (!node->HasStringAttribute(
+                ax::mojom::StringAttribute::kContainerLiveStatus) &&
+            node->GetRole() != ax::mojom::Role::kAlert &&
+            change_type != ax::mojom::Mutation::kSubtreeUpdateEnd) {
+          continue;
+        }
+        break;
+      case TreeChangeObserverFilter::kTextMarkerChanges:
+        if (!node->HasIntListAttribute(
+                ax::mojom::IntListAttribute::kMarkerTypes))
+          continue;
+        break;
+      case TreeChangeObserverFilter::kAllTreeChanges:
+        break;
+    }
+
+    did_send_event = true;
+
+    GetAutomationV8Bindings()->SendTreeChangeEvent(observer.id, tree_id,
+                                                   node->id(), change_type);
+  }
+
+  return did_send_event;
+}
+
+void AutomationTreeManagerOwner::SendAutomationEvent(
+    AXTreeID tree_id,
+    const gfx::Point& mouse_location,
+    const AXEvent& event,
+    absl::optional<AXEventGenerator::Event> generated_event_type) {
+  AutomationAXTreeWrapper* tree_wrapper =
+      GetAutomationAXTreeWrapperFromTreeID(tree_id);
+  if (!tree_wrapper)
+    return;
+
+  // Event type is none if both the ax event and generated event (if it exists)
+  // are type none or ignored.
+  bool is_type_none =
+      (event.event_type == ax::mojom::Event::kNone ||
+       ShouldIgnoreAXEventForAutomation(event.event_type)) &&
+      (!generated_event_type.has_value() ||
+       (generated_event_type.value() == AXEventGenerator::Event::NONE ||
+        ShouldIgnoreGeneratedEventForAutomation(generated_event_type.value())));
+
+  // These events get used internally to trigger other behaviors in js
+  // so they should always be fired.
+  bool fire_ax_event =
+      (event.event_type == ax::mojom::Event::kHitTestResult ||
+       event.event_type == ax::mojom::Event::kMediaStartedPlaying ||
+       event.event_type == ax::mojom::Event::kMediaStoppedPlaying);
+  bool fire_event = is_type_none || fire_ax_event;
+
+  // If we don't explicitly recognize the event type, require a valid, unignored
+  // node target.
+  AXNode* node =
+      tree_wrapper->GetNodeFromTree(tree_wrapper->GetTreeID(), event.id);
+  if (!fire_event && (!node || node->data().IsIgnored()))
+    return;
+
+  std::tuple<ax::mojom::Event, AXEventGenerator::Event> event_type_tuple =
+      MakeTupleForAutomationFromEventTypes(event.event_type,
+                                           generated_event_type.has_value()
+                                               ? generated_event_type.value()
+                                               : AXEventGenerator::Event::NONE);
+
+  while (node && tree_wrapper && !fire_event) {
+    if (tree_wrapper->HasEventListener(event_type_tuple, node)) {
+      fire_event = true;
+      break;
+    }
+    node = GetParent(node, &tree_wrapper);
+  }
+
+  if (!fire_event)
+    return;
+
+  GetAutomationV8Bindings()->SendAutomationEvent(tree_id, event, mouse_location,
+                                                 event_type_tuple);
+}
 
 AXNode* AutomationTreeManagerOwner::GetHostInParentTree(
     AutomationAXTreeWrapper** in_out_tree_wrapper) const {
@@ -238,7 +364,7 @@ void AutomationTreeManagerOwner::SendAccessibilityFocusedLocationChange(
 bool AutomationTreeManagerOwner::GetFocusInternal(
     AutomationAXTreeWrapper* tree_wrapper,
     AutomationAXTreeWrapper** out_tree_wrapper,
-    AXNode** out_node) {
+    AXNode** out_node) const {
   int focus_id = tree_wrapper->ax_tree()->data().focus_id;
   AXNode* focus =
       tree_wrapper->GetNodeFromTree(tree_wrapper->GetTreeID(), focus_id);
@@ -541,6 +667,409 @@ std::vector<int> AutomationTreeManagerOwner::CalculateSentenceBoundary(
   return sentence_boundary;
 }
 
+bool AutomationTreeManagerOwner::GetFocus(AXTreeID* focused_tree_id,
+                                          int* node_id) const {
+  AutomationAXTreeWrapper* desktop_tree =
+      GetAutomationAXTreeWrapperFromTreeID(desktop_tree_id_);
+  AutomationAXTreeWrapper* focused_wrapper = nullptr;
+  AXNode* focused_node = nullptr;
+  if (desktop_tree &&
+      !GetFocusInternal(desktop_tree, &focused_wrapper, &focused_node))
+    return false;
+
+  if (!desktop_tree) {
+    focused_wrapper = GetAutomationAXTreeWrapperFromTreeID(focus_tree_id_);
+    if (!focused_wrapper)
+      return false;
+
+    focused_node = focused_wrapper->GetNodeFromTree(
+        focused_wrapper->GetTreeID(), focus_id_);
+    if (!focused_node)
+      return false;
+  }
+
+  *focused_tree_id = focused_wrapper->GetTreeID();
+  *node_id = focused_node->id();
+  return true;
+}
+
+size_t AutomationTreeManagerOwner::GetChildCount(AXNode* node) const {
+  std::vector<AXNode*> child_roots = GetRootsOfChildTree(node);
+  if (child_roots.empty())
+    return node->GetUnignoredChildCount();
+  else
+    return child_roots.size();
+}
+
+std::vector<int> AutomationTreeManagerOwner::GetChildIDs(
+    AXNode* node,
+    AXTreeID* result_tree_id) const {
+  std::vector<int> child_ids;
+  std::vector child_roots = GetRootsOfChildTree(node);
+  if (!child_roots.empty()) {
+    *result_tree_id = child_roots[0]->tree()->GetAXTreeID();
+    for (AXNode* child_root : child_roots)
+      child_ids.push_back(child_root->id());
+  } else {
+    for (auto iter = node->UnignoredChildrenBegin();
+         iter != node->UnignoredChildrenEnd(); ++iter) {
+      child_ids.push_back(iter->id());
+      *result_tree_id = iter->tree()->GetAXTreeID();
+    }
+  }
+  return child_ids;
+}
+
+bool AutomationTreeManagerOwner::GetBoundsForRange(
+    AutomationAXTreeWrapper* tree_wrapper,
+    AXNode* node,
+    int start,
+    int end,
+    bool clipped,
+    gfx::Rect* result) const {
+  if (node->GetRole() != ax::mojom::Role::kInlineTextBox)
+    return false;
+
+  // Use character offsets to compute the local bounds of this subrange.
+  gfx::RectF local_bounds(0, 0, node->data().relative_bounds.bounds.width(),
+                          node->data().relative_bounds.bounds.height());
+  const std::string& name =
+      node->GetStringAttribute(ax::mojom::StringAttribute::kName);
+  std::vector<int> character_offsets =
+      node->GetIntListAttribute(ax::mojom::IntListAttribute::kCharacterOffsets);
+  int len = static_cast<int>(std::min(name.size(), character_offsets.size()));
+  if (start >= 0 && start <= end && end <= len) {
+    int start_offset = start > 0 ? character_offsets[start - 1] : 0;
+    int end_offset = end > 0 ? character_offsets[end - 1] : 0;
+
+    switch (node->data().GetTextDirection()) {
+      case ax::mojom::WritingDirection::kLtr:
+      default:
+        local_bounds.set_x(local_bounds.x() + start_offset);
+        local_bounds.set_width(end_offset - start_offset);
+        break;
+      case ax::mojom::WritingDirection::kRtl:
+        local_bounds.set_x(local_bounds.x() + local_bounds.width() -
+                           end_offset);
+        local_bounds.set_width(end_offset - start_offset);
+        break;
+      case ax::mojom::WritingDirection::kTtb:
+        local_bounds.set_y(local_bounds.y() + start_offset);
+        local_bounds.set_height(end_offset - start_offset);
+        break;
+      case ax::mojom::WritingDirection::kBtt:
+        local_bounds.set_y(local_bounds.y() + local_bounds.height() -
+                           end_offset);
+        local_bounds.set_height(end_offset - start_offset);
+        break;
+    }
+  }
+
+  // Convert from local to global coordinates second, after subsetting,
+  // because the local to global conversion might involve matrix
+  // transformations.
+  *result = ComputeGlobalNodeBounds(tree_wrapper, node, local_bounds, nullptr,
+                                    clipped /* clip_bounds */);
+  return true;
+}
+
+const char* AutomationTreeManagerOwner::GetName(AXNode* node) const {
+  if (node->GetRole() == ax::mojom::Role::kPortal &&
+      node->data().GetNameFrom() == ax::mojom::NameFrom::kNone) {
+    // Portals are not expected to have multiple child roots.
+    if (const auto& child_roots = GetRootsOfChildTree(node);
+        !child_roots.empty()) {
+      return child_roots[0]
+          ->GetStringAttribute(ax::mojom::StringAttribute::kName)
+          .c_str();
+    }
+  }
+
+  if (node->HasStringAttribute(ax::mojom::StringAttribute::kName)) {
+    return node->GetStringAttribute(ax::mojom::StringAttribute::kName).c_str();
+  }
+
+  return nullptr;
+}
+
+bool AutomationTreeManagerOwner::GetNextTextMatch(
+    AutomationAXTreeWrapper* tree_wrapper,
+    AXNode* node,
+    const std::string& search_str,
+    bool backward,
+    AXTreeID* result_tree_id,
+    int* result_node_id) const {
+  std::u16string search_str_16 = base::UTF8ToUTF16(search_str);
+  auto next = backward ? &AutomationTreeManagerOwner::GetPreviousInTreeOrder
+                       : &AutomationTreeManagerOwner::GetNextInTreeOrder;
+  AutomationAXTreeWrapper** target_tree_wrapper = &tree_wrapper;
+  while (true) {
+    node = (this->*next)(node, target_tree_wrapper);
+
+    // We explicitly disallow searches in the desktop tree.
+    if ((*target_tree_wrapper)->IsDesktopTree())
+      return false;
+
+    if (!node)
+      return false;
+
+    std::u16string name;
+    if (!node->GetString16Attribute(ax::mojom::StringAttribute::kName, &name))
+      continue;
+
+    if (base::i18n::StringSearchIgnoringCaseAndAccents(search_str_16, name,
+                                                       nullptr, nullptr)) {
+      *result_tree_id = (*target_tree_wrapper)->GetTreeID();
+      *result_node_id = node->id();
+      return true;
+    }
+  }
+}
+
+bool AutomationTreeManagerOwner::GetChildIDAtIndex(const AXTreeID& tree_id,
+                                                   int node_id,
+                                                   int index,
+                                                   AXTreeID* child_tree_id,
+                                                   int* child_node_id) const {
+  if (index < 0)
+    return false;
+
+  AutomationAXTreeWrapper* tree_wrapper =
+      GetAutomationAXTreeWrapperFromTreeID(tree_id);
+  if (!tree_wrapper)
+    return false;
+
+  AXNode* node =
+      tree_wrapper->GetNodeFromTree(tree_wrapper->GetTreeID(), node_id);
+  if (!node)
+    return false;
+
+  // Check for child roots.
+  std::vector<AXNode*> child_roots = GetRootsOfChildTree(node);
+
+  AXNode* child_node = nullptr;
+  if (!child_roots.empty() && static_cast<size_t>(index) < child_roots.size()) {
+    child_node = child_roots[index];
+  } else if (static_cast<size_t>(index) >= node->GetUnignoredChildCount()) {
+    return false;
+  } else {
+    child_node = node->GetUnignoredChildAtIndex(static_cast<size_t>(index));
+  }
+
+  DCHECK(child_node);
+  *child_tree_id = child_node->tree()->GetAXTreeID();
+  *child_node_id = child_node->id();
+  return true;
+}
+
+bool AutomationTreeManagerOwner::GetAccessibilityFocus(AXTreeID* tree_id,
+                                                       int* node_id) const {
+  AutomationAXTreeWrapper* tree_wrapper =
+      GetAutomationAXTreeWrapperFromTreeID(accessibility_focused_tree_id_);
+  if (!tree_wrapper)
+    return false;
+
+  AXNode* node = tree_wrapper->GetAccessibilityFocusedNode();
+  if (!node)
+    return false;
+
+  *tree_id = accessibility_focused_tree_id_;
+  *node_id = node->id();
+  return true;
+}
+
+AXNode* AutomationTreeManagerOwner::GetNodeFromTree(const AXTreeID& tree_id,
+                                                    int node_id) const {
+  AutomationAXTreeWrapper* tree_wrapper =
+      GetAutomationAXTreeWrapperFromTreeID(tree_id);
+  if (!tree_wrapper)
+    return nullptr;
+
+  return tree_wrapper->GetNodeFromTree(tree_wrapper->GetTreeID(), node_id);
+}
+
+void AutomationTreeManagerOwner::AddTreeChangeObserver(
+    int observer_id,
+    TreeChangeObserverFilter filter) {
+  TreeChangeObserver observer;
+  observer.id = observer_id;
+  observer.filter = filter;
+  tree_change_observers_.push_back(observer);
+  UpdateOverallTreeChangeObserverFilter();
+}
+
+void AutomationTreeManagerOwner::RemoveTreeChangeObserver(int observer_id) {
+  for (auto iter = tree_change_observers_.begin();
+       iter != tree_change_observers_.end(); ++iter) {
+    if (iter->id == observer_id) {
+      tree_change_observers_.erase(iter);
+      break;
+    }
+  }
+
+  UpdateOverallTreeChangeObserverFilter();
+}
+
+bool AutomationTreeManagerOwner::ShouldSendTreeChangeEvent(
+    ax::mojom::Mutation change_type,
+    AXTree* tree,
+    AXNode* node) const {
+  // Don't bother dispatching to js if the node is ignored. A js
+  // client shouldn't process ignored nodes.
+  if (node->IsIgnored())
+    return false;
+
+  // Likewise, don't process tree changes on ignored trees.
+  auto* tree_wrapper =
+      GetAutomationAXTreeWrapperFromTreeID(tree->GetAXTreeID());
+  if (!tree_wrapper || tree_wrapper->IsTreeIgnored())
+    return false;
+
+  bool has_filter = false;
+  if (tree_change_observer_overall_filter_ &
+      (1 << TreeChangeObserverFilter::kLiveRegionTreeChanges)) {
+    if (node->HasStringAttribute(
+            ax::mojom::StringAttribute::kContainerLiveStatus) ||
+        node->GetRole() == ax::mojom::Role::kAlert ||
+        change_type == ax::mojom::Mutation::kSubtreeUpdateEnd) {
+      has_filter = true;
+    }
+  }
+
+  if (tree_change_observer_overall_filter_ &
+      (1 << TreeChangeObserverFilter::kTextMarkerChanges)) {
+    if (node->HasIntListAttribute(ax::mojom::IntListAttribute::kMarkerTypes))
+      has_filter = true;
+  }
+
+  if (tree_change_observer_overall_filter_ &
+      (1 << TreeChangeObserverFilter::kAllTreeChanges))
+    has_filter = true;
+
+  return has_filter;
+}
+
+void AutomationTreeManagerOwner::DestroyAccessibilityTree(
+    const AXTreeID& tree_id) {
+  auto& child_tree_id_reverse_map =
+      AutomationAXTreeWrapper::GetChildTreeIDReverseMap();
+  base::EraseIf(
+      child_tree_id_reverse_map,
+      [tree_id](const std::pair<AXTreeID, AutomationAXTreeWrapper*>& pair) {
+        return pair.first == tree_id || pair.second->GetTreeID() == tree_id;
+      });
+
+  if (tree_id == accessibility_focused_tree_id_)
+    accessibility_focused_tree_id_ = AXTreeIDUnknown();
+
+  RemoveAutomationTreeWrapperFromCache(tree_id);
+  trees_with_event_listeners_.erase(tree_id);
+}
+
+bool AutomationTreeManagerOwner::CalculateNodeState(const AXTreeID& tree_id,
+                                                    int node_id,
+                                                    uint32_t* node_state,
+                                                    bool* offscreen,
+                                                    bool* focused) const {
+  AutomationAXTreeWrapper* tree_wrapper =
+      GetAutomationAXTreeWrapperFromTreeID(tree_id);
+  if (!tree_wrapper)
+    return false;
+
+  AXNode* node =
+      tree_wrapper->GetNodeFromTree(tree_wrapper->GetTreeID(), node_id);
+  if (!node)
+    return false;
+
+  *node_state = node->data().state;
+
+  AutomationAXTreeWrapper* top_tree_wrapper = nullptr;
+  AutomationAXTreeWrapper* walker = tree_wrapper;
+  while (walker && walker != top_tree_wrapper) {
+    top_tree_wrapper = walker;
+    GetParent(walker->ax_tree()->root(), &walker);
+  }
+
+  *focused = tree_wrapper->IsInFocusChain(node->id());
+  ComputeGlobalNodeBounds(tree_wrapper, node, gfx::RectF(), offscreen);
+  return true;
+}
+
+void AutomationTreeManagerOwner::SetAccessibilityFocus(AXTreeID tree_id) {
+  if (tree_id != accessibility_focused_tree_id_ &&
+      accessibility_focused_tree_id_ != AXTreeIDUnknown()) {
+    AutomationAXTreeWrapper* previous_tree_wrapper =
+        GetAutomationAXTreeWrapperFromTreeID(accessibility_focused_tree_id_);
+    if (previous_tree_wrapper) {
+      previous_tree_wrapper->SetAccessibilityFocus(kInvalidAXNodeID);
+    }
+  }
+  accessibility_focused_tree_id_ = tree_id;
+}
+
+void AutomationTreeManagerOwner::OnAccessibilityEvents(
+    const AXTreeID& tree_id,
+    const std::vector<AXEvent>& events,
+    const std::vector<AXTreeUpdate>& updates,
+    const gfx::Point& mouse_location,
+    bool is_active_profile) {
+  is_active_profile_ = is_active_profile;
+  AutomationAXTreeWrapper* tree_wrapper =
+      GetAutomationAXTreeWrapperFromTreeID(tree_id);
+  bool is_new_tree = tree_wrapper == nullptr;
+  if (is_new_tree) {
+    tree_wrapper = new AutomationAXTreeWrapper(tree_id, this);
+    CacheAutomationTreeWrapperForTreeID(tree_id, tree_wrapper);
+  }
+
+  if (!tree_wrapper->OnAccessibilityEvents(tree_id, updates, events,
+                                           mouse_location, is_active_profile)) {
+    DLOG(ERROR) << tree_wrapper->ax_tree()->error();
+    GetAutomationV8Bindings()->SendTreeSerializationError(tree_id);
+    return;
+  }
+
+  // Send an initial event to ensure the js-side objects get created for new
+  // trees.
+  if (is_new_tree) {
+    AXEvent initial_event;
+    initial_event.id = -1;
+    initial_event.event_from = ax::mojom::EventFrom::kNone;
+    initial_event.event_type = ax::mojom::Event::kNone;
+    SendAutomationEvent(tree_id, gfx::Point(), initial_event);
+  }
+
+  // After handling events in js, if the client did not add any event listeners,
+  // shut things down.
+  TreeEventListenersChanged(tree_wrapper);
+}
+
+void AutomationTreeManagerOwner::OnAccessibilityLocationChange(
+    const AXTreeID& tree_id,
+    int node_id,
+    AXRelativeBounds new_location) {
+  AutomationAXTreeWrapper* tree_wrapper =
+      GetAutomationAXTreeWrapperFromTreeID(tree_id);
+  if (!tree_wrapper)
+    return;
+  AXNode* node =
+      tree_wrapper->GetNodeFromTree(tree_wrapper->GetTreeID(), node_id);
+  if (!node)
+    return;
+
+  absl::optional<gfx::Rect> previous_accessibility_focused_global_bounds =
+      GetAccessibilityFocusedLocation();
+
+  node->SetLocation(new_location.offset_container_id, new_location.bounds,
+                    new_location.transform.get());
+
+  if (previous_accessibility_focused_global_bounds.has_value() &&
+      previous_accessibility_focused_global_bounds !=
+          GetAccessibilityFocusedLocation()) {
+    SendAccessibilityFocusedLocationChange(gfx::Point());
+  }
+}
+
 void AutomationTreeManagerOwner::CacheAutomationTreeWrapperForTreeID(
     const AXTreeID& tree_id,
     AutomationAXTreeWrapper* tree_wrapper) {
@@ -555,6 +1084,59 @@ void AutomationTreeManagerOwner::RemoveAutomationTreeWrapperFromCache(
 
 void AutomationTreeManagerOwner::ClearCachedAutomationTreeWrappers() {
   tree_id_to_tree_wrapper_map_.clear();
+}
+
+void AutomationTreeManagerOwner::ClearCachedAccessibilityTrees() {
+  tree_change_observers_.clear();
+  ClearCachedAutomationTreeWrappers();
+  AutomationAXTreeWrapper::GetChildTreeIDReverseMap().clear();
+}
+
+void AutomationTreeManagerOwner::Invalidate() {
+  auto& child_tree_id_reverse_map =
+      AutomationAXTreeWrapper::GetChildTreeIDReverseMap();
+  base::EraseIf(
+      child_tree_id_reverse_map,
+      [this](const std::pair<AXTreeID, AutomationAXTreeWrapper*>& pair) {
+        return pair.second->owner() == this;
+      });
+
+  ClearCachedAutomationTreeWrappers();
+}
+
+void AutomationTreeManagerOwner::TreeEventListenersChanged(
+    AutomationAXTreeWrapper* tree_wrapper) {
+  if (tree_wrapper->EventListenerCount() != 0) {
+    trees_with_event_listeners_.insert(tree_wrapper->GetTreeID());
+    return;
+  }
+
+  if (trees_with_event_listeners_.empty())
+    return;
+
+  trees_with_event_listeners_.erase(tree_wrapper->GetTreeID());
+  if (!trees_with_event_listeners_.empty())
+    return;
+
+  NotifyTreeEventListenersChanged();
+}
+
+bool AutomationTreeManagerOwner::HasTreesWithEventListeners() const {
+  return !trees_with_event_listeners_.empty();
+}
+
+void AutomationTreeManagerOwner::
+    MaybeSendOnAllAutomationEventListenersRemoved() {
+  if (HasTreesWithEventListeners())
+    return;
+
+  GetAutomationV8Bindings()->SendOnAllEventListenersRemoved();
+}
+
+void AutomationTreeManagerOwner::UpdateOverallTreeChangeObserverFilter() {
+  tree_change_observer_overall_filter_ = 0;
+  for (const auto& observer : tree_change_observers_)
+    tree_change_observer_overall_filter_ |= 1 << observer.filter;
 }
 
 }  // namespace ui

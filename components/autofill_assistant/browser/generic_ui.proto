@@ -54,10 +54,27 @@ message CallbackProto {
     CreateNestedGenericUiProto create_nested_ui = 14;
     ClearViewContainerProto clear_view_container = 15;
     ForEachProto for_each = 16;
+    RequestBackendDataProto request_backend_data = 17;
   }
   // Optional model identifier pointing to a single boolean. If set, the
   // callback will only be invoked if the condition is true.
   optional string condition_model_identifier = 10;
+}
+
+message RequestBackendDataProto {
+  // Store the outcome of the backend data request in this model identifier.
+  // true if the backend request and response parsing was successful, else false
+  optional string output_success_model_identifier = 1;
+
+  // Set if requesting phone numbers from the backend.
+  optional RequestPhoneNumbersProto request_phone_numbers = 2;
+}
+
+message RequestPhoneNumbersProto {
+  // After getting the phone numbers from the backend, model identifier
+  // points to a list of |AutofillProfileProto|, each item pointing to
+  // a profile containing one phone number.
+  optional string output_profiles_model_identifier = 1;
 }
 
 message EventProto {
@@ -139,6 +156,8 @@ message ComputeValueProto {
     CreateLoginOptionResponseProto create_login_option_response = 9;
     // Check if a string value is empty.
     StringEmptyProto string_empty = 10;
+    // Writes the length of array model_identifier to the result.
+    ArrayLengthProto array_length = 11;
   }
 
   // The model identifier to write the result to.
@@ -248,6 +267,15 @@ message IntegerSumProto {
   repeated ValueReferenceProto values = 3;
 
   reserved 1, 2;
+}
+
+// Computes the length of a list |value|.
+// If |value| doesn't point to a list, e.g. if it points to
+// |credit_card_response|, we simply return 1.
+message ArrayLengthProto {
+  // |value| is a required field.
+  // If not present, |result_model_identifier| won't be written.
+  optional ValueReferenceProto value = 1;
 }
 
 // Creates a safe-to-transmit CreditCardResponseProto for the input |value|.

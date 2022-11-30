@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/variations/client_filterable_state.h"
+#include "components/variations/entropy_provider.h"
 #include "components/variations/processed_study.h"
 #include "components/variations/study_filtering.h"
 #include "components/variations/variations_associated_data.h"
@@ -129,6 +130,32 @@ void ForceExperimentState(
   }
 }
 
+// Associates features for groups that do not specify them manually.
+void AssociateDefaultFeatures(const Study& study,
+                              base::FieldTrial* trial,
+                              base::FeatureList* feature_list) {
+  // Note: We only compute feature associations for ACTIVATE_ON_QUERY studies,
+  // since these associations are only used to determine that the trial has
+  // been queried when the feature is queried.
+  if (study.activation_type() != Study_ActivationType_ACTIVATE_ON_QUERY)
+    return;
+
+  std::set<std::string> features_to_associate;
+  for (const auto& experiment : study.experiment()) {
+    const auto& features = experiment.feature_association();
+    for (const auto& feature : features.enable_feature()) {
+      features_to_associate.insert(feature);
+    }
+    for (const auto& feature : features.disable_feature()) {
+      features_to_associate.insert(feature);
+    }
+  }
+  for (const auto& feature_name : features_to_associate) {
+    feature_list->RegisterFieldTrialOverride(
+        feature_name, base::FeatureList::OVERRIDE_USE_DEFAULT, trial);
+  }
+}
+
 // Registers feature overrides for the chosen experiment in the specified study.
 void RegisterFeatureOverrides(const ProcessedStudy& processed_study,
                               base::FieldTrial* trial,
@@ -163,10 +190,7 @@ void RegisterFeatureOverrides(const ProcessedStudy& processed_study,
   // Associate features for groups that do not specify them manually (e.g.
   // "Default" group), so that such groups are reported.
   if (!experiment.has_feature_association()) {
-    for (const auto& feature_name : processed_study.associated_features()) {
-      feature_list->RegisterFieldTrialOverride(
-          feature_name, base::FeatureList::OVERRIDE_USE_DEFAULT, trial);
-    }
+    AssociateDefaultFeatures(study, trial, feature_list);
   }
 }
 
@@ -218,40 +242,26 @@ void VariationsSeedProcessor::CreateTrialsFromSeed(
     const VariationsSeed& seed,
     const ClientFilterableState& client_state,
     const UIStringOverrideCallback& override_callback,
-    const base::FieldTrial::EntropyProvider* low_entropy_provider,
+    const EntropyProviders& entropy_providers,
     base::FeatureList* feature_list) {
   base::UmaHistogramCounts1000("Variations.AppliedSeed.StudyCount",
                                seed.study().size());
-  std::vector<ProcessedStudy> filtered_studies;
-  VariationsLayers layers(seed, low_entropy_provider);
-  FilterAndValidateStudies(seed, client_state, layers, &filtered_studies);
+  VariationsLayers layers(seed, entropy_providers);
+  std::vector<ProcessedStudy> filtered_studies =
+      FilterAndValidateStudies(seed, client_state, layers);
   SetSeedVersion(seed.version());
 
   for (const ProcessedStudy& study : filtered_studies) {
-    CreateTrialFromStudy(study, override_callback, low_entropy_provider,
+    CreateTrialFromStudy(study, override_callback, entropy_providers, layers,
                          feature_list);
   }
-}
-
-// static
-bool VariationsSeedProcessor::ShouldStudyUseLowEntropy(const Study& study) {
-  // This should be kept in sync with the server-side layer validation
-  // code: https://go/chrome-variations-layer-validation
-  for (int i = 0; i < study.experiment_size(); ++i) {
-    const Study::Experiment& experiment = study.experiment(i);
-    if (experiment.has_google_web_experiment_id() ||
-        experiment.has_google_web_trigger_experiment_id() ||
-        experiment.has_chrome_sync_experiment_id()) {
-      return true;
-    }
-  }
-  return false;
 }
 
 void VariationsSeedProcessor::CreateTrialFromStudy(
     const ProcessedStudy& processed_study,
     const UIStringOverrideCallback& override_callback,
-    const base::FieldTrial::EntropyProvider* low_entropy_provider,
+    const EntropyProviders& entropy_providers,
+    const VariationsLayers& layers,
     base::FeatureList* feature_list) {
   // Since trials and features can come from many different sources (variations
   // seed, about://flags, and command line), there are special cases for when
@@ -306,8 +316,7 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
   // Check if any experiments need to be forced due to a command line
   // flag. Force the first experiment with an existing flag.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  for (int i = 0; i < study.experiment_size(); ++i) {
-    const Study::Experiment& experiment = study.experiment(i);
+  for (const auto& experiment : study.experiment()) {
     if (ShouldForceExperiment(experiment, *command_line, *feature_list)) {
       base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
           study.name(), experiment.name());
@@ -337,38 +346,18 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
   if (processed_study.total_probability() <= 0)
     return;
 
-  const auto* entropy_provider =
-      &base::FieldTrialList::GetEntropyProviderForSessionRandomization();
-  uint32_t randomization_seed = 0;
-  if (study.has_consistency() &&
-      study.consistency() == Study_Consistency_PERMANENT &&
-      // If all assignments are to a single group, no need to enable one time
-      // randomization (which is more expensive to compute), since the result
-      // will be the same.
-      !processed_study.all_assignments_to_one_group()) {
-    // WebView currently passes a null low_entropy_provider, which actually
-    // means that the default provider is low-entropy.
-    // TODO(b/183955043): Express that more coherently and without nullptr.
-    if (low_entropy_provider && ShouldStudyUseLowEntropy(study)) {
-      entropy_provider = low_entropy_provider;
-    } else {
-      entropy_provider =
-          &base::FieldTrialList::GetEntropyProviderForOneTimeRandomization();
-    }
-    if (study.has_randomization_seed())
-      randomization_seed = study.randomization_seed();
-  }
+  const auto& entropy_provider =
+      processed_study.SelectEntropyProviderForStudy(entropy_providers, layers);
 
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
           study.name(), processed_study.total_probability(),
-          processed_study.GetDefaultExperimentName(), *entropy_provider,
-          randomization_seed));
+          processed_study.GetDefaultExperimentName(), entropy_provider,
+          study.randomization_seed()));
 
   bool has_overrides = false;
   bool enables_or_disables_features = false;
-  for (int i = 0; i < study.experiment_size(); ++i) {
-    const Study::Experiment& experiment = study.experiment(i);
+  for (const auto& experiment : study.experiment()) {
     RegisterExperimentParams(study, experiment);
 
     // Groups with forcing flags have probability 0 and will never be selected.

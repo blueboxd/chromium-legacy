@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,12 +76,13 @@ enum SerializationTag {
   kTransformStreamTransferTag = 'm',  // index:uint32_t
   kWritableStreamTransferTag = 'w',   // index:uint32_t
   kMediaStreamTrack =
-      's',             // session_id.high:uint64_t, session_id.low:uint64_t,
-                       // transfer_id.high:uint64_t, transfer_id.low:uint64_t,
-                       // kind:WebCoreString, id:WebCoreString,
-                       // label:WebCoreString, enabled:byte, muted:byte,
-                       // contentHint:Uint32Enum, readyState:Uint32Enum
-  kDOMPointTag = 'Q',  // x:Double, y:Double, z:Double, w:Double
+      's',  // trackImplSubtype:Uint32Enum, session_id.high:uint64_t,
+            // session_id.low:uint64_t, transfer_id.high:uint64_t,
+            // transfer_id.low:uint64_t, kind:WebCoreString, id:WebCoreString,
+            // label:WebCoreString, enabled:byte, muted:byte,
+            // contentHint:Uint32Enum, readyState:Uint32Enum
+            // If trackImplSubtype=BrowserCapture: cropVersion:uint32_t
+  kDOMPointTag = 'Q',          // x:Double, y:Double, z:Double, w:Double
   kDOMPointReadOnlyTag = 'W',  // x:Double, y:Double, z:Double, w:Double
   kDOMRectTag = 'E',          // x:Double, y:Double, width:Double, height:Double
   kDOMRectReadOnlyTag = 'R',  // x:Double, y:Double, width:Double, height:Double

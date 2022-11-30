@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,6 +107,8 @@ void CustomProperty::ApplyInherit(StyleResolverState& state) const {
 
 void CustomProperty::ApplyValue(StyleResolverState& state,
                                 const CSSValue& value) const {
+  DCHECK(!value.IsCSSWideKeyword());
+
   if (value.IsInvalidVariableValue()) {
     if (!SupportsGuaranteedInvalid()) {
       ApplyUnset(state);
@@ -120,51 +122,50 @@ void CustomProperty::ApplyValue(StyleResolverState& state,
 
   const auto& declaration = To<CSSCustomPropertyDeclaration>(value);
 
-  DCHECK(!value.IsRevertValue());
   bool is_inherited_property = IsInherited();
-  bool initial = declaration.IsInitial(is_inherited_property);
-  bool inherit = declaration.IsInherit(is_inherited_property);
-  DCHECK(!(initial && inherit));
 
-  // TODO(andruud): Use regular initial/inherit dispatch in StyleBuilder
-  //                once custom properties are Ribbonized.
-  if (initial) {
-    ApplyInitial(state);
-  } else if (inherit) {
-    ApplyInherit(state);
-  } else {
-    scoped_refptr<CSSVariableData> data = declaration.Value();
-    DCHECK(!data->NeedsVariableResolution());
+  scoped_refptr<CSSVariableData> data = &declaration.Value();
+  DCHECK(!data->NeedsVariableResolution());
+
+  state.Style()->SetVariableData(name_, data, is_inherited_property);
+
+  if (registration_) {
+    const CSSParserContext* context = declaration.ParserContext();
+
+    // There is no "originating" CSSParserContext associated with the
+    // declaration if it represents a "synthetic" token sequence such as those
+    // constructed to represent interpolated (registered) custom properties. [1]
+    //
+    // However, such values should also not contain any relative url()
+    // functions, so we don't need any particular parser context in that case.
+    //
+    // [1]
+    // https://drafts.css-houdini.org/css-properties-values-api-1/#equivalent-token-sequence
+    if (!context) {
+      context = StrictCSSParserContext(
+          state.GetDocument().GetExecutionContext()->GetSecureContextMode());
+    }
+    auto mode = CSSParserLocalContext::VariableMode::kTyped;
+    auto local_context = CSSParserLocalContext().WithVariableMode(mode);
+    CSSParserTokenRange range = data->TokenRange();
+    const CSSValue* registered_value =
+        ParseSingleValue(range, *context, local_context);
+    if (!registered_value) {
+      if (is_inherited_property)
+        ApplyInherit(state);
+      else
+        ApplyInitial(state);
+      return;
+    }
+
+    registered_value = &StyleBuilderConverter::ConvertRegisteredPropertyValue(
+        state, *registered_value, context);
+    data = StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
+        *registered_value, data->IsAnimationTainted());
 
     state.Style()->SetVariableData(name_, data, is_inherited_property);
-
-    if (registration_) {
-      // TODO(andruud): Store CSSParserContext on CSSCustomPropertyDeclaration
-      // and use that.
-      const CSSParserContext* context = StrictCSSParserContext(
-          state.GetDocument().GetExecutionContext()->GetSecureContextMode());
-      auto mode = CSSParserLocalContext::VariableMode::kTyped;
-      auto local_context = CSSParserLocalContext().WithVariableMode(mode);
-      CSSParserTokenRange range = data->TokenRange();
-      const CSSValue* registered_value =
-          ParseSingleValue(range, *context, local_context);
-      if (!registered_value) {
-        if (is_inherited_property)
-          ApplyInherit(state);
-        else
-          ApplyInitial(state);
-        return;
-      }
-
-      registered_value = &StyleBuilderConverter::ConvertRegisteredPropertyValue(
-          state, *registered_value, data->BaseURL(), data->Charset());
-      data = StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
-          *registered_value, data->IsAnimationTainted());
-
-      state.Style()->SetVariableData(name_, data, is_inherited_property);
-      state.Style()->SetVariableValue(name_, registered_value,
-                                      is_inherited_property);
-    }
+    state.Style()->SetVariableValue(name_, registered_value,
+                                    is_inherited_property);
   }
 }
 
@@ -204,7 +205,8 @@ const CSSValue* CustomProperty::CSSValueFromComputedStyleInternal(
   if (!data)
     return nullptr;
 
-  return MakeGarbageCollected<CSSCustomPropertyDeclaration>(data);
+  return MakeGarbageCollected<CSSCustomPropertyDeclaration>(
+      data, /* parser_context */ nullptr);
 }
 
 const CSSValue* CustomProperty::ParseUntyped(

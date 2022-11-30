@@ -13,8 +13,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 class TimerController : public mojom::TimerController,
                         public AssistantClientObserver {
@@ -51,7 +50,7 @@ class TimerController : public mojom::TimerController,
   mojo::Receiver<mojom::TimerController> receiver_{this};
   mojo::Remote<mojom::TimerDelegate> delegate_;
 };
-}  // namespace libassistant
-}  // namespace chromeos
+
+}  // namespace ash::libassistant
 
 #endif  // CHROMEOS_ASH_SERVICES_LIBASSISTANT_TIMER_CONTROLLER_H_

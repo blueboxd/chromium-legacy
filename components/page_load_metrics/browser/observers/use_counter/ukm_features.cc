@@ -262,6 +262,10 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kChromeLoadTimesWasAlternateProtocolAvailable,
           WebFeature::kChromeLoadTimesWasFetchedViaSpdy,
           WebFeature::kChromeLoadTimesWasNpnNegotiated,
+          WebFeature::kGamepadButtons,
+          WebFeature::kWebNfcNdefReaderScan,
+          WebFeature::kWakeLockAcquireScreenLockWithoutActivation,
+          WebFeature::kGetDisplayMediaWithoutUserActivation,
       }));
   return *opt_in_features;
 }

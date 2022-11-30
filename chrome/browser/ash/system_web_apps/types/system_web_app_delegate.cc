@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
 
+#include "ui/gfx/geometry/rect.h"
+
 namespace ash {
 
 url::Origin GetOrigin(const char* url) {
@@ -124,12 +126,20 @@ bool SystemWebAppDelegate::ShouldShowTabContextMenuShortcut(
   return true;
 }
 
+bool SystemWebAppDelegate::ShouldRestoreOverrideUrl() const {
+  return false;
+}
+
 bool SystemWebAppDelegate::IsUrlInSystemAppScope(const GURL& url) const {
   return false;
 }
 
 bool SystemWebAppDelegate::PreferManifestBackgroundColor() const {
   return false;
+}
+
+bool SystemWebAppDelegate::UseSystemThemeColor() const {
+  return true;
 }
 
 #if BUILDFLAG(IS_CHROMEOS)

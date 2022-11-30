@@ -61,9 +61,6 @@ void SearchControllerImpl::StartSearch(const std::u16string& query) {
   session_start_ = base::Time::Now();
   dispatching_query_ = true;
   ash::RecordLauncherIssuedSearchQueryLength(query.length());
-  for (SearchController::Observer& observer : observer_list_) {
-    observer.OnResultsCleared();
-  }
 
   for (const auto& provider : providers_) {
     if (query.empty())
@@ -74,7 +71,6 @@ void SearchControllerImpl::StartSearch(const std::u16string& query) {
 
   dispatching_query_ = false;
   last_query_ = query;
-  query_for_recommendation_ = query.empty();
 
   OnResultsChanged();
 }
@@ -160,9 +156,7 @@ void SearchControllerImpl::OnResultsChanged() {
     return;
 
   size_t num_max_results =
-      query_for_recommendation_
-          ? ash::SharedAppListConfig::instance().num_start_page_tiles()
-          : ash::SharedAppListConfig::instance().max_search_results();
+      ash::SharedAppListConfig::instance().max_search_results();
   mixer_->MixAndPublish(num_max_results, last_query_);
 }
 
@@ -181,7 +175,8 @@ void SearchControllerImpl::OnImpression(
     ash::AppListNotifier::Location location,
     const std::vector<ash::AppListNotifier::Result>& results,
     const std::u16string& query) {
-  if (query.empty() && location == ash::kList && mixer_) {
+  if (query.empty() && location == ash::SearchResultDisplayType::kList &&
+      mixer_) {
     ash::SearchResultIdWithPositionIndices results_with_indices;
     for (size_t i = 0; i < results.size(); ++i) {
       results_with_indices.emplace_back(results[i].id, i);

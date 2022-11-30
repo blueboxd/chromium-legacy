@@ -10,11 +10,11 @@
 #include "base/android/android_image_reader_compat.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "gpu/command_buffer/service/ref_counted_lock.h"
 #include "gpu/command_buffer/service/texture_owner.h"
 #include "gpu/gpu_gles2_export.h"
 #include "ui/gl/gl_fence_egl.h"
-#include "ui/gl/gl_image_ahardwarebuffer.h"
 
 namespace base {
 namespace android {
@@ -79,15 +79,11 @@ class GPU_GLES2_EXPORT ImageReaderGLOwner : public TextureOwner,
     ~ScopedCurrentImageRef();
     AImage* image() const { return image_; }
     base::ScopedFD GetReadyFence() const;
-    void EnsureBound(GLuint service_id);
 
    private:
     ImageReaderGLOwner* texture_owner_;
     AImage* image_;
     base::ScopedFD ready_fence_;
-
-    // Set to true if the current image is bound to |texture_id_|.
-    bool image_bound_ = false;
   };
 
   ImageReaderGLOwner(std::unique_ptr<gles2::AbstractTexture> texture,

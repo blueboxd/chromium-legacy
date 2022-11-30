@@ -17,6 +17,7 @@
 #include "ash/public/cpp/holding_space/holding_space_metrics.h"
 #include "ash/public/cpp/holding_space/holding_space_model.h"
 #include "ash/public/cpp/holding_space/holding_space_prefs.h"
+#include "ash/public/cpp/holding_space/holding_space_section.h"
 #include "ash/public/cpp/holding_space/holding_space_test_api.h"
 #include "ash/public/cpp/holding_space/holding_space_util.h"
 #include "ash/public/cpp/holding_space/mock_holding_space_client.h"
@@ -39,7 +40,6 @@
 #include "ash/wm/overview/overview_item_view.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_preview_view.h"
-#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/strings/strcat.h"
 #include "base/test/bind.h"
@@ -48,18 +48,22 @@
 #include "build/branding_buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/canvas_painter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/test/layer_animation_stopped_waiter.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/transform_util.h"
-#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/drag_utils.h"
 #include "ui/views/test/views_test_utils.h"
+#include "ui/views/view_utils.h"
+#include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
 namespace ash {
@@ -223,6 +227,26 @@ std::vector<HoldingSpaceCommandId> GetHoldingSpaceCommandIds() {
   return ids;
 }
 
+size_t GetMaxVisibleItemCount(HoldingSpaceSectionId section_id) {
+  return GetHoldingSpaceSection(section_id)->max_visible_item_count.value();
+}
+
+// Returns whether a context menu is currently showing.
+bool IsShowingContextMenu() {
+  return views::MenuController::GetActiveInstance();
+}
+
+// Returns the menu item matched by `id`.
+const views::MenuItemView* GetMenuItemByCommandId(HoldingSpaceCommandId id) {
+  if (!IsShowingContextMenu())
+    return nullptr;
+  if (auto* menu_item =
+          views::MenuController::GetActiveInstance()->GetSelectedMenuItem()) {
+    return menu_item->GetMenuItemByID(static_cast<int>(id));
+  }
+  return nullptr;
+}
+
 // PredicateWaiter -------------------------------------------------------------
 
 // A class capable of waiting until a predicate returns true.
@@ -274,6 +298,27 @@ class ViewVisibilityChangedWaiter : public views::ViewObserver {
                                views::View* starting_view) override {
     wait_loop_->Quit();
   }
+
+  std::unique_ptr<base::RunLoop> wait_loop_;
+};
+
+// WidgetWaiter ----------------------------------------------------------------
+
+// A class capable of waiting until a widget is closing.
+class WidgetWaiter : public views::WidgetObserver {
+ public:
+  void WaitForClose(views::Widget* widget) {
+    base::ScopedObservation<views::Widget, views::WidgetObserver>
+        widget_observation_{this};
+    widget_observation_.Observe(widget);
+    wait_loop_ = std::make_unique<base::RunLoop>();
+    wait_loop_->Run();
+    wait_loop_.reset();
+  }
+
+ private:
+  // views::WidgetObserver:
+  void OnWidgetClosing(views::Widget* widget) override { wait_loop_->Quit(); }
 
   std::unique_ptr<base::RunLoop> wait_loop_;
 };
@@ -549,14 +594,11 @@ class HoldingSpaceTrayTest : public HoldingSpaceTrayTestBase {
     auto* prefs = GetSessionControllerClient()->GetUserPrefService(account_id);
     ASSERT_TRUE(prefs);
 
-    const auto expected_chevron_skia =
-        gfx::ImageSkiaOperations::CreateRotatedImage(
-            gfx::CreateVectorIcon(
-                kChevronRightIcon, kHoldingSpaceSectionChevronIconSize,
-                AshColorProvider::Get()->GetContentLayerColor(
-                    AshColorProvider::ContentLayerType::kIconColorSecondary)),
-            expanded ? SkBitmapOperations::ROTATION_270_CW
-                     : SkBitmapOperations::ROTATION_90_CW);
+    const auto expected_chevron_skia = gfx::CreateVectorIcon(
+        expanded ? kChevronUpSmallIcon : kChevronDownSmallIcon,
+        kHoldingSpaceSectionChevronIconSize,
+        AshColorProvider::Get()->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kIconColorSecondary));
 
     // Changes to the section's expanded state should be stored persistently.
     EXPECT_EQ(holding_space_prefs::IsSuggestionsExpanded(prefs), expanded);
@@ -1189,6 +1231,9 @@ TEST_F(HoldingSpaceTrayTest, PlaceholderHiddenAfterFilesAppChipPressed) {
 TEST_F(HoldingSpaceTrayTest, EnterKeyTogglesSuggestionsExpanded) {
   StartSession();
 
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount("HoldingSpace.Suggestions.Action.All", 0);
+
   // Add a suggested item.
   AddItem(HoldingSpaceItem::Type::kLocalSuggestion,
           base::FilePath("/tmp/fake1"));
@@ -1211,6 +1256,12 @@ TEST_F(HoldingSpaceTrayTest, EnterKeyTogglesSuggestionsExpanded) {
   // Press ENTER and expect the section to collapse.
   EXPECT_TRUE(PressTabUntilFocused(suggestions_section_header));
   PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
+  histogram_tester.ExpectBucketCount(
+      "HoldingSpace.Suggestions.Action.All",
+      holding_space_metrics::SuggestionsAction::kCollapse, 1);
+  histogram_tester.ExpectBucketCount(
+      "HoldingSpace.Suggestions.Action.All",
+      holding_space_metrics::SuggestionsAction::kExpand, 0);
   {
     SCOPED_TRACE("First collapse.");
     VerifySuggestionsSectionState(/*expanded=*/false, /*item_present=*/true);
@@ -1218,6 +1269,12 @@ TEST_F(HoldingSpaceTrayTest, EnterKeyTogglesSuggestionsExpanded) {
 
   // Press ENTER and expect the section to expand.
   PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
+  histogram_tester.ExpectBucketCount(
+      "HoldingSpace.Suggestions.Action.All",
+      holding_space_metrics::SuggestionsAction::kCollapse, 1);
+  histogram_tester.ExpectBucketCount(
+      "HoldingSpace.Suggestions.Action.All",
+      holding_space_metrics::SuggestionsAction::kExpand, 1);
   {
     SCOPED_TRACE("First expand.");
     VerifySuggestionsSectionState(/*expanded=*/true, /*item_present=*/true);
@@ -1241,6 +1298,12 @@ TEST_F(HoldingSpaceTrayTest, EnterKeyTogglesSuggestionsExpanded) {
   // Verify that removing and adding an item works with the section collapsed.
   EXPECT_TRUE(PressTabUntilFocused(suggestions_section_header));
   PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
+  histogram_tester.ExpectBucketCount(
+      "HoldingSpace.Suggestions.Action.All",
+      holding_space_metrics::SuggestionsAction::kCollapse, 2);
+  histogram_tester.ExpectBucketCount(
+      "HoldingSpace.Suggestions.Action.All",
+      holding_space_metrics::SuggestionsAction::kExpand, 1);
   {
     SCOPED_TRACE("Second collapse.");
     VerifySuggestionsSectionState(/*expanded=*/false, /*item_present=*/true);
@@ -1976,6 +2039,27 @@ TEST_F(HoldingSpaceTrayTest, OpenItemsViaDoubleClickWithEventModifiers) {
   testing::Mock::VerifyAndClearExpectations(client());
 }
 
+// Verifies that holding space tray bubble closes after double clicking on a
+// holding space item.
+TEST_F(HoldingSpaceTrayTest, CloseTrayBubbleAfterDoubleClick) {
+  StartSession();
+  // Add a file to holding space.
+  AddItem(HoldingSpaceItem::Type::kPinnedFile, base::FilePath("/tmp/fake1"));
+
+  // Show and open the first item.
+  test_api()->Show();
+  std::vector<views::View*> pinned_file_chips =
+      test_api()->GetPinnedFileChips();
+  ASSERT_EQ(pinned_file_chips.size(), 1u);
+  DoubleClick(pinned_file_chips[0]);
+
+  // Monitor the tray bubble widget for an `OnWidgetClosing()` call.
+  WidgetWaiter().WaitForClose(test_api()->GetBubble()->GetWidget());
+
+  // Expect holding space tray bubble to be closed.
+  EXPECT_FALSE(test_api()->IsShowing());
+}
+
 // TODO(crbug.com/1208501): Fix flakes and re-enable.
 // Verifies that the holding space tray animates in and out as expected.
 TEST_F(HoldingSpaceTrayTest, DISABLED_EnterAndExitAnimations) {
@@ -2515,9 +2599,12 @@ TEST_F(HoldingSpacePreviewsTrayTest,
   MarkTimeOfFirstPin();
   StartSession();
 
+  const size_t max_screen_captures =
+      GetMaxVisibleItemCount(HoldingSpaceSectionId::kScreenCaptures);
+
   // Add a number of initialized screen capture items.
   std::deque<HoldingSpaceItem*> items;
-  for (size_t i = 0; i < kMaxScreenCaptures; ++i) {
+  for (size_t i = 0; i < max_screen_captures; ++i) {
     items.push_back(
         AddItem(HoldingSpaceItem::Type::kScreenshot,
                 base::FilePath("/tmp/fake_" + base::NumberToString(i))));
@@ -2901,6 +2988,32 @@ TEST_P(HoldingSpaceTraySuggestionsSectionTest, SuggestionsSection) {
   EXPECT_TRUE(test_api()->GetSuggestionChips().empty());
 }
 
+// Tests the code flow when a suggestion item is removed through the context
+// menu.
+TEST_P(HoldingSpaceTraySuggestionsSectionTest, SuggestionsRemoval) {
+  StartSession();
+
+  // Add a suggestion item.
+  const base::FilePath path("/tmp/fake_1");
+  AddItem(GetType(), path);
+
+  test_api()->Show();
+  std::vector<views::View*> item_views = test_api()->GetHoldingSpaceItemViews();
+  ASSERT_EQ(item_views.size(), 1u);
+
+  // Hover over the item view.
+  MoveMouseTo(item_views.front());
+
+  // Right click the item view to show the context menu.
+  RightClick(item_views.front());
+
+  // Click at the menu item of item removal. Verify that
+  // `HoldingSpaceClient::RemoveFileSuggestions()` is called.
+  EXPECT_CALL(*client(),
+              RemoveFileSuggestions(std::vector<base::FilePath>({path})));
+  Click(GetMenuItemByCommandId(HoldingSpaceCommandId::kRemoveItem));
+}
+
 // Base class for tests of the holding space downloads section parameterized by
 // the set of holding space item types which are expected to appear there.
 class HoldingSpaceTrayDownloadsSectionTest
@@ -2960,8 +3073,11 @@ TEST_P(HoldingSpaceTrayDownloadsSectionTest, DownloadsSection) {
   EXPECT_EQ(items[0]->id(),
             HoldingSpaceItemView::Cast(download_chips[0])->item()->id());
 
+  const size_t max_downloads =
+      GetMaxVisibleItemCount(HoldingSpaceSectionId::kDownloads);
+
   // Add a few more download items until the section reaches capacity.
-  for (size_t i = 2; i <= kMaxDownloads; ++i) {
+  for (size_t i = 2; i <= max_downloads; ++i) {
     items.push_back(AddItem(
         GetType(), base::FilePath("/tmp/fake_" + base::NumberToString(i))));
   }
@@ -2970,7 +3086,7 @@ TEST_P(HoldingSpaceTrayDownloadsSectionTest, DownloadsSection) {
   EXPECT_TRUE(test_api()->GetSuggestionChips().empty());
   EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
   download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(kMaxDownloads, download_chips.size());
+  ASSERT_EQ(max_downloads, download_chips.size());
 
   // All downloads should be visible except for that which is associated with
   // the partially initialized item at index == `1`.
@@ -3008,7 +3124,7 @@ TEST_P(HoldingSpaceTrayDownloadsSectionTest, DownloadsSection) {
   EXPECT_TRUE(test_api()->GetSuggestionChips().empty());
   EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
   download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(kMaxDownloads, download_chips.size());
+  ASSERT_EQ(max_downloads, download_chips.size());
 
   for (int download_chip_index = 0, item_index = items.size() - 1;
        item_index >= 0; ++download_chip_index, --item_index) {
@@ -3037,9 +3153,12 @@ TEST_P(HoldingSpaceTrayDownloadsSectionTest,
   MarkTimeOfFirstPin();
   StartSession();
 
+  const size_t max_downloads =
+      GetMaxVisibleItemCount(HoldingSpaceSectionId::kDownloads);
+
   // Add a number of initialized download items.
   std::deque<HoldingSpaceItem*> items;
-  for (size_t i = 0; i < kMaxDownloads; ++i) {
+  for (size_t i = 0; i < max_downloads; ++i) {
     items.push_back(AddItem(
         GetType(), base::FilePath("/tmp/fake_" + base::NumberToString(i))));
   }
@@ -3076,8 +3195,11 @@ TEST_P(HoldingSpaceTrayDownloadsSectionTest,
   items.push_back(
       AddPartiallyInitializedItem(GetType(), base::FilePath("/tmp/fake_1")));
 
+  const size_t max_downloads =
+      GetMaxVisibleItemCount(HoldingSpaceSectionId::kDownloads);
+
   // Add download items until the section reaches capacity.
-  for (size_t i = 1; i < kMaxDownloads + 1; ++i) {
+  for (size_t i = 1; i < max_downloads + 1; ++i) {
     items.push_back(AddItem(
         GetType(), base::FilePath("/tmp/fake_" + base::NumberToString(i))));
   }
@@ -3086,7 +3208,7 @@ TEST_P(HoldingSpaceTrayDownloadsSectionTest,
   EXPECT_TRUE(test_api()->GetSuggestionChips().empty());
   EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
   std::vector<views::View*> download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(kMaxDownloads, download_chips.size());
+  ASSERT_EQ(max_downloads, download_chips.size());
 
   for (size_t download_chip_index = 0, item_index = items.size() - 1;
        item_index > 0; ++download_chip_index, --item_index) {
@@ -3103,7 +3225,7 @@ TEST_P(HoldingSpaceTrayDownloadsSectionTest,
   EXPECT_TRUE(test_api()->GetSuggestionChips().empty());
   EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
   download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(kMaxDownloads, download_chips.size());
+  ASSERT_EQ(max_downloads, download_chips.size());
 
   for (size_t download_chip_index = 0, item_index = items.size() - 1;
        item_index > 0; ++download_chip_index, --item_index) {
@@ -3120,7 +3242,7 @@ TEST_P(HoldingSpaceTrayDownloadsSectionTest,
   EXPECT_TRUE(test_api()->GetSuggestionChips().empty());
   EXPECT_TRUE(test_api()->GetScreenCaptureViews().empty());
   download_chips = test_api()->GetDownloadChips();
-  ASSERT_EQ(kMaxDownloads, download_chips.size());
+  ASSERT_EQ(max_downloads, download_chips.size());
 
   for (int download_chip_index = 0, item_index = items.size() - 1;
        item_index >= 0; ++download_chip_index, --item_index) {
@@ -3455,6 +3577,27 @@ TEST_P(HoldingSpaceTrayPredictableFeatureTest,
   }
 }
 
+// If the predictable feature flag is enabled and the user has no items in the
+// screen captures or downloads sections, then show a placeholder.
+TEST_P(HoldingSpaceTrayPredictableFeatureTest,
+       ShowRecentFilesPlaceholderWhenNoScreenCapturesOrDownloadsExist) {
+  StartSession();
+
+  // Assert we have no items to display in the recent files holding space
+  // sections.
+  ASSERT_EQ(model()->items().size(), 0u);
+
+  test_api()->Show();
+  ASSERT_TRUE(test_api()->IsShowing());
+
+  // Expect that the recent files bubble and its placeholder are shown if the
+  // feature is enabled.
+  EXPECT_EQ(test_api()->RecentFilesBubbleShown(),
+            IsHoldingSpacePredictabilityEnabled());
+  EXPECT_EQ(test_api()->RecentFilesPlaceholderShown(),
+            IsHoldingSpacePredictabilityEnabled());
+}
+
 class HoldingSpaceTraySuggestionsFeatureTest
     : public HoldingSpaceTrayTestBase,
       public ::testing::WithParamInterface<std::tuple<
@@ -3462,8 +3605,8 @@ class HoldingSpaceTraySuggestionsFeatureTest
           /*suggestions_enabled=*/bool>> {
  public:
   HoldingSpaceTraySuggestionsFeatureTest() {
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
 
     (IsHoldingSpacePredictabilityEnabled() ? enabled_features
                                            : disabled_features)
@@ -3473,6 +3616,10 @@ class HoldingSpaceTraySuggestionsFeatureTest
         .push_back(features::kHoldingSpaceSuggestions);
 
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+  }
+
+  void SetDisableDrive(bool disable) {
+    ON_CALL(*client(), IsDriveDisabled).WillByDefault(testing::Return(disable));
   }
 
   bool IsHoldingSpacePredictabilityEnabled() const {
@@ -3528,7 +3675,8 @@ TEST_P(HoldingSpaceTraySuggestionsFeatureTest,
   EXPECT_TRUE(test_api()->PinnedFilesBubbleShown());
 
   RemoveAllItems();
-  EXPECT_FALSE(test_api()->RecentFilesBubbleShown());
+  EXPECT_EQ(test_api()->RecentFilesBubbleShown(),
+            IsHoldingSpacePredictabilityEnabled());
   EXPECT_EQ(test_api()->PinnedFilesBubbleShown(),
             IsHoldingSpacePredictabilityEnabled());
   EXPECT_EQ(test_api()->IsShowingInShelf(),
@@ -3582,12 +3730,15 @@ TEST_P(HoldingSpaceTraySuggestionsFeatureTest,
        PlaceholderContainsGSuitePrompt) {
   StartSession(/*pre_mark_time_of_first_add=*/true);
 
-  // Show the bubble. Only the pinned files bubble should be visible.
+  // Show the bubble. Only the pinned files bubble should be visible if the
+  // predictable flag is off, otherwise both should be shown.
   test_api()->Show();
   EXPECT_TRUE(test_api()->PinnedFilesBubbleShown());
-  EXPECT_FALSE(test_api()->RecentFilesBubbleShown());
+  EXPECT_EQ(test_api()->RecentFilesBubbleShown(),
+            IsHoldingSpacePredictabilityEnabled());
 
-  // The new suggestions placeholder text and icons should exist in the bubble.
+  // The new suggestions placeholder text and icons should exist in the pinned
+  // files bubble.
   views::View* pinned_files_bubble = test_api()->GetPinnedFilesBubble();
   ASSERT_TRUE(pinned_files_bubble);
 
@@ -3596,12 +3747,30 @@ TEST_P(HoldingSpaceTraySuggestionsFeatureTest,
           kHoldingSpacePinnedFilesSectionPlaceholderLabelId));
   ASSERT_TRUE(suggestions_placeholder_label);
 
-  // TODO(https://crbug.com/1363339): Replace the placeholder text below when
-  // the final string is added.
   std::u16string expected_text =
       IsHoldingSpaceSuggestionsEnabled()
-          ? u"[i18n]You can pin important files here, from the Files app, as "
-            u"well as from Google Slides, Docs, and Drive."
+          ? l10n_util::GetStringUTF16(
+                IDS_ASH_HOLDING_SPACE_PINNED_EMPTY_PROMPT_SUGGESTIONS)
+          : l10n_util::GetStringUTF16(
+                IDS_ASH_HOLDING_SPACE_PINNED_EMPTY_PROMPT);
+  EXPECT_EQ(suggestions_placeholder_label->GetText(), expected_text);
+
+  // Also check to make sure that the label is adjusted when drive is disabled.
+  test_api()->Close();
+  SetDisableDrive(true);
+  test_api()->Show();
+
+  pinned_files_bubble = test_api()->GetPinnedFilesBubble();
+  ASSERT_TRUE(pinned_files_bubble);
+
+  suggestions_placeholder_label =
+      static_cast<views::Label*>(pinned_files_bubble->GetViewByID(
+          kHoldingSpacePinnedFilesSectionPlaceholderLabelId));
+  ASSERT_TRUE(suggestions_placeholder_label);
+  expected_text =
+      IsHoldingSpaceSuggestionsEnabled()
+          ? l10n_util::GetStringUTF16(
+                IDS_ASH_HOLDING_SPACE_PINNED_EMPTY_PROMPT_SUGGESTIONS_DRIVE_DISABLED)
           : l10n_util::GetStringUTF16(
                 IDS_ASH_HOLDING_SPACE_PINNED_EMPTY_PROMPT);
   EXPECT_EQ(suggestions_placeholder_label->GetText(), expected_text);
@@ -3613,33 +3782,94 @@ TEST_P(HoldingSpaceTraySuggestionsFeatureTest,
       pinned_files_bubble));
 }
 
-// Base class for tests of the holding space icon parameterized by a boolean for
-// the kHoldingSpaceRebrand feature flag.
-class HoldingSpaceTrayIconTest : public HoldingSpaceTrayTestBase,
-                                 public ::testing::WithParamInterface<bool> {
+// Base class for tests of holding space parameterized by whether the
+// `kHoldingSpaceRefresh` feature flag is enabled.
+class HoldingSpaceTrayRefreshTest
+    : public HoldingSpaceTrayTestBase,
+      public testing::WithParamInterface</*refresh_enabled=*/bool> {
  public:
-  HoldingSpaceTrayIconTest() {
-    scoped_feature_list_.InitWithFeatureState(features::kHoldingSpaceRebrand,
-                                              IsHoldingSpaceRebrandEnabled());
+  HoldingSpaceTrayRefreshTest() {
+    scoped_feature_list_.InitWithFeatureState(features::kHoldingSpaceRefresh,
+                                              IsHoldingSpaceRefreshEnabled());
   }
 
-  // Returns if kHoldingSpaceRebrand flag is enabled given the test
-  // parameterization.
-  bool IsHoldingSpaceRebrandEnabled() const { return GetParam(); }
+  bool IsHoldingSpaceRefreshEnabled() const { return GetParam(); }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All, HoldingSpaceTrayIconTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         HoldingSpaceTrayRefreshTest,
+                         /*refresh_enabled=*/testing::Bool());
 
-TEST_P(HoldingSpaceTrayIconTest, TrayButtonWithRebrandIcon) {
+TEST_P(HoldingSpaceTrayRefreshTest, HasExpectedBubbleTreatment) {
+  StartSession();
+
+  test_api()->Show();
+  views::View* bubble = test_api()->GetBubble();
+  ASSERT_TRUE(bubble);
+
+  if (IsHoldingSpaceRefreshEnabled()) {
+    // Background.
+    auto* background = bubble->GetBackground();
+    ASSERT_TRUE(background);
+    EXPECT_EQ(background->get_color(),
+              AshColorProvider::Get()->GetBaseLayerColor(
+                  AshColorProvider::BaseLayerType::kTransparent80));
+    EXPECT_EQ(bubble->layer()->background_blur(),
+              ColorProvider::kBackgroundBlurSigma);
+
+    // Border.
+    EXPECT_TRUE(bubble->GetBorder());
+
+    // Corner radius.
+    EXPECT_TRUE(bubble->layer()->is_fast_rounded_corner());
+    EXPECT_EQ(bubble->layer()->rounded_corner_radii(),
+              gfx::RoundedCornersF(kBubbleCornerRadius));
+
+    // Header.
+    auto* header = bubble->GetViewByID(kHoldingSpaceHeaderLabelId);
+    ASSERT_TRUE(header);
+    EXPECT_EQ(views::AsViewClass<views::Label>(header)->GetText(),
+              u"Quick files");
+  } else {
+    // Background.
+    auto* background = bubble->GetBackground();
+    ASSERT_TRUE(background);
+    EXPECT_EQ(background->get_color(), SK_ColorTRANSPARENT);
+    EXPECT_EQ(bubble->layer()->background_blur(), 0.f);
+
+    // Border.
+    EXPECT_FALSE(bubble->GetBorder());
+
+    // Corner radius.
+    EXPECT_FALSE(bubble->layer()->is_fast_rounded_corner());
+    EXPECT_EQ(bubble->layer()->rounded_corner_radii(),
+              gfx::RoundedCornersF(0.f));
+
+    // Header.
+    EXPECT_FALSE(bubble->GetViewByID(kHoldingSpaceHeaderLabelId));
+  }
+}
+
+TEST_P(HoldingSpaceTrayRefreshTest, CheckTrayAccessibilityText) {
+  StartSession(/*pre_mark_time_of_first_add=*/true);
+  GetTray()->FirePreviewsUpdateTimerIfRunningForTesting();
+  EXPECT_EQ(
+      GetTray()->GetAccessibleNameForTray(),
+      IsHoldingSpaceRefreshEnabled()
+          ? u"Quick files: recent screen captures, downloads, and pinned files"
+          : u"Tote: recent screen captures, downloads, and pinned files");
+}
+
+TEST_P(HoldingSpaceTrayRefreshTest, TrayButtonWithRefreshIcon) {
   StartSession(/*pre_mark_time_of_first_add=*/true);
   GetTray()->FirePreviewsUpdateTimerIfRunningForTesting();
   EXPECT_TRUE(gfx::BitmapsAreEqual(
       *test_api()->GetDefaultTrayIcon()->GetImage().bitmap(),
       *gfx::CreateVectorIcon(
-           IsHoldingSpaceRebrandEnabled() ? kHoldingSpaceRebrandIcon
+           IsHoldingSpaceRefreshEnabled() ? kHoldingSpaceRefreshIcon
                                           : kHoldingSpaceIcon,
            kHoldingSpaceTrayIconSize,
            AshColorProvider::Get()->GetContentLayerColor(
@@ -3647,11 +3877,76 @@ TEST_P(HoldingSpaceTrayIconTest, TrayButtonWithRebrandIcon) {
            .bitmap()));
 }
 
-TEST_P(HoldingSpaceTrayIconTest, CheckTrayTooltipText) {
+TEST_P(HoldingSpaceTrayRefreshTest, CheckTrayTooltipText) {
   StartSession(/*pre_mark_time_of_first_add=*/true);
   GetTray()->FirePreviewsUpdateTimerIfRunningForTesting();
   EXPECT_EQ(GetTray()->GetTooltipText(gfx::Point()),
-            IsHoldingSpaceRebrandEnabled() ? u"Quick Files" : u"Tote");
+            IsHoldingSpaceRefreshEnabled() ? u"Quick files" : u"Tote");
+}
+
+TEST_P(HoldingSpaceTrayRefreshTest, PaintsSeparatorBetweenBubbles) {
+  StartSession();
+
+  // Add a pinned file and a download to holding space so that both the
+  // pinned files bubble and recent files bubble will be populated.
+  AddItem(HoldingSpaceItem::Type::kPinnedFile, base::FilePath("/tmp/fake1"));
+  AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake2"));
+
+  // Show holding space and verify that both the pinned files bubble and the
+  // recent files bubble are shown.
+  test_api()->Show();
+  EXPECT_TRUE(test_api()->PinnedFilesBubbleShown());
+  EXPECT_TRUE(test_api()->RecentFilesBubbleShown());
+
+  // Paint the holding space `bubble` to a `bitmap`.
+  views::View* bubble = test_api()->GetBubble();
+  ASSERT_TRUE(bubble);
+  SkBitmap bitmap;
+  bubble->Paint(views::PaintInfo::CreateRootPaintInfo(
+      ui::CanvasPainter(
+          &bitmap, bubble->size(),
+          views::ScaleFactorForDragFromWidget(bubble->GetWidget()),
+          /*clear_color=*/SK_ColorTRANSPARENT,
+          bubble->GetWidget()->GetCompositor()->is_pixel_canvas())
+          .context(),
+      bubble->size()));
+
+  // Determine the midpoint of where a separator would appear if painted.
+  views::View* pinned_files_bubble = test_api()->GetPinnedFilesBubble();
+  ASSERT_TRUE(pinned_files_bubble);
+  views::View* recent_files_bubble = test_api()->GetRecentFilesBubble();
+  ASSERT_TRUE(recent_files_bubble);
+  const int separator_midpoint_x = std::round(bubble->width() / 2.f);
+  const int separator_midpoint_y = gfx::Tween::LinearIntValueBetween(
+      0.5f,
+      views::View::ConvertRectToTarget(
+          /*source=*/pinned_files_bubble, /*target=*/bubble,
+          gfx::RectF(pinned_files_bubble->GetLocalBounds()))
+          .bottom(),
+      views::View::ConvertRectToTarget(
+          /*source=*/recent_files_bubble, /*target=*/bubble,
+          gfx::RectF(recent_files_bubble->GetLocalBounds()))
+          .y());
+
+  // Cache the `actual_color` of the pixel at the midpoint of where a separator
+  // would appear as well as the `expected_color` given feature flag state.
+  SkColor actual_color =
+      bitmap.getColor(separator_midpoint_x, separator_midpoint_y);
+  SkColor expected_color = color_utils::GetResultingPaintColor(
+      /*foreground=*/IsHoldingSpaceRefreshEnabled()
+          ? AshColorProvider::Get()->GetContentLayerColor(
+                AshColorProvider::ContentLayerType::kSeparatorColor)
+          : SK_ColorTRANSPARENT,
+      /*background=*/bubble->GetBackground()
+          ? bubble->GetBackground()->get_color()
+          : SK_ColorTRANSPARENT);
+
+  // Verify that the RGBA components of the `actual_color` versus the
+  // `expected_color` are near enough to be considered equal.
+  EXPECT_NEAR(SkColorGetR(actual_color), SkColorGetR(expected_color), 1);
+  EXPECT_NEAR(SkColorGetG(actual_color), SkColorGetG(expected_color), 1);
+  EXPECT_NEAR(SkColorGetB(actual_color), SkColorGetB(expected_color), 1);
+  EXPECT_NEAR(SkColorGetA(actual_color), SkColorGetA(expected_color), 1);
 }
 
 // Base class for holding space tray tests which make assertions about primary
@@ -3671,11 +3966,6 @@ class HoldingSpaceTrayPrimaryAndSecondaryActionsTest
     auto* progress_indicator =
         static_cast<ProgressIndicator*>(progress_indicator_layer->owner());
     return progress_indicator->inner_icon_visible();
-  }
-
-  // Returns whether a context menu is currently showing.
-  bool IsShowingContextMenu() const {
-    return views::MenuController::GetActiveInstance();
   }
 
   // Returns whether the holding space image is currently showing.
@@ -3698,11 +3988,7 @@ class HoldingSpaceTrayPrimaryAndSecondaryActionsTest
 
   // Returns whether a context menu is showing with a command matching `id`.
   bool HasContextMenuCommand(HoldingSpaceCommandId id) const {
-    if (!IsShowingContextMenu())
-      return false;
-    auto* menu_controller = views::MenuController::GetActiveInstance();
-    auto* menu_item = menu_controller->GetSelectedMenuItem();
-    return menu_item && menu_item->GetMenuItemByID(static_cast<int>(id));
+    return !!GetMenuItemByCommandId(id);
   }
 };
 

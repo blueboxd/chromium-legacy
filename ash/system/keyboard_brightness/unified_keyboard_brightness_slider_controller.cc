@@ -8,6 +8,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/personalization_entry_point.h"
+#include "ash/constants/quick_settings_catalogs.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -48,8 +49,7 @@ class UnifiedKeyboardBrightnessView : public UnifiedSliderView,
                           true /* readonly*/),
         model_(model) {
     if (features::IsRgbKeyboardEnabled() &&
-        Shell::Get()->rgb_keyboard_manager()->IsRgbKeyboardSupported() &&
-        features::IsPersonalizationHubEnabled()) {
+        Shell::Get()->rgb_keyboard_manager()->IsRgbKeyboardSupported()) {
       button()->SetBackgroundColor(keyboardBrightnessIconBackgroundColor);
       AddChildView(CreateKeyboardBacklightColorButton());
     }
@@ -134,6 +134,11 @@ views::View* UnifiedKeyboardBrightnessSliderController::CreateView() {
   DCHECK(!slider_);
   slider_ = new UnifiedKeyboardBrightnessView(this, model_);
   return slider_;
+}
+
+QsSliderCatalogName
+UnifiedKeyboardBrightnessSliderController::GetCatalogName() {
+  return QsSliderCatalogName::kKeyboardBrightness;
 }
 
 void UnifiedKeyboardBrightnessSliderController::SliderValueChanged(

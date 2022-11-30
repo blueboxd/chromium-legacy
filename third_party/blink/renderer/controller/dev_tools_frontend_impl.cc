@@ -86,7 +86,8 @@ void DevToolsFrontendImpl::DidClearWindowObject() {
     DCHECK(script_state);
     ScriptState::Scope scope(script_state);
     v8::MicrotasksScope microtasks_scope(
-        isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+        isolate, ToMicrotaskQueue(script_state),
+        v8::MicrotasksScope::kDoNotRunMicrotasks);
     if (devtools_host_)
       devtools_host_->DisconnectClient();
     devtools_host_ =
@@ -101,7 +102,7 @@ void DevToolsFrontendImpl::DidClearWindowObject() {
         .Check();
   }
 
-  if (!api_script_.IsEmpty()) {
+  if (!api_script_.empty()) {
     ClassicScript::CreateUnspecifiedScript(api_script_)
         ->RunScript(GetSupplementable()->DomWindow());
   }
@@ -118,7 +119,7 @@ void DevToolsFrontendImpl::SetupDevToolsFrontend(
   api_script_ = api_script;
   host_.Bind(std::move(host),
              GetSupplementable()->GetTaskRunner(TaskType::kMiscPlatformAPI));
-  host_.set_disconnect_handler(WTF::Bind(
+  host_.set_disconnect_handler(WTF::BindOnce(
       &DevToolsFrontendImpl::DestroyOnHostGone, WrapWeakPersistent(this)));
   GetSupplementable()->GetPage()->SetDefaultPageScaleLimits(1.f, 1.f);
 }

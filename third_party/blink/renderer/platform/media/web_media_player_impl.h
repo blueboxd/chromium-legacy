@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -178,6 +178,8 @@ class PLATFORM_EXPORT WebMediaPlayerImpl
   void SetPreload(WebMediaPlayer::Preload preload) override;
   WebTimeRanges Buffered() const override;
   WebTimeRanges Seekable() const override;
+
+  void OnFrozen() override;
 
   // paint() the current video frame into |canvas|. This is used to support
   // various APIs and functionalities, including but not limited to: <canvas>,

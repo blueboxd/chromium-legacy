@@ -184,7 +184,7 @@ export class CameraManager implements EventListener {
   getPreviewResolution(): Resolution {
     const {video} = this.getPreviewVideo();
     const {videoWidth, videoHeight} = video;
-    if (this.preferSquarePhoto()) {
+    if (this.useSquareResolution()) {
       const size = Math.min(videoWidth, videoHeight);
       return new Resolution(size, size);
     }
@@ -277,7 +277,6 @@ export class CameraManager implements EventListener {
     };
     const screenState =
         await helper.initScreenStateMonitor(updateScreenOffAuto);
-    updateScreenOffAuto(screenState);
 
     const updateExternalScreen = (hasExternalScreen: boolean) => {
       if (this.hasExternalScreen !== hasExternalScreen) {
@@ -287,7 +286,9 @@ export class CameraManager implements EventListener {
     };
     const hasExternalScreen =
         await helper.initExternalScreenMonitor(updateExternalScreen);
-    updateExternalScreen(hasExternalScreen);
+
+    this.screenOffAuto = screenState === ScreenState.OFF_AUTO;
+    this.hasExternalScreen = hasExternalScreen;
 
     await this.scheduler.initialize(cameraViewUI);
   }
@@ -448,7 +449,7 @@ export class CameraManager implements EventListener {
   }
 
   getAspectRatioSet(resolution: Resolution): AspectRatioSet {
-    if (this.preferSquarePhoto()) {
+    if (this.useSquareResolution()) {
       return AspectRatioSet.RATIO_SQUARE;
     }
     return util.toAspectRatioSet(resolution);
@@ -495,7 +496,10 @@ export class CameraManager implements EventListener {
     this.scheduler.toggleVideoRecordingPause();
   }
 
-  preferSquarePhoto(): boolean {
+  useSquareResolution(): boolean {
+    if (!(state.get(Mode.PHOTO) || state.get(Mode.PORTRAIT))) {
+      return false;
+    }
     const deviceId = this.getDeviceId();
     if (deviceId === null) {
       return false;

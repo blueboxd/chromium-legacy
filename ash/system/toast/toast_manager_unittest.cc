@@ -66,6 +66,14 @@ void WaitForAnimationEnded(ui::Layer* layer) {
   EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
 }
 
+// Waits for a time delta `time`.
+void WaitForTimeDelta(base::TimeDelta time) {
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), time);
+  run_loop.Run();
+}
+
 }  // namespace
 
 namespace ash {
@@ -98,33 +106,41 @@ class ToastManagerImplTest : public AshTestBase {
 
   int GetToastSerial() { return manager_->serial_for_testing(); }
 
-  ToastOverlay* GetCurrentOverlay() {
-    return manager_->GetCurrentOverlayForTesting();
+  // Some toasts can display on multiple root windows, so the caller can use
+  // `root_window` to target a toast on a specific root window.
+  ToastOverlay* GetCurrentOverlay(
+      aura::Window* root_window = Shell::GetRootWindowForNewWindows()) {
+    return manager_->GetCurrentOverlayForTesting(root_window);
   }
 
-  views::Widget* GetCurrentWidget() {
-    ToastOverlay* overlay = GetCurrentOverlay();
+  views::Widget* GetCurrentWidget(
+      aura::Window* root_window = Shell::GetRootWindowForNewWindows()) {
+    ToastOverlay* overlay = GetCurrentOverlay(root_window);
     return overlay ? overlay->widget_for_testing() : nullptr;
   }
 
-  views::LabelButton* GetDismissButton() {
-    ToastOverlay* overlay = GetCurrentOverlay();
+  views::LabelButton* GetDismissButton(
+      aura::Window* root_window = Shell::GetRootWindowForNewWindows()) {
+    ToastOverlay* overlay = GetCurrentOverlay(root_window);
     DCHECK(overlay);
     return overlay->dismiss_button_for_testing();
   }
 
-  std::u16string GetCurrentText() {
-    ToastOverlay* overlay = GetCurrentOverlay();
+  std::u16string GetCurrentText(
+      aura::Window* root_window = Shell::GetRootWindowForNewWindows()) {
+    ToastOverlay* overlay = GetCurrentOverlay(root_window);
     return overlay ? overlay->text_ : std::u16string();
   }
 
-  std::u16string GetCurrentDismissText() {
-    ToastOverlay* overlay = GetCurrentOverlay();
+  std::u16string GetCurrentDismissText(
+      aura::Window* root_window = Shell::GetRootWindowForNewWindows()) {
+    ToastOverlay* overlay = GetCurrentOverlay(root_window);
     return overlay ? overlay->dismiss_text_ : std::u16string();
   }
 
-  void ClickDismissButton() {
-    views::LabelButton* dismiss_button = GetDismissButton();
+  void ClickDismissButton(
+      aura::Window* root_window = Shell::GetRootWindowForNewWindows()) {
+    views::LabelButton* dismiss_button = GetDismissButton(root_window);
     const gfx::Point button_center =
         dismiss_button->GetBoundsInScreen().CenterPoint();
     auto* event_generator = GetEventGenerator();
@@ -855,6 +871,116 @@ TEST_F(ToastManagerImplTest, ExpiredCallbackRunsWhenToastOverlayClosed) {
         break;
       }
       case CancellationSource::kToastDuration: {
+        WaitForTimeDelta(ToastData::kDefaultToastDuration);
+        break;
+      }
+    }
+
+    EXPECT_TRUE(expired_callback_ran);
+  }
+}
+
+// Tests that a toast that is created with `ToastData::persist_on_hover` set to
+// true will not expire while the mouse is hovering over it.
+TEST_F(ToastManagerImplTest, ToastsCanPersistOnHover) {
+  std::string toast_id = "TOAST_ID_" + base::NumberToString(GetToastSerial());
+
+  ToastData toast_data(toast_id, ToastCatalogName::kToastManagerUnittest,
+                       /*text=*/u"");
+  toast_data.persist_on_hover = true;
+
+  auto* toast_manager = manager();
+  toast_manager->Show(toast_data);
+  EXPECT_TRUE(toast_manager->IsRunning(toast_id));
+
+  // Wait for half of the toast duration to elapse.
+  WaitForTimeDelta(ToastData::kDefaultToastDuration / 2);
+
+  // Hover the mouse over the toast to stop the expiration countdown timer.
+  views::Widget* widget = GetCurrentWidget();
+  const gfx::Point toast_center =
+      widget->GetNativeWindow()->GetBoundsInScreen().CenterPoint();
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(toast_center);
+  ASSERT_TRUE(widget->GetRootView()->IsMouseHovered());
+
+  // Wait for the remainder of the default toast duration. At this point the
+  // toast would normally expire, but because the mouse is hovered over it, it
+  // will not.
+  WaitForTimeDelta(ToastData::kDefaultToastDuration / 2);
+  ASSERT_TRUE(toast_manager->IsRunning(toast_id));
+
+  // Move the mouse away to resume the expiration countdown timer.
+  event_generator->MoveMouseTo(gfx::Point(0, 0));
+  ASSERT_FALSE(widget->GetRootView()->IsMouseHovered());
+
+  // Wait for the toast to expire now that the toast is no longer hovered.
+  WaitForTimeDelta(ToastData::kDefaultToastDuration / 2);
+  EXPECT_FALSE(toast_manager->IsRunning(toast_id));
+}
+
+// Table-driven test that checks that toasts designated to show on all windows
+// correctly show and close on all root windows.
+TEST_F(ToastManagerImplTest, ShowAndCloseToastsOnAllRootWindows) {
+  UpdateDisplay("800x700,800x700");
+
+  // Covers possible ways that a toast can be cancelled.
+  enum class CancellationSource {
+    kToastManager,
+    kDismissButton,
+    kToastDuration,
+  };
+
+  struct {
+    const std::string scope_trace;
+    const CancellationSource source;
+  } kTestCases[] = {
+      {"Cancel toast through the toast manager",
+       CancellationSource::kToastManager},
+      {"Cancel toast by pressing the dismiss button",
+       CancellationSource::kDismissButton},
+      {"Cancel toast by letting duration elapse",
+       CancellationSource::kToastDuration},
+  };
+
+  auto* toast_manager = manager();
+  const aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.scope_trace);
+    std::string toast_id = "TOAST_ID_" + base::NumberToString(GetToastSerial());
+
+    // Create data for a toast that matches the test case. If the test case is
+    // not `kToastDuration`, duration should be infinite, and if the test case
+    // is not `kDismissButton` then we do not need a dismiss button on the
+    // toast.
+    ToastData toast_data(
+        toast_id, ToastCatalogName::kToastManagerUnittest,
+        /*text=*/u"",
+        /*duration=*/test_case.source == CancellationSource::kToastDuration
+            ? ToastData::kDefaultToastDuration
+            : ToastData::kInfiniteDuration,
+        /*visible_on_lock_screen=*/false,
+        /*has_dismiss_button=*/test_case.source ==
+            CancellationSource::kDismissButton);
+
+    // Indicate that the toast will show on all root windows.
+    toast_data.show_on_all_root_windows = true;
+    toast_manager->Show(toast_data);
+
+    for (auto* root_window : root_windows)
+      EXPECT_TRUE(GetCurrentOverlay(root_window));
+
+    switch (test_case.source) {
+      case CancellationSource::kToastManager: {
+        toast_manager->Cancel(toast_id);
+        break;
+      }
+      case CancellationSource::kDismissButton: {
+        ClickDismissButton();
+        break;
+      }
+      case CancellationSource::kToastDuration: {
         base::RunLoop run_loop;
         base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
             FROM_HERE, run_loop.QuitClosure(),
@@ -864,8 +990,107 @@ TEST_F(ToastManagerImplTest, ExpiredCallbackRunsWhenToastOverlayClosed) {
       }
     }
 
-    EXPECT_TRUE(expired_callback_ran);
+    for (auto* root_window : root_windows)
+      EXPECT_FALSE(GetCurrentOverlay(root_window));
   }
+}
+
+// This tests that toasts that are designated to persist on hover and appear on
+// all root windows will not close when one of the toast instances is hovered.
+TEST_F(ToastManagerImplTest, ToastsThatPersistOnHoverOnAllRootWindows) {
+  UpdateDisplay("800x700,800x700");
+  auto* toast_manager = manager();
+  const aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+
+  std::string toast_id = "TOAST_ID_" + base::NumberToString(GetToastSerial());
+
+  // Create a basic toast with `ToastData::kDefaultToastDuration` as duration.
+  ToastData toast_data(toast_id, ToastCatalogName::kToastManagerUnittest,
+                       /*text=*/u"");
+
+  // Indicate that the toast will show on all root windows and persist on hover.
+  toast_data.show_on_all_root_windows = true;
+  toast_data.persist_on_hover = true;
+  toast_manager->Show(toast_data);
+  ASSERT_TRUE(toast_manager->IsRunning(toast_id));
+
+  for (auto* root_window : root_windows)
+    ASSERT_TRUE(GetCurrentOverlay(root_window));
+
+  // Wait for half of the toast duration to elapse.
+  WaitForTimeDelta(ToastData::kDefaultToastDuration / 2);
+
+  // Hover the mouse over the toast instance on a root window (in this case the
+  // default is `Shell::GetRootWindowForNewWindows()`) to stop the expiration
+  // countdown timer.
+  views::Widget* widget = GetCurrentWidget();
+  const gfx::Point toast_center =
+      widget->GetNativeWindow()->GetBoundsInScreen().CenterPoint();
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(toast_center);
+  ASSERT_TRUE(widget->GetRootView()->IsMouseHovered());
+
+  // Wait for the other half of the toast duration to elapse. Because the mouse
+  // is hovering over one of the toast instances, all toasts instances should
+  // remain open after this time.
+  WaitForTimeDelta(ToastData::kDefaultToastDuration / 2);
+
+  for (auto* root_window : root_windows)
+    EXPECT_TRUE(GetCurrentOverlay(root_window));
+
+  // Move the mouse away to resume the expiration countdown timer.
+  event_generator->MoveMouseTo(gfx::Point(0, 0));
+  ASSERT_FALSE(widget->GetRootView()->IsMouseHovered());
+
+  // Wait for the other half of the toast duration to elapse. This time, because
+  // the mouse has been moved away from the toast, all toast instances should be
+  // gone.
+  WaitForTimeDelta(ToastData::kDefaultToastDuration / 2);
+
+  for (auto* root_window : root_windows)
+    EXPECT_FALSE(GetCurrentOverlay(root_window));
+}
+
+// This tests that multi-monitor toast instances do not call the
+// `expired_callback_` when the root window is removed.
+TEST_F(ToastManagerImplTest, ExpiredCallbackNotCalledOnRootWindowRemoved) {
+  UpdateDisplay("800x700,800x700");
+  auto* toast_manager = manager();
+
+  std::string toast_id = "TOAST_ID_" + base::NumberToString(GetToastSerial());
+
+  // Create a basic toast with `ToastData::kDefaultToastDuration` as duration.
+  ToastData toast_data(toast_id, ToastCatalogName::kToastManagerUnittest,
+                       /*text=*/u"");
+
+  // Indicate that the toast will show on all root windows.
+  toast_data.show_on_all_root_windows = true;
+
+  // Bind a lambda that will change a value to tell us whether the expired
+  // callback ran.
+  bool expired_callback_ran = false;
+  toast_data.expired_callback = base::BindLambdaForTesting(
+      [&expired_callback_ran]() { expired_callback_ran = true; });
+  toast_manager->Show(toast_data);
+  ASSERT_TRUE(toast_manager->IsRunning(toast_id));
+
+  for (auto* root_window : Shell::GetAllRootWindows())
+    ASSERT_TRUE(GetCurrentOverlay(root_window));
+
+  // Wait for half of the toast duration to elapse.
+  WaitForTimeDelta(ToastData::kDefaultToastDuration / 2);
+
+  // Remove a display to trigger the destruction of a toast overlay.
+  // `expired_callback_ran` should still be false.
+  UpdateDisplay("800x700");
+  ASSERT_EQ(1u, Shell::GetAllRootWindows().size());
+  ASSERT_TRUE(toast_manager->IsRunning(toast_id));
+  EXPECT_FALSE(expired_callback_ran);
+
+  // Wait for the other half of the toast duration to elapse.
+  WaitForTimeDelta(ToastData::kDefaultToastDuration / 2);
+  EXPECT_FALSE(toast_manager->IsRunning(toast_id));
+  EXPECT_TRUE(expired_callback_ran);
 }
 
 }  // namespace ash

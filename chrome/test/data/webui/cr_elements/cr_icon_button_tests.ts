@@ -10,7 +10,8 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import {downAndUp, pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {eventToPromise, flushTasks} from 'chrome://webui-test/test_util.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 // clang-format on
 
@@ -23,7 +24,8 @@ suite('cr-icon-button', function() {
   }
 
   setup(async () => {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     button = document.createElement('cr-icon-button');
     document.body.appendChild(button);
     await flushTasks();

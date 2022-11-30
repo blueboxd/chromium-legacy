@@ -1395,6 +1395,9 @@
       <message name="IDS_CHROMEOS_NETWORK_ERROR_WEP_NOT_SUPPORTED" desc="Network error details in notifications: WEP_NOT_SUPPORTED. Error when a connect attempt fails because WEP networks are not supported.">
         WEP networks are not supported
       </message>
+      <message name="IDS_NETWORK_NETWORK_TO_MANY_STAS_ERROR" desc="Network error details in notifications: TO_MANY_STAS. Error when a connect attempt fails.">
+        This network is busy. Try again later.
+      </message>
       <message name="IDS_NETWORK_UNRECOGNIZED_ERROR" desc="Unrecognized Network error text">
         Unrecognized error: <ph name="desc">$1<ex>ShillErrorString</ex></ph>
       </message>
@@ -1406,6 +1409,15 @@
       </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED" desc="The network device status connected.">
         Connected
+      </message>
+      <message name="IDS_STATUSBAR_NETWORK_DEVICE_SIGNIN" desc="Settings > Network, text in network page when in captive portal state or proxy auth state.">
+        Sign in to network
+      </message>
+      <message name="IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED_LIMITED" desc="The network device is connected but in a portal-suspected portal state. A portal is suspected but no redirect was found, therefore, there may be limited connectivity.">
+        Connected, limited connectivity
+      </message>
+      <message name="IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED_NO_CONNECTIVITY" desc="The network device is connected but in a no-connectivity portal state, therefore, there is no connection to the internet.">
+        Connected, no internet
       </message>
 
       <!-- Strings used in <network-list>, used in Settings and OOBE -->

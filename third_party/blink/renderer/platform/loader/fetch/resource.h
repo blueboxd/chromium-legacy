@@ -89,6 +89,7 @@ enum class ResourceType : uint8_t {
   kAudio,
   kVideo,
   kManifest,
+  kSpeculationRules,
   kMock,  // Only for testing
   kMaxValue = kMock
 };
@@ -444,8 +445,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
   void MarkClientFinished(ResourceClient*);
 
   virtual bool HasClientsOrObservers() const {
-    return !clients_.IsEmpty() || !clients_awaiting_callback_.IsEmpty() ||
-           !finished_clients_.IsEmpty() || !finish_observers_.IsEmpty();
+    return !clients_.empty() || !clients_awaiting_callback_.empty() ||
+           !finished_clients_.empty() || !finish_observers_.empty();
   }
   virtual void DestroyDecodedDataForFailedRevalidation() {}
 

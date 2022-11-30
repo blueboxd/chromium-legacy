@@ -6,8 +6,10 @@
 
 #include "base/check.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/permission_request.h"
 #include "components/permissions/permissions_client.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -104,7 +106,7 @@ const gfx::VectorIcon& GetIconIdDesktop(RequestType type) {
       return kUsbSecurityKeyIcon;
     case RequestType::kStorageAccess:
       return vector_icons::kCookieIcon;
-    case RequestType::kWindowPlacement:
+    case RequestType::kWindowManagement:
       return vector_icons::kSelectWindowIcon;
   }
   NOTREACHED();
@@ -180,8 +182,8 @@ absl::optional<RequestType> ContentSettingsTypeToRequestTypeIfExists(
     case ContentSettingsType::VR:
       return RequestType::kVrSession;
 #if !BUILDFLAG(IS_ANDROID)
-    case ContentSettingsType::WINDOW_PLACEMENT:
-      return RequestType::kWindowPlacement;
+    case ContentSettingsType::WINDOW_MANAGEMENT:
+      return RequestType::kWindowManagement;
 #endif
     default:
       return absl::nullopt;
@@ -244,13 +246,24 @@ absl::optional<ContentSettingsType> RequestTypeToContentSettingsType(
     case RequestType::kVrSession:
       return ContentSettingsType::VR;
 #if !BUILDFLAG(IS_ANDROID)
-    case RequestType::kWindowPlacement:
-      return ContentSettingsType::WINDOW_PLACEMENT;
+    case RequestType::kWindowManagement:
+      return ContentSettingsType::WINDOW_MANAGEMENT;
 #endif
     default:
       // Not associated with a ContentSettingsType.
       return absl::nullopt;
   }
+}
+
+// Returns whether confirmation chips can be displayed
+bool IsConfirmationChipSupported(RequestType for_request_type) {
+  return base::ranges::any_of(
+      std::vector<RequestType>{
+          RequestType::kNotifications, RequestType::kGeolocation,
+          RequestType::kCameraStream, RequestType::kMicStream},
+      [for_request_type](permissions::RequestType request_type) {
+        return request_type == for_request_type;
+      });
 }
 
 IconId GetIconId(RequestType type) {
@@ -327,7 +340,7 @@ const char* PermissionKeyForRequestType(permissions::RequestType request_type) {
     case permissions::RequestType::kVrSession:
       return "vr_session";
 #if !BUILDFLAG(IS_ANDROID)
-    case permissions::RequestType::kWindowPlacement:
+    case permissions::RequestType::kWindowManagement:
       return "window_placement";
 #endif
   }

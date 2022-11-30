@@ -41,7 +41,7 @@ class Widget;
 }  // namespace views
 
 namespace ui {
-class Event;
+class KeyEvent;
 }  // namespace ui
 
 namespace gfx {
@@ -88,12 +88,12 @@ class ASH_EXPORT EcheTray : public TrayBackgroundView,
   void Initialize() override;
   void CloseBubble() override;
   void ShowBubble() override;
-  bool PerformAction(const ui::Event& event) override;
   TrayBubbleView* GetBubbleView() override;
   views::Widget* GetBubbleWidget() const override;
   void OnVirtualKeyboardVisibilityChanged() override;
   void OnAnyBubbleVisibilityChanged(views::Widget* bubble_widget,
                                     bool visible) override;
+  bool CacheBubbleViewForHide() const override;
 
   // TrayBubbleView::Delegate:
   std::u16string GetAccessibleNameForBubble() override;
@@ -179,6 +179,9 @@ class ASH_EXPORT EcheTray : public TrayBackgroundView,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EcheTrayTest, EcheTrayCreatesBubbleButHideFirst);
+  FRIEND_TEST_ALL_PREFIXES(EcheTrayTest, EcheTrayOnDisplayConfigurationChanged);
+  FRIEND_TEST_ALL_PREFIXES(EcheTrayTest,
+                           EcheTrayKeyboardShowHideUpdateBubbleBounds);
 
   // Intercepts all the events targeted to the internal webview in order to
   // process the accelerator keys.
@@ -217,15 +220,14 @@ class ASH_EXPORT EcheTray : public TrayBackgroundView,
   PhoneHubTray* GetPhoneHubTray();
   EcheIconLoadingIndicatorView* GetLoadingIndicator();
 
-  // Updates the bubble's position based on the movements of the shelf.
-  void UpdateBubbleBounds();
+  // Resize Eche size and update the bubble's position.
+  void UpdateEcheSizeAndBubbleBounds();
 
   // ScreenLayoutObserver:
   void OnDisplayConfigurationChanged() override;
 
   // ShelfObserver:
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
-  void OnShelfIconPositionsChanged() override;
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;

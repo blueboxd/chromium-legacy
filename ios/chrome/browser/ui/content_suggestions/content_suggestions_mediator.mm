@@ -27,7 +27,6 @@
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
 #import "ios/chrome/browser/policy/policy_util.h"
@@ -59,11 +58,11 @@
 #import "ios/chrome/browser/ui/ntp/metrics/metrics.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/ntp_tile_saver.h"
-#import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_util.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/whats_new/whats_new_util.h"
+#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -278,7 +277,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 - (void)configureMostRecentTabItemWithWebState:(web::WebState*)webState
                                      timeLabel:(NSString*)timeLabel {
-  DCHECK(IsStartSurfaceEnabled());
   self.returnToRecentTabSectionInfo = ReturnToRecentTabSectionInformation();
   if (!self.returnToRecentTabItem) {
     self.returnToRecentTabItem =
@@ -310,7 +308,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 }
 
 - (void)hideRecentTabTile {
-  DCHECK(IsStartSurfaceEnabled());
   if (self.showMostRecentTabStartSurfaceTile) {
     self.showMostRecentTabStartSurfaceTile = NO;
     self.returnToRecentTabItem = nil;
@@ -350,6 +347,10 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
       case NTPCollectionShortcutTypeHistory:
         base::RecordAction(base::UserMetricsAction("MobileNTPShowHistory"));
         [self.dispatcher showHistory];
+        break;
+      case NTPCollectionShortcutTypeWhatsNew:
+        base::RecordAction(base::UserMetricsAction("MobileNTPShowWhatsNew"));
+        [self.dispatcher showWhatsNew];
         break;
       case NTPCollectionShortcutTypeCount:
         NOTREACHED();
@@ -459,7 +460,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 #pragma mark - StartSurfaceRecentTabObserving
 
 - (void)mostRecentTabWasRemoved:(web::WebState*)web_state {
-  DCHECK(IsStartSurfaceEnabled());
   [self hideRecentTabTile];
 }
 
@@ -631,6 +631,20 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   return [NSString stringWithFormat:@"%@%@", pageTitle, time];
 }
 
+- (BOOL)shouldShowWhatsNewActionItem {
+  if (!IsWhatsNewEnabled()) {
+    return NO;
+  }
+
+  AuthenticationService* authService =
+      AuthenticationServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
+  BOOL isSignedIn =
+      authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin);
+
+  return !isSignedIn;
+}
+
 #pragma mark - Properties
 
 - (NSArray<ContentSuggestionsMostVisitedActionItem*>*)actionButtonItems {
@@ -638,8 +652,9 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     self.readingListItem = ReadingListActionItem();
     self.readingListItem.count = self.readingListUnreadCount;
     _actionButtonItems = @[
-      BookmarkActionItem(), self.readingListItem, RecentTabsActionItem(),
-      HistoryActionItem()
+      [self shouldShowWhatsNewActionItem] ? WhatsNewActionItem()
+                                          : BookmarkActionItem(),
+      self.readingListItem, RecentTabsActionItem(), HistoryActionItem()
     ];
     for (ContentSuggestionsMostVisitedActionItem* item in _actionButtonItems) {
       item.accessibilityTraits = UIAccessibilityTraitButton;

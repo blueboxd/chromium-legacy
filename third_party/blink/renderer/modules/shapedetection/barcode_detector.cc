@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,7 +80,7 @@ BarcodeDetector::BarcodeDetector(ExecutionContext* context,
         barcode_detector_options->formats.push_back(format);
     }
 
-    if (barcode_detector_options->formats.IsEmpty()) {
+    if (barcode_detector_options->formats.empty()) {
       exception_state.ThrowTypeError("Hint option provided, but is empty.");
       return;
     }
@@ -92,8 +92,8 @@ BarcodeDetector::BarcodeDetector(ExecutionContext* context,
   BarcodeDetectorStatics::From(context)->CreateBarcodeDetection(
       service_.BindNewPipeAndPassReceiver(task_runner),
       std::move(barcode_detector_options));
-  service_.set_disconnect_handler(
-      WTF::Bind(&BarcodeDetector::OnConnectionError, WrapWeakPersistent(this)));
+  service_.set_disconnect_handler(WTF::BindOnce(
+      &BarcodeDetector::OnConnectionError, WrapWeakPersistent(this)));
 }
 
 // static
@@ -149,9 +149,10 @@ ScriptPromise BarcodeDetector::DoDetect(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   auto promise = resolver->Promise();
   detect_requests_.insert(resolver);
-  service_->Detect(std::move(bitmap),
-                   WTF::Bind(&BarcodeDetector::OnDetectBarcodes,
-                             WrapPersistent(this), WrapPersistent(resolver)));
+  service_->Detect(
+      std::move(bitmap),
+      WTF::BindOnce(&BarcodeDetector::OnDetectBarcodes, WrapPersistent(this),
+                    WrapPersistent(resolver)));
   return promise;
 }
 

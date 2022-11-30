@@ -50,7 +50,7 @@ void TabletModeMultitaskMenuEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   // Close the multitask menu if it is the target and we have a upwards scroll.
   if (y_offset > 0.f && multitask_menu_ &&
       target == multitask_menu_->multitask_menu_widget()->GetNativeWindow()) {
-    CloseMultitaskMenu();
+    multitask_menu_->AnimateClose();
     return;
   }
 
@@ -67,36 +67,44 @@ void TabletModeMultitaskMenuEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   // downwards scroll.
   if (y_offset < 0.f &&
       event->location_f().y() < target->bounds().height() / 4.f) {
-    ShowMultitaskMenu(active_window);
+    multitask_menu_ = std::make_unique<TabletModeMultitaskMenu>(
+        this, active_window,
+        base::BindRepeating(
+            &TabletModeMultitaskMenuEventHandler::ResetMultitaskMenu,
+            base::Unretained(this)));
   }
 }
 
 void TabletModeMultitaskMenuEventHandler::OnGestureEvent(
     ui::GestureEvent* event) {
   aura::Window* active_window = window_util::GetActiveWindow();
-  if (!multitask_menu_ &&
-      (!active_window ||
-       !active_window->Contains(static_cast<aura::Window*>(event->target())) ||
-       !WindowState::Get(active_window)->CanMaximize())) {
+  auto* window_state = WindowState::Get(active_window);
+  // No-op if there is no active window and no multitask menu, which might be
+  // the active window. If the multitask menu is the active window, we still
+  // want to handle events that might close the menu.
+  if (!window_state ||
+      (!multitask_menu_ &&
+       (!active_window ||
+        !active_window->Contains(static_cast<aura::Window*>(event->target())) ||
+        window_state->IsFloated() || !window_state->CanMaximize()))) {
     return;
   }
 
   gfx::PointF screen_location = event->location_f();
   wm::ConvertPointToScreen(active_window, &screen_location);
 
-  // TODO(sophiewen): Consider checking greater bounds to take into account
-  // events that start in the target area, but end outside.
-
-  // If the menu is open, only handle events inside the menu.
-  if (multitask_menu_ &&
+  // If no drag is in process and the menu is open, only handle events inside
+  // the menu.
+  if (!is_drag_to_open_ && multitask_menu_ &&
       !gfx::RectF(
            multitask_menu_->multitask_menu_widget()->GetWindowBoundsInScreen())
            .Contains(screen_location)) {
     return;
   }
 
-  // If no menu is open, only handle events inside the target area.
-  if (!multitask_menu_ &&
+  // If no drag is in process and the menu is closed, only handle events inside
+  // the target area.
+  if (!is_drag_to_open_ && !multitask_menu_ &&
       !gfx::RectF(active_window->GetBoundsInScreen().CenterPoint().x() -
                       kTargetAreaWidth / 2,
                   0, kTargetAreaWidth, kTargetAreaHeight)
@@ -115,9 +123,16 @@ void TabletModeMultitaskMenuEventHandler::OnGestureEvent(
     case ui::ET_GESTURE_END:
       if (is_drag_to_open_) {
         if (is_drag_to_open_.value()) {
-          ShowMultitaskMenu(active_window);
+          multitask_menu_ = std::make_unique<TabletModeMultitaskMenu>(
+              this, active_window,
+              base::BindRepeating(
+                  &TabletModeMultitaskMenuEventHandler::ResetMultitaskMenu,
+                  base::Unretained(this)));
         } else {
-          CloseMultitaskMenu();
+          // TODO(crbug.com/1363818): Handle drag direction changes if animation
+          // is in progress.
+          DCHECK(multitask_menu_);
+          multitask_menu_->AnimateClose();
         }
         event->SetHandled();
         is_drag_to_open_.reset();
@@ -175,17 +190,7 @@ bool TabletModeMultitaskMenuEventHandler::ProcessBeginFlingOrSwipe(
   return true;
 }
 
-void TabletModeMultitaskMenuEventHandler::ShowMultitaskMenu(
-    aura::Window* active_window) {
-  multitask_menu_ = std::make_unique<TabletModeMultitaskMenu>(
-      this, active_window,
-      base::BindRepeating(
-          &TabletModeMultitaskMenuEventHandler::CloseMultitaskMenu,
-          base::Unretained(this)));
-  multitask_menu_->Show();
-}
-
-void TabletModeMultitaskMenuEventHandler::CloseMultitaskMenu() {
+void TabletModeMultitaskMenuEventHandler::ResetMultitaskMenu() {
   multitask_menu_.reset();
 }
 

@@ -772,18 +772,6 @@ class AutofillMetrics {
     kMaxValue = SECTION_UNION_IMPORT,
   };
 
-  // When parsing a nationally formatted phone number on profile import, a
-  // region has to be assumed. This enum represents if a phone number could be
-  // parsed by assuming the app locale and/or the variation country code as its
-  // region.
-  enum class PhoneNumberImportParsingResult {
-    CANNOT_PARSE = 0,
-    PARSED_WITH_APP_LOCALE = 1,
-    PARSED_WITH_VARIATION_COUNTRY_CODE = 2,
-    PARSED_WITH_BOTH = 3,
-    kMaxValue = PARSED_WITH_BOTH,
-  };
-
   // To record the source of the autofilled state field.
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -1327,17 +1315,11 @@ class AutofillMetrics {
   // This should be called each time a new chrome profile is launched.
   static void LogIsAutofillCreditCardEnabledAtStartup(bool enabled);
 
-  // Records the number of stored address profiles. This is called each time a
-  // new Chrome profile is launched.
-  static void LogStoredProfileCount(size_t num_profiles);
-
-  // Records the number of profiles without a country. This is called each time
-  // a new Chrome profile is launched.
-  static void LogStoredProfilesWithoutCountry(size_t num_profiles);
-
-  // Records the number of stored address profiles which have not been used in
-  // a long time. This is be called each time a new chrome profile is launched.
-  static void LogStoredProfileDisusedCount(size_t num_profiles);
+  // Records statistics for the number of used, disused and country-less address
+  // profiles. This is called each time a new chrome profile is launched.
+  static void LogStoredProfileCountStatistics(size_t num_profiles,
+                                              size_t num_disused_profiles,
+                                              size_t num_countryless_profiles);
 
   // Records the number of days since an address profile was last used. This is
   // called once per address profile each time a new chrome profile is launched.
@@ -1523,6 +1505,19 @@ class AutofillMetrics {
                                         int developer_engagement_metrics,
                                         FormSignature form_signature);
 
+  // Logs the address profile import UKM after the form submission.
+  // `user_decision` is the user's decision based on the storage prompt, if
+  // presented. `num_edited_fields` is the number of fields that were edited by
+  // the user before acceptance of the storage prompt. `profile_import_metadata`
+  // stores metadata related to the import of the address profiles.
+  static void LogAddressProfileImportUkm(
+      ukm::UkmRecorder* ukm_recorder,
+      ukm::SourceId source_id,
+      AutofillProfileImportType import_type,
+      AutofillClient::SaveAddressProfileOfferUserDecision user_decision,
+      const ProfileImportMetadata& profile_import_metadata,
+      size_t num_edited_fields);
+
   // Log the number of hidden or presentational 'select' fields that were
   // autofilled to support synthetic fields.
   static void LogHiddenOrPresentationalSelectFieldsFilled();
@@ -1676,11 +1671,10 @@ class AutofillMetrics {
   // setting-inaccessible in the profile's country.
   static void LogRemovedSettingInaccessibleField(ServerFieldType field);
 
-  // Logs the outcome of parsing a phone number on profile import when assuming
-  // either the variation country code or the app locale as its region.
-  static void LogPhoneNumberImportParsingResult(
-      bool with_variation_country_code,
-      bool with_app_locale);
+  // Logs whether a phone number was parsed successfully on profile import.
+  // Contrary to the profile import requirement metrics, the parsing result is
+  // only emitted when a number is present.
+  static void LogPhoneNumberImportParsingResult(bool parsed_successfully);
 
   // Logs that local heuristics matched phone number fields using `grammar_id`.
   // `suffix_matched` indicates if the special case handling for phone number

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,9 +91,7 @@ class StyleEnvironmentVariablesTest : public PageTestBase {
                 name, /*feature_context=*/nullptr),
             {});
     EXPECT_NE(nullptr, data);
-    Vector<String> backing_strings;
-    data->AppendBackingStrings(backing_strings);
-    return backing_strings[0];
+    return data->Serialize();
   }
 
   void SetVariableOnRoot(const AtomicString& name, const String& value) {

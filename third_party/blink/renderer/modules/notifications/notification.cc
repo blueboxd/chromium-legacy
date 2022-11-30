@@ -85,7 +85,7 @@ Notification* Notification::Create(ExecutionContext* context,
     return nullptr;
   }
 
-  if (!options->actions().IsEmpty()) {
+  if (!options->actions().empty()) {
     exception_state.ThrowTypeError(
         "Actions are only supported for persistent notifications shown using "
         "ServiceWorkerRegistration.showNotification().");
@@ -130,7 +130,7 @@ Notification* Notification::Create(ExecutionContext* context,
 
   // TODO(https://crbug.com/595685): Make |token| a constructor parameter
   // once persistent notifications have been mojofied too.
-  if (notification->tag().IsNull() || notification->tag().IsEmpty()) {
+  if (notification->tag().IsNull() || notification->tag().empty()) {
     auto unguessable_token = base::UnguessableToken::Create();
     notification->SetToken(unguessable_token.ToString().c_str());
   } else {
@@ -199,7 +199,7 @@ void Notification::PrepareShow(TimerBase*) {
   }
 
   loader_ = MakeGarbageCollected<NotificationResourcesLoader>(
-      WTF::Bind(&Notification::DidLoadResources, WrapWeakPersistent(this)));
+      WTF::BindOnce(&Notification::DidLoadResources, WrapWeakPersistent(this)));
   loader_->Start(GetExecutionContext(), *data_);
 }
 

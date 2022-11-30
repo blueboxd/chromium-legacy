@@ -4,6 +4,7 @@
 
 #include "device/bluetooth/floss/floss_lescan_client.h"
 
+#include <map>
 #include <utility>
 #include <vector>
 
@@ -43,10 +44,21 @@ constexpr uint8_t kTestUuidByteArray[] = {0, 1, 2,  3,  4,  5,  6,  7,
                                           8, 9, 10, 11, 12, 13, 14, 15};
 constexpr char kTestUuidStr[] = "00010203-0405-0607-0809-0a0b0c0d0e0f";
 const uint8_t kTestScannerId = 10;
-const uint8_t kTestStatus = 1;
+const GattStatus kTestStatus = GattStatus::kSuccess;
 const uint32_t kTestCallbackId = 1000;
+constexpr char kTestDeviceName[] = "FlossDevice";
 constexpr char kTestDeviceAddr[] = "11:22:33:44:55:66";
 const uint8_t kTestAddrType = 2;
+const uint16_t kTestEventType = 3;
+const uint8_t kTestPrimaryPhy = 4;
+const uint8_t kTestSecondaryPhy = 5;
+const uint8_t kTestAdvSid = 6;
+const int8_t kTestTxPower = 7;
+const int8_t kTestRssi = 8;
+const uint16_t kTestPeriodicAdvInt = 9;
+const uint8_t kTestFlags = 10;
+const uint16_t kTestManufacturerId = 11;
+const std::vector<uint8_t> kTestAdvData = {0, 1, 2};
 
 }  // namespace
 
@@ -81,7 +93,7 @@ class FlossLEScanClientTest : public testing::Test,
   // ScannerClientObserver overrides
   void ScannerRegistered(device::BluetoothUUID uuid,
                          uint8_t scanner_id,
-                         uint8_t status) override {
+                         GattStatus status) override {
     fake_scanner_registered_info_ = {uuid, scanner_id, status};
   }
 
@@ -94,9 +106,30 @@ class FlossLEScanClientTest : public testing::Test,
 
     writer->OpenArray("{sv}", &array);
 
+    FlossDBusClient::WriteDictEntry(&array, "name", scan_result->name);
     FlossDBusClient::WriteDictEntry(&array, "address", scan_result->address);
     FlossDBusClient::WriteDictEntry(&array, "addr_type",
                                     scan_result->addr_type);
+    FlossDBusClient::WriteDictEntry(&array, "event_type",
+                                    scan_result->event_type);
+    FlossDBusClient::WriteDictEntry(&array, "primary_phy",
+                                    scan_result->primary_phy);
+    FlossDBusClient::WriteDictEntry(&array, "secondary_phy",
+                                    scan_result->secondary_phy);
+    FlossDBusClient::WriteDictEntry(&array, "advertising_sid",
+                                    scan_result->advertising_sid);
+    FlossDBusClient::WriteDictEntry(&array, "tx_power", scan_result->tx_power);
+    FlossDBusClient::WriteDictEntry(&array, "rssi", scan_result->rssi);
+    FlossDBusClient::WriteDictEntry(&array, "periodic_adv_int",
+                                    scan_result->periodic_adv_int);
+    FlossDBusClient::WriteDictEntry(&array, "flags", scan_result->flags);
+    FlossDBusClient::WriteDictEntry(&array, "service_uuids",
+                                    scan_result->service_uuids);
+    FlossDBusClient::WriteDictEntry(&array, "service_data",
+                                    scan_result->service_data);
+    FlossDBusClient::WriteDictEntry(&array, "manufacturer_data",
+                                    scan_result->manufacturer_data);
+    FlossDBusClient::WriteDictEntry(&array, "adv_data", scan_result->adv_data);
 
     writer->CloseContainer(&array);
   }
@@ -111,7 +144,7 @@ class FlossLEScanClientTest : public testing::Test,
     dbus::MessageWriter writer(&method_call);
     writer.AppendArrayOfBytes(kTestUuidByteArray, sizeof(kTestUuidByteArray));
     writer.AppendByte(kTestScannerId);
-    writer.AppendByte(kTestStatus);
+    writer.AppendUint32(static_cast<uint32_t>(kTestStatus));
 
     std::unique_ptr<dbus::Response> saved_response;
     method_handler.Run(&method_call,
@@ -137,8 +170,25 @@ class FlossLEScanClientTest : public testing::Test,
     method_call.SetSender(kTestSender);
     method_call.SetSerial(kTestSerial);
     dbus::MessageWriter writer(&method_call);
-    ScanResult scan_result =
-        ScanResult{.address = kTestDeviceAddr, .addr_type = kTestAddrType};
+    ScanResult scan_result;
+    scan_result.name = kTestDeviceName;
+    scan_result.address = kTestDeviceAddr;
+    scan_result.addr_type = kTestAddrType;
+    scan_result.event_type = kTestEventType;
+    scan_result.primary_phy = kTestPrimaryPhy;
+    scan_result.secondary_phy = kTestSecondaryPhy;
+    scan_result.advertising_sid = kTestAdvSid;
+    scan_result.tx_power = kTestTxPower;
+    scan_result.rssi = kTestRssi;
+    scan_result.periodic_adv_int = kTestPeriodicAdvInt;
+    scan_result.flags = kTestFlags;
+    scan_result.service_uuids = std::vector<device::BluetoothUUID>(
+        {device::BluetoothUUID(kTestUuidStr)});
+    scan_result.service_data = std::map<std::string, std::vector<uint8_t>>(
+        {{kTestUuidStr, kTestAdvData}});
+    scan_result.manufacturer_data = std::map<uint16_t, std::vector<uint8_t>>(
+        {{kTestManufacturerId, kTestAdvData}});
+    scan_result.adv_data = kTestAdvData;
     WriteScanResult(&writer, &scan_result);
 
     std::unique_ptr<dbus::Response> saved_response;
@@ -153,8 +203,28 @@ class FlossLEScanClientTest : public testing::Test,
     ASSERT_TRUE(!!saved_response);
     EXPECT_EQ("", saved_response->GetErrorName());
 
+    EXPECT_EQ(fake_scan_result_.name, kTestDeviceName);
     EXPECT_EQ(fake_scan_result_.address, kTestDeviceAddr);
     EXPECT_EQ(fake_scan_result_.addr_type, kTestAddrType);
+    EXPECT_EQ(fake_scan_result_.event_type, kTestEventType);
+    EXPECT_EQ(fake_scan_result_.primary_phy, kTestPrimaryPhy);
+    EXPECT_EQ(fake_scan_result_.secondary_phy, kTestSecondaryPhy);
+    EXPECT_EQ(fake_scan_result_.advertising_sid, kTestAdvSid);
+    EXPECT_EQ(fake_scan_result_.tx_power, kTestTxPower);
+    EXPECT_EQ(fake_scan_result_.rssi, kTestRssi);
+    EXPECT_EQ(fake_scan_result_.periodic_adv_int, kTestPeriodicAdvInt);
+    EXPECT_EQ(fake_scan_result_.flags, kTestFlags);
+    EXPECT_EQ(fake_scan_result_.service_uuids.size(), 1UL);
+    EXPECT_EQ(std::count(fake_scan_result_.service_uuids.begin(),
+                         fake_scan_result_.service_uuids.end(),
+                         device::BluetoothUUID(kTestUuidStr)),
+              1);
+    EXPECT_EQ(fake_scan_result_.service_data.size(), 1UL);
+    EXPECT_EQ(fake_scan_result_.service_data[kTestUuidStr], kTestAdvData);
+    EXPECT_EQ(fake_scan_result_.manufacturer_data.size(), 1UL);
+    EXPECT_EQ(fake_scan_result_.manufacturer_data[kTestManufacturerId],
+              kTestAdvData);
+    EXPECT_EQ(fake_scan_result_.adv_data, kTestAdvData);
   }
 
   int adapter_index_ = 5;
@@ -166,7 +236,7 @@ class FlossLEScanClientTest : public testing::Test,
   std::unique_ptr<FlossLEScanClient> client_;
 
   // For observer test inspections.
-  absl::optional<std::tuple<device::BluetoothUUID, uint8_t, uint8_t>>
+  absl::optional<std::tuple<device::BluetoothUUID, uint8_t, GattStatus>>
       fake_scanner_registered_info_;
   ScanResult fake_scan_result_;
 
@@ -305,15 +375,22 @@ TEST_F(FlossLEScanClientTest, TestStartStopScan) {
         uint8_t param1;
         ASSERT_TRUE(FlossDBusClient::ReadDBusParam(&msg, &param1));
         EXPECT_EQ(kTestScannerId, param1);
-        // Create a fake response with no return value.
+        // Create a fake response with BtifStatus return value.
         auto response = ::dbus::Response::CreateEmpty();
+        dbus::MessageWriter writer(response.get());
+        writer.AppendUint32(
+            static_cast<uint32_t>(FlossDBusClient::BtifStatus::kSuccess));
         std::move(*cb).Run(response.get(), /*err=*/nullptr);
       });
-  client_->StartScan(base::BindLambdaForTesting([](DBusResult<Void> ret) {
-                       // Check that there is no error
-                       EXPECT_TRUE(ret.has_value());
-                     }),
-                     kTestScannerId, ScanSettings{}, std::vector<ScanFilter>());
+  client_->StartScan(base::BindLambdaForTesting(
+                         [](DBusResult<FlossDBusClient::BtifStatus> ret) {
+                           // Check that there is no error and return is parsed
+                           // correctly
+                           EXPECT_TRUE(ret.has_value());
+                           EXPECT_EQ(ret.value(),
+                                     FlossDBusClient::BtifStatus::kSuccess);
+                         }),
+                     kTestScannerId, ScanSettings{}, ScanFilter{});
 
   // Method of 1 parameter with no return.
   EXPECT_CALL(*object_proxy_.get(), DoCallMethodWithErrorResponse(
@@ -326,14 +403,21 @@ TEST_F(FlossLEScanClientTest, TestStartStopScan) {
         ASSERT_TRUE(FlossDBusClient::ReadAllDBusParams(&msg, &param1));
         EXPECT_EQ(kTestScannerId, param1);
         EXPECT_FALSE(msg.HasMoreData());
-        // Create a fake response with no return value.
+        // Create a fake response with BtifStatus return value.
         auto response = ::dbus::Response::CreateEmpty();
+        dbus::MessageWriter writer(response.get());
+        writer.AppendUint32(
+            static_cast<uint32_t>(FlossDBusClient::BtifStatus::kSuccess));
         std::move(*cb).Run(response.get(), /*err=*/nullptr);
       });
-  client_->StopScan(base::BindLambdaForTesting([](DBusResult<Void> ret) {
-                      // Check that there is no error
-                      EXPECT_TRUE(ret.has_value());
-                    }),
+  client_->StopScan(base::BindLambdaForTesting(
+                        [](DBusResult<FlossDBusClient::BtifStatus> ret) {
+                          // Check that there is no error and return is parsed
+                          // correctly
+                          EXPECT_TRUE(ret.has_value());
+                          EXPECT_EQ(ret.value(),
+                                    FlossDBusClient::BtifStatus::kSuccess);
+                        }),
                     kTestScannerId);
 }
 

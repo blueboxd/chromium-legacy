@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -379,7 +379,7 @@ void SlotAssignment::CollectSlots() {
   DCHECK(needs_collect_slots_);
   slots_.clear();
 
-  slots_.ReserveCapacity(slot_count_);
+  slots_.reserve(slot_count_);
   for (HTMLSlotElement& slot :
        Traversal<HTMLSlotElement>::DescendantsOf(*owner_)) {
     slots_.push_back(&slot);

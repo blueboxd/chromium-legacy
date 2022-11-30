@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,8 +113,13 @@ std::string WebLayerDependencies::GetLocale() const {
   return base::android::GetDefaultLocaleString();
 }
 
-std::string WebLayerDependencies::GetCountryCode() const {
-  return autofill_assistant::dependencies_util::GetCountryCode(
+std::string WebLayerDependencies::GetLatestCountryCode() const {
+  return autofill_assistant::dependencies_util::GetLatestCountryCode(
+      FeatureListCreator::GetInstance()->variations_service());
+}
+
+std::string WebLayerDependencies::GetStoredPermanentCountryCode() const {
+  return autofill_assistant::dependencies_util::GetStoredPermanentCountryCode(
       FeatureListCreator::GetInstance()->variations_service());
 }
 

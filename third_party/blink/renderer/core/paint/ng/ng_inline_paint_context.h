@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,7 +120,7 @@ inline NGInlinePaintContext::ScopedInlineItem::~ScopedInlineItem() {
   if (!inline_context_)
     return;
   inline_context_->last_decorations_ = last_decorations_;
-  if (!saved_decorating_boxes_.IsEmpty()) {
+  if (!saved_decorating_boxes_.empty()) {
     inline_context_->decorating_boxes_.swap(saved_decorating_boxes_);
     return;
   }

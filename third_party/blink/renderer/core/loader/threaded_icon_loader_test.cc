@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,9 +65,9 @@ class ThreadedIconLoaderTest : public PageTestBase {
     icon_loader->Start(
         GetDocument().GetExecutionContext(), resource_request,
         resize_dimensions,
-        WTF::Bind(&ThreadedIconLoaderTest::DidGetIcon, WTF::Unretained(this),
-                  run_loop.QuitClosure(), WTF::Unretained(&icon),
-                  WTF::Unretained(&resize_scale)));
+        WTF::BindOnce(&ThreadedIconLoaderTest::DidGetIcon,
+                      WTF::Unretained(this), run_loop.QuitClosure(),
+                      WTF::Unretained(&icon), WTF::Unretained(&resize_scale)));
     WebURLLoaderMockFactory::GetSingletonInstance()
         ->ServeAsynchronousRequests();
     run_loop.Run();

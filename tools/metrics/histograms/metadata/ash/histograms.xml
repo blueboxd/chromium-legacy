@@ -169,7 +169,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.AmbientMode.Enabled" enum="BooleanEnabled"
-    expires_after="2023-02-05">
+    expires_after="2023-04-09">
   <owner>cowmoo@google.com</owner>
   <owner>xiaohuic@chromium.org</owner>
   <summary>
@@ -398,7 +398,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.AshDataSizeMB" units="MB"
-    expires_after="M110">
+    expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -409,7 +409,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.CommonDataSizeMB" units="MB"
-    expires_after="M110">
+    expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -419,7 +419,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.CommonDataTimeTakenMS" units="ms"
-    expires_after="M110">
+    expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -428,7 +428,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.CopiedDataSizeMB" units="MB"
-    expires_after="2023-03-12">
+    expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -438,7 +438,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.CreateDirectoryFailure"
-    enum="PlatformFileError" expires_after="M110">
+    enum="PlatformFileError" expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -448,7 +448,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunAshDataSizeMB" units="MB"
-    expires_after="2023-03-12">
+    expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -462,7 +462,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunCommonDataSizeMB" units="MB"
-    expires_after="M110">
+    expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -475,7 +475,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunExtraSizeRequiredMB.Move"
-    units="MB" expires_after="2023-03-12">
+    units="MB" expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -484,14 +484,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunExtraSizeReservedMB.Move"
-    units="MB" expires_after="M110">
+    units="MB" expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>Free disk space after move migration.</summary>
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunHasEnoughDiskSpace.{Mode}"
-    enum="Boolean" expires_after="M110">
+    enum="Boolean" expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -509,7 +509,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunLacrosDataSizeMB" units="MB"
-    expires_after="2023-03-12">
+    expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -523,7 +523,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunNoCopyDataSizeMB" units="MB"
-    expires_after="M110">
+    expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -535,7 +535,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunTotalCopySizeMB.Copy" units="MB"
-    expires_after="2023-03-12">
+    expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -544,7 +544,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunTotalCopySizeMB.Move" units="MB"
-    expires_after="2023-03-12">
+    expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -553,7 +553,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.FinalStatus"
-    enum="BrowserDataMigratorFinalStatus" expires_after="M110">
+    enum="BrowserDataMigratorFinalStatus" expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -563,7 +563,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.LacrosDataSizeMB" units="MB"
-    expires_after="2023-03-12">
+    expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -574,14 +574,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.LacrosDataTimeTakenMS" units="ms"
-    expires_after="M110">
+    expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>The time taken for copying lacros data.</summary>
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.MoveMigrator.CancelledMigrationTime"
-    units="ms" expires_after="M110">
+    units="ms" expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -595,7 +595,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.MoveMigrator.PosixErrno.{TaskStatus}"
-    units="errno" expires_after="M110">
+    units="errno" expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -638,7 +638,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.MoveMigrator.PreMigrationCleanUpTime"
-    units="ms" expires_after="M110">
+    units="ms" expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -649,7 +649,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.MoveMigrator.ResumeStep"
-    enum="MoveMigratorResumeStep" expires_after="M110">
+    enum="MoveMigratorResumeStep" expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -663,7 +663,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Ash.BrowserDataMigrator.MoveMigrator.SetupLacrosDirCopyTargetItemsTime"
-    units="ms" expires_after="M110">
+    units="ms" expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -675,7 +675,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.MoveMigrator.SetupLacrosDirTime"
-    units="ms" expires_after="M110">
+    units="ms" expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -686,7 +686,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.MoveMigrator.SuccessfulMigrationTime"
-    units="ms" expires_after="M110">
+    units="ms" expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -698,7 +698,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.MoveMigrator.TaskStatus"
-    enum="MoveMigratorTaskStatus" expires_after="2023-03-12">
+    enum="MoveMigratorTaskStatus" expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -709,7 +709,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.NoCopyDataSizeMB" units="MB"
-    expires_after="M110">
+    expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -718,7 +718,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.TotalCopySizeWhenNotEnoughSpace"
-    units="MB" expires_after="M110">
+    units="MB" expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -728,7 +728,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.TotalTimeTakenMS" units="ms"
-    expires_after="2023-03-12">
+    expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -738,7 +738,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Calendar.CalendarKeyboardNavigationSource"
-    enum="CalendarKeyboardNavigationSource" expires_after="2023-02-16">
+    enum="CalendarKeyboardNavigationSource" expires_after="2023-09-18">
   <owner>kradtke@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -750,7 +750,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Calendar.FetchEvents.FetchDuration" units="ms"
-    expires_after="2023-01-15">
+    expires_after="2023-09-18">
   <owner>rtinkoff@google.com</owner>
   <owner>jiamingc@google.com</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -789,7 +789,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Calendar.FetchEvents.PreFetched" units="fetches"
-    expires_after="2022-11-10">
+    expires_after="2023-09-18">
   <owner>rtinkoff@google.com</owner>
   <owner>jiamingc@google.com</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -800,7 +800,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Calendar.FetchEvents.Result"
-    enum="CalendarEventFetchApiError" expires_after="2023-01-15">
+    enum="CalendarEventFetchApiError" expires_after="2023-09-18">
   <owner>rtinkoff@google.com</owner>
   <owner>jiamingc@google.com</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -811,7 +811,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Calendar.FetchEvents.SingleMonthSize" units="bytes"
-    expires_after="2023-04-14">
+    expires_after="2023-09-18">
   <owner>rtinkoff@google.com</owner>
   <owner>jiamingc@google.com</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -822,7 +822,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Calendar.FetchEvents.Timeout" enum="Boolean"
-    expires_after="2023-01-15">
+    expires_after="2023-09-18">
   <owner>rtinkoff@google.com</owner>
   <owner>jiamingc@google.com</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -833,7 +833,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Calendar.FetchEvents.TotalCacheSizeMonths" units="months"
-    expires_after="2023-04-13">
+    expires_after="2023-09-18">
   <owner>rtinkoff@google.com</owner>
   <owner>jiamingc@google.com</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -844,7 +844,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Calendar.MaxDistanceBrowsed" units="months"
-    expires_after="2023-02-16">
+    expires_after="2023-09-18">
   <owner>newcomer@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -854,7 +854,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Calendar.MonthDwellTime" units="ms"
-    expires_after="2023-02-16">
+    expires_after="2023-09-18">
   <owner>kradtke@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -864,7 +864,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Calendar.ScrollSource" enum="CalendarViewScrollSource"
-    expires_after="2023-02-12">
+    expires_after="2023-09-18">
   <owner>jiamingc@google.com</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -875,7 +875,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Calendar.ShowSource.{ViewShowSource}"
-    enum="CalendarEventSource" expires_after="2022-11-10">
+    enum="CalendarEventSource" expires_after="2023-09-18">
   <owner>newcomer@google.com</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -889,7 +889,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Calendar.TimeToSeeTodaysEventDots" units="ms"
-    expires_after="2023-02-12">
+    expires_after="2023-09-18">
   <owner>newcomer@google.com</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -900,8 +900,23 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.Calendar.UserJourneyTime.{EventLaunchState}" units="ms"
+    expires_after="2023-09-18">
+  <owner>newcomer@google.com</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <summary>
+    Recorded when the calendar view is destroyed, records the lifetime of the
+    CalendarView object, which corresponds with the user journey time of the
+    calendar.
+  </summary>
+  <token key="EventLaunchState">
+    <variant name="EventLaunched" summary="event launched"/>
+    <variant name="EventNotLaunched" summary="event not launched"/>
+  </token>
+</histogram>
+
 <histogram name="Ash.Calendar.{CalendarChildView}.Activated"
-    enum="CalendarEventSource" expires_after="2022-11-10">
+    enum="CalendarEventSource" expires_after="2023-09-18">
   <owner>newcomer@google.com</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>Recorded when the {CalendarChildView} is activated.</summary>
@@ -914,7 +929,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.CalendarView.CloseEventList.AnimationSmoothness" units="%"
-    expires_after="2023-02-18">
+    expires_after="2023-09-18">
   <owner>newcomer@google.com</owner>
   <owner>jiamingc@google.com</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -923,7 +938,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.CalendarView.ConstructionTime" units="ms"
-    expires_after="2023-02-18">
+    expires_after="2023-09-18">
   <owner>jiamingc@google.com</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -934,7 +949,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.CalendarView.OnMonthChanged.AnimationSmoothness" units="%"
-    expires_after="2023-02-18">
+    expires_after="2023-09-18">
   <owner>newcomer@google.com</owner>
   <owner>jiamingc@google.com</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -960,7 +975,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Ash.CalendarView.ScrollOneMonth.{CalendarChildView}.AnimationSmoothness"
-    units="%" expires_after="2023-02-18">
+    units="%" expires_after="2023-09-18">
   <owner>newcomer@google.com</owner>
   <owner>jiamingc@google.com</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -977,7 +992,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Ash.CalendarView.{Animation}.{CalendarChildView}.AnimationSmoothness"
-    units="%" expires_after="2023-02-18">
+    units="%" expires_after="2023-09-18">
   <owner>newcomer@google.com</owner>
   <owner>jiamingc@google.com</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -1072,7 +1087,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.CaptureModeController.ConsecutiveScreenshots"
-    units="consecutive screenshots" expires_after="2023-01-15">
+    units="consecutive screenshots" expires_after="2023-03-19">
   <owner>afakhry@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -1173,7 +1188,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.CaptureModeController.QuickAction"
-    enum="CaptureQuickAction" expires_after="2023-01-15">
+    enum="CaptureQuickAction" expires_after="2023-03-19">
   <owner>shidi@chromium.org</owner>
   <summary>
     Track all quick actions on screenshot notification. Including: Edit in
@@ -1257,7 +1272,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.CaptureModeController.ScreenshotsPerDay" units="int"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>afakhry@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -1269,7 +1284,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.CaptureModeController.ScreenshotsPerWeek" units="int"
-    expires_after="2023-01-22">
+    expires_after="2023-04-09">
   <owner>afakhry@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -1341,6 +1356,21 @@ chromium-metrics-reviews@google.com.
     theme) feature pod button inside system tray menu. Emitted false if the user
     switched to light mode through toggling this button. ChromeOS only.
   </summary>
+</histogram>
+
+<histogram name="Ash.DeskApi.{Method}.Result" units="BooleanSuccess"
+    expires_after="2023-10-07">
+  <owner>aprilzhou@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    Recorded when a desk API {Method} method succeeded or failed.
+  </summary>
+  <token key="Method">
+    <variant name="AllDesk" summary="set to all desks"/>
+    <variant name="LaunchDesk" summary="launch desk"/>
+    <variant name="RemoveDesk" summary="remove desk"/>
+    <variant name="SwitchDesk" summary="switch desk"/>
+  </token>
 </histogram>
 
 <histogram name="Ash.Desks.AnimationLatency.DeskActivation" units="ms"
@@ -1587,6 +1617,23 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.Desks.NumberOfWindowsClosed.{RemovalSource}"
+    units="windows" expires_after="2023-10-03">
+  <owner>aprilzhou@google.com</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    Emitted when a virtual desk is removed and all windows on the desk being
+    closed by {RemovalSource} to record the total number of windows being closed
+    by this operation.
+  </summary>
+  <token key="RemovalSource">
+    <variant name="Api" summary="api"/>
+    <variant name="Button" summary="button"/>
+    <variant name="Keyboard" summary="keyboard"/>
+    <variant name="SaveRecall" summary="save and recall"/>
+  </token>
+</histogram>
+
 <histogram name="Ash.Desks.NumberOfWindowsOnDesk_1" units="units"
     expires_after="2023-04-23">
   <owner>afakhry@chromium.org</owner>
@@ -1594,6 +1641,76 @@ chromium-metrics-reviews@google.com.
   <summary>
     The number of windows on the first desk. Emitted when a desk is removed, or
     a window is moved to another desk.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.NumberOfWindowsOnDesk_10" units="units"
+    expires_after="2023-04-23">
+  <owner>dandersson@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    The number of windows on the tenth desk. Emitted when a desk is removed, or
+    a window is moved to another desk.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.NumberOfWindowsOnDesk_11" units="units"
+    expires_after="2023-04-23">
+  <owner>dandersson@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    The number of windows on the eleventh desk. Emitted when a desk is removed,
+    or a window is moved to another desk.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.NumberOfWindowsOnDesk_12" units="units"
+    expires_after="2023-04-23">
+  <owner>dandersson@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    The number of windows on the twelfth desk. Emitted when a desk is removed,
+    or a window is moved to another desk.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.NumberOfWindowsOnDesk_13" units="units"
+    expires_after="2023-04-23">
+  <owner>dandersson@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    The number of windows on the thirteenth desk. Emitted when a desk is
+    removed, or a window is moved to another desk.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.NumberOfWindowsOnDesk_14" units="units"
+    expires_after="2023-04-23">
+  <owner>dandersson@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    The number of windows on the fourteenth desk. Emitted when a desk is
+    removed, or a window is moved to another desk.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.NumberOfWindowsOnDesk_15" units="units"
+    expires_after="2023-04-23">
+  <owner>dandersson@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    The number of windows on the fifteenth desk. Emitted when a desk is removed,
+    or a window is moved to another desk.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.NumberOfWindowsOnDesk_16" units="units"
+    expires_after="2023-04-23">
+  <owner>dandersson@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    The number of windows on the sixteenth desk. Emitted when a desk is removed,
+    or a window is moved to another desk.
   </summary>
 </histogram>
 
@@ -1663,6 +1780,16 @@ chromium-metrics-reviews@google.com.
   <owner>janetmac@chromium.org</owner>
   <summary>
     The number of windows on the eighth desk. Emitted when a desk is removed, or
+    a window is moved to another desk.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.NumberOfWindowsOnDesk_9" units="units"
+    expires_after="2023-04-23">
+  <owner>dandersson@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    The number of windows on the ninth desk. Emitted when a desk is removed, or
     a window is moved to another desk.
   </summary>
 </histogram>
@@ -1745,7 +1872,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.AddOrUpdateTemplateStatus"
-    enum="DeskModelAddOrUpdateEntryStatus" expires_after="2023-01-15">
+    enum="DeskModelAddOrUpdateEntryStatus" expires_after="2023-04-09">
   <owner>yzd@google.com</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1756,7 +1883,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.DeleteSaveAndRecall" units="BooleanHit"
-    expires_after="2022-11-24">
+    expires_after="2023-10-03">
   <owner>dandersson@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1765,14 +1892,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.DeleteTemplate" enum="BooleanHit"
-    expires_after="2022-11-11">
+    expires_after="2023-10-03">
   <owner>avynn@google.com</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>Recorded when desk templates are deleted, is never false.</summary>
 </histogram>
 
 <histogram name="Ash.DeskTemplate.LaunchFromTemplate" enum="BooleanHit"
-    expires_after="2023-02-19">
+    expires_after="2023-10-03">
   <owner>richui@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1781,14 +1908,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.LaunchSaveAndRecall" enum="BooleanHit"
-    expires_after="2023-02-19">
+    expires_after="2023-10-03">
   <owner>dandersson@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>Emitted when a Save and Recall desk is launched.</summary>
 </histogram>
 
 <histogram name="Ash.DeskTemplate.LoadTemplateGrid" enum="BooleanHit"
-    expires_after="2022-11-12">
+    expires_after="2023-10-03">
   <owner>avynn@google.com</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1797,14 +1924,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.NewSaveAndRecall" units="BooleanHit"
-    expires_after="2022-11-24">
+    expires_after="2023-10-03">
   <owner>dandersson@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>Recorded when a new Save and Recall desk is created.</summary>
 </histogram>
 
 <histogram name="Ash.DeskTemplate.NewTemplate" enum="BooleanHit"
-    expires_after="2023-01-22">
+    expires_after="2023-10-03">
   <owner>avynn@google.com</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1813,14 +1940,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.ReplaceSaveAndRecall" enum="BooleanHit"
-    expires_after="2022-12-03">
+    expires_after="2023-10-03">
   <owner>dandersson@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>Recorded when the user replaces a Save and Recall desk.</summary>
 </histogram>
 
 <histogram name="Ash.DeskTemplate.ReplaceTemplate" enum="BooleanHit"
-    expires_after="2022-07-14">
+    expires_after="2023-10-03">
   <owner>aprilzhou@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1829,7 +1956,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.SaveAndRecallTabCount" units="count"
-    expires_after="2022-11-24">
+    expires_after="2023-10-03">
   <owner>dandersson@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1838,7 +1965,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.SaveAndRecallUnsupportedAppDialogShow"
-    units="count" expires_after="2022-12-03">
+    units="count" expires_after="2023-10-03">
   <owner>dandersson@google.com</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1850,7 +1977,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.SaveAndRecallWindowAndTabCount" units="count"
-    expires_after="2022-11-24">
+    expires_after="2023-10-03">
   <owner>dandersson@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1860,7 +1987,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.SaveAndRecallWindowCount" units="count"
-    expires_after="2022-11-24">
+    expires_after="2023-10-03">
   <owner>dandersson@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1869,14 +1996,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.TabCount" units="count"
-    expires_after="2023-02-19">
+    expires_after="2023-10-03">
   <owner>richui@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>Records the number of tabs in a template when it is saved.</summary>
 </histogram>
 
 <histogram name="Ash.DeskTemplate.TimeBetweenSaveAndRecall" units="seconds"
-    expires_after="2022-12-03">
+    expires_after="2023-10-03">
   <owner>dandersson@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1886,7 +2013,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.TimeToLoadTemplate" units="ms"
-    expires_after="2023-01-18">
+    expires_after="2023-10-03">
   <owner>avynn@google.com</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1896,7 +2023,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.UnsupportedAppDialogShow" units="count"
-    expires_after="2023-01-04">
+    expires_after="2023-10-03">
   <owner>avynn@google.com</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1908,7 +2035,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.UserSaveAndRecallCount" units="count"
-    expires_after="2022-11-24">
+    expires_after="2023-10-03">
   <owner>dandersson@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1918,7 +2045,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.UserTemplateCount" units="count"
-    expires_after="2023-04-04">
+    expires_after="2023-10-03">
   <owner>richui@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1928,7 +2055,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.WindowAndTabCount" units="count"
-    expires_after="2023-02-19">
+    expires_after="2023-10-03">
   <owner>richui@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1937,7 +2064,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.WindowCount" units="count"
-    expires_after="2023-02-19">
+    expires_after="2023-10-03">
   <owner>richui@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1973,7 +2100,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeviceActiveClient.QueryMembershipResult"
-    enum="BooleanSuccess" expires_after="2023-01-15">
+    enum="BooleanSuccess" expires_after="2023-03-19">
   <owner>hirthanan@google.com</owner>
   <owner>chromeos-data-team@google.com</owner>
   <summary>
@@ -2021,14 +2148,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeviceActiveController.PsmDeviceActiveSecretIsSet"
-    enum="BooleanSuccess" expires_after="2023-01-15">
+    enum="BooleanSuccess" expires_after="2023-03-19">
   <owner>hirthanan@google.com</owner>
   <owner>chromeos-data-team@google.com</owner>
   <summary>Whether the PSM derived active secret is set (non empty).</summary>
 </histogram>
 
 <histogram name="Ash.DeviceActivity.MethodCalled" enum="DeviceActivityMethod"
-    expires_after="2023-02-01">
+    expires_after="2023-04-09">
   <owner>hirthanan@google.com</owner>
   <owner>chromeos-data-team@google.com</owner>
   <summary>
@@ -2226,7 +2353,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.HotseatGesture" enum="HotseatInAppGesture"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>andrewxu@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
   <summary>Gestures supported by the in-app hotseat.</summary>
@@ -2344,13 +2471,24 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Lacros.Launch.Mode" enum="LacrosLaunchMode"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>skuhne@chromium.org</owner>
   <owner>lacros-team@google.com</owner>
   <summary>
     The Lacros operation mode. This will record if Ash is the only browser, both
     browsers are running side by side or if Lacros is the only browser. It will
     be emitted once when the system (Ash) starts.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Lacros.Launch.Mode.Daily" enum="LacrosLaunchMode"
+    expires_after="2023-07-15">
+  <owner>skuhne@chromium.org</owner>
+  <owner>lacros-team@google.com</owner>
+  <summary>
+    The Lacros operation mode. This will record if Ash is the only browser, both
+    browsers are running side by side or if Lacros is the only browser. It will
+    be emitted at least once a day.
   </summary>
 </histogram>
 
@@ -2365,6 +2503,19 @@ chromium-metrics-reviews@google.com.
     by a policy or enforced by the user (overriding any given policy). It will
     be emitted shortly before Lacros gets started the first time from the system
     (Ash).
+  </summary>
+</histogram>
+
+<histogram name="Ash.Lacros.Launch.ModeAndSource.Daily"
+    enum="LacrosLaunchModeAndSource" expires_after="2023-07-12">
+  <owner>skuhne@chromium.org</owner>
+  <owner>lacros-team@google.com</owner>
+  <summary>
+    The Lacros operation mode and the origin of the setting. This will record if
+    Ash is the only browser, both browsers are running side by side or if Lacros
+    is the only browser as well as if the setting was set by the user, enforced
+    by a policy or enforced by the user (overriding any given policy). It will
+    be emitted at least once a day.
   </summary>
 </histogram>
 
@@ -2512,7 +2663,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Login.ShowGaiaSignin.WaitTime" units="ms"
-    expires_after="2023-01-20">
+    expires_after="2023-03-26">
   <owner>agawronska@chromium.org</owner>
   <owner>galenemco@google.com</owner>
   <owner>cros-families-eng@google.com</owner>
@@ -2525,13 +2676,15 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Ash.Login.TimeUntilGoodADF" units="ms"
+<histogram name="Ash.Login.TimeUntilGoodADF" units="microseconds"
     expires_after="2023-08-07">
   <owner>xiyuan@chromium.org</owner>
   <owner>chromeos-perfmetrics-eng@google.com</owner>
   <summary>
     Time between user logged in (i.e. a successful cryptohome mount) and when
     good ADF (&lt;= 20%) is observed for more than 5 seconds.
+
+    This histogram only records metrics on machines with high-resolution clocks.
   </summary>
 </histogram>
 
@@ -2613,7 +2766,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.MessageCenter.Scroll.PresentationTime" units="ms"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -2750,7 +2903,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Notification.ClearAllVisible.AnimationSmoothness"
-    units="%" expires_after="2023-01-15">
+    units="%" expires_after="2023-03-19">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -2771,7 +2924,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Notification.ExpandOrCollapse.AnimationSmoothness"
-    units="%" expires_after="2023-01-22">
+    units="%" expires_after="2023-03-26">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -2805,7 +2958,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Notification.MoveDown.AnimationSmoothness" units="%"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -3009,7 +3162,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.NotifierFramework.Toast.ShownCount"
-    enum="ToastCatalogName" expires_after="2023-01-15">
+    enum="ToastCatalogName" expires_after="2023-03-19">
   <owner>kradtke@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -3019,7 +3172,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.NotifierFramework.Toast.TimeInQueue" units="seconds"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>kradtke@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -3136,7 +3289,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Overview.ArrowKeyPresses" units="units"
-    expires_after="2023-01-15">
+    expires_after="2023-03-26">
   <owner>nupurjain@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -3166,7 +3319,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Overview.KeyPressesOverItemsRatio" units="%"
-    expires_after="2023-01-15">
+    expires_after="2023-03-26">
   <owner>nupurjain@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -3177,7 +3330,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Overview.OverviewClosedItems" units="units"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>nupurjain@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -3208,7 +3361,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Overview.SelectionDepth" units="items"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>nupurjain@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
@@ -3230,7 +3383,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Overview.TimeBetweenActiveWindowChanges" units="seconds"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>nupurjain@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -3469,6 +3622,34 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.PrivacyIndicators.AnimationSmoothness" units="%"
+    expires_after="2023-09-19">
+  <owner>leandre@chromium.org</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <summary>
+    Animation smoothness of the privacy indicators view animation. This occurs
+    when an app is accessing camera/microphone or screen sharing and a green
+    indicator appears on the status area button. Measured via a throughtput
+    tracker.
+  </summary>
+</histogram>
+
+<histogram name="Ash.PrivacyIndicators.{Icon}.AnimationSmoothness" units="%"
+    expires_after="2023-09-19">
+  <owner>leandre@chromium.org</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <summary>
+    Animation smoothness of the privacy indicators {Icon} fade in animation.
+    This occurs when an app is accessing camera/microphone or screen sharing and
+    a green indicator appears on the status area button.
+  </summary>
+  <token key="Icon">
+    <variant name="CameraIcon" summary="Camera icon"/>
+    <variant name="MicrophoneIcon" summary="Microphone icon"/>
+    <variant name="ScreenshareIcon" summary="Screen share icon"/>
+  </token>
+</histogram>
+
 <histogram name="Ash.Projector.CreationFlow.{TabletOrClamshell}"
     enum="ProjectorCreationFlow" expires_after="2022-12-01">
   <owner>tobyhuang@chromium.org</owner>
@@ -3561,6 +3742,49 @@ chromium-metrics-reviews@google.com.
   <token key="TabletOrClamshell" variants="DisplayModes"/>
 </histogram>
 
+<histogram name="Ash.QuickSettings.Button.Activated" enum="QsButtonCatalogName"
+    expires_after="2023-09-08">
+  <owner>jiamingc@google.com</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <summary>
+    Recorded when any button in the quick settings view is activated.
+  </summary>
+</histogram>
+
+<histogram name="Ash.QuickSettings.FeaturePod.{FeaturePodBehavior}"
+    enum="QsFeatureCatalogName" expires_after="2023-09-14">
+  <owner>jiamingc@google.com</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <summary>
+    Recorded when an action is done on any FeaturePod in the quick settings
+    view. {FeaturePodBehavior} can be toggled to enable the feature, toggle to
+    disable this feature, or go to the feature's detailed page.
+  </summary>
+  <token key="FeaturePodBehavior">
+    <variant name="DiveIn" summary="Go to the feature detailed page"/>
+    <variant name="ToggleOff" summary="Toggle to disable the feature"/>
+    <variant name="ToggleOn" summary="Toggle to enable the feature"/>
+    <variant name="Visible" summary="The feature pod is shown"/>
+  </token>
+</histogram>
+
+<histogram name="Ash.QuickSettings.Slider.{SliderBehavior}"
+    enum="QsSliderCatalogName" expires_after="2023-09-21">
+  <owner>jiamingc@google.com</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <summary>
+    Recorded when an action is done on any slider in the quick settings view or
+    in the slider bubble. {SliderBehavior} can be changing the value or toggling
+    to enable the feature.
+  </summary>
+  <token key="SliderBehavior">
+    <variant name="DisableFeature" summary="Toggle to disable the feature"/>
+    <variant name="Down" summary="Turn the slider value down"/>
+    <variant name="EnableFeature" summary="Toggle to enable the feature"/>
+    <variant name="Up" summary="Turn the slider value up"/>
+  </token>
+</histogram>
+
 <histogram name="Ash.QuickSettings.UserJourneyTime" units="ms"
     expires_after="2023-04-01">
   <owner>kradtke@chromium.org</owner>
@@ -3572,18 +3796,23 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Ash.QuickSettings.{QsChildView}.Activated"
-    enum="QsButtonCatalogName" expires_after="2023-09-08">
+<histogram name="Ash.QuickSettings.{DeviceMode}.FeaturePodCountOnOpen"
+    units="count" expires_after="2023-09-14">
   <owner>jiamingc@google.com</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
-    Recorded when any {QsChildView} in the quick settings view is activated. For
-    example, this view can be a button (such as lock button), or a pod view
-    (such as the network pod).
+    The number of feature pods (e.g. WiFi, Bluetooth, IME, Accessibility, etc.)
+    in the system tray quick settings when it is opened, including pods that
+    overflow to other pages. This metric is logged by 2 different types of
+    {DeviceMode}: &quot;Clamshell&quot; and &quot;Tablet&quot;. This metric gets
+    recorded for both the new quick settings view and the old unified system
+    view, see
+    &quot;Ash.UnifiedSystemView.{DeviceMode}.FeaturePodCountOnOpen&quot; which
+    is the metric for the old view.
   </summary>
-  <token key="QsChildView">
-    <variant name="Button" summary="Buttons"/>
-    <variant name="FeaturePod" summary="Feature pods"/>
+  <token key="DeviceMode">
+    <variant name="Clamshell" summary="Regular mode"/>
+    <variant name="Tablet" summary="Tablet mode"/>
   </token>
 </histogram>
 
@@ -3635,7 +3864,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Shelf.Menu.NumItemsEnabledUponSelection" units="Count"
-    expires_after="2023-02-01">
+    expires_after="2023-04-09">
   <owner>anasalazar@chromium.org</owner>
   <owner>mmourgos@google.com</owner>
   <summary>
@@ -3679,7 +3908,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Shelf.NumberOfPinnedItems" units="Icons"
-    expires_after="2023-01-24">
+    expires_after="2023-03-26">
   <owner>anasalazar@chromium.org</owner>
   <owner>mmourgos@google.com</owner>
   <summary>
@@ -3868,7 +4097,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Shelf.ShutdownConfirmationBubble.Action"
-    enum="ShutdownConfirmationBubbleAction" expires_after="2023-03-12">
+    enum="ShutdownConfirmationBubbleAction" expires_after="2023-04-09">
   <owner>sherrilin@google.com</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>
@@ -4091,7 +4320,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.SplitView.SwapWindowCount" units="count"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>xdai@chromium.org</owner>
   <owner>zxdan@chromium.org</owner>
   <owner>nupurjain@chromium.org</owner>
@@ -4199,7 +4428,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.StatusArea.TrayBackgroundView.BounceIn" units="%"
-    expires_after="2023-01-19">
+    expires_after="2023-03-26">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -4211,7 +4440,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.StatusArea.TrayBackgroundView.FadeIn" units="%"
-    expires_after="2023-01-19">
+    expires_after="2023-03-26">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -4223,7 +4452,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.StatusArea.TrayBackgroundView.Hide" units="%"
-    expires_after="2023-01-19">
+    expires_after="2023-03-26">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -4234,8 +4463,25 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.StatusArea.TrayBackgroundView.{State}"
+    enum="TrayBackgroundViewCatalogName" expires_after="2023-01-19">
+  <owner>newcomer@chromium.org</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <summary>
+    Logged when: Hidden: a TrayBackgroundView's preferred visibility is set to
+    false. Shown: a TrayBackgroundView's preferred visibility is set to true.
+    Pressed: Logged when a TrayBackgroundView is activated, either showing a
+    bubble or handling a custom action.
+  </summary>
+  <token key="State">
+    <variant name="Hidden"/>
+    <variant name="Pressed"/>
+    <variant name="Shown"/>
+  </token>
+</histogram>
+
 <histogram name="Ash.StatusArea.TrayItemView.Hide" units="%"
-    expires_after="2023-01-19">
+    expires_after="2023-03-26">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -4246,7 +4492,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.StatusArea.TrayItemView.Show" units="%"
-    expires_after="2023-01-19">
+    expires_after="2023-03-26">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -4315,17 +4561,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Ash.SystemMenu.DefaultView.VisibleRows"
-    enum="SystemMenuDefaultViewRows" expires_after="2022-04-24">
-  <owner>amehfooz@chromium.org</owner>
-  <owner>cros-status-area@google.com</owner>
-  <owner>gzadina@chromium.org</owner>
-  <summary>
-    The visible rows displayed in the system menu's default view. Recorded each
-    time the menu is opened.
-  </summary>
-</histogram>
-
 <histogram name="Ash.SystemMenu.PercentageOfWorkAreaHeightCoveredByMenu"
     units="%" expires_after="2021-12-12">
   <owner>amehfooz@chromium.org</owner>
@@ -4378,7 +4613,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.TabletMode.AnimationSmoothness.Enter" units="%"
-    expires_after="2023-01-10">
+    expires_after="2023-03-19">
   <owner>oshima@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -4445,7 +4680,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.TouchView.TouchViewActive" units="ms"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>girard@chromium.org</owner>
   <summary>
     The length of time that TouchView is active, for each activation.
@@ -4453,13 +4688,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.TouchView.TouchViewActivePercentage" units="%"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>girard@chromium.org</owner>
   <summary>The proportion of time spent in TouchView during a session.</summary>
 </histogram>
 
 <histogram name="Ash.TouchView.TouchViewActiveTotal" units="minutes"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>girard@chromium.org</owner>
   <summary>The total time that TouchView is active during a session.</summary>
 </histogram>
@@ -4471,25 +4706,73 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.TouchView.TouchViewInactiveTotal" units="minutes"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>girard@chromium.org</owner>
   <summary>
     The total time that TouchView is not active during a session.
   </summary>
 </histogram>
 
-<histogram name="Ash.UnifiedSystemView.{OldQsChildView}.Activated"
-    enum="QsButtonCatalogName" expires_after="2023-09-08">
+<histogram name="Ash.UnifiedSystemView.Button.Activated"
+    enum="QsButtonCatalogName" expires_after="2023-09-14">
   <owner>jiamingc@google.com</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
-    Recorded when any {OldQsChildView} in the old quick settings view is
-    activated. For example, this view can be a button (such as lock button), or
-    a pod view (such as the network pod).
+    Recorded when any button in the old quick settings view is activated.
   </summary>
-  <token key="OldQsChildView">
-    <variant name="Button" summary="Buttons"/>
-    <variant name="FeaturePod" summary="Feature pods"/>
+</histogram>
+
+<histogram name="Ash.UnifiedSystemView.FeaturePod.{FeaturePodBehavior}"
+    enum="QsFeatureCatalogName" expires_after="2023-09-14">
+  <owner>jiamingc@google.com</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <summary>
+    Recorded when an action is done on any FeaturePod in the old quick settings
+    view. {FeaturePodBehavior} can be toggled to enable the feature, toggle to
+    disable this feature, go to the feature's detailed page, or the feature pod
+    is shown (visible).
+  </summary>
+  <token key="FeaturePodBehavior">
+    <variant name="DiveIn" summary="Go to the feature detailed page"/>
+    <variant name="ToggleOff" summary="Toggle to disable the feature"/>
+    <variant name="ToggleOn" summary="Toggle to enable the feature"/>
+    <variant name="Visible" summary="The feature pod is shown"/>
+  </token>
+</histogram>
+
+<histogram name="Ash.UnifiedSystemView.Slider.{SliderBehavior}"
+    enum="QsSliderCatalogName" expires_after="2023-09-21">
+  <owner>jiamingc@google.com</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <summary>
+    Recorded when an action is done on any slider in the old quick settings view
+    or in the slider bubble. {SliderBehavior} can be changing the value or
+    toggling to enable the feature.
+  </summary>
+  <token key="SliderBehavior">
+    <variant name="DisableFeature" summary="Toggle to disable the feature"/>
+    <variant name="Down" summary="Turn the slider value down"/>
+    <variant name="EnableFeature" summary="Toggle to enable the feature"/>
+    <variant name="Up" summary="Turn the slider value up"/>
+  </token>
+</histogram>
+
+<histogram name="Ash.UnifiedSystemView.{DeviceMode}.FeaturePodCountOnOpen"
+    units="count" expires_after="2023-09-14">
+  <owner>jiamingc@google.com</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <summary>
+    The number of feature pods (e.g. WiFi, Bluetooth, IME, Accessibility, etc.)
+    in the old system tray quick settings when it is opened, including pods that
+    overflow to other pages. This metric is logged by 2 different types of
+    {DeviceMode}: &quot;Clamshell&quot; and &quot;Tablet&quot;. This metric gets
+    recorded for both the new quick settings view and the old unified system
+    view, see &quot;Ash.QuickSettings.{DeviceMode}.FeaturePodCountOnOpen&quot;
+    which is the metric for the new quick settings view.
+  </summary>
+  <token key="DeviceMode">
+    <variant name="Clamshell" summary="Regular mode"/>
+    <variant name="Tablet" summary="Tablet mode"/>
   </token>
 </histogram>
 
@@ -4534,7 +4817,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.UserDataStatsRecorder.DataSize.TotalSize" units="MB"
-    expires_after="M101">
+    expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -4544,7 +4827,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.UserDataStatsRecorder.DataSize.{ItemName}" units="MB"
-    expires_after="M101">
+    expires_after="M121">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -4996,7 +5279,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.WindowDragFromShelfResult" enum="ShelfWindowDragResult"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>andrewxu@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
   <summary>
@@ -5006,7 +5289,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.WindowManager.Lock.Success" units="ms"
-    expires_after="2023-02-01">
+    expires_after="2023-04-09">
   <owner>antrim@chromium.org</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>

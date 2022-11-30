@@ -31,8 +31,7 @@ class ApplicationContextImpl : public ApplicationContext {
  public:
   ApplicationContextImpl(base::SequencedTaskRunner* local_state_task_runner,
                          const base::CommandLine& command_line,
-                         const std::string& locale,
-                         const std::string& country);
+                         const std::string& locale);
 
   ApplicationContextImpl(const ApplicationContextImpl&) = delete;
   ApplicationContextImpl& operator=(const ApplicationContextImpl&) = delete;
@@ -63,7 +62,6 @@ class ApplicationContextImpl : public ApplicationContext {
       override;
   network::mojom::NetworkContext* GetSystemNetworkContext() override;
   const std::string& GetApplicationLocale() override;
-  const std::string& GetApplicationCountry() override;
   ios::ChromeBrowserStateManager* GetChromeBrowserStateManager() override;
   metrics_services_manager::MetricsServicesManager* GetMetricsServicesManager()
       override;
@@ -124,7 +122,6 @@ class ApplicationContextImpl : public ApplicationContext {
   std::unique_ptr<component_updater::ComponentUpdateService> component_updater_;
   std::unique_ptr<ios::ChromeBrowserStateManager> chrome_browser_state_manager_;
   std::string application_locale_;
-  std::string application_country_;
 
   // Sequenced task runner for local state related I/O tasks.
   const scoped_refptr<base::SequencedTaskRunner> local_state_task_runner_;

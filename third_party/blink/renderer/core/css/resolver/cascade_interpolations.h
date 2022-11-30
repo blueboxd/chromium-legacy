@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,7 +64,7 @@ class CORE_EXPORT CascadeInterpolations {
     entries_.push_back(Entry{map, origin});
   }
 
-  bool IsEmpty() const { return GetEntries().IsEmpty(); }
+  bool IsEmpty() const { return GetEntries().empty(); }
 
   const Vector<Entry, 4>& GetEntries() const {
     using EntryVector = Vector<Entry, 4>;

@@ -37,13 +37,11 @@ class UpdateServiceImplInactive : public UpdateService {
     std::move(callback).Run(-1);
   }
 
-  void RegisterApp(
-      const RegistrationRequest& request,
-      base::OnceCallback<void(const RegistrationResponse&)> callback) override {
+  void RegisterApp(const RegistrationRequest& request,
+                   base::OnceCallback<void(int)> callback) override {
     VLOG(1) << __func__ << " (Inactive)";
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), RegistrationResponse(-1)));
+        FROM_HERE, base::BindOnce(std::move(callback), -1));
   }
 
   void GetAppStates(base::OnceCallback<void(const std::vector<AppState>&)>
@@ -79,6 +77,7 @@ class UpdateServiceImplInactive : public UpdateService {
   }
 
   void Install(const RegistrationRequest& /*registration*/,
+               const std::string& /*client_install_data*/,
                const std::string& /*install_data_index*/,
                Priority /*priority*/,
                StateChangeCallback /*state_update*/,

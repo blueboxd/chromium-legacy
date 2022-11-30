@@ -84,10 +84,8 @@ std::unique_ptr<URLRequestContextBuilder> CreateTestURLRequestContextBuilder() {
   builder->SetHttpAuthHandlerFactory(HttpAuthHandlerFactory::CreateDefault());
   builder->SetHttpServerProperties(std::make_unique<HttpServerProperties>());
   builder->set_quic_context(std::make_unique<QuicContext>());
-  builder->SetCookieStore(
-      std::make_unique<CookieMonster>(/*store=*/nullptr,
-                                      /*netlog=*/nullptr,
-                                      /*first_party_sets_enabled=*/false));
+  builder->SetCookieStore(std::make_unique<CookieMonster>(/*store=*/nullptr,
+                                                          /*netlog=*/nullptr));
   builder->set_http_user_agent_settings(
       std::make_unique<StaticHttpUserAgentSettings>("en-us,fr", std::string()));
   return builder;
@@ -501,6 +499,7 @@ void TestNetworkDelegate::OnURLRequestDestroyed(URLRequest* request) {
 
 bool TestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
     const URLRequest& request,
+    const net::FirstPartySetMetadata& first_party_set_metadata,
     net::CookieAccessResultList& maybe_included_cookies,
     net::CookieAccessResultList& excluded_cookies) {
   bool allow = true;
@@ -545,6 +544,14 @@ bool TestNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
     const GURL& target_url,
     const GURL& referrer_url) const {
   return cancel_request_with_policy_violating_referrer_;
+}
+
+absl::optional<FirstPartySetsCacheFilter::MatchInfo>
+TestNetworkDelegate::OnGetFirstPartySetsCacheFilterMatchInfoMaybeAsync(
+    const SchemefulSite& request_site,
+    base::OnceCallback<void(FirstPartySetsCacheFilter::MatchInfo)> callback)
+    const {
+  return fps_cache_filter_.GetMatchInfo(request_site);
 }
 
 int TestNetworkDelegate::GetRequestId(URLRequest* request) {
@@ -597,6 +604,7 @@ FilteringTestNetworkDelegate::OnForcePrivacyMode(
 
 bool FilteringTestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
     const URLRequest& request,
+    const net::FirstPartySetMetadata& first_party_set_metadata,
     net::CookieAccessResultList& maybe_included_cookies,
     net::CookieAccessResultList& excluded_cookies) {
   // Filter out cookies if |block_annotate_cookies_| is set and
@@ -630,7 +638,8 @@ bool FilteringTestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
 
   // Call the nested delegate's method first to avoid a short circuit.
   return TestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
-             request, maybe_included_cookies, excluded_cookies) &&
+             request, first_party_set_metadata, maybe_included_cookies,
+             excluded_cookies) &&
          allowed;
 }
 

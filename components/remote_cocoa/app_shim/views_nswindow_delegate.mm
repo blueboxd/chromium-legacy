@@ -185,13 +185,6 @@
             [sheetParent endSheet:window];
           })));
     }
-  } else {
-    if([(NSWindow*)[notification object] isSheet]) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(base::RetainBlock(^{
-            [NSApp endSheet:window];
-          })));
-    }
   }
   DCHECK([window isEqual:[notification object]]);
   _parent->OnWindowWillClose();
@@ -213,6 +206,14 @@
 - (void)windowDidDeminiaturize:(NSNotification*)notification {
   _parent->host()->OnWindowMiniaturizedChanged(false);
   _parent->OnVisibilityChanged();
+}
+
+// The delegate or the window class should implement this method so that
+// -[NSWindow isZoomed] can be then determined by whether or not the current
+// window frame is equal to the zoomed frame.
+- (NSRect)windowWillUseStandardFrame:(NSWindow*)window
+                        defaultFrame:(NSRect)newFrame {
+  return newFrame;
 }
 
 - (void)windowDidChangeBackingProperties:(NSNotification*)notification {

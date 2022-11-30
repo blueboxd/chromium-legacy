@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,6 +64,7 @@ class BLINK_EXPORT WebRemoteFrame : public WebFrame {
       const WebFrameOwnerProperties&,
       const LocalFrameToken& frame_token,
       WebFrame* opener,
+      const DocumentToken& document_token,
       std::unique_ptr<WebPolicyContainer> policy_container) = 0;
 
   // Returns the frame associated with the |frame_token|.

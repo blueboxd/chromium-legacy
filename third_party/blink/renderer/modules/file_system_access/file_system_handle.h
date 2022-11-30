@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,6 +51,7 @@ class FileSystemHandle : public ScriptWrappable, public ExecutionContextClient {
   ScriptPromise remove(ScriptState*, const FileSystemRemoveOptions* options);
 
   ScriptPromise isSameEntry(ScriptState*, FileSystemHandle* other);
+  ScriptPromise getUniqueId(ScriptState*);
 
   // Grab a handle to a transfer token. This may return an invalid PendingRemote
   // if the context is already destroyed.
@@ -78,6 +79,8 @@ class FileSystemHandle : public ScriptWrappable, public ExecutionContextClient {
       mojo::PendingRemote<mojom::blink::FileSystemAccessTransferToken> other,
       base::OnceCallback<void(mojom::blink::FileSystemAccessErrorPtr,
                               bool)>) = 0;
+  virtual void GetUniqueIdImpl(
+      base::OnceCallback<void(const WTF::String&)>) = 0;
 
   String name_;
 };

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {appendParam} from 'chrome://resources/js/util.m.js';
-import {maybeAutofillUsername} from 'chrome://webui-test/gaia_auth_host/saml_username_autofill.m.js';
+import {appendParam} from 'chrome://resources/js/util.js';
+import {maybeAutofillUsername} from 'chrome://webui-test/gaia_auth_host/saml_username_autofill.js';
 
 const IDP_URL_FOR_TESTS = 'https://login.corp.example.com/example';
 const IDP_URL_FOR_TESTS_WITH_PARAMETER =

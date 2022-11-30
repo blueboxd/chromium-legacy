@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -221,13 +221,13 @@ class CORE_EXPORT FragmentData final : public GarbageCollected<FragmentData> {
 
     // Fragment specific data.
     PhysicalOffset legacy_pagination_offset;
-    wtf_size_t fragment_id = 0;
     std::unique_ptr<ObjectPaintProperties> paint_properties;
     std::unique_ptr<RefCountedPropertyTreeStateOrAlias>
         local_border_box_properties;
     CullRect cull_rect_;
     CullRect contents_cull_rect_;
     Member<FragmentData> next_fragment_;
+    wtf_size_t fragment_id = 0;
 
 #if DCHECK_IS_ON()
     // Legacy block fragmentation sets the flow thread offset for each

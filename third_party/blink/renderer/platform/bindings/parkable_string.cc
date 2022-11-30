@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,10 +100,9 @@ void AsanPoisonString(const String& string) {
 #if defined(ADDRESS_SANITIZER)
   if (string.IsNull())
     return;
-  // Since |string| is not deallocated, it remains in the per-thread
-  // AtomicStringTable, where its content can be accessed for equality
-  // comparison for instance, triggering a poisoned memory access.
-  // See crbug.com/883344 for an example.
+  // Since |string| is not deallocated, it remains in the AtomicStringTable,
+  // where its content can be accessed for equality comparison for instance,
+  // triggering a poisoned memory access. See crbug.com/883344 for an example.
   if (string.Impl()->IsAtomic())
     return;
 
@@ -644,10 +643,12 @@ void ParkableStringImpl::PostBackgroundCompressionTask() {
   // |string_|'s data should not be touched except in the compression task.
   AsanPoisonString(string_);
   metadata_->background_task_in_progress_ = true;
+  auto& manager = ParkableStringManager::Instance();
+  DCHECK(manager.task_runner()->BelongsToCurrentThread());
   // |params| keeps |this| alive until |OnParkingCompleteOnMainThread()|.
   auto params = std::make_unique<BackgroundTaskParams>(
       this, string_.Bytes(), string_.CharactersSizeInBytes(),
-      Thread::Current()->GetDeprecatedTaskRunner());
+      manager.task_runner());
   worker_pool::PostTask(
       FROM_HERE, CrossThreadBindOnce(&ParkableStringImpl::CompressInBackground,
                                      std::move(params)));
@@ -794,12 +795,13 @@ void ParkableStringImpl::PostBackgroundWritingTask() {
   DCHECK(!metadata_->background_task_in_progress_);
   DCHECK_EQ(State::kParked, metadata_->state_);
   auto& manager = ParkableStringManager::Instance();
+  DCHECK(manager.task_runner()->BelongsToCurrentThread());
   auto& data_allocator = manager.data_allocator();
   if (!has_on_disk_data() && data_allocator.may_write()) {
     metadata_->background_task_in_progress_ = true;
     auto params = std::make_unique<BackgroundTaskParams>(
         this, metadata_->compressed_->data(), metadata_->compressed_->size(),
-        Thread::Current()->GetDeprecatedTaskRunner());
+        manager.task_runner());
     worker_pool::PostTask(
         FROM_HERE, {base::MayBlock()},
         CrossThreadBindOnce(&ParkableStringImpl::WriteToDiskInBackground,

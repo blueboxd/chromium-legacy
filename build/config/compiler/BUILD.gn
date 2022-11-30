@@ -85,9 +85,6 @@ declare_args() {
   # the needed gcov profiling data.
   auto_profile_path = ""
 
-  # Allow projects that wish to stay on C++11 to override Chromium's default.
-  use_cxx11 = false
-
   # Path to an AFDO profile to use while building with clang, if any. Empty
   # implies none.
   clang_sample_profile_path = ""
@@ -593,6 +590,15 @@ config("compiler") {
       if (is_clang) {
         cflags_cc += [ "-fno-trigraphs" ]
       }
+    } else if (is_linux) {
+      # TODO(crbug.com/1284275): Switch to C++20 on all platforms.
+      if (is_clang) {
+        cflags_cc += [ "-std=${standard_prefix}++20" ]
+      } else {
+        # The gcc bots are currently using GCC 9, which is not new enough to
+        # support "c++20"/"gnu++20".
+        cflags_cc += [ "-std=${standard_prefix}++2a" ]
+      }
     } else {
       cflags_cc += [ "-std=${standard_prefix}++17" ]
     }
@@ -606,7 +612,12 @@ config("compiler") {
     # turned off we need the !is_nacl clause and the (is_nacl && is_clang)
     # clause, above.
     cflags_c += [ "-std=c11" ]
-    cflags_cc += [ "-std=c++17" ]
+    if (is_mac) {
+      # TODO(crbug.com/1284275): Switch to C++20 on all platforms.
+      cflags_cc += [ "-std=c++20" ]
+    } else {
+      cflags_cc += [ "-std=c++17" ]
+    }
   }
 
   if (is_clang && current_os != "zos") {
@@ -662,14 +673,10 @@ config("compiler") {
       # of "all" which means number of hardware threads) is faster.
       ldflags += [ "-Wl,--thinlto-jobs=all" ]
       if (is_apple) {
-        _object_path_suffix = ""
-        if (is_ios) {
-          _object_path_suffix = ",persist"
-        }
         ldflags += [
           "-Wl,-cache_path_lto," +
               rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
-          "-Wcrl,object_path_lto" + _object_path_suffix,
+          "-Wcrl,object_path_lto",
         ]
       } else {
         ldflags +=
@@ -1184,6 +1191,15 @@ config("compiler_cpu_abi") {
         ldflags += [ "--target=riscv64-linux-gnu" ]
       }
       cflags += [ "-mabi=lp64d" ]
+    } else if (current_cpu == "loong64") {
+      if (is_clang) {
+        cflags += [ "--target=loongarch64-linux-gnu" ]
+        ldflags += [ "--target=loongarch64-linux-gnu" ]
+      }
+      cflags += [
+        "-mabi=lp64d",
+        "-mcmodel=medium",
+      ]
     } else if (current_cpu == "s390x") {
       cflags += [ "-m64" ]
       ldflags += [ "-m64" ]
@@ -1229,6 +1245,7 @@ config("compiler_codegen") {
 config("compiler_deterministic") {
   cflags = []
   ldflags = []
+  swiftflags = []
 
   # Eliminate build metadata (__DATE__, __TIME__ and __TIMESTAMP__) for
   # deterministic build.  See https://crbug.com/314403
@@ -1269,6 +1286,7 @@ config("compiler_deterministic") {
       # -ffile-compilation-dir is an alias for both -fdebug-compilation-dir=
       # and -fcoverage-compilation-dir=.
       cflags += [ "-ffile-compilation-dir=." ]
+      swiftflags += [ "-file-compilation-dir=." ]
     }
     if (!is_win) {
       # We don't use clang -cc1as on Windows (yet? https://crbug.com/762167)
@@ -1513,6 +1531,15 @@ config("default_warnings") {
       "-Wno-missing-field-initializers",  # "struct foo f = {0};"
       "-Wno-unused-parameter",  # Unused function parameters.
     ]
+
+    if (!is_nacl || is_nacl_saigo) {
+      cflags += [
+        # An ABI compat warning we don't care about, https://crbug.com/1102157
+        # TODO(thakis): Push this to the (few) targets that need it,
+        # instead of having a global flag.
+        "-Wno-psabi",
+      ]
+    }
   }
 
   if (is_clang) {
@@ -1536,11 +1563,6 @@ config("default_warnings") {
       cflags += [
         "-Wenum-compare-conditional",
 
-        # An ABI compat warning we don't care about, https://crbug.com/1102157
-        # TODO(thakis): Push this to the (few) targets that need it,
-        # instead of having a global flag.
-        "-Wno-psabi",
-
         # Ignore warnings about MSVC optimization pragmas.
         # TODO(thakis): Only for no_chromium_code? http://crbug.com/912662
         "-Wno-ignored-pragma-optimize",
@@ -1554,10 +1576,6 @@ config("default_warnings") {
           # TODO(crbug.com/1352183) Evaluate and possibly enable.
           "-Wno-bitfield-constant-conversion",
         ]
-        if (is_win) {
-          # TODO(https://crbug.com/1363759): Evaluate and possibly enable.
-          cflags += [ "-Wno-deprecated-copy-with-user-provided-copy" ]
-        }
       }
     }
   }
@@ -1642,7 +1660,7 @@ config("chromium_code") {
     if (!is_debug && !using_sanitizer && current_cpu != "s390x" &&
         current_cpu != "s390" && current_cpu != "ppc64" &&
         current_cpu != "mips" && current_cpu != "mips64" &&
-        current_cpu != "riscv64") {
+        current_cpu != "riscv64" && current_cpu != "loong64") {
       # Non-chromium code is not guaranteed to compile cleanly with
       # _FORTIFY_SOURCE. Also, fortified build may fail when optimizations are
       # disabled, so only do that for Release build.
@@ -2408,10 +2426,11 @@ config("symbols") {
   }
 
   configs = []
+
   # Compress debug on 32-bit ARM to stay under 4GB for ChromeOS
   # https://b/243982712.
   if (symbol_level == 2 && is_chromeos_device && !use_debug_fission &&
-        !is_nacl && current_cpu == "arm") {
+      !is_nacl && current_cpu == "arm") {
     configs += [ "//build/config:compress_debug_sections" ]
   }
 

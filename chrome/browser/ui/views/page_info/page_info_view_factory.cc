@@ -320,7 +320,7 @@ const ui::ImageModel PageInfoViewFactory::GetPermissionIcon(
     case ContentSettingsType::AR:
       icon = &vector_icons::kVrHeadsetIcon;
       break;
-    case ContentSettingsType::WINDOW_PLACEMENT:
+    case ContentSettingsType::WINDOW_MANAGEMENT:
       icon = &vector_icons::kSelectWindowIcon;
       break;
     case ContentSettingsType::LOCAL_FONTS:
@@ -477,20 +477,41 @@ const ui::ImageModel PageInfoViewFactory::GetBlockingThirdPartyCookiesIcon() {
 }
 
 // static
+const ui::ImageModel PageInfoViewFactory::GetFpsIcon() {
+  return ui::ImageModel::FromVectorIcon(vector_icons::kTenancyIcon,
+                                        ui::kColorIcon, GetIconSize());
+}
+
+// static
 const ui::ImageModel PageInfoViewFactory::GetEnforcedCookieControlsIcon(
     CookieControlsEnforcement enforcement) {
   switch (enforcement) {
     case CookieControlsEnforcement::kEnforcedByExtension:
-      return ui::ImageModel::FromVectorIcon(vector_icons::kExtensionIcon,
-                                            ui::kColorIcon, GetIconSize());
+      return GetEnforcedByExtensionIcon();
     case CookieControlsEnforcement::kEnforcedByPolicy:
-      return ui::ImageModel::FromVectorIcon(vector_icons::kBusinessIcon,
-                                            ui::kColorIcon, GetIconSize());
+      return GetEnforcedByPolicyIcon();
     case CookieControlsEnforcement::kEnforcedByCookieSetting:
-      return ui::ImageModel::FromVectorIcon(vector_icons::kSettingsIcon,
-                                            ui::kColorIcon, GetIconSize());
+      return GetEnforcedBySettingsIcon();
     case CookieControlsEnforcement::kNoEnforcement:
       NOTREACHED();
       return ui::ImageModel();
   }
+}
+
+// static
+const ui::ImageModel PageInfoViewFactory::GetEnforcedByPolicyIcon() {
+  return ui::ImageModel::FromVectorIcon(vector_icons::kBusinessIcon,
+                                        ui::kColorIcon, GetIconSize());
+}
+
+// static
+const ui::ImageModel PageInfoViewFactory::GetEnforcedByExtensionIcon() {
+  return ui::ImageModel::FromVectorIcon(vector_icons::kExtensionIcon,
+                                        ui::kColorIcon, GetIconSize());
+}
+
+// static
+const ui::ImageModel PageInfoViewFactory::GetEnforcedBySettingsIcon() {
+  return ui::ImageModel::FromVectorIcon(vector_icons::kSettingsIcon,
+                                        ui::kColorIcon, GetIconSize());
 }

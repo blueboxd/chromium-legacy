@@ -68,6 +68,7 @@
 #include "third_party/blink/renderer/core/timing/performance_observer.h"
 #include "third_party/blink/renderer/core/timing/performance_timing.h"
 #include "third_party/blink/renderer/core/timing/responsiveness_metrics.h"
+#include "third_party/blink/renderer/core/timing/soft_navigation_entry.h"
 #include "third_party/blink/renderer/core/timing/visibility_state_entry.h"
 #include "third_party/blink/renderer/platform/heap/forward.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -257,7 +258,7 @@ WindowPerformance::CreateNavigationTimingInstance() {
     return nullptr;
   HeapVector<Member<PerformanceServerTiming>> server_timing =
       PerformanceServerTiming::ParseServerTiming(*info);
-  if (!server_timing.IsEmpty())
+  if (!server_timing.empty())
     document_loader->CountUse(WebFeature::kPerformanceServerTiming);
 
   return MakeGarbageCollected<PerformanceNavigationTiming>(
@@ -447,7 +448,7 @@ void WindowPerformance::ReportEventTimings(
     base::TimeTicks presentation_timestamp) {
   DCHECK(pending_presentation_promise_count_);
   --pending_presentation_promise_count_;
-  if (events_data_.IsEmpty())
+  if (events_data_.empty())
     return;
 
   if (!DomWindow() || !DomWindow()->document())
@@ -456,7 +457,7 @@ void WindowPerformance::ReportEventTimings(
       InteractiveDetector::From(*(DomWindow()->document()));
   DOMHighResTimeStamp end_time =
       MonotonicTimeToDOMHighResTimeStamp(presentation_timestamp);
-  while (!events_data_.IsEmpty()) {
+  while (!events_data_.empty()) {
     auto event_data = events_data_.front();
     PerformanceEventTiming* entry = event_data->GetEventTiming();
     uint64_t entry_frame_index = event_data->GetFrameIndex();
@@ -652,6 +653,21 @@ void WindowPerformance::AddVisibilityStateEntry(bool is_visible,
 
   if (visibility_state_buffer_.size() < kDefaultVisibilityStateEntrySize)
     visibility_state_buffer_.push_back(entry);
+}
+
+void WindowPerformance::AddSoftNavigationEntry(const AtomicString& name,
+                                               base::TimeTicks timestamp) {
+  if (!RuntimeEnabledFeatures::SoftNavigationHeuristicsEnabled()) {
+    return;
+  }
+  SoftNavigationEntry* entry = MakeGarbageCollected<SoftNavigationEntry>(
+      name, MonotonicTimeToDOMHighResTimeStamp(timestamp),
+      PerformanceEntry::GetNavigationId(GetExecutionContext()));
+
+  if (HasObserverFor(PerformanceEntry::kSoftNavigation))
+    NotifyObserversOfEntry(*entry);
+
+  AddSoftNavigationToPerformanceTimeline(entry);
 }
 
 void WindowPerformance::PageVisibilityChanged() {

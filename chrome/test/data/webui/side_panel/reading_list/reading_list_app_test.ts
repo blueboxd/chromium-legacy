@@ -11,7 +11,7 @@ import {ReadingListApiProxyImpl} from 'chrome://read-later.top-chrome/reading_li
 import {ReadingListItemElement} from 'chrome://read-later.top-chrome/reading_list/reading_list_item.js';
 import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks} from 'chrome://webui-test/test_util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {TestReadingListApiProxy} from './test_reading_list_api_proxy.js';
 
@@ -82,7 +82,8 @@ suite('ReadingListAppTest', () => {
     testProxy = new TestReadingListApiProxy();
     ReadingListApiProxyImpl.setInstance(testProxy);
     testProxy.setEntries(getSampleData());
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
 
     readingListApp = document.createElement('reading-list-app');
     document.body.appendChild(readingListApp);

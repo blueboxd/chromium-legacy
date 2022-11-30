@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -36,8 +36,8 @@ from .code_node_cxx import CxxUnlikelyIfNode
 from .codegen_accumulator import CodeGenAccumulator
 from .codegen_context import CodeGenContext
 from .codegen_expr import CodeGenExpr
-from .codegen_expr import expr_and
 from .codegen_expr import expr_from_exposure
+from .codegen_expr import expr_not
 from .codegen_expr import expr_or
 from .codegen_format import format_template as _format
 from .codegen_utils import component_export
@@ -645,9 +645,9 @@ def _make_reflect_process_keyword_state(cg_context):
 
     if "ReflectEmpty" in ext_attrs:
         empty_default = ext_attrs.value_of("ReflectEmpty")
-        branches.append(
-            cond="reflect_value.IsEmpty()",
-            body=F("${return_value} = {};", constant(empty_default)))
+        branches.append(cond="reflect_value.empty()",
+                        body=F("${return_value} = {};",
+                               constant(empty_default)))
 
     keywords = ext_attrs.values_of("ReflectOnly")
     expr = " || ".join(
@@ -2088,6 +2088,20 @@ def make_constructor_function_def(cg_context, function_name):
     body = func_def.body
 
     if len(cg_context.constructor_group) == 1:
+        # The constructor callback is installed with
+        # v8::FunctionTemplate::SetCallHandler, where no way to control the
+        # installation context-by-context. So, we check the exposure and may
+        # throw a TypeError if not exposed. For the case of multiple overloads,
+        # the overload resolution is already exposure sensitive.
+        if cg_context.constructor.exposure.is_context_dependent():
+            body.append(
+                CxxUnlikelyIfNode(cond=expr_not(
+                    expr_from_exposure(cg_context.constructor.exposure)),
+                                  body=[
+                                      T("${exception_state}.ThrowTypeError("
+                                        "\"Illegal constructor\");"),
+                                      T("return;"),
+                                  ]))
         body.append(make_constructor_entry(cg_context))
         body.append(EmptyNode())
 
@@ -3143,7 +3157,7 @@ def make_named_property_getter_callback(cg_context, function_name):
     # existence by heuristics.
     type = cg_context.return_type.unwrap()
     if type.is_any or type.is_object:
-        not_found_expr = "${return_value}.IsEmpty()"
+        not_found_expr = "${return_value}.empty()"
     elif type.is_string:
         not_found_expr = "${return_value}.IsNull()"
     elif type.is_interface:
@@ -5751,7 +5765,8 @@ def make_install_interface_template(cg_context, function_name, class_name,
             FormatNode("${interface_function_template}->SetLength({});",
                        entry.ctor_func_length),
         ]
-        if not entry.exposure_conditional.is_always_true:
+        if not (entry.exposure_conditional.is_always_true
+                or entry.is_context_dependent):
             nodes = [
                 CxxUnlikelyIfNode(cond=entry.exposure_conditional, body=nodes),
             ]

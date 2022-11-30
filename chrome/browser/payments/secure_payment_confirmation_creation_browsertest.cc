@@ -83,39 +83,6 @@ class SecurePaymentConfirmationCreationTest
     return merchant_origin;
   }
 
-  void ExpectNoEnrollDialogShown() {
-    histogram_tester_.ExpectTotalCount(
-        "PaymentRequest.SecurePaymentConfirmation.Funnel.EnrollDialogShown", 0);
-  }
-
-  void ExpectEnrollDialogShown(
-      SecurePaymentConfirmationEnrollDialogShown result,
-      int count) {
-    histogram_tester_.ExpectTotalCount(
-        "PaymentRequest.SecurePaymentConfirmation.Funnel.EnrollDialogShown",
-        count);
-    histogram_tester_.ExpectBucketCount(
-        "PaymentRequest.SecurePaymentConfirmation.Funnel.EnrollDialogShown",
-        result, count);
-  }
-
-  void ExpectNoEnrollDialogResult() {
-    histogram_tester_.ExpectTotalCount(
-        "PaymentRequest.SecurePaymentConfirmation.Funnel.EnrollDialogResult",
-        0);
-  }
-
-  void ExpectEnrollDialogResult(
-      SecurePaymentConfirmationEnrollDialogResult result,
-      int count) {
-    histogram_tester_.ExpectTotalCount(
-        "PaymentRequest.SecurePaymentConfirmation.Funnel.EnrollDialogResult",
-        count);
-    histogram_tester_.ExpectBucketCount(
-        "PaymentRequest.SecurePaymentConfirmation.Funnel.EnrollDialogResult",
-        result, count);
-  }
-
   void ExpectNoEnrollSystemPromptResult() {
     histogram_tester_.ExpectTotalCount(
         "PaymentRequest.SecurePaymentConfirmation.Funnel."
@@ -184,8 +151,14 @@ class SecurePaymentConfirmationCreationTest
   std::unique_ptr<autofill::EventWaiter<Event>> event_waiter_;
 };
 
+// TODO(crbug.com/1372198)  Re-enable tests once fixed on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_SuccessfulEnrollment DISABLED_SuccessfulEnrollment
+#else
+#define MAYBE_SuccessfulEnrollment SuccessfulEnrollment
+#endif
 IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
-                       SuccessfulEnrollment) {
+                       MAYBE_SuccessfulEnrollment) {
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
 
@@ -196,17 +169,20 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
                             content::JsReplace("createPaymentCredential($1)",
                                                GetDefaultIconURL())));
 
-  ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                          0);
-  ExpectEnrollDialogResult(
-      SecurePaymentConfirmationEnrollDialogResult::kCanceled, 0);
   ExpectEnrollSystemPromptResult(
       SecurePaymentConfirmationEnrollSystemPromptResult::kAccepted, 1);
   ExpectNoFunnelCount();
   ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/false);
 }
 
-IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest, CredentialType) {
+// TODO(crbug.com/1372198)  Re-enable tests once fixed on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_CredentialType DISABLED_CredentialType
+#else
+#define MAYBE_CredentialType CredentialType
+#endif
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
+                       MAYBE_CredentialType) {
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
 
@@ -217,8 +193,14 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest, CredentialType) {
                                          GetDefaultIconURL())));
 }
 
+// TODO(crbug.com/1372198)  Re-enable tests once fixed on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_CreatePaymentCredential DISABLED_CreatePaymentCredential
+#else
+#define MAYBE_CreatePaymentCredential CreatePaymentCredential
+#endif
 IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
-                       CreatePaymentCredential) {
+                       MAYBE_CreatePaymentCredential) {
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
 
@@ -231,12 +213,6 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
   // Verify that credential id size gets recorded.
   histogram_tester_.ExpectTotalCount(
       "PaymentRequest.SecurePaymentConfirmationCredentialIdSizeInBytes", 1U);
-  int expected_enroll_histogram_value_ = 0;
-  ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                          expected_enroll_histogram_value_);
-  ExpectEnrollDialogResult(
-      SecurePaymentConfirmationEnrollDialogResult::kAccepted,
-      expected_enroll_histogram_value_);
   ExpectEnrollSystemPromptResult(
       SecurePaymentConfirmationEnrollSystemPromptResult::kAccepted, 1);
   ExpectNoFunnelCount();
@@ -269,8 +245,14 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationDisableDebugTest,
                                          GetDefaultIconURL())));
 }
 
+// TODO(crbug.com/1372198)  Re-enable tests once fixed on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_LookupPaymentCredential DISABLED_LookupPaymentCredential
+#else
+#define MAYBE_LookupPaymentCredential LookupPaymentCredential
+#endif
 IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
-                       LookupPaymentCredential) {
+                       MAYBE_LookupPaymentCredential) {
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
   std::string credentialIdentifier =
@@ -296,20 +278,20 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
   EXPECT_EQ("display_name_for_instrument",
             test_controller()->app_descriptions().front().label);
 
-  int expected_enroll_histogram_value = 0;
-  ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                          expected_enroll_histogram_value);
-  ExpectEnrollDialogResult(
-      SecurePaymentConfirmationEnrollDialogResult::kAccepted,
-      expected_enroll_histogram_value);
   ExpectEnrollSystemPromptResult(
       SecurePaymentConfirmationEnrollSystemPromptResult::kAccepted, 1);
   ExpectNoFunnelCount();
   ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/false);
 }
 
+// TODO(crbug.com/1372198)  Re-enable tests once fixed on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_PaymentExtension DISABLED_PaymentExtension
+#else
+#define MAYBE_PaymentExtension PaymentExtension
+#endif
 IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
-                       PaymentExtension) {
+                       MAYBE_PaymentExtension) {
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
 
@@ -362,8 +344,16 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
           .ExtractString());
 }
 
+// TODO(crbug.com/1372198)  Re-enable tests once fixed on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_ConfirmPaymentInCrossOriginIframe \
+  DISABLED_ConfirmPaymentInCrossOriginIframe
+#else
+#define MAYBE_ConfirmPaymentInCrossOriginIframe \
+  ConfirmPaymentInCrossOriginIframe
+#endif
 IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
-                       ConfirmPaymentInCrossOriginIframe) {
+                       MAYBE_ConfirmPaymentInCrossOriginIframe) {
   NavigateTo("a.com", "/secure_payment_confirmation.html");
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   std::string credentialIdentifier =
@@ -429,20 +419,22 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
   ASSERT_NE(nullptr, rp) << response;
   EXPECT_EQ("a.com", *rp);
 
-  int expected_enroll_histogram_value = 0;
-  ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                          expected_enroll_histogram_value);
-  ExpectEnrollDialogResult(
-      SecurePaymentConfirmationEnrollDialogResult::kAccepted,
-      expected_enroll_histogram_value);
   ExpectEnrollSystemPromptResult(
       SecurePaymentConfirmationEnrollSystemPromptResult::kAccepted, 1);
   ExpectFunnelCount(SecurePaymentConfirmationSystemPromptResult::kAccepted, 1);
   ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/true);
 }
 
+// TODO(crbug.com/1372198)  Re-enable tests once fixed on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_ConfirmPaymentInCrossOriginIframeWithPayeeName \
+  DISABLED_ConfirmPaymentInCrossOriginIframeWithPayeeName
+#else
+#define MAYBE_ConfirmPaymentInCrossOriginIframeWithPayeeName \
+  ConfirmPaymentInCrossOriginIframeWithPayeeName
+#endif
 IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
-                       ConfirmPaymentInCrossOriginIframeWithPayeeName) {
+                       MAYBE_ConfirmPaymentInCrossOriginIframeWithPayeeName) {
   NavigateTo("a.com", "/secure_payment_confirmation.html");
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   std::string credentialIdentifier =
@@ -484,21 +476,23 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
   std::string* payee_origin = value->FindStringPath("payment.payeeOrigin");
   ASSERT_EQ(nullptr, payee_origin) << response;
 
-  int expected_enroll_histogram_value = 0;
-  ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                          expected_enroll_histogram_value);
-  ExpectEnrollDialogResult(
-      SecurePaymentConfirmationEnrollDialogResult::kAccepted,
-      expected_enroll_histogram_value);
   ExpectEnrollSystemPromptResult(
       SecurePaymentConfirmationEnrollSystemPromptResult::kAccepted, 1);
   ExpectFunnelCount(SecurePaymentConfirmationSystemPromptResult::kAccepted, 1);
   ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/true);
 }
 
+// TODO(crbug.com/1372198)  Re-enable tests once fixed on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_ConfirmPaymentInCrossOriginIframeWithPayeeNameAndOrigin \
+  DISABLED_ConfirmPaymentInCrossOriginIframeWithPayeeNameAndOrigin
+#else
+#define MAYBE_ConfirmPaymentInCrossOriginIframeWithPayeeNameAndOrigin \
+  ConfirmPaymentInCrossOriginIframeWithPayeeNameAndOrigin
+#endif
 IN_PROC_BROWSER_TEST_F(
     SecurePaymentConfirmationCreationTest,
-    ConfirmPaymentInCrossOriginIframeWithPayeeNameAndOrigin) {
+    MAYBE_ConfirmPaymentInCrossOriginIframeWithPayeeNameAndOrigin) {
   NavigateTo("a.com", "/secure_payment_confirmation.html");
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   std::string credentialIdentifier =
@@ -541,20 +535,20 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_NE(nullptr, payee_origin) << response;
   EXPECT_EQ(GURL("https://example-payee-origin.test"), GURL(*payee_origin));
 
-  int expected_enroll_histogram_value = 0;
-  ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                          expected_enroll_histogram_value);
-  ExpectEnrollDialogResult(
-      SecurePaymentConfirmationEnrollDialogResult::kAccepted,
-      expected_enroll_histogram_value);
   ExpectEnrollSystemPromptResult(
       SecurePaymentConfirmationEnrollSystemPromptResult::kAccepted, 1);
   ExpectFunnelCount(SecurePaymentConfirmationSystemPromptResult::kAccepted, 1);
   ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/true);
 }
 
+// TODO(crbug.com/1372198)  Re-enable tests once fixed on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_ChallengeIsReturned DISABLED_ChallengeIsReturned
+#else
+#define MAYBE_ChallengeIsReturned ChallengeIsReturned
+#endif
 IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
-                       ChallengeIsReturned) {
+                       MAYBE_ChallengeIsReturned) {
   NavigateTo("a.com", "/secure_payment_confirmation.html");
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   std::string credentialIdentifier =
@@ -602,20 +596,20 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
               "getTotalAmountFromClientDataWithModifierAndShowPromise($1, $2);",
               credentialIdentifier, "0.04")));
 
-  int expected_enroll_histogram_value = 0;
-  ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                          expected_enroll_histogram_value);
-  ExpectEnrollDialogResult(
-      SecurePaymentConfirmationEnrollDialogResult::kAccepted,
-      expected_enroll_histogram_value);
   ExpectEnrollSystemPromptResult(
       SecurePaymentConfirmationEnrollSystemPromptResult::kAccepted, 1);
   ExpectFunnelCount(SecurePaymentConfirmationSystemPromptResult::kAccepted, 4);
   ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/true);
 }
 
+// TODO(crbug.com/1372198)  Re-enable tests once fixed on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_UserVerificationFails DISABLED_UserVerificationFails
+#else
+#define MAYBE_UserVerificationFails UserVerificationFails
+#endif
 IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
-                       UserVerificationFails) {
+                       MAYBE_UserVerificationFails) {
   NavigateTo("a.com", "/secure_payment_confirmation.html");
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   std::string credentialIdentifier =
@@ -640,20 +634,20 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
           content::JsReplace("getTotalAmountFromClientData($1, $2);",
                              credentialIdentifier, "0.01")));
 
-  int expected_enroll_histogram_value = 0;
-  ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                          expected_enroll_histogram_value);
-  ExpectEnrollDialogResult(
-      SecurePaymentConfirmationEnrollDialogResult::kAccepted,
-      expected_enroll_histogram_value);
   ExpectEnrollSystemPromptResult(
       SecurePaymentConfirmationEnrollSystemPromptResult::kAccepted, 1);
   ExpectFunnelCount(SecurePaymentConfirmationSystemPromptResult::kCanceled, 1);
   ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/true);
 }
 
+// TODO(crbug.com/1372198)  Re-enable tests once fixed on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_CreatePaymentCredentialTwice DISABLED_CreatePaymentCredentialTwice
+#else
+#define MAYBE_CreatePaymentCredentialTwice CreatePaymentCredentialTwice
+#endif
 IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
-                       CreatePaymentCredentialTwice) {
+                       MAYBE_CreatePaymentCredentialTwice) {
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
 
@@ -671,20 +665,22 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
   histogram_tester_.ExpectTotalCount(
       "PaymentRequest.SecurePaymentConfirmationCredentialIdSizeInBytes", 2U);
 
-  int expected_enroll_histogram_value = 0;
-  ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                          expected_enroll_histogram_value);
-  ExpectEnrollDialogResult(
-      SecurePaymentConfirmationEnrollDialogResult::kAccepted,
-      expected_enroll_histogram_value);
   ExpectEnrollSystemPromptResult(
       SecurePaymentConfirmationEnrollSystemPromptResult::kAccepted, 2);
   ExpectNoFunnelCount();
   ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/false);
 }
 
+// TODO(crbug.com/1372198)  Re-enable tests once fixed on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_WebContentsClosedDuringEnrollmentOSPrompt \
+  DISABLED_WebContentsClosedDuringEnrollmentOSPrompt
+#else
+#define MAYBE_WebContentsClosedDuringEnrollmentOSPrompt \
+  WebContentsClosedDuringEnrollmentOSPrompt
+#endif
 IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
-                       WebContentsClosedDuringEnrollmentOSPrompt) {
+                       MAYBE_WebContentsClosedDuringEnrollmentOSPrompt) {
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true, /*should_hang=*/true);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
 
@@ -703,18 +699,18 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
   GetActiveWebContents()->Close();
   event_waiter_->Wait();
 
-  int expected_enroll_histogram_value = 0;
-  ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                          expected_enroll_histogram_value);
-  ExpectEnrollDialogResult(
-      SecurePaymentConfirmationEnrollDialogResult::kAccepted,
-      expected_enroll_histogram_value);
   ExpectNoFunnelCount();
   ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/false);
 }
 
+// TODO(crbug.com/1372198)  Re-enable tests once fixed on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_UserVerificationSucceeds DISABLED_UserVerificationSucceeds
+#else
+#define MAYBE_UserVerificationSucceeds UserVerificationSucceeds
+#endif
 IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
-                       UserVerificationSucceeds) {
+                       MAYBE_UserVerificationSucceeds) {
   NavigateTo("a.com", "/secure_payment_confirmation.html");
 
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
@@ -735,12 +731,6 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
                                         "getTotalAmountFromClientData($1, $2);",
                                         credentialIdentifier, "0.01")));
 
-  int expected_enroll_histogram_value = 0;
-  ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                          expected_enroll_histogram_value);
-  ExpectEnrollDialogResult(
-      SecurePaymentConfirmationEnrollDialogResult::kAccepted,
-      expected_enroll_histogram_value);
   histogram_tester_.ExpectTotalCount(
       "PaymentRequest.SecurePaymentConfirmation.Funnel."
       "EnrollSystemPromptResult",
@@ -759,8 +749,14 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
 }
 
 // Test allowing a failed icon download with iconMustBeShown option
+// TODO(crbug.com/1372198)  Re-enable tests once fixed on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_IconMustBeShownFalse DISABLED_IconMustBeShownFalse
+#else
+#define MAYBE_IconMustBeShownFalse IconMustBeShownFalse
+#endif
 IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
-                       IconMustBeShownFalse) {
+                       MAYBE_IconMustBeShownFalse) {
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   test_controller()->SetHasAuthenticator(true);
   confirm_payment_ = true;

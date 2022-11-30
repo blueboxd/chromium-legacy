@@ -1059,7 +1059,12 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
 
 TestLauncher::~TestLauncher() {
   if (base::ThreadPoolInstance::Get()) {
+    // Clear the ThreadPoolInstance entirely to make it clear to final cleanup
+    // phases that they are happening in a single-threaded phase. Assertions in
+    // code like ~ScopedFeatureList are unhappy otherwise (crbug.com/1359095).
     base::ThreadPoolInstance::Get()->Shutdown();
+    base::ThreadPoolInstance::Get()->JoinForTesting();
+    base::ThreadPoolInstance::Set(nullptr);
   }
 }
 
@@ -1575,6 +1580,12 @@ bool TestLauncher::Init(CommandLine* command_line) {
                           &negative_test_filter_))
         return false;
     }
+  }
+
+  // If kGTestRunDisabledTestsFlag is set, force running all negative
+  // tests in testing/buildbot/filters.
+  if (command_line->HasSwitch(kGTestRunDisabledTestsFlag)) {
+    negative_test_filter_.clear();
   }
 
   // Split --gtest_filter at '-', if there is one, to separate into

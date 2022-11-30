@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -440,6 +440,13 @@ class CORE_EXPORT NGLayoutResult final
     return bitfields_.disable_simplified_layout;
   }
 
+  // Returns true if the fragment got truncated because it reached the
+  // fragmentation line. This typically means that we cannot re-use (cache-hit)
+  // this fragment if the fragmentation line moves.
+  bool IsTruncatedByFragmentationLine() const {
+    return bitfields_.is_truncated_by_fragmentation_line;
+  }
+
   // Returns the space which generated this object for caching purposes.
   const NGConstraintSpace& GetConstraintSpaceForCaching() const {
     return space_;
@@ -693,15 +700,16 @@ class CORE_EXPORT NGLayoutResult final
       SetBfcBlockOffset(bfc_block_offset);
     }
     RareData(const RareData& rare_data)
-        : bfc_line_offset(rare_data.bfc_line_offset),
-          start_page_name(rare_data.start_page_name),
+        : start_page_name(rare_data.start_page_name),
           end_page_name(rare_data.end_page_name),
+          bfc_line_offset(rare_data.bfc_line_offset),
           early_break(rare_data.early_break),
           oof_positioned_offset(rare_data.oof_positioned_offset),
           end_margin_strut(rare_data.end_margin_strut),
           // This will initialize "both" members of the union.
           tallest_unbreakable_block_size(
               rare_data.tallest_unbreakable_block_size),
+          block_size_for_fragmentation(rare_data.block_size_for_fragmentation),
           exclusion_space(rare_data.exclusion_space),
           custom_layout_data(rare_data.custom_layout_data),
           annotation_overflow(rare_data.annotation_overflow),
@@ -789,10 +797,10 @@ class CORE_EXPORT NGLayoutResult final
 
     void Trace(Visitor* visitor) const;
 
-    LayoutUnit bfc_line_offset;
-
     AtomicString start_page_name;
     AtomicString end_page_name;
+
+    LayoutUnit bfc_line_offset;
 
     Member<const NGEarlyBreak> early_break;
     LogicalOffset oof_positioned_offset;
@@ -879,7 +887,8 @@ class CORE_EXPORT NGLayoutResult final
           initial_break_before(static_cast<unsigned>(EBreakBetween::kAuto)),
           final_break_after(static_cast<unsigned>(EBreakBetween::kAuto)),
           status(static_cast<unsigned>(kSuccess)),
-          disable_simplified_layout(false) {}
+          disable_simplified_layout(false),
+          is_truncated_by_fragmentation_line(false) {}
 
     unsigned has_rare_data_exclusion_space : 1;
     unsigned has_oof_positioned_offset : 1;
@@ -906,6 +915,7 @@ class CORE_EXPORT NGLayoutResult final
 
     unsigned status : 3;  // EStatus
     unsigned disable_simplified_layout : 1;
+    unsigned is_truncated_by_fragmentation_line : 1;
   };
 
   // The constraint space which generated this layout result.

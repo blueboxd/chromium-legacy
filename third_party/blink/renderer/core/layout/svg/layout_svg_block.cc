@@ -48,7 +48,7 @@ SVGElement* LayoutSVGBlock::GetElement() const {
 
 void LayoutSVGBlock::WillBeDestroyed() {
   NOT_DESTROYED();
-  SVGResources::ClearClipPathFilterMask(*GetElement(), Style());
+  SVGResources::ClearEffects(*this);
   LayoutBlockFlow::WillBeDestroyed();
 }
 
@@ -126,16 +126,23 @@ void LayoutSVGBlock::StyleDidChange(StyleDifference diff,
       SetNeedsTransformUpdate();
   }
 
-  SVGResources::UpdateClipPathFilterMask(*GetElement(), old_style, StyleRef());
+  SVGResources::UpdateEffects(*this, diff, old_style);
 
   if (!Parent())
     return;
+
   if (diff.BlendModeChanged()) {
     DCHECK(IsBlendingAllowed());
     Parent()->DescendantIsolationRequirementsChanged(
         StyleRef().HasBlendMode() ? kDescendantIsolationRequired
                                   : kDescendantIsolationNeedsUpdate);
   }
+
+  if (StyleRef().HasCurrentTransformRelatedAnimation() &&
+      !old_style->HasCurrentTransformRelatedAnimation()) {
+    Parent()->SetSVGDescendantMayHaveTransformRelatedAnimation();
+  }
+
   if (diff.HasDifference())
     LayoutSVGResourceContainer::StyleChanged(*this, diff);
 }

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_PERFORMANCE_CONTROLS_BATTERY_SAVER_BUBBLE_DELEGATE_H_
 
 #include "base/memory/raw_ptr.h"
+#include "chrome/browser/ui/performance_controls/performance_controls_metrics.h"
 #include "ui/base/models/dialog_model.h"
 
 class Browser;
@@ -19,12 +20,13 @@ class BatterySaverBubbleDelegate : public ui::DialogModelDelegate {
                                       BatterySaverBubbleObserver* observer);
 
   void OnWindowClosing();
-  void OnSessionOffClicked(const ui::Event& event);
-  void OnSettingsClicked();
+  void OnSessionOffClicked();
 
  private:
   raw_ptr<Browser> browser_;
   raw_ptr<BatterySaverBubbleObserver> observer_;
+  BatterySaverBubbleActionType action_type_ =
+      BatterySaverBubbleActionType::kDismiss;
 };
 
 #endif  // CHROME_BROWSER_UI_PERFORMANCE_CONTROLS_BATTERY_SAVER_BUBBLE_DELEGATE_H_

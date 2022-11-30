@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document.h"
+#include "ui/accessibility/ax_event.h"
 
 namespace ui {
 class AXMode;
@@ -23,9 +24,6 @@ class BLINK_EXPORT WebAXContext {
  public:
   explicit WebAXContext(WebDocument document, const ui::AXMode& mode);
   ~WebAXContext();
-
-  // Returns the root element of the document's accessibility tree.
-  WebAXObject Root() const;
 
   const ui::AXMode& GetAXMode() const;
 
@@ -56,8 +54,31 @@ class BLINK_EXPORT WebAXContext {
                            base::TimeDelta timeout,
                            ui::AXTreeUpdate* response);
 
-  void MarkAllImageAXObjectsDirty(
-      ax::mojom::Action event_from_action);
+  void MarkAllImageAXObjectsDirty();
+
+  // Serialize all AXObjects that are dirty (have changed their state since
+  // the last serialization) into |updates|. (Heuristically) skips
+  // serializing dirty nodes whose AX id is in |already_serialized_ids|, and
+  // adds serialized dirty objects into |already_serialized_ids|.
+  void SerializeDirtyObjectsAndEvents(bool has_plugin_tree_source,
+                                      std::vector<ui::AXTreeUpdate>& updates,
+                                      std::vector<ui::AXEvent>& events,
+                                      bool& had_end_of_test_event,
+                                      bool& had_load_complete_messages,
+                                      bool& need_to_send_location_changes);
+
+  // Clears out the list of dirty AXObjects and of pending events.
+  void ClearDirtyObjectsAndPendingEvents();
+
+  // Note that any pending event also causes its corresponding object to
+  // become dirty.
+  bool HasDirtyObjects();
+
+  // Adds the event to a list of pending events that is cleared out by
+  // a subsequent call to SerializeDirtyObjectsAndEvents. Returns false if
+  // the event is already pending.
+  bool AddPendingEvent(const ui::AXEvent& event,
+                       bool insert_at_beginning = false);
 
  private:
   std::unique_ptr<AXContext> private_;

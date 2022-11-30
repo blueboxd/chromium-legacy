@@ -1,4 +1,4 @@
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Process WPT results for upload to ResultDB."""
@@ -48,12 +48,6 @@ def _html_diff(expected_text, actual_text, encoding='utf-8'):
 def _remove_query_params(test_name):
     index = test_name.rfind('?')
     return test_name if index == -1 else test_name[:index]
-
-
-def _wptrunner_to_resultdb_status(status):
-    """Map a test-level wptrunner status to a ResultDB one."""
-    # Test timeouts are a special case of aborts.
-    return 'ABORT' if status == 'TIMEOUT' else status
 
 
 class WPTResultsProcessor(object):
@@ -524,7 +518,7 @@ class WPTResultsProcessor(object):
                                                    durations)):
             result = Result(
                 name=test_name,
-                actual=_wptrunner_to_resultdb_status(actual),
+                actual=actual,
                 started=(self.host.time() - duration),
                 took=duration,
                 worker=0,
@@ -569,7 +563,9 @@ class WPTResultsProcessor(object):
     def process_wpt_report(self, report_path):
         """Process and upload a wpt report to result sink."""
         with self.fs.open_text_file_for_reading(report_path) as report_file:
-            report = json.load(report_file)
+            report = json.loads(next(report_file))
+            for retry_report in map(json.loads, report_file):
+                report['results'].extend(retry_report['results'])
         report_filename = self.fs.basename(report_path)
         artifact_path = self.fs.join(self.artifacts_dir, report_filename)
         if not report['run_info'].get('used_upstream'):

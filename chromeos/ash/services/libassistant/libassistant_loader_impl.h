@@ -17,7 +17,7 @@
 #include "net/base/backoff_entry.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos::libassistant {
+namespace ash::libassistant {
 
 using EntryPoint = assistant_client::internal_api::LibassistantEntrypoint;
 
@@ -39,6 +39,9 @@ class COMPONENT_EXPORT(LIBASSISTANT_LOADER) LibassistantLoaderImpl
 
   // Load libassistant.so. Will skip if the library has been loaded.
   void Load(LoadCallback callback);
+
+  // Load libassistant.so for sandbox. This is a blocking method.
+  void LoadBlocking(const std::string& root_path);
 
   // Return the LibassistantEntrypoint.
   EntryPoint* GetEntryPoint();
@@ -68,6 +71,6 @@ class COMPONENT_EXPORT(LIBASSISTANT_LOADER) LibassistantLoaderImpl
   base::WeakPtrFactory<LibassistantLoaderImpl> weak_factory_{this};
 };
 
-}  // namespace chromeos::libassistant
+}  // namespace ash::libassistant
 
 #endif  // /CHROMEOS_SERVICES_LIBASSISTANT_PUBLIC_CPP_LIBASSISTANT_LOADER_H_

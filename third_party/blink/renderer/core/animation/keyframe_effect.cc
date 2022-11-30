@@ -105,7 +105,7 @@ KeyframeEffect* KeyframeEffect::Create(
         EffectModel::StringToCompositeOperation(effect_options->composite())
             .value();
     if (RuntimeEnabledFeatures::WebAnimationsAPIEnabled() &&
-        !effect_options->pseudoElement().IsEmpty()) {
+        !effect_options->pseudoElement().empty()) {
       pseudo = effect_options->pseudoElement();
       if (!ValidateAndCanonicalizePseudo(pseudo)) {
         // TODO(gtsteel): update when
@@ -124,15 +124,15 @@ KeyframeEffect* KeyframeEffect::Create(
   KeyframeEffect* effect =
       MakeGarbageCollected<KeyframeEffect>(element, model, timing);
 
-  if (!pseudo.IsEmpty()) {
+  if (!pseudo.empty()) {
     effect->target_pseudo_ = pseudo;
     if (element) {
       element->GetDocument().UpdateStyleAndLayoutTreeForNode(element);
       PseudoId pseudo_id =
-          CSSSelectorParser<>::ParsePseudoElement(pseudo, element);
+          CSSSelectorParser::ParsePseudoElement(pseudo, element);
       AtomicString pseudo_argument =
           PseudoElementHasArguments(pseudo_id)
-              ? CSSSelectorParser<>::ParsePseudoElementArgument(pseudo)
+              ? CSSSelectorParser::ParsePseudoElementArgument(pseudo)
               : WTF::g_null_atom;
       effect->effect_target_ =
           element->GetNestedPseudoElement(pseudo_id, pseudo_argument);
@@ -220,13 +220,13 @@ void KeyframeEffect::RefreshTarget() {
   Element* new_target;
   if (!target_element_) {
     new_target = nullptr;
-  } else if (target_pseudo_.IsEmpty()) {
+  } else if (target_pseudo_.empty()) {
     new_target = target_element_;
   } else {
     target_element_->GetDocument().UpdateStyleAndLayoutTreeForNode(
         target_element_);
-    PseudoId pseudoId = CSSSelectorParser<>::ParsePseudoElement(
-        target_pseudo_, target_element_);
+    PseudoId pseudoId =
+        CSSSelectorParser::ParsePseudoElement(target_pseudo_, target_element_);
     new_target = target_element_->GetPseudoElement(pseudoId);
   }
 
@@ -333,7 +333,7 @@ KeyframeEffect::CheckCanStartAnimationOnCompositor(
 
   // There would be no reason to composite an effect that has no keyframes; it
   // has no visual result.
-  if (model_->Properties().IsEmpty())
+  if (model_->Properties().empty())
     reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
 
   // There would be no reason to composite an effect that has no target; it has
@@ -384,11 +384,11 @@ void KeyframeEffect::StartAnimationOnCompositor(
       *effect_target_, group, start_time, time_offset, SpecifiedTiming(),
       NormalizedTiming(), GetAnimation(), *compositor_animation, *Model(),
       compositor_keyframe_model_ids_, animation_playback_rate);
-  DCHECK(!compositor_keyframe_model_ids_.IsEmpty());
+  DCHECK(!compositor_keyframe_model_ids_.empty());
 }
 
 bool KeyframeEffect::HasActiveAnimationsOnCompositor() const {
-  return !compositor_keyframe_model_ids_.IsEmpty();
+  return !compositor_keyframe_model_ids_.empty();
 }
 
 bool KeyframeEffect::HasActiveAnimationsOnCompositor(
@@ -593,7 +593,7 @@ void KeyframeEffect::ApplyEffects() {
     HeapVector<Member<Interpolation>> interpolations;
     model_->Sample(ClampTo<int>(iteration.value(), 0), Progress().value(),
                    NormalizedTiming().iteration_duration, interpolations);
-    if (!interpolations.IsEmpty()) {
+    if (!interpolations.empty()) {
       auto* sampled_effect =
           MakeGarbageCollected<SampledEffect>(this, owner_->SequenceNumber());
       sampled_effect->MutableInterpolations().swap(interpolations);

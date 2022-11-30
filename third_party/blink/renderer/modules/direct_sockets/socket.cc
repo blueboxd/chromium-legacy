@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -159,7 +159,7 @@ void Socket::ContextLifecycleStateChanged(
 void Socket::ConnectService() {
   service_ = DirectSocketsServiceMojoRemote::Create(
       GetExecutionContext(),
-      WTF::Bind(&Socket::OnServiceConnectionError, WrapPersistent(this)));
+      WTF::BindOnce(&Socket::OnServiceConnectionError, WrapPersistent(this)));
 }
 
 bool Socket::Closed() const {

@@ -1,4 +1,4 @@
-# Copyright 2018 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -63,6 +63,18 @@ absl_source_set("config") {
     "config.h",
     "options.h",
     "policy_checks.h",
+  ]
+}
+
+absl_source_set("cycleclock_internal") {
+  public = [
+    "internal/cycleclock_config.h",
+    "internal/unscaledcycleclock_config.h",
+  ]
+  visibility = [ "//third_party/abseil-cpp/absl/*" ]
+  deps = [
+    ":base_internal",
+    ":config",
   ]
 }
 
@@ -150,6 +162,7 @@ absl_source_set("base") {
     ":base_internal",
     ":config",
     ":core_headers",
+    ":cycleclock_internal",
     ":dynamic_annotations",
     ":log_severity",
     ":raw_logging_internal",

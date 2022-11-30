@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/containers/span.h"
+#include "base/ranges/algorithm.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -228,7 +229,7 @@ TEST_F(OriginTrialContextTest, ValidatorGetsCorrectInfo) {
   EXPECT_EQ(url::Origin::Create(GURL(kFrobulateEnabledOrigin)),
             validation_params[0].origin.origin);
   EXPECT_TRUE(validation_params[0].origin.is_secure);
-  EXPECT_TRUE(validation_params[0].third_party_origin_info.IsEmpty());
+  EXPECT_TRUE(validation_params[0].third_party_origin_info.empty());
 
   // Check that the "expected" token is passed to the validator
   EXPECT_EQ(kTokenPlaceholder, validation_params[0].token);
@@ -255,7 +256,7 @@ TEST_F(OriginTrialContextTest,
   EXPECT_EQ(url::Origin::Create(GURL(kFrobulateEnabledOriginInsecure)),
             validation_params[0].origin.origin);
   EXPECT_FALSE(validation_params[0].origin.is_secure);
-  EXPECT_TRUE(validation_params[0].third_party_origin_info.IsEmpty());
+  EXPECT_TRUE(validation_params[0].third_party_origin_info.empty());
 }
 
 // Test that we're passing correct security information to the validator
@@ -274,9 +275,8 @@ TEST_F(OriginTrialContextTest, ValidatorGetsCorrectSecurityInfoThirdParty) {
   EXPECT_TRUE(validation_params[0].origin.is_secure);
 
   EXPECT_EQ(2ul, validation_params[0].third_party_origin_info.size());
-  TrialTokenValidator::OriginInfo* unrelated_info = std::find_if(
-      validation_params[0].third_party_origin_info.begin(),
-      validation_params[0].third_party_origin_info.end(),
+  TrialTokenValidator::OriginInfo* unrelated_info = base::ranges::find_if(
+      validation_params[0].third_party_origin_info,
       [](const TrialTokenValidator::OriginInfo& item) {
         return item.origin.IsSameOriginWith(GURL(kUnrelatedSecureOrigin));
       });
@@ -284,12 +284,11 @@ TEST_F(OriginTrialContextTest, ValidatorGetsCorrectSecurityInfoThirdParty) {
   EXPECT_TRUE(unrelated_info->is_secure);
 
   TrialTokenValidator::OriginInfo* insecure_origin_info =
-      std::find_if(validation_params[0].third_party_origin_info.begin(),
-                   validation_params[0].third_party_origin_info.end(),
-                   [](const TrialTokenValidator::OriginInfo& item) {
-                     return item.origin.IsSameOriginWith(
-                         GURL(kFrobulateEnabledOriginInsecure));
-                   });
+      base::ranges::find_if(validation_params[0].third_party_origin_info,
+                            [](const TrialTokenValidator::OriginInfo& item) {
+                              return item.origin.IsSameOriginWith(
+                                  GURL(kFrobulateEnabledOriginInsecure));
+                            });
   ASSERT_NE(validation_params[0].third_party_origin_info.end(),
             insecure_origin_info);
   EXPECT_FALSE(insecure_origin_info->is_secure);
@@ -445,7 +444,7 @@ TEST_F(OriginTrialContextTest, PermissionsPolicy) {
   ParsedPermissionsPolicy result;
   result = PermissionsPolicyParser::ParsePermissionsPolicyForTest(
       "frobulate=*", security_origin, nullptr, logger, feature_map, window);
-  EXPECT_TRUE(logger.GetMessages().IsEmpty());
+  EXPECT_TRUE(logger.GetMessages().empty());
   ASSERT_EQ(1u, result.size());
   EXPECT_EQ(mojom::blink::PermissionsPolicyFeature::kFrobulate,
             result[0].feature);

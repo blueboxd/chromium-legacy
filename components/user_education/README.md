@@ -4,6 +4,8 @@ This library contains the code that will allow you to implement
 **In-Product-Help (IPH)** and **Tutorials** in any framework, as well as display
 the **"New" Badge** on menus and labels.
 
+[TOC]
+
 ## Upstream dependencies
 
 Familiarity with these libraries are strongly recommended; feel free to reach
@@ -27,6 +29,16 @@ out to their respective OWNERS if you have any questions.
  * [webui](./webui/README.md) - contains code required to display a `HelpBubble`
    on a WebUI surface.
 
+## Application integration
+
+The necessary IPH services have already been implemented in Chrome. If
+you are interested in extending User Education to another platform, see
+the [section](#Adding-User-Education-to-your-application) below.
+
+*Note: The rest of this document introduces User Education concepts and
+focuses on using existing services to create in-product help
+experiences.*
+
 # Programming API
 
 ## Help bubbles
@@ -44,12 +56,19 @@ example, [HelpBubbleViews](./views/help_bubble_factory_views.h). Each type of
 [HelpBubbleFactory](./common/help_bubble_factory.h), which is registered at
 startup in the global
 [HelpBubbleFactoryRegistry](./common/help_bubble_factory_registry.h). So for
-example, Chrome registers separate factories for Views and WebUI, and on Mac
-a third factory that can attach a Views-based `HelpBubble` to a Mac native menu.
+example, Chrome registers separate factories for Views, WebUI, and a
+Mac-specific factory that can attach a Views-based `HelpBubble` to a Mac
+native menu.
 
-To actually show the bubble, the `HelpBubbleFactoryRegistry` needs two things:
+When it comes time to actually show the bubble, the
+`HelpBubbleFactoryRegistry` will need two things:
   * The `TrackedElement` the bubble will be anchored to
   * The [HelpBubbleParams](./common/help_bubble_params.h) describing the bubble
+
+The `HelpBubbleFactoryRegistry` will search its registered factories for
+one able to produce a help bubble in the framework that sees this
+element. It can then create our help bubble with the given
+`HelpBubbleParams`.
 
 You will notice that this is an extremely bare-bones system. ***You are not
 expected to call `HelpBubbleFactoryRegistry` directly!*** Rather, the IPH and
@@ -69,41 +88,45 @@ IPH are:
  * **Simple** - only a small number of templates approved by UX are available,
    for different kinds of User Education journeys.
 
-Your application will provide a
-[FeaturePromoController](./common/feature_promo_controller.h) with a
-[FeaturePromoRegistry](./common/feature_promo_registry.h). In order to add a new
-IPH, you will need to:
+In the code, an IPH is described by a `FeaturePromo`. Your application
+will provide
+a [FeaturePromoController](./common/feature_promo_controller.h) with
+a [FeaturePromoRegistry](./common/feature_promo_registry.h). In order to
+add a new IPH, you will need to:
+
  1. Add the `base::Feature` corresponding to the IPH.
- 2. Register the
+ 2. Register the appropriate
     [FeaturePromoSpecification](./common/feature_promo_specification.h)
-    describing your IPH journey (see below).
+    describing your IPH journey ([Registering your
+    IPH](#Registering-your-IPH)).
  3. Configure the Feature Engagement backend for your IPH journey
-    ([see documentation](/components/feature_engagement/README.md)).
- 4. Put hooks in your code:
-    * Call `FeaturePromoController::MaybeShowPromo()` at the point in the code
-      when the promo should trigger, adding feature-specific logic for when the
-      promo is appropriate.
-    * Add additional calls to `feature_engagement::Tracker::NotifyEvent()` for
-      events that should affect whether the IPH should display.
-      * These should also be referenced in the Feature Engagement configuration.
-      * This should include the user actually engaging with the feature being
-        promo'd.
-      * You can retrieve the tracker via
-        `FeaturePromoControllerCommon::feature_engagement_tracker()`.
-    * Optionally: add calls to `FeaturePromoController::CloseBubble()` or
-      `FeaturePromoController::CloseBubbleAndContinuePromo()` to
-      programmatically end the promo when the user engages your feature.
+    ([Configuring when your IPH runs](#Configuring-when-your-IPH-runs)).
+ 4. Add hooks into your code to show/hide your IPH and dispatch events
+    ([Talking to the FE backend](#Talking-to-the-FE-backend)).
  5. Enable the feature via a trade study or Finch.
+
+![How to implement IPH diagram](images/iph-diagram.png)
+
+In reality, you will likely never interact directly with the
+`FeaturePromoController`. In Chrome, these methods are wrapped by the
+`BrowserWindow`. You may access them by calling:
+
+- `BrowserWindow::MaybeShowFeaturePromo()`
+- `BrowserWindow::MaybeShowStartupFeaturePromo()`
+- `BrowserWindow::CloseFeaturePromo()`
+- `BrowserWindow::CloseFeaturePromoAndContinue()`
+
 
 ### Registering your IPH
 
 You will want to create a `FeaturePromoSpecification` and register it with
 `FeaturePromoRegistry::RegisterFeature()`. There should be a common function
 your application uses to register IPH journeys during startup; in Chrome it's
-`MaybeRegisterChromeFeaturePromos()`.
+[`MaybeRegisterChromeFeaturePromos()`](../../chrome/browser/ui/views/frame/browser_view.cc).
 
 There are several factory methods on FeaturePromoSpecification for different
 types of IPH:
+
   * **CreateForToastPromo** - creates a small, short-lived promo with no buttons
     that disappears after a short time.
     * These are designed to point out a specific UI element; you will not expect
@@ -137,6 +160,45 @@ These are advanced features
     from a collection of candidates, if there is more than one element maching
     the anchor's `ElementIdentifier`.
 
+### Configuring when your IPH runs
+
+The Feature Engagement (FE) backend does all the heavy-lifting when it
+comes to showing your IPH at the right time. All you need to do is
+configure how often your IPH should show and how it interacts with other
+IPH.
+
+<!-- TODO(mickeyburks) Add examples for FeatureConfig usage -->
+
+You will need to become familiar with the terminology in the [FE
+docs](/components/feature_engagement/README.md), but you will instead
+create the configuration through the [FeatureConfig
+API](/components/feature_engagement/public/feature_configurations.cc).
+
+### Talking to the FE backend
+
+Now that the IPH feature is created and configured, you will need to add
+hooks into your code to interact with the FE backend.
+
+You should attempt to show the IPH at an appropriate point in the code.
+In Chrome, this would be a call to
+`BrowserWindow::MaybeShowFeaturePromo()`, or if your promo should run
+immediately at startup, `BrowserWindow::MaybeShowStartupFeaturePromo()`.
+
+You will also add additional calls to
+`feature_engagement::Tracker::NotifyEvent()` for events that should
+affect whether the IPH should display.
+  * These events should also be referenced in the Feature Engagement
+    configuration (`FeatureConfig`).
+  * This should include the user actually engaging with the feature
+    being promo'd.
+  * You can retrieve the tracker and send an event in Chrome via
+`BrowserView::NotifyFeatureEngagementEvent()`.
+
+Optionally: you may add calls to programmatically end the promo when the
+user engages with your feature. In Chrome, you can use
+`BrowserWindow::CloseFeaturePromo()` or
+`BrowserWindow::CloseFeaturePromoAndContinue()`.
+
 ## Tutorials
 
 Tutorials are the more complicated, in-depth way to display a series of help
@@ -158,18 +220,30 @@ Tutorial, you will need to:
   1. Declare a [TutorialIdentifier](./common/tutorial_identifier.h) in an
      accessible location.
   2. Register the `TutorialIdentifier` and
-     [TutorialDescription](./common/tutorial_description.h); details will be
-     provided below.
-  3. Create an entry point for the Tutorial:
-     * Directly call `TutorialService::StartTutorial()`, or...
-     * Register an IPH using the `CreateForTutorialPromo()` factory method.
+     [TutorialDescription](./common/tutorial_description.h)
+     ([Defining and registering your tutorial](#Defining-and-registering-your-Tutorial)).
+  3. Create an entry point for the Tutorial, either by:
+     * Directly calling `TutorialService::StartTutorial()`
+     * Or registering an IPH using the `CreateForTutorialPromo()` factory
+     method. This IPH will prompt the user to start your tutorial.
+
+Notice that compared to an IPH, the tutorial itself does not require any
+`base::Feature`, FE configuration, or Finch configuration. This is
+because the tutorial is always initiated by the user. However, the IPH
+that launches your tutorial will need to be implemented and configured
+as outlined above ([In-Produce Help (IPH)](#in_product-help-iph)).
 
 ### Defining and registering your Tutorial
 
-A [TutorialDescription](./common/tutorial_description.h) is the template from
-which a [Tutorial](./common/tutorial.h) is built. A `Tutorial` is a stateful,
-executable object that "runs" the Tutorial itself; since they can't be reused,
-one needs to be created every time the Tutorial is started.
+A [Tutorial](./common/tutorial.h) is a stateful, executable object that
+"runs" the Tutorial itself; since they can't be reused, one needs to be
+created every time the Tutorial is started.
+
+A [TutorialDescription](./common/tutorial_description.h) is the template
+from which a `Tutorial` is built. It describes each step your tutorial
+will show the user, similar to the `FeaturePromoSpecification` used to
+create an IPH. A `TutorialDescription` can be restarted, i.e. rebuilt
+into a new `Tutorial`, if you choose to allow it.
 
 There are only a few fields in a `TutorialDescription`:
   * **steps** - Contains a sequence of user actions, UI changes, and the help

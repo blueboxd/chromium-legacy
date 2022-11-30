@@ -25,7 +25,8 @@ suite('NewTabPageMiddleSlotPromoTest', () => {
   let metrics: MetricsTracker;
 
   setup(() => {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     newTabPageHandler = installMock(
         PageHandlerRemote,
         mock => NewTabPageProxy.setInstance(mock, new PageCallbackRouter()));
@@ -141,15 +142,12 @@ suite('NewTabPageMiddleSlotPromoTest', () => {
         (imageWithCommand.children[0] as CrAutoImgElement).autoSrc);
 
     assertEquals('text', text.innerText);
-    assertEquals('red', text.style.color);
 
     assertEquals('https://link/', link.href);
     assertEquals('link', link.innerText);
-    assertEquals('green', link.style.color);
 
     assertEquals('', command.href);
     assertEquals('command', command.text);
-    assertEquals('blue', command.style.color);
   });
 
   test('render canShowPromo=false', async () => {

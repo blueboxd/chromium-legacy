@@ -14,8 +14,7 @@ namespace base {
 class TimeDelta;
 }  // namespace base
 
-namespace ash {
-namespace holding_space_metrics {
+namespace ash::holding_space_metrics {
 
 // Returns the numeric representation of the extension for `file_path`.
 ASH_PUBLIC_EXPORT size_t FilePathToExtension(const base::FilePath& file_path);
@@ -113,6 +112,18 @@ ASH_PUBLIC_EXPORT void RecordItemFailureToLaunch(
     const base::FilePath& file_path,
     ItemFailureToLaunchReason reason);
 
+// Enumeration of actions that can be taken on the holding space suggestions
+// section button. These values are persisted to logs. Entries should not be
+// renumbered and numeric values should never be reused.
+enum class SuggestionsAction {
+  kCollapse = 0,
+  kExpand = 1,
+  kMaxValue = kExpand,
+};
+
+// Records the specified `action` taken on the holding space suggestions header.
+ASH_PUBLIC_EXPORT void RecordSuggestionsAction(SuggestionsAction action);
+
 // Records time from the first availability of the holding space feature to the
 // first item being added to holding space.
 ASH_PUBLIC_EXPORT void RecordTimeFromFirstAvailabilityToFirstAdd(
@@ -136,11 +147,19 @@ ASH_PUBLIC_EXPORT void RecordBubbleResizeAnimationSmoothness(int smoothness);
 // representing ideal smoothness of >= 60 frames per second.
 ASH_PUBLIC_EXPORT void RecordPodResizeAnimationSmoothness(int smoothness);
 
+// Representation of a user's preferences.
+struct ASH_PUBLIC_EXPORT UserPreferences {
+  bool previews_enabled = false;
+  bool suggestions_expanded = false;
+};
+
+// Records a user's preferences.
+ASH_PUBLIC_EXPORT void RecordUserPreferences(UserPreferences user_preferences);
+
 // Records counts for the visible holding space `items` specified.
 ASH_PUBLIC_EXPORT void RecordVisibleItemCounts(
     const std::vector<const HoldingSpaceItem*>& items);
 
-}  // namespace holding_space_metrics
-}  // namespace ash
+}  // namespace ash::holding_space_metrics
 
 #endif  // ASH_PUBLIC_CPP_HOLDING_SPACE_HOLDING_SPACE_METRICS_H_

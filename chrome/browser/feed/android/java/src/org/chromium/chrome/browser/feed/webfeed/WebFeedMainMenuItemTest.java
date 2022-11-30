@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.feed.webfeed;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
@@ -27,6 +28,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -41,10 +43,12 @@ import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.feed.test.R;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedSnackbarController.FeedLauncher;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.share.crow.CrowButtonDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.widget.chips.ChipView;
 import org.chromium.components.embedder_support.util.ShadowUrlUtilities;
 import org.chromium.components.url_formatter.UrlFormatter;
@@ -63,6 +67,7 @@ import java.util.ArrayList;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowUrlUtilities.class})
 @LooperMode(LooperMode.Mode.LEGACY)
+@Features.EnableFeatures({ChromeFeatureList.CORMORANT})
 @SmallTest
 public final class WebFeedMainMenuItemTest {
     private static final GURL TEST_URL = JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL);
@@ -73,6 +78,8 @@ public final class WebFeedMainMenuItemTest {
     @Rule
     public ActivityScenarioRule<TestActivity> mActivityScenarioRule =
             new ActivityScenarioRule<>(TestActivity.class);
+    @Rule
+    public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
 
     private Activity mActivity;
     @Mock
@@ -92,6 +99,7 @@ public final class WebFeedMainMenuItemTest {
     private TestWebFeedFaviconFetcher mFaviconFetcher = new TestWebFeedFaviconFetcher();
     @Mock
     private CrowButtonDelegate mCrowButtonDelegate;
+    private Class<?> mCreatorActivityClass;
 
     private WebFeedMainMenuItem mWebFeedMainMenuItem;
     private ArrayList<Callback<WebFeedBridge.WebFeedMetadata>> mWaitingMetadataCallbacks =
@@ -157,7 +165,7 @@ public final class WebFeedMainMenuItemTest {
     public void initialize_emptyUrl_removesIcon() {
         doReturn(GURL.emptyGURL()).when(mTab).getOriginalUrl();
         mWebFeedMainMenuItem.initialize(mTab, mAppMenuHandler, mFaviconFetcher, mFeedLauncher,
-                mDialogManager, mSnackBarManager, mCrowButtonDelegate);
+                mDialogManager, mSnackBarManager, mCrowButtonDelegate, mCreatorActivityClass);
         respondWithFeedMetadata(null);
         mFaviconFetcher.answerWithNull();
 
@@ -175,6 +183,18 @@ public final class WebFeedMainMenuItemTest {
         assertEquals("Title should be shortened URL.",
                 UrlFormatter.formatUrlForDisplayOmitSchemePathAndTrivialSubdomains(TEST_URL),
                 textView.getText());
+    }
+
+    @Test
+    @UiThreadTest
+    public void initialize_launchCreatorActivity() {
+        initializeWebFeedMainMenuItem();
+        respondWithFeedMetadata(null);
+
+        assertFalse(mWebFeedMainMenuItem.isCreatorActivityInitiated());
+        TextView textView = mWebFeedMainMenuItem.findViewById(R.id.menu_item_text);
+        textView.performClick();
+        assertTrue(mWebFeedMainMenuItem.isCreatorActivityInitiated());
     }
 
     @Test
@@ -380,7 +400,7 @@ public final class WebFeedMainMenuItemTest {
     private void initializeWebFeedMainMenuItem() {
         doReturn(TEST_URL).when(mTab).getOriginalUrl();
         mWebFeedMainMenuItem.initialize(mTab, mAppMenuHandler, mFaviconFetcher, mFeedLauncher,
-                mDialogManager, mSnackBarManager, mCrowButtonDelegate);
+                mDialogManager, mSnackBarManager, mCrowButtonDelegate, mCreatorActivityClass);
     }
 
     /**

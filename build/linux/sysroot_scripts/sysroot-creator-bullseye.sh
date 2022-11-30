@@ -8,6 +8,11 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DISTRO=debian
 DIST=bullseye
 
+# This number is appended to the sysroot key to cause full rebuilds.  It
+# should be incremented when removing packages or patching existing packages.
+# It should not be incremented when adding packages.
+SYSROOT_RELEASE=0
+
 ARCHIVE_TIMESTAMP=20220331T153654Z
 ARCHIVE_URL="https://snapshot.debian.org/archive/debian/$ARCHIVE_TIMESTAMP/"
 APT_SOURCES_LIST=(
@@ -293,6 +298,7 @@ DEBIAN_PACKAGES="\
   libssl1.1
   libstdc++-10-dev
   libstdc++6
+  libsystemd-dev
   libsystemd0
   libtasn1-6
   libthai-dev
@@ -324,6 +330,7 @@ DEBIAN_PACKAGES="\
   libwayland-client0
   libwayland-cursor0
   libwayland-dev
+  libwayland-egl-backend-dev
   libwayland-egl1
   libwayland-egl1-mesa
   libwayland-server0
@@ -346,19 +353,26 @@ DEBIAN_PACKAGES="\
   libxcb-glx0-dev
   libxcb-icccm4
   libxcb-image0
+  libxcb-image0-dev
   libxcb-keysyms1
   libxcb-present-dev
   libxcb-present0
   libxcb-randr0
+  libxcb-randr0-dev
   libxcb-render-util0
+  libxcb-render-util0-dev
   libxcb-render0
   libxcb-render0-dev
   libxcb-shape0
+  libxcb-shape0-dev
   libxcb-shm0
   libxcb-shm0-dev
+  libxcb-sync-dev
   libxcb-sync1
+  libxcb-util-dev
   libxcb-util1
   libxcb-xfixes0
+  libxcb-xfixes0-dev
   libxcb-xinerama0
   libxcb-xinput0
   libxcb-xkb1

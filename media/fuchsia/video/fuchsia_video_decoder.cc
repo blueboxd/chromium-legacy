@@ -4,19 +4,19 @@
 
 #include "media/fuchsia/video/fuchsia_video_decoder.h"
 
+#include <fuchsia/sysmem/cpp/fidl.h>
 #include <vulkan/vulkan.h>
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/fuchsia/process_context.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_metrics.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -27,16 +27,14 @@
 #include "media/base/cdm_context.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_aspect_ratio.h"
+#include "media/base/video_color_space.h"
 #include "media/base/video_frame.h"
-#include "media/base/video_util.h"
 #include "media/fuchsia/cdm/fuchsia_cdm_context.h"
-#include "media/fuchsia/cdm/fuchsia_decryptor.h"
 #include "media/fuchsia/cdm/fuchsia_stream_decryptor.h"
 #include "media/fuchsia/common/decrypting_sysmem_buffer_stream.h"
 #include "media/fuchsia/common/passthrough_sysmem_buffer_stream.h"
 #include "media/fuchsia/common/stream_processor_helper.h"
 #include "media/fuchsia/mojom/fuchsia_media_resource_provider.mojom.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/client_native_pixmap_factory.h"
 #include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
@@ -69,6 +67,42 @@ constexpr size_t kNumInputBuffers = 2;
 // codecs, not just H264).
 constexpr size_t kInputBufferSize = 1920 * 1080 * 3 / 2 / 2 + 128 * 1024;
 
+const fuchsia::sysmem::PixelFormatType kSupportedPixelFormats[] = {
+    fuchsia::sysmem::PixelFormatType::NV12,
+    fuchsia::sysmem::PixelFormatType::I420,
+    fuchsia::sysmem::PixelFormatType::YV12,
+};
+const fuchsia::sysmem::ColorSpaceType kSupportedColorSpaces[] = {
+    fuchsia::sysmem::ColorSpaceType::REC601_NTSC,
+    fuchsia::sysmem::ColorSpaceType::REC601_NTSC_FULL_RANGE,
+    fuchsia::sysmem::ColorSpaceType::REC601_PAL,
+    fuchsia::sysmem::ColorSpaceType::REC601_PAL_FULL_RANGE,
+    fuchsia::sysmem::ColorSpaceType::REC709,
+};
+
+absl::optional<gfx::Size> ParseMinBufferSize() {
+  std::string min_buffer_size_arg =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kMinVideoDecoderOutputBufferSize);
+  if (min_buffer_size_arg.empty())
+    return absl::nullopt;
+  size_t width;
+  size_t height;
+  if (sscanf(min_buffer_size_arg.c_str(), "%zux%zu" SCNu32, &width, &height) !=
+      2) {
+    LOG(WARNING) << "Invalid value for --"
+                 << switches::kMinVideoDecoderOutputBufferSize << ": '"
+                 << min_buffer_size_arg << "'";
+    return absl::nullopt;
+  }
+  return gfx::Size(width, height);
+}
+
+absl::optional<gfx::Size> GetMinBufferSize() {
+  static absl::optional<gfx::Size> value = ParseMinBufferSize();
+  return value;
+}
+
 }  // namespace
 
 // Helper used to hold mailboxes for the output textures. OutputMailbox may
@@ -77,16 +111,17 @@ class FuchsiaVideoDecoder::OutputMailbox {
  public:
   OutputMailbox(
       scoped_refptr<viz::RasterContextProvider> raster_context_provider,
-      std::unique_ptr<gfx::GpuMemoryBuffer> gmb)
+      std::unique_ptr<gfx::GpuMemoryBuffer> gmb,
+      const gfx::ColorSpace& color_space)
       : raster_context_provider_(raster_context_provider),
         size_(gmb->GetSize()),
         weak_factory_(this) {
-    uint32_t usage = gpu::SHARED_IMAGE_USAGE_DISPLAY |
+    uint32_t usage = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
                      gpu::SHARED_IMAGE_USAGE_SCANOUT |
                      gpu::SHARED_IMAGE_USAGE_VIDEO_DECODE;
     mailbox_ =
         raster_context_provider_->SharedImageInterface()->CreateSharedImage(
-            gmb.get(), nullptr, gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin,
+            gmb.get(), nullptr, color_space, kTopLeft_GrSurfaceOrigin,
             kPremul_SkAlphaType, usage);
   }
 
@@ -183,11 +218,13 @@ class FuchsiaVideoDecoder::OutputMailbox {
 
 FuchsiaVideoDecoder::FuchsiaVideoDecoder(
     scoped_refptr<viz::RasterContextProvider> raster_context_provider,
-    media::mojom::FuchsiaMediaResourceProvider* media_resource_provider)
+    media::mojom::FuchsiaMediaResourceProvider* media_resource_provider,
+    bool allow_overlays)
     : raster_context_provider_(raster_context_provider),
       media_resource_provider_(media_resource_provider),
-      use_overlays_for_video_(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseOverlaysForVideo)),
+      use_overlays_for_video_(allow_overlays &&
+                              base::CommandLine::ForCurrentProcess()->HasSwitch(
+                                  switches::kUseOverlaysForVideo)),
       sysmem_allocator_("CrFuchsiaVideoDecoder"),
       client_native_pixmap_factory_(
           ui::CreateClientNativePixmapFactoryOzone()) {
@@ -224,7 +261,6 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                      const OutputCB& output_cb,
                                      const WaitingCB& waiting_cb) {
   DCHECK(output_cb);
-  DCHECK(waiting_cb);
   DCHECK(decode_callbacks_.empty());
 
   auto done_callback = BindToCurrentLoop(std::move(init_cb));
@@ -236,7 +272,6 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   output_cb_ = output_cb;
   waiting_cb_ = waiting_cb;
-  container_aspect_ratio_ = config.aspect_ratio();
 
   // Keep decoder and decryptor if the configuration hasn't changed.
   if (decoder_ && current_config_.codec() == config.codec() &&
@@ -249,12 +284,30 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   decoder_.reset();
 
   // Initialize the stream.
-  bool secure_mode = false;
+  bool secure_input = false;
   DecoderStatus status = InitializeSysmemBufferStream(
-      config.is_encrypted(), cdm_context, &secure_mode);
+      config.is_encrypted(), cdm_context, &secure_input);
+
   if (!status.is_ok()) {
     std::move(done_callback).Run(status);
     return;
+  }
+
+  media::mojom::VideoDecoderSecureMemoryMode secure_mode =
+      media::mojom::VideoDecoderSecureMemoryMode::CLEAR_INPUT;
+  if (secure_input) {
+    if (!use_overlays_for_video_) {
+      DLOG(ERROR) << "Protected content can be rendered only using overlays.";
+      std::move(done_callback)
+          .Run(DecoderStatus(DecoderStatus::Codes::kUnsupportedConfig,
+                             FROM_HERE));
+      return;
+    }
+    secure_mode = media::mojom::VideoDecoderSecureMemoryMode::SECURE;
+  } else if (!use_overlays_for_video_) {
+    // Protected output buffers can be rendered only using overlays. If overlays
+    // are not allowed then the output buffers cannot be protected.
+    secure_mode = media::mojom::VideoDecoderSecureMemoryMode::CLEAR;
   }
 
   // Reset output buffers since we won't be able to re-use them.
@@ -266,6 +319,13 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   decoder_ = std::make_unique<StreamProcessorHelper>(std::move(decoder), this);
 
   current_config_ = config;
+
+  // Default to REC601 when the colorspace is not specified in the container.
+  // TODO(crbug.com/1364366): HW decoders currently don't provide accurate
+  // color space information to sysmem. Once that issue is resolved, we'll
+  // need to update this logic accordingly.
+  if (!current_config_.color_space_info().IsSpecified())
+    current_config_.set_color_space_info(VideoColorSpace::REC601());
 
   std::move(done_callback).Run(DecoderStatus::Codes::kOk);
 }
@@ -317,6 +377,9 @@ DecoderStatus FuchsiaVideoDecoder::InitializeSysmemBufferStream(
   max_decoder_requests_ = kNumInputBuffers + 1;
 
   if (is_encrypted) {
+    // `waiting_cb_` is required for encrypted streams.
+    DCHECK(waiting_cb_);
+
     // Caller makes sure |cdm_context| is available if the stream is encrypted.
     if (!cdm_context) {
       DLOG(ERROR) << "No cdm context for encrypted stream.";
@@ -396,6 +459,41 @@ void FuchsiaVideoDecoder::OnStreamProcessorAllocateOutputBuffers(
   buffer_constraints.min_buffer_count_for_camping = kOutputBuffersForCamping;
   buffer_constraints.min_buffer_count_for_shared_slack =
       kMaxUsedOutputBuffers - kOutputBuffersForCamping;
+
+  buffer_constraints.image_format_constraints_count =
+      std::size(kSupportedPixelFormats);
+  for (size_t pixel_format_index = 0;
+       pixel_format_index < std::size(kSupportedPixelFormats);
+       ++pixel_format_index) {
+    auto& image_format_constraints =
+        buffer_constraints.image_format_constraints[pixel_format_index];
+    image_format_constraints.pixel_format.type =
+        kSupportedPixelFormats[pixel_format_index];
+    image_format_constraints.pixel_format.has_format_modifier = true;
+    image_format_constraints.pixel_format.format_modifier.value =
+        fuchsia::sysmem::FORMAT_MODIFIER_LINEAR;
+
+    image_format_constraints.color_spaces_count =
+        std::size(kSupportedColorSpaces);
+    for (size_t i = 0; i < std::size(kSupportedColorSpaces); ++i) {
+      image_format_constraints.color_space[i].type = kSupportedColorSpaces[i];
+    }
+  }
+
+  auto min_buffer_size = GetMinBufferSize();
+  if (min_buffer_size) {
+    for (size_t pixel_format_index = 0;
+         pixel_format_index < std::size(kSupportedPixelFormats);
+         ++pixel_format_index) {
+      auto& image_format_constraints =
+          buffer_constraints.image_format_constraints[pixel_format_index];
+      image_format_constraints.required_max_coded_width =
+          min_buffer_size->width();
+      image_format_constraints.required_max_coded_height =
+          min_buffer_size->height();
+    }
+  }
+
   output_buffer_collection_->Initialize(std::move(buffer_constraints),
                                         "ChromiumVideoDecoderOutput");
 }
@@ -475,7 +573,8 @@ void FuchsiaVideoDecoder::OnStreamProcessorOutputPacket(
         gpu::GpuMemoryBufferImpl::DestructionCallback());
 
     output_mailboxes_[buffer_index] =
-        new OutputMailbox(raster_context_provider_, std::move(gmb));
+        new OutputMailbox(raster_context_provider_, std::move(gmb),
+                          current_config_.color_space_info().ToGfxColorSpace());
   } else {
     raster_context_provider_->SharedImageInterface()->UpdateSharedImage(
         gpu::SyncToken(), output_mailboxes_[buffer_index]->mailbox());
@@ -484,7 +583,7 @@ void FuchsiaVideoDecoder::OnStreamProcessorOutputPacket(
   auto display_rect = gfx::Rect(output_format_.primary_display_width_pixels,
                                 output_format_.primary_display_height_pixels);
 
-  VideoAspectRatio aspect_ratio = container_aspect_ratio_;
+  VideoAspectRatio aspect_ratio = current_config_.aspect_ratio();
   if (!aspect_ratio.IsValid() && output_format_.has_pixel_aspect_ratio) {
     aspect_ratio =
         VideoAspectRatio::PAR(output_format_.pixel_aspect_ratio_width,
@@ -510,6 +609,12 @@ void FuchsiaVideoDecoder::OnStreamProcessorOutputPacket(
       base::BindOnce(&FuchsiaVideoDecoder::ReleaseOutputPacket,
                      base::Unretained(this), std::move(output_packet)));
 
+  VkSamplerYcbcrModelConversion ycbcr_conversion =
+      (current_config_.color_space_info().matrix ==
+       VideoColorSpace::MatrixID::BT709)
+          ? VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709
+          : VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601;
+
   // Currently sysmem doesn't specify location of chroma samples relative to
   // luma (see fxbug.dev/13677). Assume they are cosited with luma. YCbCr info
   // here must match the values passed for the same buffer in
@@ -517,8 +622,7 @@ void FuchsiaVideoDecoder::OnStreamProcessorOutputPacket(
   // ui/ozone/platform/scenic/sysmem_buffer_collection.cc). |format_features|
   // are resolved later in the GPU process before this info is passed to Skia.
   frame->set_ycbcr_info(gpu::VulkanYCbCrInfo(
-      vk_format, /*external_format=*/0,
-      VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709,
+      vk_format, /*external_format=*/0, ycbcr_conversion,
       VK_SAMPLER_YCBCR_RANGE_ITU_NARROW, VK_CHROMA_LOCATION_COSITED_EVEN,
       VK_CHROMA_LOCATION_COSITED_EVEN, /*format_features=*/0));
 

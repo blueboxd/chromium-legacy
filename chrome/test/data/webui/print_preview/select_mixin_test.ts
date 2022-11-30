@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {SelectMixin, SelectMixinInterface} from 'chrome://print/print_preview.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals} from 'chrome://webui-test/chai_assert.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
@@ -52,7 +52,8 @@ suite(select_mixin_test.suiteName, function() {
   });
 
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     testSelect = document.createElement('test-select') as (
                      HTMLElement & SelectMixinInterface);
     document.body.appendChild(testSelect);

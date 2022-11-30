@@ -194,7 +194,7 @@ const char kPrintPdfAsImage[] = "printPdfAsImage";
 // Preview WebUI does not send over invalid data.
 base::Value::Dict GetSettingsDictionary(const std::string& json_str) {
   absl::optional<base::Value> settings = base::JSONReader::Read(json_str);
-  base::Value::Dict dict = std::move(settings->GetDict());
+  base::Value::Dict dict = std::move(*settings).TakeDict();
   CHECK(!dict.empty());
   return dict;
 }
@@ -1194,8 +1194,7 @@ void PrintPreviewHandler::HandleManagePrinters(const base::Value::List& args) {
   }
   local_printer_->ShowSystemPrintSettings(base::DoNothing());
 #else
-  printing::PrinterManagerDialog::ShowPrinterManagerDialog(
-      Profile::FromWebUI(web_ui()));
+  printing::PrinterManagerDialog::ShowPrinterManagerDialog();
 #endif
 }
 

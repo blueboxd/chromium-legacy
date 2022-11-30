@@ -368,6 +368,7 @@ class CORE_EXPORT HTMLInputElement
     form_element_pii_type_ = form_element_pii_type;
   }
 
+  bool isMutable();
   void showPicker(ExceptionState&);
 
  protected:
@@ -440,7 +441,7 @@ class CORE_EXPORT HTMLInputElement
   bool TooShort(const String&, NeedsToCheckDirtyFlag) const;
 
   void UpdatePlaceholderText() final;
-  bool IsEmptyValue() const final { return InnerEditorValue().IsEmpty(); }
+  bool IsEmptyValue() const final { return InnerEditorValue().empty(); }
   void HandleBlurEvent() final;
   void DispatchFocusInEvent(const AtomicString& event_type,
                             Element* old_focused_element,

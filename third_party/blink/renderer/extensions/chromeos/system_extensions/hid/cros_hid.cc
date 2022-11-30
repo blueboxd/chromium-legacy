@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,7 +76,7 @@ ScriptPromise CrosHID::accessDevice(ScriptState* script_state,
   if (cros_hid) {
     Vector<mojom::blink::HidDeviceFilterPtr> mojo_filters;
     if (options->hasFilters()) {
-      mojo_filters.ReserveCapacity(options->filters().size());
+      mojo_filters.reserve(options->filters().size());
       for (const auto& filter : options->filters()) {
         absl::optional<String> error_message =
             HID::CheckDeviceFilterValidity(*filter);
@@ -90,8 +90,8 @@ ScriptPromise CrosHID::accessDevice(ScriptState* script_state,
 
       cros_hid->AccessDevices(
           std::move(mojo_filters),
-          WTF::Bind(&CrosHID::OnAccessDevicesResponse, WrapPersistent(this),
-                    WrapPersistent(resolver)));
+          WTF::BindOnce(&CrosHID::OnAccessDevicesResponse, WrapPersistent(this),
+                        WrapPersistent(resolver)));
     }
   }
 

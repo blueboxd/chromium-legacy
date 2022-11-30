@@ -77,7 +77,7 @@ enum class NotificationCatalogName {
   kFirmwareUpdate = 62,
   kPeripheralBattery = 63,
   kBluetoothPairingRequest = 64,
-  kBluetoothPairedDevice = 65,
+  // [Deprecated] kBluetoothPairedDevice = 65,
   kCellularSetup = 66,
   kScreenSecurity = 67,
   kWifiToggle = 68,
@@ -166,7 +166,10 @@ enum class NotificationCatalogName {
   kArcLowDiskSpacePreStop = 151,
   kArcLowDiskSpacePostStop = 152,
   kMultiCapture = 153,
-  kMaxValue = kMultiCapture
+  kPrivacyHubCamera = 154,
+  kPrivacyHubHWCameraSwitchOffSWCameraSwitchOn = 155,
+  kEcheAppNetworkSetting = 156,
+  kMaxValue = kEcheAppNetworkSetting
 };
 
 // A living catalog that registers system nudges.

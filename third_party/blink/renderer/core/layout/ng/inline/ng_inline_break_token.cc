@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,7 +110,6 @@ bool NGInlineBreakToken::IsAfterBlockInInline() const {
 
 String NGInlineBreakToken::ToString() const {
   StringBuilder string_builder;
-  string_builder.Append(NGBreakToken::ToString());
   string_builder.Append(
       String::Format(" index:%u offset:%u", ItemIndex(), TextOffset()));
   if (IsForcedBreak())

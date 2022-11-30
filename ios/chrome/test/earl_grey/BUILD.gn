@@ -157,6 +157,8 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/browser/ui/settings/password:eg_app_support+eg2",
     "//ios/chrome/browser/ui/settings/password:password_constants",
     "//ios/chrome/browser/ui/settings/password/passwords_in_other_apps:eg_app_support+eg2",
+    "//ios/chrome/browser/ui/settings/price_notifications:constants",
+    "//ios/chrome/browser/ui/settings/price_notifications/tracking_price:constants",
     "//ios/chrome/browser/ui/settings/privacy:privacy_constants",
     "//ios/chrome/browser/ui/settings/privacy:privacy_ui",
     "//ios/chrome/browser/ui/settings/sync",
@@ -259,6 +261,7 @@ source_set("eg_test_support+eg2") {
     "//components/strings",
     "//components/sync/base",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui/ntp:feature_flags",
     "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/browser/ui/recent_tabs:recent_tabs_ui_constants",
     "//ios/chrome/browser/ui/safe_mode:eg_test_support+eg2",
@@ -291,6 +294,11 @@ source_set("chrome_egtest_bundle_main+eg2") {
   configs += [
     "//build/config/compiler:enable_arc",
     "//build/config/ios:xctest_config",
+
+    # Adding this config to exempt from the style check:
+    # "cannot use 'try' with exceptions disabled". This cannot be fixed because
+    # it's part of the gRPC library.
+    "//build/config/compiler:exceptions",
   ]
   testonly = true
 
@@ -300,9 +308,34 @@ source_set("chrome_egtest_bundle_main+eg2") {
   ]
 
   deps = [
+    ":chrome_egtest_plugin_client",
     "//base",
     "//base:i18n",
+    "//third_party/grpc:grpc++",
     "//ui/base",
+  ]
+}
+
+source_set("chrome_egtest_plugin_client") {
+  configs += [
+    "//build/config/compiler:enable_arc",
+
+    # Adding this config to exempt from the style check:
+    # "cannot use 'try' with exceptions disabled". This cannot be fixed because
+    # it's part of the gRPC library.
+    "//build/config/compiler:exceptions",
+  ]
+  testonly = true
+
+  sources = [
+    "chrome_egtest_plugin_client.h",
+    "chrome_egtest_plugin_client.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//ios/testing/plugin:test_plugin_service",
+    "//third_party/grpc:grpc++",
   ]
 }
 

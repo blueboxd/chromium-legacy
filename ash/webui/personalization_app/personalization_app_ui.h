@@ -10,13 +10,17 @@
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
+#include "ui/webui/resources/cr_components/color_change_listener/color_change_listener.mojom.h"
 
 namespace content {
 class WebUIDataSource;
 }  // namespace content
 
-namespace ash {
-namespace personalization_app {
+namespace ui {
+class ColorChangeHandler;
+}  // namespace ui
+
+namespace ash::personalization_app {
 
 class PersonalizationAppAmbientProvider;
 class PersonalizationAppKeyboardBacklightProvider;
@@ -59,6 +63,10 @@ class PersonalizationAppUI : public ui::MojoWebUIController {
       mojo::PendingReceiver<personalization_app::mojom::WallpaperProvider>
           receiver);
 
+  void BindInterface(
+      mojo::PendingReceiver<color_change_listener::mojom::PageHandler>
+          receiver);
+
  private:
   void AddBooleans(content::WebUIDataSource* source);
   std::unique_ptr<PersonalizationAppAmbientProvider> ambient_provider_;
@@ -67,11 +75,13 @@ class PersonalizationAppUI : public ui::MojoWebUIController {
   std::unique_ptr<PersonalizationAppThemeProvider> theme_provider_;
   std::unique_ptr<PersonalizationAppUserProvider> user_provider_;
   std::unique_ptr<PersonalizationAppWallpaperProvider> wallpaper_provider_;
+  // The color change handler notifies the WebUI when the color provider
+  // changes.
+  std::unique_ptr<ui::ColorChangeHandler> color_provider_handler_;
 
   WEB_UI_CONTROLLER_TYPE_DECL();
 };
 
-}  // namespace personalization_app
-}  // namespace ash
+}  // namespace ash::personalization_app
 
 #endif  // ASH_WEBUI_PERSONALIZATION_APP_PERSONALIZATION_APP_UI_H_

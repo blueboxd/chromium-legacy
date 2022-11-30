@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -467,8 +467,14 @@ source_set("testing") {
     "testing/internal_settings.h",
     "testing/internals.cc",
     "testing/internals.h",
+    "testing/internals_cookies.cc",
+    "testing/internals_cookies.h",
     "testing/internals_delete_all_cookies.cc",
     "testing/internals_delete_all_cookies.h",
+    "testing/internals_get_all_cookies.cc",
+    "testing/internals_get_all_cookies.h",
+    "testing/internals_get_named_cookie.cc",
+    "testing/internals_get_named_cookie.h",
     "testing/intersection_observer_test_helper.h",
     "testing/mock_clipboard_host.cc",
     "testing/mock_clipboard_host.h",
@@ -772,13 +778,10 @@ css_properties("make_core_generated_cssom_types") {
 }
 
 css_properties("make_core_generated_known_exposed_properties") {
-  script = "../build/scripts/core/css/properties/make_known_exposed_properties.py"
-  other_inputs = [
-    "../build/scripts/core/css/properties/templates/known_exposed_properties.cc.tmpl",
-  ]
-  outputs = [
-    "$blink_core_output_dir/known_exposed_properties.cc",
-  ]
+  script =
+      "../build/scripts/core/css/properties/make_known_exposed_properties.py"
+  other_inputs = [ "../build/scripts/core/css/properties/templates/known_exposed_properties.cc.tmpl" ]
+  outputs = [ "$blink_core_output_dir/known_exposed_properties.cc" ]
 }
 
 code_generator("make_core_generated_css_value_keywords") {
@@ -943,6 +946,11 @@ make_names("make_core_generated_keywords") {
 
 make_names("make_core_generated_performance_entry_names") {
   in_files = [ "timing/performance_entry_names.json5" ]
+  output_dir = blink_core_output_dir
+}
+
+make_names("make_core_generated_delivery_type_names") {
+  in_files = [ "timing/delivery_type_names.json5" ]
   output_dir = blink_core_output_dir
 }
 
@@ -1149,6 +1157,7 @@ targets_generating_sources = [
   ":make_core_generated_css_value_id_mappings",
   ":make_core_generated_css_value_keywords",
   ":make_core_generated_cssom_types",
+  ":make_core_generated_delivery_type_names",
   ":make_core_generated_event_factory",
   ":make_core_generated_event_names",
   ":make_core_generated_event_target_names",
@@ -1678,7 +1687,8 @@ fuzzer_test("attribution_source_registration_fuzzer") {
     "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
     "//third_party/libprotobuf-mutator",
   ]
-  seed_corpus = "//third_party/blink/renderer/core/frame/attribution_src/attribution_source_registration_corpus"
+  seed_corpus =
+      "//testing/libfuzzer/fuzzers/attribution_source_registration_corpus"
 }
 
 fuzzer_test("attribution_trigger_registration_fuzzer") {

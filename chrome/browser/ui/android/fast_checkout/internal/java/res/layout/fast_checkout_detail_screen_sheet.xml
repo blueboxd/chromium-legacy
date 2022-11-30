@@ -15,17 +15,25 @@ found in the LICENSE file.
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/action_bar"
+        android:layout_gravity="center_horizontal"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
+        android:focusable="true"
         android:titleTextAppearance="@style/TextAppearance.Headline"
         style="@style/ModernToolbar" />
 
-    <androidx.recyclerview.widget.RecyclerView
-      android:id="@+id/fast_checkout_detail_screen_recycler_view"
+  <FrameLayout
+      android:id="@+id/sheet_item_list_container"
       android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:layout_marginTop="18dp"
-      android:layout_marginBottom="24dp"
-      android:divider="@null"/>
+      android:layout_height="match_parent">
+      <androidx.recyclerview.widget.RecyclerView
+          android:id="@+id/fast_checkout_detail_screen_recycler_view"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:clipToPadding="false"
+          android:divider="@null"
+          android:paddingBottom="24dp"/>
+  </FrameLayout>
 
 </LinearLayout>
+

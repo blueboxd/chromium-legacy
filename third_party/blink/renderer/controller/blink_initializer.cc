@@ -56,7 +56,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/parser/atomic_html_token.h"
 #include "third_party/blink/renderer/core/html/parser/literal_buffer.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/disk_data_allocator.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -107,13 +106,15 @@ class EndOfTaskRunner : public Thread::TaskObserver {
 
 // See description of `g_literal_buffer_create_string_with_encoding` in
 // LiteralBuffer as to what this controls.
-const base::Feature kLiteralBufferCreateStringWithEncoding{
-    "LiteralBufferCreateStringWithEncoding", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kLiteralBufferCreateStringWithEncoding,
+             "LiteralBufferCreateStringWithEncoding",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // See description of `g_use_html_attribute_name_lookup` in AtomicHTMLToken as
 // to what this controls.
-const base::Feature kUseHtmlAttributeNameLookup{
-    "UseHtmlAttributeNameLookup", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kUseHtmlAttributeNameLookup,
+             "UseHtmlAttributeNameLookup",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 Thread::TaskObserver* g_end_of_task_runner = nullptr;
 
@@ -217,18 +218,8 @@ void SetIsCrossOriginIsolated(bool value) {
 }
 
 // Function defined in third_party/blink/public/web/blink.h.
-bool IsCrossOriginIsolated() {
-  return Agent::IsCrossOriginIsolated();
-}
-
-// Function defined in third_party/blink/public/web/blink.h.
 void SetIsIsolatedApplication(bool value) {
   Agent::SetIsIsolatedApplication(value);
-}
-
-// Function defined in third_party/blink/public/web/blink.h.
-bool IsIsolatedApplication() {
-  return Agent::IsIsolatedApplication();
 }
 
 void BlinkInitializer::RegisterInterfaces(mojo::BinderMap& binders) {
@@ -261,8 +252,8 @@ void BlinkInitializer::RegisterInterfaces(mojo::BinderMap& binders) {
 #endif
 
   binders.Add<mojom::blink::LeakDetector>(
-      ConvertToBaseRepeatingCallback(
-          CrossThreadBindRepeating(&BlinkLeakDetector::Bind)),
+      ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
+          &BlinkLeakDetector::Bind, WTF::RetainedRef(main_thread_task_runner))),
       main_thread_task_runner);
 
   binders.Add<mojom::blink::DiskAllocator>(

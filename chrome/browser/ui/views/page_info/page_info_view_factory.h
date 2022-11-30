@@ -133,8 +133,15 @@ class PageInfoViewFactory {
   // Returns the icon for the 'Ad personalization' button.
   static const ui::ImageModel GetAdPersonalizationIcon();
 
+  static const ui::ImageModel GetEnforcedByPolicyIcon();
+  static const ui::ImageModel GetEnforcedByExtensionIcon();
+  static const ui::ImageModel GetEnforcedBySettingsIcon();
+
   // Returns the icon for the 'Block third party cookies' button.
   static const ui::ImageModel GetBlockingThirdPartyCookiesIcon();
+
+  // Returns the icon for the first party sets button.
+  static const ui::ImageModel GetFpsIcon();
 
   [[nodiscard]] std::unique_ptr<views::View> CreateMainPageView(
       base::OnceClosure initialized_callback);

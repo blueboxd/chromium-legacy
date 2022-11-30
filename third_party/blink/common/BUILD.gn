@@ -1,4 +1,4 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -132,7 +132,6 @@ source_set("common") {
     "features.cc",
     "fenced_frame/fenced_frame_utils.cc",
     "fetch/fetch_api_request_body_mojom_traits.cc",
-    "frame/event_page_show_persisted.cc",
     "frame/frame_ad_evidence.cc",
     "frame/frame_ad_evidence_mojom_traits.cc",
     "frame/frame_policy.cc",
@@ -193,6 +192,7 @@ source_set("common") {
     "messaging/message_port_descriptor.cc",
     "messaging/message_port_descriptor_mojom_traits.cc",
     "messaging/string_message_codec.cc",
+    "messaging/task_attribution_id_mojom_traits.cc",
     "messaging/transferable_message.cc",
     "messaging/transferable_message_mojom_traits.cc",
     "messaging/web_message_port.cc",
@@ -223,6 +223,7 @@ source_set("common") {
     "peerconnection/webrtc_ip_handling_policy.cc",
     "permissions/permission_utils.cc",
     "permissions_policy/document_policy.cc",
+    "permissions_policy/origin_with_possible_wildcards.cc",
     "permissions_policy/permissions_policy.cc",
     "permissions_policy/permissions_policy_declaration.cc",
     "permissions_policy/permissions_policy_mojom_traits.cc",
@@ -273,6 +274,7 @@ source_set("common") {
 
   deps = [
     "//base",
+    "//build:chromecast_buildflags",
     "//build:chromeos_buildflags",
     "//media/capture:capture_base",
     "//media/capture/mojom:video_capture_mojom_support",
@@ -333,8 +335,6 @@ test("blink_common_unittests") {
   }
 
   if (is_fuchsia) {
-    use_cfv1 = false
-
     # TODO(https://crbug.com/1185811): Investigate removing the requirement for
     # job_policy_ambient_mark_vmo_exec for the sake of V8's allocator in tests.
     test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
@@ -377,6 +377,7 @@ source_set("common_unittests_sources") {
     "page/content_to_visible_time_reporter_unittest.cc",
     "page_state/page_state_serialization_unittest.cc",
     "permissions_policy/document_policy_unittest.cc",
+    "permissions_policy/origin_with_possible_wildcards_unittest.cc",
     "permissions_policy/permissions_policy_declaration_unittest.cc",
     "permissions_policy/permissions_policy_unittest.cc",
     "permissions_policy/policy_value_unittest.cc",

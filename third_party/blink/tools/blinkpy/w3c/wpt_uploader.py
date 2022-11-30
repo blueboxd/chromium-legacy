@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Uploads Wpt test results from Chromium to wpt.fyi."""
@@ -51,17 +51,19 @@ class WptReportUploader(object):
             build = self.fetch_latest_complete_build(*builder)
             if build:
                 _log.info("Find latest completed build %d" % build.get("number"))
+                # pylint: disable=unsubscriptable-object
                 urls = self._host.results_fetcher.fetch_wpt_report_urls(
                     build["id"])
                 for url in urls:
                     _log.info("Fetching wpt report from %s" % url)
-                    res = self._host.web.request("GET", url)
-                    if res.getcode() == 200:
-                        body = res.read()
-                        reports.append(json.loads(body))
-                    else:
+                    body = self._host.web.get_binary(url,
+                                                     return_none_on_404=True)
+                    if not body:
                         _log.error("Failed to fetch wpt report.")
-
+                        continue
+                    # Ignore retry results on subsequent lines.
+                    initial_report, _, _ = body.partition(b'\n')
+                    reports.append(json.loads(initial_report))
             merged_report = self.merge_reports(reports)
 
             with tempfile.TemporaryDirectory() as tmpdir:

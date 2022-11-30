@@ -70,6 +70,7 @@ class BrowsingTopicsCalculatorTest : public testing::Test {
             std::move(privacy_sandbox_delegate),
             host_content_settings_map_.get(), cookie_settings_, &prefs_,
             /*incognito_profile=*/false);
+    privacy_sandbox_settings_->SetPrivacySandboxEnabled(true);
 
     topics_site_data_manager_ =
         std::make_unique<content::TesterBrowsingTopicsSiteDataManager>(
@@ -925,7 +926,7 @@ TEST_F(BrowsingTopicsCalculatorTest, PaddedTopicsDoNotDuplicate) {
        {Topic(103), {}}});
 }
 
-TEST_F(BrowsingTopicsCalculatorTest, Metrics) {
+TEST_F(BrowsingTopicsCalculatorTest, Metrics_LessThan5HistoryTopics) {
   base::HistogramTester histograms;
 
   base::Time begin_time = base::Time::Now();
@@ -967,6 +968,11 @@ TEST_F(BrowsingTopicsCalculatorTest, Metrics) {
       /*expected_bucket_count=*/1);
 
   histograms.ExpectUniqueSample(
+      "BrowsingTopics.EpochTopicsCalculation.HistoryTopicsCount",
+      /*sample=*/3,
+      /*expected_bucket_count=*/1);
+
+  histograms.ExpectUniqueSample(
       "BrowsingTopics.EpochTopicsCalculation.TopTopicsCountBeforePadding",
       /*sample=*/3,
       /*expected_bucket_count=*/1);
@@ -990,6 +996,47 @@ TEST_F(BrowsingTopicsCalculatorTest, Metrics) {
       "ObservationContextDomainsCountPerTopTopic",
       /*sample=*/3,
       /*expected_count=*/2);
+}
+
+TEST_F(BrowsingTopicsCalculatorTest, Metrics_MoreThan5HistoryTopics) {
+  base::HistogramTester histograms;
+
+  base::Time begin_time = base::Time::Now();
+
+  AddHistoryEntries({kHost1, kHost2, kHost3, kHost4, kHost5, kHost6},
+                    begin_time);
+
+  AddApiUsageContextEntries(
+      {{kHost1, {}},
+       {kHost2, {}},
+       {kHost3, {HashedDomain(2)}},
+       {kHost4, {HashedDomain(3)}},
+       {kHost5, {HashedDomain(1), HashedDomain(2), HashedDomain(3)}}});
+
+  test_page_content_annotator_.UsePageTopics(
+      *optimization_guide::TestModelInfoBuilder().SetVersion(1).Build(),
+      {{kHost1, TopicsAndWeight({1, 2, 3, 4, 5, 6}, 0.1)},
+       {kHost2, TopicsAndWeight({2, 3, 4, 5, 6}, 0.1)},
+       {kHost3, TopicsAndWeight({3, 4, 5, 6}, 0.1)},
+       {kHost4, TopicsAndWeight({4, 5, 6}, 0.1)},
+       {kHost5, TopicsAndWeight({5, 6}, 0.1)},
+       {kHost6, TopicsAndWeight({6}, 0.1)}});
+
+  task_environment_.AdvanceClock(base::Seconds(1));
+
+  EpochTopics result = CalculateTopics();
+
+  EXPECT_EQ(result.padded_top_topics_start_index(), 5u);
+
+  histograms.ExpectUniqueSample(
+      "BrowsingTopics.EpochTopicsCalculation.HistoryTopicsCount",
+      /*sample=*/6,
+      /*expected_bucket_count=*/1);
+
+  histograms.ExpectUniqueSample(
+      "BrowsingTopics.EpochTopicsCalculation.TopTopicsCountBeforePadding",
+      /*sample=*/5,
+      /*expected_bucket_count=*/1);
 }
 
 }  // namespace browsing_topics

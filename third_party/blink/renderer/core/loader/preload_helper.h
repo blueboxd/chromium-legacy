@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,10 @@ class PreloadHelper final {
   // Media links cannot be preloaded until the first chunk is parsed. The rest
   // can be preloaded at commit time.
   enum MediaPreloadPolicy { kLoadAll, kOnlyLoadNonMedia, kOnlyLoadMedia };
+
+  static void LoadSpeculationRuleLinkFromHeader(const String& header_value,
+                                                Document* document,
+                                                LocalFrame& frame);
 
   static void LoadLinksFromHeader(
       const String& header_value,

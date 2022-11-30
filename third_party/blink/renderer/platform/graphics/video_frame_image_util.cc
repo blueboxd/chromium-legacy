@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -152,7 +152,7 @@ scoped_refptr<StaticBitmapImage> CreateImageFromVideoFrame(
         kN32_SkColorType, kUnpremul_SkAlphaType, std::move(sk_color_space));
 
     // Hold a ref by storing it in the release callback.
-    auto release_callback = WTF::Bind(
+    auto release_callback = WTF::BindOnce(
         [](scoped_refptr<media::VideoFrame> frame,
            base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider,
            const gpu::SyncToken& sync_token, bool is_lost) {
@@ -345,7 +345,7 @@ std::unique_ptr<CanvasResourceProvider> CreateResourceProviderForVideoFrame(
       CanvasResourceProvider::ShouldInitialize::kNo,
       SharedGpuContext::ContextProviderWrapper(), RasterMode::kGPU,
       false,  // Origin of GL texture is bottom left on screen
-      gpu::SHARED_IMAGE_USAGE_DISPLAY);
+      gpu::SHARED_IMAGE_USAGE_DISPLAY_READ);
 }
 
 }  // namespace blink

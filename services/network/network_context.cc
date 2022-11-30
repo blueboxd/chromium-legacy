@@ -59,7 +59,6 @@
 #include "net/cert/caching_cert_verifier.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/coalescing_cert_verifier.h"
-#include "net/cert_net/cert_net_fetcher_url_request.h"
 #include "net/cookies/cookie_access_delegate.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_cache.h"
@@ -627,9 +626,6 @@ NetworkContext::~NetworkContext() {
   if (network_service_)
     network_service_->DeregisterNetworkContext(this);
 
-  if (cert_net_fetcher_)
-    cert_net_fetcher_->Shutdown();
-
   if (domain_reliability_monitor_)
     domain_reliability_monitor_->Shutdown();
   // Because of the order of declaration in the class,
@@ -802,9 +798,7 @@ void NetworkContext::OnComputedFirstPartySetMetadata(
       std::make_unique<RestrictedCookieManager>(
           role, url_request_context_->cookie_store(),
           cookie_manager_->cookie_settings(), origin, isolation_info,
-          std::move(cookie_observer),
-          first_party_sets_access_delegate_.is_enabled(),
-          std::move(first_party_set_metadata)),
+          std::move(cookie_observer), std::move(first_party_set_metadata)),
       std::move(receiver));
 }
 
@@ -2390,9 +2384,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
 
   if (session_cleanup_cookie_store) {
     std::unique_ptr<net::CookieMonster> cookie_store =
-        std::make_unique<net::CookieMonster>(
-            session_cleanup_cookie_store.get(), net_log,
-            first_party_sets_access_delegate_.is_enabled());
+        std::make_unique<net::CookieMonster>(session_cleanup_cookie_store.get(),
+                                             net_log);
     if (params_->persist_session_cookies)
       cookie_store->SetPersistSessionCookies(true);
 
@@ -2609,9 +2602,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   builder.set_host_mapping_rules(
       command_line->GetSwitchValueASCII(switches::kHostResolverRules));
 
-  builder.set_first_party_sets_enabled(
-      first_party_sets_access_delegate_.is_enabled());
-
   if (params_->socket_broker) {
     builder.set_client_socket_factory(
         std::make_unique<BrokeredClientSocketFactory>(
@@ -2734,9 +2724,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
     proxy_delegate_->SetProxyResolutionService(
         result.url_request_context->proxy_resolution_service());
   }
-
-  if (cert_net_fetcher_)
-    cert_net_fetcher_->SetURLRequestContext(result.url_request_context.get());
 
   return result;
 }

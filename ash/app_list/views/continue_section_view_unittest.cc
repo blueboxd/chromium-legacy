@@ -266,15 +266,13 @@ class ContinueSectionViewTestBase : public AshTestBase {
   }
 
   gfx::RectF GetTargetLayerBounds(views::View* view) {
-    gfx::RectF bounds(view->layer()->GetTargetBounds());
-    view->layer()->GetTargetTransform().TransformRect(&bounds);
-    return bounds;
+    return view->layer()->GetTargetTransform().MapRect(
+        gfx::RectF(view->layer()->GetTargetBounds()));
   }
 
   gfx::RectF GetCurrentLayerBounds(views::View* view) {
-    gfx::RectF bounds(view->layer()->bounds());
-    view->layer()->transform().TransformRect(&bounds);
-    return bounds;
+    return view->layer()->transform().MapRect(
+        gfx::RectF(view->layer()->bounds()));
   }
 
   std::vector<gfx::RectF> GetCurrentLayerBoundsForAllTaskViews() {
@@ -1203,13 +1201,8 @@ TEST_P(ContinueSectionViewWithReorderNudgeTest, TimeDismissPrivacyNotice) {
             AppListToastType::kReorderNudge);
 }
 
-// TODO(crbug.com/1317428): Switch to ContinueSectionViewWithReorderNudgeTest
-// when this feature works in tablet mode.
-TEST_F(ContinueSectionViewClamshellModeTest,
+TEST_P(ContinueSectionViewWithReorderNudgeTest,
        HidingContinueSectionHidesPrivacyNotice) {
-  base::test::ScopedFeatureList feature_list(
-      features::kLauncherHideContinueSection);
-
   AddSearchResult("id1", AppListSearchResultType::kZeroStateFile);
   AddSearchResult("id2", AppListSearchResultType::kZeroStateDrive);
   AddSearchResult("id3", AppListSearchResultType::kZeroStateDrive);

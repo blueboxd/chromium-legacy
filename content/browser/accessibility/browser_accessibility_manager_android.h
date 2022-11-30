@@ -12,10 +12,14 @@
 #include "third_party/blink/public/mojom/render_accessibility.mojom-forward.h"
 
 namespace ui {
+
 class MotionEventAndroid;
-}
+
+}  // namespace ui
 
 namespace content {
+
+class WebAXPlatformTreeManagerDelegate;
 
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content.browser.accessibility
@@ -44,7 +48,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   BrowserAccessibilityManagerAndroid(
       const ui::AXTreeUpdate& initial_tree,
       base::WeakPtr<WebContentsAccessibilityAndroid> web_contents_accessibility,
-      BrowserAccessibilityDelegate* delegate);
+      WebAXPlatformTreeManagerDelegate* delegate);
 
   BrowserAccessibilityManagerAndroid(
       const BrowserAccessibilityManagerAndroid&) = delete;
@@ -56,10 +60,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   static ui::AXTreeUpdate GetEmptyDocument();
 
   void set_allow_image_descriptions_for_testing(bool is_allowed) {
-    allow_image_descriptions_ = is_allowed;
-  }
-  bool should_allow_image_descriptions() const {
-    return allow_image_descriptions_;
+    allow_image_descriptions_for_testing_ = is_allowed;
   }
 
   // By default, the tree is pruned for a better screen reading experience,
@@ -79,6 +80,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
     web_contents_accessibility_ = std::move(wcax);
   }
 
+  // State properties defined from Java-side code.
+  bool ShouldAllowImageDescriptions();
   bool ShouldRespectDisplayedPasswordText();
   bool ShouldExposePasswordText();
 
@@ -92,14 +95,13 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   BrowserAccessibility* GetFocus() const override;
   void SendLocationChangeEvents(
       const std::vector<blink::mojom::LocationChangesPtr>& changes) override;
-  BrowserAccessibility* RetargetForEvents(
-      BrowserAccessibility* node,
-      RetargetEventType type) const override;
+  ui::AXNode* RetargetForEvents(ui::AXNode* node,
+                                RetargetEventType type) const override;
   void FireBlinkEvent(ax::mojom::Event event_type,
                       BrowserAccessibility* node,
                       int action_request_id) override;
   void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
-                          BrowserAccessibility* node) override;
+                          const ui::AXNode* node) override;
 
   void FireLocationChanged(BrowserAccessibility* node);
 
@@ -165,9 +167,10 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   // See docs for set_prune_tree_for_screen_reader, above.
   bool prune_tree_for_screen_reader_;
 
-  // Whether or not image descriptions are allowed for this instance, set
-  // during construction with the value from WebContentsAccessibilityAndroid.
-  bool allow_image_descriptions_ = false;
+  // True if this instance should force enable the image descriptions feature
+  // for testing. This allows us to mock generated image descriptions and test
+  // tree dumps for nodes without creating web_contents_accessibility_android.
+  bool allow_image_descriptions_for_testing_ = false;
 
   // Only set on the root BrowserAccessibilityManager. Keeps track of if
   // any node uses touch passthrough in any frame. See comment next to

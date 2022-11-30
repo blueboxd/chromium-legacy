@@ -21,7 +21,7 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/buffer_format_utils.h"
-#include "ui/gl/gl_image_shared_memory.h"
+#include "ui/gl/gl_implementation.h"
 #include "ui/gl/progress_reporter.h"
 
 namespace gpu {
@@ -41,14 +41,12 @@ GLImageBackingFactory::GLImageBackingFactory(
     const GpuDriverBugWorkarounds& workarounds,
     const gles2::FeatureInfo* feature_info,
     ImageFactory* image_factory,
-    gl::ProgressReporter* progress_reporter,
-    const bool for_shared_memory_gmbs)
+    gl::ProgressReporter* progress_reporter)
     : GLCommonImageBackingFactory(gpu_preferences,
                                   workarounds,
                                   feature_info,
                                   progress_reporter),
-      image_factory_(image_factory),
-      for_shared_memory_gmbs_(for_shared_memory_gmbs) {
+      image_factory_(image_factory) {
   gpu_memory_buffer_formats_ =
       feature_info->feature_flags().gpu_memory_buffer_formats;
   // Return if scanout images are not supported
@@ -95,7 +93,7 @@ GLImageBackingFactory::~GLImageBackingFactory() = default;
 
 std::unique_ptr<SharedImageBacking> GLImageBackingFactory::CreateSharedImage(
     const Mailbox& mailbox,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
@@ -111,7 +109,7 @@ std::unique_ptr<SharedImageBacking> GLImageBackingFactory::CreateSharedImage(
 
 std::unique_ptr<SharedImageBacking> GLImageBackingFactory::CreateSharedImage(
     const Mailbox& mailbox,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
@@ -153,10 +151,8 @@ std::unique_ptr<SharedImageBacking> GLImageBackingFactory::CreateSharedImage(
     return nullptr;
   }
 
-  const gfx::GpuMemoryBufferType handle_type = handle.type;
   GLenum target =
-      (handle_type == gfx::SHARED_MEMORY_BUFFER ||
-       !NativeBufferNeedsPlatformSpecificTextureTarget(buffer_format, plane))
+      !NativeBufferNeedsPlatformSpecificTextureTarget(buffer_format, plane)
           ? GL_TEXTURE_2D
           : gpu::GetPlatformSpecificTextureTarget();
   scoped_refptr<gl::GLImage> image =
@@ -181,8 +177,8 @@ std::unique_ptr<SharedImageBacking> GLImageBackingFactory::CreateSharedImage(
   texture_2d_support =
       (gpu::GetPlatformSpecificTextureTarget() == GL_TEXTURE_2D);
 #endif  // BUILDFLAG(IS_MAC)
-  DCHECK(handle_type == gfx::SHARED_MEMORY_BUFFER || target != GL_TEXTURE_2D ||
-         texture_2d_support || image->ShouldBindOrCopy() == gl::GLImage::BIND);
+  DCHECK(target != GL_TEXTURE_2D || texture_2d_support ||
+         image->ShouldBindOrCopy() == gl::GLImage::BIND);
 #endif  // DCHECK_IS_ON()
   if (usage & SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX)
     image->DisableInUseByWindowServer();
@@ -205,8 +201,10 @@ std::unique_ptr<SharedImageBacking> GLImageBackingFactory::CreateSharedImage(
   params.is_cleared = true;
   params.framebuffer_attachment_angle =
       for_framebuffer_attachment && texture_usage_angle_;
+
+  auto si_format = viz::SharedImageFormat::SinglePlane(plane_format);
   return std::make_unique<GLImageBacking>(
-      image, mailbox, plane_format, plane_size, color_space, surface_origin,
+      image, mailbox, si_format, plane_size, color_space, surface_origin,
       alpha_type, usage, params, use_passthrough_);
 }
 
@@ -218,20 +216,6 @@ scoped_refptr<gl::GLImage> GLImageBackingFactory::MakeGLImage(
     gfx::BufferPlane plane,
     SurfaceHandle surface_handle,
     const gfx::Size& size) {
-  if (handle.type == gfx::SHARED_MEMORY_BUFFER) {
-    if (plane != gfx::BufferPlane::DEFAULT)
-      return nullptr;
-    auto image = base::MakeRefCounted<gl::GLImageSharedMemory>(size);
-    if (color_space.IsValid())
-      image->SetColorSpace(color_space);
-    if (!image->Initialize(handle.region, handle.id, format, handle.offset,
-                           handle.stride)) {
-      return nullptr;
-    }
-
-    return image;
-  }
-
   if (!image_factory_)
     return nullptr;
 
@@ -241,7 +225,7 @@ scoped_refptr<gl::GLImage> GLImageBackingFactory::MakeGLImage(
 }
 
 bool GLImageBackingFactory::IsSupported(uint32_t usage,
-                                        viz::ResourceFormat format,
+                                        viz::SharedImageFormat format,
                                         const gfx::Size& size,
                                         bool thread_safe,
                                         gfx::GpuMemoryBufferType gmb_type,
@@ -253,10 +237,8 @@ bool GLImageBackingFactory::IsSupported(uint32_t usage,
   if (thread_safe) {
     return false;
   }
-  // If the GLImage factory is created specifically for SHARED_MEMORY Gmbs,
-  // make sure that it used for that purpose based on flag
-  if ((for_shared_memory_gmbs_ && gmb_type != gfx::SHARED_MEMORY_BUFFER) ||
-      (!for_shared_memory_gmbs_ && gmb_type == gfx::SHARED_MEMORY_BUFFER)) {
+  // Never used with shared memory GMBs.
+  if (gmb_type == gfx::SHARED_MEMORY_BUFFER) {
     return false;
   }
   if (usage & SHARED_IMAGE_USAGE_CPU_UPLOAD) {
@@ -265,11 +247,29 @@ bool GLImageBackingFactory::IsSupported(uint32_t usage,
 #if BUILDFLAG(IS_MAC)
   // On macOS, there is no separate interop factory. Any GpuMemoryBuffer-backed
   // image can be used with both OpenGL and Metal
+
+  // In certain modes on Mac, Angle needs the image to be released when ending a
+  // write. To avoid that release resulting in the GLES2 command decoders
+  // needing to perform on-demand binding, we disallow concurrent read/write in
+  // these modes. See GLImageBacking::GLTextureImageRepresentationEndAccess()
+  // for further details.
+  // TODO(https://anglebug.com/7626): Adjust the Metal-related conditions here
+  // if/as they are adjusted in
+  // GLImageBacking::GLTextureImageRepresentationEndAccess().
+  if (use_passthrough_ &&
+      (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader ||
+       gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal)) {
+    if (usage & SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE) {
+      return false;
+    }
+  }
+
   return true;
 #else
   // Doesn't support contexts other than GL for OOPR Canvas
   if (gr_context_type != GrContextType::kGL &&
-      ((usage & SHARED_IMAGE_USAGE_DISPLAY) ||
+      ((usage & SHARED_IMAGE_USAGE_DISPLAY_READ) ||
+       (usage & SHARED_IMAGE_USAGE_DISPLAY_WRITE) ||
        (usage & SHARED_IMAGE_USAGE_RASTER))) {
     return false;
   }
@@ -285,7 +285,7 @@ bool GLImageBackingFactory::IsSupported(uint32_t usage,
 std::unique_ptr<SharedImageBacking>
 GLImageBackingFactory::CreateSharedImageInternal(
     const Mailbox& mailbox,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
@@ -293,8 +293,8 @@ GLImageBackingFactory::CreateSharedImageInternal(
     SkAlphaType alpha_type,
     uint32_t usage,
     base::span<const uint8_t> pixel_data) {
-  const FormatInfo& format_info = format_info_[format];
-  const BufferFormatInfo& buffer_format_info = buffer_format_info_[format];
+  const FormatInfo& format_info = GetFormatInfo(format);
+  const BufferFormatInfo& buffer_format_info = GetBufferFormatInfo(format);
   GLenum target = buffer_format_info.target_for_scanout;
 
   if (!buffer_format_info.allow_scanout) {

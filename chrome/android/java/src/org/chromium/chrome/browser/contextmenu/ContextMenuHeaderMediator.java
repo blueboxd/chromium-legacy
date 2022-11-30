@@ -23,8 +23,6 @@ import androidx.annotation.Nullable;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver;
-import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver.PerformanceClass;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
@@ -40,34 +38,26 @@ class ContextMenuHeaderMediator implements View.OnClickListener {
     private Context mContext;
     private GURL mPlainUrl;
 
-    ContextMenuHeaderMediator(Context context, PropertyModel model,
-            @PerformanceClass int performanceClass, ContextMenuParams params, Profile profile,
-            ContextMenuNativeDelegate nativeDelegate) {
+    ContextMenuHeaderMediator(Context context, PropertyModel model, ContextMenuParams params,
+            Profile profile, ContextMenuNativeDelegate nativeDelegate) {
         mContext = context;
         mPlainUrl = params.getUrl();
         mModel = model;
         mModel.set(ContextMenuHeaderProperties.TITLE_AND_URL_CLICK_LISTENER, this);
 
-        // Skip setting up the image header if context menu is in pop up style.
-        if (!model.get(ContextMenuHeaderProperties.HIDE_HEADER_IMAGE)) {
-            if (params.isImage()) {
-                final Resources res = mContext.getResources();
-                final int imageMaxSize =
-                        res.getDimensionPixelSize(R.dimen.context_menu_header_image_max_size);
-                nativeDelegate.retrieveImageForContextMenu(
-                        imageMaxSize, imageMaxSize, this::onImageThumbnailRetrieved);
-            } else if (!params.isImage() && !params.isVideo()) {
-                LargeIconBridge iconBridge = new LargeIconBridge(profile);
-                iconBridge.getLargeIconForUrl(mPlainUrl,
-                        context.getResources().getDimensionPixelSize(
-                                R.dimen.default_favicon_min_size),
-                        this::onFaviconAvailable);
-            } else if (params.isVideo()) {
-                setVideoIcon();
-            }
-        }
-        if (PerformanceHintsObserver.isContextMenuPerformanceInfoEnabled() && params.isAnchor()) {
-            mModel.set(ContextMenuHeaderProperties.URL_PERFORMANCE_CLASS, performanceClass);
+        if (params.isImage()) {
+            final Resources res = mContext.getResources();
+            final int imageMaxSize =
+                    res.getDimensionPixelSize(R.dimen.context_menu_header_image_max_size);
+            nativeDelegate.retrieveImageForContextMenu(
+                    imageMaxSize, imageMaxSize, this::onImageThumbnailRetrieved);
+        } else if (!params.isImage() && !params.isVideo()) {
+            LargeIconBridge iconBridge = new LargeIconBridge(profile);
+            iconBridge.getLargeIconForUrl(mPlainUrl,
+                    context.getResources().getDimensionPixelSize(R.dimen.default_favicon_min_size),
+                    this::onFaviconAvailable);
+        } else if (params.isVideo()) {
+            setVideoIcon();
         }
     }
 

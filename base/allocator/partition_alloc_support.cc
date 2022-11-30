@@ -5,6 +5,7 @@
 #include "base/allocator/partition_alloc_support.h"
 
 #include <array>
+#include <cinttypes>
 #include <cstdint>
 #include <map>
 #include <string>
@@ -14,6 +15,7 @@
 #include "base/allocator/partition_allocator/allocation_guard.h"
 #include "base/allocator/partition_allocator/dangling_raw_ptr_checks.h"
 #include "base/allocator/partition_allocator/memory_reclaimer.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/debug/alias.h"
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
@@ -22,7 +24,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/debug/stack_trace.h"
+#include "base/debug/task_trace.h"
 #include "base/feature_list.h"
 #include "base/immediate_crash.h"
 #include "base/metrics/histogram_functions.h"
@@ -482,23 +486,22 @@ void DanglingRawPtrReleasedCrash(uintptr_t id) {
   // allowed. In particular, symbolizing and printing the StackTraces may
   // allocate memory.
   debug::StackTrace stack_trace_release;
+  debug::TaskTrace task_trace_release;
   absl::optional<debug::StackTrace> stack_trace_free = TakeStackTrace(id);
 
   if (stack_trace_free) {
-    LOG(ERROR) << StringPrintf(
-        "Detected dangling raw_ptr with id=0x%016" PRIxPTR
-        ":\n\n"
-        "The memory was freed at:\n%s\n"
-        "The dangling raw_ptr was released at:\n%s",
-        id, stack_trace_free->ToString().c_str(),
-        stack_trace_release.ToString().c_str());
+    LOG(ERROR) << "Detected dangling raw_ptr with id="
+               << StringPrintf("0x%016" PRIxPTR, id) << ":\n\n"
+               << "The memory was freed at:\n"
+               << *stack_trace_free << "\n"
+               << "The dangling raw_ptr was released at:\n"
+               << stack_trace_release << task_trace_release;
   } else {
-    LOG(ERROR) << StringPrintf(
-        "Detected dangling raw_ptr with id=0x%016" PRIxPTR
-        ":\n\n"
-        "It was not recorded where the memory was freed.\n\n"
-        "The dangling raw_ptr was released at:\n%s",
-        id, stack_trace_release.ToString().c_str());
+    LOG(ERROR) << "Detected dangling raw_ptr with id="
+               << StringPrintf("0x%016" PRIxPTR, id) << ":\n\n"
+               << "It was not recorded where the memory was freed.\n\n"
+               << "The dangling raw_ptr was released at:\n"
+               << stack_trace_release << task_trace_release;
   }
   IMMEDIATE_CRASH();
 }
@@ -542,6 +545,41 @@ void InstallDanglingRawPtrChecks() {
 #else   // BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS)
 void InstallDanglingRawPtrChecks() {}
 #endif  // BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS)
+
+void UnretainedDanglingRawPtrDetectedDumpWithoutCrashing(uintptr_t id) {
+  PA_NO_CODE_FOLDING();
+  debug::DumpWithoutCrashing();
+}
+
+void UnretainedDanglingRawPtrDetectedCrash(uintptr_t id) {
+  debug::TaskTrace task_trace;
+  debug::StackTrace stack_trace;
+  LOG(ERROR) << "Detected dangling raw_ptr in unretained with id="
+             << StringPrintf("0x%016" PRIxPTR, id) << ":\n\n"
+             << task_trace << stack_trace;
+  IMMEDIATE_CRASH();
+}
+
+void InstallUnretainedDanglingRawPtrChecks() {
+  if (!FeatureList::IsEnabled(features::kPartitionAllocUnretainedDanglingPtr)) {
+    partition_alloc::SetUnretainedDanglingRawPtrDetectedFn([](uintptr_t) {});
+    partition_alloc::SetUnretainedDanglingRawPtrCheckEnabled(/*enabled=*/false);
+    return;
+  }
+
+  partition_alloc::SetUnretainedDanglingRawPtrCheckEnabled(/*enabled=*/true);
+  switch (features::kUnretainedDanglingPtrModeParam.Get()) {
+    case features::UnretainedDanglingPtrMode::kCrash:
+      partition_alloc::SetUnretainedDanglingRawPtrDetectedFn(
+          &UnretainedDanglingRawPtrDetectedCrash);
+      break;
+
+    case features::UnretainedDanglingPtrMode::kDumpWithoutCrashing:
+      partition_alloc::SetUnretainedDanglingRawPtrDetectedFn(
+          &UnretainedDanglingRawPtrDetectedDumpWithoutCrashing);
+      break;
+  }
+}
 
 }  // namespace allocator
 }  // namespace base

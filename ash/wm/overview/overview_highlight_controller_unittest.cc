@@ -83,7 +83,7 @@ class OverviewHighlightControllerTest
 
   // OverviewTestBase:
   void SetUp() override {
-    std::vector<base::Feature> enabled_features, disabled_features;
+    std::vector<base::test::FeatureRef> enabled_features, disabled_features;
     if (IsDesksTemplatesEnabled())
       enabled_features.push_back(features::kDesksTemplates);
     else
@@ -398,6 +398,11 @@ class DesksOverviewHighlightControllerTest
     auto* desk_controller = DesksController::Get();
     desk_controller->NewDesk(DesksCreationRemovalSource::kButton);
     ASSERT_EQ(2u, desk_controller->desks().size());
+
+    // Give the second desk a name. The desk name gets exposed as the accessible
+    // name. And the focusable views that are painted in these tests will fail
+    // the accessibility paint checker checks if they lack an accessible name.
+    desk_controller->desks()[1]->SetName(u"Desk 2", false);
   }
 
   OverviewHighlightableView* GetHighlightedView() {
@@ -879,7 +884,8 @@ TEST_P(DesksOverviewHighlightControllerTest,
     SendKey(ui::VKEY_TAB);
   }
   EXPECT_FALSE(new_desk_button->GetEnabled());
-  EXPECT_EQ(desks_util::kMaxNumberOfDesks, desks_controller->desks().size());
+  EXPECT_EQ(desks_util::GetMaxNumberOfDesks(),
+            desks_controller->desks().size());
 }
 
 TEST_P(DesksOverviewHighlightControllerTest, ZeroStateOfDesksBar) {

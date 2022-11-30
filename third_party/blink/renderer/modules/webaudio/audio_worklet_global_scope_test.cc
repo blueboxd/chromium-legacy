@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -288,7 +288,8 @@ class AudioWorkletGlobalScopeTest : public PageTestBase, public ModuleTestBase {
     v8::Isolate* isolate = script_state->GetIsolate();
     EXPECT_TRUE(isolate);
     v8::MicrotasksScope microtasks_scope(
-        isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+        isolate, ToMicrotaskQueue(script_state),
+        v8::MicrotasksScope::kDoNotRunMicrotasks);
 
     String source_code =
         R"JS(

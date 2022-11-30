@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,8 +87,9 @@ mojom::blink::FederatedAuthRequest*
 CredentialManagerProxy::FederatedAuthRequest() {
   BindRemoteForFedCm(
       federated_auth_request_,
-      WTF::Bind(&CredentialManagerProxy::OnFederatedAuthRequestConnectionError,
-                WrapWeakPersistent(this)));
+      WTF::BindOnce(
+          &CredentialManagerProxy::OnFederatedAuthRequestConnectionError,
+          WrapWeakPersistent(this)));
   return federated_auth_request_.get();
 }
 
@@ -96,8 +97,8 @@ mojom::blink::FederatedAuthRequest*
 CredentialManagerProxy::FedCmLogoutRpsRequest() {
   BindRemoteForFedCm(
       fedcm_logout_request_,
-      WTF::Bind(&CredentialManagerProxy::OnFedCmLogoutConnectionError,
-                WrapWeakPersistent(this)));
+      WTF::BindOnce(&CredentialManagerProxy::OnFedCmLogoutConnectionError,
+                    WrapWeakPersistent(this)));
   return fedcm_logout_request_.get();
 }
 

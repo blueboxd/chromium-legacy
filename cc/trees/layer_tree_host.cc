@@ -455,8 +455,15 @@ void LayerTreeHost::WaitForCommitCompletion(bool for_protected_sequence) const {
     commit_completion_event_ = nullptr;
     if (for_protected_sequence) {
       waited_for_protected_sequence_ = true;
+      auto elapsed = timer.Elapsed();
       base::UmaHistogramMicrosecondsTimes(
-          "Compositing.MainThreadBlockedDuringCommitTime", timer.Elapsed());
+          "Compositing.MainThreadBlockedDuringCommitTime", elapsed);
+      if (in_apply_compositor_changes_) {
+        base::UmaHistogramMicrosecondsTimes(
+            "Compositing.MainThreadBlockedDuringCommitTime."
+            "ApplyCompositorChanges",
+            elapsed);
+      }
     }
   }
 }
@@ -487,8 +494,8 @@ void LayerTreeHost::CommitComplete(const CommitTimestamps& commit_timestamps) {
     did_complete_scale_animation_ = false;
   }
   if (compositor_mode_ == CompositorMode::THREADED) {
-    base::UmaHistogramBoolean("Compositing.DidMainThreadBlockDuringCommit",
-                              waited_for_protected_sequence_);
+    UMA_HISTOGRAM_BOOLEAN("Compositing.DidMainThreadBlockDuringCommit",
+                          waited_for_protected_sequence_);
   }
   waited_for_protected_sequence_ = false;
 }
@@ -648,6 +655,11 @@ ScopedPauseRendering::~ScopedPauseRendering() {
 std::unique_ptr<ScopedPauseRendering> LayerTreeHost::PauseRendering() {
   DCHECK(IsMainThread());
   return std::make_unique<ScopedPauseRendering>(this);
+}
+
+void LayerTreeHost::OnPauseRenderingChanged(bool paused) {
+  DCHECK(IsMainThread());
+  client_->OnPauseRenderingChanged(paused);
 }
 
 void LayerTreeHost::OnDeferMainFrameUpdatesChanged(bool defer_status) {
@@ -822,9 +834,12 @@ bool LayerTreeHost::UpdateLayers() {
   if (const char* client_name = GetClientNameForMetrics()) {
     auto elapsed = elapsed_delta.InMicroseconds();
 
-    std::string histogram_name =
-        base::StringPrintf("Compositing.%s.LayersUpdateTime", client_name);
-    base::UmaHistogramCounts10M(histogram_name, elapsed);
+    // The histogram name must be a constant for the macro to work.
+    // GetClientNameForMetrics() guarantees to always return the same string or
+    // null
+    UMA_HISTOGRAM_COUNTS_10M(
+        base::StringPrintf("Compositing.%s.LayersUpdateTime", client_name),
+        elapsed);
   }
 
   return result;
@@ -989,7 +1004,10 @@ void LayerTreeHost::ApplyViewportChanges(
   }
   is_pinch_gesture_active_from_impl_ = commit_data.is_pinch_gesture_active;
 
-  if (const auto* inner_scroll = property_trees()->scroll_tree().Node(
+  // const_cast to ensure the compiler chooses to the const version of
+  // property_trees(), to avoid blocking on commit.
+  const auto* pt = const_cast<const LayerTreeHost*>(this)->property_trees();
+  if (const auto* inner_scroll = pt->scroll_tree().Node(
           pending_commit_state()->viewport_property_ids.inner_scroll)) {
     UpdateScrollOffsetFromImpl(
         inner_scroll->element_id, inner_viewport_scroll_delta,
@@ -1074,6 +1092,9 @@ void LayerTreeHost::ApplyCompositorChanges(CompositorCommitData* commit_data) {
   DCHECK(commit_data);
   TRACE_EVENT0("cc", "LayerTreeHost::ApplyCompositorChanges");
 
+  DCHECK(!in_apply_compositor_changes_);
+  base::AutoReset<bool> in_apply_changes(&in_apply_compositor_changes_, true);
+
   using perfetto::protos::pbzero::ChromeLatencyInfo;
   using perfetto::protos::pbzero::TrackEvent;
 
@@ -1090,14 +1111,17 @@ void LayerTreeHost::ApplyCompositorChanges(CompositorCommitData* commit_data) {
     swap_promise_manager_.QueueSwapPromise(std::move(swap_promise));
   }
 
-  if (root_layer()) {
+  if (has_root_layer()) {
     for (auto& scroll : commit_data->scrolls) {
       UpdateScrollOffsetFromImpl(scroll.element_id, scroll.scroll_delta,
                                  scroll.snap_target_element_ids);
     }
+    // const_cast to ensure the compiler chooses to the const version of
+    // property_trees(), to avoid blocking on commit.
+    const auto* pt = const_cast<const LayerTreeHost*>(this)->property_trees();
     for (auto& scrollbar : commit_data->scrollbars) {
-      property_trees()->scroll_tree_mutable().NotifyDidChangeScrollbarsHidden(
-          scrollbar.element_id, scrollbar.hidden);
+      pt->scroll_tree().NotifyDidChangeScrollbarsHidden(scrollbar.element_id,
+                                                        scrollbar.hidden);
     }
   }
 
@@ -1647,8 +1671,10 @@ void LayerTreeHost::SetPageScaleFromImplSide(float page_scale) {
       << "Setting PSF in oopif subframe: old psf = "
       << pending_commit_state()->page_scale_factor
       << ", new psf = " << page_scale;
+  bool changed = (page_scale != pending_commit_state()->page_scale_factor);
   pending_commit_state()->page_scale_factor = page_scale;
-  SetPropertyTreesNeedRebuild();
+  if (changed)
+    SetPropertyTreesNeedRebuild();
 }
 
 void LayerTreeHost::SetElasticOverscrollFromImplSide(

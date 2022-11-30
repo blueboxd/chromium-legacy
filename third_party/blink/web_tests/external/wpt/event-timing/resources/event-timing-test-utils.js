@@ -168,6 +168,13 @@ function applyAction(eventType, target) {
       || eventType === 'pointerleave' || eventType === 'pointerout') {
     actions.pointerMove(0, 0, {origin: target})
     .pointerMove(0, 0);
+  } else if (eventType === 'keyup' || eventType === 'keydown') {
+    // Any key here as an input should work.
+    // TODO: Switch this to use test_driver.Actions.key{up,down}
+    // when test driver supports it.
+    // Please check crbug.com/893480.
+    const key = 'k';
+    return test_driver.send_keys(target, key);
   } else {
     assert_unreached('The event type ' + eventType + ' is not supported.');
   }
@@ -182,7 +189,9 @@ function requiresListener(eventType) {
           'pointerleave',
           'pointerout',
           'pointerover',
-          'pointerup'
+          'pointerup',
+          'keyup',
+          'keydown'
         ].includes(eventType);
 }
 
@@ -300,13 +309,6 @@ async function pressKey(element, key) {
   await test_driver.send_keys(element, key);
 }
 
-// The testdriver.js, testdriver-vendor.js and testdriver-actions.js need to be
-// included to use this function.
-function addListenersAndTap(element, events) {
-  addListeners(element, events);
-  return tap(element);
-}
-
 // The testdriver.js, testdriver-vendor.js need to be included to use this
 // function.
 async function addListenersAndPress(element, key, events) {
@@ -329,4 +331,34 @@ function filterAndAddToMap(events, map) {
     }
     return false;
   }
+}
+
+function createPerformanceObserverPromise(observeTypes, callback, readyToResolve) {
+  return new Promise(resolve => {
+    new PerformanceObserver(entryList => {
+      callback(entryList);
+
+      if (readyToResolve())
+        resolve();
+    }).observe({ entryTypes: observeTypes });
+  });
+}
+
+// The testdriver.js, testdriver-vendor.js need to be included to use this
+// function.
+function interactAndObserve(interactionType, element, observerPromise) {
+  let interactionPromise;
+  switch (interactionType) {
+    case 'tap': {
+      addListeners(element, ['pointerdown', 'pointerup']);
+      interactionPromise = tap(element);
+      break;
+    }
+    case 'click': {
+      addListeners(element, ['mousedown', 'mouseup', 'pointerdown', 'pointerup', 'click']);
+      interactionPromise = test_driver.click(element);
+      break;
+    }
+  }
+  return Promise.all([interactionPromise, observerPromise]);
 }

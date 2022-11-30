@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,6 +71,20 @@ class WriteBarrier final {
     HeapConsistency::WriteBarrierParams params;
     return HeapConsistency::GetWriteBarrierType(*element, params) !=
            HeapConsistency::WriteBarrierType::kNone;
+  }
+
+  static void DispatchForUncompressedSlot(void* slot, void* value) {
+    HeapConsistency::WriteBarrierParams params;
+    switch (HeapConsistency::GetWriteBarrierType(slot, value, params)) {
+      case HeapConsistency::WriteBarrierType::kMarking:
+        HeapConsistency::DijkstraWriteBarrier(params, value);
+        break;
+      case HeapConsistency::WriteBarrierType::kGenerational:
+        HeapConsistency::GenerationalBarrierForUncompressedSlot(params, slot);
+        break;
+      case HeapConsistency::WriteBarrierType::kNone:
+        break;
+    }
   }
 };
 

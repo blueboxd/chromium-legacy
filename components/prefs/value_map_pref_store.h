@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/observer_list.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "components/prefs/pref_value_map.h"
 #include "components/prefs/prefs_export.h"
@@ -26,7 +27,7 @@ class COMPONENTS_PREFS_EXPORT ValueMapPrefStore : public WriteablePrefStore {
   ValueMapPrefStore& operator=(const ValueMapPrefStore&) = delete;
 
   // PrefStore overrides:
-  bool GetValue(const std::string& key,
+  bool GetValue(base::StringPiece key,
                 const base::Value** value) const override;
   base::Value::Dict GetValues() const override;
   void AddObserver(PrefStore::Observer* observer) override;
@@ -35,13 +36,13 @@ class COMPONENTS_PREFS_EXPORT ValueMapPrefStore : public WriteablePrefStore {
 
   // WriteablePrefStore overrides:
   void SetValue(const std::string& key,
-                std::unique_ptr<base::Value> value,
+                base::Value value,
                 uint32_t flags) override;
   void RemoveValue(const std::string& key, uint32_t flags) override;
   bool GetMutableValue(const std::string& key, base::Value** value) override;
   void ReportValueChanged(const std::string& key, uint32_t flags) override;
   void SetValueSilently(const std::string& key,
-                        std::unique_ptr<base::Value> value,
+                        base::Value value,
                         uint32_t flags) override;
   void RemoveValuesByPrefixSilently(const std::string& prefix) override;
 

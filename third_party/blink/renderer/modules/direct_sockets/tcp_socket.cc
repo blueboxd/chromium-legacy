@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,7 +126,7 @@ bool TCPSocket::Open(const String& remote_address,
   service_->get()->OpenTcpSocket(
       std::move(open_tcp_socket_options), GetTCPSocketReceiver(),
       GetTCPSocketObserver(),
-      WTF::Bind(&TCPSocket::Init, WrapPersistent(this)));
+      WTF::BindOnce(&TCPSocket::Init, WrapPersistent(this)));
 
   return true;
 }
@@ -138,8 +138,8 @@ void TCPSocket::Init(int32_t result,
                      mojo::ScopedDataPipeProducerHandle send_stream) {
   if (result == net::OK && peer_addr) {
     auto close_callback = base::BarrierCallback<ScriptValue>(
-        /*num_callbacks=*/2,
-        WTF::Bind(&TCPSocket::OnBothStreamsClosed, WrapWeakPersistent(this)));
+        /*num_callbacks=*/2, WTF::BindOnce(&TCPSocket::OnBothStreamsClosed,
+                                           WrapWeakPersistent(this)));
 
     readable_stream_wrapper_ = MakeGarbageCollected<TCPReadableStreamWrapper>(
         script_state_, close_callback, std::move(receive_stream));
@@ -184,7 +184,7 @@ TCPSocket::GetTCPSocketObserver() {
       GetExecutionContext()->GetTaskRunner(TaskType::kNetworking));
 
   socket_observer_.set_disconnect_handler(
-      WTF::Bind(&TCPSocket::OnSocketConnectionError, WrapPersistent(this)));
+      WTF::BindOnce(&TCPSocket::OnSocketConnectionError, WrapPersistent(this)));
 
   return pending_remote;
 }
@@ -234,8 +234,7 @@ void TCPSocket::OnBothStreamsClosed(std::vector<ScriptValue> args) {
 
   // Finds first actual exception and rejects |closed| with it.
   // If neither of the streams was errored, resolves |closed|.
-  if (auto it = base::ranges::find_if(
-          args, [](ScriptValue exception) { return !exception.IsEmpty(); });
+  if (auto it = base::ranges::find_if_not(args, &ScriptValue::IsEmpty);
       it != args.end()) {
     RejectClosed(*it);
   } else {

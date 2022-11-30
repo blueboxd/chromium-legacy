@@ -18,8 +18,9 @@ import '../autofill_page/autofill_page.js';
 import '../controls/settings_idle_load.js';
 import '../on_startup_page/on_startup_page.js';
 import '../people_page/people_page.js';
-import '../reset_page/reset_profile_banner.js';
+import '../performance_page/battery_page.js';
 import '../performance_page/performance_page.js';
+import '../reset_page/reset_profile_banner.js';
 import '../search_page/search_page.js';
 import '../settings_page/settings_section.js';
 import '../settings_page_styles.css.js';
@@ -33,7 +34,7 @@ import '../languages_page/languages.js';
 // </if>
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
+import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {beforeNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SettingsIdleLoadElement} from '../controls/settings_idle_load.js';
@@ -270,7 +271,8 @@ export class SettingsBasicPageElement extends SettingsBasicPageElementBase {
   }
 
   private updatePrivacyGuidePromoVisibility_() {
-    if (this.pageVisibility.privacy === false || this.isManaged_ ||
+    if (!loadTimeData.getBoolean('showPrivacyGuide') ||
+        this.pageVisibility.privacy === false || this.isManaged_ ||
         this.isChildUser_ || this.prefs === undefined ||
         this.getPref('privacy_guide.viewed').value ||
         this.privacyGuideBrowserProxy_.getPromoImpressionCount() >=
@@ -407,6 +409,11 @@ export class SettingsBasicPageElement extends SettingsBasicPageElementBase {
   private showPerformancePage_(visibility?: boolean): boolean {
     return visibility !== false &&
         loadTimeData.getBoolean('highEfficiencyModeAvailable');
+  }
+
+  private showBatteryPage_(visibility?: boolean): boolean {
+    return visibility !== false &&
+        loadTimeData.getBoolean('batterySaverModeAvailable');
   }
 }
 

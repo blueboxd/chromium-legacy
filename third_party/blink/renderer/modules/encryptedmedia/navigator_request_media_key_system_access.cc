@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -147,7 +147,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   // When this method is invoked, the user agent must run the following steps:
   // 1. If keySystem is the empty string, return a promise rejected with a
   //    newly created TypeError.
-  if (key_system.IsEmpty()) {
+  if (key_system.empty()) {
     exception_state.ThrowTypeError("The keySystem parameter is empty.");
     return ScriptPromise();
   }
@@ -185,8 +185,8 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   // Defer to determine support until the prerendering page is activated.
   if (window->document()->IsPrerendering()) {
     window->document()->AddPostPrerenderingActivationStep(
-        WTF::Bind(&MediaKeySystemAccessInitializer::StartRequestAsync,
-                  WrapWeakPersistent(initializer)));
+        WTF::BindOnce(&MediaKeySystemAccessInitializer::StartRequestAsync,
+                      WrapWeakPersistent(initializer)));
     return promise;
   }
 

@@ -37,6 +37,10 @@ namespace storage {
 class SpecialStoragePolicy;
 }  // namespace storage
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace content {
 
 class AggregatableReport;
@@ -58,7 +62,25 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
  public:
   // Configures underlying storage to be setup in memory, rather than on
   // disk. This speeds up initialization to avoid timeouts in test environments.
-  static void RunInMemoryForTesting();
+  class CONTENT_EXPORT ScopedUseInMemoryStorageForTesting {
+   public:
+    ScopedUseInMemoryStorageForTesting();
+
+    ~ScopedUseInMemoryStorageForTesting();
+
+    ScopedUseInMemoryStorageForTesting(
+        const ScopedUseInMemoryStorageForTesting&) = delete;
+    ScopedUseInMemoryStorageForTesting& operator=(
+        const ScopedUseInMemoryStorageForTesting&) = delete;
+
+    ScopedUseInMemoryStorageForTesting(ScopedUseInMemoryStorageForTesting&&) =
+        delete;
+    ScopedUseInMemoryStorageForTesting& operator=(
+        ScopedUseInMemoryStorageForTesting&&) = delete;
+
+   private:
+    const bool previous_;
+  };
 
   static std::unique_ptr<AttributionManagerImpl> CreateForTesting(
       const base::FilePath& user_data_directory,
@@ -93,7 +115,7 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   void GetActiveSourcesForWebUI(
       base::OnceCallback<void(std::vector<StoredSource>)> callback) override;
   void GetPendingReportsForInternalUse(
-      AttributionReport::ReportTypes report_types,
+      AttributionReport::Types report_types,
       int limit,
       base::OnceCallback<void(std::vector<AttributionReport>)> callback)
       override;
@@ -102,8 +124,13 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   void ClearData(base::Time delete_begin,
                  base::Time delete_end,
                  StoragePartition::StorageKeyMatcherFunction filter,
+                 BrowsingDataFilterBuilder* filter_builder,
                  bool delete_rate_limit_data,
                  base::OnceClosure done) override;
+  void NotifyFailedSourceRegistration(
+      const std::string& header_value,
+      const url::Origin& reporting_origin,
+      attribution_reporting::mojom::SourceRegistrationError) override;
 
  private:
   friend class AttributionManagerImplTest;
@@ -161,7 +188,7 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   void MaybeSendDebugReport(AttributionReport&&);
 
   void NotifySourcesChanged();
-  void NotifyReportsChanged(AttributionReport::ReportType report_type);
+  void NotifyReportsChanged(AttributionReport::Type report_type);
   void NotifyReportSent(bool is_debug_report, AttributionReport, SendResult);
 
   bool IsReportAllowed(const AttributionReport&) const;

@@ -63,11 +63,6 @@ class WebAppUiManagerImplBrowserTest : public InProcessBrowserTest {
     return web_app::test::InstallWebApp(profile(), std::move(web_app_info));
   }
 
-  void UninstallWebApp(const AppId& app_id, UninstallWebAppCallback callback) {
-    return web_app::UninstallWebAppWithCallback(profile(), app_id,
-                                                std::move(callback));
-  }
-
   Browser* LaunchWebApp(const AppId& app_id) {
     return LaunchWebAppBrowser(profile(), app_id);
   }
@@ -118,23 +113,13 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
   EXPECT_EQ(1u, ui_manager().GetNumWindowsForApp(foo_app_id));
   // It has 2 browser window object.
   EXPECT_EQ(2u, BrowserList::GetInstance()->size());
-  // Retrieve the provider before closing the browser, as this causes a crash.
-  WebAppProvider* provider = web_app::WebAppProvider::GetForTest(profile());
   web_app::CloseAndWait(browser());
   EXPECT_EQ(1u, BrowserList::GetInstance()->size());
   Browser* app_browser = BrowserList::GetInstance()->GetLastActive();
   BrowserWaiter waiter(app_browser);
   // Uninstalling should close the |app_browser|, but keep the browser
   // object alive long enough to complete the uninstall.
-  base::RunLoop run_loop;
-  DCHECK(provider->install_finalizer().CanUserUninstallWebApp(foo_app_id));
-  provider->install_finalizer().UninstallWebApp(
-      foo_app_id, webapps::WebappUninstallSource::kAppMenu,
-      base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
-        EXPECT_EQ(code, webapps::UninstallResultCode::kSuccess);
-        run_loop.Quit();
-      }));
-  run_loop.Run();
+  test::UninstallWebApp(app_browser->profile(), foo_app_id);
   waiter.AwaitRemoved();
 
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
@@ -232,8 +217,6 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
   // Install a new app to migrate the old one to.
   AppId new_app_id = InstallWebApp(GURL("https://new.app.com"));
   ui_manager().UninstallAndReplaceIfExists({old_app_id}, new_app_id);
-  apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
-      ->FlushMojoCallsForTesting();
 
   EXPECT_TRUE(os_integration_manager_->did_add_to_desktop());
   auto options = os_integration_manager_->get_last_install_options();
@@ -262,8 +245,6 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest, DoubleMigration) {
     waiter.BeginListening({old_app_id});
     ui_manager().UninstallAndReplaceIfExists({old_app_id}, new_app_id);
     waiter.Wait();
-    apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
-        ->FlushMojoCallsForTesting();
   }
 
   // New app should acquire old app's pin position.
@@ -277,8 +258,6 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest, DoubleMigration) {
 
   // Do migration again. New app should not move.
   ui_manager().UninstallAndReplaceIfExists({old_app_id}, new_app_id);
-  apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
-      ->FlushMojoCallsForTesting();
   EXPECT_EQ(app_list_service->GetSyncItem(new_app_id)
                 ->item_pin_ordinal.ToDebugString(),
             "positionnew");

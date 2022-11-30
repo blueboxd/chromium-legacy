@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "third_party/blink/renderer/core/paint/image_paint_timing_detector.h"
@@ -226,9 +226,9 @@ void ImagePaintTimingDetector::StopRecordEntries() {
 }
 
 void ImagePaintTimingDetector::RegisterNotifyPresentationTime() {
-  auto callback = WTF::Bind(&ImagePaintTimingDetector::ReportPresentationTime,
-                            WrapCrossThreadWeakPersistent(this),
-                            last_registered_frame_index_);
+  auto callback = WTF::BindOnce(
+      &ImagePaintTimingDetector::ReportPresentationTime,
+      WrapCrossThreadWeakPersistent(this), last_registered_frame_index_);
   callback_manager_->RegisterCallback(std::move(callback));
 }
 
@@ -245,7 +245,7 @@ void ImagePaintTimingDetector::ReportPresentationTime(
 void ImageRecordsManager::AssignPaintTimeToRegisteredQueuedRecords(
     const base::TimeTicks& timestamp,
     unsigned last_queued_frame_index) {
-  while (!images_queued_for_paint_time_.IsEmpty()) {
+  while (!images_queued_for_paint_time_.empty()) {
     const base::WeakPtr<ImageRecord>& record =
         images_queued_for_paint_time_.front().first;
     if (!record) {
@@ -561,6 +561,16 @@ std::unique_ptr<ImageRecord> ImageRecordsManager::CreateImageRecord(
 
 void ImageRecordsManager::ClearImagesQueuedForPaintTime() {
   images_queued_for_paint_time_.clear();
+}
+
+void ImageRecordsManager::Clear() {
+  largest_painted_image_.reset();
+  images_queued_for_paint_time_.clear();
+  size_ordered_set_.clear();
+  recorded_images_.clear();
+  pending_images_.clear();
+  image_finished_times_.clear();
+  largest_ignored_image_.reset();
 }
 
 void ImageRecordsManager::Trace(Visitor* visitor) const {

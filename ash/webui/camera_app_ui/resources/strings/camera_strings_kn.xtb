@@ -9,7 +9,7 @@
 <translation id="1300209025925956156">ನಿಮ್ಮ ಡಾಕ್ಯುಮೆಂಟ್ ಅನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ</translation>
 <translation id="1309250603447638106">ಡಾಕ್ಯುಮೆಂಟ್ ಸ್ಕ್ಯಾನಿಂಗ್‌ಗಾಗಿ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. ಪ್ರವೇಶಿಸಲು Search +ಲೆಫ್ಟ್ ಆ್ಯರೋ.</translation>
-<translation id="1393338179284529051">Quad HD</translation>
+<translation id="1417314334557041815">ಪುಟ <ph name="INDEX" /> ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="1430915738399379752">ಮುದ್ರಿಸು</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> ಅನ್‌ಪ್ಲಗ್ ಆಗಿದೆ.</translation>
 <translation id="1473110567575736769">3 ಸೆಕೆಂಡುಗಳ ಟೈಮರ್</translation>
@@ -20,8 +20,8 @@
 <translation id="1620510694547887537">ಕ್ಯಾಮರಾ</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">ಏನನ್ನೂ ರೆಕಾರ್ಡ್ ಮಾಡಲಾಗಿಲ್ಲ</translation>
-<translation id="169335673490251151">ಹೆಚ್ಚುವರಿ ಪುಟಗಳನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ</translation>
 <translation id="1838104802459806957">ಮೇಲಕ್ಕೆ ಟಿಲ್ಟ್ ಮಾಡಿ</translation>
+<translation id="1843105061469674856">ಹೆಚ್ಚುವರಿ ಪುಟವನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ</translation>
 <translation id="1851169887664797861">ಹೆಚ್ಚುವರಿ ಕ್ಯಾಮರಾ ನಿಯಂತ್ರಣಗಳು ಲಭ್ಯ</translation>
 <translation id="1851616744363735765">ವಿರಾಮಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="1862930711583847113"><ph name="FILE" /> ರಫ್ತು ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ</translation>
@@ -46,7 +46,6 @@
 <translation id="2599796128805996109">ಹಿಂಬದಿ ಕ್ಯಾಮರಾ</translation>
 <translation id="2759905922487820242"><ph name="CURRENT" /> / <ph name="MAXIMAL" />ಸೆ</translation>
 <translation id="2761536921376153655">ಸ್ಕ್ಯಾನ್ ಪ್ರಕಾರ</translation>
-<translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">ಮಿರರ್ ಪೂರ್ವವೀಕ್ಷಣೆ</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> ಪ್ಲಗ್-ಇನ್ ಆಗಿದೆ.</translation>
 <translation id="2904654629665923749">ಡಾಕ್ಯುಮೆಂಟ್ ಸ್ಕ್ಯಾನ್ ಲಭ್ಯವಿದೆ</translation>
@@ -80,6 +79,7 @@
 <translation id="414641094616694804">ಈ ಕ್ಯಾಮರಾ ರೆಸಲ್ಯೂಷನ್ ಅನ್ನು ಬದಲಾಯಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="4269820728363426813">ಲಿಂಕ್ ವಿಳಾಸವನ್ನು ನಕಲಿಸಿ</translation>
 <translation id="4281620174117014503">ಮೀಡಿಯಮ್ ರೆಸಲ್ಯೂಷನ್</translation>
+<translation id="428234092390943511">ಪುಟದ ಥಂಬ್‌ನೇಲ್</translation>
 <translation id="4329152592498422850">ಚೌಕಾಕಾರದ ಫೋಟೋ ತೆಗೆಯಲು ಬದಲಾಯಿಸಿ</translation>
 <translation id="4340659173795395806">ನೀವು ಈಗ ಬಹು ಪುಟ PDF ಅನ್ನು ರಚಿಸಬಹುದು</translation>
 <translation id="4383571725254449280">ಕಾರ್ಯಕ್ಷಮತೆ ಲಾಗ್‌ಗಳನ್ನು ಪ್ರಿಂಟ್ ಮಾಡಿ</translation>
@@ -114,7 +114,6 @@
 <translation id="5916664084637901428">ಆನ್‌</translation>
 <translation id="5975083100439434680">ಝೂಮ್ ಔಟ್</translation>
 <translation id="5976160379964388480">ಇತರರು</translation>
-<translation id="603973421174355542">ಸಂಪೂರ್ಣ HD</translation>
 <translation id="6073451960410192870">ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ</translation>
 <translation id="6197807149213783179">ಮೆಟಾಡೇಟಾ ಉಳಿಸಿ</translation>
 <translation id="6233780560267770709">3 x 3</translation>
@@ -137,7 +136,6 @@
 <translation id="698156982839284926">3 ಸೆಕೆಂಡುಗಳು</translation>
 <translation id="712848772518857951">ನೀವು ನಿಜವಾಗಿಯೂ <ph name="COUNT" /> ಐಟಂಗಳನ್ನು ತೆಗೆದುಹಾಕಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="7134221860976209830">10 ಸೆಕೆಂಡುಗಳ ಟೈಮರ್</translation>
-<translation id="7150591439198955032">4K</translation>
 <translation id="7191890674911603392">ರೆಕಾರ್ಡ್ ಪ್ರಕಾರ</translation>
 <translation id="7243947652761655814">ವೀಡಿಯೊ ರೆಸಲ್ಯೂಷನ್</translation>
 <translation id="7337660886763914220">ಫೈಲ್ ಸಿಸ್ಟಂ ದೋಷಗಳು.</translation>
@@ -162,7 +160,6 @@
 <translation id="8167081290930651932">ಫೋಟೋ ಫಾರ್ಮ್ಯಾಟ್‌ನಲ್ಲಿ ಉಳಿಸಿ</translation>
 <translation id="8239780215768881278">ವೀಡಿಯೊ ಸ್ನ್ಯಾಪ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ</translation>
 <translation id="8261506727792406068">ಅಳಿಸಿ</translation>
-<translation id="839162370397157884">ಪುಟವನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="8425673304802773841">ಕೆಳಗೆ ಟಿಲ್ಟ್ ಮಾಡಿ</translation>
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="8629662593426079630">360p</translation>

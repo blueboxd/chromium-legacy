@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,7 +71,7 @@ void FontFaceSetWorker::FireDoneEventIfPossible() {
 
 bool FontFaceSetWorker::ResolveFontStyle(const String& font_string,
                                          Font& font) {
-  if (font_string.IsEmpty())
+  if (font_string.empty())
     return false;
 
   // Interpret fontString in the same way as the 'font' attribute of

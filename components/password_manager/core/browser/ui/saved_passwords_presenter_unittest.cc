@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 
 #include <string>
+#include <utility>
 
 #include "base/containers/flat_map.h"
 #include "base/memory/scoped_refptr.h"
@@ -15,12 +16,17 @@
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
+#include "components/password_manager/core/browser/fake_password_store_backend.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/site_affiliation/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/sync/base/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,6 +34,7 @@ namespace password_manager {
 
 namespace {
 
+using ::testing::Contains;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::IsEmpty;
@@ -58,6 +65,7 @@ class SavedPasswordsPresenterTest : public ::testing::Test {
 
   TestPasswordStore& store() { return *store_; }
   SavedPasswordsPresenter& presenter() { return presenter_; }
+  MockAffiliationService& affiliation_service() { return affiliation_service_; }
 
   void RunUntilIdle() { task_env_.RunUntilIdle(); }
 
@@ -66,7 +74,8 @@ class SavedPasswordsPresenterTest : public ::testing::Test {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   scoped_refptr<TestPasswordStore> store_ =
       base::MakeRefCounted<TestPasswordStore>();
-  SavedPasswordsPresenter presenter_{store_};
+  MockAffiliationService affiliation_service_;
+  SavedPasswordsPresenter presenter_{&affiliation_service_, store_};
 };
 
 // Parametrized test class which enables or disables the password notes feature
@@ -77,9 +86,9 @@ class SavedPasswordsPresenterWithPasswordNotesTest
  protected:
   void SetUp() override {
     if (GetParam())
-      feature_list_.InitAndEnableFeature(features::kPasswordNotes);
+      feature_list_.InitAndEnableFeature(syncer::kPasswordNotesWithBackup);
     else
-      feature_list_.InitAndDisableFeature(features::kPasswordNotes);
+      feature_list_.InitAndDisableFeature(syncer::kPasswordNotesWithBackup);
   }
   base::test::ScopedFeatureList feature_list_;
 };
@@ -451,7 +460,7 @@ TEST_P(SavedPasswordsPresenterWithPasswordNotesTest, EditOnlyPassword) {
 
 TEST_F(SavedPasswordsPresenterTest, EditOnlyNoteFirstTime) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPasswordNotes);
+  feature_list.InitAndEnableFeature(syncer::kPasswordNotesWithBackup);
   PasswordForm form =
       CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
   form.notes.emplace_back(u"display name", u"note with non-empty display name",
@@ -487,7 +496,7 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyNoteFirstTime) {
 
 TEST_F(SavedPasswordsPresenterTest, EditingNotesShouldNotResetPasswordIssues) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPasswordNotes);
+  feature_list.InitAndEnableFeature(syncer::kPasswordNotesWithBackup);
   PasswordForm form =
       CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
 
@@ -518,7 +527,7 @@ TEST_F(SavedPasswordsPresenterTest, EditingNotesShouldNotResetPasswordIssues) {
 
 TEST_F(SavedPasswordsPresenterTest, EditOnlyNoteSecondTime) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPasswordNotes);
+  feature_list.InitAndEnableFeature(syncer::kPasswordNotesWithBackup);
   PasswordNote kExistingNote =
       PasswordNote(u"existing note", base::Time::Now());
   PasswordForm form =
@@ -552,7 +561,7 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyNoteSecondTime) {
 
 TEST_F(SavedPasswordsPresenterTest, EditNoteAsEmpty) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPasswordNotes);
+  feature_list.InitAndEnableFeature(syncer::kPasswordNotesWithBackup);
   PasswordForm form =
       CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
   form.notes = {PasswordNote(u"existing note", base::Time::Now())};
@@ -874,7 +883,9 @@ class SavedPasswordsPresenterWithTwoStoresTest : public ::testing::Test {
       base::MakeRefCounted<TestPasswordStore>(IsAccountStore(false));
   scoped_refptr<TestPasswordStore> account_store_ =
       base::MakeRefCounted<TestPasswordStore>(IsAccountStore(true));
-  SavedPasswordsPresenter presenter_{profile_store_, account_store_};
+  MockAffiliationService affiliation_service_;
+  SavedPasswordsPresenter presenter_{&affiliation_service_, profile_store_,
+                                     account_store_};
 };
 
 }  // namespace
@@ -1553,6 +1564,74 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest, GetSavedCredentials) {
               ElementsAre(CredentialUIEntry(expected_form)));
 }
 
+TEST_F(SavedPasswordsPresenterTest, GetAffiliatedGroups) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kPasswordsGrouping);
+
+  PasswordForm form =
+      CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
+
+  PasswordForm blocked_form;
+  blocked_form.signon_realm = form.signon_realm;
+  blocked_form.blocked_by_user = true;
+  blocked_form.in_store = PasswordForm::Store::kProfileStore;
+
+  PasswordForm federated_form;
+  federated_form.signon_realm = "https://federated.com";
+  federated_form.username_value = u"example@gmail.com";
+  federated_form.federation_origin =
+      url::Origin::Create(GURL(u"federatedOrigin.com"));
+  federated_form.in_store = PasswordForm::Store::kProfileStore;
+
+  store().AddLogin(form);
+  store().AddLogin(blocked_form);
+  store().AddLogin(federated_form);
+
+  EXPECT_CALL(affiliation_service(), GetAllGroups)
+      .WillRepeatedly([&form, &federated_form](
+                          AffiliationService::GroupsCallback callback) {
+        // Setup callback result.
+        std::vector<password_manager::GroupedFacets> grouped_facets_to_return;
+
+        // Form & Blocked form.
+        Facet facet;
+        facet.uri = FacetURI::FromPotentiallyInvalidSpec(form.signon_realm);
+        GroupedFacets grouped_facets;
+        grouped_facets.facets.push_back(std::move(facet));
+        grouped_facets_to_return.push_back(std::move(grouped_facets));
+
+        // Federated form.
+        Facet facet2;
+        facet2.uri =
+            FacetURI::FromPotentiallyInvalidSpec(federated_form.signon_realm);
+        GroupedFacets grouped_facets2;
+        grouped_facets2.facets.push_back(std::move(facet2));
+        grouped_facets_to_return.push_back(std::move(grouped_facets2));
+
+        std::move(callback).Run(grouped_facets_to_return);
+      });
+
+  RunUntilIdle();
+
+  ASSERT_THAT(
+      store().stored_passwords(),
+      UnorderedElementsAre(
+          Pair(form.signon_realm, UnorderedElementsAre(form, blocked_form)),
+          Pair(federated_form.signon_realm, ElementsAre(federated_form))));
+
+  // Setup results to compare.
+  std::vector<CredentialUIEntry> credential_group1;
+  credential_group1.emplace_back(form);
+  credential_group1.emplace_back(blocked_form);
+  std::vector<CredentialUIEntry> credential_group2;
+  credential_group2.emplace_back(federated_form);
+
+  EXPECT_THAT(presenter().GetAffiliatedGroups(),
+              UnorderedElementsAre(AffiliatedGroup(credential_group1),
+                                   AffiliatedGroup(credential_group2)));
+}
+
 // Prefixes like [m, mobile, www] are considered as "same-site".
 TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
        GetSavedCredentialsGroupsSameSites) {
@@ -1670,6 +1749,137 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest, UndoRemoval) {
   presenter().UndoLastRemoval();
   RunUntilIdle();
   EXPECT_THAT(presenter().GetSavedCredentials(), ElementsAre(credential));
+}
+
+namespace {
+
+class SavedPasswordsPresenterInitializationTest : public ::testing::Test {
+ protected:
+  SavedPasswordsPresenterInitializationTest() {
+    profile_store_ = base::MakeRefCounted<PasswordStore>(
+        std::make_unique<FakePasswordStoreBackend>(
+            IsAccountStore(false), profile_store_backend_runner()));
+    profile_store_->Init(/*prefs=*/nullptr,
+                         /*affiliated_match_helper=*/nullptr);
+
+    account_store_ = base::MakeRefCounted<PasswordStore>(
+        std::make_unique<FakePasswordStoreBackend>(
+            IsAccountStore(true), account_store_backend_runner()));
+    account_store_->Init(/*prefs=*/nullptr,
+                         /*affiliated_match_helper=*/nullptr);
+  }
+
+  ~SavedPasswordsPresenterInitializationTest() override {
+    account_store_->ShutdownOnUIThread();
+    profile_store_->ShutdownOnUIThread();
+
+    ProcessBackendTasks(account_store_backend_runner());
+    ProcessBackendTasks(profile_store_backend_runner());
+  }
+
+  void ProcessBackendTasks(scoped_refptr<base::TestMockTimeTaskRunner> runner) {
+    runner->RunUntilIdle();
+    task_env_.RunUntilIdle();
+  }
+
+  scoped_refptr<PasswordStore> profile_store() { return profile_store_; }
+  scoped_refptr<PasswordStore> account_store() { return account_store_; }
+  MockAffiliationService& affiliation_service() { return affiliation_service_; }
+
+  const scoped_refptr<base::TestMockTimeTaskRunner>&
+  profile_store_backend_runner() {
+    return profile_store_backend_runner_;
+  }
+  const scoped_refptr<base::TestMockTimeTaskRunner>&
+  account_store_backend_runner() {
+    return account_store_backend_runner_;
+  }
+
+ private:
+  // `TestMockTimeTaskRunner` is used to simulate different response times
+  // between stores.
+  base::test::SingleThreadTaskEnvironment task_env_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  scoped_refptr<base::TestMockTimeTaskRunner> profile_store_backend_runner_ =
+      base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  scoped_refptr<base::TestMockTimeTaskRunner> account_store_backend_runner_ =
+      base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+
+  MockAffiliationService affiliation_service_;
+  scoped_refptr<PasswordStore> profile_store_ = nullptr;
+  scoped_refptr<PasswordStore> account_store_ = nullptr;
+};
+
+}  // namespace
+
+TEST_F(SavedPasswordsPresenterInitializationTest, InitWithTwoStores) {
+  SavedPasswordsPresenter presenter{&affiliation_service(), profile_store(),
+                                    account_store()};
+
+  // As long as no `Init` is called, there are no pending requests.
+  EXPECT_FALSE(presenter.IsWaitingForPasswordStore());
+
+  presenter.Init();
+  EXPECT_TRUE(presenter.IsWaitingForPasswordStore());
+  ProcessBackendTasks(profile_store_backend_runner());
+  EXPECT_TRUE(presenter.IsWaitingForPasswordStore());
+  ProcessBackendTasks(account_store_backend_runner());
+  EXPECT_FALSE(presenter.IsWaitingForPasswordStore());
+}
+
+TEST_F(SavedPasswordsPresenterInitializationTest, InitWithOneStore) {
+  SavedPasswordsPresenter presenter{&affiliation_service(), profile_store(),
+                                    nullptr};
+
+  EXPECT_FALSE(presenter.IsWaitingForPasswordStore());
+
+  presenter.Init();
+  EXPECT_TRUE(presenter.IsWaitingForPasswordStore());
+  ProcessBackendTasks(profile_store_backend_runner());
+  EXPECT_FALSE(presenter.IsWaitingForPasswordStore());
+}
+
+TEST_F(SavedPasswordsPresenterInitializationTest, PendingUpdatesProfileStore) {
+  SavedPasswordsPresenter presenter{&affiliation_service(), profile_store(),
+                                    account_store()};
+  presenter.Init();
+  ProcessBackendTasks(profile_store_backend_runner());
+  ProcessBackendTasks(account_store_backend_runner());
+  EXPECT_FALSE(presenter.IsWaitingForPasswordStore());
+
+  // Adding a new credential to the profile store will cause new pending
+  // updates.
+  PasswordForm form =
+      CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
+  EXPECT_THAT(presenter.GetSavedPasswords(), IsEmpty());
+
+  profile_store()->AddLogin(form);
+  ProcessBackendTasks(profile_store_backend_runner());
+  EXPECT_TRUE(presenter.IsWaitingForPasswordStore());
+  EXPECT_THAT(presenter.GetSavedPasswords(), IsEmpty());
+  ProcessBackendTasks(profile_store_backend_runner());
+  EXPECT_FALSE(presenter.IsWaitingForPasswordStore());
+  EXPECT_THAT(presenter.GetSavedPasswords(), Contains(form));
+}
+
+TEST_F(SavedPasswordsPresenterInitializationTest, PendingUpdatesAccountStore) {
+  SavedPasswordsPresenter presenter{&affiliation_service(), profile_store(),
+                                    account_store()};
+  presenter.Init();
+  ProcessBackendTasks(profile_store_backend_runner());
+  ProcessBackendTasks(account_store_backend_runner());
+  EXPECT_FALSE(presenter.IsWaitingForPasswordStore());
+
+  PasswordForm form =
+      CreateTestPasswordForm(PasswordForm::Store::kAccountStore);
+  EXPECT_THAT(presenter.GetSavedPasswords(), IsEmpty());
+  account_store()->AddLogin(form);
+  ProcessBackendTasks(account_store_backend_runner());
+  EXPECT_TRUE(presenter.IsWaitingForPasswordStore());
+  EXPECT_THAT(presenter.GetSavedPasswords(), IsEmpty());
+  ProcessBackendTasks(account_store_backend_runner());
+  EXPECT_FALSE(presenter.IsWaitingForPasswordStore());
+  EXPECT_THAT(presenter.GetSavedPasswords(), Contains(form));
 }
 
 }  // namespace password_manager

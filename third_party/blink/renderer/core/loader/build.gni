@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -123,6 +123,8 @@ blink_core_sources_loader = [
   "resource/multipart_image_resource_parser.h",
   "resource/script_resource.cc",
   "resource/script_resource.h",
+  "resource/speculation_rules_resource.cc",
+  "resource/speculation_rules_resource.h",
   "resource/text_resource.cc",
   "resource/text_resource.h",
   "resource/xsl_style_sheet_resource.cc",
@@ -133,6 +135,8 @@ blink_core_sources_loader = [
   "resource_load_observer_for_worker.h",
   "subresource_filter.cc",
   "subresource_filter.h",
+  "speculation_rule_loader.h",
+  "speculation_rule_loader.cc",
   "subresource_integrity_helper.cc",
   "subresource_integrity_helper.h",
   "text_track_loader.cc",

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -156,9 +156,9 @@ ScriptPromise BluetoothRemoteGATTService::GetCharacteristicsImpl(
       device_->GetBluetooth()->Service();
   service->RemoteServiceGetCharacteristics(
       service_->instance_id, quantity, characteristics_uuid,
-      WTF::Bind(&BluetoothRemoteGATTService::GetCharacteristicsCallback,
-                WrapPersistent(this), service_->instance_id,
-                characteristics_uuid, quantity, WrapPersistent(resolver)));
+      WTF::BindOnce(&BluetoothRemoteGATTService::GetCharacteristicsCallback,
+                    WrapPersistent(this), service_->instance_id,
+                    characteristics_uuid, quantity, WrapPersistent(resolver)));
 
   return promise;
 }

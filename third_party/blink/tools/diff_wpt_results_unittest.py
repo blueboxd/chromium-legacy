@@ -24,7 +24,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import copy
-import io
 import logging
 import json
 import six
@@ -66,7 +65,7 @@ class MockWPTResultsDiffer(WPTResultsDiffer):
             def flakes_by_path(self, *args, **kwargs):
 
                 class AlwaysGet(object):
-                    def get(*_):
+                    def get(self, *_):
                         if product == TEST_PRODUCT:
                             return {'FAIL', 'TIMEOUT'}
                         else:
@@ -165,26 +164,14 @@ class CreateCsvTest(unittest.TestCase):
             else:
                 return '{"number": 400, "id":"abcd"}'
 
-        def byteify(data):
-            if six.PY3:
-                return data
-            if isinstance(data, dict):
-                return {byteify(key): byteify(value) for key, value in data.iteritems()}
-            elif isinstance(data, list):
-                return [byteify(element) for element in data]
-            elif isinstance(data, unicode):
-                return data.encode('utf-8')
-            else:
-                return data
-
         host.executive = MockExecutive(run_command_fn=process_cmds)
 
         with DataIO() as csv_out,                                                 \
                 _get_product_test_results(host, 'android_weblayer') as test_results,   \
                 _get_product_test_results(host, 'chrome_android') as baseline_results:
 
-            actual_results_json = byteify(json.loads(test_results.read()))
-            baseline_results_json = byteify(json.loads(baseline_results.read()))
+            actual_results_json = json.loads(test_results.read())
+            baseline_results_json = json.loads(baseline_results.read())
 
             tests_to_actual_results = {}
             tests_to_baseline_results = {}

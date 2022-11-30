@@ -12,20 +12,21 @@
 #include "components/version_info/channel.h"
 #include "third_party/private_membership/src/private_membership_rlwe_client.h"
 
-namespace ash {
-namespace device_activity {
+namespace ash::device_activity {
 
 namespace psm_rlwe = private_membership::rlwe;
 
 DailyUseCaseImpl::DailyUseCaseImpl(
     const std::string& psm_device_active_secret,
     const ChromeDeviceMetadataParameters& chrome_passed_device_params,
-    PrefService* local_state)
+    PrefService* local_state,
+    std::unique_ptr<PsmDelegateInterface> psm_delegate)
     : DeviceActiveUseCase(psm_device_active_secret,
                           chrome_passed_device_params,
                           prefs::kDeviceActiveLastKnownDailyPingTimestamp,
                           psm_rlwe::RlweUseCase::CROS_FRESNEL_DAILY,
-                          local_state) {}
+                          local_state,
+                          std::move(psm_delegate)) {}
 
 DailyUseCaseImpl::~DailyUseCaseImpl() = default;
 
@@ -43,8 +44,6 @@ ImportDataRequest DailyUseCaseImpl::GenerateImportRequestBody() {
   // Generate Fresnel PSM import request body.
   device_activity::ImportDataRequest import_request;
   import_request.set_window_identifier(window_id_str);
-  import_request.set_plaintext_identifier(psm_id_str);
-  import_request.set_use_case(GetPsmUseCase());
 
   // Create fresh |DeviceMetadata| object.
   // Note every dimension added to this proto must be approved by privacy.
@@ -57,8 +56,10 @@ ImportDataRequest DailyUseCaseImpl::GenerateImportRequestBody() {
   // has launched.
   device_metadata->set_hardware_id(GetFullHardwareClass());
 
+  import_request.set_use_case(GetPsmUseCase());
+  import_request.set_plaintext_identifier(psm_id_str);
+
   return import_request;
 }
 
-}  // namespace device_activity
-}  // namespace ash
+}  // namespace ash::device_activity

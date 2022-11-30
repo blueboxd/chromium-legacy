@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -213,7 +213,7 @@ void SVGShapePainter::StrokeShape(GraphicsContext& context,
 void SVGShapePainter::PaintMarkers(const PaintInfo& paint_info) {
   const Vector<MarkerPosition>* marker_positions =
       layout_svg_shape_.MarkerPositions();
-  if (!marker_positions || marker_positions->IsEmpty())
+  if (!marker_positions || marker_positions->empty())
     return;
   SVGResourceClient* client = SVGResources::GetClient(layout_svg_shape_);
   const ComputedStyle& style = layout_svg_shape_.StyleRef();

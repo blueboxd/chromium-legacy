@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -337,7 +337,7 @@ void InstallUnscopablePropertyNames(
 v8::Local<v8::Array> EnumerateIndexedProperties(v8::Isolate* isolate,
                                                 uint32_t length) {
   Vector<v8::Local<v8::Value>> elements;
-  elements.ReserveCapacity(length);
+  elements.reserve(length);
   for (uint32_t i = 0; i < length; ++i)
     elements.UncheckedAppend(v8::Integer::New(isolate, i));
   return v8::Array::New(isolate, elements.data(), elements.size());

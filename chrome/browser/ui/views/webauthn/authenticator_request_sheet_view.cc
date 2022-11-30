@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/views/webauthn/authenticator_request_sheet_view.h"
 
+#include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -15,24 +17,23 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
+#include "device/fido/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/color/color_provider.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/fill_layout.h"
 
 namespace {
-
-// Fixed height of the illustration shown in the top half of the sheet.
-constexpr int kIllustrationHeight = 148;
 
 // Height of the progress bar style activity indicator shown at the top of some
 // sheets.
@@ -85,20 +86,42 @@ AuthenticatorRequestSheetView::BuildStepSpecificContent() {
 
 std::unique_ptr<views::View>
 AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
-  const int illustration_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+  if (base::FeatureList::IsEnabled(
+          device::kWebAuthnNewDiscoverableCredentialsUi)) {
+    // Some sheets do not have an illustration.
+    const gfx::VectorIcon& illustration =
+        model()->GetStepIllustration(ImageColorScheme::kLight);
+    if (&illustration == &gfx::kNoneIcon) {
+      return std::make_unique<views::View>();
+    }
+  }
+
+  const int dialog_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
-  const gfx::Size illustration_size(illustration_width, kIllustrationHeight);
+  constexpr int kImageHeight = 112, kImageMarginTop = 22,
+                kImageMarginBottom = 2;
+  const int header_height =
+      base::FeatureList::IsEnabled(
+          device::kWebAuthnNewDiscoverableCredentialsUi)
+          ? (kImageHeight + kImageMarginTop + kImageMarginBottom)
+          : 148;
+  const gfx::Size image_view_size(dialog_width, header_height);
 
   // The container view has no layout, so its preferred size is hardcoded to
   // match the size of the image, and all overlays are absolutely positioned.
-  auto image_with_overlays = std::make_unique<views::View>();
-  image_with_overlays->SetPreferredSize(illustration_size);
+  auto header_view = std::make_unique<views::View>();
+  header_view->SetPreferredSize(image_view_size);
 
   auto image_view = std::make_unique<NonAccessibleImageView>();
   step_illustration_ = image_view.get();
-  image_view->SetSize(illustration_size);
+  if (base::FeatureList::IsEnabled(
+          device::kWebAuthnNewDiscoverableCredentialsUi)) {
+    image_view->SetBorder(views::CreateEmptyBorder(
+        gfx::Insets::TLBR(kImageMarginTop, 0, kImageMarginTop, 0)));
+  }
+  image_view->SetSize(image_view_size);
   image_view->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
-  image_with_overlays->AddChildView(image_view.release());
+  header_view->AddChildView(image_view.release());
 
   if (model()->IsActivityIndicatorVisible()) {
     auto activity_indicator = std::make_unique<views::ProgressBar>(
@@ -106,12 +129,14 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
     activity_indicator->SetValue(-1 /* inifinite animation */);
     activity_indicator->SetBackgroundColor(SK_ColorTRANSPARENT);
     activity_indicator->SetPreferredSize(
-        gfx::Size(illustration_width, kActivityIndicatorHeight));
+        gfx::Size(dialog_width, kActivityIndicatorHeight));
     activity_indicator->SizeToPreferredSize();
-    image_with_overlays->AddChildView(activity_indicator.release());
+    header_view->AddChildView(activity_indicator.release());
   }
 
-  if (model()->IsBackButtonVisible()) {
+  if (!base::FeatureList::IsEnabled(
+          device::kWebAuthnNewDiscoverableCredentialsUi) &&
+      model()->IsBackButtonVisible()) {
     auto back_arrow = views::CreateVectorImageButton(base::BindRepeating(
         &AuthenticatorRequestSheetModel::OnBack, base::Unretained(model())));
     back_arrow->SetAccessibleName(l10n_util::GetStringUTF16(
@@ -130,21 +155,21 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
     back_arrow->SetX(dialog_insets.left());
     back_arrow->SetY(dialog_insets.top());
     back_arrow_ = back_arrow.get();
-    back_arrow_button_ =
-        image_with_overlays->AddChildView(std::move(back_arrow));
+    back_arrow_button_ = header_view->AddChildView(std::move(back_arrow));
   }
-
-  if (model()->IsCloseButtonVisible()) {
+  if (!base::FeatureList::IsEnabled(
+          device::kWebAuthnNewDiscoverableCredentialsUi) &&
+      model()->IsCloseButtonVisible()) {
     auto close = views::CreateVectorImageButton(base::BindRepeating(
         &AuthenticatorRequestSheetModel::OnCancel, base::Unretained(model())));
     close->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_NEW_TAB_VOICE_CLOSE_TOOLTIP));
     close->SizeToPreferredSize();
-    close->SetX(illustration_size.width() - close->GetPreferredSize().width() -
+    close->SetX(dialog_width - close->GetPreferredSize().width() -
                 kActivityIndicatorHeight);
     close->SetY(kActivityIndicatorHeight);
     close_button_ = close.get();
-    image_with_overlays->AddChildView(std::move(close));
+    header_view->AddChildView(std::move(close));
   }
 
   if (GetWidget()) {
@@ -152,7 +177,7 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
     UpdateIconColors();
   }
 
-  return image_with_overlays;
+  return header_view;
 }
 
 std::unique_ptr<views::View>

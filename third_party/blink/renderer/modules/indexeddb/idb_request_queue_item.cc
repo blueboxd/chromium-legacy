@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ class IDBDatabaseGetAllResultSinkImpl
       : receiver_(this, std::move(receiver)),
         owner_(owner),
         key_only_(key_only) {
-    receiver_.set_disconnect_handler(WTF::Bind(
+    receiver_.set_disconnect_handler(WTF::BindOnce(
         &IDBDatabaseGetAllResultSinkImpl::OnDisconnect, WTF::Unretained(this)));
   }
 
@@ -85,12 +85,12 @@ class IDBDatabaseGetAllResultSinkImpl
     DCHECK(!key_only_);
     DCHECK_LE(values.size(),
               static_cast<wtf_size_t>(mojom::blink::kIDBGetAllChunkSize));
-    if (values_.IsEmpty()) {
+    if (values_.empty()) {
       values_ = std::move(values);
       return;
     }
 
-    values_.ReserveCapacity(values_.size() + values.size());
+    values_.reserve(values_.size() + values.size());
     for (auto& value : values)
       values_.emplace_back(std::move(value));
   }
@@ -99,12 +99,12 @@ class IDBDatabaseGetAllResultSinkImpl
     DCHECK(key_only_);
     DCHECK_LE(keys.size(),
               static_cast<wtf_size_t>(mojom::blink::kIDBGetAllChunkSize));
-    if (keys_.IsEmpty()) {
+    if (keys_.empty()) {
       keys_ = std::move(keys);
       return;
     }
 
-    keys_.ReserveCapacity(keys_.size() + keys.size());
+    keys_.reserve(keys_.size() + keys.size());
     for (auto& key : keys)
       keys_.emplace_back(std::move(key));
   }

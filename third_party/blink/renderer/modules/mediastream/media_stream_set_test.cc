@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ class MockLocalMediaStreamVideoSource : public blink::MediaStreamVideoSource {
             blink::scheduler::GetSingleThreadTaskRunnerForTesting()) {}
 
  private:
-  base::WeakPtr<MediaStreamVideoSource> GetWeakPtr() const override {
+  base::WeakPtr<MediaStreamVideoSource> GetWeakPtr() override {
     return weak_factory_.GetWeakPtr();
   }
 
@@ -125,7 +125,7 @@ TEST_F(MediaStreamSetTest, GetDisplayMediaSetNoMediaStreamInitialized) {
       v8_scope.GetExecutionContext(), descriptors,
       UserMediaRequestType::kDisplayMediaSet,
       base::BindLambdaForTesting([&run_loop](MediaStreamVector streams) {
-        EXPECT_TRUE(streams.IsEmpty());
+        EXPECT_TRUE(streams.empty());
         run_loop.Quit();
       }));
   run_loop.Run();
@@ -170,7 +170,7 @@ TEST_F(MediaStreamSetTest, GetDisplayMediaNoMediaStreamInitialized) {
       v8_scope.GetExecutionContext(), descriptors,
       UserMediaRequestType::kDisplayMedia,
       base::BindLambdaForTesting([&run_loop](MediaStreamVector streams) {
-        EXPECT_TRUE(streams.IsEmpty());
+        EXPECT_TRUE(streams.empty());
         run_loop.Quit();
       }));
   run_loop.Run();

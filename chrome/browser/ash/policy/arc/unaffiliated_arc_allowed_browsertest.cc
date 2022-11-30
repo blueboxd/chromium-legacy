@@ -5,7 +5,6 @@
 #include <set>
 
 #include "ash/components/arc/test/arc_util_test_support.h"
-#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,16 +48,14 @@ class UnaffiliatedArcAllowedTest
     affiliation_mixin_.set_affiliated(std::get<0>(GetParam()).affiliated);
     cryptohome_mixin_.MarkUserAsExisting(affiliation_mixin_.account_id());
 
-    // TODO(crbug.com/1311355): This test is run with the feature
-    // kUseAuthsessionAuthentication enabled and disabled because of a
+    // TODO(b/239422391): This test is run with the feature
+    // kUseAuthFactors enabled and disabled because of a
     // transitive dependency of AffiliationTestHelper on that feature. Remove
-    // the parameter when kUseAuthsessionAuthentication is removed.
+    // the parameter when kUseAuthFactors is removed.
     if (std::get<1>(GetParam())) {
-      feature_list_.InitAndEnableFeature(
-          ash::features::kUseAuthsessionAuthentication);
+      feature_list_.InitAndEnableFeature(ash::features::kUseAuthFactors);
     } else {
-      feature_list_.InitAndDisableFeature(
-          ash::features::kUseAuthsessionAuthentication);
+      feature_list_.InitAndDisableFeature(ash::features::kUseAuthFactors);
     }
   }
 

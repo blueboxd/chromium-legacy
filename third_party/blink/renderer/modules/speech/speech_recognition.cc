@@ -65,7 +65,7 @@ void SpeechRecognition::start(ExceptionState& exception_state) {
   receiver_.Bind(
       session_client.InitWithNewPipeAndPassReceiver(),
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI));
-  receiver_.set_disconnect_handler(WTF::Bind(
+  receiver_.set_disconnect_handler(WTF::BindOnce(
       &SpeechRecognition::OnConnectionError, WrapWeakPersistent(this)));
 
   controller_->Start(
@@ -106,8 +106,7 @@ void SpeechRecognition::ResultRetrieved(
   // Add the new results to the previous final results.
   HeapVector<Member<SpeechRecognitionResult>> aggregated_results =
       std::move(final_results_);
-  aggregated_results.ReserveCapacity(aggregated_results.size() +
-                                     results.size());
+  aggregated_results.reserve(aggregated_results.size() + results.size());
 
   for (const auto& result : results) {
     HeapVector<Member<SpeechRecognitionAlternative>> alternatives;

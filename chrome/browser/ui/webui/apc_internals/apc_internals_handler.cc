@@ -4,17 +4,18 @@
 
 #include "chrome/browser/ui/webui/apc_internals/apc_internals_handler.h"
 
+#include <array>
 #include <string>
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/ranges/algorithm.h"
-#include "base/strings/strcat.h"
-#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/autofill_assistant/password_change/apc_client.h"
@@ -26,11 +27,12 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/apc_internals/apc_internals_logins_request.h"
+#include "components/autofill_assistant/browser/public/prefs.h"
 #include "components/autofill_assistant/browser/switches.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/password_manager/core/browser/password_scripts_fetcher.h"
 #include "components/password_manager/core/common/password_manager_features.h"
-#include "components/url_formatter/url_formatter.h"
+#include "components/prefs/pref_service.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -39,9 +41,6 @@
 using password_manager::PasswordScriptsFetcher;
 
 namespace {
-
-constexpr char kPasswordChangeIntentName[] = "password_change";
-constexpr char kBundleIdSeparator[] = "/";
 
 // TODO(1311324): Reduce the level of code duplication between
 // autofill_assistant::ClientAndroid and the helper method in
@@ -55,23 +54,15 @@ std::string GetCountryCode() {
   return base::ToUpperASCII(variations_service->GetLatestCountry());
 }
 
-// Builds the bundle id that Autofill Assistant takes as a parameter based on
-// the user's `ldap`, the `url` of the page, and the `id` of the bundle.
-std::string CreateBundleId(const std::string& ldap,
-                           const GURL& url,
-                           unsigned id) {
-  const std::u16string formatted_url = url_formatter::FormatUrl(
-      url,
-      url_formatter::kFormatUrlOmitHTTP | url_formatter::kFormatUrlOmitHTTPS |
-          url_formatter::kFormatUrlOmitTrivialSubdomains |
-          url_formatter::kFormatUrlTrimAfterHost,
-      base::UnescapeRule::SPACES, /*new_parsed=*/nullptr,
-      /*prefix_end=*/nullptr, /*offset_for_adjustment=*/nullptr);
-  // Autofill Assistant expects the following format:
-  // `{LDAP}/{BUNDLE_ID}/{INTENT_NAME}/{DOMAIN}`.
-  return base::StrCat({ldap, kBundleIdSeparator, base::NumberToString(id),
-                       kBundleIdSeparator, kPasswordChangeIntentName,
-                       kBundleIdSeparator, base::UTF16ToUTF8(formatted_url)});
+const std::array<base::StringPiece, 4>& GetAssistantPrefs() {
+  static const std::array<base::StringPiece, 4> prefs = {
+      autofill_assistant::prefs::kAutofillAssistantEnabled,
+      autofill_assistant::prefs::kAutofillAssistantConsent,
+      autofill_assistant::prefs::kAutofillAssistantTriggerScriptsEnabled,
+      autofill_assistant::prefs::
+          kAutofillAssistantTriggerScriptsIsFirstTimeUser,
+  };
+  return prefs;
 }
 
 }  // namespace
@@ -100,6 +91,16 @@ void APCInternalsHandler::RegisterMessages() {
                           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
+      "toggle-user-pref",
+      base::BindRepeating(&APCInternalsHandler::OnToggleUserPref,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "remove-user-pref",
+      base::BindRepeating(&APCInternalsHandler::OnRemoveUserPref,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
       "set-autofill-assistant-url",
       base::BindRepeating(&APCInternalsHandler::OnSetAutofillAssistantUrl,
                           base::Unretained(this)));
@@ -117,8 +118,13 @@ void APCInternalsHandler::OnLoaded(const base::Value::List& args) {
   FireWebUIListener("on-flags-information-received", GetAPCRelatedFlags());
   FireWebUIListener("on-script-fetching-information-received",
                     GetPasswordScriptFetcherInformation());
+  UpdatePrefsInformation();
   UpdateAutofillAssistantInformation();
   OnRefreshScriptCacheRequested(base::Value::List());
+}
+
+void APCInternalsHandler::UpdatePrefsInformation() {
+  FireWebUIListener("on-prefs-information-received", GetAPCRelatedPrefs());
 }
 
 void APCInternalsHandler::UpdateAutofillAssistantInformation() {
@@ -139,6 +145,38 @@ void APCInternalsHandler::OnRefreshScriptCacheRequested(
     scripts_fetcher->RefreshScriptsIfNecessary(
         base::BindOnce(&APCInternalsHandler::OnScriptCacheRequested,
                        weak_ptr_factory_.GetWeakPtr(), base::Value::List()));
+  }
+}
+
+void APCInternalsHandler::OnToggleUserPref(const base::Value::List& args) {
+  if (args.size() == 1 && args.front().is_string()) {
+    const std::string& pref_name = args.front().GetString();
+    // Only allow modifying the prefs that are supposed to be shown here.
+    CHECK(base::Contains(GetAssistantPrefs(), pref_name));
+
+    PrefService* pref_service =
+        Profile::FromBrowserContext(
+            web_ui()->GetWebContents()->GetBrowserContext())
+            ->GetPrefs();
+    CHECK(pref_service);
+    pref_service->SetBoolean(pref_name, !pref_service->GetBoolean(pref_name));
+    UpdatePrefsInformation();
+  }
+}
+
+void APCInternalsHandler::OnRemoveUserPref(const base::Value::List& args) {
+  if (args.size() == 1 && args.front().is_string()) {
+    const std::string& pref_name = args.front().GetString();
+    // Only allow removing the prefs that are supposed to be shown here.
+    CHECK(base::Contains(GetAssistantPrefs(), pref_name));
+
+    PrefService* pref_service =
+        Profile::FromBrowserContext(
+            web_ui()->GetWebContents()->GetBrowserContext())
+            ->GetPrefs();
+    CHECK(pref_service);
+    pref_service->ClearPref(pref_name);
+    UpdatePrefsInformation();
   }
 }
 
@@ -205,6 +243,46 @@ base::Value::List APCInternalsHandler::GetAPCRelatedFlags() const {
   return relevant_features;
 }
 
+base::Value::List APCInternalsHandler::GetAPCRelatedPrefs() {
+  PrefService* pref_service =
+      Profile::FromBrowserContext(
+          web_ui()->GetWebContents()->GetBrowserContext())
+          ->GetPrefs();
+  if (!pref_service)
+    return base::Value::List();
+
+  // A helper function to output information about which store a pref setting
+  // comes from.
+  auto GetControlLevel =
+      [](const PrefService::Preference* preference) -> base::StringPiece {
+    if (!preference)
+      return "";
+    if (preference->IsDefaultValue()) {
+      return "Default";
+    } else if (preference->IsUserControlled()) {
+      return "User";
+    } else if (preference->IsManaged()) {
+      return "Policy";
+    } else {
+      return "Other";
+    }
+  };
+
+  base::Value::List result;
+  for (base::StringPiece pref : GetAssistantPrefs()) {
+    base::Value::Dict pref_info;
+    pref_info.Set("name", pref);
+    pref_info.Set("value", pref_service->GetBoolean(pref));
+    // `FindPreference` does not yet support base::StringPiece`.
+    pref_info.Set(
+        "control_level",
+        GetControlLevel(pref_service->FindPreference(std::string(pref))));
+    result.Append(std::move(pref_info));
+  }
+
+  return result;
+}
+
 base::Value::Dict APCInternalsHandler::GetPasswordScriptFetcherInformation() {
   if (PasswordScriptsFetcher* scripts_fetcher = GetPasswordScriptsFetcher();
       scripts_fetcher) {
@@ -227,7 +305,7 @@ base::Value::Dict APCInternalsHandler::GetAutofillAssistantInformation() const {
 
   // TODO(crbug.com/1314010): Add default values once global instance of
   // AutofillAssistant exists and exposes more methods.
-  static const char* const kAutofillAssistantSwitches[] = {
+  static base::StringPiece kAutofillAssistantSwitches[] = {
       autofill_assistant::switches::kAutofillAssistantAnnotateDom,
       autofill_assistant::switches::kAutofillAssistantAuth,
       autofill_assistant::switches::kAutofillAssistantCupPublicKeyBase64,
@@ -240,7 +318,7 @@ base::Value::Dict APCInternalsHandler::GetAutofillAssistantInformation() const {
       autofill_assistant::switches::kAutofillAssistantUrl};
 
   const auto* command_line = base::CommandLine::ForCurrentProcess();
-  for (const char* switch_name : kAutofillAssistantSwitches) {
+  for (base::StringPiece switch_name : kAutofillAssistantSwitches) {
     if (command_line->HasSwitch(switch_name)) {
       result.Set(switch_name, command_line->GetSwitchValueASCII(switch_name));
     }
@@ -262,14 +340,11 @@ void APCInternalsHandler::GetLoginsAndTryLaunchScript(
         GURL());
 
     // Check whether to pass debug parameters.
-    const std::string& ldap = args[1].GetString();
-    const std::string& bundle_id_input = args[2].GetString();
-    unsigned bundle_id_number = 0u;
-    if (!ldap.empty() &&
-        base::StringToUint(bundle_id_input, &bundle_id_number)) {
+    const std::string& bundle_id = args[1].GetString();
+    const std::string& ldap = args[2].GetString();
+    if (!bundle_id.empty() && !ldap.empty()) {
       debug_run_information_ = ApcClient::DebugRunInformation{
-          .bundle_id = CreateBundleId(ldap, url, bundle_id_number),
-          .socket_id = ldap};
+          .bundle_id = bundle_id, .socket_id = ldap};
     } else {
       debug_run_information_.reset();
     }

@@ -11,7 +11,6 @@
 #include "base/base64.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/ash/account_manager/account_apps_availability.h"
 #include "chrome/browser/ash/account_manager/account_apps_availability_factory.h"
@@ -23,7 +22,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/webui/chromeos/edu_coexistence/edu_coexistence_state_tracker.h"
-#include "chrome/browser/ui/webui/signin/inline_login_dialog_chromeos.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_helper_chromeos.h"
 #include "chrome/common/pref_names.h"
@@ -274,8 +272,9 @@ void InlineLoginHandlerChromeOS::SetExtraInitParams(base::Value::Dict& params) {
   const GURL& url = gaia_urls->embedded_setup_chromeos_url(2U);
   params.Set("gaiaPath", url.path().substr(1));
 
-  params.Set("platformVersion",
-             version_loader::GetVersion(version_loader::VERSION_SHORT));
+  absl::optional<std::string> version =
+      version_loader::GetVersion(version_loader::VERSION_SHORT);
+  params.Set("platformVersion", version.value_or("0.0.0.0"));
   params.Set("constrained", "1");
   params.Set("flow", GetInlineLoginFlowName(Profile::FromWebUI(web_ui()),
                                             params.FindString("email")));

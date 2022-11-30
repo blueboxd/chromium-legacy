@@ -71,8 +71,9 @@ namespace features {
 //
 // Currently this feature only changes AdTagging behavior for metrics recorded
 // in AdsPageLoadMetricsObserver, and for triggering the Heavy Ad Intervention.
-const base::Feature kRestrictedNavigationAdTagging{
-    "RestrictedNavigationAdTagging", base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kRestrictedNavigationAdTagging,
+             "RestrictedNavigationAdTagging",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features
 
@@ -280,6 +281,10 @@ PageLoadMetricsObserver::ObservePolicy
 AdsPageLoadMetricsObserver::OnFencedFramesStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url) {
+  // Need the observer-level forwarding for FrameReceivedUserActivation,
+  // FrameDisplayStateChanged, FrameSizeChanged, MediaStartedPlaying,
+  // OnMainFrameIntersectionRectChanged, OnMainFrameViewportRectChanged,
+  // and OnV8MemoryChanged.
   return FORWARD_OBSERVING;
 }
 

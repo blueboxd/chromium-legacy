@@ -10,7 +10,7 @@
 import 'chrome://resources/polymer/v3_0/iron-location/iron-location.js';
 import 'chrome://resources/polymer/v3_0/iron-location/iron-query-params.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -27,10 +27,6 @@ export enum Paths {
   LOCAL_COLLECTION = '/wallpaper/local',
   ROOT = '/',
   USER = '/user',
-}
-
-export function isPersonalizationHubEnabled(): boolean {
-  return loadTimeData.getBoolean('isPersonalizationHubEnabled');
 }
 
 export function isAmbientModeAllowed(): boolean {
@@ -108,12 +104,6 @@ export class PersonalizationRouter extends PolymerElement {
 
   override connectedCallback() {
     super.connectedCallback();
-    // Force the user onto the wallpaper subpage if personalization hub feature
-    // is not enabled, and the user is not already on a wallpaper page.
-    if (!loadTimeData.getBoolean('isPersonalizationHubEnabled') &&
-        !this.shouldShowWallpaperSubpage_(this.path_)) {
-      PersonalizationRouter.reloadAtWallpaper();
-    }
   }
 
   get collectionId() {
@@ -148,21 +138,17 @@ export class PersonalizationRouter extends PolymerElement {
   }
 
   private shouldShowRootPage_(path: string|null): boolean {
-    if (!isPersonalizationHubEnabled()) {
-      return false;
-    }
-
     // If the ambient mode is not allowed, will not show Ambient/AmbientAlbums
     // subpages.
     return (path === Paths.ROOT) || (isAmbientPathNotAllowed(path));
   }
 
   private shouldShowAmbientSubpage_(path: string|null): boolean {
-    return isPersonalizationHubEnabled() && isAmbientPathAllowed(path);
+    return isAmbientPathAllowed(path);
   }
 
   private shouldShowUserSubpage_(path: string|null): boolean {
-    return isPersonalizationHubEnabled() && path === Paths.USER;
+    return path === Paths.USER;
   }
 
   private shouldShowWallpaperSubpage_(path: string|null): boolean {

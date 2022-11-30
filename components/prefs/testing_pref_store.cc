@@ -5,9 +5,11 @@
 #include "components/prefs/testing_pref_store.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/json/json_writer.h"
+#include "base/strings/string_piece.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,7 +23,7 @@ TestingPrefStore::TestingPrefStore()
       init_complete_(false),
       committed_(true) {}
 
-bool TestingPrefStore::GetValue(const std::string& key,
+bool TestingPrefStore::GetValue(base::StringPiece key,
                                 const base::Value** value) const {
   return prefs_.GetValue(key, value);
 }
@@ -52,21 +54,19 @@ bool TestingPrefStore::IsInitializationComplete() const {
 }
 
 void TestingPrefStore::SetValue(const std::string& key,
-                                std::unique_ptr<base::Value> value,
+                                base::Value value,
                                 uint32_t flags) {
-  DCHECK(value);
-  if (prefs_.SetValue(key, base::Value::FromUniquePtrValue(std::move(value)))) {
+  if (prefs_.SetValue(key, std::move(value))) {
     committed_ = false;
     NotifyPrefValueChanged(key);
   }
 }
 
 void TestingPrefStore::SetValueSilently(const std::string& key,
-                                        std::unique_ptr<base::Value> value,
+                                        base::Value value,
                                         uint32_t flags) {
-  DCHECK(value);
-  CheckPrefIsSerializable(key, *value);
-  if (prefs_.SetValue(key, base::Value::FromUniquePtrValue(std::move(value))))
+  CheckPrefIsSerializable(key, value);
+  if (prefs_.SetValue(key, std::move(value)))
     committed_ = false;
 }
 
@@ -143,15 +143,15 @@ void TestingPrefStore::ReportValueChanged(const std::string& key,
 
 void TestingPrefStore::SetString(const std::string& key,
                                  const std::string& value) {
-  SetValue(key, std::make_unique<base::Value>(value), DEFAULT_PREF_WRITE_FLAGS);
+  SetValue(key, base::Value(value), DEFAULT_PREF_WRITE_FLAGS);
 }
 
 void TestingPrefStore::SetInteger(const std::string& key, int value) {
-  SetValue(key, std::make_unique<base::Value>(value), DEFAULT_PREF_WRITE_FLAGS);
+  SetValue(key, base::Value(value), DEFAULT_PREF_WRITE_FLAGS);
 }
 
 void TestingPrefStore::SetBoolean(const std::string& key, bool value) {
-  SetValue(key, std::make_unique<base::Value>(value), DEFAULT_PREF_WRITE_FLAGS);
+  SetValue(key, base::Value(value), DEFAULT_PREF_WRITE_FLAGS);
 }
 
 bool TestingPrefStore::GetString(const std::string& key,

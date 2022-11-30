@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ class GpuVideoAcceleratorFactories;
 namespace blink {
 
 namespace features {
-PLATFORM_EXPORT extern const base::Feature kWebRtcScreenshareSwEncoding;
+PLATFORM_EXPORT BASE_DECLARE_FEATURE(kWebRtcScreenshareSwEncoding);
 }
 
 // RTCVideoEncoder uses a media::VideoEncodeAccelerator to implement a

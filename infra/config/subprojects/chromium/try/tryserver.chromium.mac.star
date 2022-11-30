@@ -52,7 +52,7 @@ try_.builder(
         "ci/mac-osxbeta-rel",
     ],
     builderless = False,
-    os = os.MAC_DEFAULT,
+    os = os.MAC_13,
 )
 
 # This trybot mirrors the trybot mac-rel
@@ -76,8 +76,15 @@ try_.builder(
 
 try_.builder(
     name = "mac-builder-next-rel",
-    os = os.MAC_12,
+    os = os.MAC_13,
     builderless = False,
+)
+
+try_.builder(
+    name = "mac-perfetto-rel",
+    mirrors = [
+        "ci/mac-perfetto-rel",
+    ],
 )
 
 try_.orchestrator_builder(
@@ -99,15 +106,14 @@ try_.orchestrator_builder(
     ),
     main_list_view = "try",
     use_clang_coverage = True,
+    coverage_test_types = ["overall", "unit"],
     tryjob = try_.job(),
     experiments = {
         "remove_src_checkout_experiment": 100,
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
     },
-    # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
+    # TODO (crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
-    # use_orchestrator_pool = True,
+    #use_orchestrator_pool = True,
 )
 
 try_.compilator_builder(
@@ -116,9 +122,6 @@ try_.compilator_builder(
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_list_view = "try",
     os = os.MAC_DEFAULT,
-    experiments = {
-        "luci.buildbucket.omit_python2": 100,
-    },
 )
 
 try_.builder(
@@ -152,9 +155,6 @@ try_.compilator_builder(
     os = os.MAC_12,
     # TODO (crbug.com/1245171): Revert when root issue is fixed
     grace_period = 4 * time.minute,
-    experiments = {
-        "luci.buildbucket.omit_python2": 100,
-    },
 )
 
 # NOTE: the following trybots aren't sensitive to Mac version on which
@@ -340,24 +340,21 @@ try_.orchestrator_builder(
     tryjob = try_.job(),
     experiments = {
         "remove_src_checkout_experiment": 100,
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
     },
-    # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
-    # are addressed
+    # TODO (crbug.com/1372179): Move back to orchestrator bots once they can be
+    # properly rate limited
     # use_orchestrator_pool = True,
+    cores = 2,
+    os = os.LINUX_DEFAULT,
 )
 
 try_.compilator_builder(
     name = "ios-simulator-compilator",
+    # Set builderless to False so that branch builders use builderful bots
     builderless = False,
     check_for_flakiness = True,
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
-    experiments = {
-        "luci.buildbucket.omit_python2": 100,
-    },
     os = os.MAC_DEFAULT,
     ssd = None,
     xcode = xcode.x14main,
@@ -372,11 +369,13 @@ ios_builder(
     check_for_flakiness = True,
     main_list_view = "try",
     tryjob = try_.job(
-        location_filters = [
-            "components/cronet/.+",
-            "components/grpc_support/.+",
-            "ios/.+",
-            cq.location_filter(path_regexp = "components/cronet/android/.+", exclude = True),
+        location_regexp = [
+            ".+/[+]/components/cronet/.+",
+            ".+/[+]/components/grpc_support/.+",
+            ".+/[+]/ios/.+",
+        ],
+        location_regexp_exclude = [
+            ".+/[+]/components/cronet/android/.+",
         ],
     ),
 )
@@ -393,9 +392,8 @@ ios_builder(
     coverage_exclude_sources = "ios_test_files_and_test_utils",
     coverage_test_types = ["overall", "unit"],
     tryjob = try_.job(
-        location_filters = [
-            "ios/.+",
-            "testing/variations/fieldtrial_testing_config.json",
+        location_regexp = [
+            ".+/[+]/ios/.+",
         ],
     ),
 )
@@ -415,10 +413,13 @@ ios_builder(
         "ci/ios-simulator-noncq",
     ],
     tryjob = try_.job(
-        location_filters = [
-            "third_party/crashpad/crashpad/.+",
+        location_regexp = [
+            ".+/[+]/third_party/crashpad/crashpad/.+",
         ],
     ),
+    experiments = {
+        "remove_src_checkout_experiment": 100,
+    },
 )
 
 ios_builder(
@@ -470,29 +471,29 @@ try_.gpu.optional_tests_builder(
     main_list_view = "try",
     ssd = None,
     tryjob = try_.job(
-        location_filters = [
-            "chrome/browser/vr/.+",
-            "content/browser/xr/.+",
-            "content/test/gpu/.+",
-            "gpu/.+",
-            "media/audio/.+",
-            "media/base/.+",
-            "media/capture/.+",
-            "media/filters/.+",
-            "media/gpu/.+",
-            "media/mojo/.+",
-            "media/renderers/.+",
-            "media/video/.+",
-            "services/shape_detection/.+",
-            "testing/buildbot/tryserver.chromium.mac.json",
-            "testing/trigger_scripts/.+",
-            "third_party/blink/renderer/modules/mediastream/.+",
-            "third_party/blink/renderer/modules/webcodecs/.+",
-            "third_party/blink/renderer/modules/webgl/.+",
-            "third_party/blink/renderer/platform/graphics/gpu/.+",
-            "tools/clang/scripts/update.py",
-            "tools/mb/mb_config_expectations/tryserver.chromium.mac.json",
-            "ui/gl/.+",
+        location_regexp = [
+            ".+/[+]/chrome/browser/vr/.+",
+            ".+/[+]/content/browser/xr/.+",
+            ".+/[+]/content/test/gpu/.+",
+            ".+/[+]/gpu/.+",
+            ".+/[+]/media/audio/.+",
+            ".+/[+]/media/base/.+",
+            ".+/[+]/media/capture/.+",
+            ".+/[+]/media/filters/.+",
+            ".+/[+]/media/gpu/.+",
+            ".+/[+]/media/mojo/.+",
+            ".+/[+]/media/renderers/.+",
+            ".+/[+]/media/video/.+",
+            ".+/[+]/services/shape_detection/.+",
+            ".+/[+]/testing/buildbot/tryserver.chromium.mac.json",
+            ".+/[+]/testing/trigger_scripts/.+",
+            ".+/[+]/third_party/blink/renderer/modules/mediastream/.+",
+            ".+/[+]/third_party/blink/renderer/modules/webcodecs/.+",
+            ".+/[+]/third_party/blink/renderer/modules/webgl/.+",
+            ".+/[+]/third_party/blink/renderer/platform/graphics/gpu/.+",
+            ".+/[+]/tools/clang/scripts/update.py",
+            ".+/[+]/tools/mb/mb_config_expectations/tryserver.chromium.mac.json",
+            ".+/[+]/ui/gl/.+",
         ],
     ),
 )

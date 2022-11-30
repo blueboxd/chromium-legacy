@@ -116,21 +116,22 @@ static constexpr base::TimeDelta kUnusedPreloadTimeout = base::Seconds(3);
     break;                                                                     \
   }
 
-#define DEFINE_RESOURCE_HISTOGRAM(prefix)                   \
-  switch (factory.GetType()) {                              \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, CSSStyleSheet) \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Font)          \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Image)         \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, LinkPrefetch)  \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Manifest)      \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Audio)         \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Video)         \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Mock)          \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Raw)           \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Script)        \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, SVGDocument)   \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, TextTrack)     \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, XSLStyleSheet) \
+#define DEFINE_RESOURCE_HISTOGRAM(prefix)                      \
+  switch (factory.GetType()) {                                 \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, CSSStyleSheet)    \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Font)             \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Image)            \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, LinkPrefetch)     \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Manifest)         \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Audio)            \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Video)            \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Mock)             \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Raw)              \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Script)           \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, SVGDocument)      \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, TextTrack)        \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, SpeculationRules) \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, XSLStyleSheet)    \
   }
 
 ResourceLoadPriority TypeToPriority(ResourceType type) {
@@ -157,6 +158,7 @@ ResourceLoadPriority TypeToPriority(ResourceType type) {
       // Also async scripts (set explicitly in loadPriority)
       return ResourceLoadPriority::kLow;
     case ResourceType::kLinkPrefetch:
+    case ResourceType::kSpeculationRules:
       return ResourceLoadPriority::kVeryLow;
   }
 
@@ -349,6 +351,8 @@ mojom::blink::RequestContextType ResourceFetcher::DetermineRequestContext(
       return mojom::blink::RequestContextType::MANIFEST;
     case ResourceType::kMock:
       return mojom::blink::RequestContextType::SUBRESOURCE;
+    case ResourceType::kSpeculationRules:
+      return mojom::blink::RequestContextType::SUBRESOURCE;
   }
   NOTREACHED();
   return mojom::blink::RequestContextType::SUBRESOURCE;
@@ -360,6 +364,7 @@ network::mojom::RequestDestination ResourceFetcher::DetermineRequestDestination(
     case ResourceType::kXSLStyleSheet:
     case ResourceType::kCSSStyleSheet:
       return network::mojom::RequestDestination::kStyle;
+    case ResourceType::kSpeculationRules:
     case ResourceType::kScript:
       return network::mojom::RequestDestination::kScript;
     case ResourceType::kFont:
@@ -657,12 +662,12 @@ Resource* ResourceFetcher::CreateResourceForStaticData(
   // this point, but off-main-thread module fetches might.
   if (IsMainThread()) {
     if (Resource* old_resource =
-            GetMemoryCache()->ResourceForURL(url, cache_identifier)) {
+            MemoryCache::Get()->ResourceForURL(url, cache_identifier)) {
       // There's no reason to re-parse if we saved the data from the previous
       // parse.
       if (params.Options().data_buffering_policy != kDoNotBufferData)
         return old_resource;
-      GetMemoryCache()->Remove(old_resource);
+      MemoryCache::Get()->Remove(old_resource);
     }
   }
 
@@ -1110,7 +1115,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
           !in_cached_resources_map) {
         resource = nullptr;
       } else {
-        resource = GetMemoryCache()->ResourceForURL(
+        resource = MemoryCache::Get()->ResourceForURL(
             params.Url(), GetCacheIdentifier(params.Url()));
       }
       if (resource) {
@@ -1131,7 +1136,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
 
   switch (policy) {
     case RevalidationPolicy::kReload:
-      GetMemoryCache()->Remove(resource);
+      MemoryCache::Get()->Remove(resource);
       [[fallthrough]];
     case RevalidationPolicy::kLoad:
       resource = CreateResourceForLoading(params, factory);
@@ -1247,7 +1252,7 @@ void ResourceFetcher::InitializeRevalidation(
     ResourceRequest& revalidating_request,
     Resource* resource) {
   DCHECK(resource);
-  DCHECK(GetMemoryCache()->Contains(resource));
+  DCHECK(MemoryCache::Get()->Contains(resource));
   DCHECK(resource->IsLoaded());
   DCHECK(resource->CanUseCacheValidator());
   DCHECK(!resource->IsCacheValidator());
@@ -1262,7 +1267,7 @@ void ResourceFetcher::InitializeRevalidation(
       resource->GetResponse().HttpHeaderField(http_names::kLastModified);
   const AtomicString& e_tag =
       resource->GetResponse().HttpHeaderField(http_names::kETag);
-  if (!last_modified.IsEmpty() || !e_tag.IsEmpty()) {
+  if (!last_modified.empty() || !e_tag.empty()) {
     DCHECK_NE(mojom::blink::FetchCacheMode::kBypassCache,
               revalidating_request.GetCacheMode());
     if (revalidating_request.GetCacheMode() ==
@@ -1271,11 +1276,11 @@ void ResourceFetcher::InitializeRevalidation(
                                               "max-age=0");
     }
   }
-  if (!last_modified.IsEmpty()) {
+  if (!last_modified.empty()) {
     revalidating_request.SetHttpHeaderField(http_names::kIfModifiedSince,
                                             last_modified);
   }
-  if (!e_tag.IsEmpty())
+  if (!e_tag.empty())
     revalidating_request.SetHttpHeaderField(http_names::kIfNoneMatch, e_tag);
 
   resource->SetRevalidatingRequest(revalidating_request);
@@ -1312,7 +1317,7 @@ void ResourceFetcher::AddToMemoryCacheIfNeeded(const FetchParameters& params,
   if (!ShouldResourceBeAddedToMemoryCache(params, resource))
     return;
 
-  GetMemoryCache()->Add(resource);
+  MemoryCache::Get()->Add(resource);
 }
 
 Resource* ResourceFetcher::CreateResourceForLoading(
@@ -1323,8 +1328,8 @@ Resource* ResourceFetcher::CreateResourceForLoading(
   if (!base::FeatureList::IsEnabled(
           blink::features::kScopeMemoryCachePerContext)) {
     DCHECK(!IsMainThread() || params.IsStaleRevalidation() ||
-           !GetMemoryCache()->ResourceForURL(params.GetResourceRequest().Url(),
-                                             cache_identifier));
+           !MemoryCache::Get()->ResourceForURL(
+               params.GetResourceRequest().Url(), cache_identifier));
   }
 
   RESOURCE_LOADING_DVLOG(1) << "Loading Resource for "
@@ -1821,15 +1826,15 @@ void ResourceFetcher::ClearContext() {
   // first choice font failed to load).
   StopFetching();
 
-  if (!loaders_.IsEmpty() || !non_blocking_loaders_.IsEmpty()) {
+  if (!loaders_.empty() || !non_blocking_loaders_.empty()) {
     // There are some keepalive requests.
     // The use of WrapPersistent creates a reference cycle intentionally,
     // to keep the ResourceFetcher and ResourceLoaders alive until the requests
     // complete or the timer fires.
     keepalive_loaders_task_handle_ = PostDelayedCancellableTask(
         *freezable_task_runner_, FROM_HERE,
-        WTF::Bind(&ResourceFetcher::StopFetchingIncludingKeepaliveLoaders,
-                  WrapPersistent(this)),
+        WTF::BindOnce(&ResourceFetcher::StopFetchingIncludingKeepaliveLoaders,
+                      WrapPersistent(this)),
         kKeepaliveLoadersTimeout);
   }
 }
@@ -1867,7 +1872,7 @@ void ResourceFetcher::ClearPreloads(ClearPreloadsPolicy policy) {
   for (const auto& pair : preloads_) {
     Resource* resource = pair.value;
     if (policy == kClearAllPreloads || !resource->IsLinkPreload()) {
-      GetMemoryCache()->Remove(resource);
+      MemoryCache::Get()->Remove(resource);
       keys_to_be_removed.push_back(pair.key);
     }
   }
@@ -1880,11 +1885,12 @@ void ResourceFetcher::ScheduleWarnUnusedPreloads() {
   // If preloads_ is not empty here, it's full of link
   // preloads, as speculative preloads should have already been cleared when
   // parsing finished.
-  if (preloads_.IsEmpty() && early_hints_preloaded_resources_.IsEmpty())
+  if (preloads_.empty() && early_hints_preloaded_resources_.empty())
     return;
   unused_preloads_timer_ = PostDelayedCancellableTask(
       *freezable_task_runner_, FROM_HERE,
-      WTF::Bind(&ResourceFetcher::WarnUnusedPreloads, WrapWeakPersistent(this)),
+      WTF::BindOnce(&ResourceFetcher::WarnUnusedPreloads,
+                    WrapWeakPersistent(this)),
       kUnusedPreloadTimeout);
 }
 
@@ -2070,7 +2076,7 @@ bool ResourceFetcher::StartLoad(
     ScriptForbiddenScope script_forbidden_scope;
 
     if (properties_->ShouldBlockLoadingSubResource() && IsMainThread()) {
-      GetMemoryCache()->Remove(resource);
+      MemoryCache::Get()->Remove(resource);
       return false;
     }
 
@@ -2145,7 +2151,7 @@ void ResourceFetcher::RemoveResourceLoader(ResourceLoader* loader) {
   else
     NOTREACHED();
 
-  if (loaders_.IsEmpty() && non_blocking_loaders_.IsEmpty())
+  if (loaders_.empty() && non_blocking_loaders_.empty())
     keepalive_loaders_task_handle_.Cancel();
 }
 
@@ -2332,8 +2338,8 @@ void ResourceFetcher::ScheduleStaleRevalidate(Resource* stale_resource) {
   stale_resource->SetStaleRevalidationStarted();
   freezable_task_runner_->PostTask(
       FROM_HERE,
-      WTF::Bind(&ResourceFetcher::RevalidateStaleResource,
-                WrapWeakPersistent(this), WrapPersistent(stale_resource)));
+      WTF::BindOnce(&ResourceFetcher::RevalidateStaleResource,
+                    WrapWeakPersistent(this), WrapPersistent(stale_resource)));
 }
 
 void ResourceFetcher::RevalidateStaleResource(Resource* stale_resource) {

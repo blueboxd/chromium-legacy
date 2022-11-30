@@ -8,7 +8,7 @@
 
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/cast/app_activity.h"
-#include "components/cast_channel/enum_table.h"
+#include "components/media_router/common/providers/cast/channel/enum_table.h"
 
 using blink::mojom::PresentationConnectionCloseReason;
 using blink::mojom::PresentationConnectionMessagePtr;
@@ -29,12 +29,12 @@ void ReportClientMessageParseError(const MediaRoute::Id& route_id,
 // null.
 void RemoveNullFields(base::Value& value) {
   if (value.is_list()) {
-    for (auto& item : value.GetListDeprecated()) {
+    for (auto& item : value.GetList()) {
       RemoveNullFields(item);
     }
   } else if (value.is_dict()) {
     std::vector<std::string> to_remove;
-    for (auto pair : value.DictItems()) {
+    for (auto pair : value.GetDict()) {
       if (pair.second.is_none()) {
         to_remove.push_back(pair.first);
       } else {
@@ -78,7 +78,7 @@ void CastSessionClientImpl::SendMessageToClient(
 }
 
 void CastSessionClientImpl::SendMediaStatusToClient(
-    const base::Value& media_status,
+    const base::Value::Dict& media_status,
     absl::optional<int> request_id) {
   // Look up if there is a pending request from this client associated with this
   // message. If so, send the media status message as a response by setting the
@@ -131,23 +131,23 @@ void CastSessionClientImpl::SendErrorCodeToClient(
     int sequence_number,
     CastInternalMessage::ErrorCode error_code,
     absl::optional<std::string> description) {
-  base::Value message(base::Value::Type::DICTIONARY);
-  message.SetKey("code", base::Value(*cast_util::EnumToString(error_code)));
-  message.SetKey("description",
-                 description ? base::Value(*description) : base::Value());
-  message.SetKey("details", base::Value());
+  base::Value::Dict message;
+  message.Set("code", base::Value(*cast_util::EnumToString(error_code)));
+  message.Set("description",
+              description ? base::Value(*description) : base::Value());
+  message.Set("details", base::Value());
   SendErrorToClient(sequence_number, std::move(message));
 }
 
 void CastSessionClientImpl::SendErrorToClient(int sequence_number,
-                                              base::Value error) {
+                                              base::Value::Dict error) {
   SendMessageToClient(
       CreateErrorMessage(client_id(), std::move(error), sequence_number));
 }
 
 void CastSessionClientImpl::HandleParsedClientMessage(
     data_decoder::DataDecoder::ValueOrError result) {
-  if (!result.has_value()) {
+  if (!result.has_value() || !result.value().is_dict()) {
     ReportClientMessageParseError(activity_->route().media_route_id(),
                                   result.error());
     return;
@@ -159,7 +159,7 @@ void CastSessionClientImpl::HandleParsedClientMessage(
   RemoveNullFields(*result);
 
   std::unique_ptr<CastInternalMessage> cast_message =
-      CastInternalMessage::From(std::move(*result));
+      CastInternalMessage::From(std::move(result.value().GetDict()));
   if (!cast_message) {
     ReportClientMessageParseError(activity_->route().media_route_id(),
                                   "Not a Cast message");
@@ -258,7 +258,7 @@ void CastSessionClientImpl::SendResultResponse(int sequence_number,
   if (result == cast_channel::Result::kOk) {
     // Send an empty message to let the client know the request succeeded.
     SendMessageToClient(
-        CreateV2Message(client_id(), base::Value(), sequence_number));
+        CreateV2Message(client_id(), base::Value::Dict(), sequence_number));
   } else {
     // TODO(crbug.com/951089): Send correct error codes.  The original
     // implementation isn't much help here because it sends incorrectly

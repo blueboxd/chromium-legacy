@@ -440,7 +440,6 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget, Shelf* shelf)
 
   // |animating_background_| will be made visible during hotseat animations.
   ShowAnimatingBackground(false);
-  animating_background_.SetColor(ShelfConfig::Get()->GetMaximizedShelfColor());
 
   drag_handle_ = AddChildView(
       std::make_unique<DragHandle>(kDragHandleCornerRadius, shelf));
@@ -479,6 +478,8 @@ void ShelfWidget::DelegateView::ShowOpaqueBackground() {
 
 void ShelfWidget::DelegateView::OnThemeChanged() {
   views::AccessiblePaneView::OnThemeChanged();
+  animating_background_.SetColor(
+      ShelfConfig::Get()->GetMaximizedShelfColor(GetWidget()));
   shelf_widget_->background_animator_.PaintBackground(
       shelf_widget_->shelf_layout_manager()->GetShelfBackgroundType(),
       AnimationChangeType::IMMEDIATE);
@@ -753,7 +754,9 @@ void ShelfWidget::SetLoginShelfButtonOpacity(float target_opacity) {
 ShelfWidget::ShelfWidget(Shelf* shelf)
     : shelf_(shelf),
       background_animator_(shelf_, Shell::Get()->wallpaper_controller()),
-      shelf_layout_manager_(new ShelfLayoutManager(this, shelf)),
+      shelf_layout_manager_owned_(
+          std::make_unique<ShelfLayoutManager>(this, shelf)),
+      shelf_layout_manager_(shelf_layout_manager_owned_.get()),
       delegate_view_(new DelegateView(this, shelf_)),
       scoped_session_observer_(this) {
   DCHECK(shelf_);
@@ -792,7 +795,7 @@ void ShelfWidget::Initialize(aura::Window* shelf_container) {
   SetContentsView(delegate_view_);
 
   shelf_layout_manager_->AddObserver(this);
-  shelf_container->SetLayoutManager(shelf_layout_manager_);
+  shelf_container->SetLayoutManager(std::move(shelf_layout_manager_owned_));
   shelf_layout_manager_->InitObservers();
   background_animator_.Init(ShelfBackgroundType::kDefaultBg);
   background_animator_.PaintBackground(
@@ -830,11 +833,6 @@ void ShelfWidget::Shutdown() {
 
 ShelfBackgroundType ShelfWidget::GetBackgroundType() const {
   return background_animator_.target_background_type();
-}
-
-int ShelfWidget::GetBackgroundAlphaValue(
-    ShelfBackgroundType background_type) const {
-  return SkColorGetA(background_animator_.GetBackgroundColor(background_type));
 }
 
 void ShelfWidget::RegisterHotseatWidget(HotseatWidget* hotseat_widget) {
@@ -1026,9 +1024,8 @@ void ShelfWidget::UpdateLayout(bool animate) {
     // When the |shelf_widget_| needs to reverse the direction of the current
     // animation, we must take into account the transform when calculating the
     // current shelf widget bounds.
-    gfx::RectF transformed_bounds(current_shelf_bounds);
-    GetLayer()->transform().TransformRect(&transformed_bounds);
-    current_shelf_bounds = gfx::ToEnclosedRect(transformed_bounds);
+    current_shelf_bounds =
+        GetLayer()->transform().MapRect(current_shelf_bounds);
   }
 
   gfx::Transform shelf_widget_target_transform;
@@ -1038,7 +1035,8 @@ void ShelfWidget::UpdateLayout(bool animate) {
   SetBounds(
       screen_util::SnapBoundsToDisplayEdge(target_bounds_, GetNativeWindow()));
 
-  {
+  // There is no need to animate if the shelf already has the desired transform.
+  if (!shelf_widget_target_transform.IsIdentity()) {
     ui::ScopedLayerAnimationSettings shelf_animation_setter(
         GetLayer()->GetAnimator());
 

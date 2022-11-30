@@ -24,7 +24,7 @@
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/attribution_reporting_constants.h"
+#include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
@@ -41,15 +41,11 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/abseil-cpp/absl/utility/utility.h"
+#include "url/origin.h"
 
 namespace content {
 
 namespace {
-
-static_assert(kAttributionAggregatableBudgetPerSource == 65536,
-              "please update BUDGET_PER_SOURCE in "
-              "content/browser/resources/attribution_reporting/"
-              "attribution_internals.ts with new value");
 
 using Attributability =
     ::attribution_internals::mojom::WebUISource::Attributability;
@@ -67,7 +63,8 @@ attribution_internals::mojom::WebUISourcePtr WebUISource(
     const CommonSourceInfo& source,
     Attributability attributability,
     const std::vector<uint64_t>& dedup_keys,
-    int64_t aggregatable_budget_consumed) {
+    int64_t aggregatable_budget_consumed,
+    const std::vector<uint64_t>& aggregatable_dedup_keys) {
   DCHECK_GE(aggregatable_budget_consumed, 0);
   return attribution_internals::mojom::WebUISource::New(
       source.source_event_id(), source.source_origin(),
@@ -82,7 +79,7 @@ attribution_internals::mojom::WebUISourcePtr WebUISource(
             return std::make_pair(key.first,
                                   HexEncodeAggregationKey(key.second));
           }),
-      aggregatable_budget_consumed, attributability);
+      aggregatable_budget_consumed, aggregatable_dedup_keys, attributability);
 }
 
 void ForwardSourcesToWebUI(
@@ -110,9 +107,10 @@ void ForwardSourcesToWebUI(
       }
     }
 
-    web_ui_sources.push_back(
-        WebUISource(source.common_info(), attributability, source.dedup_keys(),
-                    source.aggregatable_budget_consumed()));
+    web_ui_sources.push_back(WebUISource(source.common_info(), attributability,
+                                         source.dedup_keys(),
+                                         source.aggregatable_budget_consumed(),
+                                         source.aggregatable_dedup_keys()));
   }
 
   std::move(web_ui_callback).Run(std::move(web_ui_sources));
@@ -178,6 +176,12 @@ void ForwardReportsToWebUI(
   std::move(web_ui_callback).Run(std::move(web_ui_reports));
 }
 
+attribution_internals::mojom::DedupKeyPtr CreateWebUIDedupKey(
+    absl::optional<uint64_t> dedup_key) {
+  return dedup_key ? attribution_internals::mojom::DedupKey::New(*dedup_key)
+                   : nullptr;
+}
+
 }  // namespace
 
 AttributionInternalsHandlerImpl::AttributionInternalsHandlerImpl(
@@ -215,12 +219,12 @@ void AttributionInternalsHandlerImpl::GetActiveSources(
 }
 
 void AttributionInternalsHandlerImpl::GetReports(
-    AttributionReport::ReportType report_type,
+    AttributionReport::Type report_type,
     attribution_internals::mojom::Handler::GetReportsCallback callback) {
   if (AttributionManager* manager =
           AttributionManager::FromWebContents(web_ui_->GetWebContents())) {
     manager->GetPendingReportsForInternalUse(
-        AttributionReport::ReportTypes{report_type},
+        AttributionReport::Types{report_type},
         /*limit=*/1000,
         base::BindOnce(&ForwardReportsToWebUI, std::move(callback)));
   } else {
@@ -244,7 +248,8 @@ void AttributionInternalsHandlerImpl::ClearStorage(
   if (AttributionManager* manager =
           AttributionManager::FromWebContents(web_ui_->GetWebContents())) {
     manager->ClearData(base::Time::Min(), base::Time::Max(),
-                       base::NullCallback(),
+                       /*filter=*/base::NullCallback(),
+                       /*filter_builder=*/nullptr,
                        /*delete_rate_limit_data=*/true, std::move(callback));
   } else {
     std::move(callback).Run();
@@ -273,7 +278,7 @@ void AttributionInternalsHandlerImpl::OnSourcesChanged() {
 }
 
 void AttributionInternalsHandlerImpl::OnReportsChanged(
-    AttributionReport::ReportType report_type) {
+    AttributionReport::Type report_type) {
   for (auto& observer : observers_)
     observer->OnReportsChanged(report_type);
 }
@@ -304,7 +309,8 @@ void AttributionInternalsHandlerImpl::OnSourceHandled(
 
   auto web_ui_source =
       WebUISource(source.common_info(), attributability, /*dedup_keys=*/{},
-                  /*aggregatable_budget_consumed=*/0);
+                  /*aggregatable_budget_consumed=*/0,
+                  /*aggregatable_dedup_keys=*/{});
 
   for (auto& observer : observers_) {
     observer->OnSourceRejected(web_ui_source.Clone());
@@ -337,6 +343,26 @@ void AttributionInternalsHandlerImpl::OnReportSent(
 
   for (auto& observer : observers_) {
     observer->OnReportSent(web_report.Clone());
+  }
+}
+
+// TODO(crbug/1351843): Consider surfacing this error in devtools instead of
+// internals, currently however this error is associated with a redirect
+// navigation, rather than a specific committed page.
+void AttributionInternalsHandlerImpl::OnFailedSourceRegistration(
+    const std::string& header_value,
+    base::Time source_time,
+    const url::Origin& reporting_origin,
+    attribution_reporting::mojom::SourceRegistrationError error) {
+  auto web_ui_log =
+      attribution_internals::mojom::FailedSourceRegistration::New();
+  web_ui_log->header_value = header_value;
+  web_ui_log->time = source_time.ToJsTime();
+  web_ui_log->reporting_origin = reporting_origin;
+  web_ui_log->error = error;
+
+  for (auto& observer : observers_) {
+    observer->OnFailedSourceRegistration(web_ui_log->Clone());
   }
 }
 
@@ -400,6 +426,8 @@ WebUITriggerStatus GetWebUITriggerStatus(AggregatableStatus status) {
       return WebUITriggerStatus::kNotRegistered;
     case AggregatableStatus::kProhibitedByBrowserPolicy:
       return WebUITriggerStatus::kProhibitedByBrowserPolicy;
+    case AggregatableStatus::kDeduplicated:
+      return WebUITriggerStatus::kDeduplicated;
   }
 }
 
@@ -425,10 +453,7 @@ void AttributionInternalsHandlerImpl::OnTriggerHandled(
         absl::in_place,
         /*data=*/event_trigger.data,
         /*priority=*/event_trigger.priority,
-        /*deduplication_key=*/event_trigger.dedup_key
-            ? attribution_internals::mojom::DedupKey::New(
-                  *event_trigger.dedup_key)
-            : nullptr,
+        /*deduplication_key=*/CreateWebUIDedupKey(event_trigger.dedup_key),
         /*filters=*/event_trigger.filters.filter_values(),
         /*not_filters=*/event_trigger.not_filters.filter_values());
   }
@@ -449,6 +474,8 @@ void AttributionInternalsHandlerImpl::OnTriggerHandled(
   }
 
   web_ui_trigger->aggregatable_values = trigger.aggregatable_values().values();
+  web_ui_trigger->aggregatable_dedup_key =
+      CreateWebUIDedupKey(trigger.aggregatable_dedup_key());
 
   for (auto& observer : observers_) {
     observer->OnTriggerHandled(web_ui_trigger.Clone());

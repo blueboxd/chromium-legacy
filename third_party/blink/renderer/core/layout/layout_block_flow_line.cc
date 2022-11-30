@@ -597,7 +597,7 @@ static inline void SetLogicalWidthForTextRun(
         glyph_bounds.Union(word_glyph_bounds);
         measured_width += word_measurement.width;
       }
-      if (!word_measurement.fallback_fonts.IsEmpty()) {
+      if (!word_measurement.fallback_fonts.empty()) {
         HashSet<const SimpleFontData*>::const_iterator end =
             word_measurement.fallback_fonts.end();
         for (HashSet<const SimpleFontData*>::const_iterator it =
@@ -631,7 +631,7 @@ static inline void SetLogicalWidthForTextRun(
   glyph_overflow.SetFromBounds(glyph_bounds, font, measured_width);
 
   run->box_->SetLogicalWidth(LayoutUnit(measured_width) + hyphen_width);
-  if (!fallback_fonts.IsEmpty()) {
+  if (!fallback_fonts.empty()) {
     DCHECK(run->box_->IsText());
     GlyphOverflowAndFallbackFontsMap::ValueType* it =
         text_box_data_map
@@ -639,8 +639,8 @@ static inline void SetLogicalWidthForTextRun(
                     std::make_pair(Vector<const SimpleFontData*>(),
                                    GlyphOverflow()))
             .stored_value;
-    DCHECK(it->value.first.IsEmpty());
-    CopyToVector(fallback_fonts, it->value.first);
+    DCHECK(it->value.first.empty());
+    it->value.first.assign(fallback_fonts);
     run->box_->Parent()->ClearDescendantsHaveSameLineHeightAndBaseline();
   }
   if (!glyph_overflow.IsApproximatelyZero()) {
@@ -1076,7 +1076,7 @@ void LayoutBlockFlow::AppendFloatsToLastLine(
     }
     layout_state.SetFloatIndex(layout_state.FloatIndex() + 1);
   }
-  layout_state.SetLastFloat(!floating_object_set.IsEmpty()
+  layout_state.SetLastFloat(!floating_object_set.empty()
                                 ? floating_object_set.back().Get()
                                 : nullptr);
 }
@@ -2133,7 +2133,7 @@ RootInlineBox* LayoutBlockFlow::DetermineStartPosition(
         pagination_delta -= curr->PaginationStrut();
         AdjustLinePositionForPagination(*curr, pagination_delta);
         if (pagination_delta) {
-          if (ContainsFloats() || !layout_state.Floats().IsEmpty()) {
+          if (ContainsFloats() || !layout_state.Floats().empty()) {
             // FIXME: Do better eventually.  For now if we ever shift because of
             // pagination and floats are present just go to a full layout.
             layout_state.MarkForFullLayout();
@@ -2200,7 +2200,7 @@ RootInlineBox* LayoutBlockFlow::DetermineStartPosition(
   }
 
   unsigned num_clean_floats = 0;
-  if (!layout_state.Floats().IsEmpty()) {
+  if (!layout_state.Floats().empty()) {
     // Restore floats from clean lines.
     RootInlineBox* line = FirstRootBox();
     while (line != curr) {
@@ -2472,7 +2472,7 @@ void LayoutBlockFlow::AddVisualOverflowFromInlineChildren() {
     To<LayoutInline>(o).AddOutlineRectsForContinuations(
         outline_rects, PhysicalOffset(),
         style.OutlineRectsShouldIncludeBlockVisualOverflow());
-    if (!outline_rects.IsEmpty()) {
+    if (!outline_rects.empty()) {
       PhysicalRect outline_bounds = UnionRect(outline_rects);
       outline_bounds.Inflate(LayoutUnit(OutlinePainter::OutlineOutsetExtent(
           style, OutlineInfo::GetFromStyle(style))));

@@ -37,7 +37,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "chromeos/ash/components/account_manager/account_manager_factory.h"
-#include "chromeos/ui/vector_icons/vector_icons.h"
 #include "components/account_id/account_id.h"
 #include "components/account_manager_core/account.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
@@ -121,7 +120,7 @@ CreateDeviceAccountErrorNotification(
           GURL(device_account_notification_id), notifier_id, data,
           new message_center::HandleNotificationClickDelegate(
               base::BindRepeating(&HandleDeviceAccountReauthNotificationClick)),
-          chromeos::kNotificationWarningIcon,
+          vector_icons::kNotificationWarningIcon,
           message_center::SystemNotificationWarningLevel::WARNING);
   notification->SetSystemPriority();
 
@@ -197,7 +196,7 @@ void SigninErrorNotifier::OnTokenHandleCheck(
     TokenHandleUtil::TokenHandleStatus status) {
   if (status != TokenHandleUtil::INVALID)
     return;
-  RecordReauthReason(account_id, ReauthReason::INVALID_TOKEN_HANDLE);
+  RecordReauthReason(account_id, ReauthReason::kInvalidTokenHandle);
   HandleDeviceAccountError(/*error_message=*/l10n_util::GetStringUTF16(
       IDS_SYNC_TOKEN_HANDLE_ERROR_BUBBLE_VIEW_MESSAGE));
 }
@@ -248,7 +247,7 @@ void SigninErrorNotifier::OnErrorChanged() {
   if (!IsAccountManagerAvailable(profile_)) {
     // If this flag is disabled, Chrome OS does not have a concept of Secondary
     // Accounts. Preserve existing behavior.
-    RecordReauthReason(account_id, ReauthReason::SYNC_FAILED);
+    RecordReauthReason(account_id, ReauthReason::kSyncFailed);
     HandleDeviceAccountError(
         /*error_message=*/GetMessageBodyForDeviceAccountErrors(
             /*error=*/error_controller_->auth_error().state()));
@@ -259,7 +258,7 @@ void SigninErrorNotifier::OnErrorChanged() {
   const CoreAccountId primary_account_id =
       identity_manager_->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
   if (error_account_id == primary_account_id) {
-    RecordReauthReason(account_id, ReauthReason::SYNC_FAILED);
+    RecordReauthReason(account_id, ReauthReason::kSyncFailed);
     HandleDeviceAccountError(
         /*error_message=*/GetMessageBodyForDeviceAccountErrors(
             /*error=*/error_controller_->auth_error().state()));

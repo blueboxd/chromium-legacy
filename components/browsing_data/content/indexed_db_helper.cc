@@ -51,15 +51,14 @@ void IndexedDBHelper::DeleteIndexedDB(const blink::StorageKey& storage_key,
 
 void IndexedDBHelper::IndexedDBUsageInfoReceived(
     FetchCallback callback,
-    std::vector<storage::mojom::StorageUsageInfoPtr> origins) {
+    std::vector<storage::mojom::StorageUsageInfoPtr> usages) {
   DCHECK(!callback.is_null());
   std::list<content::StorageUsageInfo> result;
-  for (const auto& origin_usage : origins) {
-    if (!HasWebScheme(origin_usage->origin.GetURL()))
+  for (const auto& usage : usages) {
+    if (!HasWebScheme(usage->storage_key.origin().GetURL()))
       continue;  // Non-websafe state is not considered browsing data.
-    result.emplace_back(StorageUsageInfo(origin_usage->origin,
-                                         origin_usage->total_size_bytes,
-                                         origin_usage->last_modified));
+    result.emplace_back(usage->storage_key, usage->total_size_bytes,
+                        usage->last_modified);
   }
   std::move(callback).Run(std::move(result));
 }
@@ -100,8 +99,7 @@ void CannedIndexedDBHelper::StartFetching(FetchCallback callback) {
 
   std::list<StorageUsageInfo> result;
   for (const auto& storage_key : pending_storage_keys_) {
-    // TODO(https://crbug.com/1199077): Use the real StorageKey once migrated.
-    result.emplace_back(storage_key.origin(), 0, base::Time());
+    result.emplace_back(storage_key, 0, base::Time());
   }
 
   content::GetUIThreadTaskRunner({})->PostTask(

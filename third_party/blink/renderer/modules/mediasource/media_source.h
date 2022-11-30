@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,8 +98,7 @@ class MediaSource final : public EventTargetWithInlineData,
   void clearLiveSeekableRange(ExceptionState&)
       LOCKS_EXCLUDED(attachment_link_lock_);
 
-  MediaSourceHandleImpl* handle(ExceptionState&)
-      LOCKS_EXCLUDED(attachment_link_lock_);
+  MediaSourceHandleImpl* handle() LOCKS_EXCLUDED(attachment_link_lock_);
 
   static bool isTypeSupported(ExecutionContext* context, const String& type);
 

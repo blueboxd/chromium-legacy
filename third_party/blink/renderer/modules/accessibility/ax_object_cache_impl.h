@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/modules/accessibility/blink_ax_tree_source.h"
 #include "third_party/blink/renderer/modules/accessibility/inspector_accessibility_agent.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_deque.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -94,7 +95,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void RemoveInspectorAgent(InspectorAccessibilityAgent*);
 
   // Ensure that a call to ProcessDeferredAccessibilityEvents() will occur soon.
-  void ScheduleVisualUpdate(Document& document);
+  void ScheduleVisualUpdate(Document& document) override;
 
   void Dispose() override;
 
@@ -134,6 +135,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   // Returns false if no associated AXObject exists in the cache.
   bool Remove(LayoutObject*) override;
   void Remove(Node*) override;
+  void Remove(Document*) override;
   void Remove(AbstractInlineTextBox*) override;
   void Remove(AXObject*);  // Calls more specific Remove methods as necessary.
   // For any ancestor that could contain the passed-in AXObject* in their cached
@@ -414,12 +416,38 @@ class MODULES_EXPORT AXObjectCacheImpl
                            base::TimeDelta timeout,
                            ui::AXTreeUpdate*) override;
 
-  void MarkAllImageAXObjectsDirty(
-      ax::mojom::blink::Action event_from_action) override {
-    return Root()->MarkAllImageAXObjectsDirty(event_from_action);
+  void MarkAllImageAXObjectsDirty() override {
+    return Root()->MarkAllImageAXObjectsDirty();
   }
 
   void ResetSerializer() override { ax_tree_serializer_->Reset(); }
+
+  void MarkAXObjectDirty(
+      AXObject* obj,
+      bool subtree,
+      ax::mojom::blink::EventFrom event_from,
+      ax::mojom::blink::Action event_from_action,
+      const std::vector<ui::AXEventIntent>& event_intents) override;
+
+  void SerializeDirtyObjectsAndEvents(
+      bool has_plugin_tree_source,
+      std::vector<ui::AXTreeUpdate>& updates,
+      std::vector<ui::AXEvent>& events,
+      bool& had_end_of_test_event,
+      bool& had_load_complete_messages,
+      bool& need_to_send_location_changes) override;
+
+  void ClearDirtyObjectsAndPendingEvents() override {
+    dirty_objects_.clear();
+    pending_events_.clear();
+  }
+
+  bool HasDirtyObjects() override {
+    return !dirty_objects_.empty();
+  }
+
+  bool AddPendingEvent(const ui::AXEvent& event,
+                       bool insert_at_beginning) override;
 
   void InvalidateSerializerSubtree(AXObject& obj) {
     ax_tree_serializer_->InvalidateSubtree(&obj);
@@ -490,6 +518,33 @@ class MODULES_EXPORT AXObjectCacheImpl
   void Remove(AXID);
 
  private:
+
+  struct AXDirtyObject : public GarbageCollected<AXDirtyObject> {
+    AXDirtyObject(AXObject* obj_arg,
+                  ax::mojom::blink::EventFrom event_from_arg,
+                  ax::mojom::blink::Action event_from_action_arg,
+                  std::vector<ui::AXEventIntent> event_intents_arg)
+        : obj(obj_arg),
+          event_from(event_from_arg),
+          event_from_action(event_from_action_arg),
+          event_intents(event_intents_arg) {}
+
+    static AXDirtyObject* Create(AXObject* obj,
+                                 ax::mojom::blink::EventFrom event_from,
+                                 ax::mojom::blink::Action event_from_action,
+                                 std::vector<ui::AXEventIntent> event_intents) {
+      return MakeGarbageCollected<AXDirtyObject>(
+          obj, event_from, event_from_action, event_intents);
+    }
+
+    void Trace(Visitor* visitor) const { visitor->Trace(obj); }
+
+    Member<AXObject> obj;
+    ax::mojom::blink::EventFrom event_from;
+    ax::mojom::blink::Action event_from_action;
+    std::vector<ui::AXEventIntent> event_intents;
+  };
+
   mojo::Remote<mojom::blink::RenderAccessibilityHost>&
   GetOrCreateRemoteRenderAccessibilityHost();
   void ProcessDeferredAccessibilityEventsImpl(Document&);
@@ -804,7 +859,12 @@ class MODULES_EXPORT AXObjectCacheImpl
   Member<BlinkAXTreeSource> ax_tree_source_;
   std::unique_ptr<ui::AXTreeSerializer<AXObject*>> ax_tree_serializer_;
 
+  HeapDeque<Member<AXDirtyObject>> dirty_objects_;
+
+  Deque<ui::AXEvent> pending_events_;
+
   FRIEND_TEST_ALL_PREFIXES(AccessibilityTest, PauseUpdatesAfterMaxNumberQueued);
+  FRIEND_TEST_ALL_PREFIXES(AccessibilityTest, RemoveAXID);
 };
 
 // This is the only subclass of AXObjectCache.

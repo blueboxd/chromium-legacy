@@ -13,8 +13,7 @@
 #include "chromeos/ash/services/libassistant/system_provider_impl.h"
 #include "media/audio/audio_device_description.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 PlatformApi::PlatformApi()
     : audio_output_provider_(std::make_unique<AudioOutputProviderImpl>(
@@ -85,5 +84,4 @@ void PlatformApi::OnAssistantClientDestroyed() {
   audio_output_provider_->UnBindAudioDecoderFactory();
 }
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant

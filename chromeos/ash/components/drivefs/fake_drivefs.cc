@@ -4,7 +4,6 @@
 
 #include "chromeos/ash/components/drivefs/fake_drivefs.h"
 
-#include <algorithm>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -17,6 +16,7 @@
 #include "base/files/file_util.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/task/thread_pool.h"
@@ -94,6 +94,7 @@ struct FakeDriveFs::FileMetadata {
   bool pinned = false;
   bool hosted = false;
   bool shared = false;
+  bool available_offline = false;
   std::string original_name;
   mojom::Capabilities capabilities;
   mojom::FolderFeature folder_feature;
@@ -186,8 +187,8 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
         const base::FilePath path = item_ptr->path;
         const drivefs::mojom::FileMetadata* metadata = item_ptr->metadata.get();
         if (!query.empty()) {
-          return base::ToLowerASCII(path.BaseName().value()).find(query) ==
-                 std::string::npos;
+          return !base::Contains(base::ToLowerASCII(path.BaseName().value()),
+                                 query);
         }
         if (params_->available_offline) {
           return !metadata->available_offline && IsLocal(metadata->type);
@@ -200,12 +201,11 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
           if (content_mime_type.empty()) {
             return true;
           }
-          const auto find_mime_type_iter = std::find_if(
-              mime_types.begin(), mime_types.end(),
-              [content_mime_type](const std::string& mime_type) {
-                return net::MatchesMimeType(mime_type, content_mime_type);
-              });
-          if (find_mime_type_iter == mime_types.end()) {
+          if (base::ranges::none_of(
+                  mime_types,
+                  [content_mime_type](const std::string& mime_type) {
+                    return net::MatchesMimeType(mime_type, content_mime_type);
+                  })) {
             return true;
           }
         }
@@ -289,6 +289,7 @@ void FakeDriveFs::SetMetadata(const base::FilePath& path,
                               const std::string& mime_type,
                               const std::string& original_name,
                               bool pinned,
+                              bool available_offline,
                               bool shared,
                               const mojom::Capabilities& capabilities,
                               const mojom::FolderFeature& folder_feature,
@@ -303,6 +304,9 @@ void FakeDriveFs::SetMetadata(const base::FilePath& path,
   stored_metadata.doc_id = doc_id;
   if (pinned) {
     stored_metadata.pinned = true;
+  }
+  if (available_offline) {
+    stored_metadata.available_offline = true;
   }
   if (shared) {
     stored_metadata.shared = true;
@@ -349,7 +353,8 @@ void FakeDriveFs::GetMetadata(const base::FilePath& path,
 
   const auto& stored_metadata = metadata_[path];
   metadata->pinned = stored_metadata.pinned;
-  metadata->available_offline = stored_metadata.pinned;
+  metadata->available_offline =
+      stored_metadata.pinned || stored_metadata.available_offline;
   metadata->shared = stored_metadata.shared;
 
   metadata->content_mime_type = stored_metadata.mime_type;
@@ -557,8 +562,7 @@ void FakeDriveFs::ToggleSyncForPath(
     syncing_paths_.push_back(path);
   } else {
     // status == drivefs::mojom::MirrorPathStatus::kStop.
-    auto element =
-        std::find(syncing_paths_.begin(), syncing_paths_.end(), path);
+    auto element = base::ranges::find(syncing_paths_, path);
     syncing_paths_.erase(element);
   }
   std::move(callback).Run(drive::FileError::FILE_ERROR_OK);

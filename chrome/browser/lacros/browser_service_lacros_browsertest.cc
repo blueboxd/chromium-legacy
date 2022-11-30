@@ -8,7 +8,7 @@
 #include "chrome/browser/chromeos/app_mode/app_session.h"
 #include "chrome/browser/lacros/app_mode/kiosk_session_service_lacros.h"
 #include "chrome/browser/lacros/browser_service_lacros.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/application_lifetime_desktop.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
@@ -386,11 +386,11 @@ IN_PROC_BROWSER_TEST_F(BrowserServiceLacrosWindowlessBrowserTest,
   auto* new_tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(3, new_tab_strip->count());
 
-  EXPECT_EQ("",  // The new tab.
-            new_tab_strip->GetWebContentsAt(0)->GetLastCommittedURL().path());
   EXPECT_EQ("/title1.html",
-            new_tab_strip->GetWebContentsAt(1)->GetLastCommittedURL().path());
+            new_tab_strip->GetWebContentsAt(0)->GetLastCommittedURL().path());
   EXPECT_EQ("/title2.html",
+            new_tab_strip->GetWebContentsAt(1)->GetLastCommittedURL().path());
+  EXPECT_EQ("",  // The new tab.
             new_tab_strip->GetWebContentsAt(2)->GetLastCommittedURL().path());
 
   // A second call to NewTab() ignores session restore and adds yet another new

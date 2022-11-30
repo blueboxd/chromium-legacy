@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,10 @@
 // Please run the closure compiler before committing changes.
 // See https://chromium.googlesource.com/chromium/src/+/main/docs/closure_compilation.md
 
-/** @fileoverview Externs generated from namespace: accessibilityPrivate */
+/**
+ * @fileoverview Externs generated from namespace: accessibilityPrivate
+ * @externs
+ */
 
 /** @const */
 chrome.accessibilityPrivate = {};
@@ -331,6 +334,25 @@ chrome.accessibilityPrivate.DlcType = {
 };
 
 /**
+ * @typedef {{
+ *   js_pumpkin_tagger_bin_js: ArrayBuffer,
+ *   tagger_wasm_main_js: ArrayBuffer,
+ *   tagger_wasm_main_wasm: ArrayBuffer,
+ *   en_us_action_config_binarypb: ArrayBuffer,
+ *   en_us_pumpkin_config_binarypb: ArrayBuffer,
+ *   fr_fr_action_config_binarypb: ArrayBuffer,
+ *   fr_fr_pumpkin_config_binarypb: ArrayBuffer,
+ *   it_it_action_config_binarypb: ArrayBuffer,
+ *   it_it_pumpkin_config_binarypb: ArrayBuffer,
+ *   de_de_action_config_binarypb: ArrayBuffer,
+ *   de_de_pumpkin_config_binarypb: ArrayBuffer,
+ *   es_es_action_config_binarypb: ArrayBuffer,
+ *   es_es_pumpkin_config_binarypb: ArrayBuffer
+ * }}
+ */
+chrome.accessibilityPrivate.PumpkinData;
+
+/**
  * Property to indicate whether event source should default to touch.
  * @type {number}
  */
@@ -354,8 +376,8 @@ chrome.accessibilityPrivate.getBatteryDescription = function(callback) {};
 
 /**
  * Called to request an install of the Pumpkin semantic parser for Dictation.
- * @param {function(boolean): void} callback Runs when Pumpkin download
- *     finishes.
+ * @param {function(!chrome.accessibilityPrivate.PumpkinData): void} callback
+ *     Runs when Pumpkin download finishes.
  */
 chrome.accessibilityPrivate.installPumpkinForDictation = function(callback) {};
 

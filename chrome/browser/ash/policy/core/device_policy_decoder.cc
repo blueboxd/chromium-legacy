@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/components/settings/cros_settings_names.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/chrome_schema.h"
 #include "components/policy/core/common/external_data_fetcher.h"
@@ -153,14 +153,6 @@ std::unique_ptr<base::Value> DecodeConnectionType(int value) {
   if (iter == kConnectionTypes.end())
     return nullptr;
   return std::make_unique<base::Value>(iter->second);
-}
-
-void AddDeprecationWarning(const std::string& old_name,
-                           const std::string& new_name,
-                           PolicyMap* policies) {
-  policies->AddMessage(old_name, PolicyMap::MessageType::kError,
-                       IDS_POLICY_MIGRATED_OLD_POLICY,
-                       {base::UTF8ToUTF16(new_name)});
 }
 
 void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
@@ -725,12 +717,6 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
                              PolicyMap* policies) {
   if (policy.has_device_reporting()) {
     const em::DeviceReportingProto& container(policy.device_reporting());
-    if (container.has_enable_granular_reporting()) {
-      policies->Set(key::kEnableDeviceGranularReporting, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                    base::Value(container.enable_granular_reporting()),
-                    nullptr);
-    }
     if (container.has_report_version_info()) {
       policies->Set(key::kReportDeviceVersionInfo, POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
@@ -2068,6 +2054,16 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                     POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                     POLICY_SOURCE_CLOUD, base::Value(container.value()),
                     nullptr);
+    }
+  }
+
+  if (policy.has_device_report_xdr_events()) {
+    const em::DeviceReportXDREventsProto& container(
+        policy.device_report_xdr_events());
+    if (container.has_enabled()) {
+      policies->Set(policy::key::kDeviceReportXDREvents, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    base::Value(container.enabled()), nullptr);
     }
   }
 }

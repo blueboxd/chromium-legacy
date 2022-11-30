@@ -176,6 +176,7 @@ target(link_target_type, "gles2_sources") {
     "id_manager.h",
     "indexed_buffer_binding_host.cc",
     "indexed_buffer_binding_host.h",
+    "isolation_key_provider.h",
     "logger.cc",
     "logger.h",
     "mailbox_manager_dummy.cc",
@@ -238,6 +239,8 @@ target(link_target_type, "gles2_sources") {
     "shared_image/gl_image_backing.h",
     "shared_image/gl_image_backing_factory.cc",
     "shared_image/gl_image_backing_factory.h",
+    "shared_image/gl_repack_utils.cc",
+    "shared_image/gl_repack_utils.h",
     "shared_image/gl_texture_image_backing.cc",
     "shared_image/gl_texture_image_backing.h",
     "shared_image/gl_texture_image_backing_factory.cc",
@@ -382,6 +385,8 @@ target(link_target_type, "gles2_sources") {
     ]
 
     sources += [
+      "shared_image/angle_vulkan_image_backing.cc",
+      "shared_image/angle_vulkan_image_backing.h",
       "shared_image/angle_vulkan_image_backing_factory.cc",
       "shared_image/angle_vulkan_image_backing_factory.h",
     ]
@@ -512,6 +517,13 @@ target(link_target_type, "gles2_sources") {
       "texture_owner.cc",
       "texture_owner.h",
     ]
+
+    if (use_dawn) {
+      sources += [
+        "shared_image/dawn_ahardwarebuffer_image_representation.cc",
+        "shared_image/dawn_ahardwarebuffer_image_representation.h",
+      ]
+    }
 
     deps += [ "//base" ]
 

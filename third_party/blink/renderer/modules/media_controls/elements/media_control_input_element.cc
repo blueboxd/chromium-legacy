@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,8 +63,7 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
   button->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
 
   overflow_menu_text_ = MakeGarbageCollected<HTMLSpanElement>(GetDocument());
-  overflow_menu_text_->setInnerText(button->GetOverflowMenuString(),
-                                    ASSERT_NO_EXCEPTION);
+  overflow_menu_text_->setInnerText(button->GetOverflowMenuString());
 
   overflow_label_element_ =
       MakeGarbageCollected<HTMLLabelElement>(GetDocument());
@@ -85,6 +84,14 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
   overflow_menu_container_->setAttribute(html_names::kAriaHiddenAttr, "true");
   aria_label_ = button->FastGetAttribute(html_names::kAriaLabelAttr) + " " +
                 button->GetOverflowMenuString();
+
+  // The button label along with the overflow menu string will be part of
+  // the aria-label for the overflow label element, so all information is
+  // already available to the screen reader. Additionally, invoking the
+  // overflow label element (it's a menuitem) will invoke the button so
+  // the button should be hidden from screenreaders.
+  button->setAttribute(html_names::kAriaHiddenAttr, "true");
+
   UpdateOverflowSubtitleElement(button->GetOverflowMenuSubtitleString());
   overflow_label_element_->ParserAppendChild(overflow_menu_container_);
 
@@ -114,12 +121,12 @@ void MediaControlInputElement::UpdateOverflowSubtitleElement(String text) {
 
   if (overflow_menu_subtitle_) {
     // If element exists, just update the text.
-    overflow_menu_subtitle_->setInnerText(text, ASSERT_NO_EXCEPTION);
+    overflow_menu_subtitle_->setInnerText(text);
   } else {
     // Otherwise, create a new element.
     overflow_menu_subtitle_ =
         MakeGarbageCollected<HTMLSpanElement>(GetDocument());
-    overflow_menu_subtitle_->setInnerText(text, ASSERT_NO_EXCEPTION);
+    overflow_menu_subtitle_->setInnerText(text);
     overflow_menu_subtitle_->setAttribute(
         "class", AtomicString(kOverflowSubtitleCSSClass));
 
@@ -178,8 +185,7 @@ void MediaControlInputElement::UpdateOverflowString() {
     return;
 
   DCHECK(overflow_element_);
-  overflow_menu_text_->setInnerText(GetOverflowMenuString(),
-                                    ASSERT_NO_EXCEPTION);
+  overflow_menu_text_->setInnerText(GetOverflowMenuString());
 
   UpdateOverflowSubtitleElement(GetOverflowMenuSubtitleString());
 }
@@ -230,10 +236,8 @@ void MediaControlInputElement::MaybeRecordInteracted() {
     return;
 
   if (!display_recorded_) {
-    // The only valid reason to not have the display recorded at this point is
-    // if it wasn't allowed. Regardless, the display will now be recorded.
-    DCHECK(!ShouldRecordDisplayStates(MediaElement()));
     RecordCTREvent(CTREvent::kDisplayed);
+    display_recorded_ = true;
   }
 
   RecordCTREvent(CTREvent::kInteracted);

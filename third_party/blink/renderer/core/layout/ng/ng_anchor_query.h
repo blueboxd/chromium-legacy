@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ class CORE_EXPORT NGPhysicalAnchorQuery {
   DISALLOW_NEW();
 
  public:
-  bool IsEmpty() const { return anchor_references_.IsEmpty(); }
+  bool IsEmpty() const { return anchor_references_.empty(); }
 
   const NGPhysicalAnchorReference* AnchorReference(
       const AtomicString& name) const;
@@ -94,21 +94,35 @@ struct CORE_EXPORT NGLogicalAnchorReference
 class CORE_EXPORT NGLogicalAnchorQuery
     : public GarbageCollected<NGLogicalAnchorQuery> {
  public:
-  bool IsEmpty() const { return anchor_references_.IsEmpty(); }
+  // Returns an empty instance.
+  static const NGLogicalAnchorQuery& Empty();
+
+  bool IsEmpty() const { return anchor_references_.empty(); }
 
   const NGLogicalAnchorReference* AnchorReference(
       const AtomicString& name) const;
   const LogicalRect* Rect(const AtomicString& name) const;
   const NGPhysicalFragment* Fragment(const AtomicString& name) const;
 
+  enum class SetOptions {
+    // A valid entry. The call order is in the tree order.
+    kValidInOrder,
+    // A valid entry but the call order may not be in the tree order.
+    kValidOutOfOrder,
+    // An invalid entry.
+    kInvalid,
+  };
   void Set(const AtomicString& name,
            const NGPhysicalFragment& fragment,
-           const LogicalRect& rect);
-  void Set(const AtomicString& name, NGLogicalAnchorReference* reference);
+           const LogicalRect& rect,
+           SetOptions);
+  void Set(const AtomicString& name,
+           NGLogicalAnchorReference* reference,
+           bool maybe_out_of_order = false);
   void SetFromPhysical(const NGPhysicalAnchorQuery& physical_query,
                        const WritingModeConverter& converter,
                        const LogicalOffset& additional_offset,
-                       bool is_invalid);
+                       SetOptions);
 
   // Evaluate the |anchor_name| for the |anchor_value|. Returns |nullopt| if
   // the query is invalid (e.g., no targets or wrong axis.)
@@ -144,12 +158,13 @@ class CORE_EXPORT NGLogicalAnchorQueryForFragmentation {
  public:
   bool HasAnchorsOnOutOfFlowObjects() const { return has_anchors_on_oofs_; }
   bool ShouldLayoutByContainingBlock() const {
-    return !queries_.IsEmpty() || has_anchors_on_oofs_;
+    return !queries_.empty() || has_anchors_on_oofs_;
   }
 
   // Get |NGLogicalAnchorQuery| in the stitched coordinate system for the given
-  // containing block.
-  const NGLogicalAnchorQuery* StitchedAnchorQuery(
+  // containing block. If there is no anchor query for the containing block,
+  // returns an empty instance.
+  const NGLogicalAnchorQuery& StitchedAnchorQuery(
       const LayoutObject& containing_block) const;
 
   // Update the internal map of anchor queries for containing blocks from the

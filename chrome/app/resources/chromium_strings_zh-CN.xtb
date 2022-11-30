@@ -10,6 +10,7 @@
 <translation id="1131805035311359397">若要检查您的密码是否未曾遭遇数据泄露和其他安全问题，请<ph name="BEGIN_LINK" />登录 Chromium<ph name="END_LINK" />。</translation>
 <translation id="1185134272377778587">关于 Chromium</translation>
 <translation id="1203500561924088507">感谢您完成安装。您必须重启浏览器才能使用 <ph name="BUNDLE_NAME" />。</translation>
+<translation id="1261119230216066228">省内存模式提高了 Chromium 的运行速度</translation>
 <translation id="1315551408014407711">设置您的新 Chromium 个人资料</translation>
 <translation id="1385859895174722837">Chromium 中的 Google 助理</translation>
 <translation id="1396446129537741364">Chromium 正尝试显示密码。</translation>
@@ -180,6 +181,7 @@
 <translation id="5386450000063123300">正在更新 Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">允许登录 Chromium</translation>
 <translation id="5398878173008909840">Chromium 现已推出新版本。</translation>
+<translation id="5405650547142096840">从Chromium中移除</translation>
 <translation id="5427571867875391349">将Chromium设为默认浏览器</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium 测试版</translation>
 <translation id="5473971139929175403">Chromium 可能无法正常运行，因为它不再支持此 Linux 发行版</translation>
@@ -207,6 +209,7 @@
 <translation id="6055895534982063517">Chromium 现已推出速度更快的新版本。</translation>
 <translation id="6063093106622310249">在 Chromium 中打开(&amp;O)</translation>
 <translation id="6072279588547424923">“<ph name="EXTENSION_NAME" />”已添加到 Chromium</translation>
+<translation id="6072463441809498330">提高 Chromium 的运行速度</translation>
 <translation id="608006075545470555">向此浏览器添加工作资料</translation>
 <translation id="6096348254544841612">有可用的更新。欢迎自定义和控制 Chromium。</translation>
 <translation id="6119438414301547735">允许扩展程序在 Chromium 工具栏中显示访问请求</translation>
@@ -302,9 +305,9 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="7682601070171973634">Chromium 团队正在探索新功能，以便网站只需使用您的较少数据就能提供同样的浏览体验</translation>
 <translation id="7686590090926151193">Chromium 不是您的默认浏览器</translation>
 <translation id="7689606757190482937">在您的所有设备上同步并个性化设置 Chromium</translation>
-<translation id="7714577916146996629">开启此设置后，Chromium 会从您目前未主动使用的标签页回收内存。这样可释放计算机的资源以用于执行其他任务，并使 Chromium 保持快速运行。闲置的标签页会显示为空白，在您点击后才会自动重新加载。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" />或<ph name="BEGIN_LINK_2" />发送反馈<ph name="END_LINK_2" /></translation>
 <translation id="7745317241717453663">这会从这台设备上删除您的浏览数据。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chromium。</translation>
 <translation id="7747138024166251722">安装程序无法创建临时目录。请检查您是否有足够的磁盘空间和权限来安装该软件。</translation>
+<translation id="7786760609782648049">提高 Chromium 的运行速度</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7828947555739565424">此设备上已有一份使用该帐号创建的 Chromium 个人资料</translation>
 <translation id="7845233973568007926">感谢您完成安装。您必须重启计算机才能使用 <ph name="BUNDLE_NAME" />。</translation>
@@ -332,11 +335,11 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="8453117565092476964">安装程序归档损坏或无效。请重新下载 Chromium。</translation>
 <translation id="8463672209299734063">可选：自动向 Google 发送诊断数据和使用情况数据，协助改进 Chromium 操作系统的功能和性能。</translation>
 <translation id="8493179195440786826">Chromium版本太旧</translation>
-<translation id="8522220489792889625">Chromium 会酌情从您目前未主动使用的标签页回收内存。您随时可在“设置”中更改此设置。</translation>
 <translation id="8550334526674375523">此工作资料与您的个人资料是完全分开的。</translation>
 <translation id="8558383651099478961">您的家长已为 Chromium 停用“网站、应用和扩展程序的权限”。因此，您无法添加该<ph name="EXTENSION_TYPE_PARAMETER" />。</translation>
 <translation id="8561285221328166383">若要接收后续 Chromium 更新，您需使用 macOS 10.13 或更高版本。该计算机目前使用的是 macOS 10.12。</translation>
 <translation id="8568283329061645092">您需要先登录 Google 帐号才能使用 Chromium 的密码检查功能。</translation>
+<translation id="8574036838419011058">开启此设置后，Chromium 会通过限制后台活动和视觉效果（例如流畅滚动和视频帧速率）来节省电池电量。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">版权所有<ph name="YEAR" /> The Chromium Authors。保留所有权利。</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />我们会如何使用这些数据<ph name="END_BOLD" />：网站可以将您的兴趣信息存储在 Chromium 中。例如，如果您访问某个网站购买马拉松跑鞋，系统可能会根据该网站推测您对跑马拉松感兴趣。之后，如果您访问其他网站报名参加比赛，相应网站就可以根据您的兴趣向您展示跑鞋广告。</translation>
 <translation id="8619360774459241877">正在启动 Chromium…</translation>

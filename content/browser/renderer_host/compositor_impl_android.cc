@@ -753,11 +753,6 @@ std::unique_ptr<ui::CompositorLock> CompositorImpl::GetCompositorLock(
                                          host_->DeferMainFrameUpdate());
 }
 
-void CompositorImpl::PostRequestPresentationTimeForNextFrame(
-    PresentationTimeCallback callback) {
-  RequestPresentationTimeForNextFrame(std::move(callback));
-}
-
 void CompositorImpl::DidSubmitCompositorFrame() {
   TRACE_EVENT0("compositor", "CompositorImpl::DidSubmitCompositorFrame");
   pending_frames_++;

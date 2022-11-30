@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/settings/ash/apps_section.h"
 
-#include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/arc_util.h"
 #include "ash/constants/ash_features.h"
@@ -39,6 +38,14 @@
 
 namespace chromeos {
 namespace settings {
+
+// TODO(https://crbug.com/1164001): remove after migrating to ash.
+namespace mojom {
+using ::ash::settings::mojom::SearchResultDefaultRank;
+using ::ash::settings::mojom::SearchResultIcon;
+using ::ash::settings::mojom::SearchResultType;
+}  // namespace mojom
+
 namespace {
 
 const std::vector<SearchConcept>& GetAppsSearchConcepts() {
@@ -416,10 +423,7 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       "showOsSettingsAppNotificationsRow",
       base::FeatureList::IsEnabled(
           chromeos::features::kOsSettingsAppNotificationsPage));
-  html_source->AddBoolean(
-      "showArcvmManageUsb",
-      arc::IsArcVmEnabled() &&
-          base::FeatureList::IsEnabled(arc::kUsbDeviceDefaultAttachToArcVm));
+  html_source->AddBoolean("showArcvmManageUsb", arc::IsArcVmEnabled());
 
   html_source->AddBoolean(
       "isAccessibilityOSSettingsVisibilityEnabled",
@@ -435,10 +439,8 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
 void AppsSection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(
-      std::make_unique<chromeos::settings::AndroidAppsHandler>(
-          profile(), app_service_proxy_));
-  if (arc::IsArcVmEnabled() &&
-      base::FeatureList::IsEnabled(arc::kUsbDeviceDefaultAttachToArcVm))
+      std::make_unique<AndroidAppsHandler>(profile(), app_service_proxy_));
+  if (arc::IsArcVmEnabled())
     web_ui->AddMessageHandler(std::make_unique<GuestOsHandler>(profile()));
 
   if (ShowPluginVm(profile(), *pref_service_)) {

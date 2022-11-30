@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -222,7 +222,7 @@ ProfilerGroup::~ProfilerGroup() {
 }
 
 void ProfilerGroup::WillBeDestroyed() {
-  while (!profilers_.IsEmpty()) {
+  while (!profilers_.empty()) {
     Profiler* profiler = profilers_.begin()->Get();
     DCHECK(profiler);
     CancelProfiler(profiler);
@@ -316,8 +316,8 @@ void ProfilerGroup::CancelProfilerAsync(ScriptState* script_state,
   // associated context, dispatch a task to cleanup context-independent isolate
   // resources (rather than use the context's task runner).
   ThreadScheduler::Current()->V8TaskRunner()->PostTask(
-      FROM_HERE, WTF::Bind(&ProfilerGroup::StopDetachedProfiler,
-                           WrapPersistent(this), profiler->ProfilerId()));
+      FROM_HERE, WTF::BindOnce(&ProfilerGroup::StopDetachedProfiler,
+                               WrapPersistent(this), profiler->ProfilerId()));
 }
 
 void ProfilerGroup::StopDetachedProfiler(String profiler_id) {

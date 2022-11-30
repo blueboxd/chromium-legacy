@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_shared_array_buffer.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -738,7 +739,7 @@ V8ScriptValueDeserializer::GetOrCreateBlobDataHandle(const String& uuid,
   // Creating a BlobDataHandle from an empty string will get this renderer
   // killed, so since we're parsing untrusted data (from possibly another
   // process/renderer) return null instead.
-  if (uuid.IsEmpty())
+  if (uuid.empty())
     return nullptr;
   return BlobDataHandle::Create(uuid, type, size);
 }
@@ -774,7 +775,7 @@ V8ScriptValueDeserializer::GetWasmModuleFromId(v8::Isolate* isolate,
     return v8::WasmModuleObject::FromCompiledModule(
         isolate, serialized_script_value_->WasmModules()[id]);
   }
-  CHECK(serialized_script_value_->WasmModules().IsEmpty());
+  CHECK(serialized_script_value_->WasmModules().empty());
   return v8::MaybeLocal<v8::WasmModuleObject>();
 }
 
@@ -801,8 +802,21 @@ V8ScriptValueDeserializer::GetSharedArrayBufferFromId(v8::Isolate* isolate,
   // If the id does not map to a valid index, it is expected that the
   // SerializedScriptValue emptied its shared ArrayBufferContents when crossing
   // a process boundary.
-  CHECK(shared_array_buffers_contents.IsEmpty());
+  CHECK(shared_array_buffers_contents.empty());
   return v8::MaybeLocal<v8::SharedArrayBuffer>();
+}
+
+const v8::SharedValueConveyor*
+V8ScriptValueDeserializer::GetSharedValueConveyor(v8::Isolate* isolate) {
+  if (auto* conveyor =
+          serialized_script_value_->MaybeGetSharedValueConveyor()) {
+    return conveyor;
+  }
+  ExceptionState exception_state(isolate, ExceptionState::kUnknownContext,
+                                 nullptr, nullptr);
+  exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
+                                    "Unable to deserialize shared JS value.");
+  return nullptr;
 }
 
 }  // namespace blink

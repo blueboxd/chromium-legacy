@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,22 +23,12 @@
 
 namespace blink {
 
-namespace {
-// TODO(crbug.com/1223353): Remove usage of
-// Thread::Current()->GetDeprecatedTaskRunner() when canvas capture no longer
-// requires a task runner when trying to capture a detached canvas.
-scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunnerFromFrame(
-    LocalFrame* frame) {
-  return frame ? frame->GetTaskRunner(TaskType::kInternalMediaRealTime)
-               : Thread::Current()->GetDeprecatedTaskRunner();
-}
-}  // namespace
-
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     LocalFrame* frame,
     SourceStoppedCallback stop_callback,
     std::unique_ptr<VideoCapturerSource> source)
-    : MediaStreamVideoSource(GetTaskRunnerFromFrame(frame)),
+    : MediaStreamVideoSource(std::move(main_task_runner)),
       frame_(frame),
       source_(std::move(source)) {
   media::VideoCaptureFormats preferred_formats = source_->GetPreferredFormats();
@@ -48,12 +38,13 @@ MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
 }
 
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     LocalFrame* frame,
     SourceStoppedCallback stop_callback,
     const MediaStreamDevice& device,
     const media::VideoCaptureParams& capture_params,
     DeviceCapturerFactoryCallback device_capturer_factory_callback)
-    : MediaStreamVideoSource(GetTaskRunnerFromFrame(frame)),
+    : MediaStreamVideoSource(std::move(main_task_runner)),
       frame_(frame),
       source_(device_capturer_factory_callback.Run(device.session_id())),
       capture_params_(capture_params),
@@ -231,7 +222,7 @@ uint32_t MediaStreamVideoCapturerSource::GetCropVersion() const {
 }
 
 base::WeakPtr<MediaStreamVideoSource>
-MediaStreamVideoCapturerSource::GetWeakPtr() const {
+MediaStreamVideoCapturerSource::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 

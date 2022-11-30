@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ LayoutNGTable::~LayoutNGTable() = default;
 
 wtf_size_t LayoutNGTable::ColumnCount() const {
   NOT_DESTROYED();
-  const NGLayoutResult* cached_layout_result = GetCachedLayoutResult();
+  const NGLayoutResult* cached_layout_result = GetCachedLayoutResult(nullptr);
   if (!cached_layout_result)
     return 0;
   return cached_layout_result->TableColumnCount();

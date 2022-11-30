@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,7 @@ class StreamCreator : public GarbageCollected<StreamCreator> {
     auto* script_state = scope.GetScriptState();
     stream_wrapper_ = MakeGarbageCollected<TCPReadableStreamWrapper>(
         script_state,
-        WTF::Bind(&StreamCreator::Close, WrapWeakPersistent(this)),
+        WTF::BindOnce(&StreamCreator::Close, WrapWeakPersistent(this)),
         std::move(data_pipe_consumer));
     return stream_wrapper_;
   }

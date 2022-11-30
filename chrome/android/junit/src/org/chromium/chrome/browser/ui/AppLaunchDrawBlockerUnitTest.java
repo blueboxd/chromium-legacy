@@ -48,7 +48,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -78,8 +77,6 @@ public class AppLaunchDrawBlockerUnitTest {
     public JniMocker mJniMocker = new JniMocker();
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
-    @Rule
-    public TestRule mCommandLineFlagsRule = CommandLineFlags.getTestRule();
 
     @Mock
     private ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
@@ -415,7 +412,8 @@ public class AppLaunchDrawBlockerUnitTest {
                 .addOnPreDrawListener(mOnPreDrawListenerArgumentCaptor.capture());
 
         // No longer need to block draw.
-        mAppLaunchDrawBlocker.setBlockDrawForIncognitoRestore(/*blockDraw=*/false);
+        SystemClock.setCurrentTimeMillis(INITIAL_TIME + 10);
+        mAppLaunchDrawBlocker.onIncognitoRestoreUnblockConditionsFired();
         mAppLaunchDrawBlocker.onActiveTabAvailable(true);
 
         for (OnPreDrawListener listener : mOnPreDrawListenerArgumentCaptor.getAllValues()) {
@@ -424,6 +422,9 @@ public class AppLaunchDrawBlockerUnitTest {
         }
 
         verify(mIncognitoRestoreAppLaunchDrawBlockerMock, times(1)).shouldBlockDraw();
+        assertEquals("Duration not recorded.", 1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "Android.AppLaunch.DurationDrawWasBlocked.OnIncognitoReauth", 10));
     }
 
     private void validateConstructorAndCaptureObservers() {

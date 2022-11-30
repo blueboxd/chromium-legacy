@@ -67,10 +67,6 @@
     ]
   },
   "builder_group": "tryserver.chromium.mac",
-<<<<<<< HEAD
-  "recipe": "chromium_trybot",
-=======
   "recipe": "chromium/compilator",
->>>>>>> 107.0.5304.87
   "xcode_build_version": "14a309"
 }

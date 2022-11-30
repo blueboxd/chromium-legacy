@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/login/screens/gaia_password_changed_screen.h"
 
+#include "base/check_op.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/ash/login/reauth_stats.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
@@ -66,7 +67,7 @@ void GaiaPasswordChangedScreen::OnUserAction(const base::Value::List& args) {
     // cryptohome.
     exit_callback_.Run(Result::RESYNC);
   } else if (action_id == kUserActionMigrateUserData) {
-    CHECK_EQ(args.size(), 2);
+    CHECK_EQ(args.size(), 2u);
     const std::string& old_password = args[1].GetString();
     MigrateUserData(old_password);
   } else {
@@ -85,7 +86,7 @@ void GaiaPasswordChangedScreen::MigrateUserData(
 
 void GaiaPasswordChangedScreen::CancelPasswordChangedFlow() {
   if (account_id_.is_valid()) {
-    RecordReauthReason(account_id_, ReauthReason::PASSWORD_UPDATE_SKIPPED);
+    RecordReauthReason(account_id_, ReauthReason::kPasswordUpdateSkipped);
   }
   SigninProfileHandler::Get()->ClearSigninProfile(
       base::BindOnce(&GaiaPasswordChangedScreen::OnCookiesCleared,

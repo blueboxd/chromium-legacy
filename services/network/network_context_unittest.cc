@@ -1360,7 +1360,7 @@ TEST_F(NetworkContextTest, CertReporting) {
         net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
     ASSERT_TRUE(result.verified_cert);
     net::SHA256HashValue hash = {{0x00, 0x01}};
-    result.public_key_hashes.push_back(net::HashValue(hash));
+    result.public_key_hashes.emplace_back(hash);
     result.is_issued_by_known_root = true;
     net::MockCertVerifier mock_verifier;
     mock_verifier.AddResultForCert(pkp_test_server.GetCertificate(), result,
@@ -4331,15 +4331,27 @@ TEST_F(NetworkContextTest,
   net::CookieAccessResultList included;
   net::CookieAccessResultList excluded;
 
-  EXPECT_TRUE(
-      network_context->url_request_context()
-          ->network_delegate()
-          ->AnnotateAndMoveUserBlockedCookies(*request, included, excluded));
+  EXPECT_TRUE(network_context->url_request_context()
+                  ->network_delegate()
+                  ->AnnotateAndMoveUserBlockedCookies(
+                      *request,
+                      net::FirstPartySetMetadata(
+                          net::SamePartyContext(
+                              net::SamePartyContext::Type::kCrossParty),
+                          /*frame_entry=*/nullptr,
+                          /*top_frame_entry=*/nullptr),
+                      included, excluded));
   SetDefaultContentSetting(CONTENT_SETTING_BLOCK, network_context.get());
-  EXPECT_FALSE(
-      network_context->url_request_context()
-          ->network_delegate()
-          ->AnnotateAndMoveUserBlockedCookies(*request, included, excluded));
+  EXPECT_FALSE(network_context->url_request_context()
+                   ->network_delegate()
+                   ->AnnotateAndMoveUserBlockedCookies(
+                       *request,
+                       net::FirstPartySetMetadata(
+                           net::SamePartyContext(
+                               net::SamePartyContext::Type::kCrossParty),
+                           /*frame_entry=*/nullptr,
+                           /*top_frame_entry=*/nullptr),
+                       included, excluded));
 }
 
 TEST_F(NetworkContextTest,
@@ -4354,10 +4366,16 @@ TEST_F(NetworkContextTest,
   net::CookieAccessResultList excluded;
 
   SetDefaultContentSetting(CONTENT_SETTING_ALLOW, network_context.get());
-  EXPECT_TRUE(
-      network_context->url_request_context()
-          ->network_delegate()
-          ->AnnotateAndMoveUserBlockedCookies(*request, included, excluded));
+  EXPECT_TRUE(network_context->url_request_context()
+                  ->network_delegate()
+                  ->AnnotateAndMoveUserBlockedCookies(
+                      *request,
+                      net::FirstPartySetMetadata(
+                          net::SamePartyContext(
+                              net::SamePartyContext::Type::kCrossParty),
+                          /*frame_entry=*/nullptr,
+                          /*top_frame_entry=*/nullptr),
+                      included, excluded));
 }
 
 // Gets notified by the EmbeddedTestServer on incoming connections being
@@ -4963,7 +4981,7 @@ TEST_F(NetworkContextTest, FactoryParams_DisableSecureDns) {
 TEST_F(NetworkContextTest, ExpectCT) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
-      {net::TransportSecurityState::kDynamicExpectCTFeature,
+      {net::kDynamicExpectCTFeature,
        net::features::kPartitionExpectCTStateByNetworkIsolationKey},
       {});
 
@@ -6602,8 +6620,10 @@ TEST_F(NetworkContextTest, AddHttpAuthCacheEntryWithNetworkIsolationKey) {
   net::SchemefulSite site = net::SchemefulSite(GURL("http://example.test/"));
   url::SchemeHostPort scheme_host_port =
       origin.GetTupleOrPrecursorTupleIfOpaque();
-  net::NetworkAnonymizationKey network_anonymization_key(site, site);
-
+  net::NetworkIsolationKey network_isolation_key(origin, origin);
+  net::NetworkAnonymizationKey network_anonymization_key =
+      net::NetworkAnonymizationKey::CreateFromNetworkIsolationKey(
+          network_isolation_key);
   net::AuthChallengeInfo challenge;
   challenge.is_proxy = false;
   challenge.challenger = scheme_host_port;

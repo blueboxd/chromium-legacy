@@ -164,7 +164,8 @@ TEST_F(AppMenuModelTest, Basics) {
   // so that IDC_LACROS_DATA_MIGRATION can get visible.
   base::test::ScopedFeatureList feature_list(
       ash::features::kLacrosProfileMigrationForAnyUser);
-  crosapi::browser_util::SetLacrosEnabledForTest(true);
+  auto set_lacros_enabled =
+      crosapi::browser_util::SetLacrosEnabledForTest(true);
 #endif
 
   FakeIconDelegate fake_delegate;
@@ -301,10 +302,10 @@ TEST_F(AppMenuModelTest, DisableSettingsItem) {
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   {
-    ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
-                          policy::policy_prefs::kSystemFeaturesDisableList);
-    base::Value* list = update.Get();
-    list->Append(static_cast<int>(policy::SystemFeature::kBrowserSettings));
+    ScopedListPrefUpdate update(
+        TestingBrowserProcess::GetGlobal()->local_state(),
+        policy::policy_prefs::kSystemFeaturesDisableList);
+    update->Append(static_cast<int>(policy::SystemFeature::kBrowserSettings));
   }
   EXPECT_FALSE(model.IsEnabledAt(options_index));
 
@@ -315,10 +316,10 @@ TEST_F(AppMenuModelTest, DisableSettingsItem) {
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   {
-    ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
-                          policy::policy_prefs::kSystemFeaturesDisableList);
-    base::Value* list = update.Get();
-    list->ClearList();
+    ScopedListPrefUpdate update(
+        TestingBrowserProcess::GetGlobal()->local_state(),
+        policy::policy_prefs::kSystemFeaturesDisableList);
+    update->clear();
   }
   EXPECT_TRUE(model.IsEnabledAt(options_index));
 

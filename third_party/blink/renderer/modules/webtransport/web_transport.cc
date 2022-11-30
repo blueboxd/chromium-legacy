@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -152,8 +152,8 @@ class WebTransport::DatagramUnderlyingSink final : public UnderlyingSinkBase {
     for (const auto& datagram : pending_datagrams_) {
       web_transport_->transport_remote_->SendDatagram(
           base::make_span(datagram),
-          WTF::Bind(&DatagramUnderlyingSink::OnDatagramProcessed,
-                    WrapWeakPersistent(this)));
+          WTF::BindOnce(&DatagramUnderlyingSink::OnDatagramProcessed,
+                        WrapWeakPersistent(this)));
     }
     pending_datagrams_.clear();
   }
@@ -180,8 +180,8 @@ class WebTransport::DatagramUnderlyingSink final : public UnderlyingSinkBase {
 
     if (web_transport_->transport_remote_.is_bound()) {
       web_transport_->transport_remote_->SendDatagram(
-          data, WTF::Bind(&DatagramUnderlyingSink::OnDatagramProcessed,
-                          WrapWeakPersistent(this)));
+          data, WTF::BindOnce(&DatagramUnderlyingSink::OnDatagramProcessed,
+                              WrapWeakPersistent(this)));
     } else {
       Vector<uint8_t> datagram;
       datagram.Append(data.data(), static_cast<wtf_size_t>(data.size()));
@@ -510,8 +510,8 @@ class WebTransport::StreamVendingUnderlyingSource final
       return ScriptPromise::CastUndefined(script_state);
     }
 
-    vendor_->RequestStream(WTF::Bind(&StreamVendingUnderlyingSource::Enqueue,
-                                     WrapWeakPersistent(this)));
+    vendor_->RequestStream(WTF::BindOnce(
+        &StreamVendingUnderlyingSource::Enqueue, WrapWeakPersistent(this)));
 
     return ScriptPromise::CastUndefined(script_state);
   }
@@ -556,9 +556,9 @@ class WebTransport::ReceiveStreamVendor final
       : script_state_(script_state), web_transport_(web_transport) {}
 
   void RequestStream(EnqueueCallback enqueue) override {
-    web_transport_->transport_remote_->AcceptUnidirectionalStream(
-        WTF::Bind(&ReceiveStreamVendor::OnAcceptUnidirectionalStreamResponse,
-                  WrapWeakPersistent(this), std::move(enqueue)));
+    web_transport_->transport_remote_->AcceptUnidirectionalStream(WTF::BindOnce(
+        &ReceiveStreamVendor::OnAcceptUnidirectionalStreamResponse,
+        WrapWeakPersistent(this), std::move(enqueue)));
   }
 
   void Trace(Visitor* visitor) const override {
@@ -579,7 +579,8 @@ class WebTransport::ReceiveStreamVendor final
     ExceptionState exception_state(
         isolate, ExceptionState::kConstructionContext, "ReceiveStream");
     v8::MicrotasksScope microtasks_scope(
-        isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+        isolate, ToMicrotaskQueue(script_state_),
+        v8::MicrotasksScope::kDoNotRunMicrotasks);
     receive_stream->Init(exception_state);
 
     if (exception_state.HadException()) {
@@ -620,7 +621,7 @@ class WebTransport::BidirectionalStreamVendor final
       : script_state_(script_state), web_transport_(web_transport) {}
 
   void RequestStream(EnqueueCallback enqueue) override {
-    web_transport_->transport_remote_->AcceptBidirectionalStream(WTF::Bind(
+    web_transport_->transport_remote_->AcceptBidirectionalStream(WTF::BindOnce(
         &BidirectionalStreamVendor::OnAcceptBidirectionalStreamResponse,
         WrapWeakPersistent(this), std::move(enqueue)));
   }
@@ -646,7 +647,8 @@ class WebTransport::BidirectionalStreamVendor final
     ExceptionState exception_state(
         isolate, ExceptionState::kConstructionContext, "BidirectionalStream");
     v8::MicrotasksScope microtasks_scope(
-        isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+        isolate, ToMicrotaskQueue(script_state_),
+        v8::MicrotasksScope::kDoNotRunMicrotasks);
     bidirectional_stream->Init(exception_state);
     if (exception_state.HadException()) {
       // Just throw away the stream.
@@ -725,9 +727,9 @@ ScriptPromise WebTransport::createUnidirectionalStream(
   create_stream_resolvers_.insert(resolver);
   transport_remote_->CreateStream(
       std::move(data_pipe_consumer), mojo::ScopedDataPipeProducerHandle(),
-      WTF::Bind(&WebTransport::OnCreateSendStreamResponse,
-                WrapWeakPersistent(this), WrapWeakPersistent(resolver),
-                std::move(data_pipe_producer)));
+      WTF::BindOnce(&WebTransport::OnCreateSendStreamResponse,
+                    WrapWeakPersistent(this), WrapWeakPersistent(resolver),
+                    std::move(data_pipe_producer)));
 
   return resolver->Promise();
 }
@@ -770,9 +772,10 @@ ScriptPromise WebTransport::createBidirectionalStream(
   create_stream_resolvers_.insert(resolver);
   transport_remote_->CreateStream(
       std::move(outgoing_consumer), std::move(incoming_producer),
-      WTF::Bind(&WebTransport::OnCreateBidirectionalStreamResponse,
-                WrapWeakPersistent(this), WrapWeakPersistent(resolver),
-                std::move(outgoing_producer), std::move(incoming_consumer)));
+      WTF::BindOnce(&WebTransport::OnCreateBidirectionalStreamResponse,
+                    WrapWeakPersistent(this), WrapWeakPersistent(resolver),
+                    std::move(outgoing_producer),
+                    std::move(incoming_consumer)));
 
   return resolver->Promise();
 }
@@ -868,8 +871,8 @@ void WebTransport::OnConnectionEstablished(
       GetExecutionContext()->GetTaskRunner(TaskType::kNetworking);
 
   client_receiver_.Bind(std::move(client_receiver), task_runner);
-  client_receiver_.set_disconnect_handler(
-      WTF::Bind(&WebTransport::OnConnectionError, WrapWeakPersistent(this)));
+  client_receiver_.set_disconnect_handler(WTF::BindOnce(
+      &WebTransport::OnConnectionError, WrapWeakPersistent(this)));
 
   DCHECK(!transport_remote_.is_bound());
   transport_remote_.Bind(std::move(web_transport), task_runner);
@@ -1164,7 +1167,7 @@ void WebTransport::Init(const String& url,
               hash->algorithm(), value_builder.ToString()));
     }
   }
-  if (!fingerprints.IsEmpty()) {
+  if (!fingerprints.empty()) {
     execution_context->CountUse(
         WebFeature::kWebTransportServerCertificateHashes);
   }
@@ -1196,8 +1199,8 @@ void WebTransport::Init(const String& url,
         handshake_client_receiver_.BindNewPipeAndPassRemote(
             execution_context->GetTaskRunner(TaskType::kNetworking)));
 
-    handshake_client_receiver_.set_disconnect_handler(
-        WTF::Bind(&WebTransport::OnConnectionError, WrapWeakPersistent(this)));
+    handshake_client_receiver_.set_disconnect_handler(WTF::BindOnce(
+        &WebTransport::OnConnectionError, WrapWeakPersistent(this)));
   }
 
   probe::WebTransportCreated(execution_context, inspector_transport_id_, url_);
@@ -1357,7 +1360,8 @@ void WebTransport::OnCreateSendStreamResponse(
   ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
                                  "SendStream");
   v8::MicrotasksScope microtasks_scope(
-      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+      isolate, ToMicrotaskQueue(script_state_),
+      v8::MicrotasksScope::kDoNotRunMicrotasks);
   send_stream->Init(exception_state);
   if (exception_state.HadException()) {
     resolver->Reject(exception_state.GetException());
@@ -1405,7 +1409,8 @@ void WebTransport::OnCreateBidirectionalStreamResponse(
   ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
                                  "BidirectionalStream");
   v8::MicrotasksScope microtasks_scope(
-      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+      isolate, ToMicrotaskQueue(script_state_),
+      v8::MicrotasksScope::kDoNotRunMicrotasks);
   bidirectional_stream->Init(exception_state);
   if (exception_state.HadException()) {
     resolver->Reject(exception_state.GetException());

@@ -27,4 +27,27 @@ bool FirstPartySetsContextConfig::operator==(
   return customizations_ == other.customizations_;
 }
 
+absl::optional<absl::optional<FirstPartySetEntry>>
+FirstPartySetsContextConfig::FindOverride(const SchemefulSite& site) const {
+  if (const auto it = customizations_.find(site); it != customizations_.end()) {
+    return it->second;
+  }
+  return absl::nullopt;
+}
+
+bool FirstPartySetsContextConfig::Contains(const SchemefulSite& site) const {
+  return FindOverride(site).has_value();
+}
+
+bool FirstPartySetsContextConfig::ForEachCustomizationEntry(
+    base::FunctionRef<bool(const SchemefulSite&,
+                           const absl::optional<FirstPartySetEntry>&)> f)
+    const {
+  for (const auto& [site, maybe_entry] : customizations_) {
+    if (!f(site, maybe_entry))
+      return false;
+  }
+  return true;
+}
+
 }  // namespace net

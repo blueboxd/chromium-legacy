@@ -1,11 +1,11 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/presentation/presentation_availability_state.h"
 
+#include "base/ranges/algorithm.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_availability_observer.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
 
 namespace blink {
 
@@ -21,10 +21,7 @@ void PresentationAvailabilityState::RequestAvailability(
   auto screen_availability = GetScreenAvailability(urls);
   // Reject Promise if screen availability is unsupported for all URLs.
   if (screen_availability == mojom::blink::ScreenAvailability::DISABLED) {
-    Microtask::EnqueueMicrotask(WTF::Bind(
-        &PresentationAvailabilityCallbacks::RejectAvailabilityNotSupported,
-        WrapPersistent(callback)));
-    // Do not listen to urls if we reject the promise.
+    callback->RejectAvailabilityNotSupported();
     return;
   }
 
@@ -35,9 +32,8 @@ void PresentationAvailabilityState::RequestAvailability(
   }
 
   if (screen_availability != mojom::blink::ScreenAvailability::UNKNOWN) {
-    Microtask::EnqueueMicrotask(WTF::Bind(
-        &PresentationAvailabilityCallbacks::Resolve, WrapPersistent(callback),
-        screen_availability == mojom::blink::ScreenAvailability::AVAILABLE));
+    callback->Resolve(screen_availability ==
+                      mojom::blink::ScreenAvailability::AVAILABLE);
   } else {
     listener->availability_callbacks.push_back(callback);
   }
@@ -153,8 +149,8 @@ void PresentationAvailabilityState::MaybeStopListeningToURL(const KURL& url) {
       continue;
 
     // URL is still observed by some availability object.
-    if (!listener->availability_callbacks.IsEmpty() ||
-        !listener->availability_observers.IsEmpty()) {
+    if (!listener->availability_callbacks.empty() ||
+        !listener->availability_observers.empty()) {
       return;
     }
   }
@@ -213,17 +209,16 @@ PresentationAvailabilityState::GetScreenAvailability(
 PresentationAvailabilityState::AvailabilityListener*
 PresentationAvailabilityState::GetAvailabilityListener(
     const Vector<KURL>& urls) {
-  auto* listener_it = std::find_if(
-      availability_listeners_.begin(), availability_listeners_.end(),
-      [&urls](const auto& listener) { return listener->urls == urls; });
+  auto* listener_it = base::ranges::find(availability_listeners_, urls,
+                                         &AvailabilityListener::urls);
   return listener_it == availability_listeners_.end() ? nullptr : *listener_it;
 }
 
 void PresentationAvailabilityState::TryRemoveAvailabilityListener(
     AvailabilityListener* listener) {
   // URL is still observed by some availability object.
-  if (!listener->availability_callbacks.IsEmpty() ||
-      !listener->availability_observers.IsEmpty()) {
+  if (!listener->availability_callbacks.empty() ||
+      !listener->availability_observers.empty()) {
     return;
   }
 
@@ -235,12 +230,8 @@ void PresentationAvailabilityState::TryRemoveAvailabilityListener(
 
 PresentationAvailabilityState::ListeningStatus*
 PresentationAvailabilityState::GetListeningStatus(const KURL& url) const {
-  auto* status_it =
-      std::find_if(availability_listening_status_.begin(),
-                   availability_listening_status_.end(),
-                   [&url](const std::unique_ptr<ListeningStatus>& status) {
-                     return status->url == url;
-                   });
+  auto* status_it = base::ranges::find(availability_listening_status_, url,
+                                       &ListeningStatus::url);
   return status_it == availability_listening_status_.end() ? nullptr
                                                            : status_it->get();
 }

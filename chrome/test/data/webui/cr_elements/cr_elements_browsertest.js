@@ -47,20 +47,6 @@ TEST_F('CrElementsButtonTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#if BUILDFLAG(IS_CHROMEOS_ASH)');
-var CrElementsContainerShadowBehaviorTest =
-    class extends CrElementsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://webui-test/test_loader.html?module=cr_elements/cr_container_shadow_behavior_test.js';
-  }
-};
-
-TEST_F('CrElementsContainerShadowBehaviorTest', 'All', function() {
-  mocha.run();
-});
-GEN('#endif');
-
 var CrElementsContainerShadowMixinTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
@@ -112,19 +98,6 @@ TEST_F('CrElementsExpandButtonTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#if BUILDFLAG(IS_CHROMEOS_ASH)');
-var CrElementsFindShortcutBehaviorTest = class extends CrElementsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://webui-test/test_loader.html?module=cr_elements/find_shortcut_behavior_test.js';
-  }
-};
-
-TEST_F('CrElementsFindShortcutBehaviorTest', 'All', function() {
-  mocha.run();
-});
-GEN('#endif');
-
 var CrElementsFindShortcutMixinTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
@@ -159,14 +132,14 @@ TEST_F('CrElementsFingerprintProgressArcTest', 'MAYBE_Fingerprint', function() {
   mocha.run();
 });
 
-var CrElementsI18nBehaviorTest = class extends CrElementsBrowserTest {
+var CrElementsI18nMixinTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://webui-test/test_loader.html?module=cr_elements/i18n_behavior_test.js';
+    return 'chrome://webui-test/test_loader.html?module=cr_elements/i18n_mixin_test.js';
   }
 };
 
-TEST_F('CrElementsI18nBehaviorTest', 'All', function() {
+TEST_F('CrElementsI18nMixinTest', 'All', function() {
   mocha.run();
 });
 
@@ -203,6 +176,18 @@ TEST_F('CrElementsLinkRowTest', 'All', function() {
   mocha.run();
 });
 
+var CrElementsListPropertyUpdateMixinTest =
+    class extends CrElementsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://webui-test/test_loader.html?module=cr_elements/list_property_update_mixin_tests.js';
+  }
+};
+
+TEST_F('CrElementsListPropertyUpdateMixinTest', 'All', function() {
+  mocha.run();
+});
+
 var CrElementsRadioButtonTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
@@ -236,19 +221,6 @@ var CrElementsRadioGroupTest = class extends CrElementsBrowserTest {
 TEST_F('CrElementsRadioGroupTest', 'All', function() {
   mocha.run();
 });
-
-GEN('#if BUILDFLAG(IS_CHROMEOS_ASH)');
-var CrElementsScrollableBehaviorTest = class extends CrElementsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://webui-test/test_loader.html?module=cr_elements/cr_scrollable_behavior_tests.js';
-  }
-};
-
-TEST_F('CrElementsScrollableBehaviorTest', 'All', function() {
-  mocha.run();
-});
-GEN('#endif');
 
 var CrElementsScrollableMixinTest = class extends CrElementsBrowserTest {
   /** @override */
@@ -363,20 +335,6 @@ TEST_F('CrElementsPolicyPrefIndicatorTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#if BUILDFLAG(IS_CHROMEOS_ASH)');
-var CrElementsPolicyIndicatorBehaviorTest =
-    class extends CrElementsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://webui-test/test_loader.html?module=cr_elements/cr_policy_indicator_behavior_tests.js';
-  }
-};
-
-TEST_F('CrElementsPolicyIndicatorBehaviorTest', 'All', function() {
-  mocha.run();
-});
-GEN('#endif');
-
 var CrElementsPolicyIndicatorMixinTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
@@ -434,5 +392,16 @@ var CrElementsTreeTest = class extends CrElementsBrowserTest {
 };
 
 TEST_F('CrElementsTreeTest', 'All', function() {
+  mocha.run();
+});
+
+var CrElementsWebUIListenerMixinTest = class extends CrElementsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://webui-test/test_loader.html?module=cr_elements/web_ui_listener_mixin_test.js';
+  }
+};
+
+TEST_F('CrElementsWebUIListenerMixinTest', 'All', function() {
   mocha.run();
 });

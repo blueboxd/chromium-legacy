@@ -345,9 +345,6 @@ class BASE_EXPORT GSL_OWNER Value {
   // Returns a value for both `Value::Type::DOUBLE` and `Value::Type::INT`,
   // converting the latter to a double.
   double GetDouble() const;
-  // Callers that want to transfer ownership can use std::move() in conjunction
-  // with one of the mutable variants below, e.g.:
-  //   std::string taken_string = std::move(value.GetString());
   const std::string& GetString() const;
   std::string& GetString();
   const BlobStorage& GetBlob() const;
@@ -361,6 +358,7 @@ class BASE_EXPORT GSL_OWNER Value {
   // transferring the ownership `*this` is in a valid, but unspecified, state.
   // Prefer over `std::move(value.Get...())` so clang-tidy can warn about
   // potential use-after-move mistakes.
+  std::string TakeString() &&;
   Dict TakeDict() &&;
   List TakeList() &&;
 
@@ -866,7 +864,6 @@ class BASE_EXPORT GSL_OWNER Value {
   //
   // DEPRECATED: Use `Value::Dict::FindBoolByDottedPath()`,
   // `Value::Dict::FindIntByDottedPath()`, et cetera.
-  Value* FindPathOfType(StringPiece path, Type type);
   const Value* FindPathOfType(StringPiece path, Type type) const;
 
   // Convenience accessors used when the expected type of a value is known.
@@ -959,19 +956,6 @@ class BASE_EXPORT GSL_OWNER Value {
   //
   // DEPRECATED: Use `Value::Dict::RemoveByDottedPath()`.
   bool RemovePath(StringPiece path);
-
-  // Tries to extract a Value at the given path.
-  //
-  // If the current value is not a dictionary or any path component does not
-  // exist, this operation fails, leaves underlying Values untouched and returns
-  // nullopt. In case intermediate dictionaries become empty as a result of this
-  // path removal, they will be removed as well. Returns the extracted value on
-  // success.
-  // Note: If there is only one component in the path, use `ExtractKey()`
-  // instead.
-  //
-  // DEPRECATED: Use `Value::Dict::ExtractByDottedPath()`.
-  absl::optional<Value> ExtractPath(StringPiece path);
 
   using dict_iterator_proxy = detail::dict_iterator_proxy;
   using const_dict_iterator_proxy = detail::const_dict_iterator_proxy;
@@ -1425,11 +1409,6 @@ class BASE_EXPORT ListValue : public Value {
   // Value.
   void Append(base::Value::Dict in_dict);
   void Append(base::Value::List in_list);
-
-  // Swaps contents with the `other` list.
-  //
-  // DEPRECATED: prefer `base::Value::List` + `std::swap()`.
-  void Swap(ListValue* other);
 
   // Iteration: Use a range-based for loop over `base::Value::List` directly
   // instead.

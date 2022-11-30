@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,7 @@ void DeferredShapingController::RegisterDeferred(Element& element) {
 }
 
 bool DeferredShapingController::IsRegisteredDeferred(Element& element) const {
-  return !deferred_elements_.IsEmpty() && deferred_elements_.Contains(&element);
+  return !deferred_elements_.empty() && deferred_elements_.Contains(&element);
 }
 
 void DeferredShapingController::UnregisterDeferred(Element& element) {
@@ -62,8 +62,8 @@ void DeferredShapingController::PerformPostLayoutTask() {
   UseCounter::Count(*document_, WebFeature::kDeferredShapingWorked);
   reshaping_task_handle_ = PostDelayedCancellableTask(
       *document_->GetTaskRunner(TaskType::kInternalDefault), FROM_HERE,
-      WTF::Bind(&DeferredShapingController::ReshapeAllDeferred,
-                WrapWeakPersistent(this), ReshapeReason::kLastResort),
+      WTF::BindOnce(&DeferredShapingController::ReshapeAllDeferred,
+                    WrapWeakPersistent(this), ReshapeReason::kLastResort),
       kMaximumDeferDuration);
 }
 
@@ -72,19 +72,19 @@ void DeferredShapingController::OnFirstContentfulPaint() {
     return;
   if (!document_->HasFinishedParsing())
     return;
-  if (!default_allow_deferred_shaping_ && deferred_elements_.IsEmpty())
+  if (!default_allow_deferred_shaping_ && deferred_elements_.empty())
     return;
   default_allow_deferred_shaping_ = false;
   // Cancels the last resort task.
   reshaping_task_handle_.Cancel();
   reshaping_task_handle_ = PostCancellableTask(
       *document_->GetTaskRunner(TaskType::kInternalDefault), FROM_HERE,
-      WTF::Bind(&DeferredShapingController::ReshapeAllDeferred,
-                WrapWeakPersistent(this), ReshapeReason::kFcp));
+      WTF::BindOnce(&DeferredShapingController::ReshapeAllDeferred,
+                    WrapWeakPersistent(this), ReshapeReason::kFcp));
 }
 
 size_t DeferredShapingController::ReshapeAllDeferredInternal() {
-  if (deferred_elements_.IsEmpty())
+  if (deferred_elements_.empty())
     return 0;
   size_t count = 0;
   for (auto& element : deferred_elements_) {

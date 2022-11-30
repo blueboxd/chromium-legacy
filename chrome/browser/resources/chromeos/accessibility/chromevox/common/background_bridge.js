@@ -11,6 +11,7 @@ import {constants} from '../../common/constants.js';
 
 import {BridgeConstants} from './bridge_constants.js';
 import {BridgeHelper} from './bridge_helper.js';
+import {Command} from './command_store.js';
 import {BaseLog, SerializableLog} from './log_types.js';
 import {PanelTabMenuItemData} from './panel_menu_data.js';
 
@@ -49,18 +50,6 @@ BackgroundBridge.BrailleCommandHandler = {
     return BridgeHelper.sendMessage(
         BridgeConstants.BrailleCommandHandler.TARGET,
         BridgeConstants.BrailleCommandHandler.Action.SET_ENABLED, enabled);
-  },
-};
-
-BackgroundBridge.ChromeVoxBackground = {
-  /**
-   * Gets the voice currently used by ChromeVox when calling tts.
-   * @return {!Promise<string>}
-   */
-  async getCurrentVoice() {
-    return BridgeHelper.sendMessage(
-        BridgeConstants.ChromeVoxBackground.TARGET,
-        BridgeConstants.ChromeVoxBackground.Action.GET_CURRENT_VOICE);
   },
 };
 
@@ -127,7 +116,7 @@ BackgroundBridge.ChromeVoxState = {
 BackgroundBridge.CommandHandler = {
   /**
    * Handles ChromeVox commands.
-   * @param {string} command
+   * @param {!Command} command
    * @return {!Promise<boolean>} True if the command should propagate.
    */
   async onCommand(command) {
@@ -339,6 +328,19 @@ BackgroundBridge.PanelBackground = {
         BridgeConstants.PanelBackground.Action.WAIT_FOR_PANEL_COLLAPSE);
   },
 };
+
+BackgroundBridge.TtsBackground = {
+  /**
+   * Gets the voice currently used by ChromeVox when calling tts.
+   * @return {!Promise<string>}
+   */
+  async getCurrentVoice() {
+    return BridgeHelper.sendMessage(
+        BridgeConstants.TtsBackground.TARGET,
+        BridgeConstants.TtsBackground.Action.GET_CURRENT_VOICE);
+  },
+};
+
 
 BackgroundBridge.UserActionMonitor = {
   /**

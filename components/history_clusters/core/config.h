@@ -101,6 +101,23 @@ struct Config {
   // every hour.
   int persist_clusters_in_history_db_period_minutes = 60;
 
+  // Hard cap on max clusters to fetch after exhausting unclustered visits and
+  // fetching persisted clusters for the get most recent flow. Doesn't affect
+  // the update flow, which uses day boundaries as well as
+  // `max_visits_to_cluster` to keep the number of clusters and visits
+  // reasonable.
+  size_t max_persisted_clusters_to_fetch = 100;
+
+  // Like `max_persisted_clusters_to_fetch`, but an additional soft cap on max
+  // visits in case there are a few very large clusters in the same batch.
+  size_t max_persisted_cluster_visits_to_fetch_soft_cap = 1000;
+
+  // The number of days of persisted clusters to recluster when updating
+  // clusters. E.g., if set to 2, and clusters up to 1/10 have been persisted,
+  // then the next request will include visits from clusters from 1/8 and 1/9,
+  // and unclustered visits from 1/10.
+  size_t persist_clusters_recluster_window_days = 2;
+
   // The `kOmniboxAction` feature and child params.
 
   // Enables the Journeys Omnibox Action chip. `kJourneys` must also be enabled
@@ -169,6 +186,18 @@ struct Config {
   // `omnibox_history_cluster_provider` is disabled.
   bool omnibox_history_cluster_provider_shortcuts = false;
 
+  // If `omnibox_history_cluster_provider_on_navigation_intents` is false, this
+  // threshold helps determine when the user is intending to perform a
+  // navigation. Meaningless if either `omnibox_history_cluster_provider` is
+  // disabled or `omnibox_history_cluster_provider_on_navigation_intents` is
+  // true
+  int omnibox_history_cluster_provider_navigation_intent_score_threshold = 1300;
+
+  // If enabled, allows the suggestion row to appear when it's likely the user
+  // is intending to perform a navigation. Meaningless if
+  // `omnibox_history_cluster_provider` is disabled.
+  bool omnibox_history_cluster_provider_on_navigation_intents = false;
+
   // The `kOnDeviceClusteringKeywordFiltering` feature and child params.
 
   // If enabled, adds the keywords of aliases for detected entity names to a
@@ -202,36 +231,6 @@ struct Config {
   // The minimum threshold for whether an entity is considered relevant to the
   // visit.
   int entity_relevance_threshold = 60;
-
-  // The minimum threshold for whether a category is considered relevant to the
-  // visit.
-  int category_relevance_threshold = 36;  // 60 * 0.6 = 36.
-
-  // Returns whether content clustering is enabled and
-  // should be performed by the clustering backend.
-  bool content_clustering_enabled = false;
-
-  // Returns the weight that should be placed on entity similarity for
-  // determining if two clusters are similar enough to be combined into one.
-  float content_clustering_entity_similarity_weight = 1.0;
-
-  // Returns the weight that should be placed on category similarity for
-  // determining if two clusters are similar enough to be combined into one.
-  float content_clustering_category_similarity_weight = 1.0;
-
-  // Returns the similarity threshold, between 0 and 1, used to determine if
-  // two clusters are similar enough to be combined into
-  // a single cluster.
-  float content_clustering_similarity_threshold = 0.2;
-
-  // Returns the threshold for which we should mark a cluster as being able to
-  // show on prominent UI surfaces.
-  float content_visibility_threshold = 0.7;
-
-  // Whether to show all clusters on prominent UI surfaces unconditionally. This
-  // should only be set to true via command line.
-  bool should_show_all_clusters_unconditionally_on_prominent_ui_surfaces =
-      false;
 
   // Whether to hide single-visit clusters on prominent UI surfaces.
   bool should_hide_single_visit_clusters_on_prominent_ui_surfaces = true;
@@ -273,16 +272,53 @@ struct Config {
   // within a cluster. Will always be greater than or equal to 0.
   float has_page_title_ranking_weight = 2.0;
 
+  // Whether to determine whether to show/hide clusters on prominent UI surfaces
+  // based on categories annotated for a visit.
+  bool should_use_categories_to_filter_on_prominent_ui_surfaces = false;
+
+  // The category IDs used for filtering. These should represent categories that
+  // are repesentatitive of Journeys that we think the user is likely to want to
+  // re-engage with.
+  base::flat_set<std::string> categories_for_filtering;
+
+  // The `kOnDeviceClusteringContentClustering` feature and child params.
+
+  // Returns whether content clustering is enabled and
+  // should be performed by the clustering backend.
+  bool content_clustering_enabled = false;
+
+  // Returns the weight that should be placed on entity similarity for
+  // determining if two clusters are similar enough to be combined into one.
+  float content_clustering_entity_similarity_weight = 1.0;
+
+  // Returns the similarity threshold, between 0 and 1, used to determine if
+  // two clusters are similar enough to be combined into
+  // a single cluster.
+  float content_clustering_similarity_threshold = 0.2;
+
+  // Returns the threshold for which we should mark a cluster as being able to
+  // show on prominent UI surfaces.
+  float content_visibility_threshold = 0.7;
+
   // Returns true if content clustering should use the intersection similarity
-  // score. Note, if this is used, the threshold used for clustering by content
-  // score should be < .5 (see ContentClusteringSimilarityThreshold above) or
-  // the weightings between entity and category content similarity scores should
-  // be adjusted.
-  bool content_cluster_on_intersection_similarity = true;
+  // score.
+  bool content_cluster_on_intersection_similarity = false;
 
   // Returns the threshold, in terms of the number of overlapping keywords, to
   // use when clustering based on intersection score.
   int cluster_interaction_threshold = 2;
+
+  // Returns true if content clustering should use the cosine similarity
+  // algorithm.
+  bool content_cluster_using_cosine_similarity = false;
+
+  // Returns whether we should exclude entities that do not have associated
+  // collections from content clustering.
+  bool exclude_entities_that_have_no_collections_from_content_clustering =
+      false;
+
+  // The set of collections to block from being content clustered.
+  base::flat_set<std::string> collections_to_block_from_content_clustering;
 
   // The `kUseEngagementScoreCache` feature and child params.
 
@@ -321,12 +357,25 @@ struct Config {
   // True if the task runner should use trait CONTINUE_ON_SHUTDOWN.
   bool use_continue_on_shutdown = true;
 
+  // Whether to show all clusters on prominent UI surfaces unconditionally. This
+  // should only be set to true via command line.
+  bool should_show_all_clusters_unconditionally_on_prominent_ui_surfaces =
+      false;
+
   // Order consistently with features.h.
 
   Config();
   Config(const Config& other);
   ~Config();
 };
+
+// Returns the set of collections that should not be included for content
+// clustering.
+base::flat_set<std::string> JourneysCollectionContentClusteringBlocklist();
+
+// Returns the set of categories that should be used to filter for whether a
+// user is likely to re-engage with a cluster.
+base::flat_set<std::string> JourneysCategoryFilteringAllowlist();
 
 // Returns the set of mids that should be blocked from being used by the
 // clustering backend, particularly for potential keywords used for omnibox

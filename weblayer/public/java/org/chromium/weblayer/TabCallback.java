@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 /**
  * Informed of interesting events that happen during the lifetime of a Tab.
  */
-public abstract class TabCallback {
+abstract class TabCallback {
     /**
      * The Uri that should be displayed in the location-bar has updated.
      *

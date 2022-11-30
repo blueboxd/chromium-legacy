@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,6 +75,9 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
     kDeferCommits = 1 << 1,
     // if set, we have not painted a main frame from the current navigation yet
     kHasNotPainted = 1 << 2,
+    // if set, suppress events because pipeline has paused rendering (both main
+    // and compositor thread driven updates).
+    kRenderingPaused = 1 << 3,
   };
 
  public:
@@ -166,6 +169,9 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
 
   // Called to inform us when the system starts or stops deferring commits.
   void OnDeferCommitsChanged(bool defer_status, cc::PaintHoldingReason reason);
+
+  // Called to inform us when the system pauses or resumes rendering.
+  void OnPauseRenderingChanged(bool);
 
   // Allow tests, headless etc. to have input events processed before the
   // compositor is ready to commit frames.

@@ -312,6 +312,8 @@ extern const char kHatsCameraAppDeviceIsSelected[];
 extern const char kHatsCameraAppSurveyCycleEndTs[];
 extern const char kHatsPhotosExperienceCycleEndTs[];
 extern const char kHatsPhotosExperienceIsSelected[];
+extern const char kHatsGeneralCameraIsSelected[];
+extern const char kHatsGeneralCameraSurveyCycleEndTs[];
 extern const char kEolStatus[];
 extern const char kEndOfLifeDate[];
 extern const char kEolNotificationDismissed[];
@@ -375,6 +377,8 @@ extern const char kEduCoexistenceArcMigrationCompleted[];
 extern const char kSharedStorage[];
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(IS_CHROMEOS)
+extern const char kDeskAPIThirdPartyAccessEnabled[];
+extern const char kDeskAPIThirdPartyAllowlist[];
 extern const char kForceMaximizeOnFirstRun[];
 extern const char kInsightsExtensionEnabled[];
 extern const char kOOMKillsDailyCount[];
@@ -424,7 +428,7 @@ extern const char kShowUpdatePromotionInfoBar[];
 extern const char kUseCustomChromeFrame[];
 #endif
 #if BUILDFLAG(ENABLE_PLUGINS)
-extern const char kContentSettingsPluginWhitelist[];
+extern const char kContentSettingsPluginAllowlist[];
 #endif
 extern const char kPartitionDefaultZoomLevel[];
 extern const char kPartitionPerHostZoomLevels[];
@@ -620,8 +624,13 @@ extern const char kSaveFileDefaultDirectory[];
 extern const char kSaveFileType[];
 
 extern const char kAllowFileSelectionDialogs[];
+
 extern const char kDefaultTasksByMimeType[];
 extern const char kDefaultTasksBySuffix[];
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+extern const char kDefaultHandlersForFileExtensions[];
+#endif
 
 extern const char kSharedClipboardEnabled[];
 
@@ -670,9 +679,6 @@ extern const char kNtpModulesFirstShownTime[];
 extern const char kNtpModulesFreVisible[];
 extern const char kNtpPromoBlocklist[];
 extern const char kNtpPromoVisible[];
-extern const char kNtpSearchSuggestionsBlocklist[];
-extern const char kNtpSearchSuggestionsImpressions[];
-extern const char kNtpSearchSuggestionsOptOut[];
 #endif  // BUILDFLAG(IS_ANDROID)
 extern const char kNtpShownPage[];
 
@@ -858,6 +864,7 @@ extern const char kNtlmV2Enabled[];
 
 #if BUILDFLAG(IS_CHROMEOS)
 extern const char kKerberosEnabled[];
+extern const char kIsolatedWebAppInstallForceList[];
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 extern const char kCertRevocationCheckingEnabled[];
@@ -1108,8 +1115,6 @@ extern const char kUnsafelyTreatInsecureOriginAsSecure[];
 extern const char kIsolateOrigins[];
 extern const char kSitePerProcess[];
 
-extern const char kDisplayCapturePermissionsPolicyEnabled[];
-
 #if !BUILDFLAG(IS_ANDROID)
 extern const char kSharedArrayBufferUnrestrictedAccessAllowed[];
 extern const char kAutoplayAllowed[];
@@ -1270,6 +1275,10 @@ extern const char kShouldShowPriceTrackFUEBubble[];
 #endif
 
 extern const char kStrictMimetypeCheckForWorkerScriptsEnabled[];
+
+#if BUILDFLAG(IS_ANDROID)
+extern const char kVirtualKeyboardResizesLayoutByDefault[];
+#endif
 
 }  // namespace prefs
 

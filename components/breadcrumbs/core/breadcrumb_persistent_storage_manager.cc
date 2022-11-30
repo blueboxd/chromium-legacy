@@ -20,7 +20,6 @@
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "components/breadcrumbs/core/breadcrumb_manager.h"
-#include "components/breadcrumbs/core/breadcrumb_manager_keyed_service.h"
 #include "components/breadcrumbs/core/breadcrumb_persistent_storage_util.h"
 
 namespace breadcrumbs {
@@ -37,7 +36,9 @@ constexpr auto kMinDelayBetweenWrites = base::Milliseconds(250);
 void DoWriteEventsToFile(const base::FilePath& file_path,
                          const size_t position,
                          const std::string& events,
-                         const bool append) {
+                         const bool append,
+                         const size_t write_counter,
+                         const size_t write_counter_at_last_full_rewrite) {
   const base::MemoryMappedFile::Region region = {0, kPersistedFilesizeInBytes};
   base::MemoryMappedFile file;
   int flags = base::File::FLAG_READ | base::File::FLAG_WRITE;
@@ -53,16 +54,20 @@ void DoWriteEventsToFile(const base::FilePath& file_path,
   if (file_valid) {
     const size_t remaining_length = kPersistedFilesizeInBytes - position;
 
-#if BUILDFLAG(IS_CHROMEOS)
-    // TODO(crbug.com/1327267): Remove this once crashes in this function on
-    // CrOS are understood. The first and last values are delimiters to aid in
-    // finding this array on the stack, as CrOS crashes are hard to debug.
-    size_t debug_data[] = {
-        0x1234beef,      reinterpret_cast<size_t>(file.data()),
-        file.length(),   position,
-        events.length(), 0x5678beef};
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
+    // TODO(crbug.com/1327267): Remove this once crashes in this function are
+    // understood. The first and last values are delimiters to aid in finding
+    // this array on the stack, as CrOS and Android crashes are hard to debug.
+    size_t debug_data[] = {0x1234beef,
+                           reinterpret_cast<size_t>(file.data()),
+                           file.length(),
+                           position,
+                           events.length(),
+                           write_counter,
+                           write_counter_at_last_full_rewrite,
+                           0x5678beef};
     base::debug::Alias(&debug_data);
-#endif  // BUILDFLAG(IS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 
     char* data = reinterpret_cast<char*>(file.data());
     base::strlcpy(&data[position], events.c_str(), remaining_length);
@@ -167,26 +172,6 @@ void BreadcrumbPersistentStorageManager::GetStoredEvents(
       std::move(callback));
 }
 
-void BreadcrumbPersistentStorageManager::MonitorBreadcrumbManager(
-    BreadcrumbManager* manager) {
-  manager->AddObserver(this);
-}
-
-void BreadcrumbPersistentStorageManager::MonitorBreadcrumbManagerService(
-    BreadcrumbManagerKeyedService* service) {
-  service->AddObserver(this);
-}
-
-void BreadcrumbPersistentStorageManager::StopMonitoringBreadcrumbManager(
-    BreadcrumbManager* manager) {
-  manager->RemoveObserver(this);
-}
-
-void BreadcrumbPersistentStorageManager::StopMonitoringBreadcrumbManagerService(
-    BreadcrumbManagerKeyedService* service) {
-  service->RemoveObserver(this);
-}
-
 void BreadcrumbPersistentStorageManager::CombineEventsAndRewriteAllBreadcrumbs(
     const std::vector<std::string> pending_breadcrumbs,
     std::vector<std::string> existing_events) {
@@ -217,7 +202,8 @@ void BreadcrumbPersistentStorageManager::CombineEventsAndRewriteAllBreadcrumbs(
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&DoWriteEventsToFile, breadcrumbs_temp_file_path_,
-                     /*position=*/0, breadcrumbs_string, /*append=*/false));
+                     /*position=*/0, breadcrumbs_string, /*append=*/false,
+                     write_counter_, write_counter_at_last_full_rewrite_));
 
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(IgnoreResult(&base::ReplaceFile),
@@ -237,9 +223,8 @@ void BreadcrumbPersistentStorageManager::RewriteAllExistingBreadcrumbs() {
   last_written_time_ = base::TimeTicks::Now();
   file_position_ = 0;
 
-  // Load persisted events directly from file because the correct order can not
-  // be reconstructed from the multiple BreadcrumbManagers with the partial
-  // timestamps embedded in each event.
+  // Load persisted events directly from file.
+  // TODO(crbug.com/1360583): get events from BreadcrumbManager instead.
   GetStoredEvents(base::BindOnce(&BreadcrumbPersistentStorageManager::
                                      CombineEventsAndRewriteAllBreadcrumbs,
                                  weak_ptr_factory_.GetWeakPtr(),
@@ -256,7 +241,8 @@ void BreadcrumbPersistentStorageManager::WritePendingBreadcrumbs() {
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&DoWriteEventsToFile, breadcrumbs_file_path_,
                                 file_position_.value(), pending_breadcrumbs,
-                                /*append=*/true));
+                                /*append=*/true, write_counter_,
+                                write_counter_at_last_full_rewrite_));
 
   file_position_ = file_position_.value() + pending_breadcrumbs_.size();
   last_written_time_ = base::TimeTicks::Now();
@@ -264,8 +250,7 @@ void BreadcrumbPersistentStorageManager::WritePendingBreadcrumbs() {
   pending_breadcrumbs_.clear();
 }
 
-void BreadcrumbPersistentStorageManager::EventAdded(BreadcrumbManager* manager,
-                                                    const std::string& event) {
+void BreadcrumbPersistentStorageManager::EventAdded(const std::string& event) {
   pending_breadcrumbs_ += event + kEventSeparator;
   WriteEvents();
 }
@@ -321,15 +306,16 @@ void BreadcrumbPersistentStorageManager::WriteEvents() {
       // Use >= here instead of > to allow space for \0 to terminate file.
       >= kPersistedFilesizeInBytes) {
     RewriteAllExistingBreadcrumbs();
+    write_counter_at_last_full_rewrite_ = ++write_counter_;
     return;
   }
 
   // Otherwise, simply append the pending breadcrumbs.
   WritePendingBreadcrumbs();
+  ++write_counter_;
 }
 
-void BreadcrumbPersistentStorageManager::OldEventsRemoved(
-    BreadcrumbManager* manager) {
+void BreadcrumbPersistentStorageManager::OldEventsRemoved() {
   RewriteAllExistingBreadcrumbs();
 }
 

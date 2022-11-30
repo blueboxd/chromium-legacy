@@ -14,10 +14,10 @@
 #import "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
+#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper_delegate.h"
@@ -30,8 +30,6 @@
 #error "This file requires ARC support."
 #endif
 
-const double SadTabTabHelper::kDefaultRepeatFailureInterval = 60.0f;
-
 namespace {
 // Returns true if the application is in UIApplicationStateActive state.
 bool IsApplicationStateActive() {
@@ -40,11 +38,8 @@ bool IsApplicationStateActive() {
 }
 }  // namespace
 
-SadTabTabHelper::SadTabTabHelper(web::WebState* web_state)
-    : SadTabTabHelper(web_state, kDefaultRepeatFailureInterval) {}
-
 SadTabTabHelper::SadTabTabHelper(web::WebState* web_state,
-                                 double repeat_failure_interval)
+                                 base::TimeDelta repeat_failure_interval)
     : web_state_(web_state), repeat_failure_interval_(repeat_failure_interval) {
   web_state_->AddObserver(this);
   AddApplicationDidBecomeActiveObserver();
@@ -53,24 +48,6 @@ SadTabTabHelper::SadTabTabHelper(web::WebState* web_state,
 SadTabTabHelper::~SadTabTabHelper() {
   DCHECK(!application_did_become_active_observer_);
   DCHECK(!web_state_);
-}
-
-void SadTabTabHelper::CreateForWebState(web::WebState* web_state) {
-  DCHECK(web_state);
-  if (!FromWebState(web_state)) {
-    web_state->SetUserData(UserDataKey(),
-                           base::WrapUnique(new SadTabTabHelper(web_state)));
-  }
-}
-
-void SadTabTabHelper::CreateForWebState(web::WebState* web_state,
-                                        double repeat_failure_interval) {
-  DCHECK(web_state);
-  if (!FromWebState(web_state)) {
-    web_state->SetUserData(UserDataKey(),
-                           base::WrapUnique(new SadTabTabHelper(
-                               web_state, repeat_failure_interval)));
-  }
 }
 
 void SadTabTabHelper::SetDelegate(id<SadTabTabHelperDelegate> delegate) {
@@ -164,8 +141,9 @@ void SadTabTabHelper::WebStateDestroyed(web::WebState* web_state) {
 void SadTabTabHelper::OnVisibleCrash(const GURL& url_causing_failure) {
   // Is this failure a repeat-failure requiring the presentation of the Feedback
   // UI rather than the Reload UI?
-  double seconds_since_last_failure =
-      last_failed_timer_ ? last_failed_timer_->Elapsed().InSecondsF() : DBL_MAX;
+  base::TimeDelta seconds_since_last_failure =
+      last_failed_timer_ ? last_failed_timer_->Elapsed()
+                         : base::TimeDelta::Max();
 
   repeated_failure_ =
       (url_causing_failure.EqualsIgnoringRef(last_failed_url_) &&

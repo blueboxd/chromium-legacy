@@ -7,8 +7,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
+#include "base/numerics/clamped_math.h"
 #include "base/strings/strcat.h"
-#include "components/segmentation_platform/public/config.h"
 #include "components/segmentation_platform/public/constants.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
 #include "components/segmentation_platform/public/proto/types.pb.h"
@@ -43,7 +43,9 @@ enum class SegmentationModel {
   kChromeLowUserEngagement = 16,
   kFeedUserSegment = 17,
   kContextualPageActionPriceTracking = 18,
-  kMaxValue = kContextualPageActionPriceTracking,
+  kChromeStartAndroidV2 = 22,
+  kSearchUserSegment = 23,
+  kMaxValue = kSearchUserSegment,
 };
 
 AdaptiveToolbarButtonVariant OptimizationTargetToAdaptiveToolbarButtonVariant(
@@ -67,6 +69,7 @@ bool IsBooleanSegment(const std::string& segmentation_key) {
   // Please keep in sync with BooleanModel variant in
   // //tools/metrics/histograms/metadata/segmentation_platform/histograms.xml.
   return segmentation_key == kChromeStartAndroidSegmentationKey ||
+         segmentation_key == kChromeStartAndroidV2SegmentationKey ||
          segmentation_key == kQueryTilesSegmentationKey ||
          segmentation_key == kChromeLowUserEngagementSegmentationKey ||
          segmentation_key == kFeedUserSegmentationKey ||
@@ -75,7 +78,8 @@ bool IsBooleanSegment(const std::string& segmentation_key) {
          segmentation_key == kCrossDeviceUserKey ||
          segmentation_key == kFrequentFeatureUserKey ||
          segmentation_key == kIntentionalUserKey ||
-         segmentation_key == kResumeHeavyUserKey;
+         segmentation_key == kResumeHeavyUserKey ||
+         segmentation_key == kSearchUserKey;
 }
 
 BooleanSegmentSwitch GetBooleanSegmentSwitch(SegmentId new_selection,
@@ -172,6 +176,10 @@ SegmentationModel OptimizationTargetToSegmentationModel(SegmentId segment_id) {
       return SegmentationModel::kFeedUserSegment;
     case SegmentId::OPTIMIZATION_TARGET_CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING:
       return SegmentationModel::kContextualPageActionPriceTracking;
+    case SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_CHROME_START_ANDROID_V2:
+      return SegmentationModel::kChromeStartAndroidV2;
+    case SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SEARCH_USER:
+      return SegmentationModel::kSearchUserSegment;
     default:
       return SegmentationModel::kUnknown;
   }
@@ -255,11 +263,16 @@ void RecordModelScore(SegmentId segment_id, float score) {
     case SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT:
     case SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_FEED_USER:
     case SegmentId::OPTIMIZATION_TARGET_CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING:
-      // Assumes all models return score between 0 and 1. This is true for all
-      // the models we have currently.
+      // This block assumes all models return score between 0 and 1.
       base::UmaHistogramPercentage("SegmentationPlatform.ModelScore." +
                                        SegmentIdToHistogramVariant(segment_id),
                                    score * 100);
+      break;
+    case SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SEARCH_USER:
+      // This block assumes all models return score between 0 and 100.
+      base::UmaHistogramPercentage("SegmentationPlatform.ModelScore." +
+                                       SegmentIdToHistogramVariant(segment_id),
+                                   base::ClampRound(score));
       break;
     default:
       break;
@@ -280,19 +293,19 @@ void RecordModelUpdateTimeDifference(SegmentId segment_id,
 }
 
 void RecordSegmentSelectionComputed(
-    const std::string& segmentation_key,
+    const Config& config,
     SegmentId new_selection,
     absl::optional<SegmentId> previous_selection) {
   // Special case adaptive toolbar since it already has histograms being
   // recorded and updating names will affect current work.
-  if (segmentation_key == kAdaptiveToolbarSegmentationKey) {
+  if (config.segmentation_key == kAdaptiveToolbarSegmentationKey) {
     base::UmaHistogramEnumeration(
         "SegmentationPlatform.AdaptiveToolbar.SegmentSelection.Computed",
         OptimizationTargetToAdaptiveToolbarButtonVariant(new_selection));
   }
-  std::string computed_hist = base::StrCat(
-      {"SegmentationPlatform.", SegmentationKeyToUmaName(segmentation_key),
-       ".SegmentSelection.Computed2"});
+  std::string computed_hist =
+      base::StrCat({"SegmentationPlatform.", config.segmentation_uma_name,
+                    ".SegmentSelection.Computed2"});
   base::UmaHistogramEnumeration(
       computed_hist, OptimizationTargetToSegmentationModel(new_selection));
 
@@ -300,17 +313,17 @@ void RecordSegmentSelectionComputed(
                                ? previous_selection.value()
                                : SegmentId::OPTIMIZATION_TARGET_UNKNOWN;
 
-  if (prev_segment == new_selection)
+  if (prev_segment == new_selection || config.on_demand_execution)
     return;
 
-  std::string switched_hist = base::StrCat(
-      {"SegmentationPlatform.", SegmentationKeyToUmaName(segmentation_key),
-       ".SegmentSwitched"});
-  if (segmentation_key == kAdaptiveToolbarSegmentationKey) {
+  std::string switched_hist =
+      base::StrCat({"SegmentationPlatform.", config.segmentation_uma_name,
+                    ".SegmentSwitched"});
+  if (config.segmentation_key == kAdaptiveToolbarSegmentationKey) {
     base::UmaHistogramEnumeration(
         switched_hist,
         GetAdaptiveToolbarSegmentSwitch(new_selection, prev_segment));
-  } else if (IsBooleanSegment(segmentation_key)) {
+  } else if (IsBooleanSegment(config.segmentation_key)) {
     base::UmaHistogramEnumeration(
         switched_hist, GetBooleanSegmentSwitch(new_selection, prev_segment));
   }
@@ -515,11 +528,11 @@ void RecordSignalsListeningCount(
       histogram_value_count);
 }
 
-void RecordSegmentSelectionFailure(const std::string& segmentation_key,
+void RecordSegmentSelectionFailure(const Config& config,
                                    SegmentationSelectionFailureReason reason) {
   base::UmaHistogramEnumeration(
       base::StrCat({"SegmentationPlatform.SelectionFailedReason.",
-                    SegmentationKeyToUmaName(segmentation_key)}),
+                    config.segmentation_uma_name}),
       reason);
 }
 

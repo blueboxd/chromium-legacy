@@ -5,7 +5,7 @@
 import 'chrome://welcome/welcome_app.js';
 
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {waitBeforeNextRender} from 'chrome://webui-test/test_util.js';
+import {waitBeforeNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {LandingViewProxyImpl} from 'chrome://welcome/landing_view_proxy.js';
 import {navigateTo, Routes} from 'chrome://welcome/navigation_mixin.js';
 import {NuxSetAsDefaultProxyImpl} from 'chrome://welcome/set_as_default/nux_set_as_default_proxy.js';
@@ -25,7 +25,8 @@ suite('WelcomeWelcomeAppTest', function() {
   let testSetAsDefaultProxy: TestNuxSetAsDefaultProxy;
 
   function resetTestElement() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     navigateTo(Routes.LANDING, 0);
     testElement = document.createElement('welcome-app');
     document.body.appendChild(testElement);

@@ -25,7 +25,52 @@ enum class QsButtonCatalogName {
   kCollapseButton = 9,  // To be deprecated
   kFeedBackButton = 10,
   kVersionButton = 11,
-  kMaxValue = kVersionButton
+  kPowerOffMenuButton = 12,
+  kPowerRestartMenuButton = 13,
+  kPowerSignoutMenuButton = 14,
+  kPowerLockMenuButton = 15,
+  kMaxValue = kPowerLockMenuButton
+};
+
+// A catalog that registers all the features on the Quick Settings page. This
+// catalog should be kept in sync with the pods on the Quick Settings page.
+// Current values should not be renumbered or removed, because they are recorded
+// in histograms (histograms' enums.xml `QsFeatureCatalogName`). To deprecate
+// use `_DEPRECATED` post-fix on the name.
+enum class QsFeatureCatalogName {
+  kUnknown = 0,
+  kNetwork = 1,
+  kBluetooth = 2,
+  kAccessibility = 3,
+  kQuietMode = 4,
+  kRotationLock = 5,
+  kPrivacyScreen = 6,
+  kCaptureMode = 7,
+  kNearbyShare = 8,
+  kNightLight = 9,
+  kCast = 10,
+  kVPN = 11,
+  kIME = 12,
+  kLocale = 13,
+  kDarkMode = 14,
+  kShelfParty = 15,
+  kAutozoom = 16,
+  kMaxValue = kAutozoom
+};
+
+// A catalog that registers all the sliders on the Quick Settings page (also
+// includes the slider bubble which is a separate bubble from the quick settings
+// page). This catalog should be kept in sync with the sliders on the Quick
+// Settings page. Current values should not be renumbered or removed, because
+// they are recorded in histograms (histograms' enums.xml
+// `QsSliderCatalogName`). To deprecate use `_DEPRECATED` post-fix on the name.
+enum class QsSliderCatalogName {
+  kUnknown = 0,
+  kVolume = 1,
+  kBrightness = 2,
+  kMicGain = 3,
+  kKeyboardBrightness = 4,
+  kMaxValue = kKeyboardBrightness
 };
 
 }  // namespace ash

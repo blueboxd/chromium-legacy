@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,7 +105,7 @@ class FakeInterfaceFactory : public media::mojom::InterfaceFactory {
   void BindRequest(mojo::ScopedMessagePipeHandle handle) {
     receiver_.Bind(mojo::PendingReceiver<media::mojom::InterfaceFactory>(
         std::move(handle)));
-    receiver_.set_disconnect_handler(WTF::Bind(
+    receiver_.set_disconnect_handler(WTF::BindOnce(
         &FakeInterfaceFactory::OnConnectionError, base::Unretained(this)));
   }
 
@@ -179,12 +179,12 @@ class VideoDecoderBrokerTest : public testing::Test {
  public:
   VideoDecoderBrokerTest() {
     // Make sure we have the option of creating HW or SW decoders.
-    std::vector<base::Feature> disabled_features{
+    std::vector<base::test::FeatureRef> disabled_features{
         media::kForceHardwareVideoDecoders};
 
     // Make it easier to switch between HW and SW decoders, by initializing with
     // configs with a small height.
-    std::vector<base::Feature> enabled_features{
+    std::vector<base::test::FeatureRef> enabled_features{
         media::kResolutionBasedDecoderPriority};
 
     feature_list_.InitWithFeatures(enabled_features, disabled_features);
@@ -278,8 +278,8 @@ class VideoDecoderBrokerTest : public testing::Test {
     }
     decoder_broker_->Initialize(
         config, false /*low_delay*/, nullptr /* cdm_context */,
-        WTF::Bind(&VideoDecoderBrokerTest::OnInitWithClosure,
-                  WTF::Unretained(this), run_loop.QuitClosure()),
+        WTF::BindOnce(&VideoDecoderBrokerTest::OnInitWithClosure,
+                      WTF::Unretained(this), run_loop.QuitClosure()),
         WTF::BindRepeating(&VideoDecoderBrokerTest::OnOutput,
                            WTF::Unretained(this)),
         media::WaitingCB());
@@ -293,8 +293,8 @@ class VideoDecoderBrokerTest : public testing::Test {
     base::RunLoop run_loop;
     EXPECT_CALL(*this, OnDecodeDone(HasStatusCode(expected_status)));
     decoder_broker_->Decode(
-        buffer, WTF::Bind(&VideoDecoderBrokerTest::OnDecodeDoneWithClosure,
-                          WTF::Unretained(this), run_loop.QuitClosure()));
+        buffer, WTF::BindOnce(&VideoDecoderBrokerTest::OnDecodeDoneWithClosure,
+                              WTF::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     testing::Mock::VerifyAndClearExpectations(this);
   }
@@ -303,8 +303,8 @@ class VideoDecoderBrokerTest : public testing::Test {
     base::RunLoop run_loop;
     EXPECT_CALL(*this, OnResetDone());
     decoder_broker_->Reset(
-        WTF::Bind(&VideoDecoderBrokerTest::OnResetDoneWithClosure,
-                  WTF::Unretained(this), run_loop.QuitClosure()));
+        WTF::BindOnce(&VideoDecoderBrokerTest::OnResetDoneWithClosure,
+                      WTF::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     testing::Mock::VerifyAndClearExpectations(this);
   }

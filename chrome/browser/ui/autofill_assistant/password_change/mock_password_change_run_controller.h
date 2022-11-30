@@ -28,7 +28,10 @@ class MockPasswordChangeRunController : public PasswordChangeRunController {
               SetTopIcon,
               (autofill_assistant::password_change::TopIcon),
               (override));
-  MOCK_METHOD(void, SetTitle, (const std::u16string&), (override));
+  MOCK_METHOD(void,
+              SetTitle,
+              (const std::u16string&, const std::u16string&),
+              (override));
   MOCK_METHOD(void, SetDescription, (const std::u16string&), (override));
   MOCK_METHOD(void,
               SetProgressBarStep,
@@ -54,6 +57,8 @@ class MockPasswordChangeRunController : public PasswordChangeRunController {
   MOCK_METHOD(void, OpenPasswordManager, (), (override));
   MOCK_METHOD(void, ShowErrorScreen, (), (override));
   MOCK_METHOD(void, OnGeneratedPasswordSelected, (bool), (override));
+  MOCK_METHOD(void, PauseProgressBarAnimation, (), (override));
+  MOCK_METHOD(void, ResumeProgressBarAnimation, (), (override));
   MOCK_METHOD(bool, PasswordWasSuccessfullyChanged, (), (override));
   base::WeakPtr<PasswordChangeRunController> GetWeakPtr() override {
     return weak_ptr_factory_.GetWeakPtr();

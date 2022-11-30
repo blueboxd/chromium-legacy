@@ -16,14 +16,21 @@
 #error "This file requires ARC support."
 #endif
 
-const base::Feature kEnableWebChannels{"EnableWebChannels",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kEnableWebChannels,
+             "EnableWebChannels",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
-const base::Feature kEnableFeedBackgroundRefresh{
-    "EnableFeedBackgroundRefresh", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kEnableFeedBackgroundRefresh,
+             "EnableFeedBackgroundRefresh",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
-const base::Feature kCreateDiscoverFeedServiceEarly{
-    "CreateDiscoverFeedServiceEarly", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kCreateDiscoverFeedServiceEarly,
+             "CreateDiscoverFeedServiceEarly",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableGoodVisitsMetric,
+             "EnableGoodVisitsMetric",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Key for NSUserDefaults containing a bool indicating whether the next run
 // should enable feed backround refresh. This is used because registering for
@@ -53,6 +60,10 @@ bool IsWebChannelsEnabled() {
 
 bool IsDiscoverFeedServiceCreatedEarly() {
   return base::FeatureList::IsEnabled(kCreateDiscoverFeedServiceEarly);
+}
+
+bool IsGoodVisitsMetricEnabled() {
+  return base::FeatureList::IsEnabled(kEnableGoodVisitsMetric);
 }
 
 bool IsFeedBackgroundRefreshEnabled() {

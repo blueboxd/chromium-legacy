@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,6 +108,7 @@ class CORE_EXPORT NinePieceImageGrid {
   gfx::SizeF image_size_;
   ENinePieceImageRule horizontal_tile_rule_;
   ENinePieceImageRule vertical_tile_rule_;
+  float zoom_;
   bool fill_;
 
   Edge top_;

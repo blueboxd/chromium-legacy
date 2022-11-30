@@ -9,19 +9,17 @@
 
 #include "android_webview/browser/gfx/aw_vulkan_context_provider.h"
 #include "android_webview/public/browser/draw_fn.h"
+#include "base/android/scoped_hardware_buffer_handle.h"
 #include "base/containers/queue.h"
 #include "base/files/scoped_file.h"
-#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/gpu/vk/GrVkTypes.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gl/scoped_egl_image.h"
 
 class GrVkSecondaryCBDrawContext;
 class SkColorSpace;
-
-namespace gl {
-class GLImageAHardwareBuffer;
-}
 
 namespace gpu {
 class VulkanImage;
@@ -63,7 +61,9 @@ class VulkanGLInterop {
     VkFence post_draw_fence = VK_NULL_HANDLE;
     VkSemaphore post_draw_semaphore = VK_NULL_HANDLE;
     base::ScopedFD sync_fd;
-    scoped_refptr<gl::GLImageAHardwareBuffer> ahb_image;
+    ui::ScopedEGLImage egl_image;
+    gfx::Size image_size;
+    base::android::ScopedHardwareBufferHandle scoped_buffer;
     sk_sp<SkImage> ahb_skimage;
     uint32_t texture_id = 0;
     uint32_t framebuffer_id = 0;

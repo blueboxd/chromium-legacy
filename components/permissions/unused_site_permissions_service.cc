@@ -4,7 +4,7 @@
 
 #include "components/permissions/unused_site_permissions_service.h"
 #include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/task/task_traits.h"

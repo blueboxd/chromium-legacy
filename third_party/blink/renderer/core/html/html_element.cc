@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_stringtreatnullasemptystring_trustedscript.h"
 #include "third_party/blink/renderer/core/css/css_color.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
-#include "third_party/blink/renderer/core/css/css_markup.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
@@ -92,7 +91,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
-#include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/text/bidi_resolver.h"
 #include "third_party/blink/renderer/platform/text/bidi_text_run.h"
 #include "third_party/blink/renderer/platform/text/text_run_iterator.h"
@@ -181,22 +179,10 @@ HTMLElement* GetParentForDirectionality(const HTMLElement& element,
   return DynamicTo<HTMLElement>(FlatTreeTraversal::ParentElement(element));
 }
 
-bool IsDescendentOfMainElement(const Node* node) {
-  DCHECK(node);
-  do {
-    if (IsA<HTMLMainElement>(node)) {
-      return true;
-    }
-    node = node->parentNode();
-  } while (node);
-  return false;
-}
-
 void CheckSoftNavigationHeuristicsTracking(const Document& document,
                                            const Node* insertion_point) {
   DCHECK(insertion_point);
-  if (document.IsTrackingSoftNavigationHeuristics() &&
-      IsDescendentOfMainElement(insertion_point)) {
+  if (document.IsTrackingSoftNavigationHeuristics()) {
     LocalDOMWindow* window = document.domWindow();
     if (!window) {
       return;
@@ -213,7 +199,7 @@ void CheckSoftNavigationHeuristicsTracking(const Document& document,
     SoftNavigationHeuristics* heuristics =
         SoftNavigationHeuristics::From(*window);
     DCHECK(heuristics);
-    heuristics->ModifiedMain(script_state);
+    heuristics->ModifiedDOM(script_state);
   }
 }
 
@@ -272,7 +258,7 @@ static inline CSSValueID UnicodeBidiAttributeForDirAuto(HTMLElement* element) {
 unsigned HTMLElement::ParseBorderWidthAttribute(
     const AtomicString& value) const {
   unsigned border_width = 0;
-  if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, border_width)) {
+  if (value.empty() || !ParseHTMLNonNegativeInteger(value, border_width)) {
     if (HasTagName(html_names::kTableTag) && !value.IsNull())
       return 1;
   }
@@ -287,44 +273,6 @@ void HTMLElement::ApplyBorderAttributeToStyle(
                                           CSSPrimitiveValue::UnitType::kPixels);
   AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kBorderStyle,
                                           CSSValueID::kSolid);
-}
-
-void HTMLElement::MapLanguageAttributeToLocale(
-    const AtomicString& value,
-    MutableCSSPropertyValueSet* style) {
-  if (!value.IsEmpty()) {
-    // Have to quote so the locale id is treated as a string instead of as a CSS
-    // keyword.
-    AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWebkitLocale,
-                                            SerializeString(value));
-
-    // FIXME: Remove the following UseCounter code when we collect enough
-    // data.
-    UseCounter::Count(GetDocument(), WebFeature::kLangAttribute);
-    if (IsA<HTMLHtmlElement>(this))
-      UseCounter::Count(GetDocument(), WebFeature::kLangAttributeOnHTML);
-    else if (IsA<HTMLBodyElement>(this))
-      UseCounter::Count(GetDocument(), WebFeature::kLangAttributeOnBody);
-    String html_language = value.GetString();
-    wtf_size_t first_separator = html_language.find('-');
-    if (first_separator != kNotFound)
-      html_language = html_language.Left(first_separator);
-    String ui_language = DefaultLanguage();
-    first_separator = ui_language.find('-');
-    if (first_separator != kNotFound)
-      ui_language = ui_language.Left(first_separator);
-    first_separator = ui_language.find('_');
-    if (first_separator != kNotFound)
-      ui_language = ui_language.Left(first_separator);
-    if (!DeprecatedEqualIgnoringCase(html_language, ui_language)) {
-      UseCounter::Count(GetDocument(),
-                        WebFeature::kLangAttributeDoesNotMatchToUILocale);
-    }
-  } else {
-    // The empty string means the language is explicitly unknown.
-    AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWebkitLocale,
-                                            CSSValueID::kAuto);
-  }
 }
 
 bool HTMLElement::IsPresentationAttribute(const QualifiedName& name) const {
@@ -357,7 +305,7 @@ void HTMLElement::CollectStyleForPresentationAttribute(
                                               value);
     }
   } else if (name == html_names::kContenteditableAttr) {
-    if (value.IsEmpty() || EqualIgnoringASCIICase(value, "true")) {
+    if (value.empty() || EqualIgnoringASCIICase(value, "true")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kWebkitUserModify, CSSValueID::kReadWrite);
       AddPropertyToPresentationAttributeStyle(
@@ -605,6 +553,10 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
        event_type_names::kPointerup, nullptr},
       {html_names::kOnprogressAttr, kNoWebFeature, event_type_names::kProgress,
        nullptr},
+      {html_names::kOnpopuphideAttr, kNoWebFeature,
+       event_type_names::kPopuphide, nullptr},
+      {html_names::kOnpopupshowAttr, kNoWebFeature,
+       event_type_names::kPopupshow, nullptr},
       {html_names::kOnratechangeAttr, kNoWebFeature,
        event_type_names::kRatechange, nullptr},
       {html_names::kOnresetAttr, kNoWebFeature, event_type_names::kReset,
@@ -931,30 +883,28 @@ void HTMLElement::setInnerTextForBinding(
       value = string_or_trusted_script->GetAsTrustedScript()->toString();
       break;
   }
-  setInnerText(value, exception_state);
+  setInnerText(value);
 }
 
 String HTMLElement::innerText() {
   return Element::innerText();
 }
 
-void HTMLElement::setInnerText(const String& text,
-                               ExceptionState& exception_state) {
+void HTMLElement::setInnerText(const String& text) {
   // FIXME: This doesn't take whitespace collapsing into account at all.
 
   if (!text.Contains('\n') && !text.Contains('\r')) {
-    if (text.IsEmpty()) {
+    if (text.empty()) {
       RemoveChildren();
       return;
     }
-    ReplaceChildrenWithText(this, text, exception_state);
+    ReplaceChildrenWithText(this, text, ASSERT_NO_EXCEPTION);
     return;
   }
 
   // Add text nodes and <br> elements.
-  DocumentFragment* fragment = TextToFragment(text, exception_state);
-  if (!exception_state.HadException())
-    ReplaceChildrenWithFragment(this, fragment, exception_state);
+  DocumentFragment* fragment = TextToFragment(text, ASSERT_NO_EXCEPTION);
+  ReplaceChildrenWithFragment(this, fragment, ASSERT_NO_EXCEPTION);
 }
 
 void HTMLElement::setOuterText(const String& text,
@@ -1086,7 +1036,7 @@ ContentEditableType HTMLElement::contentEditableNormalized() const {
 
   if (value.IsNull())
     return ContentEditableType::kInherit;
-  if (value.IsEmpty() || EqualIgnoringASCIICase(value, "true"))
+  if (value.empty() || EqualIgnoringASCIICase(value, "true"))
     return ContentEditableType::kContentEditable;
   if (EqualIgnoringASCIICase(value, "false"))
     return ContentEditableType::kNotContentEditable;
@@ -1190,7 +1140,7 @@ const AtomicString& HTMLElement::autocapitalize() const {
   DEFINE_STATIC_LOCAL(const AtomicString, kSentences, ("sentences"));
 
   const AtomicString& value = FastGetAttribute(html_names::kAutocapitalizeAttr);
-  if (value.IsEmpty())
+  if (value.empty())
     return g_empty_atom;
 
   if (EqualIgnoringASCIICase(value, kNone) ||
@@ -1709,7 +1659,7 @@ bool HTMLElement::ParseColorWithLegacyRules(const String& attribute_value,
                                             Color& parsed_color) {
   // An empty string doesn't apply a color. (One containing only whitespace
   // does, which is why this check occurs before stripping.)
-  if (attribute_value.IsEmpty())
+  if (attribute_value.empty())
     return false;
 
   String color_string = attribute_value.StripWhiteSpace();

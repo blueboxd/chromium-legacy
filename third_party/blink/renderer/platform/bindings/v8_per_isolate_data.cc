@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/thread_debugger.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
@@ -48,7 +49,6 @@
 #include "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
-#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -61,10 +61,6 @@ static V8PerIsolateData* g_main_thread_per_isolate_data = nullptr;
 
 static void BeforeCallEnteredCallback(v8::Isolate* isolate) {
   CHECK(!ScriptForbiddenScope::IsScriptForbidden());
-}
-
-static void MicrotasksCompletedCallback(v8::Isolate* isolate, void* data) {
-  V8PerIsolateData::From(isolate)->RunEndOfScopeTasks();
 }
 
 static bool AllowAtomicWaits(
@@ -106,7 +102,6 @@ V8PerIsolateData::V8PerIsolateData(
     // FIXME: Remove once all v8::Isolate::GetCurrent() calls are gone.
     GetIsolate()->Enter();
     GetIsolate()->AddBeforeCallEnteredCallback(&BeforeCallEnteredCallback);
-    GetIsolate()->AddMicrotasksCompletedCallback(&MicrotasksCompletedCallback);
   }
   if (IsMainThread())
     g_main_thread_per_isolate_data = this;
@@ -148,9 +143,6 @@ void V8PerIsolateData::WillBeDestroyed(v8::Isolate* isolate) {
   V8PerIsolateData* data = From(isolate);
 
   data->thread_debugger_.reset();
-  // Clear any data that may have handles into the heap,
-  // prior to calling ThreadState::detach().
-  data->ClearEndOfScopeTasks();
 
   if (data->profiler_group_) {
     data->profiler_group_->WillBeDestroyed();
@@ -183,7 +175,6 @@ void V8PerIsolateData::SetGCCallbacks(
 // gets called but before the Isolate exits.
 void V8PerIsolateData::Destroy(v8::Isolate* isolate) {
   isolate->RemoveBeforeCallEnteredCallback(&BeforeCallEnteredCallback);
-  isolate->RemoveMicrotasksCompletedCallback(&MicrotasksCompletedCallback);
   V8PerIsolateData* data = From(isolate);
 
   // Clear everything before exiting the Isolate.
@@ -326,30 +317,10 @@ void V8PerIsolateData::ClearScriptRegexpContext() {
   script_regexp_script_state_ = nullptr;
 }
 
-void V8PerIsolateData::AddEndOfScopeTask(base::OnceClosure task) {
-  end_of_scope_tasks_.push_back(std::move(task));
-}
-
-void V8PerIsolateData::RunEndOfScopeTasks() {
-  Vector<base::OnceClosure> tasks;
-  tasks.swap(end_of_scope_tasks_);
-  for (auto& task : tasks)
-    std::move(task).Run();
-  DCHECK(end_of_scope_tasks_.IsEmpty());
-}
-
-void V8PerIsolateData::ClearEndOfScopeTasks() {
-  end_of_scope_tasks_.clear();
-}
-
 void V8PerIsolateData::SetThreadDebugger(
-    std::unique_ptr<V8PerIsolateData::Data> thread_debugger) {
+    std::unique_ptr<ThreadDebugger> thread_debugger) {
   DCHECK(!thread_debugger_);
   thread_debugger_ = std::move(thread_debugger);
-}
-
-V8PerIsolateData::Data* V8PerIsolateData::ThreadDebugger() {
-  return thread_debugger_.get();
 }
 
 void V8PerIsolateData::SetProfilerGroup(

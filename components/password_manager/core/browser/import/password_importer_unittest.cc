@@ -13,6 +13,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "components/password_manager/core/browser/import/csv_password_sequence.h"
+#include "components/password_manager/core/browser/site_affiliation/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #include "components/password_manager/core/browser/ui/import_results.h"
@@ -133,7 +134,9 @@ class PasswordImporterTest : public testing::Test {
       base::MakeRefCounted<TestPasswordStore>(IsAccountStore(false));
   scoped_refptr<TestPasswordStore> account_store_ =
       base::MakeRefCounted<TestPasswordStore>(IsAccountStore(true));
-  SavedPasswordsPresenter presenter_{profile_store_, account_store_};
+  MockAffiliationService affiliation_service_;
+  SavedPasswordsPresenter presenter_{&affiliation_service_, profile_store_,
+                                     account_store_};
   password_manager::PasswordImporter importer_;
 };
 
@@ -161,7 +164,7 @@ TEST_F(PasswordImporterTest, CSVImport) {
   EXPECT_EQ(1u, results.number_imported);
   ASSERT_EQ(1u, stored_passwords().size());
   EXPECT_EQ(GURL(kTestOriginURL), stored_passwords()[0].GetURL());
-  EXPECT_EQ(kTestSignonRealm, stored_passwords()[0].signon_realm);
+  EXPECT_EQ(kTestSignonRealm, stored_passwords()[0].GetFirstSignonRealm());
   EXPECT_EQ(kTestUsername, stored_passwords()[0].username);
   EXPECT_EQ(kTestPassword, stored_passwords()[0].password);
 }
@@ -772,7 +775,7 @@ TEST_F(PasswordImporterTest, PartialImportSucceeds) {
 
   ASSERT_EQ(1u, stored_passwords().size());
   EXPECT_EQ(GURL(kTestOriginURL), stored_passwords()[0].GetURL());
-  EXPECT_EQ(kTestSignonRealm, stored_passwords()[0].signon_realm);
+  EXPECT_EQ(kTestSignonRealm, stored_passwords()[0].GetFirstSignonRealm());
   EXPECT_EQ(kTestUsername, stored_passwords()[0].username);
   EXPECT_EQ(kTestPassword, stored_passwords()[0].password);
 

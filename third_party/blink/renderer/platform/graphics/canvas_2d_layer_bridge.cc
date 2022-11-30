@@ -60,16 +60,17 @@ namespace blink {
 
 namespace {
 
-const base::Feature kCanvas2DHibernation {
-  "Canvas2DHibernation",
+BASE_FEATURE(
+    kCanvas2DHibernation,
+    "Canvas2DHibernation",
 #if BUILDFLAG(IS_MAC)
-      // Canvas hibernation is not always enabled on MacOS X due to a bug that
-      // causes content loss. TODO: Find a better fix for crbug.com/588434
-      base::FeatureState::FEATURE_DISABLED_BY_DEFAULT
+    // Canvas hibernation is not always enabled on MacOS X due to a bug that
+    // causes content loss. TODO: Find a better fix for crbug.com/588434
+    base::FeatureState::FEATURE_DISABLED_BY_DEFAULT
 #else
-      base::FeatureState::FEATURE_ENABLED_BY_DEFAULT
+    base::FeatureState::FEATURE_ENABLED_BY_DEFAULT
 #endif
-};
+);
 }
 
 // static
@@ -162,21 +163,11 @@ static void HibernateWrapper(base::WeakPtr<Canvas2DLayerBridge> bridge,
   }
 }
 
-static void HibernateWrapperForTesting(
-    base::WeakPtr<Canvas2DLayerBridge> bridge) {
-  HibernateWrapper(std::move(bridge), base::TimeTicks());
-}
-
 static void LoseContextInBackgroundWrapper(
     base::WeakPtr<Canvas2DLayerBridge> bridge,
     base::TimeTicks /*idleDeadline*/) {
   if (bridge)
     bridge->LoseContext();
-}
-
-static void LoseContextInBackgroundForTestingWrapper(
-    base::WeakPtr<Canvas2DLayerBridge> bridge) {
-  LoseContextInBackgroundWrapper(std::move(bridge), base::TimeTicks());
 }
 
 void Canvas2DLayerBridge::Hibernate() {
@@ -326,6 +317,7 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider() {
     layer_->SetBlendBackgroundColor(opacity_mode_ != kOpaque);
     layer_->SetNearestNeighbor(resource_host_->FilterQuality() ==
                                cc::PaintFlags::FilterQuality::kNone);
+    layer_->SetHDRMetadata(resource_host_->GetHDRMetadata());
   }
   // After the page becomes visible and successfully restored the canvas
   // resource provider, set |lose_context_in_background_| to false.
@@ -378,6 +370,12 @@ void Canvas2DLayerBridge::SetFilterQuality(
                                cc::PaintFlags::FilterQuality::kNone);
 }
 
+void Canvas2DLayerBridge::SetHDRMetadata(
+    absl::optional<gfx::HDRMetadata> hdr_metadata) {
+  if (layer_)
+    layer_->SetHDRMetadata(hdr_metadata);
+}
+
 void Canvas2DLayerBridge::SetIsInHiddenPage(bool hidden) {
   if (is_hidden_ == hidden)
     return;
@@ -391,15 +389,9 @@ void Canvas2DLayerBridge::SetIsInHiddenPage(bool hidden) {
       base::FeatureList::IsEnabled(
           ::features::kCanvasContextLostInBackground)) {
     lose_context_in_background_scheduled_ = true;
-    if (dont_use_idle_scheduling_for_testing_) {
-      Thread::Current()->GetDeprecatedTaskRunner()->PostTask(
-          FROM_HERE, WTF::Bind(&LoseContextInBackgroundForTestingWrapper,
-                               weak_ptr_factory_.GetWeakPtr()));
-    } else {
-      ThreadScheduler::Current()->PostIdleTask(
-          FROM_HERE, WTF::Bind(&LoseContextInBackgroundWrapper,
-                               weak_ptr_factory_.GetWeakPtr()));
-    }
+    ThreadScheduler::Current()->PostIdleTask(
+        FROM_HERE, WTF::BindOnce(&LoseContextInBackgroundWrapper,
+                                 weak_ptr_factory_.GetWeakPtr()));
   } else if (IsHibernationEnabled() && ResourceProvider() && IsAccelerated() &&
              IsHidden() && !hibernation_scheduled_ &&
              !base::FeatureList::IsEnabled(
@@ -408,15 +400,9 @@ void Canvas2DLayerBridge::SetIsInHiddenPage(bool hidden) {
       layer_->ClearTexture();
     logger_->ReportHibernationEvent(kHibernationScheduled);
     hibernation_scheduled_ = true;
-    if (dont_use_idle_scheduling_for_testing_) {
-      Thread::Current()->GetDeprecatedTaskRunner()->PostTask(
-          FROM_HERE, WTF::Bind(&HibernateWrapperForTesting,
-                               weak_ptr_factory_.GetWeakPtr()));
-    } else {
-      ThreadScheduler::Current()->PostIdleTask(
-          FROM_HERE,
-          WTF::Bind(&HibernateWrapper, weak_ptr_factory_.GetWeakPtr()));
-    }
+    ThreadScheduler::Current()->PostIdleTask(
+        FROM_HERE,
+        WTF::BindOnce(&HibernateWrapper, weak_ptr_factory_.GetWeakPtr()));
   }
   if (!IsHidden() && (IsHibernating() || lose_context_in_background_))
     GetOrCreateResourceProvider();  // Rude awakening
@@ -480,7 +466,7 @@ void Canvas2DLayerBridge::ClearPendingRasterTimers() {
   }
 
   if (raster_interface) {
-    while (!pending_raster_timers_.IsEmpty()) {
+    while (!pending_raster_timers_.empty()) {
       RasterTimer rt = pending_raster_timers_.TakeFirst();
       raster_interface->DeleteQueriesEXT(1, &rt.gl_query_id);
     }
@@ -498,7 +484,7 @@ void Canvas2DLayerBridge::FinishRasterTimers(
   }
 
   // Finish up any pending queries that are complete
-  while (!pending_raster_timers_.IsEmpty()) {
+  while (!pending_raster_timers_.empty()) {
     auto it = pending_raster_timers_.begin();
     GLuint complete = 1;
     raster_interface->GetQueryObjectuivEXT(
@@ -552,11 +538,8 @@ void Canvas2DLayerBridge::FlushRecording(bool printing) {
 
   // Sample one out of every kRasterMetricProbability frames to time
   // If the canvas is accelerated, we also need access to the raster_interface
-
-  // We are using @dont_use_idle_scheduling_for_testing_ temporarily to always
-  // measure while testing.
   const bool will_measure =
-      dont_use_idle_scheduling_for_testing_ ||
+      always_measure_for_testing_ ||
       metrics_subsampler_.ShouldSample(kRasterMetricProbability);
   const bool measure_raster_metric =
       (raster_interface || !IsAccelerated()) && will_measure;

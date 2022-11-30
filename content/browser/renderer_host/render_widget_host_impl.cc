@@ -180,11 +180,6 @@ constexpr gfx::Rect kInvalidScreenRect(std::numeric_limits<int>::max(),
 
 bool g_check_for_pending_visual_properties_ack = true;
 
-bool ShouldDisableHangMonitor() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableHangMonitor);
-}
-
 // <process id, routing id>
 using RenderWidgetHostID = std::pair<int32_t, int32_t>;
 using RoutingIDWidgetMap =
@@ -437,6 +432,9 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
       is_hidden_(hidden),
       last_view_screen_rect_(kInvalidScreenRect),
       last_window_screen_rect_(kInvalidScreenRect),
+      should_disable_hang_monitor_(
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableHangMonitor)),
       latency_tracker_(delegate_),
       hung_renderer_delay_(kHungRendererDelay),
       new_content_rendering_delay_(kNewContentRenderingDelay),
@@ -615,18 +613,25 @@ RenderWidgetHostImpl::GetVisibleTimeRequestTrigger() {
   auto* trigger = delegate()->GetVisibleTimeRequestTrigger();
 
   // Use the delegate's trigger only if the kTabSwitchMetrics2 feature is
-  // enabled. `trigger` can never be null if the feature is enabled.
+  // enabled. Note that `trigger` can be null in unit tests even if the feature
+  // is enabled.
   if (trigger && trigger->is_tab_switch_metrics2_feature_enabled())
     return trigger;
 
-  // Go through this widget's view. This is different from
-  // delegate()->GetVisibleTimeRequestTrigger() which goes through the current
-  // view for the WebContents - this widget may not be current.
+  // Go through this widget's view if the kTabSwitchMetrics2 feature is NOT
+  // enabled. This is different from delegate()->GetVisibleTimeRequestTrigger()
+  // which goes through the current view for the WebContents - this widget may
+  // not be current.
   // TODO(crbug.com/1164477): Remove this obsolete implementation and return a
   // reference instead of a pointer once kTabSwitchMetrics2 is validated and
   // becomes the default.
-  if (GetView())
-    return GetView()->GetVisibleTimeRequestTrigger();
+  if (GetView()) {
+    trigger = GetView()->GetVisibleTimeRequestTrigger();
+    if (trigger) {
+      DCHECK(!trigger->is_tab_switch_metrics2_feature_enabled());
+      return trigger;
+    }
+  }
   return nullptr;
 }
 
@@ -1422,7 +1427,7 @@ void RenderWidgetHostImpl::RenderProcessBlockedStateChanged(bool blocked) {
 }
 
 void RenderWidgetHostImpl::StartInputEventAckTimeout() {
-  if (ShouldDisableHangMonitor())
+  if (should_disable_hang_monitor_)
     return;
 
   if (!input_event_ack_timeout_.IsRunning()) {
@@ -1434,7 +1439,7 @@ void RenderWidgetHostImpl::StartInputEventAckTimeout() {
 }
 
 void RenderWidgetHostImpl::RestartInputEventAckTimeoutIfNecessary() {
-  if (!GetProcess()->IsBlocked() && !ShouldDisableHangMonitor() &&
+  if (!GetProcess()->IsBlocked() && !should_disable_hang_monitor_ &&
       in_flight_event_count_ > 0 && !is_hidden_) {
     input_event_ack_timeout_.Start(
         FROM_HERE, hung_renderer_delay_,
@@ -3756,13 +3761,10 @@ bool TransformPointAndRectToRootView(RenderWidgetHostViewBase* view,
     return false;
 
   if (transformed_point)
-    transform_to_main_frame.TransformPoint(transformed_point);
+    *transformed_point = transform_to_main_frame.MapPoint(*transformed_point);
 
-  if (transformed_rect) {
-    gfx::RectF transformed_rect_f(*transformed_rect);
-    transform_to_main_frame.TransformRect(&transformed_rect_f);
-    *transformed_rect = gfx::ToEnclosingRect(transformed_rect_f);
-  }
+  if (transformed_rect)
+    *transformed_rect = transform_to_main_frame.MapRect(*transformed_rect);
 
   return true;
 }

@@ -12,7 +12,6 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
 import android.view.View;
@@ -34,6 +33,7 @@ import androidx.core.widget.ImageViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
@@ -57,8 +57,8 @@ public class TabGridDialogView extends FrameLayout {
     private static final int DIALOG_UNGROUP_ALPHA_ANIMATION_DURATION = 200;
     private static final int DIALOG_ALPHA_ANIMATION_DURATION = 150;
     private static final int CARD_FADE_ANIMATION_DURATION = 50;
-    private static final int Y_TRANSLATE_DURATION_MS = 400;
-    private static final int SCRIM_FADE_DURATION_MS = 450;
+    private static final int Y_TRANSLATE_DURATION_MS = 300;
+    private static final int SCRIM_FADE_DURATION_MS = 350;
 
     private static Callback<RectF> sSourceRectCallbackForTesting;
 
@@ -350,6 +350,10 @@ public class TabGridDialogView extends FrameLayout {
             mHideDialogAnimation.play(hideAnimator);
             mHideDialogAnimation.removeAllListeners();
             mHideDialogAnimation.addListener(mHideDialogAnimationListener);
+
+            if (ChromeFeatureList.sDiscardOccludedBitmaps.isEnabled()) {
+                updateAnimationCardView(null);
+            }
             return;
         }
 
@@ -665,6 +669,17 @@ public class TabGridDialogView extends FrameLayout {
     }
 
     private void updateAnimationCardView(View view) {
+        if (view == null) {
+            ((ImageView) mAnimationCardView.findViewById(R.id.tab_favicon)).setImageDrawable(null);
+            ((TextView) (mAnimationCardView.findViewById(R.id.tab_title))).setText("");
+            ((ImageView) (mAnimationCardView.findViewById(R.id.tab_thumbnail)))
+                    .setImageDrawable(null);
+            ((ImageView) mAnimationCardView.findViewById(R.id.action_button))
+                    .setImageDrawable(null);
+            mAnimationCardView.findViewById(R.id.background_view).setBackground(null);
+            return;
+        }
+
         // Update the dummy animation card view with the actual item view from grid tab switcher
         // recyclerView.
         FrameLayout.LayoutParams params =
@@ -703,10 +718,6 @@ public class TabGridDialogView extends FrameLayout {
                 ((ImageView) (view.findViewById(R.id.action_button))).getDrawable());
         ApiCompatibilityUtils.setImageTintList(actionButton,
                 ImageViewCompat.getImageTintList((view.findViewById(R.id.action_button))));
-
-        View dividerView = mAnimationCardView.findViewById(R.id.divider_view);
-        dividerView.setBackgroundColor(
-                ((ColorDrawable) view.findViewById(R.id.divider_view).getBackground()).getColor());
 
         mAnimationCardView.findViewById(R.id.background_view).setBackground(null);
     }

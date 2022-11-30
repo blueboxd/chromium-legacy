@@ -45,6 +45,9 @@ class TestWallpaperController : public ash::WallpaperController {
   int set_google_photos_wallpaper_count() const {
     return set_google_photos_wallpaper_count_;
   }
+  int get_third_party_wallpaper_count() const {
+    return third_party_wallpaper_count_;
+  }
   int show_always_on_top_wallpaper_count() const {
     return show_always_on_top_wallpaper_count_;
   }
@@ -77,12 +80,13 @@ class TestWallpaperController : public ash::WallpaperController {
                           ash::WallpaperLayout layout,
                           bool preview_mode,
                           SetWallpaperCallback callback) override;
-  void SetCustomWallpaper(const AccountId& account_id,
-                          const std::string& file_name,
-                          ash::WallpaperLayout layout,
-                          const gfx::ImageSkia& image,
-                          bool preview_mode,
-                          const std::string& file_path = "") override;
+  void SetDecodedCustomWallpaper(const AccountId& account_id,
+                                 const std::string& file_name,
+                                 ash::WallpaperLayout layout,
+                                 bool preview_mode,
+                                 SetWallpaperCallback callback,
+                                 const std::string& file_path,
+                                 const gfx::ImageSkia& image) override;
   void SetOnlineWallpaper(const ash::OnlineWallpaperParams& params,
                           SetWallpaperCallback callback) override;
   void SetOnlineWallpaperIfExists(const ash::OnlineWallpaperParams& params,
@@ -139,7 +143,6 @@ class TestWallpaperController : public ash::WallpaperController {
   void AddObserver(ash::WallpaperControllerObserver* observer) override;
   void RemoveObserver(ash::WallpaperControllerObserver* observer) override;
   gfx::ImageSkia GetWallpaperImage() override;
-  const std::vector<SkColor>& GetWallpaperColors() override;
   bool IsWallpaperBlurredForLockState() const override;
   bool IsActiveUserWallpaperControlledByPolicy() override;
   bool IsWallpaperControlledByPolicy(
@@ -163,6 +166,7 @@ class TestWallpaperController : public ash::WallpaperController {
   int set_google_photos_wallpaper_count_ = 0;
   int show_always_on_top_wallpaper_count_ = 0;
   int remove_always_on_top_wallpaper_count_ = 0;
+  int third_party_wallpaper_count_ = 0;
   absl::optional<ash::WallpaperInfo> wallpaper_info_;
   int update_current_wallpaper_layout_count_ = 0;
   absl::optional<ash::WallpaperLayout> update_current_wallpaper_layout_layout_;

@@ -20,10 +20,12 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorCoordinator.TabSelectionEditorController;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
@@ -46,6 +48,9 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
     private final ViewGroup mRootView;
     private final ObservableSupplierImpl<Boolean> mBackPressChangedSupplier =
             new ObservableSupplierImpl<>();
+    private final Context mContext;
+    private TabModelSelector mTabModelSelector;
+    private TabContentManager mTabContentManager;
     private TabSelectionEditorCoordinator mTabSelectionEditorCoordinator;
     private TabGridDialogView mDialogView;
 
@@ -57,6 +62,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
             Supplier<ShareDelegate> shareDelegateSupplier, ScrimCoordinator scrimCoordinator,
             ViewGroup rootView) {
         try (TraceEvent e = TraceEvent.scoped("TabGridDialogCoordinator.constructor")) {
+            mContext = activity;
             mComponentName = animationSourceViewProvider == null ? "TabGridDialogFromStrip"
                                                                  : "TabGridDialogInSwitcher";
 
@@ -84,7 +90,12 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
                                     && SysUtils.isLowEndDevice()
                             ? TabListCoordinator.TabListMode.LIST
                             : TabListCoordinator.TabListMode.GRID,
-                    activity, tabModelSelector, tabContentManager::getTabThumbnailWithCallback,
+                    activity, tabModelSelector,
+                    (tabId, thumbnailSize, callback, forceUpdate, writeBack, isSelected)
+                            -> {
+                        tabContentManager.getTabThumbnailWithCallback(
+                                tabId, thumbnailSize, callback, forceUpdate, writeBack);
+                    },
                     null, false, gridCardOnClickListenerProvider,
                     mMediator.getTabGridDialogHandler(), TabProperties.UiType.CLOSABLE, null, null,
                     containerView, false, mComponentName, rootView, null);
@@ -95,7 +106,11 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
                             R.layout.bottom_tab_grid_toolbar, recyclerView, false);
             toolbarView.setupDialogToolbarLayout();
             if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(activity)) {
-                toolbarView.hideTabGroupsContinuationWidgets();
+                toolbarView.hideTitleWidget();
+            }
+            if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(activity)
+                    && !TabUiFeatureUtilities.isTabSelectionEditorV2Enabled(activity)) {
+                toolbarView.hideMenuButton();
             }
             mModelChangeProcessor = PropertyModelChangeProcessor.create(mModel,
                     new TabGridPanelViewBinder.ViewHolder(toolbarView, recyclerView, mDialogView),
@@ -108,24 +123,33 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
     public void initWithNative(Context context, TabModelSelector tabModelSelector,
             TabContentManager tabContentManager, TabGroupTitleEditor tabGroupTitleEditor) {
         try (TraceEvent e = TraceEvent.scoped("TabGridDialogCoordinator.initWithNative")) {
-            TabSelectionEditorCoordinator.TabSelectionEditorController controller = null;
-            if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(context)) {
-                @TabListCoordinator.TabListMode
-                int mode = SysUtils.isLowEndDevice() ? TabListCoordinator.TabListMode.LIST
-                                                     : TabListCoordinator.TabListMode.GRID;
-                mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(context,
-                        mDialogView.findViewById(R.id.dialog_container_view), tabModelSelector,
-                        tabContentManager, mode, mRootView, false);
+            mTabModelSelector = tabModelSelector;
+            mTabContentManager = tabContentManager;
 
-                controller = mTabSelectionEditorCoordinator.getController();
-            } else {
-                mTabSelectionEditorCoordinator = null;
-            }
-
-            mMediator.initWithNative(controller, tabGroupTitleEditor);
+            mMediator.initWithNative(this::getTabSelectionEditorController, tabGroupTitleEditor);
             mTabListCoordinator.initWithNative(null);
         }
     }
+
+    @Nullable
+    private TabSelectionEditorController getTabSelectionEditorController() {
+        if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(mContext)
+                && !TabUiFeatureUtilities.isTabSelectionEditorV2Enabled(mContext)) {
+            return null;
+        }
+
+        if (mTabSelectionEditorCoordinator == null) {
+            @TabListCoordinator.TabListMode
+            int mode = SysUtils.isLowEndDevice() ? TabListCoordinator.TabListMode.LIST
+                                                 : TabListCoordinator.TabListMode.GRID;
+            mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(mContext,
+                    mDialogView.findViewById(R.id.dialog_container_view), mTabModelSelector,
+                    mTabContentManager, mode, mRootView, /*displayGroups=*/false);
+        }
+
+        return mTabSelectionEditorCoordinator.getController();
+    }
+
     /**
      * Destroy any members that needs clean up.
      */
@@ -175,6 +199,11 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
     @Override
     public void postHiding() {
         mTabListCoordinator.postHiding();
+        if (ChromeFeatureList.sDiscardOccludedBitmaps.isEnabled()) {
+            // TODO(crbug/1366128): This shouldn't be required if resetWithListOfTabs(null) is
+            // called. Find out why this helps and fix upstream if possible.
+            mTabListCoordinator.softCleanup();
+        }
     }
 
     @Override

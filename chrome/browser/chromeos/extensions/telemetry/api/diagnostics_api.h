@@ -289,6 +289,63 @@ class OsDiagnosticsRunDiskReadRoutineFunction
   void RunIfAllowed() override;
 };
 
+class OsDiagnosticsRunDnsResolutionRoutineFunction
+    : public DiagnosticsApiRunRoutineFunctionBase {
+ public:
+  DECLARE_EXTENSION_FUNCTION("os.diagnostics.runDnsResolutionRoutine",
+                             OS_DIAGNOSTICS_RUNDNSRESOLUTIONROUTINE)
+
+  OsDiagnosticsRunDnsResolutionRoutineFunction();
+  OsDiagnosticsRunDnsResolutionRoutineFunction(
+      const OsDiagnosticsRunDnsResolutionRoutineFunction&) = delete;
+  OsDiagnosticsRunDnsResolutionRoutineFunction& operator=(
+      const OsDiagnosticsRunDnsResolutionRoutineFunction&) = delete;
+
+ private:
+  ~OsDiagnosticsRunDnsResolutionRoutineFunction() override;
+
+  // BaseTelemetryExtensionApiGuardFunction:
+  void RunIfAllowed() override;
+};
+
+class OsDiagnosticsRunDnsResolverPresentRoutineFunction
+    : public DiagnosticsApiRunRoutineFunctionBase {
+ public:
+  DECLARE_EXTENSION_FUNCTION("os.diagnostics.runDnsResolverPresentRoutine",
+                             OS_DIAGNOSTICS_RUNDNSRESOLVERPRESENTROUTINE)
+
+  OsDiagnosticsRunDnsResolverPresentRoutineFunction();
+  OsDiagnosticsRunDnsResolverPresentRoutineFunction(
+      const OsDiagnosticsRunDnsResolverPresentRoutineFunction&) = delete;
+  OsDiagnosticsRunDnsResolverPresentRoutineFunction& operator=(
+      const OsDiagnosticsRunDnsResolverPresentRoutineFunction&) = delete;
+
+ private:
+  ~OsDiagnosticsRunDnsResolverPresentRoutineFunction() override;
+
+  // BaseTelemetryExtensionApiGuardFunction:
+  void RunIfAllowed() override;
+};
+
+class OsDiagnosticsRunGatewayCanBePingedRoutineFunction
+    : public DiagnosticsApiRunRoutineFunctionBase {
+ public:
+  DECLARE_EXTENSION_FUNCTION("os.diagnostics.runGatewayCanBePingedRoutine",
+                             OS_DIAGNOSTICS_RUNGATEWAYCANBEPINGEDROUTINE)
+
+  OsDiagnosticsRunGatewayCanBePingedRoutineFunction();
+  OsDiagnosticsRunGatewayCanBePingedRoutineFunction(
+      const OsDiagnosticsRunGatewayCanBePingedRoutineFunction&) = delete;
+  OsDiagnosticsRunGatewayCanBePingedRoutineFunction& operator=(
+      const OsDiagnosticsRunGatewayCanBePingedRoutineFunction&) = delete;
+
+ private:
+  ~OsDiagnosticsRunGatewayCanBePingedRoutineFunction() override;
+
+  // BaseTelemetryExtensionApiGuardFunction:
+  void RunIfAllowed() override;
+};
+
 class OsDiagnosticsRunLanConnectivityRoutineFunction
     : public DiagnosticsApiRunRoutineFunctionBase {
  public:
@@ -341,6 +398,25 @@ class OsDiagnosticsRunNvmeWearLevelRoutineFunction
 
  private:
   ~OsDiagnosticsRunNvmeWearLevelRoutineFunction() override;
+
+  // BaseTelemetryExtensionApiGuardFunction:
+  void RunIfAllowed() override;
+};
+
+class OsDiagnosticsRunSignalStrengthRoutineFunction
+    : public DiagnosticsApiRunRoutineFunctionBase {
+ public:
+  DECLARE_EXTENSION_FUNCTION("os.diagnostics.runSignalStrengthRoutine",
+                             OS_DIAGNOSTICS_RUNSIGNALSTRENGTHROUTINE)
+
+  OsDiagnosticsRunSignalStrengthRoutineFunction();
+  OsDiagnosticsRunSignalStrengthRoutineFunction(
+      const OsDiagnosticsRunSignalStrengthRoutineFunction&) = delete;
+  OsDiagnosticsRunSignalStrengthRoutineFunction& operator=(
+      const OsDiagnosticsRunSignalStrengthRoutineFunction&) = delete;
+
+ private:
+  ~OsDiagnosticsRunSignalStrengthRoutineFunction() override;
 
   // BaseTelemetryExtensionApiGuardFunction:
   void RunIfAllowed() override;

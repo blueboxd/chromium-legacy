@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/page_info/page_info_cookies_content_view.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/page_info/page_info_main_view.h"
@@ -274,9 +275,10 @@ void PageInfoCookiesContentView::InitBlockingThirdPartyCookiesRow() {
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_BLOCK_THIRD_PARTY_COOKIES_TITLE);
   const auto icon = PageInfoViewFactory::GetBlockingThirdPartyCookiesIcon();
 
+  // |blocking_third_party_cookies_row_| has to be the first cookie button.
   blocking_third_party_cookies_row_ =
-      cookies_buttons_container_view_->AddChildView(
-          std::make_unique<PageInfoRowView>());
+      cookies_buttons_container_view_->AddChildViewAt(
+          std::make_unique<PageInfoRowView>(), 0);
   blocking_third_party_cookies_row_->SetTitle(title);
   blocking_third_party_cookies_row_->SetIcon(icon);
   blocking_third_party_cookies_row_->SetID(
@@ -301,11 +303,11 @@ void PageInfoCookiesContentView::SetFpsCookiesInfo(
     absl::optional<CookiesFpsInfo> fps_info,
     bool is_fps_allowed) {
   if (is_fps_allowed) {
-    InitFpsButton();
+    InitFpsButton(fps_info->is_managed);
     fps_button_->SetVisible(true);
 
-    const std::u16string fps_button_title = l10n_util::GetStringFUTF16(
-        IDS_PAGE_INFO_FPS_BUTTON_TITLE, fps_info->owner_name);
+    const std::u16string fps_button_title =
+        l10n_util::GetStringUTF16(IDS_PAGE_INFO_FPS_BUTTON_TITLE);
     const std::u16string fps_button_subtitle = l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_FPS_BUTTON_SUBTITLE, fps_info->owner_name);
 
@@ -315,17 +317,16 @@ void PageInfoCookiesContentView::SetFpsCookiesInfo(
   } else if (fps_button_) {
     fps_button_->SetVisible(false);
   }
+  if (!fps_histogram_recorded_) {
+    fps_histogram_recorded_ = true;
+    base::UmaHistogramBoolean("Security.PageInfo.Cookies.HasFPSInfo",
+                              is_fps_allowed);
+  }
 }
 
-void PageInfoCookiesContentView::InitFpsButton() {
+void PageInfoCookiesContentView::InitFpsButton(bool is_managed) {
   if (fps_button_)
     return;
-
-  PageInfo::PermissionInfo info;
-  info.type = ContentSettingsType::COOKIES;
-  info.setting = CONTENT_SETTING_ALLOW;
-  // TODO(crbug.com/1346305): Change to the correct icon, after it's decided.
-  const ui::ImageModel icon_fps = PageInfoViewFactory::GetPermissionIcon(info);
 
   const std::u16string& tooltip =
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_FPS_BUTTON_TOOLTIP);
@@ -337,10 +338,14 @@ void PageInfoCookiesContentView::InitFpsButton() {
           base::BindRepeating(
               &PageInfoCookiesContentView::FpsSettingsButtonClicked,
               base::Unretained(this)),
-          icon_fps, IDS_PAGE_INFO_COOKIES, std::u16string(),
+          PageInfoViewFactory::GetFpsIcon(), IDS_PAGE_INFO_COOKIES,
+          std::u16string(),
           PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_FPS_SETTINGS,
           tooltip, /*secondary_text=*/u" ",
-          PageInfoViewFactory::GetLaunchIcon()));
+          PageInfoViewFactory::GetLaunchIcon(),
+          is_managed ? absl::optional<ui::ImageModel>(
+                           PageInfoViewFactory::GetEnforcedByPolicyIcon())
+                     : absl::nullopt));
 }
 
 void PageInfoCookiesContentView::FpsSettingsButtonClicked(ui::Event const&) {

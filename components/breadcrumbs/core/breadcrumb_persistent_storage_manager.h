@@ -12,15 +12,13 @@
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/breadcrumbs/core/breadcrumb_manager.h"
 #include "components/breadcrumbs/core/breadcrumb_manager_observer.h"
 #include "components/breadcrumbs/core/breadcrumbs_status.h"
 #include "components/breadcrumbs/core/crash_reporter_breadcrumb_constants.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace breadcrumbs {
-
-class BreadcrumbManager;
-class BreadcrumbManagerKeyedService;
 
 // The filesize for the file at |breadcrumbs_file_path_|. The file will always
 // be this constant size because it is accessed using a memory mapped file. The
@@ -34,7 +32,8 @@ constexpr size_t kPersistedFilesizeInBytes = kMaxDataLength * 2;
 // application sessions.
 class BreadcrumbPersistentStorageManager : public BreadcrumbManagerObserver {
  public:
-  // Breadcrumbs will be stored in a file in |directory|.
+  // Observes the BreadcrumbManager and stores observed breadcrumb events to a
+  // file in `directory`.
   explicit BreadcrumbPersistentStorageManager(
       const base::FilePath& directory,
       base::RepeatingCallback<bool()> is_metrics_enabled_callback);
@@ -47,19 +46,6 @@ class BreadcrumbPersistentStorageManager : public BreadcrumbManagerObserver {
   // Returns the stored breadcrumb events from disk to |callback|.
   void GetStoredEvents(
       base::OnceCallback<void(std::vector<std::string>)> callback);
-
-  // Starts observing |manager| for events. Existing events will be persisted
-  // immediately.
-  void MonitorBreadcrumbManager(BreadcrumbManager* manager);
-  // Starts observing |service| for events. Existing events will be persisted
-  // immediately.
-  void MonitorBreadcrumbManagerService(BreadcrumbManagerKeyedService* service);
-
-  // Stops observing |manager|.
-  void StopMonitoringBreadcrumbManager(BreadcrumbManager* manager);
-  // Stops observing |service|.
-  void StopMonitoringBreadcrumbManagerService(
-      BreadcrumbManagerKeyedService* service);
 
  private:
   // Returns whether metrics consent has been provided and the persistent
@@ -82,7 +68,7 @@ class BreadcrumbPersistentStorageManager : public BreadcrumbManagerObserver {
       const std::vector<std::string> pending_breadcrumbs,
       std::vector<std::string> existing_events);
 
-  // Writes events from observed managers to |breadcrumbs_file_|, overwriting
+  // Writes events from BreadcrumbManager to `breadcrumbs_file_`, overwriting
   // any existing persisted breadcrumbs.
   void RewriteAllExistingBreadcrumbs();
 
@@ -90,9 +76,8 @@ class BreadcrumbPersistentStorageManager : public BreadcrumbManagerObserver {
   void WritePendingBreadcrumbs();
 
   // BreadcrumbManagerObserver
-  void EventAdded(BreadcrumbManager* manager,
-                  const std::string& event) override;
-  void OldEventsRemoved(BreadcrumbManager* manager) override;
+  void EventAdded(const std::string& event) override;
+  void OldEventsRemoved() override;
 
   // Individual breadcrumbs that have not yet been written to disk.
   std::string pending_breadcrumbs_;
@@ -103,6 +88,16 @@ class BreadcrumbPersistentStorageManager : public BreadcrumbManagerObserver {
 
   // A timer to delay writing to disk too often.
   base::OneShotTimer write_timer_;
+
+  // TODO(crbug.com/1327267): Remove these counters once crash is understood.
+  // The number of times the breadcrumbs file has been written to. Counts from
+  // the perspective of the main thread, i.e., a write is counted at the time
+  // that a task to write is posted.
+  size_t write_counter_ = 0;
+  // The value of `write_counter_` when the file was last fully rewritten, i.e.,
+  // replaced by the temp file. Intended to investigate whether replacing the
+  // breadcrumbs file can sometimes cause a crash on the next write attempt.
+  size_t write_counter_at_last_full_rewrite_ = 0;
 
   // The path to the file for storing persisted breadcrumbs.
   const base::FilePath breadcrumbs_file_path_;

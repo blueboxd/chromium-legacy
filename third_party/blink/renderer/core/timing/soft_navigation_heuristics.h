@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,15 +36,17 @@ class SoftNavigationHeuristics
   // The class's API.
   void UserInitiatedClick(ScriptState*);
   void ClickEventEnded(ScriptState*);
-  void SawURLChange(ScriptState*);
-  void ModifiedMain(ScriptState*);
+  void SawURLChange(ScriptState*, const String& url);
+  void ModifiedDOM(ScriptState*);
   uint32_t SoftNavigationCount() { return soft_navigation_count_; }
+  void SetBackForwardNavigationURL(ScriptState* script_state,
+                                   const String& url);
 
   // TaskAttributionTracker::Observer's implementation.
   void OnCreateTaskScope(const scheduler::TaskAttributionId&) override;
 
  private:
-  void CheckSoftNavigation(ScriptState*);
+  void CheckAndReportSoftNavigation(ScriptState*);
   void SetIsTrackingSoftNavigationHeuristicsOnDocument(bool value) const;
   enum FlagType : uint8_t {
     kURLChange,
@@ -53,12 +55,20 @@ class SoftNavigationHeuristics
   using FlagTypeSet = base::EnumSet<FlagType, kURLChange, kMainModification>;
 
   bool IsCurrentTaskDescendantOfClickEventHandler(ScriptState*);
-  bool SetFlagIfDescendantAndCheck(ScriptState*, FlagType);
+  bool SetFlagIfDescendantAndCheck(ScriptState*,
+                                   FlagType,
+                                   absl::optional<String> url = absl::nullopt);
   void ResetHeuristic();
+  void ResetPaintsIfNeeded(LocalFrame*, LocalDOMWindow*);
 
   WTF::HashSet<scheduler::TaskAttributionIdType>
       potential_soft_navigation_task_ids_;
   FlagTypeSet flag_set_;
+  bool did_reset_paints_ = false;
+  String url_;
+  // The timestamp just before the click event responding to the user's click
+  // started processing.
+  base::TimeTicks user_click_timestamp_;
   uint32_t soft_navigation_count_ = 0;
 };
 

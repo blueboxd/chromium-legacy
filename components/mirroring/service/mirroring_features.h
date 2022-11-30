@@ -12,17 +12,19 @@
 namespace mirroring {
 namespace features {
 
-COMPONENT_EXPORT(MIRRORING_SERVICE)
-extern const base::Feature kCastStreamingAv1;
+COMPONENT_EXPORT(MIRRORING_SERVICE) BASE_DECLARE_FEATURE(kCastStreamingAv1);
+
+COMPONENT_EXPORT(MIRRORING_SERVICE) BASE_DECLARE_FEATURE(kCastStreamingVp9);
 
 COMPONENT_EXPORT(MIRRORING_SERVICE)
-extern const base::Feature kCastStreamingVp9;
+BASE_DECLARE_FEATURE(kCastUseBlocklistForRemotingQuery);
 
 COMPONENT_EXPORT(MIRRORING_SERVICE)
-extern const base::Feature kCastUseBlocklistForRemotingQuery;
+BASE_DECLARE_FEATURE(kCastForceEnableRemotingQuery);
 
+// TODO(crbug.com/1363512): Remove support for sender side letterboxing.
 COMPONENT_EXPORT(MIRRORING_SERVICE)
-extern const base::Feature kCastForceEnableRemotingQuery;
+BASE_DECLARE_FEATURE(kCastDisableLetterboxing);
 
 bool IsCastStreamingAV1Enabled();
 

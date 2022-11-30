@@ -20,12 +20,13 @@
 namespace content {
 
 class BrowserAccessibilityCocoaBrowserTest;
+class WebAXPlatformTreeManagerDelegate;
 
 class CONTENT_EXPORT BrowserAccessibilityManagerMac
     : public BrowserAccessibilityManager {
  public:
   BrowserAccessibilityManagerMac(const ui::AXTreeUpdate& initial_tree,
-                                 BrowserAccessibilityDelegate* delegate);
+                                 WebAXPlatformTreeManagerDelegate* delegate);
 
   BrowserAccessibilityManagerMac(const BrowserAccessibilityManagerMac&) =
       delete;
@@ -46,7 +47,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
                       BrowserAccessibility* node,
                       int action_request_id) override;
   void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
-                          BrowserAccessibility* node) override;
+                          const ui::AXNode* node) override;
 
   bool OnAccessibilityEvents(
       const AXEventNotificationDetails& details) override;

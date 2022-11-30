@@ -168,7 +168,7 @@ Resource* CachedResource(LocalFrame* frame,
     return nullptr;
   Resource* cached_resource = document->Fetcher()->CachedResource(url);
   if (!cached_resource) {
-    cached_resource = GetMemoryCache()->ResourceForURL(
+    cached_resource = MemoryCache::Get()->ResourceForURL(
         url, document->Fetcher()->GetCacheIdentifier(url));
   }
   if (!cached_resource)
@@ -259,7 +259,7 @@ static bool HasTextContent(const Resource* cached_resource) {
 static std::unique_ptr<TextResourceDecoder> CreateResourceTextDecoder(
     const String& mime_type,
     const String& text_encoding_name) {
-  if (!text_encoding_name.IsEmpty()) {
+  if (!text_encoding_name.empty()) {
     return std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
         TextResourceDecoderOptions::kPlainTextContent,
         WTF::TextEncoding(text_encoding_name)));
@@ -406,7 +406,7 @@ bool InspectorPageAgent::CachedResourceContent(const Resource* cached_resource,
     default:
       String text_encoding_name =
           cached_resource->GetResponse().TextEncodingName();
-      if (text_encoding_name.IsEmpty() &&
+      if (text_encoding_name.empty() &&
           cached_resource->GetType() != blink::ResourceType::kRaw)
         text_encoding_name = "WinLatin1";
       return InspectorPageAgent::SharedBufferContent(
@@ -742,7 +742,7 @@ void InspectorPageAgent::getResourceContent(
   }
   inspector_resource_content_loader_->EnsureResourcesContentLoaded(
       resource_content_loader_client_id_,
-      WTF::Bind(
+      WTF::BindOnce(
           &InspectorPageAgent::GetResourceContentAfterResourcesContentLoaded,
           WrapPersistent(this), frame_id, url, std::move(callback)));
 }
@@ -792,10 +792,11 @@ void InspectorPageAgent::searchInResource(
   }
   inspector_resource_content_loader_->EnsureResourcesContentLoaded(
       resource_content_loader_client_id_,
-      WTF::Bind(&InspectorPageAgent::SearchContentAfterResourcesContentLoaded,
-                WrapPersistent(this), frame_id, url, query,
-                optional_case_sensitive.fromMaybe(false),
-                optional_is_regex.fromMaybe(false), std::move(callback)));
+      WTF::BindOnce(
+          &InspectorPageAgent::SearchContentAfterResourcesContentLoaded,
+          WrapPersistent(this), frame_id, url, query,
+          optional_case_sensitive.fromMaybe(false),
+          optional_is_regex.fromMaybe(false), std::move(callback)));
 }
 
 Response InspectorPageAgent::setBypassCSP(bool enabled) {
@@ -957,7 +958,7 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
 
     ScriptState* script_state = nullptr;
     const String world_name = worlds_to_evaluate_on_load_.Get(key);
-    if (world_name.IsEmpty()) {
+    if (world_name.empty()) {
       script_state = ToScriptStateForMainWorld(window->GetFrame());
     } else if (scoped_refptr<DOMWrapperWorld> world = EnsureDOMWrapperWorld(
                    frame, world_name, true /* grant_universal_access */)) {
@@ -984,7 +985,7 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
             ExecuteScriptPolicy::kExecuteScriptWhenScriptsDisabled);
   }
 
-  if (!script_to_evaluate_on_load_once_.IsEmpty()) {
+  if (!script_to_evaluate_on_load_once_.empty()) {
     ClassicScript::CreateUnspecifiedScript(script_to_evaluate_on_load_once_)
         ->RunScript(frame->DomWindow(),
                     ExecuteScriptPolicy::kExecuteScriptWhenScriptsDisabled);
@@ -1407,7 +1408,7 @@ std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
   if (parent_frame) {
     frame_object->setParentId(IdentifiersFactory::FrameId(parent_frame));
     AtomicString name = frame->Tree().GetName();
-    if (name.IsEmpty() && frame->DeprecatedLocalOwner()) {
+    if (name.empty() && frame->DeprecatedLocalOwner()) {
       name =
           frame->DeprecatedLocalOwner()->FastGetAttribute(html_names::kIdAttr);
     }

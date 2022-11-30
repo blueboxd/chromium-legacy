@@ -4,12 +4,12 @@
 
 #include "net/cert/pki/ocsp.h"
 
-#include "base/base64.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "net/cert/pki/test_helpers.h"
 #include "net/der/encode_values.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/boringssl/src/include/openssl/base64.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
 #include "url/gurl.h"
 
@@ -23,7 +23,7 @@ std::string GetFilePath(const std::string& file_name) {
   return std::string("net/data/ocsp_unittest/") + file_name;
 }
 
-scoped_refptr<ParsedCertificate> ParseCertificate(base::StringPiece data) {
+scoped_refptr<ParsedCertificate> ParseCertificate(std::string_view data) {
   CertErrors errors;
   return ParsedCertificate::Create(
       bssl::UniquePtr<CRYPTO_BUFFER>(CRYPTO_BUFFER_new(
@@ -124,7 +124,7 @@ const TestParams kTestParams[] = {
 // Parameterised test name generator for tests depending on RenderTextBackend.
 struct PrintTestName {
   std::string operator()(const testing::TestParamInfo<TestParams>& info) const {
-    base::StringPiece name(info.param.file_name);
+    std::string_view name(info.param.file_name);
     // Strip ".pem" from the end as GTest names cannot contain period.
     name.remove_suffix(4);
     return std::string(name);
@@ -178,7 +178,7 @@ TEST_P(CheckOCSPTest, FromFile) {
             der::Input(&request_data));
 }
 
-base::StringPiece kGetURLTestParams[] = {
+std::string_view kGetURLTestParams[] = {
     "http://www.example.com/",
     "http://www.example.com/path/",
     "http://www.example.com/path",
@@ -186,8 +186,8 @@ base::StringPiece kGetURLTestParams[] = {
     "http://user:pass@www.example.com/path?query",
 };
 
-class CreateOCSPGetURLTest
-    : public ::testing::TestWithParam<base::StringPiece> {};
+class CreateOCSPGetURLTest : public ::testing::TestWithParam<std::string_view> {
+};
 
 INSTANTIATE_TEST_SUITE_P(All,
                          CreateOCSPGetURLTest,
@@ -228,10 +228,15 @@ TEST_P(CreateOCSPGetURLTest, Basic) {
   base::ReplaceSubstringsAfterOffset(&b64, 0, "%3D", "=");
 
   // Base64 decode the data.
-  std::string decoded;
-  ASSERT_TRUE(base::Base64Decode(b64, &decoded));
+  size_t len;
+  EXPECT_TRUE(EVP_DecodedLength(&len, b64.size()));
+  std::vector<uint8_t> decoded(len);
+  EXPECT_TRUE(EVP_DecodeBase64(decoded.data(), &len, len,
+                               reinterpret_cast<const uint8_t*>(b64.data()),
+                               b64.size()));
+  std::string decoded_string(decoded.begin(), decoded.begin() + len);
 
-  EXPECT_EQ(request_data, decoded);
+  EXPECT_EQ(request_data, decoded_string);
 }
 
 }  // namespace

@@ -1379,11 +1379,11 @@ void TestView::OnDidSchedulePaint(const gfx::Rect& rect) {
 namespace {
 
 gfx::Transform RotationCounterclockwise() {
-  return gfx::Transform::RotationAboutZAxisSinCos(-1, 0);
+  return gfx::Transform::Make270degRotation();
 }
 
 gfx::Transform RotationClockwise() {
-  return gfx::Transform::RotationAboutZAxisSinCos(1, 0);
+  return gfx::Transform::Make90degRotation();
 }
 
 }  // namespace
@@ -2697,7 +2697,7 @@ TEST_F(ViewTest, TransformEvent) {
   // transforamtion.
   gfx::Transform scale;
   scale.Scale(0.8f, 0.5f);
-  transform.ConcatTransform(scale);
+  transform.PostConcat(scale);
   v3->SetTransform(transform);
 
   // Translate |v2| with respect to |v1|.
@@ -2953,8 +2953,8 @@ TEST_F(ViewTest, ConversionsWithTransform) {
     t2.Scale(100.0, 55.0);
     gfx::Transform t3;
     t3.Translate(110.0, -110.0);
-    transform.ConcatTransform(t2);
-    transform.ConcatTransform(t3);
+    transform.PostConcat(t2);
+    transform.PostConcat(t3);
 
     // convert to a 3x3 matrix
     SkMatrix matrix = gfx::TransformToFlattenedSkMatrix(transform);

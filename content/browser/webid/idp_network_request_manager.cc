@@ -51,8 +51,7 @@ constexpr char kManifestListPath[] = "/.well-known/web-identity";
 constexpr char kProviderUrlListKey[] = "provider_urls";
 
 // fedcm.json configuration keys.
-// TODO(crbug.com/1339373): Rename id_token_endpoint to another name.
-constexpr char kTokenEndpointKey[] = "id_token_endpoint";
+constexpr char kIdAssertionEndpoint[] = "id_assertion_endpoint";
 constexpr char kAccountsEndpointKey[] = "accounts_endpoint";
 constexpr char kClientMetadataEndpointKey[] = "client_metadata_endpoint";
 constexpr char kRevocationEndpoint[] = "revocation_endpoint";
@@ -130,10 +129,6 @@ net::NetworkTrafficAnnotationTag CreateTrafficAnnotation() {
         })");
 }
 
-void AddCsrfHeader(network::ResourceRequest* request) {
-  request->headers.SetHeader(kSecFedCmCsrfHeader, kSecFedCmCsrfHeaderValue);
-}
-
 absl::optional<content::IdentityRequestAccount> ParseAccount(
     const base::Value& account,
     const std::string& client_id) {
@@ -152,7 +147,7 @@ absl::optional<content::IdentityRequestAccount> ParseAccount(
 
   absl::optional<LoginState> approved_value;
   if (approved_clients) {
-    for (const base::Value& entry : approved_clients->GetListDeprecated()) {
+    for (const base::Value& entry : approved_clients->GetList()) {
       if (entry.is_string() && entry.GetString() == client_id) {
         approved_value = LoginState::kSignIn;
         break;
@@ -182,7 +177,7 @@ bool ParseAccounts(const base::Value* accounts,
     return false;
 
   base::flat_set<std::string> account_ids;
-  for (auto& account : accounts->GetListDeprecated()) {
+  for (auto& account : accounts->GetList()) {
     if (!account.is_dict())
       return false;
 
@@ -234,7 +229,7 @@ void ParseIdentityProviderMetadata(const base::Value& idp_metadata_value,
       idp_metadata_value.FindKey(kIdpBrandingIcons);
   if (icons_value != nullptr && icons_value->is_list()) {
     std::vector<blink::Manifest::ImageResource> icons;
-    for (const base::Value& icon_value : icons_value->GetListDeprecated()) {
+    for (const base::Value& icon_value : icons_value->GetList()) {
       if (!icon_value.is_dict())
         continue;
 
@@ -317,6 +312,7 @@ void OnDownloadedJson(
 
 void OnManifestListParsed(
     IdpNetworkRequestManager::FetchManifestListCallback callback,
+    const GURL& manifest_list_url,
     FetchStatus fetch_status,
     data_decoder::DataDecoder::ValueOrError result) {
   if (callback.IsCancelled())
@@ -342,13 +338,17 @@ void OnManifestListParsed(
   }
 
   for (const auto& value : *list) {
-    const std::string* url = value.GetIfString();
-    if (!url) {
+    const std::string* url_str = value.GetIfString();
+    if (!url_str) {
       std::move(callback).Run(FetchStatus::kInvalidResponseError,
                               std::set<GURL>());
       return;
     }
-    urls.insert(GURL(*url));
+    GURL url(*url_str);
+    if (!url.is_valid()) {
+      url = manifest_list_url.Resolve(*url_str);
+    }
+    urls.insert(url);
   }
 
   std::move(callback).Run(FetchStatus::kSuccess, urls);
@@ -376,7 +376,7 @@ void OnManifestParsed(const GURL& provider,
   };
 
   Endpoints endpoints;
-  endpoints.token = ExtractEndpoint(kTokenEndpointKey);
+  endpoints.token = ExtractEndpoint(kIdAssertionEndpoint);
   endpoints.accounts = ExtractEndpoint(kAccountsEndpointKey);
   endpoints.client_metadata = ExtractEndpoint(kClientMetadataEndpointKey);
   endpoints.revocation = ExtractEndpoint(kRevocationEndpoint);
@@ -544,6 +544,7 @@ void IdpNetworkRequestManager::FetchManifestList(
   if (!manifest_list_url) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&OnManifestListParsed, std::move(callback),
+                                  /*manifest_list_url=*/GURL(),
                                   FetchStatus::kHttpNotFoundError,
                                   data_decoder::DataDecoder::ValueOrError()));
     return;
@@ -553,11 +554,11 @@ void IdpNetworkRequestManager::FetchManifestList(
       CreateUncredentialedResourceRequest(*manifest_list_url,
                                           /*send_referrer=*/false,
                                           /* follow_redirects= */ true);
-  DownloadJsonAndParse(
-      std::move(resource_request),
-      /*url_encoded_post_data=*/absl::nullopt,
-      base::BindOnce(&OnManifestListParsed, std::move(callback)),
-      maxResponseSizeInKiB * 1024);
+  DownloadJsonAndParse(std::move(resource_request),
+                       /*url_encoded_post_data=*/absl::nullopt,
+                       base::BindOnce(&OnManifestListParsed,
+                                      std::move(callback), *manifest_list_url),
+                       maxResponseSizeInKiB * 1024);
 }
 
 void IdpNetworkRequestManager::FetchManifest(
@@ -768,7 +769,8 @@ IdpNetworkRequestManager::CreateUncredentialedResourceRequest(
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kAccept,
                                       kResponseBodyContentType);
-  AddCsrfHeader(resource_request.get());
+  resource_request->destination =
+      network::mojom::RequestDestination::kWebIdentity;
   if (send_referrer) {
     resource_request->referrer = relying_party_origin_.GetURL();
     // Since referrer_policy only affects redirects and we never send a
@@ -801,7 +803,6 @@ IdpNetworkRequestManager::CreateCredentialedResourceRequest(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   auto target_origin = url::Origin::Create(target_url);
   auto site_for_cookies = net::SiteForCookies::FromOrigin(target_origin);
-  AddCsrfHeader(resource_request.get());
   // We set the initiator to nullopt to denote browser-initiated so that this
   // request is considered first-party. We want to send first-party cookies
   // because this is not a real third-party request as it is mediated by the
@@ -810,6 +811,8 @@ IdpNetworkRequestManager::CreateCredentialedResourceRequest(
   // We use nullopt instead of target_origin because we want to send a
   // `Sec-Fetch-Site: none` header instead of `Sec-Fetch-Site: same-origin`.
   resource_request->request_initiator = absl::nullopt;
+  resource_request->destination =
+      network::mojom::RequestDestination::kWebIdentity;
   resource_request->url = target_url;
   resource_request->site_for_cookies = site_for_cookies;
   if (send_referrer) {

@@ -37,9 +37,9 @@
 #include "third_party/perfetto/include/perfetto/test/traced_value_test_support.h"  // no-presubmit-check nogncheck
 #endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
-#if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+#if defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 #include "base/allocator/partition_allocator/partition_tag_types.h"
-#endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+#endif  // defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
 #if BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
 #include <sanitizer/asan_interface.h>
@@ -92,7 +92,7 @@ static_assert(
 namespace {
 
 using RawPtrCountingImpl =
-    base::internal::RawPtrCountingImplWrapperForTest<base::DefaultRawPtrImpl>;
+    base::internal::RawPtrCountingImplWrapperForTest<base::DefaultRawPtrType>;
 using RawPtrCountingMayDangleImpl =
     base::internal::RawPtrCountingImplWrapperForTest<base::RawPtrMayDangle>;
 
@@ -1656,7 +1656,7 @@ TEST_F(BackupRefPtrTest, ReinterpretCast) {
   raw_ptr<void>* wrapped_ptr = reinterpret_cast<raw_ptr<void>*>(&ptr);
   // The reference count cookie check should detect that the allocation has
   // been already freed.
-  EXPECT_DEATH_IF_SUPPORTED(*wrapped_ptr = nullptr, "");
+  BASE_EXPECT_DEATH(*wrapped_ptr = nullptr, "");
 }
 #endif
 
@@ -1692,7 +1692,7 @@ TEST_F(BackupRefPtrTest, RawPtrMayDangle) {
   void* ptr = allocator_.root()->Alloc(16, "");
   raw_ptr<void, DisableDanglingPtrDetection> dangling_ptr = ptr;
   allocator_.root()->Free(ptr);  // No dangling raw_ptr reported.
-  dangling_ptr = nullptr;       // No dangling raw_ptr reported.
+  dangling_ptr = nullptr;        // No dangling raw_ptr reported.
 }
 
 TEST_F(BackupRefPtrTest, RawPtrNotDangling) {
@@ -1701,10 +1701,10 @@ TEST_F(BackupRefPtrTest, RawPtrNotDangling) {
   void* ptr = allocator_.root()->Alloc(16, "");
   raw_ptr<void> dangling_ptr = ptr;
 #if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS)
-  EXPECT_DEATH_IF_SUPPORTED(
+  BASE_EXPECT_DEATH(
       {
         allocator_.root()->Free(ptr);  // Dangling raw_ptr detected.
-        dangling_ptr = nullptr;       // Dangling raw_ptr released.
+        dangling_ptr = nullptr;        // Dangling raw_ptr released.
       },
       AllOf(HasSubstr("Detected dangling raw_ptr"),
             HasSubstr("The memory was freed at:"),
@@ -1807,10 +1807,10 @@ TEST_F(BackupRefPtrTest, RawPtrDeleteWithoutExtractAsDangling) {
   raw_ptr<int> ptr =
       static_cast<int*>(allocator_.root()->Alloc(sizeof(int), ""));
 #if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS)
-  EXPECT_DEATH_IF_SUPPORTED(
+  BASE_EXPECT_DEATH(
       {
         allocator_.root()->Free(ptr.get());  // Dangling raw_ptr detected.
-        ptr = nullptr;                      // Dangling raw_ptr released.
+        ptr = nullptr;                       // Dangling raw_ptr released.
       },
       AllOf(HasSubstr("Detected dangling raw_ptr"),
             HasSubstr("The memory was freed at:"),
@@ -1855,8 +1855,7 @@ const char kAsanBrpNotProtected_NoRawPtrAccess[] =
 class AsanBackupRefPtrTest : public testing::Test {
  protected:
   void SetUp() override {
-    if (RawPtrAsanService::GetInstance().mode() !=
-        RawPtrAsanService::Mode::kEnabled) {
+    if (!RawPtrAsanService::GetInstance().IsEnabled()) {
       base::RawPtrAsanService::GetInstance().Configure(
           base::EnableDereferenceCheck(true), base::EnableExtractionCheck(true),
           base::EnableInstantiationCheck(true));
@@ -2207,7 +2206,7 @@ TEST_F(AsanBackupRefPtrTest, BoundReferences) {
 
 #endif  // BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
 
-#if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+#if defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
 static constexpr size_t kTagOffsetForTest = 2;
 
@@ -2385,7 +2384,7 @@ TEST(MTECheckedPtrImpl, AdvancedPointerShiftedAppropriately) {
 #endif  // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR) &&
         // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
-#endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+#endif  // defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
 }  // namespace internal
 }  // namespace base

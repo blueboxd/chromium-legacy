@@ -1225,14 +1225,14 @@ static void ComputeGlyphOverflow(
       &fallback_fonts, &glyph_bounds);
   const Font& font = layout_text.StyleRef().GetFont();
   glyph_overflow.SetFromBounds(glyph_bounds, font, measured_width);
-  if (!fallback_fonts.IsEmpty()) {
+  if (!fallback_fonts.empty()) {
     GlyphOverflowAndFallbackFontsMap::ValueType* it =
         text_box_data_map
             .insert(text, std::make_pair(Vector<const SimpleFontData*>(),
                                          GlyphOverflow()))
             .stored_value;
-    DCHECK(it->value.first.IsEmpty());
-    CopyToVector(fallback_fonts, it->value.first);
+    DCHECK(it->value.first.empty());
+    it->value.first.assign(fallback_fonts);
   }
   if (!glyph_overflow.IsApproximatelyZero()) {
     GlyphOverflowAndFallbackFontsMap::ValueType* it =
@@ -1279,7 +1279,7 @@ void InlineFlowBox::ComputeOverflow(
         text_box_overflow.SetWidth(
             LayoutUnit(text_box_overflow.Width() + text->NewlineSpaceWidth()));
       } else {
-        if (text_box_data_map.IsEmpty()) {
+        if (text_box_data_map.empty()) {
           // An empty glyph map means that we're computing overflow without
           // a layout, so calculate the glyph overflow on the fly.
           GlyphOverflowAndFallbackFontsMap glyph_overflow_for_text;

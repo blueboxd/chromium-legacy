@@ -130,10 +130,9 @@ class NotificationsEnabledDeferred {
   explicit NotificationsEnabledDeferred(PrefService* prefs) : prefs_(prefs) {}
 
   void Put(const std::string& app_id, bool enabled) {
-    DictionaryPrefUpdate update(
+    ScopedDictPrefUpdate update(
         prefs_, arc::prefs::kArcSetNotificationsEnabledDeferred);
-    base::Value* const dict = update.Get();
-    dict->GetDict().Set(app_id, base::Value(enabled));
+    update->Set(app_id, enabled);
   }
 
   bool Get(const std::string& app_id) {
@@ -143,10 +142,9 @@ class NotificationsEnabledDeferred {
   }
 
   void Remove(const std::string& app_id) {
-    DictionaryPrefUpdate update(
+    ScopedDictPrefUpdate update(
         prefs_, arc::prefs::kArcSetNotificationsEnabledDeferred);
-    base::Value* const dict = update.Get();
-    dict->GetDict().Remove(app_id);
+    update->Remove(app_id);
   }
 
  private:
@@ -753,24 +751,22 @@ std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
   GetInt64FromPref(package, kLastBackupTime, &last_backup_time);
   const base::Value* permission_val = package->Find(kPermissionStates);
   if (permission_val) {
-    const base::DictionaryValue* permission_dict = nullptr;
-    permission_val->GetAsDictionary(&permission_dict);
+    const base::Value::Dict* permission_dict = permission_val->GetIfDict();
     DCHECK(permission_dict);
 
-    for (const auto item : permission_dict->GetDict()) {
+    for (const auto iter : *permission_dict) {
       int64_t permission_type = -1;
-      base::StringToInt64(item.first, &permission_type);
+      base::StringToInt64(iter.first, &permission_type);
       DCHECK_NE(-1, permission_type);
 
-      const base::Value& permission_state = item.second;
+      const base::Value& permission_state = iter.second;
 
-      const base::DictionaryValue* permission_state_dict;
-      if (permission_state.GetAsDictionary(&permission_state_dict)) {
-        bool granted = permission_state_dict->GetDict()
-                           .FindBool(kPermissionStateGranted)
+      const base::Value::Dict* permission_state_dict =
+          permission_state.GetIfDict();
+      if (permission_state_dict) {
+        bool granted = permission_state_dict->FindBool(kPermissionStateGranted)
                            .value_or(false);
-        bool managed = permission_state_dict->GetDict()
-                           .FindBool(kPermissionStateManaged)
+        bool managed = permission_state_dict->FindBool(kPermissionStateManaged)
                            .value_or(false);
         arc::mojom::AppPermission permission =
             static_cast<arc::mojom::AppPermission>(permission_type);
@@ -971,6 +967,12 @@ bool ArcAppListPrefs::IsControlledByPolicy(
   return packages_by_policy_.count(package_name);
 }
 
+bool ArcAppListPrefs::IsAbleToBeLaunched(const std::string& app_id) const {
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = GetApp(app_id);
+  return app_info && !app_info->suspended && app_info->ready &&
+         !app_info->need_fixup;
+}
+
 base::Time ArcAppListPrefs::PollLaunchRequestTime(const std::string& app_id) {
   if (!launch_request_times_.count(app_id))
     return base::Time();
@@ -1002,9 +1004,9 @@ void ArcAppListPrefs::SetLastLaunchTimeInternal(const std::string& app_id) {
 
   const base::Time time = base::Time::Now();
   arc::ArcAppScopedPrefUpdate update(prefs_, app_id, arc::prefs::kArcApps);
-  base::Value* app_dict = update.Get();
+  base::Value::Dict& app_dict = update.Get();
   const std::string string_value = base::NumberToString(time.ToInternalValue());
-  app_dict->GetDict().Set(kLastLaunchTime, string_value);
+  app_dict.Set(kLastLaunchTime, string_value);
 
   for (auto& observer : observer_list_)
     observer.OnAppLastLaunchTimeUpdated(app_id);
@@ -1241,11 +1243,11 @@ void ArcAppListPrefs::SetResizeLockState(const std::string& app_id,
   instance->SetResizeLockState(app_info->package_name, state);
 
   arc::ArcAppScopedPrefUpdate update(prefs_, app_id, arc::prefs::kArcApps);
-  base::Value* app_dict = update.Get();
-  app_dict->GetDict().Set(kResizeLockState, static_cast<int32_t>(state));
+  base::Value::Dict& app_dict = update.Get();
+  app_dict.Set(kResizeLockState, static_cast<int32_t>(state));
 
   // If the app is not "ready", we shouldn't fire the AppStatesChanged
-  // callbacks. Otherwise, it would cause a crash (See crbug.com/127660). When
+  // callbacks. Otherwise, it would cause a crash (See crbug.com/1276603). When
   // the app is changed to "ready", ArcAppListPrefs sends the notifications
   // afterwards so it's fine not to fire it here.
   if (app_info->ready)
@@ -1272,8 +1274,8 @@ void ArcAppListPrefs::SetResizeLockNeedsConfirmation(const std::string& app_id,
   }
 
   arc::ArcAppScopedPrefUpdate update(prefs_, app_id, arc::prefs::kArcApps);
-  base::Value* app_dict = update.Get();
-  app_dict->GetDict().Set(kResizeLockNeedsConfirmation, is_needed);
+  base::Value::Dict& app_dict = update.Get();
+  app_dict.Set(kResizeLockNeedsConfirmation, is_needed);
 }
 
 int ArcAppListPrefs::GetShowSplashScreenDialogCount() const {
@@ -1329,7 +1331,7 @@ base::Value* ArcAppListPrefs::GetPackagePrefs(const std::string& package_name,
   }
   arc::ArcAppScopedPrefUpdate update(prefs_, package_name,
                                      arc::prefs::kArcPackages);
-  return update.Get()->GetDict().Find(key);
+  return update->Find(key);
 }
 
 void ArcAppListPrefs::SetPackagePrefs(const std::string& package_name,
@@ -1341,7 +1343,7 @@ void ArcAppListPrefs::SetPackagePrefs(const std::string& package_name,
   }
   arc::ArcAppScopedPrefUpdate update(prefs_, package_name,
                                      arc::prefs::kArcPackages);
-  update.Get()->GetDict().Set(key, std::move(value));
+  update->Set(key, std::move(value));
 }
 
 void ArcAppListPrefs::SetDefaultAppsReadyCallback(base::OnceClosure callback) {
@@ -1479,7 +1481,7 @@ void ArcAppListPrefs::AddAppAndShortcut(
       GetResizeLockNeedsConfirmation(app_id);
 
   arc::ArcAppScopedPrefUpdate update(prefs_, app_id, arc::prefs::kArcApps);
-  base::Value::Dict& app_dict = update.Get()->GetDict();
+  base::Value::Dict& app_dict = update.Get();
   app_dict.Set(kName, updated_name);
   app_dict.Set(kPackageName, package_name);
   app_dict.Set(kActivity, activity);
@@ -1599,9 +1601,8 @@ void ArcAppListPrefs::RemoveApp(const std::string& app_id) {
   ScheduleAppFolderDeletion(app_id);
 
   // Remove from prefs.
-  DictionaryPrefUpdate update(prefs_, arc::prefs::kArcApps);
-  base::Value* apps = update.Get();
-  const bool removed = apps->GetDict().Remove(app_id);
+  ScopedDictPrefUpdate apps_update(prefs_, arc::prefs::kArcApps);
+  const bool removed = apps_update->Remove(app_id);
   DCHECK(removed);
 
   // |tracked_apps_| contains apps that are reported externally as available.
@@ -1642,7 +1643,7 @@ void ArcAppListPrefs::AddOrUpdatePackagePrefs(
 
   arc::ArcAppScopedPrefUpdate update(prefs_, package_name,
                                      arc::prefs::kArcPackages);
-  base::Value::Dict& package_dict = update.Get()->GetDict();
+  base::Value::Dict& package_dict = update.Get();
   const std::string id_str =
       base::NumberToString(package.last_backup_android_id);
   const std::string time_str = base::NumberToString(package.last_backup_time);
@@ -1705,10 +1706,7 @@ void ArcAppListPrefs::AddOrUpdatePackagePrefs(
 }
 
 void ArcAppListPrefs::RemovePackageFromPrefs(const std::string& package_name) {
-  DictionaryPrefUpdate(prefs_, arc::prefs::kArcPackages)
-      .Get()
-      ->GetDict()
-      .Remove(package_name);
+  ScopedDictPrefUpdate(prefs_, arc::prefs::kArcPackages)->Remove(package_name);
 }
 
 void ArcAppListPrefs::OnAppListRefreshed(
@@ -1885,13 +1883,13 @@ void ArcAppListPrefs::OnPackageAppListRefreshed(
 
   arc::ArcAppScopedPrefUpdate update(prefs_, package_name,
                                      arc::prefs::kArcPackages);
-  base::Value* package_dict = update.Get();
+  base::Value::Dict& package_dict = update.Get();
   if (!apps_to_remove.empty()) {
     auto* shelf_controller = ChromeShelfController::instance();
     if (shelf_controller) {
       int pin_index =
           shelf_controller->PinnedItemIndexByAppID(*apps_to_remove.begin());
-      package_dict->GetDict().Set(kPinIndex, pin_index);
+      package_dict.Set(kPinIndex, pin_index);
     }
   }
 
@@ -2120,8 +2118,8 @@ void ArcAppListPrefs::OnNotificationsEnabledChanged(
       continue;
     }
     arc::ArcAppScopedPrefUpdate update(prefs_, app.first, arc::prefs::kArcApps);
-    base::Value* updating_app_dict = update.Get();
-    updating_app_dict->GetDict().Set(kNotificationsEnabled, enabled);
+    base::Value::Dict& updating_app_dict = update.Get();
+    updating_app_dict.Set(kNotificationsEnabled, enabled);
   }
   for (auto& observer : observer_list_)
     observer.OnNotificationsEnabledChanged(package_name, enabled);

@@ -1,12 +1,12 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // https://w3c.github.io/payment-handler/#canmakepaymenteventinit-dictionary
 
 dictionary CanMakePaymentEventInit : ExtendableEventInit {
-    [RuntimeEnabled=IdentityInCanMakePaymentEventFeature] USVString topOrigin;
-    [RuntimeEnabled=IdentityInCanMakePaymentEventFeature] USVString paymentRequestOrigin;
-    [RuntimeEnabled=IdentityInCanMakePaymentEventFeature] sequence<PaymentMethodData> methodData;
-    [RuntimeEnabled=IdentityInCanMakePaymentEventFeature] sequence<PaymentDetailsModifier> modifiers;
+    USVString topOrigin;
+    USVString paymentRequestOrigin;
+    sequence<PaymentMethodData> methodData;
+    sequence<PaymentDetailsModifier> modifiers;
 };

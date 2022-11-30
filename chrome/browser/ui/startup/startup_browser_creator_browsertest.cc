@@ -30,6 +30,7 @@
 #include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -3972,6 +3973,9 @@ class StartupBrowserCreatorPickerTest
   // Prevent the browser from automatically relaunching in the PRE_ test. The
   // browser will be relaunched by the main test.
   upgrade_util::ScopedRelaunchChromeBrowserOverride relaunch_chrome_override_;
+
+  base::test::ScopedFeatureList scoped_feature_list_{
+      features::kObserverBasedPostProfileInit};
 };
 
 // Create a secondary profile in a separate PRE run because the existence of
@@ -4023,6 +4027,12 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorPickerTest, TestSetup) {
     EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
   } else {
     EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  }
+
+  // No Guest profile was created.
+  for (const Profile* profile :
+       g_browser_process->profile_manager()->GetLoadedProfiles()) {
+    EXPECT_FALSE(profile->IsGuestSession());
   }
 }
 

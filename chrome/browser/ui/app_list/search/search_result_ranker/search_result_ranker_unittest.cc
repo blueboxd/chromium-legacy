@@ -15,7 +15,6 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -47,7 +46,6 @@ namespace {
 
 using ResultType = ash::AppListSearchResultType;
 
-using base::ScopedTempDir;
 using base::test::ScopedFeatureList;
 using testing::ElementsAre;
 using testing::StrEq;
@@ -110,10 +108,8 @@ class SearchResultRankerTest : public testing::Test {
 
   // testing::Test overrides:
   void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingProfile::Builder profile_builder;
     profile_builder.SetProfileName("testuser@gmail.com");
-    profile_builder.SetPath(temp_dir_.GetPath().AppendASCII("TestProfile"));
     profile_builder.AddTestingFactory(
         HistoryServiceFactory::GetInstance(),
         base::BindRepeating(&BuildHistoryService));
@@ -128,9 +124,9 @@ class SearchResultRankerTest : public testing::Test {
 
   void EnableOneFeature(const base::Feature& feature,
                         const std::map<std::string, std::string>& params = {}) {
-    std::vector<base::Feature> disabled;
+    std::vector<base::test::FeatureRef> disabled;
     for (const auto& f : all_feature_flags_) {
-      if (f.name != feature.name)
+      if (f->name != feature.name)
         disabled.push_back(f);
     }
     scoped_feature_list_.InitWithFeaturesAndParameters({{feature, params}},
@@ -159,7 +155,6 @@ class SearchResultRankerTest : public testing::Test {
   // to.
   std::list<TestResult> test_search_results_;
 
-  ScopedTempDir temp_dir_;
   content::BrowserTaskEnvironment task_environment_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 
@@ -172,7 +167,7 @@ class SearchResultRankerTest : public testing::Test {
  private:
   // All the relevant feature flags for the SearchResultRanker. New experiments
   // should add their flag here.
-  std::vector<base::Feature> all_feature_flags_ = {
+  std::vector<base::test::FeatureRef> all_feature_flags_ = {
       app_list_features::kEnableAppRanker,
       app_list_features::kEnableZeroStateMixedTypesRanker};
 };

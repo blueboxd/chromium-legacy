@@ -44,6 +44,7 @@
 #include "base/types/optional_util.h"
 #include "build/chromeos_buildflags.h"
 #include "services/network/public/cpp/client_hints.h"
+#include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -70,6 +71,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent_factory.h"
@@ -87,6 +89,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder_builder.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
@@ -111,9 +114,9 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/profiler_group.h"
+#include "third_party/blink/renderer/core/timing/soft_navigation_heuristics.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/core/xml/document_xslt.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/fonts/font_performance.h"
@@ -126,8 +129,8 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
-#include "third_party/blink/renderer/platform/loader/fetch/source_keyed_cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/navigation_body_loader.h"
 #include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
 #include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
@@ -137,6 +140,7 @@
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/storage/blink_storage_key.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
@@ -150,15 +154,7 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
-
-const base::Feature kCacheInlineScriptCode{"CacheInlineScriptCode",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 namespace {
-
-// Controls whether caching of inline script is wired up correctly.
-constexpr base::FeatureParam<bool> kCacheInlineScriptCodeFixConfiguring{
-    &kCacheInlineScriptCode, "fix_configuring", false};
 
 Vector<OriginTrialFeature> CopyInitiatorOriginTrials(
     const WebVector<int>& initiator_origin_trial_features) {
@@ -218,6 +214,7 @@ struct SameSizeAsDocumentLoader
   std::unique_ptr<WebNavigationParams> params;
   std::unique_ptr<PolicyContainer> policy_container;
   absl::optional<ParsedPermissionsPolicy> isolated_app_permissions_policy;
+  DocumentToken token;
   KURL url;
   AtomicString http_method;
   AtomicString referrer;
@@ -249,6 +246,8 @@ struct SameSizeAsDocumentLoader
   WebNavigationType navigation_type;
   DocumentLoadTiming document_load_timing;
   base::TimeTicks time_of_last_data_received;
+  mojom::blink::ControllerServiceWorkerMode
+      service_worker_initial_controller_mode;
   std::unique_ptr<WebServiceWorkerNetworkProvider>
       service_worker_network_provider;
   DocumentPolicy::ParsedDocumentPolicy document_policy;
@@ -261,6 +260,7 @@ struct SameSizeAsDocumentLoader
   bool finish_loading_when_parser_resumed;
   bool in_commit_data;
   scoped_refptr<SharedBuffer> data_buffer;
+  Vector<DocumentLoader::DecodedBodyData> decoded_data_buffer_;
   base::UnguessableToken devtools_navigation_token;
   LoaderFreezeMode defers_loading;
   bool last_navigation_had_transient_user_activation;
@@ -272,6 +272,7 @@ struct SameSizeAsDocumentLoader
   bool was_discarded;
   bool loading_main_document_from_mhtml_archive;
   bool loading_srcdoc;
+  KURL fallback_srcdoc_base_url;
   bool loading_url_as_empty_document;
   bool is_static_data;
   CommitReason commit_reason;
@@ -279,7 +280,6 @@ struct SameSizeAsDocumentLoader
   scoped_refptr<ResourceTimingInfo> navigation_timing_info;
   bool report_timing_info_to_parent;
   WebScopedVirtualTimePauser virtual_time_pauser;
-  Member<SourceKeyedCachedMetadataHandler> cached_metadata_handler;
   Member<PrefetchedSignedExchangeManager> prefetched_signed_exchange_manager;
   const KURL web_bundle_physical_url;
   const KURL web_bundle_claimed_url;
@@ -299,8 +299,6 @@ struct SameSizeAsDocumentLoader
   HashMap<KURL, EarlyHintsPreloadEntry> early_hints_preloaded_resources;
   absl::optional<Vector<KURL>> ad_auction_components;
   mojom::blink::FencedFrameReportingPtr fenced_frame_reporting;
-  bool waiting_for_document_loader;
-  bool waiting_for_code_cache;
   std::unique_ptr<ExtraData> extra_data;
   AtomicString reduced_accept_language;
 };
@@ -313,6 +311,64 @@ ASSERT_SIZE(DocumentLoader, SameSizeAsDocumentLoader);
 
 }  // namespace
 
+// Base class for body data received by the loader. This allows abstracting away
+// whether encoded or decoded data was received by the loader.
+class DocumentLoader::BodyData {
+ public:
+  virtual ~BodyData() = default;
+  virtual void AppendToParser(DocumentLoader* loader) = 0;
+  virtual void Buffer(DocumentLoader* loader) = 0;
+  virtual base::span<const char> EncodedData() const = 0;
+};
+
+// Wraps encoded data received by the loader.
+class DocumentLoader::EncodedBodyData : public BodyData {
+ public:
+  explicit EncodedBodyData(base::span<const char> data) : data_(data) {
+    DCHECK(data.data());
+    DCHECK(data.size());
+  }
+
+  void AppendToParser(DocumentLoader* loader) override {
+    loader->parser_->AppendBytes(data_.data(), data_.size());
+  }
+
+  void Buffer(DocumentLoader* loader) override {
+    loader->data_buffer_->Append(data_.data(), data_.size());
+  }
+
+  base::span<const char> EncodedData() const override { return data_; }
+
+ private:
+  base::span<const char> data_;
+};
+
+// Wraps decoded data received by the loader.
+class DocumentLoader::DecodedBodyData : public BodyData {
+ public:
+  DecodedBodyData(const String& data,
+                  const DocumentEncodingData& encoding_data,
+                  base::span<const char> encoded_data)
+      : data_(data),
+        encoding_data_(encoding_data),
+        encoded_data_(encoded_data) {}
+
+  void AppendToParser(DocumentLoader* loader) override {
+    loader->parser_->AppendDecodedData(data_, encoding_data_);
+  }
+
+  void Buffer(DocumentLoader* loader) override {
+    loader->decoded_data_buffer_.push_back(*this);
+  }
+
+  base::span<const char> EncodedData() const override { return encoded_data_; }
+
+ private:
+  String data_;
+  DocumentEncodingData encoding_data_;
+  base::span<const char> encoded_data_;
+};
+
 DocumentLoader::DocumentLoader(
     LocalFrame* frame,
     WebNavigationType navigation_type,
@@ -322,6 +378,7 @@ DocumentLoader::DocumentLoader(
     : params_(std::move(navigation_params)),
       policy_container_(std::move(policy_container)),
       initial_permissions_policy_(params_->permissions_policy_override),
+      token_(params_->document_token),
       url_(params_->url),
       http_method_(static_cast<String>(params_->http_method)),
       referrer_(static_cast<String>(params_->referrer)),
@@ -381,6 +438,7 @@ DocumentLoader::DocumentLoader(
       is_browser_initiated_(params_->is_browser_initiated),
       was_discarded_(params_->was_discarded),
       loading_srcdoc_(url_.IsAboutSrcdocURL()),
+      fallback_srcdoc_base_url_(params_->fallback_srcdoc_base_url),
       loading_url_as_empty_document_(!params_->is_static_data &&
                                      WillLoadUrlAsEmpty(url_)),
       is_static_data_(params_->is_static_data),
@@ -403,6 +461,7 @@ DocumentLoader::DocumentLoader(
       extra_data_(std::move(extra_data)),
       reduced_accept_language_(params_->reduced_accept_language) {
   DCHECK(frame_);
+  DCHECK(params_);
 
   // TODO(dgozman): we should get rid of this boolean field, and make client
   // responsible for it's own view of "replaces current item", based on the
@@ -480,6 +539,11 @@ DocumentLoader::DocumentLoader(
     }
   }
 
+  if (service_worker_network_provider_) {
+    service_worker_initial_controller_mode_ =
+        service_worker_network_provider_->GetControllerServiceWorkerMode();
+  }
+
   frame_->SetAncestorOrSelfHasCSPEE(params_->ancestor_or_self_has_cspee);
   frame_->Client()->DidCreateDocumentLoader(this);
 }
@@ -506,7 +570,9 @@ DocumentLoader::CreateWebNavigationParamsToCloneDocument() {
   // TODO(https://crbug.com/1151954): Copy |archive_| and other attributes.
   auto params = std::make_unique<WebNavigationParams>();
   LocalDOMWindow* window = frame_->DomWindow();
+  params->document_token = frame_->GetDocument()->Token();
   params->url = window->Url();
+  params->fallback_srcdoc_base_url = fallback_srcdoc_base_url_;
   params->unreachable_url = unreachable_url_;
   params->referrer = referrer_;
   // All the security properties of the document must be preserved. Note that
@@ -601,7 +667,6 @@ void DocumentLoader::Trace(Visitor* visitor) const {
   visitor->Trace(parser_);
   visitor->Trace(subresource_filter_);
   visitor->Trace(document_load_timing_);
-  visitor->Trace(cached_metadata_handler_);
   visitor->Trace(prefetched_signed_exchange_manager_);
   visitor->Trace(use_counter_);
 }
@@ -706,9 +771,8 @@ static SinglePageAppNavigationType CategorizeSinglePageAppNavigation(
       // WebFrameLoadType::kBackForward.
       DCHECK(frame_load_type != WebFrameLoadType::kBackForward);
       return kSPANavTypeHistoryPushStateOrReplaceState;
-    case mojom::blink::SameDocumentNavigationType::
-        kNavigationApiTransitionWhile:
-      return kSPANavTypeNavigationApiTransitionWhile;
+    case mojom::blink::SameDocumentNavigationType::kNavigationApiIntercept:
+      return kSPANavTypeNavigationApiIntercept;
   }
   NOTREACHED();
   return kSPANavTypeSameDocumentBackwardOrForward;
@@ -744,6 +808,14 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
     bool is_synchronously_committed) {
   DCHECK_EQ(IsBackForwardLoadType(type), !!history_item);
 
+  if (frame_->IsMainFrame() && type == WebFrameLoadType::kBackForward) {
+    if (ScriptState* script_state = ToScriptStateForMainWorld(frame_)) {
+      DCHECK(frame_->DomWindow());
+      SoftNavigationHeuristics* heuristics =
+          SoftNavigationHeuristics::From(*frame_->DomWindow());
+      heuristics->SetBackForwardNavigationURL(script_state, new_url);
+    }
+  }
   SinglePageAppNavigationType single_page_app_navigation_type =
       CategorizeSinglePageAppNavigation(same_document_navigation_type, type);
   UMA_HISTOGRAM_ENUMERATION(
@@ -821,13 +893,13 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
       same_document_navigation_type, is_client_redirect_, is_browser_initiated);
   probe::DidNavigateWithinDocument(frame_);
 
-  // If transitionWhile() was called during this same-document navigation's
+  // If intercept() was called during this same-document navigation's
   // NavigateEvent, the navigation will finish asynchronously, so
   // don't immediately call DidStopLoading() in that case.
   bool should_send_stop_notification =
-      !was_loading && same_document_navigation_type !=
-                          mojom::blink::SameDocumentNavigationType::
-                              kNavigationApiTransitionWhile;
+      !was_loading &&
+      same_document_navigation_type !=
+          mojom::blink::SameDocumentNavigationType::kNavigationApiIntercept;
   if (should_send_stop_notification)
     GetFrameLoader().Progress().ProgressCompleted();
 
@@ -940,30 +1012,37 @@ void DocumentLoader::SetHistoryItemStateForCommit(
   }
 }
 
-void DocumentLoader::BodyCodeCacheReceived(mojo_base::BigBuffer data) {
-  if (cached_metadata_handler_) {
-    cached_metadata_handler_->SetSerializedCachedMetadata(std::move(data));
-  }
-
-  if (base::FeatureList::IsEnabled(features::kEarlyBodyLoad)) {
-    waiting_for_code_cache_ = false;
-    if (!waiting_for_document_loader_ && parser_)
-      parser_->CommitPreloadedData();
-  }
+void DocumentLoader::BodyDataReceived(base::span<const char> data) {
+  EncodedBodyData body_data(data);
+  BodyDataReceivedImpl(body_data);
 }
 
-void DocumentLoader::BodyDataReceived(base::span<const char> data) {
+void DocumentLoader::DecodedBodyDataReceived(
+    const WebString& data,
+    const WebEncodingData& encoding_data,
+    base::span<const char> encoded_data) {
+  // Decoding has already happened, we don't need the decoder anymore.
+  parser_->SetDecoder(nullptr);
+
+  DecodedBodyData body_data(data, DocumentEncodingData(encoding_data),
+                            encoded_data);
+  BodyDataReceivedImpl(body_data);
+}
+
+void DocumentLoader::BodyDataReceivedImpl(BodyData& data) {
   TRACE_EVENT0("loading", "DocumentLoader::BodyDataReceived");
-  GetFrameLoader().Progress().IncrementProgress(main_resource_identifier_,
-                                                data.size());
-  probe::DidReceiveData(probe::ToCoreProbeSink(GetFrame()),
-                        main_resource_identifier_, this, data.data(),
-                        data.size());
+  base::span<const char> encoded_data = data.EncodedData();
+  if (encoded_data.size()) {
+    GetFrameLoader().Progress().IncrementProgress(main_resource_identifier_,
+                                                  encoded_data.size());
+    probe::DidReceiveData(probe::ToCoreProbeSink(GetFrame()),
+                          main_resource_identifier_, this, encoded_data.data(),
+                          encoded_data.size());
+  }
 
-  TRACE_EVENT1("loading", "DocumentLoader::HandleData", "length", data.size());
+  TRACE_EVENT1("loading", "DocumentLoader::HandleData", "length",
+               encoded_data.size());
 
-  DCHECK(data.data());
-  DCHECK(data.size());
   DCHECK(!frame_->GetPage()->Paused());
   time_of_last_data_received_ = clock_->NowTicks();
 
@@ -972,11 +1051,11 @@ void DocumentLoader::BodyDataReceived(base::span<const char> data) {
     //    to the actual document content.
     // 2) Mhtml archives accumulate data buffer and parse it as mhtml later
     //    to retrieve the actual document content.
-    data_buffer_->Append(data.data(), data.size());
+    data.Buffer(this);
     return;
   }
 
-  ProcessDataBuffer(data.data(), data.size());
+  ProcessDataBuffer(&data);
 }
 
 void DocumentLoader::BodyLoadingFinished(
@@ -1247,13 +1326,15 @@ DocumentPolicy::ParsedDocumentPolicy DocumentLoader::CreateDocumentPolicy() {
 void DocumentLoader::HandleResponse() {
   DCHECK(frame_);
 
-  if (response_.IsHTTP() && !cors::IsOkStatus(response_.HttpStatusCode())) {
+  if (response_.IsHTTP() &&
+      !network::IsSuccessfulStatus(response_.HttpStatusCode())) {
     DCHECK(!IsA<HTMLObjectElement>(frame_->Owner()));
   }
 }
 
-void DocumentLoader::CommitData(const char* bytes, size_t length) {
-  TRACE_EVENT1("loading", "DocumentLoader::CommitData", "length", length);
+void DocumentLoader::CommitData(BodyData& data) {
+  TRACE_EVENT1("loading", "DocumentLoader::CommitData", "length",
+               data.EncodedData().size());
 
   // This can happen if document.close() is called by an event handler while
   // there's still pending incoming data.
@@ -1264,9 +1345,9 @@ void DocumentLoader::CommitData(const char* bytes, size_t length) {
     return;
 
   base::AutoReset<bool> reentrancy_protector(&in_commit_data_, true);
-  if (length)
+  if (data.EncodedData().size())
     data_received_ = true;
-  parser_->AppendBytes(bytes, length);
+  data.AppendToParser(this);
 }
 
 mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
@@ -1343,7 +1424,7 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
     auto dispatch_result = navigation_api->DispatchNavigateEvent(params);
     if (dispatch_result == NavigationApi::DispatchResult::kAbort)
       return mojom::blink::CommitResult::Aborted;
-    if (dispatch_result == NavigationApi::DispatchResult::kTransitionWhile)
+    if (dispatch_result == NavigationApi::DispatchResult::kIntercept)
       return mojom::blink::CommitResult::Ok;
   }
 
@@ -1357,13 +1438,13 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
     frame_->GetTaskRunner(TaskType::kInternalLoading)
         ->PostTask(
             FROM_HERE,
-            WTF::Bind(&DocumentLoader::CommitSameDocumentNavigationInternal,
-                      WrapWeakPersistent(this), url, frame_load_type,
-                      WrapPersistent(history_item),
-                      same_document_navigation_type, client_redirect_policy,
-                      has_transient_user_activation,
-                      WTF::RetainedRef(initiator_origin), is_browser_initiated,
-                      is_synchronously_committed, triggering_event_info));
+            WTF::BindOnce(
+                &DocumentLoader::CommitSameDocumentNavigationInternal,
+                WrapWeakPersistent(this), url, frame_load_type,
+                WrapPersistent(history_item), same_document_navigation_type,
+                client_redirect_policy, has_transient_user_activation,
+                WTF::RetainedRef(initiator_origin), is_browser_initiated,
+                is_synchronously_committed, triggering_event_info));
   } else {
     // Treat a navigation to the same url as replacing only if it did not
     // originate from a cross-origin iframe. If |is_synchronously_committed| is
@@ -1468,7 +1549,7 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
       url, frame_load_type, view_state, scroll_restoration_type);
 }
 
-void DocumentLoader::ProcessDataBuffer(const char* bytes, size_t length) {
+void DocumentLoader::ProcessDataBuffer(BodyData* data) {
   DCHECK_GE(state_, kCommitted);
   if (parser_blocked_count_ || in_commit_data_) {
     // 1) If parser is blocked, we buffer data and process it upon resume.
@@ -1478,20 +1559,28 @@ void DocumentLoader::ProcessDataBuffer(const char* bytes, size_t length) {
     //    - alert(), confirm(), prompt()
     //    - Detach of plugin elements.
     //    - Synchronous XMLHTTPRequest
-    if (bytes)
-      data_buffer_->Append(bytes, length);
+    if (data)
+      data->Buffer(this);
     return;
   }
 
-  if (bytes)
-    CommitData(bytes, length);
+  if (data)
+    CommitData(*data);
+
   // Process data received in reentrant invocations. Note that the invocations
   // of CommitData() may queue more data in reentrant invocations, so iterate
   // until it's empty.
-  for (const auto& span : *data_buffer_)
-    CommitData(span.data(), span.size());
+  DCHECK(data_buffer_->empty() || decoded_data_buffer_.empty());
+  for (const auto& span : *data_buffer_) {
+    EncodedBodyData body_data(span);
+    CommitData(body_data);
+  }
+  for (auto& decoded_data : decoded_data_buffer_)
+    CommitData(decoded_data);
+
   // All data has been consumed, so flush the buffer.
   data_buffer_->Clear();
+  decoded_data_buffer_.clear();
 }
 
 void DocumentLoader::StopLoading() {
@@ -1512,6 +1601,11 @@ void DocumentLoader::SetDefersLoading(LoaderFreezeMode mode) {
 void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
   DCHECK(frame_);
   StopLoading();
+  // `frame_` may become null because this method can get re-entered. If it
+  // is null we've already run the code below so just return early.
+  if (!frame_)
+    return;
+
   if (flush_microtask_queue) {
     // Flush microtask queue so that they all run on pre-navigation context.
     // TODO(dcheng): This is a temporary hack that should be removed. This is
@@ -1524,10 +1618,12 @@ void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
     // since flushing microtasks can only be done after any other JS (which can
     // queue additional microtasks) has run. Once it is possible to associate
     // microtasks with a v8::Context, remove this hack.
-    Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
+    frame_->GetDocument()
+        ->GetAgent()
+        ->event_loop()
+        ->PerformMicrotaskCheckpoint();
   }
   ScriptForbiddenScope forbid_scripts;
-
   // If that load cancellation triggered another detach, leave.
   // (fast/frames/detach-frame-nested-no-crash.html is an example of this.)
   if (!frame_)
@@ -1652,7 +1748,7 @@ void DocumentLoader::StartLoadingInternal() {
     // synchronously and parse it, and it's already loaded in a buffer usually.
     // This means we should not defer, and we'll finish loading synchronously
     // from StartLoadingBody().
-    body_loader_->StartLoadingBody(this, nullptr /*code_cache_host*/);
+    body_loader_->StartLoadingBody(this);
     return;
   }
 
@@ -1723,48 +1819,17 @@ void DocumentLoader::StartLoadingResponse() {
     return;
 
   if (!url_.ProtocolIsInHTTPFamily()) {
-    // We only support code cache for http family, and browser insists on not
-    // event asking for code cache with other schemes.
-    body_loader_->StartLoadingBody(this, nullptr /*code_cache_host*/);
+    body_loader_->StartLoadingBody(this);
     return;
   }
 
-  ScriptableDocumentParser* scriptable_parser =
-      parser_->AsScriptableDocumentParser();
-  if (scriptable_parser) {
-    auto cached_metadata_sender = CachedMetadataSender::Create(
-        response_, blink::mojom::CodeCacheType::kJavascript,
-        frame_->DomWindow()->GetSecurityOrigin());
-    cached_metadata_handler_ =
-        MakeGarbageCollected<SourceKeyedCachedMetadataHandler>(
-            WTF::TextEncoding(), std::move(cached_metadata_sender));
-    if (kCacheInlineScriptCodeFixConfiguring.Get())
-      scriptable_parser->SetInlineScriptCacheHandler(cached_metadata_handler_);
-  }
-
-  if (waiting_for_document_loader_) {
-    // If we were just waiting for the document loader, the body has already
-    // started loading and it is safe to continue parsing if the code cache is
-    // already available.
-    waiting_for_document_loader_ = false;
-    if (!waiting_for_code_cache_)
-      parser_->CommitPreloadedData();
+  if (parser_->IsPreloading()) {
+    // If we were waiting for the document loader, the body has already
+    // started loading and it is safe to continue parsing.
+    parser_->CommitPreloadedData();
   } else {
-    StartLoadingBodyWithCodeCache();
+    body_loader_->StartLoadingBody(this);
   }
-}
-
-void DocumentLoader::StartLoadingBodyWithCodeCache() {
-  CodeCacheHost* code_cache_host =
-      UseIsolatedCodeCache() ? GetCodeCacheHost() : nullptr;
-  if (base::FeatureList::IsEnabled(features::kEarlyBodyLoad)) {
-    waiting_for_code_cache_ = true;
-    // If the body can load in parallel with the code cache, we need to enter
-    // preload mode until the code cache is received. The data will be committed
-    // once the code cache is available.
-    parser_->SetIsPreloading(true);
-  }
-  body_loader_->StartLoadingBody(this, code_cache_host);
 }
 
 void DocumentLoader::DidInstallNewDocument(Document* document) {
@@ -1790,18 +1855,18 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
 
   const AtomicString& dns_prefetch_control =
       response_.HttpHeaderField(http_names::kXDNSPrefetchControl);
-  if (!dns_prefetch_control.IsEmpty())
+  if (!dns_prefetch_control.empty())
     document->ParseDNSPrefetchControlHeader(dns_prefetch_control);
 
   String header_content_language =
       response_.HttpHeaderField(http_names::kContentLanguage);
-  if (!header_content_language.IsEmpty()) {
+  if (!header_content_language.empty()) {
     wtf_size_t comma_index = header_content_language.find(',');
     // kNotFound == -1 == don't truncate
     header_content_language.Truncate(comma_index);
     header_content_language =
         header_content_language.StripWhiteSpace(IsHTMLSpace<UChar>);
-    if (!header_content_language.IsEmpty())
+    if (!header_content_language.empty())
       document->SetContentLanguage(AtomicString(header_content_language));
   }
 
@@ -2095,9 +2160,8 @@ WindowAgent* GetWindowAgentForOrigin(
   // TODO(keishi): Also check if AllowUniversalAccessFromFileURLs might
   // dynamically change.
   return frame->window_agent_factory().GetAgentForOrigin(
-      HasPotentialUniversalAccessPrivilege(frame),
-      V8PerIsolateData::MainThreadIsolate(), origin, is_origin_agent_cluster,
-      origin_agent_cluster_left_as_default);
+      HasPotentialUniversalAccessPrivilege(frame), origin,
+      is_origin_agent_cluster, origin_agent_cluster_left_as_default);
 }
 
 // Inheriting cases use their agent's "is origin-keyed" value, which is set
@@ -2248,12 +2312,16 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
   security_origin = security_origin->GetOriginForAgentCluster(
       frame_->DomWindow()->GetAgent()->cluster_id());
 
+  // TODO(crbug.com/1159586): Remove this when 3psp storage is on. It's here
+  // to preserve the information that is stripped due to the key being re-made.
+  const auto& storage_key_with_3psp =
+      storage_key_.CopyWithForceEnabledThirdPartyStoragePartitioning();
   // TODO(https://crbug.com/888079): Just use the storage key sent by the
   // browser once the browser will be able to compute the origin in all cases.
   frame_->DomWindow()->SetStorageKey(
-      BlinkStorageKey(security_origin, storage_key_.GetTopLevelSite(),
+      BlinkStorageKey(security_origin, storage_key_with_3psp.GetTopLevelSite(),
                       base::OptionalToPtr(storage_key_.GetNonce()),
-                      storage_key_.GetAncestorChainBit()));
+                      storage_key_with_3psp.GetAncestorChainBit()));
 
   // Conceptually, SecurityOrigin doesn't have to be initialized after sandbox
   // flags are applied, but there's a UseCounter in SetSecurityOrigin() that
@@ -2290,13 +2358,6 @@ void DocumentLoader::CommitNavigation() {
          frame_->GetDocument()->ConnectedSubframeCount() == 0);
   state_ = kCommitted;
 
-  if (body_loader_ && !loading_main_document_from_mhtml_archive_ &&
-      !loading_url_as_empty_document_ && url_.ProtocolIsInHTTPFamily() &&
-      UseIsolatedCodeCache() &&
-      base::FeatureList::IsEnabled(features::kEarlyCodeCache)) {
-    body_loader_->StartLoadingCodeCache(GetCodeCacheHost());
-  }
-
   // Prepare a DocumentInit before clearing the frame, because it may need to
   // inherit an aliased security context.
   Document* owner_document = nullptr;
@@ -2311,6 +2372,9 @@ void DocumentLoader::CommitNavigation() {
 
   LocalDOMWindow* previous_window = frame_->DomWindow();
   InitializeWindow(owner_document);
+
+  MaybeStartLoadingBodyInBackground(body_loader_.get(), frame_, url_,
+                                    response_);
 
   // Record if we have navigated to a non-secure page served from a IP address
   // in the private address space.
@@ -2335,9 +2399,9 @@ void DocumentLoader::CommitNavigation() {
   // even if there is header on xml document.
   if (commit_reason_ == CommitReason::kXSLT ||
       commit_reason_ == CommitReason::kJavascriptUrl) {
-    DCHECK(response_.HttpHeaderField(http_names::kFeaturePolicy).IsEmpty());
-    DCHECK(response_.HttpHeaderField(http_names::kPermissionsPolicy).IsEmpty());
-    DCHECK(response_.HttpHeaderField(http_names::kDocumentPolicy).IsEmpty());
+    DCHECK(response_.HttpHeaderField(http_names::kFeaturePolicy).empty());
+    DCHECK(response_.HttpHeaderField(http_names::kPermissionsPolicy).empty());
+    DCHECK(response_.HttpHeaderField(http_names::kDocumentPolicy).empty());
     security_init.InitPermissionsPolicyFrom(
         previous_window->GetSecurityContext());
     security_init.InitDocumentPolicyFrom(previous_window->GetSecurityContext());
@@ -2346,9 +2410,7 @@ void DocumentLoader::CommitNavigation() {
     // trials to be initialized.
     // TODO(iclelland): Add Permissions-Policy-Report-Only to Origin Policy.
     security_init.ApplyPermissionsPolicy(
-        *frame_.Get(), response_, frame_policy_,
-        Agent::IsIsolatedApplication() ? initial_permissions_policy_
-                                       : absl::nullopt);
+        *frame_.Get(), response_, frame_policy_, initial_permissions_policy_);
 
     // |document_policy_| is parsed in document loader because it is
     // compared with |frame_policy.required_document_policy| to decide
@@ -2371,18 +2433,20 @@ void DocumentLoader::CommitNavigation() {
   Document* document = frame_->DomWindow()->InstallNewDocument(
       DocumentInit::Create()
           .WithWindow(frame_->DomWindow(), owner_document)
+          .WithToken(token_)
           .ForInitialEmptyDocument(commit_reason_ ==
                                    CommitReason::kInitialization)
           .ForPrerendering(is_prerendering_)
           .WithURL(Url())
           .WithTypeFrom(MimeType())
           .WithSrcdocDocument(loading_srcdoc_)
+          .WithFallbackSrcdocBaseURL(fallback_srcdoc_base_url_)
           .WithWebBundleClaimedUrl(web_bundle_claimed_url_)
           .WithUkmSourceId(ukm_source_id_));
 
   RecordUseCountersForCommit();
   RecordConsoleMessagesForCommit();
-  if (!response_.HttpHeaderField(http_names::kExpectCT).IsEmpty()) {
+  if (!response_.HttpHeaderField(http_names::kExpectCT).empty()) {
     Deprecation::CountDeprecation(frame_->DomWindow(),
                                   mojom::blink::WebFeature::kExpectCTHeader);
   }
@@ -2551,6 +2615,13 @@ void DocumentLoader::CommitNavigation() {
 }
 
 void DocumentLoader::CreateParserPostCommit() {
+  if (RuntimeEnabledFeatures::SpeculationRulesFetchFromHeaderEnabled()) {
+    auto& speculation_rules_header =
+        response_.HttpHeaderField(http_names::kSpeculationRules);
+    PreloadHelper::LoadSpeculationRuleLinkFromHeader(
+        speculation_rules_header, GetFrame()->GetDocument(), *GetFrame());
+  }
+
   // DidObserveLoadingBehavior() must be called after DispatchDidCommitLoad() is
   // called for the metrics tracking logic to handle it properly.
   if (service_worker_network_provider_ &&
@@ -2621,23 +2692,14 @@ void DocumentLoader::CreateParserPostCommit() {
         !loading_url_as_empty_document_ && url_.ProtocolIsInHTTPFamily() &&
         !is_static_data_ && frame_->IsMainFrame() &&
         !document->IsPrefetchOnly() && MimeType() == "text/html") {
-      waiting_for_document_loader_ = true;
-      StartLoadingBodyWithCodeCache();
+      parser_->SetIsPreloading(true);
+      body_loader_->StartLoadingBody(this);
 
       if (!frame_ || !body_loader_)
         return;
     }
 
     frame_->DomWindow()->GetScriptController().UpdateDocument();
-  }
-
-  if (!kCacheInlineScriptCodeFixConfiguring.Get()) {
-    // If this is a scriptable parser and there is a resource, register the
-    // resource's cache handler with the parser.
-    ScriptableDocumentParser* scriptable_parser =
-        parser_->AsScriptableDocumentParser();
-    if (scriptable_parser && cached_metadata_handler_)
-      scriptable_parser->SetInlineScriptCacheHandler(cached_metadata_handler_);
   }
 
   GetFrameLoader().DispatchDidClearDocumentOfWindowObject();
@@ -2800,7 +2862,7 @@ void DocumentLoader::RecordUseCountersForCommit() {
 
   if (RuntimeEnabledFeatures::EarlyHintsPreloadForNavigationOptInEnabled(
           frame_->DomWindow()) &&
-      !early_hints_preloaded_resources_.IsEmpty()) {
+      !early_hints_preloaded_resources_.empty()) {
     CountUse(WebFeature::kEarlyHintsPreload);
   }
 }
@@ -2923,11 +2985,46 @@ bool DocumentLoader::IsReloadedOrFormSubmitted() const {
   switch (navigation_type_) {
     case WebNavigationType::kWebNavigationTypeReload:
     case WebNavigationType::kWebNavigationTypeFormSubmitted:
-    case WebNavigationType::kWebNavigationTypeFormResubmitted:
+    case WebNavigationType::kWebNavigationTypeFormResubmittedBackForward:
+    case WebNavigationType::kWebNavigationTypeFormResubmittedReload:
       return true;
     default:
       return false;
   }
+}
+
+void DocumentLoader::MaybeRecordServiceWorkerFallbackMainResource(
+    bool was_subresource_fetched_via_service_worker) {
+  if (was_subresource_fetched_via_service_worker &&
+      !response_.WasFetchedViaServiceWorker() &&
+      service_worker_initial_controller_mode_ ==
+          mojom::blink::ControllerServiceWorkerMode::kControlled) {
+    CountUse(WebFeature::kSerivceWorkerFallbackMainResource);
+  }
+}
+
+// static
+void DocumentLoader::MaybeStartLoadingBodyInBackground(
+    WebNavigationBodyLoader* body_loader,
+    LocalFrame* frame,
+    const KURL& url,
+    const ResourceResponse& response) {
+  if (!body_loader ||
+      !base::FeatureList::IsEnabled(features::kThreadedBodyLoader) ||
+      !EqualIgnoringASCIICase(response.MimeType(), "text/html")) {
+    return;
+  }
+
+  auto* navigation_body_loader = DynamicTo<NavigationBodyLoader>(*body_loader);
+  if (!navigation_body_loader)
+    return;
+
+  auto decoder = BuildTextResourceDecoder(frame, url, response.MimeType(),
+                                          response.TextEncodingName());
+  navigation_body_loader->StartLoadingBodyInBackground(
+      std::move(decoder),
+      // The network inspector needs the raw data.
+      probe::ToCoreProbeSink(frame)->HasInspectorNetworkAgents());
 }
 
 ContentSecurityPolicy* DocumentLoader::CreateCSP() {
@@ -2961,12 +3058,6 @@ ContentSecurityPolicy* DocumentLoader::CreateCSP() {
   }
 
   return csp;
-}
-
-bool DocumentLoader::UseIsolatedCodeCache() {
-  return base::FeatureList::IsEnabled(kCacheInlineScriptCode) &&
-         ShouldUseIsolatedCodeCache(mojom::blink::RequestContextType::HYPERLINK,
-                                    response_);
 }
 
 bool& GetDisableCodeCacheForTesting() {

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash/tether/tether_service.h"
 
-#include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/tether/gms_core_notifications_state_tracker_impl.h"
 #include "ash/components/tether/tether_component.h"
 #include "ash/components/tether/tether_component_impl.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/network/tether_notification_presenter.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/multidevice/logging/logging.h"
 #include "chromeos/ash/components/network/device_state.h"
 #include "chromeos/ash/components/network/network_connect.h"
 #include "chromeos/ash/components/network/network_type_pattern.h"
@@ -106,9 +106,8 @@ TetherService::TetherService(
       network_state_handler_(network_state_handler),
       session_manager_(session_manager),
       notification_presenter_(
-          std::make_unique<chromeos::tether::TetherNotificationPresenter>(
-              profile_,
-              NetworkConnect::Get())),
+          std::make_unique<TetherNotificationPresenter>(profile_,
+                                                        NetworkConnect::Get())),
       gms_core_notifications_state_tracker_(
           std::make_unique<GmsCoreNotificationsStateTrackerImpl>()),
       tether_host_fetcher_(

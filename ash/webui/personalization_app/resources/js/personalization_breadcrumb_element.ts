@@ -23,7 +23,7 @@ import {IronSelectorElement} from 'chrome://resources/polymer/v3_0/iron-selector
 
 import {GooglePhotosAlbum, TopicSource, WallpaperCollection} from './personalization_app.mojom-webui.js';
 import {getTemplate} from './personalization_breadcrumb_element.html.js';
-import {isPathValid, isPersonalizationHubEnabled, Paths, PersonalizationRouter} from './personalization_router_element.js';
+import {isPathValid, Paths, PersonalizationRouter} from './personalization_router_element.js';
 import {WithPersonalizationStore} from './personalization_store.js';
 import {inBetween, isNonEmptyArray, isNonEmptyString} from './utils.js';
 
@@ -95,11 +95,6 @@ export class PersonalizationBreadcrumb extends WithPersonalizationStore {
       /** The list of Google Photos albums. */
       googlePhotosAlbums_: Array,
 
-      showBackButton_: {
-        type: Boolean,
-        computed: 'computeShowBackButton_(path)',
-      },
-
       /** The breadcrumb being highlighted by keyboard navigation. */
       selectedBreadcrumb_: {
         type: Object,
@@ -115,7 +110,6 @@ export class PersonalizationBreadcrumb extends WithPersonalizationStore {
   private breadcrumbs_: string[];
   private collections_: WallpaperCollection[]|null;
   private googlePhotosAlbums_: GooglePhotosAlbum[]|null;
-  private showBackButton_: boolean;
   private selectedBreadcrumb_: HTMLElement;
 
   override ready() {
@@ -222,15 +216,6 @@ export class PersonalizationBreadcrumb extends WithPersonalizationStore {
         break;
     }
     return breadcrumbs;
-  }
-
-  private computeShowBackButton_(): boolean {
-    // Do not show the back button if hub is enabled.
-    return !isPersonalizationHubEnabled() && this.path !== Paths.COLLECTIONS;
-  }
-
-  private showHomeButton_(): boolean {
-    return isPersonalizationHubEnabled();
   }
 
   private getBackButtonAriaLabel_(): string {

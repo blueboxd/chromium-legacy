@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
@@ -36,13 +37,13 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/driver/sync_auth_util.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_token_status.h"
 #include "components/sync/protocol/autofill_specifics.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync_entity.pb.h"
+#include "components/sync/test/entity_builder_factory.h"
 #include "components/sync/test/fake_server.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "content/public/test/browser_test.h"
@@ -174,13 +175,8 @@ class TestForAuthError : public UpdatedProgressMarkerChecker {
   // StatusChangeChecker implementation.
   bool IsExitConditionSatisfied(std::ostream* os) override {
     *os << "Waiting for auth error";
-    // Note: This is quite fragile. It relies on Sync trying to fetch a new
-    // access token, even though it might already be in a persistent auth error
-    // state.
-    return (service()
-                ->GetSyncTokenStatusForDebugging()
-                .last_get_token_error.state() !=
-            GoogleServiceAuthError::NONE) ||
+    return service()->GetAuthError() !=
+               GoogleServiceAuthError::AuthErrorNone() ||
            UpdatedProgressMarkerChecker::IsExitConditionSatisfied(os);
   }
 };
@@ -639,10 +635,16 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnPersistentError) {
 
   // Run until an auth error is encountered.
   TestForAuthError(GetSyncService(0)).Wait();
-  GoogleServiceAuthError oauth_error =
-      GetSyncService(0)->GetSyncTokenStatusForDebugging().last_get_token_error;
+  GoogleServiceAuthError oauth_error = GetSyncService(0)->GetAuthError();
   ASSERT_TRUE(oauth_error.IsPersistentError());
-  ASSERT_FALSE(syncer::IsWebSignout(oauth_error));
+  // Verify it's not a locally-initiated web signout, which would otherwise mean
+  // this test is redundant with test ClearOnSyncPaused.
+  // TODO(crbug.com/1156584): Merge the two tests into one when feature toggle
+  // kSyncPauseUponAnyPersistentAuthError is cleaned up.
+  ASSERT_NE(oauth_error,
+            GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+                GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                    CREDENTIALS_REJECTED_BY_CLIENT));
 
   // This should result in the data & metadata being gone.
   WaitForNumberOfCards(0, pdm);
@@ -1319,6 +1321,37 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   // No conversion happens now.
   histogram_tester_.ExpectTotalCount("Autofill.WalletAddressConversionType",
                                      /*count=*/0);
+}
+
+// Regression test for crbug.com/1203984.
+IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
+                       ShouldUpdateWhenDownloadingManyUpdates) {
+  // Tests that a Wallet update is successfully applied even if there are more
+  // updates to download for other types. In the past it might result in Wallet
+  // data type failure due to a bug with handling |gc_directive|.
+
+  GetFakeServer()->SetMaxGetUpdatesBatchSize(5);
+  ASSERT_TRUE(SetupSync());
+
+  // Use the ID which is the least one to guarantee that Wallet entity will be
+  // in the first GetUpdates request.
+  GetFakeServer()->SetWalletData({CreateSyncWalletCard(
+      /*name=*/"server_id_0", /*last_four=*/"0001", kDefaultBillingAddressID)});
+
+  // Inject a lot of bookmark to result in several GetUpdates requests.
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  for (int i = 1; i < 15; i++) {
+    std::string title = "Montreal Canadiens";
+    fake_server::BookmarkEntityBuilder bookmark_builder =
+        entity_builder_factory.NewBookmarkEntityBuilder(title);
+    bookmark_builder.SetId("server_id_" + base::NumberToString(i));
+    fake_server_->InjectEntity(bookmark_builder.BuildBookmark(
+        GURL("http://foo.com/" + base::NumberToString(i))));
+  }
+
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_NE(nullptr, pdm);
+  WaitForNumberOfCards(1, pdm);
 }
 
 class SingleClientWalletSecondaryAccountSyncTest

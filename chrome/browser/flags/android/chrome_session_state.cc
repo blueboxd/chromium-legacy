@@ -14,11 +14,14 @@
 
 using chrome::android::ActivityType;
 using chrome::android::DarkModeState;
+using chrome::android::MultipleUserProfilesState;
 
 namespace {
 ActivityType activity_type = ActivityType::kUndeclared;
 bool is_in_multi_window_mode = false;
 DarkModeState dark_mode_state = DarkModeState::kUnknown;
+MultipleUserProfilesState multiple_user_profiles_state =
+    MultipleUserProfilesState::kUnknown;
 
 // Name of local state pref to persist the last |chrome::android::ActivityType|.
 const char kLastActivityTypePref[] =
@@ -30,8 +33,9 @@ namespace chrome {
 namespace android {
 
 // TODO(b/182286787): A/B experiment monitoring session/activity resume order.
-const base::Feature kFixedUmaSessionResumeOrder{
-    "FixedUmaSessionResumeOrder", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kFixedUmaSessionResumeOrder,
+             "FixedUmaSessionResumeOrder",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 CustomTabsVisibilityHistogram GetCustomTabsVisibleValue(
     ActivityType activity_type) {
@@ -73,9 +77,6 @@ void SetActivityType(PrefService* local_state, ActivityType type) {
     SaveActivityTypeToLocalState(local_state, activity_type);
   }
 
-  // TODO(crbug/1228735): deprecate custom tab field.
-  ukm::UkmSource::SetCustomTabVisible(
-      GetCustomTabsVisibleValue(activity_type) == VISIBLE_CUSTOM_TAB);
   ukm::UkmSource::SetAndroidActivityTypeState(static_cast<int>(activity_type));
 }
 
@@ -122,6 +123,16 @@ absl::optional<chrome::android::ActivityType> GetActivityTypeFromLocalState(
 void SaveActivityTypeToLocalState(PrefService* local_state,
                                   chrome::android::ActivityType value) {
   local_state->SetInteger(kLastActivityTypePref, static_cast<int>(value));
+}
+
+MultipleUserProfilesState GetMultipleUserProfilesState() {
+  if (multiple_user_profiles_state != MultipleUserProfilesState::kUnknown) {
+    return multiple_user_profiles_state;
+  }
+  multiple_user_profiles_state = static_cast<MultipleUserProfilesState>(
+      Java_ChromeSessionState_getMultipleUserProfilesState(
+          base::android::AttachCurrentThread()));
+  return multiple_user_profiles_state;
 }
 
 }  // namespace android

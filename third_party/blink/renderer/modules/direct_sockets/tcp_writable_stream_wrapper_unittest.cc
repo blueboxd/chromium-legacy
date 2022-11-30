@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -169,7 +169,7 @@ TEST(TCPWritableStreamWrapperTest, AsyncWrite) {
   test::RunPendingTasks();
 
   // Let microtasks run just in case write() returns prematurely.
-  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
+  scope.PerformMicrotaskCheckpoint();
   ASSERT_FALSE(tester.IsFulfilled());
 
   // Read the first part of the data.
@@ -222,7 +222,7 @@ TEST(TCPWritableStreamWrapperTest, WriteThenClose) {
 
   // Make sure that write() and close() both run before the event loop is
   // serviced.
-  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
+  scope.PerformMicrotaskCheckpoint();
 
   write_tester.WaitUntilSettled();
   ASSERT_TRUE(write_tester.IsFulfilled());

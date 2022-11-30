@@ -12,10 +12,16 @@
 #include "chrome/browser/ash/arc/optin/arc_terms_of_service_default_negotiator.h"
 #include "chrome/browser/ash/arc/optin/arc_terms_of_service_oobe_negotiator.h"
 #include "chrome/browser/ash/arc/policy/arc_policy_util.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace arc {
 
@@ -35,31 +41,54 @@ bool g_enable_arc_terms_of_service_oobe_negotiator_in_tests = false;
 
 absl::optional<bool> g_enable_check_android_management_in_tests;
 
-// Updates UMA with user cancel only if error is not currently shown.
-// TODO(hashimoto): Remove the duplicate in arc_session_manager.cc.
-void MaybeUpdateOptInCancelUMA(const ArcSupportHost* support_host) {
-  if (!support_host ||
-      support_host->ui_page() == ArcSupportHost::UIPage::NO_PAGE ||
-      support_host->ui_page() == ArcSupportHost::UIPage::ERROR) {
-    return;
-  }
+policy::DeviceManagementService* GetDeviceManagementService() {
+  policy::BrowserPolicyConnectorAsh* const connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
+  return connector->device_management_service();
+}
 
-  UpdateOptInCancelUMA(OptInCancelReason::USER_CANCEL);
+// Returns the Device Account Id. Assumes that |profile| is the only Profile
+// on Chrome OS.
+CoreAccountId GetDeviceAccountId(Profile* profile) {
+  const auto* const identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+
+  // The account is the same whether or not the user consented to browser sync.
+  return identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
+}
+
+std::unique_ptr<ArcAndroidManagementChecker> CreateAndroidManagementChecker(
+    Profile* profile,
+    bool retry_on_error) {
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  const CoreAccountId device_account_id = GetDeviceAccountId(profile);
+  return std::make_unique<ArcAndroidManagementChecker>(
+      profile, identity_manager, device_account_id, retry_on_error,
+      std::make_unique<policy::AndroidManagementClientImpl>(
+          GetDeviceManagementService(),
+          g_browser_process->system_network_context_manager()
+              ->GetSharedURLLoaderFactory(),
+          device_account_id, identity_manager));
 }
 
 }  // namespace
 
-ArcRequirementChecker::ArcRequirementChecker(Delegate* delegate,
-                                             Profile* profile,
+ArcRequirementChecker::ArcRequirementChecker(Profile* profile,
                                              ArcSupportHost* support_host)
-    : delegate_(delegate), profile_(profile), support_host_(support_host) {
-  if (g_enable_check_android_management_in_tests.value_or(g_ui_enabled))
-    ArcAndroidManagementChecker::StartClient();
-}
+    : profile_(profile), support_host_(support_host) {}
 
 ArcRequirementChecker::~ArcRequirementChecker() {
   profile_->GetProfilePolicyConnector()->policy_service()->RemoveObserver(
       policy::POLICY_DOMAIN_CHROME, this);
+}
+
+void ArcRequirementChecker::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ArcRequirementChecker::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 // static
@@ -94,13 +123,16 @@ void ArcRequirementChecker::OnBackgroundAndroidManagementCheckedForTesting(
 }
 
 void ArcRequirementChecker::StartRequirementChecks(
-    bool is_terms_of_service_negotiation_needed) {
+    bool is_terms_of_service_negotiation_needed,
+    StartRequirementChecksCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::kStopped);
   DCHECK(profile_);
   DCHECK(!terms_of_service_negotiator_);
+  DCHECK(!requirement_check_callback_);
 
   state_ = State::kNegotiatingTermsOfService;
+  requirement_check_callback_ = std::move(callback);
 
   if (!is_terms_of_service_negotiation_needed) {
     // Moves to next state, Android management check, immediately, as if
@@ -147,8 +179,8 @@ void ArcRequirementChecker::StartBackgroundChecks(
   if (!g_enable_check_android_management_in_tests.value_or(g_ui_enabled))
     return;
 
-  android_management_checker_ = std::make_unique<ArcAndroidManagementChecker>(
-      profile_, true /* retry_on_error */);
+  android_management_checker_ =
+      CreateAndroidManagementChecker(profile_, true /* retry_on_error */);
   android_management_checker_->StartCheck(base::BindOnce(
       &ArcRequirementChecker::OnBackgroundAndroidManagementChecked,
       weak_ptr_factory_.GetWeakPtr()));
@@ -168,14 +200,14 @@ void ArcRequirementChecker::OnTermsOfServiceNegotiated(bool accepted) {
   DCHECK_EQ(state_, State::kNegotiatingTermsOfService);
   DCHECK(profile_);
   DCHECK(terms_of_service_negotiator_ || !g_ui_enabled);
+  DCHECK(requirement_check_callback_);
   terms_of_service_negotiator_.reset();
 
   if (!accepted) {
     VLOG(1) << "Terms of services declined";
     state_ = State::kStopped;
-    // User does not accept the Terms of Service. Disable Google Play Store.
-    MaybeUpdateOptInCancelUMA(support_host_);
-    SetArcPlayStoreEnabledForProfile(profile_, false);
+    std::move(requirement_check_callback_)
+        .Run(RequirementCheckResult::kTermsOfServicesDeclined);
     return;
   }
 
@@ -200,13 +232,14 @@ void ArcRequirementChecker::StartAndroidManagementCheck() {
     support_host_->ShowArcLoading();
   }
 
-  delegate_->OnArcOptInManagementCheckStarted();
+  for (auto& observer : observers_)
+    observer.OnArcOptInManagementCheckStarted();
 
   if (!g_ui_enabled)
     return;
 
-  android_management_checker_ = std::make_unique<ArcAndroidManagementChecker>(
-      profile_, false /* retry_on_error */);
+  android_management_checker_ =
+      CreateAndroidManagementChecker(profile_, false /* retry_on_error */);
   android_management_checker_->StartCheck(
       base::BindOnce(&ArcRequirementChecker::OnAndroidManagementChecked,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -217,9 +250,24 @@ void ArcRequirementChecker::OnAndroidManagementChecked(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::kCheckingAndroidManagement);
   DCHECK(android_management_checker_ || !g_ui_enabled);
+  DCHECK(requirement_check_callback_);
   android_management_checker_.reset();
   state_ = State::kStopped;
-  delegate_->OnAndroidManagementChecked(result);
+
+  switch (result) {
+    case ArcAndroidManagementChecker::CheckResult::ALLOWED:
+      std::move(requirement_check_callback_).Run(RequirementCheckResult::kOk);
+      return;
+    case ArcAndroidManagementChecker::CheckResult::DISALLOWED:
+      std::move(requirement_check_callback_)
+          .Run(RequirementCheckResult::kDisallowedByAndroidManagement);
+      return;
+    case ArcAndroidManagementChecker::CheckResult::ERROR:
+      std::move(requirement_check_callback_)
+          .Run(RequirementCheckResult::kAndroidManagementCheckError);
+      return;
+  }
+  NOTREACHED();
 }
 
 void ArcRequirementChecker::OnBackgroundAndroidManagementChecked(

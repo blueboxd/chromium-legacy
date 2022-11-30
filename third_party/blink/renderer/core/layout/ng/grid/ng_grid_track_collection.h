@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -206,6 +206,10 @@ class CORE_EXPORT NGGridLayoutTrackCollection
   LayoutUnit GetSetOffset(wtf_size_t set_index) const;
   wtf_size_t GetSetTrackCount(wtf_size_t set_index) const;
 
+  bool HasBaselines() const {
+    DCHECK_EQ(major_baselines_.empty(), minor_baselines_.empty());
+    return !major_baselines_.empty();
+  }
   LayoutUnit MajorBaseline(wtf_size_t set_index) const;
   LayoutUnit MinorBaseline(wtf_size_t set_index) const;
 

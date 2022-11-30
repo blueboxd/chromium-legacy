@@ -11,6 +11,20 @@
 #include "components/remote_cocoa/app_shim/immersive_mode_delegate_mac.h"
 #import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
 
+namespace {
+
+// TODO(https://crbug.com/1373552): use constraints / autoresizingmask instead
+// of manually setting the frame size.
+void PropagateFrameSizeToViewsSubviews(NSView* view) {
+  for (NSView* sub_view in view.subviews) {
+    if ([sub_view isKindOfClass:[BridgedContentView class]]) {
+      [sub_view setFrameSize:view.frame.size];
+    }
+  }
+}
+
+}  // namespace
+
 // A stub NSWindowDelegate class that will be used to map the AppKit controlled
 // NSWindow to the overlay view widget's NSWindow. The delegate will be used to
 // help with input routing.
@@ -41,21 +55,41 @@
 
 - (void)viewWillAppear {
   [super viewWillAppear];
-
-  // TODO(bur): Get the updated width from OnViewBoundsChanged
-  NSView* tab_view = self.view;
-  NSRect f = tab_view.frame;
-  f.size.width = 2400;
-  tab_view.frame = f;
-  for (NSView* view in tab_view.subviews) {
-    if ([view isKindOfClass:[BridgedContentView class]]) {
-      view.frame = tab_view.frame;
-    }
-  }
+  PropagateFrameSizeToViewsSubviews(self.view);
 
   if (!_view_will_appear_callback.is_null()) {
     std::move(_view_will_appear_callback).Run();
   }
+}
+
+@end
+
+@interface ClearTitlebarViewController : NSTitlebarAccessoryViewController {
+  CGFloat _height;
+}
+@end
+
+@implementation ClearTitlebarViewController
+
+- (instancetype)initWithHeight:(CGFloat)height {
+  self = [super init];
+  if (self) {
+    _height = height;
+  }
+  return self;
+}
+
+- (void)viewWillAppear {
+  [super viewWillAppear];
+
+  NSSize size = self.view.frame.size;
+  size.height = _height;
+  [self.view setFrameSize:size];
+
+  // Hide the controller before it is appears but after the view's frame is set.
+  // This will extend the NSTitlebarAccessoryViewController mouse tracking area
+  // over the entirety of the window stopping the Title Bar from auto hiding.
+  self.hidden = YES;
 }
 
 @end
@@ -174,12 +208,18 @@ ImmersiveModeController::ImmersiveModeController(
   // Remove the content view from the overlay view widget's NSWindow. This
   // view will be re-parented into the AppKit created NSWindow.
   NSView* overlay_content_view = overlay_widget_.contentView;
+  [overlay_content_view retain];
   [overlay_content_view removeFromSuperview];
 
-  // Add the overlay view to the accessory view controller and hand everything
-  // over to AppKit.
+  // Removing a view from its superview under macOS 13 nils out the reference in
+  // the tree. Match this behavior under previous macOS releases.
+  overlay_widget_.contentView = nil;
+
+  // Add the overlay view to the accessory view controller and hand
+  // everything over to AppKit.
   [immersive_mode_titlebar_view_controller_.get().view
       addSubview:overlay_content_view];
+  [overlay_content_view release];
   immersive_mode_titlebar_view_controller_.get().layoutAttribute =
       NSLayoutAttributeBottom;
 
@@ -206,8 +246,21 @@ void ImmersiveModeController::Enable() {
 }
 
 void ImmersiveModeController::OnTopViewBoundsChanged(const gfx::Rect& bounds) {
-  [immersive_mode_titlebar_view_controller_.get().view
-      setFrameSize:bounds.size().ToCGSize()];
+  // Move the overlay_widget_ off screen to avoid input masking. Its view has
+  // been moved to the AppKit fullscreen window however the overlay_widget_'s
+  // compositor is still responsible for drawing. The frame size needs to be at
+  // least as big as top chrome, overwise clipping will occur.
+  NSRect frame = NSRectFromCGRect(bounds.ToCGRect());
+  frame.origin.y = -frame.size.height;
+  [overlay_widget_ setFrame:frame display:NO];
+
+  // Set the height of the AppKit fullscreen view. The width will be
+  // automatically handled by AppKit.
+  NSView* overlay_view = immersive_mode_titlebar_view_controller_.get().view;
+  NSSize size = overlay_view.frame.size;
+  size.height = frame.size.height;
+  [overlay_view setFrameSize:size];
+  PropagateFrameSizeToViewsSubviews(overlay_view);
 }
 
 void ImmersiveModeController::UpdateToolbarVisibility(bool always_show) {
@@ -224,10 +277,18 @@ void ImmersiveModeController::UpdateToolbarVisibility(bool always_show) {
     immersive_mode_titlebar_view_controller_.get().fullScreenMinHeight =
         immersive_mode_titlebar_view_controller_.get().view.frame.size.height;
     browser_widget_.styleMask &= ~NSWindowStyleMaskFullSizeContentView;
+
+    // Toggling the controller will allow the content view to resize below Top
+    // Chrome.
+    immersive_mode_titlebar_view_controller_.get().hidden = YES;
+    immersive_mode_titlebar_view_controller_.get().hidden = NO;
   } else {
     immersive_mode_titlebar_view_controller_.get().fullScreenMinHeight = 0;
     browser_widget_.styleMask |= NSWindowStyleMaskFullSizeContentView;
   }
+
+  // Unpin the Title Bar.
+  SetTitleBarPinned(false);
 }
 
 // This function will pin or unpin the Title Bar (holder of the traffic
@@ -236,9 +297,22 @@ void ImmersiveModeController::UpdateToolbarVisibility(bool always_show) {
 // helpful when displaying sub-widgets. When the Title Bar is not pinned it will
 // reveal and auto-hide itself based on mouse movement (controlled by AppKit).
 void ImmersiveModeController::SetTitleBarPinned(bool pinned) {
-  // TODO(bur): Provide a mechanism to acomplish Title Bar pinning that looks
-  // and feels native. The use of a NSToolbar is an option but undesirable
-  // because of the +10 pixel height it adds to the blank Title Bar.
+  // Remove the current, if any, clear controller from the window.
+  [clear_titlebar_view_controller_.get() removeFromParentViewController];
+
+  if (!pinned) {
+    clear_titlebar_view_controller_.reset();
+    return;
+  }
+
+  clear_titlebar_view_controller_.reset([[ClearTitlebarViewController alloc]
+      initWithHeight:browser_widget_.contentView.frame.size.height]);
+  clear_titlebar_view_controller_.get().view =
+      [[[NSView alloc] init] autorelease];
+  clear_titlebar_view_controller_.get().layoutAttribute =
+      NSLayoutAttributeBottom;
+  [browser_widget_
+      addTitlebarAccessoryViewController:clear_titlebar_view_controller_];
 }
 
 void ImmersiveModeController::ObserveOverlayChildWindows() {
@@ -260,15 +334,12 @@ void ImmersiveModeController::ObserveOverlayChildWindows() {
 
 void ImmersiveModeController::RevealLock() {
   revealed_lock_count_++;
-  immersive_mode_titlebar_view_controller_.get().fullScreenMinHeight =
-      immersive_mode_titlebar_view_controller_.get().view.frame.size.height;
   SetTitleBarPinned(true);
 }
 
 void ImmersiveModeController::RevealUnlock() {
   if (--revealed_lock_count_ < 1) {
     SetTitleBarPinned(false);
-    UpdateToolbarVisibility(always_show_toolbar_);
   }
 }
 

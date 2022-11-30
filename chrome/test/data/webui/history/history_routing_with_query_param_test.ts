@@ -6,7 +6,7 @@ import 'chrome://history/history.js';
 
 import {BrowserServiceImpl, HistoryAppElement} from 'chrome://history/history.js';
 import {assertEquals} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks} from 'chrome://webui-test/test_util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {TestBrowserService} from './test_browser_service.js';
 import {createHistoryInfo} from './test_util.js';
@@ -17,7 +17,8 @@ suite('routing-with-query-param', function() {
   let testService: TestBrowserService;
 
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     window.history.replaceState({}, '', '/?q=query');
     testService = new TestBrowserService();
     BrowserServiceImpl.setInstance(testService);

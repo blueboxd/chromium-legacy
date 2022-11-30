@@ -149,7 +149,7 @@ class TestPlatformFieldTrials : public PlatformFieldTrials {
   void SetUpFieldTrials() override {}
   void SetUpFeatureControllingFieldTrials(
       bool has_seed,
-      const base::FieldTrial::EntropyProvider* low_entropy_provider,
+      const variations::EntropyProviders& entropy_providers,
       base::FeatureList* feature_list) override {}
 };
 
@@ -302,9 +302,9 @@ class TestVariationsFieldTrialCreator : public VariationsFieldTrialCreator {
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kForceVariationIds),
         std::vector<base::FeatureList::FeatureOverrideInfo>(),
-        /*low_entropy_provider=*/nullptr, std::make_unique<base::FeatureList>(),
-        metrics_state_manager_.get(), &platform_field_trials,
-        safe_seed_manager_, /*low_entropy_source_value=*/absl::nullopt);
+        std::make_unique<base::FeatureList>(), metrics_state_manager_.get(),
+        &platform_field_trials, safe_seed_manager_,
+        metrics_state_manager_->GetLowEntropySource());
   }
 
   TestVariationsSeedStore* seed_store() { return &seed_store_; }
@@ -820,9 +820,9 @@ TEST_F(FieldTrialCreatorTest, LoadSeedFromTestSeedPath) {
       /*variation_ids=*/{},
       /*command_line_variation_ids=*/std::string(),
       std::vector<base::FeatureList::FeatureOverrideInfo>(),
-      /*low_entropy_provider=*/nullptr, std::make_unique<base::FeatureList>(),
-      metrics_state_manager.get(), &platform_field_trials, &safe_seed_manager,
-      /*low_entropy_source_value=*/absl::nullopt));
+      std::make_unique<base::FeatureList>(), metrics_state_manager.get(),
+      &platform_field_trials, &safe_seed_manager,
+      metrics_state_manager->GetLowEntropySource()));
 
   EXPECT_TRUE(base::FieldTrialList::TrialExists(kTestSeedData.study_names[0]));
   EXPECT_EQ(
@@ -870,9 +870,9 @@ TEST_F(FieldTrialCreatorTest, SetUpFieldTrials_LoadsCountryOnFirstRun) {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kForceVariationIds),
       std::vector<base::FeatureList::FeatureOverrideInfo>(),
-      /*low_entropy_provider=*/nullptr, std::make_unique<base::FeatureList>(),
-      metrics_state_manager.get(), &platform_field_trials, &safe_seed_manager,
-      /*low_entropy_source_value=*/absl::nullopt));
+      std::make_unique<base::FeatureList>(), metrics_state_manager.get(),
+      &platform_field_trials, &safe_seed_manager,
+      metrics_state_manager->GetLowEntropySource()));
 
   EXPECT_EQ(kTestSeedExperimentName,
             base::FieldTrialList::FindFullName(kTestSeedStudyName));
@@ -978,8 +978,8 @@ TEST_F(FieldTrialCreatorTest, SetUpFieldTrialConfig_ValidSeed) {
   EXPECT_EQ("1", params["x"]);
 
   // Verify that the |UnitTestEnabled| feature is active.
-  const base::Feature kFeature1{"UnitTestEnabled",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
+  static BASE_FEATURE(kFeature1, "UnitTestEnabled",
+                      base::FEATURE_DISABLED_BY_DEFAULT);
   EXPECT_TRUE(base::FeatureList::IsEnabled(kFeature1));
 
   ResetVariations();
@@ -1035,11 +1035,11 @@ TEST_F(FieldTrialCreatorTest, SetUpFieldTrialConfig_ForceFieldTrials) {
 
   // Verify that the |UnitTestEnabled| and |UnitTestEnabled2| features are
   // active.
-  const base::Feature kFeature1{"UnitTestEnabled",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
+  static BASE_FEATURE(kFeature1, "UnitTestEnabled",
+                      base::FEATURE_DISABLED_BY_DEFAULT);
   EXPECT_TRUE(base::FeatureList::IsEnabled(kFeature1));
-  const base::Feature kFeature2{"UnitTest2Enabled",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
+  static BASE_FEATURE(kFeature2, "UnitTest2Enabled",
+                      base::FEATURE_DISABLED_BY_DEFAULT);
   EXPECT_TRUE(base::FeatureList::IsEnabled(kFeature2));
 
   ResetVariations();
@@ -1082,8 +1082,8 @@ TEST_F(FieldTrialCreatorTest, SetUpFieldTrialConfig_ForceFieldTrialsOverride) {
 
   // Verify that the |UnitTestEnabled| feature from the testing config is not
   // active.
-  const base::Feature kFeature1{"UnitTestEnabled",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
+  static BASE_FEATURE(kFeature1, "UnitTestEnabled",
+                      base::FEATURE_DISABLED_BY_DEFAULT);
   EXPECT_FALSE(base::FeatureList::IsEnabled(kFeature1));
 
   ResetVariations();
@@ -1128,8 +1128,8 @@ TEST_F(FieldTrialCreatorTest, SetUpFieldTrialConfig_ForceFieldTrialParams) {
   EXPECT_EQ("2", params["y"]);
 
   // Verify that the |UnitTestEnabled| feature is still active.
-  const base::Feature kFeature1{"UnitTestEnabled",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
+  static BASE_FEATURE(kFeature1, "UnitTestEnabled",
+                      base::FEATURE_DISABLED_BY_DEFAULT);
   EXPECT_TRUE(base::FeatureList::IsEnabled(kFeature1));
 
   ResetVariations();
@@ -1178,8 +1178,8 @@ TEST_P(FieldTrialCreatorTestWithFeatures,
 
   // Verify that the |UnitTestEnabled| feature is enabled or disabled depending
   // on whether we passed it in |--enable-features| or |--disable-features|.
-  const base::Feature kFeature1{"UnitTestEnabled",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
+  static BASE_FEATURE(kFeature1, "UnitTestEnabled",
+                      base::FEATURE_DISABLED_BY_DEFAULT);
   EXPECT_EQ(GetParam() == ::switches::kEnableFeatures,
             base::FeatureList::IsEnabled(kFeature1));
 

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/quick_pair/common/account_key_failure.h"
 #include "ash/quick_pair/common/device.h"
@@ -31,14 +32,15 @@
 #include "ash/quick_pair/scanning/scanner_broker.h"
 #include "ash/quick_pair/ui/mock_ui_broker.h"
 #include "ash/quick_pair/ui/ui_broker.h"
-#include "ash/services/quick_pair/quick_pair_process_manager_impl.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/test/scoped_feature_list.h"
 #include "chromeos/ash/services/bluetooth_config/adapter_state_controller.h"
 #include "chromeos/ash/services/bluetooth_config/fake_adapter_state_controller.h"
 #include "chromeos/ash/services/bluetooth_config/fake_discovery_session_manager.h"
 #include "chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
+#include "chromeos/ash/services/quick_pair/quick_pair_process_manager_impl.h"
 #include "components/prefs/pref_registry.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -407,21 +409,102 @@ TEST_F(MediatorTest, NotifyPairFailure_AddressConnect) {
   mock_pairer_broker_->NotifyPairFailure(device_, PairFailure::kAddressConnect);
 }
 
+TEST_F(MediatorTest,
+       RemoveDeviceFromAlreadyShownDiscoveryNotificationCache_PairFailure) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/
+      {features::kFastPairPreventNotificationsForRecentlyLostDevice},
+      /*disabled_features=*/{});
+
+  feature_status_tracker_->SetIsFastPairEnabled(true);
+  EXPECT_CALL(*mock_ui_broker_,
+              RemoveDeviceFromAlreadyShownDiscoveryNotificationCache);
+  EXPECT_CALL(*mock_ui_broker_, ShowPairingFailed);
+  mock_pairer_broker_->NotifyPairFailure(device_, PairFailure::kAddressConnect);
+}
+
+TEST_F(
+    MediatorTest,
+    RemoveDeviceFromAlreadyShownDiscoveryNotificationCache_PairFailure_FlagDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{},
+      /*disabled_features=*/{
+          features::kFastPairPreventNotificationsForRecentlyLostDevice});
+
+  feature_status_tracker_->SetIsFastPairEnabled(true);
+  EXPECT_CALL(*mock_ui_broker_,
+              RemoveDeviceFromAlreadyShownDiscoveryNotificationCache)
+      .Times(0);
+  EXPECT_CALL(*mock_ui_broker_, ShowPairingFailed);
+  mock_pairer_broker_->NotifyPairFailure(device_, PairFailure::kAddressConnect);
+}
+
 TEST_F(MediatorTest, InvokesShowAssociateAccount) {
   feature_status_tracker_->SetIsFastPairEnabled(true);
   EXPECT_CALL(*mock_ui_broker_, ShowAssociateAccount);
   fake_retroactive_pairing_detector_->NotifyRetroactivePairFound(device_);
 }
 
-TEST_F(MediatorTest, RemoveNotificationOnPaired) {
+TEST_F(MediatorTest, DoesntInvokeShowAssociateAccount_FastPairDisabled) {
+  feature_status_tracker_->SetIsFastPairEnabled(false);
+  EXPECT_CALL(*mock_ui_broker_, ShowAssociateAccount).Times(0);
+  fake_retroactive_pairing_detector_->NotifyRetroactivePairFound(device_);
+}
+
+TEST_F(MediatorTest, RemoveNotificationOnPaired_FlagEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/
+      {features::kFastPairPreventNotificationsForRecentlyLostDevice},
+      /*disabled_features=*/{});
+
   feature_status_tracker_->SetIsFastPairEnabled(true);
   EXPECT_CALL(*mock_ui_broker_, RemoveNotifications);
+  EXPECT_CALL(*mock_ui_broker_,
+              RemoveDeviceFromAlreadyShownDiscoveryNotificationCache);
   mock_pairer_broker_->NotifyDevicePaired(device_);
 }
 
-TEST_F(MediatorTest, RemoveNotificationOnDeviceLost) {
+TEST_F(MediatorTest, RemoveNotificationOnPaired_FlagDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{},
+      /*disabled_features=*/{
+          features::kFastPairPreventNotificationsForRecentlyLostDevice});
+
   feature_status_tracker_->SetIsFastPairEnabled(true);
   EXPECT_CALL(*mock_ui_broker_, RemoveNotifications);
+  EXPECT_CALL(*mock_ui_broker_,
+              RemoveDeviceFromAlreadyShownDiscoveryNotificationCache)
+      .Times(0);
+  mock_pairer_broker_->NotifyDevicePaired(device_);
+}
+
+TEST_F(MediatorTest, RemoveNotification_StartTimer_OnDeviceLost_FlagEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/
+      {features::kFastPairPreventNotificationsForRecentlyLostDevice},
+      /*disabled_features=*/{});
+
+  feature_status_tracker_->SetIsFastPairEnabled(true);
+  EXPECT_CALL(*mock_ui_broker_, RemoveNotifications);
+  EXPECT_CALL(*mock_ui_broker_, StartDeviceLostTimer);
+  mock_scanner_broker_->NotifyDeviceLost(device_);
+}
+
+TEST_F(MediatorTest, RemoveNotification_StartTimer_OnDeviceLost_FlagDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{},
+      /*disabled_features=*/{
+          features::kFastPairPreventNotificationsForRecentlyLostDevice});
+
+  feature_status_tracker_->SetIsFastPairEnabled(true);
+  EXPECT_CALL(*mock_ui_broker_, RemoveNotifications);
+  EXPECT_CALL(*mock_ui_broker_, StartDeviceLostTimer).Times(0);
   mock_scanner_broker_->NotifyDeviceLost(device_);
 }
 

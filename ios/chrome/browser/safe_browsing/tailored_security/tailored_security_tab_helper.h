@@ -20,13 +20,8 @@ class TailoredSecurityTabHelper
       public web::WebStateObserver,
       public web::WebStateUserData<TailoredSecurityTabHelper> {
  public:
-  static void CreateForWebState(
-      web::WebState* web_state,
-      safe_browsing::TailoredSecurityService* service);
-
   TailoredSecurityTabHelper(web::WebState* web_state,
                             safe_browsing::TailoredSecurityService* service);
-
   ~TailoredSecurityTabHelper() override;
 
   TailoredSecurityTabHelper(const TailoredSecurityTabHelper&) = delete;
@@ -43,9 +38,7 @@ class TailoredSecurityTabHelper
   void OnTailoredSecurityBitChanged(bool enabled,
                                     base::Time previous_update) override;
   void OnTailoredSecurityServiceDestroyed() override;
-
- protected:
-  web::WebState* web_state() { return web_state_; }
+  void OnSyncNotificationMessageRequest(bool is_enabled) override;
 
  private:
   friend class web::WebStateUserData<TailoredSecurityTabHelper>;

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,7 +126,7 @@ void FirstMeaningfulPaintDetector::OnNetwork2Quiet() {
           paint_timing_
               ->FirstContentfulPaintRenderedButNotPresentedAsMonotonicTime();
       first_meaningful_paint_presentation =
-          paint_timing_->FirstContentfulPaint();
+          paint_timing_->FirstContentfulPaintIgnoringSoftNavigations();
       // It's possible that this timer fires between when the first contentful
       // paint is set and its presentation promise is fulfilled. If this
       // happens, defer until NotifyFirstContentfulPaint() is called.

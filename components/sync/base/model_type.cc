@@ -188,10 +188,6 @@ static_assert(42 == syncer::GetNumModelTypes(),
               "When adding a new type, update enum SyncModelTypes in enums.xml "
               "and suffix SyncModelType in histograms.xml.");
 
-static_assert(42 == syncer::GetNumModelTypes(),
-              "When adding a new type, update kAllocatorDumpNameAllowlist in "
-              "base/trace_event/memory_infra_background_allowlist.cc.");
-
 void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
   switch (type) {
     case UNSPECIFIED:
@@ -338,6 +334,17 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
   DCHECK(ProtocolTypes().Has(model_type))
       << "Only protocol types have field values.";
   return kModelTypeInfoMap[model_type].specifics_field_number;
+}
+
+void internal::GetModelTypeSetFromSpecificsFieldNumberListHelper(
+    ModelTypeSet& model_types,
+    int field_number) {
+  ModelType model_type = GetModelTypeFromSpecificsFieldNumber(field_number);
+  if (IsRealDataType(model_type)) {
+    model_types.Put(model_type);
+  } else {
+    DLOG(WARNING) << "Unknown field number " << field_number;
+  }
 }
 
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {

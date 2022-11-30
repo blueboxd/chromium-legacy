@@ -4,24 +4,20 @@
 
 package org.chromium.chrome.browser.contextmenu;
 
+import android.content.Context;
 import android.text.TextUtils;
 import android.webkit.URLUtil;
-
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
 import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.common.ContentFeatures;
+import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * Provides utility methods for generating context menus.
  */
 public final class ContextMenuUtils {
-    /** Experiment params to hide the context menu header image. */
-    @VisibleForTesting
-    public static final String HIDE_HEADER_IMAGE_PARAM = "hide_header_image";
-
     private ContextMenuUtils() {}
 
     /**
@@ -60,23 +56,19 @@ public final class ContextMenuUtils {
 
     /** Whether to force using popup style for context menu. */
     static boolean forcePopupStyleEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_POPUP_STYLE)
-                || ContentFeatureList.isEnabled(ContentFeatures.TOUCH_DRAG_AND_CONTEXT_MENU);
+        return ContentFeatureList.isEnabled(ContentFeatures.TOUCH_DRAG_AND_CONTEXT_MENU);
     }
 
     /**
-     * Whether hide the context menu header image by field trial params. The value is read from 
-     * either {@link ContentFeatures.TOUCH_DRAG_AND_CONTEXT_MENU} or
-     * {@link ChromeFeatureList.CONTEXT_MENU_POPUP_STYLE}.
+     * Whether the context menu is a popup menu in the given context; otherwise, it is shown as a
+     * popup window. Note that only contexts that are meaningfully associated with a display should
+     * be used.
+     *
+     * @see DeviceFormFactor#isNonMultiDisplayContextOnTablet(Context).
      */
-    static boolean hideContextMenuHeaderImage() {
-        int valueHideHeaderFromDragAndDrop = ContentFeatureList.getFieldTrialParamByFeatureAsInt(
-                ContentFeatures.TOUCH_DRAG_AND_CONTEXT_MENU, HIDE_HEADER_IMAGE_PARAM, -1);
-        if (valueHideHeaderFromDragAndDrop != -1) {
-            return valueHideHeaderFromDragAndDrop != 0;
-        }
-
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.CONTEXT_MENU_POPUP_STYLE, HIDE_HEADER_IMAGE_PARAM, false);
+    public static boolean usePopupContextMenuForContext(Context context) {
+        return ChromeFeatureList.isEnabled(
+                       ChromeFeatureList.CONTEXT_MENU_POPUP_FOR_ALL_SCREEN_SIZES)
+                || DeviceFormFactor.isNonMultiDisplayContextOnTablet(context);
     }
 }

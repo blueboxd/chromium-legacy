@@ -34,7 +34,6 @@
 #include "components/ukm/ukm_entry_filter.h"
 #include "components/ukm/ukm_pref_names.h"
 #include "components/ukm/ukm_recorder_impl.h"
-#include "components/ukm/ukm_service.h"
 #include "components/ukm/unsent_log_store_metrics_impl.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
@@ -168,10 +167,11 @@ class UkmServiceTest : public testing::Test {
     EXPECT_GE(GetPersistedLogCount(), 1);
     metrics::UnsentLogStore result_unsent_log_store(
         std::make_unique<UnsentLogStoreMetricsImpl>(), &prefs_,
-        prefs::kUkmUnsentLogStore, /* meta_data_pref_name= */ nullptr,
-        /* min_log_count= */ 3, /* min_log_bytes= */ 1000,
-        /* max_log_size= */ 0,
-        /* signing_key= */ std::string());
+        prefs::kUkmUnsentLogStore, /*metadata_pref_name=*/nullptr,
+        /*min_log_count=*/3, /*min_log_bytes=*/1000,
+        /*max_log_size=*/0,
+        /*signing_key=*/std::string(),
+        /*logs_event_manager=*/nullptr);
 
     result_unsent_log_store.LoadPersistedUnsentLogs();
     result_unsent_log_store.StageNextLog();
@@ -621,8 +621,7 @@ TEST_F(UkmServiceTest,
 
 TEST_F(UkmServiceTest, DontAddUserDemograhicsWhenFeatureDisabled) {
   base::test::ScopedFeatureList local_feature;
-  local_feature.InitAndDisableFeature(
-      UkmService::kReportUserNoisedUserBirthYearAndGender);
+  local_feature.InitAndDisableFeature(kReportUserNoisedUserBirthYearAndGender);
 
   // The demographics provider should not be called.
   auto provider = std::make_unique<MockDemographicMetricsProvider>();

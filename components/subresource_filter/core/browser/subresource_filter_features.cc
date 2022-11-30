@@ -43,10 +43,10 @@ class CommaSeparatedStrings {
   CommaSeparatedStrings& operator=(const CommaSeparatedStrings&) = delete;
 
   bool CaseInsensitiveContains(base::StringPiece lowercase_key) const {
-    return base::ranges::find_if(pieces_, [lowercase_key](
-                                              base::StringPiece element) {
-             return base::EqualsCaseInsensitiveASCII(element, lowercase_key);
-           }) != pieces_.end();
+    return base::ranges::any_of(
+        pieces_, [lowercase_key](base::StringPiece element) {
+          return base::EqualsCaseInsensitiveASCII(element, lowercase_key);
+        });
   }
 
  private:
@@ -234,14 +234,17 @@ base::LazyInstance<scoped_refptr<ConfigurationList>>::Leaky
 
 // Constant definitions -------------------------------------------------------
 
-const base::Feature kSafeBrowsingSubresourceFilter{
-    "SubresourceFilter", base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kSafeBrowsingSubresourceFilter,
+             "SubresourceFilter",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
-const base::Feature kFilterAdsOnAbusiveSites{"FilterAdsOnAbusiveSites",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kFilterAdsOnAbusiveSites,
+             "FilterAdsOnAbusiveSites",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
-const base::Feature kAdsInterventionsEnforced{
-    "AdsInterventionsEnforced", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kAdsInterventionsEnforced,
+             "AdsInterventionsEnforced",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 const base::FeatureParam<base::TimeDelta> kAdsInterventionDuration = {
     &kAdsInterventionsEnforced, "kAdsInterventionDuration", base::Days(3)};

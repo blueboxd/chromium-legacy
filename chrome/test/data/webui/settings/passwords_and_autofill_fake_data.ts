@@ -174,7 +174,17 @@ export function createCreditCardEntry():
  */
 export function makeInsecureCredential(
     url: string, username: string,
-    id?: number): chrome.passwordsPrivate.PasswordUiEntry {
+    types?: chrome.passwordsPrivate.CompromiseType[], id?: number,
+    elapsedMinSinceCompromise?: number,
+    isMuted?: boolean): chrome.passwordsPrivate.PasswordUiEntry {
+  elapsedMinSinceCompromise = elapsedMinSinceCompromise || 0;
+  types = types || [];
+  const compromisedInfo = {
+    compromiseTime: Date.now() - (elapsedMinSinceCompromise * 60000),
+    elapsedTimeSinceCompromise: `${elapsedMinSinceCompromise} minutes ago`,
+    compromiseTypes: types,
+    isMuted: isMuted ?? false,
+  };
   return {
     id: id || 0,
     storedIn: chrome.passwordsPrivate.PasswordStoreSet.DEVICE,
@@ -188,25 +198,8 @@ export function makeInsecureCredential(
     username: username,
     note: '',
     isAndroidCredential: false,
+    compromisedInfo: types.length ? compromisedInfo : undefined,
   };
-}
-
-/**
- * Creates a new compromised credential.
- */
-export function makeCompromisedCredential(
-    url: string, username: string, type: chrome.passwordsPrivate.CompromiseType,
-    id?: number, elapsedMinSinceCompromise?: number,
-    isMuted?: boolean): chrome.passwordsPrivate.PasswordUiEntry {
-  const credential = makeInsecureCredential(url, username, id);
-  elapsedMinSinceCompromise = elapsedMinSinceCompromise || 0;
-  credential.compromisedInfo = {
-    compromiseTime: Date.now() - (elapsedMinSinceCompromise * 60000),
-    elapsedTimeSinceCompromise: `${elapsedMinSinceCompromise} minutes ago`,
-    compromiseType: type,
-    isMuted: isMuted ?? false,
-  };
-  return credential;
 }
 
 /**
@@ -277,6 +270,7 @@ export class PasswordSectionElementFactory {
           value: true,
         },
       },
+      password_manager: {biometric_authentication_filling: {value: true}},
     };
     this.document.body.appendChild(passwordsSection);
     flush();

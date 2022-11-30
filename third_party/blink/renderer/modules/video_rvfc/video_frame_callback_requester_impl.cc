@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,8 +112,8 @@ void VideoFrameCallbackRequesterImpl::ScheduleWindowRaf() {
       ->GetDocument()
       .GetScriptedAnimationController()
       .ScheduleVideoFrameCallbacksExecution(
-          WTF::Bind(&VideoFrameCallbackRequesterImpl::OnExecution,
-                    weak_factory_.GetWeakPtr()));
+          WTF::BindOnce(&VideoFrameCallbackRequesterImpl::OnExecution,
+                        weak_factory_.GetWeakPtr()));
 }
 
 void VideoFrameCallbackRequesterImpl::ScheduleExecution() {
@@ -184,8 +184,8 @@ bool VideoFrameCallbackRequesterImpl::TryScheduleImmersiveXRSessionRaf() {
     return false;
 
   session->ScheduleVideoFrameCallbacksExecution(
-      WTF::Bind(&VideoFrameCallbackRequesterImpl::OnExecution,
-                weak_factory_.GetWeakPtr()));
+      WTF::BindOnce(&VideoFrameCallbackRequesterImpl::OnExecution,
+                    weak_factory_.GetWeakPtr()));
 
   return true;
 }

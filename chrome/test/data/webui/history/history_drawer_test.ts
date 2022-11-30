@@ -6,7 +6,7 @@ import 'chrome://history/history.js';
 
 import {BrowserServiceImpl, ensureLazyLoaded, HistoryAppElement, HistorySideBarElement} from 'chrome://history/history.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks} from 'chrome://webui-test/test_util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {TestBrowserService} from './test_browser_service.js';
 import {navigateTo} from './test_util.js';
@@ -15,7 +15,8 @@ suite('drawer-test', function() {
   let app: HistoryAppElement;
 
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     const testService = new TestBrowserService();
     BrowserServiceImpl.setInstance(testService);
     app = document.createElement('history-app');

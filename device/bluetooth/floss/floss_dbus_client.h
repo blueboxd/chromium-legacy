@@ -30,13 +30,13 @@ extern DEVICE_BLUETOOTH_EXPORT const char kManagerService[];
 extern DEVICE_BLUETOOTH_EXPORT const char kAdapterInterface[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGattInterface[];
 extern DEVICE_BLUETOOTH_EXPORT const char kManagerInterface[];
+extern DEVICE_BLUETOOTH_EXPORT const char kExperimentalInterface[];
 extern DEVICE_BLUETOOTH_EXPORT const char kManagerObject[];
 extern DEVICE_BLUETOOTH_EXPORT const char kAdapterObjectFormat[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGattObjectFormat[];
 
 // Other interfaces
 extern DEVICE_BLUETOOTH_EXPORT const char kSocketManagerInterface[];
-extern DEVICE_BLUETOOTH_EXPORT const char kGattClientInterface[];
 
 namespace adapter {
 extern DEVICE_BLUETOOTH_EXPORT const char kGetAddress[];
@@ -161,6 +161,37 @@ extern DEVICE_BLUETOOTH_EXPORT const char kOnConfigureMtu[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnConnectionUpdated[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnServiceChanged[];
 }  // namespace gatt
+   //
+namespace advertiser {
+extern DEVICE_BLUETOOTH_EXPORT const char kRegisterCallback[];
+extern DEVICE_BLUETOOTH_EXPORT const char kStartAdvertisingSet[];
+extern DEVICE_BLUETOOTH_EXPORT const char kStopAdvertisingSet[];
+extern DEVICE_BLUETOOTH_EXPORT const char kGetOwnAddress[];
+extern DEVICE_BLUETOOTH_EXPORT const char kEnableAdvertisingSet[];
+extern DEVICE_BLUETOOTH_EXPORT const char kSetAdvertisingData[];
+extern DEVICE_BLUETOOTH_EXPORT const char kSetScanResponseData[];
+extern DEVICE_BLUETOOTH_EXPORT const char kSetAdvertisingParameters[];
+extern DEVICE_BLUETOOTH_EXPORT const char kSetPeriodicAdvertisingParameters[];
+extern DEVICE_BLUETOOTH_EXPORT const char kSetPeriodicAdvertisingData[];
+extern DEVICE_BLUETOOTH_EXPORT const char kSetPeriodicAdvertisingEnable[];
+extern DEVICE_BLUETOOTH_EXPORT const char kCallbackInterface[];
+
+extern DEVICE_BLUETOOTH_EXPORT const char kOnAdvertisingSetStarted[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnOwnAddressRead[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnAdvertisingSetStopped[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnAdvertisingEnabled[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnAdvertisingDataSet[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnScanResponseDataSet[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnAdvertisingParametersUpdated[];
+extern DEVICE_BLUETOOTH_EXPORT const char
+    kOnPeriodicAdvertisingParametersUpdated[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnPeriodicAdvertisingDataSet[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnPeriodicAdvertisingEnabled[];
+}  // namespace advertiser
+
+namespace experimental {
+extern DEVICE_BLUETOOTH_EXPORT const char kSetLLPrivacy[];
+}  // namespace experimental
 
 // BluetoothDevice structure for DBus apis.
 struct DEVICE_BLUETOOTH_EXPORT FlossDeviceId {
@@ -245,15 +276,34 @@ class WeaklyOwnedCallback {
 };
 
 struct DBusTypeInfo {
-  const char* dbus_signature;
-  const char* type_name;
+  const std::string dbus_signature;
+  const std::string type_name;
 };
 
 // To minimize the overhead of constructing a struct, this function returns
 // a const reference. Specialization implementations are recommended to return
 // a statically allocated DBusTypeInfo for this reason.
 template <typename T>
-DEVICE_BLUETOOTH_EXPORT const DBusTypeInfo& GetDBusTypeInfo();
+DEVICE_BLUETOOTH_EXPORT const DBusTypeInfo& GetDBusTypeInfo(const T*);
+
+template <typename T>
+const DBusTypeInfo& GetDBusTypeInfo(const std::vector<T>*) {
+  static DBusTypeInfo elem_info = GetDBusTypeInfo(static_cast<T*>(nullptr));
+  static DBusTypeInfo info{"a" + elem_info.dbus_signature,
+                           "vector<" + elem_info.type_name + ">"};
+  return info;
+}
+
+template <typename T, typename U>
+const DBusTypeInfo& GetDBusTypeInfo(const std::map<T, U>*) {
+  static DBusTypeInfo key_info = GetDBusTypeInfo(static_cast<T*>(nullptr));
+  static DBusTypeInfo val_info = GetDBusTypeInfo(static_cast<U*>(nullptr));
+  static DBusTypeInfo info{std::string("a{") + key_info.dbus_signature +
+                               val_info.dbus_signature + std::string("}"),
+                           std::string("map<") + key_info.type_name + ", " +
+                               val_info.type_name + std::string(">")};
+  return info;
+}
 
 // Restrict all access to DBus client initialization to FlossDBusManager so we
 // can enforce the proper ordering of initialization and shutdowns.
@@ -318,7 +368,7 @@ class DEVICE_BLUETOOTH_EXPORT FlossDBusClient {
   static void WriteDBusParamIntoVariant(dbus::MessageWriter* writer,
                                         const T& data) {
     dbus::MessageWriter variant(nullptr);
-    writer->OpenVariant(GetDBusTypeInfo<T>().dbus_signature, &variant);
+    writer->OpenVariant(GetDBusTypeInfo(&data).dbus_signature, &variant);
     WriteDBusParam(&variant, data);
     writer->CloseContainer(&variant);
   }
@@ -326,7 +376,36 @@ class DEVICE_BLUETOOTH_EXPORT FlossDBusClient {
   // Generalized write for std::vector.
   template <typename T>
   static void WriteDBusParam(dbus::MessageWriter* writer,
-                             const std::vector<T>& value);
+                             const std::vector<T>& value) {
+    dbus::MessageWriter array_writer(nullptr);
+    writer->OpenArray(GetDBusTypeInfo(static_cast<T*>(nullptr)).dbus_signature,
+                      &array_writer);
+    for (const auto& entry : value) {
+      WriteDBusParam<>(&array_writer, entry);
+    }
+    writer->CloseContainer(&array_writer);
+  }
+
+  // Generalized write for std::map.
+  template <typename T, typename U>
+  static void WriteDBusParam(dbus::MessageWriter* writer,
+                             const std::map<T, U>& data) {
+    std::string signature(
+        std::string("{") +
+        GetDBusTypeInfo(static_cast<T*>(nullptr)).dbus_signature +
+        GetDBusTypeInfo(static_cast<U*>(nullptr)).dbus_signature +
+        std::string("}"));
+    dbus::MessageWriter array(nullptr);
+    writer->OpenArray(signature, &array);
+    for (auto const& [key, val] : data) {
+      dbus::MessageWriter dict(nullptr);
+      array.OpenDictEntry(&dict);
+      WriteDBusParam<>(&dict, key);
+      WriteDBusParam<>(&dict, val);
+      array.CloseContainer(&dict);
+    }
+    writer->CloseContainer(&array);
+  }
 
   // Optional container type needs to be explicitly listed here.
   template <typename T>
@@ -407,10 +486,34 @@ class DEVICE_BLUETOOTH_EXPORT FlossDBusClient {
 
     while (subreader.HasMoreData()) {
       T element;
-      if (!ReadDBusParam<T>(&subreader, &element))
+      if (!ReadDBusParam<>(&subreader, &element))
         return false;
 
       value->emplace_back(std::move(element));
+    }
+
+    return true;
+  }
+
+  // Specialization for std::map.
+  template <typename T, typename U>
+  static bool ReadDBusParam(dbus::MessageReader* reader, std::map<T, U>* data) {
+    dbus::MessageReader array_reader(nullptr);
+    if (!reader->PopArray(&array_reader))
+      return false;
+
+    while (array_reader.HasMoreData()) {
+      dbus::MessageReader dict_entry_reader(nullptr);
+      if (!array_reader.PopDictEntry(&dict_entry_reader))
+        return false;
+
+      T key;
+      U value;
+      if (!ReadDBusParam<>(&dict_entry_reader, &key) ||
+          !ReadDBusParam<>(&dict_entry_reader, &value))
+        return false;
+
+      data->insert({key, value});
     }
 
     return true;
@@ -516,7 +619,7 @@ class DEVICE_BLUETOOTH_EXPORT FlossDBusClient {
 
           parsed_fields.insert(key);
         } else {
-          DBusTypeInfo type_info = GetDBusTypeInfo<T>();
+          DBusTypeInfo type_info = GetDBusTypeInfo(data);
           VLOG(3) << "Does not know how to read field " << type_info.type_name
                   << "." << key;
         }

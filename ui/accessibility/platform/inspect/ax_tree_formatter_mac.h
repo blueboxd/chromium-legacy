@@ -16,11 +16,11 @@ class AX_EXPORT AXTreeFormatterMac : public AXTreeFormatterBase {
   ~AXTreeFormatterMac() override;
 
   // AXTreeFormatter
-  base::Value BuildTree(AXPlatformNodeDelegate* root) const override;
-  base::Value BuildTreeForSelector(
+  base::Value::Dict BuildTree(AXPlatformNodeDelegate* root) const override;
+  base::Value::Dict BuildTreeForSelector(
       const AXTreeSelector& selector) const override;
 
-  base::Value BuildNode(AXPlatformNodeDelegate* node) const override;
+  base::Value::Dict BuildNode(AXPlatformNodeDelegate* node) const override;
 
   std::string EvaluateScript(const AXTreeSelector& selector,
                              const AXInspectScenario& scenario) const override;
@@ -36,25 +36,25 @@ class AX_EXPORT AXTreeFormatterMac : public AXTreeFormatterBase {
       size_t end_index) const;
 
   // AXTreeFormatterMac
-  base::Value BuildNode(const id node) const;
+  base::Value::Dict BuildNode(const id node) const;
 
  protected:
   void AddDefaultFilters(
       std::vector<AXPropertyFilter>* property_filters) override;
 
  private:
-  base::Value BuildTree(const id root) const;
-  base::Value BuildTreeForAXUIElement(AXUIElementRef node) const;
+  base::Value::Dict BuildTree(const id root) const;
+  base::Value::Dict BuildTreeForAXUIElement(AXUIElementRef node) const;
 
   void RecursiveBuildTree(const AXElementWrapper& ax_element,
                           const NSRect& root_rect,
                           const AXTreeIndexerMac* indexer,
-                          base::Value* dict) const;
+                          base::Value::Dict* dict) const;
 
   void AddProperties(const AXElementWrapper& ax_element,
                      const NSRect& root_rect,
                      const AXTreeIndexerMac* indexer,
-                     base::Value* dict) const;
+                     base::Value::Dict* dict) const;
 
   // Invokes an attribute by a property node.
   AXOptionalNSObject InvokeAttributeFor(
@@ -62,11 +62,11 @@ class AX_EXPORT AXTreeFormatterMac : public AXTreeFormatterBase {
       const AXPropertyNode& property_node,
       const AXTreeIndexerMac* indexer) const;
 
-  base::Value PopulateLocalPosition(const AXElementWrapper& ax_element,
-                                    const NSRect& root_rect) const;
+  base::Value::Dict PopulateLocalPosition(const AXElementWrapper& ax_element,
+                                          const NSRect& root_rect) const;
 
   std::string ProcessTreeForOutput(
-      const base::DictionaryValue& node) const override;
+      const base::Value::Dict& node) const override;
 };
 
 }  // namespace ui

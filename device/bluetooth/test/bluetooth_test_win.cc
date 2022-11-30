@@ -503,7 +503,7 @@ void BluetoothTestWin::SimulateGattCharacteristicReadError(
       GetSimulatedCharacteristic(characteristic);
   CHECK(target_characteristic);
   HRESULT hr = HRESULT_FROM_WIN32(ERROR_SEM_TIMEOUT);
-  if (error_code == BluetoothGattService::GATT_ERROR_INVALID_LENGTH)
+  if (error_code == BluetoothGattService::GattErrorCode::kInvalidLength)
     hr = E_BLUETOOTH_ATT_INVALID_ATTRIBUTE_VALUE_LENGTH;
   fake_bt_le_wrapper_->SimulateGattCharacteristicReadError(
       target_characteristic, hr);
@@ -523,7 +523,7 @@ void BluetoothTestWin::SimulateGattCharacteristicWriteError(
       GetSimulatedCharacteristic(characteristic);
   CHECK(target_characteristic);
   HRESULT hr = HRESULT_FROM_WIN32(ERROR_SEM_TIMEOUT);
-  if (error_code == BluetoothGattService::GATT_ERROR_INVALID_LENGTH)
+  if (error_code == BluetoothGattService::GattErrorCode::kInvalidLength)
     hr = E_BLUETOOTH_ATT_INVALID_ATTRIBUTE_VALUE_LENGTH;
   fake_bt_le_wrapper_->SimulateGattCharacteristicWriteError(
       target_characteristic, hr);
@@ -565,7 +565,7 @@ void BluetoothTestWin::SimulateGattNotifySessionStartError(
   win::GattCharacteristic* simulated_characteristic =
       GetSimulatedCharacteristic(characteristic);
   DCHECK(simulated_characteristic);
-  DCHECK(error_code == BluetoothGattService::GATT_ERROR_UNKNOWN);
+  DCHECK(error_code == BluetoothGattService::GattErrorCode::kUnknown);
   fake_bt_le_wrapper_->SimulateGattCharacteristicSetNotifyError(
       simulated_characteristic, E_BLUETOOTH_ATT_UNKNOWN_ERROR);
 }
@@ -689,8 +689,8 @@ void BluetoothTestWin::FinishPendingTasks() {
 }
 
 BluetoothTestWinrt::BluetoothTestWinrt() {
-  std::vector<base::Feature> enabled;
-  std::vector<base::Feature> disabled;
+  std::vector<base::test::FeatureRef> enabled;
+  std::vector<base::test::FeatureRef> disabled;
   if (GetParam().new_ble_implementation_enabled) {
     enabled.push_back(kNewBLEWinImplementation);
     if (base::win::GetVersion() >= base::win::Version::WIN10) {

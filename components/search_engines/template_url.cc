@@ -1685,22 +1685,29 @@ void TemplateURL::EncodeSearchTerms(
   NOTREACHED();
 }
 
-GURL TemplateURL::GenerateSearchURL(
-    const SearchTermsData& search_terms_data) const {
+GURL TemplateURL::GenerateSearchURL(const SearchTermsData& search_terms_data,
+                                    const std::u16string& search_terms) const {
   if (!url_ref().IsValid(search_terms_data))
     return GURL();
 
   if (!url_ref().SupportsReplacement(search_terms_data))
     return GURL(url());
 
-  // Use something obscure for the search terms argument so that in the rare
-  // case the term replaces the URL it's unlikely another keyword would have the
-  // same url.
-  // TODO(jnd): Add additional parameters to get post data when the search URL
-  // has post parameters.
   return GURL(url_ref().ReplaceSearchTerms(
-      TemplateURLRef::SearchTermsArgs(u"blah.blah.blah.blah.blah"),
-      search_terms_data, nullptr));
+      TemplateURLRef::SearchTermsArgs(search_terms), search_terms_data,
+      nullptr));
+}
+
+GURL TemplateURL::GenerateSuggestionURL(
+    const SearchTermsData& search_terms_data) const {
+  if (!suggestions_url_ref().IsValid(search_terms_data))
+    return GURL();
+
+  if (!suggestions_url_ref().SupportsReplacement(search_terms_data))
+    return GURL(suggestions_url());
+
+  return GURL(suggestions_url_ref().ReplaceSearchTerms(
+      TemplateURLRef::SearchTermsArgs(), search_terms_data, nullptr));
 }
 
 bool TemplateURL::IsSideSearchSupported() const {
@@ -1737,12 +1744,8 @@ GURL TemplateURL::RemoveSideImageSearchParamFromURL(
     const GURL& image_search_url) const {
   if (!IsSideImageSearchSupported())
     return image_search_url;
-  std::string value;
-  if (!net::GetValueForKeyInQuery(image_search_url, side_image_search_param(),
-                                  &value))
-    return image_search_url;
-  return net::AppendOrReplaceQueryParameter(image_search_url,
-                                            side_image_search_param(), "");
+  return net::AppendOrReplaceQueryParameter(
+      image_search_url, side_image_search_param(), absl::nullopt);
 }
 
 void TemplateURL::CopyFrom(const TemplateURL& other) {
@@ -1843,4 +1846,21 @@ bool TemplateURL::FindSearchTermsInURL(
     }
   }
   return false;
+}
+
+bool TemplateURL::ContainsSideSearchParam(const GURL& url) const {
+  std::string side_search_value;
+  if (!IsSideSearchSupported())
+    return false;
+  net::GetValueForKeyInQuery(url, side_search_param(), &side_search_value);
+  return !side_search_value.empty();
+}
+
+bool TemplateURL::ContainsSideImageSearchParam(const GURL& url) const {
+  std::string side_image_search_value;
+  if (!IsSideSearchSupported())
+    return false;
+  net::GetValueForKeyInQuery(url, side_image_search_param(),
+                             &side_image_search_value);
+  return !side_image_search_value.empty();
 }

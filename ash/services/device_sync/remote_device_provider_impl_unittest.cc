@@ -7,10 +7,6 @@
 #include <memory>
 #include <vector>
 
-#include "ash/components/multidevice/beacon_seed.h"
-#include "ash/components/multidevice/fake_secure_message_delegate.h"
-#include "ash/components/multidevice/remote_device.h"
-#include "ash/components/multidevice/secure_message_delegate_impl.h"
 #include "ash/constants/ash_features.h"
 #include "ash/services/device_sync/cryptauth_device.h"
 #include "ash/services/device_sync/cryptauth_device_manager.h"
@@ -26,6 +22,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/ash/components/multidevice/beacon_seed.h"
+#include "chromeos/ash/components/multidevice/fake_secure_message_delegate.h"
+#include "chromeos/ash/components/multidevice/remote_device.h"
+#include "chromeos/ash/components/multidevice/secure_message_delegate_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
@@ -268,8 +268,8 @@ class DeviceSyncRemoteDeviceProviderImplTest : public ::testing::Test {
   void SetFeatureFlags(bool use_v1, bool use_v2) {
     ASSERT_TRUE(use_v1 || use_v2);
 
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
 
     // This flag has no direct effect of on the RemoteDeviceProvider; however,
     // v2 Enrollment is a prerequisite for v2 DeviceSync.

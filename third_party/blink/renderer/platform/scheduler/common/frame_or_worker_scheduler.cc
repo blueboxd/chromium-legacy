@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,27 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/feature_list.h"
+#include "third_party/blink/renderer/platform/bindings/source_location.h"
+#include "v8/include/v8-isolate.h"
 
 namespace blink {
+
+namespace {
+
+// When enabled, Source Location blocking BFCache is captured
+// to send it to the browser.
+BASE_FEATURE(kRegisterJSSourceLocationBlockingBFCache,
+             "RegisterJSSourceLocationBlockingBFCache",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Returns whether features::kRegisterJSSourceLocationBlockingBFCache is
+// enabled.
+bool IsRegisterJSSourceLocationBlockingBFCache() {
+  return base::FeatureList::IsEnabled(kRegisterJSSourceLocationBlockingBFCache);
+}
+
+}  // namespace
 
 FrameOrWorkerScheduler::LifecycleObserverHandle::LifecycleObserverHandle(
     FrameOrWorkerScheduler* scheduler)
@@ -57,6 +76,16 @@ FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle
 FrameOrWorkerScheduler::RegisterFeature(SchedulingPolicy::Feature feature,
                                         SchedulingPolicy policy) {
   DCHECK(!scheduler::IsFeatureSticky(feature));
+  if (IsRegisterJSSourceLocationBlockingBFCache()) {
+    // Check if V8 is currently running an isolate.
+    // CaptureSourceLocation() detects the location of JS blocking BFCache if JS
+    // is running.
+    if (v8::Isolate* isolate = v8::Isolate::TryGetCurrent()) {
+      // TODO(crbug.com/1366675): Add source location into
+      // SchedulingAffectingFeatureHandle to pass it to the browser.
+      std::unique_ptr<SourceLocation> source_location = CaptureSourceLocation();
+    }
+  }
   return SchedulingAffectingFeatureHandle(
       feature, policy, GetSchedulingAffectingFeatureWeakPtr());
 }
@@ -65,6 +94,16 @@ void FrameOrWorkerScheduler::RegisterStickyFeature(
     SchedulingPolicy::Feature feature,
     SchedulingPolicy policy) {
   DCHECK(scheduler::IsFeatureSticky(feature));
+  if (IsRegisterJSSourceLocationBlockingBFCache()) {
+    // Check if V8 is currently running an isolate.
+    // CaptureSourceLocation() detects the location of JS blocking BFCache if JS
+    // is running.
+    if (v8::Isolate* isolate = v8::Isolate::TryGetCurrent()) {
+      // TODO(crbug.com/1366675): Add source location into
+      // SchedulingAffectingFeatureHandle to pass it to the browser.
+      std::unique_ptr<SourceLocation> source_location = CaptureSourceLocation();
+    }
+  }
   OnStartedUsingFeature(feature, policy);
 }
 

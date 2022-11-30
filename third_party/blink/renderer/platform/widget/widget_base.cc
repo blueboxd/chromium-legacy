@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,7 @@
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/renderer/platform/graphics/raster_dark_mode_filter_impl.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/compositor_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
@@ -549,7 +550,13 @@ void WidgetBase::OnDeferCommitsChanged(
   widget_input_handler_manager_->OnDeferCommitsChanged(defer, reason);
 }
 
+void WidgetBase::OnPauseRenderingChanged(bool paused) {
+  widget_input_handler_manager_->OnPauseRenderingChanged(paused);
+}
+
 void WidgetBase::DidBeginMainFrame() {
+  if (base::FeatureList::IsEnabled(features::kRunTextInputUpdatePostLifecycle))
+    UpdateTextInputState();
   client_->DidBeginMainFrame();
 }
 
@@ -703,9 +710,11 @@ void WidgetBase::FinishRequestNewLayerTreeFrameSink(
     return;
   }
 
-  scoped_refptr<viz::RasterContextProvider> worker_context_provider =
-      Platform::Current()->SharedCompositorWorkerContextProvider();
-  if (!worker_context_provider) {
+  scoped_refptr<cc::RasterContextProviderWrapper>
+      worker_context_provider_wrapper =
+          Platform::Current()->SharedCompositorWorkerContextProvider(
+              &RasterDarkModeFilterImpl::Instance());
+  if (!worker_context_provider_wrapper) {
     // Cause the compositor to wait and try again.
     std::move(callback).Run(nullptr, nullptr);
     return;
@@ -758,7 +767,8 @@ void WidgetBase::FinishRequestNewLayerTreeFrameSink(
 
     std::move(callback).Run(
         std::make_unique<SynchronousLayerTreeFrameSink>(
-            std::move(context_provider), std::move(worker_context_provider),
+            std::move(context_provider),
+            std::move(worker_context_provider_wrapper),
             Platform::Current()->CompositorThreadTaskRunner(),
             gpu_memory_buffer_manager, g_next_layer_tree_frame_sink_id++,
             std::move(params->synthetic_begin_frame_source),
@@ -781,8 +791,8 @@ void WidgetBase::FinishRequestNewLayerTreeFrameSink(
   params->gpu_memory_buffer_manager = gpu_memory_buffer_manager;
   std::move(callback).Run(
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
-          std::move(context_provider), std::move(worker_context_provider),
-          params.get()),
+          std::move(context_provider),
+          std::move(worker_context_provider_wrapper), params.get()),
       std::move(render_frame_metadata_observer));
 }
 
@@ -846,11 +856,10 @@ void WidgetBase::WillBeginMainFrame() {
   client_->SetSuppressFrameRequestsWorkaroundFor704763Only(true);
   client_->WillBeginMainFrame();
   UpdateSelectionBounds();
-
-  // The UpdateTextInputState can result in further layout and possibly
-  // enable GPU acceleration so they need to be called before any painting
-  // is done.
-  UpdateTextInputState();
+  // UpdateTextInputState() will cause a forced style and layout update, which
+  // we would like to eliminate.
+  if (!base::FeatureList::IsEnabled(features::kRunTextInputUpdatePostLifecycle))
+    UpdateTextInputState();
 }
 
 void WidgetBase::RunPaintBenchmark(int repeat_count,
@@ -927,14 +936,14 @@ void WidgetBase::SetCursor(const ui::Cursor& cursor) {
 void WidgetBase::UpdateTooltipUnderCursor(const String& tooltip_text,
                                           TextDirection dir) {
   widget_host_->UpdateTooltipUnderCursor(
-      tooltip_text.IsEmpty() ? "" : tooltip_text, ToBaseTextDirection(dir));
+      tooltip_text.empty() ? "" : tooltip_text, ToBaseTextDirection(dir));
 }
 
 void WidgetBase::UpdateTooltipFromKeyboard(const String& tooltip_text,
                                            TextDirection dir,
                                            const gfx::Rect& bounds) {
   widget_host_->UpdateTooltipFromKeyboard(
-      tooltip_text.IsEmpty() ? "" : tooltip_text, ToBaseTextDirection(dir),
+      tooltip_text.empty() ? "" : tooltip_text, ToBaseTextDirection(dir),
       BlinkSpaceToEnclosedDIPs(bounds));
 }
 

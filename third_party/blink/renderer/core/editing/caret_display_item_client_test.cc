@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -368,14 +368,14 @@ TEST_P(CaretDisplayItemClientTest, BlinkingCaretNoInvalidation) {
   EXPECT_TRUE(GetCaretDisplayItemClient().IsValid());
   UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(GetCaretDisplayItemClient().IsValid());
-  EXPECT_TRUE(CaretRasterInvalidationTracking()->Invalidations().IsEmpty());
+  EXPECT_TRUE(CaretRasterInvalidationTracking()->Invalidations().empty());
 
   EXPECT_TRUE(IsVisibleIfActive());
   SetVisibleIfActive(true);
   EXPECT_TRUE(GetCaretDisplayItemClient().IsValid());
   UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(GetCaretDisplayItemClient().IsValid());
-  EXPECT_TRUE(CaretRasterInvalidationTracking()->Invalidations().IsEmpty());
+  EXPECT_TRUE(CaretRasterInvalidationTracking()->Invalidations().empty());
 
   GetDocument().View()->SetTracksRasterInvalidations(false);
 }

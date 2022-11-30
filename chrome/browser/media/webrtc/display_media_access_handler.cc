@@ -58,8 +58,9 @@ std::u16string GetApplicationTitle(content::WebContents* web_contents) {
 // is shown to the user, offering a selection of possible sources.
 // If this feature is enabled, the order is: tabs / windows / screens
 // If this feature is disabled, the order is: screens / windows / tabs
-const base::Feature kNewGetDisplayMediaPickerOrder CONSTINIT{
-    "NewGetDisplayMediaPickerOrder", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kNewGetDisplayMediaPickerOrder,
+             "NewGetDisplayMediaPickerOrder",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace
 
@@ -178,25 +179,18 @@ void DisplayMediaAccessHandler::HandleRequest(
       return;
     }
 
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    // The kDisplayCapturePermissionsPolicyEnabled preference controls whether
-    // the display-capture permissions-policy is applied or skipped.
-    if (profile->GetPrefs()->GetBoolean(
-            prefs::kDisplayCapturePermissionsPolicyEnabled)) {
-      // If the display-capture permissions-policy disallows capture, the render
-      // process was not supposed to send this message.
-      if (!rfh->IsFeatureEnabled(
-              blink::mojom::PermissionsPolicyFeature::kDisplayCapture)) {
-        bad_message::ReceivedBadMessage(
-            rfh->GetProcess(), bad_message::BadMessageReason::
-                                   RFH_DISPLAY_CAPTURE_PERMISSION_MISSING);
-        std::move(callback).Run(
-            blink::mojom::StreamDevicesSet(),
-            blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
-            /*ui=*/nullptr);
-        return;
-      }
+    // If the display-capture permissions-policy disallows capture, the render
+    // process was not supposed to send this message.
+    if (!rfh->IsFeatureEnabled(
+            blink::mojom::PermissionsPolicyFeature::kDisplayCapture)) {
+      bad_message::ReceivedBadMessage(
+          rfh->GetProcess(), bad_message::BadMessageReason::
+                                 RFH_DISPLAY_CAPTURE_PERMISSION_MISSING);
+      std::move(callback).Run(
+          blink::mojom::StreamDevicesSet(),
+          blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
+          /*ui=*/nullptr);
+      return;
     }
   }
 

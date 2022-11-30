@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,7 +62,7 @@ CSSSyntaxStringParser::CSSSyntaxStringParser(const String& string)
     : string_(string.StripWhiteSpace()), input_(string_) {}
 
 absl::optional<CSSSyntaxDefinition> CSSSyntaxStringParser::Parse() {
-  if (string_.IsEmpty())
+  if (string_.empty())
     return absl::nullopt;
   if (string_.length() == 1 && string_[0] == '*')
     return CSSSyntaxDefinition::CreateUniversal();

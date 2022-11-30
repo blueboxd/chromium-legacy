@@ -28,12 +28,10 @@
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer_observer.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom-forward.h"
 #include "ash/wm/overview/overview_observer.h"
-#include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
@@ -46,7 +44,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_observer.h"
-#include "url/gurl.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -240,12 +237,13 @@ class ASH_EXPORT WallpaperControllerImpl
                           WallpaperLayout layout,
                           bool preview_mode,
                           SetWallpaperCallback callback) override;
-  void SetCustomWallpaper(const AccountId& account_id,
-                          const std::string& file_name,
-                          WallpaperLayout layout,
-                          const gfx::ImageSkia& image,
-                          bool preview_mode,
-                          const std::string& file_path = "") override;
+  void SetDecodedCustomWallpaper(const AccountId& account_id,
+                                 const std::string& file_name,
+                                 WallpaperLayout layout,
+                                 bool preview_mode,
+                                 SetWallpaperCallback callback,
+                                 const std::string& file_path,
+                                 const gfx::ImageSkia& image) override;
   void SetOnlineWallpaper(const OnlineWallpaperParams& params,
                           SetWallpaperCallback callback) override;
   void SetOnlineWallpaperIfExists(const OnlineWallpaperParams& params,
@@ -303,7 +301,6 @@ class ASH_EXPORT WallpaperControllerImpl
   void AddObserver(WallpaperControllerObserver* observer) override;
   void RemoveObserver(WallpaperControllerObserver* observer) override;
   gfx::ImageSkia GetWallpaperImage() override;
-  const std::vector<SkColor>& GetWallpaperColors() override;
   bool IsWallpaperBlurredForLockState() const override;
   bool IsActiveUserWallpaperControlledByPolicy() override;
   bool IsWallpaperControlledByPolicy(
@@ -591,13 +588,6 @@ class ASH_EXPORT WallpaperControllerImpl
       base::OnceCallback<void(const base::FilePath&)> image_saved_callback,
       const std::string& wallpaper_files_id);
 
-  void OnCustomWallpaperDecoded(const AccountId& account_id,
-                                const base::FilePath& path,
-                                WallpaperLayout layout,
-                                bool preview_mode,
-                                SetWallpaperCallback callback,
-                                const gfx::ImageSkia& image);
-
   // Used as the callback of wallpaper decoding. (Wallpapers of type
   // `WallpaperType::kOnline`, `WallpaperType::kDefault`,
   // `WallpaperType::kCustom`, and `Wallpapertype::kDevice` should use their
@@ -671,7 +661,7 @@ class ASH_EXPORT WallpaperControllerImpl
   void RepaintWallpaper();
 
   void HandleWallpaperInfoSyncedIn(const AccountId& account_id,
-                                   WallpaperInfo info);
+                                   const WallpaperInfo& info);
   void OnAttemptSetOnlineWallpaper(const OnlineWallpaperParams& params,
                                    SetWallpaperCallback callback,
                                    bool success);
@@ -736,7 +726,7 @@ class ASH_EXPORT WallpaperControllerImpl
   void WallpaperSavedToDriveFS(const AccountId& account_id, bool success);
 
   void HandleCustomWallpaperInfoSyncedIn(const AccountId& account_id,
-                                         WallpaperInfo info);
+                                         const WallpaperInfo& info);
 
   void DriveFsWallpaperChanged(const base::FilePath& path, bool error);
 

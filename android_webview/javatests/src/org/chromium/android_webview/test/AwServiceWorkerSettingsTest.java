@@ -17,10 +17,16 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwServiceWorkerSettings;
+import org.chromium.android_webview.ManifestMetadataUtil;
 import org.chromium.base.Log;
+import org.chromium.base.test.util.Batch;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
+
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Test service worker settings APIs.
@@ -30,6 +36,7 @@ import org.chromium.net.test.util.TestWebServer;
  * {@link android.webkit.ServiceWorkerClient} is supplied.
  */
 @RunWith(AwJUnit4ClassRunner.class)
+@Batch(Batch.PER_CLASS)
 public class AwServiceWorkerSettingsTest {
     public static final String TAG = "AwSWSettingsTest";
     @Rule
@@ -99,6 +106,14 @@ public class AwServiceWorkerSettingsTest {
     @Before
     public void setUp() throws Exception {
         mWebServer = TestWebServer.start();
+    }
+
+    /**
+     * Initialize test fields.
+     * Extracted to separate method instead of {@code setUp} to allow certain tests
+     * to configure an ApplicationContext before startup
+     */
+    private void initAwServiceWorkerSettings() {
         mContentsClient = new TestAwContentsClient();
         mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = mTestContainerView.getAwContents();
@@ -124,6 +139,7 @@ public class AwServiceWorkerSettingsTest {
     @SmallTest
     @Feature({"AndroidWebView", "Preferences", "ServiceWorker"})
     public void testBlockNetworkLoadsFalse() throws Throwable {
+        initAwServiceWorkerSettings();
         final String fullIndexUrl = mWebServer.setResponse(INDEX_URL, indexHtml(1), null);
         mWebServer.setResponse(SW_URL, NETWORK_ACCESS_SW_JS, null);
         mWebServer.setResponse(FETCH_URL, FETCH_CONTENT, null);
@@ -140,6 +156,7 @@ public class AwServiceWorkerSettingsTest {
     @SmallTest
     @Feature({"AndroidWebView", "Preferences", "ServiceWorker"})
     public void testBlockNetworkLoadsTrue() throws Throwable {
+        initAwServiceWorkerSettings();
         final String fullIndexUrl = mWebServer.setResponse(INDEX_URL, indexHtml(1), null);
         mWebServer.setResponse(SW_URL, NETWORK_ACCESS_SW_JS, null);
         mWebServer.setResponse(FETCH_URL, FETCH_CONTENT, null);
@@ -159,6 +176,7 @@ public class AwServiceWorkerSettingsTest {
     @SmallTest
     @Feature({"AndroidWebView", "Preferences", "ServiceWorker"})
     public void testCacheModeLoadNoCache() throws Throwable {
+        initAwServiceWorkerSettings();
         final String fullIndexUrl = mWebServer.setResponse(INDEX_URL, indexHtml(2), null);
         mWebServer.setResponse(SW_URL, NETWORK_ACCESS_SW_JS, null);
         mWebServer.setResponse(FETCH_URL, FETCH_CONTENT, null);
@@ -174,6 +192,7 @@ public class AwServiceWorkerSettingsTest {
     @SmallTest
     @Feature({"AndroidWebView", "Preferences", "ServiceWorker"})
     public void testCacheModeLoadCacheElseNetwork() throws Throwable {
+        initAwServiceWorkerSettings();
         final String fullIndexUrl = mWebServer.setResponse(INDEX_URL, indexHtml(2), null);
         mWebServer.setResponse(SW_URL, NETWORK_ACCESS_SW_JS, null);
         mWebServer.setResponse(FETCH_URL, FETCH_CONTENT, null);
@@ -189,6 +208,7 @@ public class AwServiceWorkerSettingsTest {
     @SmallTest
     @Feature({"AndroidWebView", "Preferences", "ServiceWorker"})
     public void testCacheModeLoadCacheOnly() throws Throwable {
+        initAwServiceWorkerSettings();
         final String fullIndexUrl = mWebServer.setResponse(INDEX_URL, indexHtml(2), null);
         mWebServer.setResponse(SW_URL, NETWORK_ACCESS_SW_JS, null);
         mWebServer.setResponse(FETCH_URL, FETCH_CONTENT, null);
@@ -201,6 +221,38 @@ public class AwServiceWorkerSettingsTest {
                 mWebServer.getRequestCount(SW_URL));
         Assert.assertEquals("No requests should be made in cache-only mode", 0,
                 mWebServer.getRequestCount(FETCH_URL));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences", "ServiceWorker"})
+    public void testGetUpdatedXRWAllowList() throws Throwable {
+        initAwServiceWorkerSettings();
+        final Set<String> allowList = Set.of("https://*.example.com", "https://*.google.com");
+
+        Assert.assertEquals(Collections.emptySet(),
+                mAwServiceWorkerSettings.getRequestedWithHeaderOriginAllowList());
+
+        mAwServiceWorkerSettings.setRequestedWithHeaderOriginAllowList(allowList);
+
+        Assert.assertEquals(
+                allowList, mAwServiceWorkerSettings.getRequestedWithHeaderOriginAllowList());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences", "ServiceWorker"})
+    @CommandLineFlags.Add({"enable-features=WebViewXRequestedWithHeaderManifestAllowList"})
+    public void testXRequestedWithAllowListSetByManifest() throws Throwable {
+        final Set<String> allowList = Set.of("https://*.example.com", "https://*.google.com");
+        try (var a = ManifestMetadataUtil.setXRequestedWithAllowListScopedForTesting(allowList)) {
+            // Only initialize once the manifest has been configured
+            initAwServiceWorkerSettings();
+
+            Set<String> changedList =
+                    mAwServiceWorkerSettings.getRequestedWithHeaderOriginAllowList();
+            Assert.assertEquals(allowList, changedList);
+        }
     }
 
     private String indexHtml(int fetches) {

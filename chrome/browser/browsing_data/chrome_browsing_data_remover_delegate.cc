@@ -26,6 +26,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/autocomplete/zero_suggest_cache_service_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -105,6 +106,7 @@
 #include "components/nacl/browser/pnacl_host.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/password_manager/core/browser/field_info_store.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
@@ -613,6 +615,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
     // Cleared for DATA_TYPE_HISTORY, DATA_TYPE_COOKIES and DATA_TYPE_PASSWORDS.
     browsing_data::RemoveFederatedSiteSettingsData(delete_begin_, delete_end_,
+                                                   website_settings_filter,
                                                    host_content_settings_map_);
   }
 
@@ -645,6 +648,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
     // Cleared for DATA_TYPE_HISTORY, DATA_TYPE_COOKIES and DATA_TYPE_PASSWORDS.
     browsing_data::RemoveFederatedSiteSettingsData(delete_begin_, delete_end_,
+                                                   website_settings_filter,
                                                    host_content_settings_map_);
 
     if (!filter_builder->IsCrossSiteClearSiteDataForCookies()) {
@@ -681,6 +685,15 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       // it now as we can not reset this setting before passwords are deleted.
       should_clear_password_account_storage_settings_ = true;
     }
+
+    // Persistent Origin Trial preferences are only saved until the next page
+    // load from the same origin. For that reason, they are not saved with
+    // last-modified information, so deletion will clear all stored information.
+    // Sites should omit setting the Origin-Trial header to clear their
+    // individual information, so rather than filtering origins, we only perform
+    // the removal if we are removing information for all origins.
+    if (filter_builder->MatchesAllOriginsAndDomains())
+      browsing_data::RemovePersistentOriginTrials(prefs);
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -788,11 +801,15 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
         ContentSettingsType::FILE_SYSTEM_LAST_PICKED_DIRECTORY, delete_begin,
         delete_end, website_settings_filter);
+
+    host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
+        ContentSettingsType::NOTIFICATION_PERMISSION_REVIEW, delete_begin_,
+        delete_end_, website_settings_filter);
 #endif
 
     host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
-        ContentSettingsType::NOTIFICATION_INTERACTIONS, base::Time(),
-        base::Time::Max(), website_settings_filter);
+        ContentSettingsType::NOTIFICATION_INTERACTIONS, delete_begin_,
+        delete_end_, website_settings_filter);
 
     PermissionDecisionAutoBlockerFactory::GetForProfile(profile_)
         ->RemoveEmbargoAndResetCounts(filter);
@@ -853,6 +870,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
     // Cleared for DATA_TYPE_HISTORY, DATA_TYPE_COOKIES and DATA_TYPE_PASSWORDS.
     browsing_data::RemoveFederatedSiteSettingsData(delete_begin_, delete_end_,
+                                                   website_settings_filter,
                                                    host_content_settings_map_);
   }
 
@@ -1074,18 +1092,18 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         request.set_match_behavior(
             ::attestation::DeleteKeysRequest::MATCH_BEHAVIOR_PREFIX);
 
-        auto callback = base::BindOnce(
+        auto clear_platform_keys_callback = base::BindOnce(
             &ChromeBrowsingDataRemoverDelegate::OnClearPlatformKeys,
             weak_ptr_factory_.GetWeakPtr(),
             CreateTaskCompletionClosure(TracingDataType::kTpmAttestationKeys));
         ash::AttestationClient::Get()->DeleteKeys(
             request, base::BindOnce(
-                         [](decltype(callback) cb,
+                         [](decltype(clear_platform_keys_callback) cb,
                             const ::attestation::DeleteKeysReply& reply) {
                            std::move(cb).Run(reply.status() ==
                                              ::attestation::STATUS_SUCCESS);
                          },
-                         std::move(callback)));
+                         std::move(clear_platform_keys_callback)));
       }
     }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1133,9 +1151,17 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     }
 
     if (should_clear_zero_suggest_and_session_token) {
-      prefs->SetString(omnibox::kZeroSuggestCachedResults, std::string());
-      prefs->SetDict(omnibox::kZeroSuggestCachedResultsWithURL,
-                     base::Value::Dict());
+      if (base::FeatureList::IsEnabled(omnibox::kZeroSuggestInMemoryCaching)) {
+        auto* zero_suggest_cache_service =
+            ZeroSuggestCacheServiceFactory::GetForProfile(profile_);
+        if (zero_suggest_cache_service) {
+          zero_suggest_cache_service->ClearCache();
+        }
+      } else {
+        prefs->SetString(omnibox::kZeroSuggestCachedResults, std::string());
+        prefs->SetDict(omnibox::kZeroSuggestCachedResultsWithURL,
+                       base::Value::Dict());
+      }
     }
 
     // |search_prefetch_service| is null if |profile_| is off the record.

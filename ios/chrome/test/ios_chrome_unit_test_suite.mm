@@ -7,10 +7,12 @@
 #import "base/metrics/user_metrics.h"
 #import "base/path_service.h"
 #import "base/test/test_simple_task_runner.h"
+#import "components/breadcrumbs/core/breadcrumb_manager.h"
+#import "components/breadcrumbs/core/crash_reporter_breadcrumb_observer.h"
 #import "components/content_settings/core/common/content_settings_pattern.h"
 #import "ios/chrome/browser/browser_state/browser_state_keyed_service_factories.h"
-#import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/paths/paths.h"
+#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/test/testing_application_context.h"
 #import "ios/components/webui/web_ui_url_constants.h"
 #import "ios/public/provider/chrome/browser/app_utils/app_utils_api.h"
@@ -59,6 +61,10 @@ class IOSChromeUnitTestSuiteInitializer
         ios::SetChromeBrowserProvider(nullptr);
     DCHECK_EQ(previous_provider, chrome_browser_provider_.get());
     chrome_browser_provider_.reset();
+
+    breadcrumbs::BreadcrumbManager::GetInstance().ResetForTesting();
+    breadcrumbs::CrashReporterBreadcrumbObserver::GetInstance()
+        .ResetForTesting();
   }
 
  private:

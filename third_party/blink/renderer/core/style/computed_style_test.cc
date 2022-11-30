@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -810,7 +810,7 @@ TEST_F(ComputedStyleTest, StrokeWidthZoomAndCalc) {
 
 TEST_F(ComputedStyleTest, InitialVariableNamesEmpty) {
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
-  EXPECT_TRUE(style->GetVariableNames().IsEmpty());
+  EXPECT_TRUE(style->GetVariableNames().empty());
 }
 
 TEST_F(ComputedStyleTest, InitialVariableNames) {
@@ -1327,5 +1327,65 @@ TEST_F(ComputedStyleTest, DebugDiffFields) {
 }
 
 #endif  // #if DCHECK_IS_ON()
+
+TEST_F(ComputedStyleTest, LogicalScrollPaddingUtils) {
+  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
+
+  Length left = Length::Fixed(1.0f);
+  Length right = Length::Fixed(2.0f);
+  Length top = Length::Fixed(3.0f);
+  Length bottom = Length::Fixed(4.0f);
+
+  style->SetScrollPaddingLeft(left);
+  style->SetScrollPaddingRight(right);
+  style->SetScrollPaddingTop(top);
+  style->SetScrollPaddingBottom(bottom);
+
+  // ltr
+
+  style->SetDirection(TextDirection::kLtr);
+  style->SetWritingMode(WritingMode::kHorizontalTb);
+  EXPECT_EQ(left, style->ScrollPaddingInlineStart());
+  EXPECT_EQ(right, style->ScrollPaddingInlineEnd());
+  EXPECT_EQ(top, style->ScrollPaddingBlockStart());
+  EXPECT_EQ(bottom, style->ScrollPaddingBlockEnd());
+
+  style->SetDirection(TextDirection::kLtr);
+  style->SetWritingMode(WritingMode::kVerticalLr);
+  EXPECT_EQ(top, style->ScrollPaddingInlineStart());
+  EXPECT_EQ(bottom, style->ScrollPaddingInlineEnd());
+  EXPECT_EQ(left, style->ScrollPaddingBlockStart());
+  EXPECT_EQ(right, style->ScrollPaddingBlockEnd());
+
+  style->SetDirection(TextDirection::kLtr);
+  style->SetWritingMode(WritingMode::kVerticalRl);
+  EXPECT_EQ(top, style->ScrollPaddingInlineStart());
+  EXPECT_EQ(bottom, style->ScrollPaddingInlineEnd());
+  EXPECT_EQ(right, style->ScrollPaddingBlockStart());
+  EXPECT_EQ(left, style->ScrollPaddingBlockEnd());
+
+  // rtl
+
+  style->SetDirection(TextDirection::kRtl);
+  style->SetWritingMode(WritingMode::kHorizontalTb);
+  EXPECT_EQ(right, style->ScrollPaddingInlineStart());
+  EXPECT_EQ(left, style->ScrollPaddingInlineEnd());
+  EXPECT_EQ(top, style->ScrollPaddingBlockStart());
+  EXPECT_EQ(bottom, style->ScrollPaddingBlockEnd());
+
+  style->SetDirection(TextDirection::kRtl);
+  style->SetWritingMode(WritingMode::kVerticalLr);
+  EXPECT_EQ(bottom, style->ScrollPaddingInlineStart());
+  EXPECT_EQ(top, style->ScrollPaddingInlineEnd());
+  EXPECT_EQ(left, style->ScrollPaddingBlockStart());
+  EXPECT_EQ(right, style->ScrollPaddingBlockEnd());
+
+  style->SetDirection(TextDirection::kRtl);
+  style->SetWritingMode(WritingMode::kVerticalRl);
+  EXPECT_EQ(bottom, style->ScrollPaddingInlineStart());
+  EXPECT_EQ(top, style->ScrollPaddingInlineEnd());
+  EXPECT_EQ(right, style->ScrollPaddingBlockStart());
+  EXPECT_EQ(left, style->ScrollPaddingBlockEnd());
+}
 
 }  // namespace blink

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,7 @@ WebVector<gfx::Size> WebIconSizesParser::ParseIconSizes(
     const WebString& web_sizes_string) {
   String sizes_string = web_sizes_string;
   Vector<gfx::Size> icon_sizes;
-  if (sizes_string.IsEmpty())
+  if (sizes_string.empty())
     return icon_sizes;
 
   wtf_size_t length = sizes_string.length();

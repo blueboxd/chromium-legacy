@@ -34,8 +34,10 @@ NSString* const kFirstRunForceEnabled = @"FirstRunForceEnabled";
 NSString* const kOriginServerHost = @"AlternateOriginServerHost";
 NSString* const kWhatsNewPromoStatus = @"WhatsNewPromoStatus";
 NSString* const kClearApplicationGroup = @"ClearApplicationGroup";
-const base::Feature kEnableThirdPartyKeyboardWorkaround{
-    "EnableThirdPartyKeyboardWorkaround", base::FEATURE_ENABLED_BY_DEFAULT};
+NSString* const kNextPromoForDisplayOverride = @"NextPromoForDisplayOverride";
+BASE_FEATURE(kEnableThirdPartyKeyboardWorkaround,
+             "EnableThirdPartyKeyboardWorkaround",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace
 
@@ -61,6 +63,11 @@ bool ShouldResetNoticeCardOnFeedStart() {
 
 bool ShouldResetFirstFollowCount() {
   return [[NSUserDefaults standardUserDefaults] boolForKey:@"ResetFirstFollow"];
+}
+
+bool ShouldForceFeedSigninPromo() {
+  return [[NSUserDefaults standardUserDefaults]
+      boolForKey:@"ForceFeedSigninPromo"];
 }
 
 void DidResetFirstFollowCount() {
@@ -117,6 +124,11 @@ bool IsThirdPartyKeyboardWorkaroundEnabled() {
 
   // Check if the Finch experiment is turned on.
   return base::FeatureList::IsEnabled(kEnableThirdPartyKeyboardWorkaround);
+}
+
+NSString* GetForcedPromoToDisplay() {
+  return [[NSUserDefaults standardUserDefaults]
+      stringForKey:kNextPromoForDisplayOverride];
 }
 
 }  // namespace experimental_flags

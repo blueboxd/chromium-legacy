@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -152,14 +152,15 @@ class ContentCaptureLocalFrameClientHelper : public EmptyLocalFrameClient {
   WebContentCaptureClient& client_;
 };
 
-class ContentCaptureTest
-    : public PageTestBase,
-      public ::testing::WithParamInterface<std::vector<base::Feature>> {
+class ContentCaptureTest : public PageTestBase,
+                           public ::testing::WithParamInterface<
+                               std::vector<base::test::FeatureRef>> {
  public:
   ContentCaptureTest() {
     EnablePlatform();
     feature_list_.InitWithFeatures(
-        GetParam(), /*disabled_features=*/std::vector<base::Feature>());
+        GetParam(),
+        /*disabled_features=*/std::vector<base::test::FeatureRef>());
   }
 
   void SetUp() override {
@@ -341,8 +342,7 @@ class ContentCaptureTest
       HashSet<Persistent<Node>> sent;
       for (int i = 0; i < 4; ++i) {
         Vector<Persistent<Node>> a_diff_b;
-        Vector<Persistent<Node>> b;
-        CopyToVector(sent, b);
+        Vector<Persistent<Node>> b(sent);
         FindNodeVectorsDiff(nodes[i], b, a_diff_b);
         ToNodeTexts(a_diff_b, scrolling_expected_captured_nodes_[i]);
         sent.clear();
@@ -367,8 +367,8 @@ class ContentCaptureTest
 INSTANTIATE_TEST_SUITE_P(
     ,
     ContentCaptureTest,
-    testing::Values(std::vector<base::Feature>{},
-                    std::vector<base::Feature>{
+    testing::Values(std::vector<base::test::FeatureRef>{},
+                    std::vector<base::test::FeatureRef>{
                         features::kContentCaptureConstantStreaming}));
 
 TEST_P(ContentCaptureTest, Basic) {

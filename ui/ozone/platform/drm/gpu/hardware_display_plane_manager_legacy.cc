@@ -6,10 +6,12 @@
 
 #include <errno.h>
 #include <sync/sync.h>
+
 #include <memory>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/task/thread_pool.h"
@@ -122,11 +124,9 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
 bool HardwareDisplayPlaneManagerLegacy::DisableOverlayPlanes(
     HardwareDisplayPlaneList* plane_list) {
   // We're never going to ship legacy pageflip with overlays enabled.
-  DCHECK(std::find_if(plane_list->old_plane_list.begin(),
-                      plane_list->old_plane_list.end(),
-                      [](HardwareDisplayPlane* plane) {
-                        return plane->type() == DRM_PLANE_TYPE_OVERLAY;
-                      }) == plane_list->old_plane_list.end());
+  DCHECK(!base::Contains(plane_list->old_plane_list,
+                         static_cast<uint32_t>(DRM_PLANE_TYPE_OVERLAY),
+                         &HardwareDisplayPlane::type));
   return true;
 }
 
@@ -206,7 +206,7 @@ bool HardwareDisplayPlaneManagerLegacy::IsCompatible(
     HardwareDisplayPlane* plane,
     const DrmOverlayPlane& overlay,
     uint32_t crtc_id) const {
-  if (plane->type() == DRM_PLANE_TYPE_CURSOR ||
+  if (plane->in_use() || plane->type() == DRM_PLANE_TYPE_CURSOR ||
       !plane->CanUseForCrtcId(crtc_id))
     return false;
 

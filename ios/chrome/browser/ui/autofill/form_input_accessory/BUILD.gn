@@ -40,7 +40,7 @@ source_set("form_input_accessory") {
     "//components/password_manager/core/browser",
     "//components/password_manager/ios",
     "//components/prefs",
-    "//components/strings:components_strings_grit",
+    "//components/strings",
     "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser:utils",
@@ -65,7 +65,7 @@ source_set("form_input_accessory") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/default_promo:utils",
-    "//ios/chrome/browser/ui/main:layout_guide_scene_agent",
+    "//ios/chrome/browser/ui/main:layout_guide_util",
     "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/ui/util:util_swift",
@@ -101,5 +101,22 @@ source_set("unit_tests") {
     "//ios/web/public/test/fakes",
     "//testing/gtest",
     "//third_party/ocmock",
+  ]
+}
+
+source_set("eg2_tests") {
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [ "branding_view_controller_egtest.mm" ]
+  deps = [
+    "//base/test:test_support",
+    "//ios/chrome/browser/ui/autofill:eg_test_support+eg2",
+    "//ios/chrome/browser/ui/autofill:features",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//net:test_support",
   ]
 }

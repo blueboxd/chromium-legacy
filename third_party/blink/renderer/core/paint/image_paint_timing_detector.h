@@ -1,8 +1,8 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -162,6 +162,7 @@ class CORE_EXPORT ImageRecordsManager {
       unsigned last_queued_frame_index);
 
   void ClearImagesQueuedForPaintTime();
+  void Clear();
 
   void Trace(Visitor* visitor) const;
 
@@ -283,6 +284,17 @@ class CORE_EXPORT ImagePaintTimingDetector final
   // candidate.
   void ReportLargestIgnoredImage();
 
+  bool IsRecordingLargestImagePaint() const {
+    return recording_largest_image_paint_;
+  }
+  void StopRecordingLargestImagePaint() {
+    recording_largest_image_paint_ = false;
+  }
+  void RestartRecordingLargestImagePaint() {
+    recording_largest_image_paint_ = true;
+    records_manager_.Clear();
+  }
+
   void Trace(Visitor*) const;
 
  private:
@@ -322,6 +334,9 @@ class CORE_EXPORT ImagePaintTimingDetector final
   absl::optional<uint64_t> viewport_size_;
   // Whether the viewport size used is the page viewport.
   bool uses_page_viewport_;
+  // Are we recording an LCP candidate? True after a navigation (including soft
+  // navigations) until the next user interaction.
+  bool recording_largest_image_paint_ = true;
 
   ImageRecordsManager records_manager_;
   Member<LocalFrameView> frame_view_;

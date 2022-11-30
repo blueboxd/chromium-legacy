@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "base/callback.h"
 #include "base/location.h"
@@ -26,6 +25,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/channel.h"
 
@@ -41,6 +41,10 @@ constexpr uint64_t kGibi = 1024ull * 1024 * 1024;
 // prefs.
 constexpr char kSaltForPrefStorage[] = "/!RoFN8,nDxiVgTI6CvU";
 
+// Regex used for CPU checks on intel processors, this means "any 11th
+// generation or greater i5/i7 processor".
+constexpr char kBorealisCapableIntelCpuRegex[] = "[1-9][1-9].. Gen.*i[357]-";
+
 // Checks the current hardware+token configuration to determine if the user
 // should be able to run borealis.
 //
@@ -54,10 +58,9 @@ class FullChecker : public TokenHardwareChecker {
     // Tokens provide more fine-grained control over whether borealis can be run
     // on a specific device. The different kinds of token are:
     //  * "Super" token: Allows borealis on any device.
-    //  * "Test" token: Allows borealis on any device with sufficient hardware
-    //    (where *-borealis boards are always considered sufficient).
+    //  * "Test" token: Allows borealis on any device with sufficient hardware.
     //  * /board token: Similar to the super token, but only works for a subset
-    //  of baords.
+    //  of boards.
     //
     // All tokens will only function if borealis is already available on that
     // board based on its use flags.
@@ -77,15 +80,7 @@ class FullChecker : public TokenHardwareChecker {
     }
 
     // The board-specific tokens.
-    if (BoardIn({"hatch-borealis", "puff-borealis", "zork-borealis",
-                 "volteer-borealis", "aurora-borealis"})) {
-      if (TokenHashMatches("MXlY+SFZ!2,P_k^02]hK",
-                           "FbxB2mxNa/uqskX4X+NqHhAE6ebHeWC0u+Y+UlGEB/4=")) {
-        LOG(WARNING) << "Dogfooder token provided, bypassing hardware checks.";
-        return AllowStatus::kAllowed;
-      }
-      return AllowStatus::kIncorrectToken;
-    } else if (IsBoard("volteer")) {
+    if (IsBoard("volteer")) {
       if (TokenHashMatches("w/8GMLXyB.EOkFaP/-AA",
                            "waiTIRjxZCFjFIRkuUVlnAbiDOMBSzyp3iSJl5x3YwA=")) {
         LOG(WARNING) << "Vendor token provided, bypassing hardware checks.";
@@ -97,25 +92,21 @@ class FullChecker : public TokenHardwareChecker {
                     "drobit"})) {
         return AllowStatus::kUnsupportedModel;
       }
-      return CpuRegexMatches("[1-9][1-9].. Gen.*i[57]-") && HasMemory(7 * kGibi)
-                 ? AllowStatus::kAllowed
-                 : AllowStatus::kHardwareChecksFailed;
+      return ReleasedBoardChecks(kBorealisCapableIntelCpuRegex);
     } else if (BoardIn({"brya", "adlrvp", "brask"})) {
       if (TokenHashMatches("tPl24iMxXNR,w$h6,g",
                            "LWULWUcemqmo6Xvdu2LalOYOyo/V4/CkljTmAneXF+U=")) {
         LOG(WARNING) << "Vendor token provided, bypassing hardware checks.";
         return AllowStatus::kAllowed;
       }
-      return AllowStatus::kIncorrectToken;
+      return ReleasedBoardChecks(kBorealisCapableIntelCpuRegex);
     } else if (BoardIn({"guybrush", "majolica"})) {
       if (TokenHashMatches("^_GkTVWDP.FQo5KclS",
                            "ftqv2wT3qeJKajioXqd+VrEW34CciMsigH3MGfMiMsU=")) {
         LOG(WARNING) << "Vendor token provided, bypassing hardware checks.";
         return AllowStatus::kAllowed;
       }
-      return CpuRegexMatches("Ryzen [57]") && HasMemory(7 * kGibi)
-                 ? AllowStatus::kAllowed
-                 : AllowStatus::kHardwareChecksFailed;
+      return ReleasedBoardChecks("Ryzen [357]");
     } else if (IsBoard("draco")) {
       return AllowStatus::kAllowed;
     }
@@ -125,6 +116,16 @@ class FullChecker : public TokenHardwareChecker {
   // Similar to the above, but also constructs the checker.
   static AllowStatus BuildAndCheck(Data data) {
     return FullChecker(std::move(data)).Check();
+  }
+
+ private:
+  // Returns the allow status for a standard released board.
+  AllowStatus ReleasedBoardChecks(const std::string& cpu_regex) const {
+    if (!HasMemory(7 * kGibi)) {
+      return AllowStatus::kHardwareChecksFailed;
+    }
+    return CpuRegexMatches(cpu_regex) ? AllowStatus::kAllowed
+                                      : AllowStatus::kHardwareChecksFailed;
   }
 };
 
@@ -235,8 +236,8 @@ AllowStatus BorealisFeatures::MightBeAllowed() {
   }
 
   version_info::Channel c = chrome::GetChannel();
-  if (c == version_info::Channel::STABLE || c == version_info::Channel::BETA)
-    return AllowStatus::kBlockedOnBetaStable;
+  if (c == version_info::Channel::STABLE)
+    return AllowStatus::kBlockedOnStable;
 
   if (!base::FeatureList::IsEnabled(chromeos::features::kBorealisPermitted))
     return AllowStatus::kBlockedByFlag;
@@ -298,9 +299,9 @@ std::ostream& operator<<(std::ostream& os, const AllowStatus& reason) {
                    "disabled)";
     case AllowStatus::kUserPrefBlocked:
       return os << "Your admin has blocked borealis (for your account)";
-    case AllowStatus::kBlockedOnBetaStable:
-      return os << "Your ChromeOS channel must be set to Dev or Canary "
-                   "to run Borealis";
+    case AllowStatus::kBlockedOnStable:
+      return os << "Your ChromeOS channel must be set to Beta or Dev to run "
+                   "Borealis";
     case AllowStatus::kBlockedByFlag:
       return os << "Borealis is still being worked on. You must set the "
                    "#borealis-enabled feature flag.";

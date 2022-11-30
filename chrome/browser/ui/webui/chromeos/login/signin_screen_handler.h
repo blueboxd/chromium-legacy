@@ -10,7 +10,6 @@
 #include <set>
 #include <string>
 
-#include "ash/components/proximity_auth/screenlock_bridge.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -22,9 +21,6 @@
 #include "chrome/browser/ash/login/ui/login_display.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
-#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui.h"
@@ -34,30 +30,11 @@
 namespace ash {
 class LoginDisplayHostMojo;
 
-namespace mojom {
-enum class TrayActionState;
-}  // namespace mojom
 }  // namespace ash
 
 namespace chromeos {
 
 class GaiaScreenHandler;
-
-// An interface for SigninScreenHandler to call WebUILoginDisplay.
-class SigninScreenHandlerDelegate {
- public:
-  // --------------- Sign in/out methods.
-  // Returns true if sign in is in progress.
-  virtual bool IsSigninInProgress() const = 0;
-
-  // --------------- Rest of the methods.
-
-  // Whether user sign in has completed.
-  virtual bool IsUserSigninCompleted() const = 0;
-
- protected:
-  virtual ~SigninScreenHandlerDelegate() = default;
-};
 
 // A class that handles the WebUI hooks in sign-in screen in OobeUI and
 // LoginDisplay.
@@ -78,10 +55,6 @@ class SigninScreenHandler
 
   // Shows the sign in screen.
   void Show();
-
-  // Sets delegate to be used by the handler. It is guaranteed that valid
-  // delegate is set before Show() method will be called.
-  void SetDelegate(SigninScreenHandlerDelegate* delegate);
 
   // NetworkStateInformer::NetworkStateInformerObserver implementation:
   void UpdateState(NetworkError::ErrorReason reason) override;
@@ -137,9 +110,6 @@ class SigninScreenHandler
   // GAIA.
   void OnErrorScreenHide();
 
-  // A delegate that glues this handler with backend LoginDisplay.
-  SigninScreenHandlerDelegate* delegate_ = nullptr;
-
   // Network state informer used to keep signin screen up.
   scoped_refptr<NetworkStateInformer> network_state_informer_;
 
@@ -189,7 +159,6 @@ class SigninScreenHandler
 // TODO(https://crbug.com/1164001): remove when moved to ash.
 namespace ash {
 using ::chromeos::SigninScreenHandler;
-using ::chromeos::SigninScreenHandlerDelegate;
 }  // namespace ash
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SIGNIN_SCREEN_HANDLER_H_

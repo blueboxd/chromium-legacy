@@ -66,14 +66,17 @@ AppServiceProxyLacros::AppServiceProxyLacros(Profile* profile)
 
 AppServiceProxyLacros::~AppServiceProxyLacros() = default;
 
-void AppServiceProxyLacros::ReInitializeForTesting(Profile* profile) {
+void AppServiceProxyLacros::ReinitializeForTesting(Profile* profile) {
   // Some test code creates a profile and profile-linked services, like the App
   // Service, before the profile is fully initialized. Such tests can call this
   // after full profile initialization to ensure the App Service implementation
   // has all of profile state it needs.
   crosapi_receiver_.reset();
+  remote_crosapi_app_service_proxy_ = nullptr;
   profile_ = profile;
   is_using_testing_profile_ = true;
+  app_registry_cache_.ReinitializeForTesting();  // IN-TEST
+
   Initialize();
 }
 
@@ -384,10 +387,6 @@ void AppServiceProxyLacros::ExecuteContextMenuCommand(
 
 void AppServiceProxyLacros::OpenNativeSettings(const std::string& app_id) {
   NOTIMPLEMENTED();
-}
-
-void AppServiceProxyLacros::FlushMojoCallsForTesting() {
-  crosapi_receiver_.FlushForTesting();
 }
 
 apps::IconLoader* AppServiceProxyLacros::OverrideInnerIconLoaderForTesting(

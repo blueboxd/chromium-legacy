@@ -73,6 +73,7 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/permissions_policy/origin_with_possible_wildcards.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-shared.h"
@@ -215,7 +216,7 @@ class ShellContentBrowserClient::ShellFieldTrials
   void SetUpFieldTrials() override {}
   void SetUpFeatureControllingFieldTrials(
       bool has_seed,
-      const base::FieldTrial::EntropyProvider* low_entropy_provider,
+      const variations::EntropyProviders& entropy_providers,
       base::FeatureList* feature_list) override {}
 };
 
@@ -731,14 +732,14 @@ void ShellContentBrowserClient::SetUpFieldTrials() {
       base::CommandLine::ForCurrentProcess();
   // Since this is a test-only code path, some arguments to SetUpFieldTrials are
   // null.
-  // TODO(crbug/1248066): Consider passing a low entropy provider and source.
+  // TODO(crbug/1248066): Consider passing a low entropy source.
   field_trial_creator.SetUpFieldTrials(
       variation_ids,
       command_line->GetSwitchValueASCII(
           variations::switches::kForceVariationIds),
       content::GetSwitchDependentFeatureOverrides(*command_line),
-      /*low_entropy_provider=*/nullptr, std::move(feature_list),
-      metrics_state_manager.get(), field_trials_.get(), &safe_seed_manager,
+      std::move(feature_list), metrics_state_manager.get(), field_trials_.get(),
+      &safe_seed_manager,
       /*low_entropy_source_value=*/absl::nullopt);
 }
 
@@ -765,7 +766,9 @@ ShellContentBrowserClient::GetPermissionsPolicyForIsolatedApp(
     content::BrowserContext* browser_context,
     const url::Origin& app_origin) {
   blink::ParsedPermissionsPolicyDeclaration decl(
-      blink::mojom::PermissionsPolicyFeature::kDirectSockets, {app_origin},
+      blink::mojom::PermissionsPolicyFeature::kDirectSockets,
+      {blink::OriginWithPossibleWildcards(app_origin,
+                                          /*has_subdomain_wildcard=*/false)},
       /*matches_all_origins=*/false, /*matches_opaque_src=*/false);
   return {{decl}};
 }

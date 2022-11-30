@@ -876,7 +876,7 @@ TEST_F(SharedStorageManagerFromFileV1Test, Version1_LoadFromFile) {
   std::vector<mojom::StorageUsageInfoPtr> infos = FetchOriginsSync();
   std::vector<url::Origin> origins;
   for (const auto& info : infos)
-    origins.push_back(info->origin);
+    origins.push_back(info->storage_key.origin());
   EXPECT_THAT(origins,
               ElementsAre(abc_xyz, chromium_org, google_com, google_org,
                           growwithgoogle_com,
@@ -974,7 +974,7 @@ TEST_F(SharedStorageManagerFromFileV1NoBudgetTableTest,
   std::vector<mojom::StorageUsageInfoPtr> infos = FetchOriginsSync();
   std::vector<url::Origin> origins;
   for (const auto& info : infos)
-    origins.push_back(info->origin);
+    origins.push_back(info->storage_key.origin());
   EXPECT_THAT(
       origins,
       ElementsAre(
@@ -1226,7 +1226,7 @@ TEST_P(SharedStorageManagerParamTest,
 
   std::vector<url::Origin> origins;
   for (const auto& info : FetchOriginsSync())
-    origins.push_back(info->origin);
+    origins.push_back(info->storage_key.origin());
   EXPECT_THAT(origins, ElementsAre(kOrigin1));
 
   url::Origin kOrigin2 = url::Origin::Create(GURL("http://www.example2.test"));
@@ -1237,7 +1237,7 @@ TEST_P(SharedStorageManagerParamTest,
 
   origins.clear();
   for (const auto& info : FetchOriginsSync())
-    origins.push_back(info->origin);
+    origins.push_back(info->storage_key.origin());
   EXPECT_THAT(origins, ElementsAre(kOrigin1, kOrigin2));
 
   StorageKeyPolicyMatcherFunctionUtility matcher_utility;
@@ -1249,7 +1249,7 @@ TEST_P(SharedStorageManagerParamTest,
 
   origins.clear();
   for (const auto& info : FetchOriginsSync())
-    origins.push_back(info->origin);
+    origins.push_back(info->storage_key.origin());
   EXPECT_THAT(origins, ElementsAre(kOrigin2));
 
   EXPECT_EQ(OperationResult::kSuccess,
@@ -2060,7 +2060,7 @@ TEST_P(SharedStorageManagerPurgeMatchingOriginsParamTest, SinceThreshold) {
 
   std::vector<url::Origin> origins;
   for (const auto& info : infos2)
-    origins.push_back(info->origin);
+    origins.push_back(info->storage_key.origin());
   EXPECT_THAT(origins,
               ElementsAre(kOrigin1, kOrigin2, kOrigin3, kOrigin4, kOrigin5));
 
@@ -2079,7 +2079,7 @@ TEST_P(SharedStorageManagerPurgeMatchingOriginsParamTest, SinceThreshold) {
 
   origins.clear();
   for (const auto& info : infos3)
-    origins.push_back(info->origin);
+    origins.push_back(info->storage_key.origin());
   EXPECT_THAT(origins, ElementsAre(kOrigin2, kOrigin3, kOrigin4, kOrigin5));
 
   EXPECT_TRUE(success2);
@@ -2099,7 +2099,7 @@ TEST_P(SharedStorageManagerPurgeMatchingOriginsParamTest, SinceThreshold) {
 
   origins.clear();
   for (const auto& info : infos4)
-    origins.push_back(info->origin);
+    origins.push_back(info->storage_key.origin());
   EXPECT_THAT(origins, ElementsAre(kOrigin2, kOrigin4));
 
   // Database is still intact after trimming memory (and possibly performing

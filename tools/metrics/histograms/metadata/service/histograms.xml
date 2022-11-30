@@ -204,7 +204,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.CanMakePaymentEvent.Time" units="ms"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>rouslan@chromium.org</owner>
   <owner>web-payments-team@google.com</owner>
   <owner>jinho.bang@samsung.com</owner>
@@ -227,9 +227,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.Database.DestroyDatabaseResult"
-    enum="ServiceWorkerDatabaseStatus" expires_after="2022-10-11">
-  <owner>bashi@chromium.org</owner>
-  <owner>nhiroki@chromium.org</owner>
+    enum="ServiceWorkerDatabaseStatus" expires_after="2023-10-09">
+  <owner>yyanagisawa@google.com</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
     Records result of destroy database operations in ServiceWorkerDatabase.
@@ -240,23 +239,24 @@ chromium-metrics-reviews@google.com.
     enum="ServiceWorkerDatabaseStatus" expires_after="never">
 <!-- expires-never: core storage metric; consumed in separate dashboard (go/chrome-storage-dashboard) -->
 
-  <owner>nhiroki@chromium.org</owner>
+  <owner>yyanagisawa@google.com</owner>
+  <owner>chrome-worker@google.com</owner>
   <summary>
     Records result of opening a database for ServiceWorkerDatabase.
   </summary>
 </histogram>
 
 <histogram name="ServiceWorker.Database.ReadResult"
-    enum="ServiceWorkerDatabaseStatus" expires_after="2022-10-09">
-  <owner>bashi@chromium.org</owner>
-  <owner>nhiroki@chromium.org</owner>
+    enum="ServiceWorkerDatabaseStatus" expires_after="2023-10-09">
+  <owner>yyanagisawa@google.com</owner>
+  <owner>chrome-worker@google.com</owner>
   <summary>Records result of read operations in ServiceWorkerDatabase.</summary>
 </histogram>
 
 <histogram name="ServiceWorker.Database.WriteResult"
-    enum="ServiceWorkerDatabaseStatus" expires_after="2022-10-09">
-  <owner>bashi@chromium.org</owner>
-  <owner>nhiroki@chromium.org</owner>
+    enum="ServiceWorkerDatabaseStatus" expires_after="2023-10-09">
+  <owner>yyanagisawa@google.com</owner>
+  <owner>chrome-worker@google.com</owner>
   <summary>
     Records result of write operations in ServiceWorkerDatabase.
   </summary>
@@ -352,7 +352,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.FetchEvent.MainResource.Status"
-    enum="ServiceWorkerStatusCode" expires_after="2023-01-15">
+    enum="ServiceWorkerStatusCode" expires_after="2023-03-19">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -376,7 +376,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.FetchEvent.Subresource.Status"
-    enum="ServiceWorkerStatusCode" expires_after="2023-01-15">
+    enum="ServiceWorkerStatusCode" expires_after="2023-03-19">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -409,7 +409,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.InstallEvent.All.FetchCount" units="fetches"
-    expires_after="2023-01-26">
+    expires_after="2023-04-09">
   <owner>wanderview@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -538,7 +538,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="ServiceWorker.LoadTiming.MainFrame.MainResource.ResponseReceivedToCompleted2"
-    units="ms" expires_after="2023-01-22">
+    units="ms" expires_after="2023-03-26">
   <owner>bashi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -570,7 +570,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="ServiceWorker.LoadTiming.MainFrame.MainResource.WorkerReadyToFetchHandlerStart"
-    units="ms" expires_after="2023-01-22">
+    units="ms" expires_after="2023-03-26">
   <owner>bashi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -761,7 +761,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="ServiceWorker.OnBrowserStartup.SkipServiceWorkerOnFirstNavigation"
-    enum="BooleanSkipped" expires_after="2023-02-05">
+    enum="BooleanSkipped" expires_after="2023-04-09">
   <owner>chikamune@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -834,7 +834,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.RegisteredStorageKeyCount" units="origins"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -861,8 +861,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.StartTiming.ClockConsistency"
-    enum="CrossProcessTimeDelta" expires_after="2022-11-06">
-  <owner>wanderview@chromium.org</owner>
+    enum="CrossProcessTimeDelta" expires_after="2023-06-30">
+  <owner>yyanagisawa@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -1100,7 +1100,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.Storage.ReadInitialDataFromDB.Time" units="ms"
-    expires_after="2023-02-05">
+    expires_after="2023-04-09">
   <owner>chikamune@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -1111,7 +1111,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="ServiceWorker.Storage.RegisteredStorageKeyCacheInitialization.Time"
-    units="ms" expires_after="2023-02-05">
+    units="ms" expires_after="2023-04-09">
   <owner>chikamune@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -1122,8 +1122,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.Storage.RetryCountForRecovery" units="retries"
-    expires_after="2022-10-04">
-  <owner>bashi@chromium.org</owner>
+    expires_after="2023-01-04">
+  <owner>yyanagisawa@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
     The counts of retries to recover after a Storage Service crash. Logged after
@@ -1219,7 +1219,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorkerCache.CacheStorage" units="ms"
-    expires_after="2022-12-02">
+    expires_after="2023-04-09">
   <owner>dmurph@chromium.org</owner>
   <owner>wanderview@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>

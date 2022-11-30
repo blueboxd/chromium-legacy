@@ -5,10 +5,7 @@
 #include <lib/sys/cpp/component_context.h>
 #include <lib/sys/inspect/cpp/component.h>
 
-#include <memory>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "base/check.h"
 #include "base/command_line.h"
@@ -17,8 +14,6 @@
 #include "base/fuchsia/process_context.h"
 #include "base/fuchsia/process_lifecycle.h"
 #include "base/fuchsia/scoped_service_binding.h"
-#include "base/json/json_file_value_serializer.h"
-#include "base/json/json_reader.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
@@ -43,9 +38,6 @@ constexpr char kHeadlessConfigKey[] = "headless";
 
 // Config-data key to enable the fuchsia.web.FrameHost provider component.
 constexpr char kFrameHostConfigKey[] = "enable-frame-host-component";
-
-// Config-data key to run the CFv1 runner as a shim to the CFv2 runner.
-constexpr char kRunCfv1ShimConfigKey[] = "enable-cfv1-shim";
 
 // Returns the value of |config_key| or false if it is not set.
 bool GetConfigBool(base::StringPiece config_key) {
@@ -94,50 +86,6 @@ int Cfv1ToCfv2RunnerProxyMain() {
   return 0;
 }
 
-// cast_runner accepts runtime configuration information from the integration
-// tests by way of a JSON file in an optional read-only configuration directory.
-// When this file is present, it is expected to contain a single JSON object.
-// This object's "argv" member, when present, specifies a list of strings from
-// which supported switches are copied into `command_line`. For example:
-// {
-//   "argv": [
-//     "--disable-vulkan-for-tests"
-//   ]
-// }
-// TODO(https://crbug.com/1255292): Remove this when switching to structured
-// configuration.
-void ReadTestConfigData(base::CommandLine* command_line) {
-  JSONFileValueDeserializer json_deserializer(
-      base::FilePath(
-          FILE_PATH_LITERAL("/config/data-for-testing/runner-features")),
-      base::JSON_PARSE_RFC);
-  std::unique_ptr<base::Value> value =
-      json_deserializer.Deserialize(nullptr, nullptr);
-  const base::Value::Dict* feature_dict = value ? value->GetIfDict() : nullptr;
-  if (!feature_dict) {
-    return;
-  }
-
-  if (const auto* const argv_list = feature_dict->FindList("argv"); argv_list) {
-    base::CommandLine::StringVector argv;
-    for (const auto& arg_value : *argv_list) {
-      if (const auto* arg = arg_value.GetIfString(); arg) {
-        argv.push_back(*arg);
-      }
-    }
-    if (!argv.empty()) {
-      static constexpr const char* kTestSwitchesToCopy[] = {
-          kDisableVulkanForTestsSwitch,
-          kEnableFrameHostComponentForTestsSwitch,
-          kForceHeadlessForTestsSwitch,
-      };
-      command_line->CopySwitchesFrom(base::CommandLine(argv),
-                                     kTestSwitchesToCopy,
-                                     std::size(kTestSwitchesToCopy));
-    }
-  }
-}
-
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -155,18 +103,12 @@ int main(int argc, char** argv) {
   fuchsia_component_support::RegisterProductDataForCrashReporting(
       enable_cfv2 ? kComponentUrl : kComponentUrlCfv1, "FuchsiaCastRunner");
 
-  if (enable_cfv2) {
-    ReadTestConfigData(command_line);
-  }
-
   CHECK(InitLoggingFromCommandLine(*command_line))
       << "Failed to initialize logging.";
 
   LogComponentStartWithVersion("cast_runner");
 
-  if (!enable_cfv2 && (base::CommandLine::ForCurrentProcess()->HasSwitch(
-                           kRunCfv1ShimConfigKey) ||
-                       GetConfigBool(kRunCfv1ShimConfigKey))) {
+  if (!enable_cfv2) {
     return Cfv1ToCfv2RunnerProxyMain();
   }
 
@@ -189,11 +131,8 @@ int main(int argc, char** argv) {
       data_reset_binding(outgoing_directory, &runner);
 
   // Allow web containers to be debugged, by end-to-end tests.
-  // Only allow this under CFv2, which requires explicit capability routing.
-  absl::optional<base::ScopedServiceBinding<fuchsia::web::Debug>> debug_binding;
-  if (enable_cfv2) {
-    debug_binding.emplace(outgoing_directory, web_instance_host.debug_api());
-  }
+  base::ScopedServiceBinding<fuchsia::web::Debug> debug_binding(
+      outgoing_directory, web_instance_host.debug_api());
 
   if (command_line->HasSwitch(kDisableVulkanForTestsSwitch)) {
     runner.set_disable_vulkan_for_test();  // IN-TEST
@@ -215,11 +154,7 @@ int main(int argc, char** argv) {
   outgoing_directory->ServeFromStartupInfo();
 
   base::RunLoop run_loop;
-  absl::optional<base::ProcessLifecycle> process_lifecycle;
-
-  if (enable_cfv2) {
-    process_lifecycle.emplace(run_loop.QuitClosure());
-  }
+  base::ProcessLifecycle process_lifecycle(run_loop.QuitClosure());
 
   run_loop.Run();
 

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
+#include "base/ranges/algorithm.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
@@ -70,7 +71,7 @@ class IOSurfaceImageBackingFactoryTest : public testing::Test {
     backing_factory_ = std::make_unique<GLImageBackingFactory>(
         preferences, workarounds, context_state_->feature_info(),
         &image_factory_,
-        /*progress_reporter=*/nullptr, /*for_shared_memory_gmbs=*/false);
+        /*progress_reporter=*/nullptr);
 
     memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
     shared_image_representation_factory_ =
@@ -149,7 +150,7 @@ TEST_F(IOSurfaceImageBackingFactoryTest, Basic) {
   }
 
   Mailbox mailbox = Mailbox::GenerateForSharedImage();
-  viz::ResourceFormat format = viz::ResourceFormat::RGBA_8888;
+  auto format = viz::SharedImageFormat::kRGBA_8888;
   gfx::Size size(256, 256);
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
   GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
@@ -233,7 +234,7 @@ TEST_F(IOSurfaceImageBackingFactoryTest, GL_SkiaGL) {
 
   // Create a backing using mailbox.
   auto mailbox = Mailbox::GenerateForSharedImage();
-  auto format = viz::ResourceFormat::RGBA_8888;
+  auto format = viz::SharedImageFormat::kRGBA_8888;
   gfx::Size size(1, 1);
   auto color_space = gfx::ColorSpace::CreateSRGB();
   GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
@@ -294,12 +295,12 @@ TEST_F(IOSurfaceImageBackingFactoryTest, Dawn_SkiaGL) {
   instance.DiscoverDefaultAdapters();
 
   std::vector<dawn::native::Adapter> adapters = instance.GetAdapters();
-  auto adapter_it = std::find_if(
-      adapters.begin(), adapters.end(), [](dawn::native::Adapter adapter) {
-        wgpu::AdapterProperties properties;
-        adapter.GetProperties(&properties);
-        return properties.backendType == wgpu::BackendType::Metal;
-      });
+  auto adapter_it = base::ranges::find(adapters, wgpu::BackendType::Metal,
+                                       [](dawn::native::Adapter adapter) {
+                                         wgpu::AdapterProperties properties;
+                                         adapter.GetProperties(&properties);
+                                         return properties.backendType;
+                                       });
   ASSERT_NE(adapter_it, adapters.end());
 
   dawn::native::DawnDeviceDescriptor device_descriptor;
@@ -314,7 +315,7 @@ TEST_F(IOSurfaceImageBackingFactoryTest, Dawn_SkiaGL) {
 
   // Create a backing using mailbox.
   auto mailbox = Mailbox::GenerateForSharedImage();
-  auto format = viz::ResourceFormat::RGBA_8888;
+  auto format = viz::SharedImageFormat::kRGBA_8888;
   gfx::Size size(1, 1);
   auto color_space = gfx::ColorSpace::CreateSRGB();
   GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
@@ -388,7 +389,7 @@ TEST_F(IOSurfaceImageBackingFactoryTest, GL_Dawn_Skia_UnclearTexture) {
 
   // Create a backing using mailbox.
   auto mailbox = Mailbox::GenerateForSharedImage();
-  const auto format = viz::ResourceFormat::RGBA_8888;
+  const auto format = viz::SharedImageFormat::kRGBA_8888;
   const gfx::Size size(1, 1);
   const auto color_space = gfx::ColorSpace::CreateSRGB();
   GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
@@ -444,12 +445,12 @@ TEST_F(IOSurfaceImageBackingFactoryTest, GL_Dawn_Skia_UnclearTexture) {
   instance.DiscoverDefaultAdapters();
 
   std::vector<dawn::native::Adapter> adapters = instance.GetAdapters();
-  auto adapter_it = std::find_if(
-      adapters.begin(), adapters.end(), [](dawn::native::Adapter adapter) {
-        wgpu::AdapterProperties properties;
-        adapter.GetProperties(&properties);
-        return properties.backendType == wgpu::BackendType::Metal;
-      });
+  auto adapter_it = base::ranges::find(adapters, wgpu::BackendType::Metal,
+                                       [](dawn::native::Adapter adapter) {
+                                         wgpu::AdapterProperties properties;
+                                         adapter.GetProperties(&properties);
+                                         return properties.backendType;
+                                       });
   ASSERT_NE(adapter_it, adapters.end());
 
   dawn::native::DawnDeviceDescriptor device_descriptor;
@@ -512,7 +513,7 @@ TEST_F(IOSurfaceImageBackingFactoryTest, GL_Dawn_Skia_UnclearTexture) {
 TEST_F(IOSurfaceImageBackingFactoryTest, UnclearDawn_SkiaFails) {
   // Create a backing using mailbox.
   auto mailbox = Mailbox::GenerateForSharedImage();
-  const auto format = viz::ResourceFormat::RGBA_8888;
+  const auto format = viz::SharedImageFormat::kRGBA_8888;
   const gfx::Size size(1, 1);
   const auto color_space = gfx::ColorSpace::CreateSRGB();
   GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
@@ -534,12 +535,12 @@ TEST_F(IOSurfaceImageBackingFactoryTest, UnclearDawn_SkiaFails) {
   instance.DiscoverDefaultAdapters();
 
   std::vector<dawn::native::Adapter> adapters = instance.GetAdapters();
-  auto adapter_it = std::find_if(
-      adapters.begin(), adapters.end(), [](dawn::native::Adapter adapter) {
-        wgpu::AdapterProperties properties;
-        adapter.GetProperties(&properties);
-        return properties.backendType == wgpu::BackendType::Metal;
-      });
+  auto adapter_it = base::ranges::find(adapters, wgpu::BackendType::Metal,
+                                       [](dawn::native::Adapter adapter) {
+                                         wgpu::AdapterProperties properties;
+                                         adapter.GetProperties(&properties);
+                                         return properties.backendType;
+                                       });
   ASSERT_NE(adapter_it, adapters.end());
 
   dawn::native::DawnDeviceDescriptor device_descriptor;
@@ -607,7 +608,7 @@ TEST_F(IOSurfaceImageBackingFactoryTest, UnclearDawn_SkiaFails) {
 TEST_F(IOSurfaceImageBackingFactoryTest, SkiaAccessFirstFails) {
   // Create a mailbox.
   auto mailbox = Mailbox::GenerateForSharedImage();
-  const auto format = viz::ResourceFormat::RGBA_8888;
+  const auto format = viz::SharedImageFormat::kRGBA_8888;
   const gfx::Size size(1, 1);
   const auto color_space = gfx::ColorSpace::CreateSRGB();
   GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;

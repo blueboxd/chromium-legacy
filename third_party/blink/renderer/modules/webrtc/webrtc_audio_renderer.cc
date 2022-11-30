@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -378,8 +378,8 @@ WebRtcAudioRenderer::CreateSharedAudioRendererProxy(
   SharedAudioRenderer::OnPlayStateChanged on_play_state_changed =
       WTF::BindRepeating(&WebRtcAudioRenderer::OnPlayStateChanged,
                          WrapRefCounted(this));
-  SharedAudioRenderer::OnPlayStateRemoved on_play_state_removed =
-      WTF::Bind(&WebRtcAudioRenderer::OnPlayStateRemoved, WrapRefCounted(this));
+  SharedAudioRenderer::OnPlayStateRemoved on_play_state_removed = WTF::BindOnce(
+      &WebRtcAudioRenderer::OnPlayStateRemoved, WrapRefCounted(this));
   return new SharedAudioRenderer(this, media_stream_descriptor,
                                  std::move(on_play_state_changed),
                                  std::move(on_play_state_removed));

@@ -40,6 +40,7 @@
 #include "content/public/common/page_type.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/back_forward_cache_util.h"
+#include "content/public/test/fake_local_frame.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/scoped_web_ui_controller_factory_registration.h"
@@ -274,12 +275,15 @@ class NavigationControllerTest : public RenderViewHostImplTestHarness,
 
   FrameTreeNode* root_ftn() { return contents()->GetPrimaryFrameTree().root(); }
 
+  void BeforeFormRepostWarningShow() override { form_repost_counter_++; }
+
  protected:
   GURL navigated_url_;
   size_t navigation_entry_committed_counter_ = 0;
   size_t navigation_entry_changed_counter_ = 0;
   size_t navigation_list_pruned_counter_ = 0;
   size_t navigation_entries_deleted_counter_ = 0;
+  size_t form_repost_counter_ = 0;
   PrunedDetails last_navigation_entry_pruned_details_;
   ReloadType last_reload_type_;
 };
@@ -716,6 +720,40 @@ TEST_F(NavigationControllerTest, LoadURLWithExtraParams_Data_Android) {
   CheckNavigationEntryMatchLoadParams(load_url_params, entry);
 }
 #endif
+
+TEST_F(NavigationControllerTest, KeepReloadTypeWhenCancelRepost) {
+  NavigationControllerImpl& controller = controller_impl();
+  GURL url("https://posturl");
+
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url, contents());
+  NavigationController::LoadURLParams load_url_params(url);
+  load_url_params.transition_type = ui::PAGE_TRANSITION_TYPED;
+  load_url_params.load_type = NavigationController::LOAD_TYPE_HTTP_POST;
+  const char* raw_data = "post\n\n\0data";
+  const int length = 11;
+  const int64_t identifier = 1;
+  load_url_params.post_data =
+      network::ResourceRequestBody::CreateFromBytes(raw_data, length);
+  load_url_params.post_data->set_identifier(identifier);
+  navigation->SetLoadURLParams(&load_url_params);
+  navigation->Start();
+
+  // Set the post_id according to identifier.
+  navigation->set_post_id(identifier);
+  navigation->Commit();
+
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  ReloadType initial_reload_type = entry->reload_type();
+  EXPECT_EQ(initial_reload_type, ReloadType::NONE);
+
+  controller.Reload(ReloadType::BYPASSING_CACHE, true);
+  EXPECT_EQ(1U, form_repost_counter_);
+  EXPECT_EQ(entry->reload_type(), initial_reload_type);
+  controller.CancelPendingReload();
+  // ReloadType should not change because we canceled pending reload.
+  EXPECT_EQ(entry->reload_type(), initial_reload_type);
+}
 
 TEST_F(NavigationControllerTest, LoadURLWithExtraParams_HttpPost) {
   NavigationControllerImpl& controller = controller_impl();
@@ -1915,7 +1953,8 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
       TestRenderFrameHost::CreateStubAssociatedInterfaceProviderReceiver(),
       blink::mojom::TreeScopeType::kDocument, std::string(), unique_name0,
       false, blink::LocalFrameToken(), base::UnguessableToken::Create(),
-      blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), kOwnerType);
+      blink::DocumentToken(), blink::FramePolicy(),
+      blink::mojom::FrameOwnerProperties(), kOwnerType);
   TestRenderFrameHost* subframe =
       static_cast<TestRenderFrameHost*>(contents()
                                             ->GetPrimaryFrameTree()
@@ -1959,7 +1998,8 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
       TestRenderFrameHost::CreateStubAssociatedInterfaceProviderReceiver(),
       blink::mojom::TreeScopeType::kDocument, std::string(), unique_name1,
       false, blink::LocalFrameToken(), base::UnguessableToken::Create(),
-      blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), kOwnerType);
+      blink::DocumentToken(), blink::FramePolicy(),
+      blink::mojom::FrameOwnerProperties(), kOwnerType);
   TestRenderFrameHost* subframe2 =
       static_cast<TestRenderFrameHost*>(contents()
                                             ->GetPrimaryFrameTree()
@@ -2003,7 +2043,8 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
       TestRenderFrameHost::CreateStubAssociatedInterfaceProviderReceiver(),
       blink::mojom::TreeScopeType::kDocument, std::string(), unique_name2,
       false, blink::LocalFrameToken(), base::UnguessableToken::Create(),
-      blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), kOwnerType);
+      blink::DocumentToken(), blink::FramePolicy(),
+      blink::mojom::FrameOwnerProperties(), kOwnerType);
   TestRenderFrameHost* subframe3 =
       static_cast<TestRenderFrameHost*>(contents()
                                             ->GetPrimaryFrameTree()
@@ -2061,7 +2102,8 @@ TEST_F(NavigationControllerTest, BackSubframe) {
       TestRenderFrameHost::CreateStubAssociatedInterfaceProviderReceiver(),
       blink::mojom::TreeScopeType::kDocument, std::string(), unique_name, false,
       blink::LocalFrameToken(), base::UnguessableToken::Create(),
-      blink::FramePolicy(), blink::mojom::FrameOwnerProperties(),
+      blink::DocumentToken(), blink::FramePolicy(),
+      blink::mojom::FrameOwnerProperties(),
       blink::FrameOwnerElementType::kIframe);
   FrameTreeNode* subframe =
       contents()->GetPrimaryFrameTree().root()->child_at(0);
@@ -2732,7 +2774,7 @@ TEST_F(NavigationControllerTest, ShowBrowserURLAfterFailUntilModified) {
   // Suppose it aborts before committing, if it's a 204 or download or due to a
   // stop or a new navigation from the user.  The URL should remain visible.
   main_test_rfh()->frame_tree_node()->navigator().CancelNavigation(
-      main_test_rfh()->frame_tree_node());
+      main_test_rfh()->frame_tree_node(), NavigationDiscardReason::kCancelled);
   EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
 
   // If something else later modifies the contents of the about:blank page, then
@@ -2895,7 +2937,8 @@ TEST_F(NavigationControllerTest, SameSubframe) {
       TestRenderFrameHost::CreateStubAssociatedInterfaceProviderReceiver(),
       blink::mojom::TreeScopeType::kDocument, std::string(), unique_name, false,
       blink::LocalFrameToken(), base::UnguessableToken::Create(),
-      blink::FramePolicy(), blink::mojom::FrameOwnerProperties(),
+      blink::DocumentToken(), blink::FramePolicy(),
+      blink::mojom::FrameOwnerProperties(),
       blink::FrameOwnerElementType::kIframe);
   TestRenderFrameHost* subframe =
       static_cast<TestRenderFrameHost*>(contents()
@@ -3053,7 +3096,8 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
       TestRenderFrameHost::CreateStubAssociatedInterfaceProviderReceiver(),
       blink::mojom::TreeScopeType::kDocument, std::string(), unique_name, false,
       blink::LocalFrameToken(), base::UnguessableToken::Create(),
-      blink::FramePolicy(), blink::mojom::FrameOwnerProperties(),
+      blink::DocumentToken(), blink::FramePolicy(),
+      blink::mojom::FrameOwnerProperties(),
       blink::FrameOwnerElementType::kIframe);
   TestRenderFrameHost* subframe =
       static_cast<TestRenderFrameHost*>(contents()
@@ -4247,7 +4291,8 @@ TEST_F(NavigationControllerTest, SubFrameNavigationUIData) {
       TestRenderFrameHost::CreateStubAssociatedInterfaceProviderReceiver(),
       blink::mojom::TreeScopeType::kDocument, std::string(), unique_name, false,
       blink::LocalFrameToken(), base::UnguessableToken::Create(),
-      blink::FramePolicy(), blink::mojom::FrameOwnerProperties(),
+      blink::DocumentToken(), blink::FramePolicy(),
+      blink::mojom::FrameOwnerProperties(),
       blink::FrameOwnerElementType::kIframe);
   TestRenderFrameHost* subframe =
       static_cast<TestRenderFrameHost*>(contents()
@@ -4490,8 +4535,7 @@ TEST_F(NavigationControllerTest,
 
   // Attempte to provide the cross-site-instance key to
   // NavigateToNavigationApiKey(). No navigation should occur.
-  controller.NavigateToNavigationApiKey(
-      root_ftn(), FrameTreeNode::kFrameTreeNodeInvalidId, first_key);
+  controller.NavigateToNavigationApiKey(main_test_rfh(), first_key);
   EXPECT_FALSE(controller.GetPendingEntry());
 }
 
@@ -4526,14 +4570,113 @@ TEST_F(NavigationControllerTest, NavigateToNavigationApiKey_KeyForWrongFrame) {
   FrameTreeNode* subframe_node =
       main_test_rfh()->frame_tree_node()->child_at(0);
   controller_impl().NavigateToNavigationApiKey(
-      subframe_node, FrameTreeNode::kFrameTreeNodeInvalidId, first_main_key);
+      subframe_node->current_frame_host(), first_main_key);
   EXPECT_FALSE(controller_impl().GetPendingEntry());
 
   // Call NavigateToNavigationApiKey() on the main frame with the key from the
   // main frame. This time a navigation should begin.
-  controller_impl().NavigateToNavigationApiKey(
-      root_ftn(), FrameTreeNode::kFrameTreeNodeInvalidId, first_main_key);
+  controller_impl().NavigateToNavigationApiKey(main_test_rfh(), first_main_key);
   EXPECT_TRUE(controller_impl().GetPendingEntry());
+}
+
+class FakeLocalFrameWithDisposedEntries : public content::FakeLocalFrame {
+ public:
+  explicit FakeLocalFrameWithDisposedEntries(RenderFrameHost* host) {
+    Init(static_cast<TestRenderFrameHost*>(host)
+             ->GetRemoteAssociatedInterfaces());
+  }
+
+  const std::vector<std::string>& disposed_keys() const {
+    return disposed_keys_;
+  }
+
+  // FakeLocalFrame:
+  void NotifyNavigationApiOfDisposedEntries(
+      const std::vector<std::string>& keys) final {
+    disposed_keys_ = keys;
+  }
+
+ private:
+  std::vector<std::string> disposed_keys_;
+};
+
+TEST_F(NavigationControllerTest, NavigationApiDisposedEntries) {
+  // Construct first entry (cross-origin to the rest).
+  const GURL kUrl1("http://google.com");
+  NavigationSimulator::NavigateAndCommitFromDocument(kUrl1, main_test_rfh());
+  controller_impl()
+      .GetLastCommittedEntry()
+      ->GetFrameEntry(root_ftn())
+      ->set_navigation_api_key("1");
+
+  // Construct second entry (from which we will conduct the final checks).
+  const GURL kUrl2("http://example.com");
+  NavigationSimulator::NavigateAndCommitFromDocument(kUrl2, main_test_rfh());
+  controller_impl()
+      .GetLastCommittedEntry()
+      ->GetFrameEntry(root_ftn())
+      ->set_navigation_api_key("2");
+  const GURL kSubframeUrl2("http://example.com/subframe");
+  TestRenderFrameHost* subframe2 = main_test_rfh()->AppendChild("subframe");
+  NavigationSimulator::NavigateAndCommitFromDocument(kSubframeUrl2, subframe2);
+  controller_impl()
+      .GetLastCommittedEntry()
+      ->GetFrameEntry(root_ftn()->child_at(0))
+      ->set_navigation_api_key("2_sub");
+
+  std::string iframe_unique_name = root_ftn()->child_at(0)->unique_name();
+
+  // Setup a FakeLocalFrame in order to inspect the
+  // NotifyNavigationApiOfDisposedEntries() callback.
+  FakeLocalFrameWithDisposedEntries main_frame(main_test_rfh());
+  FakeLocalFrameWithDisposedEntries sub_frame(
+      root_ftn()->child_at(0)->current_frame_host());
+  main_test_rfh()->FlushLocalFrameMessages();
+  static_cast<TestRenderFrameHost*>(
+      root_ftn()->child_at(0)->current_frame_host())
+      ->FlushLocalFrameMessages();
+
+  // Construct third entry (same-origin to the second, but cross-document so
+  // that the iframe gets detached). Set the iframe's FNE's unique name to match
+  // the previous detached one, to ensure they aren't spuriously considered the
+  // same conceptual iframe.
+  const GURL kUrl3("http://example.com?next");
+  NavigationSimulator::NavigateAndCommitFromDocument(kUrl3, main_test_rfh());
+  controller_impl()
+      .GetLastCommittedEntry()
+      ->GetFrameEntry(root_ftn())
+      ->set_navigation_api_key("3");
+  const GURL kSubframeUrl3("http://example.com/subframe?next");
+  TestRenderFrameHost* subframe3 = main_test_rfh()->AppendChild("subframe");
+  NavigationSimulator::NavigateAndCommitFromDocument(kSubframeUrl3, subframe3);
+  controller_impl()
+      .GetLastCommittedEntry()
+      ->GetFrameEntry(root_ftn()->child_at(0))
+      ->set_navigation_api_key("3_sub");
+  controller_impl()
+      .GetLastCommittedEntry()
+      ->GetFrameEntry(root_ftn()->child_at(0))
+      ->set_frame_unique_name(iframe_unique_name);
+
+  // Go back to the second entry.
+  NavigationSimulator::GoBack(contents());
+  EXPECT_EQ(controller_impl().GetLastCommittedEntryIndex(), 1);
+  EXPECT_EQ(controller_impl().GetEntryCount(), 3);
+
+  // Prune the first and last entries. In the main frame, we should notify the
+  // renderer of the last key's disposal, but not the first key, because it was
+  // cross-origin. In the subframe, we should not notify for either: the first
+  // because the subframe was not present at all, and the second because the
+  // subframe was detached and reattached, so it's not really the same frame,
+  // even though it had the same unique name.
+  controller_impl().PruneAllButLastCommitted();
+  main_frame.FlushMessages();
+  sub_frame.FlushMessages();
+  EXPECT_EQ(sub_frame.disposed_keys().size(), 0u);
+
+  auto main_frame_disposed_keys = main_frame.disposed_keys();
+  EXPECT_EQ(main_frame_disposed_keys.size(), 1u);
+  EXPECT_EQ(main_frame_disposed_keys[0], "3");
 }
 
 class NavigationControllerFencedFrameTest : public NavigationControllerTest {

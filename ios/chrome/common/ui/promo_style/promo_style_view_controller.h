@@ -37,6 +37,18 @@
 // When set to YES, the banner is hidden. Defaults to NO.
 @property(nonatomic, assign) BOOL shouldHideBanner;
 
+// When set to `YES`, an avatar image view is shown. This value has to be set
+// before the view is loaded. Defaults to NO.
+// See `avatarImage` to set the avatar image.
+@property(nonatomic, assign) BOOL hasAvatarImage;
+
+// Sets the avatar image. Needs to `hasAvatarImage` to `YES` before.
+@property(nonatomic, strong) UIImage* avatarImage;
+
+// Sets the avatar accessibility label. Needs to `hasAvatarImage` to `YES`
+// before.
+@property(nonatomic, copy) NSString* avatarAccessibilityLabel;
+
 // The label of the headline below the image. Must be set before the view is
 // loaded. This is declared public so the accessibility can be enabled.
 @property(nonatomic, strong) UILabel* titleLabel;

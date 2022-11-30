@@ -5,36 +5,28 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
-#include "ash/components/settings/cros_settings_names.h"
 #include "base/bind.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/attestation/soft_bind_attestation_flow.h"
-#include "chrome/browser/ash/login/users/mock_user_manager.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/profiles/profile_impl.h"
-#include "chrome/common/pref_names.h"
-#include "chromeos/ash/components/attestation/fake_certificate.h"
 #include "chromeos/ash/components/attestation/mock_attestation_flow.h"
-#include "chromeos/ash/components/dbus/attestation/attestation.pb.h"
-#include "chromeos/ash/components/dbus/attestation/fake_attestation_client.h"
-#include "chromeos/ash/components/dbus/attestation/interface.pb.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "content/public/test/browser_task_environment.h"
 #include "crypto/rsa_private_key.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/boringssl/src/include/openssl/ec.h"
 #include "third_party/securemessage/proto/securemessage.pb.h"
 #include "third_party/securemessage/src/cpp/include/securemessage/crypto_ops.h"
 #include "third_party/securemessage/src/cpp/include/securemessage/public_key_proto_util.h"
 
 using testing::_;
-using testing::DoAll;
 using testing::Invoke;
-using testing::Return;
-using testing::SetArgPointee;
 using testing::StrictMock;
 using testing::WithArgs;
 
@@ -43,20 +35,14 @@ namespace attestation {
 
 namespace {
 
-const AccountId& kTestAccountId =
+const AccountId kTestAccountId =
     AccountId::FromUserEmail("test_email@chromium.org");
 
 }  // namespace
 
 class SoftBindAttestationFlowTest : public ::testing::Test {
  public:
-  SoftBindAttestationFlowTest()
-      : fake_certificate_status_(ATTESTATION_SUCCESS),
-        fake_cert_chains_({}),
-        fake_cert_chain_read_index_(0),
-        result_cert_chain_({}) {
-    AttestationClient::InitializeFake();
-  }
+  SoftBindAttestationFlowTest() { AttestationClient::InitializeFake(); }
 
   ~SoftBindAttestationFlowTest() override { AttestationClient::Shutdown(); }
 
@@ -64,8 +50,7 @@ class SoftBindAttestationFlowTest : public ::testing::Test {
     auto mock_attestation_flow =
         std::make_unique<StrictMock<MockAttestationFlow>>();
     mock_attestation_flow_ = mock_attestation_flow.get();
-    soft_bind_attestation_flow_ =
-        std::make_unique<ash::attestation::SoftBindAttestationFlow>();
+    soft_bind_attestation_flow_ = std::make_unique<SoftBindAttestationFlow>();
     soft_bind_attestation_flow_->SetAttestationFlowForTesting(
         std::move(mock_attestation_flow));
     settings_helper_.ReplaceDeviceSettingsProviderWithStub();
@@ -95,15 +80,15 @@ class SoftBindAttestationFlowTest : public ::testing::Test {
 
   void ExpectMockAttestationFlowGetCertificate() {
     EXPECT_CALL(*mock_attestation_flow_,
-                GetCertificate(PROFILE_SOFT_BIND_CERTIFICATE, _, _, _, _, _))
-        .WillRepeatedly(WithArgs<5>(
+                GetCertificate(PROFILE_SOFT_BIND_CERTIFICATE, _, _, _, _, _, _))
+        .WillRepeatedly(WithArgs<6>(
             Invoke(this, &SoftBindAttestationFlowTest::FakeGetCertificate)));
   }
 
   void ExpectMockAttestationFlowGetCertificateTimeout() {
     EXPECT_CALL(*mock_attestation_flow_,
-                GetCertificate(PROFILE_SOFT_BIND_CERTIFICATE, _, _, _, _, _))
-        .WillRepeatedly(WithArgs<5>(Invoke(
+                GetCertificate(PROFILE_SOFT_BIND_CERTIFICATE, _, _, _, _, _, _))
+        .WillRepeatedly(WithArgs<6>(Invoke(
             this, &SoftBindAttestationFlowTest::FakeGetCertificateTimeout)));
   }
 
@@ -142,15 +127,14 @@ class SoftBindAttestationFlowTest : public ::testing::Test {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   StrictMock<MockAttestationFlow>* mock_attestation_flow_;
   ScopedCrosSettingsTestHelper settings_helper_;
-  std::unique_ptr<ash::attestation::SoftBindAttestationFlow>
-      soft_bind_attestation_flow_;
+  std::unique_ptr<SoftBindAttestationFlow> soft_bind_attestation_flow_;
 
-  AttestationStatus fake_certificate_status_;
+  AttestationStatus fake_certificate_status_ = ATTESTATION_SUCCESS;
   std::vector<std::string> fake_cert_chains_;
-  int fake_cert_chain_read_index_;
+  size_t fake_cert_chain_read_index_ = 0;
 
   std::vector<std::string> result_cert_chain_;
-  bool result_validity_;
+  bool result_validity_ = false;
 };
 
 TEST_F(SoftBindAttestationFlowTest, Success) {
@@ -160,7 +144,7 @@ TEST_F(SoftBindAttestationFlowTest, Success) {
   soft_bind_attestation_flow_->GetCertificate(CreateCallback(), kTestAccountId,
                                               user_key);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, result_cert_chain_.size());
+  EXPECT_EQ(2u, result_cert_chain_.size());
   EXPECT_TRUE(result_validity_);
 }
 
@@ -170,7 +154,7 @@ TEST_F(SoftBindAttestationFlowTest, FeatureDisabledByPolicy) {
   soft_bind_attestation_flow_->GetCertificate(CreateCallback(), kTestAccountId,
                                               user_key);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, result_cert_chain_.size());
+  EXPECT_EQ(1u, result_cert_chain_.size());
   EXPECT_EQ("INVALID:attestationNotAllowed", result_cert_chain_[0]);
   EXPECT_FALSE(result_validity_);
 }
@@ -183,7 +167,7 @@ TEST_F(SoftBindAttestationFlowTest, NotVerifiedDueToUnspecifiedFailure) {
   soft_bind_attestation_flow_->GetCertificate(CreateCallback(), kTestAccountId,
                                               user_key);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, result_cert_chain_.size());
+  EXPECT_EQ(1u, result_cert_chain_.size());
   EXPECT_EQ("INVALID:notVerified", result_cert_chain_[0]);
   EXPECT_FALSE(result_validity_);
 }
@@ -196,7 +180,7 @@ TEST_F(SoftBindAttestationFlowTest, NotVerifiedDueToBadRequestFailure) {
   soft_bind_attestation_flow_->GetCertificate(CreateCallback(), kTestAccountId,
                                               user_key);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, result_cert_chain_.size());
+  EXPECT_EQ(1u, result_cert_chain_.size());
   EXPECT_EQ("INVALID:notVerified", result_cert_chain_[0]);
   EXPECT_FALSE(result_validity_);
 }
@@ -207,7 +191,7 @@ TEST_F(SoftBindAttestationFlowTest, Timeout) {
   soft_bind_attestation_flow_->GetCertificate(CreateCallback(), kTestAccountId,
                                               user_key);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, result_cert_chain_.size());
+  EXPECT_EQ(1u, result_cert_chain_.size());
   EXPECT_EQ("INVALID:timeout", result_cert_chain_[0]);
   EXPECT_FALSE(result_validity_);
 }
@@ -220,9 +204,9 @@ TEST_F(SoftBindAttestationFlowTest, NearlyExpiredCert) {
   soft_bind_attestation_flow_->GetCertificate(CreateCallback(), kTestAccountId,
                                               user_key);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, result_cert_chain_.size());
+  EXPECT_EQ(2u, result_cert_chain_.size());
   EXPECT_TRUE(result_validity_);
-  EXPECT_EQ(2, fake_cert_chain_read_index_);
+  EXPECT_EQ(2u, fake_cert_chain_read_index_);
 }
 
 TEST_F(SoftBindAttestationFlowTest, ExpiredCertRenewed) {
@@ -233,9 +217,9 @@ TEST_F(SoftBindAttestationFlowTest, ExpiredCertRenewed) {
   soft_bind_attestation_flow_->GetCertificate(CreateCallback(), kTestAccountId,
                                               user_key);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, result_cert_chain_.size());
+  EXPECT_EQ(2u, result_cert_chain_.size());
   EXPECT_TRUE(result_validity_);
-  EXPECT_EQ(2, fake_cert_chain_read_index_);
+  EXPECT_EQ(2u, fake_cert_chain_read_index_);
 }
 
 TEST_F(SoftBindAttestationFlowTest, MultipleRenewalsExceedsMaxRetries) {
@@ -249,10 +233,10 @@ TEST_F(SoftBindAttestationFlowTest, MultipleRenewalsExceedsMaxRetries) {
   soft_bind_attestation_flow_->GetCertificate(CreateCallback(), kTestAccountId,
                                               user_key);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, result_cert_chain_.size());
+  EXPECT_EQ(1u, result_cert_chain_.size());
   EXPECT_EQ("INVALID:tooManyRetries", result_cert_chain_[0]);
   EXPECT_FALSE(result_validity_);
-  EXPECT_EQ(4, fake_cert_chain_read_index_);
+  EXPECT_EQ(4u, fake_cert_chain_read_index_);
 }
 
 TEST_F(SoftBindAttestationFlowTest, MultipleSuccessesSimultaneously) {
@@ -268,9 +252,9 @@ TEST_F(SoftBindAttestationFlowTest, MultipleSuccessesSimultaneously) {
   soft_bind_attestation_flow_->GetCertificate(CreateCallback(), kTestAccountId,
                                               user_key);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, result_cert_chain_.size());
+  EXPECT_EQ(2u, result_cert_chain_.size());
   EXPECT_TRUE(result_validity_);
-  EXPECT_EQ(3, fake_cert_chain_read_index_);
+  EXPECT_EQ(3u, fake_cert_chain_read_index_);
 }
 
 }  // namespace attestation

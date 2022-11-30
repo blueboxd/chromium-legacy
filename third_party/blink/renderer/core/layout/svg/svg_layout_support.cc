@@ -114,11 +114,11 @@ static const LayoutSVGRoot& ComputeTransformToSVGRoot(
   for (; !parent->IsSVGRoot(); parent = parent->Parent()) {
     if (filter_skipped && parent->StyleRef().HasFilter())
       *filter_skipped = true;
-    root_border_box_transform.PreMultiply(parent->LocalToSVGParentTransform());
+    root_border_box_transform.PostConcat(parent->LocalToSVGParentTransform());
   }
 
   const auto& svg_root = To<LayoutSVGRoot>(*parent);
-  root_border_box_transform.PreMultiply(svg_root.LocalToBorderBoxTransform());
+  root_border_box_transform.PostConcat(svg_root.LocalToBorderBoxTransform());
   return svg_root;
 }
 
@@ -380,7 +380,7 @@ AffineTransform SubtreeContentTransformScope::current_content_transformation_;
 SubtreeContentTransformScope::SubtreeContentTransformScope(
     const AffineTransform& subtree_content_transformation)
     : saved_content_transformation_(current_content_transformation_) {
-  current_content_transformation_.PreMultiply(subtree_content_transformation);
+  current_content_transformation_.PostConcat(subtree_content_transformation);
 }
 
 SubtreeContentTransformScope::~SubtreeContentTransformScope() {
@@ -471,7 +471,7 @@ static SearchCandidate SearchTreeForFindClosestLayoutSVGText(
 
   // If a LayoutSVGText was found and there are no potentially closer sub-trees,
   // just return |closestText|.
-  if (closest_text.layout_object && candidates.IsEmpty())
+  if (closest_text.layout_object && candidates.empty())
     return closest_text;
 
   std::stable_sort(candidates.begin(), candidates.end(),

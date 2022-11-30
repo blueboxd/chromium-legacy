@@ -802,6 +802,9 @@ class AutotestPrivateSendAssistantTextQueryFunction : public ExtensionFunction {
   // time. We will respond with an error.
   void Timeout();
 
+  // Convert session_manager::SessionState to string for error logging.
+  std::string ToString(session_manager::SessionState session_state);
+
   std::unique_ptr<AssistantInteractionHelper> interaction_helper_;
   base::OneShotTimer timeout_timer_;
 };
@@ -1576,6 +1579,18 @@ class AutotestPrivateStopThroughputTrackerDataCollectionFunction
   ResponseAction Run() override;
 };
 
+class AutotestPrivateGetThroughputTrackerDataFunction
+    : public ExtensionFunction {
+ public:
+  AutotestPrivateGetThroughputTrackerDataFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getThroughputTrackerData",
+                             AUTOTESTPRIVATE_GETTHROUGHPUTTRACKERDATA)
+
+ private:
+  ~AutotestPrivateGetThroughputTrackerDataFunction() override;
+  ResponseAction Run() override;
+};
+
 class AutotestPrivateGetDisplaySmoothnessFunction : public ExtensionFunction {
  public:
   AutotestPrivateGetDisplaySmoothnessFunction();
@@ -1674,6 +1689,30 @@ class AutotestPrivateIsInputMethodReadyForTestingFunction
 
  private:
   ~AutotestPrivateIsInputMethodReadyForTestingFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateMakeFuseboxTempDirFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.makeFuseboxTempDir",
+                             AUTOTESTPRIVATE_MAKEFUSEBOXTEMPDIR)
+
+ private:
+  ~AutotestPrivateMakeFuseboxTempDirFunction() override;
+  ResponseAction Run() override;
+
+  void OnMakeTempDir(std::string error_message,
+                     std::string fusebox_file_path,
+                     std::string underlying_file_path);
+};
+
+class AutotestPrivateRemoveFuseboxTempDirFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.removeFuseboxTempDir",
+                             AUTOTESTPRIVATE_REMOVEFUSEBOXTEMPDIR)
+
+ private:
+  ~AutotestPrivateRemoveFuseboxTempDirFunction() override;
   ResponseAction Run() override;
 };
 

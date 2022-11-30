@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -706,7 +706,7 @@ void NGTableAlgorithmUtils::FinalizeTableCellLayout(
     NGBoxFragmentBuilder* builder) {
   const NGBlockNode& node = builder->Node();
   const NGConstraintSpace& space = builder->ConstraintSpace();
-  const bool has_inflow_children = !builder->Children().IsEmpty();
+  const bool has_inflow_children = !builder->Children().empty();
 
   // Hide table-cells if:
   //  - They are within a collapsed column(s).

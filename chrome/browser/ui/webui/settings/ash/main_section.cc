@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/webui/plural_string_handler.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_features_util.h"
+#include "chrome/browser/ui/webui/settings/ash/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/browser_lifetime_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
@@ -40,6 +41,12 @@
 
 namespace chromeos {
 namespace settings {
+
+// TODO(https://crbug.com/1164001): remove after migrating to ash.
+namespace mojom {
+using ::ash::settings::mojom::SearchResultIcon;
+}
+
 namespace {
 
 void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
@@ -170,14 +177,6 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       "isKioskModeActive",
       user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp());
   html_source->AddBoolean("isChildAccount", profile()->IsChild());
-
-  // Personalization hub is only enabled for regular (non-guest) users.
-  // b/238455906 also call |!features::IsGuestModeActive()| since this
-  // additionally checks for enterprise managed guest users.
-  html_source->AddBoolean("isPersonalizationHubEnabled",
-                          ash::features::IsPersonalizationHubEnabled() &&
-                              profile()->IsRegularProfile() &&
-                              !features::IsGuestModeActive());
 
   // Add the System Web App resources for Settings.
   html_source->AddResourcePath("icon-192.png", IDR_SETTINGS_LOGO_192);

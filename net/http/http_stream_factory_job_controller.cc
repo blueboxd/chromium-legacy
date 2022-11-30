@@ -304,8 +304,7 @@ void HttpStreamFactory::JobController::OnStreamReady(
   std::unique_ptr<HttpStream> stream = job->ReleaseStream();
   DCHECK(stream);
 
-  MarkRequestComplete(job->was_alpn_negotiated(), job->negotiated_protocol(),
-                      job->using_spdy());
+  MarkRequestComplete(job);
 
   if (!request_)
     return;
@@ -336,8 +335,7 @@ void HttpStreamFactory::JobController::OnBidirectionalStreamImplReady(
     return;
   }
 
-  MarkRequestComplete(job->was_alpn_negotiated(), job->negotiated_protocol(),
-                      job->using_spdy());
+  MarkRequestComplete(job);
 
   if (!request_)
     return;
@@ -359,8 +357,7 @@ void HttpStreamFactory::JobController::OnWebSocketHandshakeStreamReady(
     const ProxyInfo& used_proxy_info,
     std::unique_ptr<WebSocketHandshakeStreamBase> stream) {
   DCHECK(job);
-  MarkRequestComplete(job->was_alpn_negotiated(), job->negotiated_protocol(),
-                      job->using_spdy());
+  MarkRequestComplete(job);
 
   if (!request_)
     return;
@@ -879,7 +876,11 @@ int HttpStreamFactory::JobController::DoCreateJobs() {
 
   // Alternative Service can only be set for HTTPS requests while Alternative
   // Proxy is set for HTTP requests.
-  if (alternative_service_info_.protocol() != kProtoUnknown) {
+  // The main job may use HTTP/3 if the origin is specified in
+  // `--origin-to-force-quic-on` switch. In that case, do not create
+  // `alternative_job_` and `dns_alpn_h3_job_`.
+  if ((alternative_service_info_.protocol() != kProtoUnknown) &&
+      !main_job_->using_quic()) {
     DCHECK(request_info_.url.SchemeIs(url::kHttpsScheme));
     DCHECK(!is_websocket_);
     DVLOG(1) << "Selected alternative service (host: "
@@ -903,7 +904,7 @@ int HttpStreamFactory::JobController::DoCreateJobs() {
         alternative_service_info_.protocol(), quic_version);
   }
 
-  if (dns_alpn_h3_job_enabled) {
+  if (dns_alpn_h3_job_enabled && !main_job_->using_quic()) {
     DCHECK(!is_websocket_);
     url::SchemeHostPort dns_alpn_h3_destination =
         url::SchemeHostPort(origin_url);
@@ -1042,19 +1043,20 @@ void HttpStreamFactory::JobController::OrphanUnboundJob() {
 void HttpStreamFactory::JobController::OnJobSucceeded(Job* job) {
   DCHECK(job);
   if (!bound_job_) {
-    if ((main_job_ && alternative_job_) || dns_alpn_h3_job_)
-      ReportAlternateProtocolUsage(job);
     BindJob(job);
     return;
   }
 }
 
-void HttpStreamFactory::JobController::MarkRequestComplete(
-    bool was_alpn_negotiated,
-    NextProto negotiated_protocol,
-    bool using_spdy) {
-  if (request_)
-    request_->Complete(was_alpn_negotiated, negotiated_protocol, using_spdy);
+void HttpStreamFactory::JobController::MarkRequestComplete(Job* job) {
+  if (request_) {
+    AlternateProtocolUsage alternate_protocol_usage =
+        CalculateAlternateProtocolUsage(job);
+    request_->Complete(job->was_alpn_negotiated(), job->negotiated_protocol(),
+                       alternate_protocol_usage, job->using_spdy());
+    ReportAlternateProtocolUsage(alternate_protocol_usage,
+                                 HasGoogleHost(job->origin_url()));
+  }
 }
 
 void HttpStreamFactory::JobController::MaybeReportBrokenAlternativeService(
@@ -1320,40 +1322,38 @@ quic::ParsedQuicVersion HttpStreamFactory::JobController::SelectQuicVersion(
 }
 
 void HttpStreamFactory::JobController::ReportAlternateProtocolUsage(
-    Job* job) const {
-  DCHECK((main_job_ && alternative_job_) || dns_alpn_h3_job_);
-
-  bool is_google_host = HasGoogleHost(job->origin_url());
-
-  if (job == main_job_.get()) {
-    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_MAIN_JOB_WON_RACE,
-                                    is_google_host);
-    return;
-  }
-  if (job == alternative_job_.get()) {
-    if (job->using_existing_quic_session()) {
-      HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_NO_RACE,
-                                      is_google_host);
-      return;
-    }
-
-    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_WON_RACE,
-                                    is_google_host);
-  }
-  if (job == dns_alpn_h3_job_.get()) {
-    if (job->using_existing_quic_session()) {
-      HistogramAlternateProtocolUsage(
-          ALTERNATE_PROTOCOL_USAGE_DNS_ALPN_H3_JOB_WON_WITHOUT_RACE,
-          is_google_host);
-      return;
-    }
-    HistogramAlternateProtocolUsage(
-        ALTERNATE_PROTOCOL_USAGE_DNS_ALPN_H3_JOB_WON_RACE, is_google_host);
-  }
+    AlternateProtocolUsage alternate_protocol_usage,
+    bool is_google_host) const {
+  DCHECK_LT(alternate_protocol_usage, ALTERNATE_PROTOCOL_USAGE_MAX);
+  HistogramAlternateProtocolUsage(alternate_protocol_usage, is_google_host);
 }
 
 bool HttpStreamFactory::JobController::IsJobOrphaned(Job* job) const {
   return !request_ || (job_bound_ && bound_job_ != job);
+}
+
+AlternateProtocolUsage
+HttpStreamFactory::JobController::CalculateAlternateProtocolUsage(
+    Job* job) const {
+  if ((main_job_ && alternative_job_) || dns_alpn_h3_job_) {
+    if (job == main_job_.get()) {
+      return ALTERNATE_PROTOCOL_USAGE_MAIN_JOB_WON_RACE;
+    }
+    if (job == alternative_job_.get()) {
+      if (job->using_existing_quic_session()) {
+        return ALTERNATE_PROTOCOL_USAGE_NO_RACE;
+      }
+      return ALTERNATE_PROTOCOL_USAGE_WON_RACE;
+    }
+    if (job == dns_alpn_h3_job_.get()) {
+      if (job->using_existing_quic_session()) {
+        return ALTERNATE_PROTOCOL_USAGE_DNS_ALPN_H3_JOB_WON_WITHOUT_RACE;
+      }
+      return ALTERNATE_PROTOCOL_USAGE_DNS_ALPN_H3_JOB_WON_RACE;
+    }
+  }
+  // TODO(crbug.com/1345536): Implement better logic to support uncovered cases.
+  return ALTERNATE_PROTOCOL_USAGE_UNSPECIFIED_REASON;
 }
 
 int HttpStreamFactory::JobController::ReconsiderProxyAfterError(Job* job,

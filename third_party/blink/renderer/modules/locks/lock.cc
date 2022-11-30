@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,7 +72,7 @@ Lock::Lock(ScriptState* script_state,
   handle_.Bind(std::move(handle), task_runner);
   lock_lifetime_.Bind(std::move(lock_lifetime), task_runner);
   handle_.set_disconnect_handler(
-      WTF::Bind(&Lock::OnConnectionError, WrapWeakPersistent(this)));
+      WTF::BindOnce(&Lock::OnConnectionError, WrapWeakPersistent(this)));
 }
 
 Lock::~Lock() = default;

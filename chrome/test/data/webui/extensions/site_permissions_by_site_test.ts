@@ -25,12 +25,12 @@ suite('SitePermissionsBySite', function() {
         {
           siteSet: chrome.developerPrivate.SiteSet.USER_PERMITTED,
           numExtensions: 0,
-          site: 'https://images.google.ca',
+          site: 'images.google.ca',
         },
         {
           siteSet: chrome.developerPrivate.SiteSet.USER_RESTRICTED,
           numExtensions: 0,
-          site: 'http://google.ca',
+          site: 'google.ca',
         },
       ],
     },
@@ -40,7 +40,7 @@ suite('SitePermissionsBySite', function() {
       sites: [{
         siteSet: chrome.developerPrivate.SiteSet.USER_PERMITTED,
         numExtensions: 0,
-        site: 'http://example.com',
+        site: 'example.com',
       }],
     },
   ];
@@ -49,7 +49,8 @@ suite('SitePermissionsBySite', function() {
     delegate = new TestService();
     delegate.siteGroups = siteGroups;
 
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     element = document.createElement('extensions-site-permissions-by-site');
     element.delegate = delegate;
     document.body.appendChild(element);
@@ -103,12 +104,12 @@ suite('SitePermissionsBySite', function() {
           sites: [{
             siteSet: chrome.developerPrivate.SiteSet.USER_RESTRICTED,
             numExtensions: 0,
-            site: 'http://www.random.com',
+            site: 'www.random.com',
           }],
         }];
 
         delegate.userSiteSettingsChangedTarget.callListeners(
-            {permittedSites: [], restrictedSites: ['http://www.random.com']});
+            {permittedSites: [], restrictedSites: ['www.random.com']});
         await delegate.whenCalled('getUserAndExtensionSitesByEtld');
         flush();
 
@@ -130,7 +131,7 @@ suite('SitePermissionsBySite', function() {
           sites: [{
             siteSet: chrome.developerPrivate.SiteSet.EXTENSION_SPECIFIED,
             numExtensions: 1,
-            site: 'http://www.random.com',
+            site: 'www.random.com',
           }],
         }];
 

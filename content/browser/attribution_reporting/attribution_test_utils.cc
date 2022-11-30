@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <limits>
 #include <tuple>
 #include <utility>
 
@@ -19,12 +20,16 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
+#include "base/time/time.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
+#include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
+#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/rate_limit_result.h"
-#include "content/public/browser/attribution_reporting.h"
+#include "content/public/browser/attribution_config.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/net_errors.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -120,9 +125,46 @@ std::vector<base::GUID> DefaultExternalReportIDs(size_t size) {
   return std::vector<base::GUID>(size, DefaultExternalReportID());
 }
 
-ConfigurableStorageDelegate::ConfigurableStorageDelegate() {
-  DCHECK(config_.Validate());
-}
+ConfigurableStorageDelegate::ConfigurableStorageDelegate()
+    : AttributionStorageDelegate(AttributionConfig{
+          .max_sources_per_origin = std::numeric_limits<int>::max(),
+          .source_event_id_cardinality = absl::nullopt,
+          .max_destinations_per_source_site_reporting_origin =
+              std::numeric_limits<int>::max(),
+          .rate_limit =
+              {
+                  .time_window = base::TimeDelta::Max(),
+                  .max_source_registration_reporting_origins =
+                      std::numeric_limits<int64_t>::max(),
+                  .max_attribution_reporting_origins =
+                      std::numeric_limits<int64_t>::max(),
+                  .max_attributions = std::numeric_limits<int64_t>::max(),
+              },
+          .event_level_limit =
+              {
+                  .navigation_source_trigger_data_cardinality =
+                      std::numeric_limits<uint64_t>::max(),
+                  .event_source_trigger_data_cardinality =
+                      std::numeric_limits<uint64_t>::max(),
+                  .navigation_source_randomized_response_rate = 0,
+                  .event_source_randomized_response_rate = 0,
+                  .max_reports_per_destination =
+                      std::numeric_limits<int>::max(),
+                  .max_attributions_per_navigation_source =
+                      std::numeric_limits<int>::max(),
+                  .max_attributions_per_event_source =
+                      std::numeric_limits<int>::max(),
+              },
+          .aggregate_limit =
+              {
+                  .max_reports_per_destination =
+                      std::numeric_limits<int>::max(),
+                  .aggregatable_budget_per_source =
+                      std::numeric_limits<int64_t>::max(),
+                  .min_delay = base::TimeDelta(),
+                  .delay_span = base::TimeDelta(),
+              },
+      }) {}
 
 ConfigurableStorageDelegate::~ConfigurableStorageDelegate() = default;
 
@@ -141,44 +183,6 @@ base::Time ConfigurableStorageDelegate::GetAggregatableReportTime(
     base::Time trigger_time) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return trigger_time + report_delay_;
-}
-
-int ConfigurableStorageDelegate::GetMaxAttributionsPerSource(
-    AttributionSourceType source_type) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  switch (source_type) {
-    case AttributionSourceType::kNavigation:
-      return config_.event_level_limit.max_attributions_per_navigation_source;
-    case AttributionSourceType::kEvent:
-      return config_.event_level_limit.max_attributions_per_event_source;
-  }
-}
-
-int ConfigurableStorageDelegate::GetMaxSourcesPerOrigin() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return config_.max_sources_per_origin;
-}
-
-int ConfigurableStorageDelegate::GetMaxReportsPerDestination(
-    AttributionReport::ReportType report_type) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  switch (report_type) {
-    case AttributionReport::ReportType::kEventLevel:
-      return config_.event_level_limit.max_reports_per_destination;
-    case AttributionReport::ReportType::kAggregatableAttribution:
-      return config_.aggregate_limit.max_reports_per_destination;
-  }
-}
-
-int ConfigurableStorageDelegate::
-    GetMaxDestinationsPerSourceSiteReportingOrigin() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return config_.max_destinations_per_source_site_reporting_origin;
-}
-
-AttributionRateLimitConfig ConfigurableStorageDelegate::GetRateLimits() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return config_.rate_limit;
 }
 
 base::TimeDelta ConfigurableStorageDelegate::GetDeleteExpiredSourcesFrequency()
@@ -211,51 +215,11 @@ void ConfigurableStorageDelegate::ShuffleReports(
     base::ranges::reverse(reports);
 }
 
-double ConfigurableStorageDelegate::GetRandomizedResponseRate(
-    AttributionSourceType source_type) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  switch (source_type) {
-    case AttributionSourceType::kNavigation:
-      return config_.event_level_limit
-          .navigation_source_randomized_response_rate;
-    case AttributionSourceType::kEvent:
-      return config_.event_level_limit.event_source_randomized_response_rate;
-  }
-}
-
 AttributionStorageDelegate::RandomizedResponse
 ConfigurableStorageDelegate::GetRandomizedResponse(
     const CommonSourceInfo& source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return randomized_response_;
-}
-
-int64_t ConfigurableStorageDelegate::GetAggregatableBudgetPerSource() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return config_.aggregate_limit.aggregatable_budget_per_source;
-}
-
-uint64_t ConfigurableStorageDelegate::SanitizeTriggerData(
-    uint64_t trigger_data,
-    AttributionSourceType source_type) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  switch (source_type) {
-    case AttributionSourceType::kNavigation:
-      return trigger_data % config_.event_level_limit
-                                .navigation_source_trigger_data_cardinality;
-    case AttributionSourceType::kEvent:
-      return trigger_data %
-             config_.event_level_limit.event_source_trigger_data_cardinality;
-  }
-}
-
-uint64_t ConfigurableStorageDelegate::SanitizeSourceEventId(
-    uint64_t source_event_id) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!config_.source_event_id_cardinality)
-    return source_event_id;
-
-  return source_event_id % *config_.source_event_id_cardinality;
 }
 
 void ConfigurableStorageDelegate::set_max_attributions_per_source(int max) {
@@ -270,14 +234,14 @@ void ConfigurableStorageDelegate::set_max_sources_per_origin(int max) {
 }
 
 void ConfigurableStorageDelegate::set_max_reports_per_destination(
-    AttributionReport::ReportType report_type,
+    AttributionReport::Type report_type,
     int max) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (report_type) {
-    case AttributionReport::ReportType::kEventLevel:
+    case AttributionReport::Type::kEventLevel:
       config_.event_level_limit.max_reports_per_destination = max;
       break;
-    case AttributionReport::ReportType::kAggregatableAttribution:
+    case AttributionReport::Type::kAggregatableAttribution:
       config_.aggregate_limit.max_reports_per_destination = max;
       break;
   }
@@ -296,7 +260,7 @@ void ConfigurableStorageDelegate::set_aggregatable_budget_per_source(
 }
 
 void ConfigurableStorageDelegate::set_rate_limits(
-    AttributionRateLimitConfig c) {
+    AttributionConfig::RateLimitConfig c) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(c.Validate());
   config_.rate_limit = c;
@@ -388,7 +352,7 @@ void MockAttributionManager::NotifySourcesChanged() {
 }
 
 void MockAttributionManager::NotifyReportsChanged(
-    AttributionReport::ReportType report_type) {
+    AttributionReport::Type report_type) {
   for (auto& observer : observers_)
     observer.OnReportsChanged(report_type);
 }
@@ -405,6 +369,17 @@ void MockAttributionManager::NotifyReportSent(const AttributionReport& report,
                                               const SendResult& info) {
   for (auto& observer : observers_)
     observer.OnReportSent(report, is_debug_report, info);
+}
+
+void MockAttributionManager::NotifySourceRegistrationFailure(
+    const std::string& header_value,
+    const url::Origin& reporting_origin,
+    attribution_reporting::mojom::SourceRegistrationError error) {
+  base::Time source_time = base::Time::Now();
+  for (auto& observer : observers_) {
+    observer.OnFailedSourceRegistration(header_value, source_time,
+                                        reporting_origin, error);
+  }
 }
 
 void MockAttributionManager::NotifyTriggerHandled(
@@ -561,6 +536,12 @@ SourceBuilder& SourceBuilder::SetAggregatableBudgetConsumed(
   return *this;
 }
 
+SourceBuilder& SourceBuilder::SetAggregatableDedupKeys(
+    std::vector<uint64_t> dedup_keys) {
+  aggregatable_dedup_keys_ = std::move(dedup_keys);
+  return *this;
+}
+
 CommonSourceInfo SourceBuilder::BuildCommonInfo() const {
   return CommonSourceInfo(source_event_id_, source_origin_, destination_origin_,
                           reporting_origin_, source_time_,
@@ -577,6 +558,7 @@ StoredSource SourceBuilder::BuildStored() const {
   StoredSource source(BuildCommonInfo(), attribution_logic_, active_state_,
                       source_id_, aggregatable_budget_consumed_);
   source.SetDedupKeys(dedup_keys_);
+  source.SetAggregatableDedupKeys(aggregatable_dedup_keys_);
   return source;
 }
 
@@ -650,25 +632,34 @@ TriggerBuilder& TriggerBuilder::SetAggregatableValues(
   return *this;
 }
 
-AttributionTrigger TriggerBuilder::Build() const {
+TriggerBuilder& TriggerBuilder::SetAggregatableDedupKey(
+    absl::optional<uint64_t> aggregatable_dedup_key) {
+  aggregatable_dedup_key_ = aggregatable_dedup_key;
+  return *this;
+}
+
+AttributionTrigger TriggerBuilder::Build(
+    bool generate_event_trigger_data) const {
   std::vector<AttributionTrigger::EventTriggerData> event_triggers;
 
-  event_triggers.emplace_back(
-      trigger_data_, priority_, dedup_key_,
-      /*filters=*/
-      AttributionFilterData::ForSourceType(AttributionSourceType::kNavigation),
-      /*not_filters=*/AttributionFilterData());
+  if (generate_event_trigger_data) {
+    event_triggers.emplace_back(trigger_data_, priority_, dedup_key_,
+                                /*filters=*/
+                                AttributionFilterData::ForSourceType(
+                                    AttributionSourceType::kNavigation),
+                                /*not_filters=*/AttributionFilterData());
 
-  event_triggers.emplace_back(
-      event_source_trigger_data_, priority_, dedup_key_,
-      /*filters=*/
-      AttributionFilterData::ForSourceType(AttributionSourceType::kEvent),
-      /*not_filters=*/AttributionFilterData());
+    event_triggers.emplace_back(
+        event_source_trigger_data_, priority_, dedup_key_,
+        /*filters=*/
+        AttributionFilterData::ForSourceType(AttributionSourceType::kEvent),
+        /*not_filters=*/AttributionFilterData());
+  }
 
   return AttributionTrigger(destination_origin_, reporting_origin_,
                             /*filters=*/AttributionFilterData(),
                             /*not_filters=*/AttributionFilterData(), debug_key_,
-                            std::move(event_triggers),
+                            aggregatable_dedup_key_, std::move(event_triggers),
                             aggregatable_trigger_data_, aggregatable_values_);
 }
 
@@ -746,6 +737,7 @@ ReportBuilder& ReportBuilder::SetAggregatableHistogramContributions(
 AttributionReport ReportBuilder::Build() const {
   return AttributionReport(
       attribution_info_, report_time_, external_report_id_,
+      /*failed_send_attempts=*/0,
       AttributionReport::EventLevelData(trigger_data_, priority_,
                                         randomized_trigger_rate_, report_id_));
 }
@@ -753,6 +745,7 @@ AttributionReport ReportBuilder::Build() const {
 AttributionReport ReportBuilder::BuildAggregatableAttribution() const {
   return AttributionReport(
       attribution_info_, report_time_, external_report_id_,
+      /*failed_send_attempts=*/0,
       AttributionReport::AggregatableAttributionData(
           contributions_, aggregatable_attribution_report_id_, report_time_));
 }
@@ -771,7 +764,7 @@ bool operator==(const AttributionTrigger& a, const AttributionTrigger& b) {
     return std::make_tuple(t.destination_origin(), t.reporting_origin(),
                            t.filters(), t.not_filters(), t.debug_key(),
                            t.event_triggers(), t.aggregatable_trigger_data(),
-                           t.aggregatable_values());
+                           t.aggregatable_values(), t.aggregatable_dedup_key());
   };
   return tie(a) == tie(b);
 }
@@ -830,7 +823,8 @@ bool operator==(const StoredSource& a, const StoredSource& b) {
   const auto tie = [](const StoredSource& source) {
     return std::make_tuple(source.common_info(), source.attribution_logic(),
                            source.active_state(), source.dedup_keys(),
-                           source.aggregatable_budget_consumed());
+                           source.aggregatable_budget_consumed(),
+                           source.aggregatable_dedup_keys());
   };
   return tie(a) == tie(b);
 }
@@ -984,6 +978,9 @@ std::ostream& operator<<(std::ostream& out,
     case AttributionTrigger::AggregatableResult::kProhibitedByBrowserPolicy:
       out << "prohibitedByBrowserPolicy";
       break;
+    case AttributionTrigger::AggregatableResult::kDeduplicated:
+      out << "deduplicated";
+      break;
   }
   return out;
 }
@@ -1001,10 +998,6 @@ std::ostream& operator<<(std::ostream& out, RateLimitResult result) {
       break;
   }
   return out;
-}
-
-std::ostream& operator<<(std::ostream& out, AttributionSourceType source_type) {
-  return out << AttributionSourceTypeToString(source_type);
 }
 
 std::ostream& operator<<(std::ostream& out,
@@ -1076,7 +1069,11 @@ std::ostream& operator<<(std::ostream& out,
     separator = ", ";
   }
 
-  out << "],aggregatable_values=" << conversion.aggregatable_values();
+  out << "],aggregatable_values=" << conversion.aggregatable_values()
+      << ",aggregatable_dedup_key="
+      << (conversion.aggregatable_dedup_key()
+              ? base::NumberToString(*conversion.aggregatable_dedup_key())
+              : "null");
 
   return out << "}";
 }
@@ -1151,6 +1148,14 @@ std::ostream& operator<<(std::ostream& out, const StoredSource& source) {
     separator = ", ";
   }
 
+  out << "],aggregatable_dedup_keys=[";
+
+  separator = "";
+  for (int64_t dedup_key : source.aggregatable_dedup_keys()) {
+    out << separator << dedup_key;
+    separator = ",";
+  }
+
   return out << "]}";
 }
 
@@ -1204,12 +1209,12 @@ std::ostream& operator<<(std::ostream& out, const AttributionReport& report) {
 }
 
 std::ostream& operator<<(std::ostream& out,
-                         AttributionReport::ReportType report_type) {
+                         AttributionReport::Type report_type) {
   switch (report_type) {
-    case AttributionReport::ReportType::kEventLevel:
+    case AttributionReport::Type::kEventLevel:
       out << "kEventLevel";
       break;
-    case AttributionReport::ReportType::kAggregatableAttribution:
+    case AttributionReport::Type::kAggregatableAttribution:
       out << "kAggregatableAttribution";
       break;
   }
@@ -1353,12 +1358,14 @@ AttributionTriggerMatcherConfig::AttributionTriggerMatcherConfig(
     ::testing::Matcher<const AttributionFilterData&> filters,
     ::testing::Matcher<absl::optional<uint64_t>> debug_key,
     ::testing::Matcher<const std::vector<AttributionTrigger::EventTriggerData>&>
-        event_triggers)
+        event_triggers,
+    ::testing::Matcher<absl::optional<uint64_t>> aggregatable_dedup_key)
     : destination_origin(std::move(destination_origin)),
       reporting_origin(std::move(reporting_origin)),
       filters(std::move(filters)),
       debug_key(std::move(debug_key)),
-      event_triggers(std::move(event_triggers)) {}
+      event_triggers(std::move(event_triggers)),
+      aggregatable_dedup_key(std::move(aggregatable_dedup_key)) {}
 
 AttributionTriggerMatcherConfig::~AttributionTriggerMatcherConfig() = default;
 
@@ -1372,7 +1379,10 @@ AttributionTriggerMatcherConfig::~AttributionTriggerMatcherConfig() = default;
       Property("filters", &AttributionTrigger::filters, cfg.filters),
       Property("debug_key", &AttributionTrigger::debug_key, cfg.debug_key),
       Property("event_triggers", &AttributionTrigger::event_triggers,
-               cfg.event_triggers));
+               cfg.event_triggers),
+      Property("aggregatable_dedup_key",
+               &AttributionTrigger::aggregatable_dedup_key,
+               cfg.aggregatable_dedup_key));
 }
 
 std::vector<AttributionReport> GetAttributionReportsForTesting(
@@ -1380,9 +1390,9 @@ std::vector<AttributionReport> GetAttributionReportsForTesting(
   base::RunLoop run_loop;
   std::vector<AttributionReport> attribution_reports;
   manager->GetPendingReportsForInternalUse(
-      AttributionReport::ReportTypes{
-          AttributionReport::ReportType::kEventLevel,
-          AttributionReport::ReportType::kAggregatableAttribution},
+      AttributionReport::Types{
+          AttributionReport::Type::kEventLevel,
+          AttributionReport::Type::kAggregatableAttribution},
       /*limit=*/-1,
       base::BindLambdaForTesting([&](std::vector<AttributionReport> reports) {
         attribution_reports = std::move(reports);

@@ -24,6 +24,12 @@ namespace floss {
 const char kNoCallbackRegistered[] =
     "org.chromium.bluetooth.Error.NoCallbackRegistered";
 
+ScanResult::ScanResult() = default;
+
+ScanResult::ScanResult(const ScanResult&) = default;
+
+ScanResult::~ScanResult() = default;
+
 std::unique_ptr<FlossLEScanClient> FlossLEScanClient::Create() {
   return std::make_unique<FlossLEScanClient>();
 }
@@ -124,22 +130,22 @@ void FlossLEScanClient::UnregisterScanner(ResponseCallback<bool> callback,
                      scanner_id);
 }
 
-void FlossLEScanClient::StartScan(ResponseCallback<Void> callback,
+void FlossLEScanClient::StartScan(ResponseCallback<BtifStatus> callback,
                                   uint8_t scanner_id,
                                   const ScanSettings& scan_settings,
-                                  const std::vector<ScanFilter>& filters) {
+                                  const ScanFilter& filter) {
   CallLEScanMethod<>(std::move(callback), adapter::kStartScan, scanner_id,
-                     scan_settings, filters);
+                     scan_settings, filter);
 }
 
-void FlossLEScanClient::StopScan(ResponseCallback<Void> callback,
+void FlossLEScanClient::StopScan(ResponseCallback<BtifStatus> callback,
                                  uint8_t scanner_id) {
   CallLEScanMethod<>(std::move(callback), adapter::kStopScan, scanner_id);
 }
 
 void FlossLEScanClient::ScannerRegistered(device::BluetoothUUID uuid,
                                           uint8_t scanner_id,
-                                          uint8_t status) {
+                                          GattStatus status) {
   for (auto& observer : observers_) {
     observer.ScannerRegistered(uuid, scanner_id, status);
   }
@@ -154,18 +160,6 @@ void FlossLEScanClient::ScanResultReceived(ScanResult scan_result) {
 // TODO(b/217274013): Update these templates when structs in place
 template <>
 void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
-                                     const RSSISettings& data) {
-  dbus::MessageWriter array_writer(nullptr);
-  writer->OpenArray("{si}", &array_writer);
-
-  WriteDictEntry(&array_writer, "low_threshold", static_cast<int32_t>(3));
-  WriteDictEntry(&array_writer, "high_threshold", static_cast<int32_t>(3));
-
-  writer->CloseContainer(&array_writer);
-}
-
-template <>
-void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
                                      const ScanSettings& data) {
   dbus::MessageWriter array_writer(nullptr);
   writer->OpenArray("{sv}", &array_writer);
@@ -173,7 +167,18 @@ void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
   WriteDictEntry(&array_writer, "interval", static_cast<int32_t>(3));
   WriteDictEntry(&array_writer, "window", static_cast<int32_t>(3));
   WriteDictEntry(&array_writer, "scan_type", static_cast<uint32_t>(1));
-  WriteDictEntry(&array_writer, "rssi_settings", RSSISettings());
+
+  writer->CloseContainer(&array_writer);
+}
+
+template <>
+void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
+                                     const ScanFilterCondition& data) {
+  dbus::MessageWriter array_writer(nullptr);
+  writer->OpenArray("{sv}", &array_writer);
+
+  // TODO(b/217274013): Update fields here.
+  WriteDictEntry(&array_writer, "patterns", std::vector<uint8_t>());
 
   writer->CloseContainer(&array_writer);
 }
@@ -184,19 +189,14 @@ void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
   dbus::MessageWriter array_writer(nullptr);
   writer->OpenArray("{sv}", &array_writer);
 
-  // TODO(b/217274013): Write fields here.
+  // TODO(b/217274013): Update fields here.
+  WriteDictEntry(&array_writer, "rssi_high_threshold", static_cast<int16_t>(3));
+  WriteDictEntry(&array_writer, "rssi_low_threshold", static_cast<int16_t>(3));
+  WriteDictEntry(&array_writer, "rssi_low_timeout", static_cast<uint16_t>(3));
+  WriteDictEntry(&array_writer, "rssi_sampling_period",
+                 static_cast<uint16_t>(3));
+  WriteDictEntry(&array_writer, "condition", ScanFilterCondition{});
 
-  writer->CloseContainer(&array_writer);
-}
-
-template <typename T>
-void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
-                                     const std::vector<T>& value) {
-  dbus::MessageWriter array_writer(nullptr);
-  writer->OpenArray("a{sv}", &array_writer);
-  for (const auto& entry : value) {
-    WriteDBusParam<T>(&array_writer, entry);
-  }
   writer->CloseContainer(&array_writer);
 }
 
@@ -204,33 +204,52 @@ template <>
 bool FlossDBusClient::ReadDBusParam(dbus::MessageReader* reader,
                                     ScanResult* scan_result) {
   static StructReader<ScanResult> struct_reader({
+      {"name", CreateFieldReader(&ScanResult::name)},
       {"address", CreateFieldReader(&ScanResult::address)},
       {"addr_type", CreateFieldReader(&ScanResult::addr_type)},
+      {"event_type", CreateFieldReader(&ScanResult::event_type)},
+      {"primary_phy", CreateFieldReader(&ScanResult::primary_phy)},
+      {"secondary_phy", CreateFieldReader(&ScanResult::secondary_phy)},
+      {"advertising_sid", CreateFieldReader(&ScanResult::advertising_sid)},
+      {"tx_power", CreateFieldReader(&ScanResult::tx_power)},
+      {"rssi", CreateFieldReader(&ScanResult::rssi)},
+      {"periodic_adv_int", CreateFieldReader(&ScanResult::periodic_adv_int)},
+      {"flags", CreateFieldReader(&ScanResult::flags)},
+      {"service_uuids", CreateFieldReader(&ScanResult::service_uuids)},
+      {"service_data", CreateFieldReader(&ScanResult::service_data)},
+      {"manufacturer_data", CreateFieldReader(&ScanResult::manufacturer_data)},
+      {"adv_data", CreateFieldReader(&ScanResult::adv_data)},
   });
 
   return struct_reader.ReadDBusParam(reader, scan_result);
 }
 
 template <>
-const DBusTypeInfo& GetDBusTypeInfo<RSSISettings>() {
-  static DBusTypeInfo info{"a{sv}", "RSSISettings"};
-  return info;
-}
-
-template <>
-const DBusTypeInfo& GetDBusTypeInfo<ScanSettings>() {
+const DBusTypeInfo& GetDBusTypeInfo(const ScanSettings*) {
   static DBusTypeInfo info{"a{sv}", "ScanSettings"};
   return info;
 }
 
 template <>
-const DBusTypeInfo& GetDBusTypeInfo<ScanFilter>() {
+const DBusTypeInfo& GetDBusTypeInfo(const ScanFilterPattern*) {
+  static DBusTypeInfo info{"a{sv}", "ScanFilterPattern"};
+  return info;
+}
+
+template <>
+const DBusTypeInfo& GetDBusTypeInfo(const ScanFilterCondition*) {
+  static DBusTypeInfo info{"a{sv}", "ScanFilterCondition"};
+  return info;
+}
+
+template <>
+const DBusTypeInfo& GetDBusTypeInfo(const ScanFilter*) {
   static DBusTypeInfo info{"a{sv}", "ScanFilter"};
   return info;
 }
 
 template <>
-const DBusTypeInfo& GetDBusTypeInfo<ScanResult>() {
+const DBusTypeInfo& GetDBusTypeInfo(const ScanResult*) {
   static DBusTypeInfo info{"a{sv}", "ScanResult"};
   return info;
 }

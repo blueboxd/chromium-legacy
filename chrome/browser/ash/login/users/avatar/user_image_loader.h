@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/image_decoder/image_decoder.h"
+#include "url/gurl.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -48,6 +49,21 @@ void StartWithData(
     ImageDecoder::ImageCodec image_codec,
     int pixels_per_side,
     LoadedCallback loaded_cb);
+
+// Loads user image from provided |data| bytes. If the image is animated, encode
+// with WebP encoder, otherwise encode with PNG encoder.
+void StartWithDataAnimated(base::StringPiece data, LoadedCallback loaded_cb);
+
+// Loads user image from |file_path|. If the image is animated, encode with WebP
+// encoder, otherwise encode with PNG encoder.
+// TODO(b/251083485): Add support for external image from file.
+void StartWithFilePathAnimated(const base::FilePath& file_path,
+                               LoadedCallback loaded_cb);
+
+// Loads the default image fetched from |default_image_url|. If the image is
+// animated, encode with WebP encoder, otherwise encode with PNG encoder.
+void StartWithGURLAnimated(const GURL& default_image_url,
+                           LoadedCallback loaded_cb);
 
 }  // namespace user_image_loader
 }  // namespace ash

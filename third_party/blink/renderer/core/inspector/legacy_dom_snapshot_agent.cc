@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,7 +87,7 @@ struct LegacyDOMSnapshotAgent::VectorStringHashTraits
     return vec.IsHashTableDeletedValue();
   }
 
-  static bool IsEmptyValue(const Vector<String>& vec) { return vec.IsEmpty(); }
+  static bool IsEmptyValue(const Vector<String>& vec) { return vec.empty(); }
 
   static const bool kEmptyValueIsZero = false;
   static const bool safe_to_compare_to_empty_or_deleted = false;
@@ -220,7 +220,7 @@ int LegacyDOMSnapshotAgent::VisitNode(Node* node,
       InspectorDOMDebuggerAgent::CollectEventListeners(
           script_state->GetIsolate(), node, v8::Local<v8::Value>(), node, true,
           &event_information);
-      if (!event_information.IsEmpty()) {
+      if (!event_information.empty()) {
         value->setEventListeners(
             dom_debugger_agent_->BuildObjectsForEventListeners(
                 event_information, context, v8_inspector::StringView()));
@@ -408,7 +408,7 @@ int LegacyDOMSnapshotAgent::VisitLayoutTreeNode(LayoutObject* layout_object,
     auto* layout_text = To<LayoutText>(layout_object);
     layout_tree_node->setLayoutText(layout_text->GetText());
     Vector<LayoutText::TextBoxInfo> text_boxes = layout_text->GetTextBoxInfo();
-    if (!text_boxes.IsEmpty()) {
+    if (!text_boxes.empty()) {
       auto inline_text_nodes = std::make_unique<
           protocol::Array<protocol::DOMSnapshot::InlineTextBox>>();
       for (const auto& text_box : text_boxes) {
@@ -438,7 +438,7 @@ int LegacyDOMSnapshotAgent::GetStyleIndexForNode(Node* node) {
   bool all_properties_empty = true;
   for (const auto& pair : *css_property_filter_) {
     String value = computed_style_info->GetPropertyValue(pair.second);
-    if (!value.IsEmpty())
+    if (!value.empty())
       all_properties_empty = false;
     style.push_back(value);
   }
@@ -456,7 +456,7 @@ int LegacyDOMSnapshotAgent::GetStyleIndexForNode(Node* node) {
       std::make_unique<protocol::Array<protocol::DOMSnapshot::NameValue>>();
 
   for (wtf_size_t i = 0; i < style.size(); i++) {
-    if (style[i].IsEmpty())
+    if (style[i].empty())
       continue;
     style_properties->emplace_back(
         protocol::DOMSnapshot::NameValue::create()

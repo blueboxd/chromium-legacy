@@ -976,6 +976,10 @@ interface ConstantSourceNode : AudioScheduledSourceNode
     attribute @@toStringTag
     getter offset
     method constructor
+interface ContentVisibilityAutoStateChangedEvent : Event
+    attribute @@toStringTag
+    getter skipped
+    method constructor
 interface ConvolverNode : AudioNode
     attribute @@toStringTag
     getter buffer
@@ -1443,6 +1447,7 @@ interface Document : Node
     getter onchange
     getter onclick
     getter onclose
+    getter oncontentvisibilityautostatechanged
     getter oncontextlost
     getter oncontextmenu
     getter oncontextrestored
@@ -1500,6 +1505,7 @@ interface Document : Node
     getter onpointerover
     getter onpointerrawupdate
     getter onpointerup
+    getter onprerenderingchange
     getter onprogress
     getter onratechange
     getter onreadystatechange
@@ -1542,6 +1548,7 @@ interface Document : Node
     getter pictureInPictureEnabled
     getter plugins
     getter pointerLockElement
+    getter prerendering
     getter readyState
     getter referrer
     getter rootElement
@@ -1646,6 +1653,7 @@ interface Document : Node
     setter onchange
     setter onclick
     setter onclose
+    setter oncontentvisibilityautostatechanged
     setter oncontextlost
     setter oncontextmenu
     setter oncontextrestored
@@ -1703,6 +1711,7 @@ interface Document : Node
     setter onpointerover
     setter onpointerrawupdate
     setter onpointerup
+    setter onprerenderingchange
     setter onprogress
     setter onratechange
     setter onreadystatechange
@@ -2739,6 +2748,7 @@ interface HTMLElement : Element
     getter onchange
     getter onclick
     getter onclose
+    getter oncontentvisibilityautostatechanged
     getter oncontextlost
     getter oncontextmenu
     getter oncontextrestored
@@ -2863,6 +2873,7 @@ interface HTMLElement : Element
     setter onchange
     setter onclick
     setter onclose
+    setter oncontentvisibilityautostatechanged
     setter oncontextlost
     setter oncontextmenu
     setter oncontextrestored
@@ -3012,6 +3023,8 @@ interface HTMLFormElement : HTMLElement
     getter method
     getter name
     getter noValidate
+    getter rel
+    getter relList
     getter target
     method @@iterator
     method checkValidity
@@ -3028,6 +3041,8 @@ interface HTMLFormElement : HTMLElement
     setter method
     setter name
     setter noValidate
+    setter rel
+    setter relList
     setter target
 interface HTMLFrameElement : HTMLElement
     attribute @@toStringTag
@@ -4235,6 +4250,10 @@ interface IIRFilterNode : AudioNode
     attribute @@toStringTag
     method constructor
     method getFrequencyResponse
+interface IdentityCredential : Credential
+    attribute @@toStringTag
+    getter token
+    method constructor
 interface IdleDeadline
     attribute @@toStringTag
     getter didTimeout
@@ -4713,6 +4732,7 @@ interface MediaSession
     setter metadata
     setter playbackState
 interface MediaSource : EventTarget
+    static getter canConstructInDedicatedWorker
     static method isTypeSupported
     attribute @@toStringTag
     getter activeSourceBuffers
@@ -4732,6 +4752,9 @@ interface MediaSource : EventTarget
     setter onsourceclose
     setter onsourceended
     setter onsourceopen
+interface MediaSourceHandle
+    attribute @@toStringTag
+    method constructor
 interface MediaStream : EventTarget
     attribute @@toStringTag
     getter active
@@ -4926,9 +4949,7 @@ interface NavigateEvent : Event
     getter userInitiated
     method constructor
     method intercept
-    method restoreScroll
     method scroll
-    method transitionWhile
 interface Navigation : EventTarget
     attribute @@toStringTag
     getter canGoBack
@@ -5544,6 +5565,7 @@ interface PerformanceNavigation
     method toJSON
 interface PerformanceNavigationTiming : PerformanceResourceTiming
     attribute @@toStringTag
+    getter activationStart
     getter domComplete
     getter domContentLoadedEventEnd
     getter domContentLoadedEventStart
@@ -5778,6 +5800,7 @@ interface PromiseRejectionEvent : Event
     getter reason
     method constructor
 interface PublicKeyCredential : Credential
+    static method isConditionalMediationAvailable
     static method isUserVerifyingPlatformAuthenticatorAvailable
     attribute @@toStringTag
     getter authenticatorAttachment
@@ -6419,6 +6442,7 @@ interface SVGElement : Element
     getter onchange
     getter onclick
     getter onclose
+    getter oncontentvisibilityautostatechanged
     getter oncontextlost
     getter oncontextmenu
     getter oncontextrestored
@@ -6527,6 +6551,7 @@ interface SVGElement : Element
     setter onchange
     setter onclick
     setter onclose
+    setter oncontentvisibilityautostatechanged
     setter oncontextlost
     setter oncontextmenu
     setter oncontextrestored
@@ -10380,8 +10405,6 @@ namespace CSS
     getter crossOriginIsolated
     getter crypto
     getter customElements
-    getter defaultStatus
-    getter defaultstatus
     getter devicePixelRatio
     getter document
     getter event
@@ -10423,6 +10446,7 @@ namespace CSS
     getter onchange
     getter onclick
     getter onclose
+    getter oncontentvisibilityautostatechanged
     getter oncontextlost
     getter oncontextmenu
     getter oncontextrestored
@@ -10603,8 +10627,6 @@ namespace CSS
     method webkitRequestFileSystem
     method webkitResolveLocalFileSystemURL
     setter clientInformation
-    setter defaultStatus
-    setter defaultstatus
     setter devicePixelRatio
     setter event
     setter external
@@ -10638,6 +10660,7 @@ namespace CSS
     setter onchange
     setter onclick
     setter onclose
+    setter oncontentvisibilityautostatechanged
     setter oncontextlost
     setter oncontextmenu
     setter oncontextrestored

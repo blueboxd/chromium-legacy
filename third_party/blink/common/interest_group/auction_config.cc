@@ -1,10 +1,38 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "third_party/blink/public/common/interest_group/auction_config.h"
 
 namespace blink {
+
+DirectFromSellerSignalsSubresource::DirectFromSellerSignalsSubresource() =
+    default;
+DirectFromSellerSignalsSubresource::DirectFromSellerSignalsSubresource(
+    const DirectFromSellerSignalsSubresource&) = default;
+DirectFromSellerSignalsSubresource::DirectFromSellerSignalsSubresource(
+    DirectFromSellerSignalsSubresource&&) = default;
+DirectFromSellerSignalsSubresource::~DirectFromSellerSignalsSubresource() =
+    default;
+
+DirectFromSellerSignalsSubresource&
+DirectFromSellerSignalsSubresource::operator=(
+    const DirectFromSellerSignalsSubresource&) = default;
+DirectFromSellerSignalsSubresource&
+DirectFromSellerSignalsSubresource::operator=(
+    DirectFromSellerSignalsSubresource&&) = default;
+
+DirectFromSellerSignals::DirectFromSellerSignals() = default;
+DirectFromSellerSignals::DirectFromSellerSignals(
+    const DirectFromSellerSignals&) = default;
+DirectFromSellerSignals::DirectFromSellerSignals(DirectFromSellerSignals&&) =
+    default;
+DirectFromSellerSignals::~DirectFromSellerSignals() = default;
+
+DirectFromSellerSignals& DirectFromSellerSignals::operator=(
+    const DirectFromSellerSignals&) = default;
+DirectFromSellerSignals& DirectFromSellerSignals::operator=(
+    DirectFromSellerSignals&&) = default;
 
 AuctionConfig::NonSharedParams::NonSharedParams() = default;
 AuctionConfig::NonSharedParams::NonSharedParams(const NonSharedParams&) =

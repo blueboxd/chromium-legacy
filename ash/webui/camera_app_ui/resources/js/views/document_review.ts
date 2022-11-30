@@ -2,12 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assertInstanceof, assertNotReached} from '../assert.js';
+import {assert, assertInstanceof, assertNotReached} from '../assert.js';
 import {IndicatorType, showIndicator} from '../custom_effect.js';
 import * as dom from '../dom.js';
 import {Point} from '../geometry.js';
 import {I18nString} from '../i18n_string.js';
+import {
+  DocScanActionType,
+  DocScanFixType,
+  DocScanResultActionType,
+  sendDocScanEvent,
+  sendDocScanResultEvent,
+} from '../metrics.js';
 import {Filenamer} from '../models/file_namer.js';
+import {getI18nMessage} from '../models/load_time_data.js';
 import {
   getBool as getLocalStorage,
   set as setLocalStorage,
@@ -15,11 +23,11 @@ import {
 import {ResultSaver} from '../models/result_saver.js';
 import {ChromeHelper} from '../mojo/chrome_helper.js';
 import * as nav from '../nav.js';
+import {speakMessage} from '../spoken_msg.js';
 import {show as showToast} from '../toast.js';
 import {
   LocalStorageKey,
   MimeType,
-  Resolution,
   Rotation,
   ViewName,
 } from '../type.js';
@@ -33,7 +41,10 @@ export interface Page {
   blob: Blob;
   corners: Point[];
   rotation: Rotation;
-  resolution: Resolution;
+}
+interface PageInternal extends Page {
+  isCornersUpdated: boolean;
+  isRotationUpdated: boolean;
 }
 
 export enum Mode {
@@ -48,7 +59,7 @@ export class DocumentReview extends View {
   /**
    * Information of each pages for creating PDF files and sending metrics.
    */
-  private pages: Page[] = [];
+  private pages: PageInternal[] = [];
 
   /**
    * The sidebar element, which contains the thumbnails and delete buttons of
@@ -98,13 +109,19 @@ export class DocumentReview extends View {
    * Pending payload for updating pages. Null if there isn't any pending
    * payload.
    */
-  private pendingUpdatePayload: [number, Page]|null = null;
+  private pendingUpdatePayload: [number, PageInternal]|null = null;
 
   /**
    * The function to hide the multi-page available indicator at leave. Should be
    * set once the indicator shows.
    */
   private hideMultiPageAvailableIndicator: (() => void)|null = null;
+
+  /**
+   * Count the fix times of each session (reset when page count is zero) for
+   * sending events.
+   */
+  private fixCount = 0;
 
   constructor(protected readonly resultSaver: ResultSaver) {
     super(
@@ -131,46 +148,72 @@ export class DocumentReview extends View {
       const clickOnDeleteButton =
           target.closest(`.${this.classes.delete}`) !== null;
       if (clickOnDeleteButton) {
-        await this.deletePage(index);
-        if (this.pages.length === 0) {
-          this.close();
-        }
+        await this.onDeletePage(index);
         return;
       }
       this.selectPage(index);
     });
 
+    const pagesElementMutationObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        assert(
+            mutation.type === 'childList',
+            '`mutation.type` must be `childList`');
+        this.updateDeleteButtonLabels();
+      }
+    });
+    pagesElementMutationObserver.observe(this.pagesElement, {childList: true});
+
     const fixMode = new DocumentFixMode({
       target: this.previewElement,
-      onExit: () => {
+      onDone: () => {
         this.waitForUpdatingPage(() => this.showMode(Mode.PREVIEW));
       },
       onUpdatePage: ({corners, rotation}) => {
+        const page = this.pages[this.selectedIndex];
+        const isCornersUpdated = page.isCornersUpdated ||
+            page.corners.some(
+                (oldCorner, i) => oldCorner.x !== corners[i].x ||
+                    oldCorner.y !== corners[i].y);
+        const isRotationUpdated =
+            page.isRotationUpdated || page.rotation !== rotation;
         this.updatePage(this.selectedIndex, {
-          ...this.pages[this.selectedIndex],
+          ...page,
           corners,
           rotation,
+          isCornersUpdated,
+          isRotationUpdated,
         });
+      },
+      onShow: () => {
+        this.fixCount += 1;
       },
     });
     const previewMode = new DocumentPreviewMode({
       target: this.previewElement,
       onAdd: () => {
+        sendDocScanEvent(DocScanActionType.ADD_PAGE);
         this.close();
       },
       onCancel: () => {
+        this.sendResultEvent(DocScanResultActionType.CANCEL);
         this.clearPages();
         this.close();
       },
       onFix: () => {
+        sendDocScanEvent(DocScanActionType.FIX);
         this.showMode(Mode.FIX);
       },
       onShare: () => {
+        this.sendResultEvent(DocScanResultActionType.SHARE);
         this.share(
             this.pages.length > 1 ? MimeType.PDF : MimeType.JPEG,
         );
       },
       onSave: (mimeType: MimeType.JPEG|MimeType.PDF) => {
+        this.sendResultEvent(
+            mimeType === MimeType.JPEG ? DocScanResultActionType.SAVE_AS_PHOTO :
+                                         DocScanResultActionType.SAVE_AS_PDF);
         nav.open(ViewName.FLASH);
         this.save(mimeType).then(() => this.clearPages()).finally(() => {
           this.close();
@@ -189,9 +232,14 @@ export class DocumentReview extends View {
    * Adds a page to `this.pages` and updates related elements.
    */
   async addPage(page: Page): Promise<void> {
-    const croppedPage = await this.crop(page);
+    const pageInternal: PageInternal = {
+      ...page,
+      isCornersUpdated: false,
+      isRotationUpdated: false,
+    };
+    const croppedPage = await this.crop(pageInternal);
     await this.addPageView(croppedPage.blob);
-    this.pages.push(page);
+    this.pages.push(pageInternal);
     this.root.classList.toggle(this.classes.single, this.pages.length === 1);
   }
 
@@ -246,6 +294,9 @@ export class DocumentReview extends View {
    * count when the view is closed.
    */
   async open({fix}: {fix?: boolean}): Promise<number> {
+    assert(
+        this.pages.length !== 0,
+        'Page count is expected to be be larger than zero');
     await this.selectPage(this.pages.length - 1);
     await this.showMode(fix === true ? Mode.FIX : Mode.PREVIEW);
     await nav.open(this.name).closed;
@@ -287,7 +338,7 @@ export class DocumentReview extends View {
       case Mode.PREVIEW: {
         const {src} = this.getPageImageElement(
             this.pagesElement.children[this.selectedIndex]);
-        this.modes[mode].update({src});
+        this.modes[mode].update({src, pageIndex: this.selectedIndex});
         break;
       }
       default:
@@ -304,7 +355,7 @@ export class DocumentReview extends View {
    * @return Promise resolves when the update is done and there isn't any
    * pending payload.
    */
-  private async updatePage(index: number, page: Page): Promise<void> {
+  private async updatePage(index: number, page: PageInternal): Promise<void> {
     this.pendingUpdatePayload = [index, page];
     if (this.updatingPage !== null) {
       return;
@@ -336,7 +387,8 @@ export class DocumentReview extends View {
     }
   }
 
-  private async updatePageInternal(index: number, page: Page): Promise<void> {
+  private async updatePageInternal(index: number, page: PageInternal):
+      Promise<void> {
     const croppedPage = await this.crop(page);
     const pageElement = this.pagesElement.children[index];
     await this.updatePageView(pageElement, croppedPage.blob);
@@ -347,6 +399,20 @@ export class DocumentReview extends View {
       Promise<void> {
     const pageImageElement = this.getPageImageElement(pageElement);
     await loadImage(pageImageElement, blob);
+  }
+
+  /**
+   * The handler called when users delete a page.
+   */
+  private async onDeletePage(index: number): Promise<void> {
+    sendDocScanEvent(DocScanActionType.DELETE_PAGE);
+    await this.deletePage(index);
+    speakMessage(getI18nMessage(I18nString.DELETE_PAGE_MESSAGE, index + 1));
+    if (this.pages.length === 0) {
+      // By design, this line is not reachable. If we decide to let users delete
+      // the last page later, we should close the view when no pages remain.
+      this.close();
+    }
   }
 
   /**
@@ -379,10 +445,17 @@ export class DocumentReview extends View {
    */
   private selectPageView(index: number): void {
     for (let i = 0; i < this.pagesElement.children.length; i++) {
-      this.pagesElement.children[i].classList.remove(this.classes.active);
+      const pageElement = this.pagesElement.children[i];
+      pageElement.classList.remove(this.classes.active);
+      pageElement.setAttribute('aria-selected', 'false');
+      pageElement.setAttribute('tabindex', '-1');
     }
-    const activePageElement = this.pagesElement.children[index];
+    const activePageElement =
+        assertInstanceof(this.pagesElement.children[index], HTMLElement);
     activePageElement.classList.add(this.classes.active);
+    activePageElement.setAttribute('aria-selected', 'true');
+    activePageElement.setAttribute('tabindex', '0');
+    activePageElement.focus();
     activePageElement.scrollIntoView();
   }
 
@@ -402,7 +475,7 @@ export class DocumentReview extends View {
     this.pagesElement.replaceChildren();
   }
 
-  private async crop(page: Page): Promise<Page> {
+  private async crop(page: PageInternal): Promise<PageInternal> {
     const {blob, corners, rotation} = page;
     const newBlob = await ChromeHelper.getInstance().convertToDocument(
         blob, corners, rotation, MimeType.JPEG);
@@ -432,6 +505,71 @@ export class DocumentReview extends View {
   protected override leaving(): boolean {
     this.hideMultiPageAvailableIndicator?.();
     this.hideMultiPageAvailableIndicator = null;
+    if (this.pages.length === 0) {
+      this.fixCount = 0;
+    }
     return true;
+  }
+
+  override onKeyPressed(key: string): boolean {
+    if (super.onKeyPressed(key)) {
+      return true;
+    }
+    if (this.pages.length === 1 ||
+        !this.pagesElement.contains(document.activeElement)) {
+      return false;
+    }
+    if (key === 'Up') {
+      const index = this.selectedIndex === 0 ? this.pages.length - 1 :
+                                               this.selectedIndex - 1;
+      this.selectPage(index);
+      return true;
+    } else if (key === 'Down') {
+      const index = this.selectedIndex === this.pages.length - 1 ?
+          0 :
+          this.selectedIndex + 1;
+      this.selectPage(index);
+      return true;
+    } else if (key === 'Delete') {
+      this.onDeletePage(this.selectedIndex);
+      return true;
+    }
+    return false;
+  }
+
+  protected override setUnfocusable(): void {
+    // `tabindex` of page elements might be changed by `selectPage` before the
+    // view is opened to avoid flickering. Set `tabindex` to -1 before
+    // `super.setUnfocusable()` to avoid `tabindex` being changed to 0 by
+    // `super.setFocusable()`.
+    if (this.pagesElement.children.length !== 0) {
+      const activePageElement = this.pagesElement.children[this.selectedIndex];
+      activePageElement.setAttribute('tabindex', '-1');
+      activePageElement.setAttribute('aria-selected', 'false');
+    }
+    super.setUnfocusable();
+  }
+
+  private sendResultEvent(action: DocScanResultActionType) {
+    const isCornersUpdated = this.pages.some((page) => page.isCornersUpdated);
+    const isRotationUpdated = this.pages.some((page) => page.isRotationUpdated);
+    let fixType = DocScanFixType.NONE;
+    if (isCornersUpdated) {
+      fixType |= DocScanFixType.CORNER;
+    }
+    if (isRotationUpdated) {
+      fixType |= DocScanFixType.ROTATION;
+    }
+    return sendDocScanResultEvent(action, fixType, this.fixCount);
+  }
+
+  private updateDeleteButtonLabels() {
+    for (let i = 0; i < this.pagesElement.children.length; i++) {
+      const deleteButton = dom.getFrom(
+          this.pagesElement.children[i], `.${this.classes.delete}`,
+          HTMLElement);
+      deleteButton.setAttribute(
+          'aria-label', getI18nMessage(I18nString.DELETE_PAGE_BUTTON, i + 1));
+    }
   }
 }

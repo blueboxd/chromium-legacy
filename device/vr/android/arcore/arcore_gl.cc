@@ -31,19 +31,14 @@
 #include "device/vr/public/mojom/pose.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/util/transform_utils.h"
-#include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/gpu_fence.h"
-#include "ui/gl/android/scoped_java_surface.h"
-#include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence_android_native_fence_sync.h"
-#include "ui/gl/gl_fence_egl.h"
-#include "ui/gl/gl_image_ahardwarebuffer.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_utils.h"
 #include "ui/gl/init/gl_factory.h"
@@ -1054,7 +1049,7 @@ void ArCoreGl::FinishFrame(int16_t frame_index) {
 
   TRACE_EVENT1("gpu", __func__, "frame", frame_index);
   DVLOG(3) << __func__;
-  surface_->SwapBuffers(base::DoNothing());
+  surface_->SwapBuffers(base::DoNothing(), gl::FrameData());
 
   // If we have a rendering frame (we don't if the app didn't submit one),
   // update statistics.
@@ -1709,7 +1704,7 @@ std::vector<mojom::XRInputSourceStatePtr> ArCoreGl::GetInputSourceStates() {
         (1.f - screen_last_touch.y() / screen_size_.height()) * 2.f - 1.f;
     gfx::Point3F touch_point(x_normalized, y_normalized, -1.f);
     DVLOG(3) << __func__ << ": touch_point=" << touch_point.ToString();
-    inverse_projection_.TransformPoint(&touch_point);
+    touch_point = inverse_projection_.MapPoint(touch_point);
     DVLOG(3) << __func__ << ": unprojected=" << touch_point.ToString();
 
     // Ray points along -Z in ray space, so we need to flip it to get
@@ -1732,7 +1727,7 @@ std::vector<mojom::XRInputSourceStatePtr> ArCoreGl::GetInputSourceStates() {
 
     // Fill in the transform matrix in row-major order. The first three columns
     // contain the basis vectors, the fourth column the position offset.
-    gfx::Transform viewer_from_pointer(
+    auto viewer_from_pointer = gfx::Transform::RowMajor(
         new_x.x(), new_y.x(), new_z.x(), touch_point.x(),  // row 1
         new_x.y(), new_y.y(), new_z.y(), touch_point.y(),  // row 2
         new_x.z(), new_y.z(), new_z.z(), touch_point.z(),  // row 3

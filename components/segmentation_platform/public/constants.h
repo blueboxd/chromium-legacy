@@ -15,14 +15,13 @@ namespace segmentation_platform {
 const char kAdaptiveToolbarSegmentationKey[] = "adaptive_toolbar";
 const char kAdaptiveToolbarUmaName[] = "AdaptiveToolbar";
 
-// The key to be used for any feature that needs to collect and store data on
-// client side while being built.
-const char kDummySegmentationKey[] = "dummy_feature";
-const char kDummyFeatureUmaName[] = "DummyFeature";
-
 // The key is used to decide whether to show Chrome Start or not.
 const char kChromeStartAndroidSegmentationKey[] = "chrome_start_android";
 const char kChromeStartAndroidUmaName[] = "ChromeStartAndroid";
+
+// The key is used to decide how long to wait before showing Chrome Start.
+const char kChromeStartAndroidV2SegmentationKey[] = "chrome_start_android_v2";
+const char kChromeStartAndroidV2UmaName[] = "ChromeStartAndroidV2";
 
 // The key is used to decide whether to show query tiles.
 const char kQueryTilesSegmentationKey[] = "query_tiles";
@@ -49,6 +48,10 @@ const char kShoppingUserUmaName[] = "ShoppingUser";
 const char kContextualPageActionsKey[] = "contextual_page_actions";
 const char kContextualPageActionsUmaName[] = "ContextualPageActions";
 
+// Determine search users of the browser app.
+const char kSearchUserKey[] = "search_user";
+const char kSearchUserUmaName[] = "SearchUser";
+
 // Determine power users of the browser app.
 const char kPowerUserKey[] = "power_user";
 const char kPowerUserUmaName[] = "PowerUser";
@@ -74,6 +77,21 @@ const char kResumeHeavyUserUmaName[] = "ResumeHeavyUser";
 // execution results are allowed to be uploaded through UKM.
 const char kSegmentIdsAllowedForReportingKey[] =
     "segment_ids_allowed_for_reporting";
+
+// Config parameter name specified in experiment configs. Any experiment config
+// or feature can include this param and segmentation will enable the config for
+// storing cached results.
+const char kSegmentationConfigParamName[] =
+    "segmentation_platform_add_config_param";
+
+// Parameter names used for defining segmentation config.
+// TODO(ssid): These should be deprecated and clients should use
+// `kSegmentationConfigParamName` to define config instead.
+constexpr char kDefaultModelEnabledParam[] = "enable_default_model";
+constexpr char kVariationsParamNameSegmentSelectionTTLDays[] =
+    "segment_selection_ttl_days";
+constexpr char kVariationsParamNameUnknownSelectionTTLDays[] =
+    "unknown_selection_ttl_days";
 
 const char kSubsegmentDiscreteMappingSuffix[] = "_subsegment";
 

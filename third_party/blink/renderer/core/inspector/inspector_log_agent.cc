@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,7 +123,7 @@ void InspectorLogAgent::ConsoleMessageAdded(ConsoleMessage* message) {
           .setText(message->Message())
           .setTimestamp(message->Timestamp())
           .build();
-  if (!message->Location()->Url().IsEmpty())
+  if (!message->Location()->Url().empty())
     entry->setUrl(message->Location()->Url());
   std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace>
       stack_trace = message->Location()->BuildInspectorObject();
@@ -132,14 +132,14 @@ void InspectorLogAgent::ConsoleMessageAdded(ConsoleMessage* message) {
   if (message->Location()->LineNumber())
     entry->setLineNumber(message->Location()->LineNumber() - 1);
   if (message->Source() == mojom::blink::ConsoleMessageSource::kWorker &&
-      !message->WorkerId().IsEmpty())
+      !message->WorkerId().empty())
     entry->setWorkerId(message->WorkerId());
   if (message->Source() == mojom::blink::ConsoleMessageSource::kNetwork &&
       !message->RequestIdentifier().IsNull()) {
     entry->setNetworkRequestId(message->RequestIdentifier());
   }
 
-  if (v8_session_ && message->Frame() && !message->Nodes().IsEmpty()) {
+  if (v8_session_ && message->Frame() && !message->Nodes().empty()) {
     ScriptForbiddenScope::AllowUserAgentScript allow_script;
     auto remote_objects = std::make_unique<
         protocol::Array<v8_inspector::protocol::Runtime::API::RemoteObject>>();

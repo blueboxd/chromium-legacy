@@ -16,7 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/first_party_sets/first_party_sets_pref_names.h"
+#include "base/types/optional_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/browsing_topics/browsing_topics_service.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -27,10 +27,14 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/browser/first_party_sets_handler.h"
 #include "content/public/browser/interest_group_manager.h"
 #include "content/public/common/content_features.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/base/schemeful_site.h"
+#include "net/first_party_sets/first_party_set_entry.h"
+#include "net/first_party_sets/global_first_party_sets.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -46,7 +50,7 @@ namespace {
 
 constexpr char kBlockedTopicsTopicKey[] = "topic";
 
-bool g_dialog_diabled_for_tests = false;
+bool g_prompt_disabled_for_tests = false;
 
 // Returns whether 3P cookies are blocked by |cookie_settings|. This can be
 // either through blocking 3P cookies directly, or blocking all cookies.
@@ -99,7 +103,8 @@ PrivacySandboxService::PrivacySandboxService(
 #if !BUILDFLAG(IS_ANDROID)
     TrustSafetySentimentService* sentiment_service,
 #endif
-    browsing_topics::BrowsingTopicsService* browsing_topics_service)
+    browsing_topics::BrowsingTopicsService* browsing_topics_service,
+    first_party_sets::FirstPartySetsPolicyService* first_party_sets_service)
     : privacy_sandbox_settings_(privacy_sandbox_settings),
       cookie_settings_(cookie_settings),
       pref_service_(pref_service),
@@ -109,7 +114,8 @@ PrivacySandboxService::PrivacySandboxService(
 #if !BUILDFLAG(IS_ANDROID)
       sentiment_service_(sentiment_service),
 #endif
-      browsing_topics_service_(browsing_topics_service) {
+      browsing_topics_service_(browsing_topics_service),
+      first_party_sets_policy_service_(first_party_sets_service) {
   DCHECK(privacy_sandbox_settings_);
   DCHECK(pref_service_);
   DCHECK(cookie_settings_);
@@ -222,17 +228,17 @@ void PrivacySandboxService::PromptActionOccurred(
 }
 
 // static
-bool PrivacySandboxService::IsUrlSuitableForDialog(const GURL& url) {
-  // The dialog should be shown on a limited list of pages:
+bool PrivacySandboxService::IsUrlSuitableForPrompt(const GURL& url) {
+  // The prompt should be shown on a limited list of pages:
 
   // about:blank is valid.
   if (url.IsAboutBlank())
     return true;
   // Chrome settings page is valid. The subpages aren't as most of them are not
-  // related to the dialog.
+  // related to the prompt.
   if (url == GURL(chrome::kChromeUISettingsURL))
     return true;
-  // Chrome history is valid as the dialog mentions history.
+  // Chrome history is valid as the prompt mentions history.
   if (url == GURL(chrome::kChromeUIHistoryURL))
     return true;
   // Only a Chrome controlled New Tab Page is valid. Third party NTP is still
@@ -245,22 +251,22 @@ bool PrivacySandboxService::IsUrlSuitableForDialog(const GURL& url) {
   return false;
 }
 
-void PrivacySandboxService::DialogOpenedForBrowser(Browser* browser) {
-  DCHECK(!browsers_with_open_dialogs_.count(browser));
-  browsers_with_open_dialogs_.insert(browser);
+void PrivacySandboxService::PromptOpenedForBrowser(Browser* browser) {
+  DCHECK(!browsers_with_open_prompts_.count(browser));
+  browsers_with_open_prompts_.insert(browser);
 }
 
-void PrivacySandboxService::DialogClosedForBrowser(Browser* browser) {
-  DCHECK(browsers_with_open_dialogs_.count(browser));
-  browsers_with_open_dialogs_.erase(browser);
+void PrivacySandboxService::PromptClosedForBrowser(Browser* browser) {
+  DCHECK(browsers_with_open_prompts_.count(browser));
+  browsers_with_open_prompts_.erase(browser);
 }
 
-bool PrivacySandboxService::IsDialogOpenForBrowser(Browser* browser) {
-  return browsers_with_open_dialogs_.count(browser);
+bool PrivacySandboxService::IsPromptOpenForBrowser(Browser* browser) {
+  return browsers_with_open_prompts_.count(browser);
 }
 
-void PrivacySandboxService::SetDialogDisabledForTests(bool disabled) {
-  g_dialog_diabled_for_tests = disabled;
+void PrivacySandboxService::SetPromptDisabledForTests(bool disabled) {
+  g_prompt_disabled_for_tests = disabled;
 }
 
 bool PrivacySandboxService::IsPrivacySandboxEnabled() {
@@ -310,16 +316,17 @@ void PrivacySandboxService::OnPrivacySandboxV2PrefChanged() {
 }
 
 bool PrivacySandboxService::IsFirstPartySetsDataAccessEnabled() {
-  return pref_service_->GetBoolean(first_party_sets::kFirstPartySetsEnabled);
+  return pref_service_->GetBoolean(prefs::kPrivacySandboxFirstPartySetsEnabled);
 }
 
-bool PrivacySandboxService::IsFirstPartySetsDataAccessManaged() {
+bool PrivacySandboxService::IsFirstPartySetsDataAccessManaged() const {
   return pref_service_->IsManagedPreference(
-      first_party_sets::kFirstPartySetsEnabled);
+      prefs::kPrivacySandboxFirstPartySetsEnabled);
 }
 
 void PrivacySandboxService::SetFirstPartySetsDataAccessEnabled(bool enabled) {
-  pref_service_->SetBoolean(first_party_sets::kFirstPartySetsEnabled, enabled);
+  pref_service_->SetBoolean(prefs::kPrivacySandboxFirstPartySetsEnabled,
+                            enabled);
 }
 
 void PrivacySandboxService::GetFledgeJoiningEtldPlusOneForDisplay(
@@ -369,6 +376,11 @@ void PrivacySandboxService::SetFledgeJoiningAllowed(
   }
 }
 
+void PrivacySandboxService::RecordFirstPartySetsStateHistogram(
+    PrivacySandboxService::FirstPartySetsState state) {
+  base::UmaHistogramEnumeration("Settings.FirstPartySets.State", state);
+}
+
 void PrivacySandboxService::RecordPrivacySandboxHistogram(
     PrivacySandboxService::SettingsPrivacySandboxEnabled state) {
   base::UmaHistogramEnumeration("Settings.PrivacySandbox.Enabled", state);
@@ -385,8 +397,8 @@ void PrivacySandboxService::RecordPrivacySandbox3StartupMetrics() {
           prefs::kPrivacySandboxNoConfirmationSandboxDisabled)) {
     base::UmaHistogramEnumeration(
         privacy_sandbox_startup_histogram,
-        sandbox_v2_enabled ? PSStartupStates::kDialogOffV1OffEnabled
-                           : PSStartupStates::kDialogOffV1OffDisabled);
+        sandbox_v2_enabled ? PSStartupStates::kPromptOffV1OffEnabled
+                           : PSStartupStates::kPromptOffV1OffDisabled);
     return;
   }
   // Handle 3PC disabled.
@@ -394,8 +406,8 @@ void PrivacySandboxService::RecordPrivacySandbox3StartupMetrics() {
           prefs::kPrivacySandboxNoConfirmationThirdPartyCookiesBlocked)) {
     base::UmaHistogramEnumeration(
         privacy_sandbox_startup_histogram,
-        sandbox_v2_enabled ? PSStartupStates::kDialogOff3PCOffEnabled
-                           : PSStartupStates::kDialogOff3PCOffDisabled);
+        sandbox_v2_enabled ? PSStartupStates::kPromptOff3PCOffEnabled
+                           : PSStartupStates::kPromptOff3PCOffDisabled);
     return;
   }
   // Handle managed.
@@ -403,15 +415,15 @@ void PrivacySandboxService::RecordPrivacySandbox3StartupMetrics() {
           prefs::kPrivacySandboxNoConfirmationSandboxManaged)) {
     base::UmaHistogramEnumeration(
         privacy_sandbox_startup_histogram,
-        sandbox_v2_enabled ? PSStartupStates::kDialogOffManagedEnabled
-                           : PSStartupStates::kDialogOffManagedDisabled);
+        sandbox_v2_enabled ? PSStartupStates::kPromptOffManagedEnabled
+                           : PSStartupStates::kPromptOffManagedDisabled);
     return;
   }
   // Handle restricted.
   if (pref_service_->GetBoolean(
           prefs::kPrivacySandboxNoConfirmationSandboxRestricted)) {
     base::UmaHistogramEnumeration(privacy_sandbox_startup_histogram,
-                                  PSStartupStates::kDialogOffRestricted);
+                                  PSStartupStates::kPromptOffRestricted);
     return;
   }
   // Handle manually controlled
@@ -420,14 +432,14 @@ void PrivacySandboxService::RecordPrivacySandbox3StartupMetrics() {
     base::UmaHistogramEnumeration(
         privacy_sandbox_startup_histogram,
         sandbox_v2_enabled
-            ? PSStartupStates::kDialogOffManuallyControlledEnabled
-            : PSStartupStates::kDialogOffManuallyControlledDisabled);
+            ? PSStartupStates::kPromptOffManuallyControlledEnabled
+            : PSStartupStates::kPromptOffManuallyControlledDisabled);
     return;
   }
   if (privacy_sandbox::kPrivacySandboxSettings3ConsentRequired.Get()) {
     if (!pref_service_->GetBoolean(prefs::kPrivacySandboxConsentDecisionMade)) {
       base::UmaHistogramEnumeration(privacy_sandbox_startup_histogram,
-                                    PSStartupStates::kDialogWaiting);
+                                    PSStartupStates::kPromptWaiting);
       return;
     }
     base::UmaHistogramEnumeration(privacy_sandbox_startup_histogram,
@@ -437,7 +449,7 @@ void PrivacySandboxService::RecordPrivacySandbox3StartupMetrics() {
   } else if (privacy_sandbox::kPrivacySandboxSettings3NoticeRequired.Get()) {
     if (!pref_service_->GetBoolean(prefs::kPrivacySandboxNoticeDisplayed)) {
       base::UmaHistogramEnumeration(privacy_sandbox_startup_histogram,
-                                    PSStartupStates::kDialogWaiting);
+                                    PSStartupStates::kPromptWaiting);
       return;
     }
     base::UmaHistogramEnumeration(privacy_sandbox_startup_histogram,
@@ -447,8 +459,8 @@ void PrivacySandboxService::RecordPrivacySandbox3StartupMetrics() {
   } else {  // No prompt currently required.
     base::UmaHistogramEnumeration(
         privacy_sandbox_startup_histogram,
-        sandbox_v2_enabled ? PSStartupStates::kNoDialogRequiredEnabled
-                           : PSStartupStates::kNoDialogRequiredDisabled);
+        sandbox_v2_enabled ? PSStartupStates::kNoPromptRequiredEnabled
+                           : PSStartupStates::kNoPromptRequiredDisabled);
   }
 }
 
@@ -456,6 +468,17 @@ void PrivacySandboxService::LogPrivacySandboxState() {
   // Do not record metrics for non-regular profiles.
   if (!IsRegularProfile(profile_type_))
     return;
+
+  auto fps_status = FirstPartySetsState::kFpsNotRelevant;
+  if (cookie_settings_->ShouldBlockThirdPartyCookies() &&
+      cookie_settings_->GetDefaultCookieSetting(/*provider_id=*/nullptr) !=
+          CONTENT_SETTING_BLOCK) {
+    fps_status =
+        pref_service_->GetBoolean(prefs::kPrivacySandboxFirstPartySetsEnabled)
+            ? FirstPartySetsState::kFpsEnabled
+            : FirstPartySetsState::kFpsDisabled;
+  }
+  RecordFirstPartySetsStateHistogram(fps_status);
 
   // Start by recording any metrics for Privacy Sandbox 3.
   if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings3)) {
@@ -616,18 +639,7 @@ void PrivacySandboxService::SetTopicAllowed(
 }
 
 base::flat_map<net::SchemefulSite, net::SchemefulSite>
-PrivacySandboxService::GetFirstPartySets() const {
-  // If FPS is not affecting cookie access, then there are effectively no
-  // first party sets.
-  if (!(cookie_settings_->ShouldBlockThirdPartyCookies() &&
-        cookie_settings_->GetDefaultCookieSetting(/*provider_id=*/nullptr) !=
-            CONTENT_SETTING_BLOCK &&
-        pref_service_->GetBoolean(first_party_sets::kFirstPartySetsEnabled) &&
-        base::FeatureList::IsEnabled(
-            privacy_sandbox::kPrivacySandboxFirstPartySetsUI))) {
-    return {};
-  }
-
+PrivacySandboxService::GetSampleFirstPartySets() const {
   if (privacy_sandbox::kPrivacySandboxFirstPartySetsUISampleSets.Get()) {
     return {{net::SchemefulSite(GURL("https://youtube.com")),
              net::SchemefulSite(GURL("https://google.com"))},
@@ -639,36 +651,70 @@ PrivacySandboxService::GetFirstPartySets() const {
              net::SchemefulSite(GURL("https://google.com"))},
             {net::SchemefulSite(GURL("https://chromium.org")),
              net::SchemefulSite(GURL("https://chromium.org"))},
-            {net::SchemefulSite(GURL("https://googlesource.org")),
+            {net::SchemefulSite(GURL("https://googlesource.com")),
              net::SchemefulSite(GURL("https://chromium.org"))}};
   }
 
-  // TODO(crbug.com/1332513): Retrieve set information from FPS delegate.
   return {};
+}
+
+absl::optional<net::SchemefulSite> PrivacySandboxService::GetFirstPartySetOwner(
+    const GURL& site_url) const {
+  // If FPS is not affecting cookie access, then there are effectively no
+  // first party sets.
+  if (!(cookie_settings_->ShouldBlockThirdPartyCookies() &&
+        cookie_settings_->GetDefaultCookieSetting(/*provider_id=*/nullptr) !=
+            CONTENT_SETTING_BLOCK &&
+        base::FeatureList::IsEnabled(
+            privacy_sandbox::kPrivacySandboxFirstPartySetsUI))) {
+    return absl::nullopt;
+  }
+
+  // Return the owner according to the sample sets if they're provided.
+  if (privacy_sandbox::kPrivacySandboxFirstPartySetsUISampleSets.Get()) {
+    const base::flat_map<net::SchemefulSite, net::SchemefulSite> sets =
+        GetSampleFirstPartySets();
+    net::SchemefulSite schemeful_site(site_url);
+
+    base::flat_map<net::SchemefulSite, net::SchemefulSite>::const_iterator
+        site_entry = sets.find(schemeful_site);
+    if (site_entry == sets.end())
+      return absl::nullopt;
+
+    return site_entry->second;
+  }
+
+  absl::optional<net::FirstPartySetEntry> site_entry =
+      first_party_sets_policy_service_->FindEntry(net::SchemefulSite(site_url));
+  if (!site_entry.has_value())
+    return absl::nullopt;
+
+  return site_entry->primary();
 }
 
 absl::optional<std::u16string>
 PrivacySandboxService::GetFirstPartySetOwnerForDisplay(
     const GURL& site_url) const {
-  auto sets = GetFirstPartySets();
-  auto schemeful_site = net::SchemefulSite(site_url);
-
-  if (!sets.count(schemeful_site))
+  absl::optional<net::SchemefulSite> site_owner =
+      GetFirstPartySetOwner(site_url);
+  if (!site_owner.has_value()) {
     return absl::nullopt;
+  }
 
   // TODO(crbug.com/1332513): Apply formatting that correctly displays unicode
   // domains.
-  return base::UTF8ToUTF16(sets[schemeful_site].GetURL().host());
+  return base::UTF8ToUTF16(site_owner->GetURL().host());
 }
 
 bool PrivacySandboxService::IsPartOfManagedFirstPartySet(
     const net::SchemefulSite& site) const {
   if (privacy_sandbox::kPrivacySandboxFirstPartySetsUISampleSets.Get()) {
-    return GetFirstPartySets()[site] ==
-           net::SchemefulSite(GURL("https://chromium.org"));
+    return IsFirstPartySetsDataAccessManaged() ||
+           GetSampleFirstPartySets()[site] ==
+               net::SchemefulSite(GURL("https://chromium.org"));
   }
-  // TODO(crbug.com/1332513): Retrieve set information from FPS delegate.
-  return false;
+
+  return first_party_sets_policy_service_->IsSiteInManagedSet(site);
 }
 
 /*static*/ PrivacySandboxService::PromptType
@@ -678,7 +724,7 @@ PrivacySandboxService::GetRequiredPromptTypeInternal(
     privacy_sandbox::PrivacySandboxSettings* privacy_sandbox_settings,
     bool third_party_cookies_blocked) {
   // If the prompt is disabled for testing, never show it.
-  if (g_dialog_diabled_for_tests)
+  if (g_prompt_disabled_for_tests)
     return PromptType::kNone;
 
   // If the profile isn't a regular profile, no prompt should ever be shown.
@@ -690,7 +736,7 @@ PrivacySandboxService::GetRequiredPromptTypeInternal(
     return PromptType::kNone;
 
   // Forced testing feature parameters override everything.
-  if (privacy_sandbox::kPrivacySandboxSettings3DisableDialogForTesting.Get())
+  if (privacy_sandbox::kPrivacySandboxSettings3DisablePromptForTesting.Get())
     return PromptType::kNone;
 
   if (base::FeatureList::IsEnabled(
@@ -873,7 +919,8 @@ void PrivacySandboxService::MaybeInitializeFirstPartySetsPref() {
   // init has been run is not synced). If any of the user's devices local state
   // would disable the pref, it is disabled across all devices.
   if (AreThirdPartyCookiesBlocked(cookie_settings_)) {
-    pref_service_->SetBoolean(first_party_sets::kFirstPartySetsEnabled, false);
+    pref_service_->SetBoolean(prefs::kPrivacySandboxFirstPartySetsEnabled,
+                              false);
   }
 
   pref_service_->SetBoolean(

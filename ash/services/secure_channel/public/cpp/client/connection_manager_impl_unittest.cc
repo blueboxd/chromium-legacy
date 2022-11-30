@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/components/multidevice/remote_device_test_util.h"
 #include "ash/constants/ash_features.h"
 #include "ash/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "ash/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
@@ -23,6 +22,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
+#include "chromeos/ash/components/multidevice/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash::secure_channel {
@@ -36,7 +36,7 @@ const char kConnectionResultMetricName[] = "PhoneHub.Connection.Result";
 const char kConnectionFailureReasonMetricName[] =
     "PhoneHub.Connection.Result.FailureReason";
 const char kConnectionDurationMetricName[] = "PhoneHub.Connection.Duration";
-const char kConnectionLatencyMetricName[] = "PhoneHub.Connectivity.Latency";
+const char kConnectionLatencyMetricName[] = "PhoneHub.Connection.Latency";
 
 constexpr base::TimeDelta kFakeConnectionLatencyTime(base::Seconds(3u));
 constexpr base::TimeDelta kFakeConnectionDurationTime(base::Seconds(10u));
@@ -79,7 +79,7 @@ class TestMetricsRecorder : public NearbyMetricsRecorder {
     base::UmaHistogramEnumeration(kConnectionFailureReasonMetricName, reason);
   }
   void RecordConnectionLatency(const base::TimeDelta latency) override {
-    base::UmaHistogramTimes(kConnectionLatencyMetricName, latency);
+    base::UmaHistogramMediumTimes(kConnectionLatencyMetricName, latency);
   }
   void RecordConnectionDuration(const base::TimeDelta duration) override {
     base::UmaHistogramLongTimes100(kConnectionDurationMetricName, duration);

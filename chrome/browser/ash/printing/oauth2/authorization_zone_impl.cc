@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash/printing/oauth2/authorization_zone_impl.h"
 
-#include <algorithm>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -17,6 +16,7 @@
 #include "base/containers/adapters.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/types/expected.h"
@@ -55,8 +55,8 @@ std::string RandBase64String() {
 // from Section 2.3 of [RFC3986], with a minimum length of 43 characters
 // and a maximum length of 128 characters."
 std::string CodeChallengeS256(const std::string& code_verifier) {
-  DCHECK_GE(code_verifier.size(), 43);
-  DCHECK_LE(code_verifier.size(), 128);
+  DCHECK_GE(code_verifier.size(), 43u);
+  DCHECK_LE(code_verifier.size(), 128u);
   std::string output;
   base::Base64Encode(crypto::SHA256HashString(code_verifier), &output);
   return output;
@@ -105,7 +105,7 @@ base::expected<std::string, std::string> ExtractParameter(
   if (value.empty()) {
     return base::unexpected(base::StrCat({"parameter '", name, "' is empty"}));
   }
-  return value;
+  return base::ok(std::move(value));
 }
 
 // Calls `callback` with `status` and `data` as parameters. When `status` equals
@@ -246,11 +246,11 @@ void AuthorizationZoneImpl::FinishAuthorization(const GURL& redirect_url,
   // Create and add a new session.
   if (sessions_.size() == kMaxNumberOfSessions) {
     // There are too many sessions. Remove the oldest one.
-    auto callbacks = sessions_.front()->TakeWaitingList();
+    auto sessions_callbacks = sessions_.front()->TakeWaitingList();
     sessions_.pop_front();
-    for (auto& callback : callbacks) {
-      std::move(callback).Run(StatusCode::kTooManySessions,
-                              "The oldest session was closed");
+    for (auto& sessions_callback : sessions_callbacks) {
+      std::move(sessions_callback)
+          .Run(StatusCode::kTooManySessions, "The oldest session was closed");
     }
     // TODO(b:228876367) - revoke the token in AuthorizationServerSession
   }
@@ -380,11 +380,8 @@ void AuthorizationZoneImpl::OnSendTokenRequestCallback(
     StatusCode status,
     const std::string& data) {
   // Find the session for which the request was completed.
-  auto it_session = std::find_if(
-      sessions_.begin(), sessions_.end(),
-      [&session](const std::unique_ptr<AuthorizationServerSession>& as) {
-        return as.get() == session;
-      });
+  auto it_session = base::ranges::find(
+      sessions_, session, &std::unique_ptr<AuthorizationServerSession>::get);
   DCHECK(it_session != sessions_.end());
 
   // Get the list of callbacks to run and copy the data.
@@ -541,9 +538,8 @@ bool AuthorizationZoneImpl::FindAndRemovePendingAuthorization(
     const std::string& state,
     base::flat_set<std::string>& scopes,
     std::string& code_verifier) {
-  std::list<PendingAuthorization>::iterator it = std::find_if(
-      pending_authorizations_.begin(), pending_authorizations_.end(),
-      [&state](const PendingAuthorization& pa) { return pa.state == state; });
+  std::list<PendingAuthorization>::iterator it = base::ranges::find(
+      pending_authorizations_, state, &PendingAuthorization::state);
   if (it == pending_authorizations_.end()) {
     return false;
   }

@@ -18,6 +18,9 @@ try_.defaults.set(
     os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 consoles.list_view(
@@ -28,11 +31,11 @@ try_.builder(
     name = "linux-blink-web-tests-force-accessibility-rel",
     mirrors = ["ci/linux-blink-web-tests-force-accessibility-rel"],
     tryjob = try_.job(
-        location_filters = [
-            "third_party/blink/renderer/modules/accessibility/.+",
-            "content/renderer/accessibility/.+",
-            "content/browser/accessibility/.+",
-            "ui/accessibility/.+",
+        location_regexp = [
+            ".+/[+]/third_party/blink/renderer/modules/accessibility/.+",
+            ".+/[+]/content/renderer/accessibility/.+",
+            ".+/[+]/content/browser/accessibility/.+",
+            ".+/[+]/ui/accessibility/.+",
         ],
     ),
 )

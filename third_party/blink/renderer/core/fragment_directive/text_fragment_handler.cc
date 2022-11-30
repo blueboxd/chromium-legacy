@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,7 +126,7 @@ bool TextFragmentHandler::IsOverTextFragment(HitTestResult result) {
   auto markers = marker_controller.MarkersAroundPosition(
       ToPositionInFlatTree(marker_position),
       DocumentMarker::MarkerTypes::TextFragment());
-  return !markers.IsEmpty();
+  return !markers.empty();
 }
 
 void TextFragmentHandler::ExtractTextFragmentsMatches(
@@ -147,7 +147,7 @@ void TextFragmentHandler::ExtractFirstFragmentRect(
     ExtractFirstFragmentRectCallback callback) {
   gfx::Rect rect_in_viewport;
 
-  if (annotation_agents_.IsEmpty()) {
+  if (annotation_agents_.empty()) {
     std::move(callback).Run(gfx::Rect());
     return;
   }
@@ -204,8 +204,8 @@ void TextFragmentHandler::StartGeneratingForCurrentSelection() {
   }
   GetTextFragmentSelectorGenerator()->Generate(
       *current_selection_range,
-      WTF::Bind(&TextFragmentHandler::DidFinishSelectorGeneration,
-                WrapWeakPersistent(this)));
+      WTF::BindOnce(&TextFragmentHandler::DidFinishSelectorGeneration,
+                    WrapWeakPersistent(this)));
 }
 
 void TextFragmentHandler::Trace(Visitor* visitor) const {
@@ -275,7 +275,7 @@ void TextFragmentHandler::OpenedContextMenuOverSelection(LocalFrame* frame) {
     return;
   }
 
-  if (frame->Selection().SelectedText().IsEmpty())
+  if (frame->Selection().SelectedText().empty())
     return;
 
   if (!frame->GetTextFragmentHandler())

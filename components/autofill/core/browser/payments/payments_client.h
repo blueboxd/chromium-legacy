@@ -110,9 +110,12 @@ class PaymentsClient {
     std::u16string otp;
     // An opaque token used to chain consecutive payments requests together.
     std::string context_token;
-    // The url origin of the website where the unmasking happened. Should be
-    // populated when the unmasking is for a virtual-card.
-    absl::optional<GURL> last_committed_url_origin;
+    // The origin of the primary main frame where the unmasking happened.
+    // Should be populated when the unmasking is for a virtual-card.
+    absl::optional<GURL> last_committed_primary_main_frame_origin;
+    // The selected challenge option. Should be populated when we are doing CVC
+    // unmasking for a virtual card.
+    absl::optional<CardUnmaskChallengeOption> selected_challenge_option;
   };
 
   // Information retrieved from an UnmaskRequest.
@@ -142,9 +145,6 @@ class PaymentsClient {
     // card is a virtual-card which does not necessarily have the same
     // expiration date as its related actual card.
     std::string expiration_year;
-    // Challenge required for enrolling user into FIDO authentication for future
-    // card unmasking.
-    absl::optional<base::Value> fido_creation_options;
     // Challenge required for authorizing user for FIDO authentication for
     // future card unmasking.
     absl::optional<base::Value> fido_request_options;
@@ -365,14 +365,11 @@ class PaymentsClient {
     LOCAL_CARD_MIGRATION_SETTINGS_PAGE,
   };
 
-  // TODO(crbug.com/1285086): Remove the |server_id| field from
-  //  UploadCardResponseDetails since it is never used.
   // A collection of information received in the response for an
   // UploadCardRequest.
   struct UploadCardResponseDetails {
     UploadCardResponseDetails();
     ~UploadCardResponseDetails();
-    std::string server_id;
     // |instrument_id| is used by the server as an identifier for the card that
     // was uploaded. Currently, we have it in the UploadCardResponseDetails so
     // that we can send it in the GetDetailsForEnrollRequest in the virtual card

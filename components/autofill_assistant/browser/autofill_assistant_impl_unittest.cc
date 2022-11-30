@@ -28,16 +28,17 @@ using testing::UnorderedElementsAreArray;
 
 const char kScriptServerUrl[] = "https://www.fake.backend.com/script_server";
 
-class AutofillAssistantImpTest : public testing::Test {
+class AutofillAssistantImplTest : public testing::Test {
  public:
-  AutofillAssistantImpTest() {
+  AutofillAssistantImplTest() {
     auto mock_request_sender =
         std::make_unique<NiceMock<MockServiceRequestSender>>();
     mock_request_sender_ = mock_request_sender.get();
 
     auto mock_common_dependencies = std::make_unique<MockCommonDependencies>();
     mock_dependencies_ = mock_common_dependencies.get();
-    ON_CALL(*mock_dependencies_, GetCountryCode).WillByDefault(Return("US"));
+    ON_CALL(*mock_dependencies_, GetLatestCountryCode)
+        .WillByDefault(Return("US"));
     ON_CALL(*mock_dependencies_, GetLocale).WillByDefault(Return("en-US"));
     ON_CALL(*mock_dependencies_, IsSupervisedUser).WillByDefault(Return(false));
 
@@ -48,7 +49,7 @@ class AutofillAssistantImpTest : public testing::Test {
         /* browser_context= */ nullptr, std::move(mock_request_sender),
         std::move(mock_common_dependencies), GURL(kScriptServerUrl));
   }
-  ~AutofillAssistantImpTest() override = default;
+  ~AutofillAssistantImplTest() override = default;
 
  protected:
   base::MockCallback<AutofillAssistant::GetCapabilitiesResponseCallback>
@@ -62,7 +63,9 @@ class AutofillAssistantImpTest : public testing::Test {
 
 bool operator==(const AutofillAssistant::BundleCapabilitiesInformation& lhs,
                 const AutofillAssistant::BundleCapabilitiesInformation& rhs) {
-  return (lhs.trigger_form_signatures == rhs.trigger_form_signatures);
+  return (lhs.trigger_form_signatures == rhs.trigger_form_signatures &&
+          lhs.supports_consentless_execution ==
+              rhs.supports_consentless_execution);
 }
 
 bool operator==(const AutofillAssistant::CapabilitiesInfo& lhs,
@@ -73,7 +76,7 @@ bool operator==(const AutofillAssistant::CapabilitiesInfo& lhs,
                   rhs.bundle_capabilities_information);
 }
 
-TEST_F(AutofillAssistantImpTest, GetCapabilitiesByHashPrefixEmptyRespose) {
+TEST_F(AutofillAssistantImplTest, GetCapabilitiesByHashPrefixEmptyRespose) {
   EXPECT_CALL(*mock_request_sender_,
               OnSendRequest(GURL(kScriptServerUrl), _, _,
                             RpcType::GET_CAPABILITIES_BY_HASH_PREFIX))
@@ -88,7 +91,7 @@ TEST_F(AutofillAssistantImpTest, GetCapabilitiesByHashPrefixEmptyRespose) {
                                         mock_response_callback_.Get());
 }
 
-TEST_F(AutofillAssistantImpTest, BackendRequestFailed) {
+TEST_F(AutofillAssistantImplTest, BackendRequestFailed) {
   EXPECT_CALL(*mock_request_sender_,
               OnSendRequest(GURL(kScriptServerUrl), _, _,
                             RpcType::GET_CAPABILITIES_BY_HASH_PREFIX))
@@ -103,7 +106,7 @@ TEST_F(AutofillAssistantImpTest, BackendRequestFailed) {
                                         mock_response_callback_.Get());
 }
 
-TEST_F(AutofillAssistantImpTest, ParsingError) {
+TEST_F(AutofillAssistantImplTest, ParsingError) {
   EXPECT_CALL(*mock_request_sender_,
               OnSendRequest(GURL(kScriptServerUrl), _, _,
                             RpcType::GET_CAPABILITIES_BY_HASH_PREFIX))
@@ -118,7 +121,7 @@ TEST_F(AutofillAssistantImpTest, ParsingError) {
                                         mock_response_callback_.Get());
 }
 
-TEST_F(AutofillAssistantImpTest, GetCapabilitiesByHashPrefix) {
+TEST_F(AutofillAssistantImplTest, GetCapabilitiesByHashPrefix) {
   GetCapabilitiesByHashPrefixResponseProto proto;
   GetCapabilitiesByHashPrefixResponseProto::MatchInfoProto* match_info =
       proto.add_match_info();
@@ -132,13 +135,15 @@ TEST_F(AutofillAssistantImpTest, GetCapabilitiesByHashPrefix) {
       proto.add_match_info();
   match_info2->set_url_match("http://exampleB.com");
 
+  BundleCapabilitiesInformationProto* bundle_cap_info_proto =
+      match_info2->mutable_bundle_capabilities_information();
   BundleCapabilitiesInformationProto::ChromeFastCheckoutProto*
       fast_checkout_proto =
-          match_info2->mutable_bundle_capabilities_information()
-              ->mutable_chrome_fast_checkout();
+          bundle_cap_info_proto->mutable_chrome_fast_checkout();
 
   fast_checkout_proto->add_trigger_form_signatures(123ull);
   fast_checkout_proto->add_trigger_form_signatures(18446744073709551615ull);
+  bundle_cap_info_proto->set_supports_consentless_execution(true);
 
   std::string serialized_proto;
   proto.SerializeToString(&serialized_proto);
@@ -148,6 +153,7 @@ TEST_F(AutofillAssistantImpTest, GetCapabilitiesByHashPrefix) {
   bundle_capabilities_information.trigger_form_signatures =
       std::vector<FormSignature>{FormSignature(123ull),
                                  FormSignature(18446744073709551615ull)};
+  bundle_capabilities_information.supports_consentless_execution = true;
 
   EXPECT_CALL(*mock_request_sender_,
               OnSendRequest(GURL(kScriptServerUrl), _, _,
@@ -169,7 +175,7 @@ TEST_F(AutofillAssistantImpTest, GetCapabilitiesByHashPrefix) {
                                         mock_response_callback_.Get());
 }
 
-TEST_F(AutofillAssistantImpTest,
+TEST_F(AutofillAssistantImplTest,
        GetCapabilitiesByHashPrefixDoesNotExecuteForSupervisedUsers) {
   EXPECT_CALL(*mock_dependencies_, IsSupervisedUser).WillOnce(Return(true));
 

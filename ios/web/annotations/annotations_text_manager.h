@@ -25,11 +25,7 @@ class WebState;
 class AnnotationsTextManager : public WebStateUserData<AnnotationsTextManager>,
                                public WebStateObserver {
  public:
-  explicit AnnotationsTextManager(WebState* web_state);
   ~AnnotationsTextManager() override;
-
-  // WebStateUserData methods:
-  static void CreateForWebState(WebState* web_state);
 
   // Observers registered after web page is loaded will miss some notifications.
   void AddObserver(AnnotationsTextObserver* observer);
@@ -58,8 +54,6 @@ class AnnotationsTextManager : public WebStateUserData<AnnotationsTextManager>,
   // WebStateObserver methods:
   void PageLoaded(WebState* web_state,
                   PageLoadCompletionStatus load_completion_status) override;
-  void DidFinishNavigation(WebState* web_state,
-                           NavigationContext* navigation_context) override;
   void WebStateDestroyed(WebState* web_state) override;
 
   void SetJSFeatureForTesting(AnnotationsJavaScriptFeature* feature);
@@ -68,6 +62,8 @@ class AnnotationsTextManager : public WebStateUserData<AnnotationsTextManager>,
 
  private:
   friend class WebStateUserData<AnnotationsTextManager>;
+
+  explicit AnnotationsTextManager(WebState* web_state);
 
   void StartExtractingText();
 

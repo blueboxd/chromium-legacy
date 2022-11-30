@@ -27,9 +27,25 @@
       "use_remoteexec": true
     }
   },
+  "ChromeOS FYI Release Skylab (kevin)": {
+    "args_file": "//build/args/chromeos/kevin.gni",
+    "gn_args": {
+      "dcheck_always_on": false,
+      "ffmpeg_branding": "Chrome",
+      "is_chromeos_device": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_skylab": true,
+      "ozone_platform_headless": true,
+      "proprietary_codecs": true,
+      "symbol_level": 0,
+      "use_remoteexec": true
+    }
+  },
   "GPU FYI Android arm Builder": {
     "gn_args": {
       "dcheck_always_on": true,
+      "debuggable_apks": false,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
@@ -43,6 +59,7 @@
   "GPU FYI Android arm64 Builder": {
     "gn_args": {
       "dcheck_always_on": true,
+      "debuggable_apks": false,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,

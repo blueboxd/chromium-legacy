@@ -8,10 +8,14 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
+#include "ui/gfx/image/image_skia.h"
 
 class GURL;
 class PermissionRequestCreator;
@@ -20,6 +24,13 @@ class SupervisedUserSettingsService;
 namespace content {
 class WebContents;
 }  // namespace content
+
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.supervised_user
+enum class AndroidLocalWebApprovalFlowOutcome {
+  kApproved = 0,
+  kRejected = 1,
+  kIncomplete = 2
+};
 
 // Manages remote and local web approval requests from Family Link users.
 //
@@ -48,6 +59,8 @@ class WebApprovalsManager {
   // successful.
   void RequestLocalApproval(content::WebContents* web_contents,
                             const GURL& url,
+                            const std::u16string& child_display_name,
+                            const gfx::ImageSkia& favicon,
                             ApprovalRequestInitiatedCallback callback);
 
   // Adds a remote approval request for the `url`.
@@ -93,7 +106,12 @@ class WebApprovalsManager {
   void OnLocalApprovalRequestCompleted(
       SupervisedUserSettingsService* settings_service,
       const GURL& url,
-      bool request_approved);
+      base::TimeTicks start_time,
+      AndroidLocalWebApprovalFlowOutcome request_outcome);
+
+  // Helper for private method testing.
+  FRIEND_TEST_ALL_PREFIXES(WebApprovalsManagerTest,
+                           LocalWebApprovalDurationHistogramTest);
 
   // Stores remote approval request creators.
   // The creators are cleared during shutdown.

@@ -17,7 +17,6 @@
 #include "ash/quick_pair/repository/fast_pair/pending_write_store.h"
 #include "ash/quick_pair/repository/fast_pair/proto_conversions.h"
 #include "ash/quick_pair/repository/fast_pair/saved_device_registry.h"
-#include "ash/services/quick_pair/public/cpp/account_key_filter.h"
 #include "base/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -25,6 +24,7 @@
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/services/bluetooth_config/public/cpp/device_image_info.h"
+#include "chromeos/ash/services/quick_pair/public/cpp/account_key_filter.h"
 #include "crypto/sha2.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -362,6 +362,7 @@ void FastPairRepositoryImpl::AddDeviceToFootprints(
     return;
   }
 
+  pending_write_store_->AddPairedDevice(mac_address, hex_model_id);
   footprints_fetcher_->AddUserFastPairInfo(
       BuildFastPairInfo(hex_model_id, account_key, mac_address, metadata),
       base::BindOnce(&FastPairRepositoryImpl::OnAddDeviceToFootprintsComplete,
@@ -373,11 +374,28 @@ void FastPairRepositoryImpl::OnAddDeviceToFootprintsComplete(
     const std::vector<uint8_t>& account_key,
     bool success) {
   if (!success) {
-    // TODO(b/221126805): Handle caching to disk + retries.
+    QP_LOG(WARNING)
+        << __func__
+        << ": Failed to add device to Footprints--"
+           "deferring addition to SavedDeviceRegistry until we succeed.";
+    return;
+  }
+  QP_LOG(INFO) << __func__ << ": Successfully added device to Footprints.";
+
+  // Remove pending add on successful Footprints write
+  pending_write_store_->OnPairedDeviceSaved(mac_address);
+
+  // save/update account key in saved device registry
+  saved_device_registry_->SaveAccountKey(mac_address, account_key);
+
+  if (saved_device_registry_->IsAccountKeySavedToRegistry(account_key)) {
+    QP_LOG(INFO) << __func__
+                 << ": Successfully added device to Saved Device Registry.";
     return;
   }
 
-  saved_device_registry_->SaveAccountKey(mac_address, account_key);
+  QP_LOG(WARNING) << __func__
+                  << ": Failed to add device to Saved Device Registry.";
 }
 
 void FastPairRepositoryImpl::CheckOptInStatus(

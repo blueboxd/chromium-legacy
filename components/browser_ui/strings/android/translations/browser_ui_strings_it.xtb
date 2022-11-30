@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
+<translation id="1005794457625275818">Cookie consentiti per <ph name="FPS_MEMBERS_COUNT" /> siti nel gruppo <ph name="FPS_OWNER" />, tra cui <ph name="FPS_MEMBER" /></translation>
 <translation id="1006017844123154345">Apri online</translation>
 <translation id="1044891598689252897">I siti funzioneranno normalmente</translation>
 <translation id="1124090076051167250">Verranno cancellati <ph name="DATASIZE" /> di dati e cookie memorizzati da siti e app nella schermata Home.</translation>
@@ -21,6 +22,7 @@
 <translation id="1426410128494586442">Sì</translation>
 <translation id="1446450296470737166">Controllo completo dispos. MIDI</translation>
 <translation id="1620510694547887537">Fotocamera</translation>
+<translation id="1633720957382884102">Siti correlati</translation>
 <translation id="1644574205037202324">Cronologia</translation>
 <translation id="1647582022260550163">Vuoi reimpostare le autorizzazioni e cancellare cookie e dati dei siti?</translation>
 <translation id="1660204651932907780">Consenti ai siti di riprodurre l'audio (opzione consigliata)</translation>
@@ -115,6 +117,7 @@
 <translation id="3333961966071413176">Tutti i contatti</translation>
 <translation id="3362437373201486687">Ricerca di dispositivi Bluetooth in corso…</translation>
 <translation id="3386292677130313581">Chiedi conferma prima di consentire ai siti di conoscere la tua posizione (opzione consigliata)</translation>
+<translation id="3521663503435878242">Siti in <ph name="DOMAIN" /></translation>
 <translation id="3538390592868664640">Impedisci ai siti di creare una mappa 3D dell'ambiente circostante o di monitorare la posizione della fotocamera</translation>
 <translation id="3551268116566418498">Uscire da modalità in incognito?</translation>
 <translation id="3586500876634962664">Uso di videocamera e microfono</translation>
@@ -260,6 +263,7 @@
 <translation id="6554732001434021288">Ultima visita: <ph name="NUM_DAYS" /> giorni fa</translation>
 <translation id="6561560012278703671">Usa messaggi più discreti (impedisce alle notifiche di disturbarti)</translation>
 <translation id="6593061639179217415">Sito desktop</translation>
+<translation id="6608211702542341247">Questo sito fa parte del gruppo di siti di <ph name="FPS_OWNER" /> che possono vedere la tua attività nel gruppo</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Contenuti protetti</translation>
 <translation id="662080504995468778">Rimani</translation>
@@ -348,7 +352,6 @@
 <translation id="8380167699614421159">Questo sito mostra annunci invasivi o fuorvianti</translation>
 <translation id="8394832520002899662">Tocca per tornare al sito.</translation>
 <translation id="8409345997656833551">Ricevi una notifica quando un articolo può essere mostrato nella visualizzazione semplificata</translation>
-<translation id="8425213833346101688">Cambia</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8441146129660941386">Posiziona indietro</translation>
 <translation id="8444433999583714703">Per consentire all'app <ph name="APP_NAME" /> di accedere alla tua posizione, devi attivare la posizione anche nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
@@ -372,6 +375,7 @@
 <translation id="8751914237388039244">Seleziona un'immagine</translation>
 <translation id="8801436777607969138">Blocca JavaScript per un sito specifico.</translation>
 <translation id="8816026460808729765">Impedisci ai siti di accedere ai sensori</translation>
+<translation id="8823559166155093873">Blocca i cookie</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8903921497873541725">Aumenta lo zoom</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>

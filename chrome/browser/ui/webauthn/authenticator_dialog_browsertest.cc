@@ -64,22 +64,25 @@ class AuthenticatorDialogTest : public DialogBrowserTest,
             ->GetActiveWebContents()
             ->GetPrimaryMainFrame());
     model_->set_relying_party_id("example.com");
-    ::device::FidoRequestHandlerBase::TransportAvailabilityInfo
-        transport_availability;
+
+    device::FidoRequestHandlerBase::TransportAvailabilityInfo&
+        transport_availability = model_->transport_availability_for_testing();
     transport_availability.available_transports = {
         AuthenticatorTransport::kUsbHumanInterfaceDevice,
         AuthenticatorTransport::kInternal,
         AuthenticatorTransport::kHybrid,
         AuthenticatorTransport::kAndroidAccessory,
     };
+
+    AuthenticatorRequestDialogModel::PairedPhone phone(
+        "Elisa's Pixel 6 Pro", 0,
+        std::array<uint8_t, device::kP256X962Length>{0});
+
     if (name == "cable_server_link_activate") {
       transport_availability.available_transports.insert(
           AuthenticatorTransport::kAndroidAccessory);
     } else if (name == "mechanisms") {
       // A phone is configured so that the "Manage devices" button is shown.
-      std::array<uint8_t, device::kP256X962Length> public_key = {0};
-      AuthenticatorRequestDialogModel::PairedPhone phone("Phone", 0,
-                                                         public_key);
       model_->set_cable_transport_info(
           /*extension_is_v2=*/absl::nullopt,
           /*paired_phones=*/{phone},
@@ -122,17 +125,15 @@ class AuthenticatorDialogTest : public DialogBrowserTest,
                name == "cable_server_link_activate") {
       model_->set_cable_transport_info(
           /*extension_is_v2=*/false,
-          /*paired_phones=*/{},
+          /*paired_phones=*/{phone},
           /*contact_phone_callback=*/base::DoNothing(), "fido://qrcode");
-      model_->SetCurrentStepForTesting(
-          AuthenticatorRequestDialogModel::Step::kCableActivate);
+      model_->ContactPhoneForTesting(phone.name);
     } else if (name == "cable_v2_activate") {
       model_->set_cable_transport_info(
           /*extension_is_v2=*/absl::nullopt,
-          /*paired_phones=*/{},
+          /*paired_phones=*/{phone},
           /*contact_phone_callback=*/base::DoNothing(), "fido://qrcode");
-      model_->SetCurrentStepForTesting(
-          AuthenticatorRequestDialogModel::Step::kCableActivate);
+      model_->ContactPhoneForTesting(phone.name);
     } else if (name == "cable_v2_pair") {
       model_->set_cable_transport_info(
           /*extension_is_v2=*/absl::nullopt,
@@ -140,6 +141,9 @@ class AuthenticatorDialogTest : public DialogBrowserTest,
           /*contact_phone_callback=*/base::DoNothing(), "fido://qrcode");
       model_->SetCurrentStepForTesting(
           AuthenticatorRequestDialogModel::Step::kCableV2QRCode);
+    } else if (name == "phone_aoa") {
+      model_->SetCurrentStepForTesting(
+          AuthenticatorRequestDialogModel::Step::kAndroidAccessory);
     } else if (name == "set_pin") {
       model_->CollectPIN(device::pin::PINEntryReason::kSet,
                          device::pin::PINEntryError::kNoError, 6, 0,
@@ -315,14 +319,14 @@ class AuthenticatorDialogTest : public DialogBrowserTest,
           AuthenticatorRequestDialogModel::Step::kCreatePasskey);
     }
 #if BUILDFLAG(IS_MAC)
-    else if (name == "ble_permission_mac") {
+    else if (name == "ble_permission_mac") {  // NOLINT
       model_->SetCurrentStepForTesting(
           AuthenticatorRequestDialogModel::Step::kBlePermissionMac);
     }
 #endif
 
 #define EXP_SHEET(x)                                                    \
-  else if (name == "server_link_sheet_" #x) {                           \
+  else if (name == "server_link_sheet_" #x) { /* NOLINT */              \
     model_->set_cable_transport_info(                                   \
         /*extension_is_v2=*/true, /*paired_phones=*/{},                 \
         /*contact_phone_callback=*/base::DoNothing(), "fido://qrcode"); \
@@ -425,6 +429,10 @@ IN_PROC_BROWSER_TEST_P(AuthenticatorDialogTest, InvokeUi_cable_v2_activate) {
 }
 
 IN_PROC_BROWSER_TEST_P(AuthenticatorDialogTest, InvokeUi_cable_v2_pair) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_P(AuthenticatorDialogTest, InvokeUi_phone_aoa) {
   ShowAndVerifyUi();
 }
 

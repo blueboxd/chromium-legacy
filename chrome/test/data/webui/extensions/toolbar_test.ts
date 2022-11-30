@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {ExtensionsToolbarElement, getToastManager} from 'chrome://extensions/extensions.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
@@ -36,7 +36,8 @@ suite(extension_toolbar_tests.suiteName, function() {
   let toolbar: ExtensionsToolbarElement;
 
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     toolbar = document.createElement('extensions-toolbar');
     document.body.appendChild(toolbar);
     toolbar.inDevMode = false;

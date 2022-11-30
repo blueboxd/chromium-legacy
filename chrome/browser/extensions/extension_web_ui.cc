@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -203,14 +204,13 @@ enum UpdateBehavior {
 bool UpdateOverridesList(base::Value::List& overrides_list,
                          const std::string& override_url,
                          UpdateBehavior behavior) {
-  auto iter = std::find_if(overrides_list.begin(), overrides_list.end(),
-                           [&override_url](const base::Value& value) {
-                             if (!value.is_dict())
-                               return false;
-                             const std::string* entry =
-                                 value.GetDict().FindString(kEntry);
-                             return entry && *entry == override_url;
-                           });
+  auto iter = base::ranges::find_if(
+      overrides_list, [&override_url](const base::Value& value) {
+        if (!value.is_dict())
+          return false;
+        const std::string* entry = value.GetDict().FindString(kEntry);
+        return entry && *entry == override_url;
+      });
   if (iter != overrides_list.end()) {
     switch (behavior) {
       case UPDATE_DEACTIVATE: {
@@ -238,8 +238,8 @@ void UpdateOverridesLists(Profile* profile,
   if (overrides.empty())
     return;
   PrefService* prefs = profile->GetPrefs();
-  DictionaryPrefUpdate update(prefs, ExtensionWebUI::kExtensionURLOverrides);
-  base::Value::Dict& all_overrides = update->GetDict();
+  ScopedDictPrefUpdate update(prefs, ExtensionWebUI::kExtensionURLOverrides);
+  base::Value::Dict& all_overrides = update.Get();
   for (const auto& page_override_pair : overrides) {
     base::Value::List* page_overrides =
         all_overrides.FindList(page_override_pair.first);
@@ -323,8 +323,8 @@ void ForEachOverrideList(
     Profile* profile,
     base::RepeatingCallback<void(base::Value::List&)> callback) {
   PrefService* prefs = profile->GetPrefs();
-  DictionaryPrefUpdate update(prefs, ExtensionWebUI::kExtensionURLOverrides);
-  base::Value::Dict& all_overrides = update->GetDict();
+  ScopedDictPrefUpdate update(prefs, ExtensionWebUI::kExtensionURLOverrides);
+  base::Value::Dict& all_overrides = update.Get();
 
   // We shouldn't modify the list during iteration. Generate the set of keys
   // instead.
@@ -536,8 +536,8 @@ void ExtensionWebUI::RegisterOrActivateChromeURLOverrides(
   if (overrides.empty())
     return;
   PrefService* prefs = profile->GetPrefs();
-  DictionaryPrefUpdate update(prefs, kExtensionURLOverrides);
-  base::Value::Dict& all_overrides = update->GetDict();
+  ScopedDictPrefUpdate update(prefs, kExtensionURLOverrides);
+  base::Value::Dict& all_overrides = update.Get();
   for (const auto& page_override_pair : overrides) {
     base::Value::List* page_overrides_weak =
         all_overrides.FindListByDottedPath(page_override_pair.first);

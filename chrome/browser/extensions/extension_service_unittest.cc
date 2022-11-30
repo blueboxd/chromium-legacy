@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <algorithm>
 #include <map>
 #include <memory>
 #include <set>
@@ -17,6 +16,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
@@ -25,6 +25,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/one_shot_event.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
@@ -251,14 +252,9 @@ bool HasExternalInstallErrors(ExtensionService* service) {
 }
 
 bool HasExternalInstallBubble(ExtensionService* service) {
-  std::vector<ExternalInstallError*> errors =
-      service->external_install_manager()->GetErrorsForTesting();
-  auto found = std::find_if(
-      errors.begin(), errors.end(),
-      [](const ExternalInstallError* error) {
-    return error->alert_type() == ExternalInstallError::BUBBLE_ALERT;
-  });
-  return found != errors.end();
+  return base::Contains(
+      service->external_install_manager()->GetErrorsForTesting(),
+      ExternalInstallError::BUBBLE_ALERT, &ExternalInstallError::alert_type);
 }
 
 size_t GetExternalInstallBubbleCount(ExtensionService* service) {
@@ -718,12 +714,12 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
                const std::string& pref_path,
                std::unique_ptr<base::Value> value,
                const std::string& msg) {
-    DictionaryPrefUpdate update(profile()->GetPrefs(), pref_names::kExtensions);
-    base::Value* dict = update.Get();
-    ASSERT_TRUE(dict) << msg;
-    base::Value* pref = dict->FindDictKey(extension_id);
+    ScopedDictPrefUpdate update(profile()->GetPrefs(), pref_names::kExtensions);
+    base::Value::Dict& dict = update.Get();
+    base::Value::Dict* pref = dict.FindDict(extension_id);
     ASSERT_TRUE(pref) << msg;
-    pref->SetPath(pref_path, base::Value::FromUniquePtrValue(std::move(value)));
+    pref->SetByDottedPath(pref_path,
+                          base::Value::FromUniquePtrValue(std::move(value)));
   }
 
   void SetPrefInteg(const std::string& extension_id,
@@ -755,12 +751,11 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
     std::string msg = " while clearing: ";
     msg += extension_id + " " + pref_path;
 
-    DictionaryPrefUpdate update(profile()->GetPrefs(), pref_names::kExtensions);
-    base::Value* dict = update.Get();
-    ASSERT_TRUE(dict) << msg;
-    base::Value* pref = dict->FindDictKey(extension_id);
+    ScopedDictPrefUpdate update(profile()->GetPrefs(), pref_names::kExtensions);
+    base::Value::Dict& dict = update.Get();
+    base::Value::Dict* pref = dict.FindDict(extension_id);
     ASSERT_TRUE(pref) << msg;
-    pref->RemovePath(pref_path);
+    pref->RemoveByDottedPath(pref_path);
   }
 
   void SetPrefStringSet(const std::string& extension_id,
@@ -796,11 +791,8 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
   ExternalInstallError* GetError(const std::string& extension_id) {
     std::vector<ExternalInstallError*> errors =
         service_->external_install_manager()->GetErrorsForTesting();
-    auto found = std::find_if(
-        errors.begin(), errors.end(),
-        [&extension_id](const ExternalInstallError* error) {
-      return error->extension_id() == extension_id;
-    });
+    auto found = base::ranges::find(errors, extension_id,
+                                    &ExternalInstallError::extension_id);
     return found == errors.end() ? nullptr : *found;
   }
 
@@ -5215,11 +5207,11 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   task_environment()->RunUntilIdle();
 
   // Check that the localStorage data been removed.
-  std::vector<storage::mojom::StorageUsageInfoV2Ptr> usage_infos;
+  std::vector<storage::mojom::StorageUsageInfoPtr> usage_infos;
   {
     base::RunLoop run_loop;
     local_storage_control->GetUsage(base::BindLambdaForTesting(
-        [&](std::vector<storage::mojom::StorageUsageInfoV2Ptr> usage_infos_in) {
+        [&](std::vector<storage::mojom::StorageUsageInfoPtr> usage_infos_in) {
           usage_infos.swap(usage_infos_in);
           run_loop.Quit();
         }));
@@ -5423,11 +5415,11 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   task_environment()->RunUntilIdle();
 
   // Check that the localStorage data been removed.
-  std::vector<storage::mojom::StorageUsageInfoV2Ptr> usage_infos;
+  std::vector<storage::mojom::StorageUsageInfoPtr> usage_infos;
   {
     base::RunLoop run_loop;
     local_storage_control->GetUsage(base::BindLambdaForTesting(
-        [&](std::vector<storage::mojom::StorageUsageInfoV2Ptr> usage_infos_in) {
+        [&](std::vector<storage::mojom::StorageUsageInfoPtr> usage_infos_in) {
           usage_infos.swap(usage_infos_in);
           run_loop.Quit();
         }));

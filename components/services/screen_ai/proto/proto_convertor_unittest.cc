@@ -57,6 +57,7 @@ ui::AXTreeUpdate CreateAXTreeUpdateFromTemplate(int root_id,
     node.id = nodes_template[i].node_id;
     for (int j = 0; j < nodes_template[i].child_count; j++)
       node.child_ids.push_back(nodes_template[i].child_ids[j]);
+    node.relative_bounds.bounds = gfx::RectF(0, 0, 100, 100);
     update.nodes.push_back(node);
   }
   return update;
@@ -378,9 +379,9 @@ TEST_F(ProtoConvertorTest, PreOrderTreeGeneration) {
 
   // Input tree is added in shuffled order to avoid order assumption.
   NodeTemplate input_tree[] = {
-      {4, 3, {5, 6, 9}}, {1, 3, {2, 4, -20}}, {7, 0, {}}, {8, 1, {3}},
-      {6, 0, {}},        {5, 0, {}},          {3, 0, {}}, {2, 2, {7, 8}},
-      {9, 0, {}},        {-20, 0, {}}};
+      {1, 3, {2, 4, -20}}, {4, 3, {5, 6, 9}}, {6, 0, {}}, {5, 0, {}},
+      {2, 2, {7, 8}},      {8, 1, {3}},       {3, 0, {}}, {7, 0, {}},
+      {9, 0, {}},          {-20, 0, {}}};
   const int nodes_count = sizeof(input_tree) / sizeof(NodeTemplate);
 
   // Expected order of nodes in the output.

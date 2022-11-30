@@ -23,9 +23,9 @@ namespace ash::assistant {
 
 namespace {
 
-using chromeos::libassistant::mojom::MediaState;
-using chromeos::libassistant::mojom::MediaStatePtr;
-using chromeos::libassistant::mojom::PlaybackState;
+using libassistant::mojom::MediaState;
+using libassistant::mojom::MediaStatePtr;
+using libassistant::mojom::PlaybackState;
 using media_session::mojom::MediaSessionInfo;
 using ::testing::_;
 
@@ -215,7 +215,7 @@ class MediaHostTest : public testing::Test {
     return libassistant_controller_;
   }
 
-  chromeos::libassistant::mojom::MediaDelegate& libassistant_media_delegate() {
+  libassistant::mojom::MediaDelegate& libassistant_media_delegate() {
     return *libassistant_media_delegate_;
   }
 
@@ -288,8 +288,7 @@ class MediaHostTest : public testing::Test {
   FakeMediaControllerManager media_controller_manager_;
   ScopedAssistantBrowserDelegate delegate_;
   testing::StrictMock<LibassistantMediaControllerMock> libassistant_controller_;
-  mojo::Remote<chromeos::libassistant::mojom::MediaDelegate>
-      libassistant_media_delegate_;
+  mojo::Remote<libassistant::mojom::MediaDelegate> libassistant_media_delegate_;
   std::unique_ptr<MediaHost> media_host_;
 };
 
@@ -482,7 +481,7 @@ TEST_F(MediaHostTest, ShouldForwardLibassistantMediaSessionUpdates) {
               MediaSessionMetadataChanged(expected_output));
 
   auto input = MediaState::New();
-  input->metadata = chromeos::libassistant::mojom::MediaMetadata::New();
+  input->metadata = libassistant::mojom::MediaMetadata::New();
   input->metadata->title = "the title";
   input->metadata->artist = "the artist";
   input->metadata->album = "the album";
@@ -511,7 +510,7 @@ TEST_F(MediaHostTest, ShouldForwardLibassistantOpenAndroidMediaUpdates) {
   input_app_info.version = 111;
   input_app_info.localized_app_name = "the localized name";
   input_app_info.intent = "the intent";
-  input_app_info.status = chromeos::assistant::AppStatus::kUnknown;
+  input_app_info.status = AppStatus::kUnknown;
   input_app_info.action = kPlayAndroidMediaAction;
 
   libassistant_media_delegate().PlayAndroidMedia(std::move(input_app_info));

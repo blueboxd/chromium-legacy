@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,8 @@ class IdleTimeEstimatorTest : public testing::Test {
 
   scoped_refptr<MainThreadTaskQueue> NewTaskQueue() {
     return manager_->CreateTaskQueueWithType<MainThreadTaskQueue>(
-        base::sequence_manager::TaskQueue::Spec("test_tq"),
+        base::sequence_manager::TaskQueue::Spec(
+            base::sequence_manager::QueueName::TEST_TQ),
         MainThreadTaskQueue::QueueCreationParams(
             MainThreadTaskQueue::QueueType::kCompositor),
         nullptr);

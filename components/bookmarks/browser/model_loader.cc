@@ -31,6 +31,7 @@ void AddBookmarksToIndex(BookmarkLoadDetails* details, BookmarkNode* node) {
     if (node->url().is_valid())
       details->index()->Add(node);
   } else {
+    details->index()->AddPath(node);
     for (const auto& child : node->children())
       AddBookmarksToIndex(details, child.get());
   }
@@ -90,6 +91,10 @@ void LoadBookmarks(const base::FilePath& path,
   int64_t file_size_bytes;
   if (bookmark_file_exists && base::GetFileSize(path, &file_size_bytes)) {
     metrics::RecordFileSizeAtStartup(file_size_bytes);
+    metrics::RecordAverageNodeSizeAtStartup(
+        stats.total_url_bookmark_count == 0
+            ? 0
+            : file_size_bytes / stats.total_url_bookmark_count);
   }
 }
 

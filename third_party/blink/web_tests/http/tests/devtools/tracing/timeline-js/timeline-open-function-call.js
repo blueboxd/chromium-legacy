@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,7 +59,7 @@
     }
   ];
 
-  PerformanceTestRunner.createPerformanceModelWithEvents(rawTraceEvents);
+  await PerformanceTestRunner.createPerformanceModelWithEvents(rawTraceEvents);
   const event = PerformanceTestRunner.mainTrackEvents().find(
       e => e.name === TimelineModel.TimelineModel.RecordType.FunctionCall);
   TestRunner.addResult(`${event.name} ${event.startTime}`);

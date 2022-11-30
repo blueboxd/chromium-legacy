@@ -6,7 +6,7 @@ import {CrButtonElement, NativeInitialSettings, NativeLayerImpl, PluginProxyImpl
 // <if expr="is_chromeos">
 import {GooglePromotedDestinationId} from 'chrome://print/print_preview.js';
 // </if>
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 // <if expr="is_chromeos">
@@ -45,7 +45,8 @@ suite(print_button_test.suiteName, function() {
     // <if expr="is_chromeos">
     setNativeLayerCrosInstance();
     // </if>
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     nativeLayer.setInitialSettings(initialSettings);
     const localDestinationInfos = [
       {printerName: 'FooName', deviceName: 'FooDevice'},

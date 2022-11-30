@@ -6,14 +6,21 @@
 
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/system/sys_info.h"
 
-const base::Feature kSearchPrefetchServicePrefetching{
-    "SearchPrefetchServicePrefetching", base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kSearchPrefetchServicePrefetching,
+             "SearchPrefetchServicePrefetching",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
-const base::Feature kSearchPrefetchBlockBeforeHeaders{
-    "SearchPrefetchBlockBeforeHeaders", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kSearchPrefetchBlockBeforeHeaders,
+             "SearchPrefetchBlockBeforeHeaders",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSearchPrefetchSkipsCancel,
+             "SearchPrefetchSkipsCancel",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool SearchPrefetchBlockBeforeHeadersIsEnabled() {
   return base::FeatureList::IsEnabled(kSearchPrefetchBlockBeforeHeaders);
@@ -56,9 +63,34 @@ base::TimeDelta SearchPrefetchBlockHeadStart() {
       kSearchPrefetchBlockBeforeHeaders, "block_head_start_ms", 0));
 }
 
-const base::Feature kSearchNavigationPrefetch{
-    "SearchNavigationPrefetch", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kSearchNavigationPrefetch,
+             "SearchNavigationPrefetch",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsSearchNavigationPrefetchEnabled() {
   return base::FeatureList::IsEnabled(kSearchNavigationPrefetch);
+}
+
+bool SearchPrefetchSkipsCancel() {
+  return base::FeatureList::IsEnabled(kSearchPrefetchSkipsCancel);
+}
+
+bool IsUpOrDownArrowPrefetchEnabled() {
+  return base::GetFieldTrialParamByFeatureAsBool(kSearchNavigationPrefetch,
+                                                 "up_or_down_arrow", true);
+}
+
+bool IsSearchMouseDownPrefetchEnabled() {
+  return base::GetFieldTrialParamByFeatureAsBool(kSearchNavigationPrefetch,
+                                                 "mouse_down", true);
+}
+
+bool AllowTopNavigationPrefetch() {
+  return base::GetFieldTrialParamByFeatureAsBool(kSearchNavigationPrefetch,
+                                                 "allow_top_selection", true);
+}
+
+bool PrefetchSearchHistorySuggestions() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kSearchNavigationPrefetch, "prefetch_search_history", true);
 }

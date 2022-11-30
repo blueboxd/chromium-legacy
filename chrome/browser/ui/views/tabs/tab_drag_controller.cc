@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 
-#include <algorithm>
 #include <limits>
 #include <set>
 #include <utility>
@@ -19,6 +18,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_auto_reset.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/ranges/algorithm.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/views/chrome_widget_sublevel.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -57,6 +58,7 @@
 #include "ui/views/event_monitor.h"
 #include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/view_tracker.h"
+#include "ui/views/views_features.h"
 #include "ui/views/widget/root_view.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -70,6 +72,10 @@
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chromeos/ui/base/window_properties.h"
+#endif
+
+#if BUILDFLAG(IS_MAC)
+#include "components/remote_cocoa/browser/window.h"
 #endif
 
 #if defined(USE_AURA)
@@ -490,6 +496,16 @@ void TabDragController::Init(TabDragContext* source_context,
   mouse_offset_ = mouse_offset;
   last_point_in_screen_ = start_point_in_screen_;
   last_move_screen_loc_ = start_point_in_screen_.x();
+  // Detachable tabs are not supported on Mac if the window is an out-of-process
+  // (remote_cocoa) window, i.e. a PWA window.
+  // TODO(https://crbug.com/1076777): Make detachable tabs work in PWAs on Mac.
+#if BUILDFLAG(IS_MAC)
+  if (source_context_->GetWidget() &&
+      remote_cocoa::IsWindowRemote(
+          source_context_->GetWidget()->GetNativeWindow())) {
+    detach_behavior_ = NOT_DETACHABLE;
+  }
+#endif
 
   source_context_emptiness_tracker_ =
       std::make_unique<SourceTabStripEmptinessTracker>(
@@ -504,8 +520,7 @@ void TabDragController::Init(TabDragContext* source_context,
   for (size_t i = 0; i < dragging_views.size(); ++i)
     InitDragData(dragging_views[i], &(drag_data_[i]));
   source_view_index_ =
-      std::find(dragging_views.begin(), dragging_views.end(), source_view) -
-      dragging_views.begin();
+      base::ranges::find(dragging_views, source_view) - dragging_views.begin();
 
   // Listen for Esc key presses.
   key_event_tracker_ = std::make_unique<KeyEventTracker>(
@@ -2058,20 +2073,21 @@ void TabDragController::MaximizeAttachedWindow() {
 
 void TabDragController::BringWindowUnderPointToFront(
     const gfx::Point& point_in_screen) {
-  gfx::NativeWindow window;
-  if (GetLocalProcessWindow(point_in_screen, true, &window) ==
+  gfx::NativeWindow native_window;
+  if (GetLocalProcessWindow(point_in_screen, true, &native_window) ==
       Liveness::DELETED) {
     return;
   }
 
   // Only bring browser windows to front - only windows with a
   // TabDragContext can be tab drag targets.
-  if (!CanAttachTo(window))
+  if (!CanAttachTo(native_window))
     return;
 
-  if (window) {
+  if (native_window &&
+      !base::FeatureList::IsEnabled(views::features::kWidgetLayering)) {
     views::Widget* widget_window =
-        views::Widget::GetWidgetForNativeWindow(window);
+        views::Widget::GetWidgetForNativeWindow(native_window);
     if (!widget_window)
       return;
 

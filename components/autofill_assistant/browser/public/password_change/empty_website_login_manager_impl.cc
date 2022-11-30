@@ -26,26 +26,11 @@ void EmptyWebsiteLoginManagerImpl::GetPasswordForLogin(
   std::move(callback).Run(false, std::string());
 }
 
-void EmptyWebsiteLoginManagerImpl::DeletePasswordForLogin(
-    const Login& login,
-    base::OnceCallback<void(bool)> callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::move(callback).Run(false);
-}
-
 void EmptyWebsiteLoginManagerImpl::GetGetLastTimePasswordUsed(
     const Login& login,
     base::OnceCallback<void(absl::optional<base::Time>)> callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::move(callback).Run(absl::nullopt);
-}
-
-void EmptyWebsiteLoginManagerImpl::EditPasswordForLogin(
-    const Login& login,
-    const std::string& new_password,
-    base::OnceCallback<void(bool)> callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::move(callback).Run(false);
 }
 
 absl::optional<std::string> EmptyWebsiteLoginManagerImpl::GeneratePassword(

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,7 +125,7 @@ class SubresourceIntegrityTest : public testing::Test {
     String digest;
 
     EXPECT_FALSE(SubresourceIntegrity::ParseDigest(position, end, digest));
-    EXPECT_TRUE(digest.IsEmpty());
+    EXPECT_TRUE(digest.empty());
   }
 
   void ExpectParse(const char* integrity_attribute,

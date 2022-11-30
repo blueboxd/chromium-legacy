@@ -11,7 +11,6 @@ import {AbstractTts} from '../common/abstract_tts.js';
 import {NavBraille} from '../common/braille/nav_braille.js';
 import {BridgeConstants} from '../common/bridge_constants.js';
 import {BridgeHelper} from '../common/bridge_helper.js';
-import {CompositeTts} from '../common/composite_tts.js';
 import {ExtensionBridge} from '../common/extension_bridge.js';
 import {Msgs} from '../common/msgs.js';
 import {QueueMode, TtsInterface, TtsSpeechProperties} from '../common/tts_interface.js';
@@ -34,46 +33,7 @@ export class ChromeVoxBackground {
   constructor() {
     ChromeVoxBackground.readPrefs();
 
-    /**
-     * Chrome's actual TTS which knows and cares about pitch, volume, etc.
-     * @type {TtsBackground}
-     * @private
-     */
-    this.backgroundTts_ = new TtsBackground();
-
-    /**
-     * @type {TtsInterface}
-     */
-    this.tts = new CompositeTts()
-                   .add(this.backgroundTts_)
-                   .add(ConsoleTts.getInstance());
-
     this.addBridgeListener();
-
-    /**
-     * The actual Braille service.
-     * @type {BrailleBackground}
-     * @private
-     */
-    this.backgroundBraille_ = BrailleBackground.instance;
-
-    // Export globals on ChromeVox.
-    ChromeVox.tts = this.tts;
-    ChromeVox.braille = this.backgroundBraille_;
-
-    chrome.accessibilityPrivate.onIntroduceChromeVox.addListener(
-        this.onIntroduceChromeVox);
-
-    // Set up a message passing system for goog.provide() calls from
-    // within the content scripts.
-    chrome.extension.onMessage.addListener((request, sender, callback) => {
-      if (request['srcFile']) {
-        const srcFile = request['srcFile'];
-        InjectedScriptLoader.fetchCode(
-            [srcFile], code => callback({'code': code[srcFile]}));
-      }
-      return true;
-    });
 
     // Build a regexp to match all allowed urls.
     let matches = [];
@@ -93,7 +53,7 @@ export class ChromeVoxBackground {
     chrome.windows.getAll({'populate': true}, windows => {
       for (let i = 0; i < windows.length; i++) {
         const tabs = windows[i].tabs.filter(tab => matchesRe.test(tab.url));
-        this.injectChromeVoxIntoTabs(tabs);
+        InjectedScriptLoader.injectContentScript(tabs);
       }
     });
   }
@@ -163,94 +123,23 @@ export class ChromeVoxBackground {
   }
 
   /**
-   * Inject ChromeVox into a tab.
-   * @param {Array<Tab>} tabs The tab where ChromeVox scripts should be
-   *     injected.
-   */
-  injectChromeVoxIntoTabs(tabs) {
-    const listOfFiles =
-        chrome.runtime.getManifest()['content_scripts'][0]['js'];
-    const stageTwo = function(code) {
-      for (let i = 0, tab; tab = tabs[i]; i++) {
-        globalThis.console.log('Injecting into ' + tab.id, tab);
-        let sawError = false;
-
-        /**
-         * A helper function which executes code.
-         * @param {string} code The code to execute.
-         */
-        const executeScript = code => {
-          chrome.tabs.executeScript(tab.id, {code, 'allFrames': true}, () => {
-            if (!chrome.extension.lastError) {
-              return;
-            }
-            if (sawError) {
-              return;
-            }
-            sawError = true;
-            console.error('Could not inject into tab', tab);
-          });
-        };
-
-        // Set a variable so that Closure deps work correctly.
-        executeScript('window.CLOSURE_NO_DEPS = true');
-
-        // Now inject the ChromeVox content script code into the tab.
-        listOfFiles.forEach(file => executeScript(code[file]));
-      }
-    };
-
-    // We use fetchCode instead of chrome.extensions.executeFile because
-    // executeFile doesn't propagate the file name to the content script
-    // which means that script is not visible in Dev Tools.
-    InjectedScriptLoader.fetchCode(listOfFiles, stageTwo);
-  }
-
-  /**
    * Called when a TTS message is received from a page content script.
    * @param {Object} msg The TTS message.
    */
   onTtsMessage(msg) {
-    if (msg['action'] === 'speak') {
-      // The only caller sending this message is a ChromeVox Classic api client.
-      // Deny empty strings.
-      if (msg['text'] === '') {
-        return;
-      }
-
-      this.tts.speak(
-          msg['text'],
-          /** QueueMode */ msg['queueMode'],
-          new TtsSpeechProperties(msg['properties']));
-    } else if (msg['action'] === 'stop') {
-      this.tts.stop();
-    } else if (msg['action'] === 'increaseOrDecrease') {
-      this.tts.increaseOrDecreaseProperty(msg['property'], msg['increase']);
-      const property = msg['property'];
-      const engine = this.backgroundTts_;
-      const valueAsPercent =
-          Math.round(this.backgroundTts_.propertyToPercentage(property) * 100);
-      let announcement;
-      switch (msg['property']) {
-        case AbstractTts.RATE:
-          announcement = Msgs.getMsg('announce_rate', [valueAsPercent]);
-          break;
-        case AbstractTts.PITCH:
-          announcement = Msgs.getMsg('announce_pitch', [valueAsPercent]);
-          break;
-        case AbstractTts.VOLUME:
-          announcement = Msgs.getMsg('announce_volume', [valueAsPercent]);
-          break;
-      }
-      if (announcement) {
-        this.tts.speak(
-            announcement, QueueMode.FLUSH, AbstractTts.PERSONALITY_ANNOTATION);
-      }
-    } else if (msg['action'] === 'cyclePunctuationEcho') {
-      this.tts.speak(
-          Msgs.getMsg(this.backgroundTts_.cyclePunctuationEcho()),
-          QueueMode.FLUSH);
+    if (msg['action'] !== 'speak') {
+      return;
     }
+    // The only caller sending this message is a ChromeVox Classic api client.
+    // Deny empty strings.
+    if (msg['text'] === '') {
+      return;
+    }
+
+    ChromeVox.tts.speak(
+        msg['text'],
+        /** @type {QueueMode} */ (msg['queueMode']),
+        new TtsSpeechProperties(msg['properties']));
   }
 
   /**
@@ -259,53 +148,20 @@ export class ChromeVoxBackground {
    */
   addBridgeListener() {
     ExtensionBridge.addMessageListener((msg, port) => {
-      const target = msg['target'];
-      const action = msg['action'];
+      if (msg['target'] !== 'TTS') {
+        return;
+      }
 
-      switch (target) {
-        case 'TTS':
-          try {
-            this.onTtsMessage(msg);
-          } catch (err) {
-            console.log(err);
-          }
-          break;
+      try {
+        this.onTtsMessage(msg);
+      } catch (err) {
+        console.log(err);
       }
     });
   }
 
-  /**
-   * Handles the onIntroduceChromeVox event.
-   */
-  onIntroduceChromeVox() {
-    ChromeVox.tts.speak(
-        Msgs.getMsg('chromevox_intro'), QueueMode.QUEUE,
-        new TtsSpeechProperties({doNotInterrupt: true}));
-    ChromeVox.braille.write(NavBraille.fromText(Msgs.getMsg('intro_brl')));
-  }
-
-  /**
-   * Gets the voice currently used by ChromeVox when calling tts.
-   * @return {string}
-   */
-  getCurrentVoice() {
-    return this.backgroundTts_.currentVoice;
-  }
-
-  /**
-   * Initializes classic background object.
-   * @param {!ChromeVoxState} chromeVoxState The new background object.
-   */
-  static init(chromeVoxState) {
-    // Create the background page object and export a function window['speak']
-    // so that other background pages can access it. Also export the prefs
-    // object for access by the options page.
+  /** Initializes classic background object. */
+  static init() {
     const background = new ChromeVoxBackground();
-
-    chromeVoxState.backgroundTts = background.backgroundTts_;
-    BridgeHelper.registerHandler(
-        BridgeConstants.ChromeVoxBackground.TARGET,
-        BridgeConstants.ChromeVoxBackground.Action.GET_CURRENT_VOICE,
-        () => background.getCurrentVoice());
   }
 }

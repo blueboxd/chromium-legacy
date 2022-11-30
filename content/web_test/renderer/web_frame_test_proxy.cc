@@ -20,6 +20,7 @@
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_testing_support.h"
@@ -106,7 +107,8 @@ const char* WebNavigationTypeToString(blink::WebNavigationType type) {
       return kBackForwardString;
     case blink::kWebNavigationTypeReload:
       return kReloadString;
-    case blink::kWebNavigationTypeFormResubmitted:
+    case blink::kWebNavigationTypeFormResubmittedBackForward:
+    case blink::kWebNavigationTypeFormResubmittedReload:
       return kFormResubmittedString;
     case blink::kWebNavigationTypeOther:
       return kOtherString;
@@ -676,11 +678,8 @@ void WebFrameTestProxy::PostAccessibilityEvent(const ui::AXEvent& event) {
   RenderFrameImpl::PostAccessibilityEvent(event);
 }
 
-void WebFrameTestProxy::MarkWebAXObjectDirty(
-    const blink::WebAXObject& object,
-    bool subtree,
-    ax::mojom::EventFrom event_from,
-    ax::mojom::Action event_from_action) {
+void WebFrameTestProxy::NotifyWebAXObjectMarkedDirty(
+    const blink::WebAXObject& object) {
   HandleWebAccessibilityEvent(object, "MarkDirty",
                               std::vector<ui::AXEventIntent>());
 
@@ -690,8 +689,7 @@ void WebFrameTestProxy::MarkWebAXObjectDirty(
   if (object.IsDetached())
     return;  // |this| is invalid.
 
-  RenderFrameImpl::MarkWebAXObjectDirty(object, subtree, event_from,
-                                        event_from_action);
+  RenderFrameImpl::NotifyWebAXObjectMarkedDirty(object);
 }
 
 void WebFrameTestProxy::HandleWebAccessibilityEvent(

@@ -292,6 +292,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener,
                 ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                         ChromeFeatureList.CLEAR_OMNIBOX_FOCUS_AFTER_NAVIGATION,
                         "clear_focus_asynchronously", false);
+        mDropdownViewInfoListManager.onNativeInitialized();
         mDropdownViewInfoListBuilder.onNativeInitialized();
         runPendingAutocompleteRequests();
     }
@@ -316,7 +317,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener,
             // suggestion would take the user to the DSE home page.
             // This is tracked by MobileStartup.LaunchCause / EXTERNAL_SEARCH_ACTION_INTENT
             // metric.
-            if (mDataProvider.getPageClassification(false)
+            if (mDataProvider.getPageClassification(
+                        /*isFocusedFromFakebox=*/false, /*isPrefetch=*/false)
                     != PageClassification.ANDROID_SEARCH_WIDGET_VALUE) {
                 postAutocompleteRequest(this::startZeroSuggest, SCHEDULE_FOR_IMMEDIATE_EXECUTION);
             } else {
@@ -330,7 +332,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener,
                     mOmniboxFocusResultedInNavigation);
             SuggestionsMetrics.recordRefineActionUsage(mRefineActionUsage);
             SuggestionsMetrics.recordSuggestionsListScrolled(
-                    mDataProvider.getPageClassification(mDelegate.didFocusUrlFromFakebox()),
+                    mDataProvider.getPageClassification(
+                            mDelegate.didFocusUrlFromFakebox(), /*isPrefetch=*/false),
                     mSuggestionsListScrolled);
 
             setSuggestionVisibilityState(SuggestionVisibilityState.DISALLOWED);
@@ -683,8 +686,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener,
                                 == mUrlBarEditingTextProvider.getSelectionEnd()
                         ? mUrlBarEditingTextProvider.getSelectionStart()
                         : -1;
-                int pageClassification =
-                        mDataProvider.getPageClassification(mDelegate.didFocusUrlFromFakebox());
+                int pageClassification = mDataProvider.getPageClassification(
+                        mDelegate.didFocusUrlFromFakebox(), /*isPrefetch=*/false);
                 String currentUrl = mDataProvider.getCurrentUrl();
 
                 postAutocompleteRequest(() -> {
@@ -718,7 +721,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener,
             List<DropdownItemViewInfo> viewInfoList =
                     mDropdownViewInfoListBuilder.buildDropdownViewInfoList(autocompleteResult);
             mDropdownViewInfoListManager.setSourceViewInfoList(
-                    viewInfoList, autocompleteResult.getGroupsDetails());
+                    viewInfoList, autocompleteResult.getGroupsInfo());
             boolean defaultMatchIsSearch = true;
             if (!TextUtils.isEmpty(mUrlBarEditingTextProvider.getTextWithoutAutocomplete())
                     && !newSuggestions.isEmpty()) {
@@ -872,8 +875,11 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener,
      * Sends a zero suggest request to the server in order to pre-populate the result cache.
      */
     /* package */ void startPrefetch() {
-        postAutocompleteRequest(
-                () -> mAutocomplete.startPrefetch(), SCHEDULE_FOR_IMMEDIATE_EXECUTION);
+        int pageClassification = mDataProvider.getPageClassification(
+                /*isFocusedFromFakebox=*/false, /*isPrefetch=*/true);
+        postAutocompleteRequest(() -> {
+            mAutocomplete.startPrefetch(mDataProvider.getCurrentUrl(), pageClassification);
+        }, SCHEDULE_FOR_IMMEDIATE_EXECUTION);
     }
 
     /**
@@ -892,8 +898,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener,
 
         if (mDelegate.isUrlBarFocused()
                 && (mDataProvider.hasTab() || mDataProvider.isInOverviewAndShowingOmnibox())) {
-            int pageClassification =
-                    mDataProvider.getPageClassification(mDelegate.didFocusUrlFromFakebox());
+            int pageClassification = mDataProvider.getPageClassification(
+                    mDelegate.didFocusUrlFromFakebox(), /*isPrefetch=*/false);
             mShouldCacheSuggestions =
                     pageClassification == PageClassification.ANDROID_SEARCH_WIDGET_VALUE;
             mAutocomplete.startZeroSuggest(mUrlBarEditingTextProvider.getTextWithAutocomplete(),
@@ -953,7 +959,9 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener,
         stopAutocomplete(false);
         if (mDataProvider.hasTab()) {
             mAutocomplete.start(mDataProvider.getCurrentUrl(),
-                    mDataProvider.getPageClassification(false), query, -1, false);
+                    mDataProvider.getPageClassification(
+                            /*isFocusedFromFakebox=*/false, /*isPrefetch=*/false),
+                    query, -1, false);
         }
     }
 
@@ -999,8 +1007,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener,
         if (mAutocompleteResult.isFromCachedResult()) return;
 
         String currentPageUrl = mDataProvider.getCurrentUrl();
-        int pageClassification =
-                mDataProvider.getPageClassification(mDelegate.didFocusUrlFromFakebox());
+        int pageClassification = mDataProvider.getPageClassification(
+                mDelegate.didFocusUrlFromFakebox(), /*isPrefetch=*/false);
         long elapsedTimeSinceModified = getElapsedTimeSinceInputChange();
         int autocompleteLength = mUrlBarEditingTextProvider.getTextWithAutocomplete().length()
                 - mUrlBarEditingTextProvider.getTextWithoutAutocomplete().length();

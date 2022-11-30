@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ash/input_method/assistive_suggester_client_filter.h"
-
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -11,6 +9,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "base/callback.h"
 #include "base/hash/hash.h"
+#include "chrome/browser/ash/input_method/assistive_suggester_client_filter.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "components/exo/wm_helper.h"
@@ -147,10 +146,18 @@ const char* kDeniedAppsForDiacritics[] = {
     "cgfnfgkafmcdkdgilmojlnaadileaach",  // Crosh app
     "fhicihalidkgcimdmhpohldehjmcabcf",  // Terminal app
     "mmfbcljfglbokpmkimbfghdkjmjhdgbg",  // System text
+    "algkcnfjnajfhgimadimbjhmpaeohhln",  // SSH app (dev)
 };
 
-bool IsTestUrl(GURL url) {
-  std::string filename = url.ExtractFileName();
+const char* kDeniedUrlsForDiacritics[] = {
+    "chrome-untrusted://crosh/",     // Crosh app
+    "chrome-untrusted://terminal/",  // Terminal app
+};
+
+bool IsTestUrl(const absl::optional<GURL>& url) {
+  if (!url)
+    return false;
+  std::string filename = url->ExtractFileName();
   for (const char* test_url : kTestUrls) {
     if (base::CompareCaseInsensitiveASCII(filename, test_url) == 0) {
       return true;
@@ -159,8 +166,10 @@ bool IsTestUrl(GURL url) {
   return false;
 }
 
-bool IsInternalWebsite(GURL url) {
-  std::string host = url.host();
+bool IsInternalWebsite(const absl::optional<GURL>& url) {
+  if (!url)
+    return false;
+  std::string host = url->host();
   for (const size_t hash_code : kHashedInternalUrls) {
     if (hash_code == base::PersistentHash(host)) {
       return true;
@@ -169,19 +178,23 @@ bool IsInternalWebsite(GURL url) {
   return false;
 }
 
-bool AtDomainWithPathPrefix(GURL url,
+bool AtDomainWithPathPrefix(const absl::optional<GURL>& url,
                             const std::string& domain,
                             const std::string& prefix) {
-  return url.DomainIs(domain) && url.has_path() &&
-         base::StartsWith(url.path(), prefix);
+  if (!url)
+    return false;
+  return url->DomainIs(domain) && url->has_path() &&
+         base::StartsWith(url->path(), prefix);
 }
 
 template <size_t N>
-bool IsMatchedUrlWithPathPrefix(const char* (&allowedDomainAndPaths)[N][2],
-                                GURL url) {
+bool IsMatchedUrlWithPathPrefix(const char* (&expected_domains_and_paths)[N][2],
+                                const absl::optional<GURL>& url) {
+  if (!url)
+    return false;
   for (size_t i = 0; i < N; i++) {
-    auto domain = allowedDomainAndPaths[i][0];
-    auto path_prefix = allowedDomainAndPaths[i][1];
+    auto domain = expected_domains_and_paths[i][0];
+    auto path_prefix = expected_domains_and_paths[i][1];
     if (AtDomainWithPathPrefix(url, domain, path_prefix)) {
       return true;
     }
@@ -190,14 +203,32 @@ bool IsMatchedUrlWithPathPrefix(const char* (&allowedDomainAndPaths)[N][2],
 }
 
 template <size_t N>
-bool IsMatchedApp(const char* (&allowedApps)[N], WindowProperties w) {
+bool IsMatchedExactUrl(const char* (&expected_urls)[N],
+                       const absl::optional<GURL>& url) {
+  if (!url)
+    return false;
+  for (size_t i = 0; i < N; i++) {
+    auto expected_url = expected_urls[i];
+    if (base::CompareCaseInsensitiveASCII(url->spec(), expected_url) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+template <size_t N>
+bool IsMatchedApp(const char* (&expected_app_ids_or_package_names)[N],
+                  WindowProperties w) {
   if (!w.arc_package_name.empty() &&
-      std::find(allowedApps, allowedApps + N, w.arc_package_name) !=
-          allowedApps + N) {
+      std::find(expected_app_ids_or_package_names,
+                expected_app_ids_or_package_names + N,
+                w.arc_package_name) != expected_app_ids_or_package_names + N) {
     return true;
   }
   if (!w.app_id.empty() &&
-      std::find(allowedApps, allowedApps + N, w.app_id) != allowedApps + N) {
+      std::find(expected_app_ids_or_package_names,
+                expected_app_ids_or_package_names + N,
+                w.app_id) != expected_app_ids_or_package_names + N) {
     return true;
   }
   return false;
@@ -210,8 +241,9 @@ void ReturnEnabledSuggestions(
   // Deny-list (will block if matched, otherwise allow)
   bool diacritic_suggestions_allowed =
       !IsMatchedApp(kDeniedAppsForDiacritics, window_properties) &&
-      !(current_url && IsMatchedUrlWithPathPrefix(
-                           kDeniedDomainAndPathsForDiacritics, *current_url));
+      !IsMatchedUrlWithPathPrefix(kDeniedDomainAndPathsForDiacritics,
+                                  current_url) &&
+      !IsMatchedExactUrl(kDeniedUrlsForDiacritics, current_url);
 
   // TODO(b/245469813): Investigate if denied is intentional for suggesters
   // below is intentional.
@@ -223,23 +255,23 @@ void ReturnEnabledSuggestions(
 
   // Allow-list (will only allow if matched)
   bool emoji_suggestions_allowed =
-      IsTestUrl(*current_url) || IsInternalWebsite(*current_url) ||
+      IsTestUrl(current_url) || IsInternalWebsite(current_url) ||
       IsMatchedUrlWithPathPrefix(kAllowedDomainAndPathsForEmojiSuggester,
-                                 *current_url) ||
+                                 current_url) ||
       IsMatchedApp(kAllowedAppsForEmojiSuggester, window_properties);
 
   // Allow-list (will only allow if matched)
   bool multi_word_suggestions_allowed =
-      IsTestUrl(*current_url) || IsInternalWebsite(*current_url) ||
+      IsTestUrl(current_url) || IsInternalWebsite(current_url) ||
       IsMatchedUrlWithPathPrefix(kAllowedDomainAndPathsForMultiWordSuggester,
-                                 *current_url) ||
+                                 current_url) ||
       IsMatchedApp(kAllowedAppsForMultiWordSuggester, window_properties);
 
   // Allow-list (will only allow if matched)
   bool personal_info_suggestions_allowed =
-      IsTestUrl(*current_url) || IsInternalWebsite(*current_url) ||
+      IsTestUrl(current_url) || IsInternalWebsite(current_url) ||
       IsMatchedUrlWithPathPrefix(kAllowedDomainAndPathsForPersonalInfoSuggester,
-                                 *current_url) ||
+                                 current_url) ||
       IsMatchedApp(kAllowedAppsForPersonalInfoSuggester, window_properties);
 
   std::move(callback).Run(AssistiveSuggesterSwitch::EnabledSuggestions{

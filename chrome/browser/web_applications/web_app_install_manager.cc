@@ -99,10 +99,6 @@ bool WebAppInstallManager::IsInstallingForWebContents(
       });
 }
 
-std::size_t WebAppInstallManager::GetInstallTaskCountForTesting() const {
-  return tasks_.size();
-}
-
 void WebAppInstallManager::SetSubsystems(
     WebAppRegistrar* registrar,
     OsIntegrationManager* os_integration_manager,
@@ -118,39 +114,6 @@ void WebAppInstallManager::SetSubsystems(
   icon_manager_ = icon_manager;
   sync_bridge_ = sync_bridge;
   translation_manager_ = translation_manager;
-}
-
-void WebAppInstallManager::InstallSubApp(
-    const AppId& parent_app_id,
-    const GURL& install_url,
-    const AppId& expected_app_id,
-    WebAppInstallDialogCallback dialog_callback,
-    OnceInstallCallback install_callback) {
-  if (!started_)
-    return;
-  auto task = std::make_unique<WebAppInstallTask>(
-      profile_, finalizer_, data_retriever_factory_.Run(), registrar_,
-      webapps::WebappInstallSource::SUB_APP);
-
-  WebAppInstallParams params;
-  params.parent_app_id = parent_app_id;
-  params.require_manifest = true;
-  params.add_to_quick_launch_bar = false;
-  params.user_display_mode = UserDisplayMode::kStandalone;
-  params.fallback_start_url = install_url;
-  // Don't want to allow devs to force manifest updates with the API.
-  params.force_reinstall = false;
-  params.install_url = install_url;
-
-  task->SetInstallParams(params);
-
-  WebAppInstallTask* task_ptr = task.get();
-  tasks_.insert(std::move(task));
-  task_ptr->LoadAndInstallSubAppFromURL(
-      install_url, expected_app_id, EnsureWebContentsCreated(),
-      url_loader_.get(), std::move(dialog_callback),
-      base::BindOnce(&WebAppInstallManager::OnInstallTaskCompleted,
-                     GetWeakPtr(), task_ptr, std::move(install_callback)));
 }
 
 base::WeakPtr<WebAppInstallManager> WebAppInstallManager::GetWeakPtr() {
@@ -426,7 +389,7 @@ void WebAppInstallManager::OnReadErrorLog(Result result,
     return;
 
   ErrorLog early_error_log = std::move(*error_log_);
-  *error_log_ = std::move(error_log.GetList());
+  *error_log_ = std::move(error_log).TakeList();
 
   // Appends the `early_error_log` at the end.
   error_log_->reserve(error_log_->size() + early_error_log.size());

@@ -21,23 +21,24 @@
 namespace features {
 
 // Runs the tracing service as an in-process browser service.
-const base::Feature kTracingServiceInProcess {
-  "TracingServiceInProcess",
+BASE_FEATURE(kTracingServiceInProcess,
+             "TracingServiceInProcess",
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CASTOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
+             base::FEATURE_ENABLED_BY_DEFAULT
 #else
-      base::FEATURE_DISABLED_BY_DEFAULT
+             base::FEATURE_DISABLED_BY_DEFAULT
 #endif
-};
+);
 
-const base::Feature kEnablePerfettoSystemTracing{
-  "EnablePerfettoSystemTracing",
-#if BUILDFLAG(IS_CHROMEOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
+BASE_FEATURE(kEnablePerfettoSystemTracing,
+             "EnablePerfettoSystemTracing",
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
+             // TODO(crbug.com/1364196): Read from structured config on Fuchsia.
+             base::FEATURE_ENABLED_BY_DEFAULT
 #else
-      base::FEATURE_DISABLED_BY_DEFAULT
+             base::FEATURE_DISABLED_BY_DEFAULT
 #endif
-};
+);
 
 }  // namespace features
 

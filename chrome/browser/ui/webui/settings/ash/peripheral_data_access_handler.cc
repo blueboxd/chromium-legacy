@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/components/peripheral_notification/peripheral_notification_manager.h"
-#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -21,11 +20,11 @@
 #include "chrome/browser/ui/webui/settings/ash/os_settings_features_util.h"
 #include "chromeos/ash/components/dbus/pciguard/pciguard_client.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace chromeos {
-namespace settings {
+namespace ash::settings {
 
 namespace {
 constexpr char thunderbolt_file_path[] = "/sys/bus/thunderbolt/devices/0-0";
@@ -49,7 +48,7 @@ bool PeripheralDataAccessHandler::GetPrefState() {
 
   // Otherwise, use the CrosSetting for non-managed devices.
   bool pcie_tunneling_allowed = false;
-  CrosSettings::Get()->GetBoolean(chromeos::kDevicePeripheralDataAccessEnabled,
+  CrosSettings::Get()->GetBoolean(kDevicePeripheralDataAccessEnabled,
                                   &pcie_tunneling_allowed);
   return pcie_tunneling_allowed;
 }
@@ -129,13 +128,11 @@ void PeripheralDataAccessHandler::OnPeripheralDataAccessProtectionChanged() {
   DCHECK(PciguardClient::Get());
 
   bool new_state = false;
-  CrosSettings::Get()->GetBoolean(chromeos::kDevicePeripheralDataAccessEnabled,
+  CrosSettings::Get()->GetBoolean(kDevicePeripheralDataAccessEnabled,
                                   &new_state);
 
-  ash::PeripheralNotificationManager::Get()->SetPcieTunnelingAllowedState(
-      new_state);
+  PeripheralNotificationManager::Get()->SetPcieTunnelingAllowedState(new_state);
   PciguardClient::Get()->SendExternalPciDevicesPermissionState(new_state);
 }
 
-}  // namespace settings
-}  // namespace chromeos
+}  // namespace ash::settings

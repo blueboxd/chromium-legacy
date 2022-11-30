@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,9 +100,10 @@ ScriptPromise EyeDropper::open(ScriptState* script_state,
       eye_dropper_chooser_.BindNewPipeAndPassReceiver(
           frame->GetTaskRunner(TaskType::kUserInteraction)));
   eye_dropper_chooser_.set_disconnect_handler(
-      WTF::Bind(&EyeDropper::EndChooser, WrapWeakPersistent(this)));
-  eye_dropper_chooser_->Choose(resolver_->WrapCallbackInScriptScope(
-      WTF::Bind(&EyeDropper::EyeDropperResponseHandler, WrapPersistent(this))));
+      WTF::BindOnce(&EyeDropper::EndChooser, WrapWeakPersistent(this)));
+  eye_dropper_chooser_->Choose(
+      resolver_->WrapCallbackInScriptScope(WTF::BindOnce(
+          &EyeDropper::EyeDropperResponseHandler, WrapPersistent(this))));
 
   return promise;
 }
@@ -148,7 +149,7 @@ void EyeDropper::EyeDropperResponseHandler(ScriptPromiseResolver* resolver,
     ColorSelectionResult* result = ColorSelectionResult::Create();
     // TODO(https://1351544): The EyeDropper should return a Color or an
     // SkColor4f, instead of an SkColor.
-    result->setSRGBHex(Color::FromRGBA32(color).SerializeAsCSSColor());
+    result->setSRGBHex(Color::FromRGBA32(color).SerializeAsCanvasColor());
     resolver->Resolve(result);
   } else {
     RejectPromiseHelper(DOMExceptionCode::kAbortError,

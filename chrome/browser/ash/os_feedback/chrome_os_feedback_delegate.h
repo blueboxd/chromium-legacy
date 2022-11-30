@@ -40,6 +40,7 @@ class ChromeOsFeedbackDelegate : public OsFeedbackDelegate {
   std::string GetApplicationLocale() override;
   absl::optional<GURL> GetLastActivePageUrl() override;
   absl::optional<std::string> GetSignedInUserEmail() const override;
+  int GetPerformanceTraceId() override;
   void GetScreenshotPng(GetScreenshotPngCallback callback) override;
   void SendReport(os_feedback_ui::mojom::ReportPtr report,
                   SendReportCallback callback) override;
@@ -47,7 +48,6 @@ class ChromeOsFeedbackDelegate : public OsFeedbackDelegate {
   void OpenExploreApp() override;
   void OpenMetricsDialog() override;
   void OpenSystemInfoDialog() override;
-  void OpenBluetoothLogsInfoDialog() override;
 
  private:
   void OnSendFeedbackDone(SendReportCallback callback, bool status);

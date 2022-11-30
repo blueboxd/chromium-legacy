@@ -5,12 +5,11 @@
 /** @fileoverview Suite of tests for extension-kiosk-dialog. */
 
 import {CrCheckboxElement, ExtensionsKioskDialogElement, KioskApp, KioskAppSettings, KioskBrowserProxyImpl, KioskSettings} from 'chrome://extensions/extensions.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks} from 'chrome://webui-test/test_util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {TestKioskBrowserProxy} from './test_kiosk_browser_proxy.js';
 
@@ -70,7 +69,8 @@ suite(extension_kiosk_mode_tests.suiteName, function() {
   }
 
   async function initPage() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     browserProxy.reset();
     dialog = document.createElement('extensions-kiosk-dialog');
     document.body.appendChild(dialog);

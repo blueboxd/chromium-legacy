@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,10 +19,11 @@ class NGGridNamedLineCollection {
       const String& named_line,
       GridTrackSizingDirection track_direction,
       const NamedGridLinesMap& implicit_grid_line_names,
+      const NamedGridLinesMap& explicit_grid_line_names,
       const ComputedGridTrackList& computed_grid_track_list,
       wtf_size_t last_line,
       wtf_size_t auto_repeat_tracks_count,
-      bool is_parent_grid_container = false);
+      bool is_subgridded_to_parent = false);
 
   NGGridNamedLineCollection(const NGGridNamedLineCollection&) = delete;
   NGGridNamedLineCollection& operator=(const NGGridNamedLineCollection&) =

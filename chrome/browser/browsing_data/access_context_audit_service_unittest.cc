@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/time_formatting.h"
+#include "base/ranges/algorithm.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
@@ -42,10 +43,9 @@ void CheckContainsCookieRecord(
     url::Origin top_frame_origin,
     base::Time last_access_time,
     const std::vector<AccessContextAuditDatabase::AccessRecord>& records) {
-  EXPECT_NE(
-      std::find_if(
-          records.begin(), records.end(),
-          [=](const AccessContextAuditDatabase::AccessRecord& record) {
+  EXPECT_TRUE(
+      base::ranges::any_of(
+          records, [=](const AccessContextAuditDatabase::AccessRecord& record) {
             return record.type ==
                        AccessContextAuditDatabase::StorageAPIType::kCookie &&
                    record.top_frame_origin == top_frame_origin &&
@@ -54,8 +54,7 @@ void CheckContainsCookieRecord(
                    record.path == cookie->Path() &&
                    record.last_access_time == last_access_time &&
                    record.is_persistent == cookie->IsPersistent();
-          }),
-      records.end());
+          }));
 }
 
 // Checks that info in |record| matches storage API access defined by
@@ -66,15 +65,12 @@ void CheckContainsStorageAPIRecord(
     url::Origin top_frame_origin,
     base::Time last_access_time,
     const std::vector<AccessContextAuditDatabase::AccessRecord>& records) {
-  EXPECT_NE(
-      std::find_if(records.begin(), records.end(),
-                   [=](const AccessContextAuditDatabase::AccessRecord& record) {
-                     return record.type == type &&
-                            record.origin == storage_origin &&
-                            record.top_frame_origin == top_frame_origin &&
-                            record.last_access_time == last_access_time;
-                   }),
-      records.end());
+  EXPECT_TRUE(base::ranges::any_of(
+      records, [=](const AccessContextAuditDatabase::AccessRecord& record) {
+        return record.type == type && record.origin == storage_origin &&
+               record.top_frame_origin == top_frame_origin &&
+               record.last_access_time == last_access_time;
+      }));
 }
 
 }  // namespace
@@ -176,10 +172,10 @@ class AccessContextAuditServiceTest : public testing::Test {
   scoped_refptr<base::UpdateableSequencedTaskRunner> task_runner_;
   std::vector<AccessContextAuditDatabase::AccessRecord> records_;
 
-  virtual std::vector<base::Feature> enabled_features() {
+  virtual std::vector<base::test::FeatureRef> enabled_features() {
     return {features::kClientStorageAccessContextAuditing};
   }
-  virtual std::vector<base::Feature> disabled_features() {
+  virtual std::vector<base::test::FeatureRef> disabled_features() {
     return {browsing_data::features::kEnableRemovingAllThirdPartyCookies};
   }
 };
@@ -882,11 +878,13 @@ class AccessContextAuditThirdPartyDataClearingTest
     EXPECT_TRUE(records[0].top_frame_origin.opaque());
   }
 
-  std::vector<base::Feature> enabled_features() override {
+  std::vector<base::test::FeatureRef> enabled_features() override {
     return {features::kClientStorageAccessContextAuditing,
             browsing_data::features::kEnableRemovingAllThirdPartyCookies};
   }
-  std::vector<base::Feature> disabled_features() override { return {}; }
+  std::vector<base::test::FeatureRef> disabled_features() override {
+    return {};
+  }
 };
 
 // Test that when we enable user controls to clear third-party data, we do not

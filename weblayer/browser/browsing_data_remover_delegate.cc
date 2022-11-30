@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,6 +111,8 @@ void BrowsingDataRemoverDelegate::RemoveEmbedderData(
   if (remove_mask & DATA_TYPE_SITE_SETTINGS) {
     browsing_data::RemoveSiteSettingsData(delete_begin, delete_end,
                                           host_content_settings_map);
+    browsing_data::RemovePersistentOriginTrials(
+        user_prefs::UserPrefs::Get(browser_context_));
   }
 
   RunCallbackIfDone();

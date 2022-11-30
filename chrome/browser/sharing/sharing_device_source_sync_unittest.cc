@@ -53,7 +53,9 @@ std::unique_ptr<syncer::DeviceInfo> CreateDeviceInfo(
 
   return CreateFakeDeviceInfo(
       base::GenerateGUID(), client_name, std::move(sharing_info),
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, manufacturer_name, model_name);
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
+      syncer::DeviceInfo::OsType::kLinux,
+      syncer::DeviceInfo::FormFactor::kDesktop, manufacturer_name, model_name);
 }
 
 class SharingDeviceSourceSyncTest : public testing::Test {
@@ -385,8 +387,6 @@ TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_FCMChannel) {
 }
 
 TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_SenderIDChannel) {
-  test_sync_service_.SetActiveDataTypes(
-      {syncer::DEVICE_INFO, syncer::SHARING_MESSAGE});
   auto device_source = CreateDeviceSource(/*wait_until_ready=*/true);
   auto device_info = CreateDeviceInfo(
       "client_name", sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2,

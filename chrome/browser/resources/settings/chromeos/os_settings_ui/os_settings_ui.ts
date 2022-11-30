@@ -22,16 +22,17 @@ import '../../settings_shared.css.js';
 import '../../prefs/prefs.js';
 import '../../settings_vars.css.js';
 
-import {CrContainerShadowBehavior} from 'chrome://resources/cr_elements/cr_container_shadow_behavior.js';
+import {CrContainerShadowBehavior} from 'chrome://resources/ash/common/cr_container_shadow_behavior.js';
 import {CrDrawerElement} from 'chrome://resources/cr_elements/cr_drawer/cr_drawer.js';
-import {FindShortcutBehavior} from 'chrome://resources/cr_elements/find_shortcut_behavior.js';
+import {FindShortcutMixin, FindShortcutMixinInterface} from 'chrome://resources/cr_elements/find_shortcut_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {listenOnce} from 'chrome://resources/js/util.m.js';
+import {listenOnce} from 'chrome://resources/js/util.js';
 import {Debouncer, DomIf, microTask, mixinBehaviors, PolymerElement, timeOut} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
 import {SettingsPrefsElement} from '../../prefs/prefs.js';
 import {Route, Router} from '../../router.js';
+import {castExists} from '../assert_extras.js';
 import {setGlobalScrollTarget} from '../global_scroll_target_behavior.js';
 import {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSettingChange} from '../metrics_recorder.js';
 import {OSPageVisibility, osPageVisibility} from '../os_page_visibility.js';
@@ -75,14 +76,13 @@ const OsSettingsUiElementBase =
     mixinBehaviors(
         [
           CrContainerShadowBehavior,
-          FindShortcutBehavior,
           // Calls currentRouteChanged() in attached(),so ensure other behaviors
           // run their attached() first.
           RouteObserverBehavior,
         ],
-        PolymerElement) as {
+        FindShortcutMixin(PolymerElement)) as {
       new (): PolymerElement & CrContainerShadowBehavior &
-          FindShortcutBehavior & RouteObserverBehaviorInterface,
+          FindShortcutMixinInterface & RouteObserverBehaviorInterface,
     };
 
 class OsSettingsUiElement extends OsSettingsUiElementBase {
@@ -265,8 +265,8 @@ class OsSettingsUiElement extends OsSettingsUiElementBase {
       // view.
       const drawer = this.getDrawer_();
       listenOnce(drawer, 'cr-drawer-opening', () => {
-        const drawerTemplate =
-            this.shadowRoot!.querySelector('#drawerTemplate') as DomIf;
+        const drawerTemplate = castExists(
+            this.shadowRoot!.querySelector<DomIf>('#drawerTemplate'));
         drawerTemplate.if = true;
       });
 
@@ -380,15 +380,11 @@ class OsSettingsUiElement extends OsSettingsUiElementBase {
   }
 
   private getDrawer_(): CrDrawerElement {
-    const drawer = this.shadowRoot!.querySelector('#drawer');
-    assert(drawer);
-    return drawer as CrDrawerElement;
+    return castExists(this.shadowRoot!.querySelector('cr-drawer'));
   }
 
   private getToolbar_(): OsToolbarElement {
-    const toolbar = this.shadowRoot!.querySelector('os-toolbar');
-    assert(toolbar);
-    return toolbar;
+    return castExists(this.shadowRoot!.querySelector('os-toolbar'));
   }
 
   private onRefreshPref_(e: CustomEvent<string>) {

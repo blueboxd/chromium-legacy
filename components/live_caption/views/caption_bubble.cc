@@ -356,7 +356,7 @@ class CaptionBubbleLabel : public views::Label {
     ui::AXNodeData& ax_node_data = ax_lines[line_index]->GetCustomData();
     if (base::UTF8ToUTF16(ax_node_data.GetStringAttribute(
             ax::mojom::StringAttribute::kName)) != line_text) {
-      ax_node_data.SetName(line_text);
+      ax_node_data.SetNameChecked(line_text);
       std::vector<gfx::Rect> bounds = GetSubstringBounds(text_range);
       ax_node_data.relative_bounds.bounds = gfx::RectF(bounds[0]);
       ax_lines[line_index]->NotifyAccessibilityEvent(
@@ -572,13 +572,13 @@ void CaptionBubble::Init() {
 
   views::Button::PressedCallback pin_or_unpin_callback = base::BindRepeating(
       &CaptionBubble::PinOrUnpinButtonPressed, base::Unretained(this));
-  auto pin_button = BuildImageButton(pin_or_unpin_callback,
-                                     IDS_LIVE_CAPTION_BUBBLE_BACK_TO_TAB);
+  auto pin_button =
+      BuildImageButton(pin_or_unpin_callback, IDS_LIVE_CAPTION_BUBBLE_PIN);
   pin_button->SetVisible(!is_pinned_);
   pin_button_ = header_container->AddChildView(std::move(pin_button));
 
   auto unpin_button = BuildImageButton(std::move(pin_or_unpin_callback),
-                                       IDS_LIVE_CAPTION_BUBBLE_BACK_TO_TAB);
+                                       IDS_LIVE_CAPTION_BUBBLE_UNPIN);
   unpin_button->SetVisible(is_pinned_);
   unpin_button_ = header_container->AddChildView(std::move(unpin_button));
 
@@ -671,7 +671,7 @@ void CaptionBubble::OnWidgetActivationChanged(views::Widget* widget,
 
 void CaptionBubble::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kDialog;
-  node_data->SetName(title_->GetText());
+  node_data->SetNameChecked(title_->GetText());
 }
 
 std::u16string CaptionBubble::GetAccessibleWindowTitle() const {
@@ -986,9 +986,9 @@ void CaptionBubble::SetTextColor() {
   media_foundation_renderer_error_checkbox_->SetCheckedIconImageColor(
       color_provider->GetColor(ui::kColorLiveCaptionBubbleCheckbox));
 #endif
-  views::SetImageFromVectorIconWithColor(back_to_tab_button_,
-                                         vector_icons::kLaunchIcon, kButtonDip,
-                                         icon_color, icon_disabled_color);
+  views::SetImageFromVectorIconWithColor(
+      back_to_tab_button_, vector_icons::kBackToTabIcon, kButtonDip, icon_color,
+      icon_disabled_color);
   views::SetImageFromVectorIconWithColor(
       close_button_, vector_icons::kCloseRoundedIcon, kButtonDip, icon_color,
       icon_disabled_color);

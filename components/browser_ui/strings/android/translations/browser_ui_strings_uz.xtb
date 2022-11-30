@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uz">
+<translation id="1005794457625275818"><ph name="FPS_OWNER" /> guruhidagi <ph name="FPS_MEMBERS_COUNT" /> ta saytga cookielardan foydalanishga ruxsat berilgan, jumlardan: <ph name="FPS_MEMBER" /></translation>
 <translation id="1006017844123154345">Onlayn versiyasini ochish</translation>
 <translation id="1044891598689252897">Saytlar xatosiz ishlaydi</translation>
 <translation id="1124090076051167250">Bunda saytlar maʼlumotlari, cookie fayllar va Bosh ekrandagi ilovalar egallagan <ph name="DATASIZE" /> joy tozalanadi.</translation>
@@ -21,6 +22,7 @@
 <translation id="1426410128494586442">Ha</translation>
 <translation id="1446450296470737166">MIDI qurilmalarini boshqarishga to‘liq ruxsat berish</translation>
 <translation id="1620510694547887537">Kamera</translation>
+<translation id="1633720957382884102">Aloqador saytlar</translation>
 <translation id="1644574205037202324">Tarix</translation>
 <translation id="1647582022260550163">Ruxsatlar qayta tiklanib, cookie fayllar va sayt maʼlumotlari tozalansinmi?</translation>
 <translation id="1660204651932907780">Saytlarga ovoz ijro etish uchun ruxsat berish (tavsiya etiladi)</translation>
@@ -115,6 +117,7 @@
 <translation id="3333961966071413176">Barcha kontaktlar</translation>
 <translation id="3362437373201486687">Bluetooth qurilmalar qidirilmoqda</translation>
 <translation id="3386292677130313581">Joylashuv ma’lumotini ko‘rishiga ruxsat so‘ralsin (tavsiya etiladi)</translation>
+<translation id="3521663503435878242"><ph name="DOMAIN" /> domenidagi saytlar</translation>
 <translation id="3538390592868664640">Saytlarni atrofingizning 3D xaritasini yaratish yoki kamera joylashuvini aniqlashdan bloklash</translation>
 <translation id="3551268116566418498">Inkognito rejimi tark etilsinmi?</translation>
 <translation id="3586500876634962664">Kamera va mikrofonni ishlatish</translation>
@@ -260,6 +263,7 @@
 <translation id="6554732001434021288">Oxirgi tashrif: <ph name="NUM_DAYS" /> kun oldin</translation>
 <translation id="6561560012278703671">Xabarlar tinchroq kelsin (bezovta qiluvchi bildirishnomalar bloklanadi)</translation>
 <translation id="6593061639179217415">Desktop versiya</translation>
+<translation id="6608211702542341247">Bu sayt guruhdagi faoliyatingizni koʻrishi mumkin boʻlgan <ph name="FPS_OWNER" />ning saytlar guruhiga kiradi</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Himoyalangan kontent</translation>
 <translation id="662080504995468778">Qolaman</translation>
@@ -348,7 +352,6 @@
 <translation id="8380167699614421159">Bu saytda yoqimsiz yoki befoyda reklamalar chiqadi</translation>
 <translation id="8394832520002899662">Saytga qaytish uchun bosing</translation>
 <translation id="8409345997656833551">Maqolani soddalashgan shaklda koʻrish mumkin boʻlganda xabar berilsin</translation>
-<translation id="8425213833346101688">O‘zgartirish</translation>
 <translation id="8428213095426709021">Sozlamalar</translation>
 <translation id="8441146129660941386">Orqaga qaytarish</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" /> joylashuvingizni aniqlay olishi uchun <ph name="BEGIN_LINK" />Android sozlamalari<ph name="END_LINK" /> orqali Joylashuvni aniqlash xizmatini yoqing.</translation>
@@ -372,6 +375,7 @@
 <translation id="8751914237388039244">Rasmni tanlang</translation>
 <translation id="8801436777607969138">Muayyan saytda JavaScript kodini bloklash.</translation>
 <translation id="8816026460808729765">Saytlarga sensorlardan foydalanishni taqiqlash</translation>
+<translation id="8823559166155093873">Cookie fayllarni bloklash</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8903921497873541725">Kattalashtirish</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>

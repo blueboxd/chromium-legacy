@@ -2344,6 +2344,9 @@ Try tapping the mic to ask me anything.
       <message name="IDS_PERSONALIZATION_APP_ARIA_LABEL_ENABLE_AUTO_COLOR_MODE" desc="Aria label for the button to enable auto color mode.">
         Enable auto color mode
       </message>
+      <message name="IDS_PERSONALIZATION_APP_TOOLTIP_AUTO_COLOR_MODE" desc="Tooltip for the button to enable auto color mode.">
+        Automatically switch to dark theme at sunset
+      </message>
       <message name="IDS_PERSONALIZATION_APP_ARIA_LABEL_GO_TO_ACCOUNT_SETTINGS" desc="Aria label for the link to account settings.">
         Go to account settings
       </message>
@@ -3220,6 +3223,9 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SHIMLESS_RMA_HARDWARE_SHUTDOWN_BUTTON" translateable="false" desc="Label for the shut down button on the hardware error page.">
         Shut down
       </message>
+      <message name="IDS_SHIMLESS_RMA_HARDWARE_ERROR_CODE_MESSAGE" translateable="false" desc="The message that displays an error code.">
+        Error code: 0x<ph name="ERROR_CODE">$1<ex>1004</ex></ph>
+      </message>
       <!-- Reboot page -->
       <message name="IDS_SHIMLESS_RMA_REBOOT_PAGE_TITLE" translateable="false" desc="The title for the reboot page. The reboot page is shown when the device is preparing to reboot.">
         Preparing to restart...
@@ -3492,8 +3498,20 @@ Try tapping the mic to ask me anything.
       <message name="IDS_FEEDBACK_TOOL_INCLUDE_SYSTEM_INFO_AND_METRICS_CHECKBOX_LABEL" desc="Checkbox for including system information and metrics on the bug report dialog box">
         Send <ph name="BEGIN_LINK1">&lt;a id="sysInfoLink"&gt;</ph>system and app info<ph name="END_LINK1">&lt;/a&gt;</ph> and <ph name="BEGIN_LINK2">&lt;a id="histogramsLink"&gt;</ph>metrics<ph name="END_LINK2">&lt;/a&gt;</ph>
       </message>
+      <message name="IDS_FEEDBACK_TOOL_INCLUDE_PERFORMANCE_TRACE_CHECKBOX_LABEL" desc="Checkbox for including performance trace data on the bug report dialog box.">
+        Send <ph name="BEGIN_LINK1">&lt;a id="performanceTraceLink"&gt;</ph>performance trace data<ph name="END_LINK1">&lt;/a&gt;</ph>
+      </message>
       <message name="IDS_FEEDBACK_TOOL_BLUETOOTH_LOGS_CHECKBOX" translateable="false" desc="Checkbox for Google internal account to attach bluetooth logs from the current session.">
         Attach <ph name="BEGIN_LINK1">&lt;a id="bluetoothLogsInfoLink"&gt;</ph>Bluetooth Logs<ph name="END_LINK1">&lt;/a&gt;</ph> (Google internal)
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_BLUETOOTH_LOGS_MESSAGE" translateable="false" desc="Message shown after user clicks on the bluetooth logs hyperlink">
+        To better diagnose Bluetooth issues, Googlers can include additional Bluetooth logs with their feedback reports. When this option is checked, your report will include btsnoop and HCI logs from your current session, sanitized to remove as much PII as possible. Access to these logs will be restricted to managers of the ChromeOS product group in Listnr. Logs will be purged after 90 days.
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_ASSISTANT_LOGS_CHECKBOX" translateable="false" desc="Checkbox for Google internal account to attach assistant logs from the current session.">
+        Include recent Assistant history via Sherlog. This may include your identify, location and debug info. <ph name="BEGIN_LINK1">&lt;a id="assistantLogsLink"&gt;</ph>Learn more<ph name="END_LINK1">&lt;/a&gt;</ph>
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_ASSISTANT_LOGS_MESSAGE" translateable="false" desc="Message shown after user clicks on the assistant logs hyperlink">
+        This information helps us better understand your Assistant issue. It's stored for up to 90 days and access is restricted to appropriate engineering and feedback teams.
       </message>
       <message name="IDS_FEEDBACK_TOOL_PRIVACY_NOTE" desc="Text for the privacy note included in the feedback app">
         Go to the <ph name="BEGIN_LINK1">&lt;a id="legalHelpPageUrl"&gt;</ph>Legal Help page<ph name="END_LINK1">&lt;/a&gt;</ph> to request content changes for legal reasons. Some account and system information may be sent to Google. We will use the information you give us to help address technical issues and to improve our services, subject to our <ph name="BEGIN_LINK2">&lt;a id="privacyPolicyUrl"&gt;</ph>Privacy Policy<ph name="END_LINK2">&lt;/a&gt;</ph> and <ph name="BEGIN_LINK3">&lt;a id="termsOfServiceUrl"&gt;</ph>Terms of Service<ph name="END_LINK3">&lt;/a&gt;</ph>.
@@ -3569,6 +3587,15 @@ Try tapping the mic to ask me anything.
         Done
       </message>
       <!-- End of Feedback Tool -->
+
+      <!-- Shortcut Customization -->
+      <message name="IDS_SHORTCUT_CUSTOMIZATION_APP_TITLE" desc="Title of the app" translateable="false">
+        Shortcuts
+      </message>
+      <message name="IDS_SHORTCUT_CUSTOMIZATION_KEYBOARD_SETTINGS" desc="Label for link to open keyboard settings in the Settings app." translateable="false">
+        Keyboard settings
+      </message>
+      <!-- End of Shortcut Customization -->
     </messages>
   </release>
 </grit>

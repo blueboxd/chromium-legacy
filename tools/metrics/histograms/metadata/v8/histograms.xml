@@ -126,7 +126,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.CompileMicroSeconds" units="microseconds"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>yangguo@chromium.org</owner>
   <summary>
     Time spent in V8 compiler (full codegen) excluding parser.
@@ -140,7 +140,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.CompileScript.CacheBehaviour" enum="V8CacheBehaviour"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>leszeks@chromium.org</owner>
   <owner>v8-runtime@google.com</owner>
   <summary>
@@ -295,7 +295,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.CompileScriptMicroSeconds.ProduceCache"
-    units="microseconds" expires_after="2023-01-22">
+    units="microseconds" expires_after="2023-03-26">
   <owner>leszeks@chromium.org</owner>
   <owner>v8-runtime@google.com</owner>
   <summary>
@@ -340,7 +340,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.DebugFeatureUsage" enum="V8DebugFeature"
-    expires_after="2022-12-11">
+    expires_after="2023-03-26">
   <owner>yangguo@chromium.org</owner>
   <owner>bmeurer@chromium.org</owner>
   <summary>
@@ -385,7 +385,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.CollectionRate.Full" units="%"
-    expires_after="M109">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -396,7 +396,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.CollectionRate.Full.Cpp" units="%"
-    expires_after="2023-02-12">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -407,7 +407,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.CollectionRate.Young" units="%"
-    expires_after="M109">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -418,7 +418,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.Efficiency.Full" units="KB/ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -428,7 +428,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.Efficiency.Full.Cpp" units="KB/ms"
-    expires_after="2023-02-19">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -438,7 +438,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.Efficiency.MainThread.Full" units="KB/ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -449,7 +449,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.Efficiency.MainThread.Full.Cpp" units="KB/ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -460,7 +460,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.Efficiency.MainThread.Young" units="KB/ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -472,7 +472,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.Efficiency.Young" units="KB/ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -482,7 +482,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GC.Cycle.Full" units="ms" expires_after="2023-02-12">
+<histogram name="V8.GC.Cycle.Full" units="ms" expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -491,7 +491,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GC.Cycle.Full.Compact" units="ms" expires_after="M109">
+<histogram name="V8.GC.Cycle.Full.Compact" units="ms" expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -500,7 +500,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GC.Cycle.Full.Compact.Cpp" units="ms" expires_after="M109">
+<histogram name="V8.GC.Cycle.Full.Compact.Cpp" units="ms" expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -509,7 +509,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GC.Cycle.Full.Cpp" units="ms" expires_after="2023-02-12">
+<histogram name="V8.GC.Cycle.Full.Cpp" units="ms" expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -518,7 +518,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GC.Cycle.Full.Mark" units="ms" expires_after="M109">
+<histogram name="V8.GC.Cycle.Full.Mark" units="ms" expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -527,7 +527,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GC.Cycle.Full.Mark.Cpp" units="ms" expires_after="M109">
+<histogram name="V8.GC.Cycle.Full.Mark.Cpp" units="ms" expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -536,7 +536,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GC.Cycle.Full.Sweep" units="ms" expires_after="M109">
+<histogram name="V8.GC.Cycle.Full.Sweep" units="ms" expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -545,7 +545,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GC.Cycle.Full.Sweep.Cpp" units="ms" expires_after="M109">
+<histogram name="V8.GC.Cycle.Full.Sweep.Cpp" units="ms" expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -554,7 +554,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GC.Cycle.Full.Weak" units="ms" expires_after="M109">
+<histogram name="V8.GC.Cycle.Full.Weak" units="ms" expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -563,7 +563,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GC.Cycle.Full.Weak.Cpp" units="ms" expires_after="M109">
+<histogram name="V8.GC.Cycle.Full.Weak.Cpp" units="ms" expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -572,8 +572,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GC.Cycle.MainThread.Full" units="ms"
-    expires_after="2023-02-12">
+<histogram name="V8.GC.Cycle.MainThread.Full" units="ms" expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -583,7 +582,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Atomic" units="ms"
-    expires_after="2023-02-12">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -595,7 +594,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Atomic.Compact" units="ms"
-    expires_after="2023-02-12">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -607,7 +606,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Atomic.Compact.Cpp" units="ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -619,7 +618,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Atomic.Cpp" units="ms"
-    expires_after="2023-02-12">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -631,7 +630,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Atomic.Mark" units="ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -643,7 +642,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Atomic.Mark.Cpp" units="ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -655,7 +654,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Atomic.Sweep" units="ms"
-    expires_after="2023-02-12">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -667,7 +666,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Atomic.Sweep.Cpp" units="ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -679,7 +678,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Atomic.Weak" units="ms"
-    expires_after="2023-02-12">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -691,7 +690,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Atomic.Weak.Cpp" units="ms"
-    expires_after="2023-02-12">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -703,7 +702,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Compact" units="ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -713,7 +712,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Compact.Cpp" units="ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -724,7 +723,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Cpp" units="ms"
-    expires_after="2023-02-12">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -734,7 +733,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Incremental.Mark" units="ms"
-    expires_after="2023-02-12">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -745,7 +744,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Incremental.Mark.Cpp" units="ms"
-    expires_after="2023-02-12">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -756,7 +755,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Incremental.Sweep" units="ms"
-    expires_after="2023-02-12">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -767,7 +766,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Incremental.Sweep.Cpp" units="ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -778,7 +777,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Mark" units="ms"
-    expires_after="2023-02-12">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -788,7 +787,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Mark.Cpp" units="ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -799,7 +798,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Sweep" units="ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -809,7 +808,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Sweep.Cpp" units="ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -820,7 +819,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Weak" units="ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -831,7 +830,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.MainThread.Full.Weak.Cpp" units="ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -841,8 +840,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GC.Cycle.MainThread.Young" units="ms"
-    expires_after="2023-02-12">
+<histogram name="V8.GC.Cycle.MainThread.Young" units="ms" expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -852,7 +850,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.Memory.Freed.Full.Cpp" units="KB"
-    expires_after="M109">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -862,7 +860,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.Objects.After.Full.Cpp" units="KB"
-    expires_after="M109">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -872,7 +870,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.Objects.Before.Full.Cpp" units="KB"
-    expires_after="2023-02-12">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -882,7 +880,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.Objects.Freed.Full.Cpp" units="KB"
-    expires_after="M109">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -892,7 +890,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.Reason.Full" enum="GarbageCollectionReason"
-    expires_after="2023-02-12">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -902,7 +900,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Cycle.Reason.Young" enum="GarbageCollectionReason"
-    expires_after="2023-02-12">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -911,7 +909,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GC.Cycle.Young" units="ms" expires_after="2023-02-12">
+<histogram name="V8.GC.Cycle.Young" units="ms" expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -921,7 +919,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Event.MainThread.Full.Incremental.Mark" units="ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -931,7 +929,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Event.MainThread.Full.Incremental.Mark.Cpp" units="ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -941,7 +939,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Event.MainThread.Full.Incremental.Sweep" units="ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>nikolaos@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -951,7 +949,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.Event.MainThread.Full.Incremental.Sweep.Cpp" units="ms"
-    expires_after="M109">
+    expires_after="M119">
   <owner>omerkatz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -961,7 +959,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.TimeToCollectionOnBackground" units="microseconds"
-    expires_after="M109">
+    expires_after="M119">
   <owner>dinfuehr@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -978,7 +976,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GC.TimeToSafepoint" units="microseconds"
-    expires_after="2023-02-12">
+    expires_after="M119">
   <owner>dinfuehr@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -993,7 +991,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GCBackgroundMarking" units="ms" expires_after="M111">
+<histogram name="V8.GCBackgroundMarking" units="ms" expires_after="2023-04-09">
   <owner>mlippautz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -1011,13 +1009,14 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GCCompactor" units="ms" expires_after="2023-01-22">
+<histogram name="V8.GCCompactor" units="ms" expires_after="2023-03-26">
   <owner>hpayer@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>Time spent in mark-sweep phase of GC.</summary>
 </histogram>
 
-<histogram name="V8.GCCompactorBackground" units="ms" expires_after="M111">
+<histogram name="V8.GCCompactorBackground" units="ms"
+    expires_after="2023-04-09">
   <owner>hpayer@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -1035,7 +1034,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GCFinalizeMC" units="ms" expires_after="2023-01-22">
+<histogram name="V8.GCFinalizeMC" units="ms" expires_after="2023-03-26">
   <owner>mlippautz@chromium.org</owner>
   <owner>hpayer@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
@@ -1045,7 +1044,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GCFinalizeMC.Clear" units="ms" expires_after="M111">
+<histogram name="V8.GCFinalizeMC.Clear" units="ms" expires_after="2023-04-09">
   <owner>mlippautz@chromium.org</owner>
   <owner>hpayer@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
@@ -1071,16 +1070,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Time spent in the finish phase of incremental latency-optimized Mark-Compact
     GC.
-  </summary>
-</histogram>
-
-<histogram name="V8.GCFinalizeMC.Mark" units="ms" expires_after="2022-11-20">
-  <owner>mlippautz@chromium.org</owner>
-  <owner>hpayer@chromium.org</owner>
-  <owner>v8-memory-sheriffs@google.com</owner>
-  <summary>
-    Time spent in the marking phase of incremental latency-optimized
-    Mark-Compact GC.
   </summary>
 </histogram>
 
@@ -1114,7 +1103,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GCFinalizeMCReduceMemory" units="ms"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>mlippautz@chromium.org</owner>
   <owner>hpayer@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
@@ -1125,7 +1114,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GCFinalizeMCReduceMemoryBackground" units="ms"
-    expires_after="M111">
+    expires_after="2023-04-09">
   <owner>mlippautz@chromium.org</owner>
   <owner>hpayer@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
@@ -1148,7 +1137,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GCIncrementalMarking" units="ms" expires_after="M111">
+<histogram name="V8.GCIncrementalMarking" units="ms" expires_after="2023-04-09">
   <owner>hpayer@chromium.org</owner>
   <owner>mlippautz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
@@ -1158,15 +1147,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GCIncrementalMarkingFinalize" units="ms"
-    expires_after="2022-11-20">
-  <owner>hpayer@chromium.org</owner>
-  <owner>v8-memory-sheriffs@google.com</owner>
-  <summary>Time spent in finalizing incremental marking.</summary>
-</histogram>
-
 <histogram name="V8.GCIncrementalMarkingReason" enum="GarbageCollectionReason"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>mlippautz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>Reason an incremental marking was started in V8.</summary>
@@ -1180,7 +1162,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.GCIncrementalMarkingSum" units="ms"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>mlippautz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -1189,27 +1171,14 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GCMainThreadMarkingThroughput" units="MB/s"
-    expires_after="2022-11-20">
-  <owner>mlippautz@chromium.org</owner>
-  <owner>v8-memory-sheriffs@google.com</owner>
-  <summary>
-    Marking throughput considering all durations of all marking phases on the
-    main thread and marked bytes within one V8 garbage collection cycle.
-    Reported once per garbage collection cycle. Only reported for platforms
-    supporting high resolution clocks and when more than 1MB of live objects
-    have been found.
-  </summary>
-</histogram>
-
 <histogram name="V8.GCMarkCompactReason" enum="GarbageCollectionReason"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>mlippautz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>Reason a mark-compact garbage collection was started in V8.</summary>
 </histogram>
 
-<histogram name="V8.GCMarkingSum" units="ms" expires_after="M111">
+<histogram name="V8.GCMarkingSum" units="ms" expires_after="2023-04-09">
   <owner>mlippautz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -1219,7 +1188,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GCScavenger.ScavengeMain" units="ms" expires_after="M111">
+<histogram name="V8.GCScavenger.ScavengeMain" units="ms"
+    expires_after="2023-04-09">
   <owner>mlippautz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>
@@ -1228,7 +1198,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.GCScavenger.ScavengeRoots" units="ms" expires_after="M111">
+<histogram name="V8.GCScavenger.ScavengeRoots" units="ms"
+    expires_after="2023-04-09">
   <owner>mlippautz@chromium.org</owner>
   <owner>v8-memory-sheriffs@google.com</owner>
   <summary>Time spent in scavenging the roots during a V8 scavenge.</summary>
@@ -1278,50 +1249,6 @@ chromium-metrics-reviews@google.com.
     enum="V8InitializerOpenV8FileResult" expires_after="2020-05-10">
   <owner>oth@chromium.org</owner>
   <summary>Results from opening V8 snapshot files.</summary>
-</histogram>
-
-<histogram name="V8.InlineCodeCache.MainFrame.CacheTimesMatch"
-    units="BooleanTimesMatch" expires_after="2023-02-12">
-  <owner>sky@chromium.org</owner>
-  <owner>swarm-team@google.com</owner>
-  <summary>
-    Whether the times of the inline code cache data and url load time match. If
-    the times do not match, the code cache is not used. This is recorded when
-    the renderer receives the code cache from the browser (which is early in
-    navigation).
-  </summary>
-</histogram>
-
-<histogram name="V8.InlineCodeCache.Subframe.CacheTimesMatch"
-    units="BooleanTimesMatch" expires_after="2023-02-12">
-  <owner>sky@chromium.org</owner>
-  <owner>swarm-team@google.com</owner>
-  <summary>
-    Whether the times of the inline code cache data and url load time match. If
-    the times do not match, the code cache is not used. This is recorded when
-    the renderer receives the code cache from the browser (which is early in
-    navigation).
-  </summary>
-</histogram>
-
-<histogram name="V8.InlineCodeCache.UsedPreviouslyGeneratedCache"
-    units="BooleanUsed" expires_after="2023-02-12">
-  <owner>sky@chromium.org</owner>
-  <owner>swarm-team@google.com</owner>
-  <summary>
-    Indicates whether a previously compiled inline script was used. This is
-    logged for every frame after all inline scripts have loaded.
-  </summary>
-</histogram>
-
-<histogram name="V8.InlineCodeCache.WillGenerateCache" units="BooleanUsed"
-    expires_after="2023-02-12">
-  <owner>sky@chromium.org</owner>
-  <owner>swarm-team@google.com</owner>
-  <summary>
-    Indicates whether inline script will be compiled and cached for future use.
-    This is logged for every frame after all inline scripts have loaded.
-  </summary>
 </histogram>
 
 <histogram name="V8.LiftoffBailoutReasons" enum="LiftoffBailoutReason"
@@ -2312,7 +2239,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.WasmTierUpModuleMicroSeconds" units="microseconds"
-    expires_after="2023-01-29">
+    expires_after="2023-04-02">
   <owner>ecmziegler@chromium.org</owner>
   <owner>adamk@chromium.org</owner>
   <owner>clemensb@chromium.org</owner>

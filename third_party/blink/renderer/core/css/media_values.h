@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,6 +104,7 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues>,
   static float CalculateExSize(LocalFrame*);
   static float CalculateChSize(LocalFrame*);
   static float CalculateIcSize(LocalFrame*);
+  static float CalculateLineHeight(LocalFrame*);
   static int CalculateDeviceWidth(LocalFrame*);
   static int CalculateDeviceHeight(LocalFrame*);
   static bool CalculateStrictMode(LocalFrame*);

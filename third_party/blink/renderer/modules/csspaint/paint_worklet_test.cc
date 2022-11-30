@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -310,13 +310,15 @@ TEST_P(MainOrOffThreadPaintWorkletTest, AllGlobalScopesMustBeCreated) {
       MakeGarbageCollected<PaintWorklet>(*GetFrame().DomWindow());
   paint_worklet_to_test->ResetIsPaintOffThreadForTesting();
 
-  EXPECT_TRUE(paint_worklet_to_test->GetGlobalScopesForTesting().IsEmpty());
+  EXPECT_TRUE(paint_worklet_to_test->GetGlobalScopesForTesting().empty());
 
   std::unique_ptr<PaintWorkletPaintDispatcher> dispatcher =
       std::make_unique<PaintWorkletPaintDispatcher>();
   Persistent<PaintWorkletProxyClient> proxy_client =
       MakeGarbageCollected<PaintWorkletProxyClient>(
-          1, paint_worklet_to_test, dispatcher->GetWeakPtr(), nullptr);
+          1, paint_worklet_to_test,
+          GetFrame().GetTaskRunner(TaskType::kInternalDefault),
+          dispatcher->GetWeakPtr(), nullptr);
   paint_worklet_to_test->SetProxyClientForTesting(proxy_client);
 
   while (paint_worklet_to_test->NeedsToCreateGlobalScopeForTesting()) {

@@ -19,16 +19,7 @@ accessibility_common_dir =
     "$root_out_dir/resources/chromeos/accessibility/accessibility_common"
 
 group("build") {
-  deps = [
-    ":accessibility_common_copied_files",
-    ":pumpkin_availability_files",
-  ]
-
-  # Only copy pumpkin files if Dictation will use Pumpkin. This keeps the build
-  # size from being inflated during Pumpkin development.
-  if (enable_pumpkin_for_dictation) {
-    deps += [ ":unzip_pumpkin_files" ]
-  }
+  deps = [ ":accessibility_common_copied_files" ]
 }
 
 # Instead of setting up copy targets, use a script to copy all files.
@@ -48,7 +39,6 @@ run_jsbundler("accessibility_common_copied_files") {
     "dictation/input_controller.js",
     "dictation/locale_info.js",
     "dictation/macros/delete_prev_sent_macro.js",
-    "dictation/macros/hidden_macro_manager.js",
     "dictation/macros/input_text_view_macro.js",
     "dictation/macros/list_commands_macro.js",
     "dictation/macros/macro.js",
@@ -75,37 +65,6 @@ run_jsbundler("accessibility_common_copied_files") {
   ]
 }
 
-if (enable_pumpkin_for_dictation) {
-  pumpkin_output_dir = "$accessibility_common_dir/dictation/parse/pumpkin"
-
-  action("unzip_pumpkin_files") {
-    script = "dictation/parse/pumpkin/unzip_pumpkin.py"
-    sources = [ "dictation/parse/pumpkin/pumpkin_files.zip" ]
-    args = [
-      "--output-dir=resources/chromeos/accessibility/accessibility_common/dictation/parse/pumpkin",
-      rebase_path("dictation/parse/pumpkin/pumpkin_files.zip", root_build_dir),
-    ]
-    outputs = [
-      "$pumpkin_output_dir/js_pumpkin_tagger_bin.js",
-      "$pumpkin_output_dir/tagger_wasm_main.js",
-      "$pumpkin_output_dir/tagger_wasm_main.wasm",
-      "$pumpkin_output_dir/en_us/action_config.binarypb",
-      "$pumpkin_output_dir/en_us/pumpkin_config.binarypb",
-    ]
-  }
-}
-
-copy("pumpkin_availability_files") {
-  if (enable_pumpkin_for_dictation) {
-    sources = [ "dictation/parse/pumpkin/include_pumpkin.js" ]
-  } else {
-    sources = [ "dictation/parse/pumpkin/exclude_pumpkin.js" ]
-  }
-  outputs = [
-    "$accessibility_common_dir/dictation/parse/pumpkin/pumpkin_availability.js",
-  ]
-}
-
 source_set("browser_tests") {
   testonly = true
   assert(enable_extensions)
@@ -123,7 +82,6 @@ source_set("browser_tests") {
     # The test uses data from the original location, not the copied one.
     "//chrome/browser/resources/chromeos/accessibility/accessibility_common/",
     "//chrome/browser/resources/chromeos/accessibility/common/",
-    "//ui/webui/resources/js/cr.js",
   ]
   data += js2gtest_js_libraries
 }
@@ -252,7 +210,6 @@ js_library("dictation_ui_controller") {
 js_library("dictation_macros") {
   sources = [
     "dictation/macros/delete_prev_sent_macro.js",
-    "dictation/macros/hidden_macro_manager.js",
     "dictation/macros/input_text_view_macro.js",
     "dictation/macros/list_commands_macro.js",
     "dictation/macros/macro.js",
@@ -281,11 +238,6 @@ js_library("speech_parsing") {
     "dictation/parse/simple_parse_strategy.js",
     "dictation/parse/speech_parser.js",
   ]
-  if (enable_pumpkin_for_dictation) {
-    sources += [ "dictation/parse/pumpkin/include_pumpkin.js" ]
-  } else {
-    sources += [ "dictation/parse/pumpkin/exclude_pumpkin.js" ]
-  }
   deps = [
     ":dictation_input_controller",
     ":dictation_locale_info",

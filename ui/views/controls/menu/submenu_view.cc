@@ -17,6 +17,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/owned_window_anchor.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
@@ -285,11 +286,8 @@ bool SubmenuView::OnMouseWheel(const ui::MouseWheelEvent& e) {
     return true;
   }
 
-  const auto starts_above_vis_bounds = [&vis_bounds](const MenuItemView* item) {
-    return item->y() < vis_bounds.y();
-  };
-  auto i = std::find_if_not(menu_items.cbegin(), menu_items.cend(),
-                            starts_above_vis_bounds);
+  auto i = base::ranges::lower_bound(menu_items, vis_bounds.y(), {},
+                                     &MenuItemView::y);
   if (i == menu_items.cend())
     return true;
 
@@ -367,9 +365,7 @@ size_t SubmenuView::GetRowCount() {
 
 absl::optional<size_t> SubmenuView::GetSelectedRow() {
   const auto menu_items = GetMenuItems();
-  const auto i =
-      std::find_if(menu_items.cbegin(), menu_items.cend(),
-                   [](const MenuItemView* item) { return item->IsSelected(); });
+  const auto i = base::ranges::find_if(menu_items, &MenuItemView::IsSelected);
   return (i == menu_items.cend()) ? absl::nullopt
                                   : absl::make_optional(static_cast<size_t>(
                                         std::distance(menu_items.cbegin(), i)));

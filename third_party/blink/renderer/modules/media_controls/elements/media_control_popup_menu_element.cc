@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -142,9 +142,10 @@ void MediaControlPopupMenuElement::DefaultEventHandler(Event& event) {
   } else if (event.type() == event_type_names::kFocusout) {
     GetDocument()
         .GetTaskRunner(TaskType::kMediaElementEvent)
-        ->PostTask(FROM_HERE,
-                   WTF::Bind(&MediaControlPopupMenuElement::HideIfNotFocused,
-                             WrapWeakPersistent(this)));
+        ->PostTask(
+            FROM_HERE,
+            WTF::BindOnce(&MediaControlPopupMenuElement::HideIfNotFocused,
+                          WrapWeakPersistent(this)));
   } else if (event.type() == event_type_names::kClick &&
              event.target() != this) {
     // Since event.target() != this, we know that one of our children was

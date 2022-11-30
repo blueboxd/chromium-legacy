@@ -7,12 +7,15 @@
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "base/containers/contains.h"
+#include "base/ranges/algorithm.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/policy_util.h"
 #include "chrome/browser/ash/eche_app/app_id.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
@@ -35,63 +38,6 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 
-namespace {
-
-// The PinnedLauncherApps policy allows specifying three types of identifiers:
-// Chrome App Ids, Android App package names, and Web App install URLs. This
-// method returns the value that would have been used in the policy to pin an
-// app with |app_id|.
-//
-// Web App Example:
-// Admin installs a Web App using "https://foo.example" as the install URL.
-// Chrome generates an app id based on the URL e.g. "abc123". Calling
-// GetPolicyValueFromAppId() with "abc123" will return "https://foo.example",
-// which is the value that would be specified in the PinnedLauncherApps policy
-// to pin this Web App.
-//
-// Arc++ Example:
-// Admin installs an Android App with package name "com.example.foo". Chrome
-// generates an app id based on the package e.g. "123abc". Calling
-// GetPolicyValueFromAppId() with "123abc" will return "com.example.foo", which
-// is the value that would be specified in the PinnedLauncherApps policy to
-// pin this Android App.
-//
-// Chrome App Example:
-// Admin installs a Chrome App with "aaa111" as its app id. Calling
-// GetPolicyValueFromAppId() with "aaa111" will return "aaa111", which is the
-// value that would be specified in the PinnedLauncherApps policy to pin this
-// Chrome App.
-std::string GetPolicyValueFromAppId(const std::string& app_id,
-                                    Profile* profile) {
-  // Handle App Service apps (eg. web apps).
-  //
-  // App Service is absent in some cases e.g. Arc++ Kiosk Mode.
-  if (apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile)) {
-    std::string policy_id;
-    apps::AppServiceProxyFactory::GetForProfile(profile)
-        ->AppRegistryCache()
-        .ForOneApp(app_id, [&policy_id](const apps::AppUpdate& update) {
-          policy_id = update.PolicyId();
-        });
-    if (!policy_id.empty())
-      return policy_id;
-  }
-
-  // Handle Arc++ ids
-  const ArcAppListPrefs* const arc_prefs = ArcAppListPrefs::Get(profile);
-  if (arc_prefs) {
-    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-        arc_prefs->GetApp(app_id);
-    if (app_info)
-      return app_info->package_name;
-  }
-
-  // Handle Chrome App ids
-  return app_id;
-}
-
-}  // namespace
-
 const extensions::Extension* GetExtensionForAppID(const std::string& app_id,
                                                   Profile* profile) {
   return extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
@@ -111,13 +57,18 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
   if (base::Contains(kNoPinAppIds, app_id))
     return AppListControllerDelegate::NO_PIN;
 
-  const std::string policy_value_for_id =
-      GetPolicyValueFromAppId(app_id, profile);
-  const GURL policy_value_gurl(policy_value_for_id);
+  const absl::optional<std::vector<std::string>> policy_ids =
+      apps_util::GetPolicyIdsFromAppId(profile, app_id);
+
+  if (!policy_ids || policy_ids->empty()) {
+    return AppListControllerDelegate::PIN_EDITABLE;
+  }
 
   if (ash::DemoSession::Get() &&
-      !ash::DemoSession::Get()->ShouldShowAndroidOrChromeAppInShelf(
-          policy_value_for_id)) {
+      base::ranges::none_of(*policy_ids, [](const auto& policy_id) {
+        return ash::DemoSession::Get()->ShouldShowAndroidOrChromeAppInShelf(
+            policy_id);
+      })) {
     return AppListControllerDelegate::PIN_EDITABLE;
   }
 
@@ -133,14 +84,8 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
     if (!policy_entry)
       return AppListControllerDelegate::PIN_EDITABLE;
 
-    if (policy_value_for_id == *policy_entry)
-      return AppListControllerDelegate::PIN_FIXED;
-
-    // For web apps, the string equality might not be perfect since
-    // policy_value_for_id was stored as GURL and converted back.
-    // For example, example.org vs. example.org/
-    if (policy_value_gurl.is_valid() &&
-        policy_value_gurl.EqualsIgnoringRef(GURL(*policy_entry))) {
+    if (base::Contains(*policy_ids,
+                       apps_util::TransformRawPolicyId(*policy_entry))) {
       return AppListControllerDelegate::PIN_FIXED;
     }
   }

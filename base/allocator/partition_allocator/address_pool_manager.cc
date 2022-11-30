@@ -47,18 +47,14 @@ void DecommitPages(uintptr_t address, size_t size) {
 
 }  // namespace
 
-pool_handle AddressPoolManager::Add(uintptr_t ptr, size_t length) {
+void AddressPoolManager::Add(pool_handle handle, uintptr_t ptr, size_t length) {
   PA_DCHECK(!(ptr & kSuperPageOffsetMask));
   PA_DCHECK(!((ptr + length) & kSuperPageOffsetMask));
+  PA_CHECK(handle > 0 && handle <= std::size(pools_));
 
-  for (pool_handle i = 0; i < std::size(pools_); ++i) {
-    if (!pools_[i].IsInitialized()) {
-      pools_[i].Initialize(ptr, length);
-      return i + 1;
-    }
-  }
-  PA_NOTREACHED();
-  return 0;
+  Pool* pool = GetPool(handle);
+  PA_CHECK(!pool->IsInitialized());
+  pool->Initialize(ptr, length);
 }
 
 void AddressPoolManager::GetPoolUsedSuperPages(
@@ -289,12 +285,12 @@ void AddressPoolManager::GetPoolStats(const pool_handle handle,
 
 bool AddressPoolManager::GetStats(AddressSpaceStats* stats) {
   // Get 64-bit pool stats.
-  GetPoolStats(GetRegularPool(), &stats->regular_pool_stats);
+  GetPoolStats(kRegularPoolHandle, &stats->regular_pool_stats);
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
-  GetPoolStats(GetBRPPool(), &stats->brp_pool_stats);
+  GetPoolStats(kBRPPoolHandle, &stats->brp_pool_stats);
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
   if (IsConfigurablePoolAvailable()) {
-    GetPoolStats(GetConfigurablePool(), &stats->configurable_pool_stats);
+    GetPoolStats(kConfigurablePoolHandle, &stats->configurable_pool_stats);
   }
   return true;
 }

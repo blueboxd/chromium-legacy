@@ -4,19 +4,18 @@
 
 #include "components/omnibox/browser/zero_suggest_verbatim_match_provider.h"
 
-#include "base/feature_list.h"
 #include "base/strings/escape.h"
 #include "components/omnibox/browser/autocomplete_match_classification.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/verbatim_match.h"
-#include "components/omnibox/common/omnibox_features.h"
 #include "components/url_formatter/url_formatter.h"
 
 namespace {
-// The relevance score for verbatim match.
-// Must outrank the QueryTiles relevance score.
-const int kVerbatimMatchRelevanceScore = 1600;
+// Verbatim Match is placed in a dedicated SECTION_MOBILE_VERBATIM.
+// There are no other occupants of this section, making the Relevance score
+// unimportant.
+const int kVerbatimMatchRelevanceScore = 2;
 
 // Returns whether specific context is eligible for a verbatim match.
 // Only offer verbatim match on a site visit and SRP (no NTP etc).
@@ -31,7 +30,6 @@ bool IsVerbatimMatchEligible(
          context == metrics::OmniboxEventProto::ANDROID_SHORTCUTS_WIDGET ||
          context == metrics::OmniboxEventProto::OTHER;
 }
-
 }  // namespace
 
 ZeroSuggestVerbatimMatchProvider::ZeroSuggestVerbatimMatchProvider(
@@ -46,10 +44,9 @@ void ZeroSuggestVerbatimMatchProvider::Start(const AutocompleteInput& input,
   if (!IsVerbatimMatchEligible(input.current_page_classification()))
     return;
 
-  // Only offer verbatim match after the user just focused the Omnibox,
-  // or if the input field is empty.
-  if (input.focus_type() == metrics::OmniboxFocusType::INTERACTION_DEFAULT ||
-      input.focus_type() == metrics::OmniboxFocusType::INTERACTION_CLOBBER)
+  // Only offer verbatim match after the user just focused the Omnibox on NTP,
+  // SRP, or existing website view, or if the input field is empty.
+  if (input.focus_type() == metrics::OmniboxFocusType::INTERACTION_DEFAULT)
     return;
 
   // For consistency with other zero-prefix providers.
@@ -73,6 +70,7 @@ void ZeroSuggestVerbatimMatchProvider::Start(const AutocompleteInput& input,
                           input.current_title(), kVerbatimMatchRelevanceScore);
   // Make sure the URL is formatted the same was as most visited sites.
   auto format_types = AutocompleteMatch::GetFormatTypes(false, false);
+  match.suggestion_group_id = omnibox::GROUP_MOBILE_SEARCH_READY_OMNIBOX;
   match.contents = url_formatter::FormatUrl(page_url, format_types,
                                             base::UnescapeRule::SPACES, nullptr,
                                             nullptr, nullptr);

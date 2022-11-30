@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -85,6 +86,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/common/features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/public/main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -109,7 +111,7 @@ static String ExtractMessageForConsole(v8::Isolate* isolate,
     const WrapperTypeInfo* type = ToWrapperTypeInfo(obj);
     if (V8DOMException::GetWrapperTypeInfo()->IsSubclass(type)) {
       DOMException* exception = V8DOMException::ToImpl(obj);
-      if (exception && !exception->MessageForConsole().IsEmpty())
+      if (exception && !exception->MessageForConsole().empty())
         return exception->ToStringForConsole();
     }
   }
@@ -184,7 +186,7 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
       ScriptValue::From(script_state, data), &script_state->World());
 
   String message_for_console = ExtractMessageForConsole(isolate, data);
-  if (!message_for_console.IsEmpty())
+  if (!message_for_console.empty())
     event->SetUnsanitizedMessage("Uncaught " + message_for_console);
 
   context->DispatchErrorEvent(event, sanitize_script_errors);
@@ -233,8 +235,15 @@ void V8Initializer::MessageHandlerInWorker(v8::Local<v8::Message> message,
 
 namespace {
 
+bool IsRejectedPromisesPerWindowAgent() {
+  static bool g_rejected_promises_per_window_agent =
+      base::FeatureList::IsEnabled(scheduler::kRejectedPromisesPerWindowAgent);
+  return g_rejected_promises_per_window_agent;
+}
+
 static RejectedPromises& RejectedPromisesOnMainThread() {
   DCHECK(IsMainThread());
+  DCHECK(!IsRejectedPromisesPerWindowAgent());
   DEFINE_STATIC_LOCAL(scoped_refptr<RejectedPromises>, rejected_promises,
                       (RejectedPromises::Create()));
   return *rejected_promises;
@@ -243,6 +252,8 @@ static RejectedPromises& RejectedPromisesOnMainThread() {
 }  // namespace
 
 void V8Initializer::ReportRejectedPromisesOnMainThread() {
+  if (IsRejectedPromisesPerWindowAgent())
+    return;
   RejectedPromisesOnMainThread().ProcessQueue();
 }
 
@@ -297,7 +308,7 @@ static void PromiseRejectHandler(v8::PromiseRejectMessage data,
 
   String message_for_console =
       ExtractMessageForConsole(isolate, data.GetValue());
-  if (!message_for_console.IsEmpty())
+  if (!message_for_console.empty())
     error_message = "Uncaught " + message_for_console;
 
   rejected_promises.RejectedWithNoHandler(script_state, data, error_message,
@@ -323,7 +334,13 @@ static void PromiseRejectHandlerInMainThread(v8::PromiseRejectMessage data) {
   if (!script_state->ContextIsValid())
     return;
 
-  PromiseRejectHandler(data, RejectedPromisesOnMainThread(), script_state);
+  RejectedPromises* rejected_promises;
+  if (IsRejectedPromisesPerWindowAgent()) {
+    rejected_promises = &window->GetAgent()->GetRejectedPromises();
+  } else {
+    rejected_promises = &RejectedPromisesOnMainThread();
+  }
+  PromiseRejectHandler(data, *rejected_promises, script_state);
 }
 
 static void PromiseRejectHandlerInWorker(v8::PromiseRejectMessage data) {
@@ -487,7 +504,8 @@ void V8Initializer::WasmAsyncResolvePromiseCallback(
     return;
   }
   v8::MicrotasksScope microtasks_scope(
-      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+      isolate, context->GetMicrotaskQueue(),
+      v8::MicrotasksScope::kDoNotRunMicrotasks);
   if (success == v8::WasmAsyncSuccess::kSuccess) {
     CHECK(resolver->Resolve(context, compilation_result).FromJust());
   } else {
@@ -613,7 +631,7 @@ v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
   if (v8_referrer_resource_url->IsString()) {
     String referrer_resource_url_str =
         ToCoreString(v8::Local<v8::String>::Cast(v8_referrer_resource_url));
-    if (!referrer_resource_url_str.IsEmpty())
+    if (!referrer_resource_url_str.empty())
       referrer_resource_url = KURL(NullURL(), referrer_resource_url_str);
   }
 

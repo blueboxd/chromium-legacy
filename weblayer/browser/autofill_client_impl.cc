@@ -1,8 +1,10 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "weblayer/browser/autofill_client_impl.h"
+
+#include <utility>
 
 #include "build/build_config.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
@@ -29,7 +31,7 @@ AutofillClientImpl::GetAutocompleteHistoryManager() {
 }
 
 PrefService* AutofillClientImpl::GetPrefs() {
-  return const_cast<PrefService*>(base::as_const(*this).GetPrefs());
+  return const_cast<PrefService*>(std::as_const(*this).GetPrefs());
 }
 
 const PrefService* AutofillClientImpl::GetPrefs() const {
@@ -77,9 +79,14 @@ autofill::AddressNormalizer* AutofillClientImpl::GetAddressNormalizer() {
   return nullptr;
 }
 
-const GURL& AutofillClientImpl::GetLastCommittedURL() const {
+const GURL& AutofillClientImpl::GetLastCommittedPrimaryMainFrameURL() const {
   NOTREACHED();
   return GURL::EmptyGURL();
+}
+
+url::Origin AutofillClientImpl::GetLastCommittedPrimaryMainFrameOrigin() const {
+  NOTREACHED();
+  return url::Origin();
 }
 
 security_state::SecurityLevel
@@ -244,6 +251,15 @@ bool AutofillClientImpl::IsFastCheckoutSupported() {
 bool AutofillClientImpl::IsFastCheckoutTriggerForm(
     const autofill::FormData& form,
     const autofill::FormFieldData& field) {
+  return false;
+}
+
+bool AutofillClientImpl::FastCheckoutScriptSupportsConsentlessExecution(
+    const url::Origin& origin) {
+  return false;
+}
+
+bool AutofillClientImpl::FastCheckoutClientSupportsConsentlessExecution() {
   return false;
 }
 

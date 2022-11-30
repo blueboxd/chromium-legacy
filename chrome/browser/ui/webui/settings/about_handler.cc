@@ -202,8 +202,9 @@ std::string ReadRegulatoryLabelText(const base::FilePath& label_dir_path) {
 
 base::Value::Dict GetVersionInfo() {
   base::Value::Dict version_info;
-  version_info.Set("osVersion", chromeos::version_loader::GetVersion(
-                                    chromeos::version_loader::VERSION_FULL));
+  absl::optional<std::string> version = chromeos::version_loader::GetVersion(
+      chromeos::version_loader::VERSION_FULL);
+  version_info.Set("osVersion", version.value_or("0.0.0.0"));
   version_info.Set("arcVersion", chromeos::version_loader::GetArcVersion());
   version_info.Set("osFirmware", chromeos::version_loader::GetFirmware());
   return version_info;
@@ -548,7 +549,7 @@ void AboutHandler::HandleGetFirmwareUpdateCount(const base::Value::List& args) {
   const std::string& callback_id = args[0].GetString();
   auto* firmware_update_manager = ash::FirmwareUpdateManager::Get();
   size_t update_count = firmware_update_manager->GetUpdateCount();
-  DCHECK_LT(update_count, std::numeric_limits<int>::max());
+  DCHECK_LT(update_count, std::numeric_limits<size_t>::max());
   ResolveJavascriptCallback(base::Value(callback_id),
                             base::Value(static_cast<int>(update_count)));
 }

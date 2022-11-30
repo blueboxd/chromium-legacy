@@ -10,7 +10,10 @@
 #include <dcomp.h>
 #include <wrl/client.h>
 
+#include "base/containers/circular_deque.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/gfx/geometry/transform.h"
@@ -18,6 +21,10 @@
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/vsync_observer.h"
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
 
 namespace gfx {
 namespace mojom {
@@ -27,10 +34,12 @@ class DelegatedInkMetadata;
 }  // namespace gfx
 
 namespace gl {
+class VSyncThreadWin;
 class DCLayerTree;
 class DirectCompositionChildSurfaceWin;
 
-class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL {
+class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
+                                              public VSyncObserver {
  public:
   using VSyncCallback =
       base::RepeatingCallback<void(base::TimeTicks, base::TimeDelta)>;
@@ -42,8 +51,6 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL {
     bool disable_vp_super_resolution = false;
     size_t max_pending_frames = 2;
     bool use_angle_texture_offset = false;
-    bool force_root_surface_full_damage = false;
-    bool force_root_surface_full_damage_always = false;
     bool no_downscaled_overlay_promotion = false;
   };
 
@@ -67,12 +74,14 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL {
               float scale_factor,
               const gfx::ColorSpace& color_space,
               bool has_alpha) override;
-  gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
+  gfx::SwapResult SwapBuffers(PresentationCallback callback,
+                              FrameData data) override;
   gfx::SwapResult PostSubBuffer(int x,
                                 int y,
                                 int width,
                                 int height,
-                                PresentationCallback callback) override;
+                                PresentationCallback callback,
+                                FrameData data) override;
   gfx::VSyncProvider* GetVSyncProvider() override;
   void SetVSyncEnabled(bool enabled) override;
   bool SetEnableDCLayers(bool enable) override;
@@ -93,6 +102,9 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL {
   bool ScheduleDCLayer(
       std::unique_ptr<ui::DCRendererLayerParams> params) override;
   void SetFrameRate(float frame_rate) override;
+
+  // VSyncObserver implementation.
+  void OnVSync(base::TimeTicks vsync_time, base::TimeDelta interval) override;
 
   bool SupportsDelegatedInk() override;
   void SetDelegatedInkTrailStartPoint(
@@ -125,11 +137,55 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL {
   ~DirectCompositionSurfaceWin() override;
 
  private:
+  struct PendingFrame {
+    PendingFrame(Microsoft::WRL::ComPtr<ID3D11Query> query,
+                 PresentationCallback callback);
+    PendingFrame(PendingFrame&& other);
+    ~PendingFrame();
+    PendingFrame& operator=(PendingFrame&& other);
+
+    // Event query issued after frame is presented.
+    Microsoft::WRL::ComPtr<ID3D11Query> query;
+
+    // Presentation callback enqueued in SwapBuffers().
+    PresentationCallback callback;
+  };
+
+  void EnqueuePendingFrame(PresentationCallback callback, bool create_query);
+  void CheckPendingFrames();
+
+  void StartOrStopVSyncThread();
+
+  bool VSyncCallbackEnabled() const;
+
+  void HandleVSyncOnMainThread(base::TimeTicks vsync_time,
+                               base::TimeDelta interval);
+
   HWND window_ = nullptr;
   ChildWindowWin child_window_;
 
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
+
+  const VSyncCallback vsync_callback_;
+
+  const raw_ptr<VSyncThreadWin> vsync_thread_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  bool vsync_thread_started_ = false;
+  bool vsync_callback_enabled_ GUARDED_BY(vsync_callback_enabled_lock_) = false;
+  mutable base::Lock vsync_callback_enabled_lock_;
+
+  // Queue of pending presentation callbacks.
+  base::circular_deque<PendingFrame> pending_frames_;
+  const size_t max_pending_frames_;
+
+  base::TimeTicks last_vsync_time_;
+  base::TimeDelta last_vsync_interval_;
+
   scoped_refptr<DirectCompositionChildSurfaceWin> root_surface_;
   std::unique_ptr<DCLayerTree> layer_tree_;
+
+  base::WeakPtrFactory<DirectCompositionSurfaceWin> weak_factory_{this};
 };
 
 }  // namespace gl

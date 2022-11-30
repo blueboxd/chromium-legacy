@@ -12,14 +12,14 @@ import '../../settings_shared.css.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_icon.js';
-import 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_device_battery_info.js';
+import 'chrome://resources/ash/common/bluetooth/bluetooth_icon.js';
+import 'chrome://resources/ash/common/bluetooth/bluetooth_device_battery_info.js';
 
-import {BatteryType} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_types.js';
-import {getBatteryPercentage, getDeviceName, hasAnyDetailedBatteryInfo} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_utils.js';
-import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
-import {FocusRowBehavior, FocusRowBehaviorInterface} from 'chrome://resources/js/cr/ui/focus_row_behavior.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {BatteryType} from 'chrome://resources/ash/common/bluetooth/bluetooth_types.js';
+import {getBatteryPercentage, getDeviceName, hasAnyDetailedBatteryInfo} from 'chrome://resources/ash/common/bluetooth/bluetooth_utils.js';
+import {FocusRowBehavior, FocusRowBehaviorInterface} from 'chrome://resources/ash/common/focus_row_behavior.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 import {DeviceConnectionState, DeviceType, PairedBluetoothDeviceProperties} from 'chrome://resources/mojo/chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 

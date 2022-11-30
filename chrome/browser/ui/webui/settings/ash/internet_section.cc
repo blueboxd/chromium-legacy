@@ -34,6 +34,14 @@
 
 namespace chromeos {
 namespace settings {
+
+// TODO(https://crbug.com/1164001): remove after migrating to ash.
+namespace mojom {
+using ::ash::settings::mojom::SearchResultDefaultRank;
+using ::ash::settings::mojom::SearchResultIcon;
+using ::ash::settings::mojom::SearchResultType;
+}  // namespace mojom
+
 namespace {
 
 // These values are persisted to logs. Entries should not be renumbered
@@ -680,6 +688,7 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"networkButtonConnect", IDS_SETTINGS_INTERNET_BUTTON_CONNECT},
       {"networkButtonDisconnect", IDS_SETTINGS_INTERNET_BUTTON_DISCONNECT},
       {"networkButtonForget", IDS_SETTINGS_INTERNET_BUTTON_FORGET},
+      {"networkButtonSignin", IDS_SETTINGS_INTERNET_BUTTON_SIGNIN},
       {"networkButtonViewAccount", IDS_SETTINGS_INTERNET_BUTTON_VIEW_ACCOUNT},
       {"networkConnectNotAllowed", IDS_SETTINGS_INTERNET_CONNECT_NOT_ALLOWED},
       {"networkHidden", IDS_SETTINGS_INTERNET_NETWORK_HIDDEN},
@@ -850,6 +859,8 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
           ash::features::kCellularBypassESimInstallationConnectivityCheck));
   html_source->AddBoolean("showTechnologyBadge",
                           !ash::features::IsSeparateNetworkIconsEnabled());
+  html_source->AddBoolean("captivePortalUI2022",
+                          ash::features::IsCaptivePortalUI2022Enabled());
   html_source->AddBoolean(
       "showMeteredToggle",
       base::FeatureList::IsEnabled(::features::kMeteredShowToggle));

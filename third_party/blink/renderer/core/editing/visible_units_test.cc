@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -180,6 +180,37 @@ TEST_F(VisibleUnitsTest, canonicalPositionOfWithInputElement) {
   EXPECT_EQ(PositionInFlatTree::BeforeNode(*input),
             CanonicalPositionOf(PositionInFlatTree::FirstPositionInNode(
                 *GetDocument().documentElement())));
+}
+
+// http://crbug.com/1116214
+TEST_F(VisibleUnitsTest, canonicalPositionOfWithCrossBlockFlowlement) {
+  const char* body_content =
+      "<div id=one>line1<span>X</span><div>line2</div></div>"
+      "<div id=two>line3"
+      "<span style='user-select: none'>X</span><div>line4</div></div>"
+      "<div id=three>line5"
+      "<span style='user-select: none'>X</span>333<div>line6</div></div>";
+  SetBodyContent(body_content);
+
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* const one = GetDocument().QuerySelector("#one");
+  Element* const two = GetDocument().QuerySelector("#two");
+  Element* const three = GetDocument().QuerySelector("#three");
+  Element* const one_span = one->QuerySelector("span");
+  Element* const two_span = two->QuerySelector("span");
+  Element* const three_span = three->QuerySelector("span");
+  Position one_text_pos(one_span->firstChild(), 1);
+  Position two_text_pos(two_span->firstChild(), 1);
+  Position three_text_pos(three_span->firstChild(), 1);
+
+  EXPECT_EQ(one_text_pos, CanonicalPositionOf(one_text_pos));
+
+  EXPECT_EQ(Position::LastPositionInNode(*two->firstChild()),
+            CanonicalPositionOf(two_text_pos));
+
+  EXPECT_EQ(Position(*three->lastChild()->previousSibling(), 0),
+            CanonicalPositionOf(three_text_pos));
 }
 
 TEST_F(VisibleUnitsTest, characterBefore) {

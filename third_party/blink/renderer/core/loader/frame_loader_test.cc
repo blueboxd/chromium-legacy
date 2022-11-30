@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -167,7 +167,9 @@ TEST_F(FrameLoaderTest, PolicyContainerIsStoredOnCommitNavigation) {
                 network::mojom::CrossOriginEmbedderPolicyValue::kNone,
                 network::mojom::ReferrerPolicy::kAlways,
                 Vector<network::mojom::blink::ContentSecurityPolicyPtr>(),
-                /*anonymous=*/false, network::mojom::WebSandboxFlags::kNone),
+                /*anonymous=*/false, network::mojom::WebSandboxFlags::kNone,
+                network::mojom::blink::IPAddressSpace::kUnknown,
+                /*can_navigate_top_without_user_gesture=*/true),
             local_frame->DomWindow()->GetPolicyContainer()->GetPolicies());
 }
 

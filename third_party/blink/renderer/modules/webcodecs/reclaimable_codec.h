@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,8 +25,8 @@ class CodecPressureManager;
 class DOMException;
 class ExecutionContext;
 
-extern const MODULES_EXPORT base::Feature kReclaimInactiveWebCodecs;
-extern const MODULES_EXPORT base::Feature kOnlyReclaimBackgroundWebCodecs;
+MODULES_EXPORT BASE_DECLARE_FEATURE(kReclaimInactiveWebCodecs);
+MODULES_EXPORT BASE_DECLARE_FEATURE(kOnlyReclaimBackgroundWebCodecs);
 
 class MODULES_EXPORT ReclaimableCodec
     : public ExecutionContextLifecycleObserver {

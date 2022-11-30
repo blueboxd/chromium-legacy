@@ -44,6 +44,8 @@
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
+#import "ios/chrome/browser/ui/settings/price_notifications/price_notifications_constants.h"
+#import "ios/chrome/browser/ui/settings/price_notifications/tracking_price/tracking_price_constants.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_constants.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_ui_swift.h"
@@ -59,7 +61,6 @@
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/promo_style/constants.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -621,6 +622,14 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
   return grey_accessibilityID(kPrivacySafeBrowsingTableViewId);
 }
 
++ (id<GREYMatcher>)settingsPriceNotificationsTableView {
+  return grey_accessibilityID(kPriceNotificationsTableViewId);
+}
+
++ (id<GREYMatcher>)settingsTrackingPriceTableView {
+  return grey_accessibilityID(kTrackingPriceTableViewId);
+}
+
 + (id<GREYMatcher>)contentSettingsButton {
   return [ChromeMatchersAppInterface
       buttonWithAccessibilityLabelID:(IDS_IOS_CONTENT_SETTINGS_TITLE)];
@@ -677,6 +686,11 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
   return [ChromeMatchersAppInterface
       buttonWithAccessibilityLabelID:
           (IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY)];
+}
+
++ (id<GREYMatcher>)settingsMenuPriceNotificationsButton {
+  return [ChromeMatchersAppInterface
+      buttonWithAccessibilityLabelID:(IDS_IOS_PRICE_NOTIFICATIONS_TITLE)];
 }
 
 + (id<GREYMatcher>)settingsMenuPasswordsButton {

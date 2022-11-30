@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -368,11 +368,13 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
   // Verify the paint property nodes and GeometryMapper cache.
   {
     UpdateAllLifecyclePhases();
-    EXPECT_EQ(TransformationMatrix().Scale(2),
+    EXPECT_EQ(TransformationMatrix::MakeScale(2),
               visual_viewport.GetPageScaleNode()->Matrix());
     EXPECT_EQ(gfx::Vector2dF(0, -300),
               visual_viewport.GetScrollTranslationNode()->Translation2D());
-    EXPECT_EQ(TransformationMatrix().Scale(2).Translate(0, -300),
+    auto expected_projection = TransformationMatrix::MakeScale(2);
+    expected_projection.Translate(0, -300);
+    EXPECT_EQ(expected_projection,
               GeometryMapper::SourceToDestinationProjection(
                   *visual_viewport.GetScrollTranslationNode(),
                   TransformPaintPropertyNode::Root())
@@ -392,11 +394,13 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
   // Verify the paint property nodes and GeometryMapper cache.
   {
     UpdateAllLifecyclePhases();
-    EXPECT_EQ(TransformationMatrix().Scale(4),
+    EXPECT_EQ(TransformationMatrix::MakeScale(4),
               visual_viewport.GetPageScaleNode()->Matrix());
     EXPECT_EQ(gfx::Vector2dF(0, -75),
               visual_viewport.GetScrollTranslationNode()->Translation2D());
-    EXPECT_EQ(TransformationMatrix().Scale(4).Translate(0, -75),
+    auto expected_projection = TransformationMatrix::MakeScale(4);
+    expected_projection.Translate(0, -75);
+    EXPECT_EQ(expected_projection,
               GeometryMapper::SourceToDestinationProjection(
                   *visual_viewport.GetScrollTranslationNode(),
                   TransformPaintPropertyNode::Root())
@@ -455,11 +459,13 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
   // Verify the paint property nodes and GeometryMapper cache.
   {
     UpdateAllLifecyclePhases();
-    EXPECT_EQ(TransformationMatrix().Scale(2),
+    EXPECT_EQ(TransformationMatrix::MakeScale(2),
               visual_viewport.GetPageScaleNode()->Matrix());
     EXPECT_EQ(gfx::Vector2dF(-150, 0),
               visual_viewport.GetScrollTranslationNode()->Translation2D());
-    EXPECT_EQ(TransformationMatrix().Scale(2).Translate(-150, 0),
+    auto expected_projection = TransformationMatrix::MakeScale(2);
+    expected_projection.Translate(-150, 0);
+    EXPECT_EQ(expected_projection,
               GeometryMapper::SourceToDestinationProjection(
                   *visual_viewport.GetScrollTranslationNode(),
                   TransformPaintPropertyNode::Root())
@@ -478,11 +484,13 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
   // Verify the paint property nodes and GeometryMapper cache.
   {
     UpdateAllLifecyclePhases();
-    EXPECT_EQ(TransformationMatrix().Scale(4),
+    EXPECT_EQ(TransformationMatrix::MakeScale(4),
               visual_viewport.GetPageScaleNode()->Matrix());
     EXPECT_EQ(gfx::Vector2dF(-150, 0),
               visual_viewport.GetScrollTranslationNode()->Translation2D());
-    EXPECT_EQ(TransformationMatrix().Scale(4).Translate(-150, 0),
+    auto expected_projection = TransformationMatrix::MakeScale(4);
+    expected_projection.Translate(-150, 0);
+    EXPECT_EQ(expected_projection,
               GeometryMapper::SourceToDestinationProjection(
                   *visual_viewport.GetScrollTranslationNode(),
                   TransformPaintPropertyNode::Root())
@@ -1696,21 +1704,6 @@ TEST_P(VisualViewportTest, ElementBoundsInWidgetSpaceAccountsForViewport) {
   EXPECT_EQ(expected_bounds.size(), bounds_in_viewport.size());
 }
 
-TEST_P(VisualViewportTest, ElementVisibleBoundsInVisualViewport) {
-  InitializeWithAndroidSettings();
-  WebView()->MainFrameViewWidget()->Resize(gfx::Size(640, 1080));
-  RegisterMockedHttpURLLoad("viewport-select.html");
-  NavigateTo(base_url_ + "viewport-select.html");
-
-  ASSERT_EQ(2.0f, WebView()->PageScaleFactor());
-  To<LocalFrame>(WebView()->GetPage()->MainFrame())->SetInitialFocus(false);
-  Element* element = WebView()->FocusedElement();
-  EXPECT_FALSE(element->VisibleBoundsInVisualViewport().IsEmpty());
-
-  WebView()->SetPageScaleFactor(4.0);
-  EXPECT_TRUE(element->VisibleBoundsInVisualViewport().IsEmpty());
-}
-
 // Test that the various window.scroll and document.body.scroll properties and
 // methods don't change with the visual viewport.
 TEST_P(VisualViewportTest, visualViewportIsInert) {
@@ -2591,8 +2584,8 @@ TEST_P(VisualViewportTest, DeviceEmulation) {
   EXPECT_TRUE(
       GetFrame()->View()->VisualViewportOrOverlayNeedsRepaintForTesting());
   ASSERT_TRUE(visual_viewport.GetDeviceEmulationTransformNode());
-  EXPECT_EQ(TransformationMatrix().Translate(-params.viewport_offset.x(),
-                                             -params.viewport_offset.y()),
+  EXPECT_EQ(TransformationMatrix::MakeTranslation(-params.viewport_offset.x(),
+                                                  -params.viewport_offset.y()),
             visual_viewport.GetDeviceEmulationTransformNode()->Matrix());
   UpdateAllLifecyclePhases();
   EXPECT_FALSE(
@@ -2607,7 +2600,7 @@ TEST_P(VisualViewportTest, DeviceEmulation) {
   EXPECT_FALSE(
       GetFrame()->View()->VisualViewportOrOverlayNeedsRepaintForTesting());
   ASSERT_TRUE(visual_viewport.GetDeviceEmulationTransformNode());
-  EXPECT_EQ(TransformationMatrix().Scale(1.5f),
+  EXPECT_EQ(TransformationMatrix::MakeScale(1.5f),
             visual_viewport.GetDeviceEmulationTransformNode()->Matrix());
   UpdateAllLifecyclePhases();
   EXPECT_FALSE(

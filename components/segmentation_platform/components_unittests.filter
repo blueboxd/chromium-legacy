@@ -1,4 +1,5 @@
 ConfigParserTest.*
+CrossDeviceUserModelTest.*
 CustomInputProcessorTest.*
 DatabaseMaintenanceImplTest.*
 DefaultModelManagerTest.*
@@ -8,6 +9,7 @@ FailedUkmDatabaseTest.*
 FeatureAggregatorImplTest.*
 FeatureListQueryProcessorTest.*
 FeedUserModelTest.*
+FrequentFeatureUserModelTest.*
 HistogramSignalHandlerTest.*
 HistoryDelegateImplTest.*
 IntentionalUserModelTest.*
@@ -18,10 +20,17 @@ ModelExecutionSchedulerTest.*
 ModelExecutorTest.*
 ModelProviderFactoryImplTest.*
 OptimizationGuideSegmentationModelProviderTest.*
+PowerUserModelTest.*
 PriceTrackingActionModelTest.*
 PriceTrackingInputDelegateTest.*
 QueryTilesModelTest.*
 ResumeHeavyUserModelTest.*
+SearchUserModelTest.*
+SegmentInfoCacheTest.*
+SegmentInfoDatabaseTest.*
+SegmentResultProviderTest.*
+SegmentScoreProviderTest.*
+SegmentSelectorTest.*
 SegmentationModelExecutorTest.*
 SegmentationPlatformDummyUkmManagerTest.*
 SegmentationPlatformServiceImplEmptyConfigTest.*
@@ -29,11 +38,6 @@ SegmentationPlatformServiceImplMultiClientTest.*
 SegmentationPlatformServiceImplTest.*
 SegmentationResultPrefsTest.*
 SegmentationUkmHelperTest.*
-SegmentInfoCacheTest.*
-SegmentInfoDatabaseTest.*
-SegmentResultProviderTest.*
-SegmentScoreProviderTest.*
-SegmentSelectorTest.*
 ServiceProxyImplTest.*
 ShoppingUserModelTest.*
 SignalDatabaseImplTest.*
@@ -43,10 +47,11 @@ SignalKeyTest.*
 SignalStorageConfigTest.*
 SqlFeatureProcessorTest.*
 StatsTest.*
+TrainingDataCacheTest.*
 TrainingDataCollectorImplTest.*
 UkmConfigTest.*
-UkmDatabaseBackendTest.*
 UkmDataManagerImplTest.*
+UkmDatabaseBackendTest.*
 UkmMetricsTableTest.*
 UkmObserverTest.*
 UkmUrlTableTest.*

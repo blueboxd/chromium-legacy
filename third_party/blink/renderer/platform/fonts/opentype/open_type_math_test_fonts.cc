@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,8 @@ namespace blink {
 void retrieveGlyphForStretchyOperators(const blink::Font operatorsWoff,
                                        Vector<UChar32>& verticalGlyphs,
                                        Vector<UChar32>& horizontalGlyphs) {
-  DCHECK(verticalGlyphs.IsEmpty());
-  DCHECK(horizontalGlyphs.IsEmpty());
+  DCHECK(verticalGlyphs.empty());
+  DCHECK(horizontalGlyphs.empty());
   // For details, see createSizeVariants() and createStretchy() from
   // third_party/blink/web_tests/external/wpt/mathml/tools/operator-dictionary.py
   for (unsigned i = 0; i < 4; i++) {

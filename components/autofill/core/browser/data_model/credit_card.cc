@@ -422,7 +422,6 @@ bool CreditCard::IsDeletable() const {
 }
 
 std::u16string CreditCard::GetRawInfo(ServerFieldType type) const {
-  DCHECK_EQ(FieldTypeGroup::kCreditCard, AutofillType(type).group());
   switch (type) {
     case CREDIT_CARD_NAME_FULL:
       return name_on_card_;
@@ -1193,9 +1192,14 @@ std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
 }
 
 void CreditCard::SetNameOnCardFromSeparateParts() {
-  DCHECK(name_on_card_.empty() && !temp_card_first_name_.empty() &&
-         !temp_card_last_name_.empty());
-  name_on_card_ = temp_card_first_name_ + u" " + temp_card_last_name_;
+  DCHECK(!temp_card_first_name_.empty() && !temp_card_last_name_.empty());
+
+  std::u16string new_name_on_card =
+      temp_card_first_name_ + u" " + temp_card_last_name_;
+
+  DCHECK(name_on_card_.empty() || name_on_card_ == new_name_on_card);
+
+  name_on_card_ = new_name_on_card;
 }
 
 const char kAmericanExpressCard[] = "americanExpressCC";

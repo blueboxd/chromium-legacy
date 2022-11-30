@@ -215,13 +215,6 @@ void FocusFakebox() {
 // Tests that the XClientData header is sent when navigating to
 // https://google.com through the omnibox.
 - (void)testXClientData {
-// TODO(crbug.com/1067815): Test doesn't pass on iPad device.
-#if !TARGET_IPHONE_SIMULATOR
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"testXClientData doesn't pass on iPad device.");
-  }
-#endif
-
   // TODO(crbug.com/1120723) This test is flakily because of a DCHECK in
   // ios/web.  Clearing browser history first works around the problem, but
   // shouldn't be necessary otherwise.  Remove once the bug is fixed.
@@ -842,9 +835,9 @@ void FocusFakebox() {
                     return error == nil;
                   }];
   // Verify that system text selection callout is not displayed.
-  GREYAssertFalse(
-      [CopyButtonIsDisplayed waitWithTimeout:kWaitForUIElementTimeout],
-      @"Copy button should not be displayed");
+  GREYAssertFalse([CopyButtonIsDisplayed
+                      waitWithTimeout:kWaitForUIElementTimeout.InSecondsF()],
+                  @"Copy button should not be displayed");
 
   // Pressing should not allow select or selectAll when omnibox is empty.
   // Verify that system text selection callout is not displayed.
@@ -880,9 +873,9 @@ void FocusFakebox() {
                                 error:&error];
                     return error == nil;
                   }];
-  GREYAssertTrue(
-      [SelectAllButtonIsDisplayed waitWithTimeout:kWaitForUIElementTimeout],
-      @"SelectAll button display failed");
+  GREYAssertTrue([SelectAllButtonIsDisplayed
+                     waitWithTimeout:kWaitForUIElementTimeout.InSecondsF()],
+                 @"SelectAll button display failed");
 
   // Cut the text.
   [[EarlGrey selectElementWithMatcher:CutButton()] performAction:grey_tap()];
@@ -903,7 +896,7 @@ void FocusFakebox() {
                     return error == nil;
                   }];
   GREYAssertTrue([searchCopiedTextButtonIsDisplayed
-                     waitWithTimeout:kWaitForUIElementTimeout],
+                     waitWithTimeout:kWaitForUIElementTimeout.InSecondsF()],
                  @"Search Copied Text button display failed");
   // Verify that system text selection callout is displayed (Paste).
   [[EarlGrey selectElementWithMatcher:PasteButton()]
@@ -945,9 +938,9 @@ void FocusFakebox() {
                     return error == nil;
                   }];
   // Verify that system text selection callout is displayed.
-  GREYAssertTrue(
-      [SelectButtonIsDisplayed waitWithTimeout:kWaitForUIElementTimeout],
-      @"Select button display failed");
+  GREYAssertTrue([SelectButtonIsDisplayed
+                     waitWithTimeout:kWaitForUIElementTimeout.InSecondsF()],
+                 @"Select button display failed");
   [[EarlGrey selectElementWithMatcher:SelectAllButton()]
       assertWithMatcher:grey_notNil()];
 
@@ -971,7 +964,6 @@ void FocusFakebox() {
       assertWithMatcher:grey_nil()];
 }
 
-// TODO(crbug.com/1067815): Test can't pass on devices.
 // TODO(crbug.com/1253345) Re-enable this test
 - (void)DISABLED_testNoDefaultMatch {
   NSString* copiedText = @"test no default match1";

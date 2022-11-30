@@ -672,6 +672,14 @@ VISIT_PROTO_FIELDS(const sync_pb::ModelTypeState& proto) {
   VISIT(initial_sync_done);
   VISIT(cache_guid);
   VISIT(authenticated_account_id);
+  VISIT_REP(invalidations);
+  VISIT(notes_enabled_before_initial_sync_for_passwords);
+}
+
+VISIT_PROTO_FIELDS(
+    const sync_pb::ModelTypeState::Invalidation& proto) {
+  VISIT(hint);
+  VISIT(version);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::NavigationRedirect& proto) {
@@ -782,6 +790,8 @@ VISIT_PROTO_FIELDS(const sync_pb::HistorySpecifics& proto) {
   VISIT(visit_time_windows_epoch_micros);
   VISIT(originator_cache_guid);
   VISIT_REP(redirect_entries);
+  VISIT(redirect_chain_start_incomplete);
+  VISIT(redirect_chain_end_incomplete);
   VISIT(page_transition);
   VISIT(originator_referring_visit_id);
   VISIT(originator_opener_visit_id);
@@ -796,6 +806,7 @@ VISIT_PROTO_FIELDS(const sync_pb::HistorySpecifics& proto) {
   VISIT(page_language);
   VISIT_ENUM(password_state);
   VISIT(favicon_url);
+  VISIT(referrer_url);
 }
 
 VISIT_PROTO_FIELDS(
@@ -1165,8 +1176,6 @@ VISIT_PROTO_FIELDS(const sync_pb::TabNavigation& proto) {
   VISIT(navigation_forward_back);
   VISIT(navigation_from_address_bar);
   VISIT(navigation_home_page);
-  VISIT(navigation_chain_start);
-  VISIT(navigation_chain_end);
   VISIT(global_id);
   VISIT(favicon_url);
   VISIT_ENUM(blocked_state);

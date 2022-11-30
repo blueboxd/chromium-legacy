@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,7 @@ SecurePaymentConfirmationHelper::ParseSecurePaymentConfirmationData(
   if (exception_state.HadException())
     return nullptr;
 
-  if (request->credentialIds().IsEmpty()) {
+  if (request->credentialIds().empty()) {
     exception_state.ThrowRangeError(
         "The \"secure-payment-confirmation\" method requires a non-empty "
         "\"credentialIds\" field.");
@@ -79,13 +79,13 @@ SecurePaymentConfirmationHelper::ParseSecurePaymentConfirmationData(
     return nullptr;
   }
 
-  if (request->instrument()->displayName().IsEmpty()) {
+  if (request->instrument()->displayName().empty()) {
     exception_state.ThrowTypeError(
         "The \"secure-payment-confirmation\" method requires a non-empty "
         "\"instrument.displayName\" field.");
     return nullptr;
   }
-  if (request->instrument()->icon().IsEmpty()) {
+  if (request->instrument()->icon().empty()) {
     exception_state.ThrowTypeError(
         "The \"secure-payment-confirmation\" method requires a non-empty "
         "\"instrument.icon\" field.");
@@ -104,8 +104,8 @@ SecurePaymentConfirmationHelper::ParseSecurePaymentConfirmationData(
     return nullptr;
   }
   if ((!request->hasPayeeOrigin() && !request->hasPayeeName()) ||
-      (request->hasPayeeOrigin() && request->payeeOrigin().IsEmpty()) ||
-      (request->hasPayeeName() && request->payeeName().IsEmpty())) {
+      (request->hasPayeeOrigin() && request->payeeOrigin().empty()) ||
+      (request->hasPayeeName() && request->payeeName().empty())) {
     exception_state.ThrowTypeError(
         "The \"secure-payment-confirmation\" method requires a non-empty "
         "\"payeeOrigin\" or \"payeeName\" field.");

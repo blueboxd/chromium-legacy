@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/core/css/container_query_data.h"
 #include "third_party/blink/renderer/core/css/container_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_markup.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
@@ -148,6 +149,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
+#include "third_party/blink/renderer/core/html/html_quote_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html/html_table_rows_collection.h"
 #include "third_party/blink/renderer/core/html/html_template_element.h"
@@ -198,6 +200,7 @@
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/region_capture_crop_id.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -294,7 +297,7 @@ bool IsRootEditableElementWithCounting(const Element& element) {
       UseCounter::Count(doc, WebFeature::kWebKitUserModifyReadWriteEffective);
       UseCounter::Count(doc, WebFeature::kWebKitUserModifyEffective);
     }
-  } else if (ce_value.IsEmpty() || EqualIgnoringASCIICase(ce_value, "true")) {
+  } else if (ce_value.empty() || EqualIgnoringASCIICase(ce_value, "true")) {
     if (user_modify == EUserModify::kReadWritePlaintextOnly) {
       UseCounter::Count(doc, WebFeature::kPlainTextEditingEffective);
       UseCounter::Count(doc, WebFeature::kWebKitUserModifyPlainTextEffective);
@@ -432,13 +435,8 @@ bool NeedsLegacyLayoutForEntireDocument(Document& document) {
   // layout (because of the above check), which would re-attach all layout
   // objects, which would cause the frameset to lose state of some sort, leaving
   // everything blank when printed.
-  if (document.IsFrameSet() &&
-      !RuntimeEnabledFeatures::LayoutNGFrameSetEnabled()) {
-    UseCounter::Count(document, WebFeature::kLegacyLayoutByFrameSet);
-    return true;
-  }
-
-  return false;
+  return document.IsFrameSet() &&
+         !RuntimeEnabledFeatures::LayoutNGFrameSetEnabled();
 }
 
 bool CalculateStyleShouldForceLegacyLayout(const Element& element,
@@ -451,27 +449,20 @@ bool CalculateStyleShouldForceLegacyLayout(const Element& element,
   if (!RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
     // Disable NG for the entire subtree if we're establishing a multicol
     // container.
-    if (style.SpecifiesColumns()) {
-      UseCounter::Count(document, WebFeature::kLegacyLayoutByMultiCol);
+    if (style.SpecifiesColumns())
       return true;
-    }
   }
 
   if (document.Printing() && element == document.documentElement() &&
       !RuntimeEnabledFeatures::LayoutNGPrintingEnabled()) {
-    UseCounter::Count(document, WebFeature::kLegacyLayoutByPrinting);
     return true;
   }
 
   if (NeedsLegacyLayoutForEntireDocument(document))
     return true;
 
-  if (NeedsLegacyBlockFragmentation(element, style)) {
-    UseCounter::Count(
-        document,
-        WebFeature::kLegacyLayoutByTableFlexGridBlockInNGFragmentationContext);
+  if (NeedsLegacyBlockFragmentation(element, style))
     return true;
-  }
 
   return false;
 }
@@ -638,7 +629,7 @@ bool IsGuaranteedToEnterNGBlockNodeLayout(const LayoutObject& layout_object) {
   // if the container for positioning is a legacy object. That is the case for
   // LayoutView, which is a legacy object but does not otherwise force
   // legacy layout objects.
-  if (!RuntimeEnabledFeatures::LayoutNGViewEnabled() &&
+  if (!RuntimeEnabledFeatures::LayoutNGPrintingEnabled() &&
       layout_object.IsOutOfFlowPositioned() &&
       layout_object.IsLayoutReplaced()) {
     return false;
@@ -870,22 +861,7 @@ void Element::SetElementAttribute(const QualifiedName& name, Element* element) {
     return;
   }
 
-  const AtomicString id = element->GetIdAttribute();
-
-  // In order to sprout a non-empty content attribute from an explicitly set
-  // attr-element, |element| must:
-  //  1) have a valid ID attribute, and
-  //  2) be the first element in tree order with this ID.
-  // Otherwise the content attribute will reflect the empty string.
-  //
-  // Note that the explicitly set attr-element is still set. See the spec for
-  // more details:
-  // https://whatpr.org/html/3917/common-dom-interfaces.html#reflecting-content-attributes-in-idl-attributes
-  if (id.IsNull() || GetTreeScope() != element->GetTreeScope() ||
-      GetTreeScope().getElementById(id) != element)
-    setAttribute(name, g_empty_atom);
-  else
-    setAttribute(name, id);
+  setAttribute(name, g_empty_atom);
 
   auto result = explicitly_set_attr_elements_map->insert(name, nullptr);
   if (result.is_new_entry) {
@@ -940,6 +916,8 @@ void Element::SetElementArrayAttribute(
     return;
   }
 
+  setAttribute(name, g_empty_atom);
+
   // Get or create element array, and remove any pre-existing elements.
   //
   // Note that this code intentionally performs two look ups on |name| within
@@ -956,39 +934,11 @@ void Element::SetElementArrayAttribute(
   } else {
     stored_elements->clear();
   }
-  SpaceSplitString value;
 
   for (auto element : *given_elements) {
-    // If |value| is null and |stored_elements| is non-empty, then a previous
-    // element must have been invalid wrt. the content attribute string rules,
-    // and therefore the content attribute string should reflect the empty
-    // string. This means we can stop trying to compute the content attribute
-    // string.
-    if (value.IsNull() && !stored_elements->IsEmpty()) {
-      stored_elements->insert(element);
-      continue;
-    }
-
     stored_elements->insert(element);
-    const AtomicString given_element_id = element->GetIdAttribute();
-
-    // We compute the content attribute string as a space separated string of
-    // the given |element| ids. Every |element| in |given_elements| must have an
-    // id, must be in the same tree scope and must be the first id in tree order
-    // with that id, otherwise the content attribute should reflect the empty
-    // string.
-    if (given_element_id.IsNull() ||
-        GetTreeScope() != element->GetTreeScope() ||
-        GetTreeScope().getElementById(given_element_id) != element) {
-      value.Clear();
-      continue;
-    }
-
-    // Whitespace between elements is added when the string is serialized.
-    value.Add(given_element_id);
   }
 
-  setAttribute(name, value.SerializeToString());
   if (isConnected()) {
     if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
       cache->HandleAttributeChanged(name, this);
@@ -1118,10 +1068,6 @@ bool Element::HasAnimations() const {
   ElementAnimations* element_animations =
       GetElementRareData()->GetElementAnimations();
   return element_animations && !element_animations->IsEmpty();
-}
-
-Node::NodeType Element::getNodeType() const {
-  return kElementNode;
 }
 
 bool Element::hasAttribute(const QualifiedName& name) const {
@@ -2018,7 +1964,7 @@ gfx::Rect Element::BoundsInWidget() const {
       GetLayoutBoxModelObject()->AbsoluteQuads(quads);
   }
 
-  if (quads.IsEmpty())
+  if (quads.empty())
     return gfx::Rect();
 
   gfx::RectF result;
@@ -2055,7 +2001,7 @@ Vector<gfx::Rect> Element::OutlineRectsInWidget(
   return rects;
 }
 
-gfx::Rect Element::VisibleBoundsInVisualViewport() const {
+gfx::Rect Element::VisibleBoundsInLocalRoot() const {
   if (!GetLayoutObject() || !GetDocument().GetPage() ||
       !GetDocument().GetFrame())
     return gfx::Rect();
@@ -2069,17 +2015,14 @@ gfx::Rect Element::VisibleBoundsInVisualViewport() const {
   rect.Intersect(frame_clip_rect);
 
   // MapToVisualRectInAncestorSpace, called with a null ancestor argument,
-  // returns the viewport-visible rect in the root frame's coordinate space.
+  // returns the root-frame-visible rect in the root frame's coordinate space.
+  // TODO(bokan): When the root is remote this appears to be document space,
+  // rather than frame.
   // MapToVisualRectInAncestorSpace applies ancestors' frame's clipping but does
   // not apply (overflow) element clipping.
   GetDocument().View()->GetLayoutView()->MapToVisualRectInAncestorSpace(nullptr,
                                                                         rect);
 
-  // TODO(layout-dev): Callers of this method don't expect the offset of the
-  // local frame root from a remote top-level frame to be applied here. They
-  // expect the result to be in the coordinate system of the local root frame.
-  // Either the method should be renamed to something which communicates that,
-  // or callers should be updated to expect actual top-level frame coordinates.
   rect = GetDocument()
              .GetFrame()
              ->LocalFrameRoot()
@@ -2087,20 +2030,7 @@ gfx::Rect Element::VisibleBoundsInVisualViewport() const {
              ->AbsoluteToLocalRect(rect, kTraverseDocumentBoundaries |
                                              kApplyRemoteMainFrameTransform);
 
-  gfx::Rect visible_rect = ToPixelSnappedRect(rect);
-  // If the rect is in the coordinates of the main frame, then it should
-  // also be clipped to the viewport to account for page scale. For OOPIFs,
-  // local frame root -> viewport coordinate conversion is done in the
-  // browser process.
-  if (GetDocument().GetFrame()->LocalFrameRoot().IsMainFrame()) {
-    gfx::Size viewport_size =
-        GetDocument().GetPage()->GetVisualViewport().Size();
-    visible_rect =
-        GetDocument().GetPage()->GetVisualViewport().RootFrameToViewport(
-            visible_rect);
-    visible_rect.Intersect(gfx::Rect(gfx::Point(), viewport_size));
-  }
-  return visible_rect;
+  return ToPixelSnappedRect(rect);
 }
 
 void Element::ClientQuads(Vector<gfx::QuadF>& quads) const {
@@ -2137,7 +2067,7 @@ DOMRectList* Element::getClientRects() {
       this, DocumentUpdateReason::kJavaScript);
   Vector<gfx::QuadF> quads;
   ClientQuads(quads);
-  if (quads.IsEmpty())
+  if (quads.empty())
     return MakeGarbageCollected<DOMRectList>();
 
   LayoutObject* element_layout_object = GetLayoutObject();
@@ -2150,7 +2080,7 @@ DOMRectList* Element::getClientRects() {
 gfx::RectF Element::GetBoundingClientRectNoLifecycleUpdateNoAdjustment() const {
   Vector<gfx::QuadF> quads;
   ClientQuads(quads);
-  if (quads.IsEmpty())
+  if (quads.empty())
     return gfx::RectF();
 
   gfx::RectF result;
@@ -2434,6 +2364,23 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
   }
 }
 
+namespace {
+PopupValueType GetPopUpTypeFromAttributeValue(String value) {
+  if (EqualIgnoringASCIICase(value, kPopupTypeValueAuto) ||
+      (!value.IsNull() && value.empty())) {
+    return PopupValueType::kAuto;
+  } else if (EqualIgnoringASCIICase(value, kPopupTypeValueHint)) {
+    return PopupValueType::kHint;
+  } else if (EqualIgnoringASCIICase(value, kPopupTypeValueManual)) {
+    return PopupValueType::kManual;
+  } else if (!value.IsNull()) {
+    // Invalid values default to popup=manual.
+    return PopupValueType::kManual;
+  }
+  return PopupValueType::kNone;
+}
+}  // namespace
+
 void Element::UpdatePopupAttribute(String value) {
   if (!RuntimeEnabledFeatures::HTMLPopupAttributeEnabled(
           GetDocument().GetExecutionContext())) {
@@ -2444,29 +2391,22 @@ void Element::UpdatePopupAttribute(String value) {
     auto* console_message = MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kOther,
         mojom::blink::ConsoleMessageLevel::kError,
-        "Found a 'popup' attribute. If you are testing the popup API, you must "
-        "enable Experimental Web Platform Features. If not, note that custom "
-        "attributes must start with 'data-': "
+        "Found a 'popup' attribute. If you are testing the pop-up API, you "
+        "must enable Experimental Web Platform Features. If not, note that "
+        "custom attributes must start with 'data-': "
         "https://html.spec.whatwg.org/multipage/"
         "dom.html#custom-data-attribute. This usage will *likely cause site "
-        "breakage* when the popup API ships: "
+        "breakage* when the pop-up API ships: "
         "https://chromestatus.com/feature/5463833265045504.");
     console_message->SetNodes(document.GetFrame(),
                               {DOMNodeIds::IdForNode(this)});
     document.AddConsoleMessage(console_message);
     return;
   }
-  PopupValueType type = PopupValueType::kNone;
-  if (EqualIgnoringASCIICase(value, kPopupTypeValueAuto) ||
-      (!value.IsNull() && value.IsEmpty())) {
-    type = PopupValueType::kAuto;
-  } else if (EqualIgnoringASCIICase(value, kPopupTypeValueHint)) {
-    type = PopupValueType::kHint;
-  } else if (EqualIgnoringASCIICase(value, kPopupTypeValueManual)) {
-    type = PopupValueType::kManual;
-  } else if (!value.IsNull()) {
-    // Invalid values default to popup=manual.
-    type = PopupValueType::kManual;
+
+  PopupValueType type = GetPopUpTypeFromAttributeValue(value);
+  if (type == PopupValueType::kManual &&
+      !EqualIgnoringASCIICase(value, kPopupTypeValueManual)) {
     // TODO(masonf) This console message might be too much log spam. Though
     // in case there's a namespace collision with something the developer is
     // doing with e.g. a function called 'popup', this will be helpful to
@@ -2479,10 +2419,18 @@ void Element::UpdatePopupAttribute(String value) {
   if (HasPopupAttribute()) {
     if (PopupType() == type)
       return;
+    String original_type = FastGetAttribute(html_names::kPopupAttr);
     // If the popup type is changing, hide it.
     if (popupOpen()) {
       HidePopUpInternal(HidePopupFocusBehavior::kFocusPreviousElement,
                         HidePopupForcingLevel::kHideAfterAnimations);
+      // Event handlers could have changed the pop-up, including by removing
+      // the popup attribute, or changing its value. If that happened, defer
+      // to the change that already happened, and don't reset it again here.
+      if (!isConnected() || !HasPopupAttribute() ||
+          original_type != FastGetAttribute(html_names::kPopupAttr)) {
+        return;
+      }
     }
   }
   if (type == PopupValueType::kNone) {
@@ -2493,6 +2441,8 @@ void Element::UpdatePopupAttribute(String value) {
     return;
   }
   UseCounter::Count(GetDocument(), WebFeature::kValidPopupAttribute);
+  DCHECK_EQ(type, GetPopUpTypeFromAttributeValue(
+                      FastGetAttribute(html_names::kPopupAttr)));
   EnsureElementRareData().EnsurePopupData().setType(type);
 }
 
@@ -2538,14 +2488,14 @@ void Element::showPopUp(ExceptionState& exception_state) {
         "Invalid on already-showing or disconnected popup elements");
   }
 
-  // Fire the show event (bubbles, cancelable).
-  Event* event = Event::CreateCancelableBubble(event_type_names::kShow);
+  // Fire the popupshow event (bubbles, cancelable).
+  Event* event = Event::CreateCancelableBubble(event_type_names::kPopupshow);
   event->SetTarget(this);
   if (DispatchEvent(*event) != DispatchEventResult::kNotCanceled)
     return;
 
-  // The 'show' event handler could have changed this pop-up, e.g. by changing
-  // its type, removing it from the document, or calling showPopUp().
+  // The 'popupshow' event handler could have changed this pop-up, e.g. by
+  // changing its type, removing it from the document, or calling showPopUp().
   if (!HasPopupAttribute() || !isConnected() || popupOpen())
     return;
 
@@ -2561,7 +2511,8 @@ void Element::showPopUp(ExceptionState& exception_state) {
             HidePopupForcingLevel::kHideAfterAnimations);
       }
       // Then hide open pop-ups that aren't ancestors of this hint.
-      if (const Element* hint_ancestor = NearestOpenAncestralPopup(*this)) {
+      if (const Element* hint_ancestor =
+              NearestOpenAncestralPopup(*this, PopUpAncestorType::kNewPopUp)) {
         HideAllPopupsUntil(hint_ancestor, document,
                            HidePopupFocusBehavior::kNone,
                            HidePopupForcingLevel::kHideAfterAnimations,
@@ -2572,14 +2523,15 @@ void Element::showPopUp(ExceptionState& exception_state) {
       // stack, and hide any hint pop-ups. Because this pop-up isn't yet in the
       // stack, we call NearestOpenAncestralPopup to find this pop-up's
       // ancestor, if any.
-      const Element* auto_ancestor = NearestOpenAncestralPopup(*this);
+      const Element* auto_ancestor =
+          NearestOpenAncestralPopup(*this, PopUpAncestorType::kNewPopUp);
       HideAllPopupsUntil(auto_ancestor, document, HidePopupFocusBehavior::kNone,
                          HidePopupForcingLevel::kHideAfterAnimations,
                          HidePopupIndependence::kHideUnrelated);
     }
 
-    // The 'hide' event handlers could have changed this popup, e.g. by changing
-    // its type, removing it from the document, or calling showPopUp().
+    // The 'popuphide' event handlers could have changed this popup, e.g. by
+    // changing its type, removing it from the document, or calling showPopUp().
     if (!HasPopupAttribute() || !isConnected() || popupOpen())
       return;
 
@@ -2644,43 +2596,70 @@ void Element::HideAllPopupsUntil(const Element* endpoint,
     auto popups_to_hide = document.PopupsWaitingToHide();
     for (auto popup : popups_to_hide)
       popup->PopupHideFinishIfNeeded();
-    DCHECK(document.PopupsWaitingToHide().IsEmpty());
+    DCHECK(document.PopupsWaitingToHide().empty());
   }
 
-  if (endpoint && endpoint->PopupType() == PopupValueType::kHint) {
+  auto close_all_open_pop_ups = [&document, &focus_behavior, &forcing_level]() {
+    while (auto* pop_up = document.TopmostPopupAutoOrHint()) {
+      pop_up->HidePopUpInternal(focus_behavior, forcing_level);
+    }
+  };
+
+  if (!endpoint)
+    return close_all_open_pop_ups();
+
+  if (endpoint->PopupType() == PopupValueType::kHint) {
     if (popup_independence == HidePopupIndependence::kHideUnrelated) {
       if (document.PopupHintShowing() != endpoint) {
         document.PopupHintShowing()->HidePopUpInternal(focus_behavior,
                                                        forcing_level);
       }
-      while (!document.PopupStack().IsEmpty()) {
+      while (!document.PopupStack().empty()) {
         document.PopupStack().back()->HidePopUpInternal(focus_behavior,
                                                         forcing_level);
       }
     }
   } else {
-    DCHECK(!endpoint || endpoint->PopupType() == PopupValueType::kAuto);
+    DCHECK_EQ(endpoint->PopupType(), PopupValueType::kAuto);
     const Element* hint_ancestor = nullptr;
     if (document.PopupHintShowing()) {
       // If there is a hint showing that is a descendant of something on the
       // stack, then the hint should be hidden before that ancestor is hidden,
       // regardless of popup_independence.
-      hint_ancestor = NearestOpenAncestralPopup(*document.PopupHintShowing());
+      hint_ancestor = NearestOpenAncestralPopup(*document.PopupHintShowing(),
+                                                PopUpAncestorType::kDefault);
       if (!hint_ancestor &&
           popup_independence == HidePopupIndependence::kHideUnrelated) {
         document.PopupHintShowing()->HidePopUpInternal(focus_behavior,
                                                        forcing_level);
       }
     }
-    // Then hide everything in the popup=auto stack up to the specified
-    // endpoint.
-    while (!document.PopupStack().IsEmpty()) {
+    // Then hide everything in the popup=auto stack until the last_to_hide
+    // pop-up is closed, or the stack is empty.
+    const Element* last_to_hide = nullptr;
+    bool found_endpoint = false;
+    for (auto pop_up : document.PopupStack()) {
+      if (pop_up == endpoint) {
+        found_endpoint = true;
+      } else if (found_endpoint) {
+        last_to_hide = pop_up;
+        break;
+      }
+    }
+    if (!found_endpoint)
+      return close_all_open_pop_ups();
+    if (!last_to_hide && document.PopupHintShowing() &&
+        hint_ancestor == endpoint) {
+      // endpoint is the top of the pop-up stack, and there's a nested hint.
+      document.PopupHintShowing()->HidePopUpInternal(focus_behavior,
+                                                     forcing_level);
+    }
+    while (last_to_hide && last_to_hide->popupOpen() &&
+           !document.PopupStack().empty()) {
       if (document.PopupStack().back() == hint_ancestor) {
         document.PopupHintShowing()->HidePopUpInternal(focus_behavior,
                                                        forcing_level);
       }
-      if (document.PopupStack().back() == endpoint)
-        break;
       document.PopupStack().back()->HidePopUpInternal(focus_behavior,
                                                       forcing_level);
     }
@@ -2713,7 +2692,7 @@ void Element::hidePopUp(ExceptionState& exception_state) {
 // 1. Capture any already-running animations via getAnimations(), including
 //    animations on descendant elements.
 // 2. Remove the `:open` pseudo class.
-// 3. Fire the 'hide' event.
+// 3. Fire the 'popuphide' event.
 // 4. If the hidePopup() call is *not* the result of the pop-up being "forced
 //    out" of the top layer, e.g. by a modal dialog or fullscreen element:
 //   a. Restore focus to the previously-focused element.
@@ -2734,8 +2713,8 @@ void Element::HidePopUpInternal(HidePopupFocusBehavior focus_behavior,
     HideAllPopupsUntil(this, document, focus_behavior, forcing_level,
                        HidePopupIndependence::kLeaveUnrelated);
 
-    // The 'hide' event handlers could have changed this popup, e.g. by changing
-    // its type, removing it from the document, or calling hidePopUp().
+    // The 'popuphide' event handlers could have changed this popup, e.g. by
+    // changing its type, removing it from the document, or calling hidePopUp().
     if (!HasPopupAttribute() || !isConnected() ||
         GetPopupData()->visibilityState() != PopupVisibilityState::kShowing) {
       DCHECK(!GetDocument().PopupStack().Contains(this));
@@ -2746,7 +2725,7 @@ void Element::HidePopUpInternal(HidePopupFocusBehavior focus_behavior,
     // is already hidden, it won't be in the stack.
     if (PopupType() == PopupValueType::kAuto) {
       auto& stack = document.PopupStack();
-      DCHECK(!stack.IsEmpty());
+      DCHECK(!stack.empty());
       DCHECK_EQ(stack.back(), this);
       stack.pop_back();
     } else {
@@ -2769,8 +2748,8 @@ void Element::HidePopUpInternal(HidePopupFocusBehavior focus_behavior,
   GetPopupData()->setVisibilityState(PopupVisibilityState::kTransitioning);
   PseudoStateChanged(CSSSelector::kPseudoOpen);
 
-  // Fire the hide event (bubbles, not cancelable).
-  Event* event = Event::CreateBubble(event_type_names::kHide);
+  // Fire the popuphide event (bubbles, not cancelable).
+  Event* event = Event::CreateBubble(event_type_names::kPopuphide);
   event->SetTarget(this);
   if (force_hide) {
     // We will be force-hidden when the pop-up element is being removed from
@@ -2782,8 +2761,8 @@ void Element::HidePopUpInternal(HidePopupFocusBehavior focus_behavior,
   auto result = DispatchEvent(*event);
   DCHECK_EQ(result, DispatchEventResult::kNotCanceled);
 
-  // The 'hide' event handler could have changed this popup, e.g. by changing
-  // its type, removing it from the document, or calling showPopUp().
+  // The 'popuphide' event handler could have changed this popup, e.g. by
+  // changing its type, removing it from the document, or calling showPopUp().
   if (!isConnected() || !HasPopupAttribute() ||
       GetPopupData()->visibilityState() !=
           PopupVisibilityState::kTransitioning) {
@@ -2800,7 +2779,7 @@ void Element::HidePopUpInternal(HidePopupFocusBehavior focus_behavior,
     animations.insert(animation);
   }
   animations.RemoveAll(previous_animations);
-  if (animations.IsEmpty()) {
+  if (animations.empty()) {
     // No animations to wait for: just finish immediately.
     PopupHideFinishIfNeeded();
   } else {
@@ -2976,8 +2955,9 @@ const Element* NearestOpenAncestralPopupRecursive(
 // pop-up found during the tree-walk is included in the search. If it is false,
 // the |node| parameter must be a pop-up, and the highest pop-up *below* that
 // starting pop- up will be returned.
-const Element* Element::NearestOpenAncestralPopup(const Node& node,
-                                                  bool inclusive) {
+const Element* Element::NearestOpenAncestralPopup(
+    const Node& node,
+    PopUpAncestorType ancestor_type) {
   DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled(
       node.GetDocument().GetExecutionContext()));
   // popup_positions is a map from all showing (or about-to-show) pop-ups to
@@ -3000,20 +2980,18 @@ const Element* Element::NearestOpenAncestralPopup(const Node& node,
     }
   }
   auto* element = DynamicTo<Element>(node);
-  bool new_element =
-      element && element->HasPopupAttribute() && !element->popupOpen();
-  if (new_element) {
-    DCHECK(!inclusive);
+  if (ancestor_type == PopUpAncestorType::kNewPopUp) {
+    DCHECK(element && element->HasPopupAttribute() && !element->popupOpen());
     popup_positions.Set(element, indx++);
   }
   // upper_bound is one above the maximum pop-up stack height to accept. It is
   // typically the position of the provided element.
   int upper_bound =
       popup_positions.Contains(element) ? popup_positions.at(element) : INT_MAX;
-  if (hint_showing && new_element) {
+  if (hint_showing && ancestor_type == PopUpAncestorType::kNewPopUp) {
     upper_bound = popup_positions.at(hint_showing);  // Do not include the hint
   }
-  if (inclusive) {
+  if (ancestor_type == PopUpAncestorType::kInclusive) {
     // For inclusive mode, we need to walk up the tree until we find an open
     // pop-up, or an invoker for an open pop-up, and then modify the upper bound
     // to include the highest such pop-up found, if any.
@@ -3061,7 +3039,7 @@ void Element::HandlePopupLightDismiss(const Event& event) {
   const AtomicString& event_type = event.type();
   if (event_type == event_type_names::kMousedown) {
     document.SetPopUpMousedownTarget(
-        NearestOpenAncestralPopup(*target_node, /*inclusive*/ true));
+        NearestOpenAncestralPopup(*target_node, PopUpAncestorType::kInclusive));
   } else if (event_type == event_type_names::kMouseup) {
     // Hide everything up to the clicked element. We do this on mouseup,
     // rather than mousedown or click, primarily for accessibility concerns.
@@ -3072,7 +3050,7 @@ void Element::HandlePopupLightDismiss(const Event& event) {
     // mouse-drag on a pop-up, and finishes off the pop-up (to highlight text),
     // the ancestral pop-up is stored in mousedown and compared here.
     auto* ancestor_pop_up =
-        NearestOpenAncestralPopup(*target_node, /*inclusive*/ true);
+        NearestOpenAncestralPopup(*target_node, PopUpAncestorType::kInclusive);
     bool same_target = ancestor_pop_up == document.PopUpMousedownTarget();
     document.SetPopUpMousedownTarget(nullptr);
     if (same_target) {
@@ -3319,7 +3297,7 @@ void Element::ParserSetAttributes(
   DCHECK(!parentNode());
   DCHECK(!element_data_);
 
-  if (!attribute_vector.IsEmpty()) {
+  if (!attribute_vector.empty()) {
     if (GetDocument().GetElementDataCache())
       element_data_ =
           GetDocument()
@@ -3457,7 +3435,7 @@ Node::InsertionNotificationRequest Element::InsertedInto(
     GetDocument()
         .GetTaskRunner(TaskType::kDOMManipulation)
         ->PostTask(FROM_HERE,
-                   WTF::Bind(maybe_show_popup, WrapWeakPersistent(this)));
+                   WTF::BindOnce(maybe_show_popup, WrapWeakPersistent(this)));
   }
 
   TreeScope& scope = insertion_point.GetTreeScope();
@@ -4092,7 +4070,16 @@ StyleRecalcChange Element::RecalcStyle(
     // If we are re-attaching us or any of our descendants, we need to attach
     // the descendants before we know if this element generates a ::first-letter
     // and which element the ::first-letter inherits style from.
-    if (!child_change.ReattachLayoutTree() && !ChildNeedsReattachLayoutTree()) {
+    if (child_change.ReattachLayoutTree()) {
+      // Make sure we reach this element during reattachment. There are cases
+      // where we compute and store the styles for a subtree but stop attaching
+      // layout objects at an element that does not allow child boxes. Marking
+      // dirty for re-attachment means we AttachLayoutTree() will still traverse
+      // down to all elements with a ComputedStyle which clears the
+      // NeedsStyleRecalc() flag.
+      if (PseudoElement* first_letter = GetPseudoElement(kPseudoIdFirstLetter))
+        first_letter->SetNeedsReattachLayoutTree();
+    } else if (!ChildNeedsReattachLayoutTree()) {
       UpdateFirstLetterPseudoElement(StyleUpdatePhase::kRecalc,
                                      child_recalc_context);
     }
@@ -4685,7 +4672,7 @@ void Element::UpdateCallbackSelectors(const ComputedStyle* old_style,
       old_style ? old_style->CallbackSelectors() : empty_vector;
   const Vector<String>& new_callback_selectors =
       new_style ? new_style->CallbackSelectors() : empty_vector;
-  if (old_callback_selectors.IsEmpty() && new_callback_selectors.IsEmpty())
+  if (old_callback_selectors.empty() && new_callback_selectors.empty())
     return;
   if (old_callback_selectors != new_callback_selectors)
     CSSSelectorWatch::From(GetDocument())
@@ -5047,14 +5034,17 @@ ShadowRoot* Element::attachShadow(const ShadowRootInit* shadow_root_init_dict,
                           shadow_root_init_dict->slotAssignment() == "manual")
                              ? SlotAssignmentMode::kManual
                              : SlotAssignmentMode::kNamed;
+  CustomElementRegistry* registry = shadow_root_init_dict->hasRegistry()
+                                        ? shadow_root_init_dict->registry()
+                                        : nullptr;
   if (const char* error_message = ErrorMessageForAttachShadow()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       error_message);
     return nullptr;
   }
 
-  ShadowRoot& shadow_root =
-      AttachShadowRootInternal(type, focus_delegation, slot_assignment);
+  ShadowRoot& shadow_root = AttachShadowRootInternal(type, focus_delegation,
+                                                     slot_assignment, registry);
 
   // Ensure that the returned shadow root is not marked as declarative so that
   // attachShadow() calls after the first one do not succeed for a shadow host
@@ -5110,7 +5100,8 @@ ShadowRoot& Element::CreateUserAgentShadowRoot() {
 ShadowRoot& Element::AttachShadowRootInternal(
     ShadowRootType type,
     FocusDelegation focus_delegation,
-    SlotAssignmentMode slot_assignment_mode) {
+    SlotAssignmentMode slot_assignment_mode,
+    CustomElementRegistry* registry) {
   // SVG <use> is a special case for using this API to create a closed shadow
   // root.
   DCHECK(CanAttachShadowRoot() || IsA<SVGUseElement>(*this));
@@ -5137,6 +5128,8 @@ ShadowRoot& Element::AttachShadowRootInternal(
                                 FocusDelegation::kDelegateFocus);
   // NEW. Set shadow’s "is declarative shadow root" property to false.
   shadow_root.SetIsDeclarativeShadowRoot(false);
+
+  shadow_root.SetRegistry(registry);
 
   // 7. If this’s custom element state is "precustomized" or "custom", then set
   // shadow’s available to element internals to true.
@@ -5207,7 +5200,7 @@ bool HasSiblingsForNonEmpty(const Node* sibling,
     if (sibling->IsElementNode())
       return true;
     auto* text_node = DynamicTo<Text>(sibling);
-    if (text_node && !text_node->data().IsEmpty())
+    if (text_node && !text_node->data().empty())
       return true;
   }
   return false;
@@ -5235,23 +5228,29 @@ void Element::ChildrenChanged(const ChildrenChange& change) {
   CheckForEmptyStyleChange(change.sibling_before_change,
                            change.sibling_after_change);
 
-  if (!change.ByParser() && change.IsChildElementChange()) {
-    Element* changed_element = To<Element>(change.sibling_changed);
-    bool removed = change.type == ChildrenChangeType::kElementRemoved;
-    CheckForSiblingStyleChanges(
-        removed ? kSiblingElementRemoved : kSiblingElementInserted,
-        changed_element, change.sibling_before_change,
-        change.sibling_after_change);
-    if (removed) {
+  if (!change.ByParser()) {
+    if (change.IsChildElementChange()) {
+      Element* changed_element = To<Element>(change.sibling_changed);
+      bool removed = change.type == ChildrenChangeType::kElementRemoved;
+      CheckForSiblingStyleChanges(
+          removed ? kSiblingElementRemoved : kSiblingElementInserted,
+          changed_element, change.sibling_before_change,
+          change.sibling_after_change);
+      if (removed) {
+        GetDocument()
+            .GetStyleEngine()
+            .ScheduleInvalidationsForHasPseudoAffectedByRemoval(
+                this, change.sibling_before_change, *changed_element);
+      } else {
+        GetDocument()
+            .GetStyleEngine()
+            .ScheduleInvalidationsForHasPseudoAffectedByInsertion(
+                this, change.sibling_before_change, *changed_element);
+      }
+    } else if (change.type == ChildrenChangeType::kAllChildrenRemoved) {
       GetDocument()
           .GetStyleEngine()
-          .ScheduleInvalidationsForHasPseudoAffectedByRemoval(
-              this, change.sibling_before_change, *changed_element);
-    } else {
-      GetDocument()
-          .GetStyleEngine()
-          .ScheduleInvalidationsForHasPseudoAffectedByInsertion(
-              this, change.sibling_before_change, *changed_element);
+          .ScheduleInvalidationsForHasPseudoWhenAllChildrenRemoved(*this);
     }
   }
 
@@ -5313,7 +5312,7 @@ Attr* Element::removeAttributeNode(Attr* attr,
 void Element::ParseAttribute(const AttributeModificationParams& params) {
   if (params.name == html_names::kTabindexAttr) {
     int tabindex = 0;
-    if (params.new_value.IsEmpty() ||
+    if (params.new_value.empty() ||
         !ParseHTMLInteger(params.new_value, tabindex)) {
       ClearTabIndexExplicitlyIfNeeded();
     } else {
@@ -6230,10 +6229,11 @@ void Element::DispatchFocusEvent(Element* old_focused_element,
       document.TopmostPopupAutoOrHint()) {
     // If there's a pop-up showing, and we focus an element, hide all pop-ups
     // outside the that element's pop-up tree, including unrelated pop-ups.
-    HideAllPopupsUntil(NearestOpenAncestralPopup(*this, /*inclusive*/ true),
-                       document, HidePopupFocusBehavior::kNone,
-                       HidePopupForcingLevel::kHideAfterAnimations,
-                       HidePopupIndependence::kHideUnrelated);
+    HideAllPopupsUntil(
+        NearestOpenAncestralPopup(*this, PopUpAncestorType::kInclusive),
+        document, HidePopupFocusBehavior::kNone,
+        HidePopupForcingLevel::kHideAfterAnimations,
+        HidePopupIndependence::kHideUnrelated);
   }
 }
 
@@ -6285,7 +6285,7 @@ String Element::outerHTML() const {
 void Element::SetInnerHTMLInternal(const String& html,
                                    bool include_shadow_roots,
                                    ExceptionState& exception_state) {
-  if (html.IsEmpty() && !HasNonInBodyInsertionMode()) {
+  if (html.empty() && !HasNonInBodyInsertionMode()) {
     setTextContent(html);
   } else {
     if (DocumentFragment* fragment = CreateFragmentForInnerOuterHTML(
@@ -6417,7 +6417,7 @@ Node* Element::InsertAdjacent(const String& where,
 
 void Element::HideNonce() {
   const AtomicString& nonce_value = FastGetAttribute(html_names::kNonceAttr);
-  if (nonce_value.IsEmpty())
+  if (nonce_value.empty())
     return;
   if (!InActiveDocument())
     return;
@@ -6666,9 +6666,9 @@ const AtomicString& Element::ShadowPseudoId() const {
 }
 
 void Element::SetShadowPseudoId(const AtomicString& id) {
-  DCHECK(CSSSelectorParser<>::ParsePseudoType(id, false, &GetDocument()) ==
+  DCHECK(CSSSelectorParser::ParsePseudoType(id, false, &GetDocument()) ==
              CSSSelector::kPseudoWebKitCustomElement ||
-         CSSSelectorParser<>::ParsePseudoType(id, false, &GetDocument()) ==
+         CSSSelectorParser::ParsePseudoType(id, false, &GetDocument()) ==
              CSSSelector::kPseudoBlinkInternalElement);
   setAttribute(html_names::kPseudoAttr, id);
 }
@@ -6748,10 +6748,10 @@ const ComputedStyle* Element::EnsureComputedStyle(
   // and the back() element is the "top-most" ancestor in the chain.
   HeapVector<Member<Element>> ancestors = CollectAncestorsToEnsure(*this);
 
-  Element* top = ancestors.IsEmpty() ? this : ancestors.back().Get();
+  Element* top = ancestors.empty() ? this : ancestors.back().Get();
   auto style_recalc_context = StyleRecalcContext::FromAncestors(*top);
 
-  while (!ancestors.IsEmpty()) {
+  while (!ancestors.empty()) {
     Element* ancestor = ancestors.back();
     ancestors.pop_back();
     const ComputedStyle* style =
@@ -7253,8 +7253,15 @@ scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
     }
     StyleRequest before_after_request = request;
     before_after_request.layout_parent_override = layout_parent_style;
-    return GetDocument().GetStyleResolver().ResolveStyle(
-        this, style_recalc_context, before_after_request);
+    scoped_refptr<ComputedStyle> result =
+        GetDocument().GetStyleResolver().ResolveStyle(
+            this, style_recalc_context, before_after_request);
+    if (result) {
+      if (auto* quote = DynamicTo<HTMLQuoteElement>(this)) {
+        quote->AdjustPseudoStyleLocale(result);
+      }
+    }
+    return result;
   }
 
   if (request.pseudo_id == kPseudoIdFirstLineInherited) {
@@ -7284,7 +7291,7 @@ scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
 bool Element::CanGeneratePseudoElement(PseudoId pseudo_id) const {
   if (pseudo_id == kPseudoIdPageTransition) {
     DCHECK_EQ(this, GetDocument().documentElement());
-    return !GetDocument().GetStyleEngine().DocumentTransitionTags().IsEmpty();
+    return !GetDocument().GetStyleEngine().DocumentTransitionTags().empty();
   }
   if (pseudo_id == kPseudoIdBackdrop && !IsInTopLayer())
     return false;
@@ -7374,7 +7381,7 @@ KURL Element::GetNonEmptyURLAttribute(const QualifiedName& name) const {
   }
 #endif
   String value = StripLeadingAndTrailingHTMLSpaces(getAttribute(name));
-  if (value.IsEmpty())
+  if (value.empty())
     return KURL();
   return GetDocument().CompleteURL(value);
 }
@@ -7615,9 +7622,9 @@ inline void Element::UpdateId(TreeScope& scope,
   DCHECK(IsInTreeScope());
   DCHECK_NE(old_id, new_id);
 
-  if (!old_id.IsEmpty())
+  if (!old_id.empty())
     scope.RemoveElementById(old_id, *this);
-  if (!new_id.IsEmpty())
+  if (!new_id.empty())
     scope.AddElementById(new_id, *this);
 
   NamedItemType type = GetNamedItemType();
@@ -7822,18 +7829,18 @@ void Element::UpdateNamedItemRegistration(NamedItemType type,
   if (!doc)
     return;
 
-  if (!old_name.IsEmpty())
+  if (!old_name.empty())
     doc->RemoveNamedItem(old_name);
 
-  if (!new_name.IsEmpty())
+  if (!new_name.empty())
     doc->AddNamedItem(new_name);
 
   if (type == NamedItemType::kNameOrIdWithName) {
     const AtomicString id = GetIdAttribute();
-    if (!id.IsEmpty()) {
-      if (!old_name.IsEmpty() && new_name.IsEmpty())
+    if (!id.empty()) {
+      if (!old_name.empty() && new_name.empty())
         doc->RemoveNamedItem(id);
-      else if (old_name.IsEmpty() && !new_name.IsEmpty())
+      else if (old_name.empty() && !new_name.empty())
         doc->AddNamedItem(id);
     }
   }
@@ -7846,13 +7853,13 @@ void Element::UpdateIdNamedItemRegistration(NamedItemType type,
   if (!doc)
     return;
 
-  if (type == NamedItemType::kNameOrIdWithName && GetNameAttribute().IsEmpty())
+  if (type == NamedItemType::kNameOrIdWithName && GetNameAttribute().empty())
     return;
 
-  if (!old_id.IsEmpty())
+  if (!old_id.empty())
     doc->RemoveNamedItem(old_id);
 
-  if (!new_id.IsEmpty())
+  if (!new_id.empty())
     doc->AddNamedItem(new_id);
 }
 
@@ -7896,7 +7903,7 @@ void Element::DetachAttrNodeFromElementWithValue(Attr* attr_node,
   wtf_size_t index = list->Find(attr_node);
   DCHECK_NE(index, kNotFound);
   list->EraseAt(index);
-  if (list->IsEmpty())
+  if (list->empty())
     RemoveAttrNodeList();
 }
 
@@ -8304,6 +8311,43 @@ void Element::AddPropertyToPresentationAttributeStyle(
   style->SetProperty(property_id, value);
 }
 
+void Element::MapLanguageAttributeToLocale(const AtomicString& value,
+                                           MutableCSSPropertyValueSet* style) {
+  if (!value.empty()) {
+    // Have to quote so the locale id is treated as a string instead of as a CSS
+    // keyword.
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWebkitLocale,
+                                            SerializeString(value));
+
+    // FIXME: Remove the following UseCounter code when we collect enough
+    // data.
+    UseCounter::Count(GetDocument(), WebFeature::kLangAttribute);
+    if (IsA<HTMLHtmlElement>(this))
+      UseCounter::Count(GetDocument(), WebFeature::kLangAttributeOnHTML);
+    else if (IsA<HTMLBodyElement>(this))
+      UseCounter::Count(GetDocument(), WebFeature::kLangAttributeOnBody);
+    String html_language = value.GetString();
+    wtf_size_t first_separator = html_language.find('-');
+    if (first_separator != kNotFound)
+      html_language = html_language.Left(first_separator);
+    String ui_language = DefaultLanguage();
+    first_separator = ui_language.find('-');
+    if (first_separator != kNotFound)
+      ui_language = ui_language.Left(first_separator);
+    first_separator = ui_language.find('_');
+    if (first_separator != kNotFound)
+      ui_language = ui_language.Left(first_separator);
+    if (!DeprecatedEqualIgnoringCase(html_language, ui_language)) {
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kLangAttributeDoesNotMatchToUILocale);
+    }
+  } else {
+    // The empty string means the language is explicitly unknown.
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWebkitLocale,
+                                            CSSValueID::kAuto);
+  }
+}
+
 void Element::LogAddElementIfIsolatedWorldAndInDocument(
     const char element[],
     const QualifiedName& attr1) {
@@ -8486,7 +8530,7 @@ void Element::RecalcTransitionPseudoTreeStyle(
   DCHECK_EQ(this, GetDocument().documentElement());
 
   auto* old_transition_pseudo = GetPseudoElement(kPseudoIdPageTransition);
-  if (document_transition_tags.IsEmpty() && !old_transition_pseudo)
+  if (document_transition_tags.empty() && !old_transition_pseudo)
     return;
 
   const StyleRecalcChange style_recalc_change;
@@ -8534,7 +8578,7 @@ void Element::RebuildTransitionPseudoLayoutTree(
     const Vector<AtomicString>& document_transition_tags) {
   DCHECK_EQ(this, GetDocument().documentElement());
 
-  if (document_transition_tags.IsEmpty()) {
+  if (document_transition_tags.empty()) {
     DCHECK(!GetPseudoElement(kPseudoIdPageTransition));
     return;
   }
@@ -8612,7 +8656,7 @@ bool Element::checkVisibility(CheckVisibilityOptions* options) const {
 WTF::AtomicStringTable::WeakResult Element::WeakLowercaseIfNecessary(
     const AtomicString& name) const {
   if (LIKELY(IsHTMLElement() && IsA<HTMLDocument>(GetDocument()))) {
-    if (name.IsEmpty() || name.IsLowerASCII())
+    if (name.empty() || name.IsLowerASCII())
       return WTF::AtomicStringTable::WeakResult(name);
     return WTF::AtomicStringTable::Instance().WeakFindLowercase(name);
   }
@@ -8732,11 +8776,9 @@ void Element::SetAttributeHinted(AtomicString local_name,
         "'" + local_name + "' is not a valid attribute name.");
     return;
   }
-
   SynchronizeAttributeHinted(local_name, hint);
-  wtf_size_t index;
-  QualifiedName q_name = QualifiedName::Null();
-  std::tie(index, q_name) =
+
+  const auto [index, q_name] =
       LookupAttributeQNameHinted(std::move(local_name), hint);
 
   AtomicString trusted_value(TrustedTypesCheckFor(
@@ -8759,11 +8801,9 @@ void Element::SetAttributeHinted(AtomicString local_name,
         "'" + local_name + "' is not a valid attribute name.");
     return;
   }
-
   SynchronizeAttributeHinted(local_name, hint);
-  wtf_size_t index;
-  QualifiedName q_name = QualifiedName::Null();
-  std::tie(index, q_name) =
+
+  const auto [index, q_name] =
       LookupAttributeQNameHinted(std::move(local_name), hint);
   AtomicString value(TrustedTypesCheckFor(
       ExpectedTrustedTypeForAttribute(q_name), trusted_string,

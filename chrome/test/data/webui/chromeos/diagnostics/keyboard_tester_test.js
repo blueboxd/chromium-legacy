@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ConnectionType, KeyEvent, KeyEventType, MechanicalLayout, NumberPadPresence, PhysicalLayout, TopRightKey} from 'chrome://diagnostics/diagnostics_types.js';
+import {ConnectionType, KeyEvent, KeyEventType, MechanicalLayout, NumberPadPresence, PhysicalLayout, TopRightKey} from 'chrome://diagnostics/input_data_provider.mojom-webui.js';
 import {TopRightKey as DiagramTopRightKey} from 'chrome://resources/ash/common/keyboard_diagram.js';
 import {KeyboardKeyState} from 'chrome://resources/ash/common/keyboard_key.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {MockController} from '../../mock_controller.js';
-import {flushTasks} from '../../test_util.js';
 
 export function keyboardTesterTestSuite() {
   /** @type {?KeyboardTesterElement} */
@@ -38,8 +38,9 @@ export function keyboardTesterTestSuite() {
     });
     await flushTasks();
 
-    const diagramElement = keyboardTesterElement.$$('#diagram');
-    assertEquals(DiagramTopRightKey.kPower, diagramElement.topRightKey);
+    const diagramElement =
+        keyboardTesterElement.shadowRoot.querySelector('#diagram');
+    assertEquals(DiagramTopRightKey.POWER, diagramElement.topRightKey);
 
     /** @type {!KeyEvent} */
     const lockKeyEvent = {
@@ -52,7 +53,7 @@ export function keyboardTesterTestSuite() {
     keyboardTesterElement.onKeyEvent(lockKeyEvent);
     await flushTasks();
 
-    assertEquals(DiagramTopRightKey.kLock, diagramElement.topRightKey);
+    assertEquals(DiagramTopRightKey.LOCK, diagramElement.topRightKey);
   });
 
   test('f13Remapping', async () => {
@@ -61,12 +62,13 @@ export function keyboardTesterTestSuite() {
     });
     await flushTasks();
 
-    const diagramElement = keyboardTesterElement.$$('#diagram');
+    const diagramElement =
+        keyboardTesterElement.shadowRoot.querySelector('#diagram');
     const mockController = new MockController();
     const mockSetKeyState =
         mockController.createFunctionMock(diagramElement, 'setKeyState');
     mockSetKeyState.addExpectation(
-        142 /* KEY_SLEEP */, KeyboardKeyState.kPressed);
+        142 /* KEY_SLEEP */, KeyboardKeyState.PRESSED);
 
     /** @type {!KeyEvent} */
     const f13Event = {
@@ -89,7 +91,8 @@ export function keyboardTesterTestSuite() {
     });
     await flushTasks();
 
-    const diagramElement = keyboardTesterElement.$$('#diagram');
+    const diagramElement =
+        keyboardTesterElement.shadowRoot.querySelector('#diagram');
     assertFalse(diagramElement.showNumberPad);
 
     /** @type {!KeyEvent} */
@@ -115,7 +118,8 @@ export function keyboardTesterTestSuite() {
     });
     await flushTasks();
 
-    const diagramElement = keyboardTesterElement.$$('#diagram');
+    const diagramElement =
+        keyboardTesterElement.shadowRoot.querySelector('#diagram');
     assertFalse(diagramElement.showNumberPad);
 
     /** @type {!KeyEvent} */
@@ -141,7 +145,8 @@ export function keyboardTesterTestSuite() {
     });
     await flushTasks();
 
-    const diagramElement = keyboardTesterElement.$$('#diagram');
+    const diagramElement =
+        keyboardTesterElement.shadowRoot.querySelector('#diagram');
     assertFalse(diagramElement.showNumberPad);
 
     /** @type {!KeyEvent} */

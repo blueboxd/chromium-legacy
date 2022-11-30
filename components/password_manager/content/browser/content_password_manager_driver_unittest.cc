@@ -57,7 +57,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
       delete;
   ~MockPasswordManagerClient() override = default;
 
-  MOCK_METHOD(const autofill::LogManager*, GetLogManager, (), (const override));
+  MOCK_METHOD(autofill::LogManager*, GetLogManager, (), (override));
   MOCK_METHOD(PasswordManager*, GetPasswordManager, (), (const override));
 #if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
   MOCK_METHOD(void,
@@ -168,8 +168,10 @@ PasswordFormFillData GetTestPasswordFormFillData() {
   non_preferred_match.password_value = u"test1";
   matches.push_back(&non_preferred_match);
 
+  url::Origin page_origin = url::Origin::Create(GURL("https://foo.com/"));
+
   return CreatePasswordFormFillData(form_on_page, matches, preferred_match,
-                                    true);
+                                    page_origin, true);
 }
 
 MATCHER(WerePasswordsCleared, "Passwords not cleared") {

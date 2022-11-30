@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -711,6 +711,24 @@ TEST_F(LocalFrameViewTest, DarkModeDocumentBackground) {
   UpdateAllLifecyclePhasesForTest();
   frame_view->SetBaseBackgroundColor(Color(255, 0, 0));
   EXPECT_EQ(frame_view->DocumentBackgroundColor(), Color(18, 18, 18));
+}
+
+class FencedFrameLocalFrameViewTest : private ScopedFencedFramesForTest,
+                                      public SimTest {
+ public:
+  FencedFrameLocalFrameViewTest() : ScopedFencedFramesForTest(true) {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kFencedFrames, {{"implementation_type", "mparch"}});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(FencedFrameLocalFrameViewTest, DoNotDeferCommitsInFencedFrames) {
+  InitializeFencedFrameRoot(mojom::blink::FencedFrameMode::kDefault);
+  GetDocument().SetDeferredCompositorCommitIsAllowed(true);
+  EXPECT_FALSE(GetDocument().View()->WillDoPaintHoldingForFCP());
 }
 
 }  // namespace

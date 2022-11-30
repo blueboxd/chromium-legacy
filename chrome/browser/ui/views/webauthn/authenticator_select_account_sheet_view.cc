@@ -7,7 +7,7 @@
 
 #include "chrome/browser/ui/views/webauthn/authenticator_select_account_sheet_view.h"
 #include "chrome/browser/ui/views/webauthn/hover_list_view.h"
-#include "chrome/browser/ui/views/webauthn/passkey_pill_view.h"
+#include "chrome/browser/ui/views/webauthn/passkey_detail_view.h"
 #include "device/fido/discoverable_credential_metadata.h"
 
 AuthenticatorSelectAccountSheetView::AuthenticatorSelectAccountSheetView(
@@ -24,16 +24,16 @@ AuthenticatorSelectAccountSheetView::BuildStepSpecificContent() {
     case AuthenticatorSelectAccountSheetModel::kMultipleAccounts:
       return std::make_pair(std::make_unique<HoverListView>(
                                 std::make_unique<AccountHoverListModel>(
-                                    &model()->dialog_model()->creds(), this)),
+                                    model()->dialog_model()->creds(), this)),
                             AutoFocus::kYes);
     case AuthenticatorSelectAccountSheetModel::kSingleAccount:
       return std::make_pair(
-          std::make_unique<PasskeyPillView>(model()->SingleCredential().user),
+          std::make_unique<PasskeyDetailView>(model()->SingleCredential().user),
           AutoFocus::kNo);
   }
 }
 
-void AuthenticatorSelectAccountSheetView::OnItemSelected(int index) {
+void AuthenticatorSelectAccountSheetView::CredentialSelected(size_t index) {
   auto* sheet_model =
       static_cast<AuthenticatorSelectAccountSheetModel*>(model());
   sheet_model->SetCurrentSelection(index);

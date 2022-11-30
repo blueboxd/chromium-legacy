@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,6 +62,7 @@ CSSNumericValueType::BaseType UnitTypeToBaseType(
     case UnitType::kRems:
     case UnitType::kChs:
     case UnitType::kIcs:
+    case UnitType::kLhs:
       return BaseType::kLength;
     case UnitType::kMilliseconds:
     case UnitType::kSeconds:

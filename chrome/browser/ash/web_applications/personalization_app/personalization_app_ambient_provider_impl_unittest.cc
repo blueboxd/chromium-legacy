@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_ambient_provider_impl.h"
 
-#include <algorithm>
 #include <memory>
 #include <vector>
 
@@ -16,6 +15,7 @@
 #include "ash/public/cpp/ambient/fake_ambient_backend_controller_impl.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "base/callback_helpers.h"
+#include "base/ranges/algorithm.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -32,8 +32,7 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "url/gurl.h"
 
-namespace ash {
-namespace personalization_app {
+namespace ash::personalization_app {
 
 namespace {
 
@@ -132,9 +131,7 @@ class PersonalizationAppAmbientProviderImplTest : public testing::Test {
   PersonalizationAppAmbientProviderImplTest()
       : profile_manager_(TestingBrowserProcess::GetGlobal()) {
     scoped_feature_list_.InitWithFeatures(
-        {ash::features::kPersonalizationHub,
-         ash::features::kAmbientModeAnimationFeature},
-        {});
+        {ash::features::kAmbientModeAnimationFeature}, {});
   }
   PersonalizationAppAmbientProviderImplTest(
       const PersonalizationAppAmbientProviderImplTest&) = delete;
@@ -708,8 +705,7 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
 
   // The fake data has album '1' as selected.
   std::vector<std::string> selected_ids = SelectedAlbumIds();
-  auto it = std::find(selected_ids.begin(), selected_ids.end(), "1");
-  EXPECT_NE(it, selected_ids.end());
+  EXPECT_TRUE(base::Contains(selected_ids, "1"));
 
   ash::personalization_app::mojom::AmbientModeAlbumPtr album =
       ash::personalization_app::mojom::AmbientModeAlbum::New();
@@ -731,8 +727,7 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
 
   selected_ids = SelectedAlbumIds();
   EXPECT_EQ(1u, selected_ids.size());
-  it = std::find(selected_ids.begin(), selected_ids.end(), "1");
-  EXPECT_NE(it, selected_ids.end());
+  EXPECT_TRUE(base::Contains(selected_ids, "1"));
   EXPECT_EQ(ash::AmbientModeTopicSource::kGooglePhotos, TopicSource());
 }
 
@@ -742,8 +737,7 @@ TEST_F(PersonalizationAppAmbientProviderImplTest, TestSetSelectedArtAlbum) {
 
   // The fake data has art setting '0' as enabled.
   std::vector<ash::ArtSetting> art_settings = ArtSettings();
-  auto it = std::find_if(art_settings.begin(), art_settings.end(),
-                         [](const auto& setting) { return setting.enabled; });
+  auto it = base::ranges::find_if(art_settings, &ash::ArtSetting::enabled);
   EXPECT_NE(it, art_settings.end());
   EXPECT_EQ(it->album_id, "0");
 
@@ -755,9 +749,7 @@ TEST_F(PersonalizationAppAmbientProviderImplTest, TestSetSelectedArtAlbum) {
   SetAlbumSelected(album->id, album->topic_source, album->checked);
 
   art_settings = ArtSettings();
-  it = std::find_if(art_settings.begin(), art_settings.end(),
-                    [](const auto& setting) { return setting.enabled; });
-  EXPECT_EQ(it, art_settings.end());
+  EXPECT_TRUE(base::ranges::none_of(art_settings, &ash::ArtSetting::enabled));
 
   album = ash::personalization_app::mojom::AmbientModeAlbum::New();
   album->id = '1';
@@ -766,8 +758,7 @@ TEST_F(PersonalizationAppAmbientProviderImplTest, TestSetSelectedArtAlbum) {
   SetAlbumSelected(album->id, album->topic_source, album->checked);
 
   art_settings = ArtSettings();
-  it = std::find_if(art_settings.begin(), art_settings.end(),
-                    [](const auto& setting) { return setting.enabled; });
+  it = base::ranges::find_if(art_settings, &ash::ArtSetting::enabled);
   EXPECT_NE(it, art_settings.end());
   EXPECT_EQ(it->album_id, "1");
 }
@@ -845,5 +836,4 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
                               /*settings=*/std::move(settings));
 }
 
-}  // namespace personalization_app
-}  // namespace ash
+}  // namespace ash::personalization_app

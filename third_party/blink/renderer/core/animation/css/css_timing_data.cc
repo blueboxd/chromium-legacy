@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,8 +18,8 @@ CSSTimingData::CSSTimingData(const CSSTimingData& other) = default;
 
 Timing CSSTimingData::ConvertToTiming(size_t index) const {
   Timing timing;
-  timing.start_delay =
-      ANIMATION_TIME_DELTA_FROM_SECONDS(GetRepeated(delay_list_, index));
+  timing.start_delay = Timing::Delay(
+      ANIMATION_TIME_DELTA_FROM_SECONDS(GetRepeated(delay_list_, index)));
   double duration = GetRepeated(duration_list_, index);
   timing.iteration_duration =
       std::isnan(duration)

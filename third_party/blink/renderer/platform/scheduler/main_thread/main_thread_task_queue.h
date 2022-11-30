@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,7 +122,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
   // Returns name of the given queue type. Returned string has application
   // lifetime.
-  static const char* NameForQueueType(QueueType queue_type);
+  static base::sequence_manager::QueueName NameForQueueType(
+      QueueType queue_type);
 
   // Returns true if task queues of the given queue type can be created on a
   // per-frame basis, and false if they are only created on a shared basis for

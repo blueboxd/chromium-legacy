@@ -85,7 +85,8 @@ class NET_EXPORT ParsedCertificate
   const ParsedTbsCertificate& tbs() const { return tbs_; }
 
   // Returns the signatureAlgorithm of the Certificate (not the tbsCertificate).
-  SignatureAlgorithm signature_algorithm() const {
+  // If the signature algorithm is unknown/unsupported, this returns nullopt.
+  absl::optional<SignatureAlgorithm> signature_algorithm() const {
     return signature_algorithm_;
   }
 
@@ -175,12 +176,12 @@ class NET_EXPORT ParsedCertificate
   }
 
   // Returns any caIssuers URIs from the AuthorityInfoAccess extension.
-  const std::vector<base::StringPiece>& ca_issuers_uris() const {
+  const std::vector<std::string_view>& ca_issuers_uris() const {
     return ca_issuers_uris_;
   }
 
   // Returns any OCSP URIs from the AuthorityInfoAccess extension.
-  const std::vector<base::StringPiece>& ocsp_uris() const { return ocsp_uris_; }
+  const std::vector<std::string_view>& ocsp_uris() const { return ocsp_uris_; }
 
   // Returns true if the certificate has a Policies extension.
   bool has_policy_oids() const { return has_policy_oids_; }
@@ -260,14 +261,7 @@ class NET_EXPORT ParsedCertificate
   ParsedTbsCertificate tbs_;
 
   // The signatureAlgorithm from the Certificate.
-  //
-  // TODO(crbug.com/1321688): This class requires that we recognize the
-  // signature algorithm, but there are some self-signed root certificates with
-  // weak signature algorithms like MD2. We never verify those signatures, but
-  // this means we must include MD2, etc., in the `SignatureAlgorithm` enum.
-  // Instead, make this an `absl::optional<SignatureAlgorithm>` and make the
-  // call sites handle recognized and unrecognized algorithms.
-  SignatureAlgorithm signature_algorithm_;
+  absl::optional<SignatureAlgorithm> signature_algorithm_;
 
   // Normalized DER-encoded Subject (not including outer Sequence tag).
   std::string normalized_subject_;
@@ -300,8 +294,8 @@ class NET_EXPORT ParsedCertificate
   // CaIssuers and Ocsp URIs parsed from the AuthorityInfoAccess extension. Note
   // that the AuthorityInfoAccess may have contained other AccessDescriptions
   // which are not represented here.
-  std::vector<base::StringPiece> ca_issuers_uris_;
-  std::vector<base::StringPiece> ocsp_uris_;
+  std::vector<std::string_view> ca_issuers_uris_;
+  std::vector<std::string_view> ocsp_uris_;
 
   // Policies extension.
   bool has_policy_oids_ = false;

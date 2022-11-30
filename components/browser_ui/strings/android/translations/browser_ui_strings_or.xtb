@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="or">
+<translation id="1005794457625275818"><ph name="FPS_MEMBER" /> ସମେତ <ph name="FPS_OWNER" /> ଗୋଷ୍ଠୀର <ph name="FPS_MEMBERS_COUNT" />ଟି ସାଇଟ ପାଇଁ କୁକୀଗୁଡ଼ିକୁ ଅନୁମତି ଦିଆଯାଇଛି</translation>
 <translation id="1006017844123154345">ଅନ୍‌ଲାଇନ୍‌ ଖୋଲନ୍ତୁ</translation>
 <translation id="1044891598689252897">ସାଇଟଗୁଡ଼ିକ ସାଧାରଣ ଭାବେ କାମ କରିବ</translation>
 <translation id="1124090076051167250">ଆପଣଙ୍କ ମୂଳ ସ୍କ୍ରିନରେ ସାଇଟ୍ କିମ୍ବା ଆପଗୁଡ଼ିକ ଦ୍ୱାରା ଷ୍ଟୋର୍ କରାଯାଇଥିବା <ph name="DATASIZE" /> ଡାଟା ଏବଂ କୁକୀଗୁଡ଼ିକୁ ଏହା ଖାଲି କରିଦେବ।</translation>
@@ -21,6 +22,7 @@
 <translation id="1426410128494586442">ହଁ</translation>
 <translation id="1446450296470737166">MIDI ଡିଭାଇସ୍‌ଗୁଡ଼ିକର ପୂର୍ଣ୍ଣ ନିୟନ୍ତ୍ରଣର ଅନୁମତି ଦିଅନ୍ତୁ</translation>
 <translation id="1620510694547887537">କ୍ୟାମେରା</translation>
+<translation id="1633720957382884102">ସମ୍ବନ୍ଧିତ ସାଇଟଗୁଡ଼ିକ</translation>
 <translation id="1644574205037202324">ଇତିବୃତ୍ତି</translation>
 <translation id="1647582022260550163">ଆପଣ ଅନୁମତିଗୁଡ଼ିକ ରିସେଟ୍ କରିବାକୁ ଏବଂ କୁକୀ ଓ ସାଇଟ୍ ଡାଟା ଖାଲି କରିବାକୁ ଚାହୁଁଥିବା ସୁନିଶ୍ଚିତ କି?</translation>
 <translation id="1660204651932907780">ସାଉଣ୍ଡ ଚାଲୁ କରିବାକୁ ସାଇଟ୍‌ଗୁଡ଼ିକୁ ଅନୁମତି ଦିଅନ୍ତୁ (ସୁପାରିଶ୍ କରାଯାଇଛି)</translation>
@@ -115,6 +117,7 @@
 <translation id="3333961966071413176">ସମସ୍ତ ଯୋଗାଯୋଗଗୁଡ଼ିକ</translation>
 <translation id="3362437373201486687">ବ୍ଲୁଟୁଥ ଡିଭାଇସଗୁଡ଼ିକ ପାଇଁ ସ୍କାନ କରାଯାଉଛି</translation>
 <translation id="3386292677130313581">ସାଇଟ୍‍ଗୁଡ଼ିକ ଆପଣଙ୍କର ଲୋକେସନ୍‌ ଜାଣିବା ପୂର୍ବରୁ ପଚାରନ୍ତୁ (ସୁପାରିଶ୍‌ କରାଯାଇଛି)</translation>
+<translation id="3521663503435878242"><ph name="DOMAIN" /> ଅଧୀନରେ ଥିବା ସାଇଟଗୁଡ଼ିକ</translation>
 <translation id="3538390592868664640">ଆପଣଙ୍କ ପରିପାର୍ଶ୍ୱର ଏକ 3D ମ୍ୟାପ୍ ତିଆରି କରିବା ଏବଂ କ୍ୟାମେରା ସ୍ଥିତି ଟ୍ରାକ୍ କରିବାକୁ ସାଇଟଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="3551268116566418498">ଇନକଗ୍ନିଟୋ ମୋଡରୁ ବାହାରି ଯିବେ କି?</translation>
 <translation id="3586500876634962664">କ୍ୟାମେରା ଏବଂ ମାଇକ୍ରୋଫୋନର ବ୍ୟବହାର</translation>
@@ -260,6 +263,7 @@
 <translation id="6554732001434021288">ଗତ ଥର <ph name="NUM_DAYS" /> ଦିନ ପୂର୍ବେ ଭିଜିଟ୍ କରାଯାଇଛି</translation>
 <translation id="6561560012278703671">’କ୍ୱାଇଟର୍ ମେସେଜିଂ’ ବ୍ୟବହାର କରନ୍ତୁ (ଆପଣଙ୍କୁ ବାଧା ଦେବାରୁ ବିଜ୍ଞପ୍ତି ପ୍ରମ୍ପ୍ଟଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରେ)</translation>
 <translation id="6593061639179217415">ଡେସ୍କଟପ୍ ସାଇଟ୍</translation>
+<translation id="6608211702542341247">ଏହି ସାଇଟ <ph name="FPS_OWNER" />ଙ୍କ ସାଇଟଗୁଡ଼ିକର ଗୋଷ୍ଠୀରେ ଅଛି ଯାହା ଗୋଷ୍ଠୀରେ ଆପଣଙ୍କ କାର୍ଯ୍ୟକଳାପ ଦେଖିପାରିବ</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">ସୁରକ୍ଷିତ ବିଷୟବସ୍ତୁ</translation>
 <translation id="662080504995468778">ରୁହନ୍ତୁ</translation>
@@ -348,7 +352,6 @@
 <translation id="8380167699614421159">ଏହି ସାଇଟ୍, ଅନଧିକାର ପ୍ରବେଶ କରିଥିବା କିମ୍ବା ବିଭ୍ରାନ୍ତିକର ବିଜ୍ଞାପନ ଦେଖାଉଛି</translation>
 <translation id="8394832520002899662">ସାଇଟକୁ ଫେରିବାକୁ ଟାପ୍ କରନ୍ତୁ</translation>
 <translation id="8409345997656833551">ଯେତେବେଳେ ଏକ ଆର୍ଟିକିଲ ସରଳୀକୃତ ଭ୍ୟୁରେ ଦେଖାଯାଇପାରିବ, ସେତେବେଳେ ସେ ବିଷୟରେ ସୂଚନା ପାଆନ୍ତୁ</translation>
-<translation id="8425213833346101688">ପରିବର୍ତ୍ତନ କରନ୍ତୁ</translation>
 <translation id="8428213095426709021">ସେଟିଂସ୍</translation>
 <translation id="8441146129660941386">ପଛକୁ ଫେରନ୍ତୁ</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" />କୁ ଆପଣଙ୍କ ଲୋକେସନ୍ ଆକ୍ସେସ୍ ଦେବା ପାଇଁ, <ph name="BEGIN_LINK" />Android ସେଟିଂସ<ph name="END_LINK" />ରେ ଲୋକେସନ୍ ମଧ୍ୟ ଚାଲୁ କରନ୍ତୁ।</translation>
@@ -372,6 +375,7 @@
 <translation id="8751914237388039244">ଗୋଟିଏ ଛବି ଚୟନ କରନ୍ତୁ</translation>
 <translation id="8801436777607969138">ଏକ ନିର୍ଦ୍ଧିଷ୍ଟ ସାଇଟ୍‌ ପାଇଁ JavaScript ଅବରୋଧ କରନ୍ତୁ।</translation>
 <translation id="8816026460808729765">ସେନ୍ସରଗୁଡ଼ିକୁ ଆକ୍ସେସ୍ କରିବାରୁ ସାଇଟ୍‌ଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
+<translation id="8823559166155093873">କୁକୀଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8903921497873541725">ଜୁମ୍ ବଢ଼ାନ୍ତୁ</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>

@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/constants/ash_features.h"
 #include "ash/constants/personalization_entry_point.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
@@ -21,8 +20,6 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
-#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager.h"
-#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager_factory.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_metrics.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -76,29 +73,25 @@ void PersonalizationResult::Open(int event_flags) {
                                launch_params);
 }
 
-PersonalizationProvider::PersonalizationProvider(Profile* profile)
-    : profile_(profile) {
-  DCHECK(ash::features::IsPersonalizationHubEnabled());
-  DCHECK(
-      ash::personalization_app::CanSeeWallpaperOrPersonalizationApp(profile_));
-
+PersonalizationProvider::PersonalizationProvider(
+    Profile* profile,
+    ash::personalization_app::SearchHandler* search_handler)
+    : profile_(profile), search_handler_(search_handler) {
   app_service_proxy_ = apps::AppServiceProxyFactory::GetForProfile(profile_);
   Observe(&app_service_proxy_->AppRegistryCache());
   StartLoadIcon();
 
-  auto* personalization_app_manager = ash::personalization_app::
-      PersonalizationAppManagerFactory::GetForBrowserContext(profile_);
-  DCHECK(personalization_app_manager);
-  search_handler_ = personalization_app_manager->search_handler();
-  DCHECK(search_handler_);
-  search_handler_->AddObserver(
-      search_results_observer_.BindNewPipeAndPassRemote());
+  if (search_handler_) {
+    search_handler_->AddObserver(
+        search_results_observer_.BindNewPipeAndPassRemote());
+  }
 }
 
 PersonalizationProvider::~PersonalizationProvider() = default;
 
 void PersonalizationProvider::Start(const std::u16string& query) {
-  DCHECK(search_handler_) << "Search handler required to run query";
+  if (!search_handler_)
+    return;
 
   ClearResultsSilently();
 

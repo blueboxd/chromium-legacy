@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -240,7 +240,6 @@ class MODULES_EXPORT MediaStreamVideoTrack : public MediaStreamTrackPlatform {
 
   // This is used for tracking if no connected video use alpha.
   HashSet<WebMediaStreamSink*> alpha_using_sinks_;
-  HashSet<WebMediaStreamSink*> alpha_discarding_sinks_;
 
   // Remembering our desired video size and frame rate.
   int width_ = 0;

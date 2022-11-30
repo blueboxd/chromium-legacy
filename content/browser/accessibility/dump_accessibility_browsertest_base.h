@@ -116,8 +116,9 @@ class DumpAccessibilityTestBase
   virtual void OnDiffFailed() {}
 
   // Choose which feature flags to enable or disable.
-  virtual void ChooseFeatures(std::vector<base::Feature>* enabled_features,
-                              std::vector<base::Feature>* disabled_features);
+  virtual void ChooseFeatures(
+      std::vector<base::test::FeatureRef>* enabled_features,
+      std::vector<base::test::FeatureRef>* disabled_features);
 
   //
   // Helpers
@@ -218,7 +219,7 @@ class DumpAccessibilityTestBase
   void WaitForAllFramesLoaded();
 
   void OnEventRecorded(const std::string& event) const {
-    LOG(INFO) << "++ Platform event: " << event;
+    VLOG(1) << "++ Platform event: " << event;
   }
 
   bool has_performed_default_actions_ = false;

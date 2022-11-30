@@ -85,6 +85,7 @@
 #endif
 
 using ::autofill::metrics::kTestGuid;
+using ::autofill::test::AddFieldPredictionToForm;
 using ::base::ASCIIToUTF16;
 using ::base::Bucket;
 using ::base::BucketsAre;
@@ -399,49 +400,33 @@ INSTANTIATE_TEST_SUITE_P(AutofillMetricsTest,
 // Test that we log the right number of autofilled fields at submission time.
 TEST_F(AutofillMetricsTest, NumberOfAutofilledFieldsAtSubmission) {
   // Set up our form data with two autofilled fields.
-  FormData form =
-      test::GetFormData({.description_for_logging = "NumberOfAutofilledFields",
-                         .fields = {{.label = u"Autofilled",
-                                     .name = u"autofilled",
-                                     .value = u"Elvis Aaron Presley",
-                                     .is_autofilled = true},
-                                    {.label = u"Autofilled but corrected",
-                                     .name = u"autofillfailed",
-                                     .value = u"buddy@gmail.com",
-                                     .is_autofilled = true},
-                                    {.label = u"Empty",
-                                     .name = u"empty",
-                                     .value = u"",
-                                     .is_autofilled = false},
-                                    {.label = u"Unknown",
-                                     .name = u"unknown",
-                                     .value = u"garbage",
-                                     .is_autofilled = false},
-                                    {.label = u"Select",
-                                     .name = u"select",
-                                     .value = u"USA",
-                                     .form_control_type = "select-one",
-                                     .is_autofilled = false},
-                                    {.role = ServerFieldType::PHONE_HOME_NUMBER,
-                                     .value = u"2345678901",
-                                     .form_control_type = "tel",
-                                     .is_autofilled = true}},
-                         .unique_renderer_id = test::MakeFormRendererId(),
-                         .main_frame_origin = url::Origin::Create(
-                             autofill_client_->form_origin())});
+  test::FormDescription form_description = {
+      .description_for_logging = "NumberOfAutofilledFields",
+      .fields = {{.role = NAME_FIRST,
+                  .value = u"Elvis Aaron Presley",
+                  .is_autofilled = true},
+                 {.role = EMAIL_ADDRESS,
+                  .value = u"buddy@gmail.com",
+                  .is_autofilled = true},
+                 {.role = NAME_FIRST, .value = u"", .is_autofilled = false},
+                 {.role = EMAIL_ADDRESS,
+                  .value = u"garbage",
+                  .is_autofilled = false},
+                 {.role = NO_SERVER_DATA,
+                  .value = u"USA",
+                  .form_control_type = "select-one",
+                  .is_autofilled = false},
+                 {.role = PHONE_HOME_CITY_AND_NUMBER,
+                  .value = u"2345678901",
+                  .form_control_type = "tel",
+                  .is_autofilled = true}},
+      .unique_renderer_id = test::MakeFormRendererId(),
+      .main_frame_origin =
+          url::Origin::Create(autofill_client_->form_origin())};
 
-  std::vector<ServerFieldType> heuristic_types = {
-      NAME_FULL,         PHONE_HOME_NUMBER, NAME_FULL,
-      PHONE_HOME_NUMBER, UNKNOWN_TYPE,      PHONE_HOME_CITY_AND_NUMBER};
-  std::vector<ServerFieldType> server_types = {
-      NAME_FIRST,    EMAIL_ADDRESS,  NAME_FIRST,
-      EMAIL_ADDRESS, NO_SERVER_DATA, PHONE_HOME_CITY_AND_NUMBER};
-
-  autofill_manager().AddSeenForm(form, heuristic_types, server_types);
-
-  // Simulate user changing the second field of the form.
-  ChangeTextField(form, form.fields[1]);
-  form.fields[1].is_autofilled = false;
+  FormData form = GetAndAddSeenForm(form_description);
+  SimulateUserChangedTextFieldWithoutActuallyChangingTheValue(form,
+                                                              form.fields[1]);
 
   base::HistogramTester histogram_tester;
   SubmitForm(form);
@@ -474,52 +459,40 @@ TEST_F(AutofillMetricsTest,
   scoped_feature_list.InitAndEnableFeature(
       features::kAutofillFillAndImportFromMoreFields);
   // Set up our form data with two autofilled fields.
-  FormData form =
-      test::GetFormData({.description_for_logging = "NumberOfAutofilledFields",
-                         .fields = {{.label = u"Autofilled",
-                                     .name = u"autofilled",
-                                     .value = u"Elvis Aaron Presley",
-                                     .autocomplete_attribute = "garbage",
-                                     .is_autofilled = true},
-                                    {.label = u"Autofilled but corrected",
-                                     .name = u"autofillfailed",
-                                     .value = u"buddy@gmail.com",
-                                     .autocomplete_attribute = "garbage",
-                                     .is_autofilled = true},
-                                    {.label = u"Empty",
-                                     .name = u"empty",
-                                     .value = u"",
-                                     .is_autofilled = false},
-                                    {.label = u"Unknown",
-                                     .name = u"unknown",
-                                     .value = u"garbage",
-                                     .is_autofilled = false},
-                                    {.label = u"Select",
-                                     .name = u"select",
-                                     .value = u"USA",
-                                     .form_control_type = "select-one",
-                                     .is_autofilled = false},
-                                    {.role = ServerFieldType::PHONE_HOME_NUMBER,
-                                     .value = u"2345678901",
-                                     .form_control_type = "tel",
-                                     .is_autofilled = true}},
-                         .unique_renderer_id = test::MakeFormRendererId(),
-                         .main_frame_origin = url::Origin::Create(
-                             autofill_client_->form_origin())});
-
-  std::vector<ServerFieldType> heuristic_types = {
-      NAME_FULL,         PHONE_HOME_NUMBER, NAME_FULL,
-      PHONE_HOME_NUMBER, UNKNOWN_TYPE,      PHONE_HOME_CITY_AND_NUMBER};
-  std::vector<ServerFieldType> server_types = {
-      NAME_FIRST,    EMAIL_ADDRESS,  NAME_FIRST,
-      EMAIL_ADDRESS, NO_SERVER_DATA, PHONE_HOME_CITY_AND_NUMBER};
-
-  autofill_manager().AddSeenForm(form, heuristic_types, server_types);
+  test::FormDescription form_description = {
+      .description_for_logging = "NumberOfAutofilledFields",
+      .fields = {{.role = NAME_FULL,
+                  .value = u"Elvis Aaron Presley",
+                  .autocomplete_attribute = "garbage",
+                  .is_autofilled = true},
+                 {.role = EMAIL_ADDRESS,
+                  .value = u"buddy@gmail.com",
+                  .autocomplete_attribute = "garbage",
+                  .is_autofilled = true},
+                 {.role = NAME_FIRST, .value = u"", .is_autofilled = false},
+                 {.role = EMAIL_ADDRESS,
+                  .value = u"garbage",
+                  .is_autofilled = false},
+                 {.role = NO_SERVER_DATA,
+                  .value = u"USA",
+                  .form_control_type = "select-one",
+                  .is_autofilled = false},
+                 {.role = PHONE_HOME_CITY_AND_NUMBER,
+                  .value = u"2345678901",
+                  .form_control_type = "tel",
+                  .is_autofilled = true}},
+      .unique_renderer_id = test::MakeFormRendererId(),
+      .main_frame_origin =
+          url::Origin::Create(autofill_client_->form_origin())};
+  FormData form = GetAndAddSeenForm(form_description);
 
   // Simulate user changing the second and forth field of the form.
-  ChangeTextField(form, form.fields[1]);
-  form.fields[1].is_autofilled = false;
-
+  // TODO(crbug.com/1368096): Fix the metric to work independent of the final
+  // value.
+  SimulateUserChangedTextFieldWithoutActuallyChangingTheValue(form,
+                                                              form.fields[1]);
+  SimulateUserChangedTextFieldWithoutActuallyChangingTheValue(form,
+                                                              form.fields[3]);
   base::HistogramTester histogram_tester;
   SubmitForm(form);
 
@@ -567,10 +540,10 @@ class AutofillPerfectFillingMetricsTest
     : public AutofillMetricsTest,
       public ::testing::WithParamInterface<PerfectFillingTestCase> {
  public:
-  std::vector<test::FieldDataDescription> GetFields(std::vector<Field> fields) {
-    std::vector<test::FieldDataDescription> fields_to_return;
+  std::vector<test::FieldDescription> GetFields(std::vector<Field> fields) {
+    std::vector<test::FieldDescription> fields_to_return;
     for (const auto& field : fields) {
-      test::FieldDataDescription f;
+      test::FieldDescription f;
       if (field.value) {
         f.value = field.value;
       } else if (field.field_type == NAME_FULL ||
@@ -678,36 +651,37 @@ TEST_P(AutofillPerfectFillingMetricsTest,
 // Test that we log quality metrics appropriately.
 TEST_F(AutofillMetricsTest, QualityMetrics) {
   // Set up our form data.
-  FormData form =
-      test::GetFormData({.description_for_logging = "QualityMetrics",
-                         .fields = {{.label = u"Autofilled",
-                                     .name = u"autofilled",
-                                     .value = u"Elvis Aaron Presley",
-                                     .is_autofilled = true},
-                                    {.label = u"Autofill Failed",
-                                     .name = u"autofillfailed",
-                                     .value = u"buddy@gmail.com",
-                                     .is_autofilled = false},
-                                    {.label = u"Empty",
-                                     .name = u"empty",
-                                     .value = u"",
-                                     .is_autofilled = false},
-                                    {.label = u"Unknown",
-                                     .name = u"unknown",
-                                     .value = u"garbage",
-                                     .is_autofilled = false},
-                                    {.label = u"Select",
-                                     .name = u"select",
-                                     .value = u"USA",
-                                     .form_control_type = "select-one",
-                                     .is_autofilled = false},
-                                    {.role = ServerFieldType::PHONE_HOME_NUMBER,
-                                     .value = u"2345678901",
-                                     .form_control_type = "tel",
-                                     .is_autofilled = true}},
-                         .unique_renderer_id = test::MakeFormRendererId(),
-                         .main_frame_origin = url::Origin::Create(
-                             autofill_client_->form_origin())});
+  test::FormDescription form_description = {
+      .description_for_logging = "QualityMetrics",
+      .fields = {{.role = NAME_FIRST,
+                  .heuristic_type = NAME_FULL,
+                  .value = u"Elvis Aaron Presley",
+                  .is_autofilled = true},
+                 {.role = EMAIL_ADDRESS,
+                  .heuristic_type = PHONE_HOME_NUMBER,
+                  .value = u"buddy@gmail.com",
+                  .is_autofilled = false},
+                 {.role = NAME_FIRST,
+                  .heuristic_type = NAME_FULL,
+                  .value = u"",
+                  .is_autofilled = false},
+                 {.role = EMAIL_ADDRESS,
+                  .heuristic_type = PHONE_HOME_NUMBER,
+                  .value = u"garbage",
+                  .is_autofilled = false},
+                 {.role = NO_SERVER_DATA,
+                  .heuristic_type = UNKNOWN_TYPE,
+                  .value = u"USA",
+                  .form_control_type = "select-one",
+                  .is_autofilled = false},
+                 {.role = PHONE_HOME_CITY_AND_NUMBER,
+                  .heuristic_type = PHONE_HOME_CITY_AND_NUMBER,
+                  .value = u"2345678901",
+                  .form_control_type = "tel",
+                  .is_autofilled = true}},
+      .unique_renderer_id = test::MakeFormRendererId(),
+      .main_frame_origin =
+          url::Origin::Create(autofill_client_->form_origin())};
 
   std::vector<ServerFieldType> heuristic_types = {
       NAME_FULL,         PHONE_HOME_NUMBER, NAME_FULL,
@@ -716,7 +690,8 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
       NAME_FIRST,    EMAIL_ADDRESS,  NAME_FIRST,
       EMAIL_ADDRESS, NO_SERVER_DATA, PHONE_HOME_CITY_AND_NUMBER};
 
-  autofill_manager().AddSeenForm(form, heuristic_types, server_types);
+  FormData form = GetAndAddSeenForm(form_description);
+
   base::HistogramTester histogram_tester;
   SubmitForm(form);
 
@@ -784,34 +759,18 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
 // Test that the ProfileImportStatus logs a no import.
 TEST_F(AutofillMetricsTest, ProfileImportStatus_NoImport) {
   // Set up our form data.
-  FormData form = test::GetFormData(
+  FormData form = GetAndAddSeenForm(
       {.description_for_logging = "ProfileImportStatus_NoImport",
        .fields = {
-           {.role = ServerFieldType::NAME_FULL,
-            .value = u"Elvis Aaron Presley"},
-           {.role = ServerFieldType::ADDRESS_HOME_LINE1,
-            .value = u"3734 Elvis Presley Blvd."},
-           {.role = ServerFieldType::ADDRESS_HOME_CITY, .value = u"New York"},
-           {.role = ServerFieldType::PHONE_HOME_NUMBER, .value = u"2345678901"},
-           {.role = ServerFieldType::ADDRESS_HOME_STATE,
-            .value = u"Invalid State"},
-           {.role = ServerFieldType::ADDRESS_HOME_ZIP,
-            .value = u"00000000000000000"},
-           {.role = ServerFieldType::ADDRESS_HOME_COUNTRY,
-            .value = u"NoACountry"}}});
+           {.role = NAME_FULL, .value = u"Elvis Aaron Presley"},
+           {.role = ADDRESS_HOME_LINE1, .value = u"3734 Elvis Presley Blvd."},
+           {.role = ADDRESS_HOME_CITY, .value = u"New York"},
+           {.role = PHONE_HOME_CITY_AND_NUMBER, .value = u"2345678901"},
+           {.role = ADDRESS_HOME_STATE, .value = u"Invalid State"},
+           {.role = ADDRESS_HOME_ZIP, .value = u"00000000000000000"},
+           {.role = ADDRESS_HOME_COUNTRY, .value = u"NoACountry"}}});
 
-  std::vector<ServerFieldType> field_types = {
-      NAME_FULL,           ADDRESS_HOME_LINE1,
-      ADDRESS_HOME_CITY,   PHONE_HOME_CITY_AND_NUMBER,
-      ADDRESS_HOME_STATE,  ADDRESS_HOME_ZIP,
-      ADDRESS_HOME_COUNTRY};
-
-  autofill_manager().AddSeenForm(form, field_types);
-  std::string guid(kTestGuid);
-  autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-      autofill_manager().suggestion_generator()->MakeFrontendId(
-          Suggestion::BackendId(), Suggestion::BackendId(guid)));
+  FillTestProfile(form);
 
   base::HistogramTester histogram_tester;
   SubmitForm(form);
@@ -827,31 +786,18 @@ TEST_F(AutofillMetricsTest, ProfileImportStatus_NoImport) {
 // Test that the ProfileImportStatus logs a regular import.
 TEST_F(AutofillMetricsTest, ProfileImportStatus_RegularImport) {
   // Set up our form data.
-  FormData form = test::GetFormData(
+  FormData form = GetAndAddSeenForm(
       {.description_for_logging = "ProfileImportStatus_RegularImport",
        .fields = {
-           {.role = ServerFieldType::NAME_FULL,
-            .value = u"Elvis Aaron Presley"},
-           {.role = ServerFieldType::ADDRESS_HOME_LINE1,
-            .value = u"3734 Elvis Presley Blvd."},
-           {.role = ServerFieldType::ADDRESS_HOME_CITY, .value = u"New York"},
-           {.role = ServerFieldType::PHONE_HOME_NUMBER, .value = u"2345678901"},
-           {.role = ServerFieldType::ADDRESS_HOME_STATE, .value = u"CA"},
-           {.role = ServerFieldType::ADDRESS_HOME_ZIP, .value = u"37373"},
-           {.role = ServerFieldType::ADDRESS_HOME_COUNTRY, .value = u"USA"}}});
+           {.role = NAME_FULL, .value = u"Elvis Aaron Presley"},
+           {.role = ADDRESS_HOME_LINE1, .value = u"3734 Elvis Presley Blvd."},
+           {.role = ADDRESS_HOME_CITY, .value = u"New York"},
+           {.role = PHONE_HOME_CITY_AND_NUMBER, .value = u"2345678901"},
+           {.role = ADDRESS_HOME_STATE, .value = u"CA"},
+           {.role = ADDRESS_HOME_ZIP, .value = u"37373"},
+           {.role = ADDRESS_HOME_COUNTRY, .value = u"USA"}}});
 
-  std::vector<ServerFieldType> field_types = {
-      NAME_FULL,           ADDRESS_HOME_LINE1,
-      ADDRESS_HOME_CITY,   PHONE_HOME_CITY_AND_NUMBER,
-      ADDRESS_HOME_STATE,  ADDRESS_HOME_ZIP,
-      ADDRESS_HOME_COUNTRY};
-
-  autofill_manager().AddSeenForm(form, field_types);
-  std::string guid(kTestGuid);
-  autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-      autofill_manager().suggestion_generator()->MakeFrontendId(
-          Suggestion::BackendId(), Suggestion::BackendId(guid)));
+  FillTestProfile(form);
 
   base::HistogramTester histogram_tester;
   SubmitForm(form);
@@ -867,38 +813,23 @@ TEST_F(AutofillMetricsTest, ProfileImportStatus_RegularImport) {
 // Test that the ProfileImportStatus logs a section union mport.
 TEST_F(AutofillMetricsTest, ProfileImportStatus_UnionImport) {
   // Set up our form data.
-  FormData form = test::GetFormData(
+  FormData form = GetAndAddSeenForm(
       {.description_for_logging = "ProfileImportStatus_UnionImport",
        .fields = {
-           {.role = ServerFieldType::NAME_FULL,
-            .value = u"Elvis Aaron Presley"},
-           {.role = ServerFieldType::ADDRESS_HOME_LINE1,
-            .value = u"3734 Elvis Presley Blvd."},
-           {.role = ServerFieldType::ADDRESS_HOME_ZIP, .value = u"37373"},
-           {.role = ServerFieldType::ADDRESS_HOME_COUNTRY, .value = u"USA"},
-           {.role = ServerFieldType::PHONE_HOME_NUMBER, .value = u"2345678901"},
-           {.role = ServerFieldType::ADDRESS_HOME_CITY,
+           {.role = NAME_FULL, .value = u"Elvis Aaron Presley"},
+           {.role = ADDRESS_HOME_LINE1, .value = u"3734 Elvis Presley Blvd."},
+           {.role = ADDRESS_HOME_ZIP, .value = u"37373"},
+           {.role = ADDRESS_HOME_COUNTRY, .value = u"USA"},
+           {.role = PHONE_HOME_CITY_AND_NUMBER, .value = u"2345678901"},
+           {.role = ADDRESS_HOME_CITY,
             .value = u"New York",
             .autocomplete_attribute = "section-billing locality"},
            // Add the last field of the form into a new section.
-           {.role = ServerFieldType::ADDRESS_HOME_STATE,
+           {.role = ADDRESS_HOME_STATE,
             .value = u"CA",
             .autocomplete_attribute = "section-shipping address-level1"}}});
 
-  std::vector<ServerFieldType> field_types = {NAME_FULL,
-                                              ADDRESS_HOME_LINE1,
-                                              ADDRESS_HOME_ZIP,
-                                              ADDRESS_HOME_COUNTRY,
-                                              PHONE_HOME_CITY_AND_NUMBER,
-                                              ADDRESS_HOME_CITY,
-                                              ADDRESS_HOME_STATE};
-
-  autofill_manager().AddSeenForm(form, field_types);
-  std::string guid(kTestGuid);
-  autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-      autofill_manager().suggestion_generator()->MakeFrontendId(
-          Suggestion::BackendId(), Suggestion::BackendId(guid)));
+  FillTestProfile(form);
 
   base::HistogramTester histogram_tester;
 
@@ -916,31 +847,18 @@ TEST_F(AutofillMetricsTest, ProfileImportStatus_UnionImport) {
 // 'perfect' profile import.
 TEST_F(AutofillMetricsTest, ProfileImportRequirements_AllFulfilled) {
   // Set up our form data.
-  FormData form = test::GetFormData(
+  FormData form = GetAndAddSeenForm(
       {.description_for_logging = "ProfileImportRequirements_AllFulfilled",
        .fields = {
-           {.role = ServerFieldType::NAME_FULL,
-            .value = u"Elvis Aaron Presley"},
-           {.role = ServerFieldType::ADDRESS_HOME_LINE1,
-            .value = u"3734 Elvis Presley Blvd."},
-           {.role = ServerFieldType::ADDRESS_HOME_CITY, .value = u"New York"},
-           {.role = ServerFieldType::PHONE_HOME_NUMBER, .value = u"2345678901"},
-           {.role = ServerFieldType::ADDRESS_HOME_STATE, .value = u"CA"},
-           {.role = ServerFieldType::ADDRESS_HOME_ZIP, .value = u"37373"},
-           {.role = ServerFieldType::ADDRESS_HOME_COUNTRY, .value = u"USA"}}});
+           {.role = NAME_FULL, .value = u"Elvis Aaron Presley"},
+           {.role = ADDRESS_HOME_LINE1, .value = u"3734 Elvis Presley Blvd."},
+           {.role = ADDRESS_HOME_CITY, .value = u"New York"},
+           {.role = PHONE_HOME_CITY_AND_NUMBER, .value = u"2345678901"},
+           {.role = ADDRESS_HOME_STATE, .value = u"CA"},
+           {.role = ADDRESS_HOME_ZIP, .value = u"37373"},
+           {.role = ADDRESS_HOME_COUNTRY, .value = u"USA"}}});
 
-  std::vector<ServerFieldType> field_types = {
-      NAME_FULL,           ADDRESS_HOME_LINE1,
-      ADDRESS_HOME_CITY,   PHONE_HOME_CITY_AND_NUMBER,
-      ADDRESS_HOME_STATE,  ADDRESS_HOME_ZIP,
-      ADDRESS_HOME_COUNTRY};
-
-  autofill_manager().AddSeenForm(form, field_types);
-  std::string guid(kTestGuid);
-  autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-      autofill_manager().suggestion_generator()->MakeFrontendId(
-          Suggestion::BackendId(), Suggestion::BackendId(guid)));
+  FillTestProfile(form);
 
   base::HistogramTester histogram_tester;
   SubmitForm(form);
@@ -991,15 +909,13 @@ TEST_F(AutofillMetricsTest, ProfileImportRequirements_MissingHomeLineOne) {
   FormData form = test::GetFormData(
       {.description_for_logging =
            "ProfileImportRequirements_MissingHomeLineOne",
-       .fields = {
-           {.role = ServerFieldType::NAME_FULL,
-            .value = u"Elvis Aaron Presley"},
-           {.role = ServerFieldType::ADDRESS_HOME_LINE1, .value = u""},
-           {.role = ServerFieldType::ADDRESS_HOME_CITY, .value = u"New York"},
-           {.role = ServerFieldType::PHONE_HOME_NUMBER, .value = u"2345678901"},
-           {.role = ServerFieldType::ADDRESS_HOME_STATE, .value = u"CA"},
-           {.role = ServerFieldType::ADDRESS_HOME_ZIP, .value = u"37373"},
-           {.role = ServerFieldType::ADDRESS_HOME_COUNTRY, .value = u"USA"}}});
+       .fields = {{.role = NAME_FULL, .value = u"Elvis Aaron Presley"},
+                  {.role = ADDRESS_HOME_LINE1, .value = u""},
+                  {.role = ADDRESS_HOME_CITY, .value = u"New York"},
+                  {.role = PHONE_HOME_NUMBER, .value = u"2345678901"},
+                  {.role = ADDRESS_HOME_STATE, .value = u"CA"},
+                  {.role = ADDRESS_HOME_ZIP, .value = u"37373"},
+                  {.role = ADDRESS_HOME_COUNTRY, .value = u"USA"}}});
 
   std::vector<ServerFieldType> field_types = {
       NAME_FULL,           ADDRESS_HOME_LINE1,
@@ -1008,11 +924,7 @@ TEST_F(AutofillMetricsTest, ProfileImportRequirements_MissingHomeLineOne) {
       ADDRESS_HOME_COUNTRY};
 
   autofill_manager().AddSeenForm(form, field_types);
-  std::string guid(kTestGuid);
-  autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-      autofill_manager().suggestion_generator()->MakeFrontendId(
-          Suggestion::BackendId(), Suggestion::BackendId(guid)));
+  FillTestProfile(form);
 
   base::HistogramTester histogram_tester;
   SubmitForm(form);
@@ -1066,16 +978,13 @@ TEST_F(AutofillMetricsTest,
       {.description_for_logging =
            "ProfileImportRequirements_AllFulfilledForNonStateCountry",
        .fields = {
-           {.role = ServerFieldType::NAME_FULL,
-            .value = u"Elvis Aaron Presley"},
-           {.role = ServerFieldType::ADDRESS_HOME_LINE1,
-            .value = u"3734 Elvis Presley Blvd."},
-           {.role = ServerFieldType::ADDRESS_HOME_CITY, .value = u"New York"},
-           {.role = ServerFieldType::PHONE_HOME_NUMBER, .value = u"2345678901"},
-           {.role = ServerFieldType::ADDRESS_HOME_STATE, .value = u""},
-           {.role = ServerFieldType::ADDRESS_HOME_ZIP, .value = u"37373"},
-           {.role = ServerFieldType::ADDRESS_HOME_COUNTRY,
-            .value = u"Germany"}}});
+           {.role = NAME_FULL, .value = u"Elvis Aaron Presley"},
+           {.role = ADDRESS_HOME_LINE1, .value = u"3734 Elvis Presley Blvd."},
+           {.role = ADDRESS_HOME_CITY, .value = u"New York"},
+           {.role = PHONE_HOME_NUMBER, .value = u"2345678901"},
+           {.role = ADDRESS_HOME_STATE, .value = u""},
+           {.role = ADDRESS_HOME_ZIP, .value = u"37373"},
+           {.role = ADDRESS_HOME_COUNTRY, .value = u"Germany"}}});
 
   std::vector<ServerFieldType> field_types = {
       NAME_FULL,           ADDRESS_HOME_LINE1,
@@ -1084,11 +993,7 @@ TEST_F(AutofillMetricsTest,
       ADDRESS_HOME_COUNTRY};
 
   autofill_manager().AddSeenForm(form, field_types);
-  std::string guid(kTestGuid);
-  autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-      autofill_manager().suggestion_generator()->MakeFrontendId(
-          Suggestion::BackendId(), Suggestion::BackendId(guid)));
+  FillTestProfile(form);
 
   base::HistogramTester histogram_tester;
   SubmitForm(form);
@@ -1136,38 +1041,21 @@ TEST_F(AutofillMetricsTest,
 TEST_F(AutofillMetricsTest,
        ProfileImportRequirements_FilledButInvalidZipEmailAndState) {
   // Set up our form data.
-  FormData form = test::GetFormData(
-      {.description_for_logging =
-           "ProfileImportRequirements_FilledButInvalidZipEmailAndState",
-       .fields = {
-           {.role = ServerFieldType::NAME_FULL,
-            .value = u"Elvis Aaron Presley"},
-           {.role = ServerFieldType::ADDRESS_HOME_LINE1,
-            .value = u"3734 Elvis Presley Blvd."},
-           {.role = ServerFieldType::ADDRESS_HOME_CITY, .value = u"New York"},
-           {.role = ServerFieldType::PHONE_HOME_NUMBER, .value = u"2345678901"},
-           {.role = ServerFieldType::ADDRESS_HOME_STATE,
-            .value = u"DefNotAState"},
-           {.role = ServerFieldType::ADDRESS_HOME_ZIP, .value = u"1234567890"},
-           {.role = ServerFieldType::ADDRESS_HOME_COUNTRY, .value = u"USA"},
-           {.role = ServerFieldType::EMAIL_ADDRESS,
-            .value = u"test_noat_test.io"}}});
+  test::FormDescription form_description = {
+      .description_for_logging =
+          "ProfileImportRequirements_FilledButInvalidZipEmailAndState",
+      .fields = {
+          {.role = NAME_FULL, .value = u"Elvis Aaron Presley"},
+          {.role = ADDRESS_HOME_LINE1, .value = u"3734 Elvis Presley Blvd."},
+          {.role = ADDRESS_HOME_CITY, .value = u"New York"},
+          {.role = PHONE_HOME_NUMBER, .value = u"2345678901"},
+          {.role = ADDRESS_HOME_STATE, .value = u"DefNotAState"},
+          {.role = ADDRESS_HOME_ZIP, .value = u"1234567890"},
+          {.role = ADDRESS_HOME_COUNTRY, .value = u"USA"},
+          {.role = EMAIL_ADDRESS, .value = u"test_noat_test.io"}}};
 
-  std::vector<ServerFieldType> field_types = {NAME_FULL,
-                                              ADDRESS_HOME_LINE1,
-                                              ADDRESS_HOME_CITY,
-                                              PHONE_HOME_CITY_AND_NUMBER,
-                                              ADDRESS_HOME_STATE,
-                                              ADDRESS_HOME_ZIP,
-                                              ADDRESS_HOME_COUNTRY,
-                                              EMAIL_ADDRESS};
-
-  autofill_manager().AddSeenForm(form, field_types);
-  std::string guid(kTestGuid);
-  autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-      autofill_manager().suggestion_generator()->MakeFrontendId(
-          Suggestion::BackendId(), Suggestion::BackendId(guid)));
+  FormData form = GetAndAddSeenForm(form_description);
+  FillTestProfile(form);
 
   base::HistogramTester histogram_tester;
   SubmitForm(form);
@@ -1218,20 +1106,15 @@ TEST_F(AutofillMetricsTest, ProfileImportRequirements_NonUniqueEmail) {
   FormData form = test::GetFormData(
       {.description_for_logging = "ProfileImportRequirements_NonUniqueEmail",
        .fields = {
-           {.role = ServerFieldType::NAME_FULL,
-            .value = u"Elvis Aaron Presley"},
-           {.role = ServerFieldType::ADDRESS_HOME_LINE1,
-            .value = u"3734 Elvis Presley Blvd."},
-           {.role = ServerFieldType::ADDRESS_HOME_CITY, .value = u"New York"},
-           {.role = ServerFieldType::PHONE_HOME_NUMBER, .value = u"2345678901"},
-           {.role = ServerFieldType::ADDRESS_HOME_STATE, .value = u"CA"},
-           {.role = ServerFieldType::ADDRESS_HOME_ZIP, .value = u"37373"},
-           {.role = ServerFieldType::ADDRESS_HOME_COUNTRY, .value = u"USA"},
-           {.role = ServerFieldType::EMAIL_ADDRESS,
-            .value = u"test_noat_test.io"},
-           {.label = u"Email1",
-            .name = u".email1",
-            .value = u"not_test@test.io"}}});
+           {.role = NAME_FULL, .value = u"Elvis Aaron Presley"},
+           {.role = ADDRESS_HOME_LINE1, .value = u"3734 Elvis Presley Blvd."},
+           {.role = ADDRESS_HOME_CITY, .value = u"New York"},
+           {.role = PHONE_HOME_CITY_AND_NUMBER, .value = u"2345678901"},
+           {.role = ADDRESS_HOME_STATE, .value = u"CA"},
+           {.role = ADDRESS_HOME_ZIP, .value = u"37373"},
+           {.role = ADDRESS_HOME_COUNTRY, .value = u"USA"},
+           {.role = EMAIL_ADDRESS, .value = u"test_noat_test.io"},
+           {.role = EMAIL_ADDRESS, .value = u"not_test@test.io"}}});
 
   std::vector<ServerFieldType> field_types = {NAME_FULL,
                                               ADDRESS_HOME_LINE1,
@@ -1244,11 +1127,7 @@ TEST_F(AutofillMetricsTest, ProfileImportRequirements_NonUniqueEmail) {
                                               EMAIL_ADDRESS};
 
   autofill_manager().AddSeenForm(form, field_types);
-  std::string guid(kTestGuid);
-  autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-      autofill_manager().suggestion_generator()->MakeFrontendId(
-          Suggestion::BackendId(), Suggestion::BackendId(guid)));
+  FillTestProfile(form);
 
   base::HistogramTester histogram_tester;
   SubmitForm(form);
@@ -1300,15 +1179,13 @@ TEST_F(AutofillMetricsTest, ProfileImportRequirements_OnlyAddressLineOne) {
       {.description_for_logging =
            "ProfileImportRequirements_OnlyAddressLineOne",
        .fields = {
-           {.role = ServerFieldType::NAME_FULL,
-            .value = u"Elvis Aaron Presley"},
-           {.role = ServerFieldType::ADDRESS_HOME_LINE1,
-            .value = u"3734 Elvis Presley Blvd."},
-           {.role = ServerFieldType::ADDRESS_HOME_CITY, .value = u""},
-           {.role = ServerFieldType::PHONE_HOME_NUMBER, .value = u""},
-           {.role = ServerFieldType::ADDRESS_HOME_STATE, .value = u""},
-           {.role = ServerFieldType::ADDRESS_HOME_ZIP, .value = u""},
-           {.role = ServerFieldType::ADDRESS_HOME_COUNTRY, .value = u""}}});
+           {.role = NAME_FULL, .value = u"Elvis Aaron Presley"},
+           {.role = ADDRESS_HOME_LINE1, .value = u"3734 Elvis Presley Blvd."},
+           {.role = ADDRESS_HOME_CITY, .value = u""},
+           {.role = PHONE_HOME_NUMBER, .value = u""},
+           {.role = ADDRESS_HOME_STATE, .value = u""},
+           {.role = ADDRESS_HOME_ZIP, .value = u""},
+           {.role = ADDRESS_HOME_COUNTRY, .value = u""}}});
 
   std::vector<ServerFieldType> field_types = {
       NAME_FULL,           ADDRESS_HOME_LINE1,
@@ -1317,11 +1194,7 @@ TEST_F(AutofillMetricsTest, ProfileImportRequirements_OnlyAddressLineOne) {
       ADDRESS_HOME_COUNTRY};
 
   autofill_manager().AddSeenForm(form, field_types);
-  std::string guid(kTestGuid);
-  autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-      autofill_manager().suggestion_generator()->MakeFrontendId(
-          Suggestion::BackendId(), Suggestion::BackendId(guid)));
+  FillTestProfile(form);
 
   base::HistogramTester histogram_tester;
   SubmitForm(form);
@@ -1398,12 +1271,8 @@ TEST_F(AutofillMetricsTest,
 
   base::UserActionTester user_action_tester;
   autofill_manager().AddSeenForm(form, heuristic_types, server_types);
-  std::string guid(kTestGuid);
   // Trigger phone number rationalization at filling time.
-  autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-      autofill_manager().suggestion_generator()->MakeFrontendId(
-          Suggestion::BackendId(), Suggestion::BackendId(guid)));
+  FillTestProfile(form);
   EXPECT_EQ(
       1, user_action_tester.GetActionCount("Autofill_FilledProfileSuggestion"));
 
@@ -1438,12 +1307,8 @@ TEST_F(AutofillMetricsTest,
 
   base::UserActionTester user_action_tester;
   autofill_manager().AddSeenForm(form, field_types);
-  std::string guid(kTestGuid);
   // Trigger phone number rationalization at filling time.
-  autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-      autofill_manager().suggestion_generator()->MakeFrontendId(
-          Suggestion::BackendId(), Suggestion::BackendId(guid)));
+  FillTestProfile(form);
   EXPECT_EQ(
       1, user_action_tester.GetActionCount("Autofill_FilledProfileSuggestion"));
 
@@ -1463,7 +1328,12 @@ TEST_F(AutofillMetricsTest,
 // Test that we log the skip decisions for hidden/representational fields
 // correctly.
 TEST_F(AutofillMetricsTest, LogHiddenRepresentationalFieldSkipDecision) {
-  // Create a profile.
+  // The old sectioning algorithm emits several different UKM metrics. Since we
+  // will have various variants of the sectioning algorithm, we don't want to
+  // adjust the expectations for each variant for now.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kAutofillUseParameterizedSectioning);
   RecreateProfile(/*is_server=*/false);
 
   FormData form = CreateForm({
@@ -1494,11 +1364,7 @@ TEST_F(AutofillMetricsTest, LogHiddenRepresentationalFieldSkipDecision) {
   // Simulate filling form.
   {
     base::UserActionTester user_action_tester;
-    std::string guid(kTestGuid);  // local profile.
-    autofill_manager().FillOrPreviewForm(
-        mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-        autofill_manager().suggestion_generator()->MakeFrontendId(
-            Suggestion::BackendId(), Suggestion::BackendId(guid)));
+    FillTestProfile(form);
   }
 
   VerifyUkm(
@@ -1582,18 +1448,6 @@ TEST_F(AutofillMetricsTest, LogHiddenRepresentationalFieldSkipDecision) {
          false}}});
 }
 
-namespace {
-void AddFieldSuggestionToForm(
-    AutofillQueryResponse_FormSuggestion* form_suggestion,
-    FormFieldData field_data,
-    ServerFieldType field_type) {
-  auto* field_suggestion = form_suggestion->add_field_suggestions();
-  field_suggestion->set_field_signature(
-      CalculateFieldSignatureForField(field_data).value());
-  field_suggestion->add_predictions()->set_type(field_type);
-}
-}  // namespace
-
 // Test that we log the address line fields whose server types are rationalized
 TEST_F(AutofillMetricsTest, LogRepeatedAddressTypeRationalized) {
   FormData form = CreateEmptyForm();
@@ -1629,11 +1483,11 @@ TEST_F(AutofillMetricsTest, LogRepeatedAddressTypeRationalized) {
 
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
-  AddFieldSuggestionToForm(form_suggestion, form.fields[0], NAME_FULL);
-  AddFieldSuggestionToForm(form_suggestion, form.fields[1],
-                           ADDRESS_HOME_STREET_ADDRESS);
-  AddFieldSuggestionToForm(form_suggestion, form.fields[2],
-                           ADDRESS_HOME_STREET_ADDRESS);
+  AddFieldPredictionToForm(form.fields[0], NAME_FULL, form_suggestion);
+  AddFieldPredictionToForm(form.fields[1], ADDRESS_HOME_STREET_ADDRESS,
+                           form_suggestion);
+  AddFieldPredictionToForm(form.fields[2], ADDRESS_HOME_STREET_ADDRESS,
+                           form_suggestion);
 
   std::string response_string = SerializeAndEncode(response);
   FormStructure::ParseApiQueryResponse(
@@ -1736,13 +1590,13 @@ TEST_F(AutofillMetricsTest, LogRepeatedStateCountryTypeRationalized) {
 
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
-  AddFieldSuggestionToForm(form_suggestion, form.fields[0],
-                           ADDRESS_HOME_COUNTRY);
-  AddFieldSuggestionToForm(form_suggestion, form.fields[1], NAME_FULL);
-  AddFieldSuggestionToForm(form_suggestion, form.fields[2],
-                           ADDRESS_HOME_COUNTRY);
-  AddFieldSuggestionToForm(form_suggestion, form.fields[3],
-                           ADDRESS_HOME_COUNTRY);
+  AddFieldPredictionToForm(form.fields[0], ADDRESS_HOME_COUNTRY,
+                           form_suggestion);
+  AddFieldPredictionToForm(form.fields[1], NAME_FULL, form_suggestion);
+  AddFieldPredictionToForm(form.fields[2], ADDRESS_HOME_COUNTRY,
+                           form_suggestion);
+  AddFieldPredictionToForm(form.fields[3], ADDRESS_HOME_COUNTRY,
+                           form_suggestion);
 
   std::string response_string = SerializeAndEncode(response);
   FormStructure::ParseApiQueryResponse(
@@ -1844,12 +1698,8 @@ TEST_F(AutofillMetricsTest,
 
   base::UserActionTester user_action_tester;
   autofill_manager().AddSeenForm(form, heuristic_types, server_types);
-  std::string guid(kTestGuid);
   // Trigger phone number rationalization at filling time.
-  autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-      autofill_manager().suggestion_generator()->MakeFrontendId(
-          Suggestion::BackendId(), Suggestion::BackendId(guid)));
+  FillTestProfile(form);
   EXPECT_EQ(
       1, user_action_tester.GetActionCount("Autofill_FilledProfileSuggestion"));
 
@@ -1900,12 +1750,8 @@ TEST_F(AutofillMetricsTest,
 
   base::UserActionTester user_action_tester;
   autofill_manager().AddSeenForm(form, heuristic_types, server_types);
-  std::string guid(kTestGuid);
   // Trigger phone number rationalization at filling time.
-  autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-      autofill_manager().suggestion_generator()->MakeFrontendId(
-          Suggestion::BackendId(), Suggestion::BackendId(guid)));
+  FillTestProfile(form);
   EXPECT_EQ(
       1, user_action_tester.GetActionCount("Autofill_FilledProfileSuggestion"));
 
@@ -2302,14 +2148,14 @@ TEST_F(AutofillMetricsTest, TimingMetrics) {
 // Test that we log quality metrics appropriately when an upload is triggered
 // but no submission event is sent.
 TEST_F(AutofillMetricsTest, QualityMetrics_NoSubmission) {
-  FormData form = CreateForm(
-      {CreateField("Autofilled", "autofilled", "Elvis Aaron Presley", "text"),
-       CreateField("Autofill Failed", "autofillfailed", "buddy@gmail.com",
-                   "text"),
-       CreateField("Empty", "empty", "", "text"),
-       CreateField("Unknown", "unknown", "garbage", "text"),
-       CreateField("Select", "select", "USA", "select-one"),
-       CreateField("Phone", "phone", "2345678901", "tel")});
+  FormData form =
+      CreateForm({CreateField("Autofilled", "autofilled", "Elvis", "text"),
+                  CreateField("Autofill Failed", "autofillfailed",
+                              "buddy@gmail.com", "text"),
+                  CreateField("Empty", "empty", "", "text"),
+                  CreateField("Unknown", "unknown", "garbage", "text"),
+                  CreateField("Select", "select", "USA", "select-one"),
+                  CreateField("Phone", "phone", "2345678901", "tel")});
   form.fields.front().is_autofilled = true;
   form.fields.back().is_autofilled = true;
 
@@ -2322,13 +2168,12 @@ TEST_F(AutofillMetricsTest, QualityMetrics_NoSubmission) {
       EMAIL_ADDRESS, NO_SERVER_DATA, PHONE_HOME_CITY_AND_NUMBER};
 
   autofill_manager().AddSeenForm(form, heuristic_types, server_types);
-  ChangeTextField(form, form.fields[0]);
-  autofill_manager().SetSeenFormPredictions(form.global_id(), heuristic_types,
-                                            server_types);
+  // Changes the name field to match the full name.
+  SimulateUserChangedTextFieldTo(form, form.fields[0], u"Elvis Aaron Presley");
 
-  // Trigger a form upload and metrics by Resetting the manager.
   base::HistogramTester histogram_tester;
 
+  // Triggers the metrics.
   autofill_manager().Reset();
 
   auto Buck = [](ServerFieldType field_type,
@@ -2409,13 +2254,13 @@ TEST_F(AutofillMetricsTest, QualityMetrics_BasedOnAutocomplete) {
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
   // Server response will match with autocomplete.
-  AddFieldSuggestionToForm(form_suggestion, form.fields[0], NAME_LAST);
+  AddFieldPredictionToForm(form.fields[0], NAME_LAST, form_suggestion);
   // Server response will NOT match with autocomplete.
-  AddFieldSuggestionToForm(form_suggestion, form.fields[1], NAME_FIRST);
+  AddFieldPredictionToForm(form.fields[1], NAME_FIRST, form_suggestion);
   // Server response will have no data.
-  AddFieldSuggestionToForm(form_suggestion, form.fields[2], NO_SERVER_DATA);
+  AddFieldPredictionToForm(form.fields[2], NO_SERVER_DATA, form_suggestion);
   // Not logged.
-  AddFieldSuggestionToForm(form_suggestion, form.fields[3], NAME_MIDDLE);
+  AddFieldPredictionToForm(form.fields[3], NAME_MIDDLE, form_suggestion);
 
   std::string response_string = SerializeAndEncode(response);
   base::HistogramTester histogram_tester;
@@ -2638,7 +2483,7 @@ TEST_F(AutofillMetricsTest, TypeOfEditedAutofilledFieldsUkmLogging) {
 
   base::HistogramTester histogram_tester;
   // Simulate text input in the first and second fields.
-  ChangeTextField(form, form.fields[0]);
+  SimulateUserChangedTextField(form, form.fields[0]);
 
   SubmitForm(form);
   ExpectedUkmMetricsRecord name_field_ukm_record{
@@ -2673,8 +2518,12 @@ TEST_F(AutofillMetricsTest, TypeOfEditedAutofilledFieldsUmaLogging) {
 
   base::HistogramTester histogram_tester;
   // Simulate text input in the first and second fields.
-  ChangeTextField(form, form.fields[0]);
-  ChangeTextField(form, form.fields[1]);
+  // TODO(crbug.com/1368096): Fix the metric to work independent of the final
+  // value.
+  SimulateUserChangedTextFieldWithoutActuallyChangingTheValue(form,
+                                                              form.fields[0]);
+  SimulateUserChangedTextFieldWithoutActuallyChangingTheValue(form,
+                                                              form.fields[1]);
 
   SubmitForm(form);
 
@@ -2728,8 +2577,8 @@ TEST_F(AutofillMetricsTest, NumberOfEditedAutofilledFields) {
 
   base::HistogramTester histogram_tester;
   // Simulate text input in the first and second fields.
-  ChangeTextField(form, form.fields[0]);
-  ChangeTextField(form, form.fields[1]);
+  SimulateUserChangedTextField(form, form.fields[0]);
+  SimulateUserChangedTextField(form, form.fields[1]);
 
   SubmitForm(form);
 
@@ -2759,7 +2608,7 @@ TEST_F(AutofillMetricsTest, NumberOfEditedAutofilledFields_NoSubmission) {
 
   base::HistogramTester histogram_tester;
   // Simulate text input in the first field.
-  ChangeTextField(form, form.fields[0]);
+  SimulateUserChangedTextField(form, form.fields[0]);
 
   // We expect metrics to be logged when the manager is reset.
   autofill_manager().Reset();
@@ -3297,12 +3146,14 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
     base::UserActionTester user_action_tester;
     std::string guid("10000000-0000-0000-0000-000000000001");  // local card
     external_delegate_->OnQuery(0, form, form.fields.front(), gfx::RectF());
-    Suggestion::BackendId backend_id = Suggestion::BackendId(guid);
+
     external_delegate_->DidAcceptSuggestion(
-        u"Test",
-        autofill_manager().suggestion_generator()->MakeFrontendId(
-            backend_id, Suggestion::BackendId()),
-        backend_id, 0);
+        test::CreateAutofillSuggestion(
+            autofill_manager().suggestion_generator()->MakeFrontendId(
+                Suggestion::BackendId(guid), Suggestion::BackendId()),
+            u"Test", Suggestion::BackendId(guid)),
+        0);
+
     EXPECT_EQ(1,
               user_action_tester.GetActionCount("Autofill_SelectedSuggestion"));
   }
@@ -3320,10 +3171,11 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
   // Simulate selecting a "Clear form" suggestion.
   {
     base::UserActionTester user_action_tester;
-    std::string guid("10000000-0000-0000-0000-000000000001");  // local card
     external_delegate_->OnQuery(0, form, form.fields.front(), gfx::RectF());
+
     external_delegate_->DidAcceptSuggestion(
-        std::u16string(), POPUP_ITEM_ID_CLEAR_FORM, Suggestion::BackendId(), 0);
+        Suggestion(POPUP_ITEM_ID_CLEAR_FORM), 0);
+
     EXPECT_EQ(1, user_action_tester.GetActionCount("Autofill_ClearedForm"));
   }
 
@@ -3342,12 +3194,14 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
     base::UserActionTester user_action_tester;
     std::string guid("10000000-0000-0000-0000-000000000001");  // local card
     external_delegate_->OnQuery(0, form, form.fields.front(), gfx::RectF());
-    Suggestion::BackendId backend_id = Suggestion::BackendId(guid);
+
     external_delegate_->DidAcceptSuggestion(
-        u"Test",
-        autofill_manager().suggestion_generator()->MakeFrontendId(
-            backend_id, Suggestion::BackendId()),
-        backend_id, 0);
+        test::CreateAutofillSuggestion(
+            autofill_manager().suggestion_generator()->MakeFrontendId(
+                Suggestion::BackendId(guid), Suggestion::BackendId()),
+            u"Test", Suggestion::BackendId(guid)),
+        0);
+
     EXPECT_EQ(1,
               user_action_tester.GetActionCount("Autofill_SelectedSuggestion"));
   }
@@ -3493,14 +3347,15 @@ TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
   // Simulate selecting a profile suggestions.
   {
     base::UserActionTester user_action_tester;
-    std::string guid(kTestGuid);  // local profile.
     external_delegate_->OnQuery(0, form, form.fields.front(), gfx::RectF());
-    Suggestion::BackendId backend_id = Suggestion::BackendId(guid);
+
     external_delegate_->DidAcceptSuggestion(
-        u"Test",
-        autofill_manager().suggestion_generator()->MakeFrontendId(
-            Suggestion::BackendId(), backend_id),
-        backend_id, 0);
+        test::CreateAutofillSuggestion(
+            autofill_manager().suggestion_generator()->MakeFrontendId(
+                Suggestion::BackendId(), Suggestion::BackendId(kTestGuid)),
+            u"Test", Suggestion::BackendId(kTestGuid)),
+        0);
+
     EXPECT_EQ(1,
               user_action_tester.GetActionCount("Autofill_SelectedSuggestion"));
   }
@@ -3508,11 +3363,7 @@ TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
   // Simulate filling a profile suggestion.
   {
     base::UserActionTester user_action_tester;
-    std::string guid(kTestGuid);  // local profile.
-    autofill_manager().FillOrPreviewForm(
-        mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-        autofill_manager().suggestion_generator()->MakeFrontendId(
-            Suggestion::BackendId(), Suggestion::BackendId(guid)));
+    FillTestProfile(form);
     EXPECT_EQ(1, user_action_tester.GetActionCount(
                      "Autofill_FilledProfileSuggestion"));
   }
@@ -4350,11 +4201,9 @@ TEST_P(
   // Set up our form data.
   FormData form = test::GetFormData(
       {.description_for_logging = "PaymentProfileImportRequirements",
-       .fields = {
-           {.role = ServerFieldType::CREDIT_CARD_EXP_MONTH, .value = u""},
-           {.role = ServerFieldType::CREDIT_CARD_EXP_2_DIGIT_YEAR,
-            .value = u""},
-           {.role = ServerFieldType::CREDIT_CARD_NUMBER, .value = u""}}});
+       .fields = {{.role = CREDIT_CARD_EXP_MONTH, .value = u""},
+                  {.role = CREDIT_CARD_EXP_2_DIGIT_YEAR, .value = u""},
+                  {.role = CREDIT_CARD_NUMBER, .value = u""}}});
   std::vector<ServerFieldType> field_types = {
       CREDIT_CARD_EXP_MONTH, CREDIT_CARD_EXP_2_DIGIT_YEAR, CREDIT_CARD_NUMBER};
 
@@ -4394,11 +4243,9 @@ TEST_P(AutofillMetricsIFrameTest,
   // Set up our form data.
   FormData form = test::GetFormData(
       {.description_for_logging = "PaymentProfileImportRequirements",
-       .fields = {
-           {.role = ServerFieldType::CREDIT_CARD_EXP_MONTH, .value = u""},
-           {.role = ServerFieldType::CREDIT_CARD_EXP_2_DIGIT_YEAR,
-            .value = u""},
-           {.role = ServerFieldType::CREDIT_CARD_NUMBER, .value = u""}}});
+       .fields = {{.role = CREDIT_CARD_EXP_MONTH, .value = u""},
+                  {.role = CREDIT_CARD_EXP_2_DIGIT_YEAR, .value = u""},
+                  {.role = CREDIT_CARD_NUMBER, .value = u""}}});
   std::vector<ServerFieldType> field_types = {
       CREDIT_CARD_EXP_MONTH, CREDIT_CARD_EXP_2_DIGIT_YEAR, CREDIT_CARD_NUMBER};
 
@@ -6557,11 +6404,7 @@ TEST_F(AutofillMetricsTest, AddressFilledFormEvents) {
   {
     // Simulating selecting/filling a local profile suggestion.
     base::HistogramTester histogram_tester;
-    std::string guid(kTestGuid);  // local profile
-    autofill_manager().FillOrPreviewForm(
-        mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-        autofill_manager().suggestion_generator()->MakeFrontendId(
-            Suggestion::BackendId(), Suggestion::BackendId(guid)));
+    FillTestProfile(form);
     histogram_tester.ExpectBucketCount("Autofill.FormEvents.Address",
                                        FORM_EVENT_LOCAL_SUGGESTION_FILLED, 1);
     histogram_tester.ExpectBucketCount("Autofill.FormEvents.Address",
@@ -6593,15 +6436,8 @@ TEST_F(AutofillMetricsTest, AddressFilledFormEvents) {
   {
     // Simulating selecting/filling a local profile suggestion more than once.
     base::HistogramTester histogram_tester;
-    std::string guid(kTestGuid);  // local profile
-    autofill_manager().FillOrPreviewForm(
-        mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-        autofill_manager().suggestion_generator()->MakeFrontendId(
-            Suggestion::BackendId(), Suggestion::BackendId(guid)));
-    autofill_manager().FillOrPreviewForm(
-        mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-        autofill_manager().suggestion_generator()->MakeFrontendId(
-            Suggestion::BackendId(), Suggestion::BackendId(guid)));
+    FillTestProfile(form);
+    FillTestProfile(form);
     histogram_tester.ExpectBucketCount("Autofill.FormEvents.Address",
                                        FORM_EVENT_LOCAL_SUGGESTION_FILLED, 2);
     histogram_tester.ExpectBucketCount("Autofill.FormEvents.Address",
@@ -6617,11 +6453,7 @@ TEST_F(AutofillMetricsTest, AddressFilledFormEvents) {
   {
     // Simulate selecting/filling a server profile suggestion.
     base::HistogramTester histogram_tester;
-    std::string guid(kTestGuid);  // server profile
-    autofill_manager().FillOrPreviewForm(
-        mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-        autofill_manager().suggestion_generator()->MakeFrontendId(
-            Suggestion::BackendId(), Suggestion::BackendId(guid)));
+    FillTestProfile(form);
     histogram_tester.ExpectBucketCount("Autofill.FormEvents.Address",
                                        FORM_EVENT_SERVER_SUGGESTION_FILLED, 1);
     histogram_tester.ExpectBucketCount("Autofill.FormEvents.Address",
@@ -6635,15 +6467,8 @@ TEST_F(AutofillMetricsTest, AddressFilledFormEvents) {
   {
     // Simulate selecting/filling a server profile suggestion more than once.
     base::HistogramTester histogram_tester;
-    std::string guid(kTestGuid);  // server profile
-    autofill_manager().FillOrPreviewForm(
-        mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-        autofill_manager().suggestion_generator()->MakeFrontendId(
-            Suggestion::BackendId(), Suggestion::BackendId(guid)));
-    autofill_manager().FillOrPreviewForm(
-        mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-        autofill_manager().suggestion_generator()->MakeFrontendId(
-            Suggestion::BackendId(), Suggestion::BackendId(guid)));
+    FillTestProfile(form);
+    FillTestProfile(form);
     histogram_tester.ExpectBucketCount("Autofill.FormEvents.Address",
                                        FORM_EVENT_SERVER_SUGGESTION_FILLED, 2);
     histogram_tester.ExpectBucketCount("Autofill.FormEvents.Address",
@@ -6739,11 +6564,7 @@ TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
     // Simulating submission with filled local data.
     base::HistogramTester histogram_tester;
     autofill_manager().OnAskForValuesToFillTest(form, form.fields[0]);
-    std::string guid(kTestGuid);  // local profile
-    autofill_manager().FillOrPreviewForm(
-        mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-        autofill_manager().suggestion_generator()->MakeFrontendId(
-            Suggestion::BackendId(), Suggestion::BackendId(guid)));
+    FillTestProfile(form);
     SubmitForm(form);
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.Address",
@@ -6867,11 +6688,7 @@ TEST_F(AutofillMetricsTest, AddressWillSubmitFormEvents) {
     // Simulating submission with filled local data.
     base::HistogramTester histogram_tester;
     autofill_manager().OnAskForValuesToFillTest(form, form.fields[0]);
-    std::string guid(kTestGuid);  // local profile
-    autofill_manager().FillOrPreviewForm(
-        mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-        autofill_manager().suggestion_generator()->MakeFrontendId(
-            Suggestion::BackendId(), Suggestion::BackendId(guid)));
+    FillTestProfile(form);
     SubmitForm(form);
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.Address",
@@ -7156,10 +6973,6 @@ TEST_F(AutofillMetricsTest, DaysSinceLastUse_Profile) {
 
 // Test that we log the verification status of name tokens.
 TEST_F(AutofillMetricsTest, LogVerificationStatusesOfNameTokens) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kAutofillEnableSupportForMoreStructureInNames);
-
   base::HistogramTester histogram_tester;
   AutofillProfile profile;
   profile.SetRawInfoWithVerificationStatus(
@@ -7201,10 +7014,6 @@ TEST_F(AutofillMetricsTest, LogVerificationStatusesOfNameTokens) {
 
 // Test that we log the verification status of address tokens..
 TEST_F(AutofillMetricsTest, LogVerificationStatusesOfAddressTokens) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kAutofillEnableSupportForMoreStructureInAddresses);
-
   base::HistogramTester histogram_tester;
   AutofillProfile profile;
   profile.SetRawInfoWithVerificationStatus(
@@ -7666,7 +7475,7 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_CreditCardForm) {
   {
     SCOPED_TRACE("Initial typing");
     base::HistogramTester histogram_tester;
-    ChangeTextField(form, form.fields.front());
+    SimulateUserChangedTextField(form, form.fields.front());
     histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
                                         AutofillMetrics::USER_DID_TYPE, 1);
     histogram_tester.ExpectUniqueSample("Autofill.UserHappiness.CreditCard",
@@ -7750,9 +7559,9 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_CreditCardForm) {
         mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
         autofill_manager().suggestion_generator()->MakeFrontendId(
             Suggestion::BackendId(guid), Suggestion::BackendId()));
-    ChangeTextField(form, form.fields.front());
+    SimulateUserChangedTextField(form, form.fields.front());
     // Simulate a second keystroke; make sure we don't log the metric twice.
-    ChangeTextField(form, form.fields.front());
+    SimulateUserChangedTextField(form, form.fields.front());
     histogram_tester.ExpectBucketCount(
         "Autofill.UserHappiness",
         AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD, 1);
@@ -7782,7 +7591,7 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_CreditCardForm) {
   {
     SCOPED_TRACE("Edit another autofilled field");
     base::HistogramTester histogram_tester;
-    ChangeTextField(form, form.fields[1]);
+    SimulateUserChangedTextField(form, form.fields[1]);
     histogram_tester.ExpectUniqueSample(
         "Autofill.UserHappiness",
         AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD, 1);
@@ -7799,8 +7608,8 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_AddressForm) {
                               CreateField("Email", "email", "", "text"),
                               CreateField("Phone", "phone", "", "text")});
 
-  // Expect a notification when the form is first seen.
   {
+    SCOPED_TRACE("Expect a notification when the form is first seen.");
     base::HistogramTester histogram_tester;
     SeeForm(form);
     histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
@@ -7809,18 +7618,18 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_AddressForm) {
                                         AutofillMetrics::FORMS_LOADED, 1);
   }
 
-  // Simulate typing.
   {
+    SCOPED_TRACE("Simulate typing.");
     base::HistogramTester histogram_tester;
-    ChangeTextField(form, form.fields.front());
+    SimulateUserChangedTextFieldTo(form, form.fields.front(), u"new value");
     histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
                                         AutofillMetrics::USER_DID_TYPE, 1);
     histogram_tester.ExpectUniqueSample("Autofill.UserHappiness.Address",
                                         AutofillMetrics::USER_DID_TYPE, 1);
   }
 
-  // Simulate suggestions shown twice with separate popups.
   {
+    SCOPED_TRACE("Simulate suggestions shown twice with separate popups.");
     base::HistogramTester histogram_tester;
     autofill_manager().DidShowSuggestions(true, form, form.fields.back());
     autofill_manager().DidShowSuggestions(true, form, form.fields.back());
@@ -7837,9 +7646,10 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_AddressForm) {
 
   autofill_manager().Reset();
   SeeForm(form);
-  // Simulate suggestions shown twice for a single edit (i.e. multiple
-  // keystrokes in a single field).
   {
+    SCOPED_TRACE(
+        "Simulate suggestions shown twice for a single edit "
+        "(i.e. multiple keystrokes in a single field).");
     base::HistogramTester histogram_tester;
     autofill_manager().DidShowSuggestions(true, form, form.fields.back());
     autofill_manager().DidShowSuggestions(false, form, form.fields.back());
@@ -7854,8 +7664,8 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_AddressForm) {
                                        1);
   }
 
-  // Simulate suggestions shown for a different field.
   {
+    SCOPED_TRACE("Simulate suggestions shown for a different field.");
     base::HistogramTester histogram_tester;
     autofill_manager().DidShowSuggestions(true, form, form.fields[1]);
     histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
@@ -7864,8 +7674,8 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_AddressForm) {
                                         AutofillMetrics::SUGGESTIONS_SHOWN, 1);
   }
 
-  // Simulate invoking autofill.
   {
+    SCOPED_TRACE("Simulate invoking autofill.");
     base::HistogramTester histogram_tester;
     FillAutofillFormData(form);
     histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
@@ -7879,17 +7689,14 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_AddressForm) {
                                        1);
   }
 
-  // Simulate editing an autofilled field.
   {
+    SCOPED_TRACE("Simulate editing an autofilled field.");
     base::HistogramTester histogram_tester;
-    std::string guid(kTestGuid);
-    autofill_manager().FillOrPreviewForm(
-        mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-        autofill_manager().suggestion_generator()->MakeFrontendId(
-            Suggestion::BackendId(), Suggestion::BackendId(guid)));
-    ChangeTextField(form, form.fields.front());
+    FillTestProfile(form);
+    SimulateUserChangedTextFieldTo(form, form.fields.front(), u"to some value");
     // Simulate a second keystroke; make sure we don't log the metric twice.
-    ChangeTextField(form, form.fields.front());
+    SimulateUserChangedTextFieldTo(form, form.fields.front(),
+                                   u"to some other value");
     histogram_tester.ExpectBucketCount(
         "Autofill.UserHappiness",
         AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD, 1);
@@ -7904,8 +7711,8 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_AddressForm) {
         AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD_ONCE, 1);
   }
 
-  // Simulate invoking autofill again.
   {
+    SCOPED_TRACE("Simulate invoking autofill again.");
     base::HistogramTester histogram_tester;
     FillAutofillFormData(form);
     histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
@@ -7914,10 +7721,10 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_AddressForm) {
                                         AutofillMetrics::USER_DID_AUTOFILL, 1);
   }
 
-  // Simulate editing another autofilled field.
   {
+    SCOPED_TRACE("Simulate editing another autofilled field.");
     base::HistogramTester histogram_tester;
-    ChangeTextField(form, form.fields[1]);
+    SimulateUserChangedTextFieldTo(form, form.fields[1], u"some value");
     histogram_tester.ExpectUniqueSample(
         "Autofill.UserHappiness",
         AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD, 1);
@@ -8014,7 +7821,7 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_AddressForm) {
          HtmlFieldType::kUnspecified},
         {UkmTextFieldDidChangeType::kHtmlFieldModeName, HtmlFieldMode::kNone},
         {UkmTextFieldDidChangeType::kIsAutofilledName, true},
-        {UkmTextFieldDidChangeType::kIsEmptyName, true},
+        {UkmTextFieldDidChangeType::kIsEmptyName, false},
         {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
         {UkmTextFieldDidChangeType::kFieldSignatureName,
          Collapse(CalculateFieldSignatureForField(form.fields[0])).value()},
@@ -8043,22 +7850,21 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   TestAutofillTickClock test_clock;
   test_clock.SetNowTicks(now);
 
-  FormData form = CreateForm({CreateField("Name", "name", "", "text"),
-                              CreateField("Email", "email", "", "text"),
-                              CreateField("Phone", "phone", "", "text")});
+  FormData empty_form = CreateForm({CreateField("Name", "name", "", "text"),
+                                    CreateField("Email", "email", "", "text"),
+                                    CreateField("Phone", "phone", "", "text")});
+
+  FormData filled_form = empty_form;
+  filled_form.fields[0].value = u"Elvis Aaron Presley";
+  filled_form.fields[1].value = u"theking@gmail.com";
+  filled_form.fields[2].value = u"12345678901";
 
   // Fill additional form.
-  FormData second_form = form;
+  FormData second_form = empty_form;
   second_form.host_frame = test::MakeLocalFrameToken();
   second_form.unique_renderer_id = test::MakeFormRendererId();
   second_form.fields.push_back(
       CreateField("Second Phone", "second_phone", "", "text"));
-
-  // Fill the field values for form submission.
-  FormData submitted_form = form;
-  form.fields[0].value = u"Elvis Aaron Presley";
-  form.fields[1].value = u"theking@gmail.com";
-  form.fields[2].value = u"12345678901";
 
   // Fill the field values for form submission.
   second_form.fields[0].value = u"Elvis Aaron Presley";
@@ -8069,15 +7875,15 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   // Expect only form load metrics to be logged if the form is submitted without
   // user interaction.
   {
-    SCOPED_TRACE("Test 1");
+    SCOPED_TRACE("Test 1 - no interaction, fields are prefilled");
     base::HistogramTester histogram_tester;
-    SeeForm(test::WithoutValues(form));
+    SeeForm(empty_form);
     base::TimeTicks parse_time = autofill_manager()
                                      .form_structures()
                                      .begin()
                                      ->second->form_parsed_timestamp();
     test_clock.SetNowTicks(parse_time + base::Microseconds(17));
-    SubmitForm(form);
+    SubmitForm(filled_form);
 
     histogram_tester.ExpectTotalCount(
         "Autofill.FillDuration.FromLoad.WithAutofill", 0);
@@ -8093,17 +7899,20 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
 
   // Expect metric to be logged if the user manually edited a form field.
   {
-    SCOPED_TRACE("Test 2");
+    SCOPED_TRACE("Test 2 - all fields are filled by the user");
     base::HistogramTester histogram_tester;
-    SeeForm(test::WithoutValues(form));
+    SeeForm(empty_form);
     base::TimeTicks parse_time = autofill_manager()
                                      .form_structures()
                                      .begin()
                                      ->second->form_parsed_timestamp();
-    ChangeTextField(form, form.fields.front(),
-                    parse_time + base::Microseconds(3));
+
+    FormData user_filled_form = filled_form;
+    SimulateUserChangedTextField(user_filled_form,
+                                 user_filled_form.fields.front(),
+                                 parse_time + base::Microseconds(3));
     test_clock.SetNowTicks(parse_time + base::Microseconds(17));
-    SubmitForm(form);
+    SubmitForm(filled_form);
 
     histogram_tester.ExpectTotalCount(
         "Autofill.FillDuration.FromLoad.WithAutofill", 0);
@@ -8119,18 +7928,19 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   }
 
   // Expect metric to be logged if the user autofilled the form.
-  form.fields[0].is_autofilled = true;
   {
-    SCOPED_TRACE("Test 3");
+    SCOPED_TRACE("Test 3 - all fields are autofilled");
     base::HistogramTester histogram_tester;
-    SeeForm(test::WithoutValues(form));
+    SeeForm(empty_form);
     base::TimeTicks parse_time = autofill_manager()
                                      .form_structures()
                                      .begin()
                                      ->second->form_parsed_timestamp();
-    FillAutofillFormData(form, parse_time + base::Microseconds(5));
+
+    FormData autofilled_form = test::AsAutofilled(filled_form);
+    FillAutofillFormData(autofilled_form, parse_time + base::Microseconds(5));
     test_clock.SetNowTicks(parse_time + base::Microseconds(17));
-    SubmitForm(form);
+    SubmitForm(autofilled_form);
 
     histogram_tester.ExpectUniqueSample(
         "Autofill.FillDuration.FromLoad.WithAutofill", 16, 1);
@@ -8149,20 +7959,25 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   // and autofilled others.  Messages can arrive out of order, so make sure they
   // take precedence appropriately.
   {
-    SCOPED_TRACE("Test 4");
+    SCOPED_TRACE(
+        "Test 4 - mixed case: some fields are autofille, some fields are "
+        "edited.");
     base::HistogramTester histogram_tester;
 
-    SeeForm(test::WithoutValues(form));
+    SeeForm(empty_form);
     base::TimeTicks parse_time = autofill_manager()
                                      .form_structures()
                                      .begin()
                                      ->second->form_parsed_timestamp();
-    FillAutofillFormData(form, parse_time + base::Microseconds(5));
 
-    ChangeTextField(form, form.fields.front(),
-                    parse_time + base::Microseconds(3));
+    FormData mixed_filled_form = test::AsAutofilled(filled_form);
+    FillAutofillFormData(mixed_filled_form, parse_time + base::Microseconds(5));
+    SimulateUserChangedTextField(mixed_filled_form,
+                                 mixed_filled_form.fields.front(),
+                                 parse_time + base::Microseconds(3));
+
     test_clock.SetNowTicks(parse_time + base::Microseconds(17));
-    SubmitForm(form);
+    SubmitForm(mixed_filled_form);
 
     histogram_tester.ExpectUniqueSample(
         "Autofill.FillDuration.FromLoad.WithAutofill", 16, 1);
@@ -8180,19 +7995,24 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   // Make sure that loading another form doesn't affect metrics from the first
   // form.
   {
-    SCOPED_TRACE("Test 5");
+    SCOPED_TRACE("Test 5 - load a second form before submitting the first");
     base::HistogramTester histogram_tester;
-    SeeForm(test::WithoutValues(form));
+    SeeForm(empty_form);
     base::TimeTicks parse_time = autofill_manager()
                                      .form_structures()
                                      .begin()
                                      ->second->form_parsed_timestamp();
+
     SeeForm(test::WithoutValues(second_form));
-    FillAutofillFormData(form, parse_time + base::Microseconds(5));
-    ChangeTextField(form, form.fields.front(),
-                    parse_time + base::Microseconds(3));
+
+    FormData mixed_filled_form = test::AsAutofilled(filled_form);
+    FillAutofillFormData(mixed_filled_form, parse_time + base::Microseconds(5));
+    SimulateUserChangedTextField(mixed_filled_form,
+                                 mixed_filled_form.fields.front(),
+                                 parse_time + base::Microseconds(3));
+
     test_clock.SetNowTicks(parse_time + base::Microseconds(17));
-    SubmitForm(form);
+    SubmitForm(mixed_filled_form);
 
     histogram_tester.ExpectUniqueSample(
         "Autofill.FillDuration.FromLoad.WithAutofill", 16, 1);
@@ -8210,15 +8030,16 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   // Make sure that submitting a form that was loaded later will report the
   // later loading time.
   {
-    SCOPED_TRACE("Test 6");
+    SCOPED_TRACE("Test 6 - submit the second seen form first");
     base::HistogramTester histogram_tester;
-    SeeForm(test::WithoutValues(form));
+    SeeForm(test::WithoutValues(empty_form));
     SeeForm(test::WithoutValues(second_form));
     base::TimeTicks parse_time{};
     for (const auto& kv : autofill_manager().form_structures()) {
       if (kv.second->form_parsed_timestamp() > parse_time)
         parse_time = kv.second->form_parsed_timestamp();
     }
+
     test_clock.SetNowTicks(parse_time + base::Microseconds(17));
     SubmitForm(second_form);
 
@@ -8582,29 +8403,17 @@ class AutofillMetricsParseQueryResponseTest : public testing::Test {
   std::vector<FormStructure*> forms_;
 };
 
-namespace {
-void AddFieldSuggestionToForm(
-    AutofillQueryResponse_FormSuggestion* form_suggestion,
-    FieldSignature field_signature,
-    int field_type) {
-  auto* field_suggestion = form_suggestion->add_field_suggestions();
-  field_suggestion->set_field_signature(field_signature.value());
-  field_suggestion->add_predictions()->set_type(field_type);
-}
-}  // namespace
-
 TEST_F(AutofillMetricsParseQueryResponseTest, ServerHasData) {
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
-  AddFieldSuggestionToForm(form_suggestion,
-                           forms_[0]->field(0)->GetFieldSignature(), 7);
-  AddFieldSuggestionToForm(form_suggestion,
-                           forms_[0]->field(1)->GetFieldSignature(), 30);
+  AddFieldPredictionToForm(*forms_[0]->field(0), NAME_FULL, form_suggestion);
+  AddFieldPredictionToForm(*forms_[0]->field(1), ADDRESS_HOME_LINE1,
+                           form_suggestion);
   form_suggestion = response.add_form_suggestions();
-  AddFieldSuggestionToForm(form_suggestion,
-                           forms_[1]->field(0)->GetFieldSignature(), 9);
-  AddFieldSuggestionToForm(form_suggestion,
-                           forms_[1]->field(1)->GetFieldSignature(), 0);
+  AddFieldPredictionToForm(*forms_[1]->field(0), EMAIL_ADDRESS,
+                           form_suggestion);
+  AddFieldPredictionToForm(*forms_[1]->field(1), NO_SERVER_DATA,
+                           form_suggestion);
 
   std::string response_string = SerializeAndEncode(response);
   base::HistogramTester histogram_tester;
@@ -8621,15 +8430,15 @@ TEST_F(AutofillMetricsParseQueryResponseTest, ServerHasData) {
 TEST_F(AutofillMetricsParseQueryResponseTest, OneFormNoServerData) {
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
-  AddFieldSuggestionToForm(form_suggestion,
-                           forms_[0]->field(0)->GetFieldSignature(), 0);
-  AddFieldSuggestionToForm(form_suggestion,
-                           forms_[0]->field(1)->GetFieldSignature(), 0);
+  AddFieldPredictionToForm(*forms_[0]->field(0), NO_SERVER_DATA,
+                           form_suggestion);
+  AddFieldPredictionToForm(*forms_[0]->field(1), NO_SERVER_DATA,
+                           form_suggestion);
   form_suggestion = response.add_form_suggestions();
-  AddFieldSuggestionToForm(form_suggestion,
-                           forms_[1]->field(0)->GetFieldSignature(), 9);
-  AddFieldSuggestionToForm(form_suggestion,
-                           forms_[1]->field(1)->GetFieldSignature(), 0);
+  AddFieldPredictionToForm(*forms_[1]->field(0), EMAIL_ADDRESS,
+                           form_suggestion);
+  AddFieldPredictionToForm(*forms_[1]->field(1), NO_SERVER_DATA,
+                           form_suggestion);
   std::string response_string = SerializeAndEncode(response);
   base::HistogramTester histogram_tester;
   FormStructure::ParseApiQueryResponse(response_string, forms_,
@@ -8647,9 +8456,8 @@ TEST_F(AutofillMetricsParseQueryResponseTest, AllFormsNoServerData) {
   for (int form_idx = 0; form_idx < 2; ++form_idx) {
     auto* form_suggestion = response.add_form_suggestions();
     for (int field_idx = 0; field_idx < 2; ++field_idx) {
-      AddFieldSuggestionToForm(
-          form_suggestion,
-          forms_[form_idx]->field(field_idx)->GetFieldSignature(), 0);
+      AddFieldPredictionToForm(*forms_[form_idx]->field(field_idx),
+                               NO_SERVER_DATA, form_suggestion);
     }
   }
 
@@ -8668,15 +8476,15 @@ TEST_F(AutofillMetricsParseQueryResponseTest, AllFormsNoServerData) {
 TEST_F(AutofillMetricsParseQueryResponseTest, PartialNoServerData) {
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
-  AddFieldSuggestionToForm(form_suggestion,
-                           forms_[0]->field(0)->GetFieldSignature(), 0);
-  AddFieldSuggestionToForm(form_suggestion,
-                           forms_[0]->field(1)->GetFieldSignature(), 10);
+  AddFieldPredictionToForm(*forms_[0]->field(0), NO_SERVER_DATA,
+                           form_suggestion);
+  AddFieldPredictionToForm(*forms_[0]->field(1), PHONE_HOME_NUMBER,
+                           form_suggestion);
   form_suggestion = response.add_form_suggestions();
-  AddFieldSuggestionToForm(form_suggestion,
-                           forms_[1]->field(0)->GetFieldSignature(), 0);
-  AddFieldSuggestionToForm(form_suggestion,
-                           forms_[1]->field(1)->GetFieldSignature(), 11);
+  AddFieldPredictionToForm(*forms_[1]->field(0), NO_SERVER_DATA,
+                           form_suggestion);
+  AddFieldPredictionToForm(*forms_[1]->field(1), PHONE_HOME_CITY_CODE,
+                           form_suggestion);
 
   std::string response_string = SerializeAndEncode(response);
   base::HistogramTester histogram_tester;
@@ -8892,7 +8700,6 @@ TEST_F(AutofillMetricsTest, DynamicFormMetrics) {
   // Simulate seeing.
   base::HistogramTester histogram_tester;
   autofill_manager().AddSeenForm(form, field_types);
-  std::string guid(kTestGuid);
 
   // Simulate checking whether to fill a dynamic form before the form was filled
   // initially.
@@ -8901,10 +8708,7 @@ TEST_F(AutofillMetricsTest, DynamicFormMetrics) {
   histogram_tester.ExpectTotalCount("Autofill.FormEvents.Address", 0);
 
   // Simulate filling the form.
-  autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-      autofill_manager().suggestion_generator()->MakeFrontendId(
-          Suggestion::BackendId(), Suggestion::BackendId(guid)));
+  FillTestProfile(form);
 
   // Simulate checking whether to fill a dynamic form after the form was filled
   // initially.
@@ -9528,8 +9332,8 @@ TEST_F(AutofillMetricsTest, AutocompleteOneTimeCodeFormFilledDuration) {
                                      .begin()
                                      ->second->form_parsed_timestamp();
     FillAutofillFormData(form, parse_time + base::Microseconds(5));
-    ChangeTextField(form, form.fields.front(),
-                    parse_time + base::Microseconds(3));
+    SimulateUserChangedTextField(form, form.fields.front(),
+                                 parse_time + base::Microseconds(3));
     test_clock.SetNowTicks(parse_time + base::Microseconds(17));
     SubmitForm(form);
 
@@ -9771,11 +9575,7 @@ TEST_P(AutofillMetricsFunnelTest, LogFunnelMetrics) {
 
   // Simulate filling the form.
   if (user_accepted_suggestion) {
-    autofill_manager().FillOrPreviewForm(
-        mojom::RendererFormDataAction::kFill, /*query_id=*/0, form,
-        form.fields.front(),
-        autofill_manager().suggestion_generator()->MakeFrontendId(
-            Suggestion::BackendId(), Suggestion::BackendId(kTestGuid)));
+    FillTestProfile(form);
   }
 
   if (user_submitted_form) {
@@ -9891,7 +9691,7 @@ TEST_F(AutofillMetricsFunnelTest, AblationState) {
   autofill_manager().OnAskForValuesToFillTest(form, form.fields[0]);
 
   // Don't simulate a suggestion but simulate the user typing.
-  ChangeTextField(form, form.fields[0]);
+  SimulateUserChangedTextField(form, form.fields[0]);
 
   SubmitForm(form);
 
@@ -9985,8 +9785,8 @@ TEST_F(AutofillMetricsKeyMetricsTest, LogNoProfile) {
   SeeForm(form_);
   autofill_manager().OnAskForValuesToFillTest(form_, form_.fields[0]);
 
-  ChangeTextField(form_, form_.fields[0]);
-  ChangeTextField(form_, form_.fields[1]);
+  SimulateUserChangedTextField(form_, form_.fields[0]);
+  SimulateUserChangedTextField(form_, form_.fields[1]);
   SubmitForm(form_);
 
   ResetDriverToCommitMetrics();
@@ -10018,8 +9818,8 @@ TEST_F(AutofillMetricsKeyMetricsTest, LogUserDoesNotAcceptSuggestion) {
   autofill_manager().DidShowSuggestions(
       /*has_autofill_suggestions=*/true, form_, form_.fields[0]);
 
-  ChangeTextField(form_, form_.fields[0]);
-  ChangeTextField(form_, form_.fields[1]);
+  SimulateUserChangedTextField(form_, form_.fields[0]);
+  SimulateUserChangedTextField(form_, form_.fields[1]);
   SubmitForm(form_);
 
   ResetDriverToCommitMetrics();
@@ -10051,13 +9851,10 @@ TEST_F(AutofillMetricsKeyMetricsTest, LogUserFixesFilledData) {
   autofill_manager().OnAskForValuesToFillTest(form_, form_.fields[0]);
   autofill_manager().DidShowSuggestions(
       /*has_autofill_suggestions=*/true, form_, form_.fields[0]);
-  autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, 0, form_, form_.fields.front(),
-      autofill_manager().suggestion_generator()->MakeFrontendId(
-          Suggestion::BackendId(), Suggestion::BackendId(kTestGuid)));
+  FillTestProfile(form_);
 
   // Simulate user fixing the address.
-  ChangeTextField(form_, form_.fields[1]);
+  SimulateUserChangedTextField(form_, form_.fields[1]);
   SubmitForm(form_);
 
   ResetDriverToCommitMetrics();
@@ -10091,13 +9888,10 @@ TEST_F(AutofillMetricsKeyMetricsTest, LogUserFixesFilledDataButDoesNotSubmit) {
   autofill_manager().OnAskForValuesToFillTest(form_, form_.fields[0]);
   autofill_manager().DidShowSuggestions(
       /*has_autofill_suggestions=*/true, form_, form_.fields[0]);
-  autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, 0, form_, form_.fields.front(),
-      autofill_manager().suggestion_generator()->MakeFrontendId(
-          Suggestion::BackendId(), Suggestion::BackendId(kTestGuid)));
+  FillTestProfile(form_);
 
   // Simulate user fixing the address.
-  ChangeTextField(form_, form_.fields[1]);
+  SimulateUserChangedTextField(form_, form_.fields[1]);
 
   // Don't submit form.
 
@@ -10187,17 +9981,17 @@ TEST_F(AutofillMetricsTest, AutofilledStateFieldSource) {
   // Set up our form data.
   FormData form = test::GetFormData(
       {.description_for_logging = "AutofilledStateFieldSource",
-       .fields = {{.role = ServerFieldType::NAME_FULL},
-                  {.role = ServerFieldType::ADDRESS_HOME_LINE1},
-                  {.role = ServerFieldType::ADDRESS_HOME_CITY},
-                  {.role = ServerFieldType::PHONE_HOME_NUMBER},
-                  {.role = ServerFieldType::ADDRESS_HOME_STATE,
+       .fields = {{.role = NAME_FULL},
+                  {.role = ADDRESS_HOME_LINE1},
+                  {.role = ADDRESS_HOME_CITY},
+                  {.role = PHONE_HOME_NUMBER},
+                  {.role = ADDRESS_HOME_STATE,
                    .value = u"TN",
                    .form_control_type = "select-one",
                    .is_autofilled = true,
                    .select_options = {{u"TN", u"TN"}, {u"CA", u"CA"}}},
-                  {.role = ServerFieldType::ADDRESS_HOME_ZIP},
-                  {.role = ServerFieldType::ADDRESS_HOME_COUNTRY}}});
+                  {.role = ADDRESS_HOME_ZIP},
+                  {.role = ADDRESS_HOME_COUNTRY}}});
 
   std::vector<ServerFieldType> field_types = {
       NAME_FULL,           ADDRESS_HOME_LINE1,
@@ -10246,22 +10040,22 @@ TEST_F(AutofillMetricsTest,
   FormData form = test::GetFormData(
       {.description_for_logging = "AutofilledStateFieldSource",
        .fields = {
-           {.role = ServerFieldType::NAME_FULL},
-           {.role = ServerFieldType::ADDRESS_HOME_CITY,
+           {.role = NAME_FULL},
+           {.role = ADDRESS_HOME_CITY,
             .value = u"Sacremento",
             .properties_mask = FieldPropertiesFlags::kUserTyped},  // Case #1
-           {.role = ServerFieldType::ADDRESS_HOME_STATE,
+           {.role = ADDRESS_HOME_STATE,
             .value = u"CA",
             .form_control_type = "select-one",
             .select_options = {{u"TN", u"Tennesse"},
                                {u"CA", u"California"},
                                {u"WA", u"Washington DC"}}},  // Case #4
-           {.role = ServerFieldType::ADDRESS_HOME_ZIP,
+           {.role = ADDRESS_HOME_ZIP,
             .value = u"00000",
             .properties_mask = FieldPropertiesFlags::kUserTyped},  // Case #2
-           {.role = ServerFieldType::PHONE_HOME_WHOLE_NUMBER,
+           {.role = PHONE_HOME_WHOLE_NUMBER,
             .value = u"12345678901"},  // Case #3
-           {.role = ServerFieldType::ADDRESS_HOME_COUNTRY}}});
+           {.role = ADDRESS_HOME_COUNTRY}}});
 
   std::vector<ServerFieldType> field_types = {
       NAME_FULL,        ADDRESS_HOME_CITY,       ADDRESS_HOME_STATE,
@@ -10274,21 +10068,15 @@ TEST_F(AutofillMetricsTest,
   autofill_manager().DidShowSuggestions(
       /*has_autofill_suggestions=*/true, form, form.fields[0]);
 
-  std::string guid(kTestGuid);
-  autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-      autofill_manager().suggestion_generator()->MakeFrontendId(
-          Suggestion::BackendId(), Suggestion::BackendId(guid)));
+  FillTestProfile(form);
 
   // Case #1: Change submitted value to expected autofilled value for the field.
   // The histogram should emit true for this.
-  form.fields[1].value = u"Memphis";
-  ChangeTextField(form, form.fields[1]);
+  SimulateUserChangedTextFieldTo(form, form.fields[1], u"Memphis");
 
   // Case #2: Change submitted value such that it different than expected
   // autofilled value for the field. The histogram should emit false for this.
-  form.fields[3].value = u"00001";
-  ChangeTextField(form, form.fields[3]);
+  SimulateUserChangedTextFieldTo(form, form.fields[3], u"00001");
 
   base::HistogramTester histogram_tester;
   SubmitForm(form);
@@ -10303,8 +10091,7 @@ TEST_F(AutofillMetricsTest,
 
 TEST_F(AutofillMetricsTest, FormInteractionsAreCounted) {
   // GIVEN
-  FormData form =
-      test::GetFormData({.fields = {{.role = ServerFieldType::NAME_FULL}}});
+  FormData form = test::GetFormData({.fields = {{.role = NAME_FULL}}});
   CreateSimpleForm(autofill_client_->form_origin(), form);
 
   std::vector<ServerFieldType> field_types = {NAME_FULL};
@@ -10312,19 +10099,15 @@ TEST_F(AutofillMetricsTest, FormInteractionsAreCounted) {
 
   // WHEN
   // Simulate manual text field change.
-  const auto field = form.fields[0];
-  ChangeTextField(form, field);
+  auto field = form.fields[0];
+  SimulateUserChangedTextField(form, field);
   // Simulate Autocomplete filling twice.
   autofill_manager().OnSingleFieldSuggestionSelected(
       u"", POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY);
   autofill_manager().OnSingleFieldSuggestionSelected(
       u"", POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY);
   // Simulate Autofill filling.
-  std::string guid(kTestGuid);
-  autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
-      autofill_manager().suggestion_generator()->MakeFrontendId(
-          Suggestion::BackendId(), Suggestion::BackendId(guid)));
+  FillTestProfile(form);
   SubmitForm(form);
 
   // THEN
@@ -10338,8 +10121,7 @@ TEST_F(AutofillMetricsTest, FormInteractionsAreCounted) {
 
 TEST_F(AutofillMetricsTest, FormInteractionsAreInitiallyZero) {
   // GIVEN
-  FormData form =
-      test::GetFormData({.fields = {{.role = ServerFieldType::NAME_FULL}}});
+  FormData form = test::GetFormData({.fields = {{.role = NAME_FULL}}});
   CreateSimpleForm(autofill_client_->form_origin(), form);
 
   std::vector<ServerFieldType> field_types = {NAME_FULL};
@@ -10738,7 +10520,7 @@ TEST_F(AutofillMetricsSeamlessnessTest,
 
 // TODO(crbug.com/1352826) Delete this after collecting the metrics.
 struct LaxLocalHeuristicsTestCase {
-  autofill::test::FormDataDescription form;
+  test::FormDescription form;
   std::vector<ServerFieldType> heuristic_types;
   std::vector<ServerFieldType> server_types;
   bool change_form_after_filling = false;
@@ -10780,7 +10562,7 @@ TEST_P(AutofillMetricsTestForLaxLocalHeuristics, TestHistogramReporting) {
                 Suggestion::BackendId(), Suggestion::BackendId(kTestGuid)));
 
   if (GetParam().change_form_after_filling)
-    ChangeTextField(form, form.fields[0]);
+    SimulateUserChangedTextField(form, form.fields[0]);
 
   base::HistogramTester histogram_tester;
   SubmitForm(form);
@@ -10797,9 +10579,9 @@ INSTANTIATE_TEST_SUITE_P(
         // don't expect any metrics. This form is not eligible.
         LaxLocalHeuristicsTestCase{
             .form = {.description_for_logging = "Three different field types",
-                     .fields = {{.role = ServerFieldType::NAME_FULL},
-                                {.role = ServerFieldType::ADDRESS_HOME_LINE1},
-                                {.role = ServerFieldType::ADDRESS_HOME_CITY}}},
+                     .fields = {{.role = NAME_FULL},
+                                {.role = ADDRESS_HOME_LINE1},
+                                {.role = ADDRESS_HOME_CITY}}},
             .heuristic_types = {NAME_FULL, ADDRESS_HOME_LINE1,
                                 ADDRESS_HOME_CITY},
             .server_types = {NO_SERVER_DATA, NO_SERVER_DATA, NO_SERVER_DATA},
@@ -10810,9 +10592,9 @@ INSTANTIATE_TEST_SUITE_P(
         // would expect that the filling acceptance is reported.
         LaxLocalHeuristicsTestCase{
             .form = {.description_for_logging = "Repeated field types",
-                     .fields = {{.role = ServerFieldType::NAME_FULL},
-                                {.role = ServerFieldType::ADDRESS_HOME_LINE1},
-                                {.role = ServerFieldType::ADDRESS_HOME_CITY}}},
+                     .fields = {{.role = NAME_FULL},
+                                {.role = ADDRESS_HOME_LINE1},
+                                {.role = ADDRESS_HOME_CITY}}},
             .heuristic_types = {NAME_FULL, ADDRESS_HOME_LINE1,
                                 ADDRESS_HOME_LINE1},
             .server_types = {NO_SERVER_DATA, NO_SERVER_DATA, NO_SERVER_DATA},
@@ -10823,9 +10605,9 @@ INSTANTIATE_TEST_SUITE_P(
         // would mean that a change to the heuristics would have no effect.
         LaxLocalHeuristicsTestCase{
             .form = {.description_for_logging = "All overridden by server",
-                     .fields = {{.role = ServerFieldType::NAME_FULL},
-                                {.role = ServerFieldType::ADDRESS_HOME_LINE1},
-                                {.role = ServerFieldType::ADDRESS_HOME_CITY}}},
+                     .fields = {{.role = NAME_FULL},
+                                {.role = ADDRESS_HOME_LINE1},
+                                {.role = ADDRESS_HOME_CITY}}},
             .heuristic_types = {NAME_FULL, ADDRESS_HOME_LINE1,
                                 ADDRESS_HOME_LINE1},
             .server_types = {NAME_FULL, ADDRESS_HOME_LINE1, ADDRESS_HOME_LINE2},
@@ -10836,9 +10618,9 @@ INSTANTIATE_TEST_SUITE_P(
         // classified by the heuristic, the server does not know it.
         LaxLocalHeuristicsTestCase{
             .form = {.description_for_logging = "Server misses field",
-                     .fields = {{.role = ServerFieldType::NAME_FULL},
-                                {.role = ServerFieldType::ADDRESS_HOME_LINE1},
-                                {.role = ServerFieldType::ADDRESS_HOME_CITY}}},
+                     .fields = {{.role = NAME_FULL},
+                                {.role = ADDRESS_HOME_LINE1},
+                                {.role = ADDRESS_HOME_CITY}}},
             .heuristic_types = {NAME_FULL, ADDRESS_HOME_LINE1,
                                 ADDRESS_HOME_LINE1},
             .server_types = {NO_SERVER_DATA, ADDRESS_HOME_LINE1,
@@ -10852,9 +10634,9 @@ INSTANTIATE_TEST_SUITE_P(
         // heuristic would not make any difference and we expect no metrics.
         LaxLocalHeuristicsTestCase{
             .form = {.description_for_logging = "Email address exception",
-                     .fields = {{.role = ServerFieldType::EMAIL_ADDRESS},
-                                {.role = ServerFieldType::ADDRESS_HOME_LINE1},
-                                {.role = ServerFieldType::ADDRESS_HOME_CITY}}},
+                     .fields = {{.role = EMAIL_ADDRESS},
+                                {.role = ADDRESS_HOME_LINE1},
+                                {.role = ADDRESS_HOME_CITY}}},
             .heuristic_types = {EMAIL_ADDRESS, ADDRESS_HOME_LINE1,
                                 ADDRESS_HOME_LINE1},
             .server_types = {NO_SERVER_DATA, ADDRESS_HOME_LINE1,
@@ -10868,9 +10650,9 @@ INSTANTIATE_TEST_SUITE_P(
         // heuristic would not make any difference and we expect no metrics.
         LaxLocalHeuristicsTestCase{
             .form = {.description_for_logging = "Promo code exception",
-                     .fields = {{.role = ServerFieldType::MERCHANT_PROMO_CODE},
-                                {.role = ServerFieldType::ADDRESS_HOME_LINE1},
-                                {.role = ServerFieldType::ADDRESS_HOME_CITY}}},
+                     .fields = {{.role = MERCHANT_PROMO_CODE},
+                                {.role = ADDRESS_HOME_LINE1},
+                                {.role = ADDRESS_HOME_CITY}}},
             .heuristic_types = {MERCHANT_PROMO_CODE, ADDRESS_HOME_LINE1,
                                 ADDRESS_HOME_LINE1},
             .server_types = {NO_SERVER_DATA, ADDRESS_HOME_LINE1,
@@ -10894,9 +10676,9 @@ INSTANTIATE_TEST_SUITE_P(
         // a field.
         LaxLocalHeuristicsTestCase{
             .form = {.description_for_logging = "Correctness of edited form",
-                     .fields = {{.role = ServerFieldType::NAME_FULL},
-                                {.role = ServerFieldType::ADDRESS_HOME_LINE1},
-                                {.role = ServerFieldType::ADDRESS_HOME_CITY}}},
+                     .fields = {{.role = NAME_FULL},
+                                {.role = ADDRESS_HOME_LINE1},
+                                {.role = ADDRESS_HOME_CITY}}},
             .heuristic_types = {NAME_FULL, ADDRESS_HOME_LINE1,
                                 ADDRESS_HOME_LINE1},
             .server_types = {NO_SERVER_DATA, NO_SERVER_DATA, NO_SERVER_DATA},
@@ -10908,9 +10690,9 @@ INSTANTIATE_TEST_SUITE_P(
         // not edit a field.
         LaxLocalHeuristicsTestCase{
             .form = {.description_for_logging = "Correctness of edited form",
-                     .fields = {{.role = ServerFieldType::NAME_FULL},
-                                {.role = ServerFieldType::ADDRESS_HOME_LINE1},
-                                {.role = ServerFieldType::ADDRESS_HOME_CITY}}},
+                     .fields = {{.role = NAME_FULL},
+                                {.role = ADDRESS_HOME_LINE1},
+                                {.role = ADDRESS_HOME_CITY}}},
             .heuristic_types = {NAME_FULL, ADDRESS_HOME_LINE1,
                                 ADDRESS_HOME_LINE1},
             .server_types = {NO_SERVER_DATA, NO_SERVER_DATA, NO_SERVER_DATA},
@@ -10921,8 +10703,8 @@ INSTANTIATE_TEST_SUITE_P(
         // Ensure that forms with two fields don't emit metrics.
         LaxLocalHeuristicsTestCase{
             .form = {.description_for_logging = "Two field form",
-                     .fields = {{.role = ServerFieldType::ADDRESS_HOME_LINE1},
-                                {.role = ServerFieldType::ADDRESS_HOME_CITY}}},
+                     .fields = {{.role = ADDRESS_HOME_LINE1},
+                                {.role = ADDRESS_HOME_CITY}}},
             .heuristic_types = {ADDRESS_HOME_LINE1, ADDRESS_HOME_LINE1},
             .server_types = {NO_SERVER_DATA, NO_SERVER_DATA},
             .change_form_after_filling = false,

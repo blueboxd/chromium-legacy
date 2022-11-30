@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -14,7 +14,8 @@ use_cpuinfo =
     # especially amongst ChromeOS devices.
     # See //third_party/cpuinfo/src/src/arm/linux/cp.h.
     (!defined(arm_arch) ||
-     (arm_arch != "armv7-a+crc" && arm_arch != "armv8-a+crc"))
+     (arm_arch != "armv7-a+crc" && arm_arch != "armv8-a+crc" &&
+      arm_arch != "armv8-a+crc+crypto"))
 
 config("ruy_include") {
   include_dirs = [ "src" ]

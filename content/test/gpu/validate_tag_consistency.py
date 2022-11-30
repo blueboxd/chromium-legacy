@@ -22,7 +22,8 @@ TAG_HEADER = """\
 #         win win8 win10 ]
 # Devices
 # tags: [ android-nexus-5 android-nexus-5x android-pixel-2 android-pixel-4
-#             android-pixel-6 android-shield-android-tv
+#             android-pixel-6 android-shield-android-tv android-sm-a135m
+#             android-sm-a235m
 #         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
 #         fuchsia-board-astro fuchsia-board-sherlock fuchsia-board-qemu-x64 ]
 # Platform
@@ -38,9 +39,8 @@ TAG_HEADER = """\
 #         apple apple-apple-m1 apple-angle-metal-renderer:-apple-m1
 #         arm
 #         google google-0xffff
-#         intel intel-hd-630-family intel-gen-9 intel-0xa2e intel-0xd26
-#               intel-0xa011 intel-0x3e92 intel-0x3e9b intel-0x5912
-#               intel-0x9bc5
+#         intel intel-gen-9 intel-0xa2e intel-0xd26 intel-0xa011 intel-0x3e92
+#               intel-0x3e9b intel-0x5912 intel-0x9bc5
 #         nvidia nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
 #         qualcomm ]
 # Architecture

@@ -215,13 +215,13 @@ inline void StyleSheetHandler::SetRuleHeaderEnd(const CharacterType* data_start,
   }
 
   current_rule_data_stack_.back()->rule_header_range.end = list_end_offset;
-  if (!current_rule_data_stack_.back()->selector_ranges.IsEmpty())
+  if (!current_rule_data_stack_.back()->selector_ranges.empty())
     current_rule_data_stack_.back()->selector_ranges.back().end =
         list_end_offset;
 }
 
 void StyleSheetHandler::EndRuleHeader(unsigned offset) {
-  DCHECK(!current_rule_data_stack_.IsEmpty());
+  DCHECK(!current_rule_data_stack_.empty());
 
   if (parsed_text_.Is8Bit())
     SetRuleHeaderEnd<LChar>(parsed_text_.Characters8(), offset);
@@ -238,7 +238,7 @@ void StyleSheetHandler::ObserveSelector(unsigned start_offset,
 
 void StyleSheetHandler::StartRuleBody(unsigned offset) {
   current_rule_data_ = nullptr;
-  DCHECK(!current_rule_data_stack_.IsEmpty());
+  DCHECK(!current_rule_data_stack_.empty());
   if (parsed_text_[offset] == '{')
     ++offset;  // Skip the rule body opening brace.
   current_rule_data_stack_.back()->rule_body_range.start = offset;
@@ -250,20 +250,20 @@ void StyleSheetHandler::EndRuleBody(unsigned offset) {
     current_rule_data_ = nullptr;
     current_rule_data_stack_.pop_back();
   }
-  DCHECK(!current_rule_data_stack_.IsEmpty());
+  DCHECK(!current_rule_data_stack_.empty());
   current_rule_data_stack_.back()->rule_body_range.end = offset;
   AddNewRuleToSourceTree(PopRuleData());
 }
 
 void StyleSheetHandler::AddNewRuleToSourceTree(CSSRuleSourceData* rule) {
-  if (current_rule_data_stack_.IsEmpty())
+  if (current_rule_data_stack_.empty())
     result_->push_back(rule);
   else
     current_rule_data_stack_.back()->child_rules.push_back(rule);
 }
 
 CSSRuleSourceData* StyleSheetHandler::PopRuleData() {
-  DCHECK(!current_rule_data_stack_.IsEmpty());
+  DCHECK(!current_rule_data_stack_.empty());
   current_rule_data_ = nullptr;
   CSSRuleSourceData* data = current_rule_data_stack_.back().Get();
   current_rule_data_stack_.pop_back();
@@ -274,7 +274,7 @@ void StyleSheetHandler::ObserveProperty(unsigned start_offset,
                                         unsigned end_offset,
                                         bool is_important,
                                         bool is_parsed) {
-  if (current_rule_data_stack_.IsEmpty() ||
+  if (current_rule_data_stack_.empty() ||
       !current_rule_data_stack_.back()->HasProperties())
     return;
 
@@ -306,7 +306,7 @@ void StyleSheetHandler::ObserveComment(unsigned start_offset,
                                        unsigned end_offset) {
   DCHECK_LE(end_offset, parsed_text_.length());
 
-  if (current_rule_data_stack_.IsEmpty() ||
+  if (current_rule_data_stack_.empty() ||
       !current_rule_data_stack_.back()->rule_header_range.end ||
       !current_rule_data_stack_.back()->HasProperties())
     return;
@@ -324,7 +324,7 @@ void StyleSheetHandler::ObserveComment(unsigned start_offset,
     return;
   comment_text =
       comment_text.Substring(0, comment_text.length() - 2).StripWhiteSpace();
-  if (comment_text.IsEmpty())
+  if (comment_text.empty())
     return;
 
   // FIXME: Use the actual rule type rather than STYLE_RULE?
@@ -613,7 +613,6 @@ void FlattenSourceData(const CSSRuleSourceDataList& data_list,
       case StyleRule::kImport:
       case StyleRule::kPage:
       case StyleRule::kFontFace:
-      case StyleRule::kViewport:
       case StyleRule::kKeyframe:
         result->push_back(data);
         break;
@@ -823,7 +822,7 @@ String CanonicalCSSText(CSSRule* rule) {
     builder.Append(':');
     builder.Append(style->GetPropertyValueWithHint(name, index));
     String priority = style->GetPropertyPriorityWithHint(name, index);
-    if (!priority.IsEmpty()) {
+    if (!priority.empty()) {
       builder.Append(' ');
       builder.Append(priority);
     }
@@ -875,7 +874,7 @@ InspectorStyle::InspectorStyle(CSSStyleDeclaration* style,
 std::unique_ptr<protocol::CSS::CSSStyle> InspectorStyle::BuildObjectForStyle() {
   std::unique_ptr<protocol::CSS::CSSStyle> result = StyleWithProperties();
   if (source_data_) {
-    if (parent_style_sheet_ && !parent_style_sheet_->Id().IsEmpty())
+    if (parent_style_sheet_ && !parent_style_sheet_->Id().empty())
       result->setStyleSheetId(parent_style_sheet_->Id());
     result->setRange(parent_style_sheet_->BuildSourceRangeObject(
         source_data_->rule_body_range));
@@ -927,7 +926,7 @@ void InspectorStyle::PopulateAllProperties(
       continue;
 
     String value = style_->GetPropertyValueWithHint(name, i);
-    bool important = !style_->GetPropertyPriorityWithHint(name, i).IsEmpty();
+    bool important = !style_->GetPropertyPriorityWithHint(name, i).empty();
     if (important)
       value = value + " !important";
     result.push_back(CSSPropertySourceData(name, value, important, false, true,
@@ -980,14 +979,14 @@ std::unique_ptr<protocol::CSS::CSSStyle> InspectorStyle::StyleWithProperties() {
         property->setImplicit(true);
 
       String shorthand = style_->GetPropertyShorthand(name);
-      if (!shorthand.IsEmpty()) {
+      if (!shorthand.empty()) {
         if (found_shorthands.insert(shorthand).is_new_entry) {
           std::unique_ptr<protocol::CSS::ShorthandEntry> entry =
               protocol::CSS::ShorthandEntry::create()
                   .setName(shorthand)
                   .setValue(ShorthandValue(shorthand))
                   .build();
-          if (!style_->getPropertyPriority(name).IsEmpty())
+          if (!style_->getPropertyPriority(name).empty())
             entry->setImportant(true);
           shorthand_entries->emplace_back(std::move(entry));
         }
@@ -1011,7 +1010,7 @@ std::unique_ptr<protocol::CSS::CSSStyle> InspectorStyle::StyleWithProperties() {
 String InspectorStyle::ShorthandValue(const String& shorthand_property) {
   StringBuilder builder;
   String value = style_->getPropertyValue(shorthand_property);
-  if (value.IsEmpty()) {
+  if (value.empty()) {
     for (unsigned i = 0; i < style_->length(); ++i) {
       String individual_property = style_->item(i);
       if (style_->GetPropertyShorthand(individual_property) !=
@@ -1022,7 +1021,7 @@ String InspectorStyle::ShorthandValue(const String& shorthand_property) {
       String individual_value = style_->getPropertyValue(individual_property);
       if (individual_value == "initial")
         continue;
-      if (!builder.IsEmpty())
+      if (!builder.empty())
         builder.Append(' ');
       builder.Append(individual_value);
     }
@@ -1030,7 +1029,7 @@ String InspectorStyle::ShorthandValue(const String& shorthand_property) {
     builder.Append(value);
   }
 
-  if (!style_->getPropertyPriority(shorthand_property).IsEmpty())
+  if (!style_->getPropertyPriority(shorthand_property).empty())
     builder.Append(" !important");
 
   return builder.ToString();
@@ -1168,7 +1167,7 @@ static String StyleSheetURL(CSSStyleSheet* page_style_sheet) {
 
 String InspectorStyleSheet::FinalURL() {
   String url = StyleSheetURL(page_style_sheet_.Get());
-  return url.IsEmpty() ? document_url_ : url;
+  return url.empty() ? document_url_ : url;
 }
 
 bool InspectorStyleSheet::SetText(const String& text,
@@ -1872,7 +1871,7 @@ InspectorStyleSheet::BuildObjectForStyleSheetInfo() {
   }
 
   String source_map_url_value = SourceMapURL();
-  if (!source_map_url_value.IsEmpty())
+  if (!source_map_url_value.empty())
     result->setSourceMapURL(source_map_url_value);
   return result;
 }
@@ -1946,7 +1945,7 @@ InspectorStyleSheet::BuildObjectForRuleWithoutAncestorData(CSSStyleRule* rule) {
           .build();
 
   if (CanBind(origin_)) {
-    if (!Id().IsEmpty())
+    if (!Id().empty())
       result->setStyleSheetId(Id());
   }
 
@@ -1988,7 +1987,7 @@ InspectorStyleSheet::BuildObjectForKeyframeRule(
           .setOrigin(origin_)
           .setStyle(BuildObjectForStyle(keyframe_rule->style()))
           .build();
-  if (CanBind(origin_) && !Id().IsEmpty())
+  if (CanBind(origin_) && !Id().empty())
     result->setStyleSheetId(Id());
   return result;
 }
@@ -2048,7 +2047,7 @@ String InspectorStyleSheet::SourceURL() {
   bool success = GetText(&style_sheet_text);
   if (success) {
     String comment_value = FindMagicComment(style_sheet_text, "sourceURL");
-    if (!comment_value.IsEmpty()) {
+    if (!comment_value.empty()) {
       source_url_ = comment_value;
       return comment_value;
     }
@@ -2077,7 +2076,7 @@ String InspectorStyleSheet::Url() {
 }
 
 bool InspectorStyleSheet::HasSourceURL() {
-  return !SourceURL().IsEmpty();
+  return !SourceURL().empty();
 }
 
 bool InspectorStyleSheet::StartsAtZero() {
@@ -2098,7 +2097,7 @@ String InspectorStyleSheet::SourceMapURL() {
   if (success) {
     String comment_value =
         FindMagicComment(style_sheet_text, "sourceMappingURL");
-    if (!comment_value.IsEmpty())
+    if (!comment_value.empty())
       return comment_value;
   }
   return page_style_sheet_->Contents()->SourceMapURL();
@@ -2423,7 +2422,7 @@ InspectorStyle* InspectorStyleSheetForInlineStyle::GetInspectorStyle(
 CSSRuleSourceData* InspectorStyleSheetForInlineStyle::RuleSourceData() {
   const String& text = ElementStyleText();
   CSSRuleSourceData* rule_source_data = nullptr;
-  if (text.IsEmpty()) {
+  if (text.empty()) {
     rule_source_data =
         MakeGarbageCollected<CSSRuleSourceData>(StyleRule::kStyle);
     rule_source_data->rule_body_range.start = 0;

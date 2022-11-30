@@ -1,4 +1,4 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -52,8 +52,6 @@ class RebaselineTest(AbstractRebaseliningCommand):
                                       test_name,
                                       suffix,
                                       results_url,
-                                      self._tool.builders.is_wpt_builder(
-                                          options.builder),
                                       options=options)
         else:
             self._baseline_fetch_url_list = options.fetch_url.split(',')
@@ -67,15 +65,11 @@ class RebaselineTest(AbstractRebaseliningCommand):
                     suffix = 'txt'
                 if 'actual_audio' in artifact_fetch_url:
                     suffix = 'wav'
-                if self._tool.builders.is_wpt_builder(options.builder):
-                    suffix = 'txt'
                 self._rebaseline_test(port_name,
                                       test_name,
                                       suffix,
                                       results_url,
                                       artifact_fetch_url,
-                                      self._tool.builders.is_wpt_builder(
-                                          options.builder),
                                       options=options)
 
     def _rebaseline_test(self,
@@ -84,7 +78,6 @@ class RebaselineTest(AbstractRebaseliningCommand):
                          suffix,
                          results_url,
                          fetch_url_resultdb='',
-                         is_wpt=False,
                          options=None):
         """Downloads a baseline file and saves it to the filesystem.
 
@@ -95,16 +88,13 @@ class RebaselineTest(AbstractRebaseliningCommand):
             suffix: The baseline file extension (e.g. png); together with the
                 test name and results_url this determines what file to download.
             results_url: Base URL to download the actual result from.
-            is_wpt: (Optional, default to False) Whether this is a WPT builder.
             options: (Optional, default to None) An object with the command line options.
         """
         port = self._tool.port_factory.get(port_name, options)
 
         # TODO(crbug.com/1154085): Undo this special case when we have WPT bots
         # on more ports.
-        if is_wpt:
-            baseline_directory = port.web_tests_dir()
-        elif options and options.flag_specific:
+        if options and options.flag_specific:
             baseline_directory = port.baseline_flag_specific_dir()
         else:
             baseline_directory = port.baseline_version_dir()
@@ -117,7 +107,7 @@ class RebaselineTest(AbstractRebaseliningCommand):
                                              test_name, suffix))
         target_baseline = self._tool.filesystem.join(
             baseline_directory,
-            self._file_name_for_expected_result(test_name, suffix, is_wpt))
+            self._file_name_for_expected_result(test_name, suffix))
 
         if suffix == 'png' and port.reference_files(test_name):
             _log.warning('Cannot rebaseline image result for reftest: %s',
@@ -128,8 +118,7 @@ class RebaselineTest(AbstractRebaseliningCommand):
             _log.debug('Retrieving source %s for target %s.', source_baseline,
                        target_baseline)
             data = self._tool.web.get_binary(source_baseline,
-                                             return_none_on_404=True,
-                                             retries=5)
+                                             return_none_on_404=True)
 
         if not data:
             # We don't just remove the file because the test may create empty

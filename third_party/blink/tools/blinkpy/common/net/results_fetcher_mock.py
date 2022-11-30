@@ -59,7 +59,7 @@ class MockTestResultsFetcher(TestResultsFetcher):
         step = BuilderStep(build, step_name=None)
         self._canned_results[step] = results
 
-    def fetch_results_from_resultdb(self, host, builds, predicate):
+    def fetch_results_from_resultdb(self, builds, predicate):
         rv = []
         for build in builds:
             step = BuilderStep(build, step_name=None)
@@ -68,15 +68,18 @@ class MockTestResultsFetcher(TestResultsFetcher):
                 rv.extend(results)
         return rv
 
-    def fetch_results_from_resultdb_layout_tests(self, host, build, predicate):
+    def fetch_results_from_resultdb_layout_tests(self, build, predicate):
         step = BuilderStep(build, step_name=None)
         return self._canned_results.get(step)
 
-    def get_artifact_list_for_test(self, host, result_id):
-        return self._canned_artifacts_resultdb[result_id]
-
-    def set_artifact_list_for_test(self, host, artifacts):
+    def set_artifact_query_for_build(self, build, artifacts):
         self._canned_artifacts_resultdb = artifacts
+
+    def query_artifact_for_build_test_results(self, build):
+        test_result_list = []
+        for test_results in self._canned_artifacts_resultdb.values():
+            test_result_list.extend(test_results)
+        return test_result_list
 
     def set_webdriver_test_results(self, build, m, results):
         self._webdriver_results[(build, m)] = results

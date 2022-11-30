@@ -60,9 +60,9 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/settings/cros_settings_names.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/supervised_user_manager.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/user_manager/user_manager.h"
 #endif
 
@@ -870,22 +870,20 @@ void SupervisedUserService::UpdateApprovedExtension(
     const std::string& version,
     ApprovedExtensionChange type) {
   PrefService* pref_service = GetPrefService();
-  DictionaryPrefUpdate update(pref_service,
+  ScopedDictPrefUpdate update(pref_service,
                               prefs::kSupervisedUserApprovedExtensions);
-  base::Value* approved_extensions = update.Get();
-  DCHECK(approved_extensions)
-      << "kSupervisedUserApprovedExtensions pref not found";
+  base::Value::Dict& approved_extensions = update.Get();
   bool success = false;
   switch (type) {
     case ApprovedExtensionChange::kAdd:
-      DCHECK(!approved_extensions->FindStringKey(extension_id));
-      approved_extensions->SetStringKey(extension_id, std::move(version));
+      DCHECK(!approved_extensions.FindString(extension_id));
+      approved_extensions.Set(extension_id, std::move(version));
       SupervisedUserExtensionsMetricsRecorder::RecordExtensionsUmaMetrics(
           SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::
               kApprovalGranted);
       break;
     case ApprovedExtensionChange::kRemove:
-      success = approved_extensions->RemoveKey(extension_id);
+      success = approved_extensions.Remove(extension_id);
       DCHECK(success);
       SupervisedUserExtensionsMetricsRecorder::RecordExtensionsUmaMetrics(
           SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::

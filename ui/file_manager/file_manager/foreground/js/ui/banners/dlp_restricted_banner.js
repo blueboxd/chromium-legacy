@@ -5,6 +5,7 @@
 import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {DialogType} from '../../../../common/js/dialog_type.js';
+import {str} from '../../../../common/js/util.js';
 import {VolumeManagerCommon} from '../../../../common/js/volume_manager_types.js';
 import {Banner} from '../../../../externs/banner.js';
 
@@ -40,16 +41,13 @@ export class DlpRestrictedBanner extends StateBanner {
    * @returns {!Array<!Banner.AllowedVolume>}
    */
   allowedVolumes() {
-    // TODO(aidazolic): confirm this list is correct.
+    // TODO(crbug.com/1364014): return the correct types here.
     return [
       {root: VolumeManagerCommon.RootType.DOWNLOADS},
       {root: VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT},
       {root: VolumeManagerCommon.RootType.COMPUTER},
       {root: VolumeManagerCommon.RootType.ARCHIVE},
       {root: VolumeManagerCommon.RootType.RECENT},
-      {root: VolumeManagerCommon.RootType.RECENT_AUDIO},
-      {root: VolumeManagerCommon.RootType.RECENT_IMAGES},
-      {root: VolumeManagerCommon.RootType.RECENT_VIDEOS},
       {root: VolumeManagerCommon.RootType.TRASH},
     ];
   }
@@ -74,16 +72,13 @@ export class DlpRestrictedBanner extends StateBanner {
       return;
     }
     const text = this.shadowRoot.querySelector('span[slot="text"]');
-    // TODO(crbug.com/1360874): update to translation strings when they're
-    // final.
     switch (context.type) {
       case DialogType.SELECT_OPEN_FILE:
       case DialogType.SELECT_OPEN_MULTI_FILE:
-        text.innerText = 'Administrator policy restricts access to some files';
+        text.innerText = str('DLP_FILE_PICKER_BANNER');
         return;
       case DialogType.SELECT_SAVEAS_FILE:
-        text.innerText =
-            'Administrator policy restricts saving to some locations';
+        text.innerText = str('DLP_FILE_SAVER_BANNER');
         return;
       default:
         console.warn(`The DLP banner should not be shown for ${context.type}.`);

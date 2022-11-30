@@ -184,25 +184,16 @@ AutofillType AutofillField::ComputedType() const {
                                 FieldTypeGroup::kPasswordField &&
                             heuristic_type() == CREDIT_CARD_VERIFICATION_CODE);
 
-    // For new name tokens the heuristic predictions get precedence over the
-    // server predictions.
-    // TODO(crbug.com/1098943): Remove feature check once launched.
-    believe_server =
-        believe_server &&
-        !(base::FeatureList::IsEnabled(
-              features::kAutofillEnableSupportForMoreStructureInNames) &&
-          (heuristic_type() == NAME_LAST_SECOND ||
-           heuristic_type() == NAME_LAST_FIRST));
+    // For structured last name tokens the heuristic predictions get precedence
+    // over the server predictions.
+    believe_server = believe_server && heuristic_type() != NAME_LAST_SECOND &&
+                     heuristic_type() != NAME_LAST_FIRST;
 
-    // For new address tokens the heuristic predictions get precedence over
-    // the server predictions.
-    // TODO(crbug.com/1098943): Remove feature check once launched.
-    believe_server =
-        believe_server &&
-        !(base::FeatureList::IsEnabled(
-              features::kAutofillEnableSupportForMoreStructureInAddresses) &&
-          (heuristic_type() == ADDRESS_HOME_STREET_NAME ||
-           heuristic_type() == ADDRESS_HOME_HOUSE_NUMBER));
+    // For structured address tokens the heuristic predictions get precedence
+    // over the server predictions.
+    believe_server = believe_server &&
+                     heuristic_type() != ADDRESS_HOME_STREET_NAME &&
+                     heuristic_type() != ADDRESS_HOME_HOUSE_NUMBER;
 
     // For merchant promo code fields the heuristic predictions get precedence
     // over the server predictions.
@@ -221,17 +212,12 @@ AutofillType AutofillField::ComputedType() const {
 }
 
 AutofillType AutofillField::Type() const {
-  // If the corresponding feature is enabled, server predictions that are an
-  // override are granted precedence unconditionally.
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillServerTypeTakesPrecedence) &&
-      server_type_prediction_is_override() && server_type() != NO_SERVER_DATA) {
+  // Server Overrides are granted precedence unconditionally.
+  if (server_type_prediction_is_override() && server_type() != NO_SERVER_DATA)
     return AutofillType(server_type());
-  }
 
-  if (overall_type_.GetStorableType() != NO_SERVER_DATA) {
+  if (overall_type_.GetStorableType() != NO_SERVER_DATA)
     return overall_type_;
-  }
   return ComputedType();
 }
 

@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "cc/input/browser_controls_state.h"
 #include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
+#include "content/browser/renderer_host/stored_page.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/page.h"
 #include "services/metrics/public/cpp/ukm_source.h"
@@ -22,13 +23,13 @@
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/frame/text_autosizer_page_info.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/ime/mojom/virtual_keyboard_types.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
 
 class PageDelegate;
 class RenderFrameHostImpl;
-class RenderViewHostImpl;
 
 // This implements the Page interface that is exposed to embedders of content,
 // and adds things only visible to content.
@@ -136,7 +137,7 @@ class CONTENT_EXPORT PageImpl : public Page {
   // documents from prerendered to activated. Tells the corresponding
   // RenderFrameHostImpls that the renderer will be activating their documents.
   void ActivateForPrerendering(
-      std::set<RenderViewHostImpl*>& render_view_hosts_to_activate);
+      StoredPage::RenderViewHostImplSafeRefSet& render_view_hosts_to_activate);
 
   // Prerender2:
   // Dispatches load events that were deferred to be dispatched after
@@ -160,11 +161,9 @@ class CONTENT_EXPORT PageImpl : public Page {
 
   void NotifyVirtualKeyboardOverlayRect(const gfx::Rect& keyboard_rect);
 
-  void set_virtual_keyboard_overlays_content(bool vk_overlays_content) {
-    virtual_keyboard_overlays_content_ = vk_overlays_content;
-  }
-  bool virtual_keyboard_overlays_content() const {
-    return virtual_keyboard_overlays_content_;
+  void SetVirtualKeyboardMode(ui::mojom::VirtualKeyboardMode mode);
+  ui::mojom::VirtualKeyboardMode virtual_keyboard_mode() const {
+    return virtual_keyboard_mode_;
   }
 
   const std::string& GetEncoding() { return canonical_encoding_; }
@@ -261,11 +260,9 @@ class CONTENT_EXPORT PageImpl : public Page {
   // RenderFrameHostManager::CommitPending and remove this.
   absl::optional<base::TimeTicks> activation_start_time_for_prerendering_;
 
-  // If true, then the Virtual keyboard rectangle that occludes the content is
-  // sent to the VirtualKeyboard API where it fires overlaygeometrychange JS
-  // event notifying the web authors that Virtual keyboard has occluded the
-  // content.
-  bool virtual_keyboard_overlays_content_ = false;
+  // The resizing mode requested by Blink for the virtual keyboard.
+  ui::mojom::VirtualKeyboardMode virtual_keyboard_mode_ =
+      ui::mojom::VirtualKeyboardMode::kUnset;
 
   // The last reported character encoding, not canonicalized.
   std::string last_reported_encoding_;

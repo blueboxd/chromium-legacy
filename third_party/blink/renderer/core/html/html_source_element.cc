@@ -68,7 +68,7 @@ HTMLSourceElement::~HTMLSourceElement() = default;
 
 void HTMLSourceElement::CreateMediaQueryList(const AtomicString& media) {
   RemoveMediaQueryListListener();
-  if (media.IsEmpty()) {
+  if (media.empty()) {
     media_query_list_ = nullptr;
     return;
   }
@@ -139,8 +139,8 @@ void HTMLSourceElement::ScheduleErrorEvent() {
 
   pending_error_event_ = PostCancellableTask(
       *GetDocument().GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
-      WTF::Bind(&HTMLSourceElement::DispatchPendingEvent,
-                WrapPersistent(this)));
+      WTF::BindOnce(&HTMLSourceElement::DispatchPendingEvent,
+                    WrapPersistent(this)));
 }
 
 void HTMLSourceElement::CancelPendingErrorEvent() {

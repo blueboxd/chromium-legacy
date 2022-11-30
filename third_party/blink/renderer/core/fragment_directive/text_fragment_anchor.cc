@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -143,7 +143,7 @@ bool TextFragmentAnchor::GenerateNewTokenForSameDocument(
   FragmentDirective& fragment_directive =
       loader.GetFrame()->GetDocument()->fragmentDirective();
   if (!fragment_directive.LastNavigationHadFragmentDirective() ||
-      fragment_directive.GetDirectives<TextDirective>().IsEmpty()) {
+      fragment_directive.GetDirectives<TextDirective>().empty()) {
     return false;
   }
 
@@ -159,7 +159,7 @@ TextFragmentAnchor* TextFragmentAnchor::TryCreate(const KURL& url,
 
   HeapVector<Member<TextDirective>> text_directives =
       frame.GetDocument()->fragmentDirective().GetDirectives<TextDirective>();
-  if (text_directives.IsEmpty()) {
+  if (text_directives.empty()) {
     if (frame.GetDocument()
             ->fragmentDirective()
             .LastNavigationHadFragmentDirective()) {
@@ -202,7 +202,7 @@ TextFragmentAnchor::TextFragmentAnchor(
       metrics_(MakeGarbageCollected<TextFragmentAnchorMetrics>(
           frame_->GetDocument())) {
   TRACE_EVENT("blink", "TextFragmentAnchor::TextFragmentAnchor");
-  DCHECK(!text_directives.IsEmpty());
+  DCHECK(!text_directives.empty());
   DCHECK(frame_->View());
 
   metrics_->DidCreateAnchor(text_directives.size());
@@ -211,7 +211,7 @@ TextFragmentAnchor::TextFragmentAnchor(
       AnnotationAgentContainerImpl::From(*frame_->GetDocument());
   DCHECK(annotation_container);
 
-  directive_annotation_pairs_.ReserveCapacity(text_directives.size());
+  directive_annotation_pairs_.reserve(text_directives.size());
   for (Member<TextDirective>& directive : text_directives) {
     auto* selector =
         MakeGarbageCollected<TextAnnotationSelector>(directive->GetSelector());
@@ -373,8 +373,8 @@ void TextFragmentAnchor::DidFindFirstMatch(
       EnclosingBlock(range.StartPosition(), kCannotCrossEditingBoundary);
   DCHECK(enclosing_block);
   frame_->GetDocument()->EnqueueAnimationFrameTask(
-      WTF::Bind(&TextFragmentAnchor::FireBeforeMatchEvent, WrapPersistent(this),
-                WrapPersistent(&range)));
+      WTF::BindOnce(&TextFragmentAnchor::FireBeforeMatchEvent,
+                    WrapPersistent(this), WrapPersistent(&range)));
 
   state_ = kBeforeMatchEventQueued;
 }
@@ -492,8 +492,7 @@ void TextFragmentAnchor::FireBeforeMatchEvent(const RangeInFlatTree* range) {
 
     // If the active match is hidden inside a <details> element, then we should
     // expand it so we can scroll to it.
-    if (RuntimeEnabledFeatures::AutoExpandDetailsElementEnabled() &&
-        HTMLDetailsElement::ExpandDetailsAncestors(first_node)) {
+    if (HTMLDetailsElement::ExpandDetailsAncestors(first_node)) {
       UseCounter::Count(
           first_node.GetDocument(),
           WebFeature::kAutoExpandedDetailsForScrollToTextFragment);

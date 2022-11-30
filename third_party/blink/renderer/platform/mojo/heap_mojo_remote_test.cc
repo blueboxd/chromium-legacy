@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,7 +86,7 @@ class HeapMojoRemoteDisconnectWithReasonHandlerBaseTest
         base::MakeRefCounted<base::NullTaskRunner>();
     impl_.receiver().Bind(
         owner_->remote().BindNewPipeAndPassReceiver(null_task_runner));
-    impl_.receiver().set_disconnect_with_reason_handler(WTF::Bind(
+    impl_.receiver().set_disconnect_with_reason_handler(WTF::BindOnce(
         [](HeapMojoRemoteDisconnectWithReasonHandlerBaseTest* remote_test,
            const uint32_t custom_reason, const std::string& description) {
           remote_test->run_loop().Quit();

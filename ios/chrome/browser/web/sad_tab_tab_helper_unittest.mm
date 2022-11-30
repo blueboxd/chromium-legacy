@@ -8,10 +8,10 @@
 
 #import "base/test/task_environment.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper_delegate.h"
@@ -79,7 +79,8 @@ class SadTabTabHelperTest : public PlatformTest {
     NamedGuide* guide = [[NamedGuide alloc] initWithName:kContentAreaGuide];
     [web_state_view_ addLayoutGuide:guide];
 
-    SadTabTabHelper::CreateForWebState(&web_state_);
+    SadTabTabHelper::CreateForWebState(
+        &web_state_, SadTabTabHelper::kDefaultRepeatFailureInterval);
     tab_helper()->SetDelegate(sad_tab_delegate_);
     PagePlaceholderTabHelper::CreateForWebState(&web_state_);
     OCMStub([application_ sharedApplication]).andReturn(application_);
@@ -355,7 +356,7 @@ TEST_F(SadTabTabHelperTest, FailureInterval) {
   web::FakeWebState web_state;
   web_state.SetBrowserState(browser_state.get());
   web_state.SetNavigationManager(std::move(navigation_manager));
-  SadTabTabHelper::CreateForWebState(&web_state, 0.0f);
+  SadTabTabHelper::CreateForWebState(&web_state, base::TimeDelta());
   SadTabTabHelper::FromWebState(&web_state)->SetDelegate(sad_tab_delegate_);
   PagePlaceholderTabHelper::CreateForWebState(&web_state);
   web_state.WasShown();

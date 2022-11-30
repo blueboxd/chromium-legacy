@@ -66,7 +66,6 @@
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
-#include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller_factory.h"
@@ -205,8 +204,8 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest,
   auto* proxy = GetAppServiceProxy(browser()->profile());
 
   proxy->Launch(GetManager().GetAppIdForSystemApp(GetMockAppType()).value(),
-                ui::EF_NONE, apps::mojom::LaunchSource::kFromAppListGrid,
-                apps::MakeWindowInfo(display::kDefaultDisplayId));
+                ui::EF_NONE, apps::LaunchSource::kFromAppListGrid,
+                std::make_unique<apps::WindowInfo>(display::kDefaultDisplayId));
   navigation_observer.Wait();
 
   histograms.ExpectTotalCount("Apps.DefaultAppLaunch.FromAppListGrid", 1);
@@ -223,18 +222,42 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest,
   navigation_observer.StartWatchingNewWebContents();
 
   auto* proxy = GetAppServiceProxy(browser()->profile());
-  auto intent = apps::mojom::Intent::New();
-  intent->action = apps_util::kIntentActionView;
+  auto intent = std::make_unique<apps::Intent>(apps_util::kIntentActionView);
   intent->mime_type = "text/plain";
 
   proxy->LaunchAppWithIntent(
       GetManager().GetAppIdForSystemApp(GetMockAppType()).value(), ui::EF_NONE,
-      std::move(intent), apps::mojom::LaunchSource::kFromAppListGrid,
-      apps::MakeWindowInfo(display::kDefaultDisplayId), {});
+      std::move(intent), apps::LaunchSource::kFromAppListGrid,
+      std::make_unique<apps::WindowInfo>(display::kDefaultDisplayId),
+      base::DoNothing());
   navigation_observer.Wait();
 
   histograms.ExpectTotalCount("Apps.DefaultAppLaunch.FromAppListGrid", 1);
   histograms.ExpectUniqueSample("Apps.DefaultAppLaunch.FromAppListGrid", 39, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest, UpdatesLaunchStats) {
+  WaitForTestSystemAppInstall();
+
+  content::TestNavigationObserver navigation_observer(
+      maybe_installation_->GetAppUrl());
+  navigation_observer.StartWatchingNewWebContents();
+
+  base::Time launch_start_time = base::Time::Now();
+
+  ash::SystemAppLaunchParams params;
+  params.launch_source = apps::LaunchSource::kFromAppListGrid;
+  LaunchSystemWebAppAsync(browser()->profile(), GetMockAppType(), params);
+
+  navigation_observer.Wait();
+
+  auto* proxy = GetAppServiceProxy(browser()->profile());
+  EXPECT_TRUE(proxy->AppRegistryCache().ForOneApp(
+      maybe_installation_->GetAppId(),
+      [&](const apps::AppUpdate& update) {
+        EXPECT_GE(update.LastLaunchTime(), launch_start_time);
+      }))
+      << "Expect app to exist";
 }
 
 // The helper methods in this class uses ExecuteScriptXXX instead of ExecJs and
@@ -1064,7 +1087,6 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerUninstallBrowserTest, Uninstall) {
 
   auto* app_service_proxy =
       apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
-  app_service_proxy->FlushMojoCallsForTesting();
 
   bool swa_found = false;
   app_service_proxy->AppRegistryCache().ForEachApp(
@@ -1138,13 +1160,13 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerInstallAllAppsBrowserTest,
   for (const auto& type_and_info : app_map) {
     auto install_url_origin =
         url::Origin::Create(type_and_info.second->GetInstallUrl());
-    EXPECT_EQ(0, install_url_origins.count(install_url_origin))
+    EXPECT_EQ(0u, install_url_origins.count(install_url_origin))
         << "System web app's install_url origin should be unique.";
     install_url_origins.insert(install_url_origin);
 
     auto start_url_origin =
         url::Origin::Create(type_and_info.second->GetWebAppInfo()->start_url);
-    EXPECT_EQ(0, start_url_origins.count(start_url_origin))
+    EXPECT_EQ(0u, start_url_origins.count(start_url_origin))
         << "System web app's start_url origin should be unique.";
     start_url_origins.insert(start_url_origin);
   }
@@ -1428,10 +1450,10 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
                    .GetAppIdForSystemApp(SystemWebAppType::SETTINGS)
                    .has_value());
   {
-    ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
-                          policy::policy_prefs::kSystemFeaturesDisableList);
-    base::Value* list = update.Get();
-    list->Append(static_cast<int>(policy::SystemFeature::kOsSettings));
+    ScopedListPrefUpdate update(
+        TestingBrowserProcess::GetGlobal()->local_state(),
+        policy::policy_prefs::kSystemFeaturesDisableList);
+    update->Append(static_cast<int>(policy::SystemFeature::kOsSettings));
   }
   WaitForTestSystemAppInstall();
   absl::optional<web_app::AppId> settings_id =
@@ -1443,12 +1465,11 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
               GetAppIconKey(*settings_id)->icon_effects);
 
   {
-    ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
-                          policy::policy_prefs::kSystemFeaturesDisableList);
-    base::Value* list = update.Get();
-    list->ClearList();
+    ScopedListPrefUpdate update(
+        TestingBrowserProcess::GetGlobal()->local_state(),
+        policy::policy_prefs::kSystemFeaturesDisableList);
+    update->clear();
   }
-  GetAppServiceProxy(browser()->profile())->FlushMojoCallsForTesting();
   EXPECT_EQ(apps::Readiness::kReady, GetAppReadiness(*settings_id));
   EXPECT_FALSE(apps::IconEffects::kBlocked &
                GetAppIconKey(*settings_id)->icon_effects);
@@ -1465,25 +1486,22 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
   EXPECT_EQ(apps::Readiness::kReady, GetAppReadiness(*settings_id));
 
   {
-    ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
-                          policy::policy_prefs::kSystemFeaturesDisableList);
-    base::Value* list = update.Get();
-    list->Append(static_cast<int>(policy::SystemFeature::kOsSettings));
+    ScopedListPrefUpdate update(
+        TestingBrowserProcess::GetGlobal()->local_state(),
+        policy::policy_prefs::kSystemFeaturesDisableList);
+    update->Append(static_cast<int>(policy::SystemFeature::kOsSettings));
   }
 
-  auto* proxy = GetAppServiceProxy(browser()->profile());
-  proxy->FlushMojoCallsForTesting();
   EXPECT_EQ(apps::Readiness::kDisabledByPolicy, GetAppReadiness(*settings_id));
   EXPECT_TRUE(apps::IconEffects::kBlocked &
               GetAppIconKey(*settings_id)->icon_effects);
 
   {
-    ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
-                          policy::policy_prefs::kSystemFeaturesDisableList);
-    base::Value* list = update.Get();
-    list->ClearList();
+    ScopedListPrefUpdate update(
+        TestingBrowserProcess::GetGlobal()->local_state(),
+        policy::policy_prefs::kSystemFeaturesDisableList);
+    update->clear();
   }
-  proxy->FlushMojoCallsForTesting();
   EXPECT_EQ(apps::Readiness::kReady, GetAppReadiness(*settings_id));
   EXPECT_FALSE(apps::IconEffects::kBlocked &
                GetAppIconKey(*settings_id)->icon_effects);
@@ -1507,10 +1525,6 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerShortcutTest, ShortcutUrl) {
           .value();
   Browser* browser;
   EXPECT_TRUE(LaunchApp(SystemWebAppType::SHORTCUT_CUSTOMIZATION, &browser));
-
-  // Wait for app service to see the newly installed apps.
-  apps::AppServiceProxyFactory::GetForProfile(browser->profile())
-      ->FlushMojoCallsForTesting();
 
   std::unique_ptr<ui::SimpleMenuModel> menu_model;
   {

@@ -155,11 +155,11 @@ void TerminalSource::StartDataRequest(
 
   // Refresh the $i8n{themeColor} replacement for css files.
   if (base::EndsWith(path, ".css", base::CompareCase::INSENSITIVE_ASCII)) {
-    GURL url;
+    GURL contents_url;
     absl::optional<SkColor> opener_background_color;
     content::WebContents* contents = wc_getter.Run();
     if (contents) {
-      url = contents->GetVisibleURL();
+      contents_url = contents->GetVisibleURL();
       TabStripModel* tab_strip;
       int tab_index;
       extensions::ExtensionTabUtil::GetTabStripModel(contents, &tab_strip,
@@ -172,7 +172,7 @@ void TerminalSource::StartDataRequest(
     }
     replacements_["themeColor"] =
         base::EscapeForHTML(guest_os::GetTerminalSettingBackgroundColor(
-            profile_, url, opener_background_color));
+            profile_, contents_url, opener_background_color));
   }
 
   base::ThreadPool::PostTask(
@@ -203,6 +203,11 @@ std::string TerminalSource::GetContentSecurityPolicy(
   if (ssh_allowed_) {
     switch (directive) {
       case network::mojom::CSPDirectiveName::ConnectSrc:
+        // TODO(b/247580345): Allow connect to any relay / proxy.
+        // First test this behind flag.
+        if (base::FeatureList::IsEnabled(chromeos::features::kTerminalDev)) {
+          return "connect-src *;";
+        }
         return "connect-src 'self' "
                "https://*.corp.google.com:* wss://*.corp.google.com:* "
                "https://*.r.ext.google.com:* wss://*.r.ext.google.com:*;";
@@ -240,7 +245,7 @@ std::string TerminalSource::GetContentSecurityPolicy(
   }
 }
 
-// Required for wasm SharedArrayBuffer.
+// Improve security, and it is required for wasm SharedArrayBuffer.
 std::string TerminalSource::GetCrossOriginOpenerPolicy() {
   return "same-origin";
 }

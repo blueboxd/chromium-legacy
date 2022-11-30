@@ -11,7 +11,7 @@ import '../../cr_elements/cr_toast/cr_toast.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/polymer/v3_0/iron-scroll-threshold/iron-scroll-threshold.js';
 
-import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
+import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {Time} from 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-webui.js';
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import {IronScrollThresholdElement} from 'chrome://resources/polymer/v3_0/iron-scroll-threshold/iron-scroll-threshold.js';
@@ -21,7 +21,7 @@ import {CrDialogElement} from '../../cr_elements/cr_dialog/cr_dialog.js';
 import {CrLazyRenderElement} from '../../cr_elements/cr_lazy_render/cr_lazy_render.js';
 import {CrToastElement} from '../../cr_elements/cr_toast/cr_toast.js';
 import {assert} from '../../js/assert_ts.js';
-import {FocusOutlineManager} from '../../js/cr/ui/focus_outline_manager.js';
+import {FocusOutlineManager} from '../../js/focus_outline_manager.js';
 import {loadTimeData} from '../../js/load_time_data.m.js';
 
 import {BrowserProxyImpl} from './browser_proxy.js';
@@ -277,7 +277,8 @@ export class HistoryClustersElement extends HistoryClustersElementBase {
     return this.result_.clusters.length ?
         '' :
         loadTimeData.getString(
-            this.result_.query ? 'noSearchResults' : 'noResults');
+            this.result_.query ? 'noSearchResults' :
+                                 'historyClustersNoResults');
   }
 
   /**
@@ -291,6 +292,13 @@ export class HistoryClustersElement extends HistoryClustersElementBase {
       _resultCanLoadMore: Time): boolean {
     return !this.result_ || this.result_.clusters.length === 0 ||
         !this.result_.canLoadMore;
+  }
+
+  /**
+   * Returns whether the given index corresponds to the last cluster.
+   */
+  private isLastCluster_(index: number): boolean {
+    return index === this.result_.clusters.length - 1;
   }
 
   /**

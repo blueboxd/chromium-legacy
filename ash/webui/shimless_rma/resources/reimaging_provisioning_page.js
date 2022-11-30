@@ -10,7 +10,7 @@ import './shimless_rma_shared_css.js';
 import './base_page.js';
 import './icons.js';
 
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
@@ -22,6 +22,12 @@ import {disableNextButton, enableNextButton, executeThenTransitionState, focusPa
  * 'reimaging-provisioning-page' provisions the device then auto-transitions to
  * the next page once complete.
  */
+
+/**
+ * The prefix for a `ProvisioningError` displayed on the Hardware Error page.
+ * @type {number}
+ */
+export const PROVISIONING_ERROR_CODE_PREFIX = 1000;
 
 /**
  * @constructor
@@ -100,7 +106,10 @@ export class ReimagingProvisioningPage extends ReimagingProvisioningPageBase {
       this.dispatchEvent(new CustomEvent('fatal-hardware-error', {
         bubbles: true,
         composed: true,
-        detail: RmadErrorCode.kProvisioningFailed,
+        detail: {
+          rmadErrorCode: RmadErrorCode.kProvisioningFailed,
+          fatalErrorCode: (PROVISIONING_ERROR_CODE_PREFIX + error),
+        },
       }));
     }
 

@@ -15,16 +15,16 @@
 #include <utility>
 
 #include "base/allocator/buildflags.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/debug/debugging_buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/check.h"
 #include "base/compiler_specific.h"
-#include "base/dcheck_is_on.h"
 #include "base/trace_event/base_tracing_forward.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 
 #if BUILDFLAG(USE_BACKUP_REF_PTR) || \
-    defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+    defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 // USE_BACKUP_REF_PTR implies USE_PARTITION_ALLOC, needed for code under
 // allocator/partition_allocator/ to be built.
 #include "base/allocator/partition_allocator/address_pool_manager_bitmap.h"
@@ -32,14 +32,13 @@
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/base_export.h"
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR) ||
-        // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+        // defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
-#if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+#if defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 #include "base/allocator/partition_allocator/partition_tag.h"
 #include "base/allocator/partition_allocator/partition_tag_types.h"
 #include "base/allocator/partition_allocator/tagging.h"
-#include "base/check_op.h"
-#endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+#endif  // defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
 #if BUILDFLAG(IS_WIN)
 #include "base/win/win_handle_types.h"
@@ -59,6 +58,27 @@ namespace base {
 
 // NOTE: All methods should be `ALWAYS_INLINE`. raw_ptr is meant to be a
 // lightweight replacement of a raw pointer, hence performance is critical.
+
+// The following types are the different RawPtrType template option possible for
+// a `raw_ptr`:
+// - RawPtrMayDangle disables dangling pointers check when the object is
+//   released.
+// - RawPtrBanDanglingIfSupported may enable dangling pointers check on object
+//   destruction.
+//
+// We describe those types here so that they can be used outside of `raw_ptr` as
+// object markers, and their meaning might vary depending on where those markers
+// are being used. For instance, we are using those in `UnretainedWrapper` to
+// change behavior depending on RawPtrType.
+struct RawPtrMayDangle {};
+struct RawPtrBanDanglingIfSupported {};
+
+struct RawPtrNoOp {};
+
+namespace raw_ptr_traits {
+template <typename T>
+struct RawPtrTypeToImpl;
+}
 
 namespace internal {
 // These classes/structures are part of the raw_ptr implementation.
@@ -141,7 +161,7 @@ struct RawPtrNoOpImpl {
   static ALWAYS_INLINE void IncrementPointerToMemberOperatorCountForTest() {}
 };
 
-#if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+#if defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
 constexpr int kValidAddressBits = 48;
 constexpr uintptr_t kAddressMask = (1ull << kValidAddressBits) - 1;
@@ -190,7 +210,7 @@ struct MTECheckedPtrImpl {
     // Disambiguation: UntagPtr removes the hardware MTE tag, whereas this
     // function is responsible for adding the software MTE tag.
     uintptr_t addr = partition_alloc::UntagPtr(ptr);
-    DCHECK_EQ(ExtractTag(addr), 0ull);
+    DCHECK(ExtractTag(addr) == 0ull);
 
     // Return a not-wrapped |addr|, if it's either nullptr or if the protection
     // for this pointer is disabled.
@@ -284,8 +304,28 @@ struct MTECheckedPtrImpl {
   static ALWAYS_INLINE ptrdiff_t GetDeltaElems(T* wrapped_ptr1,
                                                T* wrapped_ptr2) {
     // Ensure that both pointers come from the same allocation.
-    CHECK(ExtractTag(wrapped_ptr1) == ExtractTag(wrapped_ptr2));
-    return wrapped_ptr1 - wrapped_ptr2;
+    //
+    // Disambiguation: UntagPtr removes the hardware MTE tag, whereas this
+    // class is responsible for handling the software MTE tag.
+    //
+    // MTECheckedPtr doesn't use 0 as a valid tag; depending on which
+    // subtraction operator is called, we may be getting the actual
+    // untagged T* or the wrapped pointer (passed as a T*) in one or
+    // both args. We can only check slot cohabitation when both args
+    // come with tags.
+    const uintptr_t tag1 = ExtractTag(partition_alloc::UntagPtr(wrapped_ptr1));
+    const uintptr_t tag2 = ExtractTag(partition_alloc::UntagPtr(wrapped_ptr2));
+    if (tag1 && tag2) {
+      CHECK(tag1 == tag2);
+      return wrapped_ptr1 - wrapped_ptr2;
+    }
+
+    // If one or the other arg come untagged, we have to perform the
+    // subtraction entirely without tags.
+    return reinterpret_cast<T*>(
+               ExtractAddress(partition_alloc::UntagPtr(wrapped_ptr1))) -
+           reinterpret_cast<T*>(
+               ExtractAddress(partition_alloc::UntagPtr(wrapped_ptr2)));
   }
 
   // Returns a copy of a wrapped pointer, without making an assertion
@@ -320,11 +360,11 @@ struct MTECheckedPtrImpl {
   }
 };
 
-#endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+#endif  // defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
 
-#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+#if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
 BASE_EXPORT void CheckThatAddressIsntWithinFirstPartitionPage(
     uintptr_t address);
 #endif
@@ -336,30 +376,28 @@ struct BackupRefPtrImpl {
   // will occur.
 
   static ALWAYS_INLINE bool IsSupportedAndNotNull(uintptr_t address) {
-    // This covers the nullptr case, as address 0 is never in GigaCage.
+    // There are many situations where the compiler can prove that
+    // `ReleaseWrappedPtr` is called on a value that is always nullptr, but the
+    // way `IsManagedByPartitionAllocBRPPool` is written, the compiler can't
+    // prove that nullptr is not managed by PartitionAlloc; and so the compiler
+    // has to emit a useless check and dead code. To avoid that without making
+    // the runtime check slower, tell the compiler to skip
+    // `IsManagedByPartitionAllocBRPPool` when it can statically determine that
+    // address is nullptr.
+#if HAS_BUILTIN(__builtin_constant_p)
+    if (__builtin_constant_p(address == 0) && (address == 0)) {
+#if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+      CHECK(!partition_alloc::IsManagedByPartitionAllocBRPPool(address));
+#endif  // BUILDFLAG(PA_DCHECK_IS_ON) ||
+        // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+      return false;
+    }
+#endif  // HAS_BUILTIN(__builtin_constant_p)
+
+    // This covers the nullptr case, as address 0 is never in any
+    // PartitionAlloc pool.
     bool is_in_brp_pool =
         partition_alloc::IsManagedByPartitionAllocBRPPool(address);
-
-    // There are many situations where the compiler can prove that
-    // ReleaseWrappedPtr is called on a value that is always nullptr, but the
-    // way the check above is written, the compiler can't prove that nullptr is
-    // not managed by PartitionAlloc; and so the compiler has to emit a useless
-    // check and dead code.
-    // To avoid that without making the runtime check slower, explicitly promise
-    // to the compiler that is_in_brp_pool will always be false for nullptr.
-    //
-    // This condition would look nicer and might also theoretically be nicer for
-    // the optimizer if it was written as "if (!address) { ... }", but
-    // LLVM currently has issues with optimizing that away properly; see:
-    // https://bugs.llvm.org/show_bug.cgi?id=49403
-    // https://reviews.llvm.org/D97848
-    // https://chromium-review.googlesource.com/c/chromium/src/+/2727400/2/base/memory/checked_ptr.h#120
-#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
-    CHECK(address || !is_in_brp_pool);
-#endif
-#if HAS_BUILTIN(__builtin_assume)
-    __builtin_assume(address || !is_in_brp_pool);
-#endif
 
     // There may be pointers immediately after the allocation, e.g.
     //   {
@@ -378,7 +416,7 @@ struct BackupRefPtrImpl {
     // IsManagedByPartitionAllocBRPPool returns true for a valid pointer,
     // it must be at least partition page away from the beginning of a super
     // page.
-#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+#if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
     if (is_in_brp_pool) {
       CheckThatAddressIsntWithinFirstPartitionPage(address);
     }
@@ -392,17 +430,28 @@ struct BackupRefPtrImpl {
   static ALWAYS_INLINE T* WrapRawPtr(T* ptr) {
     uintptr_t address = partition_alloc::UntagPtr(ptr);
     if (IsSupportedAndNotNull(address)) {
-#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+#if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
       CHECK(ptr != nullptr);
 #endif
       AcquireInternal(address);
-    }
+    } else {
 #if !defined(PA_HAS_64_BITS_POINTERS)
-    else {
-      partition_alloc::internal::AddressPoolManagerBitmap::
-          BanSuperPageFromBRPPool(address);
+#if HAS_BUILTIN(__builtin_constant_p)
+      // Similarly to `IsSupportedAndNotNull` above, elide the
+      // `BanSuperPageFromBRPPool` call if the compiler can prove that `address`
+      // is zero since PA won't be able to map anything at that address anyway.
+      bool known_constant_zero =
+          __builtin_constant_p(address == 0) && (address == 0);
+#else   // HAS_BUILTIN(__builtin_constant_p)
+      bool known_constant_zero = false;
+#endif  // HAS_BUILTIN(__builtin_constant_p)
+
+      if (!known_constant_zero) {
+        partition_alloc::internal::AddressPoolManagerBitmap::
+            BanSuperPageFromBRPPool(address);
+      }
+#endif  // !defined(PA_HAS_64_BITS_POINTERS)
     }
-#endif
 
     return ptr;
   }
@@ -412,7 +461,7 @@ struct BackupRefPtrImpl {
   static ALWAYS_INLINE void ReleaseWrappedPtr(T* wrapped_ptr) {
     uintptr_t address = partition_alloc::UntagPtr(wrapped_ptr);
     if (IsSupportedAndNotNull(address)) {
-#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+#if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
       CHECK(wrapped_ptr != nullptr);
 #endif
       ReleaseInternal(address);
@@ -430,7 +479,7 @@ struct BackupRefPtrImpl {
   // function is allowed to crash on nullptr.
   template <typename T>
   static ALWAYS_INLINE T* SafelyUnwrapPtrForDereference(T* wrapped_ptr) {
-#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+#if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
     uintptr_t address = partition_alloc::UntagPtr(wrapped_ptr);
     if (IsSupportedAndNotNull(address)) {
       CHECK(wrapped_ptr != nullptr);
@@ -482,15 +531,15 @@ struct BackupRefPtrImpl {
     return wrapped_ptr + delta_elems;
 #else
     // In the "before allocation" mode, on 32-bit, we can run into a problem
-    // that the end-of-allocation address could fall out of "GigaCage", if this
-    // is the last slot of the super page, thus pointing to the guard page. This
-    // mean the ref-count won't be decreased when the pointer is released
-    // (leak).
+    // that the end-of-allocation address could fall outside of
+    // PartitionAlloc's pools, if this is the last slot of the super page,
+    // thus pointing to the guard page. This mean the ref-count won't be
+    // decreased when the pointer is released (leak).
     //
     // We could possibly solve it in a few different ways:
-    // - Add the trailing guard page to "GigaCage", but we'd have to think very
+    // - Add the trailing guard page to the pool, but we'd have to think very
     //   hard if this doesn't create another hole.
-    // - Add an address adjustment to "GigaCage" check, similar as the one in
+    // - Add an address adjustment to "is in pool?" check, similar as the one in
     //   PartitionAllocGetSlotStartInBRPPool(), but that seems fragile, not to
     //   mention adding an extra instruction to an inlined hot path.
     // - Let the leak happen, since it should a very rare condition.
@@ -533,6 +582,12 @@ struct BackupRefPtrImpl {
     return WrapRawPtr(wrapped_ptr);
   }
 
+  // Report the current wrapped pointer if pointee isn't alive anymore.
+  template <typename T>
+  static ALWAYS_INLINE void ReportIfDangling(T* wrapped_ptr) {
+    ReportIfDanglingInternal(partition_alloc::UntagPtr(wrapped_ptr));
+  }
+
   // This is for accounting only, used by unit tests.
   static ALWAYS_INLINE void IncrementSwapCountForTest() {}
   static ALWAYS_INLINE void IncrementLessCountForTest() {}
@@ -548,6 +603,7 @@ struct BackupRefPtrImpl {
   static BASE_EXPORT NOINLINE void AcquireInternal(uintptr_t address);
   static BASE_EXPORT NOINLINE void ReleaseInternal(uintptr_t address);
   static BASE_EXPORT NOINLINE bool IsPointeeAlive(uintptr_t address);
+  static BASE_EXPORT NOINLINE void ReportIfDanglingInternal(uintptr_t address);
   template <typename Z, typename = std::enable_if_t<offset_type<Z>, void>>
   static ALWAYS_INLINE bool IsValidDelta(uintptr_t address, Z delta_in_bytes) {
     if constexpr (std::is_signed_v<Z>)
@@ -645,35 +701,37 @@ struct AsanBackupRefPtrImpl {
 };
 
 template <class Super>
-struct RawPtrCountingImplWrapperForTest : public Super {
+struct RawPtrCountingImplWrapperForTest
+    : public raw_ptr_traits::RawPtrTypeToImpl<Super>::Impl {
+  using SuperImpl = typename raw_ptr_traits::RawPtrTypeToImpl<Super>::Impl;
   template <typename T>
   static ALWAYS_INLINE T* WrapRawPtr(T* ptr) {
     ++wrap_raw_ptr_cnt;
-    return Super::WrapRawPtr(ptr);
+    return SuperImpl::WrapRawPtr(ptr);
   }
 
   template <typename T>
   static ALWAYS_INLINE void ReleaseWrappedPtr(T* ptr) {
     ++release_wrapped_ptr_cnt;
-    Super::ReleaseWrappedPtr(ptr);
+    SuperImpl::ReleaseWrappedPtr(ptr);
   }
 
   template <typename T>
   static ALWAYS_INLINE T* SafelyUnwrapPtrForDereference(T* wrapped_ptr) {
     ++get_for_dereference_cnt;
-    return Super::SafelyUnwrapPtrForDereference(wrapped_ptr);
+    return SuperImpl::SafelyUnwrapPtrForDereference(wrapped_ptr);
   }
 
   template <typename T>
   static ALWAYS_INLINE T* SafelyUnwrapPtrForExtraction(T* wrapped_ptr) {
     ++get_for_extraction_cnt;
-    return Super::SafelyUnwrapPtrForExtraction(wrapped_ptr);
+    return SuperImpl::SafelyUnwrapPtrForExtraction(wrapped_ptr);
   }
 
   template <typename T>
   static ALWAYS_INLINE T* UnsafelyUnwrapPtrForComparison(T* wrapped_ptr) {
     ++get_for_comparison_cnt;
-    return Super::UnsafelyUnwrapPtrForComparison(wrapped_ptr);
+    return SuperImpl::UnsafelyUnwrapPtrForComparison(wrapped_ptr);
   }
 
   static ALWAYS_INLINE void IncrementSwapCountForTest() {
@@ -796,6 +854,47 @@ struct IsSupportedType<T,
 #undef CHROME_WINDOWS_HANDLE_TYPE
 #endif
 
+template <typename T>
+struct RawPtrTypeToImpl {};
+
+template <typename T>
+struct RawPtrTypeToImpl<internal::RawPtrCountingImplWrapperForTest<T>> {
+  using Impl = internal::RawPtrCountingImplWrapperForTest<T>;
+};
+
+template <>
+struct RawPtrTypeToImpl<RawPtrMayDangle> {
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
+  using Impl = internal::BackupRefPtrImpl</*AllowDangling=*/true>;
+#elif BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
+  using Impl = internal::AsanBackupRefPtrImpl;
+#elif defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
+  using Impl = internal::MTECheckedPtrImpl<
+      internal::MTECheckedPtrImplPartitionAllocSupport>;
+#else
+  using Impl = internal::RawPtrNoOpImpl;
+#endif
+};
+
+template <>
+struct RawPtrTypeToImpl<RawPtrBanDanglingIfSupported> {
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
+  using Impl = internal::BackupRefPtrImpl</*AllowDangling=*/false>;
+#elif BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
+  using Impl = internal::AsanBackupRefPtrImpl;
+#elif defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
+  using Impl = internal::MTECheckedPtrImpl<
+      internal::MTECheckedPtrImplPartitionAllocSupport>;
+#else
+  using Impl = internal::RawPtrNoOpImpl;
+#endif
+};
+
+template <>
+struct RawPtrTypeToImpl<RawPtrNoOp> {
+  using Impl = internal::RawPtrNoOpImpl;
+};
+
 }  // namespace raw_ptr_traits
 
 // `raw_ptr<T>` is a non-owning smart pointer that has improved memory-safety
@@ -824,27 +923,12 @@ struct IsSupportedType<T,
 // non-default move constructor/assignment. Thus, it's possible to get an error
 // where the pointer is not actually dangling, and have to work around the
 // compiler. We have not managed to construct such an example in Chromium yet.
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
-using RawPtrMayDangle = internal::BackupRefPtrImpl</*AllowDangling=*/true>;
-using RawPtrBanDanglingIfSupported =
-    internal::BackupRefPtrImpl</*AllowDangling=*/false>;
-#elif BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
-using RawPtrMayDangle = internal::AsanBackupRefPtrImpl;
-using RawPtrBanDanglingIfSupported = internal::AsanBackupRefPtrImpl;
-#elif defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
-using RawPtrMayDangle = internal::MTECheckedPtrImpl<
-    internal::MTECheckedPtrImplPartitionAllocSupport>;
-using RawPtrBanDanglingIfSupported = internal::MTECheckedPtrImpl<
-    internal::MTECheckedPtrImplPartitionAllocSupport>;
-#else
-using RawPtrMayDangle = internal::RawPtrNoOpImpl;
-using RawPtrBanDanglingIfSupported = internal::RawPtrNoOpImpl;
-#endif
 
-using DefaultRawPtrImpl = RawPtrBanDanglingIfSupported;
+using DefaultRawPtrType = RawPtrBanDanglingIfSupported;
 
-template <typename T, typename Impl = DefaultRawPtrImpl>
+template <typename T, typename RawPtrType = DefaultRawPtrType>
 class TRIVIAL_ABI GSL_POINTER raw_ptr {
+  using Impl = typename raw_ptr_traits::RawPtrTypeToImpl<RawPtrType>::Impl;
   using DanglingRawPtr = std::conditional_t<
       raw_ptr_traits::IsRawPtrCountingImpl<Impl>::value,
       raw_ptr<T, internal::RawPtrCountingImplWrapperForTest<RawPtrMayDangle>>,
@@ -935,7 +1019,7 @@ class TRIVIAL_ABI GSL_POINTER raw_ptr {
                 std::is_convertible<U*, T*>::value &&
                 !std::is_void<typename std::remove_cv<T>::type>::value>>
   // NOLINTNEXTLINE(google-explicit-constructor)
-  ALWAYS_INLINE raw_ptr(const raw_ptr<U, Impl>& ptr) noexcept
+  ALWAYS_INLINE raw_ptr(const raw_ptr<U, RawPtrType>& ptr) noexcept
       : wrapped_ptr_(
             Impl::Duplicate(Impl::template Upcast<T, U>(ptr.wrapped_ptr_))) {}
   // Deliberately implicit in order to support implicit upcast.
@@ -944,7 +1028,7 @@ class TRIVIAL_ABI GSL_POINTER raw_ptr {
                 std::is_convertible<U*, T*>::value &&
                 !std::is_void<typename std::remove_cv<T>::type>::value>>
   // NOLINTNEXTLINE(google-explicit-constructor)
-  ALWAYS_INLINE raw_ptr(raw_ptr<U, Impl>&& ptr) noexcept
+  ALWAYS_INLINE raw_ptr(raw_ptr<U, RawPtrType>&& ptr) noexcept
       : wrapped_ptr_(Impl::template Upcast<T, U>(ptr.wrapped_ptr_)) {
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
     ptr.wrapped_ptr_ = nullptr;
@@ -967,10 +1051,10 @@ class TRIVIAL_ABI GSL_POINTER raw_ptr {
             typename Unused = std::enable_if_t<
                 std::is_convertible<U*, T*>::value &&
                 !std::is_void<typename std::remove_cv<T>::type>::value>>
-  ALWAYS_INLINE raw_ptr& operator=(const raw_ptr<U, Impl>& ptr) noexcept {
+  ALWAYS_INLINE raw_ptr& operator=(const raw_ptr<U, RawPtrType>& ptr) noexcept {
     // Make sure that pointer isn't assigned to itself (look at pointer address,
     // not its value).
-#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+#if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
     CHECK(reinterpret_cast<uintptr_t>(this) !=
           reinterpret_cast<uintptr_t>(&ptr));
 #endif
@@ -983,10 +1067,10 @@ class TRIVIAL_ABI GSL_POINTER raw_ptr {
             typename Unused = std::enable_if_t<
                 std::is_convertible<U*, T*>::value &&
                 !std::is_void<typename std::remove_cv<T>::type>::value>>
-  ALWAYS_INLINE raw_ptr& operator=(raw_ptr<U, Impl>&& ptr) noexcept {
+  ALWAYS_INLINE raw_ptr& operator=(raw_ptr<U, RawPtrType>&& ptr) noexcept {
     // Make sure that pointer isn't assigned to itself (look at pointer address,
     // not its value).
-#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+#if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
     CHECK(reinterpret_cast<uintptr_t>(this) !=
           reinterpret_cast<uintptr_t>(&ptr));
 #endif
@@ -1233,6 +1317,12 @@ class TRIVIAL_ABI GSL_POINTER raw_ptr {
     perfetto::WriteIntoTracedValue(std::move(context), get());
   }
 
+  ALWAYS_INLINE void ReportIfDangling() const noexcept {
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
+    Impl::ReportIfDangling(wrapped_ptr_);
+#endif
+  }
+
  private:
   // This getter is meant for situations where the pointer is meant to be
   // dereferenced. It is allowed to crash on nullptr (it may or may not),
@@ -1364,17 +1454,16 @@ using DanglingUntriaged = DisableDanglingPtrDetection;
 // When `MTECheckedPtr` is in play, we need to augment this
 // implementation setting with another layer that allows the `raw_ptr`
 // to degrade into the no-op version.
-#if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+#if defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
 // Direct pass-through to no-op implementation.
-using DegradeToNoOpWhenMTE = base::internal::RawPtrNoOpImpl;
+using DegradeToNoOpWhenMTE = base::RawPtrNoOp;
 
 // As above, but with the "untriaged dangling" annotation.
-using DanglingUntriagedDegradeToNoOpWhenMTE = base::internal::RawPtrNoOpImpl;
+using DanglingUntriagedDegradeToNoOpWhenMTE = base::RawPtrNoOp;
 
 // As above, but with the "explicitly disable protection" annotation.
-using DisableDanglingPtrDetectionDegradeToNoOpWhenMTE =
-    base::internal::RawPtrNoOpImpl;
+using DisableDanglingPtrDetectionDegradeToNoOpWhenMTE = base::RawPtrNoOp;
 
 #else
 
@@ -1389,28 +1478,30 @@ using DanglingUntriagedDegradeToNoOpWhenMTE = DanglingUntriaged;
 using DisableDanglingPtrDetectionDegradeToNoOpWhenMTE =
     DisableDanglingPtrDetection;
 
-#endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+#endif  // defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
 namespace std {
 
 // Override so set/map lookups do not create extra raw_ptr. This also allows
 // dangling pointers to be used for lookup.
-template <typename T, typename Impl>
-struct less<raw_ptr<T, Impl>> {
+template <typename T, typename RawPtrType>
+struct less<raw_ptr<T, RawPtrType>> {
+  using Impl =
+      typename base::raw_ptr_traits::RawPtrTypeToImpl<RawPtrType>::Impl;
   using is_transparent = void;
 
-  bool operator()(const raw_ptr<T, Impl>& lhs,
-                  const raw_ptr<T, Impl>& rhs) const {
+  bool operator()(const raw_ptr<T, RawPtrType>& lhs,
+                  const raw_ptr<T, RawPtrType>& rhs) const {
     Impl::IncrementLessCountForTest();
     return lhs < rhs;
   }
 
-  bool operator()(T* lhs, const raw_ptr<T, Impl>& rhs) const {
+  bool operator()(T* lhs, const raw_ptr<T, RawPtrType>& rhs) const {
     Impl::IncrementLessCountForTest();
     return lhs < rhs;
   }
 
-  bool operator()(const raw_ptr<T, Impl>& lhs, T* rhs) const {
+  bool operator()(const raw_ptr<T, RawPtrType>& lhs, T* rhs) const {
     Impl::IncrementLessCountForTest();
     return lhs < rhs;
   }

@@ -97,6 +97,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void VerifyOwnerForKiosk(base::OnceClosure) override;
   void ShowPasswordChangedDialog(const AccountId& account_id,
                                  bool show_password_error) override;
+  void StartCryptohomeRecovery(const AccountId& account_id) override;
   void StartBrowserDataMigration() override;
   void AddObserver(LoginDisplayHost::Observer* observer) override;
   void RemoveObserver(LoginDisplayHost::Observer* observer) override;
@@ -210,9 +211,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   // Resets login view and unbinds login display from the signin screen handler.
   void ResetLoginView();
 
-  // Updates default scaling for CfM devices.
-  void UpScaleOobe();
-
   // Show OOBE WebUI if signal from javascript side never came.
   void OnShowWebUITimeout();
 
@@ -260,9 +258,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
       keyboard_driven_oobe_key_handler_;
 
   FinalizeAnimationType finalize_animation_type_ = ANIMATION_WORKSPACE;
-
-  // Id of display that was already scaled for CfM devices.
-  int64_t primary_display_id_ = -1;
 
   // Time when login prompt visible signal is received. Used for
   // calculations of delay before startup sound.

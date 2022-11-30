@@ -172,16 +172,6 @@ void WebAppInstallTask::ExpectAppId(const AppId& expected_app_id) {
   expected_app_id_ = expected_app_id;
 }
 
-void WebAppInstallTask::SetInstallParams(
-    const WebAppInstallParams& install_params) {
-  if (!install_params.locally_installed) {
-    DCHECK(!install_params.add_to_applications_menu);
-    DCHECK(!install_params.add_to_desktop);
-    DCHECK(!install_params.add_to_quick_launch_bar);
-  }
-  install_params_ = install_params;
-}
-
 void WebAppInstallTask::InstallWebAppFromManifest(
     content::WebContents* contents,
     bool bypass_service_worker_check,
@@ -221,35 +211,6 @@ void WebAppInstallTask::InstallWebAppFromManifestWithFallback(
   data_retriever_->GetWebAppInstallInfo(
       web_contents(),
       base::BindOnce(&WebAppInstallTask::OnGetWebAppInstallInfo, GetWeakPtr()));
-}
-
-void WebAppInstallTask::LoadAndInstallSubAppFromURL(
-    const GURL& install_url,
-    const AppId& expected_app_id,
-    content::WebContents* contents,
-    WebAppUrlLoader* url_loader,
-    WebAppInstallDialogCallback dialog_callback,
-    OnceInstallCallback install_callback) {
-  DCHECK(AreWebAppsUserInstallable(profile_));
-  CheckInstallPreconditions();
-
-  Observe(contents);
-
-  if (ShouldStopInstall())
-    return;
-
-  ExpectAppId(expected_app_id);
-
-  // TODO(https://crbug.com/1326843): Change to background installation in case
-  // of relevant policy.
-  dialog_callback_ = std::move(dialog_callback);
-  install_callback_ = std::move(install_callback);
-
-  url_loader->LoadUrl(
-      install_url, contents,
-      WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef,
-      base::BindOnce(&WebAppInstallTask::OnWebAppUrlLoadedGetWebAppInstallInfo,
-                     GetWeakPtr(), install_url));
 }
 
 // static

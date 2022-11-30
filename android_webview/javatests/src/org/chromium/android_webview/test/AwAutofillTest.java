@@ -51,8 +51,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.components.autofill.AutofillHintsServiceTestHelper;
@@ -1975,7 +1975,7 @@ public class AwAutofillTest {
     }
 
     @Test
-    @FlakyTest(message = "https://crbug.com/1161326")
+    @DisabledTest(message = "https://crbug.com/1161326")
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testUMANoServerPrediction() throws Throwable {
@@ -1986,7 +1986,7 @@ public class AwAutofillTest {
     }
 
     @Test
-    @FlakyTest(message = "https://crbug.com/1161326")
+    @DisabledTest(message = "https://crbug.com/1161326")
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testUMAServerPredictionArriveBeforeSessionStart() throws Throwable {
@@ -2258,6 +2258,7 @@ public class AwAutofillTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
+    @DisabledTest(message = "https://crbug.com/1372519")
     public void testServerPredictionArrivesBeforeAutofillStart() throws Throwable {
         final String data = "<html><head></head><body><form action='a.html' name='formname'>"
                 + "<input type='text' id='text1' name='username'>"
@@ -2361,6 +2362,7 @@ public class AwAutofillTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
+    @DisabledTest(message = "https://crbug.com/1372519")
     public void testServerPredictionArrivesAfterAutofillStart() throws Throwable {
         final String data = "<html><head></head><body><form action='a.html' name='formname'>"
                 + "<input type='text' id='text1' name='username'>"
@@ -2497,6 +2499,7 @@ public class AwAutofillTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
+    @DisabledTest(message = "https://crbug.com/1372519")
     public void testServerPredictionArrivesBeforeCallbackRegistered() throws Throwable {
         final String data = "<html><head></head><body><form action='a.html' name='formname'>"
                 + "<input type='text' id='text1' name='username'>"

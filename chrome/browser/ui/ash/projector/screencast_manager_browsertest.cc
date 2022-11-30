@@ -49,6 +49,8 @@ constexpr char kTestFileContents[] = "This is some test content.";
 constexpr char kTestVideoFile[] = "tulip2.webm";
 constexpr char kTestVideoDurationMilliesecond[] = "16682";
 
+#if !BUILDFLAG(ENABLE_CROS_PROJECTOR_APP)
+
 void VerifyResponse(const content::EvalJsResult& result) {
   EXPECT_TRUE(result.error.empty());
 
@@ -61,11 +63,13 @@ void VerifyResponse(const content::EvalJsResult& result) {
   // We can't verify the entire video src url because the random hash at the end
   // differs across test runs, even for the same file. Just check that the url
   // begins with blob:chrome-untrusted://projector/.
-  EXPECT_EQ(src_url->rfind("blob:chrome-untrusted://projector/", 0), 0);
+  EXPECT_EQ(src_url->rfind("blob:chrome-untrusted://projector/", 0), 0u);
   const std::string* duration_millis = dict.FindString("durationMillis");
   ASSERT_TRUE(duration_millis);
   EXPECT_EQ(*duration_millis, kTestVideoDurationMilliesecond);
 }
+
+#endif  // !BUILDFLAG(ENABLE_CROS_PROJECTOR_APP)
 
 }  // namespace
 
@@ -120,8 +124,8 @@ class ScreencastManagerTestWithDriveFs : public ScreencastManagerTest {
       EXPECT_TRUE(base::WriteFile(absolute_path, kTestFileContents));
 
     const base::FilePath& relative_path = GetTestFile(title, /*relative=*/true);
-    fake->SetMetadata(relative_path, content_type, title, false, shared_with_me,
-                      {}, {}, file_id, "");
+    fake->SetMetadata(relative_path, content_type, title, false, false,
+                      shared_with_me, {}, {}, file_id, "");
   }
 
   // Copies a file from //media/test/data with `original_name` to default test

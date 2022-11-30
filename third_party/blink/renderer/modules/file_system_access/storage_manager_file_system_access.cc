@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ constexpr const char kSandboxRootDirectoryName[] = "";
 
 void GetDirectoryImpl(ScriptPromiseResolver* resolver, bool allow_access) {
   ExecutionContext* context = resolver->GetExecutionContext();
-  if (!resolver->GetScriptState()->ContextIsValid())
+  if (!context || !resolver->GetScriptState()->ContextIsValid())
     return;
 
   if (!allow_access) {
@@ -52,7 +52,7 @@ void GetDirectoryImpl(ScriptPromiseResolver* resolver, bool allow_access) {
       manager.BindNewPipeAndPassReceiver());
 
   auto* raw_manager = manager.get();
-  raw_manager->GetSandboxedFileSystem(WTF::Bind(
+  raw_manager->GetSandboxedFileSystem(WTF::BindOnce(
       [](ScriptPromiseResolver* resolver,
          mojo::Remote<mojom::blink::FileSystemAccessManager>,
          mojom::blink::FileSystemAccessErrorPtr result,
@@ -112,7 +112,7 @@ ScriptPromise StorageManagerFileSystemAccess::getDirectory(
   if (content_settings_client) {
     content_settings_client->AllowStorageAccess(
         WebContentSettingsClient::StorageType::kFileSystem,
-        WTF::Bind(&GetDirectoryImpl, WrapPersistent(resolver)));
+        WTF::BindOnce(&GetDirectoryImpl, WrapPersistent(resolver)));
   } else {
     GetDirectoryImpl(resolver, true);
   }

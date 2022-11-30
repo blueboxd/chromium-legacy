@@ -103,7 +103,6 @@ id AXTextMarkerRangeFrom(id anchor_text_marker, id focus_text_marker);
 - (NSString*)methodNameForAttribute:(NSString*)attribute;
 
 - (NSString*)valueForRange:(NSRange)range;
-- (NSAttributedString*)attributedValueForRange:(NSRange)range;
 - (NSRect)frameForRange:(NSRange)range;
 
 // Find the index of the given row among the descendants of this object
@@ -129,7 +128,6 @@ id AXTextMarkerRangeFrom(id anchor_text_marker, id focus_text_marker);
 @property(nonatomic, readonly) NSNumber* expanded;
 @property(nonatomic, readonly) NSNumber* focused;
 @property(nonatomic, readonly) id header;
-@property(nonatomic, readonly) NSString* help;
 // Index of a row, column, or tree item.
 @property(nonatomic, readonly) NSNumber* index;
 @property(nonatomic, readonly) NSNumber* treeItemRowIndex;

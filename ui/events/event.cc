@@ -399,18 +399,12 @@ void LocatedEvent::UpdateForRootTransform(
     const gfx::Transform& reversed_root_transform,
     const gfx::Transform& reversed_local_transform) {
   if (target()) {
-    gfx::Point3F transformed_location(location_);
-    reversed_local_transform.TransformPoint(&transformed_location);
-    location_ = transformed_location.AsPointF();
-
-    gfx::Point3F transformed_root_location(root_location_);
-    reversed_root_transform.TransformPoint(&transformed_root_location);
-    root_location_ = transformed_root_location.AsPointF();
+    location_ = reversed_local_transform.MapPoint(location_);
+    root_location_ = reversed_root_transform.MapPoint(root_location_);
   } else {
     // This mirrors what the code previously did.
-    gfx::Point3F transformed_location(location_);
-    reversed_root_transform.TransformPoint(&transformed_location);
-    root_location_ = location_ = transformed_location.AsPointF();
+    location_ = reversed_root_transform.MapPoint(location_);
+    root_location_ = location_;
   }
 }
 
@@ -744,7 +738,7 @@ void TouchEvent::UpdateForRootTransform(
   LocatedEvent::UpdateForRootTransform(inverted_root_transform,
                                        inverted_local_transform);
 
-  // We could create a vector and then rely on Transform::TransformVector , but
+  // We could create a vector and then rely on Transform::MapVector, but
   // that ends up creating a 4 dimensional vector and applying a 4 dim
   // transform. Really what we're looking at is only in the (x,y) plane, and
   // given that we can run this relatively frequently we will inline execute the

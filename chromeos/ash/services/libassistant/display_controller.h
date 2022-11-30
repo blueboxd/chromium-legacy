@@ -15,12 +15,6 @@
 #include "mojo/public/cpp/bindings/remote_set.h"
 
 namespace chromeos {
-namespace libassistant {
-namespace mojom {
-class SpeechRecognitionObserver;
-}  // namespace mojom
-}  // namespace libassistant
-
 namespace assistant {
 namespace action {
 class CrosActionModule;
@@ -28,8 +22,11 @@ class CrosActionModule;
 }  // namespace assistant
 }  // namespace chromeos
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
+
+namespace mojom {
+class SpeechRecognitionObserver;
+}
 
 class DisplayConnection;
 
@@ -54,7 +51,7 @@ class DisplayController
   void SetDeviceAppsEnabled(bool enabled) override;
   void SetRelatedInfoEnabled(bool enabled) override;
   void SetAndroidAppList(
-      const std::vector<::chromeos::assistant::AndroidAppInfo>& apps) override;
+      const std::vector<assistant::AndroidAppInfo>& apps) override;
 
   // AssistantClientObserver implementation:
   void OnAssistantClientCreated(AssistantClient* assistant_client) override;
@@ -62,7 +59,7 @@ class DisplayController
 
   // chromeos::assistant::action::AssistantActionObserver:
   void OnVerifyAndroidApp(
-      const std::vector<chromeos::assistant::AndroidAppInfo>& apps_info,
+      const std::vector<assistant::AndroidAppInfo>& apps_info,
       const chromeos::assistant::InteractionInfo& interaction) override;
 
  private:
@@ -70,8 +67,7 @@ class DisplayController
 
   // Checks if the requested Android App with |package_name| is available on the
   // device.
-  chromeos::assistant::AppStatus GetAndroidAppStatus(
-      const std::string& package_name);
+  assistant::AppStatus GetAndroidAppStatus(const std::string& package_name);
 
   mojo::Receiver<mojom::DisplayController> receiver_{this};
   std::unique_ptr<EventObserver> event_observer_;
@@ -95,7 +91,6 @@ class DisplayController
   base::WeakPtrFactory<DisplayController> weak_factory_{this};
 };
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant
 
 #endif  // CHROMEOS_ASH_SERVICES_LIBASSISTANT_DISPLAY_CONTROLLER_H_

@@ -512,7 +512,7 @@ void ElementRuleCollector::CollectMatchingRules(
 
   Element& element = context_.GetElement();
   const AtomicString& pseudo_id = element.ShadowPseudoId();
-  if (!pseudo_id.IsEmpty()) {
+  if (!pseudo_id.empty()) {
     DCHECK(element.IsStyledElement());
     for (const auto bundle : match_request.AllRuleSets()) {
       CollectMatchingRulesForList(
@@ -792,7 +792,7 @@ void ElementRuleCollector::AppendCSSOMWrapperForRule(
 
 void ElementRuleCollector::SortAndTransferMatchedRules(
     bool is_vtt_embedded_style) {
-  if (matched_rules_.IsEmpty())
+  if (matched_rules_.empty())
     return;
 
   SortMatchedRules();

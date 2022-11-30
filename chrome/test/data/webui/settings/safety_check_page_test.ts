@@ -4,10 +4,13 @@
 
 // clang-format off
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {HatsBrowserProxyImpl, LifetimeBrowserProxyImpl, MetricsBrowserProxyImpl, OpenWindowProxyImpl, PasswordCheckReferrer, PasswordManagerImpl, Router, routes, SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckChromeCleanerStatus, SafetyCheckExtensionsStatus, SafetyCheckIconStatus, SafetyCheckInteractions, SafetyCheckParentStatus, SafetyCheckPasswordsStatus, SafetyCheckSafeBrowsingStatus, SafetyCheckUpdatesStatus, SettingsSafetyCheckChildElement, SettingsSafetyCheckExtensionsChildElement, SettingsSafetyCheckPageElement, SettingsSafetyCheckPasswordsChildElement, SettingsSafetyCheckSafeBrowsingChildElement ,SettingsSafetyCheckUpdatesChildElement, TrustSafetyInteraction} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
+import {isVisible} from 'chrome://webui-test/test_util.js';
+import {SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 
 import {TestHatsBrowserProxy} from './test_hats_browser_proxy.js';
 import {TestLifetimeBrowserProxy} from './test_lifetime_browser_proxy.js';
@@ -15,6 +18,7 @@ import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
 import {TestOpenWindowProxy} from './test_open_window_proxy.js';
 import {TestPasswordManagerProxy} from './test_password_manager_proxy.js';
 import {assertSafetyCheckChild} from './safety_check_test_utils.js';
+import {TestSiteSettingsPrefsBrowserProxy} from './test_site_settings_prefs_browser_proxy.js';
 
 // clang-format on
 
@@ -130,7 +134,8 @@ suite('SafetyCheckPageUiTests', function() {
     safetyCheckBrowserProxy.setParentRanDisplayString('Dummy string');
     SafetyCheckBrowserProxyImpl.setInstance(safetyCheckBrowserProxy);
 
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     page = document.createElement('settings-safety-check-page');
     document.body.appendChild(page);
     flush();
@@ -214,7 +219,8 @@ suite('SafetyCheckChildTests', function() {
   let page: SettingsSafetyCheckChildElement;
 
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     page = document.createElement('settings-safety-check-child');
     document.body.appendChild(page);
   });
@@ -367,7 +373,8 @@ suite('SafetyCheckUpdatesChildUiTests', function() {
     metricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.setInstance(metricsBrowserProxy);
 
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     page = document.createElement('settings-safety-check-updates-child');
     document.body.appendChild(page);
     flush();
@@ -493,7 +500,8 @@ suite('SafetyCheckPasswordsChildUiTests', function() {
     metricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.setInstance(metricsBrowserProxy);
 
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     page = document.createElement('settings-safety-check-passwords-child');
     document.body.appendChild(page);
     flush();
@@ -656,7 +664,8 @@ suite('SafetyCheckSafeBrowsingChildUiTests', function() {
     metricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.setInstance(metricsBrowserProxy);
 
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     page = document.createElement('settings-safety-check-safe-browsing-child');
     document.body.appendChild(page);
     flush();
@@ -801,7 +810,8 @@ suite('SafetyCheckExtensionsChildUiTests', function() {
     openWindowProxy = new TestOpenWindowProxy();
     OpenWindowProxyImpl.setInstance(openWindowProxy);
 
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     page = document.createElement('settings-safety-check-extensions-child');
     document.body.appendChild(page);
     flush();
@@ -948,5 +958,100 @@ suite('SafetyCheckExtensionsChildUiTests', function() {
       managedIcon: true,
       rowClickable: true,
     });
+  });
+});
+
+suite('SafetyCheckPagePermissionModulesTest', function() {
+  let page: SettingsSafetyCheckPageElement;
+  let browserProxy: TestSiteSettingsPrefsBrowserProxy;
+  const notificationElementName =
+      'settings-safety-check-notification-permissions';
+  const unusedSiteElementName = 'settings-safety-check-unused-site-permissions';
+
+  setup(function() {
+    browserProxy = new TestSiteSettingsPrefsBrowserProxy();
+    SiteSettingsPrefsBrowserProxyImpl.setInstance(browserProxy);
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
+  });
+
+  function createPage() {
+    page = document.createElement('settings-safety-check-page');
+    document.body.appendChild(page);
+    flush();
+  }
+
+  teardown(function() {
+    page.remove();
+  });
+
+  test('notificationPermissionModuleVisible', async () => {
+    const mockData = [
+      {
+        origin: 'www.example1.com',
+        notificationInfoString: 'About 4 notifications a day',
+      },
+    ];
+    browserProxy.setNotificationPermissionReview(mockData);
+
+    loadTimeData.overrideValues(
+        {safetyCheckNotificationPermissionsEnabled: true});
+    createPage();
+    webUIListenerCallback(
+        'notification-permission-review-list-changed', mockData);
+    flush();
+    assertTrue(
+        isVisible(page.shadowRoot!.querySelector(notificationElementName)));
+
+    webUIListenerCallback('notification-permission-review-list-changed', []);
+    flush();
+
+    assertFalse(
+        isVisible(page.shadowRoot!.querySelector(notificationElementName)));
+  });
+
+  test('notificationPermissionModuleFeatureDisabled', () => {
+    loadTimeData.overrideValues(
+        {safetyCheckNotificationPermissionsEnabled: false});
+    createPage();
+    assertFalse(
+        isVisible(page.shadowRoot!.querySelector(notificationElementName)));
+  });
+
+  test('notificationPermissionModuleEmptyList', () => {
+    browserProxy.setNotificationPermissionReview([]);
+
+    loadTimeData.overrideValues(
+        {safetyCheckNotificationPermissionsEnabled: true});
+    createPage();
+    assertFalse(
+        isVisible(page.shadowRoot!.querySelector(notificationElementName)));
+
+    const mockData = [{
+      origin: 'www.example1.com',
+      notificationInfoString: 'About 4 notifications a day',
+    }];
+    webUIListenerCallback(
+        'notification-permission-review-list-changed', mockData);
+    flush();
+
+    assertTrue(
+        isVisible(page.shadowRoot!.querySelector(notificationElementName)));
+  });
+
+  test('unusedSitePermissionsModuleVisible', () => {
+    loadTimeData.overrideValues(
+        {safetyCheckUnusedSitePermissionsEnabled: true});
+    createPage();
+    assertTrue(
+        isVisible(page.shadowRoot!.querySelector(unusedSiteElementName)));
+  });
+
+  test('unusedSitePermissionsModuleNotVisible', () => {
+    loadTimeData.overrideValues(
+        {safetyCheckUnusedSitePermissionsEnabled: false});
+    createPage();
+    assertFalse(
+        isVisible(page.shadowRoot!.querySelector(unusedSiteElementName)));
   });
 });

@@ -61,7 +61,7 @@ AwAutofillClient::GetAutocompleteHistoryManager() {
 }
 
 PrefService* AwAutofillClient::GetPrefs() {
-  return const_cast<PrefService*>(base::as_const(*this).GetPrefs());
+  return const_cast<PrefService*>(std::as_const(*this).GetPrefs());
 }
 
 const PrefService* AwAutofillClient::GetPrefs() const {
@@ -102,8 +102,12 @@ autofill::AddressNormalizer* AwAutofillClient::GetAddressNormalizer() {
   return nullptr;
 }
 
-const GURL& AwAutofillClient::GetLastCommittedURL() const {
-  return GetWebContents().GetLastCommittedURL();
+const GURL& AwAutofillClient::GetLastCommittedPrimaryMainFrameURL() const {
+  return GetWebContents().GetPrimaryMainFrame()->GetLastCommittedURL();
+}
+
+url::Origin AwAutofillClient::GetLastCommittedPrimaryMainFrameOrigin() const {
+  return GetWebContents().GetPrimaryMainFrame()->GetLastCommittedOrigin();
 }
 
 security_state::SecurityLevel
@@ -196,6 +200,15 @@ bool AwAutofillClient::IsFastCheckoutSupported() {
 bool AwAutofillClient::IsFastCheckoutTriggerForm(
     const autofill::FormData& form,
     const autofill::FormFieldData& field) {
+  return false;
+}
+
+bool AwAutofillClient::FastCheckoutScriptSupportsConsentlessExecution(
+    const url::Origin& origin) {
+  return false;
+}
+
+bool AwAutofillClient::FastCheckoutClientSupportsConsentlessExecution() {
   return false;
 }
 
@@ -353,9 +366,7 @@ void AwAutofillClient::SuggestionSelected(JNIEnv* env,
                                           const JavaParamRef<jobject>& object,
                                           jint position) {
   if (delegate_) {
-    delegate_->DidAcceptSuggestion(suggestions_[position].main_text.value,
-                                   suggestions_[position].frontend_id,
-                                   suggestions_[position].payload, position);
+    delegate_->DidAcceptSuggestion(suggestions_[position], position);
   }
 }
 

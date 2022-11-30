@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
+#include "base/ranges/algorithm.h"
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/external_vk_image_dawn_representation.h"
@@ -97,12 +98,12 @@ class ExternalVkImageBackingFactoryTest : public testing::Test {
     dawn_instance_.DiscoverDefaultAdapters();
 
     std::vector<dawn::native::Adapter> adapters = dawn_instance_.GetAdapters();
-    auto adapter_it = std::find_if(
-        adapters.begin(), adapters.end(), [](dawn::native::Adapter adapter) {
-          wgpu::AdapterProperties properties;
-          adapter.GetProperties(&properties);
-          return properties.backendType == wgpu::BackendType::Vulkan;
-        });
+    auto adapter_it = base::ranges::find(adapters, wgpu::BackendType::Vulkan,
+                                         [](dawn::native::Adapter adapter) {
+                                           wgpu::AdapterProperties properties;
+                                           adapter.GetProperties(&properties);
+                                           return properties.backendType;
+                                         });
     ASSERT_NE(adapter_it, adapters.end());
 
     DawnProcTable procs = dawn::native::GetProcs();
@@ -154,10 +155,11 @@ TEST_F(ExternalVkImageBackingFactoryTest, DawnWrite_SkiaVulkanRead) {
   }
   // Create a backing using mailbox.
   auto mailbox = Mailbox::GenerateForSharedImage();
-  const auto format = viz::ResourceFormat::RGBA_8888;
+  const auto format = viz::SharedImageFormat::kRGBA_8888;
   const gfx::Size size(4, 4);
   const auto color_space = gfx::ColorSpace::CreateSRGB();
-  const uint32_t usage = SHARED_IMAGE_USAGE_DISPLAY | SHARED_IMAGE_USAGE_WEBGPU;
+  const uint32_t usage =
+      SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_WEBGPU;
   const gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   auto backing = shared_image_factory_->CreateSharedImage(
       mailbox, format, surface_handle, size, color_space,
@@ -277,10 +279,11 @@ TEST_F(ExternalVkImageBackingFactoryTest, SkiaVulkanWrite_DawnRead) {
   }
   // Create a backing using mailbox.
   auto mailbox = Mailbox::GenerateForSharedImage();
-  const auto format = viz::ResourceFormat::RGBA_8888;
+  const auto format = viz::SharedImageFormat::kRGBA_8888;
   const gfx::Size size(4, 4);
   const auto color_space = gfx::ColorSpace::CreateSRGB();
-  const uint32_t usage = SHARED_IMAGE_USAGE_DISPLAY | SHARED_IMAGE_USAGE_WEBGPU;
+  const uint32_t usage =
+      SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_WEBGPU;
   const gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   auto backing = shared_image_factory_->CreateSharedImage(
       mailbox, format, surface_handle, size, color_space,

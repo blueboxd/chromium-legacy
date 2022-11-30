@@ -21,7 +21,7 @@ import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 import '../../settings_shared.css.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/cr_elements/web_ui_listener_behavior.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/ash/common/web_ui_listener_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SyncBrowserProxyImpl} from '../../people_page/sync_browser_proxy.js';
@@ -66,26 +66,16 @@ class SettingsMultideviceWifiSyncItemElement extends
     /** @private {?SyncBrowserProxy} */
     this.syncBrowserProxy_ = null;
 
-    if (loadTimeData.getBoolean('syncSettingsCategorizationEnabled')) {
-      this.osSyncBrowserProxy_ = OsSyncBrowserProxyImpl.getInstance();
-    } else {
-      this.syncBrowserProxy_ = SyncBrowserProxyImpl.getInstance();
-    }
+    this.osSyncBrowserProxy_ = OsSyncBrowserProxyImpl.getInstance();
   }
 
   /** @override */
   connectedCallback() {
     super.connectedCallback();
 
-    if (loadTimeData.getBoolean('syncSettingsCategorizationEnabled')) {
-      this.addWebUIListener(
-          'os-sync-prefs-changed', this.handleOsSyncPrefsChanged_.bind(this));
-      this.osSyncBrowserProxy_.sendOsSyncPrefsChanged();
-    } else {
-      this.addWebUIListener(
-          'sync-prefs-changed', this.handleSyncPrefsChanged_.bind(this));
-      this.syncBrowserProxy_.sendSyncPrefsChanged();
-    }
+    this.addWebUIListener(
+        'os-sync-prefs-changed', this.handleOsSyncPrefsChanged_.bind(this));
+    this.osSyncBrowserProxy_.sendOsSyncPrefsChanged();
   }
 
   /**

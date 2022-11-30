@@ -29,7 +29,7 @@ class TestSharedImageBackingFactory : public SharedImageBackingFactory {
   // SharedImageBackingFactory implementation.
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
-      viz::ResourceFormat format,
+      viz::SharedImageFormat format,
       SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
@@ -46,7 +46,7 @@ class TestSharedImageBackingFactory : public SharedImageBackingFactory {
   }
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
-      viz::ResourceFormat format,
+      viz::SharedImageFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
@@ -70,7 +70,7 @@ class TestSharedImageBackingFactory : public SharedImageBackingFactory {
     return nullptr;
   }
   bool IsSupported(uint32_t usage,
-                   viz::ResourceFormat format,
+                   viz::SharedImageFormat format,
                    const gfx::Size& size,
                    bool thread_safe,
                    gfx::GpuMemoryBufferType gmb_type,
@@ -138,7 +138,7 @@ class CompoundImageBackingTest : public testing::Test {
         std::move(handle), buffer_format, gfx::BufferPlane::DEFAULT,
         kNullSurfaceHandle, size, gfx::ColorSpace(),
         kBottomLeft_GrSurfaceOrigin, kOpaque_SkAlphaType,
-        SHARED_IMAGE_USAGE_DISPLAY);
+        SHARED_IMAGE_USAGE_DISPLAY_READ);
   }
 
  protected:

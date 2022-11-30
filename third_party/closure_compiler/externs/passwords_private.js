@@ -9,7 +9,10 @@
 // Please run the closure compiler before committing changes.
 // See https://chromium.googlesource.com/chromium/src/+/main/docs/closure_compilation.md
 
-/** @fileoverview Externs generated from namespace: passwordsPrivate */
+/**
+ * @fileoverview Externs generated from namespace: passwordsPrivate
+ * @externs
+ */
 
 /** @const */
 chrome.passwordsPrivate = {};
@@ -40,7 +43,8 @@ chrome.passwordsPrivate.ExportProgressStatus = {
 chrome.passwordsPrivate.CompromiseType = {
   LEAKED: 'LEAKED',
   PHISHED: 'PHISHED',
-  PHISHED_AND_LEAKED: 'PHISHED_AND_LEAKED',
+  REUSED: 'REUSED',
+  WEAK: 'WEAK',
 };
 
 /**
@@ -128,7 +132,7 @@ chrome.passwordsPrivate.UrlCollection;
  * @typedef {{
  *   compromiseTime: number,
  *   elapsedTimeSinceCompromise: string,
- *   compromiseType: !chrome.passwordsPrivate.CompromiseType,
+ *   compromiseTypes: !Array<!chrome.passwordsPrivate.CompromiseType>,
  *   isMuted: boolean
  * }}
  */
@@ -329,18 +333,11 @@ chrome.passwordsPrivate.isOptedInForAccountStorage = function(callback) {};
 chrome.passwordsPrivate.optInForAccountStorage = function(optIn) {};
 
 /**
- * Requests the latest compromised credentials.
+ * Requests the latest insecure credentials.
  * @param {function(!Array<!chrome.passwordsPrivate.PasswordUiEntry>): void}
  *     callback
  */
-chrome.passwordsPrivate.getCompromisedCredentials = function(callback) {};
-
-/**
- * Requests the latest weak credentials.
- * @param {function(!Array<!chrome.passwordsPrivate.PasswordUiEntry>): void}
- *     callback
- */
-chrome.passwordsPrivate.getWeakCredentials = function(callback) {};
+chrome.passwordsPrivate.getInsecureCredentials = function(callback) {};
 
 /**
  * Requests to mute |credential| from the password store. Invokes |callback| on
@@ -437,6 +434,12 @@ chrome.passwordsPrivate.addPassword = function(options, callback) {};
 chrome.passwordsPrivate.extendAuthValidity = function(callback) {};
 
 /**
+ * Starts system authentication. If successful changes
+ * `kBiometricAuthenticationBeforeFilling` value.
+ */
+chrome.passwordsPrivate.switchBiometricAuthBeforeFillingState = function() {};
+
+/**
  * Fired when the saved passwords list has changed, meaning that an entry has
  * been added or removed.
  * @type {!ChromeEvent}
@@ -463,16 +466,10 @@ chrome.passwordsPrivate.onPasswordsFileExportProgress;
 chrome.passwordsPrivate.onAccountStorageOptInStateChanged;
 
 /**
- * Fired when the compromised credentials changed.
+ * Fired when the insecure credentials changed.
  * @type {!ChromeEvent}
  */
-chrome.passwordsPrivate.onCompromisedCredentialsChanged;
-
-/**
- * Fired when the weak credentials changed.
- * @type {!ChromeEvent}
- */
-chrome.passwordsPrivate.onWeakCredentialsChanged;
+chrome.passwordsPrivate.onInsecureCredentialsChanged;
 
 /**
  * Fired when the status of the password check changes.

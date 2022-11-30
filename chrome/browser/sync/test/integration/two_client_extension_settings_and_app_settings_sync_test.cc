@@ -15,7 +15,6 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
-#include "chrome/browser/sync/test/integration/sync_settings_categorization_sync_test.h"
 #endif
 
 namespace {
@@ -240,11 +239,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionSettingsAndAppSettingsSyncTest,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Tests for SyncSettingsCategorization, which uses a different
 // ModelTypeController for syncer::APP_SETTINGS.
-class TwoClientAppSettingsOsSyncTest
-    : public SyncSettingsCategorizationSyncTest {
+class TwoClientAppSettingsOsSyncTest : public SyncTest {
  public:
-  TwoClientAppSettingsOsSyncTest()
-      : SyncSettingsCategorizationSyncTest(TWO_CLIENT) {}
+  TwoClientAppSettingsOsSyncTest() : SyncTest(TWO_CLIENT) {}
   ~TwoClientAppSettingsOsSyncTest() override = default;
 
   bool UseVerifier() override {
@@ -255,7 +252,6 @@ class TwoClientAppSettingsOsSyncTest
 
 IN_PROC_BROWSER_TEST_F(TwoClientAppSettingsOsSyncTest,
                        AppsStartWithSameSettings) {
-  ASSERT_TRUE(chromeos::features::IsSyncSettingsCategorizationEnabled());
   ASSERT_TRUE(SetupClients());
   ASSERT_PRED3(StartWithSameSettingsTest, InstallHostedAppForAllProfiles(0),
                InstallHostedAppForAllProfiles(1),
@@ -264,7 +260,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppSettingsOsSyncTest,
 
 IN_PROC_BROWSER_TEST_F(TwoClientAppSettingsOsSyncTest,
                        AppsStartWithDifferentSettings) {
-  ASSERT_TRUE(chromeos::features::IsSyncSettingsCategorizationEnabled());
   ASSERT_TRUE(SetupClients());
   ASSERT_PRED3(
       StartWithDifferentSettingsTest, InstallHostedAppForAllProfiles(0),

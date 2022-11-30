@@ -765,7 +765,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchPrivacyOptInPreferenceStateChange"
-    enum="BooleanOptedIn" expires_after="2023-01-15">
+    enum="BooleanOptedIn" expires_after="2023-03-19">
   <owner>donnd@chromium.org</owner>
   <owner>contextual-search-eng@google.com</owner>
   <summary>
@@ -1233,23 +1233,43 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Search.DefaultSearchChangeOrigin"
-    enum="DefaultSearchChangeOrigin" expires_after="M81">
-  <owner>mathp@chromium.org</owner>
-  <summary>
-    The origin/cause of a change to the default search provider.
-  </summary>
-</histogram>
-
 <histogram name="Search.DefaultSearchProviderType"
     enum="OmniboxSearchEngineType" expires_after="2023-02-12">
+  <obsolete>
+    Logged on profile open, including for profiles that do not allow the user to
+    search such as &quot;system&quot; profiles. When logged in such cases,
+    reported the default value. Replaced in M-108 with the histogram
+    Search.DefaultSearchProviderType2, which is similar but not emitted on for
+    some of those unusual/inappropriate profiles.
+  </obsolete>
   <owner>mpearson@chromium.org</owner>
   <owner>csharp@chromium.org</owner>
   <summary>
     The type of the default search engine that is loaded when a profile is
-    opened or after a profile reset. Note that at least one profile is opened on
-    startup. Due to an error, there was a period from roughly May 9 2014 to May
-    23 2014 during which this was not being logged.
+    opened or after a profile reset. Due to an error, there was a period from
+    roughly May 9 2014 to May 23 2014 during which this was not being logged.
+  </summary>
+</histogram>
+
+<histogram name="Search.DefaultSearchProviderType2"
+    enum="OmniboxSearchEngineType" expires_after="2023-09-12">
+  <owner>mpearson@chromium.org</owner>
+  <owner>csharp@chromium.org</owner>
+  <summary>
+    The type of the default search engine that is loaded when a regular, guest,
+    or ChromeOS sign-in screen profile is opened or after a profile reset. (A
+    profile reset can only happen to a regular profile.) Not logged when an
+    Incognito profile is opened because that inherits the settings from its
+    parent profile. As such, it's not necessary to log the Incognito profile's
+    settings.
+
+    The fact that this is logged when the ChromeOS sign-on screen profile is
+    opened means this is recorded when the ChromeOS sign-in screen is initially
+    shown. The value recorded is the default value for the ChromeOS install; the
+    default search engine used in this profile cannot be changed. Also note that
+    people cannot search / browse the web using this profile. As such, the
+    default search engine setting for this profile does not have any practical
+    meaning.
   </summary>
 </histogram>
 
@@ -1384,7 +1404,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.QueryTiles.FetcherNetErrorCode" enum="NetErrorCodes"
-    expires_after="2022-10-09">
+    expires_after="2023-08-31">
   <owner>qinmin@chromium.org</owner>
   <owner>chrome-upboarding-eng@google.com</owner>
   <summary>Records the net error code get from TileFetcher.</summary>
@@ -1442,7 +1462,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.QueryTiles.ShowQueryTilesSegmentationResult"
-    enum="ShowQueryTilesSegmentationResult" expires_after="2022-08-09">
+    enum="ShowQueryTilesSegmentationResult" expires_after="2023-08-31">
   <owner>haileywang@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <summary>
@@ -1469,7 +1489,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Search.QueryTiles.Tile.Clicked" units="index"
-    expires_after="2022-10-31">
+    expires_after="2023-08-31">
 <!-- Name completed by histogram_suffixes name="TileUiSurface" -->
 
   <owner>shaktisahu@chromium.org</owner>
@@ -1490,7 +1510,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Search.QueryTiles.TileCount" units="tiles"
-    expires_after="2022-10-31">
+    expires_after="2023-08-31">
 <!-- Name completed by histogram_suffixes name="TileUiSurface" -->
 
   <owner>shaktisahu@chromium.org</owner>
@@ -1520,7 +1540,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.QueryTiles.TrendingTileEvent" enum="TrendingTileEvent"
-    expires_after="2023-03-05">
+    expires_after="2023-08-31">
   <owner>qinmin@chromium.org</owner>
   <owner>chrome-upboarding-eng@google.com</owner>
   <summary>
@@ -1530,7 +1550,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RegionSearch.Lens.RegionAspectRatio"
-    enum="LensRegionSearchAspectRatio" expires_after="2023-01-15">
+    enum="LensRegionSearchAspectRatio" expires_after="2023-03-19">
   <owner>juanmojica@google.com</owner>
   <owner>benwgold@google.com</owner>
   <owner>stanfield@google.com</owner>
@@ -1542,7 +1562,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RegionSearch.Lens.RegionViewportProportion" units="pct"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>juanmojica@google.com</owner>
   <owner>benwgold@google.com</owner>
   <owner>stanfield@google.com</owner>
@@ -1554,7 +1574,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RegionSearch.Lens.Result"
-    enum="LensRegionSearchCaptureResult" expires_after="2023-01-15">
+    enum="LensRegionSearchCaptureResult" expires_after="2023-03-19">
   <owner>juanmojica@google.com</owner>
   <owner>benwgold@google.com</owner>
   <owner>stanfield@google.com</owner>
@@ -1594,7 +1614,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RelatedSearches.CarouselScrollAndClick"
-    enum="ScrollAndClickStatus" expires_after="2022-12-11">
+    enum="ScrollAndClickStatus" expires_after="2023-03-19">
   <owner>donnd@chromium.org</owner>
   <owner>gangwu@chromium.org</owner>
   <owner>related-searches-vteam@google.com</owner>
@@ -1606,7 +1626,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RelatedSearches.CarouselScrolled" enum="Boolean"
-    expires_after="2022-12-11">
+    expires_after="2023-03-19">
   <owner>donnd@chromium.org</owner>
   <owner>gangwu@chromium.org</owner>
   <owner>related-searches-vteam@google.com</owner>

@@ -4,14 +4,15 @@
 
 #include "ash/services/device_sync/cryptauth_v2_device_sync_test_devices.h"
 
-#include "ash/components/multidevice/software_feature.h"
-#include "ash/components/multidevice/software_feature_state.h"
 #include "ash/services/device_sync/cryptauth_device.h"
+#include "ash/services/device_sync/fake_attestation_certificates_syncer.h"
 #include "ash/services/device_sync/fake_ecies_encryption.h"
 #include "ash/services/device_sync/proto/cryptauth_devicesync.pb.h"
 #include "ash/services/device_sync/proto/cryptauth_v2_test_util.h"
 #include "base/check_op.h"
 #include "base/no_destructor.h"
+#include "chromeos/ash/components/multidevice/software_feature.h"
+#include "chromeos/ash/components/multidevice/software_feature_state.h"
 
 namespace ash {
 
@@ -37,6 +38,13 @@ const CryptAuthDevice& GetLocalDeviceForTest() {
         cryptauthv2::GetClientAppMetadataForTest().device_model());
     bt_metadata.set_bluetooth_public_address(
         kDefaultLocalDeviceBluetoothAddress);
+
+    cryptauthv2::AttestationData* attestation_data =
+        bt_metadata.mutable_attestation_data();
+    attestation_data->set_type(
+        cryptauthv2::AttestationData::CROS_SOFT_BIND_CERT_CHAIN);
+    attestation_data->add_certificates(
+        FakeAttestationCertificatesSyncer::kFakeCert);
 
     return CryptAuthDevice(
         cryptauthv2::GetClientAppMetadataForTest().instance_id(),

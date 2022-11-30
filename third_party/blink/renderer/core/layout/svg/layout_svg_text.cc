@@ -76,7 +76,7 @@ LayoutSVGText::LayoutSVGText(Element* node)
 }
 
 LayoutSVGText::~LayoutSVGText() {
-  DCHECK(descendant_text_nodes_.IsEmpty());
+  DCHECK(descendant_text_nodes_.empty());
 }
 
 void LayoutSVGText::Trace(Visitor* visitor) const {
@@ -88,13 +88,13 @@ void LayoutSVGText::StyleDidChange(StyleDifference diff,
                                    const ComputedStyle* old_style) {
   NOT_DESTROYED();
   LayoutSVGBlock::StyleDidChange(diff, old_style);
-  SVGResources::UpdatePaints(*GetElement(), old_style, StyleRef());
+  SVGResources::UpdatePaints(*this, old_style, StyleRef());
 }
 
 void LayoutSVGText::WillBeDestroyed() {
   NOT_DESTROYED();
   descendant_text_nodes_.clear();
-  SVGResources::ClearPaints(*GetElement(), Style());
+  SVGResources::ClearPaints(*this, Style());
   LayoutSVGBlock::WillBeDestroyed();
 }
 
@@ -129,7 +129,7 @@ void LayoutSVGText::SubtreeStructureChanged(
     LayoutInvalidationReasonForTracing reason) {
   NOT_DESTROYED();
   if (BeingDestroyed() || !EverHadLayout()) {
-    DCHECK(descendant_text_nodes_.IsEmpty());
+    DCHECK(descendant_text_nodes_.empty());
     return;
   }
   if (DocumentBeingDestroyed())

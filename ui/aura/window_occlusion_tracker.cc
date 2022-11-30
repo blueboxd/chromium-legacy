@@ -90,8 +90,8 @@ gfx::Transform GetWindowTransformRelativeToRoot(
                           static_cast<float>(window->layer()->bounds().y()));
     transform_relative_to_root = window->layer()->transform();
   }
-  transform_relative_to_root.ConcatTransform(translation);
-  transform_relative_to_root.ConcatTransform(parent_transform_relative_to_root);
+  transform_relative_to_root.PostConcat(translation);
+  transform_relative_to_root.PostConcat(parent_transform_relative_to_root);
   return transform_relative_to_root;
 }
 
@@ -100,10 +100,8 @@ SkIRect ComputeClippedAndTransformedBounds(
     const gfx::Transform& transform_relative_to_root,
     const SkIRect* clipped_bounds) {
   DCHECK(transform_relative_to_root.Preserves2dAxisAlignment());
-  gfx::RectF transformed_bounds(bounds);
-  transform_relative_to_root.TransformRect(&transformed_bounds);
-  SkIRect skirect_bounds =
-      gfx::RectToSkIRect(gfx::ToEnclosedRect(transformed_bounds));
+  gfx::Rect transformed_bounds = transform_relative_to_root.MapRect(bounds);
+  SkIRect skirect_bounds = gfx::RectToSkIRect(transformed_bounds);
   // If necessary, clip the bounds.
   if (clipped_bounds && !skirect_bounds.intersect(*clipped_bounds))
     return SkIRect::MakeEmpty();

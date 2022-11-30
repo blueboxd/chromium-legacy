@@ -21,6 +21,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
@@ -46,15 +47,17 @@ import org.chromium.base.UserDataHost;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthController;
+import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -103,6 +106,9 @@ public class TabSwitcherMediatorUnitTest {
     private static final int TAB3_ID = 123;
     private static final int TAB4_ID = 357;
 
+    private final OneshotSupplierImpl<IncognitoReauthController>
+            mIncognitoReauthControllerSupplier = new OneshotSupplierImpl<>();
+
     @Mock
     TabSwitcherMediator.ResetHandler mResetHandler;
     @Mock
@@ -139,6 +145,8 @@ public class TabSwitcherMediatorUnitTest {
     MultiWindowModeStateDispatcher mMultiWindowModeStateDispatcher;
     @Mock
     PriceMessageService mPriceMessageService;
+    @Mock
+    IncognitoReauthController mIncognitoReauthController;
 
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
@@ -150,6 +158,9 @@ public class TabSwitcherMediatorUnitTest {
     @Captor
     ArgumentCaptor<MultiWindowModeStateDispatcher.MultiWindowModeObserver>
             mMultiWindowModeObserverCaptor;
+    @Captor
+    private ArgumentCaptor<IncognitoReauthManager.IncognitoReauthCallback>
+            mIncognitoReauthCallbackArgumentCaptor;
 
     private Tab mTab1;
     private Tab mTab2;
@@ -216,17 +227,21 @@ public class TabSwitcherMediatorUnitTest {
         doReturn(new ObservableSupplierImpl<Boolean>())
                 .when(mTabGridDialogController)
                 .getHandleBackPressChangedSupplier();
+        when(mIncognitoReauthController.isIncognitoReauthPending()).thenReturn(false);
+        mIncognitoReauthControllerSupplier.set(mIncognitoReauthController);
 
         mModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
         mModel.addObserver(mPropertyObserver);
         mMediator = new TabSwitcherMediator(mContext, mResetHandler, mModel, mTabModelSelector,
                 mBrowserControlsStateProvider, mCompositorViewHolder, null, mMessageItemsController,
                 mPriceWelcomeMessageController, mMultiWindowModeStateDispatcher,
-                TabListCoordinator.TabListMode.GRID);
+                TabListCoordinator.TabListMode.GRID, mIncognitoReauthControllerSupplier);
 
         mMediator.initWithNative(controller, null);
         mMediator.addTabSwitcherViewObserver(mTabSwitcherViewObserver);
         mMediator.setOnTabSelectingListener(mLayout::onTabSelecting);
+        verify(mIncognitoReauthController, times(1))
+                .addIncognitoReauthCallback(mIncognitoReauthCallbackArgumentCaptor.capture());
     }
 
     @Test
@@ -447,38 +462,6 @@ public class TabSwitcherMediatorUnitTest {
 
         // Switching TabModels by itself shouldn't cause visibility changes.
         assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(false));
-    }
-
-    @Test
-    public void hidesPreviouslySelectedTabAfterNewTabModelSelected_regularToEmptyIncognito() {
-        initAndAssertAllProperties();
-        mModel.set(TabListContainerProperties.IS_VISIBLE, true);
-
-        TabModel incognitoTabModel = mock(TabModel.class);
-        doReturn(0).when(incognitoTabModel).getCount();
-        doReturn(true).when(incognitoTabModel).isIncognito();
-
-        mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(incognitoTabModel, mTabModel);
-        verify(/* mTab3 is the current tab. */ mTab3).hide(TabHidingType.CHANGED_TABS);
-    }
-
-    @Test
-    public void noHidesPreviouslySelectedTabAfterNewTabModelSelected_incognitoToEmptyRegular() {
-        // The tab shouldn't be hidden when moving from incognito to the regular tab switcher.
-        initAndAssertAllProperties();
-        mModel.set(TabListContainerProperties.IS_VISIBLE, true);
-
-        Tab tab = mock(Tab.class);
-        TabModel incognitoTabModel = mock(TabModel.class);
-        doReturn(0).when(mTabModel).getCount();
-        doReturn(0).when(mTabModel).index();
-        doReturn(1).when(incognitoTabModel).getCount();
-        doReturn(0).when(mTabModel).index();
-        doReturn(true).when(incognitoTabModel).isIncognito();
-        doReturn(tab).when(incognitoTabModel).getTabAt(0);
-
-        mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(incognitoTabModel, mTabModel);
-        verify(/* mTab3 is the current tab. */ mTab3, times(0)).hide(TabHidingType.CHANGED_TABS);
     }
 
     @Test
@@ -923,14 +906,14 @@ public class TabSwitcherMediatorUnitTest {
         new TabSwitcherMediator(mContext, mResetHandler, mModel, mTabModelSelector,
                 mBrowserControlsStateProvider, mCompositorViewHolder, null, mMessageItemsController,
                 mPriceWelcomeMessageController, mMultiWindowModeStateDispatcher,
-                TabListCoordinator.TabListMode.GRID);
+                TabListCoordinator.TabListMode.GRID, mIncognitoReauthControllerSupplier);
         assertEquals(16, mModel.get(TabListContainerProperties.BOTTOM_PADDING));
 
         mModel.set(TabListContainerProperties.BOTTOM_PADDING, 0);
         new TabSwitcherMediator(mContext, mResetHandler, mModel, mTabModelSelector,
                 mBrowserControlsStateProvider, mCompositorViewHolder, null, mMessageItemsController,
                 mPriceWelcomeMessageController, mMultiWindowModeStateDispatcher,
-                TabListCoordinator.TabListMode.STRIP);
+                TabListCoordinator.TabListMode.STRIP, mIncognitoReauthControllerSupplier);
         assertEquals(0, mModel.get(TabListContainerProperties.BOTTOM_PADDING));
     }
 
@@ -967,6 +950,47 @@ public class TabSwitcherMediatorUnitTest {
         mMediator.showTabSwitcherView(false);
         doReturn(mTab1).when(mTabModelSelector).getCurrentTab();
         Assert.assertTrue(mMediator.shouldInterceptBackPress());
+    }
+
+    @Test
+    public void testOnTabModelSelected_NewModelIncognito_ReauthPending_ClearsTabList() {
+        initAndAssertAllProperties();
+        mModel.set(TabListContainerProperties.IS_VISIBLE, true);
+        doReturn(true).when(mTabModelFilter).isIncognito();
+        doReturn(true).when(mTabModelSelector).isIncognitoSelected();
+        doReturn(true).when(mTabModelSelector).isTabStateInitialized();
+        doReturn(true).when(mIncognitoReauthController).isIncognitoReauthPending();
+        doReturn(true).when(mTabModel).isIncognito();
+
+        mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(mTabModel, null);
+        verify(mResetHandler, times(1)).resetWithTabList(eq(null), eq(false), eq(false));
+    }
+
+    @Test
+    public void testOnTabModelSelected_NewModelIncognito_ReauthSuccessful_RestoresTabList() {
+        initAndAssertAllProperties();
+        mModel.set(TabListContainerProperties.IS_VISIBLE, true);
+        doReturn(true).when(mTabModelFilter).isIncognito();
+        doReturn(true).when(mTabModelSelector).isIncognitoSelected();
+        doReturn(true).when(mTabModelSelector).isTabStateInitialized();
+        doReturn(true).when(mIncognitoReauthController).isIncognitoReauthPending();
+        doReturn(true).when(mTabModel).isIncognito();
+
+        mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(mTabModel, null);
+        verify(mResetHandler, times(1)).resetWithTabList(eq(null), eq(false), eq(false));
+
+        // Mock that the re-auth was successful.
+        doReturn(false).when(mIncognitoReauthController).isIncognitoReauthPending();
+        mIncognitoReauthCallbackArgumentCaptor.getValue().onIncognitoReauthSuccess();
+
+        // Verify we reset the tab-list with the current tab model filter.
+        verify(mResetHandler, times(1)).resetWithTabList(eq(mTabModelFilter), eq(false), eq(false));
+
+        // Check we don't call reset handler on other cases
+        mIncognitoReauthCallbackArgumentCaptor.getValue().onIncognitoReauthNotPossible();
+        mIncognitoReauthCallbackArgumentCaptor.getValue().onIncognitoReauthFailure();
+        // Verify we don't reset the tab-list with the current tab model filter again.
+        verifyNoMoreInteractions(mResetHandler);
     }
 
     private void initAndAssertAllProperties() {

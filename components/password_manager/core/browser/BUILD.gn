@@ -366,6 +366,8 @@ static_library("browser") {
 
   if (!is_android && !is_ios) {
     sources += [
+      "password_strength_calculation.cc",
+      "password_strength_calculation.h",
       "ui/weak_check_utility.cc",
       "ui/weak_check_utility.h",
     ]
@@ -730,6 +732,7 @@ source_set("unit_tests") {
     "sync/password_sync_bridge_unittest.cc",
     "sync_credentials_filter_unittest.cc",
     "ui/bulk_leak_check_service_adapter_unittest.cc",
+    "ui/credential_ui_entry_unittest.cc",
     "ui/insecure_credentials_manager_unittest.cc",
     "ui/password_undo_helper_unittest.cc",
     "ui/post_save_compromised_helper_unittest.cc",
@@ -762,10 +765,6 @@ source_set("unit_tests") {
 
   if (is_win || is_mac || is_linux || is_chromeos) {
     sources += [ "hash_password_manager_unittest.cc" ]
-  }
-
-  if (!is_android && !is_ios) {
-    sources += [ "ui/weak_check_utility_unittest.cc" ]
   }
 
   if (!is_chromeos_ash && !is_android) {
@@ -830,6 +829,14 @@ source_set("unit_tests") {
     "//ui/gfx:test_support",
     "//url",
   ]
+
+  if (!is_android && !is_ios) {
+    sources += [
+      "password_strength_calculation_unittest.cc",
+      "ui/weak_check_utility_unittest.cc",
+    ]
+    deps += [ "//components/password_manager/services/password_strength:lib" ]
+  }
 
   if (!is_ios) {
     deps += [

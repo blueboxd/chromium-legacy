@@ -45,6 +45,10 @@ class ASH_PUBLIC_EXPORT HoldingSpaceClient {
   virtual base::FilePath CrackFileSystemUrl(
       const GURL& file_system_url) const = 0;
 
+  // Returns the value of the `drive::prefs::kDisableDrive` pref, indicating
+  // whether Google Drive has been disabled.
+  virtual bool IsDriveDisabled() const = 0;
+
   // Attempts to open the Downloads folder.
   // Success is returned via the supplied `callback`.
   virtual void OpenDownloads(SuccessCallback callback) = 0;
@@ -63,6 +67,10 @@ class ASH_PUBLIC_EXPORT HoldingSpaceClient {
 
   // Pins the specified holding space `items`.
   virtual void PinItems(const std::vector<const HoldingSpaceItem*>& items) = 0;
+
+  // Remove file suggestions specified by absolute file paths.
+  virtual void RemoveFileSuggestions(
+      const std::vector<base::FilePath>& absolute_file_paths) = 0;
 
   // Attempts to show the specified holding space `item` in its folder.
   // Success is returned via the supplied `callback`.

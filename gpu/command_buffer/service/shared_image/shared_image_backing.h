@@ -17,6 +17,7 @@
 #include "base/trace_event/memory_allocator_dump_guid.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
+#include "components/viz/common/resources/shared_image_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/gpu_gles2_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -51,6 +52,7 @@ class OverlayImageRepresentation;
 class MemoryImageRepresentation;
 class VaapiImageRepresentation;
 class RasterImageRepresentation;
+class MemoryTracker;
 class MemoryTypeTracker;
 class SharedImageFactory;
 class VaapiDependenciesFactory;
@@ -70,6 +72,7 @@ enum class SharedImageBackingType {
   kVideo = 11,
   kWrappedSkImage = 12,
   kCompound = 13,
+  kDCOMPSurfaceProxy = 14,
 };
 
 // Represents the actual storage (GL texture, VkImage, GMB) for a SharedImage.
@@ -78,7 +81,7 @@ enum class SharedImageBackingType {
 class GPU_GLES2_EXPORT SharedImageBacking {
  public:
   SharedImageBacking(const Mailbox& mailbox,
-                     viz::ResourceFormat format,
+                     viz::SharedImageFormat format,
                      const gfx::Size& size,
                      const gfx::ColorSpace& color_space,
                      GrSurfaceOrigin surface_origin,
@@ -89,7 +92,7 @@ class GPU_GLES2_EXPORT SharedImageBacking {
 
   virtual ~SharedImageBacking();
 
-  viz::ResourceFormat format() const { return format_; }
+  viz::SharedImageFormat format() const { return format_; }
   const gfx::Size& size() const { return size_; }
   const gfx::ColorSpace& color_space() const { return color_space_; }
   GrSurfaceOrigin surface_origin() const { return surface_origin_; }
@@ -113,6 +116,9 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   void AddRef(SharedImageRepresentation* representation);
   void ReleaseRef(SharedImageRepresentation* representation);
   bool HasAnyRefs() const;
+
+  // Returns the memory tracker this backing is registering memory with.
+  const MemoryTracker* GetMemoryTracker() const;
 
   // Notify backing a read access is succeeded
   void OnReadSucceeded();
@@ -139,7 +145,7 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // Marks the provided rect as cleared.
   virtual void SetClearedRect(const gfx::Rect& cleared_rect) = 0;
 
-  virtual void Update(std::unique_ptr<gfx::GpuFence> in_fence) = 0;
+  virtual void Update(std::unique_ptr<gfx::GpuFence> in_fence);
 
   // Uploads pixels from memory into GPU texture. Backings must implement this
   // if they support `SHARED_IMAGE_USAGE_CPU_UPLOAD`.
@@ -278,7 +284,7 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   };
 
   const Mailbox mailbox_;
-  const viz::ResourceFormat format_;
+  const viz::SharedImageFormat format_;
   const gfx::Size size_;
   const gfx::ColorSpace color_space_;
   const GrSurfaceOrigin surface_origin_;
@@ -312,7 +318,7 @@ class GPU_GLES2_EXPORT ClearTrackingSharedImageBacking
     : public SharedImageBacking {
  public:
   ClearTrackingSharedImageBacking(const Mailbox& mailbox,
-                                  viz::ResourceFormat format,
+                                  viz::SharedImageFormat format,
                                   const gfx::Size& size,
                                   const gfx::ColorSpace& color_space,
                                   GrSurfaceOrigin surface_origin,

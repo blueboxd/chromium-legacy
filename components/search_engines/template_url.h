@@ -852,9 +852,18 @@ class TemplateURL {
       std::u16string* encoded_terms,
       std::u16string* encoded_original_query) const;
 
-  // Returns the search url for this template URL.
+  // Returns the search url for this template URL and the optional search terms.
+  // Uses something obscure as the default value for the search terms argument
+  // so that in the rare case the term replaces the URL it's unlikely another
+  // keyword would have the same url.
   // Returns an empty GURL if this template URL has no url().
-  GURL GenerateSearchURL(const SearchTermsData& search_terms_data) const;
+  GURL GenerateSearchURL(
+      const SearchTermsData& search_terms_data,
+      const std::u16string& search_terms = u"blah.blah.blah.blah.blah") const;
+
+  // Returns the suggest endpoint URL for this template URL.
+  // Returns an empty GURL if this template URL has no suggestions_url().
+  GURL GenerateSuggestionURL(const SearchTermsData& search_terms_data) const;
 
   // Returns true if this search engine supports the side search feature.
   bool IsSideSearchSupported() const;
@@ -885,6 +894,12 @@ class TemplateURL {
   // Estimates dynamic memory usage.
   // See base/trace_event/memory_usage_estimator.h for more info.
   size_t EstimateMemoryUsage() const;
+
+  // Returns whether |url| query contains a side search param.
+  bool ContainsSideSearchParam(const GURL& url) const;
+
+  // Returns whether |url| query contains a side image search param.
+  bool ContainsSideImageSearchParam(const GURL& url) const;
 
  private:
   friend class TemplateURLService;

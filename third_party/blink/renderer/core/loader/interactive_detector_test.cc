@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "components/ukm/test_ukm_recorder.h"
@@ -501,8 +501,8 @@ TEST_F(InteractiveDetectorTest, TaskLongerThan5sBlocksTTI) {
 
   // Post a task with 6 seconds duration.
   GetTaskRunner()->PostTask(
-      FROM_HERE, WTF::Bind(&InteractiveDetectorTest::DummyTaskWithDuration,
-                           WTF::Unretained(this), 6.0));
+      FROM_HERE, WTF::BindOnce(&InteractiveDetectorTest::DummyTaskWithDuration,
+                               WTF::Unretained(this), 6.0));
 
   platform_->RunUntilIdle();
 
@@ -520,8 +520,8 @@ TEST_F(InteractiveDetectorTest, LongTaskAfterTTIDoesNothing) {
 
   // Long task 1.
   GetTaskRunner()->PostTask(
-      FROM_HERE, WTF::Bind(&InteractiveDetectorTest::DummyTaskWithDuration,
-                           WTF::Unretained(this), 0.1));
+      FROM_HERE, WTF::BindOnce(&InteractiveDetectorTest::DummyTaskWithDuration,
+                               WTF::Unretained(this), 0.1));
 
   platform_->RunUntilIdle();
 
@@ -532,8 +532,8 @@ TEST_F(InteractiveDetectorTest, LongTaskAfterTTIDoesNothing) {
 
   // Long task 2.
   GetTaskRunner()->PostTask(
-      FROM_HERE, WTF::Bind(&InteractiveDetectorTest::DummyTaskWithDuration,
-                           WTF::Unretained(this), 0.1));
+      FROM_HERE, WTF::BindOnce(&InteractiveDetectorTest::DummyTaskWithDuration,
+                               WTF::Unretained(this), 0.1));
 
   platform_->RunUntilIdle();
   // Wait 5 seconds to see if TTI time changes.

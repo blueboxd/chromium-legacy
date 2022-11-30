@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -159,8 +159,9 @@ class PLATFORM_EXPORT HeapAllocator {
   }
 
   template <typename T>
-  static void BackingWriteBarrier(T** slot) {
-    WriteBarrier::DispatchForObject(slot);
+  static void BackingWriteBarrier(T** backing_pointer_slot) {
+    WriteBarrier::DispatchForUncompressedSlot(backing_pointer_slot,
+                                              *backing_pointer_slot);
   }
 
   template <typename T>

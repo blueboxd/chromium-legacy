@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,9 +27,21 @@ enum AudioPlaybackDestination {
   "controller",
 };
 
+// TODO(crbug.com/600726): Set RuntimeEnabled here if support is ever added for
+// enums (currently it is a no-op).
+enum PresentationSourceType {
+  "url",
+  "mirroring",
+};
+
 [RuntimeEnabled=SiteInitiatedMirroring]
 dictionary PresentationSource {
-  required USVString url;
-  CaptureLatency latencyHint;
-  AudioPlaybackDestination audioPlayback;
+  required PresentationSourceType type;
+
+  // Used if `type` is "url".
+  USVString? url;
+
+  // Used if `type` is "mirroring".
+  CaptureLatency? latencyHint;
+  AudioPlaybackDestination? audioPlayback;
 };

@@ -6,6 +6,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/fixed_flat_map.h"
@@ -73,7 +74,6 @@ constexpr auto kLacrosAvailabilityMap =
 bool IsUserTypeAllowed(const User* user) {
   switch (user->GetType()) {
     case user_manager::USER_TYPE_REGULAR:
-    case user_manager::USER_TYPE_WEB_KIOSK_APP:
     case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
     // Note: Lacros will not be enabled for Guest users unless LacrosSupport
     // flag is passed in --enable-features. See https://crbug.com/1294051#c25.
@@ -81,6 +81,8 @@ bool IsUserTypeAllowed(const User* user) {
       return true;
     case user_manager::USER_TYPE_CHILD:
       return base::FeatureList::IsEnabled(kLacrosForSupervisedUsers);
+    case user_manager::USER_TYPE_WEB_KIOSK_APP:
+      return base::FeatureList::IsEnabled(features::kWebKioskEnableLacros);
     case user_manager::USER_TYPE_KIOSK_APP:
       return base::FeatureList::IsEnabled(features::kChromeKioskEnableLacros);
     case user_manager::USER_TYPE_ARC_KIOSK_APP:
@@ -247,13 +249,15 @@ const ComponentInfo kLacrosDogfoodStableInfo = {
     "lacros-dogfood-stable", "ehpjbaiafkpkmhjocnenjbbhmecnfcjb"};
 
 // A kill switch for lacros chrome apps.
-const base::Feature kLacrosDisableChromeApps{"LacrosDisableChromeApps",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kLacrosDisableChromeApps,
+             "LacrosDisableChromeApps",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When this feature is enabled, Lacros is allowed to roll out by policy to
 // Googlers.
-const base::Feature kLacrosGooglePolicyRollout{
-    "LacrosGooglePolicyRollout", base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kLacrosGooglePolicyRollout,
+             "LacrosGooglePolicyRollout",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Makes LaCrOS allowed for Family Link users.
 // With this feature disabled LaCrOS cannot be enabled for Family Link users.
@@ -261,8 +265,9 @@ const base::Feature kLacrosGooglePolicyRollout{
 // launch switches.
 // Note: Family Link users do not have access to chrome://flags and this feature
 // flag is meant to help with development and testing.
-const base::Feature kLacrosForSupervisedUsers{
-    "LacrosForSupervisedUsers", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kLacrosForSupervisedUsers,
+             "LacrosForSupervisedUsers",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 const Channel kLacrosDefaultChannel = Channel::DEV;
 
@@ -470,10 +475,6 @@ bool IsLacrosSupportFlagAllowed() {
          (GetCachedLacrosAvailability() == LacrosAvailability::kUserChoice);
 }
 
-void SetLacrosEnabledForTest(bool force_enabled) {
-  g_lacros_enabled_for_test = force_enabled;
-}
-
 bool IsAshWebBrowserEnabled() {
   // Note that if you are updating this function, please also update the
   // *ForMigration variant to keep the logics consistent.
@@ -638,10 +639,6 @@ LacrosMode GetLacrosMode() {
   return LacrosMode::kDisabled;
 }
 
-void SetLacrosPrimaryBrowserForTest(absl::optional<bool> value) {
-  g_lacros_primary_browser_for_test = value;
-}
-
 bool IsLacrosPrimaryBrowserAllowed() {
   // Note that if you are updating this function, please also update the
   // *ForMigration variant to keep the logics consistent.
@@ -730,13 +727,11 @@ bool IsLacrosChromeAppsEnabled() {
 
 bool IsLacrosEnabledInWebKioskSession() {
   return user_manager::UserManager::Get()->IsLoggedInAsWebKioskApp() &&
-         base::FeatureList::IsEnabled(features::kWebKioskEnableLacros) &&
          IsLacrosEnabled();
 }
 
 bool IsLacrosEnabledInChromeKioskSession() {
   return user_manager::UserManager::Get()->IsLoggedInAsKioskApp() &&
-         base::FeatureList::IsEnabled(features::kChromeKioskEnableLacros) &&
          IsLacrosEnabled();
 }
 
@@ -797,9 +792,9 @@ void RecordDataVer(PrefService* local_state,
                    const std::string& user_id_hash,
                    const base::Version& version) {
   DCHECK(version.IsValid());
-  DictionaryPrefUpdate update(local_state, kDataVerPref);
-  base::Value* dict = update.Get();
-  dict->SetStringKey(user_id_hash, version.GetString());
+  ScopedDictPrefUpdate update(local_state, kDataVerPref);
+  base::Value::Dict& dict = update.Get();
+  dict.Set(user_id_hash, version.GetString());
 }
 
 bool IsDataWipeRequired(PrefService* local_state,
@@ -903,6 +898,10 @@ LacrosAvailability GetCachedLacrosAvailabilityForTesting() {
   return GetCachedLacrosAvailability();
 }
 
+void SetLacrosLaunchSwitchSourceForTest(LacrosAvailability test_value) {
+  g_lacros_availability_cache = test_value;
+}
+
 void ClearLacrosAvailabilityCacheForTest() {
   g_lacros_availability_cache.reset();
 }
@@ -963,33 +962,31 @@ bool IsProfileMigrationCompletedForUser(PrefService* local_state,
 void SetProfileMigrationCompletedForUser(PrefService* local_state,
                                          const std::string& user_id_hash,
                                          MigrationMode mode) {
-  DictionaryPrefUpdate update(local_state,
+  ScopedDictPrefUpdate update(local_state,
                               kProfileMigrationCompletedForUserPref);
-  base::Value* dict = update.Get();
-  dict->SetBoolKey(user_id_hash, true);
+  update->Set(user_id_hash, true);
 
   if (mode == MigrationMode::kMove) {
-    DictionaryPrefUpdate update(local_state,
-                                kProfileMoveMigrationCompletedForUserPref);
-    base::Value* dict = update.Get();
-    dict->SetBoolKey(user_id_hash, true);
+    ScopedDictPrefUpdate move_update(local_state,
+                                     kProfileMoveMigrationCompletedForUserPref);
+    move_update->Set(user_id_hash, true);
   }
 }
 
 void ClearProfileMigrationCompletedForUser(PrefService* local_state,
                                            const std::string& user_id_hash) {
   {
-    DictionaryPrefUpdate update(local_state,
+    ScopedDictPrefUpdate update(local_state,
                                 kProfileMigrationCompletedForUserPref);
-    base::Value* dict = update.Get();
-    dict->RemoveKey(user_id_hash);
+    base::Value::Dict& dict = update.Get();
+    dict.Remove(user_id_hash);
   }
 
   {
-    DictionaryPrefUpdate update(local_state,
+    ScopedDictPrefUpdate update(local_state,
                                 kProfileMoveMigrationCompletedForUserPref);
-    base::Value* dict = update.Get();
-    dict->RemoveKey(user_id_hash);
+    base::Value::Dict& dict = update.Get();
+    dict.Remove(user_id_hash);
   }
 }
 
@@ -1048,18 +1045,17 @@ bool IsAshBrowserSyncEnabled() {
 
 void SetGotoFilesClicked(PrefService* local_state,
                          const std::string& user_id_hash) {
-  ListPrefUpdate update(local_state, kGotoFilesPref);
-  base::Value* list = update.Get();
+  ScopedListPrefUpdate update(local_state, kGotoFilesPref);
+  base::Value::List& list = update.Get();
   base::Value user_id_hash_value(user_id_hash);
-  if (!base::Contains(list->GetList(), user_id_hash_value))
-    list->GetList().Append(std::move(user_id_hash_value));
+  if (!base::Contains(list, user_id_hash_value))
+    list.Append(std::move(user_id_hash_value));
 }
 
 void ClearGotoFilesClicked(PrefService* local_state,
                            const std::string& user_id_hash) {
-  ListPrefUpdate update(local_state, kGotoFilesPref);
-  base::Value* list = update.Get();
-  list->GetList().EraseValue(base::Value(user_id_hash));
+  ScopedListPrefUpdate update(local_state, kGotoFilesPref);
+  update->EraseValue(base::Value(user_id_hash));
 }
 
 bool WasGotoFilesClicked(PrefService* local_state,
@@ -1072,6 +1068,17 @@ bool ShouldEnforceAshExtensionKeepList() {
   return IsLacrosPrimaryBrowser() &&
          base::FeatureList::IsEnabled(
              chromeos::features::kEnforceAshExtensionKeeplist);
+}
+
+base::AutoReset<bool> SetLacrosEnabledForTest(bool force_enabled) {
+  return base::AutoReset<bool>(&g_lacros_enabled_for_test, force_enabled);
+}
+
+base::AutoReset<absl::optional<bool>>
+SetLacrosPrimaryBrowserForTest(  // IN-TEST
+    absl::optional<bool> value) {
+  return base::AutoReset<absl::optional<bool>>(
+      &g_lacros_primary_browser_for_test, value);
 }
 
 }  // namespace browser_util

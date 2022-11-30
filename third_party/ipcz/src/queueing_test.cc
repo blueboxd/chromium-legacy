@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -179,7 +179,8 @@ MULTINODE_TEST_NODE(QueueingTestNode, TwoPhaseFeedbackClient) {
   Close(b);
 }
 
-MULTINODE_TEST(QueueingTest, TwoPhaseFeedback) {
+// TODO(https://crbug.com/1361670): Fix flakiness and re-enable this test.
+MULTINODE_TEST(QueueingTest, DISABLED_TwoPhaseFeedback) {
   IpczHandle c = SpawnTestNode<TwoPhaseFeedbackClient>();
   WaitForDirectRemoteLink(c);
   EXPECT_EQ(IPCZ_RESULT_OK, Put(c, "hello?"));

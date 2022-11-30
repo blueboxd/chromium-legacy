@@ -105,13 +105,23 @@
           "builder": "mac12-arm64-rel-tests",
           "project": "chromium"
         }
+      ],
+      "mirroring_builder_group_and_names": [
+        {
+          "builder": "mac11-arm64-rel",
+          "group": "tryserver.chromium.mac"
+        },
+        {
+          "builder": "mac12-arm64-rel",
+          "group": "tryserver.chromium.mac"
+        }
       ]
     }
   },
-  "$build/goma": {
-    "rpc_extra_params": "?prod",
-    "server_host": "goma.chromium.org",
-    "use_luci_auth": true
+  "$build/reclient": {
+    "instance": "rbe-chromium-trusted",
+    "jobs": 250,
+    "metrics_project": "chromium-reclient-metrics"
   },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],
@@ -123,6 +133,6 @@
   "builder_group": "chromium.mac",
   "recipe": "chromium",
   "sheriff_rotations": [
-    "chrome_browser_release"
+    "chromium"
   ]
 }

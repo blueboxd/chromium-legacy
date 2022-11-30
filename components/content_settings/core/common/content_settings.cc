@@ -87,7 +87,7 @@ constexpr HistogramValue kHistogramValue[] = {
     {ContentSettingsType::FILE_SYSTEM_READ_GUARD, 66},
     {ContentSettingsType::STORAGE_ACCESS, 67},
     {ContentSettingsType::CAMERA_PAN_TILT_ZOOM, 68},
-    {ContentSettingsType::WINDOW_PLACEMENT, 69},
+    {ContentSettingsType::WINDOW_MANAGEMENT, 69},
     {ContentSettingsType::INSECURE_PRIVATE_NETWORK, 70},
     {ContentSettingsType::LOCAL_FONTS, 71},
     {ContentSettingsType::PERMISSION_AUTOREVOCATION_DATA, 72},
@@ -106,6 +106,7 @@ constexpr HistogramValue kHistogramValue[] = {
     {ContentSettingsType::FEDERATED_IDENTITY_API, 85},
     {ContentSettingsType::NOTIFICATION_INTERACTIONS, 86},
     {ContentSettingsType::REDUCED_ACCEPT_LANGUAGE, 87},
+    {ContentSettingsType::NOTIFICATION_PERMISSION_REVIEW, 88},
 };
 
 void FilterRulesForType(ContentSettingsForOneType& settings,

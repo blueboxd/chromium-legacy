@@ -116,8 +116,8 @@ void RunServeAsyncRequestsTask(scoped_refptr<base::TaskRunner> task_runner) {
   // getting the platform's one. (crbug.com/751425)
   WebURLLoaderMockFactory::GetSingletonInstance()->ServeAsynchronousRequests();
   if (TestWebFrameClient::IsLoading()) {
-    task_runner->PostTask(FROM_HERE,
-                          WTF::Bind(&RunServeAsyncRequestsTask, task_runner));
+    task_runner->PostTask(
+        FROM_HERE, WTF::BindOnce(&RunServeAsyncRequestsTask, task_runner));
   } else {
     test::ExitRunLoop();
   }
@@ -245,7 +245,7 @@ void PumpPendingRequestsForFrameToLoad(WebLocalFrame* frame) {
   scoped_refptr<base::TaskRunner> task_runner =
       frame->GetTaskRunner(blink::TaskType::kInternalTest);
   task_runner->PostTask(FROM_HERE,
-                        WTF::Bind(&RunServeAsyncRequestsTask, task_runner));
+                        WTF::BindOnce(&RunServeAsyncRequestsTask, task_runner));
   test::EnterRunLoop();
 }
 
@@ -288,7 +288,8 @@ WebLocalFrameImpl* CreateLocalChild(
     WebLocalFrame& parent,
     mojom::blink::TreeScopeType scope,
     TestWebFrameClient* client,
-    WebPolicyContainerBindParams policy_container_bind_params) {
+    WebPolicyContainerBindParams policy_container_bind_params,
+    WebLocalFrameClient::FinishChildFrameCreationFn finish_creation) {
   MockPolicyContainerHost mock_policy_container_host;
   mock_policy_container_host.BindWithNewEndpoint(
       std::move(policy_container_bind_params.receiver));
@@ -297,6 +298,7 @@ WebLocalFrameImpl* CreateLocalChild(
   auto* frame = To<WebLocalFrameImpl>(
       parent.CreateLocalChild(scope, client, nullptr, LocalFrameToken()));
   client->Bind(frame, std::move(owned_client));
+  finish_creation(frame, DocumentToken());
   return frame;
 }
 
@@ -304,7 +306,8 @@ WebLocalFrameImpl* CreateLocalChild(
     WebLocalFrame& parent,
     mojom::blink::TreeScopeType scope,
     std::unique_ptr<TestWebFrameClient> self_owned,
-    WebPolicyContainerBindParams policy_container_bind_params) {
+    WebPolicyContainerBindParams policy_container_bind_params,
+    WebLocalFrameClient::FinishChildFrameCreationFn finish_creation) {
   MockPolicyContainerHost mock_policy_container_host;
   mock_policy_container_host.BindWithNewEndpoint(
       std::move(policy_container_bind_params.receiver));
@@ -313,6 +316,7 @@ WebLocalFrameImpl* CreateLocalChild(
   auto* frame = To<WebLocalFrameImpl>(
       parent.CreateLocalChild(scope, client, nullptr, LocalFrameToken()));
   client->Bind(frame, std::move(self_owned));
+  finish_creation(frame, DocumentToken());
   return frame;
 }
 
@@ -426,7 +430,7 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
   web_frame_client =
       CreateDefaultClientIfNeeded(web_frame_client, owned_web_frame_client);
   WebLocalFrame* frame = WebLocalFrame::CreateMainFrame(
-      web_view_, web_frame_client, nullptr, LocalFrameToken(),
+      web_view_, web_frame_client, nullptr, LocalFrameToken(), DocumentToken(),
       // Passing a null policy_container will create an empty, default policy
       // container.
       /*policy_container=*/nullptr, opener,
@@ -526,6 +530,7 @@ WebLocalFrameImpl* WebViewHelper::CreateLocalChild(
   auto* frame = To<WebLocalFrameImpl>(parent.CreateLocalChild(
       mojom::blink::TreeScopeType::kDocument, name, FramePolicy(), client,
       nullptr, previous_sibling, properties, LocalFrameToken(), nullptr,
+      DocumentToken(),
       std::make_unique<WebPolicyContainer>(
           WebPolicyContainerPolicies(),
           mock_policy_container_host.BindNewEndpointAndPassDedicatedRemote())));
@@ -730,7 +735,8 @@ WebLocalFrame* TestWebFrameClient::CreateChildFrame(
     const FramePolicy& frame_policy,
     const WebFrameOwnerProperties&,
     FrameOwnerElementType,
-    WebPolicyContainerBindParams policy_container_bind_params) {
+    WebPolicyContainerBindParams policy_container_bind_params,
+    FinishChildFrameCreationFn finish_creation) {
   MockPolicyContainerHost mock_policy_container_host;
   mock_policy_container_host.BindWithNewEndpoint(
       std::move(policy_container_bind_params.receiver));
@@ -740,10 +746,9 @@ WebLocalFrame* TestWebFrameClient::CreateChildFrame(
   client->sandbox_flags_ = frame_policy.sandbox_flags;
   TestWebFrameClient* client_ptr = client.get();
   client_ptr->Bind(frame, std::move(client));
+  finish_creation(frame, DocumentToken());
   return frame;
 }
-
-void TestWebFrameClient::InitializeAsChildFrame(WebLocalFrame* parent) {}
 
 void TestWebFrameClient::DidStartLoading() {
   ++loads_in_progress_;
@@ -787,6 +792,15 @@ void TestWebFrameClient::CommitNavigation(
   if (!frame_)
     return;
   auto params = WebNavigationParams::CreateFromInfo(*info);
+
+  KURL url = info->url_request.Url();
+  if (url.IsAboutSrcdocURL()) {
+    // If we are loading an about:srcdoc frame in a Blink unit test, then we are
+    // guaranteed to have a local parent.
+    blink::WebLocalFrame* parent = frame_->Parent()->ToWebLocalFrame();
+    params->fallback_srcdoc_base_url = parent->GetDocument().BaseURL();
+  }
+
   MockPolicyContainerHost mock_policy_container_host;
   params->policy_container = std::make_unique<WebPolicyContainer>(
       WebPolicyContainerPolicies(),

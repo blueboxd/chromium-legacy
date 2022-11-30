@@ -5,21 +5,29 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_FILES_FILE_SUGGEST_KEYED_SERVICE_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_FILES_FILE_SUGGEST_KEYED_SERVICE_H_
 
+#include <utility>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/app_list/search/files/item_suggest_cache.h"
-#include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
+#include "base/types/pass_key.h"
+#include "chrome/browser/ui/app_list/search/files/file_suggest_util.h"
+#include "chrome/browser/ui/app_list/search/ranking/removed_results.pb.h"
+#include "chrome/browser/ui/app_list/search/util/persistent_proto.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace drive {
-class DriveIntegrationService;
-}  // namespace drive
+class Profile;
+
+namespace ash {
+struct SearchResultMetadata;
+}  // namespace ash
 
 namespace app_list {
-enum class DriveSuggestValidationStatus;
-struct FileSuggestData;
+class DriveFileSuggestionProvider;
+class LocalFileSuggestionProvider;
+class RemovedResultsRanker;
 class ZeroStateDriveProvider;
 
 // The keyed service that queries for the file suggestions (for both the drive
@@ -28,39 +36,20 @@ class ZeroStateDriveProvider;
 // than leaving it under the app list directory.
 class FileSuggestKeyedService : public KeyedService {
  public:
-  using GetSuggestDataCallback =
-      base::OnceCallback<void(absl::optional<std::vector<FileSuggestData>>)>;
-
-  // The types of the managed suggestion data.
-  enum class SuggestionType {
-    // The drive file suggestion.
-    kItemSuggest
-  };
-
   class Observer : public base::CheckedObserver {
    public:
     // Called when file suggestions change.
-    virtual void OnFileSuggestionUpdated(SuggestionType type) {}
+    virtual void OnFileSuggestionUpdated(FileSuggestionType type) {}
   };
 
-  explicit FileSuggestKeyedService(Profile* profile);
+  FileSuggestKeyedService(Profile* profile,
+                          PersistentProto<RemovedResultsProto> proto);
   FileSuggestKeyedService(const FileSuggestKeyedService&) = delete;
   FileSuggestKeyedService& operator=(const FileSuggestKeyedService&) = delete;
   ~FileSuggestKeyedService() override;
 
-  // Queries for the suggested files of the specified type and returns the
-  // suggested file data, including file paths and suggestion reasons, through
-  // the callback. The returned suggestions have been filtered by the file
-  // last modification time. Only the files that have been modified more
-  // recently than a threshold are returned.
-  void GetSuggestFileData(SuggestionType type, GetSuggestDataCallback callback);
-
-  // Adds/Removes an observer.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-
-  // Requests to update the data in `item_suggest_cache_`. Only used by the zero
-  // state drive provider. Overridden for tests.
+  // Requests to update the item suggest cache. Only used by the zero state
+  // drive provider. Overridden for tests.
   // TODO(https://crbug.com/1356347): Now the app list relies on this service to
   // fetch the drive suggestion data. Meanwhile, this service relies on the app
   // list to trigger the item cache update. This cyclic dependency could be
@@ -69,67 +58,90 @@ class FileSuggestKeyedService : public KeyedService {
   virtual void MaybeUpdateItemSuggestCache(
       base::PassKey<ZeroStateDriveProvider>);
 
-  ItemSuggestCache* item_suggest_cache_for_test() {
-    return item_suggest_cache_.get();
+  // Queries for the suggested files of the specified type and returns the
+  // suggested file data, including file paths and suggestion reasons, through
+  // the callback. The returned suggestions have been filtered by the file
+  // last modification time. Only the files that have been modified more
+  // recently than a threshold are returned. Overridden for tests.
+  virtual void GetSuggestFileData(FileSuggestionType type,
+                                  GetSuggestFileDataCallback callback);
+
+  // Persists the ids of the suggestions specified by `absolute_file_paths` so
+  // that the corresponding suggestions are not sent to service clients anymore.
+  // Also notifies observers of suggestion updates. Overridden for tests.
+  virtual void RemoveSuggestionsAndNotify(
+      const std::vector<base::FilePath>& absolute_file_paths);
+
+  // Similar to `RemoveSuggestionsAndNotify()` but with the difference that
+  // the suggestion is specified by a search result. Overridden for tests.
+  virtual void RemoveSuggestionBySearchResultAndNotify(
+      const ash::SearchResultMetadata& search_result);
+
+  // Used to expose `proto_` to app list so that the app list can query/remove
+  // non-file result ids from `proto_`.
+  // TODO(https://crbug.com/1368833): remove this function when the removed file
+  // results are managed by this service's own proto without reusing the app
+  // list's.
+  PersistentProto<RemovedResultsProto>* GetProto(
+      base::PassKey<RemovedResultsRanker>);
+
+  // Adds/Removes an observer.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  // Returns true if there is pending fetch on file suggestions.
+  bool HasPendingSuggestionFetchForTest() const;
+
+  // Returns true if the service is ready to provide all types of suggestions.
+  bool IsReadyForTest() const;
+
+  DriveFileSuggestionProvider* drive_file_suggestion_provider_for_test() {
+    return drive_file_suggestion_provider_.get();
   }
 
+  LocalFileSuggestionProvider* local_file_suggestion_provider_for_test() {
+    return local_file_suggestion_provider_.get();
+  }
+
+ protected:
+  // Called whenever a suggestion provider updates.
+  void OnSuggestionProviderUpdated(FileSuggestionType type);
+
+  // Filters `suggestions` so that the suggestions that were removed before do
+  // not appear. Then returns the filtered result through `callback`.
+  void FilterRemovedSuggestions(
+      GetSuggestFileDataCallback callback,
+      const absl::optional<std::vector<FileSuggestData>>& suggestions);
+
+  // Returns whether `proto_` is initialized.
+  bool IsProtoInitialized() const;
+
  private:
-  // Drive file related member functions ---------------------------------------
-  // TODO(https://crbug.com/1360992): move these members to a separate class.
+  // Called when `proto_` is ready to read.
+  void OnRemovedSuggestionProtoReady(ReadStatus read_status);
 
-  // Called whenever `item_suggest_cache_` updates.
-  void OnItemSuggestCacheUpdated();
+  // Removes the suggestions specified by type-id pairs.
+  void RemoveSuggestionsByTypeIdPairs(
+      const std::vector<std::pair<FileSuggestionType, std::string>>&
+          type_id_pairs);
 
-  // Handles `GetSuggestFileData()` for drive files.
-  void GetDriveSuggestFileData(GetSuggestDataCallback callback);
+  // The provider of drive file suggestions.
+  std::unique_ptr<DriveFileSuggestionProvider> drive_file_suggestion_provider_;
 
-  // Called when locating drive files through the drive service is completed.
-  // Returns the location result through `paths`. `raw_suggest_results` is the
-  // file suggestion data before validation.
-  void OnDriveFilePathsLocated(
-      std::vector<ItemSuggestCache::Result> raw_suggest_results,
-      absl::optional<std::vector<drivefs::mojom::FilePathOrErrorPtr>> paths);
-
-  // Ends the validation on drive suggestion file paths and publishes the
-  // result.
-  void EndDriveFilePathValidation(
-      DriveSuggestValidationStatus validation_status,
-      const absl::optional<std::vector<FileSuggestData>>& suggest_results);
-
-  const base::raw_ptr<Profile> profile_;
-
-  // Drive file related data members -------------------------------------------
-  // TODO(https://crbug.com/1360992): move these members to a separate class.
-
-  const base::raw_ptr<drive::DriveIntegrationService> drive_service_;
-
-  // The drive client from which the raw suggest data (i.e. the data before
-  // validation) is fetched.
-  std::unique_ptr<ItemSuggestCache> item_suggest_cache_;
-
-  // Guards the callback registered on `item_suggest_cache_`.
-  base::CallbackListSubscription item_suggest_subscription_;
-
-  // The callbacks that run when the drive suggest results are ready.
-  // Use a callback list to handle the edge case that multiple data consumers
-  // wait for the drive suggest results.
-  base::OnceCallbackList<GetSuggestDataCallback::RunType>
-      on_drive_results_ready_callback_list_;
-
-  // A drive file needs to have been modified more recently than this to be
-  // considered valid.
-  const base::TimeDelta drive_file_max_last_modified_time_;
+  // The provider of local file suggestions.
+  std::unique_ptr<LocalFileSuggestionProvider> local_file_suggestion_provider_;
 
   base::ObserverList<Observer> observers_;
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  Profile* const profile_;
 
-  // Used to post the task to filter drive suggestion results.
-  scoped_refptr<base::SequencedTaskRunner> drive_result_filter_task_runner_;
+  // Used to query/persis the removed result ids. NOTE: `proto_` contains
+  // non-file ids.
+  // TODO(https://crbug.com/1368833): `proto_` should only contain file ids
+  // after this issue gets fixed.
+  PersistentProto<RemovedResultsProto> proto_;
 
-  // Used to guard the calling to get drive suggestion results.
-  base::WeakPtrFactory<FileSuggestKeyedService> drive_result_weak_factory_{
-      this};
+  base::WeakPtrFactory<FileSuggestKeyedService> weak_factory_{this};
 };
 
 }  // namespace app_list

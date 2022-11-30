@@ -13,10 +13,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
-#include "components/cast_channel/cast_message_handler.h"
 #include "components/media_router/common/media_route.h"
 #include "components/media_router/common/mojom/logger.mojom.h"
 #include "components/media_router/common/mojom/media_router.mojom-forward.h"
+#include "components/media_router/common/providers/cast/channel/cast_message_handler.h"
 #include "components/mirroring/mojom/cast_message_channel.mojom.h"
 #include "components/mirroring/mojom/mirroring_service_host.mojom.h"
 #include "components/mirroring/mojom/session_observer.mojom.h"
@@ -63,7 +63,7 @@ class MirroringActivity : public CastActivity,
   void LogErrorMessage(const std::string& message) override;
 
   // CastMessageChannel implementation
-  void Send(mirroring::mojom::CastMessagePtr message) override;
+  void OnMessage(mirroring::mojom::CastMessagePtr message) override;
 
   // CastActivity implementation
   void OnAppMessage(const cast::channel::CastMessage& message) override;
@@ -85,7 +85,7 @@ class MirroringActivity : public CastActivity,
   void StopMirroring();
 
   // Scrubs AES related data in messages with type "OFFER".
-  static std::string GetScrubbedLogMessage(const base::Value& message);
+  static std::string GetScrubbedLogMessage(const base::Value::Dict& message);
 
   mojo::Remote<mirroring::mojom::MirroringServiceHost> host_;
 

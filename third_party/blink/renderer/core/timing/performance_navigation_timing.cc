@@ -1,14 +1,16 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/timing/performance_navigation_timing.h"
 
 #include "base/containers/contains.h"
+#include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/performance_entry_names.h"
@@ -127,16 +129,16 @@ uint64_t PerformanceNavigationTiming::GetDecodedBodySize() const {
 }
 
 AtomicString PerformanceNavigationTiming::GetNavigationType(
-    WebNavigationType type,
-    const Document* document) {
+    WebNavigationType type) {
   switch (type) {
     case kWebNavigationTypeReload:
+    case kWebNavigationTypeFormResubmittedReload:
       return "reload";
     case kWebNavigationTypeBackForward:
+    case kWebNavigationTypeFormResubmittedBackForward:
       return "back_forward";
     case kWebNavigationTypeLinkClicked:
     case kWebNavigationTypeFormSubmitted:
-    case kWebNavigationTypeFormResubmitted:
     case kWebNavigationTypeOther:
       return "navigate";
   }
@@ -253,8 +255,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::loadEventEnd() const {
 
 AtomicString PerformanceNavigationTiming::type() const {
   if (DomWindow()) {
-    return GetNavigationType(GetDocumentLoader()->GetNavigationType(),
-                             DomWindow()->document());
+    return GetNavigationType(GetDocumentLoader()->GetNavigationType());
   }
   return "navigate";
 }
@@ -310,6 +311,54 @@ DOMHighResTimeStamp PerformanceNavigationTiming::duration() const {
   return loadEventEnd();
 }
 
+ScriptValue PerformanceNavigationTiming::notRestoredReasons(
+    ScriptState* script_state) const {
+  DocumentLoader* loader = GetDocumentLoader();
+  if (!loader || !loader->GetFrame()->IsOutermostMainFrame())
+    return ScriptValue::CreateNull(script_state->GetIsolate());
+
+  // TODO(crbug.com/1370954): Save NotRestoredReasons in Document instead of
+  // Frame.
+  return NotRestoredReasonsBuilder(script_state,
+                                   loader->GetFrame()->GetNotRestoredReasons());
+}
+
+ScriptValue PerformanceNavigationTiming::NotRestoredReasonsBuilder(
+    ScriptState* script_state,
+    const mojom::blink::BackForwardCacheNotRestoredReasonsPtr& reasons) const {
+  if (!reasons)
+    return ScriptValue::CreateNull(script_state->GetIsolate());
+  V8ObjectBuilder builder(script_state);
+  builder.AddBoolean("blocked", reasons->blocked);
+  builder.AddString("url", AtomicString(reasons->same_origin_details
+                                            ? reasons->same_origin_details->url
+                                            : ""));
+  builder.AddString("src", AtomicString(reasons->same_origin_details
+                                            ? reasons->same_origin_details->src
+                                            : ""));
+  builder.AddString("id", AtomicString(reasons->same_origin_details
+                                           ? reasons->same_origin_details->id
+                                           : ""));
+  builder.AddString("name",
+                    AtomicString(reasons->same_origin_details
+                                     ? reasons->same_origin_details->name
+                                     : ""));
+  Vector<AtomicString> reason_strings;
+  Vector<v8::Local<v8::Value>> children_result;
+  if (reasons->same_origin_details) {
+    for (const auto& reason : reasons->same_origin_details->reasons) {
+      reason_strings.push_back(reason);
+    }
+    for (const auto& child : reasons->same_origin_details->children) {
+      children_result.push_back(
+          NotRestoredReasonsBuilder(script_state, child).V8Value());
+    }
+  }
+  builder.Add("reasons", reason_strings);
+  builder.Add("children", children_result);
+  return builder.GetScriptValue();
+}
+
 void PerformanceNavigationTiming::BuildJSONValue(
     V8ObjectBuilder& builder) const {
   PerformanceResourceTiming::BuildJSONValue(builder);
@@ -330,5 +379,12 @@ void PerformanceNavigationTiming::BuildJSONValue(
         "activationStart",
         PerformanceNavigationTimingActivationStart::activationStart(*this));
   }
+
+  if (RuntimeEnabledFeatures::BackForwardCacheNotRestoredReasonsEnabled(
+          ExecutionContext::From(builder.GetScriptState()))) {
+    builder.Add("notRestoredReasons",
+                notRestoredReasons(builder.GetScriptState()));
+  }
 }
+
 }  // namespace blink

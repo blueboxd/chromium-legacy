@@ -10,6 +10,7 @@
 #include "base/format_macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/predictors/loading_test_util.h"
 #include "chrome/browser/predictors/proxy_lookup_client_impl.h"
 #include "chrome/browser/predictors/resolve_host_client_impl.h"
+#include "chrome/browser/prefetch/prefetch_prefs.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -164,8 +166,7 @@ class MockNetworkContext : public network::TestNetworkContext {
 
  private:
   bool IsHangingHost(const GURL& url) const {
-    return std::find(hanging_hosts_.begin(), hanging_hosts_.end(),
-                     url.host()) != hanging_hosts_.end();
+    return base::Contains(hanging_hosts_, url.host());
   }
 
   using ResolveHostClientKey =
@@ -271,7 +272,7 @@ TEST_F(PreconnectManagerTest, TestStartOneUrlPreconnect) {
 }
 
 TEST_F(PreconnectManagerTest,
-       TestStartOneUrlPreconnectWithNetworkAnonymizationKey) {
+       TestStartOneUrlPreconnectWithNetworkIsolationKey) {
   GURL main_frame_url("http://google.com");
   net::NetworkAnonymizationKey network_anonymization_key =
       CreateNetworkAnonymizationKey(main_frame_url);
@@ -793,32 +794,32 @@ TEST_F(PreconnectManagerTest, TestTwoConcurrentSameHostMainFrameUrls) {
       PreconnectInitiated(main_frame_url1, origin_to_preconnect1.GetURL()));
   EXPECT_CALL(*mock_network_context_,
               ResolveHostProxy(origin_to_preconnect1.host()));
-  preconnect_manager_->Start(
-      main_frame_url1,
-      {PreconnectRequest(origin_to_preconnect1, 1, network_anonymization_key1)});
+  preconnect_manager_->Start(main_frame_url1,
+                             {PreconnectRequest(origin_to_preconnect1, 1,
+                                                network_anonymization_key1)});
   EXPECT_CALL(
       *mock_delegate_,
       PreconnectInitiated(main_frame_url2, origin_to_preconnect2.GetURL()));
   EXPECT_CALL(*mock_network_context_,
               ResolveHostProxy(origin_to_preconnect2.host()));
-  preconnect_manager_->Start(
-      main_frame_url2,
-      {PreconnectRequest(origin_to_preconnect2, 1, network_anonymization_key2)});
+  preconnect_manager_->Start(main_frame_url2,
+                             {PreconnectRequest(origin_to_preconnect2, 1,
+                                                network_anonymization_key2)});
 
-  EXPECT_CALL(
-      *mock_network_context_,
-      PreconnectSockets(1, origin_to_preconnect1.GetURL(),
-                        true /* allow credentials */, network_anonymization_key1));
+  EXPECT_CALL(*mock_network_context_,
+              PreconnectSockets(1, origin_to_preconnect1.GetURL(),
+                                true /* allow credentials */,
+                                network_anonymization_key1));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url1));
-  mock_network_context_->CompleteHostLookup(origin_to_preconnect1.host(),
-                                            network_anonymization_key1, net::OK);
-  EXPECT_CALL(
-      *mock_network_context_,
-      PreconnectSockets(1, origin_to_preconnect2.GetURL(),
-                        true /* allow credentials */, network_anonymization_key2));
+  mock_network_context_->CompleteHostLookup(
+      origin_to_preconnect1.host(), network_anonymization_key1, net::OK);
+  EXPECT_CALL(*mock_network_context_,
+              PreconnectSockets(1, origin_to_preconnect2.GetURL(),
+                                true /* allow credentials */,
+                                network_anonymization_key2));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url2));
-  mock_network_context_->CompleteHostLookup(origin_to_preconnect2.host(),
-                                            network_anonymization_key2, net::OK);
+  mock_network_context_->CompleteHostLookup(
+      origin_to_preconnect2.host(), network_anonymization_key2, net::OK);
 }
 
 TEST_F(PreconnectManagerTest, TestStartPreresolveHost) {
@@ -835,7 +836,21 @@ TEST_F(PreconnectManagerTest, TestStartPreresolveHost) {
 
   // Non http url shouldn't be preresovled.
   GURL non_http_url("file:///tmp/index.html");
-  preconnect_manager_->StartPreresolveHost(non_http_url, network_anonymization_key);
+  preconnect_manager_->StartPreresolveHost(non_http_url,
+                                           network_anonymization_key);
+}
+
+TEST_F(PreconnectManagerTest, TestStartPreresolveHostDisabledViaUI) {
+  prefetch::SetPreloadPagesState(profile_->GetPrefs(),
+                                 prefetch::PreloadPagesState::kNoPreloading);
+  GURL url("http://cdn.google.com/script.js");
+  GURL origin("http://cdn.google.com");
+  net::NetworkAnonymizationKey network_anonymization_key =
+      CreateNetworkAnonymizationKey(origin);
+
+  // mock_network_context_.ResolveHostProxy shouldn't be called. The StrictMock
+  // will raise an error if it happens.
+  preconnect_manager_->StartPreresolveHost(url, network_anonymization_key);
 }
 
 TEST_F(PreconnectManagerTest, TestStartPreresolveHosts) {
@@ -848,10 +863,24 @@ TEST_F(PreconnectManagerTest, TestStartPreresolveHosts) {
   EXPECT_CALL(*mock_network_context_, ResolveHostProxy(fonts.host()));
   preconnect_manager_->StartPreresolveHosts({cdn.host(), fonts.host()},
                                             network_anonymization_key);
-  mock_network_context_->CompleteHostLookup(cdn.host(), network_anonymization_key,
-                                            net::OK);
-  mock_network_context_->CompleteHostLookup(fonts.host(), network_anonymization_key,
-                                            net::OK);
+  mock_network_context_->CompleteHostLookup(cdn.host(),
+                                            network_anonymization_key, net::OK);
+  mock_network_context_->CompleteHostLookup(fonts.host(),
+                                            network_anonymization_key, net::OK);
+}
+
+TEST_F(PreconnectManagerTest, TestStartPreresolveHostsDisabledViaUI) {
+  prefetch::SetPreloadPagesState(profile_->GetPrefs(),
+                                 prefetch::PreloadPagesState::kNoPreloading);
+  GURL cdn("http://cdn.google.com");
+  GURL fonts("http://fonts.google.com");
+  net::NetworkAnonymizationKey network_anonymization_key =
+      CreateNetworkAnonymizationKey(cdn);
+
+  // mock_network_context_.ResolveHostProxy shouldn't be called. The StrictMock
+  // will raise an error if it happens.
+  preconnect_manager_->StartPreresolveHosts({cdn.host(), fonts.host()},
+                                            network_anonymization_key);
 }
 
 TEST_F(PreconnectManagerTest, TestStartPreconnectUrl) {
@@ -865,9 +894,9 @@ TEST_F(PreconnectManagerTest, TestStartPreconnectUrl) {
   preconnect_manager_->StartPreconnectUrl(url, allow_credentials,
                                           network_anonymization_key);
 
-  EXPECT_CALL(
-      *mock_network_context_,
-      PreconnectSockets(1, origin, allow_credentials, network_anonymization_key));
+  EXPECT_CALL(*mock_network_context_,
+              PreconnectSockets(1, origin, allow_credentials,
+                                network_anonymization_key));
   mock_network_context_->CompleteHostLookup(origin.host(),
                                             network_anonymization_key, net::OK);
 
@@ -877,7 +906,22 @@ TEST_F(PreconnectManagerTest, TestStartPreconnectUrl) {
                                           network_anonymization_key);
 }
 
-TEST_F(PreconnectManagerTest, TestStartPreconnectUrlWithNetworkAnonymizationKey) {
+TEST_F(PreconnectManagerTest, TestStartPreconnectUrlDisabledViaUI) {
+  prefetch::SetPreloadPagesState(profile_->GetPrefs(),
+                                 prefetch::PreloadPagesState::kNoPreloading);
+  GURL url("http://cdn.google.com/script.js");
+  net::NetworkAnonymizationKey network_anonymization_key =
+      CreateNetworkAnonymizationKey(url);
+  GURL origin("http://cdn.google.com");
+  bool allow_credentials = false;
+
+  // mock_network_context_.ResolveHostProxy shouldn't be called. The StrictMock
+  // will raise an error if it happens.
+  preconnect_manager_->StartPreconnectUrl(url, allow_credentials,
+                                          network_anonymization_key);
+}
+
+TEST_F(PreconnectManagerTest, TestStartPreconnectUrlWithNetworkIsolationKey) {
   GURL url("http://cdn.google.com/script.js");
   GURL origin("http://cdn.google.com");
   bool allow_credentials = false;
@@ -885,13 +929,14 @@ TEST_F(PreconnectManagerTest, TestStartPreconnectUrlWithNetworkAnonymizationKey)
       net::SchemefulSite(GURL("http://foo.test"));
   net::NetworkAnonymizationKey network_anonymization_key(requesting_site,
                                                          requesting_site);
+
   EXPECT_CALL(*mock_network_context_, ResolveHostProxy(origin.host()));
   preconnect_manager_->StartPreconnectUrl(url, allow_credentials,
                                           network_anonymization_key);
 
-  EXPECT_CALL(
-      *mock_network_context_,
-      PreconnectSockets(1, origin, allow_credentials, network_anonymization_key));
+  EXPECT_CALL(*mock_network_context_,
+              PreconnectSockets(1, origin, allow_credentials,
+                                network_anonymization_key));
   mock_network_context_->CompleteHostLookup(origin.host(),
                                             network_anonymization_key, net::OK);
 }
@@ -941,8 +986,8 @@ TEST_F(PreconnectManagerTest, TestDetachedRequestHasHigherPriority) {
 
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
   for (size_t i = 1; i < count; ++i) {
-    mock_network_context_->CompleteHostLookup(requests[i].origin.host(),
-                                              network_anonymization_key, net::OK);
+    mock_network_context_->CompleteHostLookup(
+        requests[i].origin.host(), network_anonymization_key, net::OK);
   }
 }
 
@@ -961,13 +1006,30 @@ TEST_F(PreconnectManagerTest, TestSuccessfulProxyLookup) {
       main_frame_url,
       {PreconnectRequest(origin_to_preconnect, 1, network_anonymization_key)});
 
-  EXPECT_CALL(
-      *mock_network_context_,
-      PreconnectSockets(1, origin_to_preconnect.GetURL(),
-                        true /* allow credentials */, network_anonymization_key));
+  EXPECT_CALL(*mock_network_context_,
+              PreconnectSockets(1, origin_to_preconnect.GetURL(),
+                                true /* allow credentials */,
+                                network_anonymization_key));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
   mock_network_context_->CompleteProxyLookup(origin_to_preconnect.GetURL(),
                                              GetIndirectProxyInfo());
+}
+
+TEST_F(PreconnectManagerTest, TestStartDisabledViaUI) {
+  prefetch::SetPreloadPagesState(profile_->GetPrefs(),
+                                 prefetch::PreloadPagesState::kNoPreloading);
+  mock_network_context_->EnableProxyTesting();
+  GURL main_frame_url("http://google.com");
+  net::NetworkAnonymizationKey network_anonymization_key =
+      CreateNetworkAnonymizationKey(main_frame_url);
+  url::Origin origin_to_preconnect =
+      url::Origin::Create(GURL("http://cdn.google.com"));
+
+  // mock_delegate_.PreconnectInitiated shouldn't be called. The StrictMock
+  // will raise an error if it happens.
+  preconnect_manager_->Start(
+      main_frame_url,
+      {PreconnectRequest(origin_to_preconnect, 1, network_anonymization_key)});
 }
 
 TEST_F(PreconnectManagerTest, TestSuccessfulHostLookupAfterProxyLookupFailure) {
@@ -1002,14 +1064,14 @@ TEST_F(PreconnectManagerTest, TestSuccessfulHostLookupAfterProxyLookupFailure) {
                                              absl::nullopt);
   Mock::VerifyAndClearExpectations(mock_network_context_.get());
 
-  EXPECT_CALL(
-      *mock_network_context_,
-      PreconnectSockets(1, origin_to_preconnect.GetURL(),
-                        true /* allow credentials */, network_anonymization_key));
-  EXPECT_CALL(
-      *mock_network_context_,
-      PreconnectSockets(1, origin_to_preconnect2.GetURL(),
-                        true /* allow credentials */, network_anonymization_key));
+  EXPECT_CALL(*mock_network_context_,
+              PreconnectSockets(1, origin_to_preconnect.GetURL(),
+                                true /* allow credentials */,
+                                network_anonymization_key));
+  EXPECT_CALL(*mock_network_context_,
+              PreconnectSockets(1, origin_to_preconnect2.GetURL(),
+                                true /* allow credentials */,
+                                network_anonymization_key));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
   mock_network_context_->CompleteHostLookup(origin_to_preconnect.host(),
                                             network_anonymization_key, net::OK);

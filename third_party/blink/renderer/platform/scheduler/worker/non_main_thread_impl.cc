@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -115,7 +115,8 @@ NonMainThreadImpl::SimpleThreadImpl::SimpleThreadImpl(
           .SetRandomisedSamplingEnabled(true)
           .Build());
   internal_task_queue_ = sequence_manager_->CreateTaskQueue(
-      base::sequence_manager::TaskQueue::Spec("worker_thread_internal_tq"));
+      base::sequence_manager::TaskQueue::Spec(
+          base::sequence_manager::QueueName::WORKER_THREAD_INTERNAL_TQ));
   internal_task_runner_ = internal_task_queue_->CreateTaskRunner(
       base::sequence_manager::kTaskTypeNone);
 }

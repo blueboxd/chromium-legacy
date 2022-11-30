@@ -12,6 +12,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.ContentObserver;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.provider.Settings;
 import android.view.accessibility.AccessibilityEvent;
@@ -62,9 +63,33 @@ public class BrowserAccessibilityState {
     private static int sFlagsMask;
     private static int sCapabilitiesMask;
 
-    // Whether we determine that genuine assistive technology such as a screen reader
-    // is running, based on the information from running accessibility services.
+    // Simple boolean that will be true when any accessibility service is running on the device.
+    private static boolean sHasAnyAccessibilityServiceEnabled;
+
+    // True when we determine that genuine assistive technology such as a screen reader
+    // is running, based on the information from running accessibility services. False otherwise.
     private static boolean sScreenReader;
+
+    // True when android version is less than 31 or at least one enabled accessibility service
+    // returns true for isAccessibilityTool(). False otherwise.
+    private static boolean sAccessibilityToolPresent;
+
+    // True when the user has enabled the Android-OS privacy setting for showing passwords, found
+    // in: Settings > Privacy > Show passwords. (Settings.System.TEXT_SHOW_PASSWORD). False
+    // otherwise.
+    private static boolean sTextShowPasswordEnabled;
+
+    /**
+     * Whether the user has enabled the Android-OS speak password when in accessibility mode,
+     * available on pre-Android O. (Settings.Secure.ACCESSIBILITY_SPEAK_PASSWORD).
+     *
+     * From Android docs:
+     * @deprecated The speaking of passwords is controlled by individual accessibility services.
+     * Apps should ignore this setting and provide complete information to accessibility
+     * at all times, which was the behavior when this value was {@code true}.
+     */
+    @Deprecated
+    private static boolean sAccessibilitySpeakPasswordEnabled;
 
     // The IDs of all running accessibility services.
     private static String[] sServiceIds;
@@ -88,10 +113,34 @@ public class BrowserAccessibilityState {
         sListeners.add(listener);
     }
 
+    public static boolean hasAnyAccessibilityServiceEnabled() {
+        if (!sInitialized) updateAccessibilityServices();
+
+        return sHasAnyAccessibilityServiceEnabled;
+    }
+
+    public static boolean hasAccessibilityToolPresent() {
+        if (!sInitialized) updateAccessibilityServices();
+
+        return sAccessibilityToolPresent;
+    }
+
     public static boolean screenReaderMode() {
         if (!sInitialized) updateAccessibilityServices();
 
         return sScreenReader;
+    }
+
+    public static boolean hasEnabledTextShowPassword() {
+        if (!sInitialized) updateAccessibilityServices();
+
+        return sTextShowPasswordEnabled;
+    }
+
+    public static boolean hasEnabledAccessibilitySpeakPassword() {
+        if (!sInitialized) updateAccessibilityServices();
+
+        return sAccessibilitySpeakPasswordEnabled;
     }
 
     private static class AnimatorDurationScaleObserver extends ContentObserver {
@@ -188,6 +237,8 @@ public class BrowserAccessibilityState {
         sFeedbackTypeMask = 0;
         sFlagsMask = 0;
         sCapabilitiesMask = 0;
+        sHasAnyAccessibilityServiceEnabled = false;
+        sAccessibilityToolPresent = false;
 
         // Get the list of currently running accessibility services.
         Context context = ContextUtils.getApplicationContext();
@@ -205,6 +256,9 @@ public class BrowserAccessibilityState {
             sFeedbackTypeMask |= service.feedbackType;
             sFlagsMask |= service.flags;
             sCapabilitiesMask |= service.getCapabilities();
+            sHasAnyAccessibilityServiceEnabled = true;
+            sAccessibilityToolPresent |= (Build.VERSION.SDK_INT < Build.VERSION_CODES.S
+                    || service.isAccessibilityTool());
 
             String serviceId = service.getId();
             sServiceIds[i++] = serviceId;
@@ -217,6 +271,15 @@ public class BrowserAccessibilityState {
                 runningServiceNames.add(serviceId);
             }
         }
+
+        // Update the user password show/speak preferences.
+        int textShowPasswordSetting = Settings.System.getInt(
+                context.getContentResolver(), Settings.System.TEXT_SHOW_PASSWORD, 1);
+        sTextShowPasswordEnabled = textShowPasswordSetting == 1;
+
+        int accessibilitySpeakPasswordSetting = Settings.Secure.getInt(
+                context.getContentResolver(), Settings.Secure.ACCESSIBILITY_SPEAK_PASSWORD, 0);
+        sAccessibilitySpeakPasswordEnabled = accessibilitySpeakPasswordSetting == 1;
 
         // Get the list of enabled accessibility services, from settings, in
         // case it's different.
@@ -328,12 +391,25 @@ public class BrowserAccessibilityState {
     @CalledByNative
     static void registerObservers() {
         ContentResolver contentResolver = ContextUtils.getApplicationContext().getContentResolver();
+
+        // We want to be notified whenever the user has updated the animator duration scale.
         contentResolver.registerContentObserver(
                 Settings.Global.getUriFor(Settings.Global.ANIMATOR_DURATION_SCALE), false,
                 new AnimatorDurationScaleObserver(getHandler()));
+
+        // We want to be notified whenever the currently enabled services changes.
         contentResolver.registerContentObserver(
                 Settings.Secure.getUriFor(Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES), false,
                 new AccessibilityServicesObserver(getHandler()));
+
+        // We want to be notified if the user changes their preferred password show/speak settings.
+        contentResolver.registerContentObserver(
+                Settings.Secure.getUriFor(Settings.Secure.ACCESSIBILITY_SPEAK_PASSWORD), false,
+                new AccessibilityServicesObserver(getHandler()));
+        contentResolver.registerContentObserver(
+                Settings.System.getUriFor(Settings.System.TEXT_SHOW_PASSWORD), false,
+                new AccessibilityServicesObserver(getHandler()));
+
         if (!sInitialized) updateAccessibilityServices();
     }
 

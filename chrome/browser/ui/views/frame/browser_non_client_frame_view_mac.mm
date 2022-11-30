@@ -187,6 +187,12 @@ int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
                                 kResizeHandleHeight);
   }
 
+  // Immersive fullscreen attaches the tab strip to the title bar, no need to
+  // calculate the y_offset below.
+  if (browser_view()->UsesImmersiveFullscreenMode()) {
+    return top_inset;
+  }
+
   // Calculate the y offset for the tab strip because in fullscreen mode the tab
   // strip may need to move under the slide down menu bar.
   CGFloat y_offset = TopUIFullscreenYOffset();
@@ -295,8 +301,10 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForClientView() const {
   // TODO(crbug/1361945): Make accessibilityHitTest support the window controls
   // overlay mode.
   gfx::Rect client_view_bounds = bounds();
-  int top_inset =
-      browser_view()->IsWindowControlsOverlayEnabled() ? 0 : GetTopInset(false);
+  int top_inset = (browser_view()->IsWindowControlsOverlayEnabled() ||
+                   browser_view()->IsImmersiveModeEnabled())
+                      ? 0
+                      : GetTopInset(false);
   client_view_bounds.Inset(gfx::Insets::TLBR(top_inset, 0, 0, 0));
   return client_view_bounds;
 }

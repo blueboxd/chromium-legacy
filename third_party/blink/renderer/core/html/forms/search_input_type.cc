@@ -106,8 +106,8 @@ void SearchInputType::StartSearchEventTimer() {
     GetElement()
         .GetDocument()
         .GetTaskRunner(TaskType::kUserInteraction)
-        ->PostTask(FROM_HERE, WTF::Bind(&HTMLInputElement::OnSearch,
-                                        WrapPersistent(&GetElement())));
+        ->PostTask(FROM_HERE, WTF::BindOnce(&HTMLInputElement::OnSearch,
+                                            WrapPersistent(&GetElement())));
     return;
   }
 
@@ -151,7 +151,7 @@ void SearchInputType::UpdateCancelButtonVisibility() {
       shadow_element_names::kIdSearchClearButton);
   if (!button)
     return;
-  if (GetElement().Value().IsEmpty()) {
+  if (GetElement().Value().empty()) {
     button->SetInlineStyleProperty(CSSPropertyID::kOpacity, 0.0,
                                    CSSPrimitiveValue::UnitType::kNumber);
     button->SetInlineStyleProperty(CSSPropertyID::kPointerEvents,

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -260,14 +260,6 @@ class CORE_EXPORT NGLayoutInputNode {
     if (ShouldApplyBlockSizeContainment())
       axes |= kLogicalAxisBlock;
     return axes;
-  }
-
-  // CSS defines certain cases to synthesize inline block baselines from box.
-  // See comments in UseLogicalBottomMarginEdgeForInlineBlockBaseline().
-  bool UseBlockEndMarginEdgeForInlineBlockBaseline() const {
-    if (auto* layout_box = DynamicTo<LayoutBlock>(GetLayoutBox()))
-      return layout_box->UseLogicalBottomMarginEdgeForInlineBlockBaseline();
-    return false;
   }
 
   // CSS intrinsic sizing getters.

@@ -32,8 +32,9 @@ using base::android::ConvertUTF16ToJavaString;
 
 namespace features {
 
-const base::Feature kNotifyJavaSpuriouslyToMeasurePerf{
-    "NotifyJavaSpuriouslyToMeasurePerf", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kNotifyJavaSpuriouslyToMeasurePerf,
+             "NotifyJavaSpuriouslyToMeasurePerf",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features
 
@@ -355,6 +356,13 @@ void WebContentsObserverProxy::ViewportFitChanged(
   JNIEnv* env = AttachCurrentThread();
   Java_WebContentsObserverProxy_viewportFitChanged(
       env, java_observer_, as_jint(static_cast<int>(value)));
+}
+
+void WebContentsObserverProxy::VirtualKeyboardModeChanged(
+    ui::mojom::VirtualKeyboardMode mode) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_WebContentsObserverProxy_virtualKeyboardModeChanged(
+      env, java_observer_, as_jint(static_cast<int>(mode)));
 }
 
 void WebContentsObserverProxy::OnWebContentsFocused(RenderWidgetHost*) {

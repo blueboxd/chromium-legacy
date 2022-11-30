@@ -22,9 +22,6 @@ ci.defaults.set(
     sheriff_rotations = sheriff_rotations.CHROMIUM,
     thin_tester_cores = 8,
     tree_closing = True,
-    experiments = {
-        "luci.buildbucket.omit_python2": 100,
-    },
 )
 
 consoles.console_view(
@@ -110,6 +107,9 @@ ci.builder(
     ),
     cq_mirrors_console_view = "mirrors",
     os = os.MAC_ANY,
+    goma_backend = None,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = reclient.jobs.DEFAULT,
 )
 
 ci.builder(
@@ -138,6 +138,9 @@ ci.builder(
     ),
     cpu = cpu.ARM64,
     os = os.MAC_DEFAULT,
+    goma_backend = None,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = reclient.jobs.DEFAULT,
 )
 
 ci.builder(
@@ -163,24 +166,9 @@ ci.builder(
         short_name = "bld",
     ),
     os = os.MAC_DEFAULT,
-)
-
-ci.builder(
-    name = "mac-arm64-rel (reclient shadow)",
-    builder_spec = builder_config.copy_from(
-        "ci/mac-arm64-rel",
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "release|arm64",
-        short_name = "rec",
-    ),
-    os = os.MAC_DEFAULT,
-    sheriff_rotations = args.ignore_default(None),
-    builderless = True,
-    cores = None,
     goma_backend = None,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
-    reclient_jobs = 200,
+    reclient_jobs = reclient.jobs.DEFAULT,
 )
 
 ci.thin_tester(

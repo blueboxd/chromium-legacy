@@ -207,14 +207,8 @@ FormStructureBrowserTest::FormStructureBrowserTest()
       // Enabled
       {// TODO(crbug.com/1187842): Remove once experiment is over.
        features::kAutofillAcrossIframes,
-       // TODO(crbug.com/1098943): Remove once experiment is over.
-       features::kAutofillEnableSupportForMoreStructureInNames,
-       // TODO(crbug.com/1125978): Remove once launched.
-       features::kAutofillEnableSupportForMoreStructureInAddresses,
        // TODO(crbug.com/1076175) Remove once launched.
        features::kAutofillUseNewSectioningMethod,
-       // Remove once launched
-       features::kAutofillEnableAugmentedPhoneCountryCode,
        // TODO(crbug.com/1157405) Remove once launched.
        features::kAutofillEnableDependentLocalityParsing,
        // TODO(crbug.com/1150895) Remove once launched.
@@ -222,16 +216,20 @@ FormStructureBrowserTest::FormStructureBrowserTest()
        features::kAutofillPageLanguageDetection,
        // TODO(crbug.com/1165780): Remove once shared labels are launched.
        features::kAutofillEnableSupportForParsingWithSharedLabels,
-       // TODO(crbug.com/1277480): Remove once launched.
-       features::kAutofillEnableNameSurenameParsing,
        // TODO(crbug.com/1190334): Remove once launched.
        features::kAutofillParseMerchantPromoCodeFields,
        // TODO(crbug.com/1335549): Remove once launched.
        features::kAutofillParseIBANFields,
        // TODO(crbug.com/1341387): Remove once launched.
-       features::kAutofillParseVcnCardOnFileStandaloneCvcFields},
+       features::kAutofillParseVcnCardOnFileStandaloneCvcFields,
+       // TODO(crbug.com/1311937): Remove once launched.
+       features::kAutofillEnableSupportForPhoneNumberTrunkTypes,
+       features::kAutofillInferCountryCallingCode},
       // Disabled
-      {});
+      {// TODO(crbug.com/1311937): Remove once launched.
+       // This feature is part of the AutofillRefinedPhoneNumberTypes rollout.
+       // As it is not supported on iOS yet, it is disabled.
+       features::kAutofillConsiderPhoneNumberSeparatorsValidLabels});
 }
 
 FormStructureBrowserTest::~FormStructureBrowserTest() = default;

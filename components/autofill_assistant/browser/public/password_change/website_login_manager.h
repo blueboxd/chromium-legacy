@@ -56,17 +56,6 @@ class WebsiteLoginManager {
       const Login& login,
       base::OnceCallback<void(bool, std::string)> callback) = 0;
 
-  // Deletes the password for |login|.
-  virtual void DeletePasswordForLogin(
-      const Login& login,
-      base::OnceCallback<void(bool)> callback) = 0;
-
-  // Edits the password for |login|.
-  virtual void EditPasswordForLogin(
-      const Login& login,
-      const std::string& new_password,
-      base::OnceCallback<void(bool)> callback) = 0;
-
   // Read the last date a password was used for |login|. In case no match is
   // found for the given login returns nullptr.
   virtual void GetGetLastTimePasswordUsed(

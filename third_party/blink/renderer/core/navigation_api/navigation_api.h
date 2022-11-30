@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,6 +62,15 @@ class CORE_EXPORT NavigationApi final
   void SetEntriesForRestore(
       const mojom::blink::NavigationApiHistoryEntryArraysPtr&);
 
+  // The entries indicated by |keys| have been removed from the session history
+  // in the browser process and should be disposed. In many cases, this won't
+  // do anything because those entries have already been synchronously removed
+  // in UpdateForNavigation(). However, if the entries are being removed due to
+  // a navigation in a different frame or due to the user manually removing
+  // things from their history, this callback will be our only notification
+  // that those entries are no longer valid.
+  void DisposeEntriesForSessionHistoryRemoval(const Vector<String>& keys);
+
   // From the navigation API's perspective, a dropped navigation is still
   // "ongoing"; that is, ongoing_navigation_event_ and ongoing_navigation_ are
   // non-null. (The impact of this is that another navigation will cancel that
@@ -103,7 +112,7 @@ class CORE_EXPORT NavigationApi final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(navigateerror, kNavigateerror)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(currententrychange, kCurrententrychange)
 
-  enum class DispatchResult { kContinue, kAbort, kTransitionWhile };
+  enum class DispatchResult { kContinue, kAbort, kIntercept };
   DispatchResult DispatchNavigateEvent(NavigateEventDispatchParams*);
 
   // In the spec, we are only informed about canceled navigations. But in the
@@ -118,6 +127,10 @@ class CORE_EXPORT NavigationApi final
   //   promise resolvers. This is handled via |ContextDestroyed()| below.
   void InformAboutCanceledNavigation(
       CancelNavigationReason reason = CancelNavigationReason::kOther);
+
+  // Called when a traverse is cancelled in the browser process.
+  void TraverseCancelled(const String& key,
+                         mojom::blink::TraverseCancelledReason reason);
 
   int GetIndexFor(NavigationHistoryEntry*);
 

@@ -15,7 +15,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chromeos/ui/frame/multitask_menu/multitask_menu_view.h"
-#include "chromeos/ui/frame/multitask_menu/split_button.h"
+#include "chromeos/ui/frame/multitask_menu/split_button_view.h"
 #include "chromeos/ui/wm/features.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/events/event_handler.h"
@@ -184,7 +184,7 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, GestureEventGeneration) {
 // Tests that a scroll down gesture from the top center activates the
 // multitask menu.
 TEST_F(TabletModeMultitaskMenuEventHandlerTest, ShowMultitaskMenu) {
-  auto window = CreateTestWindow();
+  auto window = CreateAppWindow();
 
   ShowMultitaskMenu(*window);
 
@@ -262,6 +262,11 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, SwipeFlingGestures) {
   // the menu.
   GenerateFling(window->bounds().CenterPoint().x(), 50, 8);
   ASSERT_FALSE(GetMultitaskMenu());
+
+  // Fling down and end the gesture outside of the target area. Verify that we
+  // open the menu.
+  GenerateFling(window->bounds().CenterPoint().x(), 1, 150);
+  EXPECT_TRUE(GetMultitaskMenu());
 }
 
 // Tests that scroll up closes the menu as expected.

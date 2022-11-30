@@ -5,12 +5,13 @@
 #include "components/flags_ui/flags_test_helpers.h"
 
 #include <gtest/gtest.h>
-#include <algorithm>
+
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/base_paths.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
@@ -68,11 +69,11 @@ FlagMetadataMap LoadFlagMetadata() {
   base::Value metadata_json = FileContents(FlagFile::kFlagMetadata);
 
   FlagMetadataMap metadata;
-  for (const auto& entry : metadata_json.GetListDeprecated()) {
+  for (const auto& entry : metadata_json.GetList()) {
     std::string name = entry.FindKey("name")->GetString();
     std::vector<std::string> owners;
     if (const base::Value* e = entry.FindKey("owners")) {
-      for (const auto& owner : e->GetListDeprecated())
+      for (const auto& owner : e->GetList())
         owners.push_back(owner.GetString());
     }
     int expiry_milestone = entry.FindKey("expiry_milestone")->GetInt();
@@ -86,7 +87,7 @@ std::vector<std::string> LoadFlagNeverExpireList() {
   base::Value list_json = FileContents(FlagFile::kFlagNeverExpire);
 
   std::vector<std::string> result;
-  for (const auto& entry : list_json.GetListDeprecated()) {
+  for (const auto& entry : list_json.GetList()) {
     result.push_back(entry.GetString());
   }
   return result;
@@ -227,8 +228,7 @@ void EnsureOnlyPermittedFlagsNeverExpire() {
 
   for (const auto& entry : metadata) {
     if (entry.second.expiry_milestone == -1 &&
-        std::find(listed_flags.begin(), listed_flags.end(), entry.first) ==
-            listed_flags.end()) {
+        !base::Contains(listed_flags, entry.first)) {
       missing_flags.push_back(entry.first);
     }
   }
@@ -275,7 +275,7 @@ void EnsureFlagsAreListedInAlphabeticalOrder() {
 
   std::vector<std::string> normalized_names;
   std::vector<std::string> names;
-  for (const auto& entry : metadata_json.GetListDeprecated()) {
+  for (const auto& entry : metadata_json.GetList()) {
     normalized_names.push_back(
         NormalizeName(entry.FindKey("name")->GetString()));
     names.push_back(entry.FindKey("name")->GetString());
@@ -287,7 +287,7 @@ void EnsureFlagsAreListedInAlphabeticalOrder() {
 
   normalized_names.clear();
   names.clear();
-  for (const auto& entry : expiration_json.GetListDeprecated()) {
+  for (const auto& entry : expiration_json.GetList()) {
     normalized_names.push_back(NormalizeName(entry.GetString()));
     names.push_back(entry.GetString());
   }

@@ -78,9 +78,14 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
                                public pdf::mojom::PdfListener,
                                public UrlLoader::Client,
                                public PostMessageReceiver::Client,
+                               public PaintManager::Client,
                                public PdfAccessibilityActionHandler,
                                public PreviewModeClient::Client {
  public:
+  // Do not save files larger than 100 MB. This cap should be kept in sync with
+  // and is also enforced in chrome/browser/resources/pdf/pdf_viewer.ts.
+  static constexpr size_t kMaximumSavedFileSize = 100 * 1000 * 1000;
+
   // Must match `SaveRequestType` in chrome/browser/resources/pdf/constants.ts.
   enum class SaveRequestType {
     kAnnotation = 0,
@@ -115,7 +120,9 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
     virtual blink::WebURL CompleteURL(
         const blink::WebString& partial_url) const = 0;
 
-    // Enqueues a "message" event carrying `message` to the plugin embedder.
+    // Enqueues a "message" event carrying `message` to the embedder.
+    // Messages are guaranteed to be received in the order that they are sent.
+    // This method is non-blocking.
     virtual void PostMessage(base::Value::Dict message) {}
 
     // Invalidates the entire web plugin container and schedules a paint of the
@@ -277,11 +284,24 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
   // PDFEngine::Client:
   void ProposeDocumentLayout(const DocumentLayout& layout) override;
+  void Invalidate(const gfx::Rect& rect) override;
+  void DidScroll(const gfx::Vector2d& offset) override;
+  void ScrollToX(int x_screen_coords) override;
+  void ScrollToY(int y_screen_coords) override;
+  void ScrollBy(const gfx::Vector2d& delta) override;
+  void ScrollToPage(int page) override;
+  void NavigateTo(const std::string& url,
+                  WindowOpenDisposition disposition) override;
+  void NavigateToDestination(int page,
+                             const float* x,
+                             const float* y,
+                             const float* zoom) override;
   void UpdateCursor(ui::mojom::CursorType new_cursor_type) override;
   void UpdateTickMarks(const std::vector<gfx::Rect>& tickmarks) override;
   void NotifyNumberOfFindResultsChanged(int total, bool final_result) override;
   void NotifySelectedFindResultChanged(int current_find_index,
                                        bool final_result) override;
+  void NotifyTouchSelectionOccurred() override;
   void GetDocumentPassword(
       base::OnceCallback<void(const std::string&)> callback) override;
   void Beep() override;
@@ -290,6 +310,11 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   std::string Prompt(const std::string& question,
                      const std::string& default_answer) override;
   std::string GetURL() override;
+  void Email(const std::string& to,
+             const std::string& cc,
+             const std::string& bcc,
+             const std::string& subject,
+             const std::string& body) override;
   void Print() override;
   void SubmitForm(const std::string& url,
                   const void* data,
@@ -299,10 +324,14 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
                                                const char16_t* term,
                                                bool case_sensitive) override;
   void DocumentHasUnsupportedFeature(const std::string& feature) override;
+  void DocumentLoadProgress(uint32_t available, uint32_t doc_size) override;
+  void FormFieldFocusChange(PDFEngine::FocusFieldType type) override;
   bool IsPrintPreview() const override;
   SkColor GetBackgroundColor() const override;
+  void SetIsSelecting(bool is_selecting) override;
   void CaretChanged(const gfx::Rect& caret_rect) override;
   void EnteredEditMode() override;
+  void DocumentFocusChanged(bool document_has_focus) override;
   void SetSelectedText(const std::string& selected_text) override;
   void SetLinkUnderCursor(const std::string& link_under_cursor) override;
   bool IsValidLink(const std::string& url) override;
@@ -327,6 +356,9 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
   // PaintManager::Client:
   void InvalidatePluginContainer() override;
+  void OnPaint(const std::vector<gfx::Rect>& paint_rects,
+               std::vector<PaintReadyRect>& ready,
+               std::vector<gfx::Rect>& pending) override;
   void UpdateSnapshot(sk_sp<SkImage> snapshot) override;
   void UpdateScale(float scale) override;
   void UpdateLayerTransform(float scale,
@@ -344,22 +376,30 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // Initializes the plugin for testing, bypassing certain consistency checks.
   bool InitializeForTesting();
 
-  const gfx::Rect& GetPluginRectForTesting() const { return plugin_rect(); }
+  const gfx::Rect& GetPluginRectForTesting() const { return plugin_rect_; }
 
-  float GetDeviceScaleForTesting() const { return device_scale(); }
+  float GetDeviceScaleForTesting() const { return device_scale_; }
+
+  DocumentLoadState document_load_state_for_testing() const {
+    return document_load_state_;
+  }
+
+  int GetContentRestrictionsForTesting() const {
+    return GetContentRestrictions();
+  }
+
+  AccessibilityDocInfo GetAccessibilityDocInfoForTesting() const {
+    return GetAccessibilityDocInfo();
+  }
 
  protected:
   // PdfViewPluginBase:
-  std::unique_ptr<PDFiumEngine> CreateEngine(
-      PDFEngine::Client* client,
-      PDFiumFormFiller::ScriptOption script_option) override;
   const PDFiumEngine* engine() const override;
   PDFiumEngine* engine() override;
   base::WeakPtr<PdfViewPluginBase> GetWeakPtr() override;
   void OnPrintPreviewLoaded() override;
   void OnDocumentLoadComplete() override;
-  void SendMessage(base::Value::Dict message) override;
-  void SetFormTextFieldInFocus(bool in_focus) override;
+  void SendLoadingProgress(double percentage) override;
   void SetAccessibilityDocInfo(AccessibilityDocInfo doc_info) override;
   void SetAccessibilityPageInfo(AccessibilityPageInfo page_info,
                                 std::vector<AccessibilityTextRunInfo> text_runs,
@@ -375,14 +415,19 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
                               const gfx::PointF& right,
                               int right_height) override;
   void UserMetricsRecordAction(const std::string& action) override;
+  PaintManager& paint_manager() override;
+  const gfx::Rect& available_area() const override;
+  double zoom() const override;
   bool full_frame() const override;
-  const gfx::Size& plugin_dip_size() const override;
   const gfx::Rect& plugin_rect() const override;
   float device_scale() const override;
-  bool needs_reraster() const override;
-  base::i18n::TextDirection ui_direction() const override;
-  bool received_viewport_message() const override;
-  void PrepareForFirstPaint(std::vector<PaintReadyRect>& ready) override;
+  DocumentLoadState document_load_state() const override;
+  void set_document_load_state(DocumentLoadState state) override;
+  AccessibilityState accessibility_state() const override;
+  void set_accessibility_state(AccessibilityState state) override;
+  int32_t next_accessibility_page_index() const override;
+  void increment_next_accessibility_page_index() override;
+  void reset_next_accessibility_page_index() override;
 
  private:
   // Callback that runs after `LoadUrl()`. The `loader` is the loader used to
@@ -390,6 +435,11 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   using LoadUrlCallback =
       base::OnceCallback<void(std::unique_ptr<UrlLoader> loader,
                               int32_t result)>;
+
+  struct BackgroundPart {
+    gfx::Rect location;
+    uint32_t color;
+  };
 
   // Metadata about an available preview page.
   struct PreviewPageInfo {
@@ -442,6 +492,45 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
   void SaveToBuffer(const std::string& token);
   void SaveToFile(const std::string& token);
+
+  // Converts a scroll offset (which is relative to a UI direction-dependent
+  // scroll origin) to a scroll position (which is always relative to the
+  // top-left corner).
+  gfx::PointF GetScrollPositionFromOffset(
+      const gfx::Vector2dF& scroll_offset) const;
+
+  // Paints the given invalid area of the plugin to the given graphics device.
+  // PaintManager::Client::OnPaint() should be its only caller.
+  void DoPaint(const std::vector<gfx::Rect>& paint_rects,
+               std::vector<PaintReadyRect>& ready,
+               std::vector<gfx::Rect>& pending);
+
+  // The preparation when painting on the image data buffer for the first
+  // time.
+  void PrepareForFirstPaint(std::vector<PaintReadyRect>& ready);
+
+  // Updates the available area and the background parts, notifies the PDF
+  // engine, and updates the accessibility information.
+  void OnGeometryChanged(double old_zoom, float old_device_scale);
+
+  // A helper of OnGeometryChanged() which updates the available area and
+  // the background parts, and notifies the PDF engine of geometry changes.
+  void RecalculateAreas(double old_zoom, float old_device_scale);
+
+  // Figures out the location of any background rectangles (i.e. those that
+  // aren't painted by the PDF engine).
+  void CalculateBackgroundParts();
+
+  // Computes document width/height in device pixels, based on current zoom and
+  // device scale
+  int GetDocumentPixelWidth() const;
+  int GetDocumentPixelHeight() const;
+
+  // Schedules invalidation tasks after painting finishes.
+  void InvalidateAfterPaintDone();
+
+  // Callback to clear deferred invalidates after painting finishes.
+  void ClearDeferredInvalidates();
 
   // Recalculates values that depend on scale factors.
   void UpdateScaledValues();
@@ -504,6 +593,9 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // Sends the thumbnail image data.
   void SendThumbnail(base::Value::Dict reply, Thumbnail thumbnail);
 
+  // Converts `frame_coordinates` to PDF coordinates.
+  gfx::Point FrameToPdfCoordinates(const gfx::PointF& frame_coordinates) const;
+
   blink::WebString selected_text_;
 
   std::unique_ptr<Client> const client_;
@@ -538,6 +630,11 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
   v8::Persistent<v8::Object> scriptable_receiver_;
 
+  PaintManager paint_manager_{this};
+
+  // Image data buffer for painting.
+  SkBitmap image_data_;
+
   // The current image snapshot.
   cc::PaintImage snapshot_;
 
@@ -571,6 +668,13 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // The plugin rectangle in device pixels.
   gfx::Rect plugin_rect_;
 
+  // Remaining area, in pixels, to render the PDF in after accounting for
+  // horizontal centering.
+  gfx::Rect available_area_;
+
+  // Current zoom factor.
+  double zoom_ = 1.0;
+
   // Current device scale factor. Multiply by `device_scale_` to convert from
   // viewport to screen coordinates. Divide by `device_scale_` to convert from
   // screen to viewport coordinates.
@@ -579,11 +683,23 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // True if we haven't painted the plugin viewport yet.
   bool first_paint_ = true;
 
+  // Whether OnPaint() is in progress or not.
+  bool in_paint_ = false;
+
   // True if last bitmap was smaller than the screen.
   bool last_bitmap_smaller_ = false;
 
   // True if we request a new bitmap rendering.
   bool needs_reraster_ = true;
+
+  // The size of the entire document in pixels (i.e. if each page is 800 pixels
+  // high and there are 10 pages, the height will be 8000).
+  gfx::Size document_size_;
+
+  std::vector<BackgroundPart> background_parts_;
+
+  // Deferred invalidates while `in_paint_` is true.
+  std::vector<gfx::Rect> deferred_invalidates_;
 
   // The UI direction.
   base::i18n::TextDirection ui_direction_ = base::i18n::UNKNOWN_DIRECTION;
@@ -607,6 +723,19 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // the document finishes loading.
   bool did_call_start_loading_ = false;
 
+  // The last document load progress value sent to the web page.
+  double last_progress_sent_ = 0.0;
+
+  // The current state of document load.
+  DocumentLoadState document_load_state_ = DocumentLoadState::kLoading;
+
+  // The current state of accessibility.
+  AccessibilityState accessibility_state_ = AccessibilityState::kOff;
+
+  // The next accessibility page index, used to track interprocess calls when
+  // reconstructing the tree for new document layouts.
+  int32_t next_accessibility_page_index_ = 0;
+
   // Used for submitting forms.
   std::unique_ptr<UrlLoader> form_loader_;
 
@@ -617,7 +746,7 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // The URL currently under the cursor.
   std::string link_under_cursor_;
 
-  // The id of the current find operation, or -1 if no current operation is
+  // The ID of the current find operation, or -1 if no current operation is
   // present.
   int find_identifier_ = -1;
 

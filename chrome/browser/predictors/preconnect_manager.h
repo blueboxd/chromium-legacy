@@ -223,6 +223,9 @@ class PreconnectManager {
       const net::NetworkAnonymizationKey& network_anonymization_key,
       ProxyLookupCallback callback) const;
 
+  // Whether the PreconnectManager should be performing preloading operations
+  // or if preloading is disabled.
+  bool IsEnabled();
   void TryToLaunchPreresolveJobs();
   void OnPreresolveFinished(PreresolveJobId job_id, bool success);
   void OnProxyLookupFinished(PreresolveJobId job_id, bool success);

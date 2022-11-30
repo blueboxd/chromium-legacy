@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,8 +47,8 @@ void DeviceSensorEventPump::SetSensorProviderForTesting(
     mojo::PendingRemote<device::mojom::blink::SensorProvider> sensor_provider) {
   sensor_provider_.Bind(std::move(sensor_provider), task_runner_);
   sensor_provider_.set_disconnect_handler(
-      WTF::Bind(&DeviceSensorEventPump::HandleSensorProviderError,
-                WrapWeakPersistent(this)));
+      WTF::BindOnce(&DeviceSensorEventPump::HandleSensorProviderError,
+                    WrapWeakPersistent(this)));
 }
 
 DeviceSensorEventPump::PumpState

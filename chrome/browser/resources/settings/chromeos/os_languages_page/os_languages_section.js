@@ -10,17 +10,18 @@
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
+import './input_method_options_page.js';
 import './input_page.js';
+import './languages.js';
+import './os_japanese_manage_user_dictionary_page.js';
 import './os_languages_page_v2.js';
 import './smart_inputs_page.js';
-import './input_method_options_page.js';
-import './languages.js';
 import '../../settings_page/settings_animated_pages.js';
 import '../../settings_page/settings_subpage.js';
 import '../../settings_shared.css.js';
 import '../../settings_vars.css.js';
 
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
 import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../../i18n_setup.js';

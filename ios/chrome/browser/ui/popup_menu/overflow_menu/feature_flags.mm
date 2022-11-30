@@ -10,26 +10,25 @@
 #error "This file requires ARC support."
 #endif
 
-const base::Feature kNewOverflowMenu{"NewOverflowMenu",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kNewOverflowMenu,
+             "NewOverflowMenu",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
-const base::Feature kNewOverflowMenuCBDAction{
-    "NewOverflowMenuCBDAction", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kNewOverflowMenuCBDAction,
+             "NewOverflowMenuCBDAction",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
-const base::Feature kNewOverflowMenuSettingsAction{
-    "NewOverflowMenuSettingsAction", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kSmartSortingNewOverflowMenu,
+             "kSmartSortingNewOverflowMenu",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
-const base::Feature kNewOverflowMenuSimpleDestinationIcons{
-    "NewOverflowMenuSimpleDestinationIcons", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kNewOverflowMenuShareChromeAction,
+             "kNewOverflowMenuShareChromeAction",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
-const base::Feature kSmartSortingNewOverflowMenu{
-    "kSmartSortingNewOverflowMenu", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kNewOverflowMenuShareChromeAction{
-    "kNewOverflowMenuShareChromeAction", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kNewOverflowMenuAlternateIPH{
-    "NewOverflowMenuAlternateIPH", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kNewOverflowMenuAlternateIPH,
+             "NewOverflowMenuAlternateIPH",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsNewOverflowMenuEnabled() {
   if (@available(iOS 15, *)) {
@@ -43,16 +42,6 @@ bool IsNewOverflowMenuEnabled() {
 bool IsNewOverflowMenuCBDActionEnabled() {
   return IsNewOverflowMenuEnabled() &&
          base::FeatureList::IsEnabled(kNewOverflowMenuCBDAction);
-}
-
-bool IsNewOverflowMenuSettingsActionEnabled() {
-  return IsNewOverflowMenuEnabled() &&
-         base::FeatureList::IsEnabled(kNewOverflowMenuSettingsAction);
-}
-
-bool IsNewOverflowMenuSimpleDestinationIconsEnabled() {
-  return IsNewOverflowMenuEnabled() &&
-         base::FeatureList::IsEnabled(kNewOverflowMenuSimpleDestinationIcons);
 }
 
 bool IsPasswordManagerBrandingUpdateEnabled() {

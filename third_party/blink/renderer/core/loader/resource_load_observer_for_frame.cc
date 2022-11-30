@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,12 +106,12 @@ ResourceLoadObserverForFrame::ResourceLoadObserverForFrame(
     DocumentLoader& loader,
     Document& document,
     const ResourceFetcherProperties& fetcher_properties)
-    : document_loader_(loader),
-      document_(document),
-      fetcher_properties_(fetcher_properties),
-      power_mode_voter_(
+    : power_mode_voter_(
           power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
-              "PowerModeVoter.ResourceLoads")) {}
+              "PowerModeVoter.ResourceLoads")),
+      document_loader_(loader),
+      document_(document),
+      fetcher_properties_(fetcher_properties) {}
 ResourceLoadObserverForFrame::~ResourceLoadObserverForFrame() = default;
 
 void ResourceLoadObserverForFrame::DidStartRequest(
@@ -156,7 +156,7 @@ void ResourceLoadObserverForFrame::WillSendRequest(
   }
 
   if (!redirect_response.IsNull() &&
-      !redirect_response.HttpHeaderField(http_names::kExpectCT).IsEmpty()) {
+      !redirect_response.HttpHeaderField(http_names::kExpectCT).empty()) {
     Deprecation::CountDeprecation(frame->DomWindow(),
                                   mojom::blink::WebFeature::kExpectCTHeader);
   }
@@ -268,10 +268,13 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
 
   RecordAddressSpaceFeature(frame, response);
 
-  if (!response.HttpHeaderField(http_names::kExpectCT).IsEmpty()) {
+  if (!response.HttpHeaderField(http_names::kExpectCT).empty()) {
     Deprecation::CountDeprecation(frame->DomWindow(),
                                   mojom::blink::WebFeature::kExpectCTHeader);
   }
+
+  document_->Loader()->MaybeRecordServiceWorkerFallbackMainResource(
+      response.WasFetchedViaServiceWorker());
 
   std::unique_ptr<AlternateSignedExchangeResourceInfo> alternate_resource_info;
 

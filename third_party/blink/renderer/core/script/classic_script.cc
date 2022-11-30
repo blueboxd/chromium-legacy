@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,7 @@ KURL SanitizeBaseUrl(const KURL& raw_base_url,
 
 String SourceMapUrlFromResponse(const ResourceResponse& response) {
   String source_map_url = response.HttpHeaderField(http_names::kSourceMap);
-  if (!source_map_url.IsEmpty())
+  if (!source_map_url.empty())
     return source_map_url;
 
   // Try to get deprecated header.
@@ -77,7 +77,7 @@ ClassicScript* ClassicScript::Create(
     const ScriptFetchOptions& fetch_options,
     ScriptSourceLocationType source_location_type,
     SanitizeScriptErrors sanitize_script_errors,
-    SingleCachedMetadataHandler* cache_handler,
+    CachedMetadataHandler* cache_handler,
     const TextPosition& start_position,
     ScriptStreamer::NotStreamingReason not_streaming_reason,
     InlineScriptStreamer* streamer) {
@@ -156,7 +156,7 @@ ClassicScript::ClassicScript(
     const ScriptFetchOptions& fetch_options,
     ScriptSourceLocationType source_location_type,
     SanitizeScriptErrors sanitize_script_errors,
-    SingleCachedMetadataHandler* cache_handler,
+    CachedMetadataHandler* cache_handler,
     const TextPosition& start_position,
     ScriptStreamer* streamer,
     ScriptStreamer::NotStreamingReason not_streaming_reason,

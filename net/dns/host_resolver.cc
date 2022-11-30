@@ -15,10 +15,12 @@
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time_delta_from_string.h"
 #include "base/values.h"
 #include "net/base/address_list.h"
 #include "net/base/features.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/context_host_resolver.h"
@@ -30,6 +32,8 @@
 #include "net/dns/public/host_resolver_results.h"
 #include "net/dns/resolve_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
+#include "url/scheme_host_port.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/build_info.h"
@@ -43,7 +47,6 @@ namespace {
 // The experiment settings of features::kUseDnsHttpsSvcb. See the comments in
 // net/base/features.h for more details.
 const char kUseDnsHttpsSvcbEnable[] = "enable";
-const char kUseDnsHttpsSvcbEnableInsecure[] = "enable_insecure";
 const char kUseDnsHttpsSvcbInsecureExtraTimeMax[] = "insecure_extra_time_max";
 const char kUseDnsHttpsSvcbInsecureExtraTimePercent[] =
     "insecure_extra_time_percent";
@@ -52,8 +55,6 @@ const char kUseDnsHttpsSvcbSecureExtraTimeMax[] = "secure_extra_time_max";
 const char kUseDnsHttpsSvcbSecureExtraTimePercent[] =
     "secure_extra_time_percent";
 const char kUseDnsHttpsSvcbSecureExtraTimeMin[] = "secure_extra_time_min";
-const char kUseDnsHttpsSvcbExtraTimeAbsolute[] = "extra_time_absolute";
-const char kUseDnsHttpsSvcbExtraTimePercent[] = "extra_time_percent";
 
 class FailingRequestImpl : public HostResolver::ResolveHostRequest,
                            public HostResolver::ProbeRequest {
@@ -121,6 +122,86 @@ void GetTimeDeltaFromDictString(const base::Value::Dict& args,
 
 }  // namespace
 
+HostResolver::Host::Host(absl::variant<url::SchemeHostPort, HostPortPair> host)
+    : host_(std::move(host)) {
+#if DCHECK_IS_ON()
+  if (absl::holds_alternative<url::SchemeHostPort>(host_)) {
+    DCHECK(absl::get<url::SchemeHostPort>(host_).IsValid());
+  } else {
+    DCHECK(absl::holds_alternative<HostPortPair>(host_));
+    DCHECK(!absl::get<HostPortPair>(host_).IsEmpty());
+  }
+#endif  // DCHECK_IS_ON()
+}
+
+HostResolver::Host::~Host() = default;
+
+HostResolver::Host::Host(const Host&) = default;
+
+HostResolver::Host& HostResolver::Host::operator=(const Host&) = default;
+
+HostResolver::Host::Host(Host&&) = default;
+
+HostResolver::Host& HostResolver::Host::operator=(Host&&) = default;
+
+bool HostResolver::Host::HasScheme() const {
+  return absl::holds_alternative<url::SchemeHostPort>(host_);
+}
+
+const std::string& HostResolver::Host::GetScheme() const {
+  DCHECK(absl::holds_alternative<url::SchemeHostPort>(host_));
+  return absl::get<url::SchemeHostPort>(host_).scheme();
+}
+
+std::string HostResolver::Host::GetHostname() const {
+  if (absl::holds_alternative<url::SchemeHostPort>(host_)) {
+    return absl::get<url::SchemeHostPort>(host_).host();
+  } else {
+    DCHECK(absl::holds_alternative<HostPortPair>(host_));
+    return absl::get<HostPortPair>(host_).HostForURL();
+  }
+}
+
+base::StringPiece HostResolver::Host::GetHostnameWithoutBrackets() const {
+  if (absl::holds_alternative<url::SchemeHostPort>(host_)) {
+    base::StringPiece hostname = absl::get<url::SchemeHostPort>(host_).host();
+    if (hostname.size() > 2 && hostname.front() == '[' &&
+        hostname.back() == ']') {
+      return hostname.substr(1, hostname.size() - 2);
+    } else {
+      return hostname;
+    }
+  } else {
+    DCHECK(absl::holds_alternative<HostPortPair>(host_));
+    return absl::get<HostPortPair>(host_).host();
+  }
+}
+
+uint16_t HostResolver::Host::GetPort() const {
+  if (absl::holds_alternative<url::SchemeHostPort>(host_)) {
+    return absl::get<url::SchemeHostPort>(host_).port();
+  } else {
+    DCHECK(absl::holds_alternative<HostPortPair>(host_));
+    return absl::get<HostPortPair>(host_).port();
+  }
+}
+
+std::string HostResolver::Host::ToString() const {
+  if (absl::holds_alternative<url::SchemeHostPort>(host_)) {
+    return absl::get<url::SchemeHostPort>(host_).Serialize();
+  } else {
+    DCHECK(absl::holds_alternative<HostPortPair>(host_));
+    return absl::get<HostPortPair>(host_).ToString();
+  }
+}
+
+const url::SchemeHostPort& HostResolver::Host::AsSchemeHostPort() const {
+  const url::SchemeHostPort* scheme_host_port =
+      absl::get_if<url::SchemeHostPort>(&host_);
+  DCHECK(scheme_host_port);
+  return *scheme_host_port;
+}
+
 HostResolver::HttpsSvcbOptions::HttpsSvcbOptions() = default;
 
 HostResolver::HttpsSvcbOptions::HttpsSvcbOptions(
@@ -136,8 +217,6 @@ HostResolver::HttpsSvcbOptions HostResolver::HttpsSvcbOptions::FromDict(
   net::HostResolver::HttpsSvcbOptions options;
   options.enable =
       dict.FindBool(kUseDnsHttpsSvcbEnable).value_or(options.enable);
-  options.enable_insecure = dict.FindBool(kUseDnsHttpsSvcbEnableInsecure)
-                                .value_or(options.enable_insecure);
   GetTimeDeltaFromDictString(dict, kUseDnsHttpsSvcbInsecureExtraTimeMax,
                              &options.insecure_extra_time_max);
 
@@ -156,10 +235,6 @@ HostResolver::HttpsSvcbOptions HostResolver::HttpsSvcbOptions::FromDict(
   GetTimeDeltaFromDictString(dict, kUseDnsHttpsSvcbSecureExtraTimeMin,
                              &options.secure_extra_time_min);
 
-  GetTimeDeltaFromDictString(dict, kUseDnsHttpsSvcbExtraTimeAbsolute,
-                             &options.extra_time_absolute);
-  options.extra_time_percent = dict.FindInt(kUseDnsHttpsSvcbExtraTimePercent)
-                                   .value_or(options.extra_time_percent);
   return options;
 }
 
@@ -167,7 +242,6 @@ HostResolver::HttpsSvcbOptions HostResolver::HttpsSvcbOptions::FromDict(
 HostResolver::HttpsSvcbOptions HostResolver::HttpsSvcbOptions::FromFeatures() {
   net::HostResolver::HttpsSvcbOptions options;
   options.enable = base::FeatureList::IsEnabled(features::kUseDnsHttpsSvcb);
-  options.enable_insecure = features::kUseDnsHttpsSvcbEnableInsecure.Get();
   options.insecure_extra_time_max =
       features::kUseDnsHttpsSvcbInsecureExtraTimeMax.Get();
   options.insecure_extra_time_percent =
@@ -180,9 +254,6 @@ HostResolver::HttpsSvcbOptions HostResolver::HttpsSvcbOptions::FromFeatures() {
       features::kUseDnsHttpsSvcbSecureExtraTimePercent.Get();
   options.secure_extra_time_min =
       features::kUseDnsHttpsSvcbSecureExtraTimeMin.Get();
-  options.extra_time_absolute =
-      features::kUseDnsHttpsSvcbExtraTimeAbsolute.Get();
-  options.extra_time_percent = features::kUseDnsHttpsSvcbExtraTimePercent.Get();
   return options;
 }
 
@@ -199,9 +270,6 @@ HostResolver::ResolveHostRequest::GetExperimentalResultsForTesting() const {
   NOTREACHED();
   return nullptr;
 }
-
-const size_t HostResolver::ManagerOptions::kDefaultRetryAttempts =
-    static_cast<size_t>(-1);
 
 std::unique_ptr<HostResolver> HostResolver::Factory::CreateResolver(
     HostResolverManager* manager,

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,7 @@ gfx::Rect ToGfxRect(const DOMRectInit* rect,
 
 // Checks |rect| x, y, width, and height for sample alignment in all planes.
 bool ValidateCropAlignment(media::VideoPixelFormat format,
+                           const char* format_str,
                            const gfx::Rect& rect,
                            const char* rect_name,
                            ExceptionState& exception_state);

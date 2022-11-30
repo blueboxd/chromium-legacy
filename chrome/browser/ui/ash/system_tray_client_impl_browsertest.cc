@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
 
-#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/login_screen_test_api.h"
@@ -39,6 +38,7 @@
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -75,11 +75,7 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientEnterpriseTest, TrayEnterprise) {
   EXPECT_TRUE(test_api->IsBubbleViewVisible(ash::VIEW_ID_QS_MANAGED_BUTTON,
                                             true /* open_tray */));
   std::u16string expected_text =
-      ash::features::IsManagedDeviceUIRedesignEnabled()
-          ? l10n_util::GetStringFUTF16(IDS_ASH_SHORT_MANAGED_BY, u"example.com")
-          : l10n_util::GetStringFUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
-                                       ui::GetChromeOSDeviceName(),
-                                       u"example.com");
+      l10n_util::GetStringFUTF16(IDS_ASH_SHORT_MANAGED_BY, u"example.com");
   EXPECT_EQ(expected_text,
             test_api->GetBubbleViewTooltip(ash::VIEW_ID_QS_MANAGED_BUTTON));
 
@@ -311,9 +307,6 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientClockUnknownPrefTest, SwitchToDefault) {
 class SystemTrayClientEnterpriseAccountTest : public ash::LoginManagerTest {
  protected:
   SystemTrayClientEnterpriseAccountTest() : LoginManagerTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        ash::features::kManagedDeviceUIRedesign);
-
     std::unique_ptr<ash::ScopedUserPolicyUpdate> scoped_user_policy_update =
         user_policy_mixin_.RequestPolicyUpdate();
     scoped_user_policy_update->policy_data()->set_managed_by(kManager);
@@ -332,9 +325,6 @@ class SystemTrayClientEnterpriseAccountTest : public ash::LoginManagerTest {
                                           managed_user_.account_id};
   ash::LoginManagerMixin login_mixin_{&mixin_host_,
                                       {managed_user_, unmanaged_user_}};
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(SystemTrayClientEnterpriseAccountTest,

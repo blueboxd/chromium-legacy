@@ -6,10 +6,9 @@
 load("//lib/args.star", "args")
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "goma", "reclient", "sheriff_rotations")
+load("//lib/builders.star", "reclient", "sheriff_rotations")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
-load("//lib/structs.star", "structs")
 
 ci.defaults.set(
     builder_group = "chromium.gpu",
@@ -23,6 +22,9 @@ ci.defaults.set(
     tree_closing = True,
     tree_closing_notifiers = ci.gpu.TREE_CLOSING_NOTIFIERS,
     thin_tester_cores = 2,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 consoles.console_view(
@@ -63,6 +65,7 @@ ci.gpu.linux_builder(
         category = "Android",
     ),
     cq_mirrors_console_view = "mirrors",
+    sheriff_rotations = args.ignore_default(None),
 )
 
 ci.gpu.linux_builder(
@@ -127,26 +130,6 @@ ci.gpu.mac_builder(
         category = "Mac",
     ),
     cq_mirrors_console_view = "mirrors",
-    goma_backend = goma.backend.RBE_PROD,
-    reclient_instance = None,
-)
-
-ci.gpu.mac_builder(
-    name = "GPU Mac Builder (reclient shadow)",
-    builder_spec = builder_config.copy_from(
-        "ci/GPU Mac Builder",
-        lambda spec: structs.evolve(
-            spec,
-            build_gs_bucket = None,
-        ),
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "Mac",
-        short_name = "rec",
-    ),
-    goma_backend = None,
-    tree_closing = False,
-    sheriff_rotations = args.ignore_default(None),
 )
 
 ci.gpu.mac_builder(
@@ -156,8 +139,6 @@ ci.gpu.mac_builder(
     ),
     sheriff_rotations = args.ignore_default(None),
     tree_closing = False,
-    goma_backend = goma.backend.RBE_PROD,
-    reclient_instance = None,
 )
 
 ci.gpu.windows_builder(

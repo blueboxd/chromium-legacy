@@ -6,18 +6,19 @@
 
 #include <stddef.h>
 
-#include "ash/components/settings/cros_settings_names.h"
-#include "ash/components/settings/system_settings_provider.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/ash/settings/device_settings_provider.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/ash/settings/supervised_user_cros_settings_provider.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
+#include "chromeos/ash/components/settings/system_settings_provider.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace ash {
@@ -290,11 +291,8 @@ bool CrosSettings::AddSettingsProvider(
 std::unique_ptr<CrosSettingsProvider> CrosSettings::RemoveSettingsProvider(
     CrosSettingsProvider* provider) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto it = std::find_if(
-      providers_.begin(), providers_.end(),
-      [provider](const std::unique_ptr<CrosSettingsProvider>& ptr) {
-        return ptr.get() == provider;
-      });
+  auto it = base::ranges::find(providers_, provider,
+                               &std::unique_ptr<CrosSettingsProvider>::get);
   if (it != providers_.end()) {
     std::unique_ptr<CrosSettingsProvider> ptr = std::move(*it);
     providers_.erase(it);

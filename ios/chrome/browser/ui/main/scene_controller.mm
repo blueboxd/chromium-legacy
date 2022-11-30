@@ -32,7 +32,6 @@
 #import "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
-#import "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/app/application_delegate/url_opener.h"
 #import "ios/chrome/app/application_delegate/url_opener_params.h"
 #import "ios/chrome/app/application_delegate/user_activity_handler.h"
@@ -45,8 +44,6 @@
 #import "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_remover.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
-#import "ios/chrome/browser/chrome_url_constants.h"
-#import "ios/chrome/browser/chrome_url_util.h"
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_browser_agent.h"
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
@@ -78,6 +75,8 @@
 #import "ios/chrome/browser/signin/constants.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
+#import "ios/chrome/browser/ui/app_store_rating/app_store_rating_scene_agent.h"
+#import "ios/chrome/browser/ui/app_store_rating/features.h"
 #import "ios/chrome/browser/ui/appearance/appearance_customization.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts/signed_in_accounts_view_controller.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
@@ -96,7 +95,6 @@
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_scheduler.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
-#import "ios/chrome/browser/ui/first_run/fre_field_trial.h"
 #import "ios/chrome/browser/ui/first_run/orientation_limiting_navigation_controller.h"
 #import "ios/chrome/browser/ui/history/history_coordinator.h"
 #import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_coordinator.h"
@@ -126,6 +124,8 @@
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url/chrome_url_constants.h"
+#import "ios/chrome/browser/url/url_util.h"
 #import "ios/chrome/browser/url_loading/scene_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -155,9 +155,9 @@ namespace {
 // Feature to control whether Search Intents (Widgets, Application
 // Shortcuts menu) forcibly open a new tab, rather than reusing an
 // existing NTP. See http://crbug.com/1363375 for details.
-const base::Feature kForceNewTabForIntentSearch(
-    "ForceNewTabForIntentSearch",
-    base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kForceNewTabForIntentSearch,
+             "ForceNewTabForIntentSearch",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // A rough estimate of the expected duration of a view controller transition
 // animation. It's used to temporarily disable mutally exclusive chrome
@@ -742,7 +742,8 @@ bool IsSigninForcedByPolicy() {
       ChromeAccountManagerServiceFactory::GetForBrowserState(
           self.mainInterface.browser->GetBrowserState());
   // The sign-in promo should not be presented if there is no identities.
-  ChromeIdentity* defaultIdentity = accountManagerService->GetDefaultIdentity();
+  id<SystemIdentity> defaultIdentity =
+      accountManagerService->GetDefaultIdentity();
   DCHECK(defaultIdentity);
 
   __weak SceneController* weakSelf = self;
@@ -905,6 +906,9 @@ bool IsSigninForcedByPolicy() {
     [self.sceneState
         addAgent:[[PromosManagerSceneAgent alloc]
                      initWithCommandDispatcher:mainCommandDispatcher]];
+  if (IsAppStoreRatingEnabled()) {
+    [self.sceneState addAgent:[[AppStoreRatingSceneAgent alloc] init]];
+  }
 }
 
 // Determines the mode (normal or incognito) the initial UI should be in.
@@ -1028,9 +1032,7 @@ bool IsSigninForcedByPolicy() {
   return postOpeningAction == NO_ACTION &&
          !self.sceneState.appState.postCrashLaunch &&
          !IsChromeLikelyDefaultBrowser() &&
-         !HasUserOpenedSettingsFromFirstRunPromo() &&
-         fre_field_trial::GetFREDefaultBrowserScreenPromoFRE() !=
-             NewDefaultBrowserPromoFRE::kFirstRunOnly;
+         !HasUserOpenedSettingsFromFirstRunPromo();
 }
 
 - (void)maybeShowDefaultBrowserPromo:(Browser*)browser {
@@ -2256,21 +2258,6 @@ bool IsSigninForcedByPolicy() {
                                                        kExternalIntent];
 }
 
-#pragma mark - TabSwitching
-
-- (BOOL)openNewTabFromTabSwitcher {
-  if (!self.mainCoordinator)
-    return NO;
-
-  UrlLoadParams urlLoadParams =
-      UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
-  urlLoadParams.web_params.transition_type = ui::PAGE_TRANSITION_TYPED;
-
-  [self addANewTabAndPresentBrowser:self.mainInterface.browser
-                  withURLLoadParams:urlLoadParams];
-  return YES;
-}
-
 #pragma mark - TabOpening implementation.
 
 - (void)dismissModalsAndMaybeOpenSelectedTabInMode:
@@ -3246,17 +3233,6 @@ bool IsSigninForcedByPolicy() {
     [sceneController willDestroyIncognitoBrowserState];
   }
 
-  breadcrumbs::BreadcrumbPersistentStorageManager* persistentStorageManager =
-      nullptr;
-  if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
-    breadcrumbs::BreadcrumbManagerKeyedService* service =
-        BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
-            mainBrowserState->GetOffTheRecordChromeBrowserState());
-    persistentStorageManager = service->GetPersistentStorageManager();
-    breakpad::StopMonitoringBreadcrumbManagerService(service);
-    service->StopPersisting();
-  }
-
   // Record off-the-record metrics before detroying the BrowserState.
   if (mainBrowserState->HasOffTheRecordChromeBrowserState()) {
     ChromeBrowserState* otrBrowserState =
@@ -3275,14 +3251,8 @@ bool IsSigninForcedByPolicy() {
   }
 
   if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
-    breadcrumbs::BreadcrumbManagerKeyedService* service =
-        BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
-            mainBrowserState->GetOffTheRecordChromeBrowserState());
-
-    if (persistentStorageManager) {
-      service->StartPersisting(persistentStorageManager);
-    }
-    breakpad::MonitorBreadcrumbManagerService(service);
+    BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
+        mainBrowserState->GetOffTheRecordChromeBrowserState());
   }
 
   // This seems the best place to deem the destroying and rebuilding the

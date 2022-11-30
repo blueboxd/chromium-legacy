@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {DuplexMode, NativeInitialSettings, NativeLayerImpl, PluginProxyImpl, PrintPreviewAppElement} from 'chrome://print/print_preview.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
@@ -72,7 +72,8 @@ suite(print_preview_app_test.suiteName, function() {
 
   setup(function() {
     // Stub out the native layer and the plugin.
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     nativeLayer = new NativeLayerStub();
     NativeLayerImpl.setInstance(nativeLayer);
     // <if expr="is_chromeos">

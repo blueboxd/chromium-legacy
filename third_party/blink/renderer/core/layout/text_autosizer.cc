@@ -368,14 +368,14 @@ void TextAutosizer::BeginLayout(LayoutBlock* block,
   if (block->IsRubyRun() || block->IsRubyBase() || block->IsRubyText())
     return;
 
-  DCHECK(!cluster_stack_.IsEmpty() || IsA<LayoutView>(block));
-  if (cluster_stack_.IsEmpty())
+  DCHECK(!cluster_stack_.empty() || IsA<LayoutView>(block));
+  if (cluster_stack_.empty())
     did_check_cross_site_use_count_ = false;
 
   if (Cluster* cluster = MaybeCreateCluster(block))
     cluster_stack_.push_back(cluster);
 
-  DCHECK(!cluster_stack_.IsEmpty());
+  DCHECK(!cluster_stack_.empty());
 
   // Cells in auto-layout tables are handled separately by inflateAutoTable.
   bool is_auto_table_cell =
@@ -384,7 +384,7 @@ void TextAutosizer::BeginLayout(LayoutBlock* block,
                                    ->ToLayoutObject()
                                    ->StyleRef()
                                    .IsFixedTableLayout();
-  if (!is_auto_table_cell && !cluster_stack_.IsEmpty())
+  if (!is_auto_table_cell && !cluster_stack_.empty())
     Inflate(block, layouter);
 }
 
@@ -433,7 +433,7 @@ void TextAutosizer::EndLayout(LayoutBlock* block) {
 #endif
     // Tables can create two layout scopes for the same block so the isEmpty
     // check below is needed to guard against endLayout being called twice.
-  } else if (!cluster_stack_.IsEmpty() && CurrentCluster()->root_ == block) {
+  } else if (!cluster_stack_.empty() && CurrentCluster()->root_ == block) {
     cluster_stack_.pop_back();
   }
 }
@@ -803,13 +803,10 @@ bool TextAutosizer::ClusterHasEnoughTextToAutosize(
 
   // 4 lines of text is considered enough to autosize.
   float minimum_text_length_to_autosize = WidthFromBlock(width_provider) * 4;
-  if (LocalFrameView* view = document_->View()) {
-    minimum_text_length_to_autosize =
-        document_->GetPage()
-            ->GetChromeClient()
-            .ViewportToScreen(
-                gfx::Rect(0, 0, minimum_text_length_to_autosize, 0), view)
-            .width();
+  if (LocalFrame* frame = document_->GetFrame()) {
+    minimum_text_length_to_autosize /=
+        document_->GetPage()->GetChromeClient().WindowToViewportScalar(frame,
+                                                                       1);
   }
 
   float length = 0;
@@ -895,8 +892,7 @@ TextAutosizer::Cluster* TextAutosizer::MaybeCreateCluster(LayoutBlock* block) {
   if (!(flags & POTENTIAL_ROOT))
     return nullptr;
 
-  Cluster* parent_cluster =
-      cluster_stack_.IsEmpty() ? nullptr : CurrentCluster();
+  Cluster* parent_cluster = cluster_stack_.empty() ? nullptr : CurrentCluster();
   DCHECK(parent_cluster || IsA<LayoutView>(block));
 
   // If a non-independent block would not alter the SUPPRESSING flag, it doesn't
@@ -1040,7 +1036,7 @@ float TextAutosizer::WidthFromBlock(const LayoutBlock* block) const {
 
   if (!(block->IsTable() || block->IsTableCell() ||
         block->IsListItemIncludingNG()))
-    return block->ContentLogicalWidth().ToFloat();
+    return ContentInlineSize(block);
 
   if (!block->ContainingBlock())
     return 0;
@@ -1058,13 +1054,12 @@ float TextAutosizer::WidthFromBlock(const LayoutBlock* block) const {
         return width;
     }
     if (specified_width.IsPercentOrCalc()) {
-      if (float container_width =
-              block->ContainingBlock()->ContentLogicalWidth().ToFloat()) {
+      if (float container_width = ContentInlineSize(block->ContainingBlock())) {
         if ((width = FloatValueForLength(specified_width, container_width)) > 0)
           return width;
       }
     }
-    if ((width = block->ContentLogicalWidth().ToFloat()) > 0)
+    if ((width = ContentInlineSize(block)) > 0)
       return width;
   }
   return 0;
@@ -1293,9 +1288,9 @@ bool TextAutosizer::IsWiderOrNarrowerDescendant(Cluster* cluster) {
 #endif
 
   float content_width =
-      DeepestBlockContainingAllText(cluster)->ContentLogicalWidth().ToFloat();
+      ContentInlineSize(DeepestBlockContainingAllText(cluster));
   float cluster_text_width =
-      parent_deepest_block_containing_all_text->ContentLogicalWidth().ToFloat();
+      ContentInlineSize(parent_deepest_block_containing_all_text);
 
   // Clusters with a root that is wider than the deepestBlockContainingAllText
   // of their parent autosize independently of their parent.
@@ -1317,7 +1312,7 @@ void TextAutosizer::Supercluster::Trace(Visitor* visitor) const {
 }
 
 TextAutosizer::Cluster* TextAutosizer::CurrentCluster() const {
-  SECURITY_DCHECK(!cluster_stack_.IsEmpty());
+  SECURITY_DCHECK(!cluster_stack_.empty());
   return cluster_stack_.back();
 }
 
@@ -1395,7 +1390,7 @@ bool TextAutosizer::FingerprintMapper::Remove(LayoutObject* layout_object) {
 
   BlockSet& blocks = *blocks_iter->value;
   blocks.erase(To<LayoutBlock>(layout_object));
-  if (blocks.IsEmpty()) {
+  if (blocks.empty()) {
     blocks_for_fingerprint_.erase(blocks_iter);
 
     SuperclusterMap::iterator supercluster_iter =
@@ -1464,9 +1459,19 @@ TextAutosizer::DeferUpdatePageInfo::DeferUpdatePageInfo(Page* page)
   }
 }
 
+// static
+void TextAutosizer::MaybeRegisterInlineSize(const LayoutBlock& ng_block,
+                                            LayoutUnit inline_size) {
+  if (auto* text_autosizer = ng_block.GetDocument().GetTextAutosizer()) {
+    if (text_autosizer->ShouldHandleLayout())
+      text_autosizer->RegisterInlineSize(ng_block, inline_size);
+  }
+}
+
 TextAutosizer::NGLayoutScope::NGLayoutScope(LayoutBox* box,
                                             LayoutUnit inline_size)
-    : text_autosizer_(box->GetDocument().GetTextAutosizer()), box_(box) {
+    : text_autosizer_(box->GetDocument().GetTextAutosizer()),
+      block_(DynamicTo<LayoutBlock>(box)) {
   // Bail if:
   //  - Text autosizing isn't enabled.
   //  - If the chid isn't a LayoutBlock.
@@ -1474,24 +1479,26 @@ TextAutosizer::NGLayoutScope::NGLayoutScope(LayoutBox* box,
   //    blocks, and using them to determine if we should autosize the text will
   //    typically false, overriding whatever its parent has already correctly
   //    determined).
-  if (!text_autosizer_ || !text_autosizer_->ShouldHandleLayout() ||
-      box_->IsLayoutNGOutsideListMarker() || !box_->IsLayoutBlock()) {
+  if (!text_autosizer_ || !text_autosizer_->ShouldHandleLayout() || !block_ ||
+      block_->IsLayoutNGOutsideListMarker()) {
     text_autosizer_ = nullptr;
     return;
   }
 
   // In order for the text autosizer to do anything useful at all, it needs to
-  // know the inline size of the block. So set it. LayoutNG normally writes back
-  // to the legacy tree *after* layout, but this one must be set before, at
-  // least if the autosizer is enabled.
-  box_->SetLogicalWidth(inline_size);
+  // know the inline size of the block. So register it. LayoutNG normally
+  // writes back to the legacy tree *after* layout, but this one must be ready
+  // before, at least if the autosizer is enabled.
+  text_autosizer_->RegisterInlineSize(*block_, inline_size);
 
-  text_autosizer_->BeginLayout(To<LayoutBlock>(box_), nullptr);
+  text_autosizer_->BeginLayout(block_, nullptr);
 }
 
 TextAutosizer::NGLayoutScope::~NGLayoutScope() {
-  if (text_autosizer_)
-    text_autosizer_->EndLayout(To<LayoutBlock>(box_));
+  if (text_autosizer_) {
+    text_autosizer_->EndLayout(block_);
+    text_autosizer_->UnregisterInlineSize(*block_);
+  }
 }
 
 TextAutosizer::DeferUpdatePageInfo::~DeferUpdatePageInfo() {
@@ -1541,7 +1548,7 @@ float TextAutosizer::ComputeAutosizedFontSize(float computed_size,
 void TextAutosizer::CheckSuperclusterConsistency() {
   HeapHashSet<Member<Supercluster>>& potentially_inconsistent_superclusters =
       fingerprint_mapper_.GetPotentiallyInconsistentSuperclusters();
-  if (potentially_inconsistent_superclusters.IsEmpty())
+  if (potentially_inconsistent_superclusters.empty())
     return;
 
   for (Supercluster* supercluster : potentially_inconsistent_superclusters) {
@@ -1572,9 +1579,36 @@ void TextAutosizer::CheckSuperclusterConsistency() {
   potentially_inconsistent_superclusters.clear();
 }
 
+float TextAutosizer::ContentInlineSize(const LayoutBlock* block) const {
+  if (!block->IsLayoutNGObject())
+    return block->ContentLogicalWidth().ToFloat();
+  auto iter = inline_size_map_.find(block);
+  if (iter == inline_size_map_.end())
+    return block->ContentLogicalWidth().ToFloat();
+  LayoutUnit size = iter.Get()->value;
+  if (block->IsHorizontalWritingMode()) {
+    size = block->ClientWidthFrom(size) - block->PaddingLeft() -
+           block->PaddingRight();
+  } else {
+    size = block->ClientHeightFrom(size) - block->PaddingTop() -
+           block->PaddingBottom();
+  }
+  return size.ClampNegativeToZero().ToFloat();
+}
+
+void TextAutosizer::RegisterInlineSize(const LayoutBlock& ng_block,
+                                       LayoutUnit inline_size) {
+  inline_size_map_.insert(&ng_block, inline_size);
+}
+
+void TextAutosizer::UnregisterInlineSize(const LayoutBlock& ng_block) {
+  inline_size_map_.erase(&ng_block);
+}
+
 void TextAutosizer::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(first_block_to_begin_layout_);
+  visitor->Trace(inline_size_map_);
 #if DCHECK_IS_ON()
   visitor->Trace(blocks_that_have_begun_layout_);
 #endif

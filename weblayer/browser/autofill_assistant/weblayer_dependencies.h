@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,8 @@ class WebLayerDependencies : public ::autofill_assistant::DependenciesAndroid,
   password_manager::PasswordManagerClient* GetPasswordManagerClient(
       content::WebContents* web_contents) const override;
   std::string GetLocale() const override;
-  std::string GetCountryCode() const override;
+  std::string GetLatestCountryCode() const override;
+  std::string GetStoredPermanentCountryCode() const override;
   std::string GetSignedInEmail() const override;
   PrefService* GetPrefs() const override;
   bool IsSupervisedUser() const override;

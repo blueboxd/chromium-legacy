@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assertInstanceof} from 'chrome://resources/js/assert.m.js';
+import {assertInstanceof} from 'chrome://resources/js/assert.js';
 import {decorate, define as crUiDefine} from 'chrome://resources/js/cr/ui.js';
 
 import {DialogType} from '../../../common/js/dialog_type.js';
 import {str, strf, util} from '../../../common/js/util.js';
 import {AllowedPaths} from '../../../common/js/volume_manager_types.js';
 import {BreadcrumbContainer} from '../../../containers/breadcrumb_container.js';
+import {NudgeContainer} from '../../../containers/nudge_container.js';
 import {VolumeManager} from '../../../externs/volume_manager.js';
 import {XfDlpRestrictionDetailsDialog} from '../../../widgets/xf_dlp_restriction_details_dialog.js';
 import {FilesPasswordDialog} from '../../elements/files_password_dialog.js';
@@ -98,6 +99,22 @@ export class FileManagerUI {
     this.deleteConfirmDialog = new FilesConfirmDialog(this.element);
     this.deleteConfirmDialog.setOkLabel(str('DELETE_BUTTON_LABEL'));
     this.deleteConfirmDialog.focusCancelButton = true;
+
+    /**
+     * Confirm dialog for emptying the trash.
+     * @type {!FilesConfirmDialog}
+     * @const
+     */
+    this.emptyTrashConfirmDialog = new FilesConfirmDialog(this.element);
+    this.emptyTrashConfirmDialog.setOkLabel(str('EMPTY_TRASH_DELETE_FOREVER'));
+
+    /**
+     * Restore dialog when trying to open files that are in the trash
+     * @type {!FilesConfirmDialog}
+     * @const
+     */
+    this.restoreConfirmDialog = new FilesConfirmDialog(this.element);
+    this.restoreConfirmDialog.setOkLabel(str('RESTORE_ACTION_LABEL'));
 
     /**
      * Confirm dialog for file move operation.
@@ -365,6 +382,13 @@ export class FileManagerUI {
      * @const
      */
     this.actionsSubmenu = new ActionsSubmenu(this.fileContextMenu);
+
+    /**
+     * The container that maintains the lifetime of nudges.
+     * @public {!NudgeContainer}
+     * @const
+     */
+    this.nudgeContainer = new NudgeContainer();
 
     /**
      * @type {!FilesToast}

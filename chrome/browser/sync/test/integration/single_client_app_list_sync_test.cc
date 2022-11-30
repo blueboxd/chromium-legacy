@@ -11,7 +11,6 @@
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_app_list_helper.h"
 #include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
-#include "chrome/browser/sync/test/integration/sync_settings_categorization_sync_test.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
@@ -227,13 +226,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, LocalStorage) {
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
   // Disable app sync by disabling all user-selectable types.
-  if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
-    sync_service->GetUserSettings()->SetSelectedOsTypes(
-        /*sync_all_os_types=*/false, syncer::UserSelectableOsTypeSet());
-  } else {
-    sync_service->GetUserSettings()->SetSelectedTypes(
-        /*sync_everything=*/false, syncer::UserSelectableTypeSet());
-  }
+  sync_service->GetUserSettings()->SetSelectedOsTypes(
+      /*sync_all_os_types=*/false, syncer::UserSelectableOsTypeSet());
 
   // Change data when sync is off.
   for (const std::string& app_id : app_ids) {
@@ -248,23 +242,16 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, LocalStorage) {
   EXPECT_FALSE(SyncItemsMatch(service, &compare_service));
 
   // Restore app sync and sync data should override local changes.
-  if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
-    sync_service->GetUserSettings()->SetSelectedOsTypes(
-        /*sync_all_os_types=*/true, syncer::UserSelectableOsTypeSet());
-  } else {
-    sync_service->GetUserSettings()->SetSelectedTypes(
-        /*sync_everything=*/true, syncer::UserSelectableTypeSet());
-  }
+  sync_service->GetUserSettings()->SetSelectedOsTypes(
+      /*sync_all_os_types=*/true, syncer::UserSelectableOsTypeSet());
   EXPECT_TRUE(AppListSyncUpdateWaiter(service).Wait());
   EXPECT_TRUE(SyncItemsMatch(service, &compare_service));
 }
 
 // Tests for SyncSettingsCategorization.
-class SingleClientAppListOsSyncTest
-    : public SyncSettingsCategorizationSyncTest {
+class SingleClientAppListOsSyncTest : public SyncTest {
  public:
-  SingleClientAppListOsSyncTest()
-      : SyncSettingsCategorizationSyncTest(SINGLE_CLIENT) {}
+  SingleClientAppListOsSyncTest() : SyncTest(SINGLE_CLIENT) {}
   ~SingleClientAppListOsSyncTest() override = default;
 };
 

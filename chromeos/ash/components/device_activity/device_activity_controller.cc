@@ -13,6 +13,7 @@
 #include "chromeos/ash/components/device_activity/daily_use_case_impl.h"
 #include "chromeos/ash/components/device_activity/device_active_use_case.h"
 #include "chromeos/ash/components/device_activity/device_activity_client.h"
+#include "chromeos/ash/components/device_activity/first_active_use_case_impl.h"
 #include "chromeos/ash/components/device_activity/fresnel_pref_names.h"
 #include "chromeos/ash/components/device_activity/monthly_use_case_impl.h"
 #include "chromeos/ash/components/network/network_state.h"
@@ -22,8 +23,7 @@
 #include "google_apis/google_api_keys.h"
 #include "third_party/private_membership/src/private_membership_rlwe_client.h"
 
-namespace ash {
-namespace device_activity {
+namespace ash::device_activity {
 
 namespace psm_rlwe = private_membership::rlwe;
 
@@ -68,14 +68,14 @@ void RecordPsmDeviceActiveSecretIsSet(bool is_set) {
                             is_set);
 }
 
-class PsmDelegateImpl : public PsmDelegate {
+class PsmDelegateImpl : public PsmDelegateInterface {
  public:
   PsmDelegateImpl() = default;
   PsmDelegateImpl(const PsmDelegateImpl&) = delete;
   PsmDelegateImpl& operator=(const PsmDelegateImpl&) = delete;
   ~PsmDelegateImpl() override = default;
 
-  // PsmDelegate:
+  // PsmDelegateInterface:
   rlwe::StatusOr<std::unique_ptr<psm_rlwe::PrivateMembershipRlweClient>>
   CreatePsmClient(
       psm_rlwe::RlweUseCase use_case,
@@ -98,8 +98,8 @@ void DeviceActivityController::RegisterPrefs(PrefRegistrySimple* registry) {
                              unix_epoch);
   registry->RegisterTimePref(prefs::kDeviceActiveLastKnownMonthlyPingTimestamp,
                              unix_epoch);
-  registry->RegisterTimePref(prefs::kDeviceActiveLastKnownAllTimePingTimestamp,
-                             unix_epoch);
+  registry->RegisterTimePref(
+      prefs::kDeviceActiveLastKnownFirstActivePingTimestamp, unix_epoch);
 }
 
 // static
@@ -238,13 +238,17 @@ void DeviceActivityController::OnMachineStatisticsLoaded(
   // smallest to largest window. i.e. Daily > Monthly > First Active.
   std::vector<std::unique_ptr<DeviceActiveUseCase>> use_cases;
   use_cases.push_back(std::make_unique<DailyUseCaseImpl>(
-      psm_device_active_secret, chrome_passed_device_params_, local_state));
+      psm_device_active_secret, chrome_passed_device_params_, local_state,
+      std::make_unique<PsmDelegateImpl>()));
   use_cases.push_back(std::make_unique<MonthlyUseCaseImpl>(
-      psm_device_active_secret, chrome_passed_device_params_, local_state));
+      psm_device_active_secret, chrome_passed_device_params_, local_state,
+      std::make_unique<PsmDelegateImpl>()));
+  use_cases.push_back(std::make_unique<FirstActiveUseCaseImpl>(
+      psm_device_active_secret, chrome_passed_device_params_, local_state,
+      std::make_unique<PsmDelegateImpl>()));
 
   da_client_network_ = std::make_unique<DeviceActivityClient>(
       NetworkHandler::Get()->network_state_handler(), url_loader_factory,
-      std::make_unique<PsmDelegateImpl>(),
       std::make_unique<base::RepeatingTimer>(), kFresnelBaseUrl,
       google_apis::GetFresnelAPIKey(), std::move(use_cases));
 }
@@ -255,5 +259,4 @@ void DeviceActivityController::Stop() {
   }
 }
 
-}  // namespace device_activity
-}  // namespace ash
+}  // namespace ash::device_activity

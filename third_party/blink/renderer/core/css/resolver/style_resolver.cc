@@ -120,6 +120,22 @@ namespace blink {
 
 namespace {
 
+scoped_refptr<const ComputedStyle> BuildInitialStyleForImg(
+    const scoped_refptr<const ComputedStyle>& initial_style) {
+  if (!RuntimeEnabledFeatures::CSSOverflowForReplacedElementsEnabled())
+    return initial_style;
+
+  // This matches the img {} declarations in html.css to avoid copy-on-write
+  // when only UA styles apply for these properties. See crbug.com/1369454
+  // for details.
+  auto initial_style_for_img = ComputedStyle::Clone(*initial_style);
+  initial_style_for_img->SetOverflowX(EOverflow::kClip);
+  initial_style_for_img->SetOverflowY(EOverflow::kClip);
+  initial_style_for_img->SetOverflowClipMargin(
+      StyleOverflowClipMargin::CreateContent());
+  return initial_style_for_img;
+}
+
 bool ShouldStoreOldStyle(const StyleRecalcContext& style_recalc_context,
                          StyleResolverState& state) {
   // Storing the old style is only relevant if we risk computing the style
@@ -178,9 +194,9 @@ bool HasAnimationsOrTransitions(const StyleResolverState& state) {
 }
 
 bool HasTimelines(const StyleResolverState& state) {
-  if (!state.Style()->ScrollTimelineName().IsEmpty())
+  if (!state.Style()->ScrollTimelineName().empty())
     return true;
-  if (!state.Style()->ViewTimelineName().IsEmpty())
+  if (!state.Style()->ViewTimelineName().empty())
     return true;
   if (ElementAnimations* element_animations = GetElementAnimations(state))
     return element_animations->CssAnimations().HasTimelines();
@@ -247,7 +263,7 @@ String ComputeBaseComputedStyleDiff(const ComputedStyle* base_computed_style,
     builder.Append(" ");
   }
 
-  if (builder.IsEmpty())
+  if (builder.empty())
     return g_null_atom;
 
   return String("Field diff: ") + builder.ReleaseString();
@@ -368,8 +384,9 @@ static void CollectScopedResolversForHostedShadowTrees(
 }
 
 StyleResolver::StyleResolver(Document& document)
-    : document_(document),
-      initial_style_(ComputedStyle::CreateInitialStyleSingleton()) {
+    : initial_style_(ComputedStyle::CreateInitialStyleSingleton()),
+      initial_style_for_img_(BuildInitialStyleForImg(initial_style_)),
+      document_(document) {
   UpdateMediaType();
 }
 
@@ -402,7 +419,7 @@ static inline ScopedStyleResolver* ScopedResolverFor(const Element& element) {
   if (ScopedStyleResolver* resolver = tree_scope->GetScopedStyleResolver()) {
 #if DCHECK_IS_ON()
     if (!element.HasMediaControlAncestor())
-      DCHECK(element.ShadowPseudoId().IsEmpty());
+      DCHECK(element.ShadowPseudoId().empty());
 #endif
     DCHECK(!element.IsVTTElement());
     return resolver;
@@ -411,7 +428,7 @@ static inline ScopedStyleResolver* ScopedResolverFor(const Element& element) {
   tree_scope = tree_scope->ParentTreeScope();
   if (!tree_scope)
     return nullptr;
-  if (element.ShadowPseudoId().IsEmpty() && !element.IsVTTElement())
+  if (element.ShadowPseudoId().empty() && !element.IsVTTElement())
     return nullptr;
   return tree_scope->GetScopedStyleResolver();
 }
@@ -559,7 +576,7 @@ static void MatchVTTRules(const Element& element,
     return;
   const HeapVector<Member<CSSStyleSheet>>& styles =
       text_track->GetCSSStyleSheets();
-  if (!styles.IsEmpty()) {
+  if (!styles.empty()) {
     int style_sheet_index = 0;
     collector.ClearMatchedRules();
     for (CSSStyleSheet* style : styles) {
@@ -590,7 +607,15 @@ static void MatchElementScopeRules(const Element& element,
   MatchVTTRules(element, collector);
   if (element.IsStyledElement() && element.InlineStyle() &&
       collector.GetPseudoId() == kPseudoIdNone) {
-    // Inline style is immutable as long as there is no CSSOM wrapper.
+    // Do not add styles depending on style attributes to the
+    // MatchedPropertiesCache (MPC) if they have been modified after parsing.
+    // The reason is that such declarations are not shared across elements and
+    // the caching would effectively only be useful for multiple resolutions for
+    // the same element with the exact same styles.
+    //
+    // For cases where animations are done by modifying the style attribute
+    // every frame, making the style cacheable would effectively just fill up
+    // the MPC with unnecessary ComputedStyles.
     bool is_inline_style_cacheable = !element.InlineStyle()->IsMutable();
     collector.AddElementStyleProperties(element.InlineStyle(),
                                         is_inline_style_cacheable,
@@ -769,14 +794,24 @@ void StyleResolver::MatchPresentationalHints(StyleResolverState& state,
                                              ElementRuleCollector& collector) {
   Element& element = state.GetElement();
   if (element.IsStyledElement() && !state.IsForPseudoElement()) {
-    collector.AddElementStyleProperties(element.PresentationAttributeStyle());
+    // Do not add styles depending on presentation attributes to the
+    // MatchedPropertiesCache (MPC) for SVG elements. The reason is that such
+    // declarations are not shared across elements and the caching would
+    // effectively only be useful for multiple resolutions for the same element
+    // with the exact same styles. We do this for SVG elements specifically
+    // since we have cases where SVG elements are animated by changing an
+    // attribute every frame, filling up the MPC.
+    const bool is_cacheable = !element.IsSVGElement();
+
+    collector.AddElementStyleProperties(element.PresentationAttributeStyle(),
+                                        is_cacheable);
 
     // Now we check additional mapped declarations.
     // Tables and table cells share an additional mapped rule that must be
     // applied after all attributes, since their mapped style depends on the
     // values of multiple attributes.
     collector.AddElementStyleProperties(
-        element.AdditionalPresentationAttributeStyle());
+        element.AdditionalPresentationAttributeStyle(), is_cacheable);
 
     if (auto* html_element = DynamicTo<HTMLElement>(element)) {
       if (html_element->HasDirectionAuto()) {
@@ -988,7 +1023,16 @@ void StyleResolver::ApplyInheritance(Element& element,
 
     state.SetStyle(ComputedStyle::Clone(*state.ParentStyle()));
   } else {
-    scoped_refptr<ComputedStyle> style = CreateComputedStyle();
+    // We use a different initial_style for img elements to match the overrides
+    // in html.css. This avoids allocation overhead from copy-on-write when these
+    // properties are set only via UA styles. The overhead shows up on motionmark
+    // which stress tests this code. See crbub.com/1369454 for details.
+    scoped_refptr<ComputedStyle> style;
+    if (IsA<HTMLImageElement>(element))
+      style = ComputedStyle::Clone(*initial_style_for_img_);
+    else
+      style = CreateComputedStyle();
+
     style->InheritFrom(
         *state.ParentStyle(),
         (!style_request.IsPseudoStyleRequest() && IsAtShadowBoundary(&element))
@@ -1519,11 +1563,9 @@ scoped_refptr<ComputedStyle> StyleResolver::InitialStyleForElement() const {
   initial_style->SetTapHighlightColor(
       ComputedStyleInitialValues::InitialTapHighlightColor());
 
-  Settings* settings = GetDocument().GetSettings();
-  bool force_dark = settings ? settings->GetForceDarkModeEnabled() : false;
   initial_style->SetUsedColorScheme(engine.GetPageColorSchemes(),
                                     engine.GetPreferredColorScheme(),
-                                    force_dark);
+                                    engine.GetForceDarkModeEnabled());
 
   FontDescription document_font_description =
       initial_style->GetFontDescription();
@@ -1940,6 +1982,13 @@ bool StyleResolver::CanReuseBaseComputedStyle(const StyleResolverState& state) {
       return false;
   }
 
+  // Likewise, When applying an animation or transition for line-height, lh unit
+  // lengths in the base style must respond to the animation.
+  if (CSSAnimations::IsAnimatingLineHeightProperty(element_animations)) {
+    if (base_data->GetBaseComputedStyle()->HasLineHeightRelativeUnits())
+      return false;
+  }
+
   // Normally, we apply all active animation effects on top of the style created
   // by regular CSS declarations. However, !important declarations have a
   // higher priority than animation effects [1]. If we're currently animating
@@ -2133,11 +2182,10 @@ void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
 void StyleResolver::ComputeFont(Element& element,
                                 ComputedStyle* style,
                                 const CSSPropertyValueSet& property_set) {
-  static const CSSProperty* properties[7] = {
+  static const CSSProperty* properties[6] = {
       &GetCSSPropertyFontSize(),        &GetCSSPropertyFontFamily(),
       &GetCSSPropertyFontStretch(),     &GetCSSPropertyFontStyle(),
       &GetCSSPropertyFontVariantCaps(), &GetCSSPropertyFontWeight(),
-      &GetCSSPropertyLineHeight(),
   };
 
   // TODO(timloh): This is weird, the style is being used as its own parent
@@ -2145,10 +2193,11 @@ void StyleResolver::ComputeFont(Element& element,
                            nullptr /* StyleRecalcContext */,
                            StyleRequest(style));
   state.SetStyle(style);
+  if (const ComputedStyle* parent_style = element.GetComputedStyle()) {
+    state.SetParentStyle(parent_style);
+  }
 
   for (const CSSProperty* property : properties) {
-    if (property->IDEquals(CSSPropertyID::kLineHeight))
-      state.UpdateFont();
     // TODO(futhark): If we start supporting fonts on ShadowRoot.fonts in
     // addition to Document.fonts, we need to pass the correct TreeScope instead
     // of GetDocument() in the ScopedCSSValue below.
@@ -2158,6 +2207,7 @@ void StyleResolver::ComputeFont(Element& element,
             *property_set.GetPropertyCSSValue(property->PropertyID()),
             &GetDocument()));
   }
+  state.UpdateFont();
 }
 
 void StyleResolver::UpdateMediaType() {

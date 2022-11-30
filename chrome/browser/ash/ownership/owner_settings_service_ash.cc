@@ -11,7 +11,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/components/tpm/tpm_token_loader.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -34,6 +33,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
+#include "chromeos/ash/components/tpm/tpm_token_loader.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
@@ -82,17 +82,14 @@ void LoadPrivateKeyByPublicKeyOnWorkerThread(
     crypto::ScopedPK11Slot public_slot,
     crypto::ScopedPK11Slot private_slot,
     ReloadKeyCallback callback) {
-  std::vector<uint8_t> public_key_data;
-  scoped_refptr<PublicKey> public_key;
-  if (!owner_key_util->ImportPublicKey(&public_key_data)) {
+  scoped_refptr<PublicKey> public_key = owner_key_util->ImportPublicKey();
+  if (!public_key) {
     scoped_refptr<PrivateKey> private_key;
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), public_key, private_key));
     return;
   }
-  public_key = new PublicKey();
-  public_key->data().swap(public_key_data);
 
   // If private slot is already available, this will check it. If not, we'll get
   // called again later when the TPM Token is ready, and the slot will be
@@ -156,11 +153,11 @@ void LoadPrivateKeyOnIOThread(const scoped_refptr<OwnerKeyUtil>& owner_key_util,
 
 bool DoesPrivateKeyExistAsyncHelper(
     const scoped_refptr<OwnerKeyUtil>& owner_key_util) {
-  std::vector<uint8_t> public_key;
-  if (!owner_key_util->ImportPublicKey(&public_key))
+  scoped_refptr<PublicKey> public_key = owner_key_util->ImportPublicKey();
+  if (!public_key)
     return false;
   crypto::ScopedSECKEYPrivateKey key =
-      crypto::FindNSSKeyFromPublicKeyInfo(public_key);
+      crypto::FindNSSKeyFromPublicKeyInfo(public_key->data());
   return key && SECKEY_GetPrivateKeyType(key.get()) == rsaKey;
 }
 
@@ -495,29 +492,29 @@ void OwnerSettingsServiceAsh::UpdateDeviceSettings(
         settings.mutable_device_local_accounts();
     device_local_accounts->clear_account();
     if (value.is_list()) {
-      for (const auto& entry : value.GetListDeprecated()) {
-        const base::DictionaryValue* entry_dict = nullptr;
-        if (entry.GetAsDictionary(&entry_dict)) {
+      for (const auto& entry : value.GetList()) {
+        if (entry.is_dict()) {
+          const base::Value::Dict& entry_dict = entry.GetDict();
           em::DeviceLocalAccountInfoProto* account =
               device_local_accounts->add_account();
           const std::string* account_id =
-              entry_dict->FindStringKey(kAccountsPrefDeviceLocalAccountsKeyId);
+              entry_dict.FindString(kAccountsPrefDeviceLocalAccountsKeyId);
           if (account_id)
             account->set_account_id(*account_id);
 
           absl::optional<int> type =
-              entry_dict->FindIntKey(kAccountsPrefDeviceLocalAccountsKeyType);
+              entry_dict.FindInt(kAccountsPrefDeviceLocalAccountsKeyType);
           if (type.has_value()) {
             account->set_type(
                 static_cast<em::DeviceLocalAccountInfoProto::AccountType>(
                     type.value()));
           }
-          const std::string* kiosk_app_id = entry_dict->FindStringKey(
+          const std::string* kiosk_app_id = entry_dict.FindString(
               kAccountsPrefDeviceLocalAccountsKeyKioskAppId);
           if (kiosk_app_id)
             account->mutable_kiosk_app()->set_app_id(*kiosk_app_id);
 
-          const std::string* kiosk_app_update_url = entry_dict->FindStringKey(
+          const std::string* kiosk_app_update_url = entry_dict.FindString(
               kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL);
           if (kiosk_app_update_url)
             account->mutable_kiosk_app()->set_update_url(*kiosk_app_update_url);
@@ -590,7 +587,7 @@ void OwnerSettingsServiceAsh::UpdateDeviceSettings(
     }
     DCHECK(list);
     list->Clear();
-    for (const auto& user : value.GetListDeprecated()) {
+    for (const auto& user : value.GetList()) {
       if (user.is_string()) {
         list->Add(std::string(user.GetString()));
       }
@@ -615,7 +612,7 @@ void OwnerSettingsServiceAsh::UpdateDeviceSettings(
     em::FeatureFlagsProto* feature_flags = settings.mutable_feature_flags();
     feature_flags->Clear();
     if (value.is_list()) {
-      for (const auto& flag : value.GetListDeprecated()) {
+      for (const auto& flag : value.GetList()) {
         if (flag.is_string())
           feature_flags->add_feature_flags(flag.GetString());
       }
@@ -660,6 +657,7 @@ void OwnerSettingsServiceAsh::UpdateDeviceSettings(
     //   kAccountsPrefTransferSAMLCookies
     //   kDeviceAttestationEnabled
     //   kDeviceOwner
+    //   kDeviceReportXDREvents
     //   kHeartbeatEnabled
     //   kHeartbeatFrequency
     //   kReleaseChannelDelegated

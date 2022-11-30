@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
@@ -57,6 +58,7 @@ const char kPerfITLBMissCyclesCmdSkylake[] =
     "-- record -a -e itlb_misses.walk_pending -c 30001";
 const char kPerfITLBMissCyclesCmdAtom[] =
     "-- record -a -e page_walks.i_side_cycles -c 30001";
+const char kPerfITLBMissCyclesCmdTremont[] = "-- record -a -e r1085 -c 30001";
 const char kPerfLLCMissesCmd[] = "-- record -a -e r412e -g -c 30007";
 const char kPerfLLCMissesPreciseCmd[] = "-- record -a -e r412e:pp -g -c 30007";
 const char kPerfETMCmd[] =
@@ -498,27 +500,15 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_IvyBridge) {
   EXPECT_TRUE(DoesCommandSampleCycles(cmds[0].value));
   EXPECT_EQ(cmds[1].value, kPerfFPCallgraphCmd);
   EXPECT_TRUE(DoesCommandSampleCycles(cmds[1].value));
-  auto found =
-      std::find_if(cmds.begin(), cmds.end(),
-                   [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                     return cmd.value == kPerfLBRCmd;
-                   });
-  EXPECT_NE(cmds.end(), found);
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfLLCMissesCmd;
-                       });
-  EXPECT_NE(cmds.end(), found);
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfITLBMissCyclesCmdIvyBridge;
-                       });
-  EXPECT_NE(cmds.end(), found);
+  EXPECT_TRUE(base::Contains(cmds, kPerfLBRCmd,
+                             &RandomSelector::WeightAndValue::value));
+  EXPECT_TRUE(base::Contains(cmds, kPerfLLCMissesCmd,
+                             &RandomSelector::WeightAndValue::value));
+  EXPECT_TRUE(base::Contains(cmds, kPerfITLBMissCyclesCmdIvyBridge,
+                             &RandomSelector::WeightAndValue::value));
 }
 
 TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_IvyBridge_HostAndGuest) {
-  const base::Feature kCWPCollectionOnHostAndGuest{
-      "CWPCollectionOnHostAndGuest", base::FEATURE_DISABLED_BY_DEFAULT};
   feature_list_.InitAndEnableFeature(kCWPCollectionOnHostAndGuest);
   CPUIdentity cpuid;
   cpuid.arch = "x86_64";
@@ -551,22 +541,12 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_SandyBridge) {
   EXPECT_TRUE(DoesCommandSampleCycles(cmds[0].value));
   EXPECT_EQ(cmds[1].value, kPerfFPCallgraphCmd);
   EXPECT_TRUE(DoesCommandSampleCycles(cmds[1].value));
-  auto found =
-      std::find_if(cmds.begin(), cmds.end(),
-                   [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                     return cmd.value == kPerfLBRCmd;
-                   });
-  EXPECT_NE(cmds.end(), found);
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfLLCMissesCmd;
-                       });
-  EXPECT_NE(cmds.end(), found);
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfITLBMissCyclesCmdIvyBridge;
-                       });
-  EXPECT_NE(cmds.end(), found);
+  EXPECT_TRUE(base::Contains(cmds, kPerfLBRCmd,
+                             &RandomSelector::WeightAndValue::value));
+  EXPECT_TRUE(base::Contains(cmds, kPerfLLCMissesCmd,
+                             &RandomSelector::WeightAndValue::value));
+  EXPECT_TRUE(base::Contains(cmds, kPerfITLBMissCyclesCmdIvyBridge,
+                             &RandomSelector::WeightAndValue::value));
 }
 
 TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_Haswell) {
@@ -585,27 +565,14 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_Haswell) {
   EXPECT_EQ(cmds[1].value, kPerfFPCallgraphCmd);
   EXPECT_TRUE(DoesCommandSampleCycles(cmds[1].value));
   // No LBR callstacks because the kernel is old.
-  auto found =
-      std::find_if(cmds.begin(), cmds.end(),
-                   [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                     return cmd.value == kPerfLBRCallgraphCmd;
-                   });
-  EXPECT_EQ(cmds.end(), found);
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfLBRCmd;
-                       });
-  EXPECT_NE(cmds.end(), found);
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfLLCMissesCmd;
-                       });
-  EXPECT_NE(cmds.end(), found);
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfITLBMissCyclesCmdIvyBridge;
-                       });
-  EXPECT_NE(cmds.end(), found);
+  EXPECT_FALSE(base::Contains(cmds, kPerfLBRCallgraphCmd,
+                              &RandomSelector::WeightAndValue::value));
+  EXPECT_TRUE(base::Contains(cmds, kPerfLBRCmd,
+                             &RandomSelector::WeightAndValue::value));
+  EXPECT_TRUE(base::Contains(cmds, kPerfLLCMissesCmd,
+                             &RandomSelector::WeightAndValue::value));
+  EXPECT_TRUE(base::Contains(cmds, kPerfITLBMissCyclesCmdIvyBridge,
+                             &RandomSelector::WeightAndValue::value));
 }
 
 TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_Skylake) {
@@ -625,22 +592,12 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_Skylake) {
   EXPECT_TRUE(DoesCommandSampleCycles(cmds[0].value));
   EXPECT_EQ(cmds[2].value, kPerfLBRCallgraphCmd);
   EXPECT_TRUE(DoesCommandSampleCycles(cmds[1].value));
-  auto found =
-      std::find_if(cmds.begin(), cmds.end(),
-                   [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                     return cmd.value == kPerfLBRCmd;
-                   });
-  EXPECT_NE(cmds.end(), found);
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfLLCMissesCmd;
-                       });
-  EXPECT_NE(cmds.end(), found);
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfITLBMissCyclesCmdSkylake;
-                       });
-  EXPECT_NE(cmds.end(), found);
+  EXPECT_TRUE(base::Contains(cmds, kPerfLBRCmd,
+                             &RandomSelector::WeightAndValue::value));
+  EXPECT_TRUE(base::Contains(cmds, kPerfLLCMissesCmd,
+                             &RandomSelector::WeightAndValue::value));
+  EXPECT_TRUE(base::Contains(cmds, kPerfITLBMissCyclesCmdSkylake,
+                             &RandomSelector::WeightAndValue::value));
 }
 
 TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_Tigerlake) {
@@ -660,27 +617,15 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_Tigerlake) {
   EXPECT_TRUE(DoesCommandSampleCycles(cmds[0].value));
   EXPECT_EQ(cmds[2].value, kPerfLBRCallgraphPPPCmd);
   EXPECT_TRUE(DoesCommandSampleCycles(cmds[1].value));
-  auto found =
-      std::find_if(cmds.begin(), cmds.end(),
-                   [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                     return cmd.value == kPerfLBRCmd;
-                   });
-  EXPECT_NE(cmds.end(), found);
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfLLCMissesCmd;
-                       });
-  EXPECT_NE(cmds.end(), found);
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfITLBMissCyclesCmdSkylake;
-                       });
-  EXPECT_NE(cmds.end(), found);
+  EXPECT_TRUE(base::Contains(cmds, kPerfLBRCmd,
+                             &RandomSelector::WeightAndValue::value));
+  EXPECT_TRUE(base::Contains(cmds, kPerfLLCMissesCmd,
+                             &RandomSelector::WeightAndValue::value));
+  EXPECT_TRUE(base::Contains(cmds, kPerfITLBMissCyclesCmdSkylake,
+                             &RandomSelector::WeightAndValue::value));
 }
 
 TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_Tigerlake_HostAndGuest) {
-  const base::Feature kCWPCollectionOnHostAndGuest{
-      "CWPCollectionOnHostAndGuest", base::FEATURE_DISABLED_BY_DEFAULT};
   feature_list_.InitAndEnableFeature(kCWPCollectionOnHostAndGuest);
   CPUIdentity cpuid;
   cpuid.arch = "x86_64";
@@ -716,27 +661,14 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_Goldmont) {
   EXPECT_EQ(cmds[1].value, kPerfFPCallgraphPPPCmd);
   EXPECT_TRUE(DoesCommandSampleCycles(cmds[1].value));
   // No LBR callstacks because the microarchitecture doesn't support it.
-  auto found =
-      std::find_if(cmds.begin(), cmds.end(),
-                   [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                     return cmd.value == kPerfLBRCallgraphCmd;
-                   });
-  EXPECT_EQ(cmds.end(), found);
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfLBRCmdAtom;
-                       });
-  EXPECT_NE(cmds.end(), found);
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfLLCMissesPreciseCmd;
-                       });
-  EXPECT_NE(cmds.end(), found);
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfITLBMissCyclesCmdAtom;
-                       });
-  EXPECT_NE(cmds.end(), found);
+  EXPECT_FALSE(base::Contains(cmds, kPerfLBRCallgraphCmd,
+                              &RandomSelector::WeightAndValue::value));
+  EXPECT_TRUE(base::Contains(cmds, kPerfLBRCmdAtom,
+                             &RandomSelector::WeightAndValue::value));
+  EXPECT_TRUE(base::Contains(cmds, kPerfLLCMissesPreciseCmd,
+                             &RandomSelector::WeightAndValue::value));
+  EXPECT_TRUE(base::Contains(cmds, kPerfITLBMissCyclesCmdAtom,
+                             &RandomSelector::WeightAndValue::value));
 }
 
 TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_GoldmontPlus) {
@@ -755,27 +687,40 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_GoldmontPlus) {
   EXPECT_EQ(cmds[1].value, kPerfFPCallgraphPPPCmd);
   EXPECT_TRUE(DoesCommandSampleCycles(cmds[1].value));
   // No LBR callstacks because the microarchitecture doesn't support it.
-  auto found =
-      std::find_if(cmds.begin(), cmds.end(),
-                   [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                     return cmd.value == kPerfLBRCallgraphCmd;
-                   });
-  EXPECT_EQ(cmds.end(), found);
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfLBRCmdAtom;
-                       });
-  EXPECT_NE(cmds.end(), found);
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfLLCMissesPreciseCmd;
-                       });
-  EXPECT_NE(cmds.end(), found);
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfITLBMissCyclesCmdSkylake;
-                       });
-  EXPECT_NE(cmds.end(), found);
+  EXPECT_FALSE(base::Contains(cmds, kPerfLBRCallgraphCmd,
+                              &RandomSelector::WeightAndValue::value));
+  EXPECT_TRUE(base::Contains(cmds, kPerfLBRCmdAtom,
+                             &RandomSelector::WeightAndValue::value));
+  EXPECT_TRUE(base::Contains(cmds, kPerfLLCMissesPreciseCmd,
+                             &RandomSelector::WeightAndValue::value));
+  EXPECT_TRUE(base::Contains(cmds, kPerfITLBMissCyclesCmdSkylake,
+                             &RandomSelector::WeightAndValue::value));
+}
+
+TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_Tremont) {
+  CPUIdentity cpuid;
+  cpuid.arch = "x86_64";
+  cpuid.vendor = "GenuineIntel";
+  cpuid.family = 0x06;
+  cpuid.model = 0x9c;  // Tremont
+  cpuid.model_name = "";
+  cpuid.release = "5.4.206";
+  std::vector<RandomSelector::WeightAndValue> cmds =
+      internal::GetDefaultCommandsForCpuModel(cpuid, "");
+  ASSERT_GE(cmds.size(), 2UL);
+  EXPECT_EQ(cmds[0].value, kPerfCyclesCmd);
+  EXPECT_TRUE(DoesCommandSampleCycles(cmds[0].value));
+  EXPECT_EQ(cmds[1].value, kPerfFPCallgraphCmd);
+  EXPECT_TRUE(DoesCommandSampleCycles(cmds[1].value));
+  // No LBR callstacks because the microarchitecture doesn't support it.
+  EXPECT_FALSE(base::Contains(cmds, kPerfLBRCallgraphCmd,
+                              &RandomSelector::WeightAndValue::value));
+  EXPECT_FALSE(base::Contains(cmds, kPerfLBRCmdAtom,
+                              &RandomSelector::WeightAndValue::value));
+  EXPECT_TRUE(base::Contains(cmds, kPerfLLCMissesPreciseCmd,
+                             &RandomSelector::WeightAndValue::value));
+  EXPECT_TRUE(base::Contains(cmds, kPerfITLBMissCyclesCmdTremont,
+                             &RandomSelector::WeightAndValue::value));
 }
 
 TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_Excavator) {
@@ -792,12 +737,9 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_Excavator) {
   EXPECT_TRUE(DoesCommandSampleCycles(cmds[0].value));
   EXPECT_EQ(cmds[1].value, kPerfFPCallgraphCmd);
   EXPECT_TRUE(DoesCommandSampleCycles(cmds[1].value));
-  auto found =
-      std::find_if(cmds.begin(), cmds.end(),
-                   [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                     return cmd.value == kPerfLLCMissesCmd;
-                   });
-  EXPECT_EQ(cmds.end(), found) << "Excavator does not support this command";
+  EXPECT_FALSE(base::Contains(cmds, kPerfLLCMissesCmd,
+                              &RandomSelector::WeightAndValue::value))
+      << "Excavator does not support this command";
 }
 
 TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_Arm32) {
@@ -814,17 +756,12 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_Arm32) {
   EXPECT_TRUE(DoesCommandSampleCycles(cmds[0].value));
   EXPECT_EQ(cmds[1].value, kPerfFPCallgraphCmd);
   EXPECT_TRUE(DoesCommandSampleCycles(cmds[1].value));
-  auto found =
-      std::find_if(cmds.begin(), cmds.end(),
-                   [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                     return cmd.value == kPerfLBRCmd;
-                   });
-  EXPECT_EQ(cmds.end(), found) << "ARM32 does not support this command";
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfLLCMissesCmd;
-                       });
-  EXPECT_EQ(cmds.end(), found) << "ARM32 does not support this command";
+  EXPECT_FALSE(
+      base::Contains(cmds, kPerfLBRCmd, &RandomSelector::WeightAndValue::value))
+      << "ARM32 does not support this command";
+  EXPECT_FALSE(base::Contains(cmds, kPerfLLCMissesCmd,
+                              &RandomSelector::WeightAndValue::value))
+      << "ARM32 does not support this command";
 }
 
 TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_Arm64) {
@@ -841,22 +778,15 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_Arm64) {
   EXPECT_TRUE(DoesCommandSampleCycles(cmds[0].value));
   EXPECT_EQ(cmds[1].value, kPerfFPCallgraphHGCmd);
   EXPECT_TRUE(DoesCommandSampleCycles(cmds[1].value));
-  auto found =
-      std::find_if(cmds.begin(), cmds.end(),
-                   [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                     return cmd.value == kPerfLBRCmd;
-                   });
-  EXPECT_EQ(cmds.end(), found) << "ARM64 does not support this command";
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfLLCMissesCmd;
-                       });
-  EXPECT_EQ(cmds.end(), found) << "ARM64 does not support this command";
+  EXPECT_FALSE(
+      base::Contains(cmds, kPerfLBRCmd, &RandomSelector::WeightAndValue::value))
+      << "ARM64 does not support this command";
+  EXPECT_FALSE(base::Contains(cmds, kPerfLLCMissesCmd,
+                              &RandomSelector::WeightAndValue::value))
+      << "ARM64 does not support this command";
 }
 
 TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_Arm64_HostAndGuest) {
-  const base::Feature kCWPCollectionOnHostAndGuest{
-      "CWPCollectionOnHostAndGuest", base::FEATURE_DISABLED_BY_DEFAULT};
   feature_list_.InitAndEnableFeature(kCWPCollectionOnHostAndGuest);
   CPUIdentity cpuid;
   cpuid.arch = "aarch64";
@@ -874,8 +804,6 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_Arm64_HostAndGuest) {
 }
 
 TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_Arm64_ETM) {
-  const base::Feature kCWPCollectsETM{"CWPCollectsETM",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
   feature_list_.InitAndEnableFeature(kCWPCollectsETM);
   CPUIdentity cpuid;
   cpuid.arch = "aarch64";
@@ -908,17 +836,12 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_x86_32) {
   EXPECT_TRUE(DoesCommandSampleCycles(cmds[0].value));
   EXPECT_EQ(cmds[1].value, kPerfFPCallgraphCmd);
   EXPECT_TRUE(DoesCommandSampleCycles(cmds[1].value));
-  auto found =
-      std::find_if(cmds.begin(), cmds.end(),
-                   [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                     return cmd.value == kPerfLBRCmd;
-                   });
-  EXPECT_EQ(cmds.end(), found) << "x86_32 does not support this command";
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfLLCMissesCmd;
-                       });
-  EXPECT_EQ(cmds.end(), found) << "x86_32 does not support this command";
+  EXPECT_FALSE(
+      base::Contains(cmds, kPerfLBRCmd, &RandomSelector::WeightAndValue::value))
+      << "x86_32 does not support this command";
+  EXPECT_FALSE(base::Contains(cmds, kPerfLLCMissesCmd,
+                              &RandomSelector::WeightAndValue::value))
+      << "x86_32 does not support this command";
 }
 
 TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_Unknown) {

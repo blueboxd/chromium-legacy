@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -226,7 +226,7 @@ static const String UniqueSimpleSelectorAmongSiblings(Element* element) {
 
   if (element->HasClass()) {
     AtomicString unique_classname = UniqueClassnameAmongSiblings(element);
-    if (!unique_classname.IsEmpty()) {
+    if (!unique_classname.empty()) {
       return AtomicString(".") + unique_classname;
     }
   }
@@ -778,7 +778,7 @@ const SerializedAnchor ScrollAnchor::GetSerializedAnchor() {
 
   // It's safe to return saved_selector_ before checking anchor_object_, since
   // clearing anchor_object_ also clears saved_selector_.
-  if (!saved_selector_.IsEmpty()) {
+  if (!saved_selector_.empty()) {
     DCHECK(anchor_object_);
     return SerializedAnchor(
         saved_selector_,

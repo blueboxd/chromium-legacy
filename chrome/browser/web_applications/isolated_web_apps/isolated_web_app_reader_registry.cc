@@ -4,11 +4,15 @@
 
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_reader_registry.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/functional/overloaded.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/web_applications/isolated_web_apps/signed_web_bundle_reader.h"
+#include "chrome/browser/web_applications/isolated_web_apps/signed_web_bundle_signature_verifier.h"
 #include "components/web_package/mojom/web_bundle_parser.mojom.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -16,19 +20,12 @@
 
 namespace web_app {
 
-namespace {
-
-// This is used in `absl::visit` below, but Clang incorrectly detects this as an
-// unused variable. Therefore this is marked with `__attribute__((unused))` to
-// suppress that warning.
-template <class>
-inline constexpr bool always_false_v __attribute__((unused)) = false;
-
-}  // namespace
-
 IsolatedWebAppReaderRegistry::IsolatedWebAppReaderRegistry(
-    std::unique_ptr<IsolatedWebAppValidator> validator)
-    : validator_(std::move(validator)) {}
+    std::unique_ptr<IsolatedWebAppValidator> validator,
+    base::RepeatingCallback<std::unique_ptr<SignedWebBundleSignatureVerifier>()>
+        signature_verifier_factory)
+    : validator_(std::move(validator)),
+      signature_verifier_factory_(std::move(signature_verifier_factory)) {}
 
 IsolatedWebAppReaderRegistry::~IsolatedWebAppReaderRegistry() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -60,6 +57,8 @@ void IsolatedWebAppReaderRegistry::ReadResponse(
     }
   }
 
+  std::unique_ptr<SignedWebBundleSignatureVerifier> signature_verifier =
+      signature_verifier_factory_.Run();
   std::unique_ptr<SignedWebBundleReader> reader =
       SignedWebBundleReader::CreateAndStartReading(
           web_bundle_path,
@@ -70,7 +69,8 @@ void IsolatedWebAppReaderRegistry::ReadResponse(
           base::BindOnce(
               &IsolatedWebAppReaderRegistry::OnIntegrityBlockAndMetadataRead,
               // `base::Unretained` can be used here since `this` owns `reader`.
-              base::Unretained(this), web_bundle_path, web_bundle_id));
+              base::Unretained(this), web_bundle_path, web_bundle_id),
+          std::move(signature_verifier));
 
   auto [cache_entry_it, was_insertion] =
       reader_cache_.emplace(web_bundle_path, CacheEntry(std::move(reader)));
@@ -83,7 +83,7 @@ void IsolatedWebAppReaderRegistry::OnIntegrityBlockRead(
     const base::FilePath& web_bundle_path,
     const web_package::SignedWebBundleId& web_bundle_id,
     const std::vector<web_package::Ed25519PublicKey>& public_key_stack,
-    base::OnceCallback<void(SignedWebBundleReader::IntegrityVerificationAction)>
+    base::OnceCallback<void(SignedWebBundleReader::SignatureVerificationAction)>
         integrity_callback) {
   if (auto error =
           validator_->ValidateIntegrityBlock(web_bundle_id, public_key_stack);
@@ -91,18 +91,20 @@ void IsolatedWebAppReaderRegistry::OnIntegrityBlockRead(
     // Aborting parsing will trigger a call to `OnIntegrityBlockAndMetadataRead`
     // with a `SignedWebBundleReader::AbortedByCaller` error.
     std::move(integrity_callback)
-        .Run(SignedWebBundleReader::IntegrityVerificationAction::Abort(*error));
+        .Run(SignedWebBundleReader::SignatureVerificationAction::Abort(*error));
     return;
   }
 
 #if BUILDFLAG(IS_CHROMEOS)
+  // On ChromeOS, we only verify integrity at install-time. On other OSes,
+  // we verify integrity once per session.
   std::move(integrity_callback)
-      .Run(SignedWebBundleReader::IntegrityVerificationAction::
-               ContinueAndSkipIntegrityVerification());
+      .Run(SignedWebBundleReader::SignatureVerificationAction::
+               ContinueAndSkipSignatureVerification());
 #else
   std::move(integrity_callback)
-      .Run(SignedWebBundleReader::IntegrityVerificationAction::
-               ContinueAndVerifyIntegrity());
+      .Run(SignedWebBundleReader::SignatureVerificationAction::
+               ContinueAndVerifySignatures());
 #endif
 }
 
@@ -124,29 +126,25 @@ void IsolatedWebAppReaderRegistry::OnIntegrityBlockAndMetadataRead(
 
   if (read_error.has_value()) {
     std::string error_message = absl::visit(
-        [](auto&& error) {
-          using T = std::decay_t<decltype(error)>;
-          if constexpr (std::is_same_v<T,
-                                       web_package::mojom::
-                                           BundleIntegrityBlockParseErrorPtr>) {
-            return base::StringPrintf("Failed to parse integrity block: %s",
-                                      error->message.c_str());
-          } else if constexpr (std::is_same_v<
-                                   T, SignedWebBundleReader::AbortedByCaller>) {
-            return base::StringPrintf(
-                "Public keys of the Isolated Web App are untrusted: %s",
-                error.message.c_str());
-          } else if constexpr (std::is_same_v<
-                                   T, web_package::mojom::
-                                          BundleMetadataParseErrorPtr>) {
-            return base::StringPrintf("Failed to parse metadata: %s",
-                                      error->message.c_str());
-          } else {
-            static_assert(always_false_v<T>, "The visitor is non-exhaustive.");
-          }
-          // TODO(crbug.com/1315947): Check if an error occurred during
-          // signature verification once it is implemented.
-        },
+        base::Overloaded{
+            [](const web_package::mojom::BundleIntegrityBlockParseErrorPtr&
+                   error) {
+              return base::StringPrintf("Failed to parse integrity block: %s",
+                                        error->message.c_str());
+            },
+            [](const SignedWebBundleReader::AbortedByCaller& error) {
+              return base::StringPrintf(
+                  "Public keys of the Isolated Web App are untrusted: %s",
+                  error.message.c_str());
+            },
+            [](const SignedWebBundleSignatureVerifier::Error& error) {
+              return base::StringPrintf("Failed to verify signatures: %s",
+                                        error.message.c_str());
+            },
+            [](const web_package::mojom::BundleMetadataParseErrorPtr& error) {
+              return base::StringPrintf("Failed to parse metadata: %s",
+                                        error->message.c_str());
+            }},
         *read_error);
     for (auto& [resource_request, callback] : pending_requests) {
       std::move(callback).Run(

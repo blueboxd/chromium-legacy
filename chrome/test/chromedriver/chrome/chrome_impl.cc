@@ -5,13 +5,14 @@
 #include "chrome/test/chromedriver/chrome/chrome_impl.h"
 
 #include <stddef.h>
-#include <algorithm>
+
 #include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/logging.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -176,10 +177,10 @@ Status ChromeImpl::NewWindow(const std::string& target_id,
   if (status.IsError())
     return Status(kNoSuchWindow);
 
-  base::DictionaryValue params;
-  params.SetStringKey("url", "about:blank");
-  params.SetBoolKey("newWindow", type == WindowType::kWindow);
-  params.SetBoolKey("background", true);
+  base::Value::Dict params;
+  params.Set("url", "about:blank");
+  params.Set("newWindow", type == WindowType::kWindow);
+  params.Set("background", true);
   base::Value result;
   status = devtools_websocket_client_->SendCommandAndGetResult(
       "Target.createTarget", params, &result);
@@ -203,13 +204,12 @@ Status ChromeImpl::CreateClient(const std::string& id,
 
   std::string session_id;
   {
-    base::Value params(base::Value::Type::DICT);
+    base::Value::Dict params;
     base::Value result;
-    params.GetDict().Set("targetId", id);
-    params.GetDict().Set("flatten", true);
+    params.Set("targetId", id);
+    params.Set("flatten", true);
     status = devtools_websocket_client_->SendCommandAndGetResult(
-        "Target.attachToTarget", base::Value::AsDictionaryValue(params),
-        &result);
+        "Target.attachToTarget", params, &result);
     if (status.IsError()) {
       return status;
     }
@@ -310,8 +310,8 @@ Status ChromeImpl::GetWindow(const std::string& target_id, Window* window) {
   if (status.IsError())
     return status;
 
-  base::DictionaryValue params;
-  params.SetStringKey("targetId", target_id);
+  base::Value::Dict params;
+  params.Set("targetId", target_id);
   base::Value result;
   status = devtools_websocket_client_->SendCommandAndGetResult(
       "Browser.getWindowForTarget", params, &result);
@@ -409,8 +409,8 @@ Status ChromeImpl::GetWindowBounds(int window_id, Window* window) {
   if (status.IsError())
     return status;
 
-  base::DictionaryValue params;
-  params.SetIntKey("windowId", window_id);
+  base::Value::Dict params;
+  params.Set("windowId", window_id);
   base::Value result;
   status = devtools_websocket_client_->SendCommandAndGetResult(
       "Browser.getWindowBounds", params, &result);
@@ -428,11 +428,11 @@ Status ChromeImpl::SetWindowBounds(
   if (status.IsError())
     return status;
 
-  base::DictionaryValue params;
-  params.SetIntKey("windowId", window->id);
+  base::Value::Dict params;
+  params.Set("windowId", window->id);
   const std::string normal = "normal";
   if (window->state != normal) {
-    params.SetStringPath("bounds.windowState", normal);
+    params.SetByDottedPath("bounds.windowState", normal);
     status = devtools_websocket_client_->SendCommand("Browser.setWindowBounds",
                                                      params);
     // Return success in case of `Browser.setWindowBounds` not implemented like
@@ -465,11 +465,11 @@ Status ChromeImpl::SetWindowBounds(
     if (status.IsError())
       return status;
 
-    base::DictionaryValue fullscreen_params;
-    fullscreen_params.SetStringKey(
-        "expression", "document.documentElement.requestFullscreen()");
-    fullscreen_params.SetBoolKey("userGesture", true);
-    fullscreen_params.SetBoolKey("awaitPromise", true);
+    base::Value::Dict fullscreen_params;
+    fullscreen_params.Set("expression",
+                          "document.documentElement.requestFullscreen()");
+    fullscreen_params.Set("userGesture", true);
+    fullscreen_params.Set("awaitPromise", true);
     status = web_view->SendCommand("Runtime.evaluate", fullscreen_params);
     if (status.IsError())
       return status;
@@ -487,7 +487,7 @@ Status ChromeImpl::SetWindowBounds(
   // we sometimes see a devtools crash. Because the latter call will
   // set fullscreen, do not call setWindowBounds with a fullscreen request
   // unless running headless. see https://crbug.com/1049336
-  params.SetKey("bounds", bounds->Clone());
+  params.Set("bounds", bounds->Clone());
   status = devtools_websocket_client_->SendCommand("Browser.setWindowBounds",
                                                    params);
 
@@ -540,7 +540,7 @@ Status ChromeImpl::SetWindowBounds(
     window_bounds->SetIntKey("height", height->GetInt());
     window_bounds->SetIntKey("left", 0);
     window_bounds->SetIntKey("top", 0);
-    params.SetKey("bounds", window_bounds->Clone());
+    params.Set("bounds", window_bounds->Clone());
     return devtools_websocket_client_->SendCommand("Browser.setWindowBounds",
                                                    params);
   }
@@ -549,7 +549,7 @@ Status ChromeImpl::SetWindowBounds(
   // Wait and retry for 1 second
   for (; retries < 10; ++retries) {
     // SetWindowBounds again for retry
-    params.SetKey("bounds", bounds->Clone());
+    params.Set("bounds", bounds->Clone());
     status = devtools_websocket_client_->SendCommand("Browser.setWindowBounds",
                                                      params);
 
@@ -574,10 +574,10 @@ Status ChromeImpl::GetWebViewsInfo(WebViewsInfo* views_info) {
     return status;
   }
 
-  base::Value params{base::Value::Type::DICT};
+  base::Value::Dict params;
   base::Value result;
   status = devtools_websocket_client_->SendCommandAndGetResult(
-      "Target.getTargets", base::Value::AsDictionaryValue(params), &result);
+      "Target.getTargets", params, &result);
   if (status.IsError()) {
     return status;
   }
@@ -664,10 +664,10 @@ Status ChromeImpl::ParseWindowBounds(const base::Value& params,
 }
 
 Status ChromeImpl::CloseTarget(const std::string& id) {
-  base::Value params{base::Value::Type::DICT};
-  params.GetDict().Set("targetId", id);
-  Status status = devtools_websocket_client_->SendCommand(
-      "Target.closeTarget", base::Value::AsDictionaryValue(params));
+  base::Value::Dict params;
+  params.Set("targetId", id);
+  Status status =
+      devtools_websocket_client_->SendCommand("Target.closeTarget", params);
 
   if (status.IsError())
     return status;
@@ -701,9 +701,7 @@ Status ChromeImpl::CloseWebView(const std::string& id) {
     return status;
   }
 
-  auto it =
-      std::find_if(web_views_.begin(), web_views_.end(),
-                   [&id](const auto& view) { return view->GetId() == id; });
+  auto it = base::ranges::find(web_views_, id, &WebViewImpl::GetId);
   if (it != web_views_.end()) {
     web_views_.erase(it);
   }
@@ -722,10 +720,10 @@ Status ChromeImpl::ActivateWebView(const std::string& id) {
     return status;
   }
 
-  base::Value params{base::Value::Type::DICT};
-  params.GetDict().Set("targetId", id);
-  status = devtools_websocket_client_->SendCommand(
-      "Target.activateTarget", base::Value::AsDictionaryValue(params));
+  base::Value::Dict params;
+  params.Set("targetId", id);
+  status =
+      devtools_websocket_client_->SendCommand("Target.activateTarget", params);
   return status;
 }
 
@@ -734,8 +732,8 @@ Status ChromeImpl::SetAcceptInsecureCerts() {
   if (status.IsError())
     return status;
 
-  base::DictionaryValue params;
-  params.SetBoolKey("ignore", true);
+  base::Value::Dict params;
+  params.Set("ignore", true);
   return devtools_websocket_client_->SendCommand(
       "Security.setIgnoreCertificateErrors", params);
 }
@@ -765,10 +763,10 @@ Status ChromeImpl::SetPermission(
   else
     return Status(kInvalidArgument, "unsupported PermissionState");
 
-  base::DictionaryValue args;
-  args.SetStringKey("origin", current_url);
-  args.SetKey("permission", std::move(*permission_descriptor));
-  args.SetStringKey("setting", permission_setting);
+  base::Value::Dict args;
+  args.Set("origin", current_url);
+  args.Set("permission", std::move(*permission_descriptor));
+  args.Set("setting", permission_setting);
   return devtools_websocket_client_->SendCommand("Browser.setPermission", args);
 }
 

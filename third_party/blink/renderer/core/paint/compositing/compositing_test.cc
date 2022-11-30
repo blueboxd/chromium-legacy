@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,8 +42,7 @@ namespace blink {
 namespace {
 
 const char* ViewLayerName() {
-  return RuntimeEnabledFeatures::LayoutNGViewEnabled() &&
-                 RuntimeEnabledFeatures::LayoutNGEnabled()
+  return RuntimeEnabledFeatures::LayoutNGPrintingEnabled()
              ? "LayoutNGView #document"
              : "LayoutView #document";
 }
@@ -84,7 +83,7 @@ class CompositingTest : public PaintTestConfigurations, public testing::Test {
 
   cc::Layer* CcLayerByDOMElementId(const char* id) {
     auto layers = CcLayersByDOMElementId(RootCcLayer(), id);
-    return layers.IsEmpty() ? nullptr : layers[0];
+    return layers.empty() ? nullptr : layers[0];
   }
 
   cc::LayerTreeHost* LayerTreeHost() {
@@ -582,7 +581,7 @@ class CompositingSimTest : public PaintTestConfigurations, public SimTest {
 
   const cc::Layer* CcLayerByDOMElementId(const char* id) {
     auto layers = CcLayersByDOMElementId(RootCcLayer(), id);
-    return layers.IsEmpty() ? nullptr : layers[0];
+    return layers.empty() ? nullptr : layers[0];
   }
 
   const cc::Layer* CcLayerByOwnerNodeId(Node* node) {
@@ -913,8 +912,6 @@ TEST_P(CompositingSimTest, DirectTransformPropertyUpdate) {
 // This is similar to |DirectTransformPropertyUpdate|, but the update is done
 // from style rather than the property tree builder.
 TEST_P(CompositingSimTest, FastPathTransformUpdateFromStyle) {
-  if (!base::FeatureList::IsEnabled(features::kFastPathPaintPropertyUpdates))
-    return;
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -946,7 +943,7 @@ TEST_P(CompositingSimTest, FastPathTransformUpdateFromStyle) {
   auto* div_properties =
       div->GetLayoutObject()->FirstFragment().PaintProperties();
   ASSERT_TRUE(div_properties);
-  EXPECT_EQ(TransformationMatrix().Translate(100, 0),
+  EXPECT_EQ(TransformationMatrix::MakeTranslation(100, 0),
             div_properties->Transform()->Matrix());
   EXPECT_TRUE(div_properties->Transform()->HasActiveTransformAnimation());
   EXPECT_FALSE(div->GetLayoutObject()->NeedsPaintPropertyUpdate());
@@ -971,7 +968,7 @@ TEST_P(CompositingSimTest, FastPathTransformUpdateFromStyle) {
   // Continue to run the lifecycle to paint and ensure that updates are
   // performed.
   UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_EQ(TransformationMatrix().Translate(400, 0),
+  EXPECT_EQ(TransformationMatrix::MakeTranslation(400, 0),
             div_properties->Transform()->Matrix());
   EXPECT_EQ(400.0f, transform_node->local.To2dTranslation().x());
   EXPECT_TRUE(transform_node->transform_changed);

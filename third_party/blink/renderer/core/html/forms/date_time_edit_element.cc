@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/date_time_edit_element.h"
 
+#include "base/ranges/algorithm.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/text.h"
@@ -771,7 +772,7 @@ void DateTimeEditElement::GetLayout(const LayoutParameters& layout_parameters,
 
   DateTimeEditBuilder builder(*this, layout_parameters, date_value);
   Node* last_child_to_be_removed = fields_wrapper->lastChild();
-  if (!builder.Build(layout_parameters.date_time_format) || fields_.IsEmpty()) {
+  if (!builder.Build(layout_parameters.date_time_format) || fields_.empty()) {
     last_child_to_be_removed = fields_wrapper->lastChild();
     builder.Build(layout_parameters.fallback_date_time_format);
   }
@@ -857,9 +858,7 @@ void DateTimeEditElement::SetEmptyValue(
 }
 
 DateTimeFieldElement* DateTimeEditElement::GetField(DateTimeField type) const {
-  auto* it = std::find_if(
-      fields_.begin(), fields_.end(),
-      [&type](const auto& field) { return field->Type() == type; });
+  auto* it = base::ranges::find(fields_, type, &DateTimeFieldElement::Type);
   if (it == fields_.end())
     return nullptr;
   return *it;

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "build/build_config.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/shared_image/external_vk_image_gl_representation.h"
@@ -53,7 +54,7 @@ namespace gpu {
 
 namespace {
 
-static const struct {
+static const struct GLFormatInfo {
   GLenum gl_format;
   GLenum gl_type;
   GLuint bytes_per_pixel;
@@ -83,6 +84,10 @@ static const struct {
 static_assert(std::size(kFormatTable) == (viz::RESOURCE_FORMAT_MAX + 1),
               "kFormatTable does not handle all cases.");
 
+GLFormatInfo GetGLFormatInfo(viz::SharedImageFormat format) {
+  return kFormatTable[format.resource_format()];
+}
+
 class ScopedDedicatedMemoryObject {
  public:
   explicit ScopedDedicatedMemoryObject(gl::GLApi* api) : api_(api) {
@@ -101,11 +106,11 @@ class ScopedDedicatedMemoryObject {
 };
 
 bool UseSeparateGLTexture(SharedContextState* context_state,
-                          viz::ResourceFormat format) {
+                          viz::SharedImageFormat format) {
   if (!context_state->support_vulkan_external_object())
     return true;
 
-  if (format != viz::ResourceFormat::BGRA_8888)
+  if (format.resource_format() != viz::ResourceFormat::BGRA_8888)
     return false;
 
   auto* gl_context = context_state->real_context();
@@ -160,13 +165,13 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
     scoped_refptr<SharedContextState> context_state,
     VulkanCommandPool* command_pool,
     const Mailbox& mailbox,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
     uint32_t usage,
-    const VulkanImageUsageCache* image_usage_cache,
+    const base::flat_map<VkFormat, VkImageUsageFlags>& image_usage_cache,
     base::span<const uint8_t> pixel_data,
     bool using_gmb) {
   bool is_external = context_state->support_vulkan_external_object();
@@ -183,22 +188,25 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
   if (usage & kUsageNeedsColorAttachment) {
     vk_usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
                 VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
-    if (format == viz::ETC1) {
+    if (viz::IsResourceFormatCompressed(format)) {
       DLOG(ERROR) << "ETC1 format cannot be used as color attachment.";
       return nullptr;
     }
   }
 
+  auto it = image_usage_cache.find(vk_format);
+  DCHECK(it != image_usage_cache.end());
+  auto vk_tiling_usage = it->second;
+
   // Requested usage flags must be supported.
-  DCHECK_EQ(vk_usage & image_usage_cache->optimal_tiling_usage[format],
-            vk_usage);
+  DCHECK_EQ(vk_usage & vk_tiling_usage, vk_usage);
 
   // Must request all available image usage flags if aliasing GL texture. This
   // is a spec requirement per EXT_memory_object. However, if
   // ANGLE_memory_object_flags is supported, usage flags can be arbitrary.
   if (is_external && (usage & SHARED_IMAGE_USAGE_GLES2) &&
       !UseMinimalUsageFlags(context_state.get())) {
-    vk_usage |= image_usage_cache->optimal_tiling_usage[format];
+    vk_usage |= vk_tiling_usage;
   }
 
   VkImageCreateFlags vk_flags = 0;
@@ -224,10 +232,12 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
 
   if (!pixel_data.empty()) {
     size_t stride = BitsPerPixel(format) / 8 * size.width();
-    backing->WritePixelsWithData(pixel_data, stride);
+    SkPixmap pixmap(backing->AsSkImageInfo(), pixel_data.data(), stride);
+    backing->UploadToVkImage(pixmap);
 
     // Mark the backing as cleared.
     backing->SetCleared();
+    backing->latest_content_ = kInVkImage;
   }
 
   return backing;
@@ -244,8 +254,7 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
-    uint32_t usage,
-    const VulkanImageUsageCache* image_usage_cache) {
+    uint32_t usage) {
   if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(size, buffer_format)) {
     DLOG(ERROR) << "Invalid image size for format.";
     return nullptr;
@@ -254,54 +263,33 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
   auto* vulkan_implementation =
       context_state->vk_context_provider()->GetVulkanImplementation();
   auto resource_format = viz::GetResourceFormat(buffer_format);
+  auto si_format = viz::SharedImageFormat::SinglePlane(resource_format);
   auto* device_queue = context_state->vk_context_provider()->GetDeviceQueue();
-  if (vulkan_implementation->CanImportGpuMemoryBuffer(device_queue,
-                                                      handle.type)) {
-    VkFormat vk_format = ToVkFormat(resource_format);
-    auto image = vulkan_implementation->CreateImageFromGpuMemoryHandle(
-        device_queue, std::move(handle), size, vk_format);
-    if (!image) {
-      DLOG(ERROR) << "Failed to create VkImage from GpuMemoryHandle.";
-      return nullptr;
-    }
+  DCHECK(vulkan_implementation->CanImportGpuMemoryBuffer(device_queue,
+                                                         handle.type));
 
-    bool use_separate_gl_texture =
-        UseSeparateGLTexture(context_state.get(), resource_format);
-    auto backing = std::make_unique<ExternalVkImageBacking>(
-        base::PassKey<ExternalVkImageBacking>(), mailbox, resource_format, size,
-        color_space, surface_origin, alpha_type, usage,
-        std::move(context_state), std::move(image), command_pool,
-        use_separate_gl_texture);
-    backing->SetCleared();
-    return backing;
-  }
-
-  if (gfx::NumberOfPlanesForLinearBufferFormat(buffer_format) != 1) {
-    DLOG(ERROR) << "Invalid image format.";
+  VkFormat vk_format = ToVkFormat(resource_format);
+  auto image = vulkan_implementation->CreateImageFromGpuMemoryHandle(
+      device_queue, std::move(handle), size, vk_format, color_space);
+  if (!image) {
+    DLOG(ERROR) << "Failed to create VkImage from GpuMemoryHandle.";
     return nullptr;
   }
 
-  DCHECK_EQ(handle.type, gfx::SHARED_MEMORY_BUFFER);
-
-  SharedMemoryRegionWrapper shared_memory_wrapper;
-  if (!shared_memory_wrapper.Initialize(handle, size, resource_format))
-    return nullptr;
-
-  auto backing = Create(std::move(context_state), command_pool, mailbox,
-                        resource_format, size, color_space, surface_origin,
-                        alpha_type, usage, image_usage_cache,
-                        base::span<const uint8_t>(), true /* using_gmb */);
-  if (!backing)
-    return nullptr;
-
-  backing->InstallSharedMemory(std::move(shared_memory_wrapper));
+  bool use_separate_gl_texture =
+      UseSeparateGLTexture(context_state.get(), si_format);
+  auto backing = std::make_unique<ExternalVkImageBacking>(
+      base::PassKey<ExternalVkImageBacking>(), mailbox, si_format, size,
+      color_space, surface_origin, alpha_type, usage, std::move(context_state),
+      std::move(image), command_pool, use_separate_gl_texture);
+  backing->SetCleared();
   return backing;
 }
 
 ExternalVkImageBacking::ExternalVkImageBacking(
     base::PassKey<ExternalVkImageBacking>,
     const Mailbox& mailbox,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
@@ -471,7 +459,7 @@ void ExternalVkImageBacking::EndAccess(bool readonly,
     if (use_separate_gl_texture()) {
       latest_content_ = is_gl ? kInGLTexture : kInVkImage;
     } else {
-      latest_content_ = kInVkImage | kInGLTexture;
+      latest_content_ = kInVkImage;
     }
   }
 
@@ -514,8 +502,22 @@ SharedImageBackingType ExternalVkImageBacking::GetType() const {
 
 void ExternalVkImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
   DCHECK(!in_fence);
-  latest_content_ = kInSharedMemory;
+}
+
+bool ExternalVkImageBacking::UploadFromMemory(const SkPixmap& pixmap) {
+  if (!UploadToVkImage(pixmap))
+    return false;
+
   SetCleared();
+  latest_content_ = kInVkImage;
+
+  // Also upload to GL texture if there is a separate one.
+  if (use_separate_gl_texture() && (texture_ || texture_passthrough_)) {
+    UploadToGLTexture(pixmap);
+    latest_content_ |= kInGLTexture;
+  }
+
+  return true;
 }
 
 void ExternalVkImageBacking::AddSemaphoresToPendingListOrRelease(
@@ -650,10 +652,11 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
       api->glTexStorage2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
                                size().width(), size().height());
     } else {
-      auto gl_format = kFormatTable[format()].gl_format;
-      auto gl_type = kFormatTable[format()].gl_type;
+      auto gl_format_info = GetGLFormatInfo(format());
+      auto gl_format = gl_format_info.gl_format;
+      auto gl_type = gl_format_info.gl_type;
       if (gl_format == GL_ZERO || gl_type == GL_ZERO)
-        LOG(FATAL) << "Not support format: " << format();
+        LOG(FATAL) << "Not support format: " << format().ToString();
       api->glTexImage2DFn(GL_TEXTURE_2D, 0, gl_format, size().width(),
                           size().height(), 0, gl_format, gl_type, nullptr);
     }
@@ -773,51 +776,27 @@ ExternalVkImageBacking::ProduceOverlay(SharedImageManager* manager,
       manager, this, tracker);
 }
 
-void ExternalVkImageBacking::InstallSharedMemory(
-    SharedMemoryRegionWrapper shared_memory_wrapper) {
-  DCHECK(!shared_memory_wrapper_.IsValid());
-  DCHECK(shared_memory_wrapper.IsValid());
-  shared_memory_wrapper_ = std::move(shared_memory_wrapper);
-  Update(nullptr);
-}
-
 void ExternalVkImageBacking::UpdateContent(uint32_t content_flags) {
   // Only support one backing for now.
-  DCHECK(content_flags == kInVkImage || content_flags == kInGLTexture ||
-         content_flags == kInSharedMemory);
+  DCHECK(content_flags == kInVkImage || content_flags == kInGLTexture);
+
+  // There is no need to update content when there is only one texture.
+  if (!use_separate_gl_texture())
+    return;
 
   if ((latest_content_ & content_flags) == content_flags)
     return;
 
-  if (content_flags == kInGLTexture && !use_separate_gl_texture())
-    content_flags = kInVkImage;
-
   if (content_flags == kInVkImage) {
-    if (latest_content_ & kInSharedMemory) {
-      if (!shared_memory_wrapper_.IsValid())
-        return;
-      if (!WritePixels())
-        return;
-      latest_content_ |=
-          use_separate_gl_texture() ? kInVkImage : kInVkImage | kInGLTexture;
-      return;
-    }
-    if ((latest_content_ & kInGLTexture) && use_separate_gl_texture()) {
+    if ((latest_content_ & kInGLTexture)) {
       CopyPixelsFromGLTextureToVkImage();
       latest_content_ |= kInVkImage;
-      return;
     }
   } else if (content_flags == kInGLTexture) {
-    DCHECK(use_separate_gl_texture());
-    if (latest_content_ & kInSharedMemory) {
-      CopyPixelsFromShmToGLTexture();
-    } else if (latest_content_ & kInVkImage) {
+    if (latest_content_ & kInVkImage) {
       CopyPixelsFromVkImageToGLTexture();
+      latest_content_ |= kInGLTexture;
     }
-  } else if (content_flags == kInSharedMemory) {
-    // TODO(penghuang): read pixels back from VkImage to shared memory GMB, if
-    // this feature is needed.
-    NOTIMPLEMENTED_LOG_ONCE();
   }
 }
 
@@ -1000,9 +979,7 @@ bool ExternalVkImageBacking::ReadPixelsWithCallback(
   return true;
 }
 
-bool ExternalVkImageBacking::WritePixelsWithData(
-    base::span<const uint8_t> pixel_data,
-    size_t stride) {
+bool ExternalVkImageBacking::UploadToVkImage(const SkPixmap& pixmap) {
   std::vector<ExternalSemaphore> external_semaphores;
   if (!BeginAccessInternal(false /* readonly */, &external_semaphores)) {
     DLOG(ERROR) << "BeginAccess() failed.";
@@ -1011,7 +988,6 @@ bool ExternalVkImageBacking::WritePixelsWithData(
   auto* gr_context = context_state_->gr_context();
   WaitSemaphoresOnGrContext(gr_context, &external_semaphores);
 
-  SkPixmap pixmap(AsSkImageInfo(), pixel_data.data(), stride);
   if (!gr_context->updateBackendTexture(backend_texture_, &pixmap,
                                         /*numLevels=*/1, nullptr, nullptr)) {
     DLOG(ERROR) << "updateBackendTexture() failed.";
@@ -1049,25 +1025,19 @@ bool ExternalVkImageBacking::WritePixelsWithData(
   return true;
 }
 
-bool ExternalVkImageBacking::WritePixels() {
-  return WritePixelsWithData(shared_memory_wrapper_.GetMemoryAsSpan(),
-                             shared_memory_wrapper_.GetStride());
-}
-
 void ExternalVkImageBacking::CopyPixelsFromGLTextureToVkImage() {
   DCHECK(use_separate_gl_texture());
   DCHECK_NE(!!texture_, !!texture_passthrough_);
   const GLuint texture_service_id =
       texture_ ? texture_->service_id() : texture_passthrough_->service_id();
 
-  DCHECK_GE(format(), 0);
-  DCHECK_LE(format(), viz::RESOURCE_FORMAT_MAX);
-  auto gl_format = kFormatTable[format()].gl_format;
-  auto gl_type = kFormatTable[format()].gl_type;
-  auto bytes_per_pixel = kFormatTable[format()].bytes_per_pixel;
+  auto gl_format_info = GetGLFormatInfo(format());
+  auto gl_format = gl_format_info.gl_format;
+  auto gl_type = gl_format_info.gl_type;
+  auto bytes_per_pixel = gl_format_info.bytes_per_pixel;
 
   if (gl_format == GL_ZERO) {
-    NOTREACHED() << "Not supported resource format=" << format();
+    NOTREACHED() << "Not supported resource format=" << format().ToString();
     return;
   }
 
@@ -1120,14 +1090,13 @@ void ExternalVkImageBacking::CopyPixelsFromVkImageToGLTexture() {
   const GLuint texture_service_id =
       texture_ ? texture_->service_id() : texture_passthrough_->service_id();
 
-  DCHECK_GE(format(), 0);
-  DCHECK_LE(format(), viz::RESOURCE_FORMAT_MAX);
-  auto gl_format = kFormatTable[format()].gl_format;
-  auto gl_type = kFormatTable[format()].gl_type;
-  auto bytes_per_pixel = kFormatTable[format()].bytes_per_pixel;
+  auto gl_format_info = GetGLFormatInfo(format());
+  auto gl_format = gl_format_info.gl_format;
+  auto gl_type = gl_format_info.gl_type;
+  auto bytes_per_pixel = gl_format_info.bytes_per_pixel;
 
   if (gl_format == GL_ZERO) {
-    NOTREACHED() << "Not supported resource format=" << format();
+    NOTREACHED() << "Not supported resource format=" << format().ToString();
     return;
   }
 
@@ -1167,20 +1136,19 @@ void ExternalVkImageBacking::CopyPixelsFromVkImageToGLTexture() {
           api, size(), gl_format, gl_type));
 }
 
-void ExternalVkImageBacking::CopyPixelsFromShmToGLTexture() {
+void ExternalVkImageBacking::UploadToGLTexture(const SkPixmap& pixmap) {
   DCHECK(use_separate_gl_texture());
   DCHECK_NE(!!texture_, !!texture_passthrough_);
   const GLuint texture_service_id =
       texture_ ? texture_->service_id() : texture_passthrough_->service_id();
 
-  DCHECK_GE(format(), 0);
-  DCHECK_LE(format(), viz::RESOURCE_FORMAT_MAX);
-  auto gl_format = kFormatTable[format()].gl_format;
-  auto gl_type = kFormatTable[format()].gl_type;
-  auto bytes_per_pixel = kFormatTable[format()].bytes_per_pixel;
+  auto gl_format_info = GetGLFormatInfo(format());
+  auto gl_format = gl_format_info.gl_format;
+  auto gl_type = gl_format_info.gl_type;
+  auto bytes_per_pixel = gl_format_info.bytes_per_pixel;
 
   if (gl_format == GL_ZERO) {
-    NOTREACHED() << "Not supported resource format=" << format();
+    NOTREACHED() << "Not supported resource format=" << format().ToString();
     return;
   }
 
@@ -1208,10 +1176,8 @@ void ExternalVkImageBacking::CopyPixelsFromShmToGLTexture() {
   checked_size *= size().height();
   DCHECK(checked_size.IsValid());
 
-  auto pixel_data = shared_memory_wrapper_.GetMemoryAsSpan();
   api->glTexSubImage2DFn(GL_TEXTURE_2D, 0, 0, 0, size().width(),
-                         size().height(), gl_format, gl_type,
-                         pixel_data.data());
+                         size().height(), gl_format, gl_type, pixmap.addr());
   DCHECK_EQ(api->glGetErrorFn(), static_cast<GLenum>(GL_NO_ERROR));
 }
 

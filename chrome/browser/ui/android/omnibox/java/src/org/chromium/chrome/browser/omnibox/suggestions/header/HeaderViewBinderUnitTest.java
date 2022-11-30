@@ -28,6 +28,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -36,18 +37,25 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.ui.base.TestActivity;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
- * Tests for {@link BaseSuggestionViewProcessor}.
+ * Tests for {@link HeaderViewBinder}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 public class HeaderViewBinderUnitTest {
     @Rule
     public ActivityScenarioRule<TestActivity> mActivityScenarioRule =
             new ActivityScenarioRule<>(TestActivity.class);
+
+    @Rule
+    public TestRule mProcessor = new Features.JUnitProcessor();
 
     Activity mActivity;
     PropertyModel mModel;
@@ -139,6 +147,8 @@ public class HeaderViewBinderUnitTest {
 
     @Test
     public void actionIcon_accessibilityAnnouncementsReflectExpandedState() {
+        mModel.set(HeaderViewProperties.SHOULD_REMOVE_CHEVRON, false);
+
         final AccessibilityNodeInfo info = mock(AccessibilityNodeInfo.class);
         Bundle infoExtras = new Bundle();
         when(info.getExtras()).thenReturn(infoExtras);
@@ -171,6 +181,27 @@ public class HeaderViewBinderUnitTest {
     }
 
     @Test
+    public void headerView_removeSuggestionHeaderChevronRemovesAccessibilityControl() {
+        mModel.set(HeaderViewProperties.SHOULD_REMOVE_CHEVRON, true);
+
+        final AccessibilityNodeInfo info = mock(AccessibilityNodeInfo.class);
+        Bundle infoExtras = new Bundle();
+        when(info.getExtras()).thenReturn(infoExtras);
+
+        // Expand.
+        mModel.set(HeaderViewProperties.IS_COLLAPSED, false);
+        mHeaderView.onInitializeAccessibilityNodeInfo(info);
+        verify(info, never()).addAction(AccessibilityAction.ACTION_COLLAPSE);
+        verify(info, never()).addAction(AccessibilityAction.ACTION_EXPAND);
+
+        // Collapse.
+        mModel.set(HeaderViewProperties.IS_COLLAPSED, true);
+        mHeaderView.onInitializeAccessibilityNodeInfo(info);
+        verify(info, never()).addAction(AccessibilityAction.ACTION_COLLAPSE);
+        verify(info, never()).addAction(AccessibilityAction.ACTION_EXPAND);
+    }
+
+    @Test
     public void headerView_removeSuggestionHeaderCapitalizationTrue() {
         // Remove Capitalization.
         mModel.set(HeaderViewProperties.SHOULD_REMOVE_CAPITALIZATION, true);
@@ -185,30 +216,58 @@ public class HeaderViewBinderUnitTest {
     }
 
     @Test
+    @DisableFeatures({ChromeFeatureList.OMNIBOX_HEADER_PADDING_UPDATE,
+            ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
+    public void
+    headerView_updateHeaderPaddingFalse() {
+        // Update Header Padding.
+        mModel.set(HeaderViewProperties.USE_UPDATED_HEADER_PADDING, false);
+
+        int minHeight = mResources.getDimensionPixelSize(R.dimen.omnibox_suggestion_header_height);
+        int paddingStart =
+                mResources.getDimensionPixelSize(R.dimen.omnibox_suggestion_header_padding_start);
+        int paddingTop = 0;
+        int paddingBottom = 0;
+        verify(mHeaderView, times(1))
+                .setUpdateHeaderPadding(minHeight, paddingStart, paddingTop, paddingBottom);
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_HEADER_PADDING_UPDATE)
+    @DisableFeatures(ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE)
     public void headerView_updateHeaderPaddingTrue() {
         // Update Header Padding.
         mModel.set(HeaderViewProperties.USE_UPDATED_HEADER_PADDING, true);
 
         int minHeight =
                 mResources.getDimensionPixelSize(R.dimen.omnibox_suggestion_header_height_modern);
-        int paddingMarginStart = mResources.getDimensionPixelSize(
-                R.dimen.omnibox_suggestion_header_margin_start_modern);
-        int paddingMarginTop =
-                mResources.getDimensionPixelSize(R.dimen.omnibox_suggestion_header_margin_top);
+        int paddingStart = mResources.getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_header_padding_start_modern);
+        int paddingTop =
+                mResources.getDimensionPixelSize(R.dimen.omnibox_suggestion_header_padding_top);
+        int paddingBottom =
+                mResources.getDimensionPixelSize(R.dimen.omnibox_suggestion_header_padding_bottom);
         verify(mHeaderView, times(1))
-                .setUpdateHeaderPadding(minHeight, paddingMarginStart, paddingMarginTop);
+                .setUpdateHeaderPadding(minHeight, paddingStart, paddingTop, paddingBottom);
     }
 
     @Test
-    public void headerView_updateHeaderPaddingFalse() {
+    @EnableFeatures({ChromeFeatureList.OMNIBOX_HEADER_PADDING_UPDATE,
+            ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
+    public void
+    headerView_updateHeaderPaddingTrueModernizeFeatureEnabled() {
         // Update Header Padding.
-        mModel.set(HeaderViewProperties.USE_UPDATED_HEADER_PADDING, false);
+        mModel.set(HeaderViewProperties.USE_UPDATED_HEADER_PADDING, true);
 
-        int minHeight = mResources.getDimensionPixelSize(R.dimen.omnibox_suggestion_header_height);
-        int paddingMarginStart =
-                mResources.getDimensionPixelSize(R.dimen.omnibox_suggestion_header_margin_start);
-        int paddingMarginTop = 0;
+        int minHeight = mResources.getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_header_height_modern_phase2);
+        int paddingStart = mResources.getDimensionPixelSize(
+                                   R.dimen.omnibox_suggestion_header_padding_start_modern)
+                + mResources.getDimensionPixelSize(R.dimen.omnibox_suggestion_side_spacing);
+        int paddingTop =
+                mResources.getDimensionPixelSize(R.dimen.omnibox_suggestion_header_padding_top);
+        int paddingBottom = 0;
         verify(mHeaderView, times(1))
-                .setUpdateHeaderPadding(minHeight, paddingMarginStart, paddingMarginTop);
+                .setUpdateHeaderPadding(minHeight, paddingStart, paddingTop, paddingBottom);
     }
 }

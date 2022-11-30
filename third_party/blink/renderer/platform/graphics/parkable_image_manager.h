@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ namespace blink {
 class ParkableImageImpl;
 class ParkableImage;
 
-PLATFORM_EXPORT extern const base::Feature kParkableImagesToDisk;
+PLATFORM_EXPORT BASE_DECLARE_FEATURE(kParkableImagesToDisk);
 
 // Manages parkable images, which are used in blink::BitmapImage. Currently,
 // only records metrics for this. In the future we will park eligible images
@@ -50,7 +50,7 @@ class PLATFORM_EXPORT ParkableImageManager
   friend class base::NoDestructor<ParkableImageManager>;
   friend class ParkableImageBaseTest;
 
-  ParkableImageManager() = default;
+  ParkableImageManager();
 
   DiskDataAllocator& data_allocator() const;
 
@@ -103,6 +103,9 @@ class PLATFORM_EXPORT ParkableImageManager
     allocator_for_testing_ = std::move(allocator);
   }
 
+  void SetTaskRunnerForTesting(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
   void ResetForTesting();
   constexpr static auto kDelayedParkingInterval = base::Seconds(2);
   constexpr static const char* kAllocatorDumpName = "parkable_images";
@@ -132,6 +135,7 @@ class PLATFORM_EXPORT ParkableImageManager
   base::TimeDelta total_disk_read_time_ GUARDED_BY(lock_) = base::TimeDelta();
   base::TimeDelta total_disk_write_time_ GUARDED_BY(lock_) = base::TimeDelta();
 
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<DiskDataAllocator> allocator_for_testing_;
 };
 

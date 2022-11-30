@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,8 +75,8 @@ ScriptPromise PushMessagingBridge::GetPermissionState(
 
   permission_service_->HasPermission(
       CreatePermissionDescriptor(mojom::blink::PermissionName::NOTIFICATIONS),
-      WTF::Bind(&PushMessagingBridge::DidGetPermissionState,
-                WrapPersistent(this), WrapPersistent(resolver)));
+      WTF::BindOnce(&PushMessagingBridge::DidGetPermissionState,
+                    WrapPersistent(this), WrapPersistent(resolver)));
 
   return promise;
 }

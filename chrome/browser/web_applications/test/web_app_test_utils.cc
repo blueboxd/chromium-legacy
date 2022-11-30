@@ -63,6 +63,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/common/permissions_policy/origin_with_possible_wildcards.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/permissions_policy/policy_helper_public.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
@@ -193,7 +194,9 @@ blink::ParsedPermissionsPolicy CreateRandomPermissionsPolicy(
 
       const auto origin =
           url::Origin::Create(GURL("https://app-" + suffix_str + ".com/"));
-      permissions_policy[i].allowed_origins.push_back(origin);
+      permissions_policy[i].allowed_origins.emplace_back(
+          origin,
+          /*has_subdomain_wildcard=*/false);
     }
   }
   return permissions_policy;
@@ -615,9 +618,10 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
     using IsolationDataContent = decltype(IsolationData::content);
     constexpr size_t kNumContentTypes =
         absl::variant_size<IsolationDataContent>::value;
+    auto path = base::FilePath::FromUTF8Unsafe(seed_str);
     IsolationDataContent content_types[] = {
-        IsolationData::InstalledBundle{.path = seed_str},
-        IsolationData::DevModeBundle{.path = seed_str},
+        IsolationData::InstalledBundle{.path = path},
+        IsolationData::DevModeBundle{.path = path},
         IsolationData::DevModeProxy{.proxy_url = seed_str},
     };
     static_assert(std::size(content_types) == kNumContentTypes);

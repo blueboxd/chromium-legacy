@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,7 +114,7 @@ ScriptPromise GPUShaderModule::compilationInfo(ScriptState* script_state) {
       GetHandle(), callback->UnboundCallback(), callback->AsUserdata());
   // WebGPU guarantees that promises are resolved in finite time so we
   // need to ensure commands are flushed.
-  EnsureFlush();
+  EnsureFlush(ToEventLoop(script_state));
   return promise;
 }
 

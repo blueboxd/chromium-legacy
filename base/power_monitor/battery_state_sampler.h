@@ -42,13 +42,30 @@ class BASE_EXPORT BatteryStateSampler {
           BatteryLevelProvider::Create());
   ~BatteryStateSampler();
 
-  // Returns the unique instance.
+  // Returns the unique instance, or nullptr on platforms without a
+  // `BatteryLevelProvider` implementation.
   static BatteryStateSampler* Get();
 
   // Adds/removes an observer. `OnBatteryStateSampled` will be immediately
   // invoked upon adding an observer if an existing sample exists already.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  // Shuts down this instance but doesn't destroy it. This allows it to remain
+  // alive for its observers to deregister as they are destroyed without causing
+  // use-after-frees, but it won't serve any samples after this is called.
+  // Invoked in `PostMainMessageLoopRun`.
+  void Shutdown();
+
+  // Creates, installs, and returns an instance of the sampler for testing.
+  // This is meant to be used in browser tests before browser init to control
+  // the sampler's behavior in the tests.
+  static std::unique_ptr<base::BatteryStateSampler> CreateInstanceForTesting(
+      std::unique_ptr<SamplingEventSource> sampling_event_source,
+      std::unique_ptr<BatteryLevelProvider> battery_level_provider);
+
+  // Returns true if a sampler has been created using `CreateInstanceForTesting`
+  static bool HasTestingInstance();
 
  private:
   // Returns a platform specific SamplingEventSource.

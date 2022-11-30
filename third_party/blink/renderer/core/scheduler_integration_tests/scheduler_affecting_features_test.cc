@@ -1,5 +1,5 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
-// Use of this source code if governed by a BSD-style license that can be
+// Copyright 2017 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
 // found in LICENSE file.
 
 #include "base/run_loop.h"
@@ -150,8 +150,6 @@ TEST_F(SchedulingAffectingFeaturesTest, CacheControl_Navigation) {
 }
 
 TEST_F(SchedulingAffectingFeaturesTest, Plugins) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kBackForwardCacheEnabledForNonPluginEmbed);
   {
     SimRequest main_resource("https://example.com/", "text/html");
     LoadURL("https://example.com/");
@@ -181,8 +179,6 @@ TEST_F(SchedulingAffectingFeaturesTest, Plugins) {
 }
 
 TEST_F(SchedulingAffectingFeaturesTest, NonPlugins) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kBackForwardCacheEnabledForNonPluginEmbed);
   {
     SimRequest main_resource("https://example.com/", "text/html");
     LoadURL("https://example.com/");

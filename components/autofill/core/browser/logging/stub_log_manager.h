@@ -5,14 +5,12 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_STUB_LOG_MANAGER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_STUB_LOG_MANAGER_H_
 
-#include <string>
-
 #include "components/autofill/core/browser/logging/log_manager.h"
 
 namespace autofill {
 
 // Use this in tests only, to provide a no-op implementation of LogManager.
-class StubLogManager : public LogManager {
+class StubLogManager : public RoutingLogManager {
  public:
   StubLogManager() = default;
 
@@ -25,10 +23,10 @@ class StubLogManager : public LogManager {
   // LogManager
   void OnLogRouterAvailabilityChanged(bool router_can_be_used) override;
   void SetSuspended(bool suspended) override;
-  void LogTextMessage(const std::string& text) const override;
-  void LogEntry(const base::Value::Dict& entry) const override;
   bool IsLoggingActive() const override;
   LogBufferSubmitter Log() override;
+  void ProcessLog(base::Value::Dict node,
+                  base::PassKey<LogBufferSubmitter>) override;
 };
 
 }  // namespace autofill

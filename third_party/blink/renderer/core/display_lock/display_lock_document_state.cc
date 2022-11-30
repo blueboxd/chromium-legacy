@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,9 +23,9 @@
 namespace {
 
 const char kForcedRendering[] =
-    "Rendering was performed in a subtree hidden by content-visibility:hidden.";
+    "Rendering was performed in a subtree hidden by content-visibility.";
 const char kForcedRenderingMax[] =
-    "Rendering was performed in a subtree hidden by content-visibility:hidden. "
+    "Rendering was performed in a subtree hidden by content-visibility. "
     "Further messages will be suppressed.";
 constexpr unsigned kMaxConsoleMessages = 500;
 
@@ -147,12 +147,12 @@ void DisplayLockDocumentState::ProcessDisplayLockActivationObservation(
     if (context->HadAnyViewportIntersectionNotifications()) {
       if (entry->isIntersecting()) {
         document_->View()->EnqueueStartOfLifecycleTask(
-            WTF::Bind(&DisplayLockContext::NotifyIsIntersectingViewport,
-                      WrapWeakPersistent(context)));
+            WTF::BindOnce(&DisplayLockContext::NotifyIsIntersectingViewport,
+                          WrapWeakPersistent(context)));
       } else {
         document_->View()->EnqueueStartOfLifecycleTask(
-            WTF::Bind(&DisplayLockContext::NotifyIsNotIntersectingViewport,
-                      WrapWeakPersistent(context)));
+            WTF::BindOnce(&DisplayLockContext::NotifyIsNotIntersectingViewport,
+                          WrapWeakPersistent(context)));
       }
       had_asynchronous_notifications = true;
     } else {
@@ -172,8 +172,8 @@ void DisplayLockDocumentState::ProcessDisplayLockActivationObservation(
     // lifecycle).
     document_->GetTaskRunner(TaskType::kInternalFrameLifecycleControl)
         ->PostTask(FROM_HERE,
-                   WTF::Bind(&DisplayLockDocumentState::ScheduleAnimation,
-                             WrapWeakPersistent(this)));
+                   WTF::BindOnce(&DisplayLockDocumentState::ScheduleAnimation,
+                                 WrapWeakPersistent(this)));
   }
 }
 
@@ -237,7 +237,7 @@ void DisplayLockDocumentState::ElementRemovedFromTopLayer(Element*) {
 
 bool DisplayLockDocumentState::MarkAncestorContextsHaveTopLayerElement(
     Element* element) {
-  if (display_lock_contexts_.IsEmpty())
+  if (display_lock_contexts_.empty())
     return false;
 
   bool had_locked_ancestor = false;
@@ -452,9 +452,12 @@ void DisplayLockDocumentState::IssueForcedRenderWarning(Element* element) {
   // accessing content-visibility: hidden subtrees intentionally.
   if (forced_render_warnings_ < kMaxConsoleMessages) {
     forced_render_warnings_++;
+    auto level =
+        RuntimeEnabledFeatures::WarnOnContentVisibilityRenderAccessEnabled()
+            ? mojom::blink::ConsoleMessageLevel::kWarning
+            : mojom::blink::ConsoleMessageLevel::kVerbose;
     auto* console_message = MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kJavaScript,
-        mojom::blink::ConsoleMessageLevel::kVerbose,
+        mojom::blink::ConsoleMessageSource::kJavaScript, level,
         forced_render_warnings_ == kMaxConsoleMessages ? kForcedRenderingMax
                                                        : kForcedRendering);
     console_message->SetNodes(document_->GetFrame(),

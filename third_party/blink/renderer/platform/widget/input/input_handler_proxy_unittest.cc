@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,7 +137,7 @@ class MockInputHandler : public cc::InputHandler {
 
   ~MockInputHandler() override = default;
 
-  base::WeakPtr<InputHandler> AsWeakPtr() const override {
+  base::WeakPtr<InputHandler> AsWeakPtr() override {
     return weak_ptr_factory_.GetWeakPtr();
   }
 

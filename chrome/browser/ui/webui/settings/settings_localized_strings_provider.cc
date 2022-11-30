@@ -22,6 +22,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/net/cert_verifier_configuration.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
+#include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -72,6 +73,7 @@
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
+#include "components/sync/base/features.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/driver/sync_user_settings.h"
@@ -740,17 +742,38 @@ void AddPerformanceStrings(content::WebUIDataSource* html_source) {
       {"performancePageTitle", IDS_SETTINGS_PERFORMANCE_PAGE_TITLE},
       {"highEfficiencyModeLabel",
        IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_SETTING},
+      {"batteryPageTitle", IDS_SETTINGS_BATTERY_PAGE_TITLE},
+      {"batterySaverModeLabel",
+       IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_SETTING},
+      {"batterySaverModeEnabledOnBatteryLabel",
+       IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_ON_BATTERY_LABEL},
+      {"tabDiscardingExceptionsHeader",
+       IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_HEADER},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
+  html_source->AddString(
+      "batterySaverModeEnabledBelowThresholdLabel",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_BELOW_THRESHOLD_LABEL,
+          base::NumberToString16(
+              performance_manager::user_tuning::UserPerformanceTuningManager::
+                  kLowBatteryThresholdPercent)));
   html_source->AddString(
       "highEfficiencyModeDescription",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_SETTING_DESCRIPTION,
           base::UTF8ToUTF16(chrome::kHighEfficiencyModeLearnMoreUrl)));
+  html_source->AddString(
+      "batterySaverModeDescription",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_SETTING_DESCRIPTION,
+          base::UTF8ToUTF16(chrome::kBatterySaverModeLearnMoreUrl)));
 
   html_source->AddString("highEfficiencyLearnMoreUrl",
                          chrome::kHighEfficiencyModeLearnMoreUrl);
+  html_source->AddString("batterySaverLearnMoreUrl",
+                         chrome::kBatterySaverModeLearnMoreUrl);
 }
 
 void AddLanguagesStrings(content::WebUIDataSource* html_source,
@@ -1049,6 +1072,12 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_PASSWORDS_NOTE_CHARACTER_COUNT_WARNING},
     {"passwordsTimedOut", IDS_SETTINGS_PASSWORDS_TIMED_OUT},
     {"passwordsGotIt", IDS_SETTINGS_GOT_IT},
+#if BUILDFLAG(IS_MAC)
+    {"passkeyLengthError", IDS_SETTINGS_PASSKEYS_LENGTH_ERROR},
+    {"editPasskeySiteLabel", IDS_SETTINGS_PASSKEYS_SITE_LABEL},
+    {"editPasskeyDialogTitle", IDS_SETTINGS_PASSKEYS_DIALOG_TITLE},
+    {"passkeyEditDialogFootnote", IDS_SETTINGS_PASSKEYS_EDIT_DIALOG_FOOTNOTE},
+#endif
     {"noAddressesFound", IDS_SETTINGS_ADDRESS_NONE},
     {"noPasswordsFound", IDS_SETTINGS_PASSWORDS_NONE},
     {"noPasswordsFoundImport", IDS_SETTINGS_PASSWORDS_NONE_WITH_IMPORT},
@@ -1184,20 +1213,27 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
     {"managePasskeysLabel", IDS_AUTOFILL_MANAGE_PASSKEYS_LABEL},
     {"managePasskeysTitle", IDS_AUTOFILL_MANAGE_PASSKEYS_TITLE},
-    {"managePasskeysSubTitle", IDS_AUTOFILL_MANAGE_PASSKEYS_SUB_TITLE},
     {"managePasskeysSearch", IDS_AUTOFILL_MANAGE_PASSKEYS_SEARCH},
     {"managePasskeysNoSupport", IDS_AUTOFILL_MANAGE_PASSKEYS_NO_SUPPORT},
     {"managePasskeysCannotDeleteTitle",
      IDS_AUTOFILL_MANAGE_PASSKEYS_CANNOT_DELETE_TITLE},
     {"managePasskeysCannotDeleteBody",
      IDS_AUTOFILL_MANAGE_PASSKEYS_CANNOT_DELETE_BODY},
+    {"managePasskeysDeleteConfirmationTitle",
+     IDS_AUTOFILL_MANAGE_PASSKEYS_DELETE_CONFIRMATION_TITLE},
+    {"managePasskeysDeleteConfirmationDescription",
+     IDS_AUTOFILL_MANAGE_PASSKEYS_DELETE_CONFIRMATION_DESCRIPTION},
+    {"managePasskeysMoreActionsLabel",
+     IDS_AUTOFILL_MANAGE_PASSKEYS_MORE_ACTIONS_LABEL},
 #endif
 #if BUILDFLAG(IS_MAC)
     {"biometricAuthenticaionForFillingLabel",
      IDS_SETTINGS_PASSWORDS_BIOMETRIC_AUTHENTICATION_FOR_FILLING_TOGGLE_LABEL_MAC},
+    {"managePasskeysSubTitle", IDS_AUTOFILL_MANAGE_PASSKEYS_SUB_TITLE_MAC},
 #elif BUILDFLAG(IS_WIN)
     {"biometricAuthenticaionForFillingLabel",
      IDS_SETTINGS_PASSWORDS_BIOMETRIC_AUTHENTICATION_FOR_FILLING_TOGGLE_LABEL_WIN},
+    {"managePasskeysSubTitle", IDS_AUTOFILL_MANAGE_PASSKEYS_SUB_TITLE_WIN},
 #endif
   };
 
@@ -1323,8 +1359,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       "passwordsTimedOutDescription",
       l10n_util::GetPluralStringFUTF16(
           IDS_SETTINGS_PASSWORDS_TIMED_OUT_DESCRIPTION,
-          password_manager::features::kPasswordNotesAuthValidity.Get()
-              .InMinutes()));
+          syncer::kPasswordNotesAuthValidity.Get().InMinutes()));
 }
 
 void AddSignOutDialogStrings(content::WebUIDataSource* html_source,
@@ -1694,32 +1729,7 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
       {"privacySandboxCookiesDialogMore",
        IDS_SETTINGS_PRIVACY_SANDBOX_COOKIES_DIALOG_MORE},
       {"privacySandboxPageHeading", IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_HEADING},
-      {"privacySandboxPageExplanation2Phase2",
-       IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_EXPLANATION2_PHASE2},
-      {"privacySandboxPageSettingTitle",
-       IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_SETTING_TITLE},
-      {"privacySandboxPageSettingExplanation1Phase2",
-       IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_SETTING_EXPLANATION1_PHASE2},
-      {"privacySandboxPageSettingExplanation2Phase2",
-       IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_SETTING_EXPLANATION2_PHASE2},
-      {"privacySandboxPageSettingExplanation3Phase2",
-       IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_SETTING_EXPLANATION3_PHASE2},
       {"privacySandboxPageDetails", IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_DETAILS},
-      {"privacySandboxPageFlocHeading",
-       IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_FLOC_HEADING},
-      {"privacySandboxPageFlocStatus",
-       IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_FLOC_STATUS},
-      {"privacySandboxPageFlocStatusNotActive",
-       IDS_PRIVACY_SANDBOX_FLOC_STATUS_NOT_ACTIVE},
-      {"privacySandboxPageFlocCohort",
-       IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_FLOC_COHORT},
-      {"privacySandboxFlocInvalid", IDS_PRIVACY_SANDBOX_FLOC_INVALID},
-      {"privacySandboxPageFlocCohortNextUpdate",
-       IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_FLOC_COHORT_NEXT_UPDATE},
-      {"privacySandboxPageFlocTimeToNextComputeInvalid",
-       IDS_PRIVACY_SANDBOX_FLOC_TIME_TO_NEXT_COMPUTE_INVALID},
-      {"privacySandboxPageFlocResetCohort",
-       IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_FLOC_RESET_COHORT},
       // The following strings are used for PrivacySandboxSettings3.
       {"privacySandboxTrialsTitle", IDS_SETTINGS_PRIVACY_SANDBOX_TRIALS_TITLE},
       {"privacySandboxTrialsSummary",
@@ -1822,33 +1832,6 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
-  html_source->AddString(
-      "privacySandboxPageExplanation1Phase2",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_PRIVACY_SANDBOX_PAGE_EXPLANATION1_PHASE2,
-          u"https://www.privacysandbox.com"));
-
-  // The complete FLoC explanation string must be built from two strings,
-  // one provided by the Privacy Sandbox service, and one with a URL
-  // replacement based on a feature parameter.
-  std::u16string floc_explanation =
-      l10n_util::GetPluralStringFUTF16(IDS_PRIVACY_SANDBOX_FLOC_DESCRIPTION,
-                                       7) +
-      u" " +  // Whitespace is a valid separator w.r.t l10n.
-      l10n_util::GetStringFUTF16(IDS_SETTINGS_PRIVACY_SANDBOX_FLOC_TRIAL_ACTIVE,
-                                 u"https://privacysandbox.com/proposals/floc");
-  html_source->AddString("privacySandboxPageFlocExplanation", floc_explanation);
-
-  // The FLoC compute frequency string is constant through the life of the
-  // profile, and so the relevant string can be injected here, rather than
-  // fetched dynamically from JS.
-  html_source->AddString("privacySandboxPageFlocResetExplanation",
-                         l10n_util::GetPluralStringFUTF16(
-                             IDS_PRIVACY_SANDBOX_FLOC_RESET_EXPLANATION, 7));
-
-  html_source->AddBoolean(
-      "privacySandboxSettings3Enabled",
-      base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings3));
   html_source->AddString(
       "privacySandboxAdMeasurementDialogControlMeasurement",
       l10n_util::GetStringFUTF16(
@@ -1988,8 +1971,6 @@ void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_SAFETY_CHECK_ICON_INFO_ARIA_LABEL},
     {"safetyCheckIconWarningAriaLabel",
      IDS_SETTINGS_SAFETY_CHECK_ICON_WARNING_ARIA_LABEL},
-    {"safetyCheckNotificationPermissionsPrimaryLabel",
-     IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSIONS_PRIMARY_LABEL},
     {"safetyCheckReview", IDS_SETTINGS_SAFETY_CHECK_REVIEW},
     {"safetyCheckUnusedSitePermissionsPrimaryLabel",
      IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_PRIMARY_LABEL},
@@ -2006,16 +1987,34 @@ void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_PRIMARY_LABEL},
     {"safetyCheckExtensionsButtonAriaLabel",
      IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BUTTON_ARIA_LABEL},
-    {"safetyCheckReviewNotificationPermissionsPrimaryLabel",
+    {"safetyCheckNotificationPermissionReviewPrimaryLabel",
      IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_PRIMARY_LABEL},
-    {"safetyCheckReviewNotificationPermissionsSecondaryLabel",
+    {"safetyCheckNotificationPermissionReviewSecondaryLabel",
      IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_SECONDARY_LABEL},
-    {"safetyCheckReviewNotificationPermissionsDontAllowLabel",
+    {"safetyCheckNotificationPermissionReviewIgnoredToastLabel",
+     IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_IGNORED_TOAST_LABEL},
+    {"safetyCheckNotificationPermissionReviewBlockedToastLabel",
+     IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_BLOCKED_TOAST_LABEL},
+    {"safetyCheckNotificationPermissionReviewResetToastLabel",
+     IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_RESET_TOAST_LABEL},
+    {"safetyCheckNotificationPermissionReviewDontAllowLabel",
      IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_DONT_ALLOW_LABEL},
-    {"safetyCheckReviewNotificationPermissionsIgnoreLabel",
+    {"safetyCheckNotificationPermissionReviewDontAllowAriaLabel",
+     IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_DONT_ALLOW_ARIA_LABEL},
+    {"safetyCheckNotificationPermissionReviewIgnoreLabel",
      IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_IGNORE_LABEL},
-    {"safetyCheckReviewNotificationPermissionsResetLabel",
+    {"safetyCheckNotificationPermissionReviewIgnoreAriaLabel",
+     IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_IGNORE_ARIA_LABEL},
+    {"safetyCheckNotificationPermissionReviewResetLabel",
      IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_RESET_LABEL},
+    {"safetyCheckNotificationPermissionReviewResetAriaLabel",
+     IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_RESET_ARIA_LABEL},
+    {"safetyCheckNotificationPermissionReviewMoreActionsAriaLabel",
+     IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_MORE_ACTIONS_ARIA_LABEL},
+    {"safetyCheckNotificationPermissionReviewUndo",
+     IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_UNDO},
+    {"safetyCheckNotificationPermissionReviewDoneLabel",
+     IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_DONE_LABEL},
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"safetyCheckChromeCleanerPrimaryLabel",
      IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_PRIMARY_LABEL},
@@ -2505,6 +2504,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_CLEAR_ALL_STORAGE_DIALOG_TITLE},
     {"siteSettingsClearDisplayedStorageDialogTitle",
      IDS_SETTINGS_SITE_SETTINGS_CLEAR_DISPLAYED_STORAGE_DIALOG_TITLE},
+    {"siteSettingsFirstPartySetsLearnMore",
+     IDS_SETTINGS_SITE_SETTINGS_FIRST_PARTY_SETS_LEARN_MORE},
     {"siteSettingsClearAllStorageDescription",
      IDS_SETTINGS_SITE_SETTINGS_CLEAR_ALL_STORAGE_DESCRIPTION},
     {"siteSettingsClearDisplayedStorageDescription",
@@ -2610,6 +2611,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_DEFAULT_BEHAVIOR},
     {"siteSettingsDefaultBehaviorDescription",
      IDS_SETTINGS_SITE_SETTINGS_DEFAULT_BEHAVIOR_DESCRIPTION},
+    {"siteSettingsNotificationsDefaultBehaviorDescription",
+     IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS_DEFAULT_BEHAVIOR_DESC},
     {"siteSettingsCustomizedBehaviors",
      IDS_SETTINGS_SITE_SETTINGS_CUSTOMIZED_BEHAVIORS},
     {"siteSettingsCustomizedBehaviorsDescription",
@@ -2898,18 +2901,18 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"siteSettingsVrMidSentence", IDS_SITE_SETTINGS_TYPE_VR_MID_SENTENCE},
     {"siteSettingsVrAskRecommended",
      IDS_SETTINGS_SITE_SETTINGS_VR_ASK_RECOMMENDED},
-    {"siteSettingsWindowPlacement", IDS_SITE_SETTINGS_TYPE_WINDOW_MANAGEMENT},
-    {"siteSettingsWindowPlacementMidSentence",
+    {"siteSettingsWindowManagement", IDS_SITE_SETTINGS_TYPE_WINDOW_MANAGEMENT},
+    {"siteSettingsWindowManagementMidSentence",
      IDS_SITE_SETTINGS_TYPE_WINDOW_MANAGEMENT_MID_SENTENCE},
-    {"siteSettingsWindowPlacementDescription",
+    {"siteSettingsWindowManagementDescription",
      IDS_SETTINGS_SITE_SETTINGS_WINDOW_MANAGEMENT_DESCRIPTION},
-    {"siteSettingsWindowPlacementAsk",
+    {"siteSettingsWindowManagementAsk",
      IDS_SETTINGS_SITE_SETTINGS_WINDOW_MANAGEMENT_ASK},
-    {"siteSettingsWindowPlacementBlocked",
+    {"siteSettingsWindowManagementBlocked",
      IDS_SETTINGS_SITE_SETTINGS_WINDOW_MANAGEMENT_BLOCKED},
-    {"siteSettingsWindowPlacementAskExceptions",
+    {"siteSettingsWindowManagementAskExceptions",
      IDS_SETTINGS_SITE_SETTINGS_WINDOW_MANAGEMENT_ASK_EXCEPTIONS},
-    {"siteSettingsWindowPlacementBlockedExceptions",
+    {"siteSettingsWindowManagementBlockedExceptions",
      IDS_SETTINGS_SITE_SETTINGS_WINDOW_MANAGEMENT_BLOCKED_EXCEPTIONS},
     {"siteSettingsFontAccessMidSentence",
      IDS_SITE_SETTINGS_TYPE_FONT_ACCESS_MID_SENTENCE},

@@ -6,18 +6,20 @@ import './base_page.js';
 import './icons.js';
 import './shimless_rma_shared_css.js';
 import './strings.m.js';
-import 'chrome://resources/cr_components/chromeos/network/network_config.js';
-import 'chrome://resources/cr_components/chromeos/network/network_list.js';
+import 'chrome://resources/ash/common/network/network_config.js';
+import 'chrome://resources/ash/common/network/network_list.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
-import {HTMLEscape} from '//resources/js/util.m.js';
-import {NetworkListenerBehavior, NetworkListenerBehaviorInterface} from 'chrome://resources/cr_components/chromeos/network/network_listener_behavior.js';
-import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {HTMLEscape} from '//resources/js/util.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
+import {NetworkListenerBehavior, NetworkListenerBehaviorInterface} from 'chrome://resources/ash/common/network/network_listener_behavior.js';
+import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
+import {assert} from 'chrome://resources/js/assert.js';
+import {FilterType, NetworkStateProperties, NO_LIMIT, StartConnectResult} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
+import {ConnectionStateType, NetworkType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getNetworkConfigService, getShimlessRmaService} from './mojo_interface_provider.js';
@@ -61,7 +63,7 @@ export class OnboardingNetworkPage extends OnboardingNetworkPageBase {
       /**
        * Array of available networks
        * @protected
-       * @type {!Array<chromeos.networkConfig.mojom.NetworkStateProperties>}
+       * @type {!Array<NetworkStateProperties>}
        */
       networks_: {
         type: Array,
@@ -163,16 +165,16 @@ export class OnboardingNetworkPage extends OnboardingNetworkPageBase {
 
   refreshNetworks() {
     const networkFilter = {
-      filter: chromeos.networkConfig.mojom.FilterType.kVisible,
-      networkType: chromeos.networkConfig.mojom.NetworkType.kAll,
-      limit: chromeos.networkConfig.mojom.NO_LIMIT,
+      filter: FilterType.kVisible,
+      networkType: NetworkType.kAll,
+      limit: NO_LIMIT,
     };
 
     this.networkConfig_.getNetworkStateList(networkFilter).then(res => {
       // Filter again since networkFilter above doesn't take two network types.
       this.networks_ = res.result.filter(
-          (network) => [chromeos.networkConfig.mojom.NetworkType.kWiFi,
-                        chromeos.networkConfig.mojom.NetworkType.kEthernet,
+          (network) => [NetworkType.kWiFi,
+                        NetworkType.kEthernet,
       ].includes(network.type));
 
       this.isOnline_ = this.networks_.some(function(network) {
@@ -193,8 +195,7 @@ export class OnboardingNetworkPage extends OnboardingNetworkPageBase {
     const displayName = OncMojo.getNetworkStateDisplayName(networkState);
 
     this.networkShowConnect_ =
-        (networkState.connectionState ===
-         chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected);
+        (networkState.connectionState === ConnectionStateType.kNotConnected);
 
     if (!this.canAttemptConnection_(networkState)) {
       this.showConfig_(type, networkState.guid, displayName);
@@ -203,8 +204,7 @@ export class OnboardingNetworkPage extends OnboardingNetworkPageBase {
 
     this.networkConfig_.startConnect(networkState.guid).then(response => {
       this.refreshNetworks();
-      if (response.result ===
-          chromeos.networkConfig.mojom.StartConnectResult.kUnknown) {
+      if (response.result === StartConnectResult.kUnknown) {
         console.error(
             'startConnect failed for: ' + networkState.guid +
             ' Error: ' + response.message);
@@ -221,8 +221,7 @@ export class OnboardingNetworkPage extends OnboardingNetworkPageBase {
    * @private
    */
   canAttemptConnection_(state) {
-    if (state.connectionState !==
-        chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected) {
+    if (state.connectionState !== ConnectionStateType.kNotConnected) {
       return false;
     }
 
@@ -235,15 +234,13 @@ export class OnboardingNetworkPage extends OnboardingNetworkPageBase {
   }
 
   /**
-   * @param {chromeos.networkConfig.mojom.NetworkType} type
+   * @param {NetworkType} type
    * @param {string} guid
    * @param {string} name
    * @private
    */
   showConfig_(type, guid, name) {
-    assert(
-        type !== chromeos.networkConfig.mojom.NetworkType.kCellular &&
-        type !== chromeos.networkConfig.mojom.NetworkType.kTether);
+    assert(type !== NetworkType.kCellular && type !== NetworkType.kTether);
 
     this.networkType_ = OncMojo.getNetworkTypeString(type);
     this.networkName_ = name || '';

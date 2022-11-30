@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -190,7 +190,7 @@ TEST_F(CSSScrollTimelineTest, ResizeObserverTriggeredTimelines) {
   )HTML");
 
   ASSERT_TRUE(
-      GetDocumentAnimations().GetUnvalidatedTimelinesForTesting().IsEmpty());
+      GetDocumentAnimations().GetUnvalidatedTimelinesForTesting().empty());
 
   Element* element = MakeGarbageCollected<HTMLDivElement>(GetDocument());
   element->setAttribute(blink::html_names::kIdAttr, "element");

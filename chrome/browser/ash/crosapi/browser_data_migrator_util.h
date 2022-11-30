@@ -173,6 +173,7 @@ constexpr const char* const kLacrosDataPaths[]{
     "Service Worker",
     "Session Storage",
     "Sessions",
+    "SharedStorage",
     "Shortcuts",
     "Storage",
     "Sync App Settings",
@@ -187,11 +188,11 @@ constexpr const char* const kLacrosDataPaths[]{
 // thus should be copied to lacros while keeping the original files/dirs in ash
 // data dir.
 constexpr const char* const kNeedCopyForMoveDataPaths[]{
-    "DNR Extension Rules", "Extension Cookies", "Policy", "shared_proto_db"};
+    "DNR Extension Rules", "Extension Cookies", "shared_proto_db"};
 
 // The same as `kNeedCopyDataPathsForMove` + "Preferences".
 constexpr const char* const kNeedCopyForCopyDataPaths[]{
-    "DNR Extension Rules", "Extension Cookies", "Policy", "Preferences",
+    "DNR Extension Rules", "Extension Cookies", "Preferences",
     "shared_proto_db"};
 
 // List of extension ids to be kept in Ash.

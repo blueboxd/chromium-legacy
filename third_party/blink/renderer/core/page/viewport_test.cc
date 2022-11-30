@@ -28,7 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -52,6 +54,7 @@
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "ui/base/ime/mojom/virtual_keyboard_types.mojom-blink.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -2747,7 +2750,7 @@ TEST_F(ViewportTest, viewportWarnings1) {
   Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_TRUE(web_frame_client.messages.IsEmpty());
+  EXPECT_TRUE(web_frame_client.messages.empty());
 
   EXPECT_EQ(320, constraints.layout_size.width());
   EXPECT_EQ(352, constraints.layout_size.height());
@@ -3143,6 +3146,282 @@ TEST_F(ViewportHistogramsTest, TypeXhtml) {
       "<!DOCTYPE html PUBLIC '-//WAPFORUM//DTD XHTML Mobile 1.1//EN' "
       "'http://www.openmobilealliance.org/tech/DTD/xhtml-mobile11.dtd'");
   ExpectType(ViewportDescription::ViewportUMAType::kXhtmlMobileProfile);
+}
+
+class ViewportMetaSimTest : public SimTest {
+ public:
+  ViewportMetaSimTest() = default;
+
+  void SetUp() override {
+    SimTest::SetUp();
+    WebView().GetSettings()->SetViewportEnabled(true);
+    WebView().GetSettings()->SetViewportMetaEnabled(true);
+    WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
+  }
+
+  void LoadPageWithHTML(const String& html) {
+    SimRequest request("https://example.com/test.html", "text/html");
+    LoadURL("https://example.com/test.html");
+    request.Complete(html);
+    blink::test::RunPendingTasks();
+  }
+};
+
+// Test that the virtual keyboard mode isn't set when a interactive-widget key
+// isn't provided.
+TEST_F(ViewportMetaSimTest, VirtualKeyboardUnsetWithFlag) {
+  // Without a viewport meta tag.
+  LoadPageWithHTML(R"HTML(
+    <!DOCTYPE html>
+  )HTML");
+  EXPECT_EQ(WebView().VirtualKeyboardModeForTesting(),
+            ui::mojom::blink::VirtualKeyboardMode::kUnset);
+
+  // With a viewport meta tag.
+  LoadPageWithHTML(R"HTML(
+    <!DOCTYPE html>
+    <meta name="viewport" content="width=device-width">
+  )HTML");
+  EXPECT_EQ(WebView().VirtualKeyboardModeForTesting(),
+            ui::mojom::blink::VirtualKeyboardMode::kUnset);
+}
+
+// Test that, when the interactive-widget property is disabled, the mode is
+// unset set when interactive-widget isn't provided
+TEST_F(ViewportMetaSimTest, VirtualKeyboardUnsetWithoutFlag) {
+  ScopedViewportMetaInteractiveWidgetPropertyForTest disable(false);
+
+  // Without a viewport meta tag.
+  LoadPageWithHTML(R"HTML(
+    <!DOCTYPE html>
+  )HTML");
+  EXPECT_EQ(WebView().VirtualKeyboardModeForTesting(),
+            ui::mojom::blink::VirtualKeyboardMode::kUnset);
+
+  // With a viewport meta tag.
+  LoadPageWithHTML(R"HTML(
+    <!DOCTYPE html>
+    <meta name="viewport" content="width=device-width">
+  )HTML");
+  EXPECT_EQ(WebView().VirtualKeyboardModeForTesting(),
+            ui::mojom::blink::VirtualKeyboardMode::kUnset);
+}
+
+// Test that, when the interactive-widget property is disabled, the
+// interactive-widget key is not parsed and is treated as an unknown key.
+TEST_F(ViewportMetaSimTest, VirtualKeyboardNotParsedWithoutFlag) {
+  ScopedViewportMetaInteractiveWidgetPropertyForTest disable(false);
+
+  LoadPageWithHTML(R"HTML(
+    <!DOCTYPE html>
+    <meta name="viewport" content="interactive-widget=invalid-value">
+  )HTML");
+
+  // Parsing should fail at the key.
+  EXPECT_EQ(ConsoleMessages().front(),
+            "The key \"interactive-widget\" is not recognized and ignored.");
+}
+
+// Test that an invalid value to the interactive-widget property fails to be
+// parsed.
+TEST_F(ViewportMetaSimTest, VirtualKeyboardParsingEnabledByFlag) {
+  LoadPageWithHTML(R"HTML(
+    <!DOCTYPE html>
+    <meta name="viewport" content="interactive-widget=invalid-value">
+  )HTML");
+
+  // Parsing will still fail but now because the value isn't a valid one.
+  EXPECT_EQ(ConsoleMessages().front(),
+            "The value \"invalid-value\" for key \"interactive-widget\" is "
+            "invalid, and has been ignored.");
+}
+
+// Test that the resizes-content value is correctly parsed and set on the
+// interactive-widget key.
+TEST_F(ViewportMetaSimTest, VirtualKeyboardResizesContent) {
+  // Blank page to set the default.
+  LoadPageWithHTML(R"HTML(
+    <!DOCTYPE html>
+  )HTML");
+  ASSERT_EQ(WebView().VirtualKeyboardModeForTesting(),
+            ui::mojom::blink::VirtualKeyboardMode::kUnset);
+
+  // Check resizes-content value is set in a basic test case.
+  LoadPageWithHTML(R"HTML(
+    <!DOCTYPE html>
+    <meta name="viewport" content="interactive-widget=resizes-content">
+  )HTML");
+
+  EXPECT_TRUE(ConsoleMessages().empty()) << ConsoleMessages().front();
+  EXPECT_EQ(WebView().VirtualKeyboardModeForTesting(),
+            ui::mojom::blink::VirtualKeyboardMode::kResizesContent);
+
+  // Ensure a blank page resets the value.
+  LoadPageWithHTML(R"HTML(
+    <!DOCTYPE html>
+  )HTML");
+  EXPECT_EQ(WebView().VirtualKeyboardModeForTesting(),
+            ui::mojom::blink::VirtualKeyboardMode::kUnset);
+
+  // Mixed with other keys.
+  LoadPageWithHTML(R"HTML(
+    <!DOCTYPE html>
+    <meta name="viewport" content="width=device-width,interactive-widget=resizes-content,minimum-scale=1">
+  )HTML");
+
+  EXPECT_TRUE(ConsoleMessages().empty()) << ConsoleMessages().front();
+  EXPECT_EQ(WebView().VirtualKeyboardModeForTesting(),
+            ui::mojom::blink::VirtualKeyboardMode::kResizesContent);
+}
+
+// Test that the resizes-visual value is correctly parsed and set on the
+// interactive-widget key.
+TEST_F(ViewportMetaSimTest, VirtualKeyboardResizeVisual) {
+  // Blank page to set the default.
+  LoadPageWithHTML(R"HTML(
+    <!DOCTYPE html>
+  )HTML");
+  ASSERT_EQ(WebView().VirtualKeyboardModeForTesting(),
+            ui::mojom::blink::VirtualKeyboardMode::kUnset);
+
+  // Check resizes-visual value is set.
+  LoadPageWithHTML(R"HTML(
+    <!DOCTYPE html>
+    <meta name="viewport" content="interactive-widget=resizes-visual">
+  )HTML");
+
+  EXPECT_TRUE(ConsoleMessages().empty()) << ConsoleMessages().front();
+  EXPECT_EQ(WebView().VirtualKeyboardModeForTesting(),
+            ui::mojom::blink::VirtualKeyboardMode::kResizesVisual);
+}
+
+// Test that the overlays-content value is correctly parsed and set on the
+// interactive-widget key.
+TEST_F(ViewportMetaSimTest, VirtualKeyboardOverlaysContent) {
+  // Blank page to set the default.
+  LoadPageWithHTML(R"HTML(
+    <!DOCTYPE html>
+  )HTML");
+  ASSERT_EQ(WebView().VirtualKeyboardModeForTesting(),
+            ui::mojom::blink::VirtualKeyboardMode::kUnset);
+
+  // Check overlays-content value is set.
+  LoadPageWithHTML(R"HTML(
+    <!DOCTYPE html>
+    <meta name="viewport" content="interactive-widget=overlays-content">
+  )HTML");
+
+  EXPECT_TRUE(ConsoleMessages().empty()) << ConsoleMessages().front();
+  EXPECT_EQ(WebView().VirtualKeyboardModeForTesting(),
+            ui::mojom::blink::VirtualKeyboardMode::kOverlaysContent);
+}
+
+// Test that the virtualKeyboard.overlaysContent API overrides any values set
+// from the meta tag and that unsetting it goes back to using the meta tag
+// keyboard mode.
+TEST_F(ViewportMetaSimTest, VirtualKeyboardAPIOverlaysContent) {
+  v8::HandleScope handle_scope(
+      WebView().GetPage()->GetAgentGroupScheduler().Isolate());
+  LoadPageWithHTML(R"HTML(
+    <!DOCTYPE html>
+    <meta name="viewport" content="interactive-widget=resizes-content">
+  )HTML");
+
+  ASSERT_EQ(WebView().VirtualKeyboardModeForTesting(),
+            ui::mojom::blink::VirtualKeyboardMode::kResizesContent);
+
+  MainFrame().ExecuteScript(
+      WebScriptSource("navigator.virtualKeyboard.overlaysContent = true;"));
+
+  EXPECT_EQ(WebView().VirtualKeyboardModeForTesting(),
+            ui::mojom::blink::VirtualKeyboardMode::kOverlaysContent);
+
+  MainFrame().ExecuteScript(
+      WebScriptSource("navigator.virtualKeyboard.overlaysContent = false;"));
+
+  EXPECT_EQ(WebView().VirtualKeyboardModeForTesting(),
+            ui::mojom::blink::VirtualKeyboardMode::kResizesContent);
+}
+
+// Ensure that updating the content to a bad value causes the mode to become
+// unset.
+TEST_F(ViewportMetaSimTest, VirtualKeyboardUpdateContent) {
+  LoadPageWithHTML(R"HTML(
+    <!DOCTYPE html>
+    <meta name="viewport" content="interactive-widget=resizes-content">
+  )HTML");
+
+  ASSERT_EQ(WebView().VirtualKeyboardModeForTesting(),
+            ui::mojom::blink::VirtualKeyboardMode::kResizesContent);
+
+  Element* meta = GetDocument().QuerySelector("[name=viewport]");
+  meta->setAttribute(html_names::kContentAttr, "interactive-widget=bad-value");
+
+  EXPECT_EQ(WebView().VirtualKeyboardModeForTesting(),
+            ui::mojom::blink::VirtualKeyboardMode::kUnset);
+}
+
+// Test use counters for values of the 'interactive-widget' property.
+TEST_F(ViewportMetaSimTest, InteractiveWidgetUseCounters) {
+  // Property unset.
+  {
+    LoadPageWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <meta name="viewport" content="width=device-width">
+    )HTML");
+
+    EXPECT_FALSE(GetDocument().IsUseCounted(
+        WebFeature::kInteractiveWidgetResizesVisual));
+    EXPECT_FALSE(GetDocument().IsUseCounted(
+        WebFeature::kInteractiveWidgetResizesContent));
+    EXPECT_FALSE(GetDocument().IsUseCounted(
+        WebFeature::kInteractiveWidgetOverlaysContent));
+  }
+
+  // resizes-visual.
+  {
+    LoadPageWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <meta name="viewport" content="interactive-widget=resizes-visual">
+    )HTML");
+
+    EXPECT_TRUE(GetDocument().IsUseCounted(
+        WebFeature::kInteractiveWidgetResizesVisual));
+    EXPECT_FALSE(GetDocument().IsUseCounted(
+        WebFeature::kInteractiveWidgetResizesContent));
+    EXPECT_FALSE(GetDocument().IsUseCounted(
+        WebFeature::kInteractiveWidgetOverlaysContent));
+  }
+
+  // resizes-content.
+  {
+    LoadPageWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <meta name="viewport" content="interactive-widget=resizes-content">
+    )HTML");
+
+    EXPECT_FALSE(GetDocument().IsUseCounted(
+        WebFeature::kInteractiveWidgetResizesVisual));
+    EXPECT_TRUE(GetDocument().IsUseCounted(
+        WebFeature::kInteractiveWidgetResizesContent));
+    EXPECT_FALSE(GetDocument().IsUseCounted(
+        WebFeature::kInteractiveWidgetOverlaysContent));
+  }
+
+  // overlays-content.
+  {
+    LoadPageWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <meta name="viewport" content="interactive-widget=overlays-content">
+    )HTML");
+
+    EXPECT_FALSE(GetDocument().IsUseCounted(
+        WebFeature::kInteractiveWidgetResizesVisual));
+    EXPECT_FALSE(GetDocument().IsUseCounted(
+        WebFeature::kInteractiveWidgetResizesContent));
+    EXPECT_TRUE(GetDocument().IsUseCounted(
+        WebFeature::kInteractiveWidgetOverlaysContent));
+  }
 }
 
 }  // namespace blink

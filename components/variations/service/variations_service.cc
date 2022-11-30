@@ -18,6 +18,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
@@ -94,8 +95,7 @@ std::string GetPlatformString() {
   return "android";
 #elif BUILDFLAG(IS_FUCHSIA)
   return "fuchsia";
-#elif (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
-    BUILDFLAG(IS_BSD) || BUILDFLAG(IS_SOLARIS)
+#elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_BSD) || BUILDFLAG(IS_SOLARIS)
   // Default BSD and SOLARIS to Linux to not break those builds, although these
   // platforms are not officially supported by Chrome.
   return "linux";
@@ -190,8 +190,8 @@ bool GetInstanceManipulations(const net::HttpResponseHeaders* headers,
                               bool* is_delta_compressed,
                               bool* is_gzip_compressed) {
   std::vector<std::string> ims = GetHeaderValuesList(headers, "IM");
-  const auto delta_im = std::find(ims.begin(), ims.end(), "x-bm");
-  const auto gzip_im = std::find(ims.begin(), ims.end(), "gzip");
+  const auto delta_im = base::ranges::find(ims, "x-bm");
+  const auto gzip_im = base::ranges::find(ims, "gzip");
   *is_delta_compressed = delta_im != ims.end();
   *is_gzip_compressed = gzip_im != ims.end();
 
@@ -686,11 +686,6 @@ bool VariationsService::StoreSeed(const std::string& seed_data,
   return true;
 }
 
-std::unique_ptr<const base::FieldTrial::EntropyProvider>
-VariationsService::CreateLowEntropyProvider() {
-  return state_manager_->CreateLowEntropyProvider();
-}
-
 void VariationsService::InitResourceRequestedAllowedNotifier() {
   // ResourceRequestAllowedNotifier does not install an observer if there is no
   // NetworkChangeNotifier, which results in never being notified of changes to
@@ -898,11 +893,8 @@ void VariationsService::PerformSimulationWithVersion(
 
   const base::ElapsedTimer timer;
 
-  std::unique_ptr<const base::FieldTrial::EntropyProvider> default_provider =
-      state_manager_->CreateDefaultEntropyProvider();
-  std::unique_ptr<const base::FieldTrial::EntropyProvider> low_provider =
-      state_manager_->CreateLowEntropyProvider();
-  VariationsSeedSimulator seed_simulator(*default_provider, *low_provider);
+  auto entropy_providers = state_manager_->CreateEntropyProviders();
+  VariationsSeedSimulator seed_simulator(*entropy_providers);
 
   std::unique_ptr<ClientFilterableState> client_state =
       field_trial_creator_.GetClientFilterableStateForVersion(version);
@@ -950,9 +942,8 @@ bool VariationsService::SetUpFieldTrials(
     variations::PlatformFieldTrials* platform_field_trials) {
   return field_trial_creator_.SetUpFieldTrials(
       variation_ids, command_line_variation_ids, extra_overrides,
-      CreateLowEntropyProvider(), std::move(feature_list), state_manager_,
-      platform_field_trials, &safe_seed_manager_,
-      state_manager_->GetLowEntropySource());
+      std::move(feature_list), state_manager_, platform_field_trials,
+      &safe_seed_manager_, state_manager_->GetLowEntropySource());
 }
 
 void VariationsService::OverrideCachedUIStrings() {

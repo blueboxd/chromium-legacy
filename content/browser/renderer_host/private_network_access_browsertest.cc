@@ -462,8 +462,8 @@ class PrivateNetworkAccessBrowserTestBase : public ContentBrowserTest {
  protected:
   // Allows subclasses to construct instances with different features enabled.
   explicit PrivateNetworkAccessBrowserTestBase(
-      const std::vector<base::Feature>& enabled_features,
-      const std::vector<base::Feature>& disabled_features)
+      const std::vector<base::test::FeatureRef>& enabled_features,
+      const std::vector<base::test::FeatureRef>& disabled_features)
       : insecure_local_server_(
             net::EmbeddedTestServer::TYPE_HTTP,
             net::test_server::HttpConnection::Protocol::kHttp1,
@@ -2971,6 +2971,101 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
 
   EXPECT_EQ(security_state->private_network_request_policy,
             network::mojom::PrivateNetworkRequestPolicy::kBlock);
+}
+
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
+                       DeprecationTrialSettingInheritedByInitialEmptyDoc) {
+  DeprecationTrialURLLoaderInterceptor interceptor;
+
+  EXPECT_TRUE(NavigateToURL(shell(), interceptor.EnabledUrl()));
+
+  RenderFrameHostImpl* child_frame = AddChildInitialEmptyDoc(root_frame_host());
+
+  const network::mojom::ClientSecurityStatePtr security_state =
+      child_frame->BuildClientSecurityState();
+  ASSERT_FALSE(security_state.is_null());
+
+  // TODO(https://crbug.com/1170335): Expect `kAllow` here once inheritance is
+  // properly implemented.
+  EXPECT_EQ(security_state->private_network_request_policy,
+            network::mojom::PrivateNetworkRequestPolicy::kBlock);
+}
+
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
+                       DeprecationTrialSettingInheritedByAboutBlank) {
+  DeprecationTrialURLLoaderInterceptor interceptor;
+
+  EXPECT_TRUE(NavigateToURL(shell(), interceptor.EnabledUrl()));
+
+  RenderFrameHostImpl* child_frame = AddChildFromAboutBlank(root_frame_host());
+
+  const network::mojom::ClientSecurityStatePtr security_state =
+      child_frame->BuildClientSecurityState();
+  ASSERT_FALSE(security_state.is_null());
+
+  // TODO(https://crbug.com/1170335): Expect `kAllow` here once inheritance is
+  // properly implemented.
+  EXPECT_EQ(security_state->private_network_request_policy,
+            network::mojom::PrivateNetworkRequestPolicy::kBlock);
+}
+
+// `data:` URLs do not inherit their navigation initiator's origin, so they
+// should not inherit deprecation trials.
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
+                       DeprecationTrialSettingNotInheritedByDataURL) {
+  DeprecationTrialURLLoaderInterceptor interceptor;
+
+  EXPECT_TRUE(NavigateToURL(shell(), interceptor.EnabledUrl()));
+
+  RenderFrameHostImpl* child_frame = AddChildFromDataURL(root_frame_host());
+
+  const network::mojom::ClientSecurityStatePtr security_state =
+      child_frame->BuildClientSecurityState();
+  ASSERT_FALSE(security_state.is_null());
+
+  EXPECT_EQ(security_state->private_network_request_policy,
+            network::mojom::PrivateNetworkRequestPolicy::kBlock);
+}
+
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
+                       DeprecationTrialSettingNotInheritedBySandboxedIframe) {
+  DeprecationTrialURLLoaderInterceptor interceptor;
+
+  EXPECT_TRUE(NavigateToURL(shell(), interceptor.EnabledUrl()));
+
+  RenderFrameHostImpl* child_frame =
+      AddSandboxedChildFromAboutBlank(root_frame_host());
+
+  const network::mojom::ClientSecurityStatePtr security_state =
+      child_frame->BuildClientSecurityState();
+  ASSERT_FALSE(security_state.is_null());
+
+  EXPECT_EQ(security_state->private_network_request_policy,
+            network::mojom::PrivateNetworkRequestPolicy::kBlock);
+}
+
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
+                       DeprecationTrialSettingNotInheritedByErrorPage) {
+  DeprecationTrialURLLoaderInterceptor interceptor;
+
+  EXPECT_TRUE(NavigateToURL(shell(), interceptor.EnabledUrl()));
+
+  RenderFrameHostImpl* child_frame =
+      AddChildFromURL(root_frame_host(), "/close-socket");
+
+  // The iframe committed an error page.
+  EXPECT_EQ(GURL(kUnreachableWebDataURL),
+            EvalJs(child_frame, "document.location.href"));
+  EXPECT_TRUE(child_frame->GetLastCommittedOrigin().opaque());
+
+  const network::mojom::ClientSecurityStatePtr security_state =
+      child_frame->BuildClientSecurityState();
+  ASSERT_FALSE(security_state.is_null());
+
+  // TODO(https://crbug.com/1175787): Expect `kBlock` once error pages have
+  // stricter policies, or decide that this is right and remove this test.
+  EXPECT_EQ(security_state->private_network_request_policy,
+            network::mojom::PrivateNetworkRequestPolicy::kAllow);
 }
 
 // =======================

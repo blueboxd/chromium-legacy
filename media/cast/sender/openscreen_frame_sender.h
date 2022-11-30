@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -30,24 +31,25 @@ struct SenderEncodedFrame;
 //
 // For more information, see the Cast Streaming README.md located at:
 // https://source.chromium.org/chromium/chromium/src/+/main:third_party/openscreen/src/cast/streaming/README.md
-
 class OpenscreenFrameSender : public FrameSender,
                               openscreen::cast::Sender::Observer {
  public:
-  // TODO(https://crbug.com/1318499): will likely need to remove
-  // FrameSenderConfig here once the migration to libcast is complete.
   OpenscreenFrameSender(scoped_refptr<CastEnvironment> cast_environment,
                         const FrameSenderConfig& config,
-                        openscreen::cast::Sender* sender,
+                        std::unique_ptr<openscreen::cast::Sender> sender,
                         Client& client,
                         FrameSender::GetSuggestedVideoBitrateCB get_bitrate_cb);
+  OpenscreenFrameSender(OpenscreenFrameSender&& other) = delete;
+  OpenscreenFrameSender& operator=(OpenscreenFrameSender&& other) = delete;
+  OpenscreenFrameSender(const OpenscreenFrameSender&) = delete;
+  OpenscreenFrameSender& operator=(const OpenscreenFrameSender&) = delete;
   ~OpenscreenFrameSender() override;
 
   // FrameSender overrides.
   void SetTargetPlayoutDelay(base::TimeDelta new_target_playout_delay) override;
   base::TimeDelta GetTargetPlayoutDelay() const override;
   bool NeedsKeyFrame() const override;
-  void EnqueueFrame(std::unique_ptr<SenderEncodedFrame> encoded_frame) override;
+  bool EnqueueFrame(std::unique_ptr<SenderEncodedFrame> encoded_frame) override;
   bool ShouldDropNextFrame(base::TimeDelta frame_duration) const override;
   RtpTimeTicks GetRecordedRtpTimestamp(FrameId frame_id) const override;
   int GetUnacknowledgedFrameCount() const override;
@@ -91,9 +93,7 @@ class OpenscreenFrameSender : public FrameSender,
   const scoped_refptr<CastEnvironment> cast_environment_;
 
   // The backing Open Screen sender implementation.
-  // TODO(https://crbug.com/1363500): the OenscreenFrameSender should own the
-  // openscreen::cast::Sender instance as a unique pointer.
-  raw_ptr<openscreen::cast::Sender> const sender_;
+  std::unique_ptr<openscreen::cast::Sender> const sender_;
 
   // The frame sender client.
   Client& client_;
@@ -116,9 +116,15 @@ class OpenscreenFrameSender : public FrameSender,
   // last time any frame was sent or re-sent.
   base::TimeTicks last_send_time_;
 
-  // The ID of the last frame sent.  This member is invalid until
+  // The ID of the last enqueued frame. This member is invalid until
   // |!last_send_time_.is_null()|.
-  FrameId last_sent_frame_id_;
+  FrameId last_enqueued_frame_id_;
+
+  // Since the encoder emits frames that depend on each other, and the Open
+  // Screen sender demands that we use its FrameIDs for enqueued frames, we
+  // have to keep a map of the encoder's frame id to the Open Screen sender's
+  // frame id. This map is cleared on each keyframe.
+  base::flat_map<FrameId, FrameId> frame_id_map_;
 
   // This is the maximum delay that the sender should get ack from receiver.
   // Counts how many RTCP reports are being "aggressively" sent (i.e., one per

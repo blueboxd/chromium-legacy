@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ConnectionType, KeyboardInfo, MechanicalLayout, NumberPadPresence, PhysicalLayout, TopRightKey, TopRowKey} from 'chrome://diagnostics/diagnostics_types.js';
-import {InputCardType} from 'chrome://diagnostics/input_card.js';
+import {InputCardElement, InputCardType} from 'chrome://diagnostics/input_card.js';
+import {ConnectionType, KeyboardInfo, MechanicalLayout, NumberPadPresence, PhysicalLayout, TopRightKey, TopRowKey} from 'chrome://diagnostics/input_data_provider.mojom-webui.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
+
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.js';
 
 /** @type {!Array<!KeyboardInfo>} */
 const keyboards = [
@@ -74,8 +75,10 @@ export function inputCardTestSuite() {
   }
 
   test('KeyboardsListedCorrectly', async () => {
-    await initializeInputCard(InputCardType.kKeyboard, keyboards);
-    assertEquals(2, inputCardElement.$$('dom-repeat').items.length);
+    await initializeInputCard(InputCardType.KEYBOARD, keyboards);
+    assertEquals(
+        2,
+        inputCardElement.shadowRoot.querySelector('dom-repeat').items.length);
     const elements = inputCardElement.root.querySelectorAll('.device');
     assertEquals(
         keyboards[0].name, elements[0].querySelector('.device-name').innerText);
@@ -90,13 +93,15 @@ export function inputCardTestSuite() {
   });
 
   test('TestButtonClickEvent', async () => {
-    await initializeInputCard(InputCardType.kKeyboard, keyboards);
+    await initializeInputCard(InputCardType.KEYBOARD, keyboards);
     let listenerCalled = false;
     inputCardElement.addEventListener('test-button-click', (e) => {
       listenerCalled = true;
       assertEquals(10, e.detail.evdevId);
     });
-    inputCardElement.$$('.device[data-evdev-id="10"] cr-button').click();
+    inputCardElement.shadowRoot
+        .querySelector('.device[data-evdev-id="10"] cr-button')
+        .click();
     await flushTasks();
     assertTrue(listenerCalled);
   });

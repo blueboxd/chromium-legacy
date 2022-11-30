@@ -58,12 +58,14 @@ void TestWallpaperController::SetCustomWallpaper(
   std::move(callback).Run(true);
 }
 
-void TestWallpaperController::SetCustomWallpaper(const AccountId& account_id,
-                                                 const std::string& file_name,
-                                                 ash::WallpaperLayout layout,
-                                                 const gfx::ImageSkia& image,
-                                                 bool preview_mode,
-                                                 const std::string& file_path) {
+void TestWallpaperController::SetDecodedCustomWallpaper(
+    const AccountId& account_id,
+    const std::string& file_name,
+    ash::WallpaperLayout layout,
+    bool preview_mode,
+    SetWallpaperCallback callback,
+    const std::string& file_path,
+    const gfx::ImageSkia& image) {
   ++set_custom_wallpaper_count_;
 }
 
@@ -163,6 +165,7 @@ bool TestWallpaperController::SetThirdPartyWallpaper(
     ash::WallpaperLayout layout,
     const gfx::ImageSkia& image) {
   ShowWallpaperImage(image);
+  ++third_party_wallpaper_count_;
   return true;
 }
 
@@ -254,12 +257,6 @@ void TestWallpaperController::RemoveObserver(
 
 gfx::ImageSkia TestWallpaperController::GetWallpaperImage() {
   return current_wallpaper;
-}
-
-const std::vector<SkColor>& TestWallpaperController::GetWallpaperColors() {
-  NOTIMPLEMENTED();
-  static std::vector<SkColor> kColors;
-  return kColors;
 }
 
 bool TestWallpaperController::IsWallpaperBlurredForLockState() const {

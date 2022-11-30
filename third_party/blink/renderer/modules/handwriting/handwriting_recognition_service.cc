@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -142,8 +142,8 @@ ScriptPromise HandwritingRecognitionService::CreateHandwritingRecognizer(
 
   remote_service_->CreateHandwritingRecognizer(
       std::move(mojo_model_constraint),
-      WTF::Bind(OnCreateHandwritingRecognizer, WrapPersistent(script_state),
-                WrapPersistent(resolver)));
+      WTF::BindOnce(OnCreateHandwritingRecognizer, WrapPersistent(script_state),
+                    WrapPersistent(resolver)));
 
   return promise;
 }
@@ -173,8 +173,8 @@ ScriptPromise HandwritingRecognitionService::QueryHandwritingRecognizer(
   remote_service_->QueryHandwritingRecognizer(
       mojo::ConvertTo<handwriting::mojom::blink::HandwritingModelConstraintPtr>(
           constraint),
-      WTF::Bind(&OnQueryHandwritingRecognizer, WrapPersistent(script_state),
-                WrapPersistent(resolver)));
+      WTF::BindOnce(&OnQueryHandwritingRecognizer, WrapPersistent(script_state),
+                    WrapPersistent(resolver)));
 
   return promise;
 }

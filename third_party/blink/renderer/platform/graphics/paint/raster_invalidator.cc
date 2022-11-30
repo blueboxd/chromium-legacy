@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -343,7 +343,7 @@ void RasterInvalidator::Generate(
   current_paint_artifact_ = &new_chunks.GetPaintArtifact();
 
   Vector<PaintChunkInfo> new_chunks_info;
-  new_chunks_info.ReserveCapacity(new_chunks.size());
+  new_chunks_info.reserve(new_chunks.size());
 
   if (layer_bounds_was_empty || layer_bounds_.IsEmpty()) {
     // Fast path if either the old bounds or the new bounds is empty. We still

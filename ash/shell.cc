@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller_impl.h"
+#include "ash/accelerators/ash_accelerator_configuration.h"
 #include "ash/accelerators/ash_focus_manager_factory.h"
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/pre_target_accelerator_handler.h"
@@ -37,6 +38,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/controls/contextual_tooltip.h"
+#include "ash/curtain/security_curtain_controller_impl.h"
 #include "ash/dbus/ash_dbus_services.h"
 #include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/detachable_base/detachable_base_notification_controller.h"
@@ -114,9 +116,6 @@
 #include "ash/system/audio/display_speaker_controller.h"
 #include "ash/system/bluetooth/bluetooth_device_status_ui_handler.h"
 #include "ash/system/bluetooth/bluetooth_notification_controller.h"
-#include "ash/system/bluetooth/bluetooth_power_controller.h"
-#include "ash/system/bluetooth/tray_bluetooth_helper_experimental.h"
-#include "ash/system/bluetooth/tray_bluetooth_helper_legacy.h"
 #include "ash/system/brightness/brightness_controller_chromeos.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/camera/autozoom_controller_impl.h"
@@ -602,20 +601,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate)
   keyboard_controller_ =
       std::make_unique<KeyboardControllerImpl>(session_controller_.get());
 
-  if (!ash::features::IsBluetoothRevampEnabled()) {
-    if (base::FeatureList::IsEnabled(features::kUseBluetoothSystemInAsh)) {
-      mojo::PendingRemote<device::mojom::BluetoothSystemFactory>
-          bluetooth_system_factory;
-      shell_delegate_->BindBluetoothSystemFactory(
-          bluetooth_system_factory.InitWithNewPipeAndPassReceiver());
-      tray_bluetooth_helper_ =
-          std::make_unique<TrayBluetoothHelperExperimental>(
-              std::move(bluetooth_system_factory));
-    } else {
-      tray_bluetooth_helper_ = std::make_unique<TrayBluetoothHelperLegacy>();
-    }
-  }
-
   PowerStatus::Initialize();
 
   session_controller_->AddObserver(this);
@@ -760,8 +745,6 @@ Shell::~Shell() {
   ml::UserSettingsEventLogger::DeleteInstance();
 
   toast_manager_.reset();
-
-  tray_bluetooth_helper_.reset();
 
   // Accesses root window containers.
   logout_confirmation_controller_.reset();
@@ -948,9 +931,6 @@ Shell::~Shell() {
   power_event_observer_.reset();
 
   session_controller_->RemoveObserver(this);
-  // BluetoothPowerController depends on the PrefService and must be destructed
-  // before it.
-  bluetooth_power_controller_ = nullptr;
   // TouchDevicesController depends on the PrefService and must be destructed
   // before it.
   touch_devices_controller_ = nullptr;
@@ -1025,10 +1005,6 @@ void Shell::Init(
     privacy_hub_controller_ = std::make_unique<PrivacyHubController>();
   }
   touch_devices_controller_ = std::make_unique<TouchDevicesController>();
-  if (!ash::features::IsBluetoothRevampEnabled()) {
-    bluetooth_power_controller_ =
-        std::make_unique<BluetoothPowerController>(local_state_);
-  }
   detachable_base_handler_ =
       std::make_unique<DetachableBaseHandler>(local_state_);
   detachable_base_notification_controller_ =
@@ -1217,7 +1193,12 @@ void Shell::Init(
   cursor_manager_->SetDisplay(
       display::Screen::GetScreen()->GetPrimaryDisplay());
 
-  accelerator_controller_ = std::make_unique<AcceleratorControllerImpl>();
+  ash_accelerator_configuration_ =
+      std::make_unique<AshAcceleratorConfiguration>();
+  ash_accelerator_configuration_->Initialize();
+  accelerator_controller_ = std::make_unique<AcceleratorControllerImpl>(
+      ash_accelerator_configuration_.get());
+
   clipboard_history_controller_ =
       std::make_unique<ClipboardHistoryControllerImpl>();
 
@@ -1346,6 +1327,9 @@ void Shell::Init(
   color_enhancement_controller_ =
       std::make_unique<ColorEnhancementController>();
 
+  security_curtain_controller_ =
+      std::make_unique<curtain::SecurityCurtainControllerImpl>(this);
+
   docked_magnifier_controller_ = std::make_unique<DockedMagnifierController>();
 
   video_detector_ = std::make_unique<VideoDetector>();
@@ -1366,11 +1350,6 @@ void Shell::Init(
 
   logout_confirmation_controller_ =
       std::make_unique<LogoutConfirmationController>();
-
-  if (!ash::features::IsBluetoothRevampEnabled()) {
-    // May trigger initialization of the Bluetooth adapter.
-    tray_bluetooth_helper_->Initialize();
-  }
 
   // Create AshTouchTransformController before
   // WindowTreeHostManager::InitDisplays()
@@ -1400,6 +1379,12 @@ void Shell::Init(
   system_notification_controller_ =
       std::make_unique<SystemNotificationController>();
 
+  // WmModeController should be created before initializing the window tree
+  // hosts, since the latter will initialize the shelf on each display, which
+  // hosts the WM mode tray button.
+  if (features::IsWmModeEnabled())
+    wm_mode_controller_ = std::make_unique<WmModeController>();
+
   window_tree_host_manager_->InitHosts();
 
   // Create virtual keyboard after WindowTreeHostManager::InitHosts() since
@@ -1411,8 +1396,7 @@ void Shell::Init(
   // since it may need to add observers to root windows.
   window_restore_controller_ = std::make_unique<WindowRestoreController>();
 
-  cursor_manager_->HideCursor();  // Hide the mouse cursor on startup.
-  cursor_manager_->SetCursor(ui::mojom::CursorType::kPointer);
+  static_cast<CursorManager*>(cursor_manager_.get())->Init();
 
   mojo::PendingRemote<device::mojom::Fingerprint> fingerprint;
   shell_delegate_->BindFingerprint(
@@ -1422,12 +1406,8 @@ void Shell::Init(
           user_activity_detector_.get(), std::move(fingerprint));
   video_activity_notifier_ =
       std::make_unique<VideoActivityNotifier>(video_detector_.get());
-
-  if (ash::features::IsBluetoothRevampEnabled()) {
-    bluetooth_device_status_ui_handler_ =
-        std::make_unique<BluetoothDeviceStatusUiHandler>();
-  }
-
+  bluetooth_device_status_ui_handler_ =
+      std::make_unique<BluetoothDeviceStatusUiHandler>();
   bluetooth_notification_controller_ =
       std::make_unique<BluetoothNotificationController>(
           message_center::MessageCenter::Get());
@@ -1471,9 +1451,6 @@ void Shell::Init(
 
   if (chromeos::wm::features::IsFloatWindowEnabled())
     float_controller_ = std::make_unique<FloatController>();
-
-  if (features::IsWmModeEnabled())
-    wm_mode_controller_ = std::make_unique<WmModeController>();
 
   // Injects the factory which fulfills the implementation of the text context
   // menu exclusive to CrOS.

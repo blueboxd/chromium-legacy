@@ -35,6 +35,14 @@
 
 namespace chromeos {
 namespace settings {
+
+// TODO(https://crbug.com/1164001): remove after migrating to ash.
+namespace mojom {
+using ::ash::settings::mojom::SearchResultDefaultRank;
+using ::ash::settings::mojom::SearchResultIcon;
+using ::ash::settings::mojom::SearchResultType;
+}  // namespace mojom
+
 namespace {
 
 const std::vector<SearchConcept>& GetPrivacySearchConcepts() {
@@ -274,13 +282,11 @@ PrivacySection::PrivacySection(Profile* profile,
 PrivacySection::~PrivacySection() = default;
 
 void PrivacySection::AddHandlers(content::WebUI* web_ui) {
-  web_ui->AddMessageHandler(
-      std::make_unique<chromeos::settings::PeripheralDataAccessHandler>());
+  web_ui->AddMessageHandler(std::make_unique<PeripheralDataAccessHandler>());
 
-  web_ui->AddMessageHandler(
-      std::make_unique<chromeos::settings::MetricsConsentHandler>(
-          profile(), g_browser_process->metrics_service(),
-          user_manager::UserManager::Get()));
+  web_ui->AddMessageHandler(std::make_unique<MetricsConsentHandler>(
+      profile(), g_browser_process->metrics_service(),
+      user_manager::UserManager::Get()));
 
   if (ash::features::IsCrosPrivacyHubEnabled())
     web_ui->AddMessageHandler(std::make_unique<PrivacyHubHandler>());
@@ -333,6 +339,10 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_PRIVACY_HUB_MICROPHONE_HARDWARE_TOGGLE_ACTIVE_SUBTEXT},
       {"microphoneToggleSublabelNoMicConnected",
        IDS_OS_SETTINGS_PRIVACY_HUB_MICROPHONE_TOGGLE_NO_MICROPHONE_CONNECTED_SUBTEXT},
+      {"noCameraConnectedText",
+       IDS_OS_SETTINGS_PRIVACY_HUB_NO_CAMERA_CONNECTED_TEXT},
+      {"noMicrophoneConnectedText",
+       IDS_OS_SETTINGS_PRIVACY_HUB_NO_MICROPHONE_CONNECTED_TEXT},
       {"geolocationToggleTitle", IDS_OS_SETTINGS_GEOLOCATION_TOGGLE_TITLE},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
@@ -345,9 +355,9 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("showPrivacyHubPage",
                           ash::features::IsCrosPrivacyHubEnabled());
   html_source->AddBoolean("showPrivacyHubMVPPage",
-                          ash::features::IsCrosPrivacyHubMVPEnabled());
+                          ash::features::IsCrosPrivacyHubV1Enabled());
   html_source->AddBoolean("showPrivacyHubFuturePage",
-                          ash::features::IsCrosPrivacyHubFutureEnabled());
+                          ash::features::IsCrosPrivacyHubV2Enabled());
 
   html_source->AddString(
       "smartPrivacyDesc",

@@ -497,7 +497,8 @@ Frame::Frame(FrameClient* client,
       navigation_rate_limiter_(*this),
       window_agent_factory_(inheriting_agent_factory
                                 ? inheriting_agent_factory
-                                : MakeGarbageCollected<WindowAgentFactory>()),
+                                : MakeGarbageCollected<WindowAgentFactory>(
+                                      page.GetAgentGroupScheduler())),
       is_loading_(false),
       devtools_frame_token_(devtools_frame_token),
       frame_token_(frame_token) {
@@ -578,12 +579,13 @@ base::OnceClosure Frame::ScheduleFormSubmission(
     FormSubmission* form_submission) {
   form_submit_navigation_task_ = PostCancellableTask(
       *scheduler->GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
-      WTF::Bind(&FormSubmission::Navigate, WrapPersistent(form_submission)));
+      WTF::BindOnce(&FormSubmission::Navigate,
+                    WrapPersistent(form_submission)));
   form_submit_navigation_task_version_++;
 
-  return WTF::Bind(&Frame::CancelFormSubmissionWithVersion,
-                   WrapWeakPersistent(this),
-                   form_submit_navigation_task_version_);
+  return WTF::BindOnce(&Frame::CancelFormSubmissionWithVersion,
+                       WrapWeakPersistent(this),
+                       form_submit_navigation_task_version_);
 }
 
 void Frame::CancelFormSubmission() {

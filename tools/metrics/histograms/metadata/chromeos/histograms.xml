@@ -718,6 +718,31 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.Debugd.Perf.GetBigFeedbackLogs.{SubTaskName}"
+    units="ms" expires_after="2023-07-01">
+  <owner>xiangdongkong@google.com</owner>
+  <owner>cros-feedback-app@google.com</owner>
+  <summary>
+    Records the total time it takes for each sub task of
+    LogTool::GetBigFeedbackLogs to complete. Recording happens on each call to
+    debugd's GetBigFeedbackLogs.
+  </summary>
+  <token key="SubTaskName">
+    <variant name="CreateConnectivityReport"/>
+    <variant name="GetArcBugReport"/>
+    <variant name="GetBluetoothBqr"/>
+    <variant name="GetLsbReleaseInfo"/>
+    <variant name="GetOsReleaseInfo"/>
+    <variant name="GetPerfData"/>
+    <variant name="kCommandLogs"/>
+    <variant name="kCommandLogsVerbose"/>
+    <variant name="kFeedbackLogs"/>
+    <variant name="kVarLogFileLogs"/>
+    <variant name="PopulateDictionaryValue"/>
+    <variant name="SerializeLogsAsJSON"/>
+  </token>
+</histogram>
+
 <histogram name="ChromeOS.Debugd.Perf.{FunctionName}" units="ms"
     expires_after="2023-01-01">
   <owner>enlightened@google.com</owner>
@@ -784,7 +809,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.DiagnosticsUi.InitialScreen"
-    units="CrosDiagnosticsNavigationView" expires_after="2022-12-04">
+    units="CrosDiagnosticsNavigationView" expires_after="2023-03-19">
   <owner>ashleydp@google.com</owner>
   <owner>gavinwill@chromium.org</owner>
   <owner>zentaro@chromium.org</owner>
@@ -882,7 +907,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.FeatureUsage.{FeatureName}" enum="FeatureUsageEvent"
-    expires_after="2022-11-11">
+    expires_after="2023-05-11">
   <owner>rsorokin@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -894,7 +919,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.FeatureUsage.{FeatureName}.Usetime" units="ms"
-    expires_after="2022-11-11">
+    expires_after="2023-05-11">
   <owner>rsorokin@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -1037,6 +1062,21 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>The amount of time it takes to probe hardware components.</summary>
 </histogram>
 
+<histogram name="ChromeOS.HaTS.{Survey}" enum="HaTSSurvey"
+    expires_after="2023-10-06">
+  <owner>aalsum@chromium.org</owner>
+  <owner>jackshira@google.com</owner>
+  <owner>cros-telemetry@google.com</owner>
+  <summary>
+    Records the responses for HaTS questions, to be analyzed against other OS
+    metrics like performance or number of crashes. Emitted during the lifecycle
+    of a survey and when a user answers any question on a HaTS survey.
+  </summary>
+  <token key="Survey">
+    <variant name="Stability"/>
+  </token>
+</histogram>
+
 <histogram name="ChromeOS.IioService.SensorClientConcurrent" units="clients"
     expires_after="2023-05-01">
   <owner>chenghaoyang@chromium.org</owner>
@@ -1159,7 +1199,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Intents.LinkCapturingEvent2"
-    enum="LinkCapturingEvent" expires_after="2023-03-12">
+    enum="LinkCapturingEvent" expires_after="2023-04-09">
   <owner>vpao@google.com</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -1223,7 +1263,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.KeyPermissionsManager.Migration"
-    enum="KeyPermissionsManagerMigrationStatus" expires_after="2023-01-15">
+    enum="KeyPermissionsManagerMigrationStatus" expires_after="2023-03-19">
   <owner>omorsi@google.com</owner>
   <owner>pmarko@google.com</owner>
   <summary>
@@ -1367,7 +1407,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Liveness.BrowserStateAtTimeout"
-    enum="ChromeOSBrowserProcessState" expires_after="2023-01-30">
+    enum="ChromeOSBrowserProcessState" expires_after="2023-04-09">
   <owner>iby@google.com</owner>
   <owner>xiyuan@google.com</owner>
   <owner>kaznacheev@google.com</owner>
@@ -1394,7 +1434,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Liveness.PingResult" enum="BooleanSuccess"
-    expires_after="2023-02-04">
+    expires_after="2023-04-09">
   <owner>iby@google.com</owner>
   <owner>xiyuan@google.com</owner>
   <summary>
@@ -1512,7 +1552,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.MessageCenter.ScrollActionReason"
-    enum="ChromeOSMessageCenterScrollActionReason" expires_after="2023-01-22">
+    enum="ChromeOSMessageCenterScrollActionReason" expires_after="2023-03-26">
   <owner>yoshiki@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <owner>leandre@chromium.org</owner>
@@ -1548,7 +1588,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.PlatformVerification.Result2"
-    enum="ChromeOSPlatformVerificationResult2" expires_after="2023-01-15">
+    enum="ChromeOSPlatformVerificationResult2" expires_after="2023-03-19">
   <owner>erikchen@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -1556,6 +1596,36 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     Chrome OS. Does not include browser-related failures. Those are tracked in
     ChromeOS.PlatformVerification.BrowserResult.
   </summary>
+</histogram>
+
+<histogram name="ChromeOS.PrivacyHub.Opened" enum="PrivacyHubNavigationOrigin"
+    expires_after="2023-09-01">
+  <owner>zauri@google.com</owner>
+  <owner>chromeos-privacyhub@google.com</owner>
+  <summary>
+    Records when the user visits the Privacy Hub page in system settings.
+    Capturing the origin where the user navigated from.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.PrivacyHub.{FeatureName}.{Source}.Enabled"
+    enum="BooleanEnabled" expires_after="2023-09-01">
+  <owner>zauri@google.com</owner>
+  <owner>chromeos-privacyhub@google.com</owner>
+  <summary>
+    Records when the user changes the device-wide {FeatureName} access from the
+    {Source}. This can happen directly from the settings page
+    &quot;Settings&quot;&gt;&quot;Security and Privacy&quot;&gt;&quot;Privacy
+    hub&quot; or through notifications.
+  </summary>
+  <token key="FeatureName">
+    <variant name="Camera"/>
+    <variant name="Microphone"/>
+  </token>
+  <token key="Source">
+    <variant name="Notification"/>
+    <variant name="Settings"/>
+  </token>
 </histogram>
 
 <histogram name="ChromeOS.PrivacyScreen.Toggled"
@@ -1625,7 +1695,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SAML.InSessionPasswordSyncEvent"
-    enum="SamlInSessionPasswordSyncEvent" expires_after="2023-01-15">
+    enum="SamlInSessionPasswordSyncEvent" expires_after="2023-03-19">
   <owner>mslus@chromium.org</owner>
   <owner>mohammedabdon@chromium.org</owner>
   <summary>
@@ -1642,7 +1712,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SAML.Scraping.PasswordCountAll" units="passwords"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>mslus@chromium.org</owner>
   <owner>emaxx@chromium.org</owner>
   <summary>
@@ -1854,19 +1924,6 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="ChromeOS.SystemTray.FeaturePodCountOnOpen" units="count"
-    expires_after="2023-04-01">
-  <owner>amehfooz@chromium.org</owner>
-  <owner>cros-status-area@google.com</owner>
-  <summary>
-    The number of feature pods (e.g. WiFi, Bluetooth, IME, Accessibility, etc.)
-    in the system tray quick settings when it is opened, including pods that
-    overflow to other pages. See
-    ChromeOS.SystemTray.Tablet.FeaturePodCountOnOpen for the corresponding
-    histogram logged in tablet mode.
-  </summary>
-</histogram>
-
 <histogram name="ChromeOS.SystemTray.FirstInteraction"
     enum="CrosSystemTrayFirstInteraction" expires_after="2023-04-01">
   <owner>amehfooz@chromium.org</owner>
@@ -1974,18 +2031,6 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="ChromeOS.SystemTray.Tablet.FeaturePodCountOnOpen"
-    units="count" expires_after="2023-05-10">
-  <owner>amehfooz@chromium.org</owner>
-  <owner>cros-status-area@google.com</owner>
-  <summary>
-    The number of feature pods (e.g. WiFi, Bluetooth, IME, Accessibility, etc.)
-    in the system tray quick settings when it is opened, including pods that
-    overflow to other pages. This histogram is only logged when the device is in
-    tablet mode, otherwise ChromeOS.SystemTray.FeaturePodCountOnOpen is logged.
-  </summary>
-</histogram>
-
 <histogram name="ChromeOS.SystemTray.Tablet.ShelfPodCount" units="count"
     expires_after="2023-04-01">
   <owner>amehfooz@chromium.org</owner>
@@ -2029,7 +2074,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.TypeC.CableSpeed" enum="CableSpeedMetric"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>pmalani@chromium.org</owner>
   <owner>chromeos-power@google.com</owner>
   <summary>
@@ -2039,7 +2084,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.TypeC.PartnerType" enum="PartnerTypeMetric"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>pmalani@chromium.org</owner>
   <owner>chromeos-power@google.com</owner>
   <summary>
@@ -2060,7 +2105,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.TypeC.WrongConfiguration"
-    enum="WrongConfigurationMetric" expires_after="2023-01-15">
+    enum="WrongConfigurationMetric" expires_after="2023-04-09">
   <owner>pmalani@chromium.org</owner>
   <owner>chromeos-power@google.com</owner>
   <summary>
@@ -2082,7 +2127,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="ChromeOS.USB.DeviceAttached"
-    enum="ChromeOSUsbEventTiming" expires_after="2023-01-15">
+    enum="ChromeOSUsbEventTiming" expires_after="2023-03-19">
   <owner>allenwebb@chromium.org</owner>
   <owner>jorgelo@chromium.org</owner>
   <owner>mnissler@chromium.org</owner>
@@ -2207,7 +2252,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Zram.{CountMetric}" units="count"
-    expires_after="2022-11-10">
+    expires_after="2023-03-30">
   <owner>ctshao@google.com</owner>
   <owner>bgeffon@chromium.org</owner>
   <owner>chromeos-memory@google.com</owner>
@@ -2241,7 +2286,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Zram.{HugePageActivityMetric}" units="pages"
-    expires_after="2022-11-10">
+    expires_after="2023-03-30">
   <owner>ctshao@google.com</owner>
   <owner>raging@google.com</owner>
   <owner>bgeffon@chromium.org</owner>
@@ -2259,7 +2304,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Zram.{PctMetric}" units="%"
-    expires_after="2022-11-10">
+    expires_after="2023-03-30">
   <owner>ctshao@google.com</owner>
   <owner>bgeffon@chromium.org</owner>
   <owner>chromeos-memory@google.com</owner>
@@ -2278,7 +2323,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Zram.{SizeMetric}" units="MB"
-    expires_after="2022-11-10">
+    expires_after="2023-03-30">
   <owner>ctshao@google.com</owner>
   <owner>bgeffon@chromium.org</owner>
   <owner>chromeos-memory@google.com</owner>

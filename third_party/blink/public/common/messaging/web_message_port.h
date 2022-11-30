@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -156,6 +156,10 @@ class BLINK_COMMON_EXPORT WebMessagePort : public mojo::MessageReceiver {
   // calling this (all of "IsValid", "is_closed" and "is_errored" will return
   // false). This can only be called if "is_transferable()" returns true.
   MessagePortDescriptor PassPort();
+
+  // Maintains a static agent cluster ID that is used as the cluster ID in
+  // casees where the embedder is the one calling PostMessage.
+  static const base::UnguessableToken& GetEmbedderAgentClusterID();
 
  private:
   // Creates a message port that wraps the provided |port|. This provided |port|

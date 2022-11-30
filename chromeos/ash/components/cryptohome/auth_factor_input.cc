@@ -12,6 +12,16 @@
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace cryptohome {
+// =============== `SmartCard` =====================
+AuthFactorInput::SmartCard::SmartCard(
+    const std::vector<ChallengeResponseKey::SignatureAlgorithm> algorithms,
+    const std::string dbus_service_name)
+    : signature_algorithms(algorithms),
+      key_delegate_dbus_service_name(dbus_service_name) {}
+AuthFactorInput::SmartCard::SmartCard(const SmartCard& other) = default;
+AuthFactorInput::SmartCard& AuthFactorInput::SmartCard::operator=(
+    const SmartCard&) = default;
+AuthFactorInput::SmartCard::~SmartCard() = default;
 
 // =============== `AuthFactorInput` ===============
 

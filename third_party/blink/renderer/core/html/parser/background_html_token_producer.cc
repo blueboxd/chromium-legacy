@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,37 +131,32 @@ void BackgroundHTMLTokenProducer::ShutdownAndScheduleDeletion(
 BackgroundHTMLTokenProducer::Results*
 BackgroundHTMLTokenProducer::NextParseResults() {
   DCHECK(IsRunningOnMainThread());
-  Results* results;
-  while (true) {
-    base::AutoLock auto_lock(results_lock_);
-    // If `clear_results_before_next_append_` is true, the background thread
-    // hasn't yet cleared the results, so need to continue waiting.
-    if (bg_thread_results_.IsEmpty() || clear_results_before_next_append_) {
-      if (input_generation_ == processed_input_generation_) {
-        // Background thread finished parsing all the data, no more results
-        // will be produced until more data is available.
-        return nullptr;
-      }
-      results_available_.Wait();
-      continue;
+  base::AutoLock auto_lock(results_lock_);
+  // If `clear_results_before_next_append_` is true, the background thread
+  // hasn't yet cleared the results, so need to continue waiting.
+  while (bg_thread_results_.empty() || clear_results_before_next_append_) {
+    if (input_generation_ == processed_input_generation_) {
+      // Background thread finished parsing all the data, no more results
+      // will be produced until more data is available.
+      return nullptr;
     }
-    // Swap the two buffers. The background thread will clear the vector before
-    // adding any new results. Using swap and not clearing the vector enables
-    // destruction to happen on the background thread, this ensures the main
-    // thread does not do costly destruction.
-    main_thread_results_.swap(bg_thread_results_);
-    clear_results_before_next_append_ = true;
-    results = &main_thread_results_;
-    // The background thread blocks when it has processed `g_max_tokens`, signal
-    // to unblock it.
-    if (results->size() == g_max_tokens)
-      clear_results_was_set_.Signal();
-    break;
+    results_available_.Wait();
   }
-  // The while loop above blocks until at least one result, and there
-  // shouldn't be more than `g_max_tokens`.
-  DCHECK(!results->IsEmpty() && results->size() <= g_max_tokens);
-  return results;
+  // The while loop above blocks until at least one result, and there shouldn't
+  // be more than `g_max_tokens`.
+  DCHECK(!bg_thread_results_.empty() &&
+         bg_thread_results_.size() <= g_max_tokens);
+  // Swap the two buffers. The background thread will clear the vector before
+  // adding any new results. Using swap and not clearing the vector enables
+  // destruction to happen on the background thread, this ensures the main
+  // thread does not do costly destruction.
+  main_thread_results_.swap(bg_thread_results_);
+  clear_results_before_next_append_ = true;
+  // The background thread blocks when it has processed `g_max_tokens`, signal
+  // to unblock it.
+  if (main_thread_results_.size() == g_max_tokens)
+    clear_results_was_set_.Signal();
+  return &main_thread_results_;
 }
 
 void BackgroundHTMLTokenProducer::RunTokenizeLoopOnTaskRunner() {
@@ -183,8 +178,7 @@ void BackgroundHTMLTokenProducer::RunTokenizeLoopOnTaskRunner() {
 
       // Wait for more data.
       base::AutoLock auto_lock(input_lock_);
-      while (!end_of_file_ && !stop_and_delete_ &&
-             strings_to_append_.IsEmpty()) {
+      while (!end_of_file_ && !stop_and_delete_ && strings_to_append_.empty()) {
         data_available_.Wait();
       }
     } else {
@@ -320,7 +314,7 @@ void BackgroundHTMLTokenProducer::AppendResultAndNotify(
       // a result, rather than backtracking).
       result.tokenizer_snapshot =
           bg_thread_results_[bg_thread_results_.size() - 2].tokenizer_snapshot;
-    } else if (!main_thread_results_.IsEmpty()) {
+    } else if (!main_thread_results_.empty()) {
       // Similar to previous case, but this is the first result being added to
       // `bg_thread_results_`. In this case the last snapshot is available in
       // `main_thread_results_`.
@@ -350,7 +344,7 @@ void BackgroundHTMLTokenProducer::NotifyEndOfInput(uint8_t input_generation) {
   processed_input_generation_ = input_generation;
   results_available_.Signal();
   end_of_input_bg_thread_result_size_ =
-      bg_thread_results_.IsEmpty() ? kNotFound : bg_thread_results_.size();
+      bg_thread_results_.empty() ? kNotFound : bg_thread_results_.size();
 }
 
 void BackgroundHTMLTokenProducer::AppendUnhandledSequenceResult() {

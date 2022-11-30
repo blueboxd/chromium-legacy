@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash/attestation/tpm_challenge_key_subtle.h"
 
-#include "ash/components/settings/cros_settings_names.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/check_op.h"
@@ -31,6 +30,7 @@
 #include "chromeos/ash/components/dbus/attestation/interface.pb.h"
 #include "chromeos/ash/components/dbus/constants/attestation_constants.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -512,7 +512,7 @@ void TpmChallengeKeySubtleImpl::AskForUserConsentCallback(bool result) {
   attestation_flow_->GetCertificate(
       GetCertificateProfile(), GetAccountIdForAttestationFlow(),
       /*request_origin=*/std::string(),  // Not used.
-      /*force_new_key=*/true, key_name_,
+      /*force_new_key=*/true, ::attestation::KEY_TYPE_RSA, key_name_,
       base::BindOnce(&TpmChallengeKeySubtleImpl::GetCertificateCallback,
                      weak_factory_.GetWeakPtr()));
 }

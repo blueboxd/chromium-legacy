@@ -14,6 +14,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.build.annotations.MockedInTests;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuButton.PopupMenuShownListener;
+import org.chromium.components.messages.MessageStateHandler.Position;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -89,17 +90,26 @@ class MessageBannerCoordinator {
 
     /**
      * Shows the message banner.
+     * @param fromIndex The initial position.
+     * @param toIndex The target position the message is moving to.
      * @return The animator which shows the message view.
      */
-    Animator show() {
-        return mMediator.show(() -> {
-            setOnTouchRunnable(mTimer::resetTimer);
-            announceForAccessibility();
-            setOnTitleChanged(() -> {
-                mTimer.resetTimer();
+    Animator show(@Position int fromIndex, @Position int toIndex) {
+        mView.dismissSecondaryMenuIfShown();
+        return mMediator.show(fromIndex, toIndex, () -> {
+            if (toIndex != Position.FRONT) {
+                setOnTouchRunnable(null);
+                setOnTitleChanged(null);
+                mTimer.cancelTimer();
+            } else {
+                setOnTouchRunnable(mTimer::resetTimer);
                 announceForAccessibility();
-            });
-            mTimer.startTimer(mAutodismissDurationMs.get(), mOnTimeUp);
+                setOnTitleChanged(() -> {
+                    mTimer.resetTimer();
+                    announceForAccessibility();
+                });
+                mTimer.startTimer(mAutodismissDurationMs.get(), mOnTimeUp);
+            }
         });
     }
 
@@ -110,6 +120,7 @@ class MessageBannerCoordinator {
      * @return The animator which hides the message view.
      */
     Animator hide(boolean animate, Runnable messageHidden) {
+        mView.dismissSecondaryMenuIfShown();
         mTimer.cancelTimer();
         // Skip animation if animation has been globally disabled.
         // Otherwise, child animator's listener's onEnd will be called immediately after onStart,

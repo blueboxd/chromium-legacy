@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/tablet_mode.h"
@@ -21,6 +22,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/input_method_test_interface_ash.h"
 #include "chrome/browser/ash/crosapi/vpn_service_ash.h"
@@ -268,6 +271,11 @@ void TestControllerAsh::GetWindowPositionInScreen(
   std::move(cb).Run(window->GetBoundsInScreen().origin());
 }
 
+void TestControllerAsh::LaunchAppFromAppList(const std::string& app_id) {
+  ash::Shell::Get()->app_list_controller()->ActivateItem(
+      app_id, /*event_flags=*/0, ash::AppListLaunchedFrom::kLaunchedFromGrid);
+}
+
 void TestControllerAsh::PinOrUnpinItemInShelf(
     const std::string& item_id,
     bool pin,
@@ -284,6 +292,14 @@ void TestControllerAsh::PinOrUnpinItemInShelf(
     ash::ShelfModel::Get()->UnpinAppWithID(item_id);
   }
   std::move(callback).Run(/*success=*/true);
+}
+
+void TestControllerAsh::ReinitializeAppService(
+    ReinitializeAppServiceCallback callback) {
+  Profile* const profile = ProfileManager::GetPrimaryUserProfile();
+  apps::AppServiceProxyFactory::GetForProfile(profile)->ReinitializeForTesting(
+      profile);
+  std::move(callback).Run();
 }
 
 void TestControllerAsh::SelectItemInShelf(const std::string& item_id,
@@ -385,13 +401,14 @@ void TestControllerAsh::RegisterStandaloneBrowserTestController(
 void TestControllerAsh::WaiterFinished(OverviewWaiter* waiter) {
   for (size_t i = 0; i < overview_waiters_.size(); ++i) {
     if (waiter == overview_waiters_[i].get()) {
-      std::unique_ptr<OverviewWaiter> waiter = std::move(overview_waiters_[i]);
+      std::unique_ptr<OverviewWaiter> overview_waiter =
+          std::move(overview_waiters_[i]);
       overview_waiters_.erase(overview_waiters_.begin() + i);
 
       // Delete asynchronously to avoid re-entrancy. This is safe because the
       // class will never use |test_controller_| after this callback.
-      base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
-                                                      std::move(waiter));
+      base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+          FROM_HERE, std::move(overview_waiter));
       break;
     }
   }

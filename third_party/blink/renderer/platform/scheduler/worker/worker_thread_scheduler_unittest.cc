@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -153,7 +153,8 @@ class WorkerThreadSchedulerTest : public testing::Test {
             &timeline_)) {
     scheduler_->Init();
     scheduler_->AttachToCurrentThread();
-    default_task_queue_ = scheduler_->CreateTaskQueue("test_tq");
+    default_task_queue_ =
+        scheduler_->CreateTaskQueue(base::sequence_manager::QueueName::TEST_TQ);
     default_task_runner_ =
         default_task_queue_->GetTaskRunnerWithDefaultTaskType();
     idle_task_runner_ = scheduler_->IdleTaskRunner();
@@ -428,11 +429,12 @@ TEST_F(WorkerThreadSchedulerTest, TestMicrotaskCheckpointTiming) {
 
   base::TimeTicks start_time = task_environment_.NowTicks();
   default_task_runner_->PostTask(
-      FROM_HERE, WTF::Bind(&base::test::TaskEnvironment::FastForwardBy,
-                           base::Unretained(&task_environment_), kTaskTime));
+      FROM_HERE,
+      WTF::BindOnce(&base::test::TaskEnvironment::FastForwardBy,
+                    base::Unretained(&task_environment_), kTaskTime));
   scheduler_->set_on_microtask_checkpoint(
-      WTF::Bind(&base::test::TaskEnvironment::FastForwardBy,
-                base::Unretained(&task_environment_), kMicrotaskTime));
+      WTF::BindOnce(&base::test::TaskEnvironment::FastForwardBy,
+                    base::Unretained(&task_environment_), kMicrotaskTime));
 
   RecordingTaskTimeObserver observer;
 

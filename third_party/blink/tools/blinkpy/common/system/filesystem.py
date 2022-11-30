@@ -33,7 +33,6 @@ filesystem, and can be replaced with a MockFileSystem in tests.
 from __future__ import unicode_literals
 
 import codecs
-import errno
 import glob
 import hashlib
 import logging
@@ -161,7 +160,7 @@ class FileSystem(object):
         return os.getcwd()
 
     def glob(self, path):
-        return glob.glob(path)
+        return glob.iglob(path, recursive=True)
 
     def isabs(self, path):
         return os.path.isabs(path)

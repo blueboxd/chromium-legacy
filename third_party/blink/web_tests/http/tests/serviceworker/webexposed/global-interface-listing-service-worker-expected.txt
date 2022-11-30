@@ -553,6 +553,7 @@ interface FileSystemHandle
     getter kind
     getter name
     method constructor
+    method getUniqueId
     method isSameEntry
     method move
     method queryPermission
@@ -1165,6 +1166,7 @@ interface PerformanceResourceTiming : PerformanceEntry
     getter connectEnd
     getter connectStart
     getter decodedBodySize
+    getter deliveryType
     getter domainLookupEnd
     getter domainLookupStart
     getter encodedBodySize

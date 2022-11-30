@@ -7,9 +7,11 @@
 #include "ash/bubble/bubble_utils.h"
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
+#include "ash/public/cpp/holding_space/holding_space_section.h"
 #include "ash/public/cpp/holding_space/holding_space_util.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/holding_space/holding_space_item_screen_capture_view.h"
+#include "ash/system/holding_space/holding_space_ui.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -20,10 +22,8 @@
 namespace ash {
 
 ScreenCapturesSection::ScreenCapturesSection(HoldingSpaceViewDelegate* delegate)
-    : HoldingSpaceItemViewsSection(
-          delegate,
-          holding_space_util::ScreenCaptureSupportedTypes(),
-          /*max_count=*/kMaxScreenCaptures) {}
+    : HoldingSpaceItemViewsSection(delegate,
+                                   HoldingSpaceSectionId::kScreenCaptures) {}
 
 ScreenCapturesSection::~ScreenCapturesSection() = default;
 
@@ -32,11 +32,12 @@ const char* ScreenCapturesSection::GetClassName() const {
 }
 
 std::unique_ptr<views::View> ScreenCapturesSection::CreateHeader() {
-  auto header = bubble_utils::CreateLabel(
-      bubble_utils::LabelStyle::kHeader,
-      l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_SCREEN_CAPTURES_TITLE));
-  header->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-  header->SetPaintToLayer();
+  auto header =
+      holding_space_ui::CreateSectionHeaderLabel(
+          IDS_ASH_HOLDING_SPACE_SCREEN_CAPTURES_TITLE)
+          .SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT)
+          .SetPaintToLayer()
+          .Build();
   header->layer()->SetFillsBoundsOpaquely(false);
   return header;
 }

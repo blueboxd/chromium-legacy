@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -317,7 +317,7 @@ StaticColorCheckParam kTestParams[] = {
      ImageDecoder::kAlphaNotPremultiplied,
      ColorBehavior::Tag(),
      ImageOrientationEnum::kOriginTopLeft,
-     1,
+     0,
      {
          {gfx::Point(0, 0), SkColorSetARGB(255, 255, 0, 0)},
          {gfx::Point(1, 1), SkColorSetARGB(255, 255, 0, 0)},
@@ -767,6 +767,34 @@ TEST(StaticAVIFTests, DoesNotHaveMultipleSubImages) {
                             "red-at-12-oclock-with-color-profile-8bpc.avif"),
                    true);
   EXPECT_FALSE(decoder->ImageHasBothStillAndAnimatedSubImages());
+}
+
+TEST(StaticAVIFTests, HasTimingInformation) {
+  std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder();
+  decoder->SetData(ReadFile("/images/resources/avif/"
+                            "red-at-12-oclock-with-color-profile-8bpc.avif"),
+                   true);
+  EXPECT_TRUE(!!decoder->DecodeFrameBufferAtIndex(0));
+
+  // libavif has placeholder values for timestamp and duration on still images,
+  // so any duration value is valid, but the timestamp should be zero.
+  EXPECT_EQ(base::TimeDelta(), decoder->FrameTimestampAtIndex(0));
+}
+
+TEST(AnimatedAVIFTests, HasTimingInformation) {
+  std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder();
+  decoder->SetData(ReadFile("/images/resources/avif/star-animated-8bpc.avif"),
+                   true);
+
+  constexpr auto kDuration = base::Milliseconds(100);
+
+  EXPECT_TRUE(!!decoder->DecodeFrameBufferAtIndex(0));
+  EXPECT_EQ(base::TimeDelta(), decoder->FrameTimestampAtIndex(0));
+  EXPECT_EQ(kDuration, decoder->FrameDurationAtIndex(0));
+
+  EXPECT_TRUE(!!decoder->DecodeFrameBufferAtIndex(1));
+  EXPECT_EQ(kDuration, decoder->FrameTimestampAtIndex(1));
+  EXPECT_EQ(kDuration, decoder->FrameDurationAtIndex(1));
 }
 
 TEST(StaticAVIFTests, NoCrashWhenCheckingForMultipleSubImages) {

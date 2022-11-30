@@ -57,6 +57,8 @@ class SyncWebSocket;
 class DevToolsClientImpl : public DevToolsClient {
  public:
   static const char kBrowserwideDevToolsClientId[];
+  static const char kInfraChannel[];
+  static const char kClientChannelSuffix[];
 
   // Postcondition: !IsNull()
   // Postcondition: !IsConnected()
@@ -100,6 +102,12 @@ class DevToolsClientImpl : public DevToolsClient {
 
   // Overridden from DevToolsClient:
   const std::string& GetId() override;
+  // Session id used to annotate the CDP commands.
+  const std::string& SessionId() const override;
+  // Session id used for CDP traffic tunneling
+  const std::string& TunnelSessionId() const override;
+  // Set the session id used for CDP traffic tunneling
+  void SetTunnelSessionId(const std::string& session_id) override;
   // If the object IsNull then it cannot be connected to the remote end.
   // Such an object needs to be attached to some !IsNull() parent first.
   // Postcondition: IsNull() == (socket == nullptr && parent == nullptr)
@@ -113,29 +121,26 @@ class DevToolsClientImpl : public DevToolsClient {
   // Precondition: !IsNull()
   // Postcondition: result.IsError() || IsConnected()
   Status ConnectIfNecessary() override;
-  Status SendCommand(
-      const std::string& method,
-      const base::DictionaryValue& params) override;
+  Status PostBidiCommand(base::Value::Dict command) override;
+  Status SendCommand(const std::string& method,
+                     const base::Value::Dict& params) override;
   Status SendCommandFromWebSocket(const std::string& method,
-                                  const base::DictionaryValue& params,
+                                  const base::Value::Dict& params,
                                   int client_command_id) override;
-  Status SendCommandWithTimeout(
-      const std::string& method,
-      const base::DictionaryValue& params,
-      const Timeout* timeout) override;
-  Status SendAsyncCommand(
-      const std::string& method,
-      const base::DictionaryValue& params) override;
+  Status SendCommandWithTimeout(const std::string& method,
+                                const base::Value::Dict& params,
+                                const Timeout* timeout) override;
+  Status SendAsyncCommand(const std::string& method,
+                          const base::Value::Dict& params) override;
   Status SendCommandAndGetResult(const std::string& method,
-                                 const base::DictionaryValue& params,
+                                 const base::Value::Dict& params,
                                  base::Value* result) override;
   Status SendCommandAndGetResultWithTimeout(const std::string& method,
-                                            const base::DictionaryValue& params,
+                                            const base::Value::Dict& params,
                                             const Timeout* timeout,
                                             base::Value* result) override;
-  Status SendCommandAndIgnoreResponse(
-      const std::string& method,
-      const base::DictionaryValue& params) override;
+  Status SendCommandAndIgnoreResponse(const std::string& method,
+                                      const base::Value::Dict& params) override;
 
   // Add a listener for connection and events.
   // Listeners cannot be added to the object that is already connected.
@@ -153,6 +158,8 @@ class DevToolsClientImpl : public DevToolsClient {
   bool IsMainPage() const override;
   void SetMainPage(bool value);
   int NextMessageId() const;
+  // Return NextMessageId and immediately increment it
+  int AdvanceNextMessageId();
 
  private:
   enum ResponseState {
@@ -179,8 +186,11 @@ class DevToolsClientImpl : public DevToolsClient {
     friend class base::RefCounted<ResponseInfo>;
     ~ResponseInfo();
   };
+  Status PostBidiCommandInternal(std::string channel,
+                                 base::Value::Dict command);
   Status SendCommandInternal(const std::string& method,
-                             const base::DictionaryValue& params,
+                             const base::Value::Dict& params,
+                             const std::string& session_id,
                              base::Value* result,
                              bool expect_response,
                              bool wait_for_response,
@@ -208,6 +218,7 @@ class DevToolsClientImpl : public DevToolsClient {
   // WebViewImpl that owns this instance; nullptr for browser-wide DevTools.
   raw_ptr<WebViewImpl> owner_;
   const std::string session_id_;
+  std::string tunnel_session_id_;
   // parent_ / children_: it's a flat hierarchy - nesting is at most one level
   // deep. children_ holds child sessions - identified by their session id -
   // which send/receive messages via the socket_ of their parent.

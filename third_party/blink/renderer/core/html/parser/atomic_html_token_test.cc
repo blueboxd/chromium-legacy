@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,13 +28,13 @@ TEST(AtomicHTMLTokenTest, EmptyAttributeValueFromHTMLToken) {
       QualifiedName(AtomicString(), "b", AtomicString()));
   ASSERT_TRUE(attribute_b);
   EXPECT_FALSE(attribute_b->Value().IsNull());
-  EXPECT_TRUE(attribute_b->Value().IsEmpty());
+  EXPECT_TRUE(attribute_b->Value().empty());
 
   const blink::Attribute* attribute_c = atoken.GetAttributeItem(
       QualifiedName(AtomicString(), "c", AtomicString()));
   ASSERT_TRUE(attribute_c);
   EXPECT_FALSE(attribute_c->Value().IsNull());
-  EXPECT_TRUE(attribute_c->Value().IsEmpty());
+  EXPECT_TRUE(attribute_c->Value().empty());
 
   const blink::Attribute* attribute_d = atoken.GetAttributeItem(
       QualifiedName(AtomicString(), "d", AtomicString()));

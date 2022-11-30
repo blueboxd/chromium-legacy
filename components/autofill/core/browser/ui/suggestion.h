@@ -58,6 +58,7 @@ struct Suggestion {
 
   Suggestion();
   explicit Suggestion(std::u16string main_text);
+  explicit Suggestion(int frontend_id);
   // Constructor for unit tests. It will convert the strings from UTF-8 to
   // UTF-16.
   Suggestion(base::StringPiece main_text,
@@ -119,10 +120,6 @@ struct Suggestion {
   // text will be shown on the UI. (e.g. The text labels[1][2] will be shown on
   // the second line, third column in the grid view of label).
   std::vector<std::vector<Text>> labels;
-
-  // A label to be shown beneath |label| that will display information about any
-  // credit card offers or rewards.
-  std::u16string offer_label;
 
   // Used only for passwords to show the password value.
   // Also used to display an extra line of information if two line

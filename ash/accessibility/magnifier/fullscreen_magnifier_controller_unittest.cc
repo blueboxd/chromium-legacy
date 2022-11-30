@@ -98,9 +98,12 @@ class FullscreenMagnifierControllerTest : public AshTestBase {
   }
 
   gfx::Rect GetViewport() const {
-    gfx::RectF bounds(0, 0, kRootWidth, kRootHeight);
-    GetRootWindow()->layer()->transform().TransformRectReverse(&bounds);
-    return gfx::ToEnclosingRect(bounds);
+    gfx::Rect bounds(0, 0, kRootWidth, kRootHeight);
+    return GetRootWindow()
+        ->layer()
+        ->transform()
+        .InverseMapRect(bounds)
+        .value_or(bounds);
   }
 
   std::string CurrentPointOfInterest() const {
@@ -156,7 +159,7 @@ class FullscreenMagnifierControllerTest : public AshTestBase {
     const auto display = display_manager()->GetDisplayAt(0);
     gfx::Transform rotation_transform;
     rotation_transform.Rotate(display.PanelRotationAsDegree());
-    rotation_transform.TransformPoint(&offset);
+    offset = rotation_transform.MapPoint(offset);
 
     end1.Offset(offset.x(), offset.y());
     end2.Offset(offset.x(), offset.y());

@@ -16,6 +16,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/menu_source_utils.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/ui_base_types.h"
@@ -431,6 +432,9 @@ bool Combobox::OnKeyPressed(const ui::KeyEvent& e) {
   }
 
   if (new_index.has_value()) {
+    if (menu_selection_at_callback_)
+      menu_selection_at_callback_.Run(new_index.value());
+
     SetSelectedIndex(new_index);
     OnPerformAction();
   }

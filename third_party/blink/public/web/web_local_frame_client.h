@@ -34,6 +34,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/functional/function_ref.h"
 #include "base/i18n/rtl.h"
 #include "base/notreached.h"
 #include "base/unguessable_token.h"
@@ -131,7 +132,6 @@ class WebURLResponse;
 class WebView;
 struct FramePolicy;
 struct Impression;
-struct MobileFriendliness;
 struct WebConsoleMessage;
 struct ContextMenuData;
 struct WebPictureInPictureWindowOptions;
@@ -234,8 +234,13 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Request the creation of a new child frame. Embedders may return nullptr
   // to prevent the new child frame from being attached. Otherwise, embedders
-  // should create a new WebLocalFrame, insert it into the frame tree, and
-  // return the created frame.
+  // should create a new WebLocalFrame, insert it into the frame tree, call
+  // `complete_creation()`, and return the created frame.
+  //
+  // `complete_creation` takes the newly-created `WebLocalFrame` and the
+  // `DocumentToken` to use for its initial empty document as arguments.
+  using FinishChildFrameCreationFn =
+      base::FunctionRef<void(WebLocalFrame*, const DocumentToken&)>;
   virtual WebLocalFrame* CreateChildFrame(
       mojom::TreeScopeType,
       const WebString& name,
@@ -243,14 +248,10 @@ class BLINK_EXPORT WebLocalFrameClient {
       const FramePolicy&,
       const WebFrameOwnerProperties&,
       FrameOwnerElementType,
-      WebPolicyContainerBindParams policy_container_bind_params) {
+      WebPolicyContainerBindParams policy_container_bind_params,
+      FinishChildFrameCreationFn complete_creation) {
     return nullptr;
   }
-  // When CreateChildFrame() returns there is no core LocalFrame backing the
-  // WebFrame yet so using the WebLocalFrame is not entirely valid. This is
-  // called after finishing the initialization of WebLocalFrame so that the
-  // client can complete its initialization making use of it.
-  virtual void InitializeAsChildFrame(WebLocalFrame* parent) {}
 
   // Notification a new fenced frame was created.
   virtual void DidCreateFencedFrame(const blink::RemoteFrameToken& token) {}
@@ -622,16 +623,9 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Notifies the embedder about an accessibility event on a WebAXObject.
   virtual void PostAccessibilityEvent(const ui::AXEvent& event) {}
 
-  // Notifies the embedder that a WebAXObject is dirty and its state needs
-  // to be serialized again. If |subtree| is true, the entire subtree is
-  // dirty.
-  // |event_from| and |event_from_action| annotate this node change with info
-  // about the event which caused the change. For example, an event from a user
-  // or an event from a focus action.
-  virtual void MarkWebAXObjectDirty(const WebAXObject&,
-                                    bool subtree,
-                                    ax::mojom::EventFrom event_from,
-                                    ax::mojom::Action event_from_action) {}
+  // Notifies tests that a WebAXObject is dirty and its state needs
+  // to be serialized again.
+  virtual void NotifyWebAXObjectMarkedDirty(const WebAXObject&) {}
 
   // Audio Output Devices API --------------------------------------------
 
@@ -738,9 +732,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Notification that the BeginMainFrame completed, was committed into the
   // compositor (thread) and submitted to the display compositor.
   virtual void DidCommitAndDrawCompositorFrame() {}
-
-  // Notification that MobileFriendliness metrics changed.
-  virtual void DidChangeMobileFriendliness(const MobileFriendliness&) {}
 
   // Inform the widget that it was hidden.
   virtual void WasHidden() {}

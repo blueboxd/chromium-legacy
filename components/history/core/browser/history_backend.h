@@ -311,6 +311,12 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // redirects leading to each of these URLs. Used by TopSites.
   MostVisitedURLList QueryMostVisitedURLs(int result_count);
 
+  // Request `result_count` of the most repeated queries for the given keyword.
+  // Used by TopSites.
+  KeywordSearchTermVisitList QueryMostRepeatedQueriesForKeyword(
+      KeywordID keyword_id,
+      size_t result_count);
+
   // Statistics ----------------------------------------------------------------
 
   // Gets the number of URLs as seen in chrome://history within the time range
@@ -512,7 +518,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   std::vector<Cluster> GetMostRecentClusters(
       base::Time inclusive_min_time,
       base::Time exclusive_max_time,
-      int max_clusters,
+      size_t max_clusters,
+      size_t max_visits_soft_cap,
       bool include_keywords_and_duplicates = true);
 
   // Get a `Cluster`. Since `keyword_to_data_map` and `visits.duplicate_visits`
@@ -615,6 +622,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   bool GetURL(const GURL& url, URLRow* url_row);
 
   bool GetURLByID(URLID url_id, URLRow* url_row) override;
+
+  bool GetVisitByID(VisitID visit_id, VisitRow* visit_row) override;
 
   // Returns the visit matching a given timestamp. In case of redirects (where
   // multiple visits can have the same timestamp), returns the last visit in the

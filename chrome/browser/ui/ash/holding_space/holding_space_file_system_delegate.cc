@@ -26,6 +26,7 @@
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/trash_common_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/fileapi/file_change_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -492,25 +493,43 @@ void HoldingSpaceFileSystemDelegate::OnFilePathMoved(
     return;
   }
 
-  // Resolve conflicts with existing items that arise from the move.
+  // Get a list of the enabled Trash locations. Trash can be enabled and
+  // disabled via policy, so ensure the latest list is retrieved.
+  file_manager::trash::TrashPathsMap enabled_trash_locations;
+  if (base::FeatureList::IsEnabled(chromeos::features::kFilesTrash)) {
+    enabled_trash_locations =
+        file_manager::trash::GenerateEnabledTrashLocationsForProfile(
+            profile(), /*base_path=*/base::FilePath());
+  }
+
+  // Mark items that were moved to an enabled Trash location for removal.
   std::set<std::string> item_ids_to_remove;
-  for (auto& item : model()->items()) {
-    if (dst == item->file_path() || dst.IsParent(item->file_path())) {
-      item_ids_to_remove.insert(item->id());
+  for (const auto& it : enabled_trash_locations) {
+    const base::FilePath& trash_location =
+        it.first.Append(it.second.relative_folder_path);
+    for (const auto& [id, file_path] : items_to_move) {
+      if (trash_location.IsParent(file_path))
+        item_ids_to_remove.insert(id);
     }
   }
+
+  // Mark conflicts with existing items that arise from the move for removal.
+  for (auto& item : model()->items()) {
+    if (dst == item->file_path() || dst.IsParent(item->file_path()))
+      item_ids_to_remove.insert(item->id());
+  }
+
+  // Remove items which have been marked for removal.
   model()->RemoveItems(item_ids_to_remove);
 
   // Finally, update the files that have been moved.
-  for (const auto& to_move : items_to_move) {
-    if (item_ids_to_remove.count(to_move.first))
+  for (const auto& [id, file_path] : items_to_move) {
+    if (item_ids_to_remove.count(id))
       continue;
 
-    model()
-        ->UpdateItem(/*id=*/to_move.first)
-        ->SetBackingFile(/*file_path=*/to_move.second,
-                         holding_space_util::ResolveFileSystemUrl(
-                             profile(), /*file_path=*/to_move.second));
+    model()->UpdateItem(id)->SetBackingFile(
+        file_path,
+        holding_space_util::ResolveFileSystemUrl(profile(), file_path));
   }
 
   // If a backing file update occurred, it's possible that there are no longer

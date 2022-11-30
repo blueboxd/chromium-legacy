@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,10 @@ namespace blink {
 // directions.
 //
 // See README.md for more details.
+
+////////////////////////////////////////////////////////////////////////////////
+// DOCUMENT TOKENS
+using DocumentToken = base::TokenType<class DocumentTokenTypeMarker>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // FRAME TOKENS
@@ -114,6 +118,14 @@ using PortalToken = base::TokenType<class PortalTokenTypeMarker>;
 
 // Identifies a v8::Context / blink::ScriptState.
 using V8ContextToken = base::TokenType<class V8ContextTokenTypeMarker>;
+
+// Identifies possible contexts used for WebGPU. Used in cross-process mojo
+// interfaces for isolation key coordination.
+// TODO(dawn:549) Might be able to eventually swap this out to use
+//     ExecutionContextToken from above whif DocumentToken gets encapsulated
+//     there later on.
+using WebGPUExecutionContextToken =
+    MultiToken<DocumentToken, DedicatedWorkerToken>;
 
 }  // namespace blink
 

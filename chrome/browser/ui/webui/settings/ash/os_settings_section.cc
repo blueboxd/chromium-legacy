@@ -8,11 +8,17 @@
 #include "base/check.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/ui/webui/settings/ash/search/search_tag_registry.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace chromeos {
-namespace settings {
+namespace ash::settings {
+
+namespace mojom {
+using ::chromeos::settings::mojom::Section;
+using ::chromeos::settings::mojom::Setting;
+using ::chromeos::settings::mojom::Subpage;
+}  // namespace mojom
 
 // static
 constexpr const char OsSettingsSection::kSettingIdUrlParam[];
@@ -91,5 +97,4 @@ std::string OsSettingsSection::GetDefaultModifiedUrl(
   return ss.str();
 }
 
-}  // namespace settings
-}  // namespace chromeos
+}  // namespace ash::settings

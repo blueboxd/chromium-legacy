@@ -38,6 +38,7 @@
 #include "base/callback_helpers.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/page_state/page_state.mojom-blink-forward.h"
@@ -84,7 +85,8 @@ class CORE_EXPORT FrameLoader final {
   FrameLoader& operator=(const FrameLoader&) = delete;
   ~FrameLoader();
 
-  void Init(std::unique_ptr<PolicyContainer> policy_container,
+  void Init(const DocumentToken& document_token,
+            std::unique_ptr<PolicyContainer> policy_container,
             const StorageKey& storage_key);
 
   ResourceRequest ResourceRequestForReload(
@@ -296,13 +298,6 @@ class CORE_EXPORT FrameLoader final {
 
   String ApplyUserAgentOverrideAndLog(const String& user_agent) const;
 
-  Member<LocalFrame> frame_;
-
-  Member<ProgressTracker> progress_tracker_;
-
-  // Document loader for frame loading.
-  Member<DocumentLoader> document_loader_;
-
   // This struct holds information about a navigation, which is being
   // initiated by the client through the browser process, until the navigation
   // is either committed or cancelled.
@@ -310,6 +305,13 @@ class CORE_EXPORT FrameLoader final {
     KURL url;
   };
   std::unique_ptr<ClientNavigationState> client_navigation_;
+
+  Member<LocalFrame> frame_;
+
+  Member<ProgressTracker> progress_tracker_;
+
+  // Document loader for frame loading.
+  Member<DocumentLoader> document_loader_;
 
   // The state is set to kInitialized when Init() completes, and kDetached
   // during teardown in Detach().

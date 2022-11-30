@@ -10,8 +10,8 @@ import './shimless_rma_shared_css.js';
 import './base_page.js';
 import './icons.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -165,7 +165,11 @@ export class OnboardingUpdatePageElement extends
       return;
     }
     this.shimlessRmaService_.getCurrentOsVersion().then((res) => {
-      this.currentVersion_ = res.version;
+      if (res.version != null) {
+        this.currentVersion_ = res.version;
+      } else {
+        this.currentVersion_ = '0.0.0.0';
+      }
       this.currentVersionText_ =
           this.i18n('currentVersionOutOfDateText', this.currentVersion_);
     });

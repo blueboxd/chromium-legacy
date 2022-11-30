@@ -7,11 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/components/multidevice/logging/logging.h"
-#include "ash/components/proximity_auth/proximity_auth_local_state_pref_manager.h"
-#include "ash/components/proximity_auth/proximity_auth_profile_pref_manager.h"
-#include "ash/components/proximity_auth/proximity_auth_system.h"
-#include "ash/components/proximity_auth/screenlock_bridge.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/smartlock_state.h"
 #include "base/bind.h"
@@ -41,6 +36,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/login/auth/public/user_context.h"
+#include "chromeos/ash/components/multidevice/logging/logging.h"
+#include "chromeos/ash/components/proximity_auth/proximity_auth_local_state_pref_manager.h"
+#include "chromeos/ash/components/proximity_auth/proximity_auth_profile_pref_manager.h"
+#include "chromeos/ash/components/proximity_auth/proximity_auth_system.h"
+#include "chromeos/ash/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "components/account_id/account_id.h"
@@ -186,8 +186,8 @@ void EasyUnlockService::ResetLocalStateForUser(const AccountId& account_id) {
   if (!local_state)
     return;
 
-  DictionaryPrefUpdate update(local_state, prefs::kEasyUnlockHardlockState);
-  update->RemoveKey(account_id.GetUserEmail());
+  ScopedDictPrefUpdate update(local_state, prefs::kEasyUnlockHardlockState);
+  update->Remove(account_id.GetUserEmail());
 
   EasyUnlockTpmKeyManager::ResetLocalStateForUser(account_id);
 }
@@ -619,8 +619,8 @@ void EasyUnlockService::SetHardlockStateForUser(
     return;
   }
 
-  DictionaryPrefUpdate update(local_state, prefs::kEasyUnlockHardlockState);
-  update->SetIntKey(account_id.GetUserEmail(), static_cast<int>(state));
+  ScopedDictPrefUpdate update(local_state, prefs::kEasyUnlockHardlockState);
+  update->Set(account_id.GetUserEmail(), static_cast<int>(state));
 
   if (GetAccountId() == account_id)
     SetSmartLockHardlockedState(state);

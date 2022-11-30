@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ class TextEncoderStream::Transformer final : public TransformStreamTransformer {
     if (!input_resource.Prepare(script_state_->GetIsolate(), exception_state))
       return ScriptPromise();
     const String input = input_resource;
-    if (input.IsEmpty())
+    if (input.empty())
       return ScriptPromise::CastUndefined(script_state_);
 
     const absl::optional<UChar> high_surrogate = pending_high_surrogate_;

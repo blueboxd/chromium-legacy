@@ -5,6 +5,7 @@ image_loader_static_js_files = [
   "image_loader/image_loader.js",
   "image_loader/image_loader_client.js",
   "image_loader/image_loader_util.js",
+  "image_loader/image_orientation.js",
   "image_loader/image_request_task.js",
   "image_loader/load_image_request.js",
   "image_loader/piex_loader.js",
@@ -62,7 +63,6 @@ static_js_files = [
   "file_manager/common/js/mock_chrome.js",
   "file_manager/common/js/mock_entry.js",
   "file_manager/common/js/notifications_browser_proxy.js",
-  "file_manager/common/js/power.js",
   "file_manager/common/js/progress_center_common.js",
   "file_manager/common/js/recent_date_bucket.js",
   "file_manager/common/js/storage_adapter.js",
@@ -173,7 +173,6 @@ static_js_files = [
   "file_manager/foreground/js/metadata/function_parallel.js",
   "file_manager/foreground/js/metadata/function_sequence.js",
   "file_manager/foreground/js/metadata/id3_parser.js",
-  "file_manager/foreground/js/metadata/image_orientation.js",
   "file_manager/foreground/js/metadata/image_parsers.js",
   "file_manager/foreground/js/metadata/metadata_cache_item.js",
   "file_manager/foreground/js/metadata/metadata_cache_set.js",
@@ -257,17 +256,23 @@ ts_files = [
   "file_manager/state/actions.ts",
   "file_manager/state/file_key.ts",
   "file_manager/widgets/xf_breadcrumb.ts",
+  "file_manager/widgets/xf_nudge.ts",
   "file_manager/containers/breadcrumb_container.ts",
+  "file_manager/containers/nudge_container.ts",
   "file_manager/widgets/xf_dlp_restriction_details_dialog.ts",
 ]
 
 # HTML template files that are used to generate the ".html.ts"
 ts_templates = [
   "file_manager/widgets/xf_breadcrumb.html",
+  "file_manager/widgets/xf_nudge.html",
   "file_manager/widgets/xf_dlp_restriction_details_dialog.html",
 ]
 
 ts_test_files = [
+  # Containers
+  "file_manager/containers/nudge_container_unittest.ts",
+
   # Lib:
   "file_manager/lib/base_store_unittest.ts",
   "file_manager/lib/actions_producer_unittest.ts",
@@ -279,6 +284,7 @@ ts_test_files = [
   # Widgets:
   "file_manager/widgets/xf_breadcrumb_unittest.ts",
   "file_manager/widgets/xf_dlp_restriction_details_dialog_unittest.ts",
+  "file_manager/widgets/xf_nudge_unittest.ts",
 ]
 
 ts_generated_templates = []
@@ -288,10 +294,7 @@ foreach(_t, ts_templates) {
 
 # Generated files are built from the repository and the final JS files is only
 # available in the "gen/" folder.
-image_loader_generated_js_files = [
-  "image_loader/image_orientation.js",
-  "image_loader/lru_cache.js",
-]
+image_loader_generated_js_files = [ "image_loader/lru_cache.js" ]
 
 generated_js_files = [
   # Common:
@@ -361,7 +364,6 @@ unittest_files = [
   "file_manager/foreground/elements/files_xf_elements_unittest.js",
   "file_manager/foreground/elements/files_toast_unittest.js",
   "file_manager/foreground/elements/files_tooltip_unittest.js",
-  "file_manager/foreground/js/metadata/image_orientation_unittest.js",
   "file_manager/foreground/js/metadata/metadata_cache_item_unittest.js",
   "file_manager/foreground/js/metadata/exif_parser_unittest.js",
   "file_manager/foreground/js/metadata/thumbnail_model_unittest.js",
@@ -417,6 +419,7 @@ unittest_files = [
   # Image Loader:
   "image_loader/scheduler_unittest.js",
   "image_loader/image_loader_unittest.js",
+  "image_loader/image_orientation_unittest.js",
   "image_loader/cache_unittest.js",
   "image_loader/image_loader_client_unittest.js",
 ]

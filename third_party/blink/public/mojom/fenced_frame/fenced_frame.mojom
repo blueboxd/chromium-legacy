@@ -1,11 +1,10 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 module blink.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
-import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
 // These values represent the `mode` attribute of the fenced frame element. Keep

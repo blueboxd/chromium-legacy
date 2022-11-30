@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
@@ -77,15 +76,15 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction::Callable {
     // extend lifetime promise at that time.
     if (resolve_type_ == kRejected) {
       event_loop->EnqueueMicrotask(
-          WTF::Bind(&WaitUntilObserver::OnPromiseRejected,
-                    WrapPersistent(observer_.Get())));
+          WTF::BindOnce(&WaitUntilObserver::OnPromiseRejected,
+                        WrapPersistent(observer_.Get())));
       observer_ = nullptr;
       return ScriptPromise::Reject(script_state, value).AsScriptValue();
     }
 
     event_loop->EnqueueMicrotask(
-        WTF::Bind(&WaitUntilObserver::OnPromiseFulfilled,
-                  WrapPersistent(observer_.Get())));
+        WTF::BindOnce(&WaitUntilObserver::OnPromiseFulfilled,
+                      WrapPersistent(observer_.Get())));
     observer_ = nullptr;
     return value;
   }
@@ -184,7 +183,7 @@ WaitUntilObserver::WaitUntilObserver(ExecutionContext* context,
       type_(type),
       event_id_(event_id),
       consume_window_interaction_timer_(
-          Thread::Current()->GetDeprecatedTaskRunner(),
+          context->GetTaskRunner(TaskType::kUserInteraction),
           this,
           &WaitUntilObserver::ConsumeWindowInteraction) {}
 

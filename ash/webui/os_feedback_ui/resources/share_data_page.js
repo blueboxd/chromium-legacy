@@ -9,7 +9,7 @@ import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
 import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.js';
 
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {FEEDBACK_LEGAL_HELP_URL, FEEDBACK_PRIVACY_POLICY_URL, FEEDBACK_TERMS_OF_SERVICE_URL} from './feedback_constants.js';
@@ -42,9 +42,17 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
 
   static get properties() {
     return {
-      feedbackContext: {type: FeedbackContext, readOnly: false, notify: true},
+      feedbackContext: {
+        type: FeedbackContext,
+        readOnly: false,
+        notify: true,
+        observer: 'onFeedbackContextChanged_',
+      },
+
       screenshotUrl: {type: String, readOnly: false, notify: true},
       shouldShowBluetoothCheckbox:
+          {type: Boolean, readOnly: false, notify: true},
+      shouldShowAssistantCheckbox:
           {type: Boolean, readOnly: false, notify: true},
     };
   }
@@ -68,10 +76,27 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
     this.shouldShowBluetoothCheckbox;
 
     /**
+     * @type {boolean}
+     */
+    this.shouldShowAssistantCheckbox;
+
+    /**
      * @type {string}
      * @protected
      */
     this.sysInfoCheckboxLabel_;
+
+    /**
+     * @type {string}
+     * @protected
+     */
+    this.performanceTraceCheckboxLabel_;
+
+    /**
+     * @type {string}
+     * @protected
+     */
+    this.assistantLogsCheckboxLabel_;
 
     /**
      * @type {string}
@@ -93,6 +118,8 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
     super.ready();
     this.setPrivacyNote_();
     this.setSysInfoCheckboxLabelAndAttributes_();
+    this.setPerformanceTraceCheckboxLabel_();
+    this.setAssistantLogsCheckboxLabelAndAttributes_();
     this.setBluetoothLogsCheckboxLabelAndAttributes_();
     // Set the aria description works the best for screen reader.
     // It reads the description when the checkbox is focused, and when it is
@@ -109,6 +136,19 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
     // ShareDataPageElement's context.
     this.$.userEmailDropDown.addEventListener(
         'change', this.handleUserEmailDropDownChanged_.bind(this));
+
+    // Set up listener that whenever the switching page from Search page to
+    // Share Data page, the shadow shield effect will depend on whether
+    // the container is scrollable.
+    window.addEventListener('continue-click', (event) => {
+      if (event.detail.currentState === 'searchPage') {
+        const container = this.shadowRoot.querySelector('#scrollContainer');
+        const shadowShield = this.shadowRoot.querySelector('#shadowShield');
+        shadowShield.classList.toggle(
+            'scrolling-shield',
+            container.scrollHeight > container.clientHeight);
+      }
+    });
   }
 
   /**
@@ -118,6 +158,16 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
   hasEmail_() {
     return (this.feedbackContext !== null && !!this.feedbackContext.email);
   }
+
+  /**
+   * @return {boolean}
+   * @protected
+   */
+  shouldShowPerformanceTraceCheckbox_() {
+    return (
+        this.feedbackContext !== null && this.feedbackContext.traceId !== 0);
+  }
+
 
   /**
    * @return {boolean}
@@ -195,7 +245,33 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
     // this default behavior.
     e.preventDefault();
 
-    this.feedbackServiceProvider_.openBluetoothLogsInfoDialog();
+    this.getElement_('#bluetoothDialog').showModal();
+    this.getElement_('#bluetoothDialogDoneButton').focus();
+  }
+
+  /** @protected */
+  handleCloseBluetoothDialogClicked_() {
+    this.getElement_('#bluetoothDialog').close();
+  }
+
+  /**
+   * @param {!Event} e
+   * @protected
+   */
+  handleOpenAssistantLogsDialog_(e) {
+    // The default behavior of clicking on an anchor tag
+    // with href="#" is a scroll to the top of the page.
+    // This link opens a dialog, so we want to prevent
+    // this default behavior.
+    e.preventDefault();
+
+    this.getElement_('#assistantDialog').showModal();
+    this.getElement_('#assistantDialogDoneButton').focus();
+  }
+
+  /** @protected */
+  handleCloseAssistantDialogClicked_() {
+    this.getElement_('#assistantDialog').close();
   }
 
   /**
@@ -293,6 +369,19 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
       report.sendBluetoothLogs = false;
     }
 
+    if (this.getElement_('#performanceTraceCheckbox').checked) {
+      report.feedbackContext.traceId = this.feedbackContext.traceId;
+    } else {
+      report.feedbackContext.traceId = 0;
+    }
+
+    report.feedbackContext.fromAssistant = this.feedbackContext.fromAssistant;
+
+    report.feedbackContext.assistantDebugInfoAllowed =
+        this.feedbackContext.fromAssistant &&
+        !this.getElement_('#assistantLogsContainer').hidden &&
+        this.getElement_('#assiatantLogsCheckbox').checked;
+
     return report;
   }
 
@@ -350,6 +439,24 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
   }
 
   /** @private */
+  setPerformanceTraceCheckboxLabel_() {
+    this.performanceTraceCheckboxLabel_ = this.i18nAdvanced(
+        'includePerformanceTraceCheckboxLabel', {attrs: ['id']});
+  }
+
+  /** @private */
+  setAssistantLogsCheckboxLabelAndAttributes_() {
+    this.assistantLogsCheckboxLabel_ =
+        this.i18nAdvanced('includeAssistantLogsCheckboxLabel', {attrs: ['id']});
+
+    const assistantLogsLink = this.getElement_('#assistantLogsLink');
+    // Setting href causes <a> tag to display as link.
+    assistantLogsLink.setAttribute('href', '#');
+    assistantLogsLink.addEventListener(
+        'click', (e) => void this.handleOpenAssistantLogsDialog_(e));
+  }
+
+  /** @private */
   setBluetoothLogsCheckboxLabelAndAttributes_() {
     this.bluetoothLogsCheckboxLabel_ =
         this.i18nAdvanced('bluetoothLogsInfo', {attrs: ['id']});
@@ -360,6 +467,35 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
     bluetoothLogsLink.setAttribute('href', '#');
     bluetoothLogsLink.addEventListener(
         'click', (e) => void this.handleOpenBluetoothLogsInfoDialog_(e));
+  }
+
+  /** @private */
+  onFeedbackContextChanged_() {
+    // We can only set up the hyperlink for the performance trace checkbox once
+    // we receive the trace id.
+    if (this.feedbackContext !== null && this.feedbackContext.traceId !== 0) {
+      this.openLinkInNewWindow_(
+          '#performanceTraceLink',
+          `chrome://slow_trace/tracing.zip#${this.feedbackContext.traceId}`);
+    }
+  }
+
+  /** @protected */
+  onContainerScroll_() {
+    const shadowShield = this.getElement_('#shadowShield');
+    const shadowElevation = this.getElement_('#shadowElevation');
+    const separator = this.getElement_('#separator');
+    const container = this.getElement_('#scrollContainer');
+    container.classList.toggle('scrolling', container.scrollTop > 0);
+    container.classList.toggle('scrolling-before', container.scrollTop == 0);
+    shadowElevation.classList.toggle(
+        'scrolling-elevation', container.scrollTop > 0);
+    shadowShield.classList.toggle(
+        'scrolling-shield',
+        container.scrollTop + container.clientHeight < container.scrollHeight);
+    separator.classList.toggle(
+        'separator-visible',
+        container.scrollTop + container.clientHeight == container.scrollHeight);
   }
 }
 

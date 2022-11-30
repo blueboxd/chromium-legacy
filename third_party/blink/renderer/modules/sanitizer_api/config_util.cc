@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,7 +109,7 @@ bool AllValidCharacters(const String& name) {
 }
 
 bool IsValidName(const String& name) {
-  return !name.IsEmpty() && AllValidCharacters(name);
+  return !name.empty() && AllValidCharacters(name);
 }
 
 String ElementFromAPI(const String& name) {
@@ -155,11 +155,11 @@ SanitizerConfig* ToAPI(const SanitizerConfigImpl& impl) {
     config->setAllowElements(ToAPI(impl.allow_elements_));
   }
 
-  if (!impl.drop_elements_.IsEmpty()) {
+  if (!impl.drop_elements_.empty()) {
     config->setDropElements(ToAPI(impl.drop_elements_));
   }
 
-  if (!impl.block_elements_.IsEmpty()) {
+  if (!impl.block_elements_.empty()) {
     config->setBlockElements(ToAPI(impl.block_elements_));
   }
 
@@ -167,7 +167,7 @@ SanitizerConfig* ToAPI(const SanitizerConfigImpl& impl) {
     config->setAllowAttributes(ToAPI(impl.allow_attributes_));
   }
 
-  if (!impl.drop_attributes_.IsEmpty()) {
+  if (!impl.drop_attributes_.empty()) {
     config->setDropAttributes(ToAPI(impl.drop_attributes_));
   }
 

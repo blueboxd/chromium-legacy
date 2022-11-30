@@ -48,12 +48,12 @@ namespace ash {
 
 namespace {
 
+using assistant::AssistantInteractionMetadata;
+using assistant::AssistantInteractionType;
+using assistant::AssistantQuerySource;
+using assistant::AssistantSuggestion;
+using assistant::AssistantSuggestionType;
 using chromeos::assistant::Assistant;
-using chromeos::assistant::AssistantInteractionMetadata;
-using chromeos::assistant::AssistantInteractionType;
-using chromeos::assistant::AssistantQuerySource;
-using chromeos::assistant::AssistantSuggestion;
-using chromeos::assistant::AssistantSuggestionType;
 
 // Helpers ---------------------------------------------------------------------
 
@@ -520,28 +520,6 @@ TEST_F(AssistantOnboardingViewTest, DarkAndLightTheme) {
   const SkColor intro_label_color = intro_label()->GetEnabledColor();
   EXPECT_EQ(greeting_label_color, text_primary_color);
   EXPECT_EQ(intro_label_color, text_primary_color);
-}
-
-TEST_F(AssistantOnboardingViewTest, DarkAndLightModeFlagOff) {
-  // ProductivityLauncher uses DarkLightMode colors.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      /*enabled_features=*/{}, /*disabled_features=*/{
-          chromeos::features::kDarkLightMode, features::kNotificationsRefresh,
-          features::kProductivityLauncher});
-  // Cache needs to be reset to get the colors for the feature flags.
-  ui::ColorProviderManager::Get().ResetColorProviderCache();
-
-  // Reset ColorProvider's cache to reflect the flag value changes above.
-  ui::ColorProviderManager::Get().ResetColorProviderCache();
-
-  ShowAssistantUi();
-
-  EXPECT_EQ(greeting_label()->GetEnabledColor(), kTextColorPrimary);
-  EXPECT_EQ(intro_label()->GetEnabledColor(), kTextColorPrimary);
-
-  // Avoid test teardown issues by explicitly closing the launcher.
-  CloseAssistantUi();
 }
 
 }  // namespace

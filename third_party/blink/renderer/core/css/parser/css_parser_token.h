@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,7 +81,7 @@ class CORE_EXPORT CSSParserToken {
   };
 
   CSSParserToken(CSSParserTokenType type, BlockType block_type = kNotBlock)
-      : type_(type), block_type_(block_type) {}
+      : type_(type), block_type_(block_type), value_is_inline_(false) {}
   CSSParserToken(CSSParserTokenType type,
                  StringView value,
                  BlockType block_type = kNotBlock)

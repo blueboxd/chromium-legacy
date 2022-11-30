@@ -5,12 +5,13 @@
 import './realbox_dropdown.js';
 import './realbox_icon.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
-import {hasKeyModifiers} from 'chrome://resources/js/util.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
+import {hasKeyModifiers} from 'chrome://resources/js/util.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
+import {NavigationPredictor} from '../omnibox.mojom-webui.js';
 import {AutocompleteMatch, AutocompleteResult, PageCallbackRouter, PageHandlerInterface} from '../realbox.mojom-webui.js';
 import {decodeString16, mojoString16, mojoTimeDelta} from '../utils.js';
 
@@ -32,10 +33,10 @@ interface InputUpdate {
 
 export interface RealboxElement {
   $: {
+    icon: RealboxIconElement,
     input: HTMLInputElement,
     inputWrapper: HTMLElement,
     matches: RealboxDropdownElement,
-    icon: RealboxIconElement,
     voiceSearchButton: HTMLElement,
   };
 }
@@ -73,6 +74,13 @@ export class RealboxElement extends PolymerElement {
       matchSearchbox: {
         type: Boolean,
         value: () => loadTimeData.getBoolean('realboxMatchSearchboxTheme'),
+        reflectToAttribute: true,
+      },
+
+      /** Whether the Google Lens icon should be visible in the searchbox. */
+      realboxLensSearchEnabled: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('realboxLensSearch'),
         reflectToAttribute: true,
       },
 
@@ -146,6 +154,15 @@ export class RealboxElement extends PolymerElement {
         value: () => loadTimeData.getString('realboxDefaultIcon'),
       },
 
+      /**
+       * Whether the Google Lens icon should be visible in the searchbox.
+       */
+      realboxLensSearchEnabled_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('realboxLensSearch'),
+        reflectToAttribute: true,
+      },
+
       result_: {
         type: Object,
       },
@@ -176,6 +193,7 @@ export class RealboxElement extends PolymerElement {
   isDark: boolean;
   matchesAreVisible: boolean;
   matchSearchbox: boolean;
+  realboxLensSearchEnabled: boolean;
   private charTypedTime_: number;
   private isDeletingInput_: boolean;
   private lastIgnoredEnterEvent_: KeyboardEvent|null;
@@ -184,6 +202,7 @@ export class RealboxElement extends PolymerElement {
   private lastQueriedInput_: string|null;
   private pastedInInput_: boolean;
   private realboxIcon_: string;
+  private realboxLensSearchEnabled_: boolean;
   private result_: AutocompleteResult|null;
   private selectedMatch_: AutocompleteMatch|null;
   private selectedMatchIndex_: number;
@@ -461,7 +480,7 @@ export class RealboxElement extends PolymerElement {
     }
 
     if (e.defaultPrevented) {
-      // Ignore previousely handled events.
+      // Ignore previously handled events.
       return;
     }
 
@@ -533,8 +552,12 @@ export class RealboxElement extends PolymerElement {
 
     if (e.key === 'ArrowDown') {
       this.$.matches.selectNext();
+      this.pageHandler_.onNavigationLikely(
+          this.selectedMatchIndex_, NavigationPredictor.kUpOrDownArrowButton);
     } else if (e.key === 'ArrowUp') {
       this.$.matches.selectPrevious();
+      this.pageHandler_.onNavigationLikely(
+          this.selectedMatchIndex_, NavigationPredictor.kUpOrDownArrowButton);
     } else if (e.key === 'Escape' || e.key === 'PageUp') {
       this.$.matches.selectFirst();
     } else if (e.key === 'PageDown') {
@@ -603,6 +626,11 @@ export class RealboxElement extends PolymerElement {
 
   private onVoiceSearchClick_() {
     this.dispatchEvent(new Event('open-voice-search'));
+  }
+
+  private onLensSearchClick_() {
+    this.matchesAreVisible = false;
+    this.dispatchEvent(new Event('open-lens-search'));
   }
 
   //============================================================================

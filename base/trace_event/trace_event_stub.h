@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -225,6 +226,29 @@ class TracedArray {
 template <class T>
 void WriteIntoTracedValue(TracedValue, T&&) {}
 
+namespace protos::pbzero::SequenceManagerTask {
+enum class QueueName {
+  UNKNOWN_TQ = 0,
+  DEFAULT_TQ = 1,
+  TASK_ENVIRONMENT_DEFAULT_TQ = 2,
+  TEST2_TQ = 3,
+  TEST_TQ = 4,
+};
+inline const char* QueueName_Name(QueueName value) {
+  switch (value) {
+    case QueueName::UNKNOWN_TQ:
+      return "UNKNOWN_TQ";
+    case QueueName::DEFAULT_TQ:
+      return "DEFAULT_TQ";
+    case QueueName::TASK_ENVIRONMENT_DEFAULT_TQ:
+      return "TASK_ENVIRONMENT_DEFAULT_TQ";
+    case QueueName::TEST2_TQ:
+      return "TEST2_TQ";
+    case QueueName::TEST_TQ:
+      return "TEST_TQ";
+  }
+}
+}  // namespace protos::pbzero::SequenceManagerTask
 }  // namespace perfetto
 
 #endif  // BASE_TRACE_EVENT_TRACE_EVENT_STUB_H_

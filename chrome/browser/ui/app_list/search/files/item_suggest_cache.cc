@@ -103,14 +103,14 @@ void LogLatency(base::TimeDelta latency) {
 // JSON utilities
 //---------------
 
-absl::optional<base::Value::ConstListView> GetList(const base::Value* value,
-                                                   const std::string& key) {
+const base::Value::List* GetList(const base::Value* value,
+                                 const std::string& key) {
   if (!value->is_dict())
-    return absl::nullopt;
+    return nullptr;
   const base::Value* field = value->FindListKey(key);
   if (!field)
-    return absl::nullopt;
-  return field->GetListDeprecated();
+    return nullptr;
+  return &field->GetList();
 }
 
 absl::optional<std::string> GetString(const base::Value* value,
@@ -149,13 +149,13 @@ absl::optional<ItemSuggestCache::Results> ConvertResults(
 
   ItemSuggestCache::Results results(suggestion_id.value());
 
-  const auto items = GetList(value, "item");
+  const auto* items = GetList(value, "item");
   if (!items) {
     // Return empty results if there are no items.
     return results;
   }
 
-  for (const auto& result_value : items.value()) {
+  for (const auto& result_value : *items) {
     auto result = ConvertResult(&result_value);
     // If any result fails conversion, fail completely and return absl::nullopt,
     // rather than just skipping this result. This makes clear the distinction
@@ -170,9 +170,10 @@ absl::optional<ItemSuggestCache::Results> ConvertResults(
 
 }  // namespace
 
-// static
-const base::Feature ItemSuggestCache::kExperiment{
-    "LauncherItemSuggest", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kLauncherItemSuggest,
+             "LauncherItemSuggest",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 constexpr base::FeatureParam<bool> ItemSuggestCache::kEnabled;
 constexpr base::FeatureParam<std::string> ItemSuggestCache::kServerUrl;
 constexpr base::FeatureParam<std::string> ItemSuggestCache::kModelName;

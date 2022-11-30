@@ -11,8 +11,9 @@
 #include "net/base/schemeful_site.h"
 #include "net/first_party_sets/first_party_set_entry.h"
 #include "net/first_party_sets/first_party_set_metadata.h"
+#include "net/first_party_sets/first_party_sets_cache_filter.h"
 #include "net/first_party_sets/first_party_sets_context_config.h"
-#include "net/first_party_sets/public_sets.h"
+#include "net/first_party_sets/global_first_party_sets.h"
 #include "net/first_party_sets/same_party_context.h"
 #include "services/network/public/cpp/schemeful_site_mojom_traits.h"
 #include "services/network/public/mojom/first_party_sets.mojom-shared.h"
@@ -143,19 +144,24 @@ bool StructTraits<network::mojom::FirstPartySetMetadataDataView,
   return true;
 }
 
-bool StructTraits<network::mojom::PublicFirstPartySetsDataView,
-                  net::PublicSets>::
-    Read(network::mojom::PublicFirstPartySetsDataView public_sets,
-         net::PublicSets* out_public_sets) {
+bool StructTraits<network::mojom::GlobalFirstPartySetsDataView,
+                  net::GlobalFirstPartySets>::
+    Read(network::mojom::GlobalFirstPartySetsDataView sets,
+         net::GlobalFirstPartySets* out_sets) {
   base::flat_map<net::SchemefulSite, net::FirstPartySetEntry> entries;
-  if (!public_sets.ReadSets(&entries))
+  if (!sets.ReadSets(&entries))
     return false;
 
   base::flat_map<net::SchemefulSite, net::SchemefulSite> aliases;
-  if (!public_sets.ReadAliases(&aliases))
+  if (!sets.ReadAliases(&aliases))
     return false;
 
-  *out_public_sets = net::PublicSets(entries, aliases);
+  net::FirstPartySetsContextConfig manual_config;
+  if (!sets.ReadManualConfig(&manual_config))
+    return false;
+
+  *out_sets =
+      net::GlobalFirstPartySets(entries, aliases, std::move(manual_config));
 
   return true;
 }
@@ -170,6 +176,20 @@ bool StructTraits<network::mojom::FirstPartySetsContextConfigDataView,
     return false;
 
   *out_config = net::FirstPartySetsContextConfig(std::move(customizations));
+
+  return true;
+}
+
+bool StructTraits<network::mojom::FirstPartySetsCacheFilterDataView,
+                  net::FirstPartySetsCacheFilter>::
+    Read(network::mojom::FirstPartySetsCacheFilterDataView cache_filter,
+         net::FirstPartySetsCacheFilter* out_cache_filter) {
+  base::flat_map<net::SchemefulSite, int64_t> filter;
+  if (!cache_filter.ReadFilter(&filter))
+    return false;
+
+  *out_cache_filter = net::FirstPartySetsCacheFilter(
+      std::move(filter), std::move(cache_filter.browser_run_id()));
 
   return true;
 }

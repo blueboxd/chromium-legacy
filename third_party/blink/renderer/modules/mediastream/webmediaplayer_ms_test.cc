@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -580,6 +580,8 @@ class WebMediaPlayerMSTest
   void DidMediaMetadataChange(
       bool has_audio,
       bool has_video,
+      media::AudioCodec audio_codec,
+      media::VideoCodec video_codec,
       media::MediaContentType media_content_type) override {}
   void DidPlayerMediaPositionStateChange(double playback_rate,
                                          base::TimeDelta duration,
@@ -588,6 +590,7 @@ class WebMediaPlayerMSTest
   void DidDisableAudioOutputSinkChanges() override {}
   void DidUseAudioServiceChange(bool uses_audio_service) override {}
   void DidPlayerSizeChange(const gfx::Size& size) override {}
+  void OnRemotePlaybackDisabled(bool disabled) override {}
 
   // Implementation of cc::VideoFrameProvider::Client
   void StopUsingProvider() override;
@@ -672,8 +675,8 @@ void WebMediaPlayerMSTest::InitializeWebMediaPlayerMS() {
       scheduler::GetSingleThreadTaskRunnerForTesting(),
       scheduler::GetSingleThreadTaskRunnerForTesting(), gpu_factories_.get(),
       WebString(),
-      WTF::Bind(&WebMediaPlayerMSTest::CreateMockSurfaceLayerBridge,
-                WTF::Unretained(this)),
+      WTF::BindOnce(&WebMediaPlayerMSTest::CreateMockSurfaceLayerBridge,
+                    WTF::Unretained(this)),
       std::move(submitter_), enable_surface_layer_for_video_);
   player_->SetMediaStreamRendererFactoryForTesting(
       std::unique_ptr<MediaStreamRendererFactory>(render_factory_));
@@ -755,8 +758,8 @@ void WebMediaPlayerMSTest::StartRendering() {
   if (!rendering_) {
     rendering_ = true;
     scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
-        FROM_HERE, WTF::Bind(&WebMediaPlayerMSTest::RenderFrame,
-                             weak_factory_.GetWeakPtr()));
+        FROM_HERE, WTF::BindOnce(&WebMediaPlayerMSTest::RenderFrame,
+                                 weak_factory_.GetWeakPtr()));
   }
   DoStartRendering();
 }
@@ -789,7 +792,8 @@ void WebMediaPlayerMSTest::RenderFrame() {
   }
   scheduler::GetSingleThreadTaskRunnerForTesting()->PostDelayedTask(
       FROM_HERE,
-      WTF::Bind(&WebMediaPlayerMSTest::RenderFrame, weak_factory_.GetWeakPtr()),
+      WTF::BindOnce(&WebMediaPlayerMSTest::RenderFrame,
+                    weak_factory_.GetWeakPtr()),
       base::Seconds(1.0 / 60.0));
 }
 

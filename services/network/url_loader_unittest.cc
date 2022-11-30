@@ -83,6 +83,7 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/cache_transparency_settings.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/ip_address_space_util.h"
@@ -661,7 +662,8 @@ struct URLLoaderOptions {
         keepalive_request_size, std::move(keepalive_statistics_recorder),
         std::move(trust_token_helper_factory), std::move(cookie_observer),
         std::move(url_loader_network_observer), std::move(devtools_observer),
-        std::move(accept_ch_frame_observer), third_party_cookies_enabled);
+        std::move(accept_ch_frame_observer), third_party_cookies_enabled,
+        cache_transparency_settings);
   }
 
   int32_t options = mojom::kURLLoadOptionNone;
@@ -681,6 +683,7 @@ struct URLLoaderOptions {
   mojo::PendingRemote<mojom::AcceptCHFrameObserver> accept_ch_frame_observer =
       mojo::NullRemote();
   bool third_party_cookies_enabled = true;
+  CacheTransparencySettings* cache_transparency_settings = nullptr;
 
  private:
   bool used = false;
@@ -3808,8 +3811,7 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
         loader_remote.InitWithNewPipeAndPassReceiver(), request,
         client.CreateRemote());
 
-    loaders.emplace_back(
-        std::make_pair(std::move(url_loader), std::move(loader_remote)));
+    loaders.emplace_back(std::move(url_loader), std::move(loader_remote));
   }
 
   base::RunLoop().RunUntilIdle();
@@ -6827,7 +6829,7 @@ class URLLoaderCacheTransparencyTest : public URLLoaderTest {
     base::FieldTrialParams params;
     params["pervasive-payloads"] = base::StrCat(
         {"1,", pervasive_payload_url_.spec(),
-         ",87F6EE26BD9CFC440B4C805AAE79E0A5671F61C00B5E0AF54B8199EAF64AAAC3,",
+         ",3790EEB37E2A761CFD3B274CCF45CE5AB86A34DF11E28FB7ED4D82AFBBC13BEB,",
          redirect_url.spec(),
          // This is actually the checksum for /cacheable.js, the target of the
          // redirect, which shouldn't be considered a candidate for cache
@@ -6839,16 +6841,6 @@ class URLLoaderCacheTransparencyTest : public URLLoaderTest {
         features::kCacheTransparency);
     split_cache_feature_.InitAndEnableFeature(
         net::features::kSplitCacheByNetworkIsolationKey);
-
-    // The URL changes for every test, so we have to force the list to be
-    // re-read from the feature parameter.
-    URLLoader::ResetPervasivePayloadsListForTesting();
-  }
-
-  void TearDown() override {
-    URLLoaderTest::TearDown();
-
-    URLLoader::ResetPervasivePayloadsListForTesting();
   }
 
   void OnServerReceivedRequest(
@@ -6872,9 +6864,12 @@ class URLLoaderCacheTransparencyTest : public URLLoaderTest {
     std::unique_ptr<URLLoader> url_loader;
     context().mutable_factory_params().process_id = mojom::kBrowserProcessId;
     context().mutable_factory_params().is_corb_enabled = false;
+    CacheTransparencySettings cache_transparency_settings;
     URLLoaderOptions url_loader_options;
     url_loader_options.third_party_cookies_enabled =
         third_party_cookies_enabled_;
+    url_loader_options.cache_transparency_settings =
+        &cache_transparency_settings;
     url_loader = url_loader_options.MakeURLLoader(
         context(), DeleteLoaderCallback(&delete_run_loop, &url_loader),
         loader.BindNewPipeAndPassReceiver(), request, client->CreateRemote());

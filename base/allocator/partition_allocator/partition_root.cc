@@ -678,7 +678,7 @@ template <bool thread_safe>
 #endif  // #if !defined(ARCH_CPU_64_BITS)
 
   // Out of memory can be due to multiple causes, such as:
-  // - Out of GigaCage virtual address space
+  // - Out of virtual address space in the desired pool
   // - Out of commit due to either our process, or another one
   // - Excessive allocations in the current process
   //
@@ -826,7 +826,8 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
     // We mark the sentinel slot span as free to make sure it is skipped by our
     // logic to find a new active slot span.
     memset(&sentinel_bucket, 0, sizeof(sentinel_bucket));
-    sentinel_bucket.active_slot_spans_head = SlotSpan::get_sentinel_slot_span();
+    sentinel_bucket.active_slot_spans_head =
+        SlotSpan::get_sentinel_slot_span_non_const();
 
     // This is a "magic" value so we can test if a root pointer is valid.
     inverted_self = ~reinterpret_cast<uintptr_t>(this);

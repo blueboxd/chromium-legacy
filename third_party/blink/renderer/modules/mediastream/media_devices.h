@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -162,7 +162,12 @@ class MODULES_EXPORT MediaDevices final
   HeapVector<Member<Event>> scheduled_events_;
   HeapMojoRemote<mojom::blink::MediaDevicesDispatcherHost> dispatcher_host_;
   HeapMojoReceiver<mojom::blink::MediaDevicesListener, MediaDevices> receiver_;
-  HeapHashSet<Member<ScriptPromiseResolver>> requests_;
+
+  struct RequestMetadata {
+    base::TimeTicks start_time;
+  };
+  HeapHashMap<Member<ScriptPromiseResolver>, RequestMetadata>
+      enumerate_device_requests_;
 
 #if !BUILDFLAG(IS_ANDROID)
   // 1. When produceCropId() is first called for an Element, it has no crop-ID

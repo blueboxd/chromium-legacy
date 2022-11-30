@@ -24,6 +24,7 @@
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/service_factory.h"
+#include "services/accessibility/buildflags.h"
 #include "services/audio/service_factory.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/network/network_service.h"
@@ -59,6 +60,8 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "base/win/scoped_com_initializer.h"
+#include "media/audio/win/audio_manager_win.h"
+#include "media/base/media_switches.h"
 #include "sandbox/win/src/sandbox.h"
 extern sandbox::TargetServices* g_utility_target_services;
 #endif  // BUILDFLAG(IS_WIN)
@@ -90,6 +93,16 @@ extern sandbox::TargetServices* g_utility_target_services;
 #include "media/mojo/services/stable_video_decoder_factory_service.h"  // nogncheck
 #endif  // (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)) &&
         // (BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC))
+
+#if BUILDFLAG(ENABLE_ACCESSIBILITY_SERVICE)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "services/accessibility/accessibility_service_cros.h"  // nogncheck
+#elif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#include "services/accessibility/accessibility_service_chrome.h"  // nogncheck
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#include "services/accessibility/public/mojom/accessibility_service.mojom.h"  // nogncheck
+#include "ui/accessibility/accessibility_features.h"
+#endif  // BUILDFLAG(ENABLE_ACCESSIBILITY_SERVICE)
 
 namespace content {
 
@@ -209,13 +222,27 @@ auto RunAudio(mojo::PendingReceiver<audio::mojom::AudioService> receiver) {
 #endif
 
 #if BUILDFLAG(IS_WIN)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAudioProcessHighPriority)) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAudioProcessHighPriority)) {
     auto success =
         ::SetPriorityClass(::GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
     DCHECK(success);
   }
-#endif
+
+#if BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
+  // Codec Bitmask from main browser process is copied from AudioManagerWin
+  // to the command line when audio process is launched.  Set to the
+  // AudioManagerWin of the new audio process.
+  if (command_line->HasSwitch(switches::kAudioCodecsFromEDID)) {
+    uint32_t codec_bitmask = 0;
+    base::StringToUint(
+        command_line->GetSwitchValueASCII(switches::kAudioCodecsFromEDID),
+        &codec_bitmask);
+    media::AudioManagerWin::SetBitstreamPassthroughBitmask(codec_bitmask);
+  }
+#endif  // BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
+#endif  // BUILDFLAG(IS_WIN)
+
   return audio::CreateStandaloneService(std::move(receiver));
 }
 
@@ -242,6 +269,17 @@ auto RunDataDecoder(
   return std::make_unique<data_decoder::DataDecoderService>(
       std::move(receiver));
 }
+
+#if BUILDFLAG(ENABLE_ACCESSIBILITY_SERVICE)
+auto RunAccessibilityService(
+    mojo::PendingReceiver<ax::mojom::AccessibilityService> receiver) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  return std::make_unique<ax::AccessibilityServiceCros>(std::move(receiver));
+#elif   // !BUILDFLAG(IS_CHROMEOS_ASH)
+  return std::make_unique<ax::AccessibilityServiceChrome>(std::move(reciver));
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+}
+#endif  // BUILDFLAG(ENABLE_ACCESSIBILITY_SERVICE)
 
 #if BUILDFLAG(IS_WIN)
 std::unique_ptr<media::MediaFoundationServiceBroker>
@@ -347,6 +385,11 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
   services.Add(RunStableVideoDecoderFactoryService);
 #endif  // (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)) &&
         // (BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC))
+
+#if BUILDFLAG(ENABLE_ACCESSIBILITY_SERVICE)
+  if (::features::IsAccessibilityServiceEnabled())
+    services.Add(RunAccessibilityService);
+#endif  // BUILDFLAG(ENABLE_ACCESSIBILITY_SERVICE)
 
   // Add new main-thread services above this line.
   GetContentClient()->utility()->RegisterMainThreadServices(services);

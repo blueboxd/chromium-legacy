@@ -22,7 +22,7 @@
 namespace {
 // Returns the account info for `identity` (which must not be nil).
 DeviceAccountsProvider::AccountInfo GetAccountInfo(
-    ChromeIdentity* identity,
+    id<SystemIdentity> identity,
     ios::ChromeIdentityService* identity_service) {
   DCHECK(identity);
   DeviceAccountsProvider::AccountInfo account_info;
@@ -79,7 +79,7 @@ DeviceAccountsProviderImpl::GetAllAccounts() const {
   ios::ChromeIdentityService* identity_service =
       ios::GetChromeBrowserProvider().GetChromeIdentityService();
   NSArray* identities = account_manager_service_->GetAllIdentities();
-  for (ChromeIdentity* identity in identities) {
+  for (id<SystemIdentity> identity in identities) {
     accounts.push_back(GetAccountInfo(identity, identity_service));
   }
   return accounts;

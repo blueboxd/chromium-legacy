@@ -49,6 +49,10 @@
     padding-inline-end: var(--cluster-padding-horizontal);
   }
 
+  :host(:hover) #link-container {
+    padding-inline-end: 0;
+  }
+
   :host-context(.focus-outline-visible) #link-container:focus {
     box-shadow: inset 0 0 0 2px var(--cr-focus-outline-color);
   }
@@ -86,6 +90,10 @@
     font-size: .875rem;  /* 14px */
   }
 
+  :host([in-side-panel_]) #title {
+      font-size: 13px;
+  }
+
   #url {
     color: var(--url-color);
     line-height: 1.5;  /* 24px */
@@ -93,6 +101,7 @@
 
   :host([in-side-panel_]) #url {
     color: var(--side-panel-url-color);
+    font-size: 12px;
   }
 
   #debug-info {
@@ -110,10 +119,8 @@
           <span class="annotation">[[item]]</span>
         </template>
       </div>
-      <span id="url" class="truncate">
-        <!-- Print the debug next to the url to keep layout the same. -->
-        <span id="debug-info" hidden="[[!debugInfo_]]">[[debugInfo_]]</span>
-      </span>
+      <span id="url" class="truncate"></span>
+      <span id="debug-info" hidden="[[!debugInfo_]]">[[debugInfo_]]</span>
     </div>
   </a>
   <cr-icon-button id="actionMenuButton" class="icon-more-vert"

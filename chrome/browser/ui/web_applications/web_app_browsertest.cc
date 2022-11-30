@@ -5,6 +5,7 @@
 #include <codecvt>
 #include <string>
 
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/strings/strcat.h"
@@ -1303,9 +1304,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
   expected_pixel_colors.push_back(SkColorSetRGB(90, 90, 90));
 #endif
   SkColor icon_pixel_color = GetIconTopLeftColor(shortcut_path);
-  EXPECT_TRUE(std::find(expected_pixel_colors.begin(),
-                        expected_pixel_colors.end(),
-                        icon_pixel_color) != expected_pixel_colors.end())
+  EXPECT_TRUE(base::Contains(expected_pixel_colors, icon_pixel_color))
       << "Actual color (RGB) is: "
       << color_utils::SkColorToRgbString(icon_pixel_color);
 
@@ -2069,6 +2068,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
                        MAYBE_RegKeysFileExtension) {
   os_hooks_suppress_.reset();
   base::ScopedAllowBlockingForTesting allow_blocking;
+  base::HistogramTester tester;
 
   std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
       registration =
@@ -2086,8 +2086,13 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
   chrome::SetAutoAcceptWebAppDialogForTesting(true, true);
   base::RunLoop run_loop_install;
   WebAppInstallManagerObserverAdapter observer(profile());
-  observer.SetWebAppInstalledWithOsHooksDelegate(base::BindLambdaForTesting(
-      [&](const AppId& installed_app_id) { run_loop_install.Quit(); }));
+  observer.SetWebAppInstalledWithOsHooksDelegate(
+      base::BindLambdaForTesting([&](const AppId& installed_app_id) {
+        EXPECT_THAT(
+            tester.GetAllSamples("WebApp.FileHandlersRegistration.Result"),
+            BucketsAre(base::Bucket(true, 1)));
+        run_loop_install.Quit();
+      }));
   const AppId app_id = test::InstallPwaForCurrentUrl(browser());
   run_loop_install.Run();
   content::RunAllTasksUntilIdle();
@@ -2109,9 +2114,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
       std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
       const std::string extension =
           converter.to_bytes(file_extension.substr(1));
-      EXPECT_TRUE(std::find(expected_extensions.begin(),
-                            expected_extensions.end(),
-                            extension) != expected_extensions.end())
+      EXPECT_TRUE(base::Contains(expected_extensions, extension))
           << "Missing file extension: " << extension;
       const std::wstring reg_key =
           L"Software\\Classes\\" + file_extension + L"\\OpenWithProgids";
@@ -2143,6 +2146,9 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
   WebAppProvider::GetForTest(profile())->install_finalizer().UninstallWebApp(
       app_id, webapps::WebappUninstallSource::kAppsPage,
       base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
+        EXPECT_THAT(
+            tester.GetAllSamples("WebApp.FileHandlersUnregistration.Result"),
+            BucketsAre(base::Bucket(true, 1)));
         EXPECT_EQ(code, webapps::UninstallResultCode::kSuccess);
         run_loop_uninstall.Quit();
       }));

@@ -22,7 +22,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_provider_test_singleton.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_test_utils.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "net/base/mac/url_conversions.h"
@@ -31,7 +30,7 @@
 #error "This file requires ARC support."
 #endif
 
-using content_suggestions::searchFieldWidth;
+using content_suggestions::SearchFieldWidth;
 using ntp_snippets::AdditionalSuggestionsHelper;
 using ntp_snippets::Category;
 using ntp_snippets::CategoryStatus;
@@ -163,7 +162,7 @@ ContentSuggestion CreateSuggestion(Category category,
 + (CGFloat)searchFieldWidthForCollectionWidth:(CGFloat)collectionWidth
                               traitCollection:
                                   (UITraitCollection*)traitCollection {
-  return content_suggestions::searchFieldWidth(collectionWidth,
+  return content_suggestions::SearchFieldWidth(collectionWidth,
                                                traitCollection);
 }
 

@@ -56,11 +56,6 @@ void FakeInstallAttributesClient::InstallAttributesGet(
     InstallAttributesGetCallback callback) {
   NOTIMPLEMENTED();
 }
-void FakeInstallAttributesClient::InstallAttributesSet(
-    const ::user_data_auth::InstallAttributesSetRequest& request,
-    InstallAttributesSetCallback callback) {
-  NOTIMPLEMENTED();
-}
 void FakeInstallAttributesClient::InstallAttributesFinalize(
     const ::user_data_auth::InstallAttributesFinalizeRequest& request,
     InstallAttributesFinalizeCallback callback) {
@@ -204,7 +199,8 @@ bool FakeInstallAttributesClient::LoadInstallAttributes() {
                              &cache_file) &&
       base::PathExists(cache_file);
   DCHECK(file_exists);
-  // Mostly copied from ash/components/tpm/install_attributes.cc.
+  // Mostly copied from
+  // chromeos/ash/components/install_attributes/install_attributes.cc.
   std::string file_blob;
   if (!base::ReadFileToStringWithMaxSize(cache_file, &file_blob,
                                          kInstallAttributesFileMaxSize)) {

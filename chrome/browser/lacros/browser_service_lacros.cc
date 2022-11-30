@@ -164,6 +164,23 @@ Browser* FindBrowserWithTabId(const std::string& tab_id_str) {
   return nullptr;
 }
 
+bool ShowProfilePickerIfNeeded(bool incognito) {
+  if (ProfilePicker::ShouldShowAtLaunch() &&
+      chrome::GetTotalBrowserCount() == 0 && !incognito) {
+    // Profile picker does not support passing through the incognito param. It
+    // also does not support passing through the
+    // `should_trigger_session_restore` param but that's very common (left
+    // clicking the launcher icon) so we can't skip the picker in this case. The
+    // default behavior for the first browser window supports session restore,
+    // additional windows are opened blank and thus it works reasonably well for
+    // BrowserServiceLacros.
+    ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
+        ProfilePicker::EntryPoint::kNewSessionOnExistingProcess));
+    return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 // A struct to keep the pending OpenUrl task.
@@ -232,21 +249,10 @@ void BrowserServiceLacros::REMOVED_16(
 void BrowserServiceLacros::NewWindow(bool incognito,
                                      bool should_trigger_session_restore,
                                      NewWindowCallback callback) {
-  if (ProfilePicker::ShouldShowAtLaunch() &&
-      chrome::GetTotalBrowserCount() == 0 && !incognito) {
-    // Profile picker does not support passing through the incognito param. It
-    // also does not support passing through the
-    // `should_trigger_session_restore` param but that's very common (left
-    // clicking the launcher icon) so we can't skip the picker in this case. The
-    // default behavior for the first browser window supports session restore,
-    // additional windows are opened blank and thus it works reasonably well for
-    // BrowserServiceLacros.
-    ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
-        ProfilePicker::EntryPoint::kNewSessionOnExistingProcess));
+  if (ShowProfilePickerIfNeeded(incognito)) {
     std::move(callback).Run();
     return;
   }
-
   LoadMainProfile(
       base::BindOnce(&BrowserServiceLacros::NewWindowWithProfile,
                      weak_ptr_factory_.GetWeakPtr(), incognito,
@@ -292,19 +298,33 @@ void BrowserServiceLacros::NewWindowForDetachingTab(
 
 void BrowserServiceLacros::NewTab(bool should_trigger_session_restore,
                                   NewTabCallback callback) {
-  if (ProfilePicker::ShouldShowAtLaunch() &&
-      chrome::GetTotalBrowserCount() == 0) {
-    // The first browser window will trigger session restore if needed.
-    ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
-        ProfilePicker::EntryPoint::kNewSessionOnExistingProcess));
+  if (ShowProfilePickerIfNeeded(false)) {
     std::move(callback).Run();
     return;
   }
-
   LoadMainProfile(
-      base::BindOnce(&BrowserServiceLacros::NewTabWithProfile,
+      base::BindOnce(&BrowserServiceLacros::LaunchOrNewTabWithProfile,
                      weak_ptr_factory_.GetWeakPtr(),
-                     should_trigger_session_restore, std::move(callback)),
+                     should_trigger_session_restore, std::move(callback),
+                     /*is_new_tab=*/true),
+      /*can_trigger_fre=*/true);
+}
+
+void BrowserServiceLacros::NewTabWithoutParameter(
+    NewTabWithoutParameterCallback callback) {
+  return NewTab(false, std::move(callback));
+}
+
+void BrowserServiceLacros::Launch(LaunchCallback callback) {
+  if (ShowProfilePickerIfNeeded(false)) {
+    std::move(callback).Run();
+    return;
+  }
+  LoadMainProfile(
+      base::BindOnce(&BrowserServiceLacros::LaunchOrNewTabWithProfile,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     /*should_trigger_session_restore=*/true,
+                     std::move(callback), /*is_new_tab=*/false),
       /*can_trigger_fre=*/true);
 }
 
@@ -495,6 +515,18 @@ void BrowserServiceLacros::OpenUrlImpl(Profile* profile,
   // the user being unaware a new tab with `url` has been opened (if the window
   // was minimized for example).
   navigate_params.window_action = NavigateParams::SHOW_WINDOW;
+
+  // If we need to create a window, do it now in order to suppress session
+  // restore.
+  navigate_params.browser = chrome::FindTabbedBrowser(profile, false);
+  if (!navigate_params.browser &&
+      Browser::GetCreationStatusForProfile(profile) ==
+          Browser::CreationStatus::kOk) {
+    Browser::CreateParams create_params(profile, navigate_params.user_gesture);
+    create_params.should_trigger_session_restore = false;
+    navigate_params.browser = Browser::Create(create_params);
+  }
+
   Navigate(&navigate_params);
 
   auto* tab = navigate_params.navigated_or_inserted_contents;
@@ -625,9 +657,10 @@ void BrowserServiceLacros::NewWindowForDetachingTabWithProfile(
                           platform_window->GetWindowUniqueId());
 }
 
-void BrowserServiceLacros::NewTabWithProfile(
+void BrowserServiceLacros::LaunchOrNewTabWithProfile(
     bool should_trigger_session_restore,
     NewTabCallback callback,
+    bool is_new_tab,
     Profile* profile) {
   if (!profile) {
     LOG(WARNING) << "No profile, it might be an early exit from the FRE. "
@@ -636,17 +669,27 @@ void BrowserServiceLacros::NewTabWithProfile(
     return;
   }
 
-  Browser* browser;
-  {
-    chrome::ScopedTabbedBrowserDisplayer displayer(
-        profile, should_trigger_session_restore);
-    browser = displayer.browser();
-    if (browser)
-      chrome::NewTab(browser);
-  }
-  if (browser)
+  Browser* browser =
+      chrome::FindTabbedBrowser(profile, /*match_original_profiles=*/false);
+  if (browser != nullptr) {
+    chrome::NewTab(browser);
     browser->SetFocusToLocationBar();
-  std::move(callback).Run();
+  } else {
+    DCHECK(is_new_tab || should_trigger_session_restore);
+    if (is_new_tab && should_trigger_session_restore) {
+      // Session restore happens asynchronously. Let |OnSessionRestored| create
+      // a new tab afterwards.
+      using OpenUrlParams = crosapi::mojom::OpenUrlParams;
+      auto params = OpenUrlParams::New();
+      params->disposition = OpenUrlParams::WindowOpenDisposition::kSwitchToTab;
+      pending_open_urls_.push_back(
+          PendingOpenUrl{profile, GURL{chrome::kChromeUINewTabURL},
+                         std::move(params), std::move(callback)});
+    }
+    chrome::NewEmptyWindow(profile, should_trigger_session_restore);
+  }
+  if (!callback.is_null())
+    std::move(callback).Run();
 }
 
 void BrowserServiceLacros::OpenUrlWithProfile(
@@ -661,28 +704,14 @@ void BrowserServiceLacros::OpenUrlWithProfile(
     return;
   }
 
-  // If there is on-going session restoring task, wait for its completion.
+  // If there is on-going session restoring task, let OnSessionRestored open the
+  // URL on completion.
   if (SessionRestore::IsRestoring(profile)) {
     pending_open_urls_.push_back(
         PendingOpenUrl{profile, url, std::move(params), std::move(callback)});
-    return;
+  } else {
+    OpenUrlImpl(profile, url, std::move(params), std::move(callback));
   }
-
-  // If there's no available browsers, but there's a session to be restored,
-  // trigger it, and wait for its completion.
-  SessionService* session_service =
-      SessionServiceFactory::GetForProfileForSessionRestore(profile);
-  if (!chrome::FindBrowserWithProfile(profile) && session_service &&
-      session_service->ShouldRestore(nullptr)) {
-    pending_open_urls_.push_back(
-        PendingOpenUrl{profile, url, std::move(params), std::move(callback)});
-    session_service->RestoreIfNecessary(StartupTabs(),
-                                        /* restore apps */ false);
-    return;
-  }
-
-  // Otherwise, directly try to open the URL.
-  OpenUrlImpl(profile, url, std::move(params), std::move(callback));
 }
 
 void BrowserServiceLacros::RestoreTabWithProfile(RestoreTabCallback callback,

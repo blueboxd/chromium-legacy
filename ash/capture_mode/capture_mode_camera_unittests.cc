@@ -31,11 +31,12 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/style/ash_color_provider.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/system_monitor.h"
@@ -100,7 +101,7 @@ bool IsWindowStackedRightBelow(aura::Window* window, aura::Window* sibling) {
   DCHECK_EQ(window->parent(), sibling->parent());
   const auto& children = window->parent()->children();
   const int sibling_index =
-      std::find(children.begin(), children.end(), sibling) - children.begin();
+      base::ranges::find(children, sibling) - children.begin();
   return sibling_index > 0 && children[sibling_index - 1] == window;
 }
 
@@ -336,8 +337,8 @@ class CaptureModeCameraTest : public AshTestBase {
   // Verifies that the icon image and the tooltip of the resize button gets
   // updated correctly when pressed.
   void VerifyResizeButton(bool is_collapsed, CaptureModeButton* resize_button) {
-    SkColor color = AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kIconColorPrimary);
+    SkColor color =
+        resize_button->GetColorProvider()->GetColor(kColorAshIconColorPrimary);
     const gfx::ImageSkia collapse_icon_image =
         gfx::CreateVectorIcon(kCaptureModeCameraPreviewCollapseIcon, color);
     const gfx::ImageSkia expand_icon_image =
@@ -4192,6 +4193,14 @@ TEST_F(ProjectorCaptureModeCameraTest,
   EXPECT_TRUE(camera_controller->selected_camera().is_valid());
   EXPECT_EQ(cam_id_2, camera_controller->selected_camera());
   EXPECT_TRUE(camera_controller->camera_preview_widget());
+  CaptureModeController::Get()->Stop();
+
+  // Starting a normal screen capture session and the previously selected
+  // `cam_id_2` should remain being selected.
+  StartCaptureSession(CaptureModeSource::kFullscreen, CaptureModeType::kVideo);
+  EXPECT_TRUE(camera_controller->selected_camera().is_valid());
+  EXPECT_EQ(cam_id_2, camera_controller->selected_camera());
+  EXPECT_TRUE(camera_controller->camera_preview_widget());
 }
 
 // Tests that the recording starts with camera metrics are recorded correctly in
@@ -4250,6 +4259,60 @@ TEST_F(ProjectorCaptureModeCameraTest,
         GetCaptureModeHistogramName(kHistogramNameBase), test_case.camera_on,
         1);
   }
+}
+
+// Tests that the auto-selected camera in the projector-initiated capture mode
+// session will not be carried over to the normal capture mode session before
+// the video recording starts.
+TEST_F(ProjectorCaptureModeCameraTest,
+       DoNotRememberProjectorCameraSelectionBeforeVideoRecording) {
+  AddDefaultCamera();
+
+  // Initially no camera should be selected for the normal capture mode session.
+  auto* controller = CaptureModeController::Get();
+  StartCaptureSession(CaptureModeSource::kFullscreen, CaptureModeType::kVideo);
+  auto* camera_controller = GetCameraController();
+  EXPECT_FALSE(camera_controller->selected_camera().is_valid());
+  controller->Stop();
+  EXPECT_FALSE(camera_controller->selected_camera().is_valid());
+
+  // Starts a projector-initiated capture mode session, the camera will be
+  // auto-selected and reset to previous settings after the session.
+  StartProjectorModeSession();
+  EXPECT_TRUE(camera_controller->selected_camera().is_valid());
+  controller->Stop();
+
+  // Starts the capture mode session again and the camera selection settings
+  // will be restored.
+  StartCaptureSession(CaptureModeSource::kFullscreen, CaptureModeType::kVideo);
+  EXPECT_FALSE(camera_controller->selected_camera().is_valid());
+}
+
+// Tests that the auto-selected camera in the projector-initiated capture mode
+// session will not be carried over to the normal capture mode session after
+// completing a video recording.
+TEST_F(ProjectorCaptureModeCameraTest,
+       DoNotRememberProjectorCameraSelectionAfterVideoRecording) {
+  AddDefaultCamera();
+
+  auto* controller = CaptureModeController::Get();
+  StartCaptureSession(CaptureModeSource::kFullscreen, CaptureModeType::kVideo);
+  auto* camera_controller = GetCameraController();
+  EXPECT_FALSE(camera_controller->selected_camera().is_valid());
+  controller->Stop();
+
+  // Starts a projector-initiated capture mode session and begin video
+  // recording, the camera will be auto-selected and reset to previous settings
+  // after the session.
+  StartProjectorModeSession();
+  EXPECT_TRUE(camera_controller->selected_camera().is_valid());
+  StartVideoRecordingImmediately();
+  controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
+
+  // Starts the capture mode session again and the camera selection settings
+  // will be restored.
+  StartCaptureSession(CaptureModeSource::kFullscreen, CaptureModeType::kVideo);
+  EXPECT_FALSE(camera_controller->selected_camera().is_valid());
 }
 
 // A test fixture for testing the rendered video frames. The boolean parameter

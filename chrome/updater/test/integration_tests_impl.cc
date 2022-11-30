@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -176,6 +177,10 @@ base::RepeatingCallback<bool(const std::string&)> GetScopePredicate(
 
 }  // namespace
 
+void ExitTestMode(UpdaterScope scope) {
+  DeleteFileAndEmptyParentDirectories(GetOverrideFilePath(scope));
+}
+
 int CountDirectoryFiles(const base::FilePath& dir) {
   base::FileEnumerator it(dir, false, base::FileEnumerator::FILES);
   int res = 0;
@@ -190,12 +195,11 @@ void RegisterApp(UpdaterScope scope, const std::string& app_id) {
   registration.app_id = app_id;
   registration.version = base::Version("0.1");
   base::RunLoop loop;
-  update_service->RegisterApp(
-      registration,
-      base::BindLambdaForTesting([&loop](const RegistrationResponse& response) {
-        EXPECT_EQ(response.status_code, 0);
-        loop.Quit();
-      }));
+  update_service->RegisterApp(registration,
+                              base::BindLambdaForTesting([&loop](int result) {
+                                EXPECT_EQ(result, 0);
+                                loop.Quit();
+                              }));
   loop.Run();
 }
 
@@ -665,20 +669,20 @@ void ExpectLastStarted(UpdaterScope updater_scope) {
                    .is_null());
 }
 
-std::vector<base::FilePath::StringType> GetTestProcessNames() {
+std::set<base::FilePath::StringType> GetTestProcessNames() {
 #if BUILDFLAG(IS_MAC)
   return {
-      GetExecutableRelativePath().value(),
-      GetSetupExecutablePath().value(),
+      GetExecutableRelativePath().BaseName().value(),
+      GetSetupExecutablePath().BaseName().value(),
   };
 #elif BUILDFLAG(IS_WIN)
   return {
-      GetExecutableRelativePath().value(),
-      GetSetupExecutablePath().value(),
+      GetExecutableRelativePath().BaseName().value(),
+      GetSetupExecutablePath().BaseName().value(),
       kTestProcessExecutableName,
       []() {
         const base::FilePath test_executable =
-            base::FilePath::FromASCII(kExecutableName);
+            base::FilePath::FromASCII(kExecutableName).BaseName();
         return base::StrCat({test_executable.RemoveExtension().value(),
                              base::ASCIIToWide(kExecutableSuffix),
                              test_executable.Extension()});

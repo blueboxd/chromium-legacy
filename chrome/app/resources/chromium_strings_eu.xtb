@@ -12,6 +12,8 @@ Eginbide batzuk agian dira erabilgarri egongo eta hobespenei egindako aldaketak 
 <translation id="1131805035311359397">Pasahitzak datuen isilpekotasunaren urratzeen eta beste segurtasun-arazoen aurka babestuta dauden egiaztatzeko, <ph name="BEGIN_LINK" />hasi saioa Chromium-en<ph name="END_LINK" />.</translation>
 <translation id="1185134272377778587">Chromium arakatzaileari buruz</translation>
 <translation id="1203500561924088507">Eskerrik asko instalatzeagatik. <ph name="BUNDLE_NAME" /> erabiltzeko, arakatzailea berrabiarazi behar duzu.</translation>
+<translation id="1231839967188101156">Aktibatuta dagoenean, Chromium-ek tokia egiten du fitxa inaktiboen memorian. Horrela, fitxa aktiboek eta gainerako aplikazioek ordenagailuaren baliabide gehiago izango dituzte, eta bizkorrago ibiliko da Chromium. Fitxa inaktiboak haietara itzultzen zarenean aktibatuko dira berriro. <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /></translation>
+<translation id="1261119230216066228">Memoria-aurreztaileak Chromium bizkortu du</translation>
 <translation id="1315551408014407711">Konfiguratu Chromium-eko profil berria</translation>
 <translation id="1385859895174722837">Google-ren Laguntzailea Chromium-en</translation>
 <translation id="1396446129537741364">Chromium pasahitzak erakusten saiatzen ari da.</translation>
@@ -182,6 +184,7 @@ Baliteke webguneei eta aplikazioei emandako baimenak kontu honi aplikatzea. Goog
 <translation id="5386450000063123300">Chromium eguneratzen (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Baimendu Chromium-en saioa hastea</translation>
 <translation id="5398878173008909840">Chromium arakatzailearen bertsio berria erabilgarri dago.</translation>
+<translation id="5405650547142096840">Kendu Chromium-etik</translation>
 <translation id="5427571867875391349">Ezarri Chromium arakatzaile lehenetsi gisa</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium Beta</translation>
 <translation id="5473971139929175403">Chromium-ek agian ez du behar bezala funtzionatuko ez delako jada bateragarria Linux banaketa honekin</translation>
@@ -209,6 +212,7 @@ Baliteke webguneei eta aplikazioei emandako baimenak kontu honi aplikatzea. Goog
 <translation id="6055895534982063517">Chromium-en bertsio berri bat erabilgarri dago; inoiz baino bizkorragoa da.</translation>
 <translation id="6063093106622310249">&amp;Ireki Chromium-en</translation>
 <translation id="6072279588547424923">Gehitu da <ph name="EXTENSION_NAME" /> luzapena Chromium-en</translation>
+<translation id="6072463441809498330">Bizkortu Chromium</translation>
 <translation id="608006075545470555">Gehitu laneko profila arakatzaile honetan</translation>
 <translation id="6096348254544841612">Pertsonalizatu eta kontrolatu Chromium. Eguneratze bat erabilgarri dago.</translation>
 <translation id="6119438414301547735">Eman Chromium-eko tresna-barran sarbide-eskaerak erakusteko baimena luzapenari</translation>
@@ -252,6 +256,7 @@ Baliteke webguneei eta aplikazioei emandako baimenak kontu honi aplikatzea. Goog
 <translation id="6717134281241384636">Ezin duzu profila erabili Chromium bertsio berriago batekoa delako.
 
 Baliteke eginbide batzuk erabilgarri ez egotea. Adierazi beste profil-direktorio bat edo erabili Chromium bertsio berriago bat.</translation>
+<translation id="6730677189742196061">Memoria-aurreztaileak Chromium bizkortu du</translation>
 <translation id="6734291798041940871">Ordenagailuko erabiltzaile guztientzat dago instalatuta Chromium.</translation>
 <translation id="673636774878526923">Chromium-eko gauzak gailu guztietan atzitzeko, hasi saioa eta aktibatu sinkronizazioa.</translation>
 <translation id="6774082503108938489">Zure gurasoak "Webguneen, aplikazioen eta luzapenen baimenak" desaktibatu ditu Chromium-en. Ezin da gaitu <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
@@ -304,9 +309,9 @@ Chromium-ek ezin ditu ezarpenak berreskuratu.</translation>
 <translation id="7682601070171973634">Chromium eginbide berriak probatzen ari da; haiei esker, datu gutxiago erabilita sarea modu berean arakatzeko aukera eskainiko dute webguneek</translation>
 <translation id="7686590090926151193">Chromium ez da zure arakatzaile lehenetsia</translation>
 <translation id="7689606757190482937">Sinkronizatu eta pertsonalizatu Chromium gailu guzietan</translation>
-<translation id="7714577916146996629">Aktibatuta dagoenean, aktiboki erabiltzen ari ez zaren fitxen memoria berreskuratzen du Chromium-ek, behar den moduan. Horrela, ordenagailuaren baliabideak libre geratzen dira beste zeregin batzuetarako, eta Chromium-ek abiadura egokian funtzionatzen jarraitzen du. Inaktibo dauden fitxak hutsik agertzen dira eta automatikoki kargatzen dira berriro sakatzen dituzunean. <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /> edo <ph name="BEGIN_LINK_2" />bidali oharrak<ph name="END_LINK_2" /></translation>
 <translation id="7745317241717453663">Gailuko arakatze-datuak ezabatuko dira. Geroago datuak eskuratu nahi izanez gero, hasi saioa Chromium-en <ph name="USER_EMAIL" /> gisa.</translation>
 <translation id="7747138024166251722">Instalatzaileak ezin izan du sortu behin behineko direktoriorik. Softwarea instalatzeko, egiaztatu diskoan duzun espazio librea eta baimena.</translation>
+<translation id="7786760609782648049">Bizkortu Chromium</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7828947555739565424">Badago kontu honen Chromium-eko profil bat gailu honetan</translation>
 <translation id="7845233973568007926">Eskerrik asko instalatzeagatik. <ph name="BUNDLE_NAME" /> erabiltzeko, ordenagailua berrabiarazi behar duzu.</translation>
@@ -334,11 +339,11 @@ Chromium-ek ezin ditu ezarpenak berreskuratu.</translation>
 <translation id="8453117565092476964">Instalatzailearen artxiboa hondatuta dago edo baliogabea da. Deskargatu Chromium berriro.</translation>
 <translation id="8463672209299734063">Aukerakoa: lagundu Chromium OS-ren eginbideak eta errendimendua hobetzen Google-ri diagnostiko- eta erabilera-datuak automatikoki bidalita.</translation>
 <translation id="8493179195440786826">Chromium zaharkituta dago</translation>
-<translation id="8522220489792889625">Aktiboki erabiltzen ari ez zaren fitxen memoria berreskuratzen du Chromium-ek, behar den moduan. Ezarpenetan alda dezakezu aukera hori.</translation>
 <translation id="8550334526674375523">Laneko profila eta profil pertsonala guztiz bereizita daude.</translation>
 <translation id="8558383651099478961">Zure gurasoak "Webguneen, aplikazioen eta luzapenen baimenak" desaktibatu ditu Chromium-en. Ezin da gehitu <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8561285221328166383">Etorkizunean Chromium-en eguneratzeak eskuratzeko, macOS 10.13 edo bertsio berriago bat beharko duzu. Ordenagailu hau macOS 10.12 erabiltzen ari da.</translation>
 <translation id="8568283329061645092">Google-ko kontu batekin saioa hasten duzunean egiazta ditzake Chromium-ek pasahitzak</translation>
+<translation id="8574036838419011058">Aktibatuta dagoenean, Chromium-ek bateria aurrezten du atzeko planoko jarduerak eta efektu bisualak (esaterako, korritze leuna eta bideoen irudi-abiadurak) mugatuta. <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Chromium-en egileak. Eskubide guztiak erreserbatuta.</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />Nola erabiltzen ditugu datu horiek?<ph name="END_BOLD" /> Webguneek zure interesei buruzko informazioa gorde dezakete Chromium-en; esaterako, webgune batera joaten bazara maratoi baterako oinetakoak erostera, baliteke webgune horrek "maratoiak" definitzea interes gisa. Ondorioz, beranduago beste webgune batera joaten bazara lasterketa batean izena emateko, litekeena da webgune horrek lasterketetarako oinetakoekin erlazionatutako iragarki bat erakustea zure interesetan oinarrituta.</translation>
 <translation id="8619360774459241877">Chromium abiarazten…</translation>

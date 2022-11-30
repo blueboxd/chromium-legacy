@@ -118,7 +118,7 @@ void RangeInputType::SetValueAsDouble(double new_value,
 }
 
 bool RangeInputType::TypeMismatchFor(const String& value) const {
-  return !value.IsEmpty() && !std::isfinite(ParseToDoubleForNumberType(value));
+  return !value.empty() && !std::isfinite(ParseToDoubleForNumberType(value));
 }
 
 bool RangeInputType::SupportsRequired() const {
@@ -310,7 +310,7 @@ String RangeInputType::SanitizeValue(const String& proposed_value) const {
 }
 
 void RangeInputType::WarnIfValueIsInvalid(const String& value) const {
-  if (value.IsEmpty() || !GetElement().SanitizeValue(value).IsEmpty())
+  if (value.empty() || !GetElement().SanitizeValue(value).empty())
     return;
   AddWarningToConsole(
       "The specified value %s cannot be parsed, or is out of range.", value);
@@ -360,17 +360,17 @@ void RangeInputType::UpdateTickMarkValues() {
   if (!data_list)
     return;
   HTMLDataListOptionsCollection* options = data_list->options();
-  tick_mark_values_.ReserveCapacity(options->length());
+  tick_mark_values_.reserve(options->length());
   for (unsigned i = 0; i < options->length(); ++i) {
     HTMLOptionElement* option_element = options->Item(i);
     String option_value = option_element->value();
-    if (option_element->IsDisabledFormControl() || option_value.IsEmpty())
+    if (option_element->IsDisabledFormControl() || option_value.empty())
       continue;
     if (!GetElement().IsValidValue(option_value))
       continue;
     tick_mark_values_.push_back(ParseToNumber(option_value, Decimal::Nan()));
   }
-  tick_mark_values_.ShrinkToFit();
+  tick_mark_values_.shrink_to_fit();
   std::sort(tick_mark_values_.begin(), tick_mark_values_.end(), DecimalCompare);
 }
 

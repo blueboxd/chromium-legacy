@@ -316,7 +316,7 @@ void LayerTreeImpl::UpdateScrollbarGeometries() {
             scroll_tree.container_bounds(inner_scroll_node->id));
         viewport_bounds.SetToMin(inner_viewport_bounds);
       }
-      viewport_bounds.Scale(1 / current_page_scale_factor());
+      viewport_bounds.InvScale(current_page_scale_factor());
       bounds_size = ToCeiledSize(viewport_bounds);
     }
 
@@ -735,20 +735,12 @@ void LayerTreeImpl::PullLayerTreePropertiesFrom(CommitState& commit_state) {
   if (commit_state.force_send_metadata_request)
     RequestForceSendMetadata();
 
-  // TODO(ericrk): The viewport changes caused by |top_controls_shown_ratio_|
-  // changes should propagate back to the main tree. This does not currently
-  // happen, so we must force the impl tree to update its viewports if
-  // |top_controls_shown_ratio_| is greater than 0.0f and less than 1.0f
-  // (partially shown). crbug.com/875943
-  if (commit_state.top_controls_shown_ratio > 0.0f &&
-      commit_state.top_controls_shown_ratio < 1.0f) {
-    UpdateViewportContainerSizes();
-  }
-
   set_display_transform_hint(commit_state.display_transform_hint);
 
   if (commit_state.delegated_ink_metadata)
     set_delegated_ink_metadata(std::move(commit_state.delegated_ink_metadata));
+  else
+    delegated_ink_metadata_.reset();
 
   // Transfer page transition directives.
   for (auto& request : commit_state.document_transition_requests)
@@ -878,6 +870,8 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
                            TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                            "metadata", delegated_ink_metadata_->ToString());
     target_tree->set_delegated_ink_metadata(std::move(delegated_ink_metadata_));
+  } else if (target_tree->delegated_ink_metadata()) {
+    target_tree->clear_delegated_ink_metadata();
   }
 
   for (auto& request : TakeDocumentTransitionRequests())
@@ -1328,11 +1322,10 @@ void LayerTreeImpl::PushBrowserControls(
 
   if (top_controls_shown_ratio) {
     DCHECK(!IsActiveTree() || !host_impl_->pending_tree());
-    bool changed_pending =
-        top_controls_shown_ratio_->PushMainToPending(*top_controls_shown_ratio);
-    changed_pending |= bottom_controls_shown_ratio_->PushMainToPending(
+    top_controls_shown_ratio_->PushMainToPending(*top_controls_shown_ratio);
+    bottom_controls_shown_ratio_->PushMainToPending(
         *bottom_controls_shown_ratio);
-    if (!IsActiveTree() && changed_pending)
+    if (!IsActiveTree())
       UpdateViewportContainerSizes();
   }
   if (IsActiveTree()) {
@@ -2275,9 +2268,8 @@ static bool PointHitsRect(
     // To compute the distance to the camera, we have to take the planar point
     // and pull it back to world space and compute the displacement along the
     // z-axis.
-    gfx::Point3F planar_point_in_screen_space(planar_point);
-    local_space_to_screen_space_transform.TransformPoint(
-        &planar_point_in_screen_space);
+    gfx::Point3F planar_point_in_screen_space =
+        local_space_to_screen_space_transform.MapPoint(planar_point);
     *distance_to_camera = planar_point_in_screen_space.z();
   }
 
@@ -2761,14 +2753,6 @@ static gfx::SelectionBound ComputeViewportSelectionBound(
       MathUtil::MapPoint(screen_space_transform, layer_start, &clipped);
   gfx::PointF screen_end =
       MathUtil::MapPoint(screen_space_transform, layer_end, &clipped);
-
-  // MapPoint can produce points with NaN components (even when no inputs are
-  // NaN). Since consumers of gfx::SelectionBounds may round |edge_start| or
-  // |edge_end| (and since rounding will crash on NaN), we return an empty
-  // bound instead.
-  if (std::isnan(screen_start.x()) || std::isnan(screen_start.y()) ||
-      std::isnan(screen_end.x()) || std::isnan(screen_end.y()))
-    return gfx::SelectionBound();
 
   const float inv_scale = 1.f / device_scale_factor;
   viewport_bound.SetEdgeStart(gfx::ScalePoint(screen_start, inv_scale));

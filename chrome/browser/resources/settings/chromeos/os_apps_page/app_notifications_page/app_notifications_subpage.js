@@ -4,6 +4,7 @@
 
 import './app_notification_row.js';
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
+import 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js';
 import 'chrome://resources/mojo/skia/public/mojom/image_info.mojom-lite.js';
 import 'chrome://resources/mojo/skia/public/mojom/bitmap.mojom-lite.js';
 import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
@@ -13,7 +14,7 @@ import '/app-management/safe_base_name.mojom-lite.js';
 import '/app-management/types.mojom-lite.js';
 import '/os_apps_page/app_notification_handler.mojom-lite.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../../mojom-webui/setting.mojom-webui.js';

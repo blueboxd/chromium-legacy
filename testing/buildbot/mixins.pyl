@@ -348,6 +348,11 @@
       },
     },
   },
+  'chromeos-kevin-skylab': {
+    'cros_board': 'kevin',
+    'cros_img': 'kevin-public/R105-14988.0.0',
+    'bucket': 'chromiumos-image-archive',
+  },
   'chromeos-octopus': {
     'swarming': {
       'dimensions': {
@@ -485,13 +490,12 @@
       ],
     },
   },
-  'fuchsia-test-pool': {
-    # This pool is dedicated to test the test infra of fuchsia in chromium.
-    'swarming': {
-      'dimensions': {
-        'pool': 'chromium.tests.fuchsia',
-      },
-    },
+  'fuchsia-test-workstation': {
+    '$mixin_append': {
+      'args': [
+        '--custom-image=workstation_eng.qemu-x64-release',
+      ],
+    }
   },
   'fuchsia_logs': {
     '$mixin_append': {
@@ -518,14 +522,6 @@
     '$mixin_append': {
       'args': [
         '--gtest_also_run_disabled_tests',
-      ],
-    },
-  },
-  'gtest_run_disabled_only': {
-    '$mixin_append': {
-      'args': [
-        '--gtest_also_run_disabled_tests',
-        '--gtest_filter=*DISABLE*',
       ],
     },
   },
@@ -626,6 +622,18 @@
           {
             'name': 'runtime_ios_16_0',
             'path': 'Runtime-ios-16.0',
+          },
+        ],
+      },
+    },
+  },
+  'ios_runtime_cache_16_1': {
+    '$mixin_append': {
+      'swarming': {
+        'named_caches': [
+          {
+            'name': 'runtime_ios_16_1',
+            'path': 'Runtime-ios-16.1',
           },
         ],
       },
@@ -836,7 +844,7 @@
       'dimensions': {
         'cpu': 'x86-64',
         'mac_model': 'Macmini8,1',
-        'os': 'Mac-12.4|Mac-12.5',
+        'os': 'Mac-12',
       },
     },
   },
@@ -874,7 +882,7 @@
     'swarming': {
       'dimensions': {
         'cpu': 'arm64',
-        'os': 'Mac-12.4|Mac-12.5',
+        'os': 'Mac-13',
       },
     },
   },
@@ -882,7 +890,7 @@
     'swarming': {
       'dimensions': {
         'cpu': 'x86-64',
-        'os': 'Mac-12.4|Mac-12.5',
+        'os': 'Mac-13',
       },
     },
   },
@@ -1165,6 +1173,14 @@
       },
     },
   },
+  'record_failed_tests': {
+    '$mixin_append': {
+      'args': [
+        '--record-video',
+        'failed_only',
+      ],
+    },
+  },
   's_generic': {
     'swarming': {
       'dimensions': {
@@ -1261,7 +1277,6 @@
       'args': [
         '--extra-browser-args=--force_high_performance_gpu',
         '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
-        '--stable-jobs',
       ],
       'linux_args': [
         '--extra-browser-args=--enable-features=Vulkan',
@@ -1398,13 +1413,13 @@
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '14a309'
+        '14b5024i'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_14a309',
+          'name': 'xcode_ios_14b5024i',
           'path': 'Xcode.app',
         },
       ],

@@ -127,6 +127,8 @@ PerformanceEntry::EntryType PerformanceEntry::ToEntryTypeEnum(
     return kVisibilityState;
   if (entry_type == performance_entry_names::kBackForwardCacheRestoration)
     return kBackForwardCacheRestoration;
+  if (entry_type == performance_entry_names::kSoftNavigation)
+    return kSoftNavigation;
   return kInvalid;
 }
 
@@ -139,11 +141,7 @@ uint32_t PerformanceEntry::GetNavigationId(ScriptState* script_state) {
   if (!local_dom_window)
     return kNavigationIdDefaultValue;
 
-  // Calling GetFrame() on a window of a detached frame returns null.
-  if (!local_dom_window->GetFrame())
-    return kNavigationIdDefaultValue;
-
-  return local_dom_window->GetFrame()->GetNavigationId();
+  return local_dom_window->GetNavigationId();
 }
 
 // static
@@ -152,10 +150,7 @@ uint32_t PerformanceEntry::GetNavigationId(ExecutionContext* context) {
   if (!local_dom_window)
     return kNavigationIdDefaultValue;
 
-  if (!local_dom_window->GetFrame())
-    return kNavigationIdDefaultValue;
-
-  return local_dom_window->GetFrame()->GetNavigationId();
+  return local_dom_window->GetNavigationId();
 }
 
 ScriptValue PerformanceEntry::toJSONForBinding(

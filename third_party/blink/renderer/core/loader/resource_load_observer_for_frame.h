@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,13 +70,14 @@ class CORE_EXPORT ResourceLoadObserverForFrame final
 
   void UpdatePowerModeVote();
 
+  std::unique_ptr<power_scheduler::PowerModeVoter> power_mode_voter_;
+
   // There are some overlap between |document_loader_|, |document_| and
   // |fetcher_properties_|. Use |fetcher_properties_| whenever possible.
   const Member<DocumentLoader> document_loader_;
   const Member<Document> document_;
   const Member<const ResourceFetcherProperties> fetcher_properties_;
 
-  std::unique_ptr<power_scheduler::PowerModeVoter> power_mode_voter_;
   bool power_mode_vote_is_loading_ = false;
 };
 

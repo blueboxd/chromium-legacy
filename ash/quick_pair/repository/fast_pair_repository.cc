@@ -7,7 +7,7 @@
 #include "ash/quick_pair/common/logging.h"
 #include "ash/quick_pair/repository/fast_pair/device_metadata_fetcher.h"
 #include "ash/quick_pair/repository/fast_pair/fast_pair_image_decoder.h"
-#include "ash/services/quick_pair/public/cpp/account_key_filter.h"
+#include "chromeos/ash/services/quick_pair/public/cpp/account_key_filter.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "crypto/sha2.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -15,13 +15,18 @@
 
 namespace ash {
 namespace quick_pair {
+namespace {
 
 constexpr int kBluetoothAddressSize = 6;
 FastPairRepository* g_instance = nullptr;
 
+}  // namespace
+
 // static
 FastPairRepository* FastPairRepository::Get() {
-  // g_instance should always exist
+  // b/240621764 team members have seen g_instance return null during testing.
+  // Fail loudly if that happens to avoid undefined behavior.
+  CHECK(g_instance);
   return g_instance;
 }
 

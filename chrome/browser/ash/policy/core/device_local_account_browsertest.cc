@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/components/settings/timezone_settings.h"
 #include "ash/constants/ash_paths.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
@@ -102,6 +101,7 @@
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "chromeos/ash/components/network/policy_certificate_provider.h"
+#include "chromeos/ash/components/settings/timezone_settings.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
@@ -803,13 +803,13 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PRE_DataIsRemoved) {
 
   // Data for the account is normally added after successful authentication.
   // Shortcut that here.
-  DictionaryPrefUpdate given_name_update(g_browser_process->local_state(),
+  ScopedDictPrefUpdate given_name_update(g_browser_process->local_state(),
                                          "UserGivenName");
-  given_name_update->SetStringKey(account_id_1_.GetUserEmail(), "Elaine");
+  given_name_update->Set(account_id_1_.GetUserEmail(), "Elaine");
 
   // Add some arbitrary data to make sure the "UserGivenName" dictionary isn't
   // cleaning up itself.
-  given_name_update->SetStringKey("sanity.check@example.com", "Anne");
+  given_name_update->Set("sanity.check@example.com", "Anne");
 }
 
 // Disabled on ASan and LSAn builds due to a consistent failure. See
@@ -935,7 +935,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, AccountListChange) {
   g_browser_process->policy_service()->RefreshPolicies(base::OnceClosure());
 
   // Make sure the second device-local account disappears.
-  WaitUntilLocalStateChanged();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsKnownUser(account_id_2_));
 }
 

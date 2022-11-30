@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,7 @@ void GetFontsUsedByFragment(const NGPhysicalBoxFragment& fragment,
       if (shape_result_view) {
         const String font_family =
             shape_result_view->PrimaryFont()->PlatformData().FontFamilyName();
-        if (!font_family.IsEmpty())
+        if (!font_family.empty())
           result.primary_fonts.insert(font_family);
         HashSet<const SimpleFontData*> fallback_font_data;
         shape_result_view->FallbackFonts(&fallback_font_data);

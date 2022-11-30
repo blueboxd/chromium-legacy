@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
 
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
@@ -49,6 +50,8 @@ const char* BackingTypeToString(SharedImageBackingType type) {
       return "WrappedSkImage";
     case SharedImageBackingType::kCompound:
       return "CompoundImageBacking";
+    case SharedImageBackingType::kDCOMPSurfaceProxy:
+      return "DCOMPSurfaceProxy";
   }
   NOTREACHED();
 }
@@ -56,7 +59,7 @@ const char* BackingTypeToString(SharedImageBackingType type) {
 }  // namespace
 
 SharedImageBacking::SharedImageBacking(const Mailbox& mailbox,
-                                       viz::ResourceFormat format,
+                                       viz::SharedImageFormat format,
                                        const gfx::Size& size,
                                        const gfx::ColorSpace& color_space,
                                        GrSurfaceOrigin surface_origin,
@@ -89,13 +92,15 @@ void SharedImageBacking::OnContextLost() {
 SkImageInfo SharedImageBacking::AsSkImageInfo() const {
   return SkImageInfo::Make(size_.width(), size_.height(),
                            viz::ResourceFormatToClosestSkColorType(
-                               /*gpu_compositing=*/true, format_),
+                               /*gpu_compositing=*/true, format()),
                            alpha_type_, color_space_.ToSkColorSpace());
 }
 
 bool SharedImageBacking::CopyToGpuMemoryBuffer() {
   return false;
 }
+
+void SharedImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {}
 
 bool SharedImageBacking::UploadFromMemory(const SkPixmap& pixmap) {
   NOTREACHED();
@@ -124,7 +129,7 @@ void SharedImageBacking::OnMemoryDump(
 
   dump->AddString("type", "", GetName());
   dump->AddString("dimensions", "", size().ToString());
-  dump->AddString("format", "", viz::ResourceFormatToString(format()));
+  dump->AddString("format", "", format().ToString());
   dump->AddString("usage", "", CreateLabelForSharedImageUsage(usage()));
 
   // Add ownership edge to `client_guid` which expresses shared ownership with
@@ -214,7 +219,7 @@ void SharedImageBacking::ReleaseRef(SharedImageRepresentation* representation) {
   AutoLock auto_lock(this);
   DCHECK(is_ref_counted_);
 
-  auto found = std::find(refs_.begin(), refs_.end(), representation);
+  auto found = base::ranges::find(refs_, representation);
   DCHECK(found != refs_.end());
 
   // If the found representation is the first (owning) ref, free the attributed
@@ -232,6 +237,14 @@ void SharedImageBacking::ReleaseRef(SharedImageRepresentation* representation) {
     refs_[0]->tracker()->TrackMemAlloc(estimated_size_);
     return;
   }
+}
+
+const MemoryTracker* SharedImageBacking::GetMemoryTracker() const {
+  AutoLock auto_lock(this);
+  if (refs_.empty())
+    return nullptr;
+
+  return refs_[0]->tracker()->memory_tracker();
 }
 
 void SharedImageBacking::RegisterImageFactory(SharedImageFactory* factory) {
@@ -294,7 +307,7 @@ base::Lock* SharedImageBacking::AutoLock::InitializeLock(
 
 ClearTrackingSharedImageBacking::ClearTrackingSharedImageBacking(
     const Mailbox& mailbox,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,

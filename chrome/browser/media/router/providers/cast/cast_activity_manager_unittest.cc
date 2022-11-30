@@ -27,9 +27,9 @@
 #include "chrome/browser/media/router/providers/common/buffered_message_sender.h"
 #include "chrome/browser/media/router/test/mock_mojo_media_router.h"
 #include "chrome/browser/media/router/test/provider_test_helpers.h"
-#include "components/cast_channel/cast_message_util.h"
-#include "components/cast_channel/cast_test_util.h"
 #include "components/media_router/common/media_source.h"
+#include "components/media_router/common/providers/cast/channel/cast_message_util.h"
+#include "components/media_router/common/providers/cast/channel/cast_test_util.h"
 #include "components/media_router/common/test/mock_logger.h"
 #include "components/media_router/common/test/test_helper.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -44,7 +44,6 @@
 #include "third_party/openscreen/src/cast/common/public/cast_streaming_app_ids.h"
 
 using base::test::IsJson;
-using base::test::ParseJson;
 using base::test::ParseJsonDict;
 using testing::_;
 using testing::AnyNumber;
@@ -846,8 +845,8 @@ TEST_F(CastActivityManagerTest, AppMessageFromReceiver) {
 
   // Destination ID matches client ID.
   cast::channel::CastMessage message = cast_channel::CreateCastMessage(
-      "urn:x-cast:com.google.foo", base::Value(base::Value::Type::DICTIONARY),
-      "sourceId", "theClientId");
+      "urn:x-cast:com.google.foo", base::Value(base::Value::Dict()), "sourceId",
+      "theClientId");
 
   EXPECT_CALL(*app_activity_, OnAppMessage(IsCastChannelMessage(message)));
   manager_->OnAppMessage(kChannelId, message);
@@ -861,7 +860,7 @@ TEST_F(CastActivityManagerTest, OnMediaStatusUpdated) {
 
   EXPECT_CALL(*app_activity_,
               SendMediaStatusToClients(IsJson(status), request_id));
-  manager_->OnMediaStatusUpdated(sink_, ParseJson(status), request_id);
+  manager_->OnMediaStatusUpdated(sink_, ParseJsonDict(status), request_id);
 }
 
 TEST_F(CastActivityManagerTest, SecondPendingRequestCancelsTheFirst) {

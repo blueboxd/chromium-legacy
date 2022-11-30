@@ -21,6 +21,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/back_forward_cache_can_store_document_result.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
+#include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
@@ -36,7 +37,6 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/frame/event_page_show_persisted.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 #include "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom-shared.h"
 #if BUILDFLAG(IS_ANDROID)
@@ -63,7 +63,8 @@ static constexpr size_t kDefaultBackForwardCacheSize = 1;
 static constexpr size_t kDefaultForegroundBackForwardCacheSize = 0;
 
 // The default time to live in seconds for documents in BackForwardCache.
-static constexpr int kDefaultTimeToLiveInBackForwardCacheInSeconds = 180;
+// See also crbug.com/1305878.
+static constexpr int kDefaultTimeToLiveInBackForwardCacheInSeconds = 600;
 
 #if BUILDFLAG(IS_ANDROID)
 bool IsProcessBindingEnabled() {
@@ -116,7 +117,7 @@ WebSchedulerTrackedFeatures SupportedFeaturesImpl() {
     auto feature = blink::scheduler::StringToFeature(token);
     if (feature.has_value()) {
       features.Put(feature.value());
-    } else {
+    } else if (!blink::scheduler::IsRemovedFeature(token)) {
       // |feature| might not have its value when the user is in an experimental
       // group with the feature, and the feature is already removed.
       DLOG(WARNING) << "Invalid feature string: " << token;
@@ -301,20 +302,21 @@ void RequestRecordTimeToVisible(RenderFrameHostImpl* rfh,
   // cases like page navigating back with window.history.back(), while being
   // hidden.
   if (rfh->delegate()->GetVisibility() != Visibility::HIDDEN) {
+    // The trigger can be null in unit tests.
     auto* trigger = rfh->GetRenderWidgetHost()->GetVisibleTimeRequestTrigger();
-    // The only way this should be null is if there is no RenderWidgetHostView.
-    DCHECK(rfh->GetView());
-    DCHECK(trigger);
-    trigger->UpdateRequest(navigation_start, false /* destination_is_loaded */,
-                           false /* show_reason_tab_switching */,
-                           true /* show_reason_bfcache_restore */);
+    if (trigger) {
+      trigger->UpdateRequest(navigation_start,
+                             false /* destination_is_loaded */,
+                             false /* show_reason_tab_switching */,
+                             true /* show_reason_bfcache_restore */);
+    }
   }
 }
 
 // Returns true if any of the processes associated with the RenderViewHosts in
 // this Entry are foregrounded.
 bool HasForegroundedProcess(BackForwardCacheImpl::Entry& entry) {
-  for (auto* rvh : entry.render_view_hosts()) {
+  for (const auto& rvh : entry.render_view_hosts()) {
     if (!rvh->GetProcess()->IsProcessBackgrounded()) {
       return true;
     }
@@ -326,7 +328,7 @@ bool HasForegroundedProcess(BackForwardCacheImpl::Entry& entry) {
 // acknowledgement from renderer.
 bool AllRenderViewHostsReceivedAckFromRenderer(
     BackForwardCacheImpl::Entry& entry) {
-  for (auto* rvh : entry.render_view_hosts()) {
+  for (const auto& rvh : entry.render_view_hosts()) {
     if (!rvh->DidReceiveBackForwardCacheAck()) {
       return false;
     }
@@ -372,6 +374,16 @@ CacheControlNoStoreExperimentLevel GetCacheControlNoStoreLevel() {
     return CacheControlNoStoreExperimentLevel::kDoNotStore;
   }
   return cache_control_level.Get();
+}
+
+bool IsSameOriginForTreeResult(RenderFrameHostImpl* rfh,
+                               const GURL& url,
+                               const url::Origin& main_document_origin) {
+  // Treat any frame inside a fenced frame as cross origin so we don't leak
+  // any information.
+  if (rfh->IsNestedWithinFencedFrame())
+    return false;
+  return url::Origin::Create(url).IsSameOriginWith(main_document_origin);
 }
 
 }  // namespace
@@ -465,7 +477,7 @@ void BackForwardCacheImpl::Entry::WriteIntoTrace(
 }
 
 void BackForwardCacheImpl::Entry::StartMonitoringCookieChange() {
-  RenderFrameHostImpl* rfh = stored_page_->render_frame_host.get();
+  RenderFrameHostImpl* rfh = stored_page_->render_frame_host();
   StoragePartition* storage_partition = rfh->GetStoragePartition();
   auto* cookie_manager = storage_partition->GetCookieManagerForBrowserProcess();
   if (!cookie_listener_receiver_.is_bound()) {
@@ -689,7 +701,7 @@ BackForwardCacheImpl::PopulateReasonsForPage(
   // This function can be called during eviction, and |rfh| can be in
   // back/forward cache, which is considered as non primary main frame.
   bool main_frame_in_bfcache =
-      rfh->IsInBackForwardCache() && rfh->is_main_frame();
+      rfh->IsInBackForwardCache() && rfh->IsOutermostMainFrame();
 
   if (!rfh->IsInPrimaryMainFrame() && !main_frame_in_bfcache) {
     // When |rfh| is not the primary main frame and is not the bfcache main
@@ -727,7 +739,7 @@ void BackForwardCacheImpl::PopulateReasonsForMainDocument(
     BackForwardCacheCanStoreDocumentResult& result,
     RenderFrameHostImpl* rfh) {
   bool main_frame_in_bfcache =
-      rfh->IsInBackForwardCache() && rfh->is_main_frame();
+      rfh->IsInBackForwardCache() && rfh->IsOutermostMainFrame();
   DCHECK(rfh->IsInPrimaryMainFrame() || main_frame_in_bfcache);
 
   // If the the delegate doesn't support back forward cache, disable it.
@@ -860,9 +872,13 @@ void BackForwardCacheImpl::PopulateStickyReasonsForDocument(
         rfh->back_forward_cache_disabled_reasons());
   }
 
-  // Do not store documents if they have inner WebContents.
-  if (rfh->inner_tree_main_frame_tree_node_id() !=
-      FrameTreeNode::kFrameTreeNodeInvalidId) {
+  // Do not store documents if they have inner WebContents. Inner frame trees
+  // that are based on MPArch are allowed to be stored. To determine if this
+  // is an inner WebContents we check the inner frame tree's type to see if
+  // it is `kPrimary`.
+  if (rfh->frame_tree()->delegate()->GetOuterDelegateFrameTreeNodeId() !=
+          FrameTreeNode::kFrameTreeNodeInvalidId &&
+      rfh->frame_tree()->type() == FrameTree::Type::kPrimary) {
     result.No(BackForwardCacheMetrics::NotRestoredReason::kHaveInnerContents);
   }
 
@@ -915,13 +931,6 @@ void BackForwardCacheImpl::PopulateNonStickyReasonsForDocument(
     result.No(
         BackForwardCacheMetrics::NotRestoredReason::kSubframeIsNavigating);
   }
-
-  // TODO(https://crbug.com/1251387): Frames embedding FencedFrames are not
-  // supported.
-  if (!rfh->GetFencedFrames().empty()) {
-    result.No(
-        BackForwardCacheMetrics::NotRestoredReason::kFencedFramesEmbedder);
-  }
 }
 
 void BackForwardCacheImpl::PopulateReasonsForDocument(
@@ -941,7 +950,7 @@ BackForwardCacheImpl::CreateEvictionBackForwardCacheCanStoreTreeResult(
   // At this point the page already has some NotRestoredReasons for eviction, so
   // we should always record cache_control:no-store related reasons.
   BackForwardCacheImpl::NotRestoredReasonBuilder builder(
-      rfh.GetMainFrame(),
+      rfh.GetOutermostMainFrame(),
       /* include_non_sticky = */ false,
       BackForwardCacheImpl::NotRestoredReasonBuilder::EvictionInfo(
           rfh, &eviction_reason));
@@ -974,18 +983,35 @@ BackForwardCacheImpl::NotRestoredReasonBuilder::NotRestoredReasonBuilder(
       include_non_sticky_(include_non_sticky),
       eviction_info_(eviction_info) {
   // |root_rfh_| should be either primary main frame or back/forward cached
-  // page's main frame.
-  DCHECK(root_rfh_->IsInPrimaryMainFrame() ||
-         (root_rfh_->IsInBackForwardCache() && root_rfh_->is_main_frame()));
+  // page's outermost main frame.
+  DCHECK(
+      root_rfh_->IsInPrimaryMainFrame() ||
+      (root_rfh_->IsInBackForwardCache() && root_rfh_->IsOutermostMainFrame()));
   // Populate the reasons and build the tree.
-  tree_result_ = PopulateReasonsAndReturnSubtree(root_rfh_);
+  std::map<RenderFrameHostImpl*, BackForwardCacheCanStoreTreeResult*>
+      parent_map;
+  root_rfh_->ForEachRenderFrameHost([&](RenderFrameHostImpl* rfh) {
+    auto rfh_result = PopulateReasons(rfh);
+    parent_map[rfh] = rfh_result.get();
+
+    if (rfh == root_rfh_) {
+      tree_result_ = std::move(rfh_result);
+    } else {
+      RenderFrameHostImpl* parent = rfh->GetParentOrOuterDocumentOrEmbedder();
+      // TODO(https://crbug.com/1257276): parent can return null for unattached
+      // guests.
+      if (!parent)
+        parent = root_rfh_;
+      parent_map[parent]->AppendChild(std::move(rfh_result));
+    }
+  });
 }
 
 BackForwardCacheImpl::NotRestoredReasonBuilder::~NotRestoredReasonBuilder() =
     default;
 
 std::unique_ptr<BackForwardCacheCanStoreTreeResult>
-BackForwardCacheImpl::NotRestoredReasonBuilder::PopulateReasonsAndReturnSubtree(
+BackForwardCacheImpl::NotRestoredReasonBuilder::PopulateReasons(
     RenderFrameHostImpl* rfh) {
   BackForwardCacheCanStoreDocumentResult result_for_rfh;
   if (eviction_info_.has_value()) {
@@ -1004,19 +1030,10 @@ BackForwardCacheImpl::NotRestoredReasonBuilder::PopulateReasonsAndReturnSubtree(
   bfcache_.UpdateCanStoreToIncludeCacheControlNoStore(result_for_rfh, rfh);
   flattened_result_.AddReasonsFrom(result_for_rfh);
 
-  // Finds the reasons recursively and create the reason subtree for the
-  // children if needed.
-  BackForwardCacheCanStoreTreeResult::ChildrenVector children_result;
-  for (size_t i = 0; i < rfh->child_count(); i++) {
-    std::unique_ptr<BackForwardCacheCanStoreTreeResult> child =
-        PopulateReasonsAndReturnSubtree(rfh->child_at(i)->current_frame_host());
-    children_result.emplace_back(std::move(child));
-  }
-
   std::unique_ptr<BackForwardCacheCanStoreTreeResult> tree(
       new BackForwardCacheCanStoreTreeResult(
-          rfh, root_rfh_->GetLastCommittedOrigin(), result_for_rfh,
-          std::move(children_result)));
+          rfh, root_rfh_->GetLastCommittedOrigin(), rfh->GetLastCommittedURL(),
+          result_for_rfh));
   return tree;
 }
 
@@ -1051,6 +1068,7 @@ void BackForwardCacheImpl::StoreEntry(
       entry->StartMonitoringCookieChange();
     }
   }
+  entry->SetStoredPageDelegate(this);
   entries_.push_front(std::move(entry));
   AddProcessesForEntry(*entries_.front());
   EnforceCacheSizeLimit();
@@ -1111,9 +1129,6 @@ std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(
     int navigation_entry_id,
     blink::mojom::PageRestoreParamsPtr page_restore_params) {
   TRACE_EVENT0("navigation", "BackForwardCache::RestoreEntry");
-  blink::RecordUMAEventPageShowPersisted(
-      blink::EventPageShowPersisted::
-          kYesInBrowser_BackForwardCache_RestoreEntry_Attempt);
 
   // Select the RenderFrameHostImpl matching the navigation entry.
   auto matching_entry = base::ranges::find(
@@ -1136,6 +1151,7 @@ std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(
                       "BackForwardCache::RestoreEntry_matched_entry", "entry",
                       entry);
 
+  entry->SetStoredPageDelegate(nullptr);
   entries_.erase(matching_entry);
   RemoveProcessesForEntry(*entry);
   base::TimeTicks start_time = page_restore_params->navigation_start;
@@ -1145,9 +1161,6 @@ std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(
 
   RestoreBrowserControlsState(entry->render_frame_host());
 
-  blink::RecordUMAEventPageShowPersisted(
-      blink::EventPageShowPersisted::
-          kYesInBrowser_BackForwardCache_RestoreEntry_Succeed);
   return entry;
 }
 
@@ -1261,10 +1274,30 @@ BackForwardCacheImpl::Entry* BackForwardCacheImpl::GetEntry(
   return (*matching_entry).get();
 }
 
+void BackForwardCacheImpl::RenderViewHostNoLongerStored(
+    RenderViewHostImpl* rvh) {
+  // `AddProcessesForEntry` are gated on
+  // `UsingForegroundBackgroundCacheSizeLimit` in adding entries to the
+  // `observed_processes_` list so we have the same conditional here.
+  if (!UsingForegroundBackgroundCacheSizeLimit())
+    return;
+  RenderViewHostNoLongerStoredInternal(rvh);
+}
+
+void BackForwardCacheImpl::RenderViewHostNoLongerStoredInternal(
+    RenderViewHostImpl* rvh) {
+  RenderProcessHostImpl* process =
+      static_cast<RenderProcessHostImpl*>(rvh->GetProcess());
+  // Remove 1 instance of this process from the multiset.
+  observed_processes_.erase(observed_processes_.find(process));
+  if (observed_processes_.find(process) == observed_processes_.end())
+    process->RemoveInternalObserver(this);
+}
+
 void BackForwardCacheImpl::AddProcessesForEntry(Entry& entry) {
   if (!UsingForegroundBackgroundCacheSizeLimit())
     return;
-  for (auto* rvh : entry.render_view_hosts()) {
+  for (const auto& rvh : entry.render_view_hosts()) {
     RenderProcessHostImpl* process =
         static_cast<RenderProcessHostImpl*>(rvh->GetProcess());
     if (observed_processes_.find(process) == observed_processes_.end())
@@ -1276,13 +1309,8 @@ void BackForwardCacheImpl::AddProcessesForEntry(Entry& entry) {
 void BackForwardCacheImpl::RemoveProcessesForEntry(Entry& entry) {
   if (!UsingForegroundBackgroundCacheSizeLimit())
     return;
-  for (auto* rvh : entry.render_view_hosts()) {
-    RenderProcessHostImpl* process =
-        static_cast<RenderProcessHostImpl*>(rvh->GetProcess());
-    // Remove 1 instance of this process from the multiset.
-    observed_processes_.erase(observed_processes_.find(process));
-    if (observed_processes_.find(process) == observed_processes_.end())
-      process->RemoveInternalObserver(this);
+  for (const auto& rvh : entry.render_view_hosts()) {
+    RenderViewHostNoLongerStoredInternal(&*rvh);
   }
 }
 
@@ -1361,10 +1389,7 @@ void BackForwardCacheImpl::WillCommitNavigationToCachedEntry(
           },
           base::TimeTicks::Now(), std::move(done_callback)));
 
-  blink::RecordUMAEventPageShowPersisted(
-      blink::EventPageShowPersisted::
-          kYesInBrowser_BackForwardCache_WillCommitNavigationToCachedEntry);
-  for (auto* rvh : bfcache_entry.render_view_hosts()) {
+  for (const auto& rvh : bfcache_entry.render_view_hosts()) {
     rvh->PrepareToLeaveBackForwardCache(cb);
   }
 }
@@ -1424,16 +1449,15 @@ bool BackForwardCache::DisabledReason::operator!=(
 BackForwardCacheCanStoreTreeResult::BackForwardCacheCanStoreTreeResult(
     RenderFrameHostImpl* rfh,
     const url::Origin& main_document_origin,
-    BackForwardCacheCanStoreDocumentResult& result_for_this_document,
-    BackForwardCacheCanStoreTreeResult::ChildrenVector children)
+    const GURL& url,
+    BackForwardCacheCanStoreDocumentResult& result_for_this_document)
     : document_result_(std::move(result_for_this_document)),
-      children_(std::move(children)),
       is_same_origin_(
-          rfh->GetLastCommittedOrigin().IsSameOriginWith(main_document_origin)),
+          IsSameOriginForTreeResult(rfh, url, main_document_origin)),
       id_(rfh->frame_tree_node()->html_id()),
       name_(rfh->frame_tree_node()->html_name()),
       src_(rfh->frame_tree_node()->html_src()),
-      url_(rfh->GetLastCommittedURL()) {}
+      url_(url) {}
 
 BackForwardCacheCanStoreTreeResult::~BackForwardCacheCanStoreTreeResult() =
     default;
@@ -1441,6 +1465,11 @@ BackForwardCacheCanStoreTreeResult::~BackForwardCacheCanStoreTreeResult() =
 void BackForwardCacheCanStoreTreeResult::AddReasonsToSubtreeRootFrom(
     const BackForwardCacheCanStoreDocumentResult& result) {
   document_result_.AddReasonsFrom(result);
+}
+
+void BackForwardCacheCanStoreTreeResult::AppendChild(
+    std::unique_ptr<BackForwardCacheCanStoreTreeResult> child) {
+  children_.push_back(std::move(child));
 }
 
 const BackForwardCacheCanStoreDocumentResult
@@ -1461,11 +1490,21 @@ void BackForwardCacheCanStoreTreeResult::FlattenTreeHelper(
 std::unique_ptr<BackForwardCacheCanStoreTreeResult>
 BackForwardCacheCanStoreTreeResult::CreateEmptyTree(RenderFrameHostImpl* rfh) {
   BackForwardCacheCanStoreDocumentResult empty_result;
-  BackForwardCacheCanStoreTreeResult::ChildrenVector empty_vector;
   std::unique_ptr<BackForwardCacheCanStoreTreeResult> empty_tree(
       new BackForwardCacheCanStoreTreeResult(rfh, rfh->GetLastCommittedOrigin(),
-                                             empty_result,
-                                             std::move(empty_vector)));
+                                             rfh->GetLastCommittedURL(),
+                                             empty_result));
+  return empty_tree;
+}
+
+std::unique_ptr<BackForwardCacheCanStoreTreeResult>
+BackForwardCacheCanStoreTreeResult::CreateEmptyTreeBeforeCommit(
+    NavigationRequest* navigation) {
+  BackForwardCacheCanStoreDocumentResult empty_result;
+  std::unique_ptr<BackForwardCacheCanStoreTreeResult> empty_tree(
+      new BackForwardCacheCanStoreTreeResult(
+          navigation->GetRenderFrameHost(), navigation->GetOriginToCommit(),
+          navigation->GetURL(), empty_result));
   return empty_tree;
 }
 

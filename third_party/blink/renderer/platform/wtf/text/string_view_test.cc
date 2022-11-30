@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -375,15 +375,15 @@ TEST(StringViewTest, ConstructionLiteral16) {
 }
 
 TEST(StringViewTest, IsEmpty) {
-  EXPECT_FALSE(StringView(kChars).IsEmpty());
-  EXPECT_TRUE(StringView(kChars, 0).IsEmpty());
-  EXPECT_FALSE(StringView(String(kChars)).IsEmpty());
-  EXPECT_TRUE(StringView(String(kChars), 5).IsEmpty());
-  EXPECT_TRUE(StringView(String(kChars), 4, 0).IsEmpty());
-  EXPECT_TRUE(StringView().IsEmpty());
-  EXPECT_TRUE(StringView("").IsEmpty());
-  EXPECT_TRUE(StringView(reinterpret_cast<const UChar*>(u"")).IsEmpty());
-  EXPECT_FALSE(StringView(kChars16).IsEmpty());
+  EXPECT_FALSE(StringView(kChars).empty());
+  EXPECT_TRUE(StringView(kChars, 0).empty());
+  EXPECT_FALSE(StringView(String(kChars)).empty());
+  EXPECT_TRUE(StringView(String(kChars), 5).empty());
+  EXPECT_TRUE(StringView(String(kChars), 4, 0).empty());
+  EXPECT_TRUE(StringView().empty());
+  EXPECT_TRUE(StringView("").empty());
+  EXPECT_TRUE(StringView(reinterpret_cast<const UChar*>(u"")).empty());
+  EXPECT_FALSE(StringView(kChars16).empty());
 }
 
 TEST(StringViewTest, ToString) {

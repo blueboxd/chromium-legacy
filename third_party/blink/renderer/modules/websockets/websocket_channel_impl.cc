@@ -100,8 +100,9 @@ enum WebSocketOpCode {
 //
 // TODO(crbug.com/1121725): Cleanup this feature in June 2021, when it becomes
 // enabled by default on Stable.
-const base::Feature kAllowAggressiveThrottlingWithWebSocket{
-    "AllowAggressiveThrottlingWithWebSocket", base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kAllowAggressiveThrottlingWithWebSocket,
+             "AllowAggressiveThrottlingWithWebSocket",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace
 
@@ -298,7 +299,7 @@ bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
   Vector<String> protocols;
   // Avoid placing an empty token in the Vector when the protocol string is
   // empty.
-  if (!protocol.IsEmpty()) {
+  if (!protocol.empty()) {
     // Since protocol is already verified and escaped, we can simply split
     // it.
     protocol.Split(", ", true, protocols);
@@ -309,9 +310,10 @@ bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
   // returning "true" just indicates that this was not a mixed content error.
   if (ShouldDisallowConnection(url)) {
     execution_context_->GetTaskRunner(TaskType::kNetworking)
-        ->PostTask(FROM_HERE,
-                   WTF::Bind(&WebSocketChannelImpl::TearDownFailedConnection,
-                             WrapPersistent(this)));
+        ->PostTask(
+            FROM_HERE,
+            WTF::BindOnce(&WebSocketChannelImpl::TearDownFailedConnection,
+                          WrapPersistent(this)));
     return true;
   }
 
@@ -328,9 +330,10 @@ bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
         mojom::blink::ConsoleMessageSource::kNetwork,
         mojom::blink::ConsoleMessageLevel::kError, message.ToString()));
     execution_context_->GetTaskRunner(TaskType::kNetworking)
-        ->PostTask(FROM_HERE,
-                   WTF::Bind(&WebSocketChannelImpl::TearDownFailedConnection,
-                             WrapPersistent(this)));
+        ->PostTask(
+            FROM_HERE,
+            WTF::BindOnce(&WebSocketChannelImpl::TearDownFailedConnection,
+                          WrapPersistent(this)));
     return true;
   }
 
@@ -350,8 +353,8 @@ bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
           execution_context_->GetTaskRunner(TaskType::kWebSocket)),
       /*throttling_profile_id=*/devtools_token);
   handshake_client_receiver_.set_disconnect_with_reason_handler(
-      WTF::Bind(&WebSocketChannelImpl::OnConnectionError,
-                WrapWeakPersistent(this), FROM_HERE));
+      WTF::BindOnce(&WebSocketChannelImpl::OnConnectionError,
+                    WrapWeakPersistent(this), FROM_HERE));
   has_initiated_opening_handshake_ = true;
 
   if (handshake_throttle_) {
@@ -359,8 +362,8 @@ bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
     // the WebSocket is no longer referenced, there's no point in keeping it
     // alive just to receive the throttling result.
     handshake_throttle_->ThrottleHandshake(
-        url, WTF::Bind(&WebSocketChannelImpl::OnCompletion,
-                       WrapWeakPersistent(this)));
+        url, WTF::BindOnce(&WebSocketChannelImpl::OnCompletion,
+                           WrapWeakPersistent(this)));
   } else {
     // Treat no throttle as success.
     throttle_passed_ = true;
@@ -584,8 +587,8 @@ void WebSocketChannelImpl::OnConnectionEstablished(
       std::move(client_receiver),
       execution_context_->GetTaskRunner(TaskType::kNetworking));
   client_receiver_.set_disconnect_with_reason_handler(
-      WTF::Bind(&WebSocketChannelImpl::OnConnectionError,
-                WrapWeakPersistent(this), FROM_HERE));
+      WTF::BindOnce(&WebSocketChannelImpl::OnConnectionError,
+                    WrapWeakPersistent(this), FROM_HERE));
 
   DCHECK(!websocket_.is_bound());
   websocket_.Bind(std::move(websocket),
@@ -799,7 +802,7 @@ void WebSocketChannelImpl::ProcessSendQueue() {
   // TODO(yhirano): This should be DCHECK_EQ(GetState(), State::kOpen).
   DCHECK(GetState() == State::kOpen || GetState() == State::kConnecting);
   DCHECK(!execution_context_->IsContextDestroyed());
-  while (!messages_.IsEmpty() && !blob_loader_ && !wait_for_writable_) {
+  while (!messages_.empty() && !blob_loader_ && !wait_for_writable_) {
     Message& message = messages_.front();
     network::mojom::blink::WebSocketMessageType message_type =
         network::mojom::blink::WebSocketMessageType::BINARY;
@@ -1184,9 +1187,10 @@ String WebSocketChannelImpl::GetTextMessage(
   Vector<char> flatten;
   base::span<const char> span;
   if (chunks.size() > 1) {
-    flatten.ReserveCapacity(size);
+    flatten.reserve(size);
     for (const auto& chunk : chunks) {
-      flatten.Append(chunk.data(), static_cast<wtf_size_t>(chunk.size()));
+      flatten.Append(chunk.data(),
+                     base::checked_cast<wtf_size_t>(chunk.size()));
     }
     span = base::make_span(flatten.data(), flatten.size());
   } else if (chunks.size() == 1) {

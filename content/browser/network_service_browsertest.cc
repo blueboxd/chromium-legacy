@@ -180,7 +180,9 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
   base::FilePath GetCacheDirectory() { return temp_dir_.GetPath(); }
 
   base::FilePath GetCacheIndexDirectory() {
-    return GetCacheDirectory().AppendASCII("index-dir");
+    return GetCacheDirectory()
+        .AppendASCII("Cache_Data")
+        .AppendASCII("index-dir");
   }
 
   void LoadURL(const GURL& url,
@@ -282,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
   context_params->cert_verifier_params = GetCertVerifierParams(
       cert_verifier::mojom::CertVerifierCreationParams::New());
   context_params->http_cache_directory = GetCacheDirectory();
-  GetNetworkService()->CreateNetworkContext(
+  CreateNetworkContextInNetworkService(
       network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
 
   network::mojom::URLLoaderFactoryParamsPtr params =
@@ -1493,10 +1495,10 @@ INSTANTIATE_TEST_SUITE_P(
 class NetworkServiceInProcessBrowserTest : public ContentBrowserTest {
  public:
   NetworkServiceInProcessBrowserTest() {
-    std::vector<base::Feature> features;
+    std::vector<base::test::FeatureRef> features;
     features.push_back(features::kNetworkServiceInProcess);
-    scoped_feature_list_.InitWithFeatures(features,
-                                          std::vector<base::Feature>());
+    scoped_feature_list_.InitWithFeatures(
+        features, std::vector<base::test::FeatureRef>());
   }
 
   NetworkServiceInProcessBrowserTest(
@@ -1601,7 +1603,7 @@ class NetworkServiceWithUDPSocketLimit : public NetworkServiceBrowserTest {
         network::mojom::NetworkContextParams::New();
     context_params->cert_verifier_params = GetCertVerifierParams(
         cert_verifier::mojom::CertVerifierCreationParams::New());
-    GetNetworkService()->CreateNetworkContext(
+    CreateNetworkContextInNetworkService(
         network_context.BindNewPipeAndPassReceiver(),
         std::move(context_params));
     return network_context;

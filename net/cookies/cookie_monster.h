@@ -23,6 +23,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
+#include "base/thread_annotations.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
@@ -155,16 +156,13 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // this class, but it must remain valid for the duration of the cookie
   // monster's existence. If |store| is NULL, then no backing store will be
   // updated. |net_log| must outlive the CookieMonster and can be null.
-  CookieMonster(scoped_refptr<PersistentCookieStore> store,
-                NetLog* net_log,
-                bool first_party_sets_enabled);
+  CookieMonster(scoped_refptr<PersistentCookieStore> store, NetLog* net_log);
 
   // Only used during unit testing.
   // |net_log| must outlive the CookieMonster.
   CookieMonster(scoped_refptr<PersistentCookieStore> store,
                 base::TimeDelta last_access_threshold,
-                NetLog* net_log,
-                bool first_party_sets_enabled);
+                NetLog* net_log);
 
   CookieMonster(const CookieMonster&) = delete;
   CookieMonster& operator=(const CookieMonster&) = delete;
@@ -725,19 +723,21 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Set of keys (eTLD+1's) for which non-expired cookies have
   // been evicted for hitting the per-domain max. The size of this set is
   // histogrammed periodically. The size is limited to |kMaxDomainPurgedKeys|.
-  std::set<std::string> domain_purged_keys_;
+  std::set<std::string> domain_purged_keys_ GUARDED_BY_CONTEXT(thread_checker_);
 
   // The number of distinct keys (eTLD+1's) currently present in the |cookies_|
   // multimap. This is histogrammed periodically.
   size_t num_keys_ = 0u;
 
-  CookieMap cookies_;
+  CookieMap cookies_ GUARDED_BY_CONTEXT(thread_checker_);
 
-  PartitionedCookieMap partitioned_cookies_;
+  PartitionedCookieMap partitioned_cookies_ GUARDED_BY_CONTEXT(thread_checker_);
 
   // Number of distinct partitioned cookies globally. This is used to enforce a
   // global maximum on the number of partitioned cookies.
   size_t num_partitioned_cookies_ = 0u;
+
+  bool same_party_attribute_enabled_ = false;
 
   CookieMonsterChangeDispatcher change_dispatcher_;
 
@@ -756,11 +756,12 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // until all cookies for the associated domain key eTLD+1 are loaded from the
   // backend store.
   std::map<std::string, base::circular_deque<base::OnceClosure>>
-      tasks_pending_for_key_;
+      tasks_pending_for_key_ GUARDED_BY_CONTEXT(thread_checker_);
 
   // Queues tasks that are blocked until all cookies are loaded from the backend
   // store.
-  base::circular_deque<base::OnceClosure> tasks_pending_;
+  base::circular_deque<base::OnceClosure> tasks_pending_
+      GUARDED_BY_CONTEXT(thread_checker_);
 
   // Once a global cookie task has been seen, all per-key tasks must be put in
   // |tasks_pending_| instead of |tasks_pending_for_key_| to ensure a reasonable
@@ -794,9 +795,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   bool persist_session_cookies_ = false;
 
-  bool first_party_sets_enabled_;
-
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<CookieMonster> weak_ptr_factory_{this};
 };

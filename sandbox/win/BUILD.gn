@@ -13,6 +13,8 @@ static_library("sandbox") {
   sources = [
     "src/acl.cc",
     "src/acl.h",
+    "src/alternate_desktop.cc",
+    "src/alternate_desktop.h",
     "src/app_container.h",
     "src/app_container_base.cc",
     "src/app_container_base.h",
@@ -180,6 +182,7 @@ test("sbox_integration_tests") {
     "src/lpc_policy_test.cc",
     "src/named_pipe_policy_test.cc",
     "src/policy_target_test.cc",
+    "src/process_mitigations_deathtest.cc",
     "src/process_mitigations_dyncode_unittest.cc",
     "src/process_mitigations_extensionpoints_unittest.cc",
     "src/process_mitigations_unittest.cc",

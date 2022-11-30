@@ -223,6 +223,7 @@ hyphens
 imageOrientation
 imageRendering
 inherits
+initialLetter
 initialValue
 inlineSize
 inset
@@ -273,12 +274,10 @@ maxBlockSize
 maxHeight
 maxInlineSize
 maxWidth
-maxZoom
 minBlockSize
 minHeight
 minInlineSize
 minWidth
-minZoom
 mixBlendMode
 negative
 objectFit
@@ -292,7 +291,6 @@ offsetPosition
 offsetRotate
 opacity
 order
-orientation
 orphans
 outline
 outlineColor
@@ -439,6 +437,7 @@ toggle
 toggleGroup
 toggleRoot
 toggleTrigger
+toggleVisibility
 top
 touchAction
 transform
@@ -454,7 +453,6 @@ translate
 unicodeBidi
 unicodeRange
 userSelect
-userZoom
 vectorEffect
 verticalAlign
 viewTimeline

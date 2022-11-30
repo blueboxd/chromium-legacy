@@ -16,6 +16,7 @@
 #include "ui/accessibility/ax_node_id_forward.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/color/color_id.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // ReadAnythingFontModel
@@ -79,11 +80,15 @@ class ReadAnythingColorsModel : public ui::ComboboxModel {
 
     // The background color, used for text background.
     SkColor background;
+
+    // The foreground color as a ColorId, used for separators.
+    ui::ColorId foreground_color_id;
   };
 
   bool IsValidColorsIndex(size_t index);
   void SetDefaultColorsIndexFromPref(size_t index);
   ColorInfo& GetColorsAt(size_t index);
+  ui::ColorId GetForegroundColorId(size_t index);
 
   // Simple pass-through method so Init can set the starting state colors.
   size_t GetStartingStateIndex() { return GetDefaultIndex().value(); }
@@ -105,6 +110,49 @@ class ReadAnythingColorsModel : public ui::ComboboxModel {
   size_t default_index_ = 0;
 };
 
+//////////////////////////////////////////////////////////////////////////////
+// ReadAnythingLineSpacingModel
+//
+//  A class that stores the data for the colors combobox.
+//  This class is owned by the ReadAnythingModel and has the same lifetime as
+//  the browser.
+//
+class ReadAnythingLineSpacingModel : public ui::ComboboxModel {
+ public:
+  ReadAnythingLineSpacingModel();
+  ReadAnythingLineSpacingModel(const ReadAnythingLineSpacingModel&) = delete;
+  ReadAnythingLineSpacingModel& operator=(const ReadAnythingLineSpacingModel&) =
+      delete;
+  ~ReadAnythingLineSpacingModel() override;
+
+  bool IsValidLineSpacingIndex(size_t index);
+  void SetDefaultLineSpacingIndexFromPref(size_t index);
+  read_anything::mojom::Spacing GetLineSpacingAt(size_t index);
+
+  // Simple pass-through method so Init can set the starting state.
+  size_t GetStartingStateIndex() { return GetDefaultIndex().value(); }
+
+ protected:
+  // ui::Combobox implementation:
+  absl::optional<size_t> GetDefaultIndex() const override;
+  size_t GetItemCount() const override;
+  std::u16string GetItemAt(size_t index) const override;
+  ui::ImageModel GetIconAt(size_t index) const override;
+  ui::ImageModel GetDropDownIconAt(size_t index) const override;
+  std::u16string GetDropDownTextAt(size_t index) const override;
+
+ private:
+  // Names for the drop down options in front-end.
+  std::vector<read_anything::mojom::Spacing> lines_choices_;
+
+  // Default index for drop down, either one or populated from prefs.
+  size_t default_index_ = 1;
+
+  // Display names for line spacing choices
+  std::u16string GetLineSpacingName(
+      read_anything::mojom::Spacing line_spacing) const;
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // ReadAnythingLetterSpacingModel
 //
@@ -123,7 +171,7 @@ class ReadAnythingLetterSpacingModel : public ui::ComboboxModel {
 
   bool IsValidLetterSpacingIndex(size_t index);
   void SetDefaultLetterSpacingIndexFromPref(size_t index);
-  read_anything::mojom::LetterSpacing GetLetterSpacingAt(size_t index);
+  read_anything::mojom::Spacing GetLetterSpacingAt(size_t index);
 
  protected:
   // ui::Combobox implementation:
@@ -136,7 +184,7 @@ class ReadAnythingLetterSpacingModel : public ui::ComboboxModel {
 
  private:
   // Letter spacing choices for the drop down options in front-end.
-  std::vector<read_anything::mojom::LetterSpacing> letter_spacing_choices_;
+  std::vector<read_anything::mojom::Spacing> letter_spacing_choices_;
 
   // Default index for drop down, either one (normal spacing) or populated from
   // prefs.
@@ -144,7 +192,7 @@ class ReadAnythingLetterSpacingModel : public ui::ComboboxModel {
 
   // Display names for each letter spacing choice
   std::u16string GetLetterSpacingName(
-      read_anything::mojom::LetterSpacing letter_spacing) const;
+      read_anything::mojom::Spacing letter_spacing) const;
 };
 ///////////////////////////////////////////////////////////////////////////////
 // ReadAnythingModel
@@ -172,7 +220,8 @@ class ReadAnythingModel {
   void Init(std::string& font_name,
             double font_scale,
             read_anything::mojom::Colors colors,
-            read_anything::mojom::LetterSpacing letter_spacing);
+            read_anything::mojom::Spacing line_spacing,
+            read_anything::mojom::Spacing letter_spacing);
 
   void AddObserver(Observer* obs);
   void RemoveObserver(Observer* obs);
@@ -184,11 +233,16 @@ class ReadAnythingModel {
   void DecreaseTextSize();
   void IncreaseTextSize();
   void SetSelectedColorsByIndex(size_t new_index);
+  void SetSelectedLineSpacingByIndex(size_t new_index);
   void SetSelectedLetterSpacingByIndex(size_t new_index);
 
   ReadAnythingFontModel* GetFontModel() { return font_model_.get(); }
   double GetFontScale() { return font_scale_; }
   ReadAnythingColorsModel* GetColorsModel() { return colors_model_.get(); }
+  ui::ColorId GetForegroundColorId();
+  ReadAnythingLineSpacingModel* GetLineSpacingModel() {
+    return line_spacing_model_.get();
+  }
   ReadAnythingLetterSpacingModel* GetLetterSpacingModel() {
     return letter_spacing_model_.get();
   }
@@ -207,7 +261,11 @@ class ReadAnythingModel {
   // A scale multiplier for font size (internal use only, not shown to user).
   float font_scale_;
 
-  int letter_spacing_;
+  read_anything::mojom::Spacing line_spacing_;
+  read_anything::mojom::Spacing letter_spacing_;
+
+  // Currently selected index for colors combobox
+  int colors_combobox_index_;
 
   // TODO(crbug.com/1266555): Use |snapshot_| and |content_node_ids_| to keep
   // scrolls in sync.
@@ -217,6 +275,7 @@ class ReadAnythingModel {
   base::ObserverList<Observer> observers_;
   const std::unique_ptr<ReadAnythingFontModel> font_model_;
   const std::unique_ptr<ReadAnythingColorsModel> colors_model_;
+  const std::unique_ptr<ReadAnythingLineSpacingModel> line_spacing_model_;
   const std::unique_ptr<ReadAnythingLetterSpacingModel> letter_spacing_model_;
 };
 

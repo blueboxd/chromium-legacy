@@ -238,6 +238,9 @@ chromium-metrics-reviews@google.com.
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
+    NOTE: This metric is deprecated in favor of
+    EventLatency.KeyPressed.TotalLatency metric (see crbug.com/1054021).
+
     Time between the OS receiving a keyboard event and the resulting GPU frame
     swap. If no swap was induced by the event, no recording is made. Only
     recorded for key presses.
@@ -252,6 +255,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Event.Latency.EndToEnd.Mouse" units="microseconds"
     expires_after="2020-11-08">
+  <obsolete>
+    Removed in 2022-09. Replaced by EventLatency.Mouse*.TotalLatency metrics.
+  </obsolete>
   <owner>nzolghadr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -271,6 +277,9 @@ chromium-metrics-reviews@google.com.
   <owner>nzolghadr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
+    NOTE: This metric is deprecated in favor of
+    EventLatency.GesturePinch*.TotalLatency metrics (see crbug.com/1054021).
+
     Time between the OS receiving a touchpad pinch event and the resulting GPU
     frame swap. If no swap was induced by the event, no recording is made.
   </summary>
@@ -339,27 +348,6 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Event.Latency.Scroll.Wheel.TimeToHandled2"
-    units="microseconds" expires_after="2021-12-19">
-  <owner>flackr@chromium.org</owner>
-  <owner>input-dev@chromium.org</owner>
-  <summary>
-    Time between initial creation of a wheel event and the generated
-    ScrollUpdate gesture event is handled on main/impl thread (specified by
-    suffix). If no swap was induced by the ScrollUpdate gesture event, no
-    recording is made. Unlike Event.Latency.ScrollUpdate.Wheel.TimeToHandled2
-    this metric includes the first GSU of every scrolling sequence as well.
-
-    Team: input-dev@chromium.org.
-
-    Warning: This metric may include reports from clients with low-resolution
-    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
-    will cause this metric to have an abnormal distribution. When considering
-    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
-    solution.
-  </summary>
-</histogram>
-
 <histogram
     name="Event.Latency.ScrollBegin.Scrollbar.BrowserNotifiedToBeforeGpuSwap2"
     units="microseconds" expires_after="2023-01-01">
@@ -367,6 +355,9 @@ chromium-metrics-reviews@google.com.
   <owner>gerchiko@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
+    NOTE: This metric is deprecated in favor of Graphics.Smoothness.EventLatency
+    UKM metrics (see crbug.com/1054021).
+
     Time between the display compositor receives the notification of the first
     ScrollUpdate gesture event in a given scroll gesture event sequence with
     scrollbar source induced renderer swap and GPU starts to swap. The name
@@ -386,6 +377,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Event.Latency.ScrollBegin.Scrollbar.GpuSwap2"
     units="microseconds" expires_after="2022-08-29">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>gerchiko@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -406,6 +401,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Event.Latency.ScrollBegin.Scrollbar.HandledToRendererSwap2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>gerchiko@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -427,6 +426,10 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Event.Latency.ScrollBegin.Scrollbar.RendererSwapToBrowserNotified2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>gerchiko@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -454,6 +457,9 @@ chromium-metrics-reviews@google.com.
   <owner>gerchiko@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
+    NOTE: This metric is deprecated in favor of Graphics.Smoothness.EventLatency
+    UKM metrics (see crbug.com/1054021).
+
     Time between initial creation of a scrollbar event and the first generated
     ScrollUpdate gesture event in a given scroll gesture event sequence is
     handled on main/impl thread (specified by suffix). If no swap was induced by
@@ -471,12 +477,16 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Event.Latency.ScrollBegin.Scrollbar.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2023-01-01">
+    units="microseconds" expires_after="2023-03-26">
   <owner>nzolghadr@chromium.org</owner>
   <owner>gerchiko@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
+    NOTE: This metric is deprecated in favor of
+    EventLatency.FirstGestureScrollUpdate.Scrollbar.TotalLatency metric (see
+    crbug.com/1054021).
+
     Time between initial creation of an input event that resulted in a scrollbar
     scroll and the start of the frame swap on the GPU service caused by the
     generated ScrollUpdate gesture event if that ScrollUpdate is the first such
@@ -498,6 +508,10 @@ chromium-metrics-reviews@google.com.
     units="microseconds" expires_after="2023-02-12">
   <owner>nzolghadr@chromium.org</owner>
   <summary>
+    NOTE: This metric is deprecated in favor of
+    EventLatency.FirstGestureScrollUpdate.TotalLatency metric (see
+    crbug.com/1054021).
+
     Time between initial creation of a wheel/touch event and start of the frame
     swap on the GPU service caused by the generated ScrollUpdate gesture event
     if that ScrollUpdate is the first such event in a given scroll gesture event
@@ -551,6 +565,10 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Event.Latency.ScrollBegin.Touch.BrowserNotifiedToBeforeGpuSwap2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -573,6 +591,9 @@ chromium-metrics-reviews@google.com.
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
+    NOTE: This metric is deprecated in favor of Graphics.Smoothness.EventLatency
+    UKM metrics (see crbug.com/1054021).
+
     Time between gpu starts to swap the first ScrollUpdate gesture event in a
     given scroll gesture event sequence with touch source induced frame and the
     swap finishes.
@@ -589,6 +610,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Event.Latency.ScrollBegin.Touch.HandledToRendererSwap2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -609,6 +634,10 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Event.Latency.ScrollBegin.Touch.RendererSwapToBrowserNotified2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -631,6 +660,9 @@ chromium-metrics-reviews@google.com.
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
+    NOTE: This metric is deprecated in favor of Graphics.Smoothness.EventLatency
+    UKM metrics (see crbug.com/1054021).
+
     Time between initial creation of a touch event and the first generated
     ScrollBegin gesture event in a given scroll gesture event sequence is
     handled on main/impl thread (specified by suffix). If no swap was induced by
@@ -653,6 +685,10 @@ chromium-metrics-reviews@google.com.
   <owner>input-dev@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
+    NOTE: This metric is deprecated in favor of
+    EventLatency.FirstGestureScrollUpdate.Touchscreen.TotalLatency metric (see
+    crbug.com/1054021).
+
     Time between initial creation of a touch event and the start of the frame
     swap on the GPU service caused by the generated ScrollUpdate gesture event
     if that ScrollUpdate is the first such event in a given scroll gesture event
@@ -675,6 +711,10 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Event.Latency.ScrollBegin.Wheel.BrowserNotifiedToBeforeGpuSwap2"
     units="microseconds" expires_after="2022-07-03">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -688,6 +728,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Event.Latency.ScrollBegin.Wheel.GpuSwap2" units="microseconds"
     expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -707,6 +751,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Event.Latency.ScrollBegin.Wheel.HandledToRendererSwap2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -727,6 +775,10 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Event.Latency.ScrollBegin.Wheel.RendererSwapToBrowserNotified2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -746,6 +798,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Event.Latency.ScrollBegin.Wheel.TimeToHandled2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -765,9 +821,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2023-01-15">
+    units="microseconds" expires_after="2023-03-19">
   <owner>flackr@chromium.org</owner>
   <summary>
+    NOTE: This metric is deprecated in favor of
+    EventLatency.FirstGestureScrollUpdate.Wheel.TotalLatency metric (see
+    crbug.com/1054021).
+
     Time between initial creation of a wheel event and the start of the frame
     swap on the GPU service caused by the generated ScrollUpdate gesture event
     if that ScrollUpdate is the first such event in a given scroll gesture event
@@ -786,6 +846,10 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Event.Latency.ScrollInertial.Touch.BrowserNotifiedToBeforeGpuSwap2"
     units="microseconds" expires_after="2022-06-19">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -799,6 +863,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Event.Latency.ScrollInertial.Touch.GpuSwap2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -817,6 +885,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Event.Latency.ScrollInertial.Touch.HandledToRendererSwap2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -837,6 +909,10 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Event.Latency.ScrollInertial.Touch.RendererSwapToBrowserNotified2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -856,6 +932,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Event.Latency.ScrollInertial.Touch.TimeToHandled2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -876,6 +956,10 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Event.Latency.ScrollInertial.Touch.TimeToScrollUpdateSwapBegin4"
     units="microseconds" expires_after="2022-07-31">
+  <obsolete>
+    Removed in 2022-09. Replaced by
+    EventLatency.InertialGestureScrollUpdate.Touchscreen.TotalLatency.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -906,7 +990,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.JankyDuration" units="ms"
-    expires_after="2023-01-29">
+    expires_after="2023-04-02">
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
@@ -917,7 +1001,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.JankyDurationPercentage" units="%"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
@@ -939,6 +1023,10 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Event.Latency.ScrollUpdate.Scrollbar.BrowserNotifiedToBeforeGpuSwap2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>arakeri@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -962,6 +1050,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Event.Latency.ScrollUpdate.Scrollbar.GpuSwap2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>arakeri@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -981,6 +1073,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Event.Latency.ScrollUpdate.Scrollbar.HandledToRendererSwap2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>arakeri@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -1002,6 +1098,10 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Event.Latency.ScrollUpdate.Scrollbar.RendererSwapToBrowserNotified2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>arakeri@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -1029,6 +1129,9 @@ chromium-metrics-reviews@google.com.
   <owner>arakeri@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
+    NOTE: This metric is deprecated in favor of Graphics.Smoothness.EventLatency
+    UKM metrics (see crbug.com/1054021).
+
     Time between initial creation of an input event that results in a scrollbar
     scroll and the generated ScrollUpdate gesture event is handled on main/impl
     thread (specified by suffix). If no swap was induced by the ScrollUpdate
@@ -1046,12 +1149,16 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Event.Latency.ScrollUpdate.Scrollbar.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2022-12-18">
+    units="microseconds" expires_after="2023-03-26">
   <owner>flackr@chromium.org</owner>
   <owner>arakeri@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
+    NOTE: This metric is deprecated in favor of
+    EventLatency.GestureScrollUpdate.Scrollbar.TotalLatency metric (see
+    crbug.com/1054021).
+
     Time between initial creation of a scrollbar event and start of the frame
     swap on the GPU service caused by the generated ScrollUpdate gesture event.
     If no swap was induced by the event, no recording is made. The first GSU of
@@ -1072,6 +1179,10 @@ chromium-metrics-reviews@google.com.
     units="microseconds" expires_after="2023-03-05">
   <owner>nzolghadr@chromium.org</owner>
   <summary>
+    NOTE: This metric is deprecated in favor of
+    EventLatency.GestureScrollUpdate.TotalLatency metric (see
+    crbug.com/1054021).
+
     Time between initial creation of a wheel/touch event and start of the frame
     swap on the GPU service caused by the generated ScrollUpdate gesture event.
     If no swap was induced by the event, no recording is made. The first GSU of
@@ -1205,6 +1316,10 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Event.Latency.ScrollUpdate.Touch.BrowserNotifiedToBeforeGpuSwap2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -1226,6 +1341,9 @@ chromium-metrics-reviews@google.com.
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
+    NOTE: This metric is deprecated in favor of Graphics.Smoothness.EventLatency
+    UKM metrics (see crbug.com/1054021).
+
     Time between gpu starts to swap a ScrollUpdate gesture event with touch
     source induced frame and the swap finishes.
 
@@ -1244,6 +1362,9 @@ chromium-metrics-reviews@google.com.
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
+    NOTE: This metric is deprecated in favor of Graphics.Smoothness.EventLatency
+    UKM metrics (see crbug.com/1054021).
+
     Time between the ScrollUpdate gesture event with touch source, is handled on
     main/impl thread (specified by suffix) and before renderer starts to swap.
     This is recorded each time a user touch scroll is swapped to the display.
@@ -1264,6 +1385,9 @@ chromium-metrics-reviews@google.com.
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
+    NOTE: This metric is deprecated in favor of Graphics.Smoothness.EventLatency
+    UKM metrics (see crbug.com/1054021).
+
     Time between the renderer starts to swap a frame induced by ScrollUpdate
     gesture event with touch source, and browser receives the swap notification.
 
@@ -1282,6 +1406,9 @@ chromium-metrics-reviews@google.com.
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
+    NOTE: This metric is deprecated in favor of Graphics.Smoothness.EventLatency
+    UKM metrics (see crbug.com/1054021).
+
     Time between initial creation of a touch event and the generated
     ScrollUpdate gesture event is handled on main/impl thread (specified by
     suffix). If no swap was induced by the ScrollUpdate gesture event, no
@@ -1299,15 +1426,17 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4{TopControlsState}"
-    units="microseconds" expires_after="never">
-<!-- expires-never: guiding metric (internal: go/chrome-browser-guiding-metrics) -->
-
+    units="microseconds" expires_after="2023-06-30">
   <owner>flackr@chromium.org</owner>
   <owner>sullivan@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
   <summary>
+    NOTE: This metric is deprecated in favor of
+    EventLatency.GestureScrollUpdate.Touchscreen.TotalLatency metric (see
+    crbug.com/1054021).
+
     Time between initial creation of a touch event and start of the frame swap
     on the GPU service caused by the generated ScrollUpdate gesture event. If no
     swap was induced by the event, no recording is made. The first GSU of every
@@ -1330,6 +1459,10 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Event.Latency.ScrollUpdate.Wheel.BrowserNotifiedToBeforeGpuSwap2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -1348,6 +1481,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Event.Latency.ScrollUpdate.Wheel.GpuSwap2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -1366,6 +1503,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Event.Latency.ScrollUpdate.Wheel.HandledToRendererSwap2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -1387,6 +1528,10 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Event.Latency.ScrollUpdate.Wheel.RendererSwapToBrowserNotified2"
     units="microseconds" expires_after="2022-06-01">
+  <obsolete>
+    Removed in 2022-09. Replaced by Graphics.Smoothness.EventLatency UKM
+    metrics.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -1408,6 +1553,9 @@ chromium-metrics-reviews@google.com.
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
+    NOTE: This metric is deprecated in favor of Graphics.Smoothness.EventLatency
+    UKM metrics (see crbug.com/1054021).
+
     Time between initial creation of a wheel event and the generated
     ScrollUpdate gesture event is handled on main/impl thread (specified by
     suffix). If no swap was induced by the ScrollUpdate gesture event, no
@@ -1426,9 +1574,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.Wheel.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2023-01-15">
+    units="microseconds" expires_after="2023-03-19">
   <owner>flackr@chromium.org</owner>
   <summary>
+    NOTE: This metric is deprecated in favor of
+    EventLatency.GestureScrollUpdate.Wheel.TotalLatency metric (see
+    crbug.com/1054021).
+
     Time between initial creation of a wheel event and start of the frame swap
     on the GPU service caused by the generated ScrollUpdate gesture event. If no
     swap was induced by the event, no recording is made. The first GSU of every
@@ -1479,7 +1631,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.PageShow.Persisted" enum="EventPageShowPersisted"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>fergal@chromium.org</owner>
   <summary>
@@ -1752,7 +1904,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EventLatency.TotalLatency" units="microseconds"
-    expires_after="2023-01-16">
+    expires_after="2023-03-19">
   <owner>mohsen@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>

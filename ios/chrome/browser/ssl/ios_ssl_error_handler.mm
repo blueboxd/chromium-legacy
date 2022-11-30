@@ -29,8 +29,6 @@
 #error "This file requires ARC support."
 #endif
 
-const int64_t kSSLInterstitialDelayInSeconds = 3;
-
 using captive_portal::CaptivePortalDetector;
 using security_interstitials::IOSBlockingPageTabHelper;
 
@@ -123,7 +121,7 @@ void IOSSSLErrorHandler::StartHandlingError() {
 
   // Default to presenting the SSL interstitial if Captive Portal detection
   // takes too long.
-  timer_.Start(FROM_HERE, base::Seconds(kSSLInterstitialDelayInSeconds), this,
+  timer_.Start(FROM_HERE, kSSLInterstitialDelay, this,
                &IOSSSLErrorHandler::ShowSSLInterstitial);
 }
 

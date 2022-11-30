@@ -112,7 +112,7 @@ StringKeyframeVector ProcessKeyframesRule(
     const StyleRuleKeyframe* style_keyframe = style_keyframes[i].Get();
     auto* keyframe = MakeGarbageCollected<StringKeyframe>();
     const Vector<double>& offsets = style_keyframe->Keys();
-    DCHECK(!offsets.IsEmpty());
+    DCHECK(!offsets.empty());
     keyframe->SetOffset(offsets[0]);
     keyframe->SetEasing(default_timing_function);
     const CSSPropertyValueSet& properties = style_keyframe->Properties();
@@ -356,7 +356,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   // 6.3 For each property in animated properties that is not present in some
   //     other keyframe with offset 0, add the computed value of that property
   //     for element to the keyframe.
-  StringKeyframe* start_keyframe = keyframes.IsEmpty() ? nullptr : keyframes[0];
+  StringKeyframe* start_keyframe = keyframes.empty() ? nullptr : keyframes[0];
   if (NeedsBoundaryKeyframe(start_keyframe, 0, animated_properties,
                             start_properties, default_timing_function)) {
     start_keyframe = MakeGarbageCollected<StringKeyframe>();
@@ -469,7 +469,7 @@ void CSSAnimations::CalculateScrollTimelineUpdate(CSSAnimationUpdate& update,
       timeline_data ? timeline_data->GetScrollTimeline() : nullptr;
   CSSScrollTimeline* new_timeline = nullptr;
 
-  if (!name.IsEmpty()) {
+  if (!name.empty()) {
     // If the computed values of scroll-timeline-* would produce a
     // CSSScrollTimeline identical to the existing one, we reuse the existing
     // one instead.
@@ -499,12 +499,12 @@ void CSSAnimations::CalculateViewTimelineUpdate(CSSAnimationUpdate& update,
                                                 const ComputedStyle& style) {
   const Vector<AtomicString>& names = style.ViewTimelineName();
   const Vector<TimelineAxis>& axes = style.ViewTimelineAxis();
-  // TODO(crbug.com/1344151): view-timeline-inset
+  const Vector<TimelineInset>& insets = style.ViewTimelineInset();
 
   const CSSAnimations::TimelineData* timeline_data =
       GetTimelineData(animating_element);
 
-  if (names.IsEmpty() && (!timeline_data || timeline_data->IsEmpty()))
+  if (names.empty() && (!timeline_data || timeline_data->IsEmpty()))
     return;
 
   CSSViewTimelineMap changed_timelines;
@@ -519,13 +519,16 @@ void CSSAnimations::CalculateViewTimelineUpdate(CSSAnimationUpdate& update,
 
   for (wtf_size_t i = 0; i < names.size(); ++i) {
     const AtomicString& name = names[i];
-    if (name.IsEmpty())
+    if (name.empty())
       continue;
-    TimelineAxis axis = axes.IsEmpty() ? TimelineAxis::kBlock
-                                       : axes[std::min(i, axes.size() - 1)];
+    TimelineAxis axis = axes.empty() ? TimelineAxis::kBlock
+                                     : axes[std::min(i, axes.size() - 1)];
+    const TimelineInset& inset = insets.empty()
+                                     ? TimelineInset()
+                                     : insets[std::min(i, insets.size() - 1)];
     CSSViewTimeline* existing_timeline =
         timeline_data ? timeline_data->GetViewTimeline(name) : nullptr;
-    CSSViewTimeline::Options options(&animating_element, axis);
+    CSSViewTimeline::Options options(&animating_element, axis, inset);
     if (existing_timeline && existing_timeline->Matches(options)) {
       // Don't clear this timeline after all.
       changed_timelines.erase(name);
@@ -988,11 +991,11 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
                                     previous_timeline->GetDuration().value();
 
                   AnimationTimeDelta end_time = std::max(
-                      specified_timing.start_delay +
+                      specified_timing.start_delay.AsTimeValue() +
                           MultiplyZeroAlwaysGivesZero(
                               specified_timing.iteration_duration.value(),
                               specified_timing.iteration_count) +
-                          specified_timing.end_delay,
+                          specified_timing.end_delay.AsTimeValue(),
                       AnimationTimeDelta());
 
                   inherited_time = progress * end_time;
@@ -1403,7 +1406,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
 
   HashSet<PropertyHandle> suppressed_transitions;
 
-  if (!pending_update_.NewTransitions().IsEmpty()) {
+  if (!pending_update_.NewTransitions().empty()) {
     element->GetDocument()
         .GetDocumentAnimations()
         .IncrementTrasitionGeneration();
@@ -1459,7 +1462,7 @@ CSSAnimations::CreateCancelledTransitionsSet(
     ElementAnimations* element_animations,
     CSSAnimationUpdate& update) {
   HeapHashSet<Member<const Animation>> cancelled_transitions;
-  if (!update.CancelledTransitions().IsEmpty()) {
+  if (!update.CancelledTransitions().empty()) {
     DCHECK(element_animations);
     const TransitionMap& transition_map =
         element_animations->CssAnimations().transitions_;
@@ -1600,7 +1603,7 @@ void CSSAnimations::CalculateTransitionUpdateForPropertyHandle(
   Timing timing = state.transition_data->ConvertToTiming(transition_index);
   // CSS Transitions always have a valid duration (i.e. the value 'auto' is not
   // supported), so iteration_duration will always be set.
-  if (timing.start_delay + timing.iteration_duration.value() <=
+  if (timing.start_delay.AsTimeValue() + timing.iteration_duration.value() <=
       AnimationTimeDelta()) {
     // We may have started a transition in a prior CSSTransitionData update,
     // this CSSTransitionData update needs to override them.
@@ -1626,8 +1629,8 @@ void CSSAnimations::CalculateTransitionUpdateForPropertyHandle(
                       (1 - interrupted_transition->reversing_shortening_factor),
                   0.0, 1.0);
       timing.iteration_duration.value() *= reversing_shortening_factor;
-      if (timing.start_delay < AnimationTimeDelta()) {
-        timing.start_delay *= reversing_shortening_factor;
+      if (timing.start_delay.AsTimeValue() < AnimationTimeDelta()) {
+        timing.start_delay.Scale(reversing_shortening_factor);
       }
     }
   }
@@ -1945,6 +1948,10 @@ bool IsCSSPropertyHandle(const PropertyHandle& property) {
   return property.IsCSSProperty() || property.IsPresentationAttribute();
 }
 
+bool IsLineHeightPropertyHandle(const PropertyHandle& property) {
+  return property == PropertyHandle(GetCSSPropertyLineHeight());
+}
+
 void AdoptActiveAnimationInterpolations(
     EffectStack* effect_stack,
     CSSAnimationUpdate& update,
@@ -1966,8 +1973,7 @@ void CSSAnimations::CalculateAnimationActiveInterpolations(
   EffectStack* effect_stack =
       element_animations ? &element_animations->GetEffectStack() : nullptr;
 
-  if (update.NewAnimations().IsEmpty() &&
-      update.SuppressedAnimations().IsEmpty()) {
+  if (update.NewAnimations().empty() && update.SuppressedAnimations().empty()) {
     AdoptActiveAnimationInterpolations(effect_stack, update, nullptr, nullptr);
     return;
   }
@@ -1993,8 +1999,8 @@ void CSSAnimations::CalculateTransitionActiveInterpolations(
       element_animations ? &element_animations->GetEffectStack() : nullptr;
 
   ActiveInterpolationsMap active_interpolations_for_transitions;
-  if (update.NewTransitions().IsEmpty() &&
-      update.CancelledTransitions().IsEmpty()) {
+  if (update.NewTransitions().empty() &&
+      update.CancelledTransitions().empty()) {
     active_interpolations_for_transitions = EffectStack::ActiveInterpolations(
         effect_stack, nullptr, nullptr, KeyframeEffect::kTransitionPriority,
         IsCSSPropertyHandle);
@@ -2015,8 +2021,7 @@ void CSSAnimations::CalculateTransitionActiveInterpolations(
       update.ActiveInterpolationsForAnimations();
   // Properties being animated by animations don't get values from transitions
   // applied.
-  if (!animations.IsEmpty() &&
-      !active_interpolations_for_transitions.IsEmpty()) {
+  if (!animations.empty() && !active_interpolations_for_transitions.empty()) {
     for (const auto& entry : animations)
       active_interpolations_for_transitions.erase(entry.key);
   }
@@ -2225,7 +2230,7 @@ void CSSAnimations::TransitionEventDelegate::Trace(Visitor* visitor) const {
 const StylePropertyShorthand& CSSAnimations::PropertiesForTransitionAll() {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   DEFINE_STATIC_LOCAL(StylePropertyShorthand, property_shorthand, ());
-  if (properties.IsEmpty()) {
+  if (properties.empty()) {
     for (CSSPropertyID id : CSSPropertyIDList()) {
       // Avoid creating overlapping transitions with perspective-origin and
       // transition-origin.
@@ -2322,6 +2327,13 @@ bool CSSAnimations::IsAnimatingFontAffectingProperties(
   return element_animations &&
          element_animations->GetEffectStack().AffectsProperties(
              IsFontAffectingPropertyHandle);
+}
+
+bool CSSAnimations::IsAnimatingLineHeightProperty(
+    const ElementAnimations* element_animations) {
+  return element_animations &&
+         element_animations->GetEffectStack().AffectsProperties(
+             IsLineHeightPropertyHandle);
 }
 
 bool CSSAnimations::IsAnimatingRevert(

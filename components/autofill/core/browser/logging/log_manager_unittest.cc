@@ -11,13 +11,24 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
+using ::testing::_;
+using ::testing::Eq;
+using ::testing::Property;
 
 namespace autofill {
 
 namespace {
 
 const char kTestText[] = "abcd1234";
+
+auto JsonHasText(base::StringPiece text) {
+  return testing::ResultOf(
+      [](const base::Value::Dict& dict) {
+        const std::string* value = dict.FindString("value");
+        return value ? *value : "";
+      },
+      Eq(text));
+}
 
 class MockLogReceiver : public autofill::LogReceiver {
  public:
@@ -48,6 +59,7 @@ class LogManagerTest : public testing::Test {
         &router_,
         base::BindRepeating(&MockNotifiedObject::NotifyAboutLoggingActivity,
                             base::Unretained(&notified_object_)));
+    buffering_manager_ = LogManager::CreateBuffering();
   }
 
   void TearDown() override {
@@ -58,13 +70,14 @@ class LogManagerTest : public testing::Test {
   testing::StrictMock<MockLogReceiver> receiver_;
   LogRouter router_;
   testing::StrictMock<MockNotifiedObject> notified_object_;
-  std::unique_ptr<LogManager> manager_;
+  std::unique_ptr<RoutingLogManager> manager_;
+  std::unique_ptr<BufferingLogManager> buffering_manager_;
 };
 
 TEST_F(LogManagerTest, LogTextMessageNoReceiver) {
   EXPECT_CALL(receiver_, LogEntry(_)).Times(0);
   // Before attaching the receiver, no text should be passed.
-  manager_->LogTextMessage(kTestText);
+  LOG_AF(*manager_) << kTestText;
   EXPECT_FALSE(manager_->IsLoggingActive());
 }
 
@@ -75,9 +88,8 @@ TEST_F(LogManagerTest, LogTextMessageAttachReceiver) {
   router_.RegisterReceiver(&receiver_);
   EXPECT_TRUE(manager_->IsLoggingActive());
   // After attaching the logger, text should be passed.
-  base::Value::Dict log_entry = LogRouter::CreateEntryForText(kTestText);
-  EXPECT_CALL(receiver_, LogEntry(testing::Eq(testing::ByRef(log_entry))));
-  manager_->LogTextMessage(kTestText);
+  EXPECT_CALL(receiver_, LogEntry(JsonHasText(kTestText)));
+  LOG_AF(*manager_) << kTestText;
   EXPECT_CALL(notified_object_, NotifyAboutLoggingActivity());
   router_.UnregisterReceiver(&receiver_);
   EXPECT_FALSE(manager_->IsLoggingActive());
@@ -93,7 +105,34 @@ TEST_F(LogManagerTest, LogTextMessageDetachReceiver) {
 
   // After detaching the logger, no text should be passed.
   EXPECT_CALL(receiver_, LogEntry(_)).Times(0);
-  manager_->LogTextMessage(kTestText);
+  LOG_AF(*manager_) << kTestText;
+}
+
+TEST_F(LogManagerTest, LogBufferingEntriesWhenFlushed) {
+  LOG_AF(*buffering_manager_) << kTestText;
+  LOG_AF(*buffering_manager_) << kTestText;
+  EXPECT_FALSE(manager_->IsLoggingActive());
+  EXPECT_CALL(notified_object_, NotifyAboutLoggingActivity());
+  router_.RegisterReceiver(&receiver_);
+  EXPECT_TRUE(manager_->IsLoggingActive());
+
+  // After flushing the buffering log manager, text should be passed.
+  EXPECT_CALL(receiver_, LogEntry(JsonHasText(kTestText))).Times(2);
+  buffering_manager_->Flush(*manager_);
+
+  // Flushing a second time has no effect because the buffer is now empty.
+  EXPECT_CALL(receiver_, LogEntry(JsonHasText(kTestText))).Times(0);
+  buffering_manager_->Flush(*manager_);
+
+  // After logging to the buffering log manager and flushing it again, text
+  // should be passed.
+  LOG_AF(*buffering_manager_) << kTestText;
+  LOG_AF(*buffering_manager_) << kTestText;
+  EXPECT_CALL(receiver_, LogEntry(JsonHasText(kTestText))).Times(2);
+  buffering_manager_->Flush(*manager_);
+
+  EXPECT_CALL(notified_object_, NotifyAboutLoggingActivity());
+  router_.UnregisterReceiver(&receiver_);
 }
 
 TEST_F(LogManagerTest, NullCallbackWillNotCrash) {

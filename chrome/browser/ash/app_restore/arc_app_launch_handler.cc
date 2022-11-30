@@ -245,13 +245,14 @@ void ArcAppLaunchHandler::LaunchApp(const std::string& app_id) {
   if (it == handler_->restore_data()->app_id_to_launch_list().end())
     return;
 
-  if (it->second.empty()) {
+  const auto& launch_list = it->second;
+  if (launch_list.empty()) {
     handler_->restore_data()->RemoveApp(app_id);
     return;
   }
 
-  for (const auto& data_it : it->second)
-    LaunchApp(app_id, data_it.first);
+  for (const auto& [window_id, _] : launch_list)
+    LaunchAppWindow(app_id, window_id);
 
   RemoveWindowsForApp(app_id);
 }
@@ -302,8 +303,9 @@ void ArcAppLaunchHandler::OnWindowActivated(
   if (!arc_app_id || arc_app_id->empty() || !IsAppReady(*arc_app_id))
     return;
 
-  RemoveWindow(*arc_app_id, it->second);
-  LaunchApp(*arc_app_id, it->second);
+  auto window_id = it->second;
+  RemoveWindow(*arc_app_id, window_id);
+  LaunchAppWindow(*arc_app_id, window_id);
 }
 
 void ArcAppLaunchHandler::OnWindowInitialized(aura::Window* window) {
@@ -364,12 +366,14 @@ void ArcAppLaunchHandler::LoadRestoreData() {
 void ArcAppLaunchHandler::AddWindows(const std::string& app_id) {
   DCHECK(handler_);
   auto it = handler_->restore_data()->app_id_to_launch_list().find(app_id);
-  for (const auto& data_it : it->second) {
-    if (data_it.second->activation_index.has_value()) {
-      windows_[data_it.second->activation_index.value()] = {app_id,
-                                                            data_it.first};
+  DCHECK(it != handler_->restore_data()->app_id_to_launch_list().end());
+  const auto& launch_list = it->second;
+  for (const auto& [window_id, app_restore_data] : launch_list) {
+    if (app_restore_data->activation_index.has_value()) {
+      windows_[app_restore_data->activation_index.value()] = {app_id,
+                                                              window_id};
     } else {
-      no_stack_windows_.push_back({app_id, data_it.first});
+      no_stack_windows_.push_back({app_id, window_id});
     }
   }
 }
@@ -410,15 +414,16 @@ void ArcAppLaunchHandler::PrepareAppLaunching(const std::string& app_id) {
   if (it == handler_->restore_data()->app_id_to_launch_list().end())
     return;
 
-  if (it->second.empty()) {
+  const auto& launch_list = it->second;
+  if (launch_list.empty()) {
     handler_->restore_data()->RemoveApp(app_id);
     return;
   }
 
-  for (const auto& data_it : it->second) {
+  for (const auto& [window_id, app_restore_data] : launch_list) {
     handler_->RecordRestoredAppLaunch(apps::AppTypeName::kArc);
 
-    DCHECK(data_it.second->event_flag.has_value());
+    DCHECK(app_restore_data->event_flag.has_value());
 
     // Set an ARC session id to find the restore window id based on the newly
     // created ARC task id. Note that the desk template launch ID must be set
@@ -428,34 +433,44 @@ void ArcAppLaunchHandler::PrepareAppLaunching(const std::string& app_id) {
       ::app_restore::SetDeskTemplateLaunchIdForArcSessionId(
           arc_session_id, desk_template_launch_id_);
     }
-    ::app_restore::SetArcSessionIdForWindowId(arc_session_id, data_it.first);
-    window_id_to_session_id_[data_it.first] = arc_session_id;
-    session_id_to_window_id_[arc_session_id] = data_it.first;
+    ::app_restore::SetArcSessionIdForWindowId(arc_session_id, window_id);
+    window_id_to_session_id_[window_id] = arc_session_id;
+    session_id_to_window_id_[arc_session_id] = window_id;
 
     bool launch_ghost_window = false;
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
     if (window_handler_ &&
-        arc::CanLaunchGhostWindowByRestoreData(*data_it.second) &&
+        arc::CanLaunchGhostWindowByRestoreData(*app_restore_data) &&
         window_handler_->LaunchArcGhostWindow(app_id, arc_session_id,
-                                              data_it.second.get())) {
+                                              app_restore_data.get())) {
       launch_ghost_window = true;
+
+      // Update ARC app states immediately, since the app states may already
+      // changed from original state.
+      ArcAppListPrefs* prefs = ArcAppListPrefs::Get(handler_->profile());
+      if (prefs) {
+        auto app_info = prefs->GetApp(app_id);
+        if (app_info)
+          window_handler_->OnAppStatesUpdate(app_id, app_info->ready,
+                                             app_info->need_fixup);
+      }
     } else {
       // Only record bounds state when no ghost window launch.
-      RecordLaunchBoundsState(data_it.second->bounds_in_root.has_value(),
-                              data_it.second->current_bounds.has_value());
+      RecordLaunchBoundsState(app_restore_data->bounds_in_root.has_value(),
+                              app_restore_data->current_bounds.has_value());
     }
 #endif
     RecordArcGhostWindowLaunch(launch_ghost_window);
 
     const auto& file_path = handler_->profile()->GetPath();
-    int32_t event_flags = data_it.second->event_flag.value();
-    int64_t display_id = data_it.second->display_id.has_value()
-                             ? data_it.second->display_id.value()
+    int32_t event_flags = app_restore_data->event_flag.value();
+    int64_t display_id = app_restore_data->display_id.has_value()
+                             ? app_restore_data->display_id.value()
                              : display::kInvalidDisplayId;
-    if (data_it.second->intent) {
+    if (app_restore_data->intent) {
       ::full_restore::SaveAppLaunchInfo(
           file_path, std::make_unique<::app_restore::AppLaunchInfo>(
-                         app_id, event_flags, data_it.second->intent->Clone(),
+                         app_id, event_flags, app_restore_data->intent->Clone(),
                          arc_session_id, display_id));
     } else {
       ::full_restore::SaveAppLaunchInfo(
@@ -470,11 +485,11 @@ void ArcAppLaunchHandler::PrepareAppLaunching(const std::string& app_id) {
         ChromeShelfController::instance();
     // chrome_controller may be null in tests.
     if (chrome_controller) {
-      apps::mojom::WindowInfoPtr window_info = apps::mojom::WindowInfo::New();
+      apps::WindowInfoPtr window_info = std::make_unique<apps::WindowInfo>();
       window_info->window_id = arc_session_id;
       chrome_controller->GetShelfSpinnerController()->AddSpinnerToShelf(
           app_id, std::make_unique<ArcShelfSpinnerItemController>(
-                      app_id, data_it.second->event_flag.value(),
+                      app_id, app_restore_data->event_flag.value(),
                       arc::UserInteractionType::APP_STARTED_FROM_FULL_RESTORE,
                       apps::MakeArcWindowInfo(std::move(window_info))));
     }
@@ -541,11 +556,7 @@ bool ArcAppLaunchHandler::IsAppReady(const std::string& app_id) {
   if (!prefs)
     return false;
 
-  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
-  if (!app_info || app_info->suspended || !app_info->ready)
-    return false;
-
-  return true;
+  return prefs->IsAbleToBeLaunched(app_id);
 }
 
 void ArcAppLaunchHandler::MaybeLaunchApp() {
@@ -557,7 +568,7 @@ void ArcAppLaunchHandler::MaybeLaunchApp() {
 
   for (auto it = pending_windows_.begin(); it != pending_windows_.end(); ++it) {
     if (IsAppReady(it->app_id)) {
-      LaunchApp(it->app_id, it->window_id);
+      LaunchAppWindow(it->app_id, it->window_id);
       pending_windows_.erase(it);
       MaybeReStartTimer(kAppLaunchDelay);
       return;
@@ -568,7 +579,7 @@ void ArcAppLaunchHandler::MaybeLaunchApp() {
     auto it = windows_.begin();
     if (IsAppReady(it->second.app_id)) {
       launch_count_ = 0;
-      LaunchApp(it->second.app_id, it->second.window_id);
+      LaunchAppWindow(it->second.app_id, it->second.window_id);
       windows_.erase(it);
       MaybeReStartTimer(kAppLaunchDelay);
     } else {
@@ -587,7 +598,7 @@ void ArcAppLaunchHandler::MaybeLaunchApp() {
   for (auto it = no_stack_windows_.begin(); it != no_stack_windows_.end();
        ++it) {
     if (IsAppReady(it->app_id)) {
-      LaunchApp(it->app_id, it->window_id);
+      LaunchAppWindow(it->app_id, it->window_id);
       no_stack_windows_.erase(it);
       MaybeReStartTimer(kAppLaunchDelay);
       return;
@@ -595,8 +606,8 @@ void ArcAppLaunchHandler::MaybeLaunchApp() {
   }
 }
 
-void ArcAppLaunchHandler::LaunchApp(const std::string& app_id,
-                                    int32_t window_id) {
+void ArcAppLaunchHandler::LaunchAppWindow(const std::string& app_id,
+                                          int32_t window_id) {
   DCHECK(handler_);
 
   const auto it =
@@ -604,14 +615,16 @@ void ArcAppLaunchHandler::LaunchApp(const std::string& app_id,
   if (it == handler_->restore_data()->app_id_to_launch_list().end())
     return;
 
-  if (it->second.empty()) {
+  const auto& launch_list = it->second;
+  if (launch_list.empty()) {
     handler_->restore_data()->RemoveApp(app_id);
     return;
   }
 
-  const auto data_it = it->second.find(window_id);
-  if (data_it == it->second.end())
+  const auto data_it = launch_list.find(window_id);
+  if (data_it == launch_list.end())
     return;
+  const auto& app_restore_data = data_it->second;
 
   first_run_ = false;
 
@@ -619,10 +632,10 @@ void ArcAppLaunchHandler::LaunchApp(const std::string& app_id,
       apps::AppServiceProxyFactory::GetForProfile(handler_->profile());
   DCHECK(proxy);
 
-  DCHECK(data_it->second->event_flag.has_value());
+  DCHECK(app_restore_data->event_flag.has_value());
 
   apps::WindowInfoPtr window_info =
-      full_restore::HandleArcWindowInfo(data_it->second->GetAppWindowInfo());
+      full_restore::HandleArcWindowInfo(app_restore_data->GetAppWindowInfo());
   const auto window_it = window_id_to_session_id_.find(window_id);
   if (window_it != window_id_to_session_id_.end()) {
     window_info->window_id = window_it->second;
@@ -636,26 +649,26 @@ void ArcAppLaunchHandler::LaunchApp(const std::string& app_id,
     window_id_to_session_id_[window_id] = arc_session_id;
   }
 
-  if (data_it->second->intent) {
+  if (app_restore_data->intent) {
     if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
-      proxy->LaunchAppWithIntent(app_id, data_it->second->event_flag.value(),
-                                 data_it->second->intent->Clone(),
+      proxy->LaunchAppWithIntent(app_id, app_restore_data->event_flag.value(),
+                                 app_restore_data->intent->Clone(),
                                  apps::LaunchSource::kFromFullRestore,
                                  std::move(window_info), base::DoNothing());
     } else {
       proxy->LaunchAppWithIntent(
-          app_id, data_it->second->event_flag.value(),
-          apps::ConvertIntentToMojomIntent(data_it->second->intent),
+          app_id, app_restore_data->event_flag.value(),
+          apps::ConvertIntentToMojomIntent(app_restore_data->intent),
           apps::mojom::LaunchSource::kFromFullRestore,
           ConvertWindowInfoToMojomWindowInfo(window_info), {});
     }
   } else {
     if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
-      proxy->Launch(app_id, data_it->second->event_flag.value(),
+      proxy->Launch(app_id, app_restore_data->event_flag.value(),
                     apps::LaunchSource::kFromFullRestore,
                     std::move(window_info));
     } else {
-      proxy->Launch(app_id, data_it->second->event_flag.value(),
+      proxy->Launch(app_id, app_restore_data->event_flag.value(),
                     apps::mojom::LaunchSource::kFromFullRestore,
                     ConvertWindowInfoToMojomWindowInfo(window_info));
     }
@@ -668,9 +681,9 @@ void ArcAppLaunchHandler::LaunchApp(const std::string& app_id,
 void ArcAppLaunchHandler::RemoveWindowsForApp(const std::string& app_id) {
   app_ids_.erase(app_id);
   std::vector<int32_t> window_stacks;
-  for (auto& it : windows_) {
-    if (it.second.app_id == app_id)
-      window_stacks.push_back(it.first);
+  for (const auto& [window_stack, window_info] : windows_) {
+    if (window_info.app_id == app_id)
+      window_stacks.push_back(window_stack);
   }
 
   for (auto window_stack : window_stacks)
@@ -698,9 +711,9 @@ void ArcAppLaunchHandler::RemoveWindowsForApp(const std::string& app_id) {
 
 void ArcAppLaunchHandler::RemoveWindow(const std::string& app_id,
                                        int32_t window_id) {
-  for (auto& it : windows_) {
-    if (it.second.app_id == app_id && it.second.window_id == window_id) {
-      windows_.erase(it.first);
+  for (auto& [window_stack, window_info] : windows_) {
+    if (window_info.app_id == app_id && window_info.window_id == window_id) {
+      windows_.erase(window_stack);
       return;
     }
   }

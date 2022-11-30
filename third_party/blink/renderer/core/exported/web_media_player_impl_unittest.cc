@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -35,6 +36,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_content_type.h"
 #include "media/base/media_log.h"
+#include "media/base/media_observer.h"
 #include "media/base/media_switches.h"
 #include "media/base/memory_dump_provider_proxy.h"
 #include "media/base/mock_audio_renderer_sink.h"
@@ -123,6 +125,20 @@ MATCHER_P2(PlaybackRateChanged, old_rate_string, new_rate_string, "") {
                                   std::string(new_rate_string));
 }
 
+class MockMediaObserver : public media::MediaObserver,
+                          public base::SupportsWeakPtr<MockMediaObserver> {
+ public:
+  MOCK_METHOD1(OnBecameDominantVisibleContent, void(bool));
+  MOCK_METHOD1(OnMetadataChanged, void(const media::PipelineMetadata&));
+  MOCK_METHOD1(OnRemotePlaybackDisabled, void(bool));
+  MOCK_METHOD0(OnHlsManifestDetected, void());
+  MOCK_METHOD0(OnPlaying, void());
+  MOCK_METHOD0(OnPaused, void());
+  MOCK_METHOD0(OnFrozen, void());
+  MOCK_METHOD1(OnDataSourceInitialized, void(const GURL&));
+  MOCK_METHOD1(SetClient, void(media::MediaObserverClient*));
+};
+
 class MockWebMediaPlayerClient : public WebMediaPlayerClient {
  public:
   MockWebMediaPlayerClient() = default;
@@ -172,8 +188,12 @@ class MockWebMediaPlayerClient : public WebMediaPlayerClient {
   MOCK_METHOD0(DidPlayerStartPlaying, void());
   MOCK_METHOD1(DidPlayerPaused, void(bool));
   MOCK_METHOD1(DidPlayerMutedStatusChange, void(bool));
-  MOCK_METHOD3(DidMediaMetadataChange,
-               void(bool, bool, media::MediaContentType));
+  MOCK_METHOD5(DidMediaMetadataChange,
+               void(bool,
+                    bool,
+                    media::AudioCodec,
+                    media::VideoCodec,
+                    media::MediaContentType));
   MOCK_METHOD4(DidPlayerMediaPositionStateChange,
                void(double,
                     base::TimeDelta,
@@ -182,6 +202,7 @@ class MockWebMediaPlayerClient : public WebMediaPlayerClient {
   MOCK_METHOD0(DidDisableAudioOutputSinkChanges, void());
   MOCK_METHOD1(DidUseAudioServiceChange, void(bool uses_audio_service));
   MOCK_METHOD1(DidPlayerSizeChange, void(const gfx::Size&));
+  MOCK_METHOD1(OnRemotePlaybackDisabled, void(bool));
   MOCK_METHOD0(DidBufferUnderflow, void());
   MOCK_METHOD0(DidSeek, void());
   MOCK_METHOD0(OnRequestVideoFrameCallback, void());
@@ -439,8 +460,8 @@ class WebMediaPlayerImplTest
         media_thread_.task_runner(), media_thread_.task_runner(),
         base::BindRepeating(&WebMediaPlayerImplTest::OnAdjustAllocatedMemory,
                             base::Unretained(this)),
-        nullptr, media::RequestRoutingTokenCallback(), nullptr, false, false,
-        provider.Unbind(),
+        nullptr, media::RequestRoutingTokenCallback(),
+        mock_observer_.AsWeakPtr(), false, false, provider.Unbind(),
         base::BindOnce(&WebMediaPlayerImplTest::CreateMockSurfaceLayerBridge,
                        base::Unretained(this)),
         viz::TestContextProvider::Create(),
@@ -890,6 +911,9 @@ class WebMediaPlayerImplTest
 
   // default decoder factory for WMPI
   std::unique_ptr<media::DecoderFactory> decoder_factory_;
+
+  // The WebMediaPlayerImpl's media observer.
+  NiceMock<MockMediaObserver> mock_observer_;
 
   // The WebMediaPlayerImpl instance under test.
   std::unique_ptr<WebMediaPlayerImpl> wmpi_;
@@ -1988,6 +2012,12 @@ TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
   EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
+TEST_F(WebMediaPlayerImplTest, NotifiesObserverWhenFrozen) {
+  InitializeWebMediaPlayerImpl();
+  EXPECT_CALL(mock_observer_, OnFrozen());
+  wmpi_->OnFrozen();
+}
+
 TEST_F(WebMediaPlayerImplTest, BackgroundIdlePauseTimerDependsOnAudio) {
   InitializeWebMediaPlayerImpl();
   SetSuspendState(true);
@@ -2173,7 +2203,7 @@ TEST_F(WebMediaPlayerImplTest, MemDumpReporting) {
       1 /* dump_guid*/, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
 
-  int32_t id = 0;
+  int32_t id = media::GetNextMediaPlayerLoggingID() - 1;
   int dump_count = 0;
 
   auto on_memory_dump_done = base::BindLambdaForTesting(
@@ -2198,21 +2228,16 @@ TEST_F(WebMediaPlayerImplTest, MemDumpReporting) {
         auto* player_dump = it->second.get();
         const auto& entries = player_dump->entries();
 
-        auto instance_counter_it =
-            std::find_if(entries.begin(), entries.end(), [](const auto& e) {
-              auto* name =
-                  base::trace_event::MemoryAllocatorDump::kNameObjectCount;
-              return e.name == name && e.value_uint64 == 1;
-            });
-        ASSERT_NE(entries.end(), instance_counter_it);
+        ASSERT_TRUE(base::ranges::any_of(entries, [](const auto& e) {
+          auto* name = base::trace_event::MemoryAllocatorDump::kNameObjectCount;
+          return e.name == name && e.value_uint64 == 1;
+        }));
 
         if (args.level_of_detail ==
             base::trace_event::MemoryDumpLevelOfDetail::DETAILED) {
-          auto player_state_it =
-              std::find_if(entries.begin(), entries.end(), [](const auto& e) {
-                return e.name == "player_state" && !e.value_string.empty();
-              });
-          ASSERT_NE(entries.end(), player_state_it);
+          ASSERT_TRUE(base::ranges::any_of(entries, [](const auto& e) {
+            return e.name == "player_state" && !e.value_string.empty();
+          }));
         }
         dump_count++;
       });

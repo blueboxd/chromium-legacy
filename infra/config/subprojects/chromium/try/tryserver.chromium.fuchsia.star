@@ -22,6 +22,9 @@ try_.defaults.set(
     os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 consoles.list_view(
@@ -34,57 +37,47 @@ try_.builder(
     name = "fuchsia-arm64-cast",
     branch_selector = branches.FUCHSIA_LTS_MILESTONE,
     main_list_view = "try",
-    tryjob = try_.job(
-        location_filters = [
-            "chromecast/.+",
-        ],
-    ),
-    mirrors = [
-        "ci/fuchsia-arm64-cast",
-    ],
-)
-
-try_.builder(
-    name = "fuchsia-arm64-cast-receiver-rel",
-    # TODO(crbug.com/1294938): Make this FUCHSIA_LTS_MILESTONE once the mirrored
-    # bot is moved to infra/config/subprojects/chromium/ci/chromium.fuchsia.star.
-    branch_selector = branches.MAIN,
-    # TODO(crbug.com/1294938): Determine whether this should this have a
-    # swarming bot `builder` defined and thus have the following line:
-    # builderless = not settings.is_main,
-    main_list_view = "try",
-    # TODO(crbug.com/1294938): Uncomment the following when removing the
-    # `tryjob` attribute from fuchsia-arm64-cast.
-    # # This is the only bot that builds //chromecast code for Fuchsia on ARM64
-    # # so trigger it when changes are made.
-    # tryjob = try_.job(
-    #     location_filters = [
-    #         "chromecast/.+",
-    #     ],
-    # ),
     mirrors = [
         "ci/fuchsia-arm64-cast-receiver-rel",
     ],
 )
 
 try_.builder(
-    name = "fuchsia-arm64-rel",
-    # TODO(crbug.com/1294938): Make this FUCHSIA_LTS_MILESTONE once the mirrored
-    # bot is moved to infra/config/subprojects/chromium/ci/chromium.fuchsia.star.
-    branch_selector = branches.MAIN,
-    # TODO(crbug.com/1294938): Uncomment this when a swarming bot `builder` with
-    # this name is defined:
-    # builderless = not settings.is_main,
+    name = "fuchsia-arm64-cast-receiver-rel",
+    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
     main_list_view = "try",
-    # TODO(crbug.com/1294938): Uncomment the following when removing the
-    # `tryjob` attribute from fuchsia_arm64.
-    # tryjob = try_.job(),
+    # This is the only bot that builds //chromecast code for Fuchsia on ARM64
+    # so trigger it when changes are made.
+    tryjob = try_.job(
+        location_regexp = [
+            ".+/[+]/chromecast/.+",
+        ],
+    ),
+    mirrors = [
+        "ci/fuchsia-arm64-cast-receiver-rel",
+    ],
+)
+
+try_.builder(
+    name = "fuchsia-arm64-chrome-rel",
+    mirrors = [
+        "ci/fuchsia-arm64-chrome-rel",
+    ],
+)
+
+try_.builder(
+    name = "fuchsia-arm64-rel",
+    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
+    builderless = not settings.is_main,
+    main_list_view = "try",
+    tryjob = try_.job(),
     mirrors = [
         "ci/fuchsia-arm64-rel",
     ],
     experiments = {
         "enable_weetbix_queries": 100,
         "weetbix.retry_weak_exonerations": 100,
+        "weetbix.enable_weetbix_exonerations": 100,
     },
 )
 
@@ -111,10 +104,10 @@ try_.builder(
 try_.builder(
     name = "fuchsia-compile-x64-dbg",
     tryjob = try_.job(
-        location_filters = [
-            "base/fuchsia/.+",
-            "fuchsia/.+",
-            "media/fuchsia/.+",
+        location_regexp = [
+            ".+/[+]/base/fuchsia/.+",
+            ".+/[+]/fuchsia/.+",
+            ".+/[+]/media/fuchsia/.+",
         ],
     ),
     mirrors = [
@@ -147,56 +140,56 @@ try_.builder(
     branch_selector = branches.FUCHSIA_LTS_MILESTONE,
     builderless = not settings.is_main,
     main_list_view = "try",
-    tryjob = try_.job(),
-    mirrors = [
-        "ci/fuchsia-x64-cast",
-    ],
-    experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-    },
-)
-
-try_.builder(
-    name = "fuchsia-x64-cast-receiver-rel",
-    # TODO(crbug.com/1294938): Make this FUCHSIA_LTS_MILESTONE once the mirrored
-    # bot is moved to infra/config/subprojects/chromium/ci/chromium.fuchsia.star.
-    branch_selector = branches.MAIN,
-    # TODO(crbug.com/1294938): Uncomment this when a swarming bot `builder` with
-    # this name is defined:
-    # builderless = not settings.is_main,
-    main_list_view = "try",
-    # TODO(crbug.com/1294938): Uncomment the following when removing the
-    # `tryjob` attribute from fuchsia-x64-cast.
-    # tryjob = try_.job(),
     mirrors = [
         "ci/fuchsia-x64-cast-receiver-rel",
     ],
     experiments = {
         "enable_weetbix_queries": 100,
         "weetbix.retry_weak_exonerations": 100,
+        "weetbix.enable_weetbix_exonerations": 100,
     },
 )
 
 try_.builder(
-    name = "fuchsia-x64-rel",
-    # TODO(crbug.com/1294938): Make this FUCHSIA_LTS_MILESTONE once the mirrored
-    # bot is moved to infra/config/subprojects/chromium/ci/chromium.fuchsia.star.
-    branch_selector = branches.MAIN,
-    # TODO(crbug.com/1294938): Uncomment this when a swarming bot `builder` with
-    # this name is defined:
-    # builderless = not settings.is_main,
+    name = "fuchsia-x64-cast-receiver-rel",
+    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
+    builderless = not settings.is_main,
     main_list_view = "try",
-    # TODO(crbug.com/1294938): Uncomment the following when removing the
-    # `tryjob` attribute from fuchsia_x64.
-    # tryjob = try_.job(),
+    tryjob = try_.job(),
+    mirrors = [
+        "ci/fuchsia-x64-cast-receiver-rel",
+    ],
+    experiments = {
+        "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
+        "weetbix.enable_weetbix_exonerations": 100,
+    },
+)
+
+try_.builder(
+    name = "fuchsia-x64-chrome-rel",
+    mirrors = [
+        "ci/fuchsia-x64-chrome-rel",
+    ],
+)
+
+try_.builder(
+    name = "fuchsia-x64-rel",
+    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
+    main_list_view = "try",
     mirrors = [
         "ci/fuchsia-x64-rel",
     ],
     experiments = {
         "enable_weetbix_queries": 100,
         "weetbix.retry_weak_exonerations": 100,
+        "weetbix.enable_weetbix_exonerations": 100,
     },
+)
+
+try_.builder(
+    name = "fuchsia-x64-workstation",
+    mirrors = ["ci/fuchsia-x64-workstation"],
 )
 
 # TODO(crbug.com/1294938): Remove this bot after the soft CQ transition.
@@ -205,13 +198,13 @@ try_.builder(
     branch_selector = branches.FUCHSIA_LTS_MILESTONE,
     builderless = not settings.is_main,
     main_list_view = "try",
-    tryjob = try_.job(),
     mirrors = [
-        "ci/Fuchsia ARM64",
+        "ci/fuchsia-arm64-rel",
     ],
     experiments = {
         "enable_weetbix_queries": 100,
         "weetbix.retry_weak_exonerations": 100,
+        "weetbix.enable_weetbix_exonerations": 100,
     },
 )
 
@@ -221,12 +214,12 @@ try_.builder(
     branch_selector = branches.FUCHSIA_LTS_MILESTONE,
     builderless = not settings.is_main,
     main_list_view = "try",
-    tryjob = try_.job(),
     mirrors = [
-        "ci/Fuchsia x64",
+        "ci/fuchsia-x64-rel",
     ],
     experiments = {
         "enable_weetbix_queries": 100,
         "weetbix.retry_weak_exonerations": 100,
+        "weetbix.enable_weetbix_exonerations": 100,
     },
 )

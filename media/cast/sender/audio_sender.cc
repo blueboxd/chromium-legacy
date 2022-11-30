@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/notreached.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/media_switches.h"
 #include "media/cast/common/openscreen_conversion_helpers.h"
 #include "media/cast/common/rtp_time.h"
@@ -35,12 +36,14 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
 AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
                          const FrameSenderConfig& audio_config,
                          StatusChangeOnceCallback status_change_cb,
-                         openscreen::cast::Sender* sender)
-    : AudioSender(
-          cast_environment,
-          audio_config,
-          std::move(status_change_cb),
-          FrameSender::Create(cast_environment, audio_config, sender, *this)) {
+                         std::unique_ptr<openscreen::cast::Sender> sender)
+    : AudioSender(cast_environment,
+                  audio_config,
+                  std::move(status_change_cb),
+                  FrameSender::Create(cast_environment,
+                                      audio_config,
+                                      std::move(sender),
+                                      *this)) {
   DCHECK(base::FeatureList::IsEnabled(kOpenscreenCastStreamingSession));
 }
 
@@ -130,7 +133,14 @@ void AudioSender::OnEncodedAudioFrame(
 
   samples_in_encoder_ -= audio_encoder_->GetSamplesPerFrame() + samples_skipped;
   DCHECK_GE(samples_in_encoder_, 0);
-  frame_sender_->EnqueueFrame(std::move(encoded_frame));
+
+  const RtpTimeTicks rtp_timestamp = encoded_frame->rtp_timestamp;
+  if (!frame_sender_->EnqueueFrame(std::move(encoded_frame))) {
+    TRACE_EVENT_INSTANT2("cast.stream", "Audio Frame Drop (already encoded)",
+                         TRACE_EVENT_SCOPE_THREAD, "rtp_timestamp",
+                         rtp_timestamp.lower_32_bits(), "reason",
+                         "openscreen sender did not accept the frame");
+  }
 }
 
 }  // namespace media::cast

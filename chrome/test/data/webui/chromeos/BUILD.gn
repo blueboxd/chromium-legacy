@@ -9,7 +9,7 @@ assert(is_chromeos_ash)
 
 js_type_check("closure_compile_local") {
   is_polymer3 = true
-  closure_flags = default_closure_args + [
+  closure_flags = default_closure_args + mojom_js_args + [
                     "js_module_root=" + rebase_path("//chrome/test/data/webui/",
                                                     root_build_dir),
                     "js_module_root=./gen/chrome/test/data/webui/",
@@ -19,9 +19,9 @@ js_type_check("closure_compile_local") {
 
 js_library("fake_network_config_mojom") {
   deps = [
-    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
-    "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js:promise_resolver.m",
+    "//ash/webui/common/resources/network:onc_mojo",
+    "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:promise_resolver",
   ]
 }
 
@@ -31,7 +31,6 @@ group("closure_compile") {
     "account_manager:closure_compile",
     "arc_account_picker:closure_compile",
     "ash_common:closure_compile",
-    "diagnostics:closure_compile",
     "emoji_picker:closure_compile",
     "firmware_update:closure_compile",
     "gaia_action_buttons:closure_compile",

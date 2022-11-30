@@ -6,7 +6,7 @@ import 'chrome://print/print_preview.js';
 
 import {MediaSizeCapability, PrintPreviewMediaSizeSettingsElement} from 'chrome://print/print_preview.js';
 import {assertDeepEquals, assertEquals, assertFalse} from 'chrome://webui-test/chai_assert.js';
-import {fakeDataBind} from 'chrome://webui-test/test_util.js';
+import {fakeDataBind} from 'chrome://webui-test/polymer_test_util.js';
 
 import {getCddTemplate} from './print_preview_test_utils.js';
 
@@ -17,7 +17,8 @@ suite('MediaSizeSettingsTest', function() {
       getCddTemplate('FooPrinter').capabilities!.printer!.media_size!;
 
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     const model = document.createElement('print-preview-model');
     document.body.appendChild(model);
 

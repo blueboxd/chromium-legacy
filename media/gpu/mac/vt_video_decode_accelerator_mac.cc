@@ -10,13 +10,13 @@
 #include <OpenGL/gl.h>
 #include <stddef.h>
 
-#include <algorithm>
 #include <iterator>
 #include <memory>
 #include <dlfcn.h>
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/containers/span.h"
 #include "base/cxx17_backports.h"
 #include "base/logging.h"
@@ -161,7 +161,7 @@ base::ScopedCFTypeRef<CFMutableDictionaryRef> BuildImageConfig(
   // macOS support 8 bit (they actually only recommand main profile)
   // HEVC with alpha layer well.
   if (has_alpha)
-    pixel_format = kCVPixelFormatType_420YpCbCr8VideoRange_8A_TriPlanar;
+    pixel_format = kCVPixelFormatType_32BGRA;
 
 #define CFINT(i) CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &i)
   base::ScopedCFTypeRef<CFNumberRef> cf_pixel_format(CFINT(pixel_format));
@@ -753,10 +753,8 @@ bool VTVideoDecodeAccelerator::Initialize(const Config& config,
 
   static const base::NoDestructor<VideoDecodeAccelerator::SupportedProfiles>
       kActualSupportedProfiles(GetSupportedProfiles(workarounds_));
-  if (std::find_if(kActualSupportedProfiles->begin(),
-                   kActualSupportedProfiles->end(), [config](const auto& p) {
-                     return p.profile == config.profile;
-                   }) == kActualSupportedProfiles->end()) {
+  if (!base::Contains(*kActualSupportedProfiles, config.profile,
+                      &VideoDecodeAccelerator::SupportedProfile::profile)) {
     DVLOG(2) << "Unsupported profile";
     return false;
   }
@@ -2141,16 +2139,19 @@ bool VTVideoDecodeAccelerator::ProcessFrame(const Frame& frame) {
     // Request new pictures.
     picture_size_ = frame.image_size;
 
-    // TODO(https://crbug.com/1210994): Remove RGBAF16 support, and expose only
-    // PIXEL_FORMAT_NV12 and PIXEL_FORMAT_YUV420P10.
-    picture_format_ = PIXEL_FORMAT_RGBAF16;
-    if (base::FeatureList::IsEnabled(kMultiPlaneVideoToolboxSharedImages)) {
-      // TODO(https://crbug.com/1233228): The UV planes of P010 frames cannot
-      // be represented in the current gfx::BufferFormat.
-      if (config_.profile != VP9PROFILE_PROFILE2 &&
-          config_.profile != HEVCPROFILE_MAIN10 &&
-          config_.profile != HEVCPROFILE_REXT)
-        picture_format_ = PIXEL_FORMAT_NV12;
+    // ARGB is required to make alpha video has a non-transparent background
+    // when playing in PiP mode.
+    if (has_alpha_) {
+      buffer_format_ = gfx::BufferFormat::BGRA_8888;
+      picture_format_ = PIXEL_FORMAT_ARGB;
+    } else if (config_.profile == VP9PROFILE_PROFILE2 ||
+               config_.profile == HEVCPROFILE_MAIN10 ||
+               config_.profile == HEVCPROFILE_REXT) {
+      buffer_format_ = gfx::BufferFormat::P010;
+      picture_format_ = PIXEL_FORMAT_P016LE;
+    } else {
+      buffer_format_ = gfx::BufferFormat::YUV_420_BIPLANAR;
+      picture_format_ = PIXEL_FORMAT_NV12;
     }
 
     DVLOG(3) << "ProvidePictureBuffers(" << kNumPictureBuffers
@@ -2178,61 +2179,46 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   PictureInfo* picture_info = it->second.get();
   DCHECK(picture_info->gl_images.empty());
 
-  const gfx::BufferFormat buffer_format =
-      config_.profile == VP9PROFILE_PROFILE2 ||
-              config_.profile == HEVCPROFILE_MAIN10 ||
-              config_.profile == HEVCPROFILE_REXT
-          ? gfx::BufferFormat::P010
-          : gfx::BufferFormat::YUV_420_BIPLANAR;
-  gfx::ColorSpace color_space = GetImageBufferColorSpace(frame.image);
-
+  const gfx::ColorSpace color_space = GetImageBufferColorSpace(frame.image);
   std::vector<gfx::BufferPlane> planes;
   switch (picture_format_) {
     case PIXEL_FORMAT_NV12:
-    case PIXEL_FORMAT_YUV420P10:
+    case PIXEL_FORMAT_P016LE:
       planes.push_back(gfx::BufferPlane::Y);
       planes.push_back(gfx::BufferPlane::UV);
       break;
-    case PIXEL_FORMAT_RGBAF16:
+    case PIXEL_FORMAT_ARGB:
       planes.push_back(gfx::BufferPlane::DEFAULT);
       break;
     default:
       NOTREACHED();
       break;
   }
-
   for (size_t plane = 0; plane < planes.size(); ++plane) {
     const gfx::Size plane_size(
         CVPixelBufferGetWidthOfPlane(frame.image.get(), plane),
         CVPixelBufferGetHeightOfPlane(frame.image.get(), plane));
     gfx::BufferFormat plane_buffer_format =
-        gpu::GetPlaneBufferFormat(planes[plane], buffer_format);
-    // TODO(https://crbug.com/1108909): BGRA is not an appropriate value for
-    // these parameters.
+        gpu::GetPlaneBufferFormat(planes[plane], buffer_format_);
     const viz::ResourceFormat viz_resource_format =
-        (picture_format_ == PIXEL_FORMAT_RGBAF16)
-            ? viz::ResourceFormat::RGBA_F16
-            : viz::GetResourceFormat(plane_buffer_format);
+        viz::GetResourceFormat(plane_buffer_format);
     const GLenum gl_format = viz::GLDataFormat(viz_resource_format);
 
     scoped_refptr<gl::GLImageIOSurface> gl_image(
-        gl::GLImageIOSurface::Create(plane_size, gl_format));
+        gl::GLImageIOSurface::Create(plane_size));
     if (!gl_image->InitializeWithCVPixelBuffer(
             frame.image.get(), plane,
             gfx::GenericSharedMemoryId(g_cv_pixel_buffer_ids.GetNext()),
-            plane_buffer_format)) {
+            plane_buffer_format, color_space)) {
       NOTIFY_STATUS("Failed to initialize GLImageIOSurface", PLATFORM_FAILURE,
                     SFT_PLATFORM_ERROR);
     }
-    gl_image->DisableInUseByWindowServer();
-    gl_image->SetColorSpaceForYUVToRGBConversion(color_space);
-    gl_image->SetColorSpaceShallow(color_space);
 
     if (picture_info->uses_shared_images) {
       gpu::SharedImageStub* shared_image_stub = client_->GetSharedImageStub();
       DCHECK(shared_image_stub);
-      const uint32_t shared_image_usage =
-          gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
+      const uint32_t shared_image_usage = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
+                                          gpu::SHARED_IMAGE_USAGE_SCANOUT;
       gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
 
       gpu::GLTextureImageBackingHelper::InitializeGLTextureParams gl_params;
@@ -2255,9 +2241,10 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
       }
 
       auto shared_image = std::make_unique<gpu::GLImageBacking>(
-          gl_image, mailbox, viz_resource_format, plane_size, color_space,
-          kTopLeft_GrSurfaceOrigin, kOpaque_SkAlphaType, shared_image_usage,
-          gl_params, gl_client_.is_passthrough);
+          gl_image, mailbox,
+          viz::SharedImageFormat::SinglePlane(viz_resource_format), plane_size,
+          color_space, kTopLeft_GrSurfaceOrigin, kOpaque_SkAlphaType,
+          shared_image_usage, gl_params, gl_client_.is_passthrough);
 
       const bool success = shared_image_stub->factory()->RegisterBacking(
           std::move(shared_image));

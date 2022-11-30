@@ -168,8 +168,8 @@ void WaitUntilPageLoadedWithURL(NSURL* openedURL) {
                   block:^{
                     return openedGURL == [ChromeEarlGrey webStateVisibleURL];
                   }];
-  BOOL pageStartedLoading =
-      [startedLoadingCondition waitWithTimeout:kWaitForPageLoadTimeout];
+  BOOL pageStartedLoading = [startedLoadingCondition
+      waitWithTimeout:kWaitForPageLoadTimeout.InSecondsF()];
   GREYAssertTrue(pageStartedLoading, @"Page did not start loading");
   // Wait until the page has finished loading.
   [ChromeEarlGrey waitForPageToFinishLoading];
@@ -983,6 +983,11 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 // Tests that the sign-in prompt is shown on the other window when the window
 // presenting the forced sign-in screen is closed.
 - (void)testSigninScreenTransferToOtherWindow {
+#if TARGET_OS_SIMULATOR
+  // TODO(crbug.com/1370470): Re-enable the test.
+  EARL_GREY_TEST_DISABLED(@"Test failing on simulator.");
+#endif
+
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");
 
@@ -1015,6 +1020,11 @@ std::unique_ptr<net::test_server::HttpResponse> PageHttpResponse(
 - (void)testSignInScreenOnIncognitoWithMultiWindows {
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");
+
+  // TODO(crbug.com/1369148): Test is failing on iPad devices and simulator.
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
 
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;

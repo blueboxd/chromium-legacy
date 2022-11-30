@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,7 @@ bool ShouldIgnoreContents(const Node& node) {
   return (!element->ShouldSerializeEndTag() &&
           !IsA<HTMLInputElement>(*element)) ||
          (IsA<TextControlElement>(*element) &&
-          !To<TextControlElement>(*element).SuggestedValue().IsEmpty()) ||
+          !To<TextControlElement>(*element).SuggestedValue().empty()) ||
          IsA<HTMLIFrameElement>(*element) || IsA<HTMLImageElement>(*element) ||
          IsA<HTMLMeterElement>(*element) || IsA<HTMLObjectElement>(*element) ||
          IsA<HTMLProgressElement>(*element) ||
@@ -304,7 +304,7 @@ FindBuffer::Results FindBuffer::FindMatches(const WebString& search_text,
   // We should return empty result if it's impossible to get a match (buffer is
   // empty or too short), or when something went wrong in layout, in which case
   // |offset_mapping_| is null.
-  if (buffer_.IsEmpty() || search_text.length() > buffer_.size() ||
+  if (buffer_.empty() || search_text.length() > buffer_.size() ||
       !offset_mapping_)
     return Results();
   String search_text_16_bit = search_text;

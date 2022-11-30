@@ -317,6 +317,31 @@ Alternatively, a developer with commit access can [directly
 commit][direct-commit] a change, bypassing the commit queue. This should only
 be used in emergencies because it will bypass all the safety nets.
 
+## Relanding a change
+
+Occasionally changes that pass the [commit queue][commit-queue] and get
+submitted into Chromium will later be reverted. If this happens to your change,
+don't be discouraged! This can be a common part of the Chromium development
+cycle and happens for a variety of reasons, including a conflict with an
+unanticipated change or tests not covered on the commit queue.
+
+If this happens to your change, you're encouraged to pursue a reland. When doing
+so, following these basic steps can streamline the re-review process:
+- **Create the reland**: Click the `CREATE RELAND` button on the original change
+  in Gerrit. This will create a new change whose diff is identical to the
+  original, but has a small paper-trail in the commit message that leads back to
+  the original. This can be useful for sheriffs when debugging regressions.
+- **Append the fix**: If the reland requires file modifications not present in
+  the original change, simply upload these fixes in a subsequent patchset to the
+  reland change. By comparing the first patchset with the latest, this gives
+  reviewers the ability to see the diff of _just_ the reland fix.
+- **Describe the fix**: In the commit message of the reland change, briefly
+  summarize what's changed that makes relanding again safe. Explanations can
+  include: "included needed fix", "disabled failing tests", "crash was fixed
+  elsewhere". Specifically for that last case: if the reland change is identical
+  to the original and the reland fix was handled separately in a preceding
+  change, make sure to link to that change in the commit message of the reland.
+
 ## Code guidelines
 
 In addition to the adhering to the [styleguide][cr-styleguide], the following
@@ -330,16 +355,19 @@ general rules of thumb can be helpful in navigating how to structure changes:
   product in the Chromium repositories that depends on that line of code or else
   the line of code should be removed.
 
-  Completely new additions to the project (e.g., support for a new OS or
-  architecture, or a new top-level directory for a new sub-project) must be
-  approved by chrome-eng-review@google.com. For long-term maintenance reasons,
-  we will accept only things that are used by the Chromium project and things
-  whose benefit to Chromium outweighs any cost increase in maintaining
-  Chromium's supported architectures / platforms (e.g. adding one ifdef branch
-  for an unsupported architecture / platform has negligible cost and is likely
-  fine, but introducing new abstractions in the code has a high cost and would
-  need to provide Chromium with corresponding benefit). See the
-  [new port policy](new_port_policy.md) for further guidance.
+  When you are adding support for a new OS, a new architecture, a new port or
+  a new top-level directory, please send an email to
+  chrome-eng-review@google.com and get approval. For long-term maintenance
+  reasons, we will accept only things that are used by the Chromium project
+  (including Chromium-supported projects like V8 and Skia) and things whose
+  benefit to Chromium outweighs any cost increase in maintaining Chromium's
+  supported architectures / platforms (e.g. adding one ifdef branch for an
+  unsupported architecture / platform has negligible cost and is likely fine,
+  but introducing new abstractions or changes to higher level directories has
+  a high cost and would need to provide Chromium with corresponding benefit).
+  Note that an unsupported architecture / platform will not have bots on
+  Google-managed waterfalls (even FYI bots) or maintained by Chromium
+  developers. Please use existing ifdef branches as much as possible.
 
 - **Code should only be moved to a central location (e.g., //base) when
   multiple consumers would benefit.** We should resist the temptation to

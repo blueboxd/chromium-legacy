@@ -15,8 +15,7 @@
 #include "chromeos/assistant/internal/util_headers.h"
 #include "chromeos/services/assistant/public/shared/utils.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 namespace {
 
@@ -31,7 +30,7 @@ constexpr char kIntentActionView[] = "android.intent.action.VIEW";
 
 constexpr char kWebUrlPrefix[] = "http";
 
-using chromeos::assistant::AndroidAppInfo;
+using assistant::AndroidAppInfo;
 using chromeos::assistant::shared::PlayMediaArgs;
 
 // A macro which ensures we are running on the mojom thread.
@@ -255,5 +254,4 @@ void MediaController::OnAssistantClientRunning(
   assistant_client->AddMediaActionFallbackEventObserver(events_observer_.get());
 }
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant

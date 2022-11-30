@@ -4,12 +4,26 @@
 
 #include "net/socket/udp_client_socket.h"
 
+#include "base/metrics/histogram_macros.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
+
+namespace {
+
+int LogReadSize(int result) {
+  if (result > 0) {
+    UMA_HISTOGRAM_COUNTS_10M("Net.UDPClientSocketReadSize", result);
+  }
+  return result;
+}
+
+}  // namespace
 
 UDPClientSocket::UDPClientSocket(DatagramSocket::BindType bind_type,
                                  net::NetLog* net_log,
@@ -75,6 +89,26 @@ int UDPClientSocket::ConnectUsingDefaultNetwork(const IPEndPoint& address) {
   return socket_.Connect(address);
 }
 
+int UDPClientSocket::ConnectAsync(const IPEndPoint& address,
+                                  CompletionOnceCallback callback) {
+  DCHECK(callback);
+  return Connect(address);
+}
+
+int UDPClientSocket::ConnectUsingNetworkAsync(handles::NetworkHandle network,
+                                              const IPEndPoint& address,
+                                              CompletionOnceCallback callback) {
+  DCHECK(callback);
+  return ConnectUsingNetwork(network, address);
+}
+
+int UDPClientSocket::ConnectUsingDefaultNetworkAsync(
+    const IPEndPoint& address,
+    CompletionOnceCallback callback) {
+  DCHECK(callback);
+  return ConnectUsingDefaultNetwork(address);
+}
+
 handles::NetworkHandle UDPClientSocket::GetBoundNetwork() const {
   return network_;
 }
@@ -86,7 +120,8 @@ void UDPClientSocket::ApplySocketTag(const SocketTag& tag) {
 int UDPClientSocket::Read(IOBuffer* buf,
                           int buf_len,
                           CompletionOnceCallback callback) {
-  return socket_.Read(buf, buf_len, std::move(callback));
+  return socket_.Read(buf, buf_len,
+                      base::BindOnce(&LogReadSize).Then(std::move(callback)));
 }
 
 int UDPClientSocket::Write(
@@ -94,6 +129,7 @@ int UDPClientSocket::Write(
     int buf_len,
     CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
+  UMA_HISTOGRAM_COUNTS_10M("Net.UDPClientSocketWriteSize", buf_len);
   return socket_.Write(buf, buf_len, std::move(callback), traffic_annotation);
 }
 

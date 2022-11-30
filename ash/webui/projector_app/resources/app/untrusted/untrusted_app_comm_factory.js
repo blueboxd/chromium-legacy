@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {PostMessageAPIClient} from '//resources/js/post_message_api_client.m.js';
-import {RequestHandler} from '//resources/js/post_message_api_request_handler.m.js';
-import {PromiseResolver} from '//resources/js/promise_resolver.m.js';
+import {PostMessageAPIClient} from '//resources/ash/common/post_message_api/post_message_api_client.js';
+import {RequestHandler} from '//resources/ash/common/post_message_api/post_message_api_request_handler.js';
+import {PromiseResolver} from '//resources/js/promise_resolver.js';
 import {ProjectorError} from 'chrome-untrusted://projector/common/message_types.js';
 
 const TARGET_URL = 'chrome://projector/';
@@ -124,17 +124,24 @@ const CLIENT_DELEGATE = {
    * @param {string=} requestBody the request body data.
    * @param {boolean=} useCredentials authorize the request with end user
    *     credentials. Used for getting streaming URL.
+   * @param {boolean=} useApiKey authorize the request with API key. Used for
+   *     translaton requests.
    * @param {object=} additional headers.
+   * @param {string=} account email.
    * @return {!Promise<!projectorApp.XhrResponse>}
    */
-  sendXhr(url, method, requestBody, useCredentials, headers) {
+  sendXhr(
+      url, method, requestBody, useCredentials, useApiKey, headers,
+      accountEmail) {
     return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
         'sendXhr', [
           url,
           method,
           requestBody ? requestBody : '',
           !!useCredentials,
+          !!useApiKey,
           headers,
+          accountEmail,
         ]);
   },
 

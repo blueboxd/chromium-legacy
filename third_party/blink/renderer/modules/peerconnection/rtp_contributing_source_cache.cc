@@ -1,13 +1,15 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/peerconnection/rtp_contributing_source_cache.h"
 
 #include "base/check.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -110,7 +112,7 @@ RtpContributingSourceCache::getSynchronizationSources(
                                       "Window is detached");
     return HeapVector<Member<RTCRtpSynchronizationSource>>();
   }
-  MaybeUpdateRtpSources(receiver);
+  MaybeUpdateRtpSources(script_state, receiver);
   return RTCRtpSynchronizationSourcesFromRTCRtpSources(script_state,
                                                        GetRtpSources(receiver));
 }
@@ -125,12 +127,13 @@ RtpContributingSourceCache::getContributingSources(
                                       "Window is detached");
     return HeapVector<Member<RTCRtpContributingSource>>();
   }
-  MaybeUpdateRtpSources(receiver);
+  MaybeUpdateRtpSources(script_state, receiver);
   return RTCRtpContributingSourcesFromRTCRtpSources(script_state,
                                                     GetRtpSources(receiver));
 }
 
 void RtpContributingSourceCache::MaybeUpdateRtpSources(
+    ScriptState* script_state,
     RTCRtpReceiver* requesting_receiver) {
   if (!pc_) {
     return;
@@ -153,7 +156,7 @@ void RtpContributingSourceCache::MaybeUpdateRtpSources(
 
   // Receivers whose cache to update.
   Vector<RTCRtpReceiverPlatform*> receivers;
-  if (cached_sources_by_receiver->IsEmpty()) {
+  if (cached_sources_by_receiver->empty()) {
     // If the cache is empty then we only update the cache for this one
     // receiver. This avoids updating the cache for all receivers in cases where
     // the app is only interested in a single receiver per kind.
@@ -183,8 +186,11 @@ void RtpContributingSourceCache::MaybeUpdateRtpSources(
           WTF::CrossThreadUnretained(&event)));
   event.Wait();
 
-  Microtask::EnqueueMicrotask(WTF::Bind(&RtpContributingSourceCache::ClearCache,
-                                        weak_factory_.GetWeakPtr()));
+  ExecutionContext::From(script_state)
+      ->GetAgent()
+      ->event_loop()
+      ->EnqueueMicrotask(WTF::BindOnce(&RtpContributingSourceCache::ClearCache,
+                                       weak_factory_.GetWeakPtr()));
 }
 
 void RtpContributingSourceCache::UpdateRtpSourcesOnWorkerThread(

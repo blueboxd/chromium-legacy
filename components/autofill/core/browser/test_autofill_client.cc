@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/test_autofill_client.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -24,7 +26,7 @@ TestAutofillClient::TestAutofillClient(
     : test_personal_data_manager_(
           pdm ? std::move(pdm) : std::make_unique<TestPersonalDataManager>()),
       form_origin_(GURL("https://example.test")),
-      last_committed_url_(GURL("https://example.test")),
+      last_committed_primary_main_frame_url_(GURL("https://example.test")),
       log_manager_(LogManager::Create(&log_router_, base::NullCallback())) {
   mock_iban_manager_ = std::make_unique<testing::NiceMock<MockIBANManager>>(
       test_personal_data_manager_.get());
@@ -69,7 +71,7 @@ CreditCardOtpAuthenticator* TestAutofillClient::GetOtpAuthenticator() {
 }
 
 PrefService* TestAutofillClient::GetPrefs() {
-  return const_cast<PrefService*>(base::as_const(*this).GetPrefs());
+  return const_cast<PrefService*>(std::as_const(*this).GetPrefs());
 }
 
 const PrefService* TestAutofillClient::GetPrefs() const {
@@ -116,8 +118,12 @@ AutofillOfferManager* TestAutofillClient::GetAutofillOfferManager() {
   return autofill_offer_manager_.get();
 }
 
-const GURL& TestAutofillClient::GetLastCommittedURL() const {
-  return last_committed_url_;
+const GURL& TestAutofillClient::GetLastCommittedPrimaryMainFrameURL() const {
+  return last_committed_primary_main_frame_url_;
+}
+
+url::Origin TestAutofillClient::GetLastCommittedPrimaryMainFrameOrigin() const {
+  return url::Origin::Create(last_committed_primary_main_frame_url_);
 }
 
 security_state::SecurityLevel
@@ -287,6 +293,15 @@ bool TestAutofillClient::IsFastCheckoutTriggerForm(const FormData& form,
   return false;
 }
 
+bool TestAutofillClient::FastCheckoutScriptSupportsConsentlessExecution(
+    const url::Origin& origin) {
+  return false;
+}
+
+bool TestAutofillClient::FastCheckoutClientSupportsConsentlessExecution() {
+  return false;
+}
+
 bool TestAutofillClient::ShowFastCheckout(
     base::WeakPtr<FastCheckoutDelegate> delegate) {
   return false;
@@ -393,8 +408,9 @@ void TestAutofillClient::set_form_origin(const GURL& url) {
   test_ukm_recorder_.UpdateSourceURL(source_id_, form_origin_);
 }
 
-void TestAutofillClient::set_last_committed_url(const GURL& url) {
-  last_committed_url_ = url;
+void TestAutofillClient::set_last_committed_primary_main_frame_url(
+    const GURL& url) {
+  last_committed_primary_main_frame_url_ = url;
 }
 
 ukm::TestUkmRecorder* TestAutofillClient::GetTestUkmRecorder() {

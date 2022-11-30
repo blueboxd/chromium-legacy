@@ -297,11 +297,8 @@
       origin_trial_feature_name: "AutoDarkMode",
     },
     {
-      // TODO(crbug.com/1185950): Remove this flag when the feature is fully
-      // launched and released to stable with no issues.
-      name: "AutoExpandDetailsElement",
-      status: "stable",
-      base_feature: "AutoExpandDetailsElement",
+      name: "AutoDisableAccessibilityV2",
+      public: true,
     },
     {
       // Makes autofill look across shadow boundaries when collecting form
@@ -345,6 +342,9 @@
       name: "BackForwardCacheNotRestoredReasons",
       status: "experimental",
       origin_trial_feature_name: "BackForwardCacheNotRestoredReasons",
+      base_feature: "BackForwardCacheSendNotRestoredReasons",
+      base_feature_status: "enabled",
+      copied_from_base_feature_if: "overridden",
       public: true,
     },
     {
@@ -452,6 +452,14 @@
       status: "stable",
     },
     {
+      name: "ClearIdentityInCanMakePaymentEvent",
+      base_feature: "ClearIdentityInCanMakePaymentEvent",
+      origin_trial_allows_third_party: true,
+      origin_trial_feature_name: "IdentityInCanMakePaymentEventFeature",
+      origin_trial_type: "deprecation",
+      public: true,
+    },
+    {
       name: "ClickToCapturedPointer",
       status: "experimental",
     },
@@ -550,7 +558,7 @@
     },
     {
       name: "ContentVisibilityAutoStateChangedEvent",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ContextMenu",
@@ -665,7 +673,7 @@
     },
     {
       name: "CSSFontFaceSrcTechParsing",
-      status: "experimental"
+      status: "stable"
     },
     {
       name: "CSSFontFamilyMath",
@@ -689,6 +697,10 @@
       status: "stable",
     },
     {
+      // crbug.com/924069
+      name: "CSSHyphenateLimitChars",
+    },
+    {
       name: "CSSIcUnit",
       status: "stable",
     },
@@ -697,11 +709,21 @@
       status: "stable",
     },
     {
+        // http://crbug.com/1276900
+        name: "CSSInitialLetter",
+        depends_on: ["LayoutNG"],
+        status: "test",
+    },
+    {
       name: "CSSLastBaseline",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSLayoutAPI",
+      status: "experimental",
+    },
+    {
+      name: "CSSLhUnit",
       status: "experimental",
     },
     {
@@ -919,6 +941,11 @@
       name: "DelegatedInkTrails",
       status: "stable",
     },
+    // https://github.com/w3c/resource-timing/pull/343
+    {
+      name: "DeliveryType",
+      status: "experimental",
+    },
     {
       name: "DesktopCaptureDisableLocalEchoControl",
       status: "experimental",
@@ -986,15 +1013,6 @@
       status: "experimental",
     },
     {
-      // When on, the display-capture permissions-policy is enforced.
-      // When off, enforcement of this permissions-policy is skipped.
-      // This is driven from the browser process by the Enterprise policy
-      // called "DisplayCapturePermissionsPolicyEnabled".
-      // TODO(crbug.com/1233969): Remove this around m100.
-      name: "DisplayCapturePermissionsPolicy",
-      public: true,
-    },
-    {
       name: "DisplayCutoutAPI",
       public: true,
       settable_from_internals: true,
@@ -1018,6 +1036,11 @@
       name: "DocumentPictureInPictureAPI",
       depends_on: ["PictureInPictureAPI"],
       public: true,
+      status: {
+        "Android": "",
+        "ChromeOS_Lacros": "",
+        "default": "experimental",
+      },
       settable_from_internals: true,
     },
     {
@@ -1132,23 +1155,24 @@
     },
     {
       name: "FedCm",
-      origin_trial_feature_name: "FedCM",
-      origin_trial_allows_third_party: true,
       public: true,
-      status: "test",
+      status: "stable",
     },
     {
       name: "FedCmIdpSigninStatus",
+      depends_on: ["FedCm"],
       public: true,
       status: "test",
     },
     {
       name: "FedCmIdpSignout",
+      depends_on: ["FedCm"],
       public: true,
       status: "test",
     },
     {
       name: "FedCmIframeSupport",
+      depends_on: ["FedCm"],
       public: true,
       status: "test",
     },
@@ -1197,7 +1221,6 @@
       // Shared objects by OPFS and non-OPFS File System Access API.
       name: "FileSystemAccess",
       implied_by: ["FileSystemAccessLocal", "FileSystemAccessOriginPrivate"],
-
     },
     {
       name: "FileSystemAccessAccessHandle",
@@ -1219,6 +1242,12 @@
       status: {"Android": "experimental", "default": "stable"},
     },
     {
+      // Whether to re-enable async interface for FileSystemSyncAccessHandle
+      // This is used by enterprise policy during migration.
+      name: "FileSystemSyncAccessHandleAsyncInterfaceOverride",
+      public: true,
+    },
+    {
       name: "FirstPartySets",
     },
     {
@@ -1230,6 +1259,9 @@
       name: "Fledge",
       origin_trial_feature_name: "PrivacySandboxAdsAPIs",
       origin_trial_allows_third_party: true,
+    },
+    {
+      name: "FluentScrollbars",
     },
     {
       name: "Focusgroup",
@@ -1286,7 +1318,8 @@
     },
     {
       name: "FormRelAttribute",
-      status: "experimental",
+      status: "stable",
+      base_feature: "FormRelAttribute",
     },
     {
       name: "FractionalScrollOffsets",
@@ -1389,11 +1422,6 @@
       status:"experimental",
     },
     {
-      name: "IdentityInCanMakePaymentEventFeature",
-      public: true,
-      status: "stable",
-    },
-    {
       name: "IdleDetection",
       public: true,
       status: "stable",
@@ -1436,6 +1464,11 @@
       settable_from_internals: true,
     },
     {
+      name: "LangAttributeAwareSvgText",
+      base_feature: "LangAttributeAwareSvgText",
+      status: "stable",
+    },
+    {
       // LayoutNG has been enabled in M76, but we still keep this flag for
       // testing. See web_tests/FlagExpectations/disable-layout-ng for more
       // details about running web tests with LayoutNG disabled. This flag also
@@ -1453,6 +1486,12 @@
     {
       name: "LayoutNGBlockInInline",
       depends_on: ["LayoutNG"],
+      status: "stable",
+    },
+    {
+      // A kill-switch for a fix of crbug.com/1366268.
+      name: "LayoutNGDelayScrollOffsetClamping",
+      base_feature: "LayoutNGDelayScrollOffsetClamping",
       status: "stable",
     },
     {
@@ -1483,7 +1522,9 @@
     },
     {
       name: "LayoutNGPrinting",
-      depends_on: ["LayoutNG","LayoutNGBlockFragmentation","LayoutNGView"],
+      depends_on: ["LayoutNG","LayoutNGBlockFragmentation"],
+      status: "stable",
+      base_feature: "LayoutNGPrinting",
     },
     {
       name: "LayoutNGSubgrid",
@@ -1496,10 +1537,6 @@
       name: "LayoutNGTableFragmentation",
       depends_on: ["LayoutNG","LayoutNGBlockFragmentation"],
       status: "stable",
-    },
-    {
-      name: "LayoutNGView",
-      status: "test",
     },
     {
       // crbug.com/1335309
@@ -1634,15 +1671,17 @@
     },
     {
       name: "MediaSourceInWorkers",
-      status: "experimental",
+      status: "stable",
       origin_trial_feature_name: "MediaSourceInWorkers",
+      base_feature: "MediaSourceInWorkers",
     },
     {
       // Availability of this feature depends on MediaSourceInWorkers also
       // being enabled. MediaSourceInWorkers is an OT feature, so this cannot
       // use the "depends_on" key.
       name: "MediaSourceInWorkersUsingHandle",
-      status: "experimental",
+      status: "stable",
+      base_feature: "MediaSourceInWorkersUsingHandle",
     },
     {
       name: "MediaSourceNewAbortAndDuration",
@@ -1702,6 +1741,7 @@
     {
       name: "NavigationId",
       status: "experimental",
+      base_feature: "NavigationId",
     },
     {
       name: "NavigatorContentUtils",
@@ -2039,6 +2079,11 @@
       name: "PrefersReducedData",
       status: "experimental",
     },
+    {
+      name: "PrefersReducedMotionClientHintHeader",
+      status: "stable",
+      base_feature: "PrefersReducedMotionClientHintHeader",
+    },
     // TODO(crbug/695586): This flag is being used to deprecate support for
     // legacy quota API window.webkitStorageInfo.
     {
@@ -2057,7 +2102,7 @@
     {
       // https://crbug.com/1126305
       name: "Prerender2",
-      status: {"Android": "stable"},
+      status: "stable",
       base_feature: "Prerender2",
     },
     // This RTE feature is used to indicate the status of RTE feature Prerender2
@@ -2277,12 +2322,7 @@
     },
     {
       name: "SecureContextFixForSharedWorkers",
-      status: "experimental",
-    },
-    {
-      name: "SecureContextFixForWorkers",
       status: "stable",
-      base_feature: "SecureContextFixForWorkers",
     },
     // SecurePaymentConfirmation has shipped on some platforms, but its
     // availability is controlled by the browser process (via the
@@ -2403,11 +2443,9 @@
     },
     {
       name: "SoftNavigationHeuristics",
-      status: "test",
-    },
-    {
-      name: "SoftNavigationHeuristicsLogging",
       status: "experimental",
+      depends_on: ["NavigationId"],
+      base_feature: "SoftNavigationHeuristics",
     },
     // An origin trial feature name is required for this, even though it's
     // actually enabled by the more specific trial. Having these as separate
@@ -2417,6 +2455,9 @@
       name: "SpeculationRules",
       implied_by: ["SpeculationRulesPrefetchProxy", "SpeculationRulesPrefetchWithSubresources", "Prerender2"],
       origin_trial_feature_name: "SpeculationRules__DONOTUSE",
+    },
+    {
+      name: "SpeculationRulesFetchFromHeader"
     },
     // Origin trial to enable Speculation Rules for access to the prefetch proxy.
     // https://crbug.com/1190167
@@ -2446,14 +2487,15 @@
       status: "test",
     },
     {
-      name: "StorageAccessAPIForSiteExtension",
+      name: "StorageAccessAPIForOriginExtension",
       public: true,
       status: "test",
-      base_feature: "StorageAccessAPIForSiteExtension",
+      base_feature: "StorageAccessAPIForOriginExtension",
     },
     {
       name: "StorageBuckets",
       status: "experimental",
+      base_feature: "StorageBuckets",
     },
     {
       name: "StorageFoundationAPI",
@@ -2468,13 +2510,8 @@
       name: "StylusHandwriting",
     },
     {
-      name: "SubresourceWebBundles",
-      public: true,
-      status: "experimental"
-    },
-    {
       name: "SupportsFontFormatTech",
-      status: "experimental"
+      status: "stable"
     },
     {
       // When a Web application calls getDisplayMedia() and asks for video,
@@ -2677,6 +2714,7 @@
     },
     {
       name: "VariableCOLRV1",
+      status: "stable",
       base_feature: "VariableCOLRV1",
     },
     {
@@ -2718,6 +2756,10 @@
       base_feature: "ViewportHeightClientHintHeader",
     },
     {
+      name: "ViewportMetaInteractiveWidgetProperty",
+      status: "stable",
+    },
+    {
       name: "ViewportSegments",
       status: "experimental",
     },
@@ -2736,6 +2778,12 @@
       name: "WakeLock",
       status: "stable",
       implied_by: ["SystemWakeLock"],
+    },
+    {
+      // When enabled, this will issue a warning to the console any time
+      // rendering is forced withing content-visibility subtrees (both
+      // content-visibility: auto and content-visibility: hidden).
+      name: "WarnOnContentVisibilityRenderAccess",
     },
     {
       name: "WebAnimationsAPI",
@@ -2764,14 +2812,6 @@
       // required for using the "implied_by" behaviour.
       origin_trial_feature_name: "WebAppLaunchQueue",
       implied_by: ["WebAppLaunchHandler", "FileHandling"],
-    },
-    {
-      // This flag enables the Manifest parser to handle id field.
-      // Also enabled when blink::features::kWebAppEnableManifestId is
-      // overridden on the command line (or via chrome://flags).
-      name: "WebAppManifestId",
-      status: "stable",
-      base_feature: "WebAppEnableManifestId",
     },
     {
       name:"WebAppsLockScreen",
@@ -2822,13 +2862,13 @@
       name: "WebAuthAuthenticatorAttachment",
       status: "test"
     },
-    // A more subtle UI for WebAuthn that is web exposed. Under development.
+    // A more subtle UI for WebAuthn that is web exposed.
     // It's controlled by the corresponding Chromium feature which needs to
     // be enabled to make the whole feature work, except for WPTs where the
     // virtual authenticator environment is used.
     {
       name: "WebAuthenticationConditionalUI",
-      status: "test",
+      status: "stable",
     },
     // https://github.com/w3c/webauthn/pull/1663
     {
@@ -2995,6 +3035,12 @@
       depends_on: ["WebUSB"],
     },
     {
+      // It is only enabled in extension environment for now.
+      name: "WebUSBOnServiceWorkers",
+      depends_on: ["WebUSB"],
+      public: true,
+    },
+    {
       name: "WebVTTRegions",
       status: "experimental",
     },
@@ -3073,6 +3119,14 @@
     {
       name: "WGIGamepadTriggerRumble",
       status: "test",
+    },
+    // If enabled, window.default[Ss]tatus will be supported. This is disabled
+    // by default, and is here to allow this behavior to be re-enabled via Finch
+    // in case of problems. This flag should be removed by Q1 2023, assuming
+    // no problems are encountered.
+    {
+      name: "WindowDefaultStatus",
+      base_feature: "WindowDefaultStatus",
     },
     // New behavior for window.open's interpretation of the windowFeatures parameter.
     {

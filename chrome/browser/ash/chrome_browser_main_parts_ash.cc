@@ -15,9 +15,6 @@
 #include "ash/components/arc/enterprise/arc_data_snapshotd_manager.h"
 #include "ash/components/fwupd/firmware_update_manager.h"
 #include "ash/components/peripheral_notification/peripheral_notification_manager.h"
-#include "ash/components/power/dark_resume_controller.h"
-#include "ash/components/settings/cros_settings_names.h"
-#include "ash/components/tpm/tpm_token_loader.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/keyboard/ui/resources/keyboard_resource_util.h"
@@ -112,7 +109,7 @@
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/mojo_service_manager/connection_helper.h"
 #include "chrome/browser/ash/net/bluetooth_pref_state_observer.h"
-#include "chrome/browser/ash/net/network_health/network_health_service.h"
+#include "chrome/browser/ash/net/network_health/network_health_manager.h"
 #include "chrome/browser/ash/net/network_portal_detector_impl.h"
 #include "chrome/browser/ash/net/network_pref_state_observer.h"
 #include "chrome/browser/ash/net/network_throttling_observer.h"
@@ -180,7 +177,7 @@
 #include "chrome/browser/ui/ash/image_downloader_impl.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
-#include "chrome/browser/ui/webui/chromeos/emoji/emoji_ui.h"
+#include "chrome/browser/ui/webui/ash/emoji/emoji_ui.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -212,6 +209,9 @@
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector_stub.h"
 #include "chromeos/ash/components/network/system_token_cert_db_storage.h"
+#include "chromeos/ash/components/power/dark_resume_controller.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
+#include "chromeos/ash/components/tpm/tpm_token_loader.h"
 #include "chromeos/ash/services/cros_healthd/private/cpp/data_collector.h"
 #include "chromeos/ash/services/cros_healthd/public/cpp/service_connection.h"
 #include "chromeos/components/sensors/ash/sensor_hal_dispatcher.h"
@@ -268,14 +268,14 @@
 #endif
 
 #if BUILDFLAG(ENABLE_RLZ)
-#include "components/rlz/rlz_tracker.h"
+#include "components/rlz/rlz_tracker.h"  // nogncheck
 #endif
 
 namespace ash {
 namespace {
 
-void ChromeOSVersionCallback(const std::string& version) {
-  base::SetLinuxDistro(std::string("CrOS ") + version);
+void ChromeOSVersionCallback(const absl::optional<std::string>& version) {
+  base::SetLinuxDistro("CrOS " + version.value_or("0.0.0.0"));
 }
 
 // Creates an instance of the NetworkPortalDetector implementation or a stub.
@@ -290,6 +290,7 @@ void InitializeNetworkPortalDetector() {
     network_portal_detector::SetNetworkPortalDetector(
         new NetworkPortalDetectorImpl());
   }
+  network_portal_detector::GetInstance()->Enable();
 }
 
 void ApplySigninProfileModifications(Profile* profile) {
@@ -1139,30 +1140,17 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
     // active networks. Should be called before call to initialize
     // ChromeSessionManager because it depends on NetworkPortalDetector.
     InitializeNetworkPortalDetector();
-    {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-      bool is_official_build = true;
-#else
-      bool is_official_build = false;
-#endif
-      // Enable portal detector if EULA was previously accepted or if
-      // this is an unofficial build.
-      if (!is_official_build || StartupUtils::IsEulaAccepted())
-        network_portal_detector::GetInstance()->Enable();
-    }
 
     // Initialize an observer to update NetworkHandler's pref based services.
     network_pref_state_observer_ = std::make_unique<NetworkPrefStateObserver>();
 
-    if (features::IsBluetoothRevampEnabled()) {
-      // Initialize an observer to update CrosBluetoothConfig's pref based
-      // services.
-      bluetooth_pref_state_observer_ =
-          std::make_unique<BluetoothPrefStateObserver>();
-    }
+    // Initialize an observer to update CrosBluetoothConfig's pref based
+    // services.
+    bluetooth_pref_state_observer_ =
+        std::make_unique<BluetoothPrefStateObserver>();
 
     // Initialize the NetworkHealth aggregator.
-    network_health::NetworkHealthService::GetInstance();
+    network_health::NetworkHealthManager::GetInstance();
 
     // Create cros_healthd data collector.
     cros_healthd_data_collector_ =
@@ -1174,7 +1162,7 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
     // Pass a callback to the CrosHealthd service connection that binds a
     // pending remote to service.
     cros_healthd->SetBindNetworkHealthServiceCallback(base::BindRepeating([] {
-      return network_health::NetworkHealthService::GetInstance()
+      return network_health::NetworkHealthManager::GetInstance()
           ->GetHealthRemoteAndBindReceiver();
     }));
 
@@ -1182,7 +1170,7 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
     // pending remote to the interface.
     cros_healthd->SetBindNetworkDiagnosticsRoutinesCallback(
         base::BindRepeating([] {
-          return network_health::NetworkHealthService::GetInstance()
+          return network_health::NetworkHealthManager::GetInstance()
               ->GetDiagnosticsRemoteAndBindReceiver();
         }));
 
@@ -1488,9 +1476,7 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   shortcut_mapping_pref_service_.reset();
   if (features::IsTrafficCountersEnabled())
     traffic_counters_handler_.reset();
-
-  if (features::IsBluetoothRevampEnabled())
-    bluetooth_pref_state_observer_.reset();
+  bluetooth_pref_state_observer_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   idle_action_warning_observer_.reset();

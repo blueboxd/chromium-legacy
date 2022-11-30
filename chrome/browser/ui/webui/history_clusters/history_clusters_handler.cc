@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/time/time_to_iso8601.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history_clusters/history_clusters_metrics_logger.h"
@@ -47,6 +48,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/mojom/window_open_disposition.mojom.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/base/window_open_disposition_utils.h"
 #include "ui/webui/mojo_bubble_web_ui_controller.h"
 #include "ui/webui/resources/cr_components/history_clusters/history_clusters.mojom.h"
 #include "url/gurl.h"
@@ -176,8 +178,13 @@ mojom::URLVisitPtr VisitToMojom(Profile* profile,
     visit_mojom->debug_info["visit_id"] =
         base::NumberToString(annotated_visit.visit_row.visit_id);
     visit_mojom->debug_info["score"] = base::NumberToString(visit.score);
-    visit_mojom->debug_info["visit_duration"] = base::NumberToString(
-        annotated_visit.visit_row.visit_duration.InSecondsF());
+    visit_mojom->debug_info["visit_time"] =
+        base::TimeToISO8601(visit.annotated_visit.visit_row.visit_time);
+    visit_mojom->debug_info["foreground_duration"] =
+        base::NumberToString(annotated_visit.context_annotations
+                                 .total_foreground_duration.InSecondsF());
+    visit_mojom->debug_info["visit_source"] =
+        base::NumberToString(annotated_visit.source);
   }
 
   return visit_mojom;
@@ -252,7 +259,8 @@ mojom::QueryResultPtr QueryClustersResultToMojom(
     }
 
     if (GetConfig().user_visible_debug && cluster.from_persistence) {
-      cluster_mojom->debug_info = "persisted";
+      cluster_mojom->debug_info =
+          "persisted, id = " + base::NumberToString(cluster.cluster_id);
     }
 
     for (const auto& visit : cluster.visits) {
@@ -356,6 +364,8 @@ void HistoryClustersHandler::ToggleVisibility(
 
 void HistoryClustersHandler::StartQueryClusters(const std::string& query,
                                                 bool recluster) {
+  last_query_issued_ = query;
+
   if (!query.empty()) {
     // If the query string is not empty, we assume that this clusters query
     // is user generated.
@@ -427,7 +437,7 @@ void HistoryClustersHandler::RemoveVisits(
 
 void HistoryClustersHandler::OpenVisitUrlsInTabGroup(
     std::vector<mojom::URLVisitPtr> visits) {
-  const auto* browser = chrome::FindTabbedBrowser(profile_, false);
+  auto* browser = chrome::FindTabbedBrowser(profile_, false);
   if (!browser) {
     return;
   }
@@ -443,18 +453,11 @@ void HistoryClustersHandler::OpenVisitUrlsInTabGroup(
   auto* model = browser->tab_strip_model();
   std::vector<int> tab_indices;
   tab_indices.reserve(visits.size());
-  auto* opener = web_contents_.get();
   for (const auto& visit_ptr : visits) {
-    auto* opened_web_contents = opener->OpenURL(
+    auto* opened_web_contents = browser->OpenURL(
         content::OpenURLParams(visit_ptr->normalized_url, content::Referrer(),
                                WindowOpenDisposition::NEW_BACKGROUND_TAB,
                                ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
-
-    // The url may have opened a new window or clobbered the current one.
-    // Replace `opener` to be sure. `opened_web_contents` may be null in tests.
-    if (opened_web_contents) {
-      opener = opened_web_contents;
-    }
 
     // Only add those tabs to a new group that actually opened in this browser.
     const int tab_index = model->GetIndexOfWebContents(opened_web_contents);

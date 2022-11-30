@@ -32,6 +32,7 @@
   "Comparison Android (reclient)": {
     "goma": {
       "gn_args": {
+        "debuggable_apks": false,
         "ffmpeg_branding": "Chrome",
         "is_component_build": false,
         "is_debug": true,
@@ -45,6 +46,7 @@
     },
     "reclient": {
       "gn_args": {
+        "debuggable_apks": false,
         "ffmpeg_branding": "Chrome",
         "is_component_build": false,
         "is_debug": true,
@@ -398,16 +400,6 @@
       "use_remoteexec": true
     }
   },
-  "Linux Builder (py2 less)": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "use_remoteexec": true
-    }
-  },
   "Linux Builder (reclient compare)": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -488,12 +480,12 @@
       "dcheck_always_on": false,
       "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
+      "is_component_build": true,
       "is_debug": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
       "target_cpu": "arm64",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "Mac deterministic": {
@@ -503,7 +495,7 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "Mac deterministic (dbg)": {
@@ -511,23 +503,13 @@
       "is_component_build": true,
       "is_debug": true,
       "symbol_level": 1,
-      "use_goma": true
-    }
-  },
-  "Mac deterministic (reclient shadow)": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "enable_nacl": false,
-      "enable_stripping": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "symbol_level": 1,
       "use_remoteexec": true
     }
   },
   "Site Isolation Android": {
     "gn_args": {
       "dcheck_always_on": false,
+      "debuggable_apks": false,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
@@ -554,17 +536,6 @@
       "dcheck_always_on": true,
       "is_component_build": false,
       "is_debug": false,
-      "symbol_level": 1,
-      "use_remoteexec": true
-    }
-  },
-  "Win x64 Builder (py2 less)": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
       "symbol_level": 1,
       "use_remoteexec": true
     }
@@ -618,6 +589,7 @@
   "android-backuprefptr-arm-fyi-rel": {
     "gn_args": {
       "dcheck_always_on": true,
+      "debuggable_apks": false,
       "enable_backup_ref_ptr_slow_checks": true,
       "enable_backup_ref_ptr_support": true,
       "enable_dangling_raw_ptr_checks": true,
@@ -637,6 +609,7 @@
   "android-backuprefptr-arm64-fyi-rel": {
     "gn_args": {
       "dcheck_always_on": true,
+      "debuggable_apks": false,
       "enable_backup_ref_ptr_slow_checks": true,
       "enable_backup_ref_ptr_support": true,
       "enable_dangling_raw_ptr_checks": true,
@@ -657,6 +630,7 @@
     "gn_args": {
       "android_static_analysis": "off",
       "dcheck_always_on": false,
+      "debuggable_apks": false,
       "enable_resource_allowlist_generation": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
@@ -676,6 +650,7 @@
     "gn_args": {
       "android_static_analysis": "off",
       "dcheck_always_on": false,
+      "debuggable_apks": false,
       "enable_resource_allowlist_generation": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
@@ -694,6 +669,7 @@
     "gn_args": {
       "android_static_analysis": "off",
       "dcheck_always_on": false,
+      "debuggable_apks": false,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
@@ -701,8 +677,23 @@
       "strip_debug_info": true,
       "symbol_level": 1,
       "system_webview_package_name": "com.google.android.apps.chrome",
+      "system_webview_shell_package_name": "org.chromium.my_webview_shell",
       "target_cpu": "x86",
       "target_os": "android",
+      "use_remoteexec": true
+    }
+  },
+  "android-perfetto-rel": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "debuggable_apks": false,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "target_cpu": "x64",
+      "target_os": "android",
+      "use_perfetto_client_library": true,
       "use_remoteexec": true
     }
   },
@@ -710,6 +701,7 @@
     "gn_args": {
       "android_static_analysis": "off",
       "dcheck_always_on": true,
+      "debuggable_apks": false,
       "fail_on_android_expectations": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
@@ -808,29 +800,6 @@
       "use_goma": true
     }
   },
-  "fuchsia-fyi-arm64-emu-arg": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "symbol_level": 0,
-      "target_cpu": "arm64",
-      "target_os": "fuchsia",
-      "test_host_cpu": "arm64",
-      "use_goma": true
-    }
-  },
-  "fuchsia-fyi-arm64-rel": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "target_cpu": "arm64",
-      "target_os": "fuchsia",
-      "test_host_cpu": "arm64",
-      "use_goma": true
-    }
-  },
   "fuchsia-fyi-cfv2-script": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -838,37 +807,6 @@
       "is_debug": false,
       "target_os": "fuchsia",
       "use_cfv2_script": true,
-      "use_goma": true
-    }
-  },
-  "fuchsia-fyi-x64-rel": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "target_os": "fuchsia",
-      "use_goma": true
-    }
-  },
-  "fuchsia-fyi-x64-reviver": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "target_os": "fuchsia",
-      "use_goma": true
-    }
-  },
-  "fuchsia-fyi-x64-wst": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "fuchsia_additional_boot_images": [
-        "//third_party/fuchsia-sdk/images/qemu-x64-release/"
-      ],
-      "fuchsia_browser_type": "chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "target_os": "fuchsia",
       "use_goma": true
     }
   },
@@ -946,7 +884,7 @@
       "target_cpu": "x64",
       "target_os": "ios",
       "use_clang_coverage": true,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "ios-simulator-cr-recipe": {
@@ -1010,7 +948,7 @@
       "target_cpu": "x64",
       "target_environment": "simulator",
       "target_os": "ios",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "ios-wpt-fyi-rel": {
@@ -1036,20 +974,6 @@
       "target_cpu": "x64",
       "target_environment": "simulator",
       "target_os": "ios",
-      "use_goma": true
-    }
-  },
-  "ios15-sdk-device": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "enable_run_ios_unittests_with_xctest": true,
-      "ios_enable_code_signing": false,
-      "ios_set_attributes_for_xcode_project_generation": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "target_cpu": "arm64",
-      "target_environment": "device",
-      "target_os": "ios",
       "use_remoteexec": true
     }
   },
@@ -1063,7 +987,7 @@
       "target_cpu": "x64",
       "target_environment": "simulator",
       "target_os": "ios",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "ios16-beta-simulator": {
@@ -1077,6 +1001,20 @@
       "target_environment": "simulator",
       "target_os": "ios",
       "use_goma": true
+    }
+  },
+  "ios16-sdk-device": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "enable_run_ios_unittests_with_xctest": true,
+      "ios_enable_code_signing": false,
+      "ios_set_attributes_for_xcode_project_generation": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "target_cpu": "arm64",
+      "target_environment": "device",
+      "target_os": "ios",
+      "use_remoteexec": true
     }
   },
   "ios16-sdk-simulator": {
@@ -1229,6 +1167,17 @@
       "v8_enable_sandbox_future": true
     }
   },
+  "linux-blink-wpt-reset-rel": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "use_remoteexec": true
+    }
+  },
   "linux-chromeos-annotator-rel": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -1249,18 +1198,6 @@
       "proprietary_codecs": true,
       "target_os": "chromeos",
       "use_clang_coverage": true,
-      "use_remoteexec": true
-    }
-  },
-  "linux-chromeos-js-code-coverage": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "ffmpeg_branding": "ChromeOS",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "target_os": "chromeos",
-      "use_javascript_coverage": true,
       "use_remoteexec": true
     }
   },
@@ -1303,6 +1240,20 @@
       "media_use_libvpx": false,
       "proprietary_codecs": false,
       "use_remoteexec": true
+    }
+  },
+  "linux-js-code-coverage": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "enable_webui_inline_sourcemaps": true,
+      "is_clang": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "optimize_webui": false,
+      "symbol_level": 0,
+      "use_clang_coverage": true,
+      "use_goma": true,
+      "use_javascript_coverage": true
     }
   },
   "linux-lacros-builder-fyi-rel": {
@@ -1504,7 +1455,7 @@
       "is_debug": false,
       "symbol_level": 0,
       "use_clang_coverage": true,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "mac-fieldtrial-rel": {
@@ -1525,7 +1476,16 @@
       "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
-      "use_goma": true
+      "use_remoteexec": true
+    }
+  },
+  "mac-perfetto-rel": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "use_perfetto_client_library": true,
+      "use_remoteexec": true
     }
   },
   "mac-upload-perfetto": {
@@ -1534,7 +1494,7 @@
       "enable_perfetto_zlib": true,
       "is_component_build": false,
       "is_debug": false,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "win-annotator-rel": {
@@ -1595,6 +1555,15 @@
       "use_remoteexec": true
     }
   },
+  "win-perfetto-rel": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "use_perfetto_client_library": true,
+      "use_remoteexec": true
+    }
+  },
   "win-upload-perfetto": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -1622,6 +1591,15 @@
       "is_component_build": false,
       "is_debug": false,
       "proprietary_codecs": true,
+      "symbol_level": 1,
+      "use_remoteexec": true
+    }
+  },
+  "win10-wpt-content-shell-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_component_build": false,
+      "is_debug": false,
       "symbol_level": 1,
       "use_remoteexec": true
     }

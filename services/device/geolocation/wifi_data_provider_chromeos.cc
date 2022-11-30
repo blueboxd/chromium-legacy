@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "chromeos/ash/components/network/geolocation_handler.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "services/device/geolocation/wifi_data_provider_handle.h"
@@ -118,7 +117,7 @@ void WifiDataProviderChromeOs::ScheduleNextScan(int interval) {
     LOG(ERROR) << "ScheduleNextScan called with uninitialized NetworkHandler";
     return;
   }
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&WifiDataProviderChromeOs::DoWifiScanTask,
                      weak_factory_.GetWeakPtr()),

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -269,22 +269,12 @@ class CORE_EXPORT StyleCascade {
     bool AppendTokens(base::span<const CSSParserToken>, wtf_size_t);
 
     Vector<CSSParserToken> tokens_;
-    Vector<scoped_refptr<const CSSVariableData>> variable_data_;
     // https://drafts.csswg.org/css-variables/#animation-tainted
     bool is_animation_tainted_ = false;
     // https://drafts.css-houdini.org/css-properties-values-api-1/#dependency-cycles
     bool has_font_units_ = false;
     bool has_root_font_units_ = false;
-
-    // The base URL and charset are currently needed to calculate the computed
-    // value of <url>-registered custom properties correctly.
-    //
-    // TODO(crbug.com/985013): Store CSSParserContext on
-    // CSSCustomPropertyDeclaration and avoid this.
-    //
-    // https://drafts.css-houdini.org/css-properties-values-api-1/#relative-urls
-    String base_url_;
-    WTF::TextEncoding charset_;
+    bool has_line_height_units_ = false;
   };
 
   // Resolving Values
@@ -309,6 +299,9 @@ class CORE_EXPORT StyleCascade {
                           CascadePriority,
                           CascadeOrigin&,
                           CascadeResolver&);
+  const CSSValue* ResolveSubstitutions(const CSSProperty&,
+                                       const CSSValue&,
+                                       CascadeResolver&);
   const CSSValue* ResolveCustomProperty(const CSSProperty&,
                                         const CSSCustomPropertyDeclaration&,
                                         CascadeResolver&);
@@ -353,6 +346,9 @@ class CORE_EXPORT StyleCascade {
   //
   // https://drafts.css-houdini.org/css-properties-values-api-1/#dependency-cycles
   bool HasFontSizeDependency(const CustomProperty&, CSSVariableData*) const;
+  // Detects if the given property/data depends on the line-height property of
+  // the Element we're calculating style for.
+  bool HasLineHeightDependency(const CustomProperty&, CSSVariableData*) const;
   // The fallback must match the syntax of the custom property, otherwise the
   // the declaration is "invalid at computed-value time".'
   //

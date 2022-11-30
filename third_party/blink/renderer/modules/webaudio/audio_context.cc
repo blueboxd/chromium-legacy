@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -261,8 +261,9 @@ AudioContext::AudioContext(Document& document,
           execution_context->GetTaskRunner(TaskType::kPermission)));
   permission_service_->HasPermission(
       CreatePermissionDescriptor(microphone_permission_name),
-      WTF::Bind(&AudioContext::DidInitialPermissionCheck, WrapPersistent(this),
-                CreatePermissionDescriptor(microphone_permission_name)));
+      WTF::BindOnce(&AudioContext::DidInitialPermissionCheck,
+                    WrapPersistent(this),
+                    CreatePermissionDescriptor(microphone_permission_name)));
 }
 
 void AudioContext::Uninitialize() {
@@ -534,13 +535,13 @@ ScriptPromise AudioContext::setSinkId(ScriptState* script_state,
     return promise;
   }
 
-  // When the queue is empty, we start resolver immediately because it is the
-  // only item in the queue.
-  if (set_sink_id_resolvers_.IsEmpty()) {
+  set_sink_id_resolvers_.push_back(resolver);
+
+  // When there's only one resolver in the queue, we start it immediately
+  // because there is no preceding resolver will start it.
+  if (set_sink_id_resolvers_.size() == 1) {
     resolver->Start();
   }
-
-  set_sink_id_resolvers_.push_back(resolver);
 
   return promise;
 }
@@ -855,8 +856,8 @@ void AudioContext::EnsureAudioContextManagerService() {
               GetDocument()->GetTaskRunner(TaskType::kInternalMedia))));
 
   audio_context_manager_.set_disconnect_handler(
-      WTF::Bind(&AudioContext::OnAudioContextManagerServiceConnectionError,
-                WrapWeakPersistent(this)));
+      WTF::BindOnce(&AudioContext::OnAudioContextManagerServiceConnectionError,
+                    WrapWeakPersistent(this)));
 }
 
 void AudioContext::OnAudioContextManagerServiceConnectionError() {

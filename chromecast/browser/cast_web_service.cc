@@ -113,6 +113,7 @@ void CastWebService::ClearLocalStorage(ClearLocalStorageCallback callback) {
             partition->ClearData(
                 remove_data_mask,
                 content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
+                /*filter_builder=*/nullptr,
                 content::StoragePartition::StorageKeyPolicyMatcherFunction(),
                 std::move(cookie_delete_filter), /*perform_cleanup=*/true,
                 base::Time::Min(), base::Time::Max(), std::move(cb));
@@ -121,8 +122,7 @@ void CastWebService::ClearLocalStorage(ClearLocalStorageCallback callback) {
 }
 
 bool CastWebService::IsCastWebUIOrigin(const url::Origin& origin) {
-  return std::find(cast_webui_hosts_.begin(), cast_webui_hosts_.end(),
-                   origin.host()) != cast_webui_hosts_.end();
+  return base::Contains(cast_webui_hosts_, origin.host());
 }
 
 void CastWebService::RegisterWebUiClient(

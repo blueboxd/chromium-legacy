@@ -11,6 +11,7 @@
 #include <lib/fdio/directory.h>
 #include <lib/fidl/cpp/binding.h>
 #include <lib/sys/cpp/component_context.h>
+#include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <lib/ui/scenic/cpp/view_token_pair.h>
 #include <lib/zx/channel.h>
 #include <zircon/processargs.h>
@@ -948,11 +949,14 @@ TEST_F(HeadlessCastRunnerIntegrationTest, Headless) {
 
   component.CreateComponentContextAndStartComponent();
   auto tokens = scenic::ViewTokenPair::New();
+  auto view_ref_pair = scenic::ViewRefPair::New();
 
   // Create a view.
   auto view_provider = component.component_services_client()
                            ->Connect<fuchsia::ui::app::ViewProvider>();
-  view_provider->CreateView(std::move(tokens.view_holder_token.value), {}, {});
+  view_provider->CreateViewWithViewRef(
+      std::move(tokens.view_holder_token.value),
+      std::move(view_ref_pair.control_ref), std::move(view_ref_pair.view_ref));
 
   component.api_bindings()->RunAndReturnConnectedPort("animation_finished");
 
@@ -1186,30 +1190,6 @@ TEST_F(CastRunnerIntegrationTest, DataReset_Service) {
   component.app_config_manager()->AddApp(kTestAppId, app_url);
   component.StartCastComponent(base::StrCat({"cast:", kTestAppId}));
   component.ExpectControllerDisconnectWithStatus(ZX_ERR_PEER_CLOSED);
-}
-
-// Verifies that CastRunner offers a chromium.cast.DataReset component, that
-// provides the DataReset service.
-TEST_F(CastRunnerIntegrationTest, DataReset_component) {
-  TestCastComponent component(cast_runner());
-  constexpr char kDataResetComponentName[] = "cast:chromium.cast.DataReset";
-  component.StartCastComponent(kDataResetComponentName);
-
-  base::RunLoop loop;
-  auto data_reset = component.component_services_client()
-                        ->Connect<chromium::cast::DataReset>();
-  data_reset.set_error_handler([quit_loop = loop.QuitClosure()](zx_status_t) {
-    quit_loop.Run();
-    ADD_FAILURE();
-  });
-  bool succeeded = false;
-  data_reset->DeletePersistentData([&succeeded, &loop](bool result) {
-    succeeded = result;
-    loop.Quit();
-  });
-  loop.Run();
-
-  EXPECT_TRUE(succeeded);
 }
 
 class CastRunnerFrameHostIntegrationTest : public CastRunnerIntegrationTest {

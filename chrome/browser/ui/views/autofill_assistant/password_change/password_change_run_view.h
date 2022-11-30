@@ -11,18 +11,21 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/password_change_run_display.h"
 #include "components/autofill_assistant/browser/public/password_change/proto/actions.pb.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 namespace views {
-class ImageView;
+class MdTextButton;
 class View;
 }  // namespace views
 
 class PasswordChangeRunController;
 class PasswordChangeRunProgress;
+class ThemeTrackingNonAccessibleImageView;
 
 // View that displays the automatic password change experience. When this class
 // is instantiated its ownership is given to the `display_delegate` passed
@@ -38,6 +41,7 @@ class PasswordChangeRunView : public views::View,
 
     kTitleContainer,
     kTitle,
+    kTopIcon,
     kSuggestedPassword,
 
     kBody,
@@ -57,7 +61,9 @@ class PasswordChangeRunView : public views::View,
   void Show() override;
   void SetTopIcon(
       autofill_assistant::password_change::TopIcon top_icon) override;
-  void SetTitle(const std::u16string& title) override;
+  void SetTitle(
+      const std::u16string& title,
+      const std::u16string& accessibility_title = std::u16string()) override;
   void SetDescription(const std::u16string& progress_description) override;
   void SetProgressBarStep(
       autofill_assistant::password_change::ProgressStep progress_step) override;
@@ -74,9 +80,16 @@ class PasswordChangeRunView : public views::View,
   void ClearPrompt() override;
   void ShowStartingScreen(const GURL& url) override;
   void ShowCompletionScreen(
+      autofill_assistant::password_change::FlowType flow_type,
       base::RepeatingClosure done_button_callback) override;
   void ShowErrorScreen() override;
+  void PauseProgressBarAnimation() override;
+  void ResumeProgressBarAnimation() override;
+  void SetFocus() override;
   void OnControllerGone() override;
+
+  void SetFocusOnButtonTimerForTest(
+      std::unique_ptr<base::OneShotTimer> focus_on_button_timer);
 
   // Returns a weak pointer to itself.
   base::WeakPtr<PasswordChangeRunView> GetWeakPtr();
@@ -85,6 +98,9 @@ class PasswordChangeRunView : public views::View,
   // Creates/initialises the view.
   void CreateView();
 
+  // Returns the currently used background color.
+  SkColor GetBackgroundColor() const;
+
   // Renders the options for a base prompt.
   void CreateBasePromptOptions(const std::vector<PromptChoice>& choices);
 
@@ -92,11 +108,20 @@ class PasswordChangeRunView : public views::View,
   // This method destroys an instance of this class.
   void Close();
 
-  // Method that updates the UI to render the completion screen. This is called
-  // only AFTER `password_change_run_progress_` is completed, both in terms of
-  // steps and animation. Runs `show_completion_screen_done_button_callback_`
-  // when user clicks on Done.
-  void OnShowCompletionScreen();
+  // Sets focus on the currently highlighted button (if any).
+  void FocusPromptButton(views::MdTextButton* button);
+
+  // Updates the UI to show the completion screen for a successful password
+  // change. This method should not be called directly, but instead be triggered
+  // when `password_change_run_progress_` is complete.
+  // Runs `done_button_callback` if the user interacts with the "Done" button.
+  void OnShowCompletionScreenForPasswordChange(
+      base::RepeatingClosure done_button_callback);
+
+  // Updates the UI to show the completion screen for a successful password
+  // reset. It behaves similarly to `OnShowCompletionScreenForPasswordChange`.
+  void OnShowCompletionScreenForPasswordReset(
+      base::RepeatingClosure done_button_callback);
 
   // The controller belonging to this view.
   base::WeakPtr<PasswordChangeRunController> controller_;
@@ -104,16 +129,19 @@ class PasswordChangeRunView : public views::View,
   // The display that owns this view.
   raw_ptr<AssistantDisplayDelegate> display_delegate_;
 
-  raw_ptr<views::ImageView> top_icon_ = nullptr;
+  raw_ptr<ThemeTrackingNonAccessibleImageView> top_icon_ = nullptr;
   raw_ptr<views::View> title_container_ = nullptr;
   raw_ptr<PasswordChangeRunProgress> password_change_run_progress_ = nullptr;
+  std::u16string last_title_accessibility_name_announced_;
 
   // The body is used to render content below the title, i.e
   // prompts and descriptions.
   raw_ptr<views::View> body_ = nullptr;
 
-  // Callback run when a user clicks Done after a successful run.
-  base::RepeatingClosure show_completion_screen_done_button_callback_;
+  // Once this timer is completed, the currently highlighted button will receive
+  // focus.
+  std::unique_ptr<base::OneShotTimer> focus_on_button_timer_;
+
   // Factory for weak pointers to this view.
   base::WeakPtrFactory<PasswordChangeRunView> weak_ptr_factory_{this};
 };

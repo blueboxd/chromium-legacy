@@ -20,7 +20,9 @@
 #include "chrome/browser/ash/child_accounts/time_limits/app_time_limit_interface.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/grit/supervised_user_unscaled_resources.h"
 #include "chrome/browser/web_applications/app_service/web_apps.h"
@@ -40,6 +42,16 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace apps {
+
+namespace {
+// Return DlpFilesController* if exists.
+policy::DlpFilesController* GetDlpFilesController() {
+  // Primary profile restrictions are enforced across all profiles.
+  policy::DlpRulesManager* rules_manager =
+      policy::DlpRulesManagerFactory::GetForPrimaryProfile();
+  return rules_manager ? rules_manager->GetDlpFilesController() : nullptr;
+}
+}  // namespace
 
 AppServiceProxyAsh::AppServiceProxyAsh(Profile* profile)
     : AppServiceProxyBase(profile) {
@@ -208,8 +220,8 @@ void AppServiceProxyAsh::OnApps(std::vector<apps::mojom::AppPtr> deltas,
 
 void AppServiceProxyAsh::PauseApps(
     const std::map<std::string, PauseData>& pause_data) {
-  if (!app_service_.is_connected() &&
-      !base::FeatureList::IsEnabled(kAppServiceWithoutMojom)) {
+  if (!base::FeatureList::IsEnabled(kAppServiceWithoutMojom) &&
+      !app_service_.is_connected()) {
     return;
   }
 
@@ -252,8 +264,8 @@ void AppServiceProxyAsh::PauseApps(
 }
 
 void AppServiceProxyAsh::UnpauseApps(const std::set<std::string>& app_ids) {
-  if (!app_service_.is_connected() &&
-      !base::FeatureList::IsEnabled(kAppServiceWithoutMojom)) {
+  if (!base::FeatureList::IsEnabled(kAppServiceWithoutMojom) &&
+      !app_service_.is_connected()) {
     return;
   }
 
@@ -309,10 +321,19 @@ void AppServiceProxyAsh::LaunchAppWithIntent(const std::string& app_id,
                                              LaunchSource launch_source,
                                              WindowInfoPtr window_info,
                                              LaunchCallback callback) {
-  // TODO(1359312): Apply DLP checks if possible
-  AppServiceProxyBase::LaunchAppWithIntent(
-      app_id, event_flags, std::move(intent), launch_source,
-      std::move(window_info), std::move(callback));
+  apps::IntentPtr intent_copy = intent->Clone();
+  base::OnceCallback launch_callback = base::BindOnce(
+      &AppServiceProxyAsh::LaunchAppWithIntentIfAllowed,
+      weak_ptr_factory_.GetWeakPtr(), app_id, event_flags, std::move(intent),
+      std::move(launch_source), std::move(window_info), std::move(callback));
+
+  policy::DlpFilesController* files_controller = GetDlpFilesController();
+  if (files_controller) {
+    files_controller->CheckIfLaunchAllowed(app_id, std::move(intent_copy),
+                                           std::move(launch_callback));
+  } else {
+    std::move(launch_callback).Run(/*is_allowed=*/true);
+  }
 }
 
 void AppServiceProxyAsh::LaunchAppWithIntent(
@@ -322,28 +343,27 @@ void AppServiceProxyAsh::LaunchAppWithIntent(
     apps::mojom::LaunchSource launch_source,
     apps::mojom::WindowInfoPtr window_info,
     apps::mojom::Publisher::LaunchAppWithIntentCallback callback) {
-  // TODO(1359312): Apply DLP checks if possible
-  AppServiceProxyBase::LaunchAppWithIntent(
-      app_id, event_flags, std::move(intent), launch_source,
-      std::move(window_info), std::move(callback));
+  apps::IntentPtr intent_copy = apps::ConvertMojomIntentToIntent(intent);
+  base::OnceCallback launch_callback = base::BindOnce(
+      &AppServiceProxyAsh::LaunchAppWithMojoIntentIfAllowed,
+      weak_ptr_factory_.GetWeakPtr(), app_id, event_flags, std::move(intent),
+      std::move(launch_source), std::move(window_info), std::move(callback));
+
+  policy::DlpFilesController* files_controller = GetDlpFilesController();
+  if (files_controller) {
+    files_controller->CheckIfLaunchAllowed(app_id, std::move(intent_copy),
+                                           std::move(launch_callback));
+  } else {
+    std::move(launch_callback).Run(/*is_allowed=*/true);
+  }
 }
 
 base::WeakPtr<AppServiceProxyAsh> AppServiceProxyAsh::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void AppServiceProxyAsh::FlushMojoCallsForTesting() {
-  app_service_mojom_impl_->FlushMojoCallsForTesting();
-
-  if (publisher_host_) {
-    publisher_host_->FlushMojoCallsForTesting();
-  }
-
-  receivers_.FlushForTesting();
-}
-
 void AppServiceProxyAsh::ReInitializeCrostiniForTesting() {
-  if (app_service_.is_connected() && publisher_host_) {
+  if (publisher_host_) {
     publisher_host_->ReInitializeCrostiniForTesting(this);  // IN-TEST
   }
 }
@@ -389,13 +409,6 @@ void AppServiceProxyAsh::UninstallImpl(const std::string& app_id,
                                        UninstallSource uninstall_source,
                                        gfx::NativeWindow parent_window,
                                        OnUninstallForTestingCallback callback) {
-  if (!app_service_.is_connected()) {
-    if (!callback.is_null()) {
-      std::move(callback).Run(false);
-    }
-    return;
-  }
-
   // If the dialog exists for the app id, we bring the dialog to the front
   auto it = uninstall_dialogs_.find(app_id);
   if (it != uninstall_dialogs_.end()) {
@@ -443,7 +456,7 @@ void AppServiceProxyAsh::OnUninstallDialogClosed(
       DCHECK(publisher);
       publisher->Uninstall(app_id, uninstall_source,
                            /*clear_site_data=*/false, /*report_abuse=*/false);
-    } else {
+    } else if (app_service_.is_connected()) {
       app_service_->Uninstall(
           ConvertAppTypeToMojomAppType(app_type), app_id,
           ConvertUninstallSourceToMojomUninstallSource(uninstall_source),
@@ -460,10 +473,6 @@ void AppServiceProxyAsh::OnUninstallDialogClosed(
 }
 
 void AppServiceProxyAsh::InitializePreferredAppsForAllSubscribers() {
-  if (!base::FeatureList::IsEnabled(kAppServicePreferredAppsWithoutMojom)) {
-    return;
-  }
-
   AppServiceProxyBase::InitializePreferredAppsForAllSubscribers();
   if (crosapi_subscriber_ && preferred_apps_impl_) {
     crosapi_subscriber_->InitializePreferredApps(
@@ -473,10 +482,6 @@ void AppServiceProxyAsh::InitializePreferredAppsForAllSubscribers() {
 
 void AppServiceProxyAsh::OnPreferredAppsChanged(
     PreferredAppChangesPtr changes) {
-  if (!base::FeatureList::IsEnabled(kAppServicePreferredAppsWithoutMojom)) {
-    return;
-  }
-
   if (!crosapi_subscriber_) {
     AppServiceProxyBase::OnPreferredAppsChanged(std::move(changes));
     return;
@@ -622,7 +627,14 @@ void AppServiceProxyAsh::OnPauseDialogClosed(apps::AppType app_type,
         });
   }
   if (should_pause_app) {
-    app_service_->PauseApp(ConvertAppTypeToMojomAppType(app_type), app_id);
+    if (base::FeatureList::IsEnabled(kAppServiceWithoutMojom)) {
+      auto* publisher = GetPublisher(app_type);
+      if (publisher) {
+        publisher->PauseApp(app_id);
+      }
+    } else if (app_service_.is_connected()) {
+      app_service_->PauseApp(ConvertAppTypeToMojomAppType(app_type), app_id);
+    }
   }
 }
 
@@ -705,6 +717,40 @@ bool AppServiceProxyAsh::CanRunLaunchCallback(
   }
 
   return true;
+}
+
+void AppServiceProxyAsh::LaunchAppWithIntentIfAllowed(
+    const std::string& app_id,
+    int32_t event_flags,
+    IntentPtr intent,
+    LaunchSource launch_source,
+    WindowInfoPtr window_info,
+    LaunchCallback callback,
+    bool is_allowed) {
+  if (!is_allowed) {
+    std::move(callback).Run(LaunchResult(State::FAILED));
+    return;
+  }
+  AppServiceProxyBase::LaunchAppWithIntent(
+      app_id, event_flags, std::move(intent), std::move(launch_source),
+      std::move(window_info), std::move(callback));
+}
+
+void AppServiceProxyAsh::LaunchAppWithMojoIntentIfAllowed(
+    const std::string& app_id,
+    int32_t event_flags,
+    apps::mojom::IntentPtr intent,
+    apps::mojom::LaunchSource launch_source,
+    apps::mojom::WindowInfoPtr window_info,
+    apps::mojom::Publisher::LaunchAppWithIntentCallback callback,
+    bool is_allowed) {
+  if (!is_allowed) {
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+  AppServiceProxyBase::LaunchAppWithIntent(
+      app_id, event_flags, std::move(intent), std::move(launch_source),
+      std::move(window_info), std::move(callback));
 }
 
 }  // namespace apps

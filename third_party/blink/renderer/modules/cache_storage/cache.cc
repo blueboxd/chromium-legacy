@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -414,7 +414,7 @@ class Cache::BarrierCallbackForPutComplete final
     // executed.
     cache_->cache_remote_->Batch(
         std::move(batch_operations_), trace_id_,
-        WTF::Bind(
+        WTF::BindOnce(
             [](const String& method_name, ScriptPromiseResolver* resolver,
                base::TimeTicks start_time, int operation_count,
                int64_t trace_id, Cache* _,
@@ -935,7 +935,7 @@ ScriptPromise Cache::MatchImpl(ScriptState* script_state,
   cache_remote_->Match(
       std::move(mojo_request), std::move(mojo_options), in_related_fetch_event,
       in_range_fetch_event, trace_id,
-      WTF::Bind(
+      WTF::BindOnce(
           [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
              const CacheQueryOptions* options, int64_t trace_id, Cache* self,
              mojom::blink::MatchResultPtr result) {
@@ -1027,7 +1027,7 @@ ScriptPromise Cache::MatchAllImpl(ScriptState* script_state,
   // executed.
   cache_remote_->MatchAll(
       std::move(fetch_api_request), std::move(mojo_options), trace_id,
-      WTF::Bind(
+      WTF::BindOnce(
           [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
              const CacheQueryOptions* options, int64_t trace_id, Cache* _,
              mojom::blink::MatchAllResultPtr result) {
@@ -1072,7 +1072,7 @@ ScriptPromise Cache::AddAllImpl(ScriptState* script_state,
   TRACE_EVENT_WITH_FLOW0("CacheStorage", "Cache::AddAllImpl",
                          TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_OUT);
 
-  if (request_list.IsEmpty())
+  if (request_list.empty())
     return ScriptPromise::CastUndefined(script_state);
 
   // Validate all requests before starting to load or store any of them.
@@ -1151,7 +1151,7 @@ ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
   // executed.
   cache_remote_->Batch(
       std::move(batch_operations), trace_id,
-      WTF::Bind(
+      WTF::BindOnce(
           [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
              const CacheQueryOptions* options, int64_t trace_id, Cache* _,
              mojom::blink::CacheStorageVerboseErrorPtr error) {
@@ -1273,7 +1273,7 @@ ScriptPromise Cache::KeysImpl(ScriptState* script_state,
   // executed.
   cache_remote_->Keys(
       std::move(fetch_api_request), std::move(mojo_options), trace_id,
-      WTF::Bind(
+      WTF::BindOnce(
           [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
              const CacheQueryOptions* options, int64_t trace_id, Cache* _,
              mojom::blink::CacheKeysResultPtr result) {

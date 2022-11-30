@@ -3,13 +3,15 @@
 // found in the LICENSE file.
 
 import 'chrome://os-settings/strings.m.js';
-import 'chrome://resources/cr_components/chromeos/cellular_setup/esim_flow_ui.js';
+import 'chrome://resources/ash/common/cellular_setup/esim_flow_ui.js';
 
-import {ButtonState} from 'chrome://resources/cr_components/chromeos/cellular_setup/cellular_types.js';
-import {ESimPageName, ESimSetupFlowResult, FAILED_ESIM_SETUP_DURATION_METRIC_NAME, SUCCESSFUL_ESIM_SETUP_DURATION_METRIC_NAME} from 'chrome://resources/cr_components/chromeos/cellular_setup/esim_flow_ui.js';
-import {setESimManagerRemoteForTesting} from 'chrome://resources/cr_components/chromeos/cellular_setup/mojo_interface_provider.js';
-import {MojoInterfaceProviderImpl} from 'chrome://resources/cr_components/chromeos/network/mojo_interface_provider.js';
-import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.js';
+import {ButtonState} from 'chrome://resources/ash/common/cellular_setup/cellular_types.js';
+import {ESimPageName, ESimSetupFlowResult, FAILED_ESIM_SETUP_DURATION_METRIC_NAME, SUCCESSFUL_ESIM_SETUP_DURATION_METRIC_NAME} from 'chrome://resources/ash/common/cellular_setup/esim_flow_ui.js';
+import {setESimManagerRemoteForTesting} from 'chrome://resources/ash/common/cellular_setup/mojo_interface_provider.js';
+import {MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
+import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
+import {ESimOperationResult, ProfileInstallResult} from 'chrome://resources/mojo/chromeos/ash/services/cellular_setup/public/mojom/esim_manager.mojom-webui.js';
+import {ConnectionStateType, NetworkType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {FakeNetworkConfig} from 'chrome://test/chromeos/fake_network_config_mojom.js';
 
@@ -75,10 +77,9 @@ suite('CrComponentsEsimFlowUiTest', function() {
 
   /** Adds an actively online wifi network and esim network. */
   function addOnlineWifiNetwork() {
-    const onlineNetwork = OncMojo.getDefaultNetworkState(
-        chromeos.networkConfig.mojom.NetworkType.kWiFi, wifiGuidPrefix);
-    onlineNetwork.connectionState =
-        chromeos.networkConfig.mojom.ConnectionStateType.kOnline;
+    const onlineNetwork =
+        OncMojo.getDefaultNetworkState(NetworkType.kWiFi, wifiGuidPrefix);
+    onlineNetwork.connectionState = ConnectionStateType.kOnline;
     networkConfigRemote.addNetworksForTest([onlineNetwork]);
     MojoInterfaceProviderImpl.getInstance().remote_ = networkConfigRemote;
   }
@@ -86,8 +87,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
   /** Takes actively online network offline. */
   function takeWifiNetworkOffline() {
     networkConfigRemote.setNetworkConnectionStateForTest(
-        wifiGuidPrefix + '_guid',
-        chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected);
+        wifiGuidPrefix + '_guid', ConnectionStateType.kNotConnected);
   }
 
   test('Error fetching profiles', async function() {
@@ -95,8 +95,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
     const availableEuiccs = await eSimManagerRemote.getAvailableEuiccs();
     const euicc = availableEuiccs.euiccs[0];
 
-    euicc.setRequestPendingProfilesResult(
-        ash.cellularSetup.mojom.ESimOperationResult.kFailure);
+    euicc.setRequestPendingProfilesResult(ESimOperationResult.kFailure);
     eSimPage.initSubflow();
 
     await flushAsync();
@@ -306,8 +305,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
 
     test('Invalid activation code', async function() {
       euicc.setProfileInstallResultForTest(
-          ash.cellularSetup.mojom.ProfileInstallResult
-              .kErrorInvalidActivationCode);
+          ProfileInstallResult.kErrorInvalidActivationCode);
 
       await navigateForwardForInstall(
           activationCodePage,
@@ -336,8 +334,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
 
     test('Valid confirmation code', async function() {
       euicc.setProfileInstallResultForTest(
-          ash.cellularSetup.mojom.ProfileInstallResult
-              .kErrorNeedsConfirmationCode);
+          ProfileInstallResult.kErrorNeedsConfirmationCode);
 
       await navigateForwardForInstall(
           activationCodePage,
@@ -348,8 +345,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
           /*forwardButtonShouldBeEnabled*/ false,
           /*backButtonState*/ ButtonState.ENABLED);
 
-      euicc.setProfileInstallResultForTest(
-          ash.cellularSetup.mojom.ProfileInstallResult.kSuccess);
+      euicc.setProfileInstallResultForTest(ProfileInstallResult.kSuccess);
       await enterConfirmationCode(
           /*backButtonState*/ ButtonState.ENABLED);
 
@@ -361,8 +357,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
 
     test('Invalid confirmation code', async function() {
       euicc.setProfileInstallResultForTest(
-          ash.cellularSetup.mojom.ProfileInstallResult
-              .kErrorNeedsConfirmationCode);
+          ProfileInstallResult.kErrorNeedsConfirmationCode);
 
       await navigateForwardForInstall(
           activationCodePage,
@@ -373,8 +368,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
           /*forwardButtonShouldBeEnabled*/ false,
           /*backButtonState*/ ButtonState.ENABLED);
 
-      euicc.setProfileInstallResultForTest(
-          ash.cellularSetup.mojom.ProfileInstallResult.kFailure);
+      euicc.setProfileInstallResultForTest(ProfileInstallResult.kFailure);
       const confirmationCodeInput = await enterConfirmationCode(
           /*backButtonState*/ ButtonState.ENABLED);
 
@@ -389,8 +383,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
 
     test('Navigate backwards from confirmation code', async function() {
       euicc.setProfileInstallResultForTest(
-          ash.cellularSetup.mojom.ProfileInstallResult
-              .kErrorNeedsConfirmationCode);
+          ProfileInstallResult.kErrorNeedsConfirmationCode);
 
       await navigateForwardForInstall(
           activationCodePage,
@@ -451,8 +444,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
     });
 
     test('Unsuccessful install', async function() {
-      profile.setProfileInstallResultForTest(
-          ash.cellularSetup.mojom.ProfileInstallResult.kFailure);
+      profile.setProfileInstallResultForTest(ProfileInstallResult.kFailure);
 
       await assertProfileLoadingPageAndContinue();
       await flushAsync();
@@ -464,8 +456,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
 
     test('Valid confirmation code', async function() {
       profile.setProfileInstallResultForTest(
-          ash.cellularSetup.mojom.ProfileInstallResult
-              .kErrorNeedsConfirmationCode);
+          ProfileInstallResult.kErrorNeedsConfirmationCode);
 
       await assertProfileLoadingPageAndContinue();
       await flushAsync();
@@ -474,8 +465,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
           /*forwardButtonShouldBeEnabled*/ false,
           /*backButtonState*/ ButtonState.HIDDEN);
 
-      profile.setProfileInstallResultForTest(
-          ash.cellularSetup.mojom.ProfileInstallResult.kSuccess);
+      profile.setProfileInstallResultForTest(ProfileInstallResult.kSuccess);
       await enterConfirmationCode(
           /*backButtonState*/ ButtonState.HIDDEN);
 
@@ -487,8 +477,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
 
     test('Invalid confirmation code', async function() {
       profile.setProfileInstallResultForTest(
-          ash.cellularSetup.mojom.ProfileInstallResult
-              .kErrorNeedsConfirmationCode);
+          ProfileInstallResult.kErrorNeedsConfirmationCode);
 
       await assertProfileLoadingPageAndContinue();
       await flushAsync();
@@ -497,8 +486,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
           /*forwardButtonShouldBeEnabled*/ false,
           /*backButtonState*/ ButtonState.HIDDEN);
 
-      profile.setProfileInstallResultForTest(
-          ash.cellularSetup.mojom.ProfileInstallResult.kFailure);
+      profile.setProfileInstallResultForTest(ProfileInstallResult.kFailure);
       const confirmationCodeInput =
           await enterConfirmationCode(ButtonState.HIDDEN);
 
@@ -513,8 +501,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
 
     test('Navigate backwards from confirmation code', async function() {
       profile.setProfileInstallResultForTest(
-          ash.cellularSetup.mojom.ProfileInstallResult
-              .kErrorNeedsConfirmationCode);
+          ProfileInstallResult.kErrorNeedsConfirmationCode);
 
       await assertProfileLoadingPageAndContinue();
       await flushAsync();
@@ -605,8 +592,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
           skipDiscovery();
 
           euicc.setProfileInstallResultForTest(
-              ash.cellularSetup.mojom.ProfileInstallResult
-                  .kErrorNeedsConfirmationCode);
+              ProfileInstallResult.kErrorNeedsConfirmationCode);
 
           await navigateForwardForInstall(
               activationCodePage,
@@ -674,8 +660,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
       const availableEuiccs = await eSimManagerRemote.getAvailableEuiccs();
       const profileList = await availableEuiccs.euiccs[0].getProfileList();
       profileList.profiles[0].setProfileInstallResultForTest(
-          ash.cellularSetup.mojom.ProfileInstallResult
-              .kErrorNeedsConfirmationCode);
+          ProfileInstallResult.kErrorNeedsConfirmationCode);
 
       await selectProfile();
 
@@ -686,7 +671,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
       assertFocusDefaultButtonEventFired();
 
       profileList.profiles[0].setProfileInstallResultForTest(
-          ash.cellularSetup.mojom.ProfileInstallResult.kSuccess);
+          ProfileInstallResult.kSuccess);
       await enterConfirmationCode(
           /*backButtonState*/ ButtonState.ENABLED);
 
@@ -703,8 +688,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
           const availableEuiccs = await eSimManagerRemote.getAvailableEuiccs();
           const profileList = await availableEuiccs.euiccs[0].getProfileList();
           profileList.profiles[0].setProfileInstallResultForTest(
-              ash.cellularSetup.mojom.ProfileInstallResult
-                  .kErrorNeedsConfirmationCode);
+              ProfileInstallResult.kErrorNeedsConfirmationCode);
 
           await selectProfile();
           await flushAsync();
@@ -747,10 +731,9 @@ suite('CrComponentsEsimFlowUiTest', function() {
             profileLoadingPage.loadingMessage,
             eSimPage.i18n('eSimProfileDetectMessage'));
 
-        const pSimNetwork = OncMojo.getDefaultNetworkState(
-            chromeos.networkConfig.mojom.NetworkType.kCellular, 'cellular');
-        pSimNetwork.connectionState =
-            chromeos.networkConfig.mojom.ConnectionStateType.kConnected;
+        const pSimNetwork =
+            OncMojo.getDefaultNetworkState(NetworkType.kCellular, 'cellular');
+        pSimNetwork.connectionState = ConnectionStateType.kConnected;
         networkConfigRemote.addNetworksForTest([pSimNetwork]);
         MojoInterfaceProviderImpl.getInstance().remote_ = networkConfigRemote;
         await flushAsync();

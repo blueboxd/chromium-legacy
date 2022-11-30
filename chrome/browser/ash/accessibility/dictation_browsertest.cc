@@ -11,6 +11,8 @@
 #include "ash/public/cpp/system_tray_test_api.h"
 #include "ash/shell.h"
 #include "base/bind.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/statistics_recorder.h"
@@ -18,6 +20,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
@@ -285,9 +289,9 @@ class DictationTestBase
  protected:
   // InProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    std::vector<base::Feature> enabled_features =
+    std::vector<base::test::FeatureRef> enabled_features =
         test_helper_.GetEnabledFeatures();
-    std::vector<base::Feature> disabled_features =
+    std::vector<base::test::FeatureRef> disabled_features =
         test_helper_.GetDisabledFeatures();
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
@@ -1610,79 +1614,6 @@ IN_PROC_BROWSER_TEST_P(DictationUITest, MAYBE_HintsShownAfterCommandExecuted) {
       /*hints=*/std::vector<std::u16string>{kTrySaying, kUndo, kHelp});
 }
 
-// Tests behavior of Dictation macros that haven't been hooked up to the
-// speech parser.
-class DictationHiddenMacrosTest : public DictationTest {
- protected:
-  DictationHiddenMacrosTest() = default;
-  ~DictationHiddenMacrosTest() = default;
-  DictationHiddenMacrosTest(const DictationHiddenMacrosTest&) = delete;
-  DictationHiddenMacrosTest& operator=(const DictationHiddenMacrosTest&) =
-      delete;
-
-  void RunHiddenMacro(int macro) {
-    std::string script = base::StringPrintf(R"(
-      accessibilityCommon.dictation_.runHiddenMacroForTesting(%d);
-      window.domAutomationController.send("done");
-    )",
-                                            macro);
-    ExecuteAccessibilityCommonScript(script);
-  }
-
-  void RunHiddenMacroWithStringArg(int macro, const std::string& arg) {
-    std::string script = base::StringPrintf(R"(
-      accessibilityCommon.dictation_.
-          runHiddenMacroWithStringArgForTesting(%d, "%s");
-      window.domAutomationController.send("done");
-    )",
-                                            macro, arg.c_str());
-
-    ExecuteAccessibilityCommonScript(script);
-  }
-
-  void RunHiddenMacroWithTwoStringArgs(int macro,
-                                       const std::string& arg1,
-                                       const std::string& arg2) {
-    std::string script = base::StringPrintf(R"(
-      accessibilityCommon.dictation_.
-          runHiddenMacroWithTwoStringArgsForTesting(%d, "%s", "%s");
-      window.domAutomationController.send("done");
-    )",
-                                            macro, arg1.c_str(), arg2.c_str());
-
-    ExecuteAccessibilityCommonScript(script);
-  }
-
-  void RunMacroAndWaitForCaretBoundsChanged(int macro) {
-    content::AccessibilityNotificationWaiter selection_waiter(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        ui::kAXModeComplete,
-        ui::AXEventGenerator::Event::TEXT_SELECTION_CHANGED);
-    CaretBoundsChangedWaiter caret_waiter(
-        browser()->window()->GetNativeWindow()->GetHost()->GetInputMethod());
-    RunHiddenMacro(macro);
-    caret_waiter.Wait();
-    ASSERT_TRUE(selection_waiter.WaitForNotification());
-  }
-
-  void RunSmartSelectMacroAndWaitForSelectionChanged(
-      const std::string& start_phrase,
-      const std::string& end_phrase) {
-    content::AccessibilityNotificationWaiter selection_waiter(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        ui::kAXModeComplete,
-        ui::AXEventGenerator::Event::TEXT_SELECTION_CHANGED);
-    content::BoundingBoxUpdateWaiter bounding_box_waiter(
-        browser()->tab_strip_model()->GetActiveWebContents());
-    RunHiddenMacroWithTwoStringArgs(/* SMART_SELECT_BTWN_INCL */ 24,
-                                    start_phrase, end_phrase);
-    bounding_box_waiter.Wait();
-    ASSERT_TRUE(selection_waiter.WaitForNotification());
-  }
-};
-
-// Add tests for hidden macros below.
-
 // Tests behavior of Dictation and installation of Pumpkin.
 class DictationPumpkinInstallTest : public DictationTest {
  protected:
@@ -1698,6 +1629,38 @@ class DictationPumpkinInstallTest : public DictationTest {
         ::features::kExperimentalAccessibilityDictationWithPumpkin);
   }
 
+  void SetUpOnMainThread() override {
+    // Initialize Pumpkin DLC directory.
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_TRUE(pumpkin_root_dir_.CreateUniqueTempDir());
+    // Create subdirectories for each locale supported by Pumpkin.
+    std::vector<std::string> locales{"en_us", "fr_fr", "it_it", "de_de",
+                                     "es_es"};
+    for (size_t i = 0; i < locales.size(); ++i) {
+      sub_dirs_.push_back(std::make_unique<base::ScopedTempDir>());
+      ASSERT_TRUE(
+          sub_dirs_[i]->Set(pumpkin_root_dir_.GetPath().Append(locales[i])));
+    }
+
+    // Create fake DLC files.
+    AccessibilityManager::Get()->SetDlcPathForTest(pumpkin_root_dir_.GetPath());
+    std::string content = "Fake DLC file content";
+    std::vector<base::FilePath> files{
+        pumpkin_root_dir_.GetPath().Append("js_pumpkin_tagger_bin.js"),
+        pumpkin_root_dir_.GetPath().Append("tagger_wasm_main.js"),
+        pumpkin_root_dir_.GetPath().Append("tagger_wasm_main.wasm"),
+    };
+    for (const auto& sub_dir : sub_dirs_) {
+      files.push_back(sub_dir->GetPath().Append("action_config.binarypb"));
+      files.push_back(sub_dir->GetPath().Append("pumpkin_config.binarypb"));
+    }
+    for (const auto& file : files) {
+      ASSERT_TRUE(base::WriteFile(file, content));
+    }
+
+    DictationTest::SetUpOnMainThread();
+  }
+
   void WaitForInstallToSucceed() {
     std::string error_message = "Waiting for Pumpkin installation to succeed";
     SuccessWaiter(base::BindLambdaForTesting([&]() {
@@ -1710,6 +1673,8 @@ class DictationPumpkinInstallTest : public DictationTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::ScopedTempDir pumpkin_root_dir_;
+  std::vector<std::unique_ptr<base::ScopedTempDir>> sub_dirs_;
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -1722,7 +1687,13 @@ INSTANTIATE_TEST_SUITE_P(
     DictationPumpkinInstallTest,
     ::testing::Values(speech::SpeechRecognitionType::kOnDevice));
 
-IN_PROC_BROWSER_TEST_P(DictationPumpkinInstallTest, WaitForInstall) {
+// TODO(crbug.com/1368843): Test is flaky on MSAN builds.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_WaitForInstall DISABLED_WaitForInstall
+#else
+#define MAYBE_WaitForInstall WaitForInstall
+#endif
+IN_PROC_BROWSER_TEST_P(DictationPumpkinInstallTest, MAYBE_WaitForInstall) {
   // Dictation will request a Pumpkin install when it starts up. Wait for
   // the install to succeed.
   WaitForInstallToSucceed();

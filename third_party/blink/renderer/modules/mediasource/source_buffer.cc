@@ -292,8 +292,8 @@ void SourceBuffer::setMode(const AtomicString& new_mode,
   // case). Note, we must have |source_| and |source_| must have an attachment
   // because !IsRemoved().
   if (!source_->RunUnlessElementGoneOrClosingUs(
-          WTF::Bind(&SourceBuffer::SetMode_Locked, WrapPersistent(this),
-                    new_mode, WTF::Unretained(&exception_state)))) {
+          WTF::BindOnce(&SourceBuffer::SetMode_Locked, WrapPersistent(this),
+                        new_mode, WTF::Unretained(&exception_state)))) {
     // TODO(https://crbug.com/878133): Determine in specification what the
     // specific, app-visible, exception should be for this case.
     MediaSource::LogAndThrowDOMException(
@@ -366,8 +366,8 @@ TimeRanges* SourceBuffer::buffered(ExceptionState& exception_state) const {
   // an attachment because !IsRemoved().
   WebTimeRanges ranges;
   if (!source_->RunUnlessElementGoneOrClosingUs(
-          WTF::Bind(&SourceBuffer::GetBuffered_Locked, WrapPersistent(this),
-                    WTF::Unretained(&ranges)))) {
+          WTF::BindOnce(&SourceBuffer::GetBuffered_Locked, WrapPersistent(this),
+                        WTF::Unretained(&ranges)))) {
     // TODO(https://crbug.com/878133): Determine in specification what the
     // specific, app-visible, exception should be for this case.
     MediaSource::LogAndThrowDOMException(
@@ -416,7 +416,7 @@ void SourceBuffer::setTimestampOffset(double offset,
   // demuxer is protected from destruction (applicable especially for
   // MSE-in-Worker case). Note, we must have |source_| and |source_| must have
   // an attachment because !IsRemoved().
-  if (!source_->RunUnlessElementGoneOrClosingUs(WTF::Bind(
+  if (!source_->RunUnlessElementGoneOrClosingUs(WTF::BindOnce(
           &SourceBuffer::SetTimestampOffset_Locked, WrapPersistent(this),
           offset, WTF::Unretained(&exception_state)))) {
     // TODO(https://crbug.com/878133): Determine in specification what the
@@ -513,8 +513,8 @@ void SourceBuffer::setAppendWindowStart(double start,
   // case). Note, we must have |source_| and |source_| must have an attachment
   // because !IsRemoved().
   if (!source_->RunUnlessElementGoneOrClosingUs(
-          WTF::Bind(&SourceBuffer::SetAppendWindowStart_Locked,
-                    WrapPersistent(this), start))) {
+          WTF::BindOnce(&SourceBuffer::SetAppendWindowStart_Locked,
+                        WrapPersistent(this), start))) {
     // TODO(https://crbug.com/878133): Determine in specification what the
     // specific, app-visible, exception should be for this case.
     MediaSource::LogAndThrowDOMException(
@@ -575,8 +575,8 @@ void SourceBuffer::setAppendWindowEnd(double end,
   // case). Note, we must have |source_| and |source_| must have an attachment
   // because !IsRemoved().
   if (!source_->RunUnlessElementGoneOrClosingUs(
-          WTF::Bind(&SourceBuffer::SetAppendWindowEnd_Locked,
-                    WrapPersistent(this), end))) {
+          WTF::BindOnce(&SourceBuffer::SetAppendWindowEnd_Locked,
+                        WrapPersistent(this), end))) {
     // TODO(https://crbug.com/878133): Determine in specification what the
     // specific, app-visible, exception should be for this case.
     MediaSource::LogAndThrowDOMException(
@@ -718,7 +718,7 @@ ScriptPromise SourceBuffer::appendEncodedChunks(
   // only if attachment is usable and underlying demuxer is protected from
   // destruction (applicable especially for MSE-in-Worker case). Note, we must
   // have |source_| and |source_| must have an attachment because !IsRemoved().
-  if (!source_->RunUnlessElementGoneOrClosingUs(WTF::Bind(
+  if (!source_->RunUnlessElementGoneOrClosingUs(WTF::BindOnce(
           &SourceBuffer::AppendEncodedChunks_Locked, WrapPersistent(this),
           std::move(buffer_queue), size, WTF::Unretained(&exception_state)))) {
     // TODO(crbug.com/878133): Determine in specification what the specific,
@@ -769,8 +769,8 @@ void SourceBuffer::AppendEncodedChunks_Locked(
   append_encoded_chunks_async_task_handle_ = PostCancellableTask(
       *GetExecutionContext()->GetTaskRunner(TaskType::kMediaElementEvent),
       FROM_HERE,
-      WTF::Bind(&SourceBuffer::AppendEncodedChunksAsyncPart,
-                WrapPersistent(this)));
+      WTF::BindOnce(&SourceBuffer::AppendEncodedChunksAsyncPart,
+                    WrapPersistent(this)));
 
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("media", "delay", TRACE_ID_LOCAL(this),
                                     "type", "initialDelay");
@@ -826,7 +826,7 @@ void SourceBuffer::abort(ExceptionState& exception_state) {
   // case). Note, we must have |source_| and |source_| must have an attachment
   // because !IsRemoved().
   if (!source_->RunUnlessElementGoneOrClosingUs(
-          WTF::Bind(&SourceBuffer::Abort_Locked, WrapPersistent(this)))) {
+          WTF::BindOnce(&SourceBuffer::Abort_Locked, WrapPersistent(this)))) {
     // TODO(https://crbug.com/878133): Determine in specification what the
     // specific, app-visible, exception should be for this case.
     MediaSource::LogAndThrowDOMException(
@@ -879,8 +879,8 @@ void SourceBuffer::remove(double start,
   // case). Note, we must have |source_| and |source_| must have an attachment
   // because !IsRemoved().
   if (!source_->RunUnlessElementGoneOrClosingUs(
-          WTF::Bind(&SourceBuffer::Remove_Locked, WrapPersistent(this), start,
-                    end, WTF::Unretained(&exception_state)))) {
+          WTF::BindOnce(&SourceBuffer::Remove_Locked, WrapPersistent(this),
+                        start, end, WTF::Unretained(&exception_state)))) {
     // TODO(https://crbug.com/878133): Determine in specification what the
     // specific, app-visible, exception should be for this case.
     MediaSource::LogAndThrowDOMException(
@@ -950,7 +950,7 @@ void SourceBuffer::Remove_Locked(
   remove_async_task_handle_ = PostCancellableTask(
       *GetExecutionContext()->GetTaskRunner(TaskType::kMediaElementEvent),
       FROM_HERE,
-      WTF::Bind(&SourceBuffer::RemoveAsyncPart, WrapPersistent(this)));
+      WTF::BindOnce(&SourceBuffer::RemoveAsyncPart, WrapPersistent(this)));
 }
 
 void SourceBuffer::changeType(const String& type,
@@ -961,7 +961,7 @@ void SourceBuffer::changeType(const String& type,
   // https://rawgit.com/WICG/media-source/3b3742ea788999bb7ae4a4553ac7d574b0547dbe/index.html#dom-sourcebuffer-changetype
   // 1. If type is an empty string then throw a TypeError exception and abort
   //    these steps.
-  if (type.IsEmpty()) {
+  if (type.empty()) {
     MediaSource::LogAndThrowTypeError(exception_state,
                                       "The type provided is empty");
     return;
@@ -982,8 +982,8 @@ void SourceBuffer::changeType(const String& type,
   // case). Note, we must have |source_| and |source_| must have an attachment
   // because !IsRemoved().
   if (!source_->RunUnlessElementGoneOrClosingUs(
-          WTF::Bind(&SourceBuffer::ChangeType_Locked, WrapPersistent(this),
-                    type, WTF::Unretained(&exception_state)))) {
+          WTF::BindOnce(&SourceBuffer::ChangeType_Locked, WrapPersistent(this),
+                        type, WTF::Unretained(&exception_state)))) {
     // TODO(https://crbug.com/878133): Determine in specification what the
     // specific, app-visible, exception should be for this case.
     MediaSource::LogAndThrowDOMException(
@@ -1280,7 +1280,7 @@ void SourceBuffer::RemoveMediaTracks() {
   //     list.
   // Here, we perform batch removal of audio tracks, compiled in step 4.3.4,
   // above, along with conditional enqueueing of change event.
-  if (!audio_track_removal_ids.IsEmpty()) {
+  if (!audio_track_removal_ids.empty()) {
     attachment->RemoveAudioTracksFromMediaElement(
         tracer, audio_track_removal_ids,
         removed_enabled_audio_track /* enqueue_change_event */);
@@ -1325,7 +1325,7 @@ void SourceBuffer::RemoveMediaTracks() {
   //     list.
   // Here, we perform batch removal of video tracks, compiled in step 6.3.4,
   // above, along with conditional enqueueing of change event.
-  if (!video_track_removal_ids.IsEmpty()) {
+  if (!video_track_removal_ids.empty()) {
     attachment->RemoveVideoTracksFromMediaElement(
         tracer, video_track_removal_ids,
         removed_selected_video_track /* enqueue_change_event */);
@@ -1428,8 +1428,8 @@ void SourceBuffer::AddPlaceholderCrossThreadTracks(
   // SourceBufferState::OnNewConfigs()).
   bool enable_next_audio_track = true;
   bool select_next_video_track = true;
-  DCHECK(audio_track_ids_for_crossthread_removal_.IsEmpty());
-  DCHECK(video_track_ids_for_crossthread_removal_.IsEmpty());
+  DCHECK(audio_track_ids_for_crossthread_removal_.empty());
+  DCHECK(video_track_ids_for_crossthread_removal_.empty());
   for (const MediaTrackInfo& track_info : new_tracks) {
     if (track_info.track_type == WebMediaPlayer::kAudioTrack) {
       WebString label = track_info.label;
@@ -1491,13 +1491,13 @@ void SourceBuffer::RemovePlaceholderCrossThreadTracks(
   // lists on the media element. The event(s) may be extra, but likely unseen by
   // application unless it is attempting experimental AudioVideoTracks usage,
   // too.
-  if (!audio_track_ids_for_crossthread_removal_.IsEmpty()) {
+  if (!audio_track_ids_for_crossthread_removal_.empty()) {
     attachment->RemoveAudioTracksFromMediaElement(
         tracer, std::move(audio_track_ids_for_crossthread_removal_),
         true /* enqueue_change_event */);
   }
 
-  if (!video_track_ids_for_crossthread_removal_.IsEmpty()) {
+  if (!video_track_ids_for_crossthread_removal_.empty()) {
     attachment->RemoveVideoTracksFromMediaElement(
         tracer, std::move(video_track_ids_for_crossthread_removal_),
         true /* enqueue_change_event */);
@@ -1999,7 +1999,7 @@ void SourceBuffer::AppendBufferInternal(const unsigned char* data,
   // attachment is usable and underlying demuxer is protected from destruction
   // (applicable especially for MSE-in-Worker case). Note, we must have
   // |source_| and |source_| must have an attachment because !IsRemoved().
-  if (!source_->RunUnlessElementGoneOrClosingUs(WTF::Bind(
+  if (!source_->RunUnlessElementGoneOrClosingUs(WTF::BindOnce(
           &SourceBuffer::AppendBufferInternal_Locked, WrapPersistent(this),
           WTF::Unretained(data), size, WTF::Unretained(&exception_state)))) {
     // TODO(https://crbug.com/878133): Determine in specification what the
@@ -2076,7 +2076,8 @@ void SourceBuffer::AppendBufferInternal_Locked(
   append_buffer_async_task_handle_ = PostCancellableTask(
       *GetExecutionContext()->GetTaskRunner(TaskType::kMediaElementEvent),
       FROM_HERE,
-      WTF::Bind(&SourceBuffer::AppendBufferAsyncPart, WrapPersistent(this)));
+      WTF::BindOnce(&SourceBuffer::AppendBufferAsyncPart,
+                    WrapPersistent(this)));
 
   TRACE_EVENT_NESTABLE_ASYNC_END0("media", "prepareAsyncAppend",
                                   TRACE_ID_LOCAL(this));
@@ -2090,8 +2091,8 @@ void SourceBuffer::AppendEncodedChunksAsyncPart() {
   // MSE-in-Worker case).
   DCHECK(!IsRemoved());  // So must have |source_| and it must have attachment.
   if (!source_->RunUnlessElementGoneOrClosingUs(
-          WTF::Bind(&SourceBuffer::AppendEncodedChunksAsyncPart_Locked,
-                    WrapPersistent(this)))) {
+          WTF::BindOnce(&SourceBuffer::AppendEncodedChunksAsyncPart_Locked,
+                        WrapPersistent(this)))) {
     // TODO(crbug.com/878133): Determine in specification what the specific,
     // app-visible, behavior should be for this case. In this implementation,
     // the safest thing to do is nothing here now. See more verbose reason in
@@ -2106,7 +2107,7 @@ void SourceBuffer::AppendBufferAsyncPart() {
   // demuxer is protected from destruction (applicable especially for
   // MSE-in-Worker case).
   DCHECK(!IsRemoved());  // So must have |source_| and it must have attachment.
-  if (!source_->RunUnlessElementGoneOrClosingUs(WTF::Bind(
+  if (!source_->RunUnlessElementGoneOrClosingUs(WTF::BindOnce(
           &SourceBuffer::AppendBufferAsyncPart_Locked, WrapPersistent(this)))) {
     // TODO(https://crbug.com/878133): Determine in specification what the
     // specific, app-visible, behavior should be for this case. In this
@@ -2231,8 +2232,8 @@ void SourceBuffer::AppendBufferAsyncPart_Locked(
       append_buffer_async_task_handle_ = PostCancellableTask(
           *GetExecutionContext()->GetTaskRunner(TaskType::kMediaElementEvent),
           FROM_HERE,
-          WTF::Bind(&SourceBuffer::AppendBufferAsyncPart,
-                    WrapPersistent(this)));
+          WTF::BindOnce(&SourceBuffer::AppendBufferAsyncPart,
+                        WrapPersistent(this)));
       TRACE_EVENT_NESTABLE_ASYNC_END0("media", "appending",
                                       TRACE_ID_LOCAL(this));
       TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("media", "delay", TRACE_ID_LOCAL(this),
@@ -2270,7 +2271,7 @@ void SourceBuffer::RemoveAsyncPart() {
   // demuxer is protected from destruction (applicable especially for
   // MSE-in-Worker case).
   DCHECK(!IsRemoved());  // So must have |source_| and it must have attachment.
-  if (!source_->RunUnlessElementGoneOrClosingUs(WTF::Bind(
+  if (!source_->RunUnlessElementGoneOrClosingUs(WTF::BindOnce(
           &SourceBuffer::RemoveAsyncPart_Locked, WrapPersistent(this)))) {
     // TODO(https://crbug.com/878133): Determine in specification what the
     // specific, app-visible, behavior should be for this case. This

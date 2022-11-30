@@ -96,6 +96,11 @@ void UninstallImpl(WebAppProvider* provider,
                    apps::UninstallSource uninstall_source,
                    gfx::NativeWindow parent_window);
 
+// Converts RunOnOsLoginMode from apps::mojom::RunOnOsLoginMode to
+// RunOnOsLoginMode.
+RunOnOsLoginMode ConvertOsLoginModeToWebAppConstants(
+    apps::mojom::RunOnOsLoginMode login_mode);
+
 class WebAppPublisherHelper : public AppRegistrarObserver,
                               public WebAppInstallManagerObserver,
 #if BUILDFLAG(IS_CHROMEOS)
@@ -245,11 +250,6 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
   apps::WindowMode ConvertDisplayModeToWindowMode(
       blink::mojom::DisplayMode display_mode);
 
-  // Converts RunOnOsLoginMode from apps::mojom::RunOnOsLoginMode to
-  // RunOnOsLoginMode.
-  RunOnOsLoginMode ConvertOsLoginModeToWebAppConstants(
-      apps::mojom::RunOnOsLoginMode login_mode);
-
   void PublishWindowModeUpdate(const std::string& app_id,
                                blink::mojom::DisplayMode display_mode);
 
@@ -391,9 +391,9 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
       base::OnceCallback<void(const std::vector<content::WebContents*>&)>
           callback);
 
-  // Get the identifier for the app that will be used in policy controls, such
-  // as force-installation and pinning. May be empty.
-  std::string GetPolicyId(const WebApp& web_app);
+  // Get the list of identifiers for the app that will be used in policy
+  // controls, such as force-installation and pinning. May be empty.
+  std::vector<std::string> GetPolicyIds(const WebApp& web_app) const;
 
 #if BUILDFLAG(IS_CHROMEOS)
   // Updates app visibility.

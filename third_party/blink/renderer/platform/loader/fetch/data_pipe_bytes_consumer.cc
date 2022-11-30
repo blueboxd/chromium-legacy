@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -132,8 +132,8 @@ BytesConsumer::Result DataPipeBytesConsumer::EndRead(size_t read) {
   if (has_pending_notification_) {
     has_pending_notification_ = false;
     task_runner_->PostTask(FROM_HERE,
-                           WTF::Bind(&DataPipeBytesConsumer::Notify,
-                                     WrapPersistent(this), MOJO_RESULT_OK));
+                           WTF::BindOnce(&DataPipeBytesConsumer::Notify,
+                                         WrapPersistent(this), MOJO_RESULT_OK));
   }
   return Result::kOk;
 }

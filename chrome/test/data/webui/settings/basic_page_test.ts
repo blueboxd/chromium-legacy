@@ -14,7 +14,8 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import {CrSettingsPrefs, MetricsBrowserProxyImpl, pageVisibility, PrivacyGuideBrowserProxy, PrivacyGuideBrowserProxyImpl, PrivacyGuideInteractions, Router, routes, SettingsBasicPageElement, SettingsIdleLoadElement, SettingsPrefsElement, SettingsSectionElement, StatusAction, SyncStatus} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
-import {eventToPromise, flushTasks, isChildVisible, isVisible} from 'chrome://webui-test/test_util.js';
+import {eventToPromise, isChildVisible, isVisible} from 'chrome://webui-test/test_util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
 
@@ -48,7 +49,8 @@ suite('SettingsBasicPage', () => {
   });
 
   setup(async function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
 
     // Because some test() cases below call navigateTo(), need to ensure that
     // the route is being reset before each test.
@@ -292,9 +294,11 @@ suite('PrivacyGuidePromo', () => {
   });
 
   setup(async function() {
+    loadTimeData.overrideValues({showPrivacyGuide: true});
     privacyGuideBrowserProxy = new TestPrivacyGuideBrowserProxy();
     PrivacyGuideBrowserProxyImpl.setInstance(privacyGuideBrowserProxy);
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     page = document.createElement('settings-basic-page');
     page.prefs = settingsPrefs.prefs!;
     // The promo is only shown when privacy guide hasn't been visited yet.
@@ -321,6 +325,25 @@ suite('PrivacyGuidePromo', () => {
 
   test('load page', function() {
     // This will fail if there are any asserts or errors in the Settings page.
+  });
+
+  test('promoNotShown', async function() {
+    loadTimeData.overrideValues({showPrivacyGuide: false});
+
+    page.remove();
+    page = document.createElement('settings-basic-page');
+    page.prefs = settingsPrefs.prefs!;
+    // The promo is only shown when privacy guide hasn't been visited yet.
+    page.setPrefValue('privacy_guide.viewed', false);
+    document.body.appendChild(page);
+
+    await flushTasks();
+    assertFalse(
+        loadTimeData.getBoolean('showPrivacyGuide'),
+        'showPrivacyGuide was not overwritten');
+    assertFalse(
+        isChildVisible(page, '#privacyGuidePromo'),
+        'privacyGuidePromo is visible');
   });
 
   // Same as the SometimesMoreSectionsShown test in the suite above, but
@@ -417,12 +440,18 @@ suite('PrivacyGuidePromo', () => {
 
 suite('SettingsBasicPagePerformance', () => {
   let page: SettingsBasicPageElement;
+
   function queryPerformanceSettingsSection() {
     return page.shadowRoot!.querySelector('#performanceSettingsSection');
   }
 
+  function queryBatterySettingsSection() {
+    return page.shadowRoot!.querySelector('#batterySettingsSection');
+  }
+
   async function createNewBasicPage() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     page = document.createElement('settings-basic-page');
     document.body.appendChild(page);
     flush();
@@ -435,12 +464,17 @@ suite('SettingsBasicPagePerformance', () => {
   test('performanceVisibilityTestFeaturesNotAvailable', async function() {
     loadTimeData.overrideValues({
       highEfficiencyModeAvailable: false,
+      batterySaverModeAvailable: false,
     });
     await createNewBasicPage();
     // Set the visibility of the pages under test to their default value.
     page.pageVisibility = pageVisibility;
     flush();
 
+    assertFalse(
+        !!queryBatterySettingsSection(),
+        'Battery section should not be visible with default page visibility ' +
+            'if feature flags are off');
     assertFalse(
         !!queryPerformanceSettingsSection(),
         'Performance section should not be visible with default page ' +
@@ -453,6 +487,9 @@ suite('SettingsBasicPagePerformance', () => {
     flush();
 
     assertFalse(
+        !!queryBatterySettingsSection(),
+        'Battery section should not be visible when visibility is false');
+    assertFalse(
         !!queryPerformanceSettingsSection(),
         'Performance section should not be visible when visibility is false');
   });
@@ -460,12 +497,17 @@ suite('SettingsBasicPagePerformance', () => {
   test('performanceVisibilityTestFeaturesAvailable', async function() {
     loadTimeData.overrideValues({
       highEfficiencyModeAvailable: true,
+      batterySaverModeAvailable: true,
     });
     await createNewBasicPage();
     // Set the visibility of the pages under test to their default value.
     page.pageVisibility = pageVisibility;
     flush();
 
+    assertTrue(
+        !!queryBatterySettingsSection(),
+        'Battery section should be visible with default page visibility if ' +
+            'feature flags are on');
     assertTrue(
         !!queryPerformanceSettingsSection(),
         'Performance section should be visible with default page visibility ' +
@@ -477,6 +519,9 @@ suite('SettingsBasicPagePerformance', () => {
     });
     flush();
 
+    assertFalse(
+        !!queryBatterySettingsSection(),
+        'Battery section should not be visible when visibility is false');
     assertFalse(
         !!queryPerformanceSettingsSection(),
         'Performance section should not be visible when visibility is false');

@@ -5,8 +5,8 @@
 import 'chrome://os-settings/chromeos/lazy_load.js';
 
 import {CrSettingsPrefs, Router, routes, setContactManagerForTesting, setNearbyShareSettingsForTesting} from 'chrome://os-settings/chromeos/os_settings.js';
-import {setBluetoothConfigForTesting} from 'chrome://resources/cr_components/chromeos/bluetooth/cros_bluetooth_config.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {setBluetoothConfigForTesting} from 'chrome://resources/ash/common/bluetooth/cros_bluetooth_config.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {FakeBluetoothConfig} from 'chrome://test/cr_components/chromeos/bluetooth/fake_bluetooth_config.js';
 
@@ -26,10 +26,6 @@ suite('OsSettingsPageTests', function() {
   let fakeSettings = null;
 
   suiteSetup(async function() {
-    loadTimeData.overrideValues({
-      enableBluetoothRevamp: false,
-    });
-
     fakeContactManager = new FakeContactManager();
     setContactManagerForTesting(fakeContactManager);
     fakeContactManager.setupContactRecords();
@@ -53,6 +49,10 @@ suite('OsSettingsPageTests', function() {
   });
 
   function init() {
+    // Using the real CrosBluetoothConfig will crash due to no
+    // SessionManager.
+    setBluetoothConfigForTesting(new FakeBluetoothConfig());
+
     settingsPage = document.createElement('os-settings-page');
     settingsPage.prefs = prefElement.prefs;
     document.body.appendChild(settingsPage);
@@ -82,42 +82,12 @@ suite('OsSettingsPageTests', function() {
     assert(!!osSettingsPrintingPage);
   });
 
-  test(
-      'Check settings-bluetooth-page exists with' +
-          'enableBluetoothRevamp flag off',
-      async () => {
-        init();
-        const settingsBluetoothPage =
-            settingsPage.shadowRoot.querySelector('settings-bluetooth-page');
-
-        const osSettingsBluetoothPage =
-            settingsPage.shadowRoot.querySelector('os-settings-bluetooth-page');
-        assert(!!settingsBluetoothPage);
-        assertFalse(!!osSettingsBluetoothPage);
-      });
-
-  test(
-      'Check settings-bluetooth-page does not exist with' +
-          'enableBluetoothRevamp flag on',
-      async () => {
-        loadTimeData.overrideValues({
-          enableBluetoothRevamp: true,
-        });
-
-        // Using the real CrosBluetoothConfig will crash due to no
-        // SessionManager.
-        setBluetoothConfigForTesting(new FakeBluetoothConfig());
-
-        init();
-        const settingsBluetoothPage =
-            settingsPage.shadowRoot.querySelector('settings-bluetooth-page');
-
-        const osSettingsBluetoothPage =
-            settingsPage.shadowRoot.querySelector('os-settings-bluetooth-page');
-
-        assertFalse(!!settingsBluetoothPage);
-        assert(!!osSettingsBluetoothPage);
-      });
+  test('Check os-settings-bluetooth-page exists', async () => {
+    init();
+    const osSettingsBluetoothPage =
+        settingsPage.shadowRoot.querySelector('os-settings-bluetooth-page');
+    assert(!!osSettingsBluetoothPage);
+  });
 
   test('Check os-settings-privacy-page exists', async () => {
     init();

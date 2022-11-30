@@ -950,7 +950,9 @@ class WebBundleParser::MetadataParser
 
   // Implements SharedBundleDataSource::Observer.
   void OnDisconnect() override {
-    RunErrorCallbackAndDestroy("Data source disconnected.");
+    RunErrorCallbackAndDestroy(
+        "Data source disconnected.",
+        mojom::BundleParseErrorType::kParserInternalError);
   }
 
   scoped_refptr<SharedBundleDataSource> data_source_;
@@ -1119,7 +1121,9 @@ class WebBundleParser::ResponseParser
 
   // Implements SharedBundleDataSource::Observer.
   void OnDisconnect() override {
-    RunErrorCallbackAndDestroy("Data source disconnected.");
+    RunErrorCallbackAndDestroy(
+        "Data source disconnected.",
+        mojom::BundleParseErrorType::kParserInternalError);
   }
 
   scoped_refptr<SharedBundleDataSource> data_source_;
@@ -1138,22 +1142,22 @@ WebBundleParser::SharedBundleDataSource::SharedBundleDataSource(
 }
 
 void WebBundleParser::SharedBundleDataSource::AddObserver(Observer* observer) {
-  DCHECK(observers_.end() == observers_.find(observer));
-  observers_.insert(observer);
+  observers_.AddObserver(observer);
 }
 
 void WebBundleParser::SharedBundleDataSource::RemoveObserver(
     Observer* observer) {
-  auto it = observers_.find(observer);
-  DCHECK(observers_.end() != it);
-  observers_.erase(it);
+  observers_.RemoveObserver(observer);
 }
 
 WebBundleParser::SharedBundleDataSource::~SharedBundleDataSource() = default;
 
 void WebBundleParser::SharedBundleDataSource::OnDisconnect() {
-  for (auto* observer : observers_)
-    observer->OnDisconnect();
+  // |observer->OnDisconnect()| below may remove the last external reference to
+  // |this|.
+  scoped_refptr<SharedBundleDataSource> keep_alive(this);
+  for (Observer& observer : observers_)
+    observer.OnDisconnect();
 }
 
 void WebBundleParser::SharedBundleDataSource::Read(

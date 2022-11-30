@@ -91,6 +91,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegate() override;
   const sync_pb::EntitySpecifics& GetPossiblyTrimmedRemoteSpecifics(
       const std::string& storage_key) const override;
+  base::WeakPtr<ModelTypeChangeProcessor> GetWeakPtr() override;
 
   // ModelTypeProcessor implementation.
   void ConnectSync(std::unique_ptr<CommitQueue> worker) override;
@@ -103,7 +104,9 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
       const FailedCommitResponseDataList& error_response_list) override;
   void OnCommitFailed(SyncCommitError commit_error) override;
   void OnUpdateReceived(const sync_pb::ModelTypeState& type_state,
-                        UpdateResponseDataList updates) override;
+                        UpdateResponseDataList updates,
+                        absl::optional<sync_pb::GarbageCollectionDirective>
+                            gc_directive) override;
 
   // ModelTypeControllerDelegate implementation.
   // |start_callback| will never be called synchronously.
@@ -161,15 +164,18 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // Validates the update specified by the input parameters and returns whether
   // it should get further processed. If the update is incorrect, this function
   // also reports an error.
-  bool ValidateUpdate(const sync_pb::ModelTypeState& model_type_state,
-                      const UpdateResponseDataList& updates);
+  bool ValidateUpdate(
+      const sync_pb::ModelTypeState& model_type_state,
+      const UpdateResponseDataList& updates,
+      const absl::optional<sync_pb::GarbageCollectionDirective>& gc_directive);
 
   // Handle the first update received from the server after being enabled. If
   // the data type does not support incremental updates, this will be called for
   // any server update.
   absl::optional<ModelError> OnFullUpdateReceived(
       const sync_pb::ModelTypeState& type_state,
-      UpdateResponseDataList updates);
+      UpdateResponseDataList updates,
+      absl::optional<sync_pb::GarbageCollectionDirective> gc_directive);
 
   // Handle any incremental updates received from the server after being
   // enabled.
@@ -287,7 +293,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
 
   // WeakPtrFactory for this processor for ModelTypeController (only gets
   // invalidated during destruction).
-  base::WeakPtrFactory<ModelTypeControllerDelegate>
+  base::WeakPtrFactory<ClientTagBasedModelTypeProcessor>
       weak_ptr_factory_for_controller_{this};
 
   // WeakPtrFactory for this processor which will be sent to sync thread.

@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.toolbar.top.ToolbarPhone;
 import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityPreferencesManager;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.widget.Toast;
@@ -41,7 +42,6 @@ import org.chromium.ui.widget.Toast;
 public class SearchActivityLocationBarLayout extends LocationBarLayout {
     private boolean mPendingSearchPromoDecision;
     private boolean mPendingBeginQuery;
-    private boolean mHasWindowFocus;
 
     public SearchActivityLocationBarLayout(Context context, AttributeSet attrs) {
         super(context, attrs, R.layout.location_bar_base);
@@ -62,14 +62,20 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
                 ToolbarPhone.createModernLocationBarBackground(getContext());
         if (OmniboxFeatures.shouldShowModernizeVisualUpdate(getContext())) {
             backgroundDrawable.setTint(OmniboxFeatures.shouldShowActiveColorOnOmnibox()
-                            ? mLocationBarDataProvider.getSuggestionStandardBackgroundColor()
-                            : mLocationBarDataProvider.getDropdownStandardBackgroundColor());
+                            ? ChromeColors.getSurfaceColor(
+                                    getContext(), R.dimen.omnibox_suggestion_bg_elevation)
+                            : ChromeColors.getSurfaceColor(getContext(),
+                                    R.dimen.omnibox_suggestion_dropdown_bg_elevation));
             if (OmniboxFeatures.shouldShowActiveColorOnOmnibox()) {
                 backgroundDrawable.setCornerRadius(getResources().getDimensionPixelSize(
                         R.dimen.omnibox_suggestion_bg_round_corner_radius));
             }
         }
         setBackground(backgroundDrawable);
+
+        // Expand status view's left and right space, and expand the vertical padding of the
+        // location bar to match the expanded interface on the regular omnibox.
+        setUrlFocusChangePercent(1f);
     }
 
     @Override

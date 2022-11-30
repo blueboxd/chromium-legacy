@@ -203,7 +203,7 @@ void Resource::CheckResourceIntegrity() {
   }
 
   // No integrity attributes to check? Then we're passing.
-  if (IntegrityMetadata().IsEmpty()) {
+  if (IntegrityMetadata().empty()) {
     integrity_disposition_ = ResourceIntegrityDisposition::kPassed;
     return;
   }
@@ -283,7 +283,7 @@ void Resource::ClearData() {
 
 void Resource::TriggerNotificationForFinishObservers(
     base::SingleThreadTaskRunner* task_runner) {
-  if (finish_observers_.IsEmpty())
+  if (finish_observers_.empty())
     return;
 
   auto* new_collections =
@@ -291,8 +291,9 @@ void Resource::TriggerNotificationForFinishObservers(
           std::move(finish_observers_));
   finish_observers_.clear();
 
-  task_runner->PostTask(FROM_HERE, WTF::Bind(&NotifyFinishObservers,
-                                             WrapPersistent(new_collections)));
+  task_runner->PostTask(
+      FROM_HERE,
+      WTF::BindOnce(&NotifyFinishObservers, WrapPersistent(new_collections)));
 
   DidRemoveClientOrObserver();
 }
@@ -330,7 +331,7 @@ void Resource::FinishAsError(const ResourceError& error,
   is_revalidating_ = false;
 
   if (IsMainThread())
-    GetMemoryCache()->Remove(this);
+    MemoryCache::Get()->Remove(this);
 
   bool failed_during_start = status_ == ResourceStatus::kNotStarted;
   if (!ErrorOccurred()) {
@@ -356,8 +357,8 @@ void Resource::FinishAsError(const ResourceError& error,
   // So if this is an immediate failure (i.e., before NotifyStartLoad()),
   // post a task if the Resource::Type supports it.
   if (failed_during_start && !NeedsSynchronousCacheHit(GetType(), options_)) {
-    task_runner->PostTask(FROM_HERE, WTF::Bind(&Resource::NotifyFinished,
-                                               WrapWeakPersistent(this)));
+    task_runner->PostTask(FROM_HERE, WTF::BindOnce(&Resource::NotifyFinished,
+                                                   WrapWeakPersistent(this)));
   } else {
     NotifyFinished();
   }
@@ -381,7 +382,7 @@ AtomicString Resource::HttpContentType() const {
 
 bool Resource::MustRefetchDueToIntegrityMetadata(
     const FetchParameters& params) const {
-  if (params.IntegrityMetadata().IsEmpty())
+  if (params.IntegrityMetadata().empty())
     return false;
 
   return !IntegrityMetadata::SetsEqual(IntegrityMetadata(),
@@ -487,7 +488,7 @@ size_t Resource::RedirectChainSize() const {
 }
 
 void Resource::SetRevalidatingRequest(const ResourceRequestHead& request) {
-  SECURITY_CHECK(redirect_chain_.IsEmpty());
+  SECURITY_CHECK(redirect_chain_.empty());
   SECURITY_CHECK(!is_unused_preload_);
   DCHECK(!request.IsNull());
   CHECK(!is_revalidation_start_forbidden_);
@@ -536,23 +537,23 @@ String Resource::ReasonNotDeletable() const {
   if (HasClientsOrObservers()) {
     builder.Append("hasClients(");
     builder.AppendNumber(clients_.size());
-    if (!clients_awaiting_callback_.IsEmpty()) {
+    if (!clients_awaiting_callback_.empty()) {
       builder.Append(", AwaitingCallback=");
       builder.AppendNumber(clients_awaiting_callback_.size());
     }
-    if (!finished_clients_.IsEmpty()) {
+    if (!finished_clients_.empty()) {
       builder.Append(", Finished=");
       builder.AppendNumber(finished_clients_.size());
     }
     builder.Append(')');
   }
   if (loader_) {
-    if (!builder.IsEmpty())
+    if (!builder.empty())
       builder.Append(' ');
     builder.Append("loader_");
   }
-  if (IsMainThread() && GetMemoryCache()->Contains(this)) {
-    if (!builder.IsEmpty())
+  if (IsMainThread() && MemoryCache::Get()->Contains(this)) {
+    if (!builder.empty())
       builder.Append(' ');
     builder.Append("in_memory_cache");
   }
@@ -603,9 +604,10 @@ void Resource::AddClient(ResourceClient* client,
       !NeedsSynchronousCacheHit(GetType(), options_)) {
     clients_awaiting_callback_.insert(client);
     if (!async_finish_pending_clients_task_.IsActive()) {
-      async_finish_pending_clients_task_ = PostCancellableTask(
-          *task_runner, FROM_HERE,
-          WTF::Bind(&Resource::FinishPendingClients, WrapWeakPersistent(this)));
+      async_finish_pending_clients_task_ =
+          PostCancellableTask(*task_runner, FROM_HERE,
+                              WTF::BindOnce(&Resource::FinishPendingClients,
+                                            WrapWeakPersistent(this)));
     }
     return;
   }
@@ -625,7 +627,7 @@ void Resource::RemoveClient(ResourceClient* client) {
   else
     clients_.erase(client);
 
-  if (clients_awaiting_callback_.IsEmpty() &&
+  if (clients_awaiting_callback_.empty() &&
       async_finish_pending_clients_task_.IsActive()) {
     async_finish_pending_clients_task_.Cancel();
   }
@@ -662,7 +664,7 @@ void Resource::DidRemoveClientOrObserver() {
     // "... History buffers MAY store such responses as part of their normal
     // operation."
     if (HasCacheControlNoStoreHeader() && IsMainThread()) {
-      GetMemoryCache()->Remove(this);
+      MemoryCache::Get()->Remove(this);
     }
   }
 }
@@ -678,7 +680,7 @@ void Resource::SetDecodedSize(size_t decoded_size) {
   size_t old_size = size();
   decoded_size_ = decoded_size;
   if (IsMainThread())
-    GetMemoryCache()->Update(this, old_size, size());
+    MemoryCache::Get()->Update(this, old_size, size());
 }
 
 void Resource::SetEncodedSize(size_t encoded_size) {
@@ -689,7 +691,7 @@ void Resource::SetEncodedSize(size_t encoded_size) {
   encoded_size_ = encoded_size;
   encoded_size_memory_usage_ = encoded_size;
   if (IsMainThread())
-    GetMemoryCache()->Update(this, old_size, size());
+    MemoryCache::Get()->Update(this, old_size, size());
 }
 
 void Resource::FinishPendingClients() {
@@ -722,11 +724,11 @@ void Resource::FinishPendingClients() {
   // It is still possible for the above loop to finish a new client
   // synchronously. If there's no client waiting we should deschedule.
   bool scheduled = async_finish_pending_clients_task_.IsActive();
-  if (scheduled && clients_awaiting_callback_.IsEmpty())
+  if (scheduled && clients_awaiting_callback_.empty())
     async_finish_pending_clients_task_.Cancel();
 
   // Prevent the case when there are clients waiting but no callback scheduled.
-  DCHECK(clients_awaiting_callback_.IsEmpty() || scheduled);
+  DCHECK(clients_awaiting_callback_.empty() || scheduled);
 }
 
 Resource::MatchStatus Resource::CanReuse(const FetchParameters& params) const {
@@ -924,7 +926,7 @@ void Resource::ClearRangeRequestHeader() {
 
 void Resource::RevalidationSucceeded(
     const ResourceResponse& validating_response) {
-  SECURITY_CHECK(redirect_chain_.IsEmpty());
+  SECURITY_CHECK(redirect_chain_.empty());
   SECURITY_CHECK(
       EqualIgnoringFragmentIdentifier(validating_response.CurrentRequestUrl(),
                                       GetResponse().CurrentRequestUrl()));
@@ -948,7 +950,7 @@ void Resource::RevalidationSucceeded(
 }
 
 void Resource::RevalidationFailed() {
-  SECURITY_CHECK(redirect_chain_.IsEmpty());
+  SECURITY_CHECK(redirect_chain_.empty());
   ClearData();
   integrity_disposition_ = ResourceIntegrityDisposition::kNotChecked;
   integrity_report_info_.Clear();
@@ -1063,7 +1065,7 @@ bool Resource::CanUseCacheValidator() const {
     return false;
 
   // Do not revalidate Resource with redirects. https://crbug.com/613971
-  if (!RedirectChain().IsEmpty())
+  if (!RedirectChain().empty())
     return false;
 
   return GetResponse().HasCacheValidatorFields() ||
@@ -1153,6 +1155,8 @@ const char* Resource::ResourceTypeToString(
       return "Video";
     case ResourceType::kManifest:
       return "Manifest";
+    case ResourceType::kSpeculationRules:
+      return "SpeculationRule";
     case ResourceType::kMock:
       return "Mock";
   }
@@ -1178,6 +1182,7 @@ bool Resource::IsLoadEventBlockingResourceType() const {
     case ResourceType::kVideo:
     case ResourceType::kManifest:
     case ResourceType::kMock:
+    case ResourceType::kSpeculationRules:
       return false;
   }
   NOTREACHED();

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -299,7 +299,6 @@ MediaQueryEvaluatorTestCase g_device_posture_none_cases[] = {
     {"(device-posture)", true},
     {"(device-posture: continuous)", true},
     {"(device-posture: folded)", false},
-    {"(device-posture: folded-over)", false},
     {"(device-posture: 15)", false},
     {"(device-posture: 2px)", false},
     {"(device-posture: 16/9)", false},
@@ -310,7 +309,6 @@ MediaQueryEvaluatorTestCase g_device_posture_folded_cases[] = {
     {"(device-posture)", true},
     {"(device-posture: continuous)", false},
     {"(device-posture: folded)", true},
-    {"(device-posture: folded-over)", false},
     {nullptr, false}  // Do not remove the terminator line.
 };
 
@@ -318,7 +316,6 @@ MediaQueryEvaluatorTestCase g_device_posture_folded_over_cases[] = {
     {"(device-posture)", true},
     {"(device-posture: continuous)", false},
     {"(device-posture: folded)", false},
-    {"(device-posture: folded-over)", true},
     {nullptr, false}  // Do not remove the terminator line.
 };
 
@@ -369,7 +366,7 @@ void TestMQEvaluator(MediaQueryEvaluatorTestCase* test_cases,
                      CSSParserMode mode) {
   MediaQuerySet* query_set = nullptr;
   for (unsigned i = 0; test_cases[i].input; ++i) {
-    if (String(test_cases[i].input).IsEmpty()) {
+    if (String(test_cases[i].input).empty()) {
       query_set = MediaQuerySet::Create();
     } else {
       query_set = MediaQueryParser::ParseMediaQuerySetInMode(
@@ -618,13 +615,6 @@ TEST(MediaQueryEvaluatorTest, CachedDevicePosture) {
     MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
     MediaQueryEvaluator media_query_evaluator(media_values);
     TestMQEvaluator(g_device_posture_folded_cases, media_query_evaluator);
-  }
-
-  {
-    data.device_posture = device::mojom::blink::DevicePostureType::kFoldedOver;
-    MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
-    MediaQueryEvaluator media_query_evaluator(media_values);
-    TestMQEvaluator(g_device_posture_folded_over_cases, media_query_evaluator);
   }
 }
 

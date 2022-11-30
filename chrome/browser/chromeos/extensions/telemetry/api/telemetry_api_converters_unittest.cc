@@ -5,6 +5,7 @@
 #include <inttypes.h>
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -12,7 +13,10 @@
 
 #include "chrome/browser/chromeos/extensions/telemetry/api/telemetry_api_converters.h"
 #include "chrome/common/chromeos/extensions/api/telemetry.h"
+#include "chromeos/crosapi/mojom/nullable_primitives.mojom.h"
 #include "chromeos/crosapi/mojom/probe_service.mojom.h"
+#include "chromeos/services/network_config/public/mojom/network_types.mojom.h"
+#include "chromeos/services/network_health/public/mojom/network_health.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -233,6 +237,51 @@ TEST(TelemetryApiConverters, BatteryInfo) {
   EXPECT_EQ(kTemperature, static_cast<uint64_t>(*result.temperature));
 }
 
+TEST(TelemetryApiConverters, NonRemovableBlockDevice) {
+  constexpr uint64_t kSize1 = 100000000000;
+  constexpr char kName1[] = "TestName1";
+  constexpr char kType1[] = "TestType1";
+
+  constexpr uint64_t kSize2 = 200000000000;
+  constexpr char kName2[] = "TestName2";
+  constexpr char kType2[] = "TestType2";
+
+  auto first_element =
+      telemetry_service::ProbeNonRemovableBlockDeviceInfo::New();
+  first_element->size = telemetry_service::UInt64Value::New(kSize1);
+  first_element->name = kName1;
+  first_element->type = kType1;
+
+  auto second_element =
+      telemetry_service::ProbeNonRemovableBlockDeviceInfo::New();
+  second_element->size = telemetry_service::UInt64Value::New(kSize2);
+  second_element->name = kName2;
+  second_element->type = kType2;
+
+  std::vector<telemetry_service::ProbeNonRemovableBlockDeviceInfoPtr> input;
+  input.push_back(std::move(first_element));
+  input.push_back(std::move(second_element));
+
+  auto result = ConvertPtrVector<telemetry_api::NonRemovableBlockDeviceInfo>(
+      std::move(input));
+
+  ASSERT_EQ(result.size(), 2ul);
+
+  ASSERT_TRUE(result[0].size);
+  EXPECT_EQ(*result[0].size, kSize1);
+  ASSERT_TRUE(result[0].name);
+  EXPECT_EQ(*result[0].name, kName1);
+  ASSERT_TRUE(result[0].type);
+  EXPECT_EQ(*result[0].type, kType1);
+
+  ASSERT_TRUE(result[1].size);
+  EXPECT_EQ(*result[1].size, kSize2);
+  ASSERT_TRUE(result[1].name);
+  EXPECT_EQ(*result[1].name, kName2);
+  ASSERT_TRUE(result[1].type);
+  EXPECT_EQ(*result[1].type, kType2);
+}
+
 TEST(TelemetryApiConverters, OsVersion) {
   constexpr char kReleaseMilestone[] = "87";
   constexpr char kBuildNumber[] = "13544";
@@ -284,6 +333,251 @@ TEST(TelemetryApiConverters, StatefulPartitionInfoNullFields) {
       ConvertPtr<telemetry_api::StatefulPartitionInfo>(std::move(input));
   ASSERT_FALSE(result.available_space);
   ASSERT_FALSE(result.total_space);
+}
+
+TEST(TelemetryApiConverters, NetworkStateEnum) {
+  EXPECT_EQ(
+      telemetry_api::NetworkState::NETWORK_STATE_UNINITIALIZED,
+      Convert(chromeos::network_health::mojom::NetworkState::kUninitialized));
+  EXPECT_EQ(telemetry_api::NetworkState::NETWORK_STATE_DISABLED,
+            Convert(chromeos::network_health::mojom::NetworkState::kDisabled));
+  EXPECT_EQ(
+      telemetry_api::NetworkState::NETWORK_STATE_PROHIBITED,
+      Convert(chromeos::network_health::mojom::NetworkState::kProhibited));
+  EXPECT_EQ(
+      telemetry_api::NetworkState::NETWORK_STATE_NOT_CONNECTED,
+      Convert(chromeos::network_health::mojom::NetworkState::kNotConnected));
+  EXPECT_EQ(
+      telemetry_api::NetworkState::NETWORK_STATE_CONNECTING,
+      Convert(chromeos::network_health::mojom::NetworkState::kConnecting));
+  EXPECT_EQ(telemetry_api::NetworkState::NETWORK_STATE_PORTAL,
+            Convert(chromeos::network_health::mojom::NetworkState::kPortal));
+  EXPECT_EQ(telemetry_api::NetworkState::NETWORK_STATE_CONNECTED,
+            Convert(chromeos::network_health::mojom::NetworkState::kConnected));
+  EXPECT_EQ(telemetry_api::NetworkState::NETWORK_STATE_ONLINE,
+            Convert(chromeos::network_health::mojom::NetworkState::kOnline));
+}
+
+TEST(TelemetryApiConverters, NetworkTypeEnum) {
+  EXPECT_EQ(telemetry_api::NetworkType::NETWORK_TYPE_NONE,
+            Convert(chromeos::network_config::mojom::NetworkType::kAll));
+  EXPECT_EQ(telemetry_api::NetworkType::NETWORK_TYPE_CELLULAR,
+            Convert(chromeos::network_config::mojom::NetworkType::kCellular));
+  EXPECT_EQ(telemetry_api::NetworkType::NETWORK_TYPE_ETHERNET,
+            Convert(chromeos::network_config::mojom::NetworkType::kEthernet));
+  EXPECT_EQ(telemetry_api::NetworkType::NETWORK_TYPE_NONE,
+            Convert(chromeos::network_config::mojom::NetworkType::kMobile));
+  EXPECT_EQ(telemetry_api::NetworkType::NETWORK_TYPE_TETHER,
+            Convert(chromeos::network_config::mojom::NetworkType::kTether));
+  EXPECT_EQ(telemetry_api::NetworkType::NETWORK_TYPE_VPN,
+            Convert(chromeos::network_config::mojom::NetworkType::kVPN));
+  EXPECT_EQ(telemetry_api::NetworkType::NETWORK_TYPE_NONE,
+            Convert(chromeos::network_config::mojom::NetworkType::kWireless));
+  EXPECT_EQ(telemetry_api::NetworkType::NETWORK_TYPE_WIFI,
+            Convert(chromeos::network_config::mojom::NetworkType::kWiFi));
+}
+
+TEST(TelemetryApiConverters, NetworkInfo) {
+  constexpr char kIpv4Address[] = "1.1.1.1";
+  const std::vector<std::string> kIpv6Addresses = {
+      "FE80:CD00:0000:0CDE:1257:0000:211E:729C",
+      "CD00:FE80:0000:1257:0CDE:0000:729C:211E"};
+  constexpr uint32_t kSignalStrength = 100;
+
+  auto input = chromeos::network_health::mojom::Network::New();
+  input->type = chromeos::network_config::mojom::NetworkType::kWiFi;
+  input->state = chromeos::network_health::mojom::NetworkState::kOnline;
+  input->ipv4_address = kIpv4Address;
+  input->ipv6_addresses = kIpv6Addresses;
+  input->signal_strength =
+      chromeos::network_health::mojom::UInt32Value::New(kSignalStrength);
+
+  auto result = ConvertPtr<telemetry_api::NetworkInfo>(std::move(input));
+  EXPECT_EQ(result.type, telemetry_api::NetworkType::NETWORK_TYPE_WIFI);
+  EXPECT_EQ(result.state, telemetry_api::NetworkState::NETWORK_STATE_ONLINE);
+
+  ASSERT_TRUE(result.ipv4_address);
+  EXPECT_EQ(*result.ipv4_address, kIpv4Address);
+
+  ASSERT_EQ(result.ipv6_addresses.size(), 2LU);
+  EXPECT_EQ(result.ipv6_addresses, kIpv6Addresses);
+
+  ASSERT_TRUE(result.signal_strength);
+  EXPECT_EQ(static_cast<double_t>(*result.signal_strength), kSignalStrength);
+}
+
+TEST(TelemetryApiConverters, TpmVersion) {
+  constexpr uint32_t kFamily = 0x322e3000;
+  constexpr uint64_t kSpecLevel = 1000;
+  constexpr uint32_t kManufacturer = 42;
+  constexpr uint32_t kTpmModel = 101;
+  constexpr uint64_t kFirmwareVersion = 1001;
+  constexpr char kVendorSpecific[] = "info";
+
+  auto input = telemetry_service::ProbeTpmVersion::New();
+  input->gsc_version = telemetry_service::ProbeTpmGSCVersion::kCr50;
+  input->family = telemetry_service::UInt32Value::New(kFamily);
+  input->spec_level = telemetry_service::UInt64Value::New(kSpecLevel);
+  input->manufacturer = telemetry_service::UInt32Value::New(kManufacturer);
+  input->tpm_model = telemetry_service::UInt32Value::New(kTpmModel);
+  input->firmware_version =
+      telemetry_service::UInt64Value::New(kFirmwareVersion);
+  input->vendor_specific = kVendorSpecific;
+
+  auto result = ConvertPtr<telemetry_api::TpmVersion>(std::move(input));
+  EXPECT_EQ(telemetry_api::TpmGSCVersion::TPM_GSC_VERSION_CR50,
+            result.gsc_version);
+  ASSERT_TRUE(result.family);
+  EXPECT_EQ(kFamily, static_cast<uint32_t>(*result.family));
+  ASSERT_TRUE(result.spec_level);
+  EXPECT_EQ(kSpecLevel, static_cast<uint64_t>(*result.spec_level));
+  ASSERT_TRUE(result.manufacturer);
+  EXPECT_EQ(kManufacturer, static_cast<uint32_t>(*result.manufacturer));
+  ASSERT_TRUE(result.tpm_model);
+  EXPECT_EQ(kTpmModel, static_cast<uint32_t>(*result.tpm_model));
+  ASSERT_TRUE(result.firmware_version);
+  EXPECT_EQ(kFirmwareVersion, static_cast<uint64_t>(*result.firmware_version));
+  ASSERT_TRUE(result.vendor_specific);
+  EXPECT_EQ(kVendorSpecific, *result.vendor_specific);
+}
+
+TEST(TelemetryApiConverters, TpmStatus) {
+  constexpr bool kEnabled = true;
+  constexpr bool kOwned = false;
+  constexpr bool kOwnerPasswortIsPresent = false;
+
+  auto input = telemetry_service::ProbeTpmStatus::New();
+  input->enabled = telemetry_service::BoolValue::New(kEnabled);
+  input->owned = telemetry_service::BoolValue::New(kOwned);
+  input->owner_password_is_present =
+      telemetry_service::BoolValue::New(kOwnerPasswortIsPresent);
+
+  auto result = ConvertPtr<telemetry_api::TpmStatus>(std::move(input));
+  ASSERT_TRUE(result.enabled);
+  EXPECT_EQ(kEnabled, *result.enabled);
+  ASSERT_TRUE(result.owned);
+  EXPECT_EQ(kOwned, *result.owned);
+  ASSERT_TRUE(result.owner_password_is_present);
+  EXPECT_EQ(kOwnerPasswortIsPresent, *result.owner_password_is_present);
+}
+
+TEST(TelemetryApiConverters, TpmDictionaryAttack) {
+  constexpr uint32_t kCounter = 42;
+  constexpr uint32_t kThreshold = 100;
+  constexpr bool kLockOutInEffect = true;
+  constexpr uint32_t kLockoutSecondsRemaining = 5;
+
+  auto input = telemetry_service::ProbeTpmDictionaryAttack::New();
+  input->counter = telemetry_service::UInt32Value::New(kCounter);
+  input->threshold = telemetry_service::UInt32Value::New(kThreshold);
+  input->lockout_in_effect =
+      telemetry_service::BoolValue::New(kLockOutInEffect);
+  input->lockout_seconds_remaining =
+      telemetry_service::UInt32Value::New(kLockoutSecondsRemaining);
+
+  auto result =
+      ConvertPtr<telemetry_api::TpmDictionaryAttack>(std::move(input));
+  ASSERT_TRUE(result.counter);
+  EXPECT_EQ(kCounter, static_cast<uint32_t>(*result.counter));
+  ASSERT_TRUE(result.threshold);
+  EXPECT_EQ(kThreshold, static_cast<uint32_t>(*result.threshold));
+  ASSERT_TRUE(result.lockout_in_effect);
+  EXPECT_EQ(kLockOutInEffect, *result.lockout_in_effect);
+  ASSERT_TRUE(result.lockout_seconds_remaining);
+  EXPECT_EQ(kLockoutSecondsRemaining,
+            static_cast<uint32_t>(*result.lockout_seconds_remaining));
+}
+
+TEST(TelemetryApiConverters, TpmInfo) {
+  // TPM Version fields.
+  constexpr uint32_t kFamily = 0x322e3000;
+  constexpr uint64_t kSpecLevel = 1000;
+  constexpr uint32_t kManufacturer = 42;
+  constexpr uint32_t kTpmModel = 101;
+  constexpr uint64_t kFirmwareVersion = 1001;
+  constexpr char kVendorSpecific[] = "info";
+
+  // TPM Status fields.
+  constexpr bool kEnabled = true;
+  constexpr bool kOwned = false;
+  constexpr bool kOwnerPasswortIsPresent = false;
+
+  // TPM dictionary attack fields.
+  constexpr uint32_t kCounter = 42;
+  constexpr uint32_t kThreshold = 100;
+  constexpr bool kLockOutInEffect = true;
+  constexpr uint32_t kLockoutSecondsRemaining = 5;
+
+  auto tpm_version = telemetry_service::ProbeTpmVersion::New();
+  tpm_version->gsc_version = telemetry_service::ProbeTpmGSCVersion::kCr50;
+  tpm_version->family = telemetry_service::UInt32Value::New(kFamily);
+  tpm_version->spec_level = telemetry_service::UInt64Value::New(kSpecLevel);
+  tpm_version->manufacturer =
+      telemetry_service::UInt32Value::New(kManufacturer);
+  tpm_version->tpm_model = telemetry_service::UInt32Value::New(kTpmModel);
+  tpm_version->firmware_version =
+      telemetry_service::UInt64Value::New(kFirmwareVersion);
+  tpm_version->vendor_specific = kVendorSpecific;
+
+  auto tpm_status = telemetry_service::ProbeTpmStatus::New();
+  tpm_status->enabled = telemetry_service::BoolValue::New(kEnabled);
+  tpm_status->owned = telemetry_service::BoolValue::New(kOwned);
+  tpm_status->owner_password_is_present =
+      telemetry_service::BoolValue::New(kOwnerPasswortIsPresent);
+
+  auto dictionary_attack = telemetry_service::ProbeTpmDictionaryAttack::New();
+  dictionary_attack->counter = telemetry_service::UInt32Value::New(kCounter);
+  dictionary_attack->threshold =
+      telemetry_service::UInt32Value::New(kThreshold);
+  dictionary_attack->lockout_in_effect =
+      telemetry_service::BoolValue::New(kLockOutInEffect);
+  dictionary_attack->lockout_seconds_remaining =
+      telemetry_service::UInt32Value::New(kLockoutSecondsRemaining);
+
+  auto input = telemetry_service::ProbeTpmInfo::New();
+  input->version = std::move(tpm_version);
+  input->status = std::move(tpm_status);
+  input->dictionary_attack = std::move(dictionary_attack);
+
+  auto result = ConvertPtr<telemetry_api::TpmInfo>(std::move(input));
+
+  auto version_result = std::move(result.version);
+  EXPECT_EQ(telemetry_api::TpmGSCVersion::TPM_GSC_VERSION_CR50,
+            version_result.gsc_version);
+  ASSERT_TRUE(version_result.family);
+  EXPECT_EQ(kFamily, static_cast<uint32_t>(*version_result.family));
+  ASSERT_TRUE(version_result.spec_level);
+  EXPECT_EQ(kSpecLevel, static_cast<uint64_t>(*version_result.spec_level));
+  ASSERT_TRUE(version_result.manufacturer);
+  EXPECT_EQ(kManufacturer, static_cast<uint32_t>(*version_result.manufacturer));
+  ASSERT_TRUE(version_result.tpm_model);
+  EXPECT_EQ(kTpmModel, static_cast<uint32_t>(*version_result.tpm_model));
+  ASSERT_TRUE(version_result.firmware_version);
+  EXPECT_EQ(kFirmwareVersion,
+            static_cast<uint64_t>(*version_result.firmware_version));
+  ASSERT_TRUE(version_result.vendor_specific);
+  EXPECT_EQ(kVendorSpecific, *version_result.vendor_specific);
+
+  auto status_result = std::move(result.status);
+  ASSERT_TRUE(status_result.enabled);
+  EXPECT_EQ(kEnabled, *status_result.enabled);
+  ASSERT_TRUE(status_result.owned);
+  EXPECT_EQ(kOwned, *status_result.owned);
+  ASSERT_TRUE(status_result.owner_password_is_present);
+  EXPECT_EQ(kOwnerPasswortIsPresent, *status_result.owner_password_is_present);
+
+  auto dictionary_attack_result = std::move(result.dictionary_attack);
+  ASSERT_TRUE(dictionary_attack_result.counter);
+  EXPECT_EQ(kCounter, static_cast<uint32_t>(*dictionary_attack_result.counter));
+  ASSERT_TRUE(dictionary_attack_result.threshold);
+  EXPECT_EQ(kThreshold,
+            static_cast<uint32_t>(*dictionary_attack_result.threshold));
+  ASSERT_TRUE(dictionary_attack_result.lockout_in_effect);
+  EXPECT_EQ(kLockOutInEffect, *dictionary_attack_result.lockout_in_effect);
+  ASSERT_TRUE(dictionary_attack_result.lockout_seconds_remaining);
+  EXPECT_EQ(kLockoutSecondsRemaining,
+            static_cast<uint32_t>(
+                *dictionary_attack_result.lockout_seconds_remaining));
 }
 
 }  // namespace converters

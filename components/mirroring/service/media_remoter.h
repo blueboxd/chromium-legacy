@@ -13,10 +13,8 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-
-namespace openscreen::cast {
-class Sender;
-}  // namespace openscreen::cast
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/openscreen/src/cast/streaming/sender.h"
 
 namespace media::cast {
 class CastEnvironment;
@@ -81,23 +79,19 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) MediaRemoter final
   // and must either outlive `this` or live until `Stop` is called. If
   // either is nullptr, the associated config should be default constructed as
   // it is ignored.
-  // TODO(https://crbug.com/1363516): make audio and video configs
-  // absl::optional instead of default constructed.
   void StartRpcMessaging(
       scoped_refptr<media::cast::CastEnvironment> cast_environment,
-      openscreen::cast::Sender* audio_sender,
-      openscreen::cast::Sender* video_sender,
-      const media::cast::FrameSenderConfig& audio_config,
-      const media::cast::FrameSenderConfig& video_config);
+      std::unique_ptr<openscreen::cast::Sender> audio_sender,
+      std::unique_ptr<openscreen::cast::Sender> video_sender,
+      absl::optional<media::cast::FrameSenderConfig> audio_config,
+      absl::optional<media::cast::FrameSenderConfig> video_config);
 
   // Old way using a cast transport.
-  // TODO(https://crbug.com/1316434): should be removed once libcast sender is
-  // successfully launched.
   void StartRpcMessaging(
       scoped_refptr<media::cast::CastEnvironment> cast_environment,
       media::cast::CastTransport* transport,
-      const media::cast::FrameSenderConfig& audio_config,
-      const media::cast::FrameSenderConfig& video_config);
+      absl::optional<media::cast::FrameSenderConfig> audio_config,
+      absl::optional<media::cast::FrameSenderConfig> video_config);
 
   // Called when a mirroring session is successfully resumed.
   void OnMirroringResumed();
@@ -145,8 +139,8 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) MediaRemoter final
   // Called by the public |StartRpcMessaging| methods.
   void StartRpcMessagingInternal(
       scoped_refptr<media::cast::CastEnvironment> cast_environment,
-      const media::cast::FrameSenderConfig& audio_config,
-      const media::cast::FrameSenderConfig& video_config);
+      absl::optional<media::cast::FrameSenderConfig> audio_config,
+      absl::optional<media::cast::FrameSenderConfig> video_config);
 
   // Called by RemotingSender when error occurred. Will stop this remoting
   // session and fallback to mirroring.
@@ -166,11 +160,11 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) MediaRemoter final
 
   // Used only if StartRpcMessaging is called with openscreen::cast::Sender
   // objects.
-  raw_ptr<openscreen::cast::Sender> openscreen_audio_sender_ = nullptr;
-  raw_ptr<openscreen::cast::Sender> openscreen_video_sender_ = nullptr;
+  std::unique_ptr<openscreen::cast::Sender> openscreen_audio_sender_;
+  std::unique_ptr<openscreen::cast::Sender> openscreen_video_sender_;
 
-  media::cast::FrameSenderConfig audio_config_;
-  media::cast::FrameSenderConfig video_config_;
+  absl::optional<media::cast::FrameSenderConfig> audio_config_;
+  absl::optional<media::cast::FrameSenderConfig> video_config_;
 
   // State transition diagram:
   //

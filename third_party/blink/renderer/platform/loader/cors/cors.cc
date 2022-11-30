@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -160,10 +160,6 @@ bool ContainsOnlyCorsSafelistedHeaders(const HTTPHeaderMap& header_map) {
   }
 
   return network::cors::CorsUnsafeRequestHeaderNames(in).empty();
-}
-
-bool IsOkStatus(int status) {
-  return network::cors::IsOkStatus(status);
 }
 
 bool CalculateCorsFlag(const KURL& url,

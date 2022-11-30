@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -298,7 +298,7 @@ class PropertyTreePrinter {
   }
 
   String NodesAsTreeString() {
-    if (nodes_.IsEmpty())
+    if (nodes_.empty())
       return "";
     StringBuilder string_builder;
     BuildTreeString(string_builder, RootNode(), 0);
@@ -330,7 +330,7 @@ class PropertyTreePrinter {
     const auto* node = nodes_.back();
     while (!node->IsRoot())
       node = node->Parent();
-    if (node->DebugName().IsEmpty())
+    if (node->DebugName().empty())
       const_cast<NodeType*>(node)->SetDebugName("root");
     nodes_.insert(node);
     return *node;

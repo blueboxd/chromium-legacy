@@ -714,6 +714,12 @@ void SearchBoxView::ProcessAutocomplete(
 
   SearchResult* const first_visible_result = first_result_view->result();
 
+  // Do not autocomplete on answer cards.
+  if (first_visible_result->display_type() ==
+      SearchResultDisplayType::kAnswerCard) {
+    return;
+  }
+
   if (first_result_view->is_default_result() &&
       current_query_ != search_box()->GetText()) {
     // Search box text has been set to the previous selected result. Reset
@@ -747,13 +753,13 @@ void SearchBoxView::ProcessAutocomplete(
     return;
   }
 
+  // Clear autocomplete since we don't have a prefix match.
+  ClearAutocompleteText();
+
   if (IsValidAutocompleteText(search_text)) {
     // Setup autocomplete ghost text for eligible search_text.
-    if (features::IsAutocompleteExtendedSuggestionsEnabled()) {
-      MaybeSetAutocompleteGhostText(
-          first_result_view->result()->title(),
-          GetCategoryName(first_result_view->result()));
-    }
+    MaybeSetAutocompleteGhostText(first_result_view->result()->title(),
+                                  GetCategoryName(first_result_view->result()));
 
     if (IsSubstringCaseInsensitive(search_text, user_typed_text)) {
       // user_typed_text is a substring of search_text and is eligible for
@@ -769,8 +775,6 @@ void SearchBoxView::ProcessAutocomplete(
     // search_text is not eligible for autocompletion.
     RecordAutocompleteMatchMetric(SearchBoxTextMatch::kNoMatch);
   }
-
-  ClearAutocompleteText();
 }
 
 bool SearchBoxView::ProcessPrefixMatchAutocomplete(
@@ -1013,7 +1017,6 @@ void SearchBoxView::SetAutocompleteText(
   // |node_data| for "Value".
   NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
 
-  if (features::IsAutocompleteExtendedSuggestionsEnabled())
     MaybeSetAutocompleteGhostText(std::u16string(), std::u16string());
 }
 
@@ -1040,8 +1043,7 @@ void SearchBoxView::ClearSearchAndDeactivateSearchBox() {
   SetA11yActiveDescendant(absl::nullopt);
   ClearSearch();
   SetSearchBoxActive(false, ui::ET_UNKNOWN);
-  if (features::IsAutocompleteExtendedSuggestionsEnabled())
-    MaybeSetAutocompleteGhostText(std::u16string(), std::u16string());
+  MaybeSetAutocompleteGhostText(std::u16string(), std::u16string());
 }
 
 void SearchBoxView::SetA11yActiveDescendant(
@@ -1225,8 +1227,9 @@ bool SearchBoxView::HandleGestureEvent(views::Textfield* sender,
 void SearchBoxView::UpdateSearchBoxForSelectedResult(
     SearchResult* selected_result) {
   if (selected_result->result_type() ==
-      AppListSearchResultType::kInternalPrivacyInfo) {
-    // Privacy view should not change the search box text.
+          AppListSearchResultType::kInternalPrivacyInfo ||
+      selected_result->display_type() == SearchResultDisplayType::kAnswerCard) {
+    // Privacy and answer card views should not change the search box text.
     return;
   }
 
@@ -1269,9 +1272,12 @@ void SearchBoxView::ShowAssistantChanged() {
 }
 
 bool SearchBoxView::ShouldProcessAutocomplete() {
-  // IME sets composition text while the user is typing, so avoid handle
+  // IME sets composition text while the user is typing, so avoid handling
   // autocomplete in this case to avoid conflicts.
-  return !(search_box()->IsIMEComposing() && highlight_range_.is_empty());
+  // The user's cursor may not be at the end of the the current query, so avoid
+  // handling autocomplete in this case to avoid moving the user's cursor.
+  return search_box()->GetCursorPosition() == search_box()->GetText().size() &&
+         (!(search_box()->IsIMEComposing() && highlight_range_.is_empty()));
 }
 
 void SearchBoxView::ResetHighlightRange() {

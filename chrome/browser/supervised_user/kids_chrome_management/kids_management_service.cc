@@ -7,11 +7,13 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_context.h"
 
-namespace chrome::kids {
+namespace {
+using ::content::BrowserContext;
+}  // namespace
+
 // Builds the service instance and its local dependencies.
 // The profile dependency is needed to verify the dynamic child account status.
 KeyedService* KidsManagementServiceFactory::BuildServiceInstanceFor(
-    content::BrowserContext* browser_context) const {
+    BrowserContext* browser_context) const {
   return new KidsManagementService();
 }
-}  // namespace chrome::kids

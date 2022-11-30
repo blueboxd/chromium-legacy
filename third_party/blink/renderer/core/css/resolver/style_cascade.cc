@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/css/css_cyclic_variable_value.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_invalid_variable_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_pending_substitution_value.h"
 #include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
@@ -21,6 +22,7 @@
 #include "third_party/blink/renderer/core/css/document_style_environment_variables.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
@@ -58,14 +60,6 @@ bool ConsumeComma(CSSParserTokenRange& range) {
     return true;
   }
   return false;
-}
-
-// TODO(crbug.com/1105782): It is currently unclear how to handle 'revert'
-// and 'revert-layer' at computed-value-time. For now we treat it as 'unset'.
-const CSSValue* TreatRevertAsUnset(const CSSValue* value) {
-  if (value && (value->IsRevertValue() || value->IsRevertLayerValue()))
-    return cssvalue::CSSUnsetValue::Create();
-  return value;
 }
 
 const CSSValue* Parse(const CSSProperty& property,
@@ -128,22 +122,6 @@ CSSPropertyID UnvisitedID(CSSPropertyID id) {
   if (!property.IsVisited())
     return id;
   return property.GetUnvisitedProperty()->PropertyID();
-}
-
-bool IsRevert(const CSSValue& value) {
-  // TODO(andruud): Don't transport CSS-wide keywords in
-  // CustomPropertyDeclaration.
-  return value.IsRevertValue() ||
-         (value.IsCustomPropertyDeclaration() &&
-          To<CSSCustomPropertyDeclaration>(value).IsRevert());
-}
-
-bool IsRevertLayer(const CSSValue& value) {
-  // TODO(andruud): Don't transport CSS-wide keywords in
-  // CustomPropertyDeclaration.
-  return value.IsRevertLayerValue() ||
-         (value.IsCustomPropertyDeclaration() &&
-          To<CSSCustomPropertyDeclaration>(value).IsRevertLayer());
 }
 
 bool IsInterpolation(CascadePriority priority) {
@@ -224,6 +202,11 @@ void StyleCascade::Apply(CascadeFilter filter) {
   }
 
   ApplyHighPriority(resolver);
+
+  if (map_.NativeBitset().Has(CSSPropertyID::kLineHeight)) {
+    LookupAndApply(GetCSSPropertyLineHeight(), resolver);
+  }
+  state_.UpdateLineHeight();
 
   ApplyWideOverlapping(resolver);
 
@@ -730,10 +713,7 @@ StyleCascade::TokenSequence::TokenSequence(const CSSVariableData* data)
     : is_animation_tainted_(data->IsAnimationTainted()),
       has_font_units_(data->HasFontUnits()),
       has_root_font_units_(data->HasRootFontUnits()),
-      base_url_(data->BaseURL()),
-      charset_(data->Charset()) {
-  variable_data_.push_back(base::WrapRefCounted(data));
-}
+      has_line_height_units_(data->HasLineHeightUnits()) {}
 
 bool StyleCascade::TokenSequence::AppendTokens(
     base::span<const CSSParserToken> tokens,
@@ -741,9 +721,7 @@ bool StyleCascade::TokenSequence::AppendTokens(
   // https://drafts.csswg.org/css-variables/#long-variables
   if (tokens.size() > limit)
     return false;
-  for (const CSSParserToken& token : tokens) {
-    tokens_.push_back(token);
-  }
+  tokens_.Append(tokens.data(), static_cast<wtf_size_t>(tokens.size()));
   return true;
 }
 
@@ -751,10 +729,10 @@ bool StyleCascade::TokenSequence::Append(const TokenSequence& sequence,
                                          wtf_size_t limit) {
   if (!AppendTokens(base::span<const CSSParserToken>{sequence.tokens_}, limit))
     return false;
-  variable_data_.AppendVector(sequence.variable_data_);
   is_animation_tainted_ |= sequence.is_animation_tainted_;
   has_font_units_ |= sequence.has_font_units_;
   has_root_font_units_ |= sequence.has_root_font_units_;
+  has_line_height_units_ |= sequence.has_line_height_units_;
   return true;
 }
 
@@ -762,10 +740,10 @@ bool StyleCascade::TokenSequence::Append(CSSVariableData* data,
                                          wtf_size_t limit) {
   if (!AppendTokens(data->Tokens(), limit))
     return false;
-  variable_data_.push_back(base::WrapRefCounted(data));
   is_animation_tainted_ |= data->IsAnimationTainted();
   has_font_units_ |= data->HasFontUnits();
   has_root_font_units_ |= data->HasRootFontUnits();
+  has_line_height_units_ |= data->HasLineHeightUnits();
   return true;
 }
 
@@ -775,13 +753,11 @@ void StyleCascade::TokenSequence::Append(const CSSParserToken& token) {
 
 scoped_refptr<CSSVariableData>
 StyleCascade::TokenSequence::BuildVariableData() {
-  Vector<String> backing_strings;
-  for (scoped_refptr<const CSSVariableData>& data : variable_data_)
-    data->AppendBackingStrings(backing_strings);
-  variable_data_.clear();
-  return CSSVariableData::CreateResolved(
-      std::move(tokens_), std::move(backing_strings), is_animation_tainted_,
-      has_font_units_, has_root_font_units_, base_url_, charset_);
+  // TODO(crbug.com/661854): We have no original_text_ in this case,
+  // even though we should.
+  return CSSVariableData::Create(
+      CSSTokenizedValue{CSSParserTokenRange{tokens_}, StringView{}},
+      is_animation_tainted_, /*needs_variable_resolution=*/false);
 }
 
 const CSSValue* StyleCascade::Resolve(const CSSProperty& property,
@@ -790,11 +766,23 @@ const CSSValue* StyleCascade::Resolve(const CSSProperty& property,
                                       CascadeOrigin& origin,
                                       CascadeResolver& resolver) {
   DCHECK(!property.IsSurrogate());
-  if (IsRevert(value))
-    return ResolveRevert(property, value, origin, resolver);
-  if (IsRevertLayer(value))
-    return ResolveRevertLayer(property, value, priority, origin, resolver);
+
+  const CSSValue* result = ResolveSubstitutions(property, value, resolver);
+  DCHECK(result);
+
+  if (result->IsRevertValue())
+    return ResolveRevert(property, *result, origin, resolver);
+  if (result->IsRevertLayerValue())
+    return ResolveRevertLayer(property, *result, priority, origin, resolver);
+
   resolver.CollectFlags(property, origin);
+
+  return result;
+}
+
+const CSSValue* StyleCascade::ResolveSubstitutions(const CSSProperty& property,
+                                                   const CSSValue& value,
+                                                   CascadeResolver& resolver) {
   if (const auto* v = DynamicTo<CSSCustomPropertyDeclaration>(value))
     return ResolveCustomProperty(property, *v, resolver);
   if (const auto* v = DynamicTo<CSSVariableReferenceValue>(value))
@@ -810,20 +798,19 @@ const CSSValue* StyleCascade::ResolveCustomProperty(
     CascadeResolver& resolver) {
   DCHECK(!property.IsSurrogate());
 
-  // TODO(andruud): Don't transport css-wide keywords in this value.
-  if (!decl.Value())
-    return &decl;
-
   DCHECK(!resolver.IsLocked(property));
   CascadeResolver::AutoLock lock(property, resolver);
 
-  scoped_refptr<CSSVariableData> data = decl.Value();
+  scoped_refptr<CSSVariableData> data = &decl.Value();
 
   if (data->NeedsVariableResolution())
     data = ResolveVariableData(data.get(), resolver);
 
   if (HasFontSizeDependency(To<CustomProperty>(property), data.get()))
     resolver.DetectCycle(GetCSSPropertyFontSize());
+
+  if (HasLineHeightDependency(To<CustomProperty>(property), data.get()))
+    resolver.DetectCycle(GetCSSPropertyLineHeight());
 
   state_.Style()->SetHasVariableDeclaration();
 
@@ -833,10 +820,24 @@ const CSSValue* StyleCascade::ResolveCustomProperty(
   if (!data)
     return CSSInvalidVariableValue::Create();
 
-  if (data == decl.Value())
+  if (data == &decl.Value())
     return &decl;
 
-  return MakeGarbageCollected<CSSCustomPropertyDeclaration>(data);
+  // If a declaration, once all var() functions are substituted in, contains
+  // only a CSS-wide keyword (and possibly whitespace), its value is determined
+  // as if that keyword were its specified value all along.
+  //
+  // https://drafts.csswg.org/css-variables/#substitute-a-var
+  {
+    CSSParserTokenRange range = data->TokenRange();
+    range.ConsumeWhitespace();
+    CSSValue* value = css_parsing_utils::ConsumeCSSWideKeyword(range);
+    if (value && range.AtEnd())
+      return value;
+  }
+
+  return MakeGarbageCollected<CSSCustomPropertyDeclaration>(
+      data, decl.ParserContext());
 }
 
 const CSSValue* StyleCascade::ResolveVariableReference(
@@ -860,7 +861,7 @@ const CSSValue* StyleCascade::ResolveVariableReference(
   if (ResolveTokensInto(CSSParserTokenRange{data->Tokens()}, resolver,
                         sequence)) {
     if (const auto* parsed = Parse(property, sequence.TokenRange(), context))
-      return TreatRevertAsUnset(parsed);
+      return parsed;
   }
 
   return cssvalue::CSSUnsetValue::Create();
@@ -927,7 +928,7 @@ const CSSValue* StyleCascade::ResolvePendingSubstitution(
     // When using var() in a css-logical shorthand (e.g. margin-inline),
     // the longhands here will also be logical.
     if (unvisited_property == &ResolveSurrogate(longhand))
-      return TreatRevertAsUnset(parsed);
+      return parsed;
   }
 
   NOTREACHED();
@@ -1130,9 +1131,18 @@ bool StyleCascade::HasFontSizeDependency(const CustomProperty& property,
                                          CSSVariableData* data) const {
   if (!property.IsRegistered() || !data)
     return false;
-  if (data->HasFontUnits())
+  if (data->HasFontUnits() || data->HasLineHeightUnits())
     return true;
   if (data->HasRootFontUnits() && IsRootElement())
+    return true;
+  return false;
+}
+
+bool StyleCascade::HasLineHeightDependency(const CustomProperty& property,
+                                           CSSVariableData* data) const {
+  if (!property.IsRegistered() || !data)
+    return false;
+  if (data->HasLineHeightUnits())
     return true;
   return false;
 }
@@ -1189,7 +1199,7 @@ void StyleCascade::CountUse(WebFeature feature) {
 }
 
 void StyleCascade::MaybeUseCountRevert(const CSSValue& value) {
-  if (IsRevert(value))
+  if (value.IsRevertValue())
     CountUse(WebFeature::kCSSKeywordRevert);
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,7 +114,7 @@ void WebTestWebFrameWidgetImpl::ScheduleAnimationForWebTests() {
 
 void WebTestWebFrameWidgetImpl::UpdateAllLifecyclePhasesAndComposite(
     base::OnceClosure callback) {
-  LayerTreeHost()->RequestPresentationTimeForNextFrame(WTF::Bind(
+  LayerTreeHost()->RequestPresentationTimeForNextFrame(WTF::BindOnce(
       [](base::OnceClosure callback, const gfx::PresentationFeedback&) {
         std::move(callback).Run();
       },
@@ -148,8 +148,8 @@ void WebTestWebFrameWidgetImpl::ScheduleAnimationInternal(bool do_raster) {
 
     frame->GetTaskRunner(TaskType::kInternalTest)
         ->PostDelayedTask(FROM_HERE,
-                          WTF::Bind(&WebTestWebFrameWidgetImpl::AnimateNow,
-                                    WrapWeakPersistent(this)),
+                          WTF::BindOnce(&WebTestWebFrameWidgetImpl::AnimateNow,
+                                        WrapWeakPersistent(this)),
                           base::Milliseconds(1));
   }
 }

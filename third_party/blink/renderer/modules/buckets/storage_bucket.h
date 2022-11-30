@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/dom/dom_time_stamp.h"
+#include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/execution_context/navigator_base.h"
@@ -39,7 +39,7 @@ class StorageBucket final : public ScriptWrappable,
   ScriptPromise persisted(ScriptState*);
   ScriptPromise estimate(ScriptState*);
   ScriptPromise durability(ScriptState*);
-  ScriptPromise setExpires(ScriptState*, const DOMTimeStamp&);
+  ScriptPromise setExpires(ScriptState*, const DOMHighResTimeStamp&);
   ScriptPromise expires(ScriptState*);
   IDBFactory* indexedDB();
   LockManager* locks();

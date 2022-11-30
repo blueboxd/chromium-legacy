@@ -141,6 +141,9 @@ _OS_SPECIFIC_FILTER['mac'] = [
     'ChromeDriverTest.testTakeElementScreenshotPartlyVisible',
     'ChromeDriverTest.testTakeLargeElementScreenshot',
     'ChromeDriverSiteIsolation.testCanClickOOPIF',
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=1367160
+    # Flaky test.
+    'ChromeDriverTest.testClickElementThatRestartsBrowser',
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
@@ -1004,6 +1007,17 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     alert_button = self._driver.FindElement('css selector', '#aa1')
     alert_button.Click()
     self.assertTrue(self._driver.IsAlertOpen())
+
+  def testClickElementThatRestartsBrowser(self):
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=4221
+    self._driver.Load('chrome://flags')
+    reset_all = self._driver.FindElement('css selector',
+                                         '#experiment-reset-all')
+    reset_all.Click()
+    relaunch = self._driver.FindElement('css selector',
+                                        '#experiment-restart-button')
+    # Clicking Relaunch should not crash chromedriver.
+    relaunch.Click()
 
   def testClickElementJustOutsidePage(self):
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=3878
@@ -5429,10 +5443,39 @@ class BidiTest(ChromeDriverBaseTestWithWebServer):
       # Wait indefinitely until time out.
       conn.WaitForResponse(-1)
 
-
   # TODO(nechaev): Test over tab switching by different means.
 
-class ClassiTest(ChromeDriverBaseTestWithWebServer):
+  def testContextCountForIFrames(self):
+    path = os.path.join(chrome_paths.GetTestData(), 'chromedriver',
+      'nested.html')
+    url = 'file://' + urllib.request.pathname2url(path)
+    # This is a regression test. Loading the same url twice leads
+    # to the duplication of the nested browsing context.
+    self._driver.Load(url)
+    self._driver.Load(url)
+
+    conn = self.createWebSocketConnection()
+
+    cmd_id = conn.SendCommand({
+      'method': 'browsingContext.getTree',
+      'params': {
+      }
+    })
+    resp = conn.WaitForResponse(cmd_id)
+    contexts = resp['result']['contexts']
+
+    self.assertIsNotNone(contexts)
+    self.assertIsInstance(contexts, list)
+    self.assertEqual(1, len(contexts))
+
+    parent_context = contexts[0]
+    children = parent_context['children']
+    self.assertIsNotNone(children)
+    self.assertIsInstance(children, list)
+    self.assertEqual(1, len(children))
+
+
+class ClassicTest(ChromeDriverBaseTestWithWebServer):
 
   def testAfterLastPage(self):
     driver = self.CreateDriver(web_socket_url = False)

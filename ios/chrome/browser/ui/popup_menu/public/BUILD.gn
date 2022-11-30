@@ -29,7 +29,6 @@ source_set("popup_menu_ui") {
   deps = [
     ":ui_constants",
     "//base",
-    "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/popup_menu:metrics_protocols",
     "//ios/chrome/browser/ui/popup_menu/cells",
@@ -57,17 +56,5 @@ source_set("ui_constants") {
   sources = [
     "popup_menu_ui_constants.h",
     "popup_menu_ui_constants.mm",
-  ]
-}
-
-source_set("features") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "features.h",
-    "features.mm",
-  ]
-  deps = [
-    "//base",
-    "//ios/chrome/app/strings",
   ]
 }

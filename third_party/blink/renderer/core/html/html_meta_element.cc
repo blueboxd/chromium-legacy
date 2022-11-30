@@ -65,7 +65,7 @@ static bool IsSeparator(UChar c) {
          c == ',' || c == '\0';
 }
 
-void HTMLMetaElement::ParseContentAttribute(
+void HTMLMetaElement::ParseViewportContentAttribute(
     const String& content,
     ViewportDescription& viewport_description,
     Document* document,
@@ -330,6 +330,19 @@ blink::mojom::ViewportFit HTMLMetaElement::ParseViewportFitValueAsEnum(
   return mojom::ViewportFit::kAuto;
 }
 
+// static
+absl::optional<ui::mojom::blink::VirtualKeyboardMode>
+HTMLMetaElement::ParseVirtualKeyboardValueAsEnum(const String& value) {
+  if (EqualIgnoringASCIICase(value, "resizes-content"))
+    return ui::mojom::blink::VirtualKeyboardMode::kResizesContent;
+  else if (EqualIgnoringASCIICase(value, "resizes-visual"))
+    return ui::mojom::blink::VirtualKeyboardMode::kResizesVisual;
+  else if (EqualIgnoringASCIICase(value, "overlays-content"))
+    return ui::mojom::blink::VirtualKeyboardMode::kOverlaysContent;
+
+  return absl::nullopt;
+}
+
 void HTMLMetaElement::ProcessViewportKeyValuePair(
     Document* document,
     bool report_warnings,
@@ -389,6 +402,37 @@ void HTMLMetaElement::ProcessViewportKeyValuePair(
     }
   } else if (key_string == "shrink-to-fit") {
     // Ignore vendor-specific argument.
+  } else if (RuntimeEnabledFeatures::
+                 ViewportMetaInteractiveWidgetPropertyEnabled() &&
+             key_string == "interactive-widget") {
+    absl::optional<ui::mojom::blink::VirtualKeyboardMode> resize_type =
+        ParseVirtualKeyboardValueAsEnum(value_string);
+
+    if (resize_type) {
+      description.virtual_keyboard_mode = resize_type.value();
+      switch (resize_type.value()) {
+        case ui::mojom::blink::VirtualKeyboardMode::kOverlaysContent: {
+          UseCounter::Count(document,
+                            WebFeature::kInteractiveWidgetOverlaysContent);
+        } break;
+        case ui::mojom::blink::VirtualKeyboardMode::kResizesContent: {
+          UseCounter::Count(document,
+                            WebFeature::kInteractiveWidgetResizesContent);
+        } break;
+        case ui::mojom::blink::VirtualKeyboardMode::kResizesVisual: {
+          UseCounter::Count(document,
+                            WebFeature::kInteractiveWidgetResizesVisual);
+        } break;
+        case ui::mojom::blink::VirtualKeyboardMode::kUnset: {
+          NOTREACHED();
+        } break;
+      }
+    } else {
+      description.virtual_keyboard_mode =
+          ui::mojom::blink::VirtualKeyboardMode::kUnset;
+      ReportViewportWarning(document, kUnrecognizedViewportArgumentValueError,
+                            value_string, key_string);
+    }
   } else if (report_warnings) {
     ReportViewportWarning(document, kUnrecognizedViewportArgumentKeyError,
                           key_string, String());
@@ -452,8 +496,8 @@ void HTMLMetaElement::GetViewportDescriptionFromContentAttribute(
     ViewportDescription& description,
     Document* document,
     bool viewport_meta_zero_values_quirk) {
-  ParseContentAttribute(content, description, document,
-                        viewport_meta_zero_values_quirk);
+  ParseViewportContentAttribute(content, description, document,
+                                viewport_meta_zero_values_quirk);
 
   if (description.min_zoom == ViewportDescription::kValueAuto)
     description.min_zoom = 0.25;
@@ -535,7 +579,7 @@ void HTMLMetaElement::RemovedFrom(ContainerNode& insertion_point) {
   if (!insertion_point.IsInDocumentTree())
     return;
   const AtomicString& name_value = FastGetAttribute(html_names::kNameAttr);
-  if (!name_value.IsEmpty())
+  if (!name_value.empty())
     NameRemoved(name_value);
 }
 
@@ -555,7 +599,7 @@ void HTMLMetaElement::ProcessHttpEquiv() {
     return;
   const AtomicString& http_equiv_value =
       FastGetAttribute(html_names::kHttpEquivAttr);
-  if (http_equiv_value.IsEmpty())
+  if (http_equiv_value.empty())
     return;
   HttpEquiv::Process(GetDocument(), http_equiv_value, content_value,
                      InDocumentHead(this), is_sync_parser_, this);
@@ -566,7 +610,7 @@ void HTMLMetaElement::ProcessContent() {
     return;
 
   const AtomicString& name_value = FastGetAttribute(html_names::kNameAttr);
-  if (name_value.IsEmpty())
+  if (name_value.empty())
     return;
 
   const AtomicString& content_value =

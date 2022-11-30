@@ -87,7 +87,7 @@ class HashSet {
 
   unsigned size() const;
   unsigned Capacity() const;
-  bool IsEmpty() const;
+  bool empty() const;
 
   void ReserveCapacityForSize(unsigned size) {
     impl_.ReserveCapacityForSize(size);
@@ -235,8 +235,8 @@ inline unsigned HashSet<T, U, V, W>::Capacity() const {
 }
 
 template <typename T, typename U, typename V, typename W>
-inline bool HashSet<T, U, V, W>::IsEmpty() const {
-  return impl_.IsEmpty();
+inline bool HashSet<T, U, V, W>::empty() const {
+  return impl_.empty();
 }
 
 template <typename T, typename U, typename V, typename W>
@@ -342,22 +342,6 @@ inline auto HashSet<T, U, V, W>::Take(ValuePeekInType value) -> ValueType {
 template <typename T, typename U, typename V, typename W>
 inline auto HashSet<T, U, V, W>::TakeAny() -> ValueType {
   return Take(begin());
-}
-
-template <typename C, typename W>
-inline void CopyToVector(const C& collection, W& vector) {
-  typedef typename C::const_iterator iterator;
-
-  {
-    // Disallow GC across resize allocation, see crbug.com/568173
-    typename W::GCForbiddenScope scope;
-    vector.resize(collection.size());
-  }
-
-  iterator it = collection.begin();
-  iterator end = collection.end();
-  for (unsigned i = 0; it != end; ++it, ++i)
-    vector[i] = *it;
 }
 
 }  // namespace WTF

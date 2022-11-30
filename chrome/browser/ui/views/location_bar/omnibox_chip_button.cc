@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/omnibox_chip_button.h"
 #include <cstddef>
 
+#include "base/time/time.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -59,16 +60,30 @@ void OmniboxChipButton::VisibilityChanged(views::View* starting_from,
   }
 }
 
-void OmniboxChipButton::AnimateCollapse() {
-  constexpr auto kAnimationDuration = base::Milliseconds(250);
+void OmniboxChipButton::AnimateCollapse(base::TimeDelta kAnimationDuration) {
+  base_width_ = 0;
   animation_->SetSlideDuration(kAnimationDuration);
-  animation_->Hide();
+  ForceAnimateCollapse();
 }
 
-void OmniboxChipButton::AnimateExpand() {
-  constexpr auto kAnimationDuration = base::Milliseconds(350);
+void OmniboxChipButton::AnimateExpand(base::TimeDelta kAnimationDuration) {
+  base_width_ = 0;
   animation_->SetSlideDuration(kAnimationDuration);
-  animation_->Show();
+  ForceAnimateExpand();
+}
+
+void OmniboxChipButton::AnimateToFit(base::TimeDelta kAnimationDuration) {
+  animation_->SetSlideDuration(kAnimationDuration);
+  base_width_ = label()->width();
+
+  if (label()->GetPreferredSize().width() < width()) {
+    // As we're collapsing, we need to make sure that the padding is not
+    // animated away.
+    base_width_ += kChipImagePadding + kExtraRightPadding;
+    ForceAnimateCollapse();
+  } else {
+    ForceAnimateExpand();
+  }
 }
 
 void OmniboxChipButton::ResetAnimation(double value) {
@@ -81,14 +96,21 @@ void OmniboxChipButton::SetExpandAnimationEndedCallback(
   expand_animation_ended_callback_ = callback;
 }
 
+void OmniboxChipButton::SetCollapseEndedCallback(
+    base::RepeatingCallback<void()> callback) {
+  collapse_animation_ended_callback_ = callback;
+}
+
 gfx::Size OmniboxChipButton::CalculatePreferredSize() const {
   const int fixed_width = GetIconSize() + GetInsets().width();
   const int collapsable_width = label()->GetPreferredSize().width() +
                                 kChipImagePadding + kExtraRightPadding;
+
   const double animation_value =
       force_expanded_for_testing_ ? 1.0 : animation_->GetCurrentValue();
-  const int width =
-      std::round(collapsable_width * animation_value) + fixed_width;
+  const int width = base_width_ +
+                    std::round(collapsable_width * animation_value) +
+                    fixed_width;
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
@@ -112,8 +134,15 @@ void OmniboxChipButton::AnimationEnded(const gfx::Animation* animation) {
     return;
 
   fully_collapsed_ = animation->GetCurrentValue() != 1.0;
-  if (animation->GetCurrentValue() == 1.0 && expand_animation_ended_callback_)
+
+  if (animation->GetCurrentValue() == 1.0 && expand_animation_ended_callback_) {
     expand_animation_ended_callback_.Run();
+  }
+
+  if (animation->GetCurrentValue() == 0.0 &&
+      collapse_animation_ended_callback_) {
+    collapse_animation_ended_callback_.Run();
+  }
 }
 
 void OmniboxChipButton::AnimationProgressed(const gfx::Animation* animation) {
@@ -142,6 +171,16 @@ const gfx::VectorIcon& OmniboxChipButton::GetIcon() const {
   }
 
   return gfx::kNoneIcon;
+}
+
+void OmniboxChipButton::ForceAnimateExpand() {
+  ResetAnimation(0.0);
+  animation_->Show();
+}
+
+void OmniboxChipButton::ForceAnimateCollapse() {
+  ResetAnimation(1.0);
+  animation_->Hide();
 }
 
 int OmniboxChipButton::GetIconSize() const {

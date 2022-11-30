@@ -68,6 +68,9 @@ class PasswordGenerationPopupControllerImpl;
 class Profile;
 
 namespace autofill {
+class LogManager;
+class RoutingLogManager;
+
 namespace password_generation {
 struct PasswordGenerationUIData;
 }  // namespace password_generation
@@ -182,7 +185,8 @@ class ChromePasswordManagerClient
       const std::vector<const password_manager::PasswordForm*>& best_matches,
       const url::Origin& origin,
       const std::vector<const password_manager::PasswordForm*>*
-          federated_matches) override;
+          federated_matches,
+      bool was_autofilled_on_pageload) override;
   void AutofillHttpAuth(
       const password_manager::PasswordForm& preferred_match,
       const password_manager::PasswordFormManagerForUI* form_manager) override;
@@ -225,7 +229,7 @@ class ChromePasswordManagerClient
   url::Origin GetLastCommittedOrigin() const override;
   const password_manager::CredentialsFilter* GetStoreResultFilter()
       const override;
-  const autofill::LogManager* GetLogManager() const override;
+  autofill::LogManager* GetLogManager() override;
   void AnnotateNavigationEntry(bool has_password_field) override;
   autofill::LanguageCode GetPageLanguage() const override;
 
@@ -442,7 +446,7 @@ class ChromePasswordManagerClient
   const password_manager::SyncCredentialsFilter credentials_filter_;
 #endif
 
-  std::unique_ptr<autofill::LogManager> log_manager_;
+  std::unique_ptr<autofill::RoutingLogManager> log_manager_;
 
   // Recorder of metrics that is associated with the last committed navigation
   // of the WebContents owning this ChromePasswordManagerClient. May be unset at

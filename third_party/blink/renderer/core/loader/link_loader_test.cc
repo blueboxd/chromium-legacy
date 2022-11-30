@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -545,8 +545,8 @@ class LinkLoaderTestPrefetchPrivacyChanges
   LinkLoaderTestPrefetchPrivacyChanges()
       : privacy_changes_enabled_(GetParam()) {}
   void SetUp() override {
-    std::vector<base::Feature> enable_features;
-    std::vector<base::Feature> disabled_features;
+    std::vector<base::test::FeatureRef> enable_features;
+    std::vector<base::test::FeatureRef> disabled_features;
     if (GetParam()) {
       enable_features.push_back(features::kPrefetchPrivacyChanges);
     } else {

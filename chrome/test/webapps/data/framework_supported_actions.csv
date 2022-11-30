@@ -1,4 +1,5 @@
 # Action base name,                                   Mac,Win,Lin,Cros
+check_app_in_list_icon_correct,                        🌕, 🌕,  🌕,   🌕,
 check_app_in_list_not_locally_installed,               🌓, 🌓,  🌓,   🌓,
 check_app_in_list_tabbed,                              🌓, 🌓,  🌓,   🌓,
 check_app_in_list_windowed,                            🌓, 🌓,  🌓,   🌓,
@@ -9,6 +10,7 @@ check_install_icon_not_shown,                          🌕, 🌕,  🌕,   🌕
 check_install_icon_shown,                              🌕, 🌕,  🌕,   🌕,
 check_launch_icon_not_shown,                           🌕, 🌕,  🌕,   🌕,
 check_launch_icon_shown,                               🌕, 🌕,  🌕,   🌕,
+check_app_navigation,                                  🌕, 🌕,  🌕,   🌕,
 check_app_navigation_is_start_url,                     🌕, 🌕,  🌕,   🌕,
 check_no_toolbar,                                      🌕, 🌕,  🌕,   🌕,
 check_platform_shortcut_and_icon,                      🌕, 🌓,  🌓,   🌓,
@@ -43,6 +45,7 @@ navigate_notfound_url,                                 🌕, 🌕,  🌕,   🌕
 open_in_chrome,                                        🌕, 🌕,  🌕,   🌕,
 set_open_in_tab,                                       🌓, 🌓,  🌓,   🌓,
 set_open_in_window,                                    🌓, 🌓,  🌓,   🌓,
+switch_incognito_profile,                              🌕, 🌕,  🌕,   🌕,
 switch_profile_clients,                                🌕, 🌕,  🌕,   🌕,
 sync_turn_off,                                         🌕, 🌕,  🌕,   🌕,
 sync_turn_on,                                          🌕, 🌕,  🌕,   🌕,
@@ -62,5 +65,6 @@ check_run_on_os_login_enabled,                         🌕, 🌕,  🌕,   🌑
 check_run_on_os_login_disabled,                        🌕, 🌕,  🌕,   🌑,
 open_app_settings_from_chrome_apps,                    🌕, 🌕,  🌕,   🌑,
 open_app_settings_from_app_menu,                       🌕, 🌕,  🌕,   🌑,
+check_browser_navigation,                              🌕, 🌕,  🌕,   🌕,
 check_browser_navigation_is_app_settings,              🌕, 🌕,  🌕,   🌑,
 await_manifest_update,                                 🌕, 🌕,  🌕,   🌕,

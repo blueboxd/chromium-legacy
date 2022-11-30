@@ -45,6 +45,11 @@ class FormatConversionSpec;
 
 namespace str_format_internal {
 
+template <FormatConversionCharSet C>
+struct ArgConvertResult {
+  bool value;
+};
+
 template <typename T, typename = void>
 struct HasUserDefinedConvert : std::false_type {};
 
@@ -55,7 +60,12 @@ struct HasUserDefinedConvert<T, void_t<decltype(AbslFormatConvert(
                                     std::declval<FormatSink*>()))>>
     : std::true_type {};
 
-void AbslFormatConvert();  // Stops the lexical name lookup
+// These declarations prevent ADL lookup from continuing in absl namespaces,
+// we are deliberately using these as ADL hooks and want them to consider
+// non-absl namespaces only.
+void AbslFormatConvert();
+void AbslStringify();
+
 template <typename T>
 auto FormatConvertImpl(const T& v, FormatConversionSpecImpl conv,
                        FormatSinkImpl* sink)
@@ -69,6 +79,19 @@ auto FormatConvertImpl(const T& v, FormatConversionSpecImpl conv,
   auto fcs = conv.Wrap<FormatConversionSpecT>();
   auto fs = sink->Wrap<FormatSinkT>();
   return AbslFormatConvert(v, fcs, &fs);
+}
+
+template <typename T>
+auto FormatConvertImpl(const T& v, FormatConversionSpecImpl,
+                       FormatSinkImpl* sink)
+    -> std::enable_if_t<std::is_void<decltype(AbslStringify(
+                            std::declval<FormatSink&>(), v))>::value,
+                        ArgConvertResult<FormatConversionCharSetInternal::v>> {
+  using FormatSinkT =
+      absl::enable_if_t<sizeof(const T& (*)()) != 0, FormatSink>;
+  auto fs = sink->Wrap<FormatSinkT>();
+  AbslStringify(fs, v);
+  return {true};
 }
 
 template <typename T>
@@ -93,11 +116,6 @@ struct VoidPtr {
   VoidPtr(T* ptr)  // NOLINT
       : value(ptr ? reinterpret_cast<uintptr_t>(ptr) : 0) {}
   uintptr_t value;
-};
-
-template <FormatConversionCharSet C>
-struct ArgConvertResult {
-  bool value;
 };
 
 template <FormatConversionCharSet C>
@@ -176,9 +194,17 @@ StringConvertResult FormatConvertImpl(const AbslCord& value,
 using IntegralConvertResult = ArgConvertResult<FormatConversionCharSetUnion(
     FormatConversionCharSetInternal::c,
     FormatConversionCharSetInternal::kNumeric,
+    FormatConversionCharSetInternal::kStar,
+    FormatConversionCharSetInternal::v)>;
+using FloatingConvertResult = ArgConvertResult<FormatConversionCharSetUnion(
+    FormatConversionCharSetInternal::kFloating,
+    FormatConversionCharSetInternal::v)>;
+using CharConvertResult = ArgConvertResult<FormatConversionCharSetUnion(
+    FormatConversionCharSetInternal::c,
+    FormatConversionCharSetInternal::kNumeric,
     FormatConversionCharSetInternal::kStar)>;
-using FloatingConvertResult =
-    ArgConvertResult<FormatConversionCharSetInternal::kFloating>;
+
+bool ConvertBoolArg(bool v, FormatSinkImpl* sink);
 
 // Floats.
 FloatingConvertResult FormatConvertImpl(float v, FormatConversionSpecImpl conv,
@@ -190,14 +216,14 @@ FloatingConvertResult FormatConvertImpl(long double v,
                                         FormatSinkImpl* sink);
 
 // Chars.
-IntegralConvertResult FormatConvertImpl(char v, FormatConversionSpecImpl conv,
-                                        FormatSinkImpl* sink);
-IntegralConvertResult FormatConvertImpl(signed char v,
-                                        FormatConversionSpecImpl conv,
-                                        FormatSinkImpl* sink);
-IntegralConvertResult FormatConvertImpl(unsigned char v,
-                                        FormatConversionSpecImpl conv,
-                                        FormatSinkImpl* sink);
+CharConvertResult FormatConvertImpl(char v, FormatConversionSpecImpl conv,
+                                    FormatSinkImpl* sink);
+CharConvertResult FormatConvertImpl(signed char v,
+                                    FormatConversionSpecImpl conv,
+                                    FormatSinkImpl* sink);
+CharConvertResult FormatConvertImpl(unsigned char v,
+                                    FormatConversionSpecImpl conv,
+                                    FormatSinkImpl* sink);
 
 // Ints.
 IntegralConvertResult FormatConvertImpl(short v,  // NOLINT
@@ -228,9 +254,16 @@ IntegralConvertResult FormatConvertImpl(int128 v, FormatConversionSpecImpl conv,
 IntegralConvertResult FormatConvertImpl(uint128 v,
                                         FormatConversionSpecImpl conv,
                                         FormatSinkImpl* sink);
+
+// This function needs to be a template due to ambiguity regarding type
+// conversions.
 template <typename T, enable_if_t<std::is_same<T, bool>::value, int> = 0>
 IntegralConvertResult FormatConvertImpl(T v, FormatConversionSpecImpl conv,
                                         FormatSinkImpl* sink) {
+  if (conv.conversion_char() == FormatConversionCharInternal::v) {
+    return {ConvertBoolArg(v, sink)};
+  }
+
   return FormatConvertImpl(static_cast<int>(v), conv, sink);
 }
 
@@ -301,11 +334,11 @@ struct FormatArgImplFriend {
 
 template <typename Arg>
 constexpr FormatConversionCharSet ArgumentToConv() {
-  return absl::str_format_internal::ExtractCharSet(
-      decltype(str_format_internal::FormatConvertImpl(
-          std::declval<const Arg&>(),
-          std::declval<const FormatConversionSpecImpl&>(),
-          std::declval<FormatSinkImpl*>())){});
+  using ConvResult = decltype(str_format_internal::FormatConvertImpl(
+      std::declval<const Arg&>(),
+      std::declval<const FormatConversionSpecImpl&>(),
+      std::declval<FormatSinkImpl*>()));
+  return absl::str_format_internal::ExtractCharSet(ConvResult{});
 }
 
 // A type-erased handle to a format argument.

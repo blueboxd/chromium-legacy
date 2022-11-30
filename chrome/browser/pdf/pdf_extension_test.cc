@@ -21,6 +21,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -262,7 +263,7 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
   // true if it loads successfully or false if it fails. If it doesn't finish
   // loading the test will hang. This is done from outside of the BrowserPlugin
   // guest to ensure sending messages to/from the plugin works correctly from
-  // there, since the PDFScriptingAPI relies on doing this as well.
+  // there, since the PdfScriptingApi relies on doing this as well.
   testing::AssertionResult LoadPdf(const GURL& url) {
     EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
     WebContents* web_contents = GetActiveWebContents();
@@ -387,9 +388,13 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
   }
 
   // Hooks to set up feature flags.
-  virtual std::vector<base::Feature> GetEnabledFeatures() const { return {}; }
+  virtual std::vector<base::test::FeatureRef> GetEnabledFeatures() const {
+    return {};
+  }
 
-  virtual std::vector<base::Feature> GetDisabledFeatures() const { return {}; }
+  virtual std::vector<base::test::FeatureRef> GetDisabledFeatures() const {
+    return {};
+  }
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -398,7 +403,7 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
 
 class PDFExtensionTestWithPartialLoading : public PDFExtensionTest {
  protected:
-  std::vector<base::Feature> GetEnabledFeatures() const override {
+  std::vector<base::test::FeatureRef> GetEnabledFeatures() const override {
     auto enabled = PDFExtensionTest::GetEnabledFeatures();
     enabled.push_back(chrome_pdf::features::kPdfIncrementalLoading);
     enabled.push_back(chrome_pdf::features::kPdfPartialLoading);
@@ -1359,7 +1364,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionContentSettingJSTest, DISABLED_NoBeepCsp) {
 
 class PDFExtensionWebUICodeCacheJSTest : public PDFExtensionJSTest {
  protected:
-  std::vector<base::Feature> GetEnabledFeatures() const override {
+  std::vector<base::test::FeatureRef> GetEnabledFeatures() const override {
     auto enabled = PDFExtensionJSTest::GetEnabledFeatures();
     enabled.push_back(features::kWebUICodeCache);
     return enabled;
@@ -1587,7 +1592,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MAYBE_PdfZoomWithoutBubble) {
   // picked up by the browser zoom, then zoom to the next zoom level. This
   // ensures the test passes regardless of the initial default zoom level.
   std::vector<double> preset_zoom_levels = zoom::PageZoom::PresetZoomLevels(0);
-  auto it = std::find(preset_zoom_levels.begin(), preset_zoom_levels.end(), 0);
+  auto it = base::ranges::find(preset_zoom_levels, 0);
   ASSERT_NE(it, preset_zoom_levels.end());
   it++;
   ASSERT_NE(it, preset_zoom_levels.end());
@@ -2106,7 +2111,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PrintButton) {
 
 class PDFExtensionRegionSearchTest : public PDFExtensionTest {
  protected:
-  std::vector<base::Feature> GetEnabledFeatures() const override {
+  std::vector<base::test::FeatureRef> GetEnabledFeatures() const override {
     auto enabled = PDFExtensionTest::GetEnabledFeatures();
     enabled.push_back(lens::features::kLensStandalone);
     return enabled;
@@ -3928,7 +3933,7 @@ class PDFExtensionAccessibilityTextExtractionTest : public PDFExtensionTest {
   }
 
  protected:
-  std::vector<base::Feature> GetEnabledFeatures() const override {
+  std::vector<base::test::FeatureRef> GetEnabledFeatures() const override {
     auto enabled = PDFExtensionTest::GetEnabledFeatures();
     enabled.push_back(chrome_pdf::features::kAccessiblePDFForm);
     return enabled;
@@ -4141,7 +4146,7 @@ class PDFExtensionAccessibilityTreeDumpTest
   }
 
  protected:
-  std::vector<base::Feature> GetEnabledFeatures() const override {
+  std::vector<base::test::FeatureRef> GetEnabledFeatures() const override {
     auto enabled = PDFExtensionTest::GetEnabledFeatures();
     enabled.push_back(chrome_pdf::features::kAccessiblePDFForm);
     return enabled;

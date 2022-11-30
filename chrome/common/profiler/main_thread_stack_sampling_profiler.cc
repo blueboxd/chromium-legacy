@@ -7,14 +7,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/threading/platform_thread.h"
-#include "build/build_config.h"
-#include "chrome/common/channel_info.h"
 #include "chrome/common/profiler/process_type.h"
 #include "chrome/common/profiler/thread_profiler.h"
-#include "chrome/common/profiler/unwind_util.h"
 #include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
-#include "components/version_info/channel.h"
 #include "content/public/common/content_switches.h"
 
 namespace {
@@ -39,23 +35,6 @@ std::unique_ptr<ThreadProfiler> CreateThreadProfiler(
 MainThreadStackSamplingProfiler::MainThreadStackSamplingProfiler() {
   const metrics::CallStackProfileParams::Process process =
       GetProfileParamsProcess(*base::CommandLine::ForCurrentProcess());
-
-// We only want to incur the cost of universally downloading the module in
-// early channels, where profiling will occur over substantially all of
-// the population. When supporting later channels in the future we will
-// enable profiling for only a fraction of users and only download for
-// those users.
-#if defined(OFFICIAL_BUILD) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (process == metrics::CallStackProfileParams::Process::kBrowser &&
-      !AreUnwindPrerequisitesAvailable()) {
-    const version_info::Channel channel = chrome::GetChannel();
-    if (channel == version_info::Channel::CANARY ||
-        channel == version_info::Channel::DEV) {
-      RequestUnwindPrerequisitesInstallation();
-    }
-  }
-#endif
-
   sampling_profiler_ = CreateThreadProfiler(process);
 }
 

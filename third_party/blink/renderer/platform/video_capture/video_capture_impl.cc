@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -49,8 +49,9 @@ namespace blink {
 
 constexpr int kMaxFirstFrameLogs = 5;
 
-const base::Feature kTimeoutHangingVideoCaptureStarts{
-    "TimeoutHangingVideoCaptureStarts", base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kTimeoutHangingVideoCaptureStarts,
+             "TimeoutHangingVideoCaptureStarts",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 using VideoFrameBufferHandleType = media::mojom::blink::VideoBufferHandle::Tag;
 
@@ -86,9 +87,6 @@ struct VideoCaptureImpl::BufferContext
       case VideoFrameBufferHandleType::kReadOnlyShmemRegion:
         InitializeFromReadOnlyShmemRegion(
             std::move(buffer_handle->get_read_only_shmem_region()));
-        break;
-      case VideoFrameBufferHandleType::kSharedMemoryViaRawFileDescriptor:
-        NOTREACHED();
         break;
       case VideoFrameBufferHandleType::kMailboxHandles:
         InitializeFromMailbox(std::move(buffer_handle->get_mailbox_handles()));
@@ -340,9 +338,6 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::Initialize() {
           buffer_context_->data_size(), frame_info_->timestamp);
       frame_->BackWithSharedMemory(buffer_context_->read_only_shmem_region());
       break;
-    case VideoFrameBufferHandleType::kSharedMemoryViaRawFileDescriptor:
-      NOTREACHED();
-      break;
     case VideoFrameBufferHandleType::kMailboxHandles: {
       gpu::MailboxHolder mailbox_holder_array[media::VideoFrame::kMaxPlanes];
       CHECK_EQ(media::VideoFrame::kMaxPlanes,
@@ -513,7 +508,7 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::BindVideoFrameOnMediaThread(
 
   uint32_t usage =
       gpu::SHARED_IMAGE_USAGE_GLES2 | gpu::SHARED_IMAGE_USAGE_RASTER |
-      gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
+      gpu::SHARED_IMAGE_USAGE_DISPLAY_READ | gpu::SHARED_IMAGE_USAGE_SCANOUT;
 #if BUILDFLAG(IS_MAC)
   usage |= gpu::SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX;
 #endif
@@ -523,51 +518,43 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::BindVideoFrameOnMediaThread(
           gpu_memory_buffer_->GetFormat());
 
 #if BUILDFLAG(IS_WIN)
-  if (output_format ==
-      media::GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB) {
+  // Explicitly set GL_TEXTURE_EXTERNAL_OES since ImageTextureTarget() will
+  // return GL_TEXTURE_2D due to GMB factory not supporting NV12 DXGI GMBs.
+  // See https://crbug.com/1253791#c17
+  // TODO(sunnyps): This shouldn't be needed after
+  // https://chromium-review.googlesource.com/c/angle/angle/+/3856660
+  texture_target = GL_TEXTURE_EXTERNAL_OES;
+#endif  // BUILDFLAG(IS_WIN)
+
+  // TODO(sunnyps): Get rid of NV12_DUAL_GMB format and instead rely on enabled
+  // by default multi plane shared images on Windows.
+
+  const bool use_multiplane =
+#if BUILDFLAG(IS_WIN)
+      output_format ==
+          media::GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB ||
+#endif
+      base::FeatureList::IsEnabled(media::kMultiPlaneVideoCaptureSharedImages);
+
+  if (use_multiplane) {
     planes.push_back(gfx::BufferPlane::Y);
     planes.push_back(gfx::BufferPlane::UV);
-
-    // Explicitly set GL_TEXTURE_EXTERNAL_OES since ImageTextureTarget() will
-    // return GL_TEXTURE_2D due to GMB factory not supporting NV12 DXGI GMBs.
-    // See https://crbug.com/1253791#c17
-    texture_target = GL_TEXTURE_EXTERNAL_OES;
-
-    if (should_recreate_shared_image ||
-        buffer_context_->gmb_resources()->mailboxes[0].IsZero()) {
-      auto plane_mailboxes = sii->CreateSharedImageVideoPlanes(
-          gpu_memory_buffer_.get(),
-          buffer_context_->gpu_factories()->GpuMemoryBufferManager(), usage);
-      DCHECK_EQ(plane_mailboxes.size(), planes.size());
-      for (size_t plane = 0; plane < planes.size(); ++plane) {
-        buffer_context_->gmb_resources()->mailboxes[plane] =
-            plane_mailboxes[plane];
-      }
-    }
+  } else {
+    planes.push_back(gfx::BufferPlane::DEFAULT);
   }
-#endif  // BUILDFLAG(IS_WIN)
-  if (planes.empty()) {
-    if (base::FeatureList::IsEnabled(
-            media::kMultiPlaneVideoCaptureSharedImages)) {
-      planes.push_back(gfx::BufferPlane::Y);
-      planes.push_back(gfx::BufferPlane::UV);
+  for (size_t plane = 0; plane < planes.size(); ++plane) {
+    if (should_recreate_shared_image ||
+        buffer_context_->gmb_resources()->mailboxes[plane].IsZero()) {
+      buffer_context_->gmb_resources()->mailboxes[plane] =
+          sii->CreateSharedImage(
+              gpu_memory_buffer_.get(),
+              buffer_context_->gpu_factories()->GpuMemoryBufferManager(),
+              planes[plane], *(frame_info_->color_space),
+              kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage);
     } else {
-      planes.push_back(gfx::BufferPlane::DEFAULT);
-    }
-    for (size_t plane = 0; plane < planes.size(); ++plane) {
-      if (should_recreate_shared_image ||
-          buffer_context_->gmb_resources()->mailboxes[plane].IsZero()) {
-        buffer_context_->gmb_resources()->mailboxes[plane] =
-            sii->CreateSharedImage(
-                gpu_memory_buffer_.get(),
-                buffer_context_->gpu_factories()->GpuMemoryBufferManager(),
-                planes[plane], *(frame_info_->color_space),
-                kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage);
-      } else {
-        sii->UpdateSharedImage(
-            buffer_context_->gmb_resources()->release_sync_token,
-            buffer_context_->gmb_resources()->mailboxes[plane]);
-      }
+      sii->UpdateSharedImage(
+          buffer_context_->gmb_resources()->release_sync_token,
+          buffer_context_->gmb_resources()->mailboxes[plane]);
     }
   }
 

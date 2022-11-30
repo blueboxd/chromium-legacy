@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ class ObservableArrayImplHelper : public bindings::ObservableArrayBase {
   wtf_size_t capacity() const { return backing_list_.capacity(); }
   bool IsEmpty() const { return backing_list_.IsEmpty(); }
   void ReserveCapacity(size_type new_capacity) {
-    backing_list_.ReserveCapacity(new_capacity);
+    backing_list_.reserve(new_capacity);
   }
   void ReserveInitialCapacity(size_type initial_capacity) {
     backing_list_.ReserveInitialCapacity(initial_capacity);

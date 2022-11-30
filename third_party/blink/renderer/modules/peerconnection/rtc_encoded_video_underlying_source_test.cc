@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ class RTCEncodedVideoUnderlyingSourceTest : public testing::Test {
  public:
   RTCEncodedVideoUnderlyingSource* CreateSource(ScriptState* script_state) {
     return MakeGarbageCollected<RTCEncodedVideoUnderlyingSource>(
-        script_state, WTF::Bind(disconnect_callback_.Get()));
+        script_state, WTF::BindOnce(disconnect_callback_.Get()));
   }
 
  protected:

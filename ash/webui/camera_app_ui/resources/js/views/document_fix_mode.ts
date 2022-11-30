@@ -170,19 +170,21 @@ export class DocumentFixMode {
   private readonly resizeObserver: ResizeObserver;
 
   /**
-   * The target element to append the root element of fix mode.
+   * The listener called when fix mode shows.
    */
-  private readonly target: HTMLElement;
+  private readonly onShow: () => void;
 
-  constructor({target, onExit, onUpdatePage}: {
+  constructor({target, onDone, onShow, onUpdatePage}: {
     target: HTMLElement,
-    onExit: () => void,
+    onDone: () => void,
+    onShow: () => void,
     onUpdatePage:
         ({corners, rotation}: {corners: Point[], rotation: Rotation}) => void,
   }) {
-    this.target = target;
+    this.onShow = onShow;
     const fragment = util.instantiateTemplate(this.templateSelector);
     this.root = dom.getFrom(fragment, '.document-fix-mode', HTMLElement);
+    target.append(this.root);
     this.previewArea = dom.getFrom(this.root, '.preview-area', HTMLDivElement);
     this.imageElement = dom.getFrom(this.root, '.image', HTMLImageElement);
     this.cropAreaContainer =
@@ -399,7 +401,7 @@ export class DocumentFixMode {
     });
     dom.getFrom(
            this.root, 'button[i18n-text=label_crop_done]', HTMLButtonElement)
-        .addEventListener('click', onExit);
+        .addEventListener('click', onDone);
   }
 
   private setDragging(corner: Corner, pointerId: number) {
@@ -643,13 +645,14 @@ export class DocumentFixMode {
   }
 
   show(): void {
-    this.target.append(this.root);
+    this.root.classList.add('show');
     this.resizeObserver.observe(this.previewArea);
+    this.onShow();
   }
 
   hide(): void {
     this.resizeObserver.disconnect();
-    this.root.remove();
+    this.root.classList.remove('show');
   }
 
   private getNextRotation(rotation: Rotation, clockwise = true) {

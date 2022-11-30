@@ -11,6 +11,7 @@ import android.animation.Animator.AnimatorListener;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.app.Activity;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -19,6 +20,8 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.InsetDrawable;
 import android.os.Build;
 import android.os.Handler;
+import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Gravity;
@@ -44,12 +47,14 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.MathUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.customtabs.features.CustomTabNavigationBarController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
+import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
@@ -85,6 +90,19 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     private static final int NAVBAR_FADE_DURATION_MS = 16;
     private static final int SPINNER_FADEIN_DURATION_MS = 100;
     private static final int SPINNER_FADEOUT_DURATION_MS = 400;
+    private static final int NAVBAR_BUTTON_RESTORE_DELAY_MS = 400;
+    private static final int NAVBAR_BUTTON_HIDE_SHOW_DELAY_MS = 50;
+    private static final String PARAM_LOG_IMMERSIVE_MODE_CONFIRMATIONS =
+            "log_immersive_mode_confirmations";
+    @VisibleForTesting
+    static final String IMMERSIVE_MODE_CONFIRMATIONS_SETTING = "immersive_mode_confirmations";
+    @VisibleForTesting
+    static final String IMMERSIVE_MODE_CONFIRMATIONS_SETTING_VALUE = "confirmed";
+
+    public static final BooleanCachedFieldTrialParameter LOG_IMMERSIVE_MODE_CONFIRMATIONS =
+            new BooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.CCT_RESIZABLE_ALWAYS_SHOW_NAVBAR_BUTTONS,
+                    PARAM_LOG_IMMERSIVE_MODE_CONFIRMATIONS, true);
 
     @IntDef({HeightStatus.TOP, HeightStatus.INITIAL_HEIGHT, HeightStatus.TRANSITION})
     @Retention(RetentionPolicy.SOURCE)
@@ -103,6 +121,8 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     private final boolean mIsFixedHeight;
     private final @Px int mUnclampedInitialHeight;
     private final FullscreenManager mFullscreenManager;
+
+    private static boolean sHasLoggedImmersiveModeConfirmationSetting;
 
     private @Px int mDisplayHeight;
     private @Px int mFullyExpandedAdjustmentHeight;
@@ -179,10 +199,16 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     private NavBarTransitionController mNavbarTransitionController =
             new NavBarTransitionController();
 
+    // Used to initialize the coordinator view (R.id.coordinator) to full-height at the beginning.
+    // This is a workaround to an issue of the host app briefly flashing when the tab is resized.
+    private boolean mInitFirstHeight;
+
+    private boolean mIsTablet;
+
     public PartialCustomTabHeightStrategy(Activity activity, @Px int initialHeight,
             Integer navigationBarColor, Integer navigationBarDividerColor, boolean isFixedHeight,
             OnResizedCallback onResizedCallback, ActivityLifecycleDispatcher lifecycleDispatcher,
-            FullscreenManager fullscreenManager) {
+            FullscreenManager fullscreenManager, boolean isTablet) {
         mWindowAboveNavbar = ChromeFeatureList.sCctResizableWindowAboveNavbar.isEnabled();
         mActivity = activity;
         mDisplayHeight = getDisplayHeight();
@@ -247,6 +273,9 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
             });
         };
         fullscreenManager.addObserver(this);
+        mIsTablet = isTablet;
+
+        logImmersiveModeConfirmationSettingValue(ContextUtils.getApplicationContext());
     }
 
     @Override
@@ -415,6 +444,11 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         d.setCornerRadii(new float[] {radius, radius, radius, radius, 0, 0, 0, 0});
     }
 
+    private GradientDrawable getDragBarBackground() {
+        View dragBar = mActivity.findViewById(R.id.drag_bar);
+        return (GradientDrawable) dragBar.getBackground();
+    }
+
     @Override
     public void setScrimFraction(float scrimFraction) {
         int scrimColor = mActivity.getResources().getColor(R.color.default_scrim_color);
@@ -427,9 +461,30 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         // the handle view color needs updating to match it. This is a better way than running
         // PCCT's own scrim coordinator since it can apply shape-aware scrim to the handle view
         // that has the rounded corner.
-        View dragBar = mActivity.findViewById(R.id.drag_bar);
-        GradientDrawable drawable = (GradientDrawable) dragBar.getBackground();
-        drawable.setColor(color);
+        getDragBarBackground().setColor(color);
+
+        ImageView handle = (ImageView) mActivity.findViewById(R.id.drag_handlebar);
+        int handleColor = mActivity.getColor(R.color.drag_handlebar_color_baseline);
+        if (scrimFraction > 0.f) {
+            handle.setColorFilter(ColorUtils.getColorWithOverlay(
+                    handleColor, scrimColorOpaque, scrimFraction * scrimColorAlpha, false));
+        } else {
+            handle.clearColorFilter();
+        }
+    }
+
+    @Override
+    public void onFindToolbarShown() {
+        if (mIsTablet) return;
+        int findToolbarBackground =
+                mActivity.getResources().getColor(R.color.find_in_page_background_color);
+        getDragBarBackground().setColor(findToolbarBackground);
+    }
+
+    @Override
+    public void onFindToolbarHidden() {
+        if (mIsTablet) return;
+        getDragBarBackground().setColor(mToolbarColor);
     }
 
     private void initializeHeight() {
@@ -474,6 +529,11 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
             // while dragging 2) host app's navigation bar when at rest.
             positionAtHeight(height);
             mHeight = attrs.height;
+            if (!mInitFirstHeight) {
+                setCoordinatorLayoutHeight(mDisplayHeight);
+                mInitFirstHeight = true;
+                new Handler().post(() -> setCoordinatorLayoutHeight(MATCH_PARENT));
+            }
         } else {
             // We do not resize Window but just translate its vertical offset, and resize
             // CoordinatorLayoutForPointer instead. This helps us work around the round-corner bug
@@ -496,6 +556,12 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
             attrs.gravity = Gravity.BOTTOM;
         }
         mActivity.getWindow().setAttributes(attrs);
+    }
+
+    private void setCoordinatorLayoutHeight(int height) {
+        ViewGroup.LayoutParams p = mCoordinatorLayout.getLayoutParams();
+        p.height = height;
+        mCoordinatorLayout.setLayoutParams(p);
     }
 
     private void updateDragBarVisibility() {
@@ -634,11 +700,20 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
 
         hideSpinnerView();
         if (mWindowAboveNavbar) {
-            Window window = mActivity.getWindow();
-            window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-            positionAtHeight(mDisplayHeight - window.getAttributes().y);
             showNavbarButtons(true);
-            maybeInvokeResizeCallback();
+            new Handler().postDelayed(() -> {
+                // Give a small delay in restoring the window to avoid the flashing artifact
+                // at the navigation bar area.
+                Window window = mActivity.getWindow();
+                window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+                positionAtHeight(mDisplayHeight - window.getAttributes().y);
+                maybeInvokeResizeCallback();
+                mStatus = mTargetStatus;
+            }, NAVBAR_BUTTON_RESTORE_DELAY_MS);
+
+            // Temporarily disables user input until the window is restored.
+            mTargetStatus = mStatus;
+            mStatus = HeightStatus.TRANSITION;
         } else {
             updateNavbarVisibility(true);
         }
@@ -812,7 +887,7 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         }
     }
 
-    private void showNavbarButtons(boolean show) {
+    private void changeVisibilityNavbarButtons(boolean show) {
         View decorView = mActivity.getWindow().getDecorView();
         WindowInsetsControllerCompat controller =
                 WindowCompat.getInsetsController(mActivity.getWindow(), decorView);
@@ -828,6 +903,28 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         mNavbarTransitionController.setShow(show);
         controller.controlWindowInsetsAnimation(WindowInsetsCompat.Type.navigationBars(),
                 /*durationMillis*/ 1, null, null, mNavbarTransitionController);
+    }
+
+    private void showNavbarButtons(boolean show) {
+        if (mWindowAboveNavbar
+                && ChromeFeatureList.sCctResizableAlwaysShowNavBarButtons.isEnabled()) {
+            // Resizing while the navbar buttons are visible, at times, flashes the host app.
+            // http://crbug/1360425 fixed this for when the navbar buttons are hidden, so taking
+            // advantage of that fix by hiding for a bit the navigation buttons, during the time the
+            // flashing usually occurs. The navbar buttons need to be visible while resizing so that
+            // the immersive mode confirmation dialog is not displayed, as fixed with
+            // http://crbug/1360453
+            // TODO: http://crbug/1373984 for follow-up on long term solution for fixing host app
+            // flashing issues.
+            if (!show) {
+                changeVisibilityNavbarButtons(false);
+                new Handler().postDelayed(() -> {
+                    changeVisibilityNavbarButtons(true);
+                }, NAVBAR_BUTTON_HIDE_SHOW_DELAY_MS);
+            }
+        } else {
+            changeVisibilityNavbarButtons(show);
+        }
     }
 
     // TODO(jinsukkim): Explore the way to use androidx.window.WindowManager or
@@ -1030,6 +1127,11 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         return new PartialCustomTabHandleStrategy(null, this::isFullHeight, () -> mStatus, this);
     }
 
+    @VisibleForTesting
+    void setToolbarColorForTesting(int toolbarColor) {
+        mToolbarColor = toolbarColor;
+    }
+
     // Reusable class used to control nav bar transitioning, to make the transition instant.
     private static class NavBarTransitionController
             implements WindowInsetsAnimationControlListenerCompat {
@@ -1049,5 +1151,31 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
 
         @Override
         public void onCancelled(WindowInsetsAnimationControllerCompat controller) {}
+    }
+
+    @VisibleForTesting
+    static void setHasLoggedImmersiveModeConfirmationSettingForTesting(boolean value) {
+        sHasLoggedImmersiveModeConfirmationSetting = value;
+    }
+
+    private void logImmersiveModeConfirmationSettingValue(Context context) {
+        if (!ChromeFeatureList.sCctResizableAlwaysShowNavBarButtons.isEnabled()
+                || !LOG_IMMERSIVE_MODE_CONFIRMATIONS.getValue() || context == null
+                || context.getContentResolver() == null) {
+            return;
+        }
+
+        if (!sHasLoggedImmersiveModeConfirmationSetting) {
+            String immersiveModeConfirmations = Settings.Secure.getString(
+                    context.getContentResolver(), IMMERSIVE_MODE_CONFIRMATIONS_SETTING);
+            boolean isConfirmed = TextUtils.equals(
+                    immersiveModeConfirmations, IMMERSIVE_MODE_CONFIRMATIONS_SETTING_VALUE);
+            RecordHistogram.recordBooleanHistogram(
+                    "CustomTabs.ImmersiveModeConfirmationsSettingConfirmed", isConfirmed);
+            // Logging just one per app session to reduce the number of entries being logged.
+            // Once the immersive_mode_confirmation value is set, in most cases, it should remain
+            // set until the Android settings are reset to default.
+            sHasLoggedImmersiveModeConfirmationSetting = true;
+        }
     }
 }

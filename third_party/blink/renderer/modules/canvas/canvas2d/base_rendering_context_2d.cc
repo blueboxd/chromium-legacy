@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -834,7 +834,7 @@ void BaseRenderingContext2D::rotate(double angle_in_radians) {
   }
 
   AffineTransform new_transform = GetState().GetTransform();
-  new_transform.Rotate(Rad2deg(angle_in_radians));
+  new_transform.RotateRadians(angle_in_radians);
   if (GetState().GetTransform() == new_transform)
     return;
 

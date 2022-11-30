@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
 #include <array>
 #include <tuple>
 #include <utility>
@@ -3585,8 +3584,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, SyncRendererPrefs) {
     DLOG(INFO) << "render_view_host=" << render_view_host;
 
     // Multiple frame hosts can be associated to the same RenderViewHost.
-    if (std::find(render_view_hosts.begin(), render_view_hosts.end(),
-                  render_view_host) == render_view_hosts.end()) {
+    if (!base::Contains(render_view_hosts, render_view_host)) {
       render_view_hosts.push_back(render_view_host);
     }
   }
@@ -4879,15 +4877,8 @@ class DidChangeVerticalScrollDirectionObserver : public WebContentsObserver {
 
 // Tests that DidChangeVerticalScrollDirection is called only when the vertical
 // scroll direction has changed and that it includes the correct details.
-// TODO(crbug.com/1359225): This is flaky on the Mac10.14 bot.
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_DidChangeVerticalScrollDirection \
-  DISABLED_DidChangeVerticalScrollDirection
-#else
-#define MAYBE_DidChangeVerticalScrollDirection DidChangeVerticalScrollDirection
-#endif
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       MAYBE_DidChangeVerticalScrollDirection) {
+                       DidChangeVerticalScrollDirection) {
   net::EmbeddedTestServer* server = embedded_test_server();
   EXPECT_TRUE(server->Start());
 

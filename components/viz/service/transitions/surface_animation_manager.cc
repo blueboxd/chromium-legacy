@@ -160,14 +160,6 @@ void ReplaceSharedElementWithRenderPass(
   const gfx::Rect& shared_pass_output_rect =
       shared_element_content_pass->output_rect;
 
-  gfx::RectF quad_rect(shared_element_quad.rect);
-  shared_element_quad.shared_quad_state->quad_to_target_transform.TransformRect(
-      &quad_rect);
-
-  gfx::RectF visible_quad_rect(shared_element_quad.visible_rect);
-  shared_element_quad.shared_quad_state->quad_to_target_transform.TransformRect(
-      &visible_quad_rect);
-
   auto* copied_quad_state =
       target_render_pass->CreateAndAppendSharedQuadState();
   *copied_quad_state = *shared_element_quad.shared_quad_state;
@@ -180,7 +172,7 @@ void ReplaceSharedElementWithRenderPass(
   transform.Translate(-shared_pass_output_rect.x(),
                       -shared_pass_output_rect.y());
 
-  copied_quad_state->quad_to_target_transform.PreconcatTransform(transform);
+  copied_quad_state->quad_to_target_transform.PreConcat(transform);
 
   auto* render_pass_quad =
       target_render_pass
@@ -452,6 +444,7 @@ bool SurfaceAnimationManager::ProcessAnimateRendererDirective(
   // structure which has transferable resources.
   saved_textures_.emplace(
       transferable_resource_tracker_.ImportResources(std::move(saved_frame)));
+  empty_resource_ids_.clear();
   return true;
 }
 
@@ -811,7 +804,7 @@ void SurfaceAnimationManager::CopyAndInterpolateSharedElements(
       auto* pass_for_draw = transition_pass.get();
       if (!pass_for_draw) {
         pass_for_draw = animation_pass;
-        src_transform.ConcatTransform(combined_transform);
+        src_transform.PostConcat(combined_transform);
         src_opacity *= combined_opacity;
         blend_mode = SkBlendMode::kSrcOver;
       }
@@ -850,7 +843,7 @@ void SurfaceAnimationManager::CopyAndInterpolateSharedElements(
     SkBlendMode blend_mode = SkBlendMode::kSrc;
     if (!pass_for_draw) {
       pass_for_draw = animation_pass;
-      dest_transform.ConcatTransform(combined_transform);
+      dest_transform.PostConcat(combined_transform);
       dest_opacity *= combined_opacity;
       blend_mode = SkBlendMode::kSrcOver;
     }
@@ -1216,6 +1209,9 @@ bool SurfaceAnimationManager::FilterSharedElementsWithRenderPassOrResource(
 
     if (texture_it != saved_textures_->element_id_to_resource.end()) {
       const auto& transferable_resource = texture_it->second;
+      if (transferable_resource.is_null())
+        return true;
+
       resource_list->push_back(transferable_resource);
 
       // GPU textures are flipped but software bitmaps are not.

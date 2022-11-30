@@ -4,7 +4,6 @@
 
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 
-#include <algorithm>
 #include <utility>
 #include <vector>
 
@@ -17,6 +16,7 @@
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/syslog_logging.h"
 #include "base/values.h"
@@ -121,11 +121,10 @@ void WebAppPolicyManager::ReinstallPlaceholderAppIfNecessary(const GURL& url) {
       pref_service_->GetList(prefs::kWebAppInstallForceList);
   const auto& web_apps_list = web_apps;
 
-  const auto it =
-      std::find_if(web_apps_list.begin(), web_apps_list.end(),
-                   [&url](const base::Value& entry) {
-                     return entry.FindKey(kUrlKey)->GetString() == url.spec();
-                   });
+  const auto it = base::ranges::find(
+      web_apps_list, url.spec(), [](const base::Value& entry) {
+        return entry.FindKey(kUrlKey)->GetString();
+      });
 
   bool is_placeholder_url =
       app_registrar_->LookupPlaceholderAppId(url, WebAppManagement::kPolicy)
@@ -154,6 +153,9 @@ void WebAppPolicyManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kWebAppInstallForceList);
   registry->RegisterListPref(prefs::kWebAppSettings);
+#if BUILDFLAG(IS_CHROMEOS)
+  registry->RegisterListPref(prefs::kIsolatedWebAppInstallForceList);
+#endif
 }
 
 void WebAppPolicyManager::InitChangeRegistrarAndRefreshPolicy(
@@ -174,6 +176,15 @@ void WebAppPolicyManager::InitChangeRegistrarAndRefreshPolicy(
       RefreshPolicySettings();
     }
     RefreshPolicyInstalledApps();
+
+#if BUILDFLAG(IS_CHROMEOS)
+    pref_change_registrar_.Add(
+        prefs::kIsolatedWebAppInstallForceList,
+        base::BindRepeating(
+            &WebAppPolicyManager::RefreshPolicyInstalledIsolatedApps,
+            weak_ptr_factory_.GetWeakPtr()));
+    RefreshPolicyInstalledIsolatedApps();
+#endif
   }
   ObserveDisabledSystemFeaturesPolicy();
 }
@@ -281,6 +292,17 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
+#if BUILDFLAG(IS_CHROMEOS)
+void WebAppPolicyManager::RefreshPolicyInstalledIsolatedApps() {
+  const base::Value::List& isolated_web_apps =
+      pref_service_->GetList(prefs::kIsolatedWebAppInstallForceList);
+  if (!isolated_web_apps.empty()) {
+    LOG(ERROR)
+        << "IsolatedWebAppInstallForceList policy is not yet implemented";
+  }
+}
+#endif
+
 void WebAppPolicyManager::RefreshPolicySettings() {
   // No need to validate the types or values of the policy members because we
   // are using a WebAppSettingsPolicyHandler which should validate them for us.
@@ -291,9 +313,9 @@ void WebAppPolicyManager::RefreshPolicySettings() {
   default_settings_ = std::make_unique<WebAppPolicyManager::WebAppSetting>();
 
   // Read default policy, if provided.
-  const auto it = std::find_if(
-      web_apps_list.begin(), web_apps_list.end(), [](const base::Value& entry) {
-        return entry.FindKey(kManifestId)->GetString() == kWildcard;
+  const auto it = base::ranges::find(
+      web_apps_list, kWildcard, [](const base::Value& entry) {
+        return entry.FindKey(kManifestId)->GetString();
       });
 
   if (it != web_apps_list.end() && it->is_dict()) {

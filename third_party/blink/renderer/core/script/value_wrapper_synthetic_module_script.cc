@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -213,7 +213,8 @@ v8::MaybeLocal<v8::Value> ValueWrapperSyntheticModuleScript::EvaluationSteps(
           static_cast<const ValueWrapperSyntheticModuleScript*>(
               module_record_resolver->GetModuleScriptFromModuleRecord(module));
   v8::MicrotasksScope microtasks_scope(
-      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+      isolate, context->GetMicrotaskQueue(),
+      v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::TryCatch try_catch(isolate);
   v8::Maybe<bool> result = module->SetSyntheticModuleExport(
       isolate, V8String(isolate, "default"),

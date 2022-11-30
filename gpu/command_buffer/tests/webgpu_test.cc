@@ -7,9 +7,11 @@
 #include <dawn/dawn_proc.h>
 #include <dawn/webgpu.h>
 
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/test/bind.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "components/viz/test/test_gpu_service_holder.h"
 #include "gpu/command_buffer/client/webgpu_cmd_helper.h"
@@ -39,17 +41,21 @@ void CountCallback(int* count) {
 
 }  // anonymous namespace
 
+#define SKIP_TEST_IF(condition) \
+  if (condition)                \
+  GTEST_SKIP() << #condition
+
 WebGPUTest::Options::Options() = default;
+
+std::map<std::pair<WGPUDevice, WGPUErrorType>, /* matched */ bool>
+    WebGPUTest::s_expected_errors = {};
 
 WebGPUTest::WebGPUTest() = default;
 WebGPUTest::~WebGPUTest() = default;
 
 bool WebGPUTest::WebGPUSupported() const {
-  // TODO(crbug.com/1172447): Re-enable on AMD when the RX 5500 XT issues are
-  // resolved.
   // Win7 does not support WebGPU
-  if (GPUTestBotConfig::CurrentConfigMatches("Linux AMD") ||
-      GPUTestBotConfig::CurrentConfigMatches("Win7")) {
+  if (GPUTestBotConfig::CurrentConfigMatches("Win7")) {
     return false;
   }
 
@@ -62,16 +68,16 @@ bool WebGPUTest::WebGPUSharedImageSupported() const {
 #if (BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
      BUILDFLAG(IS_WIN)) &&                                                 \
     BUILDFLAG(USE_DAWN)
-  return true;
+  // TODO(crbug.com/1172447): Re-enable on AMD when the RX 5500 XT issues are
+  // resolved.
+  return !GPUTestBotConfig::CurrentConfigMatches("Linux AMD");
 #else
   return false;
 #endif
 }
 
 void WebGPUTest::SetUp() {
-  if (!WebGPUSupported()) {
-    return;
-  }
+  SKIP_TEST_IF(!WebGPUSupported());
 }
 
 void WebGPUTest::TearDown() {
@@ -81,10 +87,6 @@ void WebGPUTest::TearDown() {
 }
 
 void WebGPUTest::Initialize(const Options& options) {
-  if (!WebGPUSupported()) {
-    return;
-  }
-
   gpu::GpuPreferences gpu_preferences;
   gpu_preferences.enable_webgpu = true;
   gpu_preferences.use_passthrough_cmd_decoder =
@@ -115,10 +117,13 @@ void WebGPUTest::Initialize(const Options& options) {
   ContextResult result =
       context_->Initialize(gpu_service_holder_->task_executor(), attributes,
                            options.shared_memory_limits, image_factory);
-  ASSERT_EQ(result, ContextResult::kSuccess);
+  ASSERT_EQ(result, ContextResult::kSuccess) << "Context failed to initialize";
 
   cmd_helper_ = std::make_unique<webgpu::WebGPUCmdHelper>(
       context_->GetCommandBufferForTest());
+
+  webgpu()->SetLostContextCallback(base::BindLambdaForTesting(
+      []() { GTEST_FAIL() << "Context lost unexpectedly."; }));
 
   DawnProcTable procs = webgpu()->GetAPIChannel()->GetProcs();
   dawnProcSetProcs(&procs);
@@ -169,7 +174,7 @@ webgpu::WebGPUDecoder* WebGPUTest::GetDecoder() const {
 
 void WebGPUTest::RunPendingTasks() {
   context_->GetTaskRunner()->RunPendingTasks();
-  gpu_service_holder_->ScheduleGpuTask(base::BindOnce(
+  gpu_service_holder_->ScheduleGpuMainTask(base::BindOnce(
       [](webgpu::WebGPUDecoder* decoder) {
         if (decoder->HasPollingWork()) {
           decoder->PerformPollingWork();
@@ -198,6 +203,25 @@ void WebGPUTest::WaitForCompletion(wgpu::Device device) {
   }
 }
 
+void WebGPUTest::PollUntilIdle() {
+  if (!context_ || !gpu_service_holder_) {
+    // Never initialized. Test skipped or failed in setup.
+    return;
+  }
+  webgpu()->FlushCommands();
+  base::WaitableEvent wait;
+  gpu_service_holder_->ScheduleGpuMainTask(
+      base::BindLambdaForTesting([&wait, decoder = GetDecoder()]() {
+        while (decoder->HasPollingWork()) {
+          base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+          decoder->PerformPollingWork();
+        }
+        wait.Signal();
+      }));
+  wait.Wait();
+  context_->GetTaskRunner()->RunPendingTasks();
+}
+
 wgpu::Device WebGPUTest::GetNewDevice() {
   wgpu::Device device;
   bool done = false;
@@ -217,19 +241,35 @@ wgpu::Device WebGPUTest::GetNewDevice() {
                          callback->AsUserdata());
   webgpu()->FlushCommands();
   while (!done) {
+    base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
     RunPendingTasks();
   }
 
   EXPECT_NE(device, nullptr);
+  device.SetDeviceLostCallback(
+      [](WGPUDeviceLostReason reason, const char* message, void*) {
+        if (reason == WGPUDeviceLostReason_Destroyed) {
+          return;
+        }
+        GTEST_FAIL() << "Unexpected device lost (" << reason
+                     << "): " << message;
+      },
+      nullptr);
+  device.SetUncapturedErrorCallback(
+      [](WGPUErrorType type, const char* message, void* userdata) {
+        auto it = s_expected_errors.find(
+            std::make_pair(static_cast<WGPUDevice>(userdata), type));
+        if (it != s_expected_errors.end() && !it->second) {
+          it->second = true;
+          return;
+        }
+        GTEST_FAIL() << "Unexpected error (" << type << "): " << message;
+      },
+      device.Get());
   return device;
 }
 
 TEST_F(WebGPUTest, FlushNoCommands) {
-  if (!WebGPUSupported()) {
-    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
-    return;
-  }
-
   Initialize(WebGPUTest::Options());
 
   webgpu()->FlushCommands();
@@ -237,11 +277,6 @@ TEST_F(WebGPUTest, FlushNoCommands) {
 
 // Referred from GLES2ImplementationTest/ReportLoss
 TEST_F(WebGPUTest, ReportLoss) {
-  if (!WebGPUSupported()) {
-    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
-    return;
-  }
-
   Initialize(WebGPUTest::Options());
 
   GpuControlClient* webgpu_as_client = webgpu();
@@ -257,11 +292,6 @@ TEST_F(WebGPUTest, ReportLoss) {
 
 // Referred from GLES2ImplementationTest/ReportLossReentrant
 TEST_F(WebGPUTest, ReportLossReentrant) {
-  if (!WebGPUSupported()) {
-    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
-    return;
-  }
-
   Initialize(WebGPUTest::Options());
 
   GpuControlClient* webgpu_as_client = webgpu();
@@ -276,13 +306,9 @@ TEST_F(WebGPUTest, ReportLossReentrant) {
 }
 
 TEST_F(WebGPUTest, RequestAdapterAfterContextLost) {
-  if (!WebGPUSupported()) {
-    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
-    return;
-  }
-
   Initialize(WebGPUTest::Options());
 
+  webgpu()->SetLostContextCallback(base::DoNothing());
   webgpu()->OnGpuControlLostContext();
 
   bool called = false;
@@ -301,13 +327,9 @@ TEST_F(WebGPUTest, RequestAdapterAfterContextLost) {
 }
 
 TEST_F(WebGPUTest, RequestDeviceAfterContextLost) {
-  if (!WebGPUSupported()) {
-    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
-    return;
-  }
-
   Initialize(WebGPUTest::Options());
 
+  webgpu()->SetLostContextCallback(base::DoNothing());
   webgpu()->OnGpuControlLostContext();
 
   bool called = false;
@@ -328,11 +350,6 @@ TEST_F(WebGPUTest, RequestDeviceAfterContextLost) {
 }
 
 TEST_F(WebGPUTest, RequestDeviceWitUnsupportedFeature) {
-  if (!WebGPUSupported()) {
-    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
-    return;
-  }
-
 #if BUILDFLAG(IS_MAC)
   // Crashing on Mac M1. Currently missing stack trace. crbug.com/1271926
   // This must be checked before WebGPUTest::Initialize otherwise context
@@ -342,7 +359,7 @@ TEST_F(WebGPUTest, RequestDeviceWitUnsupportedFeature) {
   std::string renderer(gl_manager.context()->GetGLRenderer());
   if (renderer.find("Apple M1") != std::string::npos) {
     gl_manager.Destroy();
-    return;
+    GTEST_SKIP() << "Skipped due to crbug.com/1271926.";
   }
   gl_manager.Destroy();
 #endif
@@ -384,11 +401,6 @@ TEST_F(WebGPUTest, RequestDeviceWitUnsupportedFeature) {
 }
 
 TEST_F(WebGPUTest, SPIRVIsDisallowed) {
-  if (!WebGPUSupported()) {
-    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
-    return;
-  }
-
   auto ExpectSPIRVDisallowedError = [](WGPUErrorType type, const char* message,
                                        void* userdata) {
     // We match on this string to make sure the shader module creation fails
@@ -401,6 +413,7 @@ TEST_F(WebGPUTest, SPIRVIsDisallowed) {
   auto options = WebGPUTest::Options();
   options.enable_unsafe_webgpu = false;
   Initialize(options);
+
   wgpu::Device device = GetNewDevice();
 
   // Make a invalid ShaderModuleDescriptor because it contains SPIR-V.
@@ -422,11 +435,6 @@ TEST_F(WebGPUTest, SPIRVIsDisallowed) {
 }
 
 TEST_F(WebGPUTest, ExplicitFallbackAdapterIsDisallowed) {
-  if (!WebGPUSupported()) {
-    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
-    return;
-  }
-
   auto options = WebGPUTest::Options();
   options.force_fallback_adapter = true;
   options.enable_unsafe_webgpu = false;
@@ -438,11 +446,6 @@ TEST_F(WebGPUTest, ExplicitFallbackAdapterIsDisallowed) {
 }
 
 TEST_F(WebGPUTest, ImplicitFallbackAdapterIsDisallowed) {
-  if (!WebGPUSupported()) {
-    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
-    return;
-  }
-
   auto options = WebGPUTest::Options();
   options.enable_unsafe_webgpu = false;
   // Initialize attempts to create an adapter.

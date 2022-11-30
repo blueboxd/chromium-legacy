@@ -15,14 +15,13 @@
 #include <vector>
 
 #include "ash/components/arc/arc_prefs.h"
-#include "ash/components/settings/cros_settings_names.h"
-#include "ash/components/tpm/prepare_tpm.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/location.h"
@@ -102,6 +101,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/application_lifetime_chromeos.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -131,6 +131,8 @@
 #include "chromeos/ash/components/login/auth/stub_authenticator_builder.h"
 #include "chromeos/ash/components/login/session/session_termination_manager.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
+#include "chromeos/ash/components/tpm/prepare_tpm.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
@@ -570,12 +572,6 @@ UserSessionManager::UserSessionManager()
   content::GetNetworkConnectionTrackerFromUIThread(
       base::BindOnce(&UserSessionManager::SetNetworkConnectionTracker,
                      GetUserSessionManagerAsWeakPtr()));
-  // TODO(crbug/1341307): Remove the log after the feature settles in Stable.
-  LOG(WARNING) << "UseAuthsessionAuthentication experiment is "
-               << (base::FeatureList::IsEnabled(
-                       ash::features::kUseAuthsessionAuthentication)
-                       ? "enabled"
-                       : "disabled");
 }
 
 UserSessionManager::~UserSessionManager() {
@@ -700,7 +696,8 @@ scoped_refptr<Authenticator> UserSessionManager::CreateAuthenticator(
                    ash::features::kUseAuthsessionAuthentication)) {
       authenticator_ = new AuthSessionAuthenticator(
           consumer, std::make_unique<ChromeSafeModeDelegate>(),
-          base::BindRepeating(&RecordKnownUser), IsEphemeralMountForced());
+          base::BindRepeating(&RecordKnownUser), IsEphemeralMountForced(),
+          g_browser_process->local_state());
     } else {
       authenticator_ =
           base::MakeRefCounted<ChromeCryptohomeAuthenticator>(consumer);
@@ -1493,8 +1490,7 @@ void UserSessionManager::InitProfilePreferences(
       }
     }
 
-    const user_manager::User* user =
-        user_manager->FindUser(user_context.GetAccountId());
+    user = user_manager->FindUser(user_context.GetAccountId());
     bool is_child = user->GetType() == user_manager::USER_TYPE_CHILD;
     DCHECK(is_child ==
            (user_context.GetUserType() == user_manager::USER_TYPE_CHILD));
@@ -1680,8 +1676,11 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     }
 
     UpdateEasyUnlockKeys(user_context_);
-    quick_unlock::PinBackend::GetInstance()->MigrateToCryptohome(
-        profile, *user_context_.GetKey());
+    if (!features::IsUseAuthFactorsEnabled()) {
+      // Migration to cryptohome uses legacy AddKey-based cryptohome methods.
+      quick_unlock::PinBackend::GetInstance()->MigrateToCryptohome(
+          profile, std::make_unique<UserContext>(user_context_));
+    }
 
     // Save sync password hash and salt to profile prefs if they are available.
     // These will be used to detect Gaia password reuses.
@@ -2077,17 +2076,9 @@ void UserSessionManager::RestorePendingUserSessions() {
   // session restore to existing users only. Currently this breakes some tests
   // (namely CrashRestoreComplexTest.RestoreSessionForThreeUsers), but
   // it may be test-specific and could probably be changed.
-  user_manager::UserList logged_in_users =
-      user_manager::UserManager::Get()->GetLoggedInUsers();
-  bool user_already_logged_in = false;
-  for (user_manager::UserList::const_iterator it = logged_in_users.begin();
-       it != logged_in_users.end(); ++it) {
-    const user_manager::User* user = (*it);
-    if (user->GetAccountId() == account_id) {
-      user_already_logged_in = true;
-      break;
-    }
-  }
+  const bool user_already_logged_in =
+      base::Contains(user_manager::UserManager::Get()->GetLoggedInUsers(),
+                     account_id, &user_manager::User::GetAccountId);
   DCHECK(!user_already_logged_in);
 
   if (!user_already_logged_in) {
@@ -2257,7 +2248,8 @@ EasyUnlockKeyManager* UserSessionManager::GetEasyUnlockKeyManager() {
 
 void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
                                                  bool locale_pref_checked) {
-  if (browser_shutdown::IsTryingToQuit() || chrome::IsAttemptingShutdown())
+  if (browser_shutdown::IsTryingToQuit() ||
+      chrome::IsSendingStopRequestToSessionManager())
     return;
 
   if (!locale_pref_checked) {
@@ -2368,7 +2360,8 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
 void UserSessionManager::RespectLocalePreferenceWrapper(
     Profile* profile,
     base::OnceClosure callback) {
-  if (browser_shutdown::IsTryingToQuit() || chrome::IsAttemptingShutdown())
+  if (browser_shutdown::IsTryingToQuit() ||
+      chrome::IsSendingStopRequestToSessionManager())
     return;
 
   const user_manager::User* const user =

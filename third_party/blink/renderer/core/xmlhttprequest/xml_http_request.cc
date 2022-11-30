@@ -30,6 +30,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "services/network/public/cpp/header_util.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/features.h"
@@ -753,7 +754,12 @@ bool XMLHttpRequest::InitSend(ExceptionState& exception_state) {
       }
     }
     v8::Isolate* isolate = GetExecutionContext()->GetIsolate();
-    if (isolate && v8::MicrotasksScope::IsRunningMicrotasks(isolate)) {
+    v8::MicrotaskQueue* microtask_queue =
+        ToMicrotaskQueue(GetExecutionContext());
+    if (isolate &&
+        ((microtask_queue && microtask_queue->IsRunningMicrotasks()) ||
+         (!microtask_queue &&
+          v8::MicrotasksScope::IsRunningMicrotasks(isolate)))) {
       UseCounter::Count(GetExecutionContext(),
                         WebFeature::kDuring_Microtask_SyncXHR);
     }
@@ -849,7 +855,7 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& exception_state) {
   if (AreMethodAndURLValidForSend()) {
     if (!HasContentTypeRequestHeader()) {
       const String& blob_type = FetchUtils::NormalizeHeaderValue(body->type());
-      if (!blob_type.IsEmpty() && ParsedContentType(blob_type).IsValid()) {
+      if (!blob_type.empty() && ParsedContentType(blob_type).IsValid()) {
         SetRequestHeaderInternal(http_names::kContentType,
                                  AtomicString(blob_type));
       }
@@ -859,7 +865,7 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& exception_state) {
     http_body = EncodedFormData::Create();
     if (body->HasBackingFile()) {
       auto* file = To<File>(body);
-      if (!file->GetPath().IsEmpty())
+      if (!file->GetPath().empty())
         http_body->AppendFile(file->GetPath(), file->LastModifiedTime());
       else
         NOTREACHED();
@@ -1302,8 +1308,8 @@ void XMLHttpRequest::HandleDidCancel() {
 
   pending_abort_event_ = PostCancellableTask(
       *GetExecutionContext()->GetTaskRunner(TaskType::kNetworking), FROM_HERE,
-      WTF::Bind(&XMLHttpRequest::HandleRequestError, WrapPersistent(this),
-                DOMExceptionCode::kAbortError, event_type_names::kAbort));
+      WTF::BindOnce(&XMLHttpRequest::HandleRequestError, WrapPersistent(this),
+                    DOMExceptionCode::kAbortError, event_type_names::kAbort));
 }
 
 void XMLHttpRequest::HandleRequestError(DOMExceptionCode exception_code,
@@ -1544,7 +1550,7 @@ const AtomicString& XMLHttpRequest::getResponseHeader(
 AtomicString XMLHttpRequest::FinalResponseMIMEType() const {
   AtomicString overridden_type =
       ExtractMIMETypeFromMediaType(mime_type_override_);
-  if (!overridden_type.IsEmpty())
+  if (!overridden_type.empty())
     return overridden_type;
 
   if (response_.IsHTTP()) {
@@ -1557,7 +1563,7 @@ AtomicString XMLHttpRequest::FinalResponseMIMEType() const {
 
 AtomicString XMLHttpRequest::FinalResponseMIMETypeWithFallback() const {
   AtomicString final_type = FinalResponseMIMEType();
-  if (!final_type.IsEmpty())
+  if (!final_type.empty())
     return final_type;
 
   return AtomicString("text/xml");
@@ -1575,7 +1581,7 @@ WTF::TextEncoding XMLHttpRequest::FinalResponseCharset() const {
   // it. [spec text]
   String override_response_charset =
       ExtractCharsetFromMediaType(mime_type_override_);
-  if (!override_response_charset.IsEmpty())
+  if (!override_response_charset.empty())
     label = override_response_charset;
 
   // 4. If label is null, then return null. [spec text]
@@ -1717,7 +1723,7 @@ void XMLHttpRequest::DidFinishLoadingInternal() {
   if (decoder_) {
     auto text = decoder_->Flush();
 
-    if (!text.IsEmpty() && !response_text_overflow_) {
+    if (!text.empty() && !response_text_overflow_) {
       response_text_.Concat(isolate_, text);
       response_text_overflow_ = response_text_.IsEmpty();
     }
@@ -1779,7 +1785,7 @@ void XMLHttpRequest::EndLoading() {
 
   if (auto* window = DynamicTo<LocalDOMWindow>(GetExecutionContext())) {
     LocalFrame* frame = window->GetFrame();
-    if (frame && cors::IsOkStatus(status()))
+    if (frame && network::IsSuccessfulStatus(status()))
       frame->GetPage()->GetChromeClient().AjaxSucceeded(frame);
   }
 }
@@ -1909,7 +1915,7 @@ void XMLHttpRequest::DidReceiveData(const char* data, unsigned len) {
       decoder_ = CreateDecoder();
 
     auto text = decoder_->Decode(data, len);
-    if (!text.IsEmpty() && !response_text_overflow_) {
+    if (!text.empty() && !response_text_overflow_) {
       response_text_.Concat(isolate_, text);
       response_text_overflow_ = response_text_.IsEmpty();
     }

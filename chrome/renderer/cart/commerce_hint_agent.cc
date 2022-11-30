@@ -359,7 +359,7 @@ const re2::RE2& GetAddToCartPattern() {
 
 const std::map<std::string, std::string>& GetPurchaseURLPatternMapping() {
   static base::NoDestructor<std::map<std::string, std::string>> pattern_map([] {
-    const base::Value json(
+    base::Value json(
         base::JSONReader::Read(
             kPurchaseURLPatternMapping.Get().empty()
                 ? ui::ResourceBundle::GetSharedInstance()
@@ -369,8 +369,8 @@ const std::map<std::string, std::string>& GetPurchaseURLPatternMapping() {
             .value());
     DCHECK(json.is_dict());
     std::map<std::string, std::string> map;
-    for (const auto item : json.DictItems()) {
-      map.insert({std::move(item.first), std::move(item.second.GetString())});
+    for (auto&& item : json.DictItems()) {
+      map.insert({std::move(item.first), std::move(item.second).TakeString()});
     }
     return map;
   }());
@@ -379,12 +379,12 @@ const std::map<std::string, std::string>& GetPurchaseURLPatternMapping() {
 
 const std::map<std::string, std::string>& GetPurchaseButtonPatternMapping() {
   static base::NoDestructor<std::map<std::string, std::string>> pattern_map([] {
-    const base::Value json(
+    base::Value json(
         base::JSONReader::Read(kPurchaseButtonPatternMapping.Get()).value());
     DCHECK(json.is_dict());
     std::map<std::string, std::string> map;
-    for (const auto item : json.DictItems()) {
-      map.insert({std::move(item.first), std::move(item.second.GetString())});
+    for (auto&& item : json.DictItems()) {
+      map.insert({std::move(item.first), std::move(item.second).TakeString()});
     }
     return map;
   }());
@@ -477,7 +477,7 @@ bool IsSameDomainXHR(const std::string& host,
 
 const std::map<std::string, std::string>& GetSkipAddToCartMapping() {
   static base::NoDestructor<std::map<std::string, std::string>> skip_map([] {
-    const base::Value json(
+    base::Value json(
         base::JSONReader::Read(
             kSkipAddToCartMapping.Get().empty()
                 ? ui::ResourceBundle::GetSharedInstance()
@@ -487,8 +487,8 @@ const std::map<std::string, std::string>& GetSkipAddToCartMapping() {
             .value());
     DCHECK(json.is_dict());
     std::map<std::string, std::string> map;
-    for (auto item : json.DictItems()) {
-      map.insert({std::move(item.first), std::move(item.second.GetString())});
+    for (auto&& item : json.DictItems()) {
+      map.insert({std::move(item.first), std::move(item.second).TakeString()});
     }
     return map;
   }());
@@ -636,8 +636,13 @@ const WebString GetProductExtractionScript(
   if (!product_id_json_component.empty()) {
     script_string = "var idExtractionMap = " + product_id_json_component +
                     ";\n" + script_string;
+    CommerceHeuristicsDataMetricsHelper::RecordProductIDExtractionPatternSource(
+        CommerceHeuristicsDataMetricsHelper::HeuristicsSource::FROM_COMPONENT);
     return WebString::FromUTF8(std::move(script_string));
   }
+  CommerceHeuristicsDataMetricsHelper::RecordProductIDExtractionPatternSource(
+      CommerceHeuristicsDataMetricsHelper::HeuristicsSource::
+          FROM_FEATURE_PARAMETER);
   const std::string id_extraction_map =
       kProductIdPatternMapping.Get().empty()
           ? ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
@@ -818,7 +823,6 @@ void CommerceHintAgent::ExtractCartWithUpdatedScript(
 void CommerceHintAgent::OnProductsExtracted(absl::optional<base::Value> results,
                                             base::TimeTicks start_time) {
   // Only record when the start time is correctly captured.
-  DCHECK(!start_time.is_null());
   if (!results || !results->is_dict())
     return;
   if (!start_time.is_null()) {
@@ -913,8 +917,9 @@ void CommerceHintAgent::OnDestruct() {
 }
 
 void CommerceHintAgent::WillSendRequest(const blink::WebURLRequest& request) {
-  if (should_skip_)
+  if (!should_skip_.has_value() || should_skip_.value()) {
     return;
+  }
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   const GURL& url(frame->GetDocument().Url());
   if (!url.SchemeIsHTTPOrHTTPS())
@@ -999,10 +1004,43 @@ void CommerceHintAgent::DidStartNavigationCallback(
 
 void CommerceHintAgent::DidCommitProvisionalLoad(
     ui::PageTransition transition) {
-  if (should_skip_)
-    return;
   if (!starting_url_.is_valid())
     return;
+  DCHECK(starting_url_.SchemeIsHTTPOrHTTPS());
+  mojo::Remote<mojom::CommerceHintObserver> observer =
+      GetObserver(render_frame());
+  if (!commerce::kOptimizeRendererSignal.Get()) {
+    DidCommitProvisionalLoadCallback(starting_url_, std::move(observer), false,
+                                     mojom::Heuristics::New());
+    return;
+  }
+  auto* observer_ptr = observer.get();
+  observer_ptr->OnNavigation(
+      starting_url_, CommerceHeuristicsData::GetInstance().GetVersion(),
+      base::BindOnce(&CommerceHintAgent::DidCommitProvisionalLoadCallback,
+                     weak_factory_.GetWeakPtr(), starting_url_,
+                     std::move(observer)));
+}
+
+void CommerceHintAgent::DidCommitProvisionalLoadCallback(
+    const GURL& url,
+    mojo::Remote<mojom::CommerceHintObserver> observer,
+    bool should_skip,
+    mojom::HeuristicsPtr heuristics) {
+  should_skip_ = should_skip;
+  if (should_skip)
+    return;
+  if (!heuristics->version_number.empty() &&
+      heuristics->version_number !=
+          CommerceHeuristicsData::GetInstance().GetVersion()) {
+    bool is_populated =
+        CommerceHeuristicsData::GetInstance().PopulateDataFromComponent(
+            heuristics->hint_json_data, heuristics->global_json_data,
+            /*product_id_json_data*/ "", /*cart_extraction_script*/ "");
+    DCHECK(is_populated);
+    CommerceHeuristicsData::GetInstance().UpdateVersion(
+        base::Version(heuristics->version_number));
+  }
   if (IsAddToCart(starting_url_.PathForRequestPiece())) {
     RecordCommerceEvent(CommerceEvent::kAddToCartByURL);
     OnAddToCart(render_frame());
@@ -1049,7 +1087,7 @@ void CommerceHintAgent::DidFinishLoadCallback(
     bool should_skip,
     mojom::HeuristicsPtr heuristics) {
   should_skip_ = should_skip;
-  if (should_skip_)
+  if (should_skip)
     return;
   if (!heuristics->version_number.empty() &&
       heuristics->version_number !=
@@ -1077,7 +1115,7 @@ void CommerceHintAgent::DidFinishLoadCallback(
 }
 
 void CommerceHintAgent::WillSubmitForm(const blink::WebFormElement& form) {
-  if (should_skip_)
+  if (!should_skip_.has_value() || should_skip_.value())
     return;
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   const GURL url(frame->GetDocument().Url());
@@ -1098,7 +1136,7 @@ void CommerceHintAgent::WillSubmitForm(const blink::WebFormElement& form) {
 
 // TODO(crbug/1164236): use MutationObserver on cart instead.
 void CommerceHintAgent::ExtractCartFromCurrentFrame() {
-  if (should_skip_)
+  if (!should_skip_.has_value() || should_skip_.value())
     return;
   if (!has_finished_loading_)
     return;

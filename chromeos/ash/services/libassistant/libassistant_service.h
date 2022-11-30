@@ -26,8 +26,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) LibassistantService
     : public mojom::LibassistantService {
@@ -62,8 +61,7 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) LibassistantService
   void AddSpeechRecognitionObserver(
       mojo::PendingRemote<mojom::SpeechRecognitionObserver> observer) override;
   void AddAuthenticationStateObserver(
-      mojo::PendingRemote<
-          chromeos::libassistant::mojom::AuthenticationStateObserver> observer)
+      mojo::PendingRemote<mojom::AuthenticationStateObserver> observer)
       override;
 
   ConversationController& conversation_controller() {
@@ -99,12 +97,6 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) LibassistantService
   TimerController timer_controller_;
 };
 
-}  // namespace libassistant
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when it moved to ash.
-namespace ash::libassistant {
-using ::chromeos::libassistant::LibassistantService;
-}
+}  // namespace ash::libassistant
 
 #endif  // CHROMEOS_ASH_SERVICES_LIBASSISTANT_LIBASSISTANT_SERVICE_H_

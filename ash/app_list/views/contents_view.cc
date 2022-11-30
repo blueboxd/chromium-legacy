@@ -59,7 +59,7 @@ constexpr int kSearchBoxHeight = 48;
 constexpr int kSearchBoxHeightForDenseLayout = 40;
 
 // The top search box margin (measured from the app list view top bound) when
-// app list view is in peeking/half state on non-apps page.
+// app list view is in peeking state on non-apps page.
 constexpr int kDefaultSearchBoxTopMarginInPeekingState = 24;
 
 // The top search box margin (measured from the app list view top bound) when
@@ -67,31 +67,12 @@ constexpr int kDefaultSearchBoxTopMarginInPeekingState = 24;
 constexpr int kSearchBoxTopMarginInPeekingAppsPage = 84;
 constexpr int kSearchBarMinWidth = 440;
 
-// Range of the fraction of app list from collapsed to peeking that search box
-// should change opacity.
-constexpr float kSearchBoxOpacityStartProgress = 0.11f;
-constexpr float kSearchBoxOpacityEndProgress = 1.0f;
-
 // Duration for page transition.
 constexpr base::TimeDelta kPageTransitionDuration = base::Milliseconds(250);
 
 // Duration for overscroll page transition.
 constexpr base::TimeDelta kOverscrollPageTransitionDuration =
     base::Milliseconds(50);
-
-// Calculates opacity value for the current app list progress.
-// |progress| - The target app list view progress - a value in [0.0, 2.0]
-//              interval that describes the app list view position relative to
-//              peeking and fullscreen state.
-// |transition_start| - The app list view progress at which opacity equals 0.0.
-// |transition_end| - The app list view progress at which opacity equals 1.0.
-float GetOpacityForProgress(float progress,
-                            float transition_start,
-                            float transition_end) {
-  return base::clamp(
-      (progress - transition_start) / (transition_end - transition_start), 0.0f,
-      1.0f);
-}
 
 }  // namespace
 
@@ -145,10 +126,6 @@ void ContentsView::Init() {
   app_list_pages_[GetActivePageIndex()]->OnWillBeHidden();
 
   pagination_model_.SelectPage(initial_page_index, false);
-
-  // Update suggestion chips after valid page is selected to prevent the update
-  // from being ignored.
-  apps_container_view_->UpdateSuggestionChips();
 
   ActivePageChanged();
 
@@ -503,25 +480,6 @@ gfx::Rect ContentsView::GetSearchBoxBoundsForViewState(
                    size);
 }
 
-gfx::Rect ContentsView::GetSearchBoxExpectedBoundsForProgress(
-    AppListState state,
-    float progress) const {
-  AppListViewState baseline_state = state == AppListState::kStateSearchResults
-                                        ? AppListViewState::kHalf
-                                        : AppListViewState::kPeeking;
-  gfx::Rect bounds = GetSearchBoxBoundsForViewState(state, baseline_state);
-
-  if (progress <= 1) {
-    bounds.set_y(gfx::Tween::IntValueBetween(progress, 0, bounds.y()));
-  } else {
-    const int fullscreen_y = GetSearchBoxTopForViewState(
-        state, AppListViewState::kFullscreenAllApps);
-    bounds.set_y(
-        gfx::Tween::IntValueBetween(progress - 1, bounds.y(), fullscreen_y));
-  }
-  return bounds;
-}
-
 bool ContentsView::Back() {
   // If the virtual keyboard is visible, dismiss the keyboard and return early
   auto* const keyboard_controller = keyboard::KeyboardUIController::Get();
@@ -638,6 +596,14 @@ void ContentsView::UpdateYPositionAndOpacity() {
                                : pagination_model_.selected_page();
   const AppListState current_state = GetStateForPageIndex(current_page);
 
+  // The search box bounds are determined by the apps container internal
+  // margins, which depend on the apps container view size and app list config.
+  // Make sure the apps container bounds are set before calculating search box
+  // bounds, so `apps_container_view_` has up to date AppListConfig when
+  // AppsContainerView::CalculateMarginsForAvailableBounds() gets called when
+  // calculating search box y position.
+  apps_container_view_->SetBoundsRect(GetContentsBounds());
+
   SearchBoxView* search_box = GetSearchBoxView();
   const gfx::Rect search_box_bounds = GetSearchBoxBounds(current_state);
   const gfx::Rect search_rect =
@@ -645,21 +611,14 @@ void ContentsView::UpdateYPositionAndOpacity() {
           ConvertRectToWidgetWithoutTransform(search_box_bounds));
   search_box->GetWidget()->SetBounds(search_rect);
 
-  float progress =
-      AppListView::GetTransitionProgressForState(target_view_state());
-  const bool restore_opacity = target_view_state() != AppListViewState::kClosed;
   const float search_box_opacity =
-      restore_opacity
-          ? 1.0f
-          : GetOpacityForProgress(progress, kSearchBoxOpacityStartProgress,
-                                  kSearchBoxOpacityEndProgress);
+      target_view_state() != AppListViewState::kClosed ? 1.0f : 0.0f;
   search_box->layer()->SetOpacity(search_box_opacity);
 
   for (AppListPage* page : app_list_pages_) {
     page->UpdatePageBoundsForState(current_state, GetContentsBounds(),
                                    search_box_bounds);
-    page->UpdatePageOpacityForState(current_state, search_box_opacity,
-                                    restore_opacity);
+    page->UpdatePageOpacityForState(current_state, search_box_opacity);
   }
 
   target_page_for_last_view_state_update_ = current_state;
@@ -743,14 +702,8 @@ void ContentsView::AnimateToViewState(AppListViewState target_view_state,
   const AppListState selected_page =
       target_page_for_last_view_state_update_.value_or(
           GetStateForPageIndex(pagination_model_.selected_page()));
-  const int progress_baseline_flag =
-      selected_page == AppListState::kStateSearchResults
-          ? AppListView::kProgressFlagSearchResults
-          : AppListView::kProgressFlagNone;
-  const float progress = app_list_view_->GetAppListTransitionProgress(
-      AppListView::kProgressFlagWithTransform | progress_baseline_flag);
-  const gfx::Rect current_search_box_bounds =
-      GetSearchBoxExpectedBoundsForProgress(selected_page, progress);
+  const gfx::Rect current_search_box_bounds = GetSearchBoxBoundsForViewState(
+      selected_page, app_list_view_->app_list_state());
 
   const int y_offset =
       current_search_box_bounds.y() -
@@ -768,7 +721,7 @@ void ContentsView::AnimateToViewState(AppListViewState target_view_state,
     page->UpdatePageBoundsForState(target_page, GetContentsBounds(),
                                    target_search_box_bounds);
 
-    page->AnimateOpacity(progress, target_view_state,
+    page->AnimateOpacity(app_list_view_->app_list_state(), target_view_state,
                          base::BindRepeating(animate_opacity, duration));
     page->AnimateYPosition(target_view_state,
                            base::BindRepeating(animate_transform, duration),
@@ -840,9 +793,6 @@ int ContentsView::GetSearchBoxTopForViewState(
           ->CalculateMarginsForAvailableBounds(
               GetContentsBounds(), GetSearchBoxSize(AppListState::kStateApps))
           .top();
-    case AppListViewState::kPeeking:
-    case AppListViewState::kHalf:
-      return GetPeekingSearchBoxTopMarginOnPage(state);
   }
 }
 

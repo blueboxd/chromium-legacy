@@ -7,6 +7,10 @@
 #import <Foundation/Foundation.h>
 #import <Security/Security.h>
 
+#if defined(LEAK_SANITIZER)
+#include <sanitizer/lsan_interface.h>
+#endif
+
 #include "base/check_op.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -23,7 +27,13 @@ FakeKeychain::FakeKeychain(const std::string& keychain_access_group)
           CFStringCreateWithCString(kCFAllocatorDefault,
                                     keychain_access_group.data(),
                                     kCFStringEncodingUTF8)) {}
-FakeKeychain::~FakeKeychain() = default;
+FakeKeychain::~FakeKeychain() {
+  // Avoid shutdown leak of error string in Security.framework.
+  // See https://github.com/apple-oss-distributions/Security/blob/Security-60158.140.3/OSX/libsecurity_keychain/lib/SecBase.cpp#L88
+#if defined(LEAK_SANITIZER)
+  __lsan_do_leak_check();
+#endif
+}
 
 base::ScopedCFTypeRef<SecKeyRef> FakeKeychain::KeyCreateRandomKey(
     CFDictionaryRef params,
@@ -170,6 +180,43 @@ OSStatus FakeKeychain::ItemDelete(CFDictionaryRef query) {
       items_.erase(it);  // N.B. `it` becomes invalid
       return errSecSuccess;
     }
+  }
+  return errSecItemNotFound;
+}
+
+OSStatus FakeKeychain::ItemUpdate(
+    CFDictionaryRef query,
+    base::ScopedCFTypeRef<CFMutableDictionaryRef> attributes_to_update) {
+  DCHECK_EQ(base::mac::GetValueFromDictionary<CFStringRef>(query, kSecClass),
+            kSecClassKey);
+  DCHECK(CFEqual(base::mac::GetValueFromDictionary<CFStringRef>(
+                     query, kSecAttrAccessGroup),
+                 keychain_access_group_));
+  CFDataRef query_credential_id = base::mac::GetValueFromDictionary<CFDataRef>(
+      query, kSecAttrApplicationLabel);
+  DCHECK(query_credential_id);
+  for (auto it = items_.begin(); it != items_.end(); ++it) {
+    const base::ScopedCFTypeRef<CFDictionaryRef>& item = *it;
+    CFDataRef item_credential_id = base::mac::GetValueFromDictionary<CFDataRef>(
+        item, kSecAttrApplicationLabel);
+    DCHECK(item_credential_id);
+    if (!CFEqual(query_credential_id, item_credential_id)) {
+      continue;
+    }
+    base::ScopedCFTypeRef<CFMutableDictionaryRef> item_copy(
+        CFDictionaryCreateMutableCopy(kCFAllocatorDefault, /*capacity=*/0,
+                                      item));
+    size_t size = CFDictionaryGetCount(attributes_to_update.get());
+    std::vector<CFStringRef> keys(size, nullptr);
+    std::vector<CFDictionaryRef> values(size, nullptr);
+    CFDictionaryGetKeysAndValues(attributes_to_update.get(),
+                                 reinterpret_cast<const void**>(keys.data()),
+                                 reinterpret_cast<const void**>(values.data()));
+    for (size_t i = 0; i < size; ++i) {
+      CFDictionarySetValue(item_copy, keys[i], values[i]);
+    }
+    *it = base::ScopedCFTypeRef<CFDictionaryRef>(item_copy.release());
+    return errSecSuccess;
   }
   return errSecItemNotFound;
 }

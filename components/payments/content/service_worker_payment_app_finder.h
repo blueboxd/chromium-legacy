@@ -33,6 +33,7 @@ class Origin;
 
 namespace payments {
 
+class CSPChecker;
 class PaymentManifestDownloader;
 class PaymentManifestWebDataService;
 
@@ -74,6 +75,7 @@ class ServiceWorkerPaymentAppFinder
       const url::Origin& merchant_origin,
       scoped_refptr<PaymentManifestWebDataService> cache,
       std::vector<mojom::PaymentMethodDataPtr> requested_method_data,
+      base::WeakPtr<CSPChecker> csp_checker,
       GetAllPaymentAppsCallback callback,
       base::OnceClosure finished_writing_cache_callback_for_testing);
 

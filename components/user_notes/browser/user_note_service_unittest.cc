@@ -4,16 +4,15 @@
 
 #include "components/user_notes/browser/user_note_service.h"
 
-#include <algorithm>
 #include <memory>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/unguessable_token.h"
 #include "components/shared_highlighting/core/common/shared_highlighting_metrics.h"
 #include "components/user_notes/browser/frame_user_note_changes.h"
 #include "components/user_notes/browser/user_note_base_test.h"
 #include "components/user_notes/browser/user_note_manager.h"
-#include "components/user_notes/browser/user_note_service.h"
 #include "components/user_notes/interfaces/user_note_service_delegate.h"
 #include "components/user_notes/interfaces/user_notes_ui.h"
 #include "components/user_notes/model/user_note_metadata.h"
@@ -216,12 +215,12 @@ class MockUserNoteInstance : public UserNoteInstance {
 class MockFrameUserNoteChanges : public FrameUserNoteChanges {
  public:
   MockFrameUserNoteChanges(base::SafeRef<UserNoteService> service,
-                           content::RenderFrameHost* rfh,
+                           content::WeakDocumentPtr document,
                            const ChangeList& notes_added,
                            const ChangeList& notes_modified,
                            const ChangeList& notes_removed)
       : FrameUserNoteChanges(service,
-                             rfh,
+                             document,
                              notes_added,
                              notes_modified,
                              notes_removed) {}
@@ -881,14 +880,10 @@ TEST_F(UserNoteServiceTest, OnNoteMetadataFetched) {
   // immediately verified.
   const UserNoteStorage::IdSet& fetched_ids = storage_->requested_model_ids();
   EXPECT_EQ(fetched_ids.size(), 4u);
-  EXPECT_NE(std::find(fetched_ids.begin(), fetched_ids.end(), note_ids_[0]),
-            fetched_ids.end());
-  EXPECT_NE(std::find(fetched_ids.begin(), fetched_ids.end(), note_ids_[2]),
-            fetched_ids.end());
-  EXPECT_NE(std::find(fetched_ids.begin(), fetched_ids.end(), note_ids_[4]),
-            fetched_ids.end());
-  EXPECT_NE(std::find(fetched_ids.begin(), fetched_ids.end(), note_ids_[5]),
-            fetched_ids.end());
+  EXPECT_TRUE(base::Contains(fetched_ids, note_ids_[0]));
+  EXPECT_TRUE(base::Contains(fetched_ids, note_ids_[2]));
+  EXPECT_TRUE(base::Contains(fetched_ids, note_ids_[4]));
+  EXPECT_TRUE(base::Contains(fetched_ids, note_ids_[5]));
 
   const UserNoteService::IdSet& computed_new_notes =
       mock_service_->computed_new_notes();
@@ -964,10 +959,12 @@ TEST_F(UserNoteServiceTest, OnNoteModelsFetched) {
   content::RenderFrameHost* frame2 =
       web_contents_list_[1]->GetPrimaryMainFrame();
   auto change1 = std::make_unique<MockFrameUserNoteChanges>(
-      note_service_->GetSafeRef(), frame1, /*added=*/IdList{note_ids_[4]},
+      note_service_->GetSafeRef(), frame1->GetWeakDocumentPtr(),
+      /*added=*/IdList{note_ids_[4]},
       /*modified=*/IdList{note_ids_[0]}, /*removed=*/IdList{note_ids_[1]});
   auto change2 = std::make_unique<MockFrameUserNoteChanges>(
-      note_service_->GetSafeRef(), frame2, /*added=*/IdList{note_ids_[5]},
+      note_service_->GetSafeRef(), frame2->GetWeakDocumentPtr(),
+      /*added=*/IdList{note_ids_[5]},
       /*modified=*/IdList{note_ids_[2]}, /*removed=*/IdList{});
   base::UnguessableToken change1_id = change1->id();
   base::UnguessableToken change2_id = change2->id();
@@ -1008,12 +1005,8 @@ TEST_F(UserNoteServiceTest, OnNoteModelsFetched) {
   // immediately verified.
   const IdList& changes_applied = mock_service_->changes_applied();
   EXPECT_EQ(changes_applied.size(), 2u);
-  EXPECT_NE(
-      std::find(changes_applied.begin(), changes_applied.end(), change1_id),
-      changes_applied.end());
-  EXPECT_NE(
-      std::find(changes_applied.begin(), changes_applied.end(), change2_id),
-      changes_applied.end());
+  EXPECT_TRUE(base::Contains(changes_applied, change1_id));
+  EXPECT_TRUE(base::Contains(changes_applied, change2_id));
 
   EXPECT_EQ(ModelMapSize(), 5u);
   EXPECT_EQ(CreationMapSize(), 0u);
@@ -1067,10 +1060,12 @@ TEST_F(UserNoteServiceTest, OnFrameChangesApplied) {
   content::RenderFrameHost* frame2 =
       web_contents_list_[1]->GetPrimaryMainFrame();
   auto change1 = std::make_unique<FrameUserNoteChanges>(
-      note_service_->GetSafeRef(), frame1, /*added=*/IdList{},
+      note_service_->GetSafeRef(), frame1->GetWeakDocumentPtr(),
+      /*added=*/IdList{},
       /*modified=*/IdList{note_ids_[0]}, /*removed=*/IdList{});
   auto change2 = std::make_unique<FrameUserNoteChanges>(
-      note_service_->GetSafeRef(), frame2, /*added=*/IdList{},
+      note_service_->GetSafeRef(), frame2->GetWeakDocumentPtr(),
+      /*added=*/IdList{},
       /*modified=*/IdList{note_ids_[2]}, /*removed=*/IdList{});
   base::UnguessableToken change1_id = change1->id();
   base::UnguessableToken change2_id = change2->id();

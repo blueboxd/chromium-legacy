@@ -443,7 +443,9 @@ LayerTreeHostImpl::LayerTreeHostImpl(
                       compositor_frame_reporting_controller_.get()),
       lcd_text_metrics_reporter_(LCDTextMetricsReporter::CreateIfNeeded(this)),
       frame_rate_estimator_(GetTaskRunner()),
-      contains_srgb_cache_(kContainsSrgbCacheSize) {
+      contains_srgb_cache_(kContainsSrgbCacheSize),
+      use_dmsaa_for_tiles_(
+          base::FeatureList::IsEnabled(features::kUseDMSAAForTiles)) {
   DCHECK(mutator_host_);
   mutator_host_->SetMutatorHostClient(this);
   mutator_events_ = mutator_host_->CreateEvents();
@@ -1974,7 +1976,7 @@ int LayerTreeHostImpl::GetMSAASampleCountForRaster(
 
   if (display_list->HasNonAAPaint()) {
     UMA_HISTOGRAM_BOOLEAN("GPU.SupportsDisableMsaa", supports_disable_msaa_);
-    if (!supports_disable_msaa_)
+    if (!supports_disable_msaa_ || use_dmsaa_for_tiles_)
       return 0;
   }
 
@@ -2328,8 +2330,11 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
 
   metadata.display_transform_hint = active_tree_->display_transform_hint();
 
-  if (std::unique_ptr<gfx::DelegatedInkMetadata> delegated_ink_metadata =
-          active_tree_->take_delegated_ink_metadata()) {
+  if (const gfx::DelegatedInkMetadata* delegated_ink_metadata_ptr =
+          active_tree_->delegated_ink_metadata()) {
+    std::unique_ptr<gfx::DelegatedInkMetadata> delegated_ink_metadata =
+        std::make_unique<gfx::DelegatedInkMetadata>(
+            *delegated_ink_metadata_ptr);
     delegated_ink_metadata->set_frame_time(CurrentBeginFrameArgs().frame_time);
     TRACE_EVENT_WITH_FLOW1(
         "delegated_ink_trails",
@@ -3247,6 +3252,10 @@ ActivelyScrollingType LayerTreeHostImpl::GetActivelyScrollingType() const {
   return input_delegate_->GetActivelyScrollingType();
 }
 
+bool LayerTreeHostImpl::IsCurrentScrollMainRepainted() const {
+  return input_delegate_ && input_delegate_->IsCurrentScrollMainRepainted();
+}
+
 bool LayerTreeHostImpl::ScrollAffectsScrollHandler() const {
   if (!input_delegate_)
     return false;
@@ -3779,7 +3788,14 @@ void LayerTreeHostImpl::ReleaseLayerTreeFrameSink() {
   resource_pool_ = nullptr;
   ClearUIResources();
 
-  if (layer_tree_frame_sink_->context_provider()) {
+  bool should_finish = true;
+#if BUILDFLAG(IS_WIN)
+  // Windows does not have stability issues that require calling Finish.
+  // To minimize risk, only avoid waiting for the UI layer tree.
+  should_finish = !settings_.is_layer_tree_for_ui;
+#endif
+
+  if (should_finish && layer_tree_frame_sink_->context_provider()) {
     // TODO(ericrk): Remove this once all uses of ContextGL from LTFS are
     // removed.
     auto* gl = layer_tree_frame_sink_->context_provider()->ContextGL();
@@ -4569,7 +4585,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   // For gpu compositing, a SharedImage mailbox will be allocated and the
   // UIResource will be uploaded into it.
   gpu::Mailbox mailbox;
-  uint32_t shared_image_usage = gpu::SHARED_IMAGE_USAGE_DISPLAY;
+  uint32_t shared_image_usage = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ;
   // For gpu compositing, we also calculate the GL texture target.
   // TODO(ericrk): Remove references to GL from this code.
   GLenum texture_target = GL_TEXTURE_2D;

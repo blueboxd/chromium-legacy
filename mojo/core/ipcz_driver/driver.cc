@@ -101,8 +101,15 @@ IpczResult IPCZ_API CreateTransports(IpczDriverHandle transport0_handle,
   if (!transport0 || !transport1) {
     return IPCZ_RESULT_INVALID_ARGUMENT;
   }
-  auto [one, two] = Transport::CreatePair(transport0->destination(),
-                                          transport1->destination());
+
+  auto [one, two] = Transport::CreatePair(transport0->destination_type(),
+                                          transport1->destination_type());
+  if (transport0->destination_type() == Transport::EndpointType::kBroker) {
+    one->set_remote_process(transport1->remote_process().Duplicate());
+  }
+  if (transport1->destination_type() == Transport::EndpointType::kBroker) {
+    two->set_remote_process(transport0->remote_process().Duplicate());
+  }
   *new_transport0 = ObjectBase::ReleaseAsHandle(std::move(one));
   *new_transport1 = ObjectBase::ReleaseAsHandle(std::move(two));
   return IPCZ_RESULT_OK;

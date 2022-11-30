@@ -26,8 +26,10 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_test_util.h"
 #include "chrome/browser/sync/sync_service_factory.h"
+#include "chrome/browser/ui/passwords/settings/password_manager_porter_interface.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/device_reauth/mock_biometric_authenticator.h"
 #include "components/password_manager/content/browser/password_manager_log_router_factory.h"
 #include "components/password_manager/core/browser/insecure_credentials_table.h"
 #include "components/password_manager/core/browser/mock_password_feature_manager.h"
@@ -47,6 +49,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/clipboard/test/test_clipboard.h"
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+#include "base/test/scoped_feature_list.h"
+#include "components/password_manager/core/common/password_manager_features.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#endif
 
 using MockReauthCallback = base::MockCallback<
     password_manager::PasswordAccessAuthenticator::ReauthCallback>;
@@ -69,6 +79,22 @@ using MockPlaintextPasswordCallback =
     base::MockCallback<PasswordsPrivateDelegate::PlaintextPasswordCallback>;
 using MockRequestCredentialDetailsCallback = base::MockCallback<
     PasswordsPrivateDelegate::RequestCredentialDetailsCallback>;
+
+class MockPasswordManagerPorter : public PasswordManagerPorterInterface {
+ public:
+  MOCK_METHOD(bool, Export, (content::WebContents * web_contents), (override));
+  MOCK_METHOD(void, CancelExport, (), (override));
+  MOCK_METHOD(password_manager::ExportProgressStatus,
+              GetExportProgressStatus,
+              (),
+              (override));
+  MOCK_METHOD(void,
+              Import,
+              (content::WebContents * web_contents,
+               password_manager::PasswordForm::Store to_store,
+               ImportResultsCallback results_callback),
+              (override));
+};
 
 class MockPasswordManagerClient : public ChromePasswordManagerClient {
  public:
@@ -93,11 +119,24 @@ class MockPasswordManagerClient : public ChromePasswordManagerClient {
     return &mock_password_feature_manager_;
   }
 
+  scoped_refptr<device_reauth::BiometricAuthenticator>
+  GetBiometricAuthenticator() override {
+    return biometric_authenticator_;
+  }
+
+  void SetBiometricAuthenticator(
+      scoped_refptr<device_reauth::MockBiometricAuthenticator>
+          biometric_authenticator) {
+    biometric_authenticator_ = std::move(biometric_authenticator);
+  }
+
  private:
   explicit MockPasswordManagerClient(content::WebContents* web_contents)
       : ChromePasswordManagerClient(web_contents, nullptr) {}
 
   password_manager::MockPasswordFeatureManager mock_password_feature_manager_;
+  scoped_refptr<device_reauth::MockBiometricAuthenticator>
+      biometric_authenticator_ = nullptr;
 };
 
 // static
@@ -235,6 +274,9 @@ class PasswordsPrivateDelegateImplTest : public testing::Test {
       CreateAndUseTestAccountPasswordStore(&profile_);
   raw_ptr<ui::TestClipboard> test_clipboard_ =
       ui::TestClipboard::CreateForCurrentThread();
+  scoped_refptr<device_reauth::MockBiometricAuthenticator>
+      biometric_authenticator_ =
+          base::MakeRefCounted<device_reauth::MockBiometricAuthenticator>();
 
  private:
   base::HistogramTester histogram_tester_;
@@ -430,6 +472,58 @@ TEST_F(PasswordsPrivateDelegateImplTest, AddPasswordUpdatesDefaultStore) {
   EXPECT_FALSE(delegate.AddPassword("", u"", u"", u"",
                                     /*use_account_store=*/false,
                                     web_contents.get()));
+}
+
+TEST_F(PasswordsPrivateDelegateImplTest,
+       ImportPasswordsDoesNotUpdateDefaultStore) {
+  // This enables uses of TestWebContents.
+  content::RenderViewHostTestEnabler test_render_host_factories;
+  std::unique_ptr<content::WebContents> web_contents =
+      content::WebContentsTester::CreateTestWebContents(&profile_, nullptr);
+  auto* client =
+      MockPasswordManagerClient::CreateForWebContentsAndGet(web_contents.get());
+  PasswordsPrivateDelegateImpl delegate(&profile_);
+
+  auto mock_porter = std::make_unique<MockPasswordManagerPorter>();
+  auto* mock_porter_ptr = mock_porter.get();
+
+  delegate.SetPorterForTesting(std::move(mock_porter));
+
+  // NOT update default store if not opted-in for account storage.
+  ON_CALL(*(client->GetPasswordFeatureManager()), IsOptedInForAccountStorage)
+      .WillByDefault(Return(false));
+  EXPECT_CALL(*(client->GetPasswordFeatureManager()), SetDefaultPasswordStore)
+      .Times(0);
+  EXPECT_CALL(*mock_porter_ptr, Import).Times(1);
+  delegate.ImportPasswords(
+      api::passwords_private::PasswordStoreSet::PASSWORD_STORE_SET_DEVICE,
+      base::DoNothing(), web_contents.get());
+}
+
+TEST_F(PasswordsPrivateDelegateImplTest, ImportPasswordsUpdatesDefaultStore) {
+  // This enables uses of TestWebContents.
+  content::RenderViewHostTestEnabler test_render_host_factories;
+  std::unique_ptr<content::WebContents> web_contents =
+      content::WebContentsTester::CreateTestWebContents(&profile_, nullptr);
+  auto* client =
+      MockPasswordManagerClient::CreateForWebContentsAndGet(web_contents.get());
+  PasswordsPrivateDelegateImpl delegate(&profile_);
+
+  auto mock_porter = std::make_unique<MockPasswordManagerPorter>();
+  auto* mock_porter_ptr = mock_porter.get();
+
+  delegate.SetPorterForTesting(std::move(mock_porter));
+
+  // Updates the default store if opted-in and operation succeeded.
+  ON_CALL(*(client->GetPasswordFeatureManager()), IsOptedInForAccountStorage)
+      .WillByDefault(Return(true));
+  EXPECT_CALL(*(client->GetPasswordFeatureManager()),
+              SetDefaultPasswordStore(
+                  password_manager::PasswordForm::Store::kAccountStore));
+  EXPECT_CALL(*mock_porter_ptr, Import).Times(1);
+  delegate.ImportPasswords(
+      api::passwords_private::PasswordStoreSet::PASSWORD_STORE_SET_ACCOUNT,
+      base::DoNothing(), web_contents.get());
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, ChangeSavedPassword) {
@@ -1025,5 +1119,35 @@ TEST_F(PasswordsPrivateDelegateImplTest, VerifyCastingOfImportResultsStatus) {
               password_manager::ImportResults::Status::NUM_PASSWORDS_EXCEEDED),
       "");
 }
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+// Checks if authentication is triggered.
+TEST_F(PasswordsPrivateDelegateImplTest,
+       SwitchBiometricAuthBeforeFillingState) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kBiometricAuthenticationForFilling);
+  // This enables uses of TestWebContents.
+  content::RenderViewHostTestEnabler test_render_host_factories;
+  std::unique_ptr<content::WebContents> web_contents =
+      content::WebContentsTester::CreateTestWebContents(&profile_, nullptr);
+  auto* client =
+      MockPasswordManagerClient::CreateForWebContentsAndGet(web_contents.get());
+  client->SetBiometricAuthenticator(biometric_authenticator_);
+  profile_.GetPrefs()->SetBoolean(
+      password_manager::prefs::kBiometricAuthenticationBeforeFilling, false);
+  EXPECT_CALL(
+      *biometric_authenticator_.get(),
+      AuthenticateWithMessage(
+          device_reauth::BiometricAuthRequester::kPasswordsInSettings, _, _))
+      .WillOnce(testing::WithArgs<2>(
+          [](auto callback) { std::move(callback).Run(/*successful=*/true); }));
+  PasswordsPrivateDelegateImpl delegate(&profile_);
+  delegate.SwitchBiometricAuthBeforeFillingState(web_contents.get());
+  // Expects that the switch value will change.
+  EXPECT_TRUE(profile_.GetPrefs()->GetBoolean(
+      password_manager::prefs::kBiometricAuthenticationBeforeFilling));
+}
+#endif
 
 }  // namespace extensions

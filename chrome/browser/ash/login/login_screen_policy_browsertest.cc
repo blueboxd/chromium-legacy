@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/login_screen.h"
@@ -28,6 +27,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/user_manager/user_manager.h"
@@ -224,10 +224,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenButtonsLocalePolicy, UnifiedTrayLabelsText) {
 
   // Text on EnterpriseManagedView tooltip in current locale.
   std::u16string expected_text =
-      features::IsManagedDeviceUIRedesignEnabled()
-          ? l10n_util::GetStringFUTF16(IDS_ASH_SHORT_MANAGED_BY, kDomain16)
-          : l10n_util::GetStringFUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
-                                       ui::GetChromeOSDeviceName(), kDomain16);
+      l10n_util::GetStringFUTF16(IDS_ASH_SHORT_MANAGED_BY, kDomain16);
   EXPECT_EQ(expected_text, unified_tray_test_api->GetBubbleViewTooltip(
                                VIEW_ID_QS_MANAGED_BUTTON));
 }

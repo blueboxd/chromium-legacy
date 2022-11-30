@@ -11,8 +11,7 @@
 #include "chromeos/ash/services/libassistant/public/mojom/speech_recognition_observer.mojom.h"
 #include "chromeos/assistant/internal/libassistant/shared_headers.h"
 
-namespace chromeos {
-namespace libassistant {
+namespace ash::libassistant {
 
 namespace {
 
@@ -140,5 +139,4 @@ void ConversationStateListenerImpl::NotifyInteractionFinished(
     observer->OnInteractionFinished(resolution);
 }
 
-}  // namespace libassistant
-}  // namespace chromeos
+}  // namespace ash::libassistant

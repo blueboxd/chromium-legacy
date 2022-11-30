@@ -587,7 +587,7 @@ FormData* HTMLFormElement::ConstructEntryList(
       control->AppendToFormData(form_data);
     if (auto* input = DynamicTo<HTMLInputElement>(element)) {
       if (input->type() == input_type_names::kPassword &&
-          !input->Value().IsEmpty())
+          !input->Value().empty())
         form_data.SetContainsPasswordData(true);
     }
   }
@@ -645,8 +645,8 @@ void HTMLFormElement::ParseAttribute(
             mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone)
       return;
     KURL action_url = GetDocument().CompleteURL(
-        attributes_.Action().IsEmpty() ? GetDocument().Url().GetString()
-                                       : attributes_.Action());
+        attributes_.Action().empty() ? GetDocument().Url().GetString()
+                                     : attributes_.Action());
     if (MixedContentChecker::IsMixedFormAction(GetDocument().GetFrame(),
                                                action_url)) {
       UseCounter::Count(GetDocument(), WebFeature::kMixedContentFormPresent);
@@ -823,7 +823,7 @@ bool HTMLFormElement::NoValidate() const {
 
 String HTMLFormElement::action() const {
   Document& document = GetDocument();
-  KURL action_url = document.CompleteURL(attributes_.Action().IsEmpty()
+  KURL action_url = document.CompleteURL(attributes_.Action().empty()
                                              ? document.Url().GetString()
                                              : attributes_.Action());
   return action_url.GetString();
@@ -866,7 +866,7 @@ bool HTMLFormElement::CheckInvalidControlsAndCollectUnhandled(
   // ListedElement::checkValidity() might change listed_elements.
   const ListedElement::List& listed_elements = ListedElements();
   HeapVector<Member<ListedElement>> elements;
-  elements.ReserveCapacity(listed_elements.size());
+  elements.reserve(listed_elements.size());
   for (ListedElement* element : listed_elements)
     elements.push_back(element);
   int invalid_controls_count = 0;
@@ -895,7 +895,7 @@ bool HTMLFormElement::reportValidity() {
 
 Element* HTMLFormElement::ElementFromPastNamesMap(
     const AtomicString& past_name) {
-  if (past_name.IsEmpty() || !past_names_map_)
+  if (past_name.empty() || !past_names_map_)
     return nullptr;
   auto it = past_names_map_->find(past_name);
   Element* element = it != past_names_map_->end() ? it->value : nullptr;
@@ -916,7 +916,7 @@ Element* HTMLFormElement::ElementFromPastNamesMap(
 
 void HTMLFormElement::AddToPastNamesMap(Element* element,
                                         const AtomicString& past_name) {
-  if (past_name.IsEmpty())
+  if (past_name.empty())
     return;
   if (!past_names_map_)
     past_names_map_ = MakeGarbageCollected<PastNamesMap>();
@@ -943,7 +943,7 @@ void HTMLFormElement::GetNamedElements(
   Element* element_from_past = ElementFromPastNamesMap(name);
   if (named_items.size() && named_items.front() != element_from_past) {
     AddToPastNamesMap(named_items.front().Get(), name);
-  } else if (element_from_past && named_items.IsEmpty()) {
+  } else if (element_from_past && named_items.empty()) {
     named_items.push_back(element_from_past);
     UseCounter::Count(GetDocument(),
                       WebFeature::kFormNameAccessForPastNamesMap);
@@ -977,7 +977,7 @@ V8UnionElementOrRadioNodeList* HTMLFormElement::AnonymousNamedGetter(
   {
     HeapVector<Member<Element>> elements;
     GetNamedElements(name, elements);
-    if (elements.IsEmpty())
+    if (elements.empty())
       return nullptr;
   }
 
@@ -985,10 +985,10 @@ V8UnionElementOrRadioNodeList* HTMLFormElement::AnonymousNamedGetter(
   // but if the first the size cannot be zero.
   HeapVector<Member<Element>> elements;
   GetNamedElements(name, elements);
-  DCHECK(!elements.IsEmpty());
+  DCHECK(!elements.empty());
 
   bool only_match_img =
-      !elements.IsEmpty() && IsA<HTMLImageElement>(*elements.front());
+      !elements.empty() && IsA<HTMLImageElement>(*elements.front());
   if (only_match_img) {
     UseCounter::Count(GetDocument(),
                       WebFeature::kFormNameAccessForImageElement);

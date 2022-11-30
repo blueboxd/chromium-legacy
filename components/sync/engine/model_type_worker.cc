@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/logging.h"
@@ -54,6 +55,10 @@ const char kBlockedByUndecryptableUpdateHistogramName[] =
     "Sync.ModelTypeBlockedDueToUndecryptableUpdate";
 const char kPasswordNotesStateHistogramName[] =
     "Sync.PasswordNotesStateInUpdate";
+
+BASE_FEATURE(kSyncKeepGcDirectiveDuringSyncCycle,
+             "SyncKeepGcDirectiveDuringSyncCycle",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 void LogPasswordNotesState(PasswordNotesStateForUMA state) {
   base::UmaHistogramEnumeration(kPasswordNotesStateHistogramName, state);
@@ -182,8 +187,7 @@ bool DecryptPasswordSpecifics(const Cryptographer& cryptographer,
     LogPasswordNotesState(PasswordNotesStateForUMA::kUnset);
     return true;
   }
-  if (!base::FeatureList::IsEnabled(
-          syncer::kReadWritePasswordNotesBackupField)) {
+  if (!base::FeatureList::IsEnabled(syncer::kPasswordNotesWithBackup)) {
     return true;
   }
   // It is guaranteed that if `encrypted()` is decryptable, then
@@ -224,6 +228,11 @@ ModelTypeWorker::ModelTypeWorker(ModelType type,
       min_get_updates_to_ignore_key_(kMinGuResponsesToIgnoreKey.Get()) {
   DCHECK(cryptographer_);
   DCHECK(!AlwaysEncryptedUserTypes().Has(type_) || encryption_enabled_);
+
+  // GC directive is stored independently of progress marker and is used during
+  // a sync cycle (i.e. in-memory only). Clear GC directive on load to clean up
+  // previously persisted values.
+  model_type_state_.mutable_progress_marker()->clear_gc_directive();
 
   if (!CommitOnlyTypes().Has(GetModelType())) {
     DCHECK_EQ(type, GetModelTypeFromSpecificsFieldNumber(
@@ -337,7 +346,17 @@ void ModelTypeWorker::ProcessGetUpdatesResponse(
 
   // TODO(rlarocque): Handle data type context conflicts.
   *model_type_state_.mutable_type_context() = mutated_context;
+
+  if (progress_marker.has_gc_directive() &&
+      base::FeatureList::IsEnabled(kSyncKeepGcDirectiveDuringSyncCycle)) {
+    // Clean up all the pending updates because a new GC directive has been
+    // received which means that all existing data should be cleaned up.
+    pending_updates_.clear();
+    entries_pending_decryption_.clear();
+  }
+
   *model_type_state_.mutable_progress_marker() = progress_marker;
+  ExtractGcDirective();
 
   for (const sync_pb::SyncEntity* update_entity : applicable_updates) {
     RecordEntityChangeMetrics(
@@ -409,6 +428,16 @@ void ModelTypeWorker::ProcessGetUpdatesResponse(
       (!encryption_enabled_ || cryptographer_->CanEncrypt())) {
     base::UmaHistogramEnumeration(kBlockedByUndecryptableUpdateHistogramName,
                                   ModelTypeHistogramValue(type_));
+  }
+
+  // Usually, updates must only be applied at the end of a sync cycle, once all
+  // updates have been downloaded. This is mostly important during initial sync,
+  // so that the merge of local and remote data can happen.
+  // Data types that do not do an actual merge also don't have to download all
+  // remote data first. Instead, apply updates as they come in. This saves the
+  // need to accumulate all data in memory.
+  if (ApplyUpdatesImmediatelyTypes().Has(type_)) {
+    ApplyUpdates(status);
   }
 }
 
@@ -550,9 +579,10 @@ void ModelTypeWorker::SendPendingUpdatesToProcessorIfReady() {
   DeduplicatePendingUpdatesBasedOnOriginatorClientItemId();
 
   model_type_processor_->OnUpdateReceived(model_type_state_,
-                                          std::move(pending_updates_));
-
+                                          std::move(pending_updates_),
+                                          std::move(pending_gc_directive_));
   pending_updates_.clear();
+  pending_gc_directive_.reset();
 }
 
 void ModelTypeWorker::NudgeForCommit() {
@@ -926,6 +956,53 @@ bool ModelTypeWorker::HasNonDeletionUpdates() const {
     }
   }
   return false;
+}
+
+void ModelTypeWorker::ExtractGcDirective() {
+  DCHECK(model_type_state_.has_progress_marker());
+  // This is a workaround for multiple GetUpdates during one sync cycle. The
+  // server returns gc_directive only if there are updates for the data type.
+  // For example, if there are many bookmarks to download and several Wallet
+  // entities (which use GC directive), there might be the following sequence of
+  // GetUpdates responses:
+  //
+  // 1. Response with Wallet updates and bookmarks:
+  // * wallet_entities: 10
+  // ** progress_marker: {progress_token: "w1", gc_directive: "1"}
+  // * bookmark_entities: 10
+  // ** progress_marker: {progress_token: "b1"}
+  //
+  // 2. Response with remaining bookmarks only:
+  // * wallet_entities: 0
+  // ** progress_marker: {progress_token: "w1"}
+  // * bookmark_entities: 15
+  // ** progress_marker: {progress_token: "b2"}
+  //
+  // In this case the GC directive from the first request has to be kept until
+  // the end of the sync cycle.
+  // TODO(crbug.com/1356900): consider a better approach instead of this
+  // workaround.
+
+  if (model_type_state_.progress_marker().has_gc_directive()) {
+    // Keep a new GC directive if received.
+    pending_gc_directive_ = model_type_state_.progress_marker().gc_directive();
+    model_type_state_.mutable_progress_marker()->clear_gc_directive();
+    return;
+  }
+
+  if (pending_gc_directive_.has_value() &&
+      !base::FeatureList::IsEnabled(kSyncKeepGcDirectiveDuringSyncCycle)) {
+    // Remove the GC directive if not present in the response, to mimic the
+    // previous behavior.
+    pending_gc_directive_.reset();
+    return;
+  }
+
+  // Note that normally if the server returns non-empty updates for a
+  // download-only data type, it returns a non-empty |gc_directive| as well.
+  // However, it's safer to keep the GC directive until it's applied even if the
+  // server returns non-empty updates without GC directive within the same sync
+  // cycle.
 }
 
 GetLocalChangesRequest::GetLocalChangesRequest(

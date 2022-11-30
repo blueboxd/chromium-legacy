@@ -1,11 +1,10 @@
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import contextlib
 import io
 import json
-import optparse
 import textwrap
 import unittest
 from unittest.mock import patch
@@ -16,7 +15,11 @@ from blinkpy.common.net.git_cl_mock import MockGitCL
 from blinkpy.common.net.rpc import Build, RPCError
 from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.tool.mock_tool import MockBlinkTool
-from blinkpy.tool.commands.update_metadata import UpdateMetadata, MetadataUpdater
+from blinkpy.tool.commands.update_metadata import (
+    UpdateMetadata,
+    MetadataUpdater,
+    load_and_update_manifests,
+)
 from blinkpy.web_tests.builder_list import BuilderList
 
 path_finder.bootstrap_wpt_imports()
@@ -109,25 +112,25 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
     def setUp(self):
         super().setUp()
         self.tool.builders = BuilderList({
-            'test-linux-rel': {
+            'test-linux-wpt-rel': {
                 'port_name': 'test-linux-trusty',
                 'specifiers': ['Trusty', 'Release'],
                 'is_try_builder': True,
             },
-            'test-mac-rel': {
+            'test-mac-wpt-rel': {
                 'port_name': 'test-mac-mac12',
                 'specifiers': ['Mac12', 'Release'],
                 'is_try_builder': True,
             },
-            'Test Linux Tests': {
+            'Test Linux Tests (wpt)': {
                 'port_name': 'test-linux-trusty',
                 'specifiers': ['Trusty', 'Release'],
             },
         })
         self.builds = {
-            Build('test-linux-rel', 1000, '1000'):
+            Build('test-linux-wpt-rel', 1000, '1000'):
             TryJobStatus.from_bb_status('FAILURE'),
-            Build('test-mac-rel', 2000, '2000'):
+            Build('test-mac-wpt-rel', 2000, '2000'):
             TryJobStatus.from_bb_status('SUCCESS'),
         }
         self.git_cl = MockGitCL(self.tool, self.builds)
@@ -230,7 +233,7 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
     def test_execute_trigger_jobs(self):
         self.command.git_cl = MockGitCL(
             self.tool, {
-                Build('test-linux-rel', 1000, '1000'):
+                Build('test-linux-wpt-rel', 1000, '1000'):
                 TryJobStatus.from_bb_status('STARTED'),
             })
         with self._patch_builtins():
@@ -240,8 +243,8 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
             'INFO: No finished builds.\n',
             'INFO: Scheduled or started builds:\n',
             'INFO:   BUILDER              NUMBER  STATUS    BUCKET\n',
-            'INFO:   test-linux-rel       1000    STARTED   try   \n',
-            'INFO:   test-mac-rel         --      TRIGGERED try   \n',
+            'INFO:   test-linux-wpt-rel   1000    STARTED   try   \n',
+            'INFO:   test-mac-wpt-rel     --      TRIGGERED try   \n',
             'ERROR: Once all pending try jobs have finished, '
             'please re-run the tool to fetch new results.\n',
         ])
@@ -253,7 +256,7 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
                 patch.object(self.command.git_cl.bb_client,
                              'execute_batch',
                              side_effect=error))
-            exit_code = self.command.main(['--build=Test Linux Tests'])
+            exit_code = self.command.main(['--build=Test Linux Tests (wpt)'])
             self.assertEqual(exit_code, 1)
             self.assertLog([
                 'ERROR: getBuild: mock error (code: 400)\n',
@@ -281,6 +284,10 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
         self.assertEqual(self.command.git_cl.calls, [])
 
     def test_execute_dry_run(self):
+        self.tool.filesystem.write_text_file(
+            self.finder.path_from_web_tests('external', 'wpt', 'dir', 'is',
+                                            'orphaned.html.ini'),
+            '[orphaned.html]\n')
         files_before = dict(self.tool.filesystem.files)
         with self._patch_builtins():
             exit_code = self.command.main(['--dry-run'])
@@ -288,6 +295,8 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
         self.assertLog([
             'INFO: All builds finished.\n',
             'INFO: Processing wptrunner report (1/1)\n',
+            'WARNING: Deleting 1 orphaned metadata file:\n',
+            'WARNING:   external/wpt/dir/is/orphaned.html.ini\n',
             "INFO: Updated 'crash.html' (1/5, modified)\n",
             "INFO: Updated 'dir/multiglob.https.any.js' (2/5)\n",
             "INFO: Updated 'fail.html' (3/5)\n",
@@ -382,6 +391,41 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
             'WARNING: No reports to process.\n',
         ])
 
+    def test_remove_orphaned_metadata(self):
+        """Verify that the tool removes orphaned metadata files.
+
+        A metadata file is orphaned when its corresponding test no longer exists
+        in the manifest.
+        """
+        self.tool.filesystem.write_text_file(
+            self.finder.path_from_web_tests('external', 'wpt', 'dir', 'is',
+                                            'orphaned.html.ini'),
+            '[orphaned.html]\n')
+        self.tool.filesystem.write_text_file(
+            self.finder.path_from_web_tests('external', 'wpt',
+                                            'infrastructure', 'metadata',
+                                            'testdriver.html.ini'),
+            '[testdriver.html]\n')
+        self.tool.filesystem.write_text_file(
+            self.finder.path_from_web_tests('external', 'wpt', 'dir', 'is',
+                                            '__dir__.ini'), 'expected: FAIL\n')
+        with self._patch_builtins():
+            manifests = load_and_update_manifests(self.finder)
+            self.command.remove_orphaned_metadata(manifests)
+        self.assertFalse(
+            self.tool.filesystem.exists(
+                self.finder.path_from_web_tests('external', 'wpt', 'dir', 'is',
+                                                'orphaned.html.ini')))
+        self.assertTrue(
+            self.tool.filesystem.exists(
+                self.finder.path_from_web_tests('external', 'wpt', 'dir', 'is',
+                                                '__dir__.ini')))
+        self.assertTrue(
+            self.tool.filesystem.exists(
+                self.finder.path_from_web_tests('external', 'wpt',
+                                                'infrastructure', 'metadata',
+                                                'testdriver.html.ini')))
+
 
 class UpdateMetadataASTSerializationTest(BaseUpdateMetadataTest):
     """Verify the metadata ASTs are manipulated and written correctly.
@@ -400,7 +444,8 @@ class UpdateMetadataASTSerializationTest(BaseUpdateMetadataTest):
             'known_intermittent': [],
         }
         with self._patch_builtins():
-            updater = MetadataUpdater.from_path_finder(self.finder, **options)
+            manifests = load_and_update_manifests(self.finder)
+            updater = MetadataUpdater.from_manifests(manifests, **options)
             for report in reports:
                 report['run_info'] = {
                     'os': 'mac',

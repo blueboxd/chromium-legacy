@@ -103,7 +103,7 @@ gfx::RectF LayoutSVGModelObject::LocalBoundingBoxRectForAccessibility() const {
 
 void LayoutSVGModelObject::WillBeDestroyed() {
   NOT_DESTROYED();
-  SVGResources::ClearClipPathFilterMask(*GetElement(), Style());
+  SVGResources::ClearEffects(*this);
   LayoutObject::WillBeDestroyed();
 }
 
@@ -144,16 +144,24 @@ void LayoutSVGModelObject::StyleDidChange(StyleDifference diff,
   SetHasTransformRelatedProperty(
       StyleRef().HasTransformRelatedPropertyForSVG());
 
-  SVGResources::UpdateClipPathFilterMask(*GetElement(), old_style, StyleRef());
+  SVGResources::UpdateEffects(*this, diff, old_style);
 
   if (!Parent())
     return;
-  if (diff.BlendModeChanged() && !IsSVGHiddenContainer()) {
-    DCHECK(IsBlendingAllowed());
-    Parent()->DescendantIsolationRequirementsChanged(
-        StyleRef().HasBlendMode() ? kDescendantIsolationRequired
-                                  : kDescendantIsolationNeedsUpdate);
+
+  if (!IsSVGHiddenContainer()) {
+    if (diff.BlendModeChanged()) {
+      DCHECK(IsBlendingAllowed());
+      Parent()->DescendantIsolationRequirementsChanged(
+          StyleRef().HasBlendMode() ? kDescendantIsolationRequired
+                                    : kDescendantIsolationNeedsUpdate);
+    }
+    if (StyleRef().HasCurrentTransformRelatedAnimation() &&
+        !old_style->HasCurrentTransformRelatedAnimation()) {
+      Parent()->SetSVGDescendantMayHaveTransformRelatedAnimation();
+    }
   }
+
   if (diff.HasDifference())
     LayoutSVGResourceContainer::StyleChanged(*this, diff);
 }

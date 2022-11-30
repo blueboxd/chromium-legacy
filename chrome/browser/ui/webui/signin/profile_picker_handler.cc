@@ -523,8 +523,7 @@ void ProfilePickerHandler::HandleLaunchSelectedProfile(
 
   if (entry->IsSigninRequired()) {
     DCHECK(signin_util::IsForceSigninEnabled());
-    if (entry->CanBeManaged() &&
-        base::FeatureList::IsEnabled(features::kForceSignInReauth)) {
+    if (entry->CanBeManaged()) {
       ProfilePickerForceSigninDialog::ShowReauthDialog(
           web_ui()->GetWebContents()->GetBrowserContext(),
           base::UTF16ToUTF8(entry->GetUserName()), *profile_path);
@@ -538,7 +537,7 @@ void ProfilePickerHandler::HandleLaunchSelectedProfile(
       LoginUIServiceFactory::GetForProfile(
           Profile::FromWebUI(web_ui())->GetOriginalProfile())
           ->SetProfileBlockingErrorMessage();
-      ProfilePickerForceSigninDialog::ShowDialogAndDisplayErrorMessage(
+      ProfilePicker::ShowDialogAndDisplayErrorMessage(
           web_ui()->GetWebContents()->GetBrowserContext());
     } else {
       // Fresh sign in via profile picker without existing email address.
@@ -554,7 +553,7 @@ void ProfilePickerHandler::HandleLaunchSelectedProfile(
       LoginUIServiceFactory::GetForProfile(
           Profile::FromWebUI(web_ui())->GetOriginalProfile())
           ->SetProfileBlockingErrorMessage();
-      ProfilePickerForceSigninDialog::ShowDialogAndDisplayErrorMessage(
+      ProfilePicker::ShowDialogAndDisplayErrorMessage(
           web_ui()->GetWebContents()->GetBrowserContext());
       return;
     }

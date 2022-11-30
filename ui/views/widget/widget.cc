@@ -321,6 +321,9 @@ bool Widget::RequiresNonClientView(InitParams::Type type) {
 void Widget::Init(InitParams params) {
   TRACE_EVENT0("views", "Widget::Init");
 
+  DCHECK(!native_widget_initialized_)
+      << "This widget has already been initialized";
+
   if (params.name.empty() && params.delegate) {
     params.name = params.delegate->internal_name();
     // If an internal name was not provided the class name of the contents view
@@ -1342,10 +1345,16 @@ void Widget::SetVisible(bool visible) {
 // Widget, NativeWidgetDelegate implementation:
 
 bool Widget::IsModal() const {
+  if (!widget_delegate_)
+    return false;
+
   return widget_delegate_->GetModalType() != ui::MODAL_TYPE_NONE;
 }
 
 bool Widget::IsDialogBox() const {
+  if (!widget_delegate_)
+    return false;
+
   return !!widget_delegate_->AsDialogDelegate();
 }
 
@@ -1455,8 +1464,10 @@ void Widget::OnNativeWidgetDestroyed() {
   for (WidgetObserver& observer : observers_)
     observer.OnWidgetDestroyed(this);
   widget_delegate_->can_delete_this_ = true;
-  widget_delegate_->DeleteDelegate();
-  widget_delegate_ = nullptr;
+  // `DeleteDelegate()` ends up destroying the object that `widget_delegate_`
+  // points to. Use `ExtractAsDangling()` to avoid having `widget_delegate_`
+  // briefly point to freed memory.
+  widget_delegate_.ExtractAsDangling()->DeleteDelegate();
   // TODO(pbos): Replace this with native_widget_ = nullptr; and nullptr
   // checking. This currently breaks on reentrant calls to CloseNow() that I'm
   // too scared to fix right now.
@@ -1674,6 +1685,9 @@ bool Widget::ExecuteCommand(int command_id) {
 }
 
 bool Widget::HasHitTestMask() const {
+  if (!widget_delegate_)
+    return false;
+
   return widget_delegate_->WidgetHasHitTestMask();
 }
 

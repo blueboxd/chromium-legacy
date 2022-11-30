@@ -18,6 +18,7 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/flex_layout.h"
@@ -33,7 +34,6 @@ constexpr int kCloseButtonExtraMargin = 4;
 constexpr int kCloseButtonSize = 17;
 constexpr int kCornerRadius = 18;
 constexpr int kLabelExtraLeftMargin = 2;
-constexpr int kSelectionIconTopMargin = 2;
 
 int GetLensInstructionChipString() {
   if (features::UseAltChipString()) {
@@ -126,15 +126,6 @@ void LensRegionSearchInstructionsView::Init() {
             selection_icon, kColorFeatureLensPromoBubbleForeground,
             layout_provider->GetDistanceMetric(
                 DISTANCE_BUBBLE_HEADER_VECTOR_ICON_SIZE)));
-    // TODO(b/244610006): We need to set a top margin to make sure our icons
-    // feel properly centered even though they are vertically centered. Only
-    // needed for the selection icons which contain a cross cursor. Asset should
-    // be updated in the future to make this unnecessary.
-    selection_icon_view->SetProperty(
-        views::kMarginsKey,
-        gfx::Insets::TLBR(
-            features::UseSelectionIconWithImage() ? 0 : kSelectionIconTopMargin,
-            0, 0, 0));
     AddChildView(std::move(selection_icon_view));
   }
 
@@ -169,6 +160,9 @@ void LensRegionSearchInstructionsView::Init() {
   close_button_->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   close_button_->SetProperty(
       views::kMarginsKey, gfx::Insets::TLBR(0, kCloseButtonExtraMargin, 0, 0));
+  // Make sure the hover background behind the button is a circle, rather than a
+  // rounded square.
+  views::InstallCircleHighlightPathGenerator(close_button_.get());
   constructed_close_button_ = AddChildView(std::move(close_button_));
 }
 

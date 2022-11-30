@@ -251,8 +251,9 @@ RenderFrameHostImpl* FindOpenerRFH(const WebContents::CreateParams& params) {
 // Returns |true| if |type| is the kind of user input that should trigger the
 // user interaction observers.
 bool IsUserInteractionInputType(blink::WebInputEvent::Type type) {
-  // Ideally, this list would be based more off of
-  // https://whatwg.org/C/interaction.html#triggered-by-user-activation.
+  // TODO(mustaq): This list should be based off the HTML spec:
+  // https://html.spec.whatwg.org/multipage/interaction.html#tracking-user-activation,
+  // and kGestureScrollBegin is a clear outlier.
   return type == blink::WebInputEvent::Type::kMouseDown ||
          type == blink::WebInputEvent::Type::kGestureScrollBegin ||
          type == blink::WebInputEvent::Type::kTouchStart ||
@@ -827,6 +828,7 @@ void WebContentsImpl::WebContentsTreeNode::OnFrameTreeNodeDestroyed(
       << "WebContentsTreeNode should only receive notifications for the "
          "FrameTreeNode in its outer WebContents that hosts it.";
 
+  node->RemoveObserver(this);
   // Deletes |this| too.
   outer_web_contents_->node_.DetachInnerWebContents(current_web_contents_);
 }
@@ -1786,8 +1788,6 @@ WebUI* WebContentsImpl::GetWebUI() {
   return primary_frame_tree_.root()->current_frame_host()->web_ui();
 }
 
-// TODO(https://crbug.com/1199697): (MPArch) We should probably iterate all
-// FrameTree instances here.
 void WebContentsImpl::SetUserAgentOverride(
     const blink::UserAgentOverride& ua_override,
     bool override_in_new_tabs) {
@@ -3981,7 +3981,7 @@ FrameTree* WebContentsImpl::CreateNewWindow(
   create_params.initial_popup_url = params.target_url;
 
   // Even though all codepaths leading here are in response to a renderer
-  // tryng to open a new window, if the new window ends up in a different
+  // trying to open a new window, if the new window ends up in a different
   // browsing instance, then the RenderViewHost, RenderWidgetHost,
   // RenderFrameHost constellation is effectively browser initiated
   // the opener's process will not given the routing IDs for the new
@@ -5991,6 +5991,14 @@ void WebContentsImpl::DidInferColorScheme(PageImpl& page) {
       }
     }
   }
+}
+
+void WebContentsImpl::OnVirtualKeyboardModeChanged(PageImpl& page) {
+  if (!page.IsPrimary())
+    return;
+
+  observers_.NotifyObservers(&WebContentsObserver::VirtualKeyboardModeChanged,
+                             page.virtual_keyboard_mode());
 }
 
 void WebContentsImpl::DidLoadResourceFromMemoryCache(
@@ -8348,7 +8356,7 @@ void WebContentsImpl::OnDialogClosed(int render_process_id,
   is_showing_before_unload_dialog_ = false;
 }
 
-RenderFrameHostManager* WebContentsImpl::GetRenderManager() const {
+RenderFrameHostManager* WebContentsImpl::GetRenderManager() {
   return primary_frame_tree_.root()->render_manager();
 }
 
@@ -9324,8 +9332,9 @@ void WebContentsImpl::ForEachRenderViewHost(
     // Add RenderViewHostImpls in BackForwardCache.
     const auto& entries = GetController().GetBackForwardCache().GetEntries();
     for (const auto& entry : entries) {
-      std::set<RenderViewHostImpl*> bfcached_hosts = entry->render_view_hosts();
-      render_view_hosts.insert(bfcached_hosts.begin(), bfcached_hosts.end());
+      for (const auto& render_view : entry->render_view_hosts()) {
+        render_view_hosts.insert(&*render_view);
+      }
     }
   }
 
@@ -9537,6 +9546,13 @@ bool WebContentsImpl::CancelPrerendering(
   }
   return GetPrerenderHostRegistry()->CancelHost(
       frame_tree_node->frame_tree_node_id(), final_status);
+}
+
+ui::mojom::VirtualKeyboardMode WebContentsImpl::GetVirtualKeyboardMode() const {
+  return primary_frame_tree_.root()
+      ->current_frame_host()
+      ->GetPage()
+      .virtual_keyboard_mode();
 }
 
 // static

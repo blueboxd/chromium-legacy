@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-GEN_INCLUDE(['../../../../../../ui/webui/resources/js/cr.js']);
 GEN_INCLUDE(['fake_chrome_event.js']);
 GEN_INCLUDE(['select_to_speak_e2e_test_base.js']);
 GEN_INCLUDE(['../common/testing/mock_tts.js']);
@@ -24,7 +23,7 @@ SelectToSpeakEnhancedNetworkTtsVoicesTest = class extends SelectToSpeakE2ETest {
 
     this.enhancedNetworkVoicesPolicyKey_ =
         'settings.a11y.enhanced_network_voices_in_select_to_speak_allowed';
-    this.mockSettingsPrivate_ = new settings.FakeSettingsPrivate([
+    this.mockSettingsPrivate_ = new FakeSettingsPrivate([
       {type: 'number', key: 'settings.tts.speech_rate', value: 1.0},
       {type: 'number', key: 'settings.tts.speech_pitch', value: 1.0},
       {type: 'boolean', key: this.enhancedNetworkVoicesPolicyKey_, value: true},
@@ -58,10 +57,10 @@ SelectToSpeakEnhancedNetworkTtsVoicesTest = class extends SelectToSpeakE2ETest {
   }
 
   // Sets the policy to allow or disallow the network voices.
-  setEnhancedNetworkVoicesPolicy(allowed) {
-    const unused = () => {};
-    this.mockSettingsPrivate_.setPref(
-        this.enhancedNetworkVoicesPolicyKey_, allowed, '', unused);
+  async setEnhancedNetworkVoicesPolicy(allowed) {
+    await new Promise(
+        resolve => this.mockSettingsPrivate_.setPref(
+            this.enhancedNetworkVoicesPolicyKey_, allowed, '', resolve));
   }
 };
 
@@ -128,7 +127,8 @@ AX_TEST_F(
       const root = await this.runWithLoadedTree(
           'data:text/html;charset=utf-8,' +
           '<p>This is some text</p>');
-      this.mockTts.setOnSpeechCallbacks([this.newCallback(function(utterance) {
+      this.mockTts.setOnSpeechCallbacks([this.newCallback(async function(
+          utterance) {
         // Network voices are enabled initially because of the
         // confirmation.
         assertEquals(this.confirmationDialogShowCount_, 1);
@@ -136,7 +136,7 @@ AX_TEST_F(
         assertTrue(selectToSpeak.prefsManager_.enhancedNetworkVoicesEnabled());
 
         // Sets the policy to disallow network voices.
-        this.setEnhancedNetworkVoicesPolicy(/* allowed= */ false);
+        await this.setEnhancedNetworkVoicesPolicy(/* allowed= */ false);
         assertFalse(selectToSpeak.prefsManager_.enhancedNetworkVoicesEnabled());
       })]);
       const textNode = this.findTextNode(root, 'This is some text');
@@ -150,7 +150,7 @@ AX_TEST_F(
 AX_TEST_F(
     'SelectToSpeakEnhancedNetworkTtsVoicesTest',
     'DisablesDialogIfDisallowedByPolicy', async function() {
-      this.setEnhancedNetworkVoicesPolicy(/* allowed= */ false);
+      await this.setEnhancedNetworkVoicesPolicy(/* allowed= */ false);
 
       const root = await this.runWithLoadedTree(
           'data:text/html;charset=utf-8,' +

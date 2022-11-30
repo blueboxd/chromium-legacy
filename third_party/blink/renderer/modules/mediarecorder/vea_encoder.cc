@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -224,7 +224,7 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
   }
 
   // Drop frames if RequireBitstreamBuffers() hasn't been called.
-  if (output_buffers_.IsEmpty() || vea_requested_input_coded_size_.IsEmpty()) {
+  if (output_buffers_.empty() || vea_requested_input_coded_size_.IsEmpty()) {
     // TODO(emircan): Investigate if resetting encoder would help.
     DVLOG(3) << "Might drop frame.";
     last_frame_ =
@@ -260,7 +260,7 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
     const size_t desired_mapped_size = media::VideoFrame::AllocationSize(
         media::PIXEL_FORMAT_I420, vea_requested_input_coded_size_);
     std::unique_ptr<base::MappedReadOnlyRegion> input_buffer;
-    if (input_buffers_.IsEmpty()) {
+    if (input_buffers_.empty()) {
       input_buffer = std::make_unique<base::MappedReadOnlyRegion>(
           base::ReadOnlySharedMemoryRegion::Create(desired_mapped_size));
       if (!input_buffer->IsValid())
@@ -269,7 +269,7 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
       do {
         input_buffer = std::move(input_buffers_.back());
         input_buffers_.pop_back();
-      } while (!input_buffers_.IsEmpty() &&
+      } while (!input_buffers_.empty() &&
                input_buffer->mapping.size() < desired_mapped_size);
       if (!input_buffer || input_buffer->mapping.size() < desired_mapped_size)
         return;
@@ -300,8 +300,8 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
         input_visible_size_.width(), input_visible_size_.height());
     video_frame->BackWithSharedMemory(&input_buffer->region);
     video_frame->AddDestructionObserver(media::BindToCurrentLoop(
-        WTF::Bind(&VEAEncoder::FrameFinished, WrapRefCounted(this),
-                  std::move(input_buffer))));
+        WTF::BindOnce(&VEAEncoder::FrameFinished, WrapRefCounted(this),
+                      std::move(input_buffer))));
   }
   frames_in_encode_.push(std::make_pair(
       media::WebmMuxer::VideoParameters(frame), capture_timestamp));

@@ -25,7 +25,10 @@ public class LegacyChromePreferenceKeys {
         return Arrays.asList(
                 ChromePreferenceKeys.ACCESSIBILITY_TAB_SWITCHER,
                 ChromePreferenceKeys.APP_LOCALE,
+                ChromePreferenceKeys.AUTOFILL_ASSISTANT_ENABLED,
+                ChromePreferenceKeys.AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED,
                 ChromePreferenceKeys.BACKUP_FIRST_BACKUP_DONE,
+                ChromePreferenceKeys.BACKUP_FLOW_SIGNIN_ACCOUNT_NAME,
                 ChromePreferenceKeys.BOOKMARKS_LAST_MODIFIED_FOLDER_ID,
                 ChromePreferenceKeys.BOOKMARKS_LAST_USED_URL,
                 ChromePreferenceKeys.BOOKMARKS_LAST_USED_PARENT,
@@ -51,8 +54,6 @@ public class LegacyChromePreferenceKeys {
                 ChromePreferenceKeys.DOWNLOAD_UMA_ENTRY,
                 ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED,
                 ChromePreferenceKeys.FIRST_RUN_FLOW_COMPLETE,
-                ChromePreferenceKeys.FIRST_RUN_FLOW_SIGNIN_ACCOUNT_NAME,
-                ChromePreferenceKeys.FIRST_RUN_FLOW_SIGNIN_COMPLETE,
                 ChromePreferenceKeys.FIRST_RUN_FLOW_SIGNIN_SETUP,
                 ChromePreferenceKeys.FIRST_RUN_LIGHTWEIGHT_FLOW_COMPLETE,
                 ChromePreferenceKeys.FIRST_RUN_SKIP_WELCOME_PAGE,
@@ -73,6 +74,7 @@ public class LegacyChromePreferenceKeys {
                 ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI,
                 ChromePreferenceKeys.INCOGNITO_SHORTCUT_ADDED,
                 ChromePreferenceKeys.LATEST_UNSUPPORTED_VERSION,
+                ChromePreferenceKeys.LEGACY_FIRST_RUN_AND_BACKUP_SIGNIN_COMPLETE,
                 ChromePreferenceKeys.LOCALE_MANAGER_AUTO_SWITCH,
                 ChromePreferenceKeys.LOCALE_MANAGER_MISSING_TIMEZONES,
                 ChromePreferenceKeys.LOCALE_MANAGER_PARTNER_PROMO_KEYWORD_SELECTED,
@@ -144,8 +146,7 @@ public class LegacyChromePreferenceKeys {
                 ChromePreferenceKeys.VR_FEEDBACK_OPT_OUT,
                 ChromePreferenceKeys.VR_SHOULD_REGISTER_ASSETS_COMPONENT_ON_STARTUP,
                 ChromePreferenceKeys.WEBAPK_UNINSTALLED_PACKAGES,
-                ChromePreferenceKeys.KEY_ZERO_SUGGEST_LIST_SIZE,
-                ChromePreferenceKeys.KEY_ZERO_SUGGEST_HEADER_LIST_SIZE
+                ChromePreferenceKeys.KEY_ZERO_SUGGEST_LIST_SIZE
         );
         // clang-format on
     }
@@ -167,10 +168,7 @@ public class LegacyChromePreferenceKeys {
                 ChromePreferenceKeys.KEY_ZERO_SUGGEST_IS_DELETABLE_PREFIX,
                 ChromePreferenceKeys.KEY_ZERO_SUGGEST_IS_STARRED_PREFIX,
                 ChromePreferenceKeys.KEY_ZERO_SUGGEST_POST_CONTENT_TYPE_PREFIX,
-                ChromePreferenceKeys.KEY_ZERO_SUGGEST_POST_CONTENT_DATA_PREFIX,
-                ChromePreferenceKeys.KEY_ZERO_SUGGEST_HEADER_GROUP_ID_PREFIX,
-                ChromePreferenceKeys.KEY_ZERO_SUGGEST_HEADER_GROUP_TITLE_PREFIX,
-                ChromePreferenceKeys.KEY_ZERO_SUGGEST_HEADER_GROUP_COLLAPSED_BY_DEFAULT_PREFIX
+                ChromePreferenceKeys.KEY_ZERO_SUGGEST_POST_CONTENT_DATA_PREFIX
         );
         // clang-format on
     }

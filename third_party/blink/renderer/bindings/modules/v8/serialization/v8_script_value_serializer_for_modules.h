@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,6 +56,7 @@ class MODULES_EXPORT V8ScriptValueSerializerForModules final
   bool WriteDecoderBuffer(scoped_refptr<media::DecoderBuffer> data,
                           bool for_audio);
   bool WriteMediaStreamTrack(MediaStreamTrack* track,
+                             ScriptWrappable::TypeDispatcher& dispatcher,
                              ExceptionState& exception_state);
   bool WriteCropTarget(CropTarget*);
   bool WriteMediaSourceHandle(MediaSourceHandleImpl* handle,

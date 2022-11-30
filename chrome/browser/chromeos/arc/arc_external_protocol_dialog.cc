@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/ranges/algorithm.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/apps/intent_helper/page_transition_util.h"
@@ -151,7 +152,7 @@ void CloseTabIfNeeded(base::WeakPtr<WebContents> web_contents,
 
   if (web_contents->GetController().IsInitialNavigation() ||
       safe_to_bypass_ui) {
-    web_contents->Close();
+    web_contents->ClosePage();
   }
 }
 
@@ -365,10 +366,8 @@ void HandleDeviceSelection(
   if (!web_contents)
     return;
 
-  const auto it = std::find_if(devices.begin(), devices.end(),
-                               [&device_guid](const auto& device) {
-                                 return device->guid() == device_guid;
-                               });
+  const auto it =
+      base::ranges::find(devices, device_guid, &syncer::DeviceInfo::guid);
   DCHECK(it != devices.end());
   auto* device = it->get();
 

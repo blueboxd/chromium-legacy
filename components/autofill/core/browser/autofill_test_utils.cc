@@ -5,10 +5,12 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 
 #include <cstdint>
+#include <iterator>
 #include <string>
 
 #include "base/guid.h"
 #include "base/rand_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -42,6 +44,8 @@
 #include "ui/gfx/geometry/rect.h"
 
 using base::ASCIIToUTF16;
+using FieldPrediction = ::autofill::AutofillQueryResponse::FormSuggestion::
+    FieldSuggestion::FieldPrediction;
 
 namespace autofill {
 
@@ -123,6 +127,12 @@ LocalFrameToken MakeLocalFrameToken(RandomizeFrame randomize) {
 FormData WithoutValues(FormData form) {
   for (FormFieldData& field : form.fields)
     field.value.clear();
+  return form;
+}
+
+FormData AsAutofilled(FormData form, bool is_autofilled) {
+  for (FormFieldData& field : form.fields)
+    field.is_autofilled = is_autofilled;
   return form;
 }
 
@@ -307,23 +317,13 @@ void CreateTestAddressFormData(FormData* form,
   types->push_back({NAME_MIDDLE});
   test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
   form->fields.push_back(field);
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnableSupportForMoreStructureInNames)) {
-    types->push_back({NAME_LAST, NAME_LAST_SECOND});
-  } else {
-    types->push_back({NAME_LAST});
-  }
+  types->push_back({NAME_LAST, NAME_LAST_SECOND});
   test::CreateTestFormField("Address Line 1", "addr1", "", "text", &field);
   form->fields.push_back(field);
   types->push_back({ADDRESS_HOME_LINE1});
   test::CreateTestFormField("Address Line 2", "addr2", "", "text", &field);
   form->fields.push_back(field);
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnableSupportForMoreStructureInAddresses)) {
-    types->push_back({ADDRESS_HOME_SUBPREMISE, ADDRESS_HOME_LINE2});
-  } else {
-    types->push_back({ADDRESS_HOME_LINE2});
-  }
+  types->push_back({ADDRESS_HOME_SUBPREMISE, ADDRESS_HOME_LINE2});
   test::CreateTestFormField("City", "city", "", "text", &field);
   form->fields.push_back(field);
   types->push_back({ADDRESS_HOME_CITY});
@@ -765,6 +765,18 @@ AutofillOfferData GetPromoCodeOfferData(GURL origin,
       promo_code);
 }
 
+AutofillWalletUsageData GetAutofillWalletUsageDataForVirtualCard() {
+  VirtualCardUsageData virtual_card_usage_data;
+  virtual_card_usage_data.instrument_id =
+      VirtualCardUsageData::InstrumentId(12345);
+  virtual_card_usage_data.virtual_card_last_four = "1234";
+  virtual_card_usage_data.merchant_origin =
+      url::Origin::Create(GURL("https://www.google.com"));
+  virtual_card_usage_data.merchant_app_package = "google";
+
+  return AutofillWalletUsageData::ForVirtualCard(virtual_card_usage_data);
+}
+
 void SetProfileInfo(AutofillProfile* profile,
                     const char* first_name,
                     const char* middle_name,
@@ -1051,39 +1063,67 @@ std::vector<FormSignature> GetEncodedSignatures(
   return all_signatures;
 }
 
-void AddFieldSuggestionToForm(
+FieldPrediction CreateFieldPrediction(ServerFieldType type,
+                                      FieldPrediction::Source source) {
+  FieldPrediction field_prediction;
+  field_prediction.set_type(type);
+  field_prediction.set_source(source);
+  if (source == FieldPrediction::SOURCE_OVERRIDE)
+    field_prediction.set_override(true);
+  return field_prediction;
+}
+
+FieldPrediction CreateFieldPrediction(ServerFieldType type) {
+  if (type == NO_SERVER_DATA)
+    return CreateFieldPrediction(type, FieldPrediction::SOURCE_UNSPECIFIED);
+  return CreateFieldPrediction(
+      type, GroupTypeOfServerFieldType(type) == FieldTypeGroup::kPasswordField
+                ? FieldPrediction::SOURCE_PASSWORDS_DEFAULT
+                : FieldPrediction::SOURCE_AUTOFILL_DEFAULT);
+}
+
+void AddFieldPredictionToForm(
     const FormFieldData& field_data,
     ServerFieldType field_type,
     AutofillQueryResponse_FormSuggestion* form_suggestion) {
   auto* field_suggestion = form_suggestion->add_field_suggestions();
   field_suggestion->set_field_signature(
       CalculateFieldSignatureForField(field_data).value());
-  field_suggestion->add_predictions()->set_type(field_type);
-}
-
-void AddFieldPredictionsToForm(
-    const FormFieldData& field_data,
-    const std::vector<int>& field_types,
-    AutofillQueryResponse_FormSuggestion* form_suggestion) {
-  std::vector<ServerFieldType> types;
-  for (auto type : field_types) {
-    types.emplace_back(ToSafeServerFieldType(type, UNKNOWN_TYPE));
-  }
-  AddFieldPredictionsToForm(field_data, types, form_suggestion);
+  *field_suggestion->add_predictions() = CreateFieldPrediction(field_type);
 }
 
 void AddFieldPredictionsToForm(
     const FormFieldData& field_data,
     const std::vector<ServerFieldType>& field_types,
     AutofillQueryResponse_FormSuggestion* form_suggestion) {
+  std::vector<FieldPrediction> field_predictions(field_types.size());
+  base::ranges::transform(field_types, std::back_inserter(field_predictions),
+                          static_cast<FieldPrediction (*)(ServerFieldType)>(
+                              &CreateFieldPrediction));
+  return AddFieldPredictionsToForm(field_data, field_predictions,
+                                   form_suggestion);
+}
+
+void AddFieldPredictionsToForm(
+    const FormFieldData& field_data,
+    const std::vector<FieldPrediction>& field_predictions,
+    AutofillQueryResponse_FormSuggestion* form_suggestion) {
   auto* field_suggestion = form_suggestion->add_field_suggestions();
   field_suggestion->set_field_signature(
       CalculateFieldSignatureForField(field_data).value());
-  for (auto field_type : field_types) {
-    AutofillQueryResponse_FormSuggestion_FieldSuggestion_FieldPrediction*
-        prediction = field_suggestion->add_predictions();
-    prediction->set_type(field_type);
+  for (const auto& prediction : field_predictions) {
+    *field_suggestion->add_predictions() = prediction;
   }
+}
+
+Suggestion CreateAutofillSuggestion(int frontend_id,
+                                    const std::u16string& main_text_value,
+                                    const Suggestion::Payload& payload) {
+  Suggestion suggestion;
+  suggestion.frontend_id = frontend_id;
+  suggestion.main_text.value = main_text_value;
+  suggestion.payload = payload;
+  return suggestion;
 }
 
 }  // namespace test

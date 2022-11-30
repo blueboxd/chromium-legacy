@@ -108,6 +108,21 @@ class GPUTelemetryTestGenerator(BaseGenerator):
     return sorted(tests, key=lambda x: x['name'])
 
 
+class SkylabGPUTelemetryTestGenerator(GPUTelemetryTestGenerator):
+  def generate(self, *args, **kwargs):
+    # This should be identical to a regular GPU Telemetry test, but with any
+    # swarming arguments removed.
+    isolated_scripts = super(SkylabGPUTelemetryTestGenerator,
+                             self).generate(*args, **kwargs)
+    for test in isolated_scripts:
+      if 'swarming' in test:
+        test['swarming'] = {'can_use_on_swarming_builders': False}
+      if 'isolate_name' in test:
+        test['test'] = test['isolate_name']
+        del test['isolate_name']
+    return isolated_scripts
+
+
 class GTestGenerator(BaseGenerator):
   def __init__(self, bb_gen):
     super(GTestGenerator, self).__init__(bb_gen)
@@ -916,14 +931,15 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
       'gpu_vendor_id': '0',
       'gpu_device_id': '0',
     }
-    dimension_set = swarming_config['dimension_sets'][0]
-    if 'gpu' in dimension_set:
-      # First remove the driver version, then split into vendor and device.
-      gpu = dimension_set['gpu']
-      if gpu != 'none':
-        gpu = gpu.split('-')[0].split(':')
-        substitutions['gpu_vendor_id'] = gpu[0]
-        substitutions['gpu_device_id'] = gpu[1]
+    if swarming_config.get('dimension_sets'):
+      dimension_set = swarming_config['dimension_sets'][0]
+      if 'gpu' in dimension_set:
+        # First remove the driver version, then split into vendor and device.
+        gpu = dimension_set['gpu']
+        if gpu != 'none':
+          gpu = gpu.split('-')[0].split(':')
+          substitutions['gpu_vendor_id'] = gpu[0]
+          substitutions['gpu_device_id'] = gpu[1]
     return [string.Template(arg).safe_substitute(substitutions) for arg in args]
 
   def generate_gpu_telemetry_test(self, waterfall, tester_name, tester_config,
@@ -961,21 +977,6 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     args = result.get('args', [])
     test_to_run = result.pop('telemetry_test_name', test_name)
 
-    # TODO(skbug.com/12149): Remove this once Gold-based tests no longer clobber
-    # earlier results on retry attempts.
-    is_gold_based_test = False
-    for a in args:
-      if '--git-revision' in a:
-        is_gold_based_test = True
-        break
-    if is_gold_based_test:
-      for a in args:
-        if '--test-filter' in a or '--isolated-script-test-filter' in a:
-          raise RuntimeError(
-              '--test-filter/--isolated-script-test-filter are currently not '
-              'supported for Gold-based GPU tests. See skbug.com/12100 and '
-              'skbug.com/12149 for more details.')
-
     # These tests upload and download results from cloud storage and therefore
     # aren't idempotent yet. https://crbug.com/549140.
     result['swarming']['idempotent'] = False
@@ -1012,6 +1013,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         # being expected to fail, but passing.
         '--passthrough',
         '-v',
+        '--stable-jobs',
         '--extra-browser-args=%s --js-flags=--expose-gc' % logging_arg,
     ] + args
     result['args'] = self.maybe_fixup_args_array(self.substitute_gpu_args(
@@ -1047,6 +1049,8 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         ScriptGenerator(self),
         'skylab_tests':
         SkylabGenerator(self),
+        'skylab_gpu_telemetry_tests':
+        SkylabGPUTelemetryTestGenerator(self),
     }
 
   def get_test_type_remapper(self):
@@ -1056,6 +1060,9 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         'android_webview_gpu_telemetry_tests': 'isolated_scripts',
         'cast_streaming_tests': 'isolated_scripts',
         'gpu_telemetry_tests': 'isolated_scripts',
+        # These are the same as existing test types, just configured to run
+        # in Skylab instead of via normal swarming.
+        'skylab_gpu_telemetry_tests': 'skylab_tests',
     }
 
   def check_composition_type_test_suites(self, test_type,

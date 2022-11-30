@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/media_router/media_route_starter.h"
 
 #include "base/json/json_reader.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/media/router/chrome_media_router_factory.h"
 #include "chrome/browser/media/router/test/provider_test_helpers.h"
@@ -185,8 +186,7 @@ class MediaRouteStarterTest : public ChromeRenderViewHostTestHarness {
     // this to occur).
     ON_CALL(*media_router(), UnregisterMediaSinksObserver(_))
         .WillByDefault([this](MediaSinksObserver* observer) {
-          auto it = std::find(media_sinks_observers_.begin(),
-                              media_sinks_observers_.end(), observer);
+          auto it = base::ranges::find(media_sinks_observers_, observer);
           if (it != media_sinks_observers_.end()) {
             media_sinks_observers_.erase(it);
           }
@@ -297,7 +297,7 @@ class MediaRouteStarterTest : public ChromeRenderViewHostTestHarness {
   std::string GetLogEntry(const std::string& logs_json,
                           const std::string& attribute) {
     base::Value logs = base::JSONReader::Read(logs_json).value();
-    return *logs.GetListDeprecated()[0].FindStringKey(attribute);
+    return *logs.GetList()[0].GetDict().FindString(attribute);
   }
 
   void DestroyMediaRouteStarter() { starter_.reset(); }

@@ -6,13 +6,13 @@
 
 #include <string>
 
-#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/check_is_test.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
@@ -30,6 +30,7 @@
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/consent_level.h"
@@ -436,10 +437,8 @@ void SyncConsentScreen::SetSyncEverythingEnabled(bool enabled) {
     syncer::UserSelectableTypeSet empty_set;
     sync_settings->SetSelectedTypes(enabled, empty_set);
 
-    if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
-      syncer::UserSelectableOsTypeSet os_empty_set;
-      sync_settings->SetSelectedOsTypes(enabled, os_empty_set);
-    }
+    syncer::UserSelectableOsTypeSet os_empty_set;
+    sync_settings->SetSelectedOsTypes(enabled, os_empty_set);
   }
 }
 
@@ -481,7 +480,7 @@ void SyncConsentScreen::HandleContinue(
 void SyncConsentScreen::OnUserAction(const base::Value::List& args) {
   const std::string& action_id = args[0].GetString();
   if (action_id == kUserActionContinue) {
-    CHECK_EQ(args.size(), 5);
+    CHECK_EQ(args.size(), 5u);
     const bool opted_in = args[1].GetBool();
     const bool review_sync = args[2].GetBool();
     const base::Value::List& consent_description_list = args[3].GetList();

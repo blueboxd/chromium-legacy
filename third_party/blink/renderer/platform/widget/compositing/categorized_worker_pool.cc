@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,8 +32,9 @@
 namespace blink {
 namespace {
 
-const base::Feature kUseCompositorJob{"UseCompositorJob",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kUseCompositorJob,
+             "UseCompositorJob",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Task categories running at normal thread priority.
 constexpr cc::TaskCategory kNormalThreadPriorityCategories[] = {
@@ -242,7 +243,7 @@ void CategorizedWorkerPoolImpl::Start(int max_concurrency_foreground) {
       &has_task_for_background_priority_thread_cv_);
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   thread->SetBackgroundingCallback(
-      Thread::MainThread()->GetDeprecatedTaskRunner(),
+      Thread::MainThread()->GetTaskRunner(MainThreadTaskRunnerRestricted()),
       base::BindOnce([](base::PlatformThreadId thread_id) {
         Platform::Current()->SetThreadType(thread_id,
                                            base::ThreadType::kBackground);

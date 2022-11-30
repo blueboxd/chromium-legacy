@@ -8,10 +8,12 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/task/bind_post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/fusebox/fusebox_errno.h"
@@ -20,10 +22,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "storage/browser/file_system/async_file_util.h"
+#include "storage/browser/file_system/external_mount_points.h"
 #include "storage/browser/file_system/file_stream_reader.h"
-#include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/common/file_system/file_system_util.h"
+#include "third_party/cros_system_api/dbus/fusebox/dbus-constants.h"
 
 // This file provides the "business logic" half of the FuseBox server, coupled
 // with the "D-Bus protocol logic" half in fusebox_service_provider.cc.
@@ -258,11 +261,49 @@ void RunStatCallback(
   std::move(callback).Run(FileErrorToErrno(error_code), info, read_only);
 }
 
+std::string SubdirForTempDir(base::ScopedTempDir& scoped_temp_dir) {
+  std::string basename = scoped_temp_dir.GetPath().BaseName().AsUTF8Unsafe();
+  while (!basename.empty() && (basename[0] == '.')) {  // Strip leading dots.
+    basename = basename.substr(1);
+  }
+  return base::StrCat({file_manager::util::kFuseBoxSubdirPrefixTMP, basename});
+}
+
 }  // namespace
 
 Server::PrefixMapEntry::PrefixMapEntry(std::string fs_url_prefix_arg,
                                        bool read_only_arg)
     : fs_url_prefix(fs_url_prefix_arg), read_only(read_only_arg) {}
+
+Server::ReadDir2MapEntry::ReadDir2MapEntry(Server::ReadDir2Callback callback)
+    : callback_(std::move(callback)) {}
+
+Server::ReadDir2MapEntry::ReadDir2MapEntry(ReadDir2MapEntry&&) = default;
+
+Server::ReadDir2MapEntry::~ReadDir2MapEntry() = default;
+
+bool Server::ReadDir2MapEntry::Reply(uint64_t cookie,
+                                     ReadDir2Callback callback) {
+  if (callback) {
+    if (callback_) {
+      ReadDir2ResponseProto response_proto;
+      response_proto.set_posix_error_code(EINVAL);
+      std::move(callback_).Run(response_proto);
+    }
+    callback_ = std::move(callback);
+  } else if (!callback_) {
+    return false;
+  }
+
+  if (posix_error_code_ != 0) {
+    response_.set_posix_error_code(posix_error_code_);
+  } else {
+    response_.set_cookie(has_more_ ? cookie : 0);
+  }
+  std::move(callback_).Run(std::move(response_));
+  response_ = ReadDir2ResponseProto();
+  return (posix_error_code_ != 0) || !has_more_;
+}
 
 // static
 Server* Server::GetInstance() {
@@ -351,6 +392,22 @@ storage::FileSystemURL Server::ResolveFilename(Profile* profile,
       ->CrackURLInFirstPartyContext(GURL(resolved.first));
 }
 
+base::Value Server::GetDebugJSON() {
+  base::Value::Dict subdirs;
+  subdirs.Set(kMonikerSubdir, base::Value("[special]"));
+  for (const auto& i : prefix_map_) {
+    subdirs.Set(i.first,
+                base::Value(base::StrCat(
+                    {i.second.fs_url_prefix,
+                     i.second.read_only ? " (read-only)" : " (read-write)"})));
+  }
+
+  base::Value::Dict dict;
+  dict.Set("monikers", moniker_map_.GetDebugJSON());
+  dict.Set("subdirs", std::move(subdirs));
+  return base::Value(std::move(dict));
+}
+
 void Server::Close(std::string fs_url_as_string, CloseCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -426,6 +483,64 @@ void Server::ReadDir(std::string fs_url_as_string,
           common.fs_url, std::move(outer_callback)));
 }
 
+void Server::ReadDir2(ReadDir2RequestProto request_proto,
+                      ReadDir2Callback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  std::string fs_url_as_string = request_proto.has_file_system_url()
+                                     ? request_proto.file_system_url()
+                                     : std::string();
+  uint64_t cookie = request_proto.has_cookie() ? request_proto.cookie() : 0;
+  int32_t cancel_error_code = request_proto.has_cancel_error_code()
+                                  ? request_proto.cancel_error_code()
+                                  : 0;
+
+  auto common = ParseFileSystemURL(moniker_map_, prefix_map_, fs_url_as_string);
+  if (common.is_moniker_root ||
+      (common.error_code != base::File::Error::FILE_OK)) {
+    ReadDir2ResponseProto response_proto;
+    response_proto.set_posix_error_code(FileErrorToErrno(common.error_code));
+    std::move(callback).Run(response_proto);
+    return;
+  } else if (cancel_error_code) {
+    ReadDir2ResponseProto response_proto;
+    response_proto.set_posix_error_code(cancel_error_code);
+    std::move(callback).Run(response_proto);
+    return;
+  }
+
+  if (cookie) {
+    auto iter = read_dir_2_map_.find(cookie);
+    if (iter == read_dir_2_map_.end()) {
+      ReadDir2ResponseProto response_proto;
+      response_proto.set_posix_error_code(EINVAL);
+      std::move(callback).Run(response_proto);
+    } else if (iter->second.Reply(cookie, std::move(callback))) {
+      read_dir_2_map_.erase(iter);
+    }
+    return;
+  }
+
+  static uint64_t next_cookie = 0;
+  cookie = ++next_cookie;
+  read_dir_2_map_.insert({cookie, ReadDir2MapEntry(std::move(callback))});
+
+  auto outer_callback = base::BindPostTask(
+      base::SequencedTaskRunnerHandle::Get(),
+      base::BindRepeating(&Server::OnReadDirectory,
+                          weak_ptr_factory_.GetWeakPtr(), common.fs_context,
+                          common.read_only, cookie));
+
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindRepeating(
+          base::IgnoreResult(
+              &storage::FileSystemOperationRunner::ReadDirectory),
+          // Unretained is safe: common.fs_context owns its operation_runner.
+          base::Unretained(common.fs_context->operation_runner()),
+          common.fs_url, std::move(outer_callback)));
+}
+
 void Server::Stat(std::string fs_url_as_string, StatCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -453,6 +568,140 @@ void Server::Stat(std::string fs_url_as_string, StatCallback callback) {
           // Unretained is safe: common.fs_context owns its operation_runner.
           base::Unretained(common.fs_context->operation_runner()),
           common.fs_url, metadata_fields, std::move(outer_callback)));
+}
+
+void Server::ListStorages(ListStoragesRequestProto request,
+                          ListStoragesCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  ListStoragesResponseProto response;
+  response.add_storages(kMonikerSubdir);
+  for (const auto& i : prefix_map_) {
+    response.add_storages(i.first);
+  }
+  std::move(callback).Run(response);
+}
+
+void Server::MakeTempDir(MakeTempDirCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&Server::MakeTempDirOnWorkerThread,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void Server::MakeTempDirOnWorkerThread(MakeTempDirCallback callback) {
+  base::ScopedTempDir scoped_temp_dir;
+  bool create_succeeded = scoped_temp_dir.CreateUniqueTempDir();
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Server::ReplyToMakeTempDir,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(scoped_temp_dir),
+                     create_succeeded, std::move(callback)));
+}
+
+void Server::ReplyToMakeTempDir(base::ScopedTempDir scoped_temp_dir,
+                                bool create_succeeded,
+                                MakeTempDirCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!create_succeeded) {
+    std::move(callback).Run("CreateUniqueTempDir failed", "", "");
+    return;
+  }
+
+  const std::string subdir = SubdirForTempDir(scoped_temp_dir);
+  const std::string mount_name =
+      base::StrCat({file_manager::util::kFuseBoxMountNamePrefix, subdir});
+  const std::string fusebox_file_path =
+      base::StrCat({file_manager::util::kFuseBoxMediaSlashPath, subdir});
+  const base::FilePath underlying_file_path = scoped_temp_dir.GetPath();
+
+  storage::ExternalMountPoints* const mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
+  if (!mount_points->RegisterFileSystem(
+          mount_name, storage::kFileSystemTypeLocal,
+          storage::FileSystemMountOption(), underlying_file_path)) {
+    std::move(callback).Run("RegisterFileSystem failed", "", "");
+    return;
+  }
+
+  scoped_refptr<storage::FileSystemContext> fs_context =
+      file_manager::util::GetFileManagerFileSystemContext(
+          ProfileManager::GetActiveUserProfile());
+  const blink::StorageKey storage_key =
+      blink::StorageKey::CreateFromStringForTesting(
+          "http://fusebox-server.example.com");
+  fs_context->external_backend()->GrantFileAccessToOrigin(
+      storage_key.origin(), base::FilePath(mount_name));
+
+  storage::FileSystemURL fs_url =
+      mount_points->CreateExternalFileSystemURL(storage_key, mount_name, {});
+  constexpr bool read_only = false;
+  RegisterFSURLPrefix(subdir, fs_url.ToGURL().spec(), read_only);
+
+  temp_subdir_map_.insert({fusebox_file_path, std::move(scoped_temp_dir)});
+
+  std::move(callback).Run("", fusebox_file_path,
+                          underlying_file_path.AsUTF8Unsafe());
+}
+
+void Server::RemoveTempDir(std::string fusebox_file_path) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  auto iter = temp_subdir_map_.find(fusebox_file_path);
+  if (iter == temp_subdir_map_.end()) {
+    return;
+  }
+  base::ScopedTempDir scoped_temp_dir = std::move(iter->second);
+  const std::string subdir = SubdirForTempDir(scoped_temp_dir);
+  const std::string mount_name =
+      base::StrCat({file_manager::util::kFuseBoxMountNamePrefix, subdir});
+  temp_subdir_map_.erase(iter);
+  UnregisterFSURLPrefix(subdir);
+  storage::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
+      mount_name);
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(
+          [](base::ScopedTempDir) {
+            // No-op other than running the base::ScopedTempDir destructor.
+          },
+          std::move(scoped_temp_dir)));
+}
+
+void Server::OnReadDirectory(
+    scoped_refptr<storage::FileSystemContext> fs_context,  // See § above.
+    bool read_only,
+    uint64_t cookie,
+    base::File::Error error_code,
+    storage::AsyncFileUtil::EntryList entry_list,
+    bool has_more) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  auto iter = read_dir_2_map_.find(cookie);
+  if (iter == read_dir_2_map_.end()) {
+    return;
+  }
+
+  if (iter->second.posix_error_code_ == 0) {
+    iter->second.posix_error_code_ = FileErrorToErrno(error_code);
+  }
+
+  for (const auto& entry : entry_list) {
+    bool is_directory = entry.type == filesystem::mojom::FsFileType::DIRECTORY;
+    auto* proto = iter->second.response_.add_entries();
+    proto->set_is_directory(is_directory);
+    proto->set_name(entry.name.value());
+    proto->set_mode_bits(MakeModeBits(is_directory, read_only));
+  }
+
+  iter->second.has_more_ = has_more;
+
+  if (iter->second.Reply(cookie, ReadDir2Callback())) {
+    read_dir_2_map_.erase(iter);
+  }
 }
 
 }  // namespace fusebox

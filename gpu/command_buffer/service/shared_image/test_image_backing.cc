@@ -24,7 +24,10 @@ class TestGLTextureImageRepresentation : public GLTextureImageRepresentation {
       : GLTextureImageRepresentation(manager, backing, tracker),
         texture_(texture) {}
 
-  gles2::Texture* GetTexture() override { return texture_; }
+  gles2::Texture* GetTexture(int plane_index) override {
+    DCHECK_EQ(plane_index, 0);
+    return texture_;
+  }
   bool BeginAccess(GLenum mode) override {
     return static_cast<TestImageBacking*>(backing())->can_access();
   }
@@ -44,8 +47,9 @@ class TestGLTexturePassthroughImageRepresentation
       : GLTexturePassthroughImageRepresentation(manager, backing, tracker),
         texture_(std::move(texture)) {}
 
-  const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough()
-      override {
+  const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough(
+      int plane_index) override {
+    DCHECK_EQ(plane_index, 0);
     return texture_;
   }
   bool BeginAccess(GLenum mode) override {
@@ -154,7 +158,7 @@ class TestOverlayImageRepresentation : public OverlayImageRepresentation {
 }  // namespace
 
 TestImageBacking::TestImageBacking(const Mailbox& mailbox,
-                                   viz::ResourceFormat format,
+                                   viz::SharedImageFormat format,
                                    const gfx::Size& size,
                                    const gfx::ColorSpace& color_space,
                                    GrSurfaceOrigin surface_origin,
@@ -188,7 +192,7 @@ TestImageBacking::TestImageBacking(const Mailbox& mailbox,
 }
 
 TestImageBacking::TestImageBacking(const Mailbox& mailbox,
-                                   viz::ResourceFormat format,
+                                   viz::SharedImageFormat format,
                                    const gfx::Size& size,
                                    const gfx::ColorSpace& color_space,
                                    GrSurfaceOrigin surface_origin,

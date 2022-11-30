@@ -59,7 +59,7 @@ static inline bool CompareStops(const Gradient::ColorStop& a,
 }
 
 void Gradient::AddColorStop(const Gradient::ColorStop& stop) {
-  if (stops_.IsEmpty()) {
+  if (stops_.empty()) {
     stops_sorted_ = true;
   } else {
     stops_sorted_ = stops_sorted_ && CompareStops(stops_.back(), stop);
@@ -92,7 +92,7 @@ void Gradient::SortStopsIfNecessary() const {
 // (making this logic redundant), but in practice there are rendering diffs;
 // investigate.
 void Gradient::FillSkiaStops(ColorBuffer& colors, OffsetBuffer& pos) const {
-  if (stops_.IsEmpty()) {
+  if (stops_.empty()) {
     // A gradient with no stops must be transparent black.
     pos.push_back(WebCoreDoubleToSkScalar(0));
     colors.push_back(SK_ColorTRANSPARENT);
@@ -122,7 +122,7 @@ void Gradient::FillSkiaStops(ColorBuffer& colors, OffsetBuffer& pos) const {
 
   // Copy the last stop to 1.0 if needed. See comment above about this float
   // comparison.
-  DCHECK(!pos.IsEmpty());
+  DCHECK(!pos.empty());
   if (pos.back() < 1) {
     pos.push_back(WebCoreDoubleToSkScalar(1));
     colors.push_back(colors.back());
@@ -135,9 +135,9 @@ sk_sp<PaintShader> Gradient::CreateShaderInternal(
   DCHECK(stops_sorted_);
 
   ColorBuffer colors;
-  colors.ReserveCapacity(stops_.size());
+  colors.reserve(stops_.size());
   OffsetBuffer pos;
-  pos.ReserveCapacity(stops_.size());
+  pos.reserve(stops_.size());
 
   FillSkiaStops(colors, pos);
   DCHECK_GE(colors.size(), 2ul);

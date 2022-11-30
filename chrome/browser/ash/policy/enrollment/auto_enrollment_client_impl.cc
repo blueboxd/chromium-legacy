@@ -21,7 +21,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_state_message_processor.h"
-#include "chrome/browser/ash/policy/enrollment/private_membership/psm_rlwe_dmserver_client.h"
+#include "chrome/browser/ash/policy/enrollment/psm/rlwe_dmserver_client.h"
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_device_state.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
@@ -252,35 +252,33 @@ class AutoEnrollmentClientImpl::FREServerStateAvailabilityRequester
     request_job_ = device_management_service_->CreateJob(std::move(config));
   }
 
-  void HandleRequestCompletion(DeviceManagementService::Job* job,
-                               DeviceManagementStatus status,
-                               int net_error,
-                               const em::DeviceManagementResponse& response) {
+  void HandleRequestCompletion(DMServerJobResult result) {
     DCHECK(request_job_);
     DCHECK(completion_callback_);
 
     request_job_.reset();
 
-    base::UmaHistogramSparse(kUMAHashDanceRequestStatus + uma_suffix_, status);
-    // TODO(crbug.com/1312919): Check `status` for specific errors.
-    if (status != DM_STATUS_SUCCESS) {
-      LOG(ERROR) << "Auto enrollment error: " << status;
-      if (status == DM_STATUS_REQUEST_FAILED)
+    base::UmaHistogramSparse(kUMAHashDanceRequestStatus + uma_suffix_,
+                             result.dm_status);
+    // TODO(crbug.com/1312919): Check `result.dm_status` for specific errors.
+    if (result.dm_status != DM_STATUS_SUCCESS) {
+      LOG(ERROR) << "Auto enrollment error: " << result.dm_status;
+      if (result.dm_status == DM_STATUS_REQUEST_FAILED)
         base::UmaHistogramSparse(kUMAHashDanceNetworkErrorCode + uma_suffix_,
-                                 -net_error);
-      RunCallback(status == DM_STATUS_REQUEST_FAILED
+                                 -result.net_error);
+      RunCallback(result.dm_status == DM_STATUS_REQUEST_FAILED
                       ? ServerStateAvailabilityResult::kConnectionError
                       : ServerStateAvailabilityResult::kServerError);
       return;
     }
 
-    ServerStateAvailabilityResult result =
+    ServerStateAvailabilityResult availability_result =
         ServerStateAvailabilityResult::kSuccess;
     const em::DeviceAutoEnrollmentResponse& enrollment_response =
-        response.auto_enrollment_response();
-    if (!response.has_auto_enrollment_response()) {
+        result.response.auto_enrollment_response();
+    if (!result.response.has_auto_enrollment_response()) {
       LOG(ERROR) << "Server failed to provide auto-enrollment response.";
-      result = ServerStateAvailabilityResult::kServerError;
+      availability_result = ServerStateAvailabilityResult::kServerError;
     } else if (enrollment_response.has_expected_modulus()) {
       // Server is asking us to retry with a different modulus.
       modulus_updates_received_++;
@@ -291,18 +289,18 @@ class AutoEnrollmentClientImpl::FREServerStateAvailabilityRequester
         LOG(ERROR) << "Auto enrollment: the server didn't ask for a power-of-2 "
                    << "modulus. Using the closest power-of-2 instead "
                    << "(" << modulus << " vs 2^" << power << ")";
-        result = ServerStateAvailabilityResult::kServerError;
+        availability_result = ServerStateAvailabilityResult::kServerError;
       }
       if (modulus_updates_received_ >= 2) {
         LOG(ERROR) << "Auto enrollment error: already retried with an updated "
                    << "modulus but the server asked for a new one again: "
                    << power;
-        result = ServerStateAvailabilityResult::kServerError;
+        availability_result = ServerStateAvailabilityResult::kServerError;
       } else if (power > power_limit_) {
         LOG(ERROR) << "Auto enrollment error: the server asked for a larger "
                    << "modulus than the client accepts (" << power << " vs "
                    << power_limit_ << ").";
-        result = ServerStateAvailabilityResult::kServerError;
+        availability_result = ServerStateAvailabilityResult::kServerError;
       } else {
         // Retry at most once with the modulus that the server requested.
         if (power <= current_power_) {
@@ -332,26 +330,26 @@ class AutoEnrollmentClientImpl::FREServerStateAvailabilityRequester
       // preserved in the logs.
       LOG(WARNING) << "Received has_state=" << has_server_state;
 
-      result = ServerStateAvailabilityResult::kSuccess;
+      availability_result = ServerStateAvailabilityResult::kSuccess;
       RecordHashDanceSuccessTimeHistogram();
     }
 
     const bool succeeded_with_result =
-        result == ServerStateAvailabilityResult::kSuccess &&
+        availability_result == ServerStateAvailabilityResult::kSuccess &&
         GetServerStateIfObtained();
     const bool failed_without_result =
-        result != ServerStateAvailabilityResult::kSuccess &&
+        availability_result != ServerStateAvailabilityResult::kSuccess &&
         !GetServerStateIfObtained();
     DCHECK(succeeded_with_result || failed_without_result);
 
     // Bucket download done, update UMA.
     UpdateBucketDownloadTimingHistograms();
-    RunCallback(result);
+    RunCallback(availability_result);
   }
 
-  void RunCallback(ServerStateAvailabilityResult result) {
+  void RunCallback(ServerStateAvailabilityResult availability_result) {
     DCHECK(completion_callback_);
-    std::move(completion_callback_).Run(result);
+    std::move(completion_callback_).Run(availability_result);
   }
 
   bool IsIdHashInProtobuf(
@@ -446,7 +444,7 @@ class AutoEnrollmentClientImpl::InitialServerStateAvailabilityRequester
   }
 
   explicit InitialServerStateAvailabilityRequester(
-      std::unique_ptr<PsmRlweDmserverClient> psm_rlwe_dmserver_client,
+      std::unique_ptr<psm::RlweDmserverClient> psm_rlwe_dmserver_client,
       PrefService* local_state)
       : psm_rlwe_dmserver_client_(std::move(psm_rlwe_dmserver_client)),
         local_state_(local_state) {}
@@ -490,18 +488,18 @@ class AutoEnrollmentClientImpl::InitialServerStateAvailabilityRequester
   }
 
   void HandlePsmCompletion(
-      PsmRlweDmserverClient::ResultHolder psm_result_holder) {
+      psm::RlweDmserverClient::ResultHolder psm_result_holder) {
     UpdateLocalState(psm_result_holder);
 
     switch (psm_result_holder.psm_result) {
-      case PsmResult::kConnectionError:
+      case psm::RlweResult::kConnectionError:
         RunCallback(ServerStateAvailabilityResult::kConnectionError);
         break;
-      case PsmResult::kServerError:
+      case psm::RlweResult::kServerError:
         RunCallback(ServerStateAvailabilityResult::kServerError);
         break;
 
-      case PsmResult::kSuccessfulDetermination:
+      case psm::RlweResult::kSuccessfulDetermination:
         DCHECK(GetServerStateIfObtained());
         RunCallback(ServerStateAvailabilityResult::kSuccess);
         break;
@@ -511,21 +509,21 @@ class AutoEnrollmentClientImpl::InitialServerStateAvailabilityRequester
       // error) and will report final progress with given server state even if
       // it's not available.
       // TODO(crbug.com/1249792): Handle internal PSM Errors.
-      case PsmResult::kCreateRlweClientLibraryError:
-      case PsmResult::kCreateOprfRequestLibraryError:
-      case PsmResult::kCreateQueryRequestLibraryError:
-      case PsmResult::kProcessingQueryResponseLibraryError:
-      case PsmResult::kEmptyOprfResponseError:
-      case PsmResult::kEmptyQueryResponseError:
+      case psm::RlweResult::kCreateRlweClientLibraryError:
+      case psm::RlweResult::kCreateOprfRequestLibraryError:
+      case psm::RlweResult::kCreateQueryRequestLibraryError:
+      case psm::RlweResult::kProcessingQueryResponseLibraryError:
+      case psm::RlweResult::kEmptyOprfResponseError:
+      case psm::RlweResult::kEmptyQueryResponseError:
         DCHECK(!GetServerStateIfObtained());
         RunCallback(ServerStateAvailabilityResult::kPsmInternalError);
         break;
     }
   }
 
-  void RunCallback(ServerStateAvailabilityResult result) {
+  void RunCallback(ServerStateAvailabilityResult availability_result) {
     DCHECK(completion_callback_);
-    std::move(completion_callback_).Run(result);
+    std::move(completion_callback_).Run(availability_result);
   }
 
   void PrepareLocalState() {
@@ -538,7 +536,7 @@ class AutoEnrollmentClientImpl::InitialServerStateAvailabilityRequester
   }
 
   void UpdateLocalState(
-      const PsmRlweDmserverClient::ResultHolder& psm_result_holder) {
+      const psm::RlweDmserverClient::ResultHolder& psm_result_holder) {
     if (psm_result_holder.IsError()) {
       local_state_->SetInteger(prefs::kEnrollmentPsmResult,
                                em::DeviceRegisterRequest::PSM_RESULT_ERROR);
@@ -559,7 +557,7 @@ class AutoEnrollmentClientImpl::InitialServerStateAvailabilityRequester
 
   // Obtains the device state using PSM protocol. Handles all communications
   // related to PSM protocol with DMServer.
-  std::unique_ptr<PsmRlweDmserverClient> psm_rlwe_dmserver_client_;
+  std::unique_ptr<psm::RlweDmserverClient> psm_rlwe_dmserver_client_;
 
   PrefService* local_state_;
 
@@ -646,23 +644,21 @@ class AutoEnrollmentClientImpl::ServerStateRetriever {
     request_job_ = device_management_service_->CreateJob(std::move(config));
   }
 
-  void HandleRequestCompletion(DeviceManagementService::Job* job,
-                               DeviceManagementStatus status,
-                               int net_error,
-                               const em::DeviceManagementResponse& response) {
+  void HandleRequestCompletion(DMServerJobResult result) {
     DCHECK(request_job_);
     DCHECK(completion_callback_);
 
     request_job_.reset();
 
-    base::UmaHistogramSparse(kUMAHashDanceRequestStatus + uma_suffix_, status);
-    // TODO(crbug.com/1312919): Check `status` for specific errors.
-    if (status != DM_STATUS_SUCCESS) {
-      LOG(ERROR) << "Auto enrollment error: " << status;
-      if (status == DM_STATUS_REQUEST_FAILED)
+    base::UmaHistogramSparse(kUMAHashDanceRequestStatus + uma_suffix_,
+                             result.dm_status);
+    // TODO(crbug.com/1312919): Check `result.dm_status` for specific errors.
+    if (result.dm_status != DM_STATUS_SUCCESS) {
+      LOG(ERROR) << "Auto enrollment error: " << result.dm_status;
+      if (result.dm_status == DM_STATUS_REQUEST_FAILED)
         base::UmaHistogramSparse(kUMAHashDanceNetworkErrorCode + uma_suffix_,
-                                 -net_error);
-      RunCallback(status == DM_STATUS_REQUEST_FAILED
+                                 -result.net_error);
+      RunCallback(result.dm_status == DM_STATUS_REQUEST_FAILED
                       ? ServerStateRetrievalResult::kConnectionError
                       : ServerStateRetrievalResult::kServerError);
       return;
@@ -670,7 +666,7 @@ class AutoEnrollmentClientImpl::ServerStateRetriever {
 
     absl::optional<AutoEnrollmentStateMessageProcessor::ParsedResponse>
         parsed_response_result =
-            state_download_message_processor_->ParseResponse(response);
+            state_download_message_processor_->ParseResponse(result.response);
     if (!parsed_response_result) {
       RunCallback(ServerStateRetrievalResult::kServerError);
       return;
@@ -765,7 +761,7 @@ AutoEnrollmentClientImpl::FactoryImpl::CreateForInitialEnrollment(
     const std::string& device_brand_code,
     int power_initial,
     int power_limit,
-    std::unique_ptr<PsmRlweDmserverClient> psm_rlwe_dmserver_client) {
+    std::unique_ptr<psm::RlweDmserverClient> psm_rlwe_dmserver_client) {
   return base::WrapUnique(new AutoEnrollmentClientImpl(
       progress_callback,
       std::make_unique<InitialServerStateAvailabilityRequester>(

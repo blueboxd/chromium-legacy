@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -367,6 +367,57 @@ UnionTraits<blink::mojom::ExecutionContextTokenDataView,
             blink::ExecutionContextToken>::
     paint_worklet_token(const blink::ExecutionContextToken& token) {
   return token.GetAs<blink::PaintWorkletToken>();
+}
+
+// static
+bool UnionTraits<blink::mojom::WebGPUExecutionContextTokenDataView,
+                 blink::WebGPUExecutionContextToken>::
+    Read(blink::mojom::WebGPUExecutionContextTokenDataView input,
+         blink::WebGPUExecutionContextToken* output) {
+  using Tag = blink::mojom::WebGPUExecutionContextTokenDataView::Tag;
+  switch (input.tag()) {
+    case Tag::kDocumentToken: {
+      blink::DocumentToken token;
+      bool ret = input.ReadDocumentToken(&token);
+      *output = token;
+      return ret;
+    }
+    case Tag::kDedicatedWorkerToken: {
+      blink::DedicatedWorkerToken token;
+      bool ret = input.ReadDedicatedWorkerToken(&token);
+      *output = token;
+      return ret;
+    }
+  }
+  return false;
+}
+
+// static
+blink::mojom::WebGPUExecutionContextTokenDataView::Tag
+UnionTraits<blink::mojom::WebGPUExecutionContextTokenDataView,
+            blink::WebGPUExecutionContextToken>::
+    GetTag(const blink::WebGPUExecutionContextToken& token) {
+  using Tag = blink::mojom::WebGPUExecutionContextTokenDataView::Tag;
+  if (token.Is<blink::DocumentToken>())
+    return Tag::kDocumentToken;
+  DCHECK(token.Is<blink::DedicatedWorkerToken>());
+  return Tag::kDedicatedWorkerToken;
+}
+
+// static
+blink::DocumentToken
+UnionTraits<blink::mojom::WebGPUExecutionContextTokenDataView,
+            blink::WebGPUExecutionContextToken>::
+    document_token(const blink::WebGPUExecutionContextToken& token) {
+  return token.GetAs<blink::DocumentToken>();
+}
+
+// static
+blink::DedicatedWorkerToken
+UnionTraits<blink::mojom::WebGPUExecutionContextTokenDataView,
+            blink::WebGPUExecutionContextToken>::
+    dedicated_worker_token(const blink::WebGPUExecutionContextToken& token) {
+  return token.GetAs<blink::DedicatedWorkerToken>();
 }
 
 }  // namespace mojo

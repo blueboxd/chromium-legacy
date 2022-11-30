@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,8 @@ ScriptPromiseTester::ScriptPromiseTester(ScriptState* script_state,
 void ScriptPromiseTester::WaitUntilSettled() {
   auto* isolate = script_state_->GetIsolate();
   while (state_ == State::kNotSettled) {
-    v8::MicrotasksScope::PerformCheckpoint(isolate);
+    script_state_->GetContext()->GetMicrotaskQueue()->PerformCheckpoint(
+        isolate);
     test::RunPendingTasks();
   }
 }

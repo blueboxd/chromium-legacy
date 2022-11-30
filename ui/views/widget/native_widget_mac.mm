@@ -180,6 +180,15 @@ void NativeWidgetMac::GetWindowFrameTitlebarHeight(
   *titlebar_height = 0;
 }
 
+bool NativeWidgetMac::WillExecuteCommand(
+    int32_t command,
+    WindowOpenDisposition window_open_disposition,
+    bool is_before_first_responder) {
+  // This is supported only by subclasses in chrome/browser/ui.
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool NativeWidgetMac::ExecuteCommand(
     int32_t command,
     WindowOpenDisposition window_open_disposition,
@@ -218,18 +227,20 @@ void NativeWidgetMac::InitNativeWidget(Widget::InitParams params) {
         [CreateNSWindow(create_window_params.get()) retain]);
     ns_window_host_->CreateInProcessNSWindowBridge(std::move(window));
   }
-  ns_window_host_->SetParent(parent_host);
-  ns_window_host_->InitWindow(params,
-                              ConvertBoundsToScreenIfNeeded(params.bounds));
 
   // In immersive fullscreen, bubbles will be shown under the toolbar by
-  // default. Fix it by explicitly StackAbove() its parent.
+  // default. Fix it by using a higher z-order level.
   // TODO(mek): Figure out how to make this work with remote remote_cocoa
   // windows.
   if (params.parent && remote_cocoa::IsNSToolbarFullScreenWindow(
                            params.parent.GetNativeNSView().window)) {
-    StackAbove(params.parent);
+    if (!params.z_order || params.z_order == ui::ZOrderLevel::kNormal)
+      params.z_order = ui::ZOrderLevel::kFloatingWindow;
   }
+
+  ns_window_host_->SetParent(parent_host);
+  ns_window_host_->InitWindow(params,
+                              ConvertBoundsToScreenIfNeeded(params.bounds));
 
   OnWindowInitialized();
 
@@ -296,6 +307,14 @@ const Widget* NativeWidgetMac::GetWidget() const {
 }
 
 gfx::NativeView NativeWidgetMac::GetNativeView() const {
+  // The immersive mode's overlay widget content view is moved to an another
+  // NSWindow when entering fullscreen. When the view is moved, the current
+  // content view will be nil. Return the cached original content view instead.
+  NSView* contentView = (NSView*)GetNativeWindowProperty(
+      views::NativeWidgetMacNSWindowHost::kImmersiveContentNSView);
+  if (contentView) {
+    return gfx::NativeView(contentView);
+  }
   // Returns a BridgedContentView, unless there is no views::RootView set.
   return [GetNativeWindow().GetNativeNSWindow() contentView];
 }
@@ -531,6 +550,9 @@ void NativeWidgetMac::StackAtTop() {
 }
 
 bool NativeWidgetMac::IsStackedAbove(gfx::NativeView native_view) {
+  if (!GetNSWindowMojo())
+    return false;
+
   // -[NSApplication orderedWindows] are ordered front-to-back.
   NSWindow* first = GetNativeWindow().GetNativeNSWindow();
   NSWindow* second = [native_view.GetNativeNSView() window];
@@ -645,7 +667,9 @@ bool NativeWidgetMac::IsVisibleOnAllWorkspaces() const {
 }
 
 void NativeWidgetMac::Maximize() {
-  NOTIMPLEMENTED();  // See IsMaximized().
+  if (!GetNSWindowMojo())
+    return;
+  GetNSWindowMojo()->SetZoomed(true);
 }
 
 void NativeWidgetMac::Minimize() {
@@ -655,9 +679,9 @@ void NativeWidgetMac::Minimize() {
 }
 
 bool NativeWidgetMac::IsMaximized() const {
-  // The window frame isn't altered on Mac unless going fullscreen. The green
-  // "+" button just makes the window bigger. So, always false.
-  return false;
+  if (!ns_window_host_)
+    return false;
+  return ns_window_host_->IsZoomed();
 }
 
 bool NativeWidgetMac::IsMinimized() const {
@@ -671,6 +695,7 @@ void NativeWidgetMac::Restore() {
     return;
   GetNSWindowMojo()->ExitFullscreen();
   GetNSWindowMojo()->SetMiniaturized(false);
+  GetNSWindowMojo()->SetZoomed(false);
 }
 
 void NativeWidgetMac::SetFullscreen(bool fullscreen,

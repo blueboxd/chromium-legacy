@@ -192,8 +192,8 @@ TEST(AboutFlagsTest, ScopedFeatureEntriesRestoresFeatureEntries) {
   EXPECT_GT(old_entries.size(), 0U);
   const char* first_feature_name = old_entries[0].internal_name;
   {
-    const base::Feature kTestFeature1{"FeatureName1",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
+    static BASE_FEATURE(kTestFeature1, "FeatureName1",
+                        base::FEATURE_ENABLED_BY_DEFAULT);
     testing::ScopedFeatureEntries feature_entries(
         {{"feature-1", "", "", flags_ui::FlagsState::GetCurrentPlatform(),
           FEATURE_VALUE_TYPE(kTestFeature1)}});
@@ -289,8 +289,9 @@ TEST_F(AboutFlagsHistogramTest, CheckHistograms) {
                 enum_entry->first == flag)
         << "tools/metrics/histograms/enums.xml enum LoginCustomFlags doesn't "
            "contain switch '"
-        << flag << "' (value=" << uma_id
-        << " expected). Consider adding entry:\n"
+        << flag << "' (value=" << uma_id << " expected). Consider running:\n"
+        << "  tools/metrics/histograms/generate_flag_enums.py --feature "
+        << flag.substr(0, flag.find(":")) << "\nOr manually adding the entry:\n"
         << "  " << GetHistogramEnumEntryText(flag, uma_id);
   }
 }

@@ -280,13 +280,6 @@ const char kChildWallpaperLarge[] = "child-wallpaper-large";
 // non-user-writable JPEG file).
 const char kChildWallpaperSmall[] = "child-wallpaper-small";
 
-// Make ash use the chromeos service manager to bootstrap mojo connection to
-// cros_healthd.
-// TODO(b/236953728): This is a temporary flag for migration. remove it after
-// fully sync with chromeos.
-const char kCrosHealthdUsesServiceManager[] =
-    "cros-healthd-uses-service-manager";
-
 // Forces CrOS region value.
 const char kCrosRegion[] = "cros-region";
 
@@ -321,6 +314,10 @@ const char kDemoModeHighlightsApp[] = "demo-mode-highlights-extension";
 
 // App ID to use for screensaver app in demo mode.
 const char kDemoModeScreensaverApp[] = "demo-mode-screensaver-extension";
+
+// Directory from which to fetch the demo mode SWA content (instead of
+// downloading from Omaha).
+const char kDemoModeSwaContentDirectory[] = "demo-mode-swa-content-directory";
 
 // Time in seconds before a machine at OOBE is considered derelict.
 const char kDerelictDetectionTimeout[] = "derelict-detection-timeout";
@@ -565,6 +562,14 @@ const char kForceLaunchBrowser[] = "force-launch-browser";
 // tests can change how it's brought up. This flag disables that.
 const char kForceLoginManagerInTests[] = "force-login-manager-in-tests";
 
+// Forces the cursor to be shown even if we are mimicing touch events. Note that
+// cursor changes are locked when using this switch.
+const char kForceShowCursor[] = "force-show-cursor";
+
+// Force the "release track" UI to show in the system tray. Simulates the system
+// being on a non-stable release channel with feedback enabled.
+const char kForceShowReleaseTrack[] = "force-show-release-track";
+
 // Force system compositor mode when set.
 const char kForceSystemCompositorMode[] = "force-system-compositor-mode";
 
@@ -750,6 +755,11 @@ const char kOobeLargeScreenSpecialScaling[] =
 // Specifies directory for screenshots taken with OOBE UI Debugger.
 const char kOobeScreenshotDirectory[] = "oobe-screenshot-dir";
 
+// Shows a11y button on the marketing opt in without visiting gesture navigation
+// screen.
+const char kOobeShowAccessibilityButtonOnMarketingOptInForTesting[] =
+    "oobe-show-accessibility-button-on-marketing-opt-in-for-testing";
+
 // Skips all other OOBE pages after user login.
 const char kOobeSkipPostLogin[] = "oobe-skip-postlogin";
 
@@ -841,10 +851,6 @@ const char kSupportsClamshellAutoRotation[] =
 // Hides all Message Center notification popups (toasts). Used for testing.
 const char kSuppressMessageCenterPopups[] = "suppress-message-center-popups";
 
-// Enables System Extensions Debug mode e.g Force enable System Extensions APIs
-// on all Service Workers.
-const char kSystemExtensionsDebug[] = "system-extensions-debug";
-
 // Specifies directory for the Telemetry System Web Extension.
 const char kTelemetryExtensionDirectory[] = "telemetry-extension-dir";
 
@@ -888,6 +894,13 @@ const char kUnfilteredBluetoothDevices[] = "unfiltered-bluetooth-devices";
 // assumes that the device has reached Auto Update Expiration. This is useful
 // for testing the policy behaviour on the DUT.
 const char kUpdateRequiredAueForTest[] = "aue-reached-for-update-required-test";
+
+// Flag that stored MyFiles folder inside the user data directory.
+// $HOME/Downloads is used as MyFiles folder for ease access to local files for
+// debugging when running on Linux. By setting this flag, <cryptohome>/MyFiles
+// is used even on Linux.
+const char kUseMyFilesInUserDataDirForTesting[] =
+    "use-myfiles-in-user-data-dir-for-testing";
 
 // Used to tell the policy infrastructure to not let profile initialization
 // complete until policy is manually set by a test. This is used to provide
@@ -943,6 +956,11 @@ bool ShouldTetherHostScansIgnoreWiredConnections() {
 
 bool ShouldSkipOobePostLogin() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kOobeSkipPostLogin);
+}
+
+bool ShouldShowAccessibilityButtonOnMarketingOptInForTesting() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kOobeShowAccessibilityButtonOnMarketingOptInForTesting);
 }
 
 bool IsTabletFormFactor() {

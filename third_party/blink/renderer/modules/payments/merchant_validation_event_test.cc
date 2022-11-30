@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ TEST(MerchantValidationEventTest, EmptyPaymentMethodIsValid) {
       scope.GetScriptState(), "merchantvalidation", &initializer,
       scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_TRUE(event->methodName().IsEmpty());
+  EXPECT_TRUE(event->methodName().empty());
   EXPECT_EQ(KURL(kValidURL), event->validationURL());
 }
 

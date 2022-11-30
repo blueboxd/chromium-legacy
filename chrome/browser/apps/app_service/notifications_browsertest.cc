@@ -54,7 +54,6 @@
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
-using apps::mojom::OptionalBool;
 using extensions::Extension;
 using extensions::ExtensionNotificationDisplayHelper;
 using extensions::ExtensionNotificationDisplayHelperFactory;
@@ -114,7 +113,6 @@ void RemoveNotification(Profile* profile, const std::string& notification_id) {
 void UninstallApp(Profile* profile, const std::string& app_id) {
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
   proxy->UninstallSilently(app_id, apps::UninstallSource::kAppList);
-  proxy->FlushMojoCallsForTesting();
 }
 
 class ScopedBadgingClockOverride {
@@ -155,8 +153,7 @@ class AppNotificationsExtensionApiTest : public extensions::ExtensionApiTest {
     ExtensionTestMessageListener launched_listener("launched",
                                                    ReplyBehavior::kWillReply);
     apps::AppServiceProxyFactory::GetForProfile(profile())->Launch(
-        extension->id(), ui::EF_SHIFT_DOWN,
-        apps::mojom::LaunchSource::kFromTest);
+        extension->id(), ui::EF_SHIFT_DOWN, apps::LaunchSource::kFromTest);
     EXPECT_TRUE(launched_listener.WaitUntilSatisfied());
     launched_listener.Reply(create_window_options);
 
@@ -294,9 +291,7 @@ class AppNotificationsWebNotificationTest
   }
 
   void UninstallWebApp(const std::string& app_id) const {
-    web_app::UninstallWebApp(browser()->profile(), app_id);
-    apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
-        ->FlushMojoCallsForTesting();
+    web_app::test::UninstallWebApp(browser()->profile(), app_id);
   }
 
   GURL GetOrigin() const { return https_server_.GetURL("app.com", "/"); }

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -151,7 +151,7 @@ bool MaybeDisallowFetchForDocWrittenScript(FetchParameters& params,
   // getDomainAndRegistry will return the empty string for domains that are
   // already top-level, such as localhost. Thus we only compare domains if we
   // get non-empty results back from getDomainAndRegistry.
-  if (!request_domain.IsEmpty() && !document_domain.IsEmpty() &&
+  if (!request_domain.empty() && !document_domain.empty() &&
       request_domain == document_domain)
     same_site = true;
 

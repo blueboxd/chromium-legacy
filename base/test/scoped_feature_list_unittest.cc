@@ -17,8 +17,8 @@ namespace test {
 
 namespace {
 
-const Feature kTestFeature1{"TestFeature1", FEATURE_DISABLED_BY_DEFAULT};
-const Feature kTestFeature2{"TestFeature2", FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kTestFeature1, "TestFeature1", FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kTestFeature2, "TestFeature2", FEATURE_DISABLED_BY_DEFAULT);
 
 void ExpectFeatures(const std::string& enabled_features,
                     const std::string& disabled_features) {
@@ -650,7 +650,7 @@ TEST_F(ScopedFeatureListTest,
     test::ScopedFeatureList feature_list2;
     feature_list2.InitWithNullFeatureAndFieldTrialLists();
 
-    leaked_field_trial_list = std::make_unique<FieldTrialList>(nullptr);
+    leaked_field_trial_list = std::make_unique<FieldTrialList>();
     FeatureList::InitializeInstance("TestFeature1:TestParam/TestValue2", "",
                                     {});
     EXPECT_TRUE(FeatureList::IsEnabled(kTestFeature1));

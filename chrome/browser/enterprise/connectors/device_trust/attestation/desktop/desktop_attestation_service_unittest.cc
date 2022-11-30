@@ -16,10 +16,12 @@
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/common/attestation_utils.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/common/proto/device_trust_attestation_ca.pb.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/desktop/desktop_attestation_switches.h"
+#include "chrome/browser/enterprise/connectors/device_trust/common/metrics_utils.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/browser/device_trust_key_manager_impl.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/browser/mock_key_rotation_launcher.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence/scoped_key_persistence_delegate_factory.h"
 #include "components/device_signals/core/common/signals_constants.h"
+#include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,10 +56,12 @@ constexpr char kEncodedChallengeDev[] =
     "2Q99GqWGtFS5MjCSQxwHQ2OAxr74aRYCY4mvnWLnLd02IvO9PhRa1fncT+"
     "AhOmbMq35XWmRDwPAcAf+bE23yYeur3E5V8nKulZRkVTcTbE7g3ymsrlbsCSU=";
 
-constexpr char kDeviceId[] = "device-id";
-constexpr char kObfuscatedCustomerId[] = "customer-id";
+constexpr char kFakeDeviceId[] = "fake_device_id";
+constexpr char kDisplayName[] = "display-name";
+constexpr char kDmToken[] = "fake-dm-token";
+constexpr char kInvalidDmToken[] = "INVALID_DM_TOKEN";
 
-std::string GetSerializedSignedChallenge(bool use_dev) {
+std::string GetSerializedSignedChallenge(bool use_dev = false) {
   std::string serialized_signed_challenge;
   if (!base::Base64Decode(use_dev ? kEncodedChallengeDev : kEncodedChallenge,
                           &serialized_signed_challenge)) {
@@ -92,12 +96,15 @@ absl::optional<SignedData> ParseDataFromResponse(const std::string& response) {
 
 }  // namespace
 
-class DesktopAttestationServiceTest : public testing::TestWithParam<bool> {
+class DesktopAttestationServiceTest : public testing::Test {
  protected:
   DesktopAttestationServiceTest() = default;
 
   void SetUp() override {
     testing::Test::SetUp();
+
+    fake_dm_token_storage_.SetDMToken(kDmToken);
+    fake_dm_token_storage_.SetClientId(kFakeDeviceId);
 
     // Create the key manager and initialize it, which will make it use the
     // scoped persistence factory's default TPM-backed mock. In other words,
@@ -106,54 +113,110 @@ class DesktopAttestationServiceTest : public testing::TestWithParam<bool> {
         std::make_unique<StrictMock<test::MockKeyRotationLauncher>>());
     key_manager_->StartInitialization();
 
-    attestation_service_ =
-        std::make_unique<DesktopAttestationService>(key_manager_.get());
-
-    if (use_va_dev_keys()) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-          switches::kUseVaDevKeys, "");
-    }
+    attestation_service_ = std::make_unique<DesktopAttestationService>(
+        &fake_dm_token_storage_, key_manager_.get());
   }
 
   base::Value::Dict CreateSignals() {
     base::Value::Dict signals;
-    signals.Set(device_signals::names::kDeviceId, kDeviceId);
-    signals.Set(device_signals::names::kObfuscatedCustomerId,
-                kObfuscatedCustomerId);
+    signals.Set(device_signals::names::kDisplayName, kDisplayName);
     return signals;
   }
-
-  bool use_va_dev_keys() const { return GetParam(); }
 
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<DesktopAttestationService> attestation_service_;
   test::ScopedKeyPersistenceDelegateFactory persistence_delegate_factory_;
   std::unique_ptr<DeviceTrustKeyManagerImpl> key_manager_;
+  policy::FakeBrowserDMTokenStorage fake_dm_token_storage_;
 };
 
-TEST_P(DesktopAttestationServiceTest, BuildChallengeResponse_Success) {
+TEST_F(DesktopAttestationServiceTest, BuildChallengeResponseDev_Success) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kUseVaDevKeys, "");
+
+  base::RunLoop run_loop;
+  auto callback = base::BindLambdaForTesting(
+      [&](const AttestationResponse& attestation_response) {
+        ASSERT_FALSE(attestation_response.challenge_response.empty());
+        auto signed_data =
+            ParseDataFromResponse(attestation_response.challenge_response);
+        ASSERT_TRUE(signed_data);
+        EXPECT_FALSE(signed_data->data().empty());
+        EXPECT_FALSE(signed_data->signature().empty());
+
+        EXPECT_EQ(attestation_response.result_code,
+                  DTAttestationResult::kSuccess);
+        run_loop.Quit();
+      });
+
+  attestation_service_->BuildChallengeResponseForVAChallenge(
+      GetSerializedSignedChallenge(/* use_dev= */ true), CreateSignals(),
+      std::move(callback));
+  run_loop.Run();
+}
+
+TEST_F(DesktopAttestationServiceTest, BuildChallengeResponseProd_Success) {
   // TODO(crbug.com/1208881): Add signals and validate they effectively get
   // added to the signed data.
 
   base::RunLoop run_loop;
   auto callback = base::BindLambdaForTesting(
-      [&](const std::string& serialized_signed_challenge) {
-        ASSERT_FALSE(serialized_signed_challenge.empty());
-        auto signed_data = ParseDataFromResponse(serialized_signed_challenge);
+      [&](const AttestationResponse& attestation_response) {
+        ASSERT_FALSE(attestation_response.challenge_response.empty());
+        auto signed_data =
+            ParseDataFromResponse(attestation_response.challenge_response);
         ASSERT_TRUE(signed_data);
         EXPECT_FALSE(signed_data->data().empty());
         EXPECT_FALSE(signed_data->signature().empty());
+
+        EXPECT_EQ(attestation_response.result_code,
+                  DTAttestationResult::kSuccess);
         run_loop.Quit();
       });
 
   attestation_service_->BuildChallengeResponseForVAChallenge(
-      GetSerializedSignedChallenge(use_va_dev_keys()), CreateSignals(),
+      GetSerializedSignedChallenge(/* use_dev= */ false), CreateSignals(),
       std::move(callback));
   run_loop.Run();
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         DesktopAttestationServiceTest,
-                         testing::Bool() /* use_va_dev_keys */);
+TEST_F(DesktopAttestationServiceTest, BuildChallengeResponse_InvalidDmToken) {
+  fake_dm_token_storage_.SetDMToken(kInvalidDmToken);
+
+  base::RunLoop run_loop;
+  auto callback = base::BindLambdaForTesting(
+      [&](const AttestationResponse& attestation_response) {
+        // No challenge response is returned if no valid DMToken was found.
+        EXPECT_TRUE(attestation_response.challenge_response.empty());
+        EXPECT_EQ(attestation_response.result_code,
+                  DTAttestationResult::kMissingCoreSignals);
+        run_loop.Quit();
+      });
+
+  attestation_service_->BuildChallengeResponseForVAChallenge(
+      GetSerializedSignedChallenge(), CreateSignals(), std::move(callback));
+  run_loop.Run();
+}
+
+TEST_F(DesktopAttestationServiceTest, BuildChallengeResponse_EmptyDmToken) {
+  fake_dm_token_storage_.SetDMToken(std::string());
+
+  base::RunLoop run_loop;
+  auto callback = base::BindLambdaForTesting(
+      [&](const AttestationResponse& attestation_response) {
+        // No challenge response is returned if no valid DMToken was found.
+        ASSERT_TRUE(attestation_response.challenge_response.empty());
+        EXPECT_EQ(attestation_response.result_code,
+                  DTAttestationResult::kMissingCoreSignals);
+        run_loop.Quit();
+      });
+
+  attestation_service_->BuildChallengeResponseForVAChallenge(
+      GetSerializedSignedChallenge(), CreateSignals(), std::move(callback));
+  run_loop.Run();
+}
+
+// TODO(crbug.com/1208881): Add signals and validate they effectively get
+// added to the signed data in new tests.
 
 }  // namespace enterprise_connectors

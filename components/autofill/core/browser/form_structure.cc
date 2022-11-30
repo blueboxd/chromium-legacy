@@ -41,6 +41,7 @@
 #include "components/autofill/core/browser/form_processing/label_processing_util.h"
 #include "components/autofill/core/browser/form_processing/name_processing_util.h"
 #include "components/autofill/core/browser/form_structure_rationalizer.h"
+#include "components/autofill/core/browser/form_structure_sectioning_util.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/metrics/shadow_prediction_metrics.h"
@@ -805,84 +806,103 @@ void FormStructure::RetrieveFromCache(
     const FormStructure& cached_form,
     const bool should_keep_cached_value,
     const bool only_server_and_autofill_state) {
+  // Build a table to lookup AutofillFields by their FieldGlobalId.
   std::map<FieldGlobalId, const AutofillField*> cached_fields_by_id;
-  for (size_t i = 0; i < cached_form.field_count(); ++i) {
-    auto* const field = cached_form.field(i);
-    cached_fields_by_id[field->global_id()] = field;
-  }
+  for (const std::unique_ptr<autofill::AutofillField>& field : cached_form)
+    cached_fields_by_id[field->global_id()] = field.get();
+
+  // Lookup field by global_id in cached_fields_by_id.
+  auto find_field_by_id = [&cached_fields_by_id](FieldGlobalId global_id) {
+    const auto& it = cached_fields_by_id.find(global_id);
+    return it != cached_fields_by_id.end() ? it->second : nullptr;
+  };
+
+  // Lookup field by field signature and return it in case only a single field
+  // with the signature exists.
+  auto find_field_with_unique_field_signature =
+      [&cached_fields_by_id](
+          FieldSignature field_signature) -> const AutofillField* {
+    const AutofillField* match = nullptr;
+    // Iterate over the fields to find the field with the same form signature.
+    for (const auto& entry : cached_fields_by_id) {
+      if (entry.second->GetFieldSignature() == field_signature) {
+        // If there are multiple matches, do not retrieve the field and stop
+        // the process.
+        if (match)
+          return nullptr;
+        match = entry.second;
+      }
+    }
+    return match;
+  };
+
   for (auto& field : *this) {
-    const AutofillField* cached_field = nullptr;
-    const auto& it = cached_fields_by_id.find(field->global_id());
-    if (it != cached_fields_by_id.end())
-      cached_field = it->second;
+    const AutofillField* cached_field = find_field_by_id(field->global_id());
 
     // If the unique renderer id (or the name) is not stable due to some Java
     // Script magic in the website, use the field signature as a fallback
     // solution to find the field in the cached form.
     if (!cached_field) {
-      // Iterates over the fields to find the field with the same form
-      // signature.
-      for (size_t i = 0; i < cached_form.field_count(); ++i) {
-        auto* const cfield = cached_form.field(i);
-        if (field->GetFieldSignature() == cfield->GetFieldSignature()) {
-          // If there are multiple matches, do not retrieve the field and stop
-          // the process.
-          if (cached_field) {
-            cached_field = nullptr;
-            break;
-          } else {
-            cached_field = cfield;
-          }
-        }
+      cached_field =
+          find_field_with_unique_field_signature(field->GetFieldSignature());
+    }
+
+    // Skip fields that we could not find.
+    if (!cached_field)
+      continue;
+
+    if (should_keep_cached_value) {
+      // During form parsing (as in "assigning field types to fields")
+      // |should_keep_cached_value| is true to preserve the |value|
+      // (which represents the initial value found at page load).
+      field->is_autofilled = cached_field->is_autofilled;
+      if (field->form_control_type != "select-one") {
+        field->value = cached_field->value;
+        value_from_dynamic_change_form_ = true;
+      }
+    } else {
+      // Here |should_keep_cached_value| is false, meaning that we are in the
+      // phase of importing a submitted form.
+      bool same_value_as_on_page_load = field->value == cached_field->value;
+      bool field_is_neither_state_nor_country =
+          field->server_type() != ADDRESS_HOME_COUNTRY &&
+          field->server_type() != ADDRESS_HOME_STATE;
+      if (field->form_control_type != "select-one" &&
+          same_value_as_on_page_load && field_is_neither_state_nor_country) {
+        // From the perspective of learning user data, text fields containing
+        // default values are equivalent to empty fields.
+        // Since a website can prefill country and state values based on
+        // GeoIp, we want to hold on to these values. All others are cleared.
+        field->value = std::u16string();
       }
     }
 
-    if (cached_field) {
-      if (!only_server_and_autofill_state) {
-        // Transfer attributes of the cached AutofillField to the newly created
-        // AutofillField.
-        for (int i = 0; i <= static_cast<int>(PatternSource::kMaxValue); ++i) {
-          PatternSource s = static_cast<PatternSource>(i);
-          field->set_heuristic_type(s, cached_field->heuristic_type(s));
-        }
-        field->SetHtmlType(cached_field->html_type(),
-                           cached_field->html_mode());
-        field->section = cached_field->section;
-        field->set_only_fill_when_focused(
-            cached_field->only_fill_when_focused());
-      }
-      if (should_keep_cached_value) {
-        field->is_autofilled = cached_field->is_autofilled;
-      }
-      if (field->form_control_type != "select-one") {
-        if (should_keep_cached_value) {
-          field->value = cached_field->value;
-          value_from_dynamic_change_form_ = true;
-        } else if (field->value == cached_field->value &&
-                   (field->server_type() != ADDRESS_HOME_COUNTRY &&
-                    field->server_type() != ADDRESS_HOME_STATE)) {
-          // From the perspective of learning user data, text fields containing
-          // default values are equivalent to empty fields.
-          // Since a website can prefill country and state values basedw on
-          // GeoIp, the mechanism is deactivated for state and country fields.
-          field->value = std::u16string();
-        }
-      }
-      field->set_server_predictions(cached_field->server_predictions());
-      field->set_previously_autofilled(cached_field->previously_autofilled());
+    field->set_server_predictions(cached_field->server_predictions());
+    field->set_previously_autofilled(cached_field->previously_autofilled());
 
-      if (cached_field->value_not_autofilled_over_existing_value_hash()) {
-        field->set_value_not_autofilled_over_existing_value_hash(
-            *cached_field->value_not_autofilled_over_existing_value_hash());
-      }
+    if (cached_field->value_not_autofilled_over_existing_value_hash()) {
+      field->set_value_not_autofilled_over_existing_value_hash(
+          *cached_field->value_not_autofilled_over_existing_value_hash());
+    }
 
-      // Only retrieve an overall prediction from cache if a server prediction
-      // is set.
-      if (base::FeatureList::IsEnabled(
-              features::kAutofillRetrieveOverallPredictionsFromCache) &&
-          field->server_type() != NO_SERVER_DATA) {
-        field->SetTypeTo(cached_field->Type());
+    // Only retrieve an overall prediction from cache if a server prediction
+    // is set.
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillRetrieveOverallPredictionsFromCache) &&
+        field->server_type() != NO_SERVER_DATA) {
+      field->SetTypeTo(cached_field->Type());
+    }
+
+    if (!only_server_and_autofill_state) {
+      // Transfer attributes of the cached AutofillField to the newly created
+      // AutofillField.
+      for (int i = 0; i <= static_cast<int>(PatternSource::kMaxValue); ++i) {
+        PatternSource s = static_cast<PatternSource>(i);
+        field->set_heuristic_type(s, cached_field->heuristic_type(s));
       }
+      field->SetHtmlType(cached_field->html_type(), cached_field->html_mode());
+      field->section = cached_field->section;
+      field->set_only_fill_when_focused(cached_field->only_fill_when_focused());
     }
   }
 
@@ -1604,6 +1624,12 @@ void FormStructure::IdentifySections(bool ignore_autocomplete) {
     return;
   }
 
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillUseParameterizedSectioning)) {
+    AssignSections(fields_);
+    return;
+  }
+
   // Use unique local frame tokens of the fields to generate sections.
   base::flat_map<LocalFrameToken, size_t> frame_token_ids;
 
@@ -1852,9 +1878,7 @@ std::ostream& operator<<(std::ostream& buffer, const FormStructure& form) {
                   {", html: ", FieldTypeToStringPiece(field->html_type())})
             : "";
     if (field->html_type() == HtmlFieldType::kUnrecognized &&
-        (!base::FeatureList::IsEnabled(
-             features::kAutofillServerTypeTakesPrecedence) ||
-         !field->server_type_prediction_is_override())) {
+        !field->server_type_prediction_is_override()) {
       html_type_description += " (disabling autofill)";
     }
 
@@ -1929,9 +1953,7 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
                   {", html: ", FieldTypeToStringPiece(field->html_type())})
             : "";
     if (field->html_type() == HtmlFieldType::kUnrecognized &&
-        (!base::FeatureList::IsEnabled(
-             features::kAutofillServerTypeTakesPrecedence) ||
-         !field->server_type_prediction_is_override())) {
+        !field->server_type_prediction_is_override()) {
       html_type_description += " (disabling autofill)";
     }
 

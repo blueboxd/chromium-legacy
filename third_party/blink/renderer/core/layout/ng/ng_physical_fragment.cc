@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,14 +118,14 @@ class FragmentTreeDumper {
         builder_->Append("Box");
         String box_type = StringForBoxType(*fragment);
         has_content = true;
-        if (!box_type.IsEmpty()) {
+        if (!box_type.empty()) {
           builder_->Append(" (");
           builder_->Append(box_type);
           builder_->Append(")");
         }
         if (flags_ & NGPhysicalFragment::DumpSelfPainting &&
             box->HasSelfPaintingLayer()) {
-          if (box_type.IsEmpty())
+          if (box_type.empty())
             builder_->Append(" ");
           builder_->Append("(self paint)");
         }
@@ -361,13 +361,13 @@ NGPhysicalFragment::NGPhysicalFragment(NGContainerFragmentBuilder* builder,
       has_last_baseline_(false),
       use_last_baseline_for_inline_baseline_(false),
       has_fragmented_out_of_flow_data_(
-          !builder->oof_positioned_fragmentainer_descendants_.IsEmpty() ||
-          !builder->multicols_with_pending_oofs_.IsEmpty()),
+          !builder->oof_positioned_fragmentainer_descendants_.empty() ||
+          !builder->multicols_with_pending_oofs_.empty()),
       has_out_of_flow_fragment_child_(builder->HasOutOfFlowFragmentChild()),
       has_out_of_flow_in_fragmentainer_subtree_(
           builder->HasOutOfFlowInFragmentainerSubtree()),
       break_token_(std::move(builder->break_token_)),
-      oof_data_(builder->oof_positioned_descendants_.IsEmpty() &&
+      oof_data_(builder->oof_positioned_descendants_.empty() &&
                         !builder->AnchorQuery() &&
                         !has_fragmented_out_of_flow_data_
                     ? nullptr
@@ -390,10 +390,10 @@ NGPhysicalFragment::OutOfFlowData* NGPhysicalFragment::OutOfFlowDataFromBuilder(
   const WritingModeConverter converter(
       {builder->Style().GetWritingMode(), builder->Direction()}, Size());
 
-  if (!builder->oof_positioned_descendants_.IsEmpty()) {
+  if (!builder->oof_positioned_descendants_.empty()) {
     if (!oof_data)
       oof_data = MakeGarbageCollected<OutOfFlowData>();
-    oof_data->oof_positioned_descendants.ReserveCapacity(
+    oof_data->oof_positioned_descendants.reserve(
         builder->oof_positioned_descendants_.size());
     for (const auto& descendant : builder->oof_positioned_descendants_) {
       NGInlineContainer<PhysicalOffset> inline_container(
@@ -503,14 +503,14 @@ NGFragmentedOutOfFlowData* NGPhysicalFragment::FragmentedOutOfFlowData() const {
     return nullptr;
   auto* oof_data =
       reinterpret_cast<NGFragmentedOutOfFlowData*>(oof_data_.Get());
-  DCHECK(!oof_data->multicols_with_pending_oofs.IsEmpty() ||
-         !oof_data->oof_positioned_fragmentainer_descendants.IsEmpty());
+  DCHECK(!oof_data->multicols_with_pending_oofs.empty() ||
+         !oof_data->oof_positioned_fragmentainer_descendants.empty());
   return oof_data;
 }
 
 bool NGPhysicalFragment::HasNestedMulticolsWithOOFs() const {
   const NGFragmentedOutOfFlowData* oof_data = FragmentedOutOfFlowData();
-  return oof_data && !oof_data->multicols_with_pending_oofs.IsEmpty();
+  return oof_data && !oof_data->multicols_with_pending_oofs.empty();
 }
 
 bool NGPhysicalFragment::NeedsOOFPositionedInfoPropagation() const {
@@ -541,6 +541,17 @@ NGPhysicalFragment::OutOfFlowData* NGPhysicalFragment::CloneOutOfFlowData()
   DCHECK(FragmentedOutOfFlowData());
   return MakeGarbageCollected<NGFragmentedOutOfFlowData>(
       *FragmentedOutOfFlowData());
+}
+
+bool NGPhysicalFragment::IsMonolithic() const {
+  // Line boxes are monolithic, except for line boxes that are just there to
+  // contain a block inside an inline, in which case the anonymous block child
+  // wrapper inside the line is breakable.
+  if (IsLineBox())
+    return !IsBlockInInline();
+  if (const auto* box_fragment = DynamicTo<NGPhysicalBoxFragment>(this))
+    return box_fragment->IsMonolithic();
+  return false;
 }
 
 const FragmentData* NGPhysicalFragment::GetFragmentData() const {

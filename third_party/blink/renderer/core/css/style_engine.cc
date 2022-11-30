@@ -30,6 +30,8 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 
 #include "base/auto_reset.h"
+#include "base/containers/adapters.h"
+#include "base/ranges/algorithm.h"
 #include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_observable_array_css_style_sheet.h"
@@ -155,6 +157,8 @@ StyleEngine::StyleEngine(Document& document)
 
     DCHECK(document.GetSettings());
     preferred_color_scheme_ = document.GetSettings()->GetPreferredColorScheme();
+    force_dark_mode_enabled_ =
+        document.GetSettings()->GetForceDarkModeEnabled();
     UpdateColorSchemeMetrics();
   }
 
@@ -225,9 +229,9 @@ void StyleEngine::RemoveInjectedSheet(const StyleSheetKey& key,
           origin == WebCssOrigin::kUser ? injected_user_style_sheets_
                                         : injected_author_style_sheets_;
   // Remove the last sheet that matches.
-  const auto& it =
-      std::find_if(injected_style_sheets.rbegin(), injected_style_sheets.rend(),
-                   [&key](const auto& item) { return item.first == key; });
+  const auto& it = base::ranges::find(
+      base::Reversed(injected_style_sheets), key,
+      &std::pair<StyleSheetKey, Member<CSSStyleSheet>>::first);
   if (it != injected_style_sheets.rend()) {
     injected_style_sheets.erase(std::next(it).base());
     if (origin == WebCssOrigin::kUser)
@@ -416,7 +420,7 @@ bool StyleEngine::ShouldUpdateDocumentStyleSheetCollection() const {
 }
 
 bool StyleEngine::ShouldUpdateShadowTreeStyleSheetCollection() const {
-  return !dirty_tree_scopes_.IsEmpty();
+  return !dirty_tree_scopes_.empty();
 }
 
 void StyleEngine::MediaQueryAffectingValueChanged(
@@ -447,7 +451,7 @@ Element* StyleEngine::EnsureVTTOriginatingElement() {
 void StyleEngine::MediaQueryAffectingValueChanged(
     HeapHashSet<Member<TextTrack>>& text_tracks,
     MediaValueChange change) {
-  if (text_tracks.IsEmpty())
+  if (text_tracks.empty())
     return;
 
   for (auto text_track : text_tracks) {
@@ -554,7 +558,7 @@ void StyleEngine::UpdateCounterStyles() {
 
 void StyleEngine::UpdateViewport() {
   if (viewport_resolver_)
-    viewport_resolver_->UpdateViewport(GetDocumentStyleSheetCollection());
+    viewport_resolver_->UpdateViewport();
 }
 
 bool StyleEngine::NeedsActiveStyleUpdate() const {
@@ -576,7 +580,7 @@ const ActiveStyleSheetVector StyleEngine::ActiveStyleSheetsForInspector() {
   if (GetDocument().IsActive())
     UpdateActiveStyle();
 
-  if (active_tree_scopes_.IsEmpty())
+  if (active_tree_scopes_.empty())
     return GetDocumentStyleSheetCollection().ActiveStyleSheets();
 
   ActiveStyleSheetVector active_style_sheets;
@@ -652,6 +656,23 @@ RuleSet* StyleEngine::RuleSetForSheet(CSSStyleSheet& sheet) {
   }
   return &sheet.Contents()->EnsureRuleSet(*media_query_evaluator_,
                                           add_rule_flags);
+}
+
+RuleSet* StyleEngine::RuleSetScope::RuleSetForSheet(StyleEngine& engine,
+                                                    CSSStyleSheet* css_sheet) {
+  RuleSet* rule_set = engine.RuleSetForSheet(*css_sheet);
+  if (rule_set && rule_set->HasCascadeLayers() &&
+      !css_sheet->Contents()->HasSingleOwnerNode() &&
+      !layer_rule_sets_.insert(rule_set).is_new_entry) {
+    // The condition above is met for a stylesheet with cascade layers which
+    // shares StyleSheetContents with another stylesheet in this TreeScope.
+    // WillMutateRules() creates a unique StyleSheetContents for this sheet to
+    // avoid incorrectly identifying two separate anonymous layers as the same
+    // layer.
+    css_sheet->WillMutateRules();
+    rule_set = engine.RuleSetForSheet(*css_sheet);
+  }
+  return rule_set;
 }
 
 void StyleEngine::ClearResolvers() {
@@ -802,7 +823,7 @@ CSSStyleSheet* StyleEngine::CreateSheet(
   DCHECK(style_sheet);
   if (!element.IsInShadowTree()) {
     String title = element.title();
-    if (!title.IsEmpty()) {
+    if (!title.empty()) {
       style_sheet->SetTitle(title);
       SetPreferredStylesheetSetNameIfNotSet(title);
     }
@@ -832,7 +853,7 @@ void StyleEngine::CollectUserStyleFeaturesTo(RuleFeatureSet& features) const {
     features.MutableMediaQueryResultFlags().Add(
         sheet->GetMediaQueryResultFlags());
     DCHECK(sheet->Contents()->HasRuleSet());
-    features.Add(sheet->Contents()->GetRuleSet().Features());
+    features.Merge(sheet->Contents()->GetRuleSet().Features());
   }
 }
 
@@ -1322,8 +1343,8 @@ void StyleEngine::IdChangedForElement(const AtomicString& old_id,
   if (RuntimeEnabledFeatures::CSSPseudoHasEnabled() &&
       features.NeedsHasInvalidationForIdChange() &&
       PossiblyAffectingHasState(element)) {
-    if ((!old_id.IsEmpty() && features.NeedsHasInvalidationForId(old_id)) ||
-        (!new_id.IsEmpty() && features.NeedsHasInvalidationForId(new_id))) {
+    if ((!old_id.empty() && features.NeedsHasInvalidationForId(old_id)) ||
+        (!new_id.empty() && features.NeedsHasInvalidationForId(new_id))) {
       InvalidateChangedElementAffectedByLogicalCombinationsInHas(
           element, /* for_pseudo_change */ false);
       InvalidateAncestorsOrSiblingsAffectedByHas(element);
@@ -1334,9 +1355,9 @@ void StyleEngine::IdChangedForElement(const AtomicString& old_id,
     return;
 
   InvalidationLists invalidation_lists;
-  if (!old_id.IsEmpty())
+  if (!old_id.empty())
     features.CollectInvalidationSetsForId(invalidation_lists, element, old_id);
-  if (!new_id.IsEmpty())
+  if (!new_id.empty())
     features.CollectInvalidationSetsForId(invalidation_lists, element, new_id);
   pending_invalidations_.ScheduleInvalidationSetsForNode(invalidation_lists,
                                                          element);
@@ -1538,7 +1559,7 @@ void StyleEngine::ScheduleTypeRuleSetInvalidations(
     rule_set->Features().CollectTypeRuleInvalidationSet(invalidation_lists,
                                                         node);
   }
-  DCHECK(invalidation_lists.siblings.IsEmpty());
+  DCHECK(invalidation_lists.siblings.empty());
   pending_invalidations_.ScheduleInvalidationSetsForNode(invalidation_lists,
                                                          node);
 
@@ -1695,6 +1716,29 @@ void StyleEngine::ScheduleInvalidationsForHasPseudoAffectedByRemoval(
   }
 }
 
+void StyleEngine::ScheduleInvalidationsForHasPseudoWhenAllChildrenRemoved(
+    Element& parent) {
+  if (!RuntimeEnabledFeatures::CSSPseudoHasEnabled())
+    return;
+
+  if (ShouldSkipInvalidationFor(parent))
+    return;
+
+  const RuleFeatureSet& features = GetRuleFeatureSet();
+  if (!features.NeedsHasInvalidationForInsertionOrRemoval())
+    return;
+
+  if (!InsertionOrRemovalPossiblyAffectHasStateOfAncestorsOrAncestorSiblings(
+          &parent)) {
+    // Removed children will not affect :has() state
+    return;
+  }
+
+  // Always invalidate elements possibly affected by the removed children.
+  InvalidateAncestorsOrSiblingsAffectedByHas(&parent,
+                                             nullptr /* previous_sibling */);
+}
+
 void StyleEngine::InvalidateStyle() {
   StyleInvalidator style_invalidator(
       pending_invalidations_.GetPendingInvalidationMap());
@@ -1785,15 +1829,15 @@ void StyleEngine::SetStatsEnabled(bool enabled) {
 }
 
 void StyleEngine::SetPreferredStylesheetSetNameIfNotSet(const String& name) {
-  DCHECK(!name.IsEmpty());
-  if (!preferred_stylesheet_set_name_.IsEmpty())
+  DCHECK(!name.empty());
+  if (!preferred_stylesheet_set_name_.empty())
     return;
   preferred_stylesheet_set_name_ = name;
   MarkDocumentDirty();
 }
 
 void StyleEngine::SetHttpDefaultStyle(const String& content) {
-  if (!content.IsEmpty())
+  if (!content.empty())
     SetPreferredStylesheetSetNameIfNotSet(content);
 }
 
@@ -1804,7 +1848,7 @@ void StyleEngine::CollectFeaturesTo(RuleFeatureSet& features) {
     if (!sheet)
       continue;
     if (RuleSet* rule_set = RuleSetForSheet(*sheet))
-      features.Add(rule_set->Features());
+      features.Merge(rule_set->Features());
   }
 }
 
@@ -1890,9 +1934,6 @@ bool StyleEngine::HasRulesForId(const AtomicString& id) const {
 }
 
 void StyleEngine::InitialStyleChanged() {
-  if (viewport_resolver_)
-    viewport_resolver_->InitialStyleChanged();
-
   MarkViewportStyleDirty();
   // We need to update the viewport style immediately because media queries
   // evaluated in MediaQueryAffectingValueChanged() below may rely on the
@@ -1903,7 +1944,7 @@ void StyleEngine::InitialStyleChanged() {
       StyleChangeReasonForTracing::Create(style_change_reason::kSettings));
 }
 
-void StyleEngine::ViewportRulesChanged() {
+void StyleEngine::ViewportStyleSettingChanged() {
   if (viewport_resolver_)
     viewport_resolver_->SetNeedsUpdate();
 
@@ -1944,17 +1985,17 @@ unsigned GetRuleSetFlags(const HeapHashSet<Member<RuleSet>> rule_sets) {
   unsigned flags = 0;
   for (auto& rule_set : rule_sets) {
     rule_set->CompactRulesIfNeeded();
-    if (!rule_set->KeyframesRules().IsEmpty())
+    if (!rule_set->KeyframesRules().empty())
       flags |= kKeyframesRules;
-    if (!rule_set->FontFaceRules().IsEmpty())
+    if (!rule_set->FontFaceRules().empty())
       flags |= kFontFaceRules;
-    if (!rule_set->FontPaletteValuesRules().IsEmpty())
+    if (!rule_set->FontPaletteValuesRules().empty())
       flags |= kFontPaletteValuesRules;
     if (rule_set->NeedsFullRecalcForRuleSetInvalidation())
       flags |= kFullRecalcRules;
-    if (!rule_set->PropertyRules().IsEmpty())
+    if (!rule_set->PropertyRules().empty())
       flags |= kPropertyRules;
-    if (!rule_set->CounterStyleRules().IsEmpty())
+    if (!rule_set->CounterStyleRules().empty())
       flags |= kCounterStyleRules;
     if (rule_set->HasCascadeLayers())
       flags |= kLayerRules;
@@ -1973,7 +2014,7 @@ void StyleEngine::InvalidateForRuleSetChanges(
     return;
   if (!tree_scope.GetDocument().documentElement())
     return;
-  if (changed_rule_sets.IsEmpty())
+  if (changed_rule_sets.empty())
     return;
 
   Element& invalidation_root =
@@ -2126,7 +2167,7 @@ void StyleEngine::ApplyUserRuleSetChanges(
     for (auto* it = new_style_sheets.begin(); it != new_style_sheets.end();
          it++) {
       DCHECK(it->second);
-      if (!it->second->CounterStyleRules().IsEmpty())
+      if (!it->second->CounterStyleRules().empty())
         EnsureUserCounterStyleMap().AddCounterStyles(*it->second);
     }
 
@@ -2205,7 +2246,7 @@ void StyleEngine::ApplyRuleSetChanges(
     //   common prefix, and rebuild CascadeLayerMap only if layers are changed.
     // - For other diffs, reset author style and re-add all sheets for the
     //   TreeScope. If new sheets need a CascadeLayerMap, rebuild it.
-    if (new_style_sheets.IsEmpty()) {
+    if (new_style_sheets.empty()) {
       rebuild_cascade_layer_map = false;
       ResetAuthorStyle(tree_scope);
     } else if (change == kActiveSheetsAppended) {
@@ -2277,7 +2318,7 @@ void StyleEngine::ApplyRuleSetChanges(
   // TODO(crbug.com/1309178): Invalidate style & layout for @position-fallback
   // rule changes.
 
-  if (!new_style_sheets.IsEmpty()) {
+  if (!new_style_sheets.empty()) {
     tree_scope.EnsureScopedStyleResolver().AppendActiveStyleSheets(
         append_start_index, new_style_sheets);
   }
@@ -2531,7 +2572,7 @@ void StyleEngine::AddPropertyRules(AtRuleCascadeMap& cascade_map,
 
 StyleRuleKeyframes* StyleEngine::KeyframeStylesForAnimation(
     const AtomicString& animation_name) {
-  if (keyframes_rule_map_.IsEmpty())
+  if (keyframes_rule_map_.empty())
     return nullptr;
 
   KeyframesRuleMap::iterator it = keyframes_rule_map_.find(animation_name);
@@ -2544,7 +2585,7 @@ StyleRuleKeyframes* StyleEngine::KeyframeStylesForAnimation(
 StyleRuleFontPaletteValues* StyleEngine::FontPaletteValuesForNameAndFamily(
     AtomicString palette_name,
     AtomicString family_name) {
-  if (font_palette_values_rule_map_.IsEmpty() || palette_name.IsEmpty()) {
+  if (font_palette_values_rule_map_.empty() || palette_name.empty()) {
     return nullptr;
   }
 
@@ -3057,6 +3098,13 @@ bool StyleEngine::MarkReattachAllowed() const {
          allow_mark_for_reattach_from_rebuild_layout_tree_;
 }
 
+bool StyleEngine::MarkStyleDirtyAllowed() const {
+  if (GetDocument().InStyleRecalc() || InContainerQueryStyleRecalc()) {
+    return allow_mark_style_dirty_from_recalc_;
+  }
+  return !InRebuildLayoutTree();
+}
+
 bool StyleEngine::SupportsDarkColorScheme() {
   return (page_color_schemes_ &
           static_cast<ColorSchemeFlags>(ColorSchemeFlag::kDark)) &&
@@ -3077,6 +3125,8 @@ void StyleEngine::UpdateColorScheme() {
   mojom::blink::PreferredColorScheme old_preferred_color_scheme =
       preferred_color_scheme_;
   preferred_color_scheme_ = settings->GetPreferredColorScheme();
+  bool old_force_dark_mode_enabled = force_dark_mode_enabled_;
+  force_dark_mode_enabled_ = settings->GetForceDarkModeEnabled();
 
   if (const auto* overrides =
           GetDocument().GetPage()->GetMediaFeatureOverrides()) {
@@ -3091,11 +3141,14 @@ void StyleEngine::UpdateColorScheme() {
     }
   }
 
-  if (GetDocument().Printing())
+  if (GetDocument().Printing()) {
     preferred_color_scheme_ = mojom::blink::PreferredColorScheme::kLight;
+    force_dark_mode_enabled_ = false;
+  }
 
   if (forced_colors_ != old_forced_colors ||
-      preferred_color_scheme_ != old_preferred_color_scheme) {
+      preferred_color_scheme_ != old_preferred_color_scheme ||
+      force_dark_mode_enabled_ != old_force_dark_mode_enabled) {
     PlatformColorsChanged();
   }
 

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -191,6 +191,7 @@ void NodeLink::RequestIntroduction(const NodeName& name) {
 
 void NodeLink::AcceptIntroduction(const NodeName& name,
                                   LinkSide side,
+                                  Node::Type remote_node_type,
                                   uint32_t remote_protocol_version,
                                   Ref<DriverTransport> transport,
                                   DriverMemory memory) {
@@ -199,6 +200,7 @@ void NodeLink::AcceptIntroduction(const NodeName& name,
   msg::AcceptIntroduction accept;
   accept.params().name = name;
   accept.params().link_side = side;
+  accept.params().remote_node_type = remote_node_type;
   accept.params().remote_protocol_version = remote_protocol_version;
   accept.params().transport =
       accept.AppendDriverObject(transport->TakeDriverObject());
@@ -432,9 +434,7 @@ bool NodeLink::OnNonBrokerReferralRejected(
 }
 
 bool NodeLink::OnRequestIntroduction(msg::RequestIntroduction& request) {
-  // TODO: Support broker-to-broker introduction requests.
-  if (remote_node_type_ != Node::Type::kNormal ||
-      node()->type() != Node::Type::kBroker) {
+  if (node()->type() != Node::Type::kBroker) {
     return false;
   }
 
@@ -444,11 +444,6 @@ bool NodeLink::OnRequestIntroduction(msg::RequestIntroduction& request) {
 
 bool NodeLink::OnAcceptIntroduction(msg::AcceptIntroduction& accept) {
   if (remote_node_type_ != Node::Type::kBroker) {
-    return false;
-  }
-
-  if (node()->type() != Node::Type::kNormal) {
-    // TODO: Support broker-to-broker introductions.
     return false;
   }
 
@@ -466,8 +461,8 @@ bool NodeLink::OnAcceptIntroduction(msg::AcceptIntroduction& accept) {
       accept.TakeDriverObject(accept.params().transport));
   node()->AcceptIntroduction(
       *this, accept.params().name, accept.params().link_side,
-      accept.params().remote_protocol_version, std::move(transport),
-      NodeLinkMemory::Create(node(), std::move(mapping)));
+      accept.params().remote_node_type, accept.params().remote_protocol_version,
+      std::move(transport), NodeLinkMemory::Create(node(), std::move(mapping)));
   return true;
 }
 
@@ -476,12 +471,21 @@ bool NodeLink::OnRejectIntroduction(msg::RejectIntroduction& reject) {
     return false;
   }
 
-  if (node()->type() != Node::Type::kNormal) {
-    // TODO: Support broker-to-broker introductions.
+  node()->NotifyIntroductionFailed(*this, reject.params().name);
+  return true;
+}
+
+bool NodeLink::OnRequestIndirectIntroduction(
+    msg::RequestIndirectIntroduction& request) {
+  // By convention only a broker on side B of a broker-to-broker link will send
+  // this message, and so only side-A broker-to-broker links can receive it.
+  if (remote_node_type_ != Node::Type::kBroker ||
+      node()->type() != Node::Type::kBroker || !link_side_.is_side_a()) {
     return false;
   }
 
-  return node()->CancelIntroduction(reject.params().name);
+  return node()->HandleIndirectIntroductionRequest(
+      *this, request.params().target_node, request.params().source_node);
 }
 
 bool NodeLink::OnAddBlockBuffer(msg::AddBlockBuffer& add) {
@@ -796,7 +800,7 @@ void NodeLink::OnTransportError() {
   }
 
   Ref<NodeLink> self = WrapRefCounted(this);
-  node_->DropLink(remote_node_name_);
+  node_->DropConnection(remote_node_name_);
 }
 
 void NodeLink::WaitForParcelFragmentToResolve(

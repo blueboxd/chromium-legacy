@@ -104,6 +104,9 @@ static CalculationCategory UnitCategory(CSSPrimitiveValue::UnitType type) {
     case CSSPrimitiveValue::UnitType::kIcs:
       return RuntimeEnabledFeatures::CSSIcUnitEnabled() ? kCalcLength
                                                         : kCalcOther;
+    case CSSPrimitiveValue::UnitType::kLhs:
+      return RuntimeEnabledFeatures::CSSLhUnitEnabled() ? kCalcLength
+                                                        : kCalcOther;
     case CSSPrimitiveValue::UnitType::kDegrees:
     case CSSPrimitiveValue::UnitType::kGradians:
     case CSSPrimitiveValue::UnitType::kRadians:
@@ -128,6 +131,7 @@ static bool HasDoubleValue(CSSPrimitiveValue::UnitType type) {
     case CSSPrimitiveValue::UnitType::kExs:
     case CSSPrimitiveValue::UnitType::kChs:
     case CSSPrimitiveValue::UnitType::kIcs:
+    case CSSPrimitiveValue::UnitType::kLhs:
     case CSSPrimitiveValue::UnitType::kRems:
     case CSSPrimitiveValue::UnitType::kPixels:
     case CSSPrimitiveValue::UnitType::kCentimeters:
@@ -475,33 +479,52 @@ CSSMathExpressionOperation::CreateTrigonometricFunctionSimplified(
     case CSSValueID::kSin: {
       DCHECK_EQ(operands.size(), 1u);
       unit_type = CSSPrimitiveValue::UnitType::kNumber;
-      value = sin(ValueAsRadian(operands[0], error));
+      value = std::sin(ValueAsRadian(operands[0], error));
       break;
     }
     case CSSValueID::kCos: {
       DCHECK_EQ(operands.size(), 1u);
       unit_type = CSSPrimitiveValue::UnitType::kNumber;
-      value = cos(ValueAsRadian(operands[0], error));
+      value = std::cos(ValueAsRadian(operands[0], error));
       break;
     }
     case CSSValueID::kTan: {
       DCHECK_EQ(operands.size(), 1u);
       unit_type = CSSPrimitiveValue::UnitType::kNumber;
-      value = tan(ValueAsRadian(operands[0], error));
+      // Conditionally resolve inf or -inf because std::tan
+      // does not produce degenerated value.
+      const double radian_value = ValueAsRadian(operands[0], error);
+      double x = std::fmod(radian_value, (M_PI * 2));
+      // std::fmod can return negative values.
+      x = x < 0 ? M_PI * 2 + x : x;
+      DCHECK(x >= 0 && x <= M_PI * 2 || std::isnan(x));
+      if (x == M_PI / 2)
+        value = std::numeric_limits<double>::infinity();
+      else if (x == 3 * M_PI / 2)
+        value = -std::numeric_limits<double>::infinity();
+      else
+        value = std::tan(radian_value);
       break;
     }
     case CSSValueID::kAsin: {
       DCHECK_EQ(operands.size(), 1u);
       unit_type = CSSPrimitiveValue::UnitType::kDegrees;
-      value = Rad2deg(asin(ValueAsNumber(operands[0], error)));
+      value = Rad2deg(std::asin(ValueAsNumber(operands[0], error)));
       DCHECK(value >= -90 && value <= 90 || std::isnan(value));
       break;
     }
     case CSSValueID::kAcos: {
       DCHECK_EQ(operands.size(), 1u);
       unit_type = CSSPrimitiveValue::UnitType::kDegrees;
-      value = Rad2deg(acos(ValueAsNumber(operands[0], error)));
+      value = Rad2deg(std::acos(ValueAsNumber(operands[0], error)));
       DCHECK(value >= 0 && value <= 180 || std::isnan(value));
+      break;
+    }
+    case CSSValueID::kAtan: {
+      DCHECK_EQ(operands.size(), 1u);
+      unit_type = CSSPrimitiveValue::UnitType::kDegrees;
+      value = Rad2deg(std::atan(ValueAsNumber(operands[0], error)));
+      DCHECK(value >= -90 && value <= 90 || std::isnan(value));
       break;
     }
     default:
@@ -732,7 +755,7 @@ CSSMathExpressionOperation::ToCalculationExpression(
     case CSSMathOperator::kMin:
     case CSSMathOperator::kMax: {
       Vector<scoped_refptr<const CalculationExpressionNode>> operands;
-      operands.ReserveCapacity(operands_.size());
+      operands.reserve(operands_.size());
       for (const CSSMathExpressionNode* operand : operands_)
         operands.push_back(operand->ToCalculationExpression(length_resolver));
       auto expression_operator = operator_ == CSSMathOperator::kMin
@@ -743,7 +766,7 @@ CSSMathExpressionOperation::ToCalculationExpression(
     }
     case CSSMathOperator::kClamp: {
       Vector<scoped_refptr<const CalculationExpressionNode>> operands;
-      operands.ReserveCapacity(operands_.size());
+      operands.reserve(operands_.size());
       for (const CSSMathExpressionNode* operand : operands_)
         operands.push_back(operand->ToCalculationExpression(length_resolver));
       return CalculationExpressionOperationNode::CreateSimplified(
@@ -758,7 +781,7 @@ CSSMathExpressionOperation::ToCalculationExpression(
 double CSSMathExpressionOperation::DoubleValue() const {
   DCHECK(HasDoubleValue(ResolvedUnitType())) << CustomCSSText();
   Vector<double> double_values;
-  double_values.ReserveCapacity(operands_.size());
+  double_values.reserve(operands_.size());
   for (const CSSMathExpressionNode* operand : operands_)
     double_values.push_back(operand->DoubleValue());
   return Evaluate(double_values);
@@ -776,7 +799,7 @@ absl::optional<double> CSSMathExpressionOperation::ComputeValueInCanonicalUnit()
     return absl::nullopt;
 
   Vector<double> double_values;
-  double_values.ReserveCapacity(operands_.size());
+  double_values.reserve(operands_.size());
   for (const CSSMathExpressionNode* operand : operands_) {
     absl::optional<double> maybe_value = operand->ComputeValueInCanonicalUnit();
     if (!maybe_value)
@@ -790,7 +813,7 @@ double CSSMathExpressionOperation::ComputeLengthPx(
     const CSSLengthResolver& length_resolver) const {
   DCHECK_EQ(kCalcLength, Category());
   Vector<double> double_values;
-  double_values.ReserveCapacity(operands_.size());
+  double_values.reserve(operands_.size());
   for (const CSSMathExpressionNode* operand : operands_) {
     if (operand->Category() == kCalcLength) {
       double_values.push_back(operand->ComputeLengthPx(length_resolver));
@@ -1029,7 +1052,7 @@ double CSSMathExpressionOperation::EvaluateOperator(
       DCHECK(operands.size() == 1u || operands.size() == 2u);
       return operands[0] / operands[1];
     case CSSMathOperator::kMin: {
-      if (operands.IsEmpty())
+      if (operands.empty())
         return std::numeric_limits<double>::quiet_NaN();
       double minimum = operands[0];
       for (double operand : operands)
@@ -1037,7 +1060,7 @@ double CSSMathExpressionOperation::EvaluateOperator(
       return minimum;
     }
     case CSSMathOperator::kMax: {
-      if (operands.IsEmpty())
+      if (operands.empty())
         return std::numeric_limits<double>::quiet_NaN();
       double maximum = operands[0];
       for (double operand : operands)
@@ -1220,6 +1243,7 @@ class CSSMathExpressionNodeParser {
       case CSSValueID::kTan:
       case CSSValueID::kAsin:
       case CSSValueID::kAcos:
+      case CSSValueID::kAtan:
         return RuntimeEnabledFeatures::CSSTrigonometricFunctionsEnabled();
       case CSSValueID::kAnchor:
       case CSSValueID::kAnchorSize:
@@ -1325,6 +1349,7 @@ class CSSMathExpressionNodeParser {
       case CSSValueID::kTan:
       case CSSValueID::kAsin:
       case CSSValueID::kAcos:
+      case CSSValueID::kAtan:
         DCHECK(RuntimeEnabledFeatures::CSSTrigonometricFunctionsEnabled());
         max_argument_count = 1;
         min_argument_count = 1;
@@ -1371,6 +1396,7 @@ class CSSMathExpressionNodeParser {
       case CSSValueID::kTan:
       case CSSValueID::kAsin:
       case CSSValueID::kAcos:
+      case CSSValueID::kAtan:
         DCHECK(RuntimeEnabledFeatures::CSSTrigonometricFunctionsEnabled());
         return CSSMathExpressionOperation::
             CreateTrigonometricFunctionSimplified(std::move(nodes),

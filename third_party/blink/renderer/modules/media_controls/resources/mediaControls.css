@@ -1,4 +1,4 @@
-/* Copyright (c) 2017 The Chromium Authors. All rights reserved.
+/* Copyright 2017 The Chromium Authors
    Use of this source code is governed by a BSD-style license that can be
    found in the LICENSE file.*/
 
@@ -1033,6 +1033,11 @@ video::-internal-media-controls-overflow-menu-list-item:focus {
   background-color: -internal-light-dark(#e0e0e0, #545454);
   color: -internal-light-dark(rgba(0,0,0,0.87), rgba(255,255,255,0.87));
   outline: none;
+}
+
+audio::-internal-media-controls-overflow-menu-list-item:focus-visible,
+video::-internal-media-controls-overflow-menu-list-item:focus-visible {
+  border: 1px solid currentColor;
 }
 
 audio::-internal-media-controls-overflow-menu-list-item:active,

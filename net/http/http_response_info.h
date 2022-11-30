@@ -14,6 +14,7 @@
 #include "net/base/net_export.h"
 #include "net/base/proxy_server.h"
 #include "net/dns/public/resolve_error_info.h"
+#include "net/http/alternate_protocol_usage.h"
 #include "net/http/http_vary_data.h"
 #include "net/ssl/ssl_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -219,6 +220,11 @@ class NET_EXPORT HttpResponseInfo {
   // Protocol negotiated with the server.
   std::string alpn_negotiated_protocol;
 
+  // The reason why Chrome uses a specific transport protocol for HTTP
+  // semantics.
+  net::AlternateProtocolUsage alternate_protocol_usage =
+      net::AlternateProtocolUsage::ALTERNATE_PROTOCOL_USAGE_UNSPECIFIED_REASON;
+
   // The type of connection used for this response.
   ConnectionInfo connection_info = CONNECTION_INFO_UNKNOWN;
 
@@ -260,6 +266,10 @@ class NET_EXPORT HttpResponseInfo {
   // from A, AAAA, or HTTPS, not just from the address used for the connection,
   // in no particular order.
   std::set<std::string> dns_aliases;
+
+  // If not null, this indicates the response is stored during a certain browser
+  // session. Used for filtering cache access.
+  absl::optional<int64_t> browser_run_id;
 
   static std::string ConnectionInfoToString(ConnectionInfo connection_info);
 };

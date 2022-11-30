@@ -22,20 +22,11 @@
 #include "net/base/schemeful_site.h"
 #include "net/first_party_sets/first_party_set_entry.h"
 #include "net/first_party_sets/first_party_set_metadata.h"
-#include "net/first_party_sets/public_sets.h"
+#include "net/first_party_sets/global_first_party_sets.h"
 #include "net/first_party_sets/same_party_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
-
-namespace {
-
-net::SamePartyContext::Type ContextTypeFromBool(bool is_same_party) {
-  return is_same_party ? net::SamePartyContext::Type::kSameParty
-                       : net::SamePartyContext::Type::kCrossParty;
-}
-
-}  // namespace
 
 FirstPartySetsManager::FirstPartySetsManager(bool enabled)
     : enabled_(enabled),
@@ -43,37 +34,11 @@ FirstPartySetsManager::FirstPartySetsManager(bool enabled)
           enabled ? std::make_unique<base::circular_deque<base::OnceClosure>>()
                   : nullptr) {
   if (!enabled)
-    SetCompleteSets(net::PublicSets());
+    SetCompleteSets(net::GlobalFirstPartySets());
 }
 
 FirstPartySetsManager::~FirstPartySetsManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-bool FirstPartySetsManager::IsContextSamePartyWithSite(
-    const net::SchemefulSite& site,
-    const net::SchemefulSite* top_frame_site,
-    const std::set<net::SchemefulSite>& party_context,
-    const net::FirstPartySetsContextConfig& fps_context_config) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const absl::optional<net::FirstPartySetEntry> site_entry =
-      FindEntry(site, fps_context_config);
-  if (!site_entry.has_value())
-    return false;
-
-  const auto is_in_same_set_as_frame_site =
-      [this, &site_entry,
-       &fps_context_config](const net::SchemefulSite& context_site) -> bool {
-    const absl::optional<net::FirstPartySetEntry> context_entry =
-        FindEntry(context_site, fps_context_config);
-    return context_entry.has_value() &&
-           context_entry->primary() == site_entry->primary();
-  };
-
-  if (top_frame_site && !is_in_same_set_as_frame_site(*top_frame_site))
-    return false;
-
-  return base::ranges::all_of(party_context, is_in_same_set_as_frame_site);
 }
 
 absl::optional<net::FirstPartySetMetadata>
@@ -124,25 +89,8 @@ net::FirstPartySetMetadata FirstPartySetsManager::ComputeMetadataInternal(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sets_.has_value());
 
-  const base::ElapsedTimer timer;
-
-  net::SamePartyContext::Type context_type =
-      ContextTypeFromBool(IsContextSamePartyWithSite(
-          site, top_frame_site, party_context, fps_context_config));
-
-  net::SamePartyContext context(context_type);
-
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "Cookie.FirstPartySets.ComputeContext.Latency", timer.Elapsed(),
-      base::Microseconds(1), base::Milliseconds(100), 50);
-
-  absl::optional<net::FirstPartySetEntry> top_frame_entry =
-      top_frame_site ? FindEntry(*top_frame_site, fps_context_config)
-                     : absl::nullopt;
-
-  return net::FirstPartySetMetadata(
-      context, base::OptionalToPtr(FindEntry(site, fps_context_config)),
-      base::OptionalToPtr(top_frame_entry));
+  return sets_->ComputeMetadata(site, top_frame_site, party_context,
+                                fps_context_config);
 }
 
 absl::optional<net::FirstPartySetEntry> FirstPartySetsManager::FindEntry(
@@ -153,8 +101,7 @@ absl::optional<net::FirstPartySetEntry> FirstPartySetsManager::FindEntry(
   const base::ElapsedTimer timer;
 
   absl::optional<net::FirstPartySetEntry> entry =
-      is_enabled() ? sets_->FindEntry(site, &fps_context_config)
-                   : absl::nullopt;
+      is_enabled() ? sets_->FindEntry(site, fps_context_config) : absl::nullopt;
 
   UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
       "Cookie.FirstPartySets.FindOwner.Latency", timer.Elapsed(),
@@ -200,7 +147,7 @@ FirstPartySetsManager::EntriesResult FirstPartySetsManager::FindEntriesInternal(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sets_.has_value());
 
-  return sets_->FindEntries(sites, &fps_context_config);
+  return sets_->FindEntries(sites, fps_context_config);
 }
 
 void FirstPartySetsManager::InvokePendingQueries() {
@@ -221,26 +168,21 @@ void FirstPartySetsManager::InvokePendingQueries() {
                               ? first_async_query_timer_->Elapsed()
                               : base::TimeDelta());
 
-  while (!pending_queries_->empty()) {
-    base::OnceClosure query_task = std::move(pending_queries_->front());
-    pending_queries_->pop_front();
+  std::unique_ptr<base::circular_deque<base::OnceClosure>> queue;
+  queue.swap(pending_queries_);
+  while (!queue->empty()) {
+    base::OnceClosure query_task = std::move(queue->front());
+    queue->pop_front();
     std::move(query_task).Run();
   }
-
-  pending_queries_ = nullptr;
 }
 
-void FirstPartySetsManager::SetCompleteSets(net::PublicSets public_sets) {
+void FirstPartySetsManager::SetCompleteSets(net::GlobalFirstPartySets sets) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (sets_.has_value())
     return;
-  sets_ = std::move(public_sets);
+  sets_ = std::move(sets);
   InvokePendingQueries();
-}
-
-void FirstPartySetsManager::SetEnabledForTesting(bool enabled) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  enabled_ = enabled;
 }
 
 void FirstPartySetsManager::EnqueuePendingQuery(base::OnceClosure run_query) {

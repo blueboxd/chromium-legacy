@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/projector/projector_controller.h"
 #include "ash/public/cpp/projector/projector_new_screencast_precondition.h"
@@ -357,8 +358,11 @@ void ProjectorMessageHandler::SendXhr(const base::Value::List& args) {
   // 3. The request body data.
   // 4. A bool to indicate whether or not to use end user credential to
   // authorize the request.
-  // 5. Additional headers objects.
-  DCHECK_EQ(func_args.size(), 5u);
+  // 5. A bool to indicate whether or not to use api key to authorize the
+  // request.
+  // 6. Additional headers objects.
+  // 7. The email address associated with the account
+  DCHECK_EQ(func_args.size(), 7u);
 
   const auto& url = func_args[0].GetString();
   const auto& method = func_args[1].GetString();
@@ -367,16 +371,19 @@ void ProjectorMessageHandler::SendXhr(const base::Value::List& args) {
       func_args[2].is_string() ? func_args[2].GetString() : std::string();
   bool use_credentials =
       func_args[3].is_bool() ? func_args[3].GetBool() : false;
+  bool use_api_key = func_args[4].is_bool() ? func_args[4].GetBool() : false;
+  std::string account_email =
+      func_args[6].is_string() ? func_args[6].GetString() : std::string();
 
   DCHECK(!url.empty());
   DCHECK(!method.empty());
-
   xhr_sender_->Send(
-      GURL(url), method, request_body, use_credentials,
+      GURL(url), method, request_body, use_credentials, use_api_key,
       base::BindOnce(&ProjectorMessageHandler::OnXhrRequestCompleted,
                      GetWeakPtr(), callback_id),
-      func_args[4].is_dict() ? func_args[4].GetDict().Clone()
-                             : base::Value::Dict());
+      func_args[5].is_dict() ? func_args[5].GetDict().Clone()
+                             : base::Value::Dict(),
+      account_email);
 }
 
 void ProjectorMessageHandler::ShouldDownloadSoda(
@@ -514,5 +521,4 @@ void ProjectorMessageHandler::OnVideoLocated(
       << "If there is no error message, then video should not be nullptr";
   ResolveJavascriptCallback(base::Value(js_callback_id), video->ToValue());
 }
-
 }  // namespace ash

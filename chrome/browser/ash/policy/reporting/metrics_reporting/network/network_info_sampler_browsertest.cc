@@ -5,7 +5,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/components/settings/cros_settings_names.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/ash/policy/core/device_policy_cros_browser_test.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/ash/components/dbus/shill/shill_device_client.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/dbus/missive/missive_client_test_observer.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/reporting/proto/synced/metric_data.pb.h"
@@ -202,7 +202,7 @@ class NetworkInfoSamplerBrowserTest
     ASSERT_TRUE(info_data.has_networks_info());
     const auto& networks_info = info_data.networks_info();
     ASSERT_THAT(networks_info.network_interfaces_size(),
-                Eq(expected_devices.size()));
+                Eq(static_cast<int>(expected_devices.size())));
 
     // Assert details of each network interface
     for (size_t i = 0u; i < expected_devices.size(); ++i) {
@@ -247,7 +247,7 @@ class NetworkInfoSamplerBrowserTest
 IN_PROC_BROWSER_TEST_F(NetworkInfoSamplerBrowserTest,
                        ReportNetworkInfoSingleNetworkDevice) {
   // Single network devices
-  const std::array<NetworkDevice, 1> devices{NetworkDevice(
+  const std::array<NetworkDevice, 1u> devices{NetworkDevice(
       kEthernetPath, shill::kTypeEthernet, "ethernet", kEthernetMac)};
   AddDevices(devices);
   EnableReportingNetworkInterfaces();

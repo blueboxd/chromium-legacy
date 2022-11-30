@@ -13,11 +13,9 @@
 #include "base/values.h"
 
 namespace base {
-class DictionaryValue;
 class FilePath;
 class TimeDelta;
-class Value;
-}
+}  // namespace base
 
 class FrameTracker;
 struct Geoposition;
@@ -74,20 +72,23 @@ class WebView {
   // Resume the current page.
   virtual Status Resume(const Timeout* timeout) = 0;
 
+  // Send the BiDi command to the BiDiMapper
+  virtual Status PostBidiCommand(base::Value::Dict command) = 0;
+
   // Send a command to the DevTools debugger
   virtual Status SendCommand(const std::string& cmd,
-                             const base::DictionaryValue& params) = 0;
+                             const base::Value::Dict& params) = 0;
 
   // Send a command to the DevTools debugger. Received from WebSocket
   virtual Status SendCommandFromWebSocket(const std::string& cmd,
-                                          const base::DictionaryValue& params,
+                                          const base::Value::Dict& params,
                                           const int client_cmd_id) = 0;
 
   // Send a command to the DevTools debugger and wait for the result
   virtual Status SendCommandAndGetResult(
-          const std::string& cmd,
-          const base::DictionaryValue& params,
-          std::unique_ptr<base::Value>* value) = 0;
+      const std::string& cmd,
+      const base::Value::Dict& params,
+      std::unique_ptr<base::Value>* value) = 0;
 
   // Navigate |delta| steps forward in the browser history. A negative value
   // will navigate back in the history. If the delta exceeds the number of items
@@ -232,11 +233,10 @@ class WebView {
       const std::string& download_directory) = 0;
 
   // Captures the visible portions of the web view as a base64-encoded PNG.
-  virtual Status CaptureScreenshot(
-      std::string* screenshot,
-      const base::DictionaryValue& params) = 0;
+  virtual Status CaptureScreenshot(std::string* screenshot,
+                                   const base::Value::Dict& params) = 0;
 
-  virtual Status PrintToPDF(const base::DictionaryValue& params,
+  virtual Status PrintToPDF(const base::Value::Dict& params,
                             std::string* pdf) = 0;
 
   // Set files in a file input element.

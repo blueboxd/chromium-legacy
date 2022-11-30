@@ -197,16 +197,8 @@ IN_PROC_BROWSER_TEST_P(
 
 // Confirms that a page using a dedicated worker with WebTransport is not
 // cached.
-// TODO(crbug.com/1299018): Flakes on Linux.
-#if BUILDFLAG(IS_LINUX)
-#define MAYBE_DoNotCacheWithDedicatedWorkerWithWebTransport \
-  DISABLED_DoNotCacheWithDedicatedWorkerWithWebTransport
-#else
-#define MAYBE_DoNotCacheWithDedicatedWorkerWithWebTransport \
-  DoNotCacheWithDedicatedWorkerWithWebTransport
-#endif
 IN_PROC_BROWSER_TEST_P(BackForwardCacheWithDedicatedWorkerBrowserTest,
-                       MAYBE_DoNotCacheWithDedicatedWorkerWithWebTransport) {
+                       DoNotCacheWithDedicatedWorkerWithWebTransport) {
   CreateHttpsServer();
   ASSERT_TRUE(https_server()->Start());
 
@@ -2051,17 +2043,23 @@ class MockAppBannerService : public blink::mojom::AppBannerService {
     return controller_;
   }
 
-  void OnBannerPromptRequested(bool) {}
+  void OnBannerPromptRequested(base::OnceClosure closure, bool) {
+    std::move(closure).Run();
+  }
 
   void SendBannerPromptRequest() {
     blink::mojom::AppBannerController* controller_ptr = controller_.get();
-    base::OnceCallback<void(bool)> callback = base::BindOnce(
-        &MockAppBannerService::OnBannerPromptRequested, base::Unretained(this));
+    base::RunLoop run_loop;
+    base::OnceClosure quit_closure = run_loop.QuitClosure();
+    base::OnceCallback<void(bool)> callback =
+        base::BindOnce(&MockAppBannerService::OnBannerPromptRequested,
+                       base::Unretained(this), std::move(quit_closure));
     controller_ptr->BannerPromptRequest(
         receiver_.BindNewPipeAndPassRemote(),
         event_.BindNewPipeAndPassReceiver(), {"web"},
         base::BindOnce(&MockAppBannerService::OnBannerPromptReply,
                        base::Unretained(this), std::move(callback)));
+    run_loop.Run();
   }
 
   void OnBannerPromptReply(base::OnceCallback<void(bool)> callback,
@@ -2098,14 +2096,8 @@ class AppBannerBackForwardCacheBrowserTest
   bool ShouldEnabledAppBannerCaching() { return GetParam(); }
 };
 
-// Disabled on Mac due to flakes; see https://crbug.com/1276864#c8.
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_TestAppBannerCaching DISABLED_TestAppBannerCaching
-#else
-#define MAYBE_TestAppBannerCaching TestAppBannerCaching
-#endif
 IN_PROC_BROWSER_TEST_P(AppBannerBackForwardCacheBrowserTest,
-                       MAYBE_TestAppBannerCaching) {
+                       TestAppBannerCaching) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // 1) Navigate to A and request a PWA app banner.
@@ -2116,16 +2108,15 @@ IN_PROC_BROWSER_TEST_P(AppBannerBackForwardCacheBrowserTest,
   MockAppBannerService mock_app_banner_service;
   web_contents()->GetPrimaryMainFrame()->GetRemoteInterfaces()->GetInterface(
       mock_app_banner_service.controller().BindNewPipeAndPassReceiver());
-  // Send the request to the renderer's frame.
+  // Send the request to the renderer's frame, wait until the request completes.
   mock_app_banner_service.SendBannerPromptRequest();
 
-  RenderFrameDeletedObserver delete_observer_rfh(current_frame_host());
-
   // 2) Navigate away. Page A requested a PWA app banner, and thus not cached.
+  RenderFrameHostWrapper rfh_a(current_frame_host());
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
   if (!ShouldEnabledAppBannerCaching()) {
-    ASSERT_TRUE(delete_observer_rfh.WaitUntilDeleted());
+    ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
   }
 
   // 3) Go back to A.
@@ -2472,6 +2463,7 @@ IN_PROC_BROWSER_TEST_F(WebTransportBackForwardCacheBrowserTest,
 
 // Disabled on Android, since we have problems starting up the websocket test
 // server in the host
+// TODO(crbug.com/1372291): Re-enable the test after solving the WS server.
 #if BUILDFLAG(IS_ANDROID)
 #define MAYBE_WebSocketNotCached DISABLED_WebSocketNotCached
 #else
@@ -3885,15 +3877,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebMidiNotCached) {
       {}, {}, {}, FROM_HERE);
 }
 
-// TODO(https://crbug.com/1286474): This test is flaking on some Android bots.
-// TODO(crbug.com/1297406): Also flaky on Mac and Linux.
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-#define MAYBE_PresentationConnectionClosed DISABLED_PresentationConnectionClosed
-#else
-#define MAYBE_PresentationConnectionClosed PresentationConnectionClosed
-#endif  // BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       MAYBE_PresentationConnectionClosed) {
+                       PresentationConnectionClosed) {
   ASSERT_TRUE(CreateHttpsServer()->Start());
   GURL url_a(https_server()->GetURL(
       "a.test", "/back_forward_cache/presentation_controller.html"));
@@ -3909,6 +3894,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_CALL(mock_presentation_service_delegate, StartPresentation(_, _, _));
   EXPECT_TRUE(ExecJs(rfh_a, "presentationRequest.start().then(setConnection)",
                      EXECUTE_SCRIPT_NO_RESOLVE_PROMISES));
+  // Ensure that the above script runs before continuing.
+  EXPECT_TRUE(ExecJs(rfh_a, "var foo = 42;"));
 
   // Send a mock connection to the renderer.
   MockPresentationConnection mock_controller_connection;

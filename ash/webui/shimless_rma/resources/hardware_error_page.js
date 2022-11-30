@@ -7,7 +7,7 @@ import './shimless_rma_shared_css.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
@@ -43,6 +43,12 @@ export class HardwareErrorPage extends HardwareErrorPageBase {
        * @type {boolean}
        */
       allButtonsDisabled: Boolean,
+
+      /**
+       * Set by shimless_rma.js.
+       * @type {number}
+       */
+      errorCode: Number,
     };
   }
 
@@ -63,6 +69,14 @@ export class HardwareErrorPage extends HardwareErrorPageBase {
   onShutDownButtonClicked_() {
     this.shimlessRmaService_.shutDownAfterHardwareError();
     disableAllButtons(this, /* showBusyStateOverlay= */ true);
+  }
+
+  /**
+   * @return {string}
+   * @protected
+   */
+  getErrorCodeString_() {
+    return this.i18n('hardwareErrorCode', this.errorCode);
   }
 }
 

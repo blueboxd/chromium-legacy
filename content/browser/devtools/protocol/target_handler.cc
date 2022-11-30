@@ -24,13 +24,14 @@
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/protocol/target_auto_attacher.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
+#include "content/browser/devtools/web_contents_devtools_agent_host.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/cors_origin_pattern_setter.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 #include "content/public/browser/navigation_throttle.h"
-#include "content/public/browser/web_contents.h"
 #include "url/url_constants.h"
 
 namespace content {
@@ -87,7 +88,9 @@ static const char kInitializerScript[] = R"(
 
 static const char kTargetNotFound[] = "No target with given id found";
 
-std::unique_ptr<Target::TargetInfo> CreateInfo(DevToolsAgentHost* host) {
+std::unique_ptr<Target::TargetInfo> BuildTargetInfo(
+    DevToolsAgentHost* agent_host) {
+  auto* host = static_cast<DevToolsAgentHostImpl*>(agent_host);
   std::unique_ptr<Target::TargetInfo> target_info =
       Target::TargetInfo::Create()
           .SetTargetId(host->GetId())
@@ -103,6 +106,9 @@ std::unique_ptr<Target::TargetInfo> CreateInfo(DevToolsAgentHost* host) {
     target_info->SetOpenerFrameId(host->GetOpenerFrameId());
   if (host->GetBrowserContext())
     target_info->SetBrowserContextId(host->GetBrowserContext()->UniqueId());
+  std::string subtype = host->GetSubtype();
+  if (!subtype.empty())
+    target_info->SetSubtype(subtype);
   return target_info;
 }
 
@@ -419,7 +425,7 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
     } else {
       agent_host_impl->AttachClient(session);
     }
-    handler->frontend_->AttachedToTarget(id, CreateInfo(agent_host),
+    handler->frontend_->AttachedToTarget(id, BuildTargetInfo(agent_host),
                                          waiting_for_debugger);
     return id;
   }
@@ -706,39 +712,44 @@ std::unique_ptr<NavigationThrottle> TargetHandler::CreateThrottleForNavigation(
       NavigationRequest::From(navigation_handle)->frame_tree_node();
   DCHECK(access_mode_ != AccessMode::kBrowser ||
          !auto_attach_related_targets_.empty() || !frame_tree_node->parent());
-  if (frame_tree_node->IsMainFrame() &&
-      (access_mode_ == AccessMode::kBrowser ||
-       frame_tree_node->IsFencedFrameRoot())) {
-    DCHECK(auto_attacher == auto_attacher_);
-    DevToolsAgentHost* host =
-        RenderFrameDevToolsAgentHost::GetFor(frame_tree_node);
-    // For new pages create Throttle only if the session is still paused.
-    if (!host)
-      return nullptr;
-    auto it = auto_attached_sessions_.find(host);
-    if (it == auto_attached_sessions_.end())
-      return nullptr;
-    if (!it->second->IsWaitingForDebuggerOnStart())
-      return nullptr;
-    // The target already exists and we attached to it, resume message
-    // sending without waiting for the navigation to commit.
-    it->second->ResumeSendingMessagesToAgent();
-
-    // window.open() navigations are throttled on the renderer side and the main
-    // request will not be sent until runIfWaitingForDebugger is received from
-    // the client, so there is no need to throttle the navigation in the
-    // browser.
-    //
-    // New window navigations (such as ctrl+click) should be throttled before
-    // the main request is sent to apply user agent and other overrides.
-    FrameTreeNode* opener = frame_tree_node->opener();
-    if (opener)
-      return nullptr;
-    return std::make_unique<RequestThrottle>(weak_factory_.GetWeakPtr(),
-                                             navigation_handle, host);
+  // All child frames start navigating with their parent settings applied and
+  // are only throttled at response where we know if they require a new host.
+  // Note that fenced frames start as remote frames right away and get a RFDTAH
+  // of their own, so they require a RequestThrottle rather than a Response one.
+  if (!frame_tree_node->IsMainFrame()) {
+    return std::make_unique<ResponseThrottle>(weak_factory_.GetWeakPtr(),
+                                              auto_attacher, navigation_handle);
   }
-  return std::make_unique<ResponseThrottle>(weak_factory_.GetWeakPtr(),
-                                            auto_attacher, navigation_handle);
+  // If we got here for main frame, it must be either browser or tab target.
+  DCHECK(auto_attacher == auto_attacher_);
+  DevToolsAgentHost* host =
+      RenderFrameDevToolsAgentHost::GetFor(frame_tree_node);
+  // For new pages create Throttle only if the session is still paused.
+  if (!host)
+    return nullptr;
+  auto it = auto_attached_sessions_.find(host);
+  if (it == auto_attached_sessions_.end())
+    return nullptr;
+  if (!it->second->IsWaitingForDebuggerOnStart())
+    return nullptr;
+  // RFDTAHs created during auto-attach had no renderer allocated originally,
+  // and hence have messages paused, but with navigation we're supposed to
+  // have a line host, so we can send messages to renderer now.
+  DCHECK(frame_tree_node->current_frame_host()->IsRenderFrameLive());
+  it->second->ResumeSendingMessagesToAgent();
+
+  // window.open() navigations are throttled on the renderer side and the main
+  // request will not be sent until runIfWaitingForDebugger is received from
+  // the client, so there is no need to throttle the navigation in the
+  // browser.
+  //
+  // New window navigations (such as ctrl+click) should be throttled before
+  // the main request is sent to apply user agent and other overrides.
+  FrameTreeNode* opener = frame_tree_node->opener();
+  if (opener)
+    return nullptr;
+  return std::make_unique<RequestThrottle>(weak_factory_.GetWeakPtr(),
+                                           navigation_handle, host);
 }
 
 void TargetHandler::ClearThrottles() {
@@ -837,6 +848,15 @@ void TargetHandler::SetAttachedTargetsOfType(
     if (old_sessions.find(host.get()) == old_sessions.end())
       AutoAttach(source, host.get(), false);
   }
+}
+
+void TargetHandler::TargetInfoChanged(DevToolsAgentHost* host) {
+  // Only send target info for targets we reported in any way.
+  if (!reported_hosts_.count(host) &&
+      auto_attached_sessions_.find(host) == auto_attached_sessions_.end()) {
+    return;
+  }
+  frontend_->TargetInfoChanged(BuildTargetInfo(host));
 }
 
 void TargetHandler::AutoAttacherDestroyed(TargetAutoAttacher* auto_attacher) {
@@ -1075,7 +1095,7 @@ Response TargetHandler::GetTargetInfo(
       DevToolsAgentHost::GetForId(target_id));
   if (!agent_host)
     return Response::InvalidParams(kTargetNotFound);
-  *target_info = CreateInfo(agent_host.get());
+  *target_info = BuildTargetInfo(agent_host.get());
   return Response::Success();
 }
 
@@ -1170,7 +1190,7 @@ Response TargetHandler::GetTargets(
   *target_infos = std::make_unique<protocol::Array<Target::TargetInfo>>();
   for (const auto& host : DevToolsAgentHost::GetOrCreateAll()) {
     if (effective_filter->Match(*host))
-      (*target_infos)->emplace_back(CreateInfo(host.get()));
+      (*target_infos)->emplace_back(BuildTargetInfo(host.get()));
   }
   return Response::Success();
 }
@@ -1189,15 +1209,13 @@ void TargetHandler::DevToolsAgentHostCreated(DevToolsAgentHost* host) {
   // If we start discovering late, all existing agent hosts will be reported,
   // but we could have already attached to some.
   if (reported_hosts_.find(host) == reported_hosts_.end()) {
-    frontend_->TargetCreated(CreateInfo(host));
+    frontend_->TargetCreated(BuildTargetInfo(host));
     reported_hosts_.insert(host);
   }
 }
 
 void TargetHandler::DevToolsAgentHostNavigated(DevToolsAgentHost* host) {
-  if (reported_hosts_.find(host) == reported_hosts_.end())
-    return;
-  frontend_->TargetInfoChanged(CreateInfo(host));
+  TargetInfoChanged(host);
 }
 
 void TargetHandler::DevToolsAgentHostDestroyed(DevToolsAgentHost* host) {
@@ -1208,15 +1226,11 @@ void TargetHandler::DevToolsAgentHostDestroyed(DevToolsAgentHost* host) {
 }
 
 void TargetHandler::DevToolsAgentHostAttached(DevToolsAgentHost* host) {
-  if (reported_hosts_.find(host) == reported_hosts_.end())
-    return;
-  frontend_->TargetInfoChanged(CreateInfo(host));
+  TargetInfoChanged(host);
 }
 
 void TargetHandler::DevToolsAgentHostDetached(DevToolsAgentHost* host) {
-  if (reported_hosts_.find(host) == reported_hosts_.end())
-    return;
-  frontend_->TargetInfoChanged(CreateInfo(host));
+  TargetInfoChanged(host);
 }
 
 void TargetHandler::DevToolsAgentHostCrashed(DevToolsAgentHost* host,

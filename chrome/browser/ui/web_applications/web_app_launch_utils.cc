@@ -148,6 +148,71 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
   return target_browser;
 }
 
+#if BUILDFLAG(IS_CHROMEOS)
+std::unique_ptr<AppBrowserController> CreateWebKioskBrowserController(
+    Browser* browser,
+    WebAppProvider* provider,
+    const AppId& app_id) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  return std::make_unique<ash::WebKioskBrowserControllerAsh>(*provider, browser,
+                                                             app_id);
+#else
+  // TODO(b/242023891): Add web Kiosk browser controller for Lacros.
+  return nullptr;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+}
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const ash::SystemWebAppDelegate* GetSystemWebAppDelegate(Browser* browser,
+                                                         const AppId& app_id) {
+  auto system_app_type =
+      ash::GetSystemWebAppTypeForAppId(browser->profile(), app_id);
+  if (system_app_type) {
+    return ash::SystemWebAppManager::GetForLocalAppsUnchecked(
+               browser->profile())
+        ->GetSystemApp(*system_app_type);
+  }
+  return nullptr;
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+std::unique_ptr<AppBrowserController> CreateWebAppBrowserController(
+    Browser* browser,
+    WebAppProvider* provider,
+    const AppId& app_id) {
+  bool should_have_tab_strip_for_swa = false;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  const ash::SystemWebAppDelegate* system_app =
+      GetSystemWebAppDelegate(browser, app_id);
+  should_have_tab_strip_for_swa =
+      system_app && system_app->ShouldHaveTabStrip();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  const bool has_tab_strip =
+      !browser->is_type_app_popup() &&
+      (should_have_tab_strip_for_swa ||
+       provider->registrar().IsTabbedWindowModeEnabled(app_id));
+  return std::make_unique<WebAppBrowserController>(*provider, browser, app_id,
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+                                                   system_app,
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+                                                   has_tab_strip);
+}
+
+std::unique_ptr<AppBrowserController> MaybeCreateHostedAppBrowserController(
+    Browser* browser,
+    const AppId& app_id) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(browser->profile())
+          ->GetExtensionById(app_id, extensions::ExtensionRegistry::EVERYTHING);
+  if (extension && extension->is_hosted_app()) {
+    return std::make_unique<extensions::HostedAppBrowserController>(browser);
+  }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+  return nullptr;
+}
+
 }  // namespace
 
 absl::optional<AppId> GetWebAppForActiveTab(Browser* browser) {
@@ -214,9 +279,10 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
   }
 
   auto launch_url = contents->GetLastCommittedURL();
-  RecordMetrics(app_id, apps::LaunchContainer::kLaunchContainerWindow,
-                extensions::AppLaunchSource::kSourceReparenting, launch_url,
-                contents);
+  UpdateLaunchStats(contents, app_id, launch_url);
+  RecordLaunchMetrics(app_id, apps::LaunchContainer::kLaunchContainerWindow,
+                      extensions::AppLaunchSource::kSourceReparenting,
+                      launch_url, contents);
 
   bool as_pinned_home_tab = IsPinnedHomeTabUrl(registrar, app_id, launch_url);
 
@@ -272,50 +338,15 @@ std::unique_ptr<AppBrowserController> MaybeCreateAppBrowserController(
 #if BUILDFLAG(IS_CHROMEOS)
     if (profiles::IsKioskSession() &&
         base::FeatureList::IsEnabled(features::kKioskEnableAppService)) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-      controller = std::make_unique<ash::WebKioskBrowserControllerAsh>(
-          *provider, browser, app_id);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-      // TODO(b/242023891): Add web Kiosk browser controller for Lacros.
+      controller = CreateWebKioskBrowserController(browser, provider, app_id);
     } else {
-#endif  // BUILDFLAG(IS_CHROMEOS)
-      bool should_have_tab_strip_for_swa = false;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-      const ash::SystemWebAppDelegate* system_app = nullptr;
-      auto system_app_type =
-          ash::GetSystemWebAppTypeForAppId(browser->profile(), app_id);
-      if (system_app_type) {
-        system_app = ash::SystemWebAppManager::GetForLocalAppsUnchecked(
-                         browser->profile())
-                         ->GetSystemApp(*system_app_type);
-        should_have_tab_strip_for_swa =
-            system_app && system_app->ShouldHaveTabStrip();
-      }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-      const bool has_tab_strip =
-          !browser->is_type_app_popup() &&
-          (should_have_tab_strip_for_swa ||
-           provider->registrar().IsTabbedWindowModeEnabled(app_id));
-      controller =
-          std::make_unique<WebAppBrowserController>(*provider, browser, app_id,
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-                                                    system_app,
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-                                                    has_tab_strip);
-#if BUILDFLAG(IS_CHROMEOS)
+      controller = CreateWebAppBrowserController(browser, provider, app_id);
     }
+#else
+    controller = CreateWebAppBrowserController(browser, provider, app_id);
 #endif  // BUILDFLAG(IS_CHROMEOS)
   } else {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    const extensions::Extension* extension =
-        extensions::ExtensionRegistry::Get(browser->profile())
-            ->GetExtensionById(app_id,
-                               extensions::ExtensionRegistry::EVERYTHING);
-    if (extension && extension->is_hosted_app()) {
-      controller =
-          std::make_unique<extensions::HostedAppBrowserController>(browser);
-    }
-#endif
+    controller = MaybeCreateHostedAppBrowserController(browser, app_id);
   }
   if (controller)
     controller->Init();
@@ -462,7 +493,7 @@ content::WebContents* NavigateWebAppUsingParams(const std::string& app_id,
   return web_contents;
 }
 
-void RecordAppWindowLaunch(Profile* profile, const std::string& app_id) {
+void RecordAppWindowLaunchMetric(Profile* profile, const std::string& app_id) {
   WebAppProvider* provider = WebAppProvider::GetForLocalAppsUnchecked(profile);
   if (!provider)
     return;
@@ -477,27 +508,53 @@ void RecordAppWindowLaunch(Profile* profile, const std::string& app_id) {
   UMA_HISTOGRAM_ENUMERATION("Launch.WebAppDisplayMode", display);
 }
 
-void RecordMetrics(const AppId& app_id,
-                   apps::LaunchContainer container,
-                   extensions::AppLaunchSource launch_source,
-                   const GURL& launch_url,
-                   content::WebContents* web_contents) {
+void RecordLaunchMetrics(const AppId& app_id,
+                         apps::LaunchContainer container,
+                         extensions::AppLaunchSource launch_source,
+                         const GURL& launch_url,
+                         content::WebContents* web_contents) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // System web apps have different launch paths compared with web apps, and
+  // those paths aren't configurable. So their launch metrics shouldn't be
+  // reported to avoid skewing web app metrics.
+  DCHECK(!ash::GetSystemWebAppTypeForAppId(profile, app_id))
+      << "System web apps shouldn't be included in web app launch metrics";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
   if (container == apps::LaunchContainer::kLaunchContainerWindow)
-    RecordAppWindowLaunch(profile, app_id);
+    RecordAppWindowLaunchMetric(profile, app_id);
 
   // TODO(crbug.com/1014328): Populate WebApp metrics instead of Extensions.
   UMA_HISTOGRAM_ENUMERATION("Extensions.BookmarkAppLaunchSource",
                             launch_source);
   UMA_HISTOGRAM_ENUMERATION("Extensions.BookmarkAppLaunchContainer", container);
+}
 
-  // Record the launch time in the site engagement service. A recent web
+void UpdateLaunchStats(content::WebContents* web_contents,
+                       const AppId& app_id,
+                       const GURL& launch_url) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+  WebAppProvider::GetForLocalAppsUnchecked(profile)
+      ->sync_bridge()
+      .SetAppLastLaunchTime(app_id, base::Time::Now());
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (ash::GetSystemWebAppTypeForAppId(profile, app_id)) {
+    // System web apps doesn't use the rest of the stats.
+    return;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  // Update the launch time in the site engagement service. A recent web
   // app launch will provide an engagement boost to the origin.
   site_engagement::SiteEngagementService::Get(profile)
       ->SetLastShortcutLaunchTime(web_contents, launch_url);
-  WebAppProvider::GetForWebApps(profile)->sync_bridge().SetAppLastLaunchTime(
-      app_id, base::Time::Now());
+
   // Refresh the app banner added to homescreen event. The user may have
   // cleared their browsing data since installing the app, which removes the
   // event and will potentially permit a banner to be shown for the site.

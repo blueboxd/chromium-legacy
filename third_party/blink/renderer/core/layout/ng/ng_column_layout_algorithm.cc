@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -130,7 +130,7 @@ void MulticolPartWalker::AddNextColumnBreakToken(
 
 void MulticolPartWalker::UpdateNextColumnBreakToken(
     const NGContainerFragmentBuilder::ChildrenVector& children) {
-  if (children.IsEmpty())
+  if (children.empty())
     return;
   const blink::NGPhysicalFragment* last_child =
       children[children.size() - 1].fragment;
@@ -314,7 +314,7 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::Layout() {
     // In addition to establishing one, we're nested inside another
     // fragmentation context.
     FinishFragmentation(Node(), ConstraintSpace(), BorderPadding().block_end,
-                        FragmentainerSpaceAtBfcStart(ConstraintSpace()),
+                        FragmentainerSpaceLeft(ConstraintSpace()),
                         &container_builder_);
 
     // OOF positioned elements inside a nested fragmentation context are laid
@@ -533,8 +533,8 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutChildren() {
   if (!walker.IsFinished() || container_builder_.HasInflowChildBreakInside()) {
     // We broke in the main flow. Let this multicol container take up any
     // remaining space.
-    intrinsic_block_size_ = std::max(
-        intrinsic_block_size_, FragmentainerSpaceAtBfcStart(ConstraintSpace()));
+    intrinsic_block_size_ = std::max(intrinsic_block_size_,
+                                     FragmentainerSpaceLeft(ConstraintSpace()));
 
     // Go through any remaining parts that we didn't get to, and push them as
     // break tokens for the next (outer) fragmentainer to handle.
@@ -618,7 +618,7 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::LayoutRow(
   LayoutUnit available_outer_space = kIndefiniteSize;
   if (is_constrained_by_outer_fragmentation_context_) {
     available_outer_space =
-        UnclampedFragmentainerSpaceAtBfcStart(ConstraintSpace()) - row_offset;
+        UnclampedFragmentainerSpaceLeft(ConstraintSpace()) - row_offset;
 
     if (available_outer_space <= LayoutUnit()) {
       if (available_outer_space < LayoutUnit()) {
@@ -652,6 +652,8 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::LayoutRow(
       may_resume_in_next_outer_fragmentainer = true;
   }
 
+  bool shrink_to_fit_column_block_size = false;
+
   // We balance if block-size is unconstrained, or when we're explicitly told
   // to. Note that the block-size may be constrained by outer fragmentation
   // contexts, not just by a block-size specified on this multicol container.
@@ -667,8 +669,17 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::LayoutRow(
     // don't take up more space than there's room for in the outer fragmentation
     // context.
     if (column_size.block_size > available_outer_space ||
-        column_size.block_size == kIndefiniteSize)
+        column_size.block_size == kIndefiniteSize) {
+      // If the block-size of the inner multicol is unconstrained, we'll let the
+      // outer fragmentainer context constrain it. However, if the inner
+      // multicol only has content for one column (in the current row), and only
+      // fills it partially, we need to shrink its block-size, to make room for
+      // any content that follows the inner multicol, rather than eating the
+      // entire fragmentainer.
+      if (column_size.block_size == kIndefiniteSize)
+        shrink_to_fit_column_block_size = true;
       column_size.block_size = available_outer_space;
+    }
   }
 
   DCHECK_GE(column_size.block_size, LayoutUnit());
@@ -700,6 +711,7 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::LayoutRow(
 
   const NGLayoutResult* result = nullptr;
   absl::optional<NGBreakAppeal> min_break_appeal;
+  LayoutUnit intrinsic_block_size_contribution;
 
   do {
     const NGBlockBreakToken* column_break_token = next_column_token;
@@ -720,6 +732,7 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::LayoutRow(
     LayoutUnit minimal_space_shortage = kIndefiniteSize;
 
     min_break_appeal = absl::nullopt;
+    intrinsic_block_size_contribution = LayoutUnit();
 
     do {
       // Lay out one column. Each column will become a fragment.
@@ -740,6 +753,29 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::LayoutRow(
       result = child_algorithm.Layout();
       const auto& column =
           To<NGPhysicalBoxFragment>(result->PhysicalFragment());
+      intrinsic_block_size_contribution = column_size.block_size;
+      if (shrink_to_fit_column_block_size) {
+        // Shrink-to-fit the row block-size contribution from the first column
+        // if we're nested inside another fragmentation context. The column
+        // block-size that we use in auto-filled (non-balanced) inner multicol
+        // containers with unconstrained block-size is set to the available
+        // block-size in the outer fragmentation context. If we end up with just
+        // one inner column in this row, we should shrink the inner multicol
+        // container fragment, so that it doesn't take up the entire outer
+        // fragmentainer needlessly. So clamp it to the total block-size of the
+        // contents in the column (including overflow).
+        //
+        // TODO(layout-dev): It would be slightly nicer if we actually shrunk
+        // the block-size of the column fragment (in
+        // FinishFragmentationForFragmentainer()) instead of just cropping the
+        // block-size of the multicol container here, but that would cause
+        // trouble for out-of-flow positioned descendants that extend past the
+        // end of in-flow content, which benefit from "full" column block-size.
+        intrinsic_block_size_contribution =
+            std::min(intrinsic_block_size_contribution,
+                     result->BlockSizeForFragmentation());
+        shrink_to_fit_column_block_size = false;
+      }
 
       if (!has_oof_fragmentainer_descendants && balance_columns &&
           NGFragmentedOutOfFlowData::
@@ -952,17 +988,6 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::LayoutRow(
 
     const auto& first_column =
         To<NGPhysicalBoxFragment>(new_columns[0].Fragment());
-    if (!has_processed_first_column_) {
-      has_processed_first_column_ = true;
-
-      // According to the spec, we should only look for a baseline in the first
-      // column.
-      //
-      // TODO(layout-dev): It might make sense to look for baselines inside
-      // every column that's first in a row, not just the first column in the
-      // multicol container.
-      PropagateBaselineFromChild(first_column, row_offset);
-    }
 
     // Only the first column in a row may attempt to place any unpositioned
     // list-item. This matches the behavior in Gecko, and also to some extent
@@ -973,7 +998,7 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::LayoutRow(
     // (which will also be used as layout position for subsequent content), and
     // reset the margin strut (it has already been incorporated into the
     // offset).
-    intrinsic_block_size_ = row_offset + column_size.block_size;
+    intrinsic_block_size_ = row_offset + intrinsic_block_size_contribution;
     *margin_strut = NGMarginStrut();
   }
 
@@ -981,6 +1006,7 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::LayoutRow(
   for (auto result_with_offset : new_columns) {
     const NGPhysicalBoxFragment& column = result_with_offset.Fragment();
     container_builder_.AddChild(column, result_with_offset.offset);
+    PropagateBaselineFromChild(column, result_with_offset.offset.block_offset);
   }
 
   if (min_break_appeal)
@@ -1019,7 +1045,7 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutSpanner(
     // point, and determine whether we should break.
 
     LayoutUnit fragmentainer_block_offset =
-        ConstraintSpace().FragmentainerOffsetAtBfc() + block_offset;
+        ConstraintSpace().FragmentainerOffset() + block_offset;
 
     NGBreakStatus break_status = BreakBeforeChildIfNeeded(
         ConstraintSpace(), spanner_node, *result, fragmentainer_block_offset,
@@ -1110,21 +1136,21 @@ void NGColumnLayoutAlgorithm::PositionAnyUnclaimedListMarker() {
 void NGColumnLayoutAlgorithm::PropagateBaselineFromChild(
     const NGPhysicalBoxFragment& child,
     LayoutUnit block_offset) {
-  // Bail if a baseline was already found.
-  if (container_builder_.FirstBaseline())
-    return;
+  NGBoxFragment fragment(ConstraintSpace().GetWritingDirection(), child);
 
-  // According to the spec, multicol containers have no "last baseline set", so,
-  // unless we're looking for a "first baseline set", we have no work to do.
-  if (ConstraintSpace().BaselineAlgorithmType() ==
-      NGBaselineAlgorithmType::kInlineBlock)
-    return;
+  // Only propagate the first-baseline from the first-column.
+  if (child.IsFirstForNode() && !container_builder_.FirstBaseline()) {
+    if (auto first_baseline = fragment.FirstBaseline())
+      container_builder_.SetFirstBaseline(block_offset + *first_baseline);
+  }
 
-  NGBoxFragment logical_fragment(ConstraintSpace().GetWritingDirection(),
-                                 child);
-
-  if (auto baseline = logical_fragment.FirstBaseline())
-    container_builder_.SetFirstBaseline(block_offset + *baseline);
+  // The last-baseline is the lowest last-baseline of all fragments.
+  if (auto last_baseline = fragment.LastBaseline()) {
+    LayoutUnit baseline =
+        std::max(block_offset + *last_baseline,
+                 container_builder_.LastBaseline().value_or(LayoutUnit::Min()));
+    container_builder_.SetLastBaseline(baseline);
+  }
   container_builder_.SetUseLastBaselineForInlineBaseline();
 }
 
@@ -1212,7 +1238,7 @@ LayoutUnit NGColumnLayoutAlgorithm::CalculateBalancedColumnBlockSizeInternal(
 
    private:
     ContentRun* TallestRun() const {
-      DCHECK(!runs_.IsEmpty());
+      DCHECK(!runs_.empty());
       auto* const it = std::max_element(
           runs_.begin(), runs_.end(),
           [](const ContentRun& run1, const ContentRun& run2) {
@@ -1337,7 +1363,7 @@ LayoutUnit NGColumnLayoutAlgorithm::ConstrainColumnBlockSize(
   if (is_constrained_by_outer_fragmentation_context_) {
     // Don't become too tall to fit in the outer fragmentation context.
     LayoutUnit available_outer_space =
-        UnclampedFragmentainerSpaceAtBfcStart(ConstraintSpace()) - row_offset;
+        UnclampedFragmentainerSpaceLeft(ConstraintSpace()) - row_offset;
     size = std::min(size, available_outer_space.ClampNegativeToZero());
   }
 

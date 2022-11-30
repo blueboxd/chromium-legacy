@@ -20,7 +20,7 @@ using password_manager::PasswordManager;
 
 IOSPasswordManagerDriver::IOSPasswordManagerDriver(
     id<PasswordManagerDriverBridge> bridge,
-    password_manager::PasswordManager* password_manager,
+    password_manager::PasswordManagerInterface* password_manager,
     web::WebFrame* web_frame,
     int driver_id)
     : bridge_(bridge),
@@ -43,11 +43,7 @@ int IOSPasswordManagerDriver::GetId() const {
 
 void IOSPasswordManagerDriver::SetPasswordFillData(
     const autofill::PasswordFormFillData& form_data) {
-  // No need to cache data if the frame is already destroyed.
-  if (web_frame_)
-    [bridge_ fillPasswordForm:form_data
-                      inFrame:web_frame_
-            completionHandler:nil];
+  [bridge_ processPasswordFormFillData:form_data inFrame:web_frame_];
 }
 
 void IOSPasswordManagerDriver::InformNoSavedCredentials(
@@ -89,7 +85,8 @@ IOSPasswordManagerDriver::GetPasswordGenerationHelper() {
   return password_generation_helper_.get();
 }
 
-PasswordManager* IOSPasswordManagerDriver::GetPasswordManager() {
+password_manager::PasswordManagerInterface*
+IOSPasswordManagerDriver::GetPasswordManager() {
   return password_manager_;
 }
 
@@ -114,8 +111,4 @@ bool IOSPasswordManagerDriver::CanShowAutofillUi() const {
 
 const GURL& IOSPasswordManagerDriver::GetLastCommittedURL() const {
   return bridge_.lastCommittedURL;
-}
-
-void IOSPasswordManagerDriver::ProcessFrameDeletion() {
-  web_frame_ = nullptr;
 }

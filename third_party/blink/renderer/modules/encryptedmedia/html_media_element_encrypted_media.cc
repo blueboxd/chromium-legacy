@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,7 +112,7 @@ class SetContentDecryptionModuleResult final
     StringBuilder result;
     result.Append(message);
     if (system_code != 0) {
-      if (result.IsEmpty())
+      if (result.empty())
         result.Append("Rejected with system code");
       result.Append(" (");
       result.AppendNumber(system_code);
@@ -199,10 +199,10 @@ void SetMediaKeysHandler::ClearExistingMediaKeys() {
       //       attribute to decrypt media data and remove the association
       //       with the media element.
       // (All 3 steps handled as needed in Chromium.)
-      SuccessCallback success_callback = WTF::Bind(
+      SuccessCallback success_callback = WTF::BindOnce(
           &SetMediaKeysHandler::SetNewMediaKeys, WrapPersistent(this));
-      FailureCallback failure_callback =
-          WTF::Bind(&SetMediaKeysHandler::ClearFailed, WrapPersistent(this));
+      FailureCallback failure_callback = WTF::BindOnce(
+          &SetMediaKeysHandler::ClearFailed, WrapPersistent(this));
       ContentDecryptionModuleResult* result =
           MakeGarbageCollected<SetContentDecryptionModuleResult>(
               std::move(success_callback), std::move(failure_callback));
@@ -231,9 +231,9 @@ void SetMediaKeysHandler::SetNewMediaKeys() {
     //       (Handled in Chromium).
     if (element_->GetWebMediaPlayer()) {
       SuccessCallback success_callback =
-          WTF::Bind(&SetMediaKeysHandler::Finish, WrapPersistent(this));
+          WTF::BindOnce(&SetMediaKeysHandler::Finish, WrapPersistent(this));
       FailureCallback failure_callback =
-          WTF::Bind(&SetMediaKeysHandler::SetFailed, WrapPersistent(this));
+          WTF::BindOnce(&SetMediaKeysHandler::SetFailed, WrapPersistent(this));
       ContentDecryptionModuleResult* result =
           MakeGarbageCollected<SetContentDecryptionModuleResult>(
               std::move(success_callback), std::move(failure_callback));

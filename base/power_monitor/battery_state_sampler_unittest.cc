@@ -7,40 +7,25 @@
 #include <queue>
 #include <utility>
 
+#include "base/power_monitor/power_monitor_buildflags.h"
 #include "base/power_monitor/sampling_event_source.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/gtest_util.h"
+#include "base/test/power_monitor_test_utils.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 
-class TestSamplingEventSource : public SamplingEventSource {
- public:
-  TestSamplingEventSource() = default;
-  ~TestSamplingEventSource() override = default;
-
-  bool Start(SamplingEventCallback callback) override {
-    sampling_event_callback_ = std::move(callback);
-    return true;
-  }
-
-  void SimulateEvent() { sampling_event_callback_.Run(); }
-
- private:
-  SamplingEventCallback sampling_event_callback_;
-};
-
 class TestBatteryLevelProvider : public BatteryLevelProvider {
  public:
   TestBatteryLevelProvider() = default;
   ~TestBatteryLevelProvider() override = default;
 
-  void GetBatteryState(
-      base::OnceCallback<void(const absl::optional<BatteryState>&)> callback)
-      override {
+  void GetBatteryState(OnceCallback<void(const absl::optional<BatteryState>&)>
+                           callback) override {
     DCHECK(!battery_states_.empty());
 
     auto next_battery_state = std::move(battery_states_.front());
@@ -62,20 +47,19 @@ class TestBatteryLevelProviderAsync : public TestBatteryLevelProvider {
   TestBatteryLevelProviderAsync() = default;
   ~TestBatteryLevelProviderAsync() override = default;
 
-  void GetBatteryState(
-      base::OnceCallback<void(const absl::optional<BatteryState>&)> callback)
-      override {
+  void GetBatteryState(OnceCallback<void(const absl::optional<BatteryState>&)>
+                           callback) override {
     DCHECK(!battery_states_.empty());
 
     auto next_battery_state = std::move(battery_states_.front());
     battery_states_.pop();
 
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindLambdaForTesting(
-                       [callback = std::move(callback),
-                        battery_state = next_battery_state]() mutable {
-                         std::move(callback).Run(battery_state);
-                       }));
+    SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        BindLambdaForTesting([callback = std::move(callback),
+                              battery_state = next_battery_state]() mutable {
+          std::move(callback).Run(battery_state);
+        }));
   }
 };
 
@@ -107,21 +91,21 @@ const absl::optional<BatteryLevelProvider::BatteryState> kTestBatteryState1 =
         .is_external_power_connected = false,
         .current_capacity = 10000,
         .full_charged_capacity = 10000,
-        .charge_unit = BatteryLevelProvider::BatteryLevelUnit::kMAh};
+        .charge_unit = BatteryLevelProvider::BatteryLevelUnit::kMWh};
 const absl::optional<BatteryLevelProvider::BatteryState> kTestBatteryState2 =
     BatteryLevelProvider::BatteryState{
         .battery_count = 1,
         .is_external_power_connected = false,
         .current_capacity = 5000,
         .full_charged_capacity = 10000,
-        .charge_unit = BatteryLevelProvider::BatteryLevelUnit::kMAh};
+        .charge_unit = BatteryLevelProvider::BatteryLevelUnit::kMWh};
 const absl::optional<BatteryLevelProvider::BatteryState> kTestBatteryState3 =
     BatteryLevelProvider::BatteryState{
         .battery_count = 1,
         .is_external_power_connected = true,
         .current_capacity = 2000,
         .full_charged_capacity = 10000,
-        .charge_unit = BatteryLevelProvider::BatteryLevelUnit::kMAh};
+        .charge_unit = BatteryLevelProvider::BatteryLevelUnit::kMWh};
 
 bool operator==(const BatteryLevelProvider::BatteryState& lhs,
                 const BatteryLevelProvider::BatteryState& rhs) {
@@ -139,15 +123,24 @@ bool operator!=(const BatteryLevelProvider::BatteryState& lhs,
 }
 
 TEST(BatteryStateSamplerTest, GlobalInstance) {
-  // Can't get an non-existent sampler.
+#if BUILDFLAG(HAS_BATTERY_LEVEL_PROVIDER_IMPL) || BUILDFLAG(IS_CHROMEOS_ASH)
+  // Get() DCHECKs on platforms with a battery level provider if it's called
+  // without being initialized. ChromeOS behaves the same because it has a
+  // `BatteryLevelProvider`, but it doesn't live in base so it doesn't exist in
+  // this test.
   EXPECT_DCHECK_DEATH(BatteryStateSampler::Get());
+#else
+  // Get() returns null if the sampler doesn't exist on platforms without a
+  // battery level provider.
+  EXPECT_FALSE(BatteryStateSampler::Get());
+#endif
 
   auto battery_level_provider = std::make_unique<TestBatteryLevelProvider>();
   battery_level_provider->PushBatteryState(kTestBatteryState1);
 
   // Create the sampler.
   auto battery_state_sampler = std::make_unique<BatteryStateSampler>(
-      std::make_unique<TestSamplingEventSource>(),
+      std::make_unique<test::TestSamplingEventSource>(),
       std::move(battery_level_provider));
 
   // Now the getter works.
@@ -156,18 +149,23 @@ TEST(BatteryStateSamplerTest, GlobalInstance) {
   // Can't create a second sampler.
   EXPECT_DCHECK_DEATH({
     BatteryStateSampler another_battery_state_sampler(
-        std::make_unique<TestSamplingEventSource>(),
+        std::make_unique<test::TestSamplingEventSource>(),
         std::make_unique<TestBatteryLevelProvider>());
   });
 
   battery_state_sampler.reset();
 
   // The sampler no longer exists.
+#if BUILDFLAG(HAS_BATTERY_LEVEL_PROVIDER_IMPL) || BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_DCHECK_DEATH(BatteryStateSampler::Get());
+#else
+  EXPECT_FALSE(BatteryStateSampler::Get());
+#endif
 }
 
 TEST(BatteryStateSamplerTest, InitialSample) {
-  auto sampling_event_source = std::make_unique<TestSamplingEventSource>();
+  auto sampling_event_source =
+      std::make_unique<test::TestSamplingEventSource>();
 
   auto battery_level_provider = std::make_unique<TestBatteryLevelProvider>();
   // Push the initial battery state that will be queried by the sampler.
@@ -190,7 +188,8 @@ TEST(BatteryStateSamplerTest, MultipleSamples) {
   battery_level_provider->PushBatteryState(kTestBatteryState3);
   battery_level_provider->PushBatteryState(kTestBatteryState1);
 
-  auto sampling_event_source = std::make_unique<TestSamplingEventSource>();
+  auto sampling_event_source =
+      std::make_unique<test::TestSamplingEventSource>();
   auto* sampling_event_source_ptr = sampling_event_source.get();
 
   BatteryStateSampler battery_state_sampler(std::move(sampling_event_source),
@@ -219,7 +218,8 @@ TEST(BatteryStateSamplerTest, MultipleObservers) {
   battery_level_provider->PushBatteryState(kTestBatteryState1);
   battery_level_provider->PushBatteryState(kTestBatteryState2);
 
-  auto sampling_event_source = std::make_unique<TestSamplingEventSource>();
+  auto sampling_event_source =
+      std::make_unique<test::TestSamplingEventSource>();
   auto* sampling_event_source_ptr = sampling_event_source.get();
 
   BatteryStateSampler battery_state_sampler(std::move(sampling_event_source),
@@ -243,14 +243,15 @@ TEST(BatteryStateSamplerTest, MultipleObservers) {
 // Windows), the sampler will correctly notify new observers when the first
 // sample arrives.
 TEST(BatteryStateSamplerTest, InitialSample_Async) {
-  base::test::SingleThreadTaskEnvironment task_environment;
+  test::SingleThreadTaskEnvironment task_environment;
 
   auto battery_level_provider =
       std::make_unique<TestBatteryLevelProviderAsync>();
   // Push the initial battery state.
   battery_level_provider->PushBatteryState(kTestBatteryState1);
 
-  auto sampling_event_source = std::make_unique<TestSamplingEventSource>();
+  auto sampling_event_source =
+      std::make_unique<test::TestSamplingEventSource>();
 
   // Creating the sampler starts the first async sample.
   BatteryStateSampler battery_state_sampler(std::move(sampling_event_source),
@@ -260,7 +261,7 @@ TEST(BatteryStateSamplerTest, InitialSample_Async) {
   battery_state_sampler.AddObserver(&observer);
   EXPECT_EQ(observer.battery_state(), absl::nullopt);
 
-  base::RunLoop().RunUntilIdle();
+  RunLoop().RunUntilIdle();
   EXPECT_EQ(observer.battery_state(), kTestBatteryState1);
 }
 

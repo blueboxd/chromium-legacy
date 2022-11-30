@@ -10,7 +10,7 @@
 #include "base/test/task_environment.h"
 #include "components/cast/message_port/platform_message_port.h"
 #include "components/cast/message_port/test_message_port_receiver.h"
-#include "components/cast_streaming/browser/message_serialization.h"
+#include "components/cast_streaming/common/message_serialization.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cast_streaming {
@@ -249,7 +249,7 @@ TEST_F(CastMessagePortImplTest, MediaStatus) {
 
   const base::Value* status_value = return_value->FindListKey(kKeyStatus);
   ASSERT_TRUE(status_value);
-  EXPECT_EQ(status_value->GetListDeprecated().size(), 1u);
+  EXPECT_EQ(status_value->GetList().size(), 1u);
 }
 
 // Checks sending invalid media messages results in no response.

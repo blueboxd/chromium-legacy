@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -181,9 +181,11 @@ struct BLINK_EXPORT WebNavigationParams {
   WebNavigationParams();
   ~WebNavigationParams();
 
-  // Allows to specify |devtools_navigation_token|, instead of creating
-  // a new one.
-  explicit WebNavigationParams(const base::UnguessableToken&);
+  // Construct with a specific `document_token` and `devtools_navigation_token`,
+  // rather than randomly creating new ones.
+  explicit WebNavigationParams(
+      const blink::DocumentToken& document_token,
+      const base::UnguessableToken& devtools_navigation_token);
 
   // Shortcut for navigating based on WebNavigationInfo parameters.
   //
@@ -249,6 +251,15 @@ struct BLINK_EXPORT WebNavigationParams {
   // If non-null, this gives the pre-redirect URL in case that we're committing
   // a failed navigation.
   WebURL pre_redirect_url_for_failed_navigations;
+
+  // If `url` is about:srcdoc, this is the default base URL to use for the new
+  // document. It corresponds to the parent's base URL snapshotted when the
+  // navigation started.
+  // Note: this value is only used when the IsolateSandboxedIframes feature is
+  // enabled in the embedder.
+  // TODO(wjmaclean): Revisit the naming here when we expand to sending base
+  // URLs for about:blank.
+  WebURL fallback_srcdoc_base_url;
 
   // The net error code for failed navigation. Must be non-zero when
   // |unreachable_url| is non-null.
@@ -324,6 +335,7 @@ struct BLINK_EXPORT WebNavigationParams {
   // taking into account the origin computed by the renderer.
   StorageKey storage_key;
 
+  blink::DocumentToken document_token;
   // The devtools token for this navigation. See DocumentLoader
   // for details.
   base::UnguessableToken devtools_navigation_token;

@@ -491,11 +491,11 @@ class BrowserAutofillManager : public AutofillManager,
   // profile does not exist.
   AutofillProfile* GetProfile(int unique_id);
 
-  // Determines whether a fill on |form| initiated from |triggered_field| will
-  // wind up filling a credit card number. This is useful to determine if we
-  // will need to unmask a card.
+  // Determines whether a fill on |form| initiated from |field| will wind up
+  // filling a credit card number. This is useful to determine if we will need
+  // to unmask a card.
   bool WillFillCreditCardNumber(const FormData& form,
-                                const FormFieldData& triggered_field);
+                                const FormFieldData& field);
 
   // Fills or previews the credit card form.
   // Assumes the form and field are valid.
@@ -663,6 +663,14 @@ class BrowserAutofillManager : public AutofillManager,
   void MaybeTriggerRefillForExpirationDate(const FormData& form,
                                            const FormFieldData& field,
                                            const std::u16string& old_value);
+
+  // Checks whether JavaScript cleared an autofilled value within
+  // kLimitBeforeRefill after the filling and records metrics for this. This
+  // method should be called after we learend that JavaScript modified an
+  // autofilled field. It's responsible for assessing the nature of the
+  // modification.
+  void AnalyzeJavaScriptChangedAutofilledValue(const FormData& form,
+                                               const FormFieldData& field);
 
   // Replaces the contents of |suggestions| with available suggestions for
   // |field|. |context| will contain additional information about the

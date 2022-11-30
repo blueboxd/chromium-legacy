@@ -148,7 +148,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_value_store.h"
-#include "components/prefs/scoped_user_pref_update.h"
 #include "components/site_isolation/site_isolation_policy.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
@@ -221,6 +220,7 @@
 #if BUILDFLAG(IS_CHROMEOS)
 #include "base/process/process.h"
 #include "base/task/task_traits.h"
+#include "components/crash/core/app/breakpad_linux.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -229,12 +229,12 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/arc/metrics/stability_metrics_manager.h"
-#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_switches.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/hardware_data_usage_controller.h"
 #include "chrome/browser/ash/settings/stats_reporting_controller.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
@@ -244,7 +244,6 @@
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-#include "components/crash/core/app/breakpad_linux.h"
 #include "components/crash/core/app/crashpad.h"
 #endif
 
@@ -402,10 +401,8 @@ StartupProfileInfo CreateInitialProfile(
     // Clear kProfilesLastActive since the user only wants to launch a specific
     // profile. Don't clear it if the user launched a web app, in order to not
     // break any subsequent multi-profile session restore.
-    ListPrefUpdate update(g_browser_process->local_state(),
-                          prefs::kProfilesLastActive);
-    base::Value* profile_list = update.Get();
-    profile_list->ClearList();
+    g_browser_process->local_state()->SetList(prefs::kProfilesLastActive,
+                                              base::Value::List());
   }
 
   StartupProfileInfo profile_info;
@@ -506,10 +503,14 @@ bool ShouldInstallSodaDuringPostProfileInit(
 
 // ChromeBrowserMainParts::ProfileInitManager ----------------------------------
 
+// Runs `CallPostProfileInit()` on all existing and future profiles, the
+// initial profile is processed first. The initial profile is nullptr when the
+// profile picker is shown.
 class ChromeBrowserMainParts::ProfileInitManager
     : public ProfileManagerObserver {
  public:
-  explicit ProfileInitManager(ChromeBrowserMainParts* browser_main);
+  ProfileInitManager(ChromeBrowserMainParts* browser_main,
+                     Profile* initial_profile);
   ~ProfileInitManager() override;
 
   ProfileInitManager(const ProfileInitManager&) = delete;
@@ -527,19 +528,36 @@ class ChromeBrowserMainParts::ProfileInitManager
 };
 
 ChromeBrowserMainParts::ProfileInitManager::ProfileInitManager(
-    ChromeBrowserMainParts* browser_main)
+    ChromeBrowserMainParts* browser_main,
+    Profile* initial_profile)
     : browser_main_(browser_main) {
-  profile_manager_observer_.Observe(g_browser_process->profile_manager());
+  // `initial_profile` is null when the profile picker is shown.
+  if (initial_profile)
+    browser_main_->CallPostProfileInit(initial_profile);
+
+  if (base::FeatureList::IsEnabled(features::kObserverBasedPostProfileInit)) {
+    // Run `CallPostProfileInit()` on the other existing and future profiles.
+    ProfileManager* profile_manager = g_browser_process->profile_manager();
+    // Register the observer first, in case `OnProfileAdded()` causes a
+    // creation.
+    profile_manager_observer_.Observe(profile_manager);
+    for (auto* profile : profile_manager->GetLoadedProfiles()) {
+      DCHECK(profile);
+      if (profile == initial_profile)
+        continue;
+      OnProfileAdded(profile);
+    }
+  }
 }
 
 ChromeBrowserMainParts::ProfileInitManager::~ProfileInitManager() = default;
 
 void ChromeBrowserMainParts::ProfileInitManager::OnProfileAdded(
     Profile* profile) {
-  if (profile->IsSystemProfile()) {
-    // Ignore the system profile that is used for displaying the profile picker.
-    // `CallPostProfileInit()` should be called only for profiles that are used
-    // for browsing.
+  if (profile->IsSystemProfile() || profile->IsGuestSession()) {
+    // Ignore the system profile that is used for displaying the profile picker,
+    // and the "parent" guest profile. `CallPostProfileInit()` should be called
+    // only for profiles that are used for browsing.
     return;
   }
 
@@ -1043,14 +1061,13 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   }
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_OPENBSD)
+#if BUILDFLAG(IS_CHROMEOS)
   // Set the product channel for crash reports.
   if (!crash_reporter::IsCrashpadEnabled()) {
     breakpad::SetChannelCrashKey(
         chrome::GetChannelName(chrome::WithExtendedStable(true)));
   }
-#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) ||
-        // BUILDFLAG(IS_OPENBSD)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_MAC)
 #if defined(ARCH_CPU_X86_64)
@@ -1572,7 +1589,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   StartupProfileInfo profile_info = CreateInitialProfile(
       /*cur_dir=*/base::FilePath(), *base::CommandLine::ForCurrentProcess());
 
-  Profile* profile = profile_info.profile;
   if (profile_info.mode == StartupProfileMode::kError)
     return content::RESULT_CODE_NORMAL_EXIT;
 
@@ -1625,24 +1641,24 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
 #endif  // !BUILDFLAG(GOOGLE_CHROME_FOR_TESTING_BRANDING)
 
-  // TODO(stevenjb): Move WIN and MACOSX specific code to appropriate Parts.
-  // (requires supporting early exit).
-  CallPostProfileInit(profile);
-  if (base::FeatureList::IsEnabled(features::kObserverBasedPostProfileInit)) {
-    // Set up PostProfileInit triggering for profiles created later.
-    profile_init_manager_ = std::make_unique<ProfileInitManager>(this);
-  }
+  // `profile` may be nullptr if the profile picker is shown.
+  Profile* profile = profile_info.profile;
+  // Call `PostProfileInit()`and set it up for profiles created later.
+  profile_init_manager_ = std::make_unique<ProfileInitManager>(this, profile);
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // Execute first run specific code after the PrefService has been initialized
   // and preferences have been registered since some of the import code depends
   // on preferences.
   if (first_run::IsChromeFirstRun()) {
-    first_run::AutoImport(profile, master_prefs_->import_bookmarks_path);
+    // `profile` may be nullptr even on first run, for example when the
+    // "BrowserSignin" policy is set to "Force". If so, skip the auto import.
+    if (profile) {
+      first_run::AutoImport(profile, master_prefs_->import_bookmarks_path);
+    }
 
     // Note: This can pop-up the first run consent dialog on Linux & Mac.
-    first_run::DoPostImportTasks(profile,
-                                 master_prefs_->make_chrome_default_for_user);
+    first_run::DoPostImportTasks(master_prefs_->make_chrome_default_for_user);
 
     // The first run dialog is modal, and spins a RunLoop, which could receive
     // a SIGTERM, and call chrome::AttemptExit(). Exit cleanly in that case.
@@ -1731,11 +1747,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     variations_service->PerformPreMainMessageLoopStartup();
 
 #if BUILDFLAG(IS_ANDROID)
+  // The profile picker is never shown on Android.
   DCHECK_EQ(profile_info.mode, StartupProfileMode::kBrowserWindow);
+  DCHECK(profile);
   // Just initialize the policy prefs service here. Variations seed fetching
   // will be initialized when the app enters foreground mode.
   variations_service->set_policy_pref_service(profile->GetPrefs());
-
 #else
   // We are in regular browser boot sequence. Open initial tabs and enter the
   // main message loop.
@@ -1946,6 +1963,8 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
   // done before |browser_process_| is released.
   metrics::CleanExitBeacon::EnsureCleanShutdown(
       browser_process_->local_state());
+
+  profile_init_manager_.reset();
 
   // The below call to browser_shutdown::ShutdownPostThreadsStop() deletes
   // |browser_process_|. We release it so that we don't keep holding onto an

@@ -14,6 +14,9 @@ static_library("public") {
     "autofill_assistant.h",
     "autofill_assistant_factory.h",
     "external_action_delegate.h",
+    "external_action_util.cc",
+    "external_action_util.h",
+    "headless_onboarding_result.h",
     "headless_script_controller.h",
     "prefs.cc",
     "prefs.h",
@@ -30,6 +33,7 @@ static_library("public") {
 
   deps = [
     ":proto",
+    "//components/autofill/core/browser:browser",
     "//components/autofill/core/common:common",
     "//components/autofill_assistant/browser/public/fast_checkout/proto:proto",
     "//components/autofill_assistant/browser/public/password_change/proto:proto",
@@ -124,6 +128,7 @@ source_set("unit_tests") {
     "autofill_assistant_unittest.cc",
     "password_change/save_password_leak_detection_delegate_unittest.cc",
     "password_change/website_login_manager_impl_unittest.cc",
+    "prefs_unittest.cc",
   ]
   deps = [
     ":password_change",
@@ -132,7 +137,6 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/browser:test_support",
-    "//components/autofill_assistant/browser/public:unit_test_support",
     "//components/password_manager/core/browser:test_support",
     "//components/password_manager/core/browser/leak_detection:test_support",
     "//components/password_manager/core/common",

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -459,7 +459,7 @@ void DOMMatrixReadOnly::SetMatrixValueFromString(
     ExceptionState& exception_state) {
   DEFINE_STATIC_LOCAL(String, identity_matrix2d, ("matrix(1, 0, 0, 1, 0, 0)"));
   String string = input_string;
-  if (string.IsEmpty())
+  if (string.empty())
     string = identity_matrix2d;
 
   const CSSValue* value = CSSParser::ParseSingleValue(

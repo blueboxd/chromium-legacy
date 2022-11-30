@@ -432,12 +432,12 @@ class DownloadProtectionServiceTestBase
     return factories;
   }
 
-  void EnableFeatures(const std::vector<base::Feature>& features) {
+  void EnableFeatures(const std::vector<base::test::FeatureRef>& features) {
     scoped_feature_list_.Reset();
     scoped_feature_list_.InitWithFeatures(features, {});
   }
 
-  void DisableFeatures(const std::vector<base::Feature>& features) {
+  void DisableFeatures(const std::vector<base::test::FeatureRef>& features) {
     scoped_feature_list_.Reset();
     scoped_feature_list_.InitWithFeatures({}, features);
   }
@@ -621,9 +621,9 @@ class DownloadProtectionServiceTestBase
   }
 
   void AddDomainToEnterpriseAllowlist(const std::string& domain) {
-    ListPrefUpdate update(profile()->GetPrefs(),
-                          prefs::kSafeBrowsingAllowlistDomains);
-    update.Get()->Append(domain);
+    ScopedListPrefUpdate update(profile()->GetPrefs(),
+                                prefs::kSafeBrowsingAllowlistDomains);
+    update->Append(domain);
   }
 
   // Helper function to simulate a user gesture, then a link click.

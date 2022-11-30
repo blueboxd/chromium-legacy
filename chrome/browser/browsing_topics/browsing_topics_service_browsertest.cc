@@ -174,12 +174,13 @@ class BrowsingTopicsBrowserTestBase : public InProcessBrowserTest {
 
   ~BrowsingTopicsBrowserTestBase() override = default;
 
-  std::string InvokeTopicsAPI(const content::ToRenderFrameHost& adapter) {
-    return EvalJs(adapter, R"(
+  std::string InvokeTopicsAPI(const content::ToRenderFrameHost& adapter,
+                              bool skip_observation = false) {
+    return EvalJs(adapter, content::JsReplace(R"(
       if (!(document.browsingTopics instanceof Function)) {
         'not a function';
       } else {
-        document.browsingTopics()
+        document.browsingTopics({skipObservation: $1})
         .then(topics => {
           let result = "[";
           for (const topic of topics) {
@@ -190,7 +191,8 @@ class BrowsingTopicsBrowserTestBase : public InProcessBrowserTest {
         })
         .catch(error => error.message);
       }
-    )")
+    )",
+                                              skip_observation))
         .ExtractString();
   }
 
@@ -309,6 +311,11 @@ class BrowsingTopicsBrowserTest : public BrowsingTopicsBrowserTestBase {
         ->profile()
         ->GetDefaultStoragePartition()
         ->GetBrowsingTopicsSiteDataManager();
+  }
+
+  history::HistoryService* history_service() {
+    return HistoryServiceFactory::GetForProfile(
+        browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS);
   }
 
   TesterBrowsingTopicsService* browsing_topics_service() {
@@ -437,6 +444,7 @@ class BrowsingTopicsBrowserTest : public BrowsingTopicsBrowserTestBase {
 
     privacy_sandbox::PrivacySandboxSettings* privacy_sandbox_settings =
         PrivacySandboxSettingsFactory::GetForProfile(profile);
+    privacy_sandbox_settings->SetPrivacySandboxEnabled(true);
 
     history::HistoryService* history_service =
         HistoryServiceFactory::GetForProfile(
@@ -820,8 +828,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
   EXPECT_FALSE(pscs->HasAccessedTopics());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
-                       TopicsAPI_ContextDomainTracked) {
+IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest, TopicsAPI_ObserveBehavior) {
   GURL main_frame_url =
       https_server_.GetURL("a.test", "/browsing_topics/one_iframe_page.html");
 
@@ -834,19 +841,35 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
                                            /*iframe_id=*/"frame",
                                            subframe_url));
 
-  // The usage is not tracked before the API call. The returned entry was from
-  // the pre-existing storage.
+  // Invoked the API with {skipObservation: true}.
+  EXPECT_EQ("[]", InvokeTopicsAPI(content::ChildFrameAt(
+                                      web_contents()->GetPrimaryMainFrame(), 0),
+                                  /*skip_observation=*/true));
+
+  // Since {skipObservation: true} was specified, the page is not eligible for
+  // topics calculation.
+  EXPECT_FALSE(
+      BrowsingTopicsEligibleForURLVisit(history_service(), main_frame_url));
+
+  // Since {skipObservation: true} was specified, the usage is not tracked. The
+  // returned entry was from the pre-existing storage.
   std::vector<ApiUsageContext> api_usage_contexts =
       content::GetBrowsingTopicsApiUsage(browsing_topics_site_data_manager());
   EXPECT_EQ(api_usage_contexts.size(), 1u);
 
+  // Invoked the API with {skipObservation: false}.
   EXPECT_EQ("[]", InvokeTopicsAPI(content::ChildFrameAt(
                       web_contents()->GetPrimaryMainFrame(), 0)));
 
+  // Since {skipObservation: false} was specified, the page is eligible for
+  // topics calculation.
+  EXPECT_TRUE(
+      BrowsingTopicsEligibleForURLVisit(history_service(), main_frame_url));
+
+  // Since {skipObservation: false} was specified, the usage is tracked.
   api_usage_contexts =
       content::GetBrowsingTopicsApiUsage(browsing_topics_site_data_manager());
 
-  // The usage is tracked after the API call.
   EXPECT_EQ(api_usage_contexts.size(), 2u);
   EXPECT_EQ(api_usage_contexts[0].hashed_main_frame_host,
             HashMainFrameHostForStorage("foo1.com"));

@@ -186,6 +186,7 @@ void PartitionAllocSupport::ReconfigureAfterZygoteFork(
 void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
     const std::string& process_type) {
   base::allocator::InstallDanglingRawPtrChecks();
+  base::allocator::InstallUnretainedDanglingRawPtrChecks();
   {
     base::AutoLock scoped_lock(lock_);
     // Avoid initializing more than once.
@@ -466,7 +467,7 @@ void PartitionAllocSupport::OnForegrounded(bool has_main_frame) {
   }
 
   if (!base::FeatureList::IsEnabled(
-          features::kLowerMemoryLimitForNonMainRenderers) ||
+          features::kLowerPAMemoryLimitForNonMainRenderers) ||
       has_main_frame)
     ::partition_alloc::ThreadCache::SetLargestCachedSize(largest_cached_size_);
 #endif  // defined(PA_THREAD_CACHE_SUPPORTED) &&

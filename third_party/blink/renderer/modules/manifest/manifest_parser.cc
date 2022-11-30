@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
+#include "third_party/blink/public/common/permissions_policy/origin_with_possible_wildcards.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-blink-forward.h"
@@ -433,12 +434,6 @@ String ManifestParser::ParseDescription(const JSONObject* object) {
 
 String ManifestParser::ParseId(const JSONObject* object,
                                const KURL& start_url) {
-  if (!base::FeatureList::IsEnabled(blink::features::kWebAppEnableManifestId)) {
-    ManifestUmaUtil::ParseIdResult(
-        ManifestUmaUtil::ParseIdResultType::kFeatureDisabled);
-    return String();
-  }
-
   if (!start_url.IsValid()) {
     ManifestUmaUtil::ParseIdResult(
         ManifestUmaUtil::ParseIdResultType::kInvalidStartUrl);
@@ -601,7 +596,7 @@ Vector<gfx::Size> ManifestParser::ParseIconSizes(const JSONObject* icon) {
   for (auto& size : web_sizes)
     sizes.push_back(size);
 
-  if (sizes.IsEmpty())
+  if (sizes.empty())
     AddErrorInfo("found icon with no valid size.");
   return sizes;
 }
@@ -622,7 +617,7 @@ ManifestParser::ParseIconPurpose(const JSONObject* icon) {
                             keywords);
 
   // "any" is the default if there are no other keywords.
-  if (keywords.IsEmpty()) {
+  if (keywords.empty()) {
     purposes.push_back(mojom::blink::ManifestImageResource::Purpose::ANY);
     return purposes;
   }
@@ -630,7 +625,7 @@ ManifestParser::ParseIconPurpose(const JSONObject* icon) {
   bool unrecognised_purpose = false;
   for (auto& keyword : keywords) {
     keyword = keyword.StripWhiteSpace();
-    if (keyword.IsEmpty())
+    if (keyword.empty())
       continue;
 
     if (EqualIgnoringASCIICase(keyword, "any")) {
@@ -649,7 +644,7 @@ ManifestParser::ParseIconPurpose(const JSONObject* icon) {
   // This implies there was at least one purpose given, but none recognised.
   // Instead of defaulting to "any" (which would not be future proof),
   // invalidate the whole icon.
-  if (purposes.IsEmpty()) {
+  if (purposes.empty()) {
     AddErrorInfo("found icon with no valid purpose; ignoring it.");
     return absl::nullopt;
   }
@@ -687,6 +682,11 @@ ManifestParser::ParseScreenshotFormFactor(const JSONObject* screenshot) {
   return mojom::blink::ManifestScreenshot::FormFactor::kUnknown;
 }
 
+String ManifestParser::ParseScreenshotLabel(const JSONObject* object) {
+  absl::optional<String> label = ParseString(object, "label", Trim(true));
+  return label.has_value() ? *label : String();
+}
+
 Vector<mojom::blink::ManifestImageResourcePtr> ManifestParser::ParseIcons(
     const JSONObject* object) {
   return ParseImageResourceArray("icons", object);
@@ -717,6 +717,7 @@ Vector<mojom::blink::ManifestScreenshotPtr> ManifestParser::ParseScreenshots(
 
     screenshot->image = std::move(*image);
     screenshot->form_factor = ParseScreenshotFormFactor(screenshot_object);
+    screenshot->label = ParseScreenshotLabel(screenshot_object);
 
     screenshots.push_back(std::move(screenshot));
   }
@@ -836,7 +837,7 @@ Vector<mojom::blink::ManifestShortcutItemPtr> ManifestParser::ParseShortcuts(
     shortcut->short_name = ParseShortcutShortName(shortcut_object);
     shortcut->description = ParseShortcutDescription(shortcut_object);
     auto icons = ParseIcons(shortcut_object);
-    if (!icons.IsEmpty())
+    if (!icons.empty())
       shortcut->icons = std::move(icons);
 
     shortcuts.push_back(std::move(shortcut));
@@ -932,7 +933,7 @@ void ManifestParser::ParseFileFilter(
     Vector<mojom::blink::ManifestFileFilterPtr>* files) {
   auto file = mojom::blink::ManifestFileFilter::New();
   file->name = ParseFileFilterName(file_object);
-  if (file->name.IsEmpty()) {
+  if (file->name.empty()) {
     // https://wicg.github.io/web-share-target/level-2/#share_target-member
     // step 7.1 requires that we invalidate this FileFilter if 'name' is an
     // empty string. We also invalidate if 'name' is undefined or not a
@@ -941,7 +942,7 @@ void ManifestParser::ParseFileFilter(
   }
 
   file->accept = ParseFileFilterAccept(file_object);
-  if (file->accept.IsEmpty())
+  if (file->accept.empty())
     return;
 
   files->push_back(std::move(file));
@@ -1010,7 +1011,7 @@ ManifestParser::ParseShareTargetParams(const JSONObject* share_target_params) {
   params->url = url.has_value() ? *url : String();
 
   auto files = ParseTargetFiles("files", share_target_params);
-  if (!files.IsEmpty())
+  if (!files.empty())
     params->files = std::move(files);
   return params;
 }
@@ -1139,7 +1140,7 @@ ManifestParser::ParseFileHandler(const JSONObject* file_handler) {
   }
 
   entry->accept = ParseFileHandlerAccept(file_handler->GetJSONObject("accept"));
-  if (entry->accept.IsEmpty()) {
+  if (entry->accept.empty()) {
     AddErrorInfo("FileHandler ignored. Property 'accept' is invalid.");
     return absl::nullopt;
   }
@@ -1220,7 +1221,7 @@ HashMap<String, Vector<String>> ManifestParser::ParseFileHandlerAccept(
       extensions.erase(erase_iter, extensions.end());
     }
 
-    if (!extensions.IsEmpty())
+    if (!extensions.empty())
       result.Set(mimetype, std::move(extensions));
 
     if (extension_overflow > 0)
@@ -1562,7 +1563,7 @@ ManifestParser::ParseRelatedApplications(const JSONObject* object) {
     auto application = mojom::blink::ManifestRelatedApplication::New();
     application->platform = ParseRelatedApplicationPlatform(application_object);
     // "If platform is undefined, move onto the next item if any are left."
-    if (application->platform.IsEmpty()) {
+    if (application->platform.empty()) {
       AddErrorInfo(
           "'platform' is a required field, related application"
           " ignored.");
@@ -1574,7 +1575,7 @@ ManifestParser::ParseRelatedApplications(const JSONObject* object) {
     // "If both id and url are undefined, move onto the next item if any are
     // left."
     if ((!application->url.has_value() || !application->url->IsValid()) &&
-        application->id.IsEmpty()) {
+        application->id.empty()) {
       AddErrorInfo(
           "one of 'url' or 'id' is required, related application"
           " ignored.");
@@ -1618,7 +1619,8 @@ bool ManifestParser::ParseIsolatedStorage(const JSONObject* object) {
 
 Vector<blink::ParsedPermissionsPolicyDeclaration>
 ManifestParser::ParseIsolatedAppPermissions(const JSONObject* object) {
-  PermissionsPolicyParser::Node policy;
+  PermissionsPolicyParser::Node policy{
+      OriginWithPossibleWildcards::NodeType::kHeader};
 
   JSONValue* json_value = object->Get("permissions_policy");
   if (!json_value)
@@ -1655,7 +1657,7 @@ ManifestParser::ParseIsolatedAppPermissions(const JSONObject* object) {
       String wrapped_origin = (origin == "*" ? origin : "'" + origin + "'");
       new_policy.allowlist.push_back(wrapped_origin);
     }
-    policy.push_back(new_policy);
+    policy.declarations.push_back(new_policy);
   }
 
   PolicyParserMessageBuffer logger(

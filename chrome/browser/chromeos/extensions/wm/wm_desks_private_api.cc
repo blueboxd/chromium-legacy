@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/desk_template.h"
 #include "ash/wm/desks/desk.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +20,11 @@ namespace extensions {
 namespace {
 
 constexpr char kInvalidUuidError[] = "Invalid template UUID.";
+constexpr char kInvalidDeskIdError[] = "The desk identifier is not valid.";
+constexpr char kApiLaunchDeskResult[] = "Ash.DeskApi.LaunchDesk.Result";
+constexpr char kApiRemoveDeskResult[] = "Ash.DeskApi.RemoveDesk.Result";
+constexpr char kApiSwitchDeskResult[] = "Ash.DeskApi.SwitchDesk.Result";
+constexpr char kApiAllDeskResult[] = "Ash.DeskApi.AllDesk.Result";
 
 api::wm_desks_private::Desk FromAshDesk(const ash::Desk& ash_desk) {
   api::wm_desks_private::Desk target;
@@ -94,10 +100,11 @@ void WmDesksPrivateLaunchDeskFunction::OnLaunchDesk(
     std::string error_string,
     const base::GUID& desk_uuid) {
   if (!error_string.empty()) {
+    base::UmaHistogramBoolean(kApiLaunchDeskResult, false);
     Respond(Error(std::move(error_string)));
     return;
   }
-
+  base::UmaHistogramBoolean(kApiLaunchDeskResult, true);
   Respond(ArgumentList(api::wm_desks_private::LaunchDesk::Results::Create(
       desk_uuid.AsLowercaseString())));
 }
@@ -119,10 +126,12 @@ ExtensionFunction::ResponseAction WmDesksPrivateRemoveDeskFunction::Run() {
 
 void WmDesksPrivateRemoveDeskFunction::OnRemoveDesk(std::string error_string) {
   if (!error_string.empty()) {
+    base::UmaHistogramBoolean(kApiRemoveDeskResult, false);
     Respond(Error(std::move(error_string)));
     return;
   }
 
+  base::UmaHistogramBoolean(kApiRemoveDeskResult, true);
   Respond(NoArguments());
 }
 
@@ -175,9 +184,11 @@ WmDesksPrivateSetWindowPropertiesFunction::Run() {
 void WmDesksPrivateSetWindowPropertiesFunction::OnSetWindowProperties(
     std::string error_string) {
   if (!error_string.empty()) {
+    base::UmaHistogramBoolean(kApiAllDeskResult, false);
     Respond(Error(std::move(error_string)));
     return;
   }
+  base::UmaHistogramBoolean(kApiAllDeskResult, true);
   Respond(NoArguments());
 }
 
@@ -268,6 +279,59 @@ void WmDesksPrivateRecallSavedDeskFunction::OnRecalledSavedDesk(
 
   Respond(ArgumentList(api::wm_desks_private::RecallSavedDesk::Results::Create(
       desk_Id.AsLowercaseString())));
+}
+
+WmDesksPrivateGetActiveDeskFunction::WmDesksPrivateGetActiveDeskFunction() =
+    default;
+WmDesksPrivateGetActiveDeskFunction::~WmDesksPrivateGetActiveDeskFunction() =
+    default;
+
+ExtensionFunction::ResponseAction WmDesksPrivateGetActiveDeskFunction::Run() {
+  base::GUID desk_id = DesksClient::Get()->GetActiveDesk();
+  OnGetActiveDesk({}, desk_id);
+  return AlreadyResponded();
+}
+
+// Error is always empty right now. The interface is to keep compatible
+// with future lacros implementation.
+void WmDesksPrivateGetActiveDeskFunction::OnGetActiveDesk(
+    std::string error_string,
+    const base::GUID& desk_Id) {
+  if (!error_string.empty()) {
+    Respond(Error(std::move(error_string)));
+    return;
+  }
+
+  Respond(ArgumentList(api::wm_desks_private::GetActiveDesk::Results::Create(
+      desk_Id.AsLowercaseString())));
+}
+
+WmDesksPrivateSwitchDeskFunction::WmDesksPrivateSwitchDeskFunction() = default;
+WmDesksPrivateSwitchDeskFunction::~WmDesksPrivateSwitchDeskFunction() = default;
+
+ExtensionFunction::ResponseAction WmDesksPrivateSwitchDeskFunction::Run() {
+  std::unique_ptr<api::wm_desks_private::SwitchDesk::Params> params(
+      api::wm_desks_private::SwitchDesk::Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  base::GUID uuid = base::GUID::ParseCaseInsensitive(params->desk_uuid);
+  if (!uuid.is_valid()) {
+    base::UmaHistogramBoolean(kApiSwitchDeskResult, false);
+    return RespondNow(Error(kInvalidDeskIdError));
+  }
+  std::string error = DesksClient::Get()->SwitchDesk(uuid);
+  OnSwitchDesk(error);
+  return AlreadyResponded();
+}
+
+// The interface is to keep compatible with future lacros implementation.
+void WmDesksPrivateSwitchDeskFunction::OnSwitchDesk(std::string error_string) {
+  if (!error_string.empty()) {
+    base::UmaHistogramBoolean(kApiSwitchDeskResult, false);
+    Respond(Error(std::move(error_string)));
+    return;
+  }
+  base::UmaHistogramBoolean(kApiSwitchDeskResult, true);
+  Respond(NoArguments());
 }
 
 }  // namespace extensions

@@ -1224,6 +1224,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // execution context.
   virtual void RegisterBrowserInterfaceBindersForServiceWorker(
       BrowserContext* browser_context,
+      const ServiceWorkerVersionBaseInfo& service_worker_version_info,
       mojo::BinderMapWithContext<const ServiceWorkerVersionBaseInfo&>* map) {}
 
   // Allows the embedder to register per-WebUI interface brokers that are used
@@ -1506,6 +1507,9 @@ class CONTENT_EXPORT ContentBrowserClient {
     // For regular fetches from a service worker (e.g., fetch(), XHR), not
     // including importScripts().
     kServiceWorkerSubResource,
+
+    // For prefetches.
+    kPrefetch,
   };
 
   // Allows the embedder to intercept URLLoaderFactory interfaces used by the
@@ -1704,9 +1708,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
   WillCreateURLLoaderRequestInterceptors(
       content::NavigationUIData* navigation_ui_data,
-      int frame_tree_node_id,
-      const scoped_refptr<network::SharedURLLoaderFactory>&
-          network_loader_factory);
+      int frame_tree_node_id);
 
   // Callback to handle a request for a URLLoader.
   using URLLoaderRequestHandler = base::OnceCallback<void(
@@ -2085,10 +2087,13 @@ class CONTENT_EXPORT ContentBrowserClient {
       blink::NavigationDownloadPolicy* download_policy);
 
   // Returns the browsing topics associated with the browser context of
-  // |main_frame|.
+  // `main_frame`. If `observe` is true, record the observation
+  // (i.e. the <calling context site, top level site> pair) to the
+  // `BrowsingTopicsSiteDataStorage` database.
   virtual std::vector<blink::mojom::EpochTopicPtr> GetBrowsingTopicsForJsApi(
       const url::Origin& context_origin,
-      RenderFrameHost* main_frame);
+      RenderFrameHost* main_frame,
+      bool observe);
 
   // Returns whether a site is blocked to use Bluetooth scanning API.
   virtual bool IsBluetoothScanningBlocked(
@@ -2327,6 +2332,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   // we do not want to expose this.
   virtual bool ShouldSendOutermostOriginToRenderer(
       const url::Origin& outermost_origin);
+
+  // Returns true if a given filesystem: `url` navigation is allowed (i.e.
+  // originates from a Chrome App). Returns false for all other
+  // navigations.
+  virtual bool IsFileSystemURLNavigationAllowed(
+      content::BrowserContext* browser_context,
+      const GURL& url);
 };
 
 }  // namespace content

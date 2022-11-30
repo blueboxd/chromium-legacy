@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -211,7 +211,7 @@ CSSValue* ConsumeFontFaceSrcLocal(CSSParserTokenRange& range,
     String family_name = css_parsing_utils::ConcatenateFamilyName(args);
     if (!args.AtEnd())
       return nullptr;
-    if (family_name.IsEmpty())
+    if (family_name.empty())
       return nullptr;
     return CSSFontFaceSrcValue::CreateLocal(
         family_name, context.JavascriptWorld(),
@@ -274,7 +274,6 @@ CSSValue* ConsumeDescriptor(StyleRule::RuleType rule_type,
     case StyleRule::kNamespace:
     case StyleRule::kScope:
     case StyleRule::kSupports:
-    case StyleRule::kViewport:
     case StyleRule::kPositionFallback:
     case StyleRule::kTry:
       // TODO(andruud): Handle other descriptor types here.

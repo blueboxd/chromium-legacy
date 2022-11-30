@@ -43,7 +43,8 @@ std::unique_ptr<SkiaGLImageRepresentation> SkiaGLImageRepresentation::Create(
   if (!GetGrBackendTexture(
           context_state->feature_info(),
           gl_representation->GetTextureBase()->target(), backing->size(),
-          gl_representation->GetTextureBase()->service_id(), backing->format(),
+          gl_representation->GetTextureBase()->service_id(),
+          (backing->format()).resource_format(),
           context_state->gr_context()->threadSafeProxy(), &backend_texture)) {
     return nullptr;
   }
@@ -75,6 +76,8 @@ SkiaGLImageRepresentation::SkiaGLImageRepresentation(
 SkiaGLImageRepresentation::~SkiaGLImageRepresentation() {
   DCHECK_EQ(RepresentationAccessMode::kNone, mode_);
   surface_.reset();
+
+  DCHECK_EQ(!has_context(), context_state_->context_lost());
   if (!has_context())
     gl_representation_->OnContextLost();
 }

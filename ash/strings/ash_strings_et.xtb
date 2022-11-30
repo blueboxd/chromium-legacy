@@ -78,7 +78,6 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="1306549533752902673">SOOVITATUD RAKENDUSED</translation>
 <translation id="1312604459020188865">Signaalitugevus: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Kuva alati riiul</translation>
-<translation id="1316811122439383437">Tote: hiljutised kuvatõmmised, allalaadimised ja kinnitatud failid</translation>
 <translation id="132346741904777634">Kaamera kinnitati vasakusse ülanurka. Konflikt süsteemi platvormiga.</translation>
 <translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> on ühendatud</translation>
 <translation id="1341651618736211726">Ületäide</translation>
@@ -160,12 +159,22 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="1797271123677381264">Unustasin parooli</translation>
 <translation id="181103072419391116">Signaali tugevus: <ph name="SIGNAL_STRENGTH" />, võrku haldab teie administraator</translation>
 <translation id="1812997170047690955">Mis on minu ekraanil?</translation>
+<translation id="1823280932251546115">Olekusalv, aeg <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="CHANNEL" />
+        <ph name="NETWORK" />,
+        <ph name="PRIVACY" />,
+        <ph name="MANAGED" />
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1830308660060964064"><ph name="ITEM_TITLE" /> vabastati</translation>
 <translation id="1836215606488044471">Assistent (laadimine …)</translation>
 <translation id="1838895407229022812">Öövalgus on väljas.</translation>
 <translation id="1862380676329487333">Värskenda ja logi välja</translation>
 <translation id="1864454756846565995">C-tüüpi USB-seade (tagumine port)</translation>
+<translation id="1869497990620230175">Kiirfailid</translation>
 <translation id="1879018240766558464">Inkognito aknaid praegu ei toetata. Muud rakendused salvestatakse.</translation>
 <translation id="1882814835921407042">Mobiilsidevõrku pole</translation>
 <translation id="1882897271359938046">Peegeldamine asukohta <ph name="DISPLAY_NAME" /></translation>
@@ -190,6 +199,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="1989113344093894667">Ei saa sisu jäädvustada</translation>
 <translation id="1990046457226896323">Kõnefailid laaditi alla</translation>
 <translation id="1993072747612765854">Vaadake lisateavet operatsioonisüsteemi <ph name="SYSTEM_APP_NAME" /> uusima värskenduse kohta</translation>
+<translation id="1995660704900986789">Lülita välja</translation>
 <translation id="1998100899771863792">Praegune töölaud</translation>
 <translation id="2001444736072756133">Otsige <ph name="CATEGORY" />, faile, rakendusi ja muud.</translation>
 <translation id="2016340657076538683">Sisestage sõnum</translation>
@@ -226,6 +236,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="2227179592712503583">Eemalda soovitus</translation>
 <translation id="225680501294068881">Seadmete skannimine ...</translation>
 <translation id="2257486738914982088">Midagi läks faili <ph name="FILENAME" /> allalaadimisel valesti</translation>
+<translation id="2258734398699965611">Soovitatud failid</translation>
 <translation id="2268130516524549846">Bluetooth on keelatud</translation>
 <translation id="2268813581635650749">Logi kõik välja</translation>
 <translation id="2269016722240250274">Rakendus kasutab teie mikrofoni</translation>
@@ -236,6 +247,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="2298170939937364391">Täisekraani suurendus on lubatud. Vajutage selle väljalülitamiseks uuesti klahvikombinatsiooni Ctrl + otsinguklahv + M.</translation>
 <translation id="2302092602801625023">Kontot haldab Family Link</translation>
 <translation id="2303600792989757991">Akna ülevaate sisse- ja väljalülitamine</translation>
+<translation id="2315005022200073389"><ph name="HOLDING_SPACE_TITLE" />: hiljutised kuvatõmmised, allalaadimised ja kinnitatud failid</translation>
 <translation id="2318576281648121272">Täna, <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060"><ph name="CATEGORY" />, otsingutulemuse kategooria</translation>
 <translation id="2322173485024759474">Tähe võrra tagasi</translation>
@@ -254,6 +266,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="2405664212338326887">Ühendus puudub</translation>
 <translation id="2408955596600435184">Sisestage PIN-kood</translation>
 <translation id="2412593942846481727">Värskendus on saadaval</translation>
+<translation id="2417486498593892439">Võrku sisselogimine</translation>
 <translation id="2426051945783024481">Kaamera kaader on automaatselt keskel</translation>
 <translation id="2427507373259914951">Vasakklikk</translation>
 <translation id="2429753432712299108">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks. Enne nõustumist veenduge, et selles seadmes oleks kuvatud see parool: <ph name="PASSKEY" /></translation>
@@ -370,6 +383,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3120421559657122717">Kas lülitada seade välja?</translation>
 <translation id="3126069444801937830">Taaskäivitage värskendamiseks</translation>
+<translation id="3139382871451988441">Lülita kaamerale juurdepääs välja</translation>
 <translation id="3139942575505304791">Töölaud 1</translation>
 <translation id="315116470104423982">Mobiilne andmeside</translation>
 <translation id="3151786313568798007">Suund</translation>
@@ -410,6 +424,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="3368922792935385530">Ühendatud</translation>
 <translation id="3371140690572404006">C-tüüpi USB-seade (eesmine parempoolne port)</translation>
 <translation id="3375634426936648815">Ühendatud</translation>
+<translation id="3378438761594387761">Siit leiate oma hiljutised allalaadimised ja jäädvustatud ekraanikuvad</translation>
 <translation id="3378442621503952303">Profiiliga luuakse ühendust. Oodake mõni minut.</translation>
 <translation id="3386978599540877378">täisekraani luup</translation>
 <translation id="3387527074123400161">Chromium OS</translation>
@@ -453,6 +468,8 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="3600061223661453002">Väljas</translation>
 <translation id="3604801046548457007">Töölaud <ph name="DESK_TITILE" /> on loodud</translation>
 <translation id="3606978283550408104">Punktkirja ekraanikuva on ühendatud.</translation>
+<translation id="3609301425104788351"><ph name="MIC" />,
+        <ph name="CAMERA" /></translation>
 <translation id="3615926715408477684">Mobiilse andmeside lubamisel lubatakse Bluetooth</translation>
 <translation id="3616883743181209306">Menüü teisaldati ekraanikuva paremasse ülanurka.</translation>
 <translation id="3619536907358025872">Ekraani jäädvustamise seaded</translation>
@@ -493,7 +510,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="383058930331066723">Akusäästja režiim on sisse lülitatud</translation>
 <translation id="383629559565718788">Kuvab klaviatuuriseaded</translation>
 <translation id="384082539148746321">Kas kustutada mall?</translation>
-<translation id="3842239759367498783">Jätkake lugemist mobiilseadmes <ph name="TITLE" /></translation>
 <translation id="3846575436967432996">Võrguteave ei ole saadaval</translation>
 <translation id="385051799172605136">Tagasi</translation>
 <translation id="385300504083504382">Algus</translation>
@@ -508,7 +524,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="3922427723338465344">{0,plural, =1{Teil on seadme operatsioonisüsteemi eelmisele versioonile üleminekuks aega 1 minut}other{Teil on seadme operatsioonisüsteemi eelmisele versioonile üleminekuks aega # minutit}}</translation>
 <translation id="3923494859158167397">Ühtegi mobiilsidevõrku pole seadistatud</translation>
 <translation id="3925540965556789199"><ph name="DATE" />, sündmusi laaditakse.</translation>
-<translation id="392627956579011934">Kõnefailide installimiseks on vajalik taaskäivitamine.</translation>
 <translation id="3932043219784172185">Ükski seade ei ole ühendatud</translation>
 <translation id="3934456833412894880">Kohanduv laadimine on sisse lülitatud. Tööea pikendamiseks laetakse akut, kuni see on 80% täis, ja seejärel laetakse see täielikult täis siis, kui seda vajate.</translation>
 <translation id="3943857333388298514">Kleebi</translation>
@@ -563,7 +578,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4242533952199664413">Ava seaded</translation>
 <translation id="4247123849143712100">Värskenda ja lülita välja</translation>
 <translation id="4250229828105606438">Ekraanipilt</translation>
-<translation id="4250899820387052060">Kiirfailid</translation>
 <translation id="425364040945105958">SIM-kaarti pole</translation>
 <translation id="4261870227682513959">Kuvab märguandeseaded. Märguanded on välja lülitatud</translation>
 <translation id="4269883910223712419">Selle seadme administraator saab teha järgmist.</translation>
@@ -649,6 +663,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <ph name="QUERY" /></translation>
 <translation id="4659419629803378708">ChromeVox on lubatud</translation>
 <translation id="4665114317261903604">Lülitab režiimi Mitte segada sisse või välja. <ph name="STATE_TEXT" /></translation>
+<translation id="4666082839192943839">Lülitage selles seadmes kaamerale juurdepääs välja, et kõiki kaameraid kogu aeg blokeerida.</translation>
 <translation id="4667099493359681081">Faili <ph name="FILENAME" /> allalaadimine</translation>
 <translation id="4690510401873698237">Riiul asub allpool</translation>
 <translation id="4696813013609194136">Avage seade lapsevanema koodiga</translation>
@@ -659,7 +674,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4731797938093519117">Vanema juurdepääs</translation>
 <translation id="4733161265940833579"><ph name="BATTERY_PERCENTAGE" />% (vasak)</translation>
 <translation id="4734965478015604180">Horisontaalne</translation>
-<translation id="4735498845456076464">Klaviatuuri otseteed <ph name="LAUNCHER_KEY_NAME" /> + numbriklahv on muudetud. Funktsiooniklahvide kasutamiseks vajutage klahvi <ph name="LAUNCHER_KEY_NAME" /> + ülemise rea klahvi.</translation>
 <translation id="473775607612524610">Värskenda</translation>
 <translation id="4740516757091333363">Kas kustutada salvestatud töölaud?</translation>
 <translation id="4752784485658729358">Lubatud on ainult kuni 6 salvestatud töölauda. Uue töölaua salvestamiseks peate mõne eemaldama.</translation>
@@ -668,6 +682,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4776917500594043016">Kasutaja <ph name="USER_EMAIL_ADDRESS" /> parool</translation>
 <translation id="4777825441726637019">Play pood</translation>
 <translation id="4778095205580009397">Google'i assistent ei ole demoseansi puhul saadaval.</translation>
+<translation id="4789348252524569426">Kõnefaile ei saa installida. Teie seadet on vaja värskendada. Taaskäivitage seade ja proovige uuesti.</translation>
 <translation id="479989351350248267">otsing</translation>
 <translation id="4804818685124855865">Katkesta ühendus</translation>
 <translation id="4814539958450445987">Sisselogimiskuva</translation>
@@ -718,6 +733,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="5083553833479578423">Avage rohkem assistendi funktsioone.</translation>
 <translation id="509790653408515442">Telefoni rakenduste voogesitamisel kuvatakse need siin</translation>
 <translation id="5098537242461068432">Töölaud ja aknad avati uuesti</translation>
+<translation id="5104236669533825617">Ekraaniülekannet ei saa luua</translation>
 <translation id="5107522548814527560">Veeb</translation>
 <translation id="5117590920725113268">Järgmise kuu kuvamine</translation>
 <translation id="5136175204352732067">Ühendatud on teine klaviatuur</translation>
@@ -763,22 +779,13 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />% (parem)</translation>
 <translation id="5352250171825660495">Tume teema on sees</translation>
 <translation id="5356963482258194581">Vahetage tumeda ja heleda teema vahel. Tehke töölaual paremklikk ning valik Taustapilt ja stiil.</translation>
+<translation id="536019650977002321">Teie administraator ei luba heli jäädvustada. Lisateabe saamiseks võtke ühendust administraatoriga.</translation>
 <translation id="5363163447017455357"><ph name="DELIMITER" /> Ava see vaheleht</translation>
 <translation id="5379115545237091094">Liiga palju katseid</translation>
 <translation id="5391307769715781764">Kas asendada salvestatud töölaud?</translation>
 <translation id="5393156353051693207">Rakenduste järjestuse muutmiseks puudutage pikalt kus tahes</translation>
 <translation id="5395308026110844773">Rakendus <ph name="DRAGGED_APP_NAME" /> rakenduse <ph name="IN_PLACE_APP" /> kohal, kausta loomiseks vabastage.</translation>
 <translation id="5397578532367286026">Haldur (<ph name="MANAGER_EMAIL" />) saab kasutaja kasutusandmeid ja ajalugu vaadata aadressil chrome.com.</translation>
-<translation id="5399673806694250334">Olekusalv, aeg <ph name="TIME" />,
-        <ph name="BATTERY" />
-        <ph name="CHANNEL" />
-        <ph name="NETWORK" />,
-        <ph name="MIC" />,
-        <ph name="CAMERA" />,
-        <ph name="MANAGED" />
-        <ph name="NOTIFICATION" />,
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="5400461572260843123">Kiirseaded, märguandekeskusele juurdepääsemiseks vajutage otsinguklahvi ja vasaknoolt.</translation>
 <translation id="5426063383988017631">Seadete menüü on suletud</translation>
 <translation id="5428899915242071344">Alustage valimist</translation>
@@ -898,9 +905,11 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6064463340679478396">Selle faili kasutamine on lõpetatud</translation>
 <translation id="6073451960410192870">Peata salvestamine</translation>
 <translation id="6074087755403037157">Beetakanal</translation>
+<translation id="6095008505822982596">Kõne kiirus</translation>
 <translation id="6099678161144790572">Muudetud viimase kuu jooksul</translation>
 <translation id="6103838137565245112">süsteem</translation>
 <translation id="6114505516289286752">Kõnefailid <ph name="LANGUAGE" /> keeles laaditi alla</translation>
+<translation id="6116825164611323644">Juurdepääs kaamerale on selles seadmes välja lülitatud</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Allalaadimise kinnitamine (<ph name="FILENAME" />)</translation>
 <translation id="612734058257491180">Google'i assistent ei ole külastajaseansis saadaval.</translation>
@@ -1001,7 +1010,6 @@ Uus installimine</translation>
 <translation id="6700713906295497288">IME menüünupp</translation>
 <translation id="6707693040195709527">Seadme operatsioonisüsteemi eelmisele versioonile ülemineku tähtaeg on möödunud</translation>
 <translation id="6710213216561001401">Eelmine</translation>
-<translation id="6713285437468012787">Bluetoothi seade „<ph name="DEVICE_NAME" />” on nüüd seotud ja saadaval kõikidele kasutajatele. Võite sidumise tühistada jaotises Seaded.</translation>
 <translation id="6723839937902243910">Toide</translation>
 <translation id="6727969043791803658">Ühendatud, <ph name="BATTERY_PERCENTAGE" />% akut</translation>
 <translation id="6732800389263199929">+<ph name="COUNT" /></translation>
@@ -1099,7 +1107,6 @@ Uus installimine</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7313193732017069507">Kaamera laiendamine</translation>
 <translation id="731589979057211264">Shelf Party on sisse lülitatud.</translation>
-<translation id="7319740667687257810">Käivitusprogramm, osaline vaade</translation>
 <translation id="7346909386216857016">Selge, sain aru</translation>
 <translation id="7348093485538360975">Ekraanil kuvatav klaviatuur</translation>
 <translation id="735745346212279324">VPN-i ühendus on katkestatud</translation>
@@ -1127,6 +1134,7 @@ Uus installimine</translation>
 <translation id="746232733191930409">Ekraanisalvestuse režiim</translation>
 <translation id="7466449121337984263">Puudutage andurit</translation>
 <translation id="7477793887173910789">Hallake oma muusikat, videoid ja muud</translation>
+<translation id="7490360161041035804">Võite kinnitada olulised failid, sealhulgas Google Drive'i failid. Kinnitamiseks hõljutage kursorit üksuse kohal või avage rakendus Failid ning paremklõpsake üksusel.</translation>
 <translation id="7497767806359279797">Valige keel ja klaviatuur</translation>
 <translation id="7508690557411636492">Avatud viimase kuu jooksul</translation>
 <translation id="7509246181739783082">Kinnitage oma isik</translation>
@@ -1144,6 +1152,7 @@ Uus installimine</translation>
 <translation id="7557816257942363084"><ph name="APP_NAME" /> kasutab praegu teie mikrofoni</translation>
 <translation id="7561982940498449837">Sule menüü</translation>
 <translation id="7564874036684306347">Kui teisaldate aknad teisele töölauale, võib tagajärjeks olla ootamatu käitumine. Järgmised märguanded, aknad ja dialoogid võivad jaguneda eri töölaudade vahel.</translation>
+<translation id="7567076708801803118">Kas soovite selles seadmes kaamerale juurdepääsu välja lülitada?</translation>
 <translation id="7569509451529460200">Punktkiri ja ChromeVox on lubatud</translation>
 <translation id="7573585051776738856">Aktiivne aken dokiti paremale.</translation>
 <translation id="7579778809502851308">Ekraanikuva jäädvustamine</translation>
@@ -1223,6 +1232,7 @@ Uus installimine</translation>
 <translation id="7982789257301363584">Võrk</translation>
 <translation id="7984197416080286869">Liiga palju sõrmejäljega avamise katseid</translation>
 <translation id="798779949890829624">Seda seadet haldab administraator</translation>
+<translation id="799296642788192631">Võite kinnitada olulised failid. Kinnitamiseks hõljutage kursorit üksuse kohal või avage rakendus Failid ning paremklõpsake üksusel.</translation>
 <translation id="7994370417837006925">Mitmele kontole sisselogimine</translation>
 <translation id="7995804128062002838">Ekraanikuva jäädvustamine ebaõnnestus</translation>
 <translation id="8000066093800657092">Võrku pole</translation>
@@ -1254,7 +1264,6 @@ Uus installimine</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automaatne täitmine</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Seda seadet haldab administraator.</translation>
 <translation id="8155628902202578800">Avage konto <ph name="USER_EMAIL_ADDRESS" /> teabedialoog</translation>
-<translation id="8157728322324420120">Teile soovitatud</translation>
 <translation id="8167567890448493835">Kasutusel: <ph name="LOCALE_NAME" /></translation>
 <translation id="8183592608247778598">Vaadake seadmes <ph name="DEVICE_TYPE" /> oma telefoni hiljutisi fotosid, meediat, märguandeid ja rakendusi</translation>
 <translation id="8192202700944119416">Märguanded on peidetud.</translation>
@@ -1351,6 +1360,7 @@ Uus installimine</translation>
 <translation id="8734991477317290293">See võib üritada varastada teie klahvivajutusi</translation>
 <translation id="8735678380411481005">Klaviatuuri taustavalguse värv</translation>
 <translation id="8735953464173050365">Kuvab klaviatuuriseaded. Valitud on <ph name="KEYBOARD_NAME" /></translation>
+<translation id="8752416742247198423">Lülitage sisse juurdepääs kaamerale, et kaameraloaga rakendused ja veebilehed saaksid selle seadmega ühendatud kaameraid kasutada.</translation>
 <translation id="8755498163081687682">Kinnitage oma isik: <ph name="ORIGIN_NAME" /> soovib teie isiku kinnitada</translation>
 <translation id="875593634123171288">Kuvab VPN-i seaded</translation>
 <translation id="8759408218731716181">Mitmesse kontosse sisselogimist ei saa häälestada</translation>
@@ -1365,6 +1375,7 @@ Uus installimine</translation>
 <translation id="8819728065740986820">Adaptiivne laadimine on sisse lülitatud</translation>
 <translation id="8825863694328519386">Tagasiliikumiseks pühkige vasakult paremale</translation>
 <translation id="8834539327799336565">Praegu ühendatud</translation>
+<translation id="8834657930627018205">Lülita juurdepääs kaamerale sisse</translation>
 <translation id="8841375032071747811">Nupp Tagasi</translation>
 <translation id="8843682306134542540">Lülitab pööramisluku sisse või välja. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Otsing + ESC</translation>
@@ -1387,6 +1398,7 @@ Uus installimine</translation>
 <translation id="8936501819958976551">inaktiveeritud</translation>
 <translation id="8938800817013097409">C-tüüpi USB-seade (parempoolne port taga)</translation>
 <translation id="8940956008527784070">Aku tühjeneb (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8949925099261528566">Ühendatud, Interneti-ühendus puudub</translation>
 <translation id="8951539504029375108">Teie Chromebookiga ühilduvad ainult heakskiidetud Thunderbolti seadmed</translation>
 <translation id="8982906748181120328">Nähtavus läheduses</translation>
 <translation id="8983038754672563810">HSPA</translation>

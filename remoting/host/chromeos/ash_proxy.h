@@ -15,6 +15,14 @@
 
 class SkBitmap;
 
+namespace ash::curtain {
+class SecurityCurtainController;
+}  // namespace ash::curtain
+
+namespace aura {
+class ScopedWindowCaptureRequest;
+}  // namespace aura
+
 namespace viz {
 class FrameSinkId;
 namespace mojom {
@@ -44,11 +52,12 @@ class AshProxy {
   virtual ~AshProxy();
 
   virtual DisplayId GetPrimaryDisplayId() const = 0;
-
   virtual const std::vector<display::Display>& GetActiveDisplays() const = 0;
-
   virtual const display::Display* GetDisplayForId(
       DisplayId display_id) const = 0;
+
+  virtual ash::curtain::SecurityCurtainController&
+  GetSecurityCurtainController() = 0;
 
   using ScreenshotCallback = base::OnceCallback<void(absl::optional<SkBitmap>)>;
   virtual void TakeScreenshotOfDisplay(DisplayId display_id,
@@ -58,7 +67,16 @@ class AshProxy {
       mojo::PendingReceiver<viz::mojom::FrameSinkVideoCapturer>
           video_capturer) = 0;
 
+  // Ensure the given display can be captured through the frame sink video
+  // capturer. The caller must keep the returned object alive for as long as
+  // they are capturing.
+  virtual aura::ScopedWindowCaptureRequest MakeDisplayCapturable(
+      DisplayId source_display_id) = 0;
+
   virtual viz::FrameSinkId GetFrameSinkId(DisplayId source_display_id) = 0;
+
+  // Requests signing out all users, ending the current session.
+  virtual void RequestSignOut() = 0;
 };
 
 }  // namespace remoting

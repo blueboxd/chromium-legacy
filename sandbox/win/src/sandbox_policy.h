@@ -8,8 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <string>
-
 #include "base/memory/scoped_refptr.h"
 #include "sandbox/win/src/sandbox_types.h"
 #include "sandbox/win/src/security_level.h"
@@ -92,7 +90,8 @@ class [[clang::lto_visibility_public]] TargetConfig {
   // Important: most of the sandbox-provided security relies on this single
   // setting. The caller should strive to set the lockdown level as restricted
   // as possible.
-  virtual ResultCode SetTokenLevel(TokenLevel initial, TokenLevel lockdown) = 0;
+  [[nodiscard]] virtual ResultCode SetTokenLevel(TokenLevel initial,
+                                                 TokenLevel lockdown) = 0;
 
   // Returns the initial token level.
   virtual TokenLevel GetInitialTokenLevel() const = 0;
@@ -133,8 +132,8 @@ class [[clang::lto_visibility_public]] TargetConfig {
   //   http://msdn2.microsoft.com/en-us/library/ms684152.aspx
   //
   // Note: the recommended level is JobLevel::kLockdown.
-  virtual ResultCode SetJobLevel(JobLevel job_level,
-                                 uint32_t ui_exceptions) = 0;
+  [[nodiscard]] virtual ResultCode SetJobLevel(JobLevel job_level,
+                                               uint32_t ui_exceptions) = 0;
 
   // Returns the job level.
   virtual JobLevel GetJobLevel() const = 0;
@@ -142,7 +141,7 @@ class [[clang::lto_visibility_public]] TargetConfig {
   // Sets a hard limit on the size of the commit set for the sandboxed process.
   // If the limit is reached, the process will be terminated with
   // SBOX_FATAL_MEMORY_EXCEEDED (7012).
-  virtual ResultCode SetJobMemoryLimit(size_t memory_limit) = 0;
+  virtual void SetJobMemoryLimit(size_t memory_limit) = 0;
 
   // Adds a policy rule effective for processes spawned using this policy.
   // subsystem: One of the above enumerated windows subsystems.
@@ -155,20 +154,20 @@ class [[clang::lto_visibility_public]] TargetConfig {
   //   "c:\\documents and settings\\vince\\*.dmp"
   //   "c:\\documents and settings\\*\\crashdumps\\*.dmp"
   //   "c:\\temp\\app_log_?????_chrome.txt"
-  virtual ResultCode AddRule(SubSystem subsystem,
-                             Semantics semantics,
-                             const wchar_t* pattern) = 0;
+  [[nodiscard]] virtual ResultCode AddRule(SubSystem subsystem,
+                                           Semantics semantics,
+                                           const wchar_t* pattern) = 0;
 
   // Adds a dll that will be unloaded in the target process before it gets
   // a chance to initialize itself. Typically, dlls that cause the target
   // to crash go here.
-  virtual ResultCode AddDllToUnload(const wchar_t* dll_name) = 0;
+  virtual void AddDllToUnload(const wchar_t* dll_name) = 0;
 
   // Sets the integrity level of the process in the sandbox. Both the initial
   // token and the main token will be affected by this. If the integrity level
   // is set to a level higher than the current level, the sandbox will fail
   // to start.
-  virtual ResultCode SetIntegrityLevel(IntegrityLevel level) = 0;
+  [[nodiscard]] virtual ResultCode SetIntegrityLevel(IntegrityLevel level) = 0;
 
   // Returns the initial integrity level used.
   virtual IntegrityLevel GetIntegrityLevel() const = 0;
@@ -178,24 +177,26 @@ class [[clang::lto_visibility_public]] TargetConfig {
   // Isolation is not affected by this setting and will remain off for the
   // process in the sandbox. If the integrity level is set to a level higher
   // than the current level, the sandbox will fail to start.
-  virtual ResultCode SetDelayedIntegrityLevel(IntegrityLevel level) = 0;
+  virtual void SetDelayedIntegrityLevel(IntegrityLevel level) = 0;
 
   // Sets the LowBox token for sandboxed process. This is mutually exclusive
   // with SetAppContainer method.
-  virtual ResultCode SetLowBox(const wchar_t* sid) = 0;
+  [[nodiscard]] virtual ResultCode SetLowBox(const wchar_t* sid) = 0;
 
   // Sets the mitigations enabled when the process is created. Most of these
   // are implemented as attributes passed via STARTUPINFOEX. So they take
   // effect before any thread in the target executes. The declaration of
   // MitigationFlags is followed by a detailed description of each flag.
-  virtual ResultCode SetProcessMitigations(MitigationFlags flags) = 0;
+  [[nodiscard]] virtual ResultCode SetProcessMitigations(
+      MitigationFlags flags) = 0;
 
   // Returns the currently set mitigation flags.
   virtual MitigationFlags GetProcessMitigations() = 0;
 
   // Sets process mitigation flags that don't take effect before the call to
   // LowerToken().
-  virtual ResultCode SetDelayedProcessMitigations(MitigationFlags flags) = 0;
+  [[nodiscard]] virtual ResultCode SetDelayedProcessMitigations(
+      MitigationFlags flags) = 0;
 
   // Returns the currently set delayed mitigation flags.
   virtual MitigationFlags GetDelayedProcessMitigations() const = 0;
@@ -213,8 +214,9 @@ class [[clang::lto_visibility_public]] TargetConfig {
   // name of the profile to use. Specifying True for |create_profile| ensures
   // the profile exists, if set to False process creation will fail if the
   // profile has not already been created.
-  virtual ResultCode AddAppContainerProfile(const wchar_t* package_name,
-                                            bool create_profile) = 0;
+  [[nodiscard]] virtual ResultCode AddAppContainerProfile(
+      const wchar_t* package_name,
+      bool create_profile) = 0;
 
   // Get the configured AppContainer.
   virtual scoped_refptr<AppContainer> GetAppContainer() = 0;
@@ -229,12 +231,13 @@ class [[clang::lto_visibility_public]] TargetConfig {
   // Adds a handle that will be closed in the target process after lockdown.
   // A nullptr value for handle_name indicates all handles of the specified
   // type. An empty string for handle_name indicates the handle is unnamed.
-  virtual ResultCode AddKernelObjectToClose(const wchar_t* handle_type,
-                                            const wchar_t* handle_name) = 0;
+  [[nodiscard]] virtual ResultCode AddKernelObjectToClose(
+      const wchar_t* handle_type,
+      const wchar_t* handle_name) = 0;
 
   // Disconnect the target from CSRSS when TargetServices::LowerToken() is
   // called inside the target.
-  virtual ResultCode SetDisconnectCsrss() = 0;
+  [[nodiscard]] virtual ResultCode SetDisconnectCsrss() = 0;
 
   // Specifies the desktop on which the application is going to run. The
   // requested alternate desktop must have been created via the TargetPolicy
@@ -268,19 +271,6 @@ class [[clang::lto_visibility_public]] TargetPolicy {
   // lockdown tokens. The token the caller passes must remain valid for the
   // lifetime of the policy object.
   virtual void SetEffectiveToken(HANDLE token) = 0;
-
-  // Returns the name of the alternate desktop used. If an alternate window
-  // station is specified, the name is prepended by the window station name,
-  // followed by a backslash.
-  virtual std::wstring GetDesktopName() = 0;
-
-  // Precreates the desktop (for kAlternateDesktop & kAlternateWinstation) and
-  // window station (for kAlternateWindowstation). Should be called before any
-  // target is launched with an alternate desktop.
-  virtual ResultCode CreateAlternateDesktop(Desktop desktop) = 0;
-
-  // Destroys all desktops and window stations.
-  virtual void DestroyDesktops() = 0;
 };
 
 }  // namespace sandbox

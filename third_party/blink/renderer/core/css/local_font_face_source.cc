@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,8 +123,8 @@ void LocalFontFaceSource::BeginLoadIfNeeded() {
       FontGlobalContext::Get().GetFontUniqueNameLookup();
   DCHECK(unique_name_lookup);
   unique_name_lookup->PrepareFontUniqueNameLookup(
-      WTF::Bind(&LocalFontFaceSource::NotifyFontUniqueNameLookupReady,
-                WrapWeakPersistent(this)));
+      WTF::BindOnce(&LocalFontFaceSource::NotifyFontUniqueNameLookupReady,
+                    WrapWeakPersistent(this)));
   face_->DidBeginLoad();
 }
 

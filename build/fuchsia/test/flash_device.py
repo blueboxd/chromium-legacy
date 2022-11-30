@@ -24,17 +24,33 @@ def _get_system_info(target: Optional[str]) -> Tuple[str, str]:
         Tuple of strings, containing (product, version number).
     """
 
-    info_json = json.loads(
-        run_ffx_command(('target', 'show', '--json'),
-                        target_id=target,
-                        capture_output=True).stdout.strip())
-    for info in info_json:
-        if info['title'] == 'Build':
-            return (info['child'][1]['value'], info['child'][0]['value'])
+    info_cmd = run_ffx_command(('target', 'show', '--json'),
+                               target_id=target,
+                               capture_output=True,
+                               check=False)
+    if info_cmd.returncode == 0:
+        info_json = json.loads(info_cmd.stdout.strip())
+        for info in info_json:
+            if info['title'] == 'Build':
+                return (info['child'][1]['value'], info['child'][0]['value'])
 
     # If the information was not retrieved, return empty strings to indicate
     # unknown system info.
     return ('', '')
+
+
+def update_required(os_check, system_image_dir: Optional[str],
+                    target: Optional[str]) -> bool:
+    """Returns True if a system updated is required."""
+
+    if os_check == 'ignore':
+        return False
+    if not system_image_dir:
+        raise ValueError('System image directory must be specified.')
+    if (os_check == 'check'
+            and get_sdk_hash(system_image_dir) == _get_system_info(target)):
+        return False
+    return True
 
 
 def flash(system_image_dir: str,
@@ -43,29 +59,23 @@ def flash(system_image_dir: str,
           serial_num: Optional[str] = None) -> None:
     """Flash the device."""
 
-    if os_check == 'ignore':
-        return
-    if not system_image_dir:
-        raise ValueError('System image directory must be specified.')
-    if (os_check == 'check'
-            and get_sdk_hash(system_image_dir) == _get_system_info(target)):
-        return
-    manifest = os.path.join(system_image_dir, 'flash-manifest.manifest')
-    with ScopedFfxConfig('fastboot.reboot.reconnect_timeout', '120'):
-        if serial_num:
-            with ScopedFfxConfig('discovery.zedboot.enabled', 'true'):
-                run_ffx_command(('target', 'reboot', '-b'),
-                                target,
-                                check=False)
-            for _ in range(10):
-                time.sleep(10)
-                if run_ffx_command(('target', 'list', serial_num),
-                                   check=False).returncode == 0:
-                    break
-            run_ffx_command(('target', 'flash', manifest), serial_num)
-        else:
-            run_ffx_command(('target', 'flash', manifest), target)
-    run_ffx_command(('target', 'wait'), target)
+    if update_required(os_check, system_image_dir, target):
+        manifest = os.path.join(system_image_dir, 'flash-manifest.manifest')
+        with ScopedFfxConfig('fastboot.reboot.reconnect_timeout', '120'):
+            if serial_num:
+                with ScopedFfxConfig('discovery.zedboot.enabled', 'true'):
+                    run_ffx_command(('target', 'reboot', '-b'),
+                                    target,
+                                    check=False)
+                for _ in range(10):
+                    time.sleep(10)
+                    if run_ffx_command(('target', 'list', serial_num),
+                                       check=False).returncode == 0:
+                        break
+                run_ffx_command(('target', 'flash', manifest), serial_num)
+            else:
+                run_ffx_command(('target', 'flash', manifest), target)
+        run_ffx_command(('target', 'wait'), target)
 
 
 def register_flash_args(arg_parser: argparse.ArgumentParser,

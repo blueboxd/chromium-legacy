@@ -156,14 +156,14 @@ void PageImpl::SetActivationStartTime(base::TimeTicks activation_start) {
 }
 
 void PageImpl::ActivateForPrerendering(
-    std::set<RenderViewHostImpl*>& render_view_hosts) {
+    StoredPage::RenderViewHostImplSafeRefSet& render_view_hosts) {
   base::OnceClosure did_activate_render_views =
       base::BindOnce(&PageImpl::DidActivateAllRenderViewsForPrerendering,
                      weak_factory_.GetWeakPtr());
 
   base::RepeatingClosure barrier = base::BarrierClosure(
       render_view_hosts.size(), std::move(did_activate_render_views));
-  for (RenderViewHostImpl* rvh : render_view_hosts) {
+  for (const auto& rvh : render_view_hosts) {
     base::TimeTicks navigation_start_to_send;
     // Only send navigation_start to the RenderViewHost for the main frame to
     // avoid sending the info cross-origin. Only this RenderViewHost needs the
@@ -173,7 +173,7 @@ void PageImpl::ActivateForPrerendering(
     // not yet committed. These RenderViews still need to know about activation
     // so their documents are created in the non-prerendered state once their
     // navigation is committed.
-    if (main_document_.GetRenderViewHost() == rvh)
+    if (main_document_.GetRenderViewHost() == &*rvh)
       navigation_start_to_send = *activation_start_time_for_prerendering_;
 
     auto params = blink::mojom::PrerenderPageActivationParams::New();
@@ -270,9 +270,19 @@ void PageImpl::NotifyVirtualKeyboardOverlayRect(
     const gfx::Rect& keyboard_rect) {
   // TODO(https://crbug.com/1317002): send notification to outer frames if
   // needed.
-  DCHECK(virtual_keyboard_overlays_content());
+  DCHECK_EQ(virtual_keyboard_mode(),
+            ui::mojom::VirtualKeyboardMode::kOverlaysContent);
   GetMainDocument().GetAssociatedLocalFrame()->NotifyVirtualKeyboardOverlayRect(
       keyboard_rect);
+}
+
+void PageImpl::SetVirtualKeyboardMode(ui::mojom::VirtualKeyboardMode mode) {
+  if (virtual_keyboard_mode_ == mode)
+    return;
+
+  virtual_keyboard_mode_ = mode;
+
+  delegate_.OnVirtualKeyboardModeChanged(*this);
 }
 
 base::flat_map<std::string, std::string> PageImpl::GetKeyboardLayoutMap() {

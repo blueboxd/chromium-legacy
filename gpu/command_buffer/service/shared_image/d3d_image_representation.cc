@@ -8,6 +8,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_image/d3d_image_backing.h"
+#include "ui/gl/scoped_restore_texture.h"
 
 namespace gpu {
 
@@ -21,7 +22,9 @@ GLTexturePassthroughD3DImageRepresentation::
       texture_(std::move(texture)) {}
 
 const scoped_refptr<gles2::TexturePassthrough>&
-GLTexturePassthroughD3DImageRepresentation::GetTexturePassthrough() {
+GLTexturePassthroughD3DImageRepresentation::GetTexturePassthrough(
+    int plane_index) {
+  DCHECK_EQ(plane_index, 0);
   return texture_;
 }
 
@@ -29,6 +32,29 @@ GLTexturePassthroughD3DImageRepresentation::
     ~GLTexturePassthroughD3DImageRepresentation() = default;
 
 bool GLTexturePassthroughD3DImageRepresentation::BeginAccess(GLenum mode) {
+  // Bind the GLImage if necessary.
+  auto texture =
+      GLTexturePassthroughImageRepresentation::GetTexturePassthrough();
+  if (texture->is_bind_pending()) {
+    GLenum target = texture->target();
+    gl::GLImage* image = texture->GetLevelImage(target, 0);
+
+    if (image) {
+      // First ensure that |target| is bound to |texture|.
+      gl::GLApi* const api = gl::g_current_gl_context;
+      gl::ScopedRestoreTexture scoped_restore(api, target);
+      api->glBindTextureFn(target, texture->service_id());
+
+      // Now bind the GLImage to |texture| via |target|.
+      // NOTE: GLImages created in this context (GLImageDXGI or GLImageD3D)
+      // always bind.
+      DCHECK(image->ShouldBindOrCopy() == gl::GLImage::BIND);
+      image->BindTexImage(target);
+
+      texture->set_is_bind_pending(false);
+    }
+  }
+
   D3DImageBacking* d3d_image_backing = static_cast<D3DImageBacking*>(backing());
   return d3d_image_backing->BeginAccessD3D11();
 }

@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -216,6 +217,10 @@ public class MessageBannerView extends BoundedLinearLayout {
         mOnTitleChanged = runnable;
     }
 
+    void dismissSecondaryMenuIfShown() {
+        mSecondaryButton.dismiss();
+    }
+
     void enableLargeIcon(boolean enabled) {
         int smallSize = getResources().getDimensionPixelSize(R.dimen.message_icon_size);
         int largeSize = getResources().getDimensionPixelSize(R.dimen.message_icon_size_large);
@@ -252,6 +257,32 @@ public class MessageBannerView extends BoundedLinearLayout {
             mSecondaryButton.addPopupListener(mPopupMenuShownListener);
         }
         mSecondaryButton.showMenu();
+    }
+
+    void setMarginTop(int val) {
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) getLayoutParams();
+        params.topMargin = val;
+        setLayoutParams(params);
+    }
+
+    /**
+     * Overriding onMeasure for set a proper height for primary button. By design, the primary
+     * button should fill all the remaining vertical space. If it includes very long text which
+     * makes its height larger than the main content (title + description), we should manually
+     * increase its height to prevent its text from being clipped.
+     */
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        mPrimaryButton.setMinHeight(0); // Reset min height for measuring.
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        int containerHeight = getMeasuredHeight();
+        int btnWidth = mPrimaryButton.getMeasuredWidth();
+        var wSpec = MeasureSpec.makeMeasureSpec(btnWidth, MeasureSpec.EXACTLY);
+        var hSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+        mPrimaryButton.measure(wSpec, hSpec);
+        int measuredHeight = mPrimaryButton.getMeasuredHeight();
+        mPrimaryButton.setMinHeight(Math.max(measuredHeight, containerHeight));
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     private ListMenuButtonDelegate buildDelegateForSingleMenuItem() {

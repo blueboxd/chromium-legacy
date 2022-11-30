@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,7 +97,7 @@ URLSearchParams* URLSearchParams::Create(const Vector<Vector<String>>& init,
 
 URLSearchParams::URLSearchParams(const String& query_string, DOMURL* url_object)
     : url_object_(url_object) {
-  if (!query_string.IsEmpty())
+  if (!query_string.empty())
     SetInputWithoutUpdate(query_string);
 }
 
@@ -105,7 +105,7 @@ URLSearchParams* URLSearchParams::Create(
     const Vector<std::pair<String, String>>& init,
     ExceptionState& exception_state) {
   URLSearchParams* instance = MakeGarbageCollected<URLSearchParams>(String());
-  if (init.IsEmpty())
+  if (init.empty())
     return instance;
   for (const auto& item : init)
     instance->AppendWithoutUpdate(item.first, item.second);

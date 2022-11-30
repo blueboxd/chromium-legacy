@@ -291,9 +291,6 @@ EnumTraits<media::mojom::VideoCaptureBufferType,
   switch (input) {
     case media::VideoCaptureBufferType::kSharedMemory:
       return media::mojom::VideoCaptureBufferType::kSharedMemory;
-    case media::VideoCaptureBufferType::kSharedMemoryViaRawFileDescriptor:
-      return media::mojom::VideoCaptureBufferType::
-          kSharedMemoryViaRawFileDescriptor;
     case media::VideoCaptureBufferType::kMailboxHolder:
       return media::mojom::VideoCaptureBufferType::kMailboxHolder;
     case media::VideoCaptureBufferType::kGpuMemoryBuffer:
@@ -313,10 +310,9 @@ bool EnumTraits<media::mojom::VideoCaptureBufferType,
       *output = media::VideoCaptureBufferType::kSharedMemory;
       return true;
     case media::mojom::VideoCaptureBufferType::
-        kSharedMemoryViaRawFileDescriptor:
-      *output =
-          media::VideoCaptureBufferType::kSharedMemoryViaRawFileDescriptor;
-      return true;
+        kSharedMemoryViaRawFileDescriptor_DEPRECATED:
+      NOTREACHED();
+      return false;
     case media::mojom::VideoCaptureBufferType::kMailboxHolder:
       *output = media::VideoCaptureBufferType::kMailboxHolder;
       return true;
@@ -1478,6 +1474,8 @@ EnumTraits<media::mojom::VideoCaptureFrameDropReason,
         kRendererSinkFrameDelivererIsNotStarted:
       return media::mojom::VideoCaptureFrameDropReason::
           kRendererSinkFrameDelivererIsNotStarted;
+    case media::VideoCaptureFrameDropReason::kCropVersionNotCurrent:
+      return media::mojom::VideoCaptureFrameDropReason::kCropVersionNotCurrent;
   }
   NOTREACHED();
   return media::mojom::VideoCaptureFrameDropReason::kNone;
@@ -1612,6 +1610,9 @@ bool EnumTraits<media::mojom::VideoCaptureFrameDropReason,
         kRendererSinkFrameDelivererIsNotStarted:
       *output = media::VideoCaptureFrameDropReason::
           kRendererSinkFrameDelivererIsNotStarted;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::kCropVersionNotCurrent:
+      *output = media::VideoCaptureFrameDropReason::kCropVersionNotCurrent;
       return true;
   }
   NOTREACHED();

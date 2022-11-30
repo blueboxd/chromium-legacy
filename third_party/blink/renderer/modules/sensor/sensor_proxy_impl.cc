@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,8 +48,8 @@ void SensorProxyImpl::Initialize() {
 
   state_ = kInitializing;
   sensor_provider_proxy()->GetSensor(
-      type_,
-      WTF::Bind(&SensorProxyImpl::OnSensorCreated, WrapWeakPersistent(this)));
+      type_, WTF::BindOnce(&SensorProxyImpl::OnSensorCreated,
+                           WrapWeakPersistent(this)));
 }
 
 void SensorProxyImpl::AddConfiguration(
@@ -202,9 +202,9 @@ void SensorProxyImpl::OnSensorCreated(
   DCHECK_GE(device::GetSensorMaxAllowedFrequency(type_),
             frequency_limits_.second);
 
-  auto error_callback =
-      WTF::Bind(&SensorProxyImpl::HandleSensorError, WrapWeakPersistent(this),
-                SensorCreationResult::ERROR_NOT_AVAILABLE);
+  auto error_callback = WTF::BindOnce(
+      &SensorProxyImpl::HandleSensorError, WrapWeakPersistent(this),
+      SensorCreationResult::ERROR_NOT_AVAILABLE);
   sensor_remote_.set_disconnect_handler(std::move(error_callback));
 
   state_ = kInitialized;
@@ -220,7 +220,7 @@ void SensorProxyImpl::OnPollingTimer(TimerBase*) {
 }
 
 bool SensorProxyImpl::ShouldProcessReadings() const {
-  return IsInitialized() && !suspended_ && !active_frequencies_.IsEmpty();
+  return IsInitialized() && !suspended_ && !active_frequencies_.empty();
 }
 
 void SensorProxyImpl::UpdatePollingStatus() {
@@ -250,7 +250,7 @@ void SensorProxyImpl::RemoveActiveFrequency(double frequency) {
   active_frequencies_.erase(it);
   UpdatePollingStatus();
 
-  if (active_frequencies_.IsEmpty())
+  if (active_frequencies_.empty())
     reading_ = device::SensorReading();
 }
 

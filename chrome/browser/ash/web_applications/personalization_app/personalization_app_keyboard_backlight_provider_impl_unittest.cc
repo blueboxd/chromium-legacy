@@ -18,8 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace ash {
-namespace personalization_app {
+namespace ash::personalization_app {
 
 namespace {
 
@@ -74,8 +73,7 @@ class PersonalizationAppKeyboardBacklightProviderImplTest
   PersonalizationAppKeyboardBacklightProviderImplTest()
       : scoped_user_manager_(std::make_unique<ash::FakeChromeUserManager>()),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {
-    scoped_feature_list_.InitWithFeatures(
-        {ash::features::kPersonalizationHub, ash::features::kRgbKeyboard}, {});
+    scoped_feature_list_.InitWithFeatures({ash::features::kRgbKeyboard}, {});
   }
   PersonalizationAppKeyboardBacklightProviderImplTest(
       const PersonalizationAppKeyboardBacklightProviderImplTest&) = delete;
@@ -183,5 +181,4 @@ TEST_F(PersonalizationAppKeyboardBacklightProviderImplTest,
   EXPECT_EQ(SK_ColorTRANSPARENT, ObservedWallpaperColor());
 }
 
-}  // namespace personalization_app
-}  // namespace ash
+}  // namespace ash::personalization_app

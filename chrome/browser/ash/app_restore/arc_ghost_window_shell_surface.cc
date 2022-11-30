@@ -8,6 +8,7 @@
 #include "chrome/browser/ash/app_restore/arc_ghost_window_delegate.h"
 #include "chrome/browser/ash/app_restore/arc_ghost_window_view.h"
 #include "chrome/browser/ash/app_restore/arc_window_utils.h"
+#include "chrome/browser/ash/arc/window_predictor/window_predictor_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/app_restore/app_restore_data.h"
 #include "components/app_restore/full_restore_utils.h"
@@ -45,11 +46,13 @@ ArcGhostWindowShellSurface::ArcGhostWindowShellSurface(
     std::unique_ptr<exo::Surface> surface,
     int container,
     double scale_factor,
-    const std::string& application_id)
+    const std::string& application_id,
+    arc::GhostWindowType type)
     : ClientControlledShellSurface(surface.get(),
                                    /*can_minimize=*/true,
                                    container,
-                                   /*default_scale_cancellation=*/true) {
+                                   /*default_scale_cancellation=*/true),
+      type_(type) {
   controller_surface_ = std::move(surface);
   buffer_ = std::make_unique<exo::Buffer>(
       aura::Env::GetInstance()
@@ -73,6 +76,7 @@ ArcGhostWindowShellSurface::~ArcGhostWindowShellSurface() {
 // static
 std::unique_ptr<ArcGhostWindowShellSurface> ArcGhostWindowShellSurface::Create(
     const std::string& app_id,
+    arc::GhostWindowType type,
     int window_id,
     const gfx::Rect& bounds,
     app_restore::AppRestoreData* restore_data,
@@ -111,13 +115,13 @@ std::unique_ptr<ArcGhostWindowShellSurface> ArcGhostWindowShellSurface::Create(
 
   auto surface = std::make_unique<exo::Surface>();
   std::unique_ptr<ArcGhostWindowShellSurface> shell_surface(
-      new ArcGhostWindowShellSurface(std::move(surface), container,
-                                     scale_factor.value(),
-                                     WindowIdToAppId(window_id)));
+      new ArcGhostWindowShellSurface(
+          std::move(surface), container, scale_factor.value(),
+          WrapSessionAppIdFromWindowId(window_id), type));
 
   // TODO(sstan): Add set_surface_destroyed_callback.
   shell_surface->set_delegate(std::make_unique<ArcGhostWindowDelegate>(
-      shell_surface.get(), window_id, display_id_value, local_bounds,
+      shell_surface.get(), window_id, app_id, display_id_value, local_bounds,
       window_state.value_or(chromeos::WindowStateType::kDefault)));
   shell_surface->set_close_callback(std::move(close_callback));
 
@@ -180,7 +184,9 @@ exo::Surface* ArcGhostWindowShellSurface::controller_surface() {
 
 void ArcGhostWindowShellSurface::InitContentOverlay(const std::string& app_id,
                                                     uint32_t theme_color) {
-  auto view = std::make_unique<ArcGhostWindowView>(kDiameter, theme_color);
+  auto view =
+      std::make_unique<ArcGhostWindowView>(type_, kDiameter, theme_color);
+  view_observer_ = view.get();
   view->LoadIcon(app_id);
   exo::ShellSurfaceBase::OverlayParams overlay_params(std::move(view));
   overlay_params.translucent = true;
@@ -203,6 +209,12 @@ void ArcGhostWindowShellSurface::SetShellAppId(
     property_handler->SetProperty(app_restore::kAppIdKey, *id);
   else
     property_handler->ClearProperty(app_restore::kAppIdKey);
+}
+
+void ArcGhostWindowShellSurface::SetWindowType(
+    arc::GhostWindowType window_type) {
+  DCHECK(view_observer_);
+  view_observer_->SetType(window_type);
 }
 
 }  // namespace ash::full_restore

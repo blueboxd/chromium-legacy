@@ -19,9 +19,9 @@ import '../site_favicon.js';
 import {CrSearchFieldElement} from '//resources/cr_elements/cr_search_field/cr_search_field.js';
 import {FindShortcutMixin, FindShortcutMixinInterface} from '//resources/cr_elements/find_shortcut_mixin.js';
 import {assert} from '//resources/js/assert_ts.js';
-import {focusWithoutInk} from '//resources/js/cr/ui/focus_without_ink.js';
-import {I18nMixin, I18nMixinInterface} from '//resources/js/i18n_mixin.js';
-import {listenOnce} from '//resources/js/util.m.js';
+import {focusWithoutInk} from '//resources/js/focus_without_ink.js';
+import {I18nMixin, I18nMixinInterface} from '//resources/cr_elements/i18n_mixin.js';
+import {listenOnce} from '//resources/js/util.js';
 import {IronResizableBehavior} from '//resources/polymer/v3_0/iron-resizable-behavior/iron-resizable-behavior.js';
 import {afterNextRender, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
@@ -139,7 +139,7 @@ export class SettingsSubpageElement extends SettingsSubpageElementBase {
   constructor() {
     super();
 
-    // Override FindShortcutBehavior property.
+    // Override FindShortcutMixin property.
     this.findShortcutListenOnAttach = false;
   }
 
@@ -281,7 +281,7 @@ export class SettingsSubpageElement extends SettingsSubpageElementBase {
     return this.i18n('subpageBackButtonAriaRoleDescription', this.pageTitle);
   }
 
-  // Override FindShortcutBehavior methods.
+  // Override FindShortcutMixin methods.
   override handleFindShortcut(modalContextOpen: boolean) {
     if (modalContextOpen) {
       return false;
@@ -290,7 +290,7 @@ export class SettingsSubpageElement extends SettingsSubpageElementBase {
     return true;
   }
 
-  // Override FindShortcutBehavior methods.
+  // Override FindShortcutMixin methods.
   override searchInputHasFocus() {
     const field = this.shadowRoot!.querySelector('cr-search-field')!;
     return field.getSearchInput() === field.shadowRoot!.activeElement;

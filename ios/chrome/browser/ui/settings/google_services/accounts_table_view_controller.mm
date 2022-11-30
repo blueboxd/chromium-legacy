@@ -14,7 +14,6 @@
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/driver/sync_service.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -43,6 +42,7 @@
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -213,20 +213,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
 
   // Update the title with the name with the currently signed-in account.
-  ChromeIdentity* authenticatedIdentity =
-      [self authService]->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
+  AuthenticationService* authService = self.authService;
+  id<SystemIdentity> authenticatedIdentity =
+      authService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
+
   NSString* title = nil;
   if (authenticatedIdentity) {
-    title = [authenticatedIdentity userFullName];
+    title = authenticatedIdentity.userFullName;
     if (!title) {
-      title = [authenticatedIdentity userEmail];
+      title = authenticatedIdentity.userEmail;
     }
   }
   self.title = title;
 
   [super loadModel];
 
-  if (![self authService]->HasPrimaryIdentity(signin::ConsentLevel::kSignin))
+  if (!authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin))
     return;
 
   TableViewModel* model = self.tableViewModel;
@@ -241,9 +243,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(_browser->GetBrowserState());
 
-  NSString* authenticatedEmail = [authenticatedIdentity userEmail];
+  NSString* authenticatedEmail = authenticatedIdentity.userEmail;
   for (const auto& account : identityManager->GetAccountsWithRefreshTokens()) {
-    ChromeIdentity* identity =
+    id<SystemIdentity> identity =
         self.accountManagerService->GetIdentityWithGaiaID(account.gaia);
     if (!identity) {
       // Ignore the case in which the identity is invalid at lookup time. This
@@ -278,7 +280,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierSignOut];
   [model addItem:[self signOutItem]
       toSectionWithIdentifier:SectionIdentifierSignOut];
-  AuthenticationService* authService = [self authService];
 
   BOOL hasSyncConsent =
       authService->HasPrimaryIdentity(signin::ConsentLevel::kSync);
@@ -345,7 +346,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return footer;
 }
 
-- (TableViewItem*)accountItem:(ChromeIdentity*)identity {
+- (TableViewItem*)accountItem:(id<SystemIdentity>)identity {
   TableViewAccountItem* item =
       [[TableViewAccountItem alloc] initWithType:ItemTypeAccount];
   [self updateAccountItem:item withIdentity:identity];
@@ -353,11 +354,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)updateAccountItem:(TableViewAccountItem*)item
-             withIdentity:(ChromeIdentity*)identity {
+             withIdentity:(id<SystemIdentity>)identity {
   item.image = self.accountManagerService->GetIdentityAvatarWithIdentity(
       identity, IdentityAvatarSize::TableViewIcon);
   item.text = identity.userEmail;
-  item.chromeIdentity = identity;
+  item.identity = identity;
   item.accessibilityIdentifier = identity.userEmail;
   item.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
 }
@@ -429,11 +430,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
       TableViewAccountItem* item =
           base::mac::ObjCCastStrict<TableViewAccountItem>(
               [self.tableViewModel itemAtIndexPath:indexPath]);
-      DCHECK(item.chromeIdentity);
+      DCHECK(item.identity);
 
       UIView* itemView =
           [[tableView cellForRowAtIndexPath:indexPath] contentView];
-      [self showAccountDetails:item.chromeIdentity itemView:itemView];
+      [self showAccountDetails:item.identity itemView:itemView];
       break;
     }
     case ItemTypeAddAccount: {
@@ -499,7 +500,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 }
 
-- (void)showAccountDetails:(ChromeIdentity*)identity
+- (void)showAccountDetails:(id<SystemIdentity>)identity
                   itemView:(UIView*)itemView {
   DCHECK(!self.removeOrMyGoogleChooserAlertCoordinator);
   self.removeOrMyGoogleChooserAlertCoordinator = [[ActionSheetCoordinator alloc]
@@ -536,7 +537,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Handles the manage Google account action from
 // `self.removeOrMyGoogleChooserAlertCoordinator`. Action sheet created in
 // `showAccountDetails:itemView:`
-- (void)handleManageGoogleAccountWithIdentity:(ChromeIdentity*)identity {
+- (void)handleManageGoogleAccountWithIdentity:(id<SystemIdentity>)identity {
   DCHECK(self.removeOrMyGoogleChooserAlertCoordinator);
   // `self.removeOrMyGoogleChooserAlertCoordinator` should not be stopped, since
   // the coordinator has been confirmed.
@@ -551,7 +552,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Handles the secondary account remove action from
 // `self.removeOrMyGoogleChooserAlertCoordinator`. Action sheet created in
 // `showAccountDetails:itemView:`
-- (void)handleRemoveSecondaryAccountWithIdentity:(ChromeIdentity*)identity {
+- (void)handleRemoveSecondaryAccountWithIdentity:(id<SystemIdentity>)identity {
   DCHECK(self.removeOrMyGoogleChooserAlertCoordinator);
   // `self.removeOrMyGoogleChooserAlertCoordinator` should not be stopped, since
   // the coordinator has been confirmed.
@@ -583,7 +584,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self.removeAccountCoordinator start];
 }
 
-- (void)removeSecondaryIdentity:(ChromeIdentity*)identity {
+- (void)removeSecondaryIdentity:(id<SystemIdentity>)identity {
   DCHECK(self.removeAccountCoordinator);
   self.removeAccountCoordinator = nil;
   self.uiDisabled = YES;
@@ -724,7 +725,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - ChromeAccountManagerServiceObserver
 
-- (void)identityChanged:(ChromeIdentity*)identity {
+- (void)identityChanged:(id<SystemIdentity>)identity {
   TableViewAccountItem* item = base::mac::ObjCCastStrict<TableViewAccountItem>(
       [_identityMap objectForKey:identity.gaiaID]);
   if (!item) {

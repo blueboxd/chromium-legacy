@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,7 +101,7 @@ ScriptPromise FileSystemDirectoryHandle::getFileHandle(
 
   mojo_ptr_->GetFile(
       name, options->create(),
-      WTF::Bind(
+      WTF::BindOnce(
           [](FileSystemDirectoryHandle*, ScriptPromiseResolver* resolver,
              const String& name, FileSystemAccessErrorPtr result,
              mojo::PendingRemote<mojom::blink::FileSystemAccessFileHandle>
@@ -139,7 +139,7 @@ ScriptPromise FileSystemDirectoryHandle::getDirectoryHandle(
 
   mojo_ptr_->GetDirectory(
       name, options->create(),
-      WTF::Bind(
+      WTF::BindOnce(
           [](FileSystemDirectoryHandle*, ScriptPromiseResolver* resolver,
              const String& name, FileSystemAccessErrorPtr result,
              mojo::PendingRemote<mojom::blink::FileSystemAccessDirectoryHandle>
@@ -177,7 +177,7 @@ ScriptPromise FileSystemDirectoryHandle::removeEntry(
 
   mojo_ptr_->RemoveEntry(
       name, options->recursive(),
-      WTF::Bind(
+      WTF::BindOnce(
           [](FileSystemDirectoryHandle*, ScriptPromiseResolver* resolver,
              FileSystemAccessErrorPtr result) {
             // Keep `this` alive so the handle will not be garbage-collected
@@ -204,7 +204,7 @@ ScriptPromise FileSystemDirectoryHandle::resolve(
 
   mojo_ptr_->Resolve(
       possible_child->Transfer(),
-      WTF::Bind(
+      WTF::BindOnce(
           [](FileSystemDirectoryHandle*, ScriptPromiseResolver* resolver,
              FileSystemAccessErrorPtr result,
              const absl::optional<Vector<String>>& path) {
@@ -310,15 +310,24 @@ void FileSystemDirectoryHandle::IsSameEntryImpl(
 
   mojo_ptr_->Resolve(
       std::move(other),
-      WTF::Bind(
+      WTF::BindOnce(
           [](base::OnceCallback<void(mojom::blink::FileSystemAccessErrorPtr,
                                      bool)> callback,
              FileSystemAccessErrorPtr result,
              const absl::optional<Vector<String>>& path) {
             std::move(callback).Run(std::move(result),
-                                    path.has_value() && path->IsEmpty());
+                                    path.has_value() && path->empty());
           },
           std::move(callback)));
+}
+
+void FileSystemDirectoryHandle::GetUniqueIdImpl(
+    base::OnceCallback<void(const WTF::String&)> callback) {
+  if (!mojo_ptr_.is_bound()) {
+    std::move(callback).Run("");
+    return;
+  }
+  mojo_ptr_->GetUniqueId(std::move(callback));
 }
 
 }  // namespace blink

@@ -31,6 +31,8 @@
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/templates/saved_desk_dialog_controller.h"
+#include "ash/wm/desks/templates/saved_desk_grid_view.h"
+#include "ash/wm/desks/templates/saved_desk_item_view.h"
 #include "ash/wm/desks/templates/saved_desk_library_view.h"
 #include "ash/wm/desks/templates/saved_desk_presenter.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
@@ -171,8 +173,12 @@ void OverviewSession::Init(const WindowList& windows,
                            const WindowList& hide_windows) {
   Shell::Get()->AddShellObserver(this);
 
-  if (saved_desk_util::IsSavedDesksEnabled())
+  if (saved_desk_util::IsSavedDesksEnabled()) {
     tablet_mode_observation_.Observe(Shell::Get()->tablet_mode_controller());
+    hide_windows_for_saved_desks_grid_ =
+        std::make_unique<ScopedOverviewHideWindows>(
+            /*windows=*/std::vector<aura::Window*>({}), /*forced_hidden=*/true);
+  }
 
   hide_overview_windows_ = std::make_unique<ScopedOverviewHideWindows>(
       std::move(hide_windows), /*force_hidden=*/false);
@@ -861,8 +867,8 @@ void OverviewSession::OnWindowActivating(
   // snapping an ARC window.
   SplitViewController* split_view_controller =
       SplitViewController::Get(gained_active);
-  if (split_view_controller->left_window() ||
-      split_view_controller->right_window()) {
+  if (split_view_controller->primary_window() ||
+      split_view_controller->secondary_window()) {
     RestoreWindowActivation(false);
     return;
   }
@@ -1015,7 +1021,6 @@ bool OverviewSession::IsWindowActiveWindowBeforeOverview(
 }
 
 void OverviewSession::ShowDesksTemplatesGrids(
-    bool was_zero_state,
     const base::GUID& item_to_focus,
     const std::u16string& saved_desk_name,
     aura::Window* const root_window) {
@@ -1032,7 +1037,8 @@ void OverviewSession::ShowDesksTemplatesGrids(
       AccessibilityAlert::SAVED_DESKS_MODE_ENTERED);
 
   for (auto& grid : grid_list_)
-    grid->ShowDesksTemplatesGrid(was_zero_state);
+    grid->ShowDesksTemplatesGrid();
+
   // Only ask for all entries if it is the first time creating the grid widgets.
   // Otherwise, add or update the entries one at a time.
   if (created_grid_widgets) {
@@ -1048,6 +1054,32 @@ void OverviewSession::ShowDesksTemplatesGrids(
   // needed when hiding, because we either move the focus to the new desk, or
   // delete all the grid templates items which would reset their highlights.
   highlight_controller_->ResetHighlightedView();
+
+  // If not given anything to focus, focus the first saved desk.
+  if (item_to_focus.is_valid())
+    return;
+
+  OverviewGrid* overview_grid = GetGridWithRootWindow(root_window);
+  if (!overview_grid)
+    return;
+
+  SavedDeskLibraryView* library_view = overview_grid->GetSavedDeskLibraryView();
+  if (!library_view)
+    return;
+
+  std::vector<SavedDeskGridView*> grid_views = library_view->grid_views();
+  if (grid_views.empty())
+    return;
+
+  std::vector<SavedDeskItemView*> grid_items = grid_views.front()->grid_items();
+  if (grid_items.empty() ||
+      library_view->GetWidget()->GetNativeWindow()->GetRootWindow() !=
+          root_window) {
+    return;
+  }
+
+  highlight_controller_->MoveHighlightToView(
+      grid_items.front(), /*suppress_accessibility_event=*/false);
 }
 
 void OverviewSession::HideDesksTemplatesGrids() {
@@ -1494,13 +1526,23 @@ void OverviewSession::OnItemAdded(aura::Window* window) {
   if (grid && grid->IsDropTargetWindow(window))
     return;
 
-  // Transfer focus from |window| to |overview_focus_widget_| to match the
+  // Transfer focus from `window` to `overview_focus_widget_` to match the
   // behavior of entering overview mode in the beginning.
   DCHECK(overview_focus_widget_);
-  // |overview_focus_widget_| might not visible yet as OnItemAdded() might be
-  // called before OnStartingAnimationComplete() is called, so use Show()
-  // instead of ActivateWindow() to show and activate the widget.
-  overview_focus_widget_->Show();
+  // `overview_focus_widget_` might not visible yet as `OnItemAdded()` might be
+  // called before `OnStartingAnimationComplete()` is called, so use `Show()` or
+  // `ShowInactive()` instead of `ActivateWindow()` to show the widget.
+  // When the saved desk grid is on, do not switch focus to avoid unexpected
+  // name commit.
+  bool saved_desk_grid_should_keep_focus =
+      IsShowingDesksTemplatesGrid() && grid_list_.front()
+                                               ->saved_desk_library_widget()
+                                               ->GetLayer()
+                                               ->GetTargetOpacity() != 0.f;
+  if (saved_desk_grid_should_keep_focus)
+    overview_focus_widget_->ShowInactive();
+  else
+    overview_focus_widget_->Show();
 
   UpdateAccessibilityFocus();
 }

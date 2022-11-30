@@ -1,11 +1,13 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/html/parser/html_token_producer.h"
 
 #include "base/feature_list.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/html/parser/background_html_token_producer.h"
 #include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
@@ -45,12 +47,18 @@ HTMLTokenProducer::HTMLTokenProducer(HTMLInputStream& input_stream,
       base::FeatureList::IsEnabled(features::kThreadedHtmlTokenizer) &&
       g_num_bg_producers < kMaxNumBgProducers) {
     ++g_num_bg_producers;
-    worker_pool_ = worker_pool::CreateSequencedTaskRunner(
-        {base::TaskPriority::USER_BLOCKING, base::WithBaseSyncPrimitives()});
+    // The main thread will block on results from the background thread. Create
+    // a dedicated thread to ensure the work is scheduled. Using a normal
+    // worker pool may mean the background task is never scheduled or scheduled
+    // after a delay (because the worker pool has a limit to how many active
+    // threads there may be).
+    task_runner_ = base::ThreadPool::CreateSingleThreadTaskRunner(
+        {base::TaskPriority::USER_BLOCKING, base::WithBaseSyncPrimitives()},
+        base::SingleThreadTaskRunnerThreadMode::DEDICATED);
     // BackgroundHTMLTokenProducer deletes itself when
     // ShutdownAndScheduleDeletion() is called.
     background_producer_ = new BackgroundHTMLTokenProducer(
-        {}, std::move(tokenizer_), worker_pool_);
+        {}, std::move(tokenizer_), task_runner_);
   }
 }
 
@@ -81,7 +89,7 @@ void HTMLTokenProducer::AbortBackgroundParsingImpl(
     return;
 
   tokenizer_ = std::make_unique<HTMLTokenizer>(parser_options_);
-  if (results_ && !results_->IsEmpty()) {
+  if (results_ && !results_->empty()) {
     // If abort is called after ParseNextToken() when no more data is available,
     // `current_result_index_` will be > than `current_result_index_`.
     const wtf_size_t index =
@@ -131,7 +139,7 @@ HTMLToken* HTMLTokenProducer::ParseNextToken() {
         }
         // The background producer should never return an empty results vector.
         results_ = next_results;
-        DCHECK(!results_->IsEmpty());
+        DCHECK(!results_->empty());
         current_result_index_ = 0;
       }
       BackgroundHTMLTokenProducerParseResult& current_result =

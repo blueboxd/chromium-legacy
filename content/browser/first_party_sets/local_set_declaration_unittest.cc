@@ -23,17 +23,6 @@ using ::testing::UnorderedElementsAre;
 
 namespace content {
 
-MATCHER_P3(SetIs, primary_matcher, set_matcher, aliases_matcher, "") {
-  const LocalSetDeclaration& local_set = arg;
-  const net::SchemefulSite& primary = local_set.GetPrimary();
-  const FirstPartySetParser::SingleSet& set = local_set.GetSet();
-  const FirstPartySetParser::Aliases& aliases = local_set.GetAliases();
-  return testing::ExplainMatchResult(primary_matcher, primary,
-                                     result_listener) &&
-         testing::ExplainMatchResult(set_matcher, set, result_listener) &&
-         testing::ExplainMatchResult(aliases_matcher, aliases, result_listener);
-}
-
 TEST(LocalSetDeclarationTest, Invalid_EmptyString) {
   EXPECT_THAT(LocalSetDeclaration(""), IsEmpty());
 }
@@ -54,15 +43,13 @@ TEST(LocalSetDeclarationTest, Valid_Basic) {
 
   EXPECT_THAT(
       LocalSetDeclaration(R"({"primary": "https://primary.test",)"
-                          R"("associatedSites": ["https://associated.test"]})"),
-      SetIs(primary,
-            UnorderedElementsAre(
-                Pair(primary,
-                     net::FirstPartySetEntry(primary, net::SiteType::kPrimary,
-                                             absl::nullopt)),
-                Pair(associated, net::FirstPartySetEntry(
-                                     primary, net::SiteType::kAssociated, 0))),
-            IsEmpty()));
+                          R"("associatedSites": ["https://associated.test"]})")
+          .GetSet(),
+      UnorderedElementsAre(
+          Pair(primary, net::FirstPartySetEntry(
+                            primary, net::SiteType::kPrimary, absl::nullopt)),
+          Pair(associated, net::FirstPartySetEntry(
+                               primary, net::SiteType::kAssociated, 0))));
 }
 
 TEST(LocalSetDeclarationTest, Valid_MultipleSubsetsAndAliases) {
@@ -81,20 +68,20 @@ TEST(LocalSetDeclarationTest, Valid_MultipleSubsetsAndAliases) {
           R"("ccTLDs": {)"
           R"(  "https://associated2.test": ["https://associated2.cctld"])"
           R"(})"
-          R"(})"),
-      SetIs(primary,
-            UnorderedElementsAre(
-                Pair(primary,
-                     net::FirstPartySetEntry(primary, net::SiteType::kPrimary,
-                                             absl::nullopt)),
-                Pair(associated1, net::FirstPartySetEntry(
-                                      primary, net::SiteType::kAssociated, 0)),
-                Pair(associated2, net::FirstPartySetEntry(
-                                      primary, net::SiteType::kAssociated, 1)),
-                Pair(service,
-                     net::FirstPartySetEntry(primary, net::SiteType::kService,
-                                             absl::nullopt))),
-            UnorderedElementsAre(Pair(associated2_cctld, associated2))));
+          R"(})")
+          .GetSet(),
+      UnorderedElementsAre(
+          Pair(primary, net::FirstPartySetEntry(
+                            primary, net::SiteType::kPrimary, absl::nullopt)),
+          Pair(associated1,
+               net::FirstPartySetEntry(primary, net::SiteType::kAssociated, 0)),
+          Pair(associated2,
+               net::FirstPartySetEntry(primary, net::SiteType::kAssociated, 1)),
+          Pair(service, net::FirstPartySetEntry(
+                            primary, net::SiteType::kService, absl::nullopt)),
+          Pair(associated2_cctld,
+               net::FirstPartySetEntry(primary, net::SiteType::kAssociated,
+                                       1))));
 }
 
 }  // namespace content

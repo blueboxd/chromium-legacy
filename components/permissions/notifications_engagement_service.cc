@@ -4,7 +4,6 @@
 
 #include "components/permissions/notifications_engagement_service.h"
 
-#include "base/logging.h"
 #include "components/permissions/permissions_client.h"
 #include "url/gurl.h"
 
@@ -68,6 +67,12 @@ void NotificationsEngagementService::RecordNotificationDisplayed(
   IncrementCounts(url, 1 /*display_count_delta*/, 0 /*click_count_delta*/);
 }
 
+void NotificationsEngagementService::RecordNotificationDisplayed(
+    const GURL& url,
+    int display_count) {
+  IncrementCounts(url, display_count, 0 /*click_count_delta*/);
+}
+
 void NotificationsEngagementService::RecordNotificationInteraction(
     const GURL& url) {
   IncrementCounts(url, 0 /*display_count_delta*/, 1 /*click_count_delta*/);
@@ -81,7 +86,7 @@ void NotificationsEngagementService::IncrementCounts(const GURL& url,
 
   base::Value::Dict engagement;
   if (engagement_as_value.is_dict())
-    engagement = std::move(engagement_as_value.GetDict());
+    engagement = std::move(engagement_as_value).TakeDict();
 
   std::string date = GetBucketLabelForLastMonday(base::Time::Now());
   if (date == std::string())

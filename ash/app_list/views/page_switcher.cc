@@ -4,7 +4,6 @@
 
 #include "ash/app_list/views/page_switcher.h"
 
-#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -16,6 +15,7 @@
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -202,11 +202,11 @@ void PageSwitcher::OnThemeChanged() {
 }
 
 void PageSwitcher::HandlePageSwitch(const ui::Event& event) {
-  if (!model_ || ignore_button_press_)
+  if (!model_)
     return;
 
   const auto& children = buttons_->children();
-  const auto it = std::find(children.begin(), children.end(), event.target());
+  const auto it = base::ranges::find(children, event.target());
   DCHECK(it != children.end());
   const int page = std::distance(children.begin(), it);
   if (page == model_->selected_page())

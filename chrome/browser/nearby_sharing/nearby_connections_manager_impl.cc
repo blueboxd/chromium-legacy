@@ -4,7 +4,6 @@
 
 #include "chrome/browser/nearby_sharing/nearby_connections_manager_impl.h"
 
-#include "ash/services/nearby/public/mojom/nearby_connections_types.mojom.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/files/file_util.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/nearby_sharing/constants.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
+#include "chromeos/ash/services/nearby/public/mojom/nearby_connections_types.mojom.h"
 #include "crypto/random.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/network_change_notifier.h"
@@ -588,8 +588,8 @@ void NearbyConnectionsManagerImpl::OnConnectionAccepted(
     incoming_connection_listener_->OnIncomingConnection(
         endpoint_id, it->second->endpoint_info, result.first->second.get());
   } else {
-    auto it = pending_outgoing_connections_.find(endpoint_id);
-    if (it == pending_outgoing_connections_.end()) {
+    auto pending_it = pending_outgoing_connections_.find(endpoint_id);
+    if (pending_it == pending_outgoing_connections_.end()) {
       Disconnect(endpoint_id);
       return;
     }
@@ -597,8 +597,8 @@ void NearbyConnectionsManagerImpl::OnConnectionAccepted(
     auto result = connections_.emplace(
         endpoint_id, std::make_unique<NearbyConnectionImpl>(this, endpoint_id));
     DCHECK(result.second);
-    std::move(it->second).Run(result.first->second.get());
-    pending_outgoing_connections_.erase(it);
+    std::move(pending_it->second).Run(result.first->second.get());
+    pending_outgoing_connections_.erase(pending_it);
     connect_timeout_timers_.erase(endpoint_id);
   }
 }

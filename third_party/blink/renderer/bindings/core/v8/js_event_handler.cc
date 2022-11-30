@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -153,7 +153,7 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
   // necessary only for OnBeforeUnloadEventHandler.
   String result_for_beforeunload;
   if (IsOnBeforeUnloadEventHandler()) {
-    event_handler_->EvaluateAsPartOfCallback(Bind(
+    event_handler_->EvaluateAsPartOfCallback(WTF::BindOnce(
         [](v8::Local<v8::Value>& v8_return_value,
            String& result_for_beforeunload) {
           // TODO(yukiy): use |NativeValueTraits|.
@@ -192,7 +192,7 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
   if (is_beforeunload_event) {
     if (result_for_beforeunload) {
       event.preventDefault();
-      if (before_unload_event->returnValue().IsEmpty())
+      if (before_unload_event->returnValue().empty())
         before_unload_event->setReturnValue(result_for_beforeunload);
     }
   } else if (!IsOnBeforeUnloadEventHandler()) {

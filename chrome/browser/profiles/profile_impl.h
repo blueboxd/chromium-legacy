@@ -106,8 +106,9 @@ class ProfileImpl : public Profile {
   GetFederatedIdentityActiveSessionPermissionContext() override;
   content::FederatedIdentitySharingPermissionContextDelegate*
   GetFederatedIdentitySharingPermissionContext() override;
-  std::unique_ptr<content::KAnonymityServiceDelegate>
-  CreateKAnonymityServiceDelegate() override;
+  content::KAnonymityServiceDelegate* GetKAnonymityServiceDelegate() override;
+  content::OriginTrialsControllerDelegate* GetOriginTrialsControllerDelegate()
+      override;
 
   // Profile implementation:
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;

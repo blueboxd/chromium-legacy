@@ -23,8 +23,8 @@ namespace {
 const cast::common::Dictionary::Entry* FindEntry(
     const std::string& key,
     const cast::common::Dictionary& dict) {
-  auto iter = base::ranges::find_if(
-      dict.entries(), [&key](const auto& entry) { return entry.key() == key; });
+  auto iter = base::ranges::find(dict.entries(), key,
+                                 &cast::common::Dictionary::Entry::key);
   if (iter == dict.entries().end()) {
     return nullptr;
   }
@@ -44,9 +44,9 @@ RuntimeApplicationBase::RuntimeApplicationBase(
                     .Run(task_runner, cast_session_id, *this)),
       cast_session_id_(std::move(cast_session_id)),
       app_config_(std::move(app_config)),
+      renderer_type_(renderer_type_used),
       web_service_(web_service),
-      task_runner_(std::move(task_runner)),
-      renderer_type_(renderer_type_used) {
+      task_runner_(std::move(task_runner)) {
   DCHECK(platform_);
   DCHECK(web_service_);
   DCHECK(task_runner_);

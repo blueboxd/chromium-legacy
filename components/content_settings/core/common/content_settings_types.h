@@ -35,7 +35,7 @@ enum class ContentSettingsType : int32_t {
   MEDIASTREAM_MIC,
   MEDIASTREAM_CAMERA,
   PROTOCOL_HANDLERS,
-  PPAPI_BROKER,
+  DEPRECATED_PPAPI_BROKER,
   AUTOMATIC_DOWNLOADS,
   MIDI_SYSEX,
   SSL_CERT_DECISIONS,
@@ -203,10 +203,11 @@ enum class ContentSettingsType : int32_t {
   // movements. It does not give access to camera.
   CAMERA_PAN_TILT_ZOOM,
 
-  // Content setting for Screen Enumeration and Window Placement functionality.
-  // Permits access to information about the screens, like size and position.
-  // Permits creating and placing windows across the set of connected screens.
-  WINDOW_PLACEMENT,
+  // Content setting for Screen Enumeration and Screen Detail functionality.
+  // Permits access to detailed multi-screen information, like size and
+  // position. Permits placing fullscreen and windowed content on specific
+  // screens. See also: https://w3c.github.io/window-placement
+  WINDOW_MANAGEMENT,
 
   // Stores whether to allow insecure websites to make private network requests.
   // See also: https://wicg.github.io/cors-rfc1918
@@ -286,6 +287,10 @@ enum class ContentSettingsType : int32_t {
   // Website setting which stores the last reduced accept language negotiated
   // for a given origin, to be used on future visits to the origin.
   REDUCED_ACCEPT_LANGUAGE,
+
+  // Website setting which is used for NotificationPermissionReviewService to
+  // store origin blocklist from review notification permissions feature.
+  NOTIFICATION_PERMISSION_REVIEW,
 
   NUM_TYPES,
 };

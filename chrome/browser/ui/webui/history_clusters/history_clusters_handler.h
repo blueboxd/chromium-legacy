@@ -12,7 +12,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/history/profile_based_browsing_history_driver.h"
 #include "components/history/core/browser/browsing_history_service.h"
 #include "components/history/core/browser/history_types.h"
@@ -58,6 +57,8 @@ class HistoryClustersHandler : public mojom::PageHandler,
   HistoryClustersHandler(const HistoryClustersHandler&) = delete;
   HistoryClustersHandler& operator=(const HistoryClustersHandler&) = delete;
   ~HistoryClustersHandler() override;
+
+  const std::string& last_query_issued() const { return last_query_issued_; }
 
   void SetSidePanelUIEmbedder(
       base::WeakPtr<ui::MojoBubbleWebUIController::Embedder>
@@ -137,6 +138,13 @@ class HistoryClustersHandler : public mojom::PageHandler,
   // survey service itself has a limiter, but we also want to skip all the work
   // to enqueue the request, so we have a separate flag here too.
   bool survey_launch_attempted_ = false;
+
+  // Last query issued by the WebUI. The WebUI always makes a query upon load,
+  // so this string is always set. If the WebUI loads without a query in the q=
+  // GET parameter, it STILL makes a query for "", and so this variable being
+  // left an empty string is correct. Before the WebUI loads, this string is
+  // also empty, and that's okay and desirable.
+  std::string last_query_issued_;
 
   base::WeakPtrFactory<HistoryClustersHandler> weak_ptr_factory_{this};
 };

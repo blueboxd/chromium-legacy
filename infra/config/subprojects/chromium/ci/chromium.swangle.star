@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Definitions of builders in the chromium.swangle builder group."""
 
-load("//lib/builders.star", "goma", "reclient", "sheriff_rotations")
+load("//lib/builders.star", "reclient", "sheriff_rotations")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 
@@ -16,6 +16,9 @@ ci.defaults.set(
     pool = ci.gpu.POOL,
     service_account = ci.gpu.SERVICE_ACCOUNT,
     sheriff_rotations = sheriff_rotations.CHROMIUM_GPU,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 consoles.console_view(
@@ -70,8 +73,6 @@ ci.gpu.mac_builder(
         short_name = "x64",
     ),
     executable = ci.DEFAULT_EXECUTABLE,
-    goma_backend = goma.backend.RBE_PROD,
-    reclient_instance = None,
 )
 
 ci.gpu.windows_builder(

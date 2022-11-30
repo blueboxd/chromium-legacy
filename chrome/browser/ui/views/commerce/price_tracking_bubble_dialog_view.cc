@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/commerce/price_tracking_bubble_dialog_view.h"
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"

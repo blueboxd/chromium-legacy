@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,9 +54,9 @@ void PaintController::ReserveCapacity() {
       display_item_list_capacity =
           current_paint_artifact_->GetDisplayItemList().size();
     }
-    new_paint_artifact_->PaintChunks().ReserveCapacity(
+    new_paint_artifact_->PaintChunks().reserve(
         current_paint_artifact_->PaintChunks().size());
-    new_subsequences_.tree.ReserveCapacity(current_subsequences_.tree.size());
+    new_subsequences_.tree.reserve(current_subsequences_.tree.size());
     new_subsequences_.map.ReserveCapacityForSize(
         current_subsequences_.map.size());
   }
@@ -737,7 +737,7 @@ size_t PaintController::ApproximateUnsharedMemoryUsage() const {
   memory_usage += current_subsequences_.map.Capacity() *
                   sizeof(decltype(current_subsequences_.map)::value_type);
   memory_usage += current_subsequences_.tree.CapacityInBytes();
-  DCHECK(new_subsequences_.map.IsEmpty());
+  DCHECK(new_subsequences_.map.empty());
   memory_usage += new_subsequences_.map.Capacity() *
                   sizeof(decltype(new_subsequences_.map)::value_type);
   memory_usage += new_subsequences_.tree.CapacityInBytes();

@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_CAST_CAST_FEATURE_POD_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/constants/quick_settings_catalogs.h"
 #include "ash/public/cpp/cast_config_controller.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 
@@ -28,9 +29,9 @@ class ASH_EXPORT CastFeaturePodController
 
   // FeaturePodControllerBase:
   FeaturePodButton* CreateButton() override;
+  QsFeatureCatalogName GetCatalogName() override;
   void OnIconPressed() override;
   void OnLabelPressed() override;
-  SystemTrayItemUmaType GetUmaType() const override;
 
   // CastConfigControllerObserver:
   void OnDevicesUpdated(const std::vector<SinkAndRoute>& devices) override;

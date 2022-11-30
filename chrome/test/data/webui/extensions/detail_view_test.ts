@@ -5,7 +5,7 @@
 /** @fileoverview Suite of tests for extensions-detail-view. */
 
 import {CrCheckboxElement, ExtensionsDetailViewElement, ExtensionsToggleRowElement, navigation, Page} from 'chrome://extensions/extensions.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -44,7 +44,8 @@ suite(extension_detail_view_tests.suiteName, function() {
 
   // Initialize an extension item before each test.
   setup(function() {
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     extensionData = createExtensionInfo({
       incognitoAccess: {isEnabled: true, isActive: false},
       fileAccess: {isEnabled: true, isActive: false},

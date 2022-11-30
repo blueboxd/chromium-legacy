@@ -639,6 +639,20 @@ bool BrowserAccessibilityAndroid::IsLeafConsideringChildren() const {
   return true;
 }
 
+std::u16string BrowserAccessibilityAndroid::GetBrailleLabel() const {
+  if (HasStringAttribute(ax::mojom::StringAttribute::kAriaBrailleLabel))
+    return GetString16Attribute(ax::mojom::StringAttribute::kAriaBrailleLabel);
+  return std::u16string();
+}
+
+std::u16string BrowserAccessibilityAndroid::GetBrailleRoleDescription() const {
+  if (HasStringAttribute(
+          ax::mojom::StringAttribute::kAriaBrailleRoleDescription))
+    return GetString16Attribute(
+        ax::mojom::StringAttribute::kAriaBrailleRoleDescription);
+  return std::u16string();
+}
+
 std::u16string BrowserAccessibilityAndroid::GetTextContentUTF16() const {
   return GetSubstringTextContentUTF16(absl::nullopt);
 }
@@ -698,7 +712,7 @@ std::u16string BrowserAccessibilityAndroid::GetSubstringTextContentUTF16(
   // Append image description strings to the text.
   auto* manager =
       static_cast<BrowserAccessibilityManagerAndroid*>(this->manager());
-  if (manager->should_allow_image_descriptions()) {
+  if (manager->ShouldAllowImageDescriptions()) {
     auto status = GetData().GetImageAnnotationStatus();
     switch (status) {
       case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
@@ -1122,7 +1136,7 @@ std::u16string BrowserAccessibilityAndroid::GetRoleDescription() const {
   // If this node is an image, check status and potentially add unlabeled role.
   auto* manager =
       static_cast<BrowserAccessibilityManagerAndroid*>(this->manager());
-  if (manager->should_allow_image_descriptions()) {
+  if (manager->ShouldAllowImageDescriptions()) {
     auto status = GetData().GetImageAnnotationStatus();
     switch (status) {
       case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:

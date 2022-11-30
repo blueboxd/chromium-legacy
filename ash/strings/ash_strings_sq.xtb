@@ -78,7 +78,6 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="1306549533752902673">APLIKACIONET E REKOMANDUARA</translation>
 <translation id="1312604459020188865">Fuqia e sinjalit <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Shfaq gjithmonë raftin</translation>
-<translation id="1316811122439383437">Çanta: regjistrimet e fundit të ekranit, shkarkimet dhe skedarët e gozhduar</translation>
 <translation id="132346741904777634">Pamja paraprake e kamerës ka kaluar në këndin e sipërm majtas. Në konflikt me sipërfaqen e sistemit.</translation>
 <translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> u lidh</translation>
 <translation id="1341651618736211726">Tejkalo</translation>
@@ -160,12 +159,22 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="1797271123677381264">Harrova fjalëkalimin</translation>
 <translation id="181103072419391116">Fuqia e sinjalit <ph name="SIGNAL_STRENGTH" />, menaxhuar nga administratori yt</translation>
 <translation id="1812997170047690955">Çfarë ka në ekranin tim?</translation>
+<translation id="1823280932251546115">Tabakaja e statusit, ora <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="CHANNEL" />
+        <ph name="NETWORK" />,
+        <ph name="PRIVACY" />,
+        <ph name="MANAGED" />
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="1823873187264960516">Eternet: <ph name="ADDRESS" /></translation>
 <translation id="1830308660060964064"><ph name="ITEM_TITLE" /> u zhgozhdua</translation>
 <translation id="1836215606488044471">Asistenti (po ngarkohet...)</translation>
 <translation id="1838895407229022812">"Drita e natës" është joaktive.</translation>
 <translation id="1862380676329487333">Përditëso dhe dil</translation>
 <translation id="1864454756846565995">Pajisja USB-C (porta prapa)</translation>
+<translation id="1869497990620230175">Skedarët e shpejtë</translation>
 <translation id="1879018240766558464">Dritaret "E fshehta" nuk mbështeten aktualisht. Aplikacionet e tjera do të ruhen.</translation>
 <translation id="1882814835921407042">Nuk ka rrjet celular</translation>
 <translation id="1882897271359938046">Po pasqyron në <ph name="DISPLAY_NAME" /></translation>
@@ -190,6 +199,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="1989113344093894667">Përmbajtja nuk mund të regjistrohet</translation>
 <translation id="1990046457226896323">Skedarët e ligjërimit u shkarkuan</translation>
 <translation id="1993072747612765854">Mëso më shumë rreth përditësimit të fundit të <ph name="SYSTEM_APP_NAME" /></translation>
+<translation id="1995660704900986789">Fik</translation>
 <translation id="1998100899771863792">Tavolina aktuale e punës</translation>
 <translation id="2001444736072756133">Kërko te <ph name="CATEGORY" />, skedarët, aplikacionet dhe të tjera.</translation>
 <translation id="2016340657076538683">Shkruaj një mesazh</translation>
@@ -226,6 +236,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="2227179592712503583">Hiq sugjerimin</translation>
 <translation id="225680501294068881">Po skanon për pajisje...</translation>
 <translation id="2257486738914982088">Ndodhi një gabim gjatë shkarkimi të <ph name="FILENAME" /></translation>
+<translation id="2258734398699965611">Skedarët e sugjeruar</translation>
 <translation id="2268130516524549846">Bluetooth-i u çaktivizua</translation>
 <translation id="2268813581635650749">Dil nga të gjitha</translation>
 <translation id="2269016722240250274">Mikrofonin tënd po e përdor një aplikacion</translation>
@@ -236,6 +247,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="2298170939937364391">"Zmadhuesi i ekranit të plotë" u aktivizua. Shtyp përsëri Ctrl+Kërko+M për ta çaktivizuar.</translation>
 <translation id="2302092602801625023">Kjo llogari menaxhohet nga Family Link</translation>
 <translation id="2303600792989757991">Ndrysho përmbledhjen e dritares</translation>
+<translation id="2315005022200073389"><ph name="HOLDING_SPACE_TITLE" />: regjistrimet e fundit të ekranit, shkarkimet dhe skedarët e gozhduar</translation>
 <translation id="2318576281648121272">Sot <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060">Kategoria e rezultateve të kërkimit: <ph name="CATEGORY" /></translation>
 <translation id="2322173485024759474">Një shkronjë pas</translation>
@@ -254,6 +266,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="2405664212338326887">Nuk është i lidhur</translation>
 <translation id="2408955596600435184">Fut kodin PIN</translation>
 <translation id="2412593942846481727">Ka përditësim</translation>
+<translation id="2417486498593892439">Identifikohu në rrjet</translation>
 <translation id="2426051945783024481">Kuadri i kamerës u vendos automatikisht në qendër</translation>
 <translation id="2427507373259914951">Klikimi me butonin majtas</translation>
 <translation id="2429753432712299108">Pajisja me Bluetooth, "<ph name="DEVICE_NAME" />" kërkon leje për çiftim. Përpara se të pranosh, konfirmo që ky çelës kalimi shfaqet në atë pajisje: <ph name="PASSKEY" /></translation>
@@ -370,6 +383,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3120421559657122717">Të fiket pajisja?</translation>
 <translation id="3126069444801937830">Rifillo për të përditësuar</translation>
+<translation id="3139382871451988441">Çaktivizo qasjen te kamera</translation>
 <translation id="3139942575505304791">Tavolina e punës 1</translation>
 <translation id="315116470104423982">Të dhëna celulare</translation>
 <translation id="3151786313568798007">Orientimi</translation>
@@ -410,6 +424,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="3368922792935385530">Lidhur</translation>
 <translation id="3371140690572404006">Pajisja USB-C (porta e përparme, djathtas)</translation>
 <translation id="3375634426936648815">Lidhur</translation>
+<translation id="3378438761594387761">Këtu do të gjesh regjistrimet e ekranit dhe shkarkimet e tua më të fundit</translation>
 <translation id="3378442621503952303">Po lidhet me profilin. Prit disa minuta.</translation>
 <translation id="3386978599540877378">zmadhuesi në ekran të plotë</translation>
 <translation id="3387527074123400161">ChromiumOS</translation>
@@ -453,6 +468,8 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="3600061223661453002">Joaktiv</translation>
 <translation id="3604801046548457007">U krijua tavolina e punës <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">Ekrani "Braille" është i lidhur.</translation>
+<translation id="3609301425104788351"><ph name="MIC" />,
+        <ph name="CAMERA" /></translation>
 <translation id="3615926715408477684">Aktivizimi i të dhënave celulare do të aktivizojë Bluetooth</translation>
 <translation id="3616883743181209306">Menyja u zhvendos në këndin lart djathtas të ekranit.</translation>
 <translation id="3619536907358025872">Cilësimet e "Regjistrimit të ekranit"</translation>
@@ -492,7 +509,6 @@ Lidhe pajisjen me një burim të energjisë elektrike.</translation>
 <translation id="383058930331066723">Modaliteti i kursimit të baterisë është aktiv</translation>
 <translation id="383629559565718788">Shfaq cilësimet e tastierës</translation>
 <translation id="384082539148746321">Të fshihet shablloni?</translation>
-<translation id="3842239759367498783">Vazhdo të lexosh nga pajisja jote celulare <ph name="TITLE" /></translation>
 <translation id="3846575436967432996">Nuk mundësohen informacione mbi rrjetin</translation>
 <translation id="385051799172605136">Prapa</translation>
 <translation id="385300504083504382">Fillimi</translation>
@@ -507,7 +523,6 @@ Lidhe pajisjen me një burim të energjisë elektrike.</translation>
 <translation id="3922427723338465344">{0,plural, =1{Kalo pajisjen në versionin e mëparshëm brenda 1 minute}other{Kalo pajisjen në versionin e mëparshëm brenda # minutash}}</translation>
 <translation id="3923494859158167397">Nuk ka asnjë rrjet celular të konfiguruar</translation>
 <translation id="3925540965556789199"><ph name="DATE" />, ngjarjet po ngarkohen.</translation>
-<translation id="392627956579011934">Nevojitet rinisja për të instaluar skedarët e ligjërimit.</translation>
 <translation id="3932043219784172185">Nuk është lidhur asnjë pajisje</translation>
 <translation id="3934456833412894880">"Karikimi me përshtatje" është aktiv. Bateria jote do të qëndrojë në 80% për të rritur kohëzgjatjen e saj dhe do të karikohet plotësisht kur të të nevojitet.</translation>
 <translation id="3943857333388298514">Ngjite</translation>
@@ -562,7 +577,6 @@ Lidhe pajisjen me një burim të energjisë elektrike.</translation>
 <translation id="4242533952199664413">Hap cilësimet</translation>
 <translation id="4247123849143712100">Përditëso dhe fike</translation>
 <translation id="4250229828105606438">Pamje e ekranit</translation>
-<translation id="4250899820387052060">Skedarët e shpejtë</translation>
 <translation id="425364040945105958">Nuk ka kartë SIM</translation>
 <translation id="4261870227682513959">Shfaq cilësimet e njoftimeve. Njoftimet janë joaktive</translation>
 <translation id="4269883910223712419">Administratori i kësaj pajisjeje ka aftësinë që:</translation>
@@ -648,6 +662,7 @@ Lidhe pajisjen me një burim të energjisë elektrike.</translation>
 <ph name="QUERY" /></translation>
 <translation id="4659419629803378708">ChromeVox është aktivizuar</translation>
 <translation id="4665114317261903604">Aktivizo/çaktivizo modalitetin "Mos shqetëso". <ph name="STATE_TEXT" /></translation>
+<translation id="4666082839192943839">Çaktivizo qasjen te kamera në këtë pajisje për të bllokuar të gjitha kamerat gjatë të gjithë kohës.</translation>
 <translation id="4667099493359681081">Po shkarkon <ph name="FILENAME" /></translation>
 <translation id="4690510401873698237">Rafti në fund</translation>
 <translation id="4696813013609194136">Shkyç pajisjen me kodin e prindit</translation>
@@ -658,7 +673,6 @@ Lidhe pajisjen me një burim të energjisë elektrike.</translation>
 <translation id="4731797938093519117">Qasja e prindit</translation>
 <translation id="4733161265940833579"><ph name="BATTERY_PERCENTAGE" />% (majtas)</translation>
 <translation id="4734965478015604180">Horizontal</translation>
-<translation id="4735498845456076464">Shkurtorja e tastierës për <ph name="LAUNCHER_KEY_NAME" /> + Numri është ndryshuar. Për të përdorur tastet e funksioneve, shtyp tastin <ph name="LAUNCHER_KEY_NAME" /> + një tast në rreshtin e sipërm.</translation>
 <translation id="473775607612524610">Përditësoje</translation>
 <translation id="4740516757091333363">Të fshihet tavolina e ruajtur e punës?</translation>
 <translation id="4752784485658729358">Lejohen vetëm 6 tavolina të ruajtura pune. Hiq një tavolinë pune për të ruajtur një të re.</translation>
@@ -667,6 +681,7 @@ Lidhe pajisjen me një burim të energjisë elektrike.</translation>
 <translation id="4776917500594043016">Fjalëkalimi për <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Dyqani i Play</translation>
 <translation id="4778095205580009397">"Asistenti i Google" nuk ofrohet në një sesion demonstrimi.</translation>
+<translation id="4789348252524569426">Skedarët e ligjërimit nuk mund të instalohen. Pajisja jote ka nevojë që të përditësohet. Rinise pajisjen dhe provo përsëri.</translation>
 <translation id="479989351350248267">kërko</translation>
 <translation id="4804818685124855865">Shkëputu</translation>
 <translation id="4814539958450445987">Ekrani i identifikimit</translation>
@@ -717,6 +732,7 @@ Lidhe pajisjen me një burim të energjisë elektrike.</translation>
 <translation id="5083553833479578423">Shkyç më shumë funksione të "Asistentit".</translation>
 <translation id="509790653408515442">Kur transmeton aplikacionet e telefonit tënd, ato do të shfaqen këtu</translation>
 <translation id="5098537242461068432">Tavolina e punës dhe dritaret u rihapën</translation>
+<translation id="5104236669533825617">Transmetimi i ekranit nuk mund të krijohet</translation>
 <translation id="5107522548814527560">Ueb</translation>
 <translation id="5117590920725113268">Trego muajin e ardhshëm</translation>
 <translation id="5136175204352732067">Është lidhur një tastierë tjetër</translation>
@@ -762,22 +778,13 @@ Lidhe pajisjen me një burim të energjisë elektrike.</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />% (djathtas)</translation>
 <translation id="5352250171825660495">"Tema e errët" është aktive</translation>
 <translation id="5356963482258194581">Ndërro mes temës së errët dhe temës së ndriçuar. Kliko me butonin djathtas në desktop dhe zgjidh "Imazhi i sfondit dhe stili".</translation>
+<translation id="536019650977002321">Administratori yt nuk e lejon regjistrimin e audios. Kontakto me administratorin për më shumë informacion.</translation>
 <translation id="5363163447017455357"><ph name="DELIMITER" /> Shko te kjo skedë</translation>
 <translation id="5379115545237091094">Shumë përpjekje</translation>
 <translation id="5391307769715781764">Të zëvendësohet tavolina e ruajtur e punës?</translation>
 <translation id="5393156353051693207">Prek dhe mbaj të shtypur kudo për të rirenditur aplikacionet</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> mbi <ph name="IN_PLACE_APP" />, lëshoje për të krijuar dosje.</translation>
 <translation id="5397578532367286026">Përdorimi dhe historiku i këtij përdoruesi mund të rishikohen nga menaxheri (<ph name="MANAGER_EMAIL" />) në chrome.com.</translation>
-<translation id="5399673806694250334">Tabakaja e statusit, ora <ph name="TIME" />,
-        <ph name="BATTERY" />
-        <ph name="CHANNEL" />
-        <ph name="NETWORK" />,
-        <ph name="MIC" />,
-        <ph name="CAMERA" />,
-        <ph name="MANAGED" />
-        <ph name="NOTIFICATION" />,
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="5400461572260843123">Cilësimet e shpejta, shtyp "kërko" + tastin "majtas" për të pasur qasje te qendra e njoftimeve.</translation>
 <translation id="5426063383988017631">Menyja e "Cilësimeve" është e mbyllur</translation>
 <translation id="5428899915242071344">Fillo përzgjedhjen</translation>
@@ -897,9 +904,11 @@ Lidhe pajisjen me një burim të energjisë elektrike.</translation>
 <translation id="6064463340679478396">Përfundova me përdorimin e skedarit</translation>
 <translation id="6073451960410192870">Ndalo regjistrimin</translation>
 <translation id="6074087755403037157">Kanali "Beta"</translation>
+<translation id="6095008505822982596">Shpejtësia e të folurit</translation>
 <translation id="6099678161144790572">Modifikuar muajin e kaluar</translation>
 <translation id="6103838137565245112">sistemi</translation>
 <translation id="6114505516289286752">Skedarët e ligjërimit në <ph name="LANGUAGE" /> u shkarkuan</translation>
+<translation id="6116825164611323644">Qasja te kamera është joaktive në këtë pajisje</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Konfirmo shkarkimin e <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">"Asistenti i Google" nuk ofrohet në një sesion për vizitorët.</translation>
@@ -1000,7 +1009,6 @@ Instalim i ri</translation>
 <translation id="6700713906295497288">Butoni i menysë IME</translation>
 <translation id="6707693040195709527">Kalimit të pajisjes në versionin e mëparshëm i ka kaluar afati</translation>
 <translation id="6710213216561001401">Prapa</translation>
-<translation id="6713285437468012787">Pajisja me Bluetooth "<ph name="DEVICE_NAME" />" është çiftuar dhe mundësohet tani për të gjithë përdoruesit. Mund ta heqësh këtë çiftim duke përdorur "Cilësimet".</translation>
 <translation id="6723839937902243910">Energjia</translation>
 <translation id="6727969043791803658">E lidhur, bateria <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6732800389263199929">+<ph name="COUNT" /></translation>
@@ -1098,7 +1106,6 @@ Instalim i ri</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7313193732017069507">Zgjero kamerën</translation>
 <translation id="731589979057211264">"Grupi i rafteve" është aktiv.</translation>
-<translation id="7319740667687257810">Nisësi, pamje e pjesëshme</translation>
 <translation id="7346909386216857016">Në rregull, kuptova</translation>
 <translation id="7348093485538360975">Tastiera në ekran</translation>
 <translation id="735745346212279324">Rrjeti VPN u shkëput</translation>
@@ -1126,6 +1133,7 @@ Instalim i ri</translation>
 <translation id="746232733191930409">Modaliteti i regjistrimit të ekranit</translation>
 <translation id="7466449121337984263">Prek sensorin</translation>
 <translation id="7477793887173910789">Kontrollo muzikën, videot e tua etj.</translation>
+<translation id="7490360161041035804">Mund t'i gozhdosh skedarët e rëndësishëm, duke përfshirë skedarët e "Diskut të Google". Për ta gozhduar një artikull, mbaje kursorin mbi artikull ose hap Files dhe kliko me butonin djathtas tek artikulli.</translation>
 <translation id="7497767806359279797">Zgjidh gjuhën dhe tastierën</translation>
 <translation id="7508690557411636492">Hapur muajin e kaluar</translation>
 <translation id="7509246181739783082">Verifiko identitetin</translation>
@@ -1143,6 +1151,7 @@ Instalim i ri</translation>
 <translation id="7557816257942363084"><ph name="APP_NAME" /> po përdor aktualisht mikrofonin tënd</translation>
 <translation id="7561982940498449837">Mbyll menynë</translation>
 <translation id="7564874036684306347">Zhvendosja e dritareve te një desktop tjetër mund të shkaktojë një sjellje të papritur. Njoftimet pasuese, dritarja dhe dialogët mund të ndahen mes desktopëve.</translation>
+<translation id="7567076708801803118">Dëshiron që ta çaktivizosh qasjen te kamera në këtë pajisje?</translation>
 <translation id="7569509451529460200">Braille dhe ChromeVox janë aktivizuar</translation>
 <translation id="7573585051776738856">Dritarja aktive u pozicionua në të djathtë.</translation>
 <translation id="7579778809502851308">Regjistrimi i ekranit</translation>
@@ -1222,6 +1231,7 @@ Instalim i ri</translation>
 <translation id="7982789257301363584">Rrjeti</translation>
 <translation id="7984197416080286869">Shumë përpjekje të gjurmës së gishtit</translation>
 <translation id="798779949890829624">Ky cilësim menaxhohet nga administratori yt</translation>
+<translation id="799296642788192631">Mund t'i gozhdosh skedarët e rëndësishëm. Për ta gozhduar një artikull, mbaje kursorin mbi artikull ose hap Files dhe kliko me butonin djathtas tek artikulli.</translation>
 <translation id="7994370417837006925">Identifikim i shumëfishtë</translation>
 <translation id="7995804128062002838">Regjistrimi i ekranit dështoi</translation>
 <translation id="8000066093800657092">Nuk ka rrjet</translation>
@@ -1253,7 +1263,6 @@ Instalim i ri</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, plotësimi automatik</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Ky cilësim menaxhohet nga administratori yt.</translation>
 <translation id="8155628902202578800">Hap dialogun e informacioneve për <ph name="USER_EMAIL_ADDRESS" /></translation>
-<translation id="8157728322324420120">Sugjeruar për ty</translation>
 <translation id="8167567890448493835">Po përdor <ph name="LOCALE_NAME" /></translation>
 <translation id="8183592608247778598">Shiko fotografitë, mediat, njoftimet dhe aplikacionet më të fundit të telefonit në pajisjen tënde <ph name="DEVICE_TYPE" /></translation>
 <translation id="8192202700944119416">Njoftimet janë të fshehura.</translation>
@@ -1350,6 +1359,7 @@ Instalim i ri</translation>
 <translation id="8734991477317290293">Ajo ndoshta po përpiqet të regjistrojë goditjet e tasteve</translation>
 <translation id="8735678380411481005">Ngjyra e dritës së sfondit të tastierës</translation>
 <translation id="8735953464173050365">Shfaq cilësimet e tastierës. Është zgjedhur <ph name="KEYBOARD_NAME" /></translation>
+<translation id="8752416742247198423">Aktivizo qasjen te kamera për të lejuar që aplikacionet dhe faqet e uebit me lejen e kamerës të përdorin kamerat e lidhura me këtë pajisje.</translation>
 <translation id="8755498163081687682">Verifiko identitetin tënd: <ph name="ORIGIN_NAME" /> dëshiron të konfirmojë që je ti</translation>
 <translation id="875593634123171288">Shfaq cilësimet e VPN</translation>
 <translation id="8759408218731716181">Identifikimi i shumëfishtë nuk mund të konfigurohet</translation>
@@ -1364,6 +1374,7 @@ Instalim i ri</translation>
 <translation id="8819728065740986820">"Karikimi me përshtatje" është aktiv</translation>
 <translation id="8825863694328519386">Rrëshqit nga e majta për t'u kthyer prapa</translation>
 <translation id="8834539327799336565">Të lidhur aktualisht</translation>
+<translation id="8834657930627018205">Aktivizo qasjen te kamera</translation>
 <translation id="8841375032071747811">Butoni "Prapa"</translation>
 <translation id="8843682306134542540">Aktivizo/çaktivizo kyçjen e rrotullimit. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Kërko+Esc</translation>
@@ -1386,6 +1397,7 @@ Instalim i ri</translation>
 <translation id="8936501819958976551">çaktivizuar</translation>
 <translation id="8938800817013097409">Pajisja USB-C (porta djathtas, prapa)</translation>
 <translation id="8940956008527784070">Nivel i ulët baterie (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8949925099261528566">Lidhur, por pa internet</translation>
 <translation id="8951539504029375108">Vetëm pajisjet e miratuara Thunderbolt janë të përputhshme me pajisjen tënde Chromebook</translation>
 <translation id="8982906748181120328">Dukshmëria</translation>
 <translation id="8983038754672563810">HSPA</translation>

@@ -82,18 +82,20 @@ class OpenInTabHelper : public web::WebStateObserver,
 
   ~OpenInTabHelper() override;
 
-  // Creates OpenInTabHelper and attaches to `web_state`. `web_state` must not
-  // be null.
-  static void CreateForWebState(web::WebState* web_state);
-
   // Sets the OpenInTabHelper delegate. `delegate` will be in charge of enabling
   // the openIn view. `delegate` is not retained by TabHelper.
   void SetDelegate(id<OpenInTabHelperDelegate> delegate);
 
+  // Returns true if the displayed content should be downloaded.
+  static bool ShouldDownload(web::WebState* web_state);
+
+  // Returns the suggested file name of the displayed content.
+  std::u16string GetFileNameSuggestion();
+
  private:
   friend class web::WebStateUserData<OpenInTabHelper>;
 
-  OpenInTabHelper(web::WebState* web_state);
+  explicit OpenInTabHelper(web::WebState* web_state);
 
   // Handles exportable files and shows open in button if content mime type is
   // PDF.

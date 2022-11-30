@@ -24,6 +24,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
@@ -52,6 +53,7 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/in_memory_history_backend.h"
 #include "components/history/core/browser/keyword_search_term.h"
+#include "components/history/core/browser/keyword_search_term_util.h"
 #include "components/history/core/browser/page_usage_data.h"
 #include "components/history/core/browser/sync/history_sync_bridge.h"
 #include "components/history/core/browser/sync/typed_url_sync_bridge.h"
@@ -1581,6 +1583,12 @@ bool HistoryBackend::GetURLByID(URLID url_id, URLRow* url_row) {
   return false;
 }
 
+bool HistoryBackend::GetVisitByID(VisitID visit_id, VisitRow* visit_row) {
+  if (db_)
+    return db_->GetRowForVisit(visit_id, visit_row);
+  return false;
+}
+
 bool HistoryBackend::GetLastVisitByTime(base::Time visit_time,
                                         VisitRow* visit_row) {
   if (db_)
@@ -1945,8 +1953,10 @@ base::Time HistoryBackend::FindMostRecentClusteredTime() {
   TRACE_EVENT0("browser", "HistoryBackend::FindMostRecentClusteredTime");
   if (!db_)
     return base::Time::Min();
-  const auto clusters =
-      GetMostRecentClusters(base::Time::Min(), base::Time::Max(), 1, false);
+  // `max_visits` doesn't matter since it's a soft cap and `max_clusters` is 1.
+  const auto clusters = GetMostRecentClusters(
+      base::Time::Min(), base::Time::Max(),
+      /*max_clusters=*/1, /*max_visits_soft_cap=*/0, false);
   // TODO(manukh): If the most recent cluster is invalid (due to DB corruption),
   //  `GetMostRecentClusters()` will return no clusters. We should handle this
   //  case and not assume we've exhausted history.
@@ -1970,7 +1980,8 @@ void HistoryBackend::ReplaceClusters(
 std::vector<Cluster> HistoryBackend::GetMostRecentClusters(
     base::Time inclusive_min_time,
     base::Time exclusive_max_time,
-    int max_clusters,
+    size_t max_clusters,
+    size_t max_visits_soft_cap,
     bool include_keywords_and_duplicates) {
   TRACE_EVENT0("browser", "HistoryBackend::GetMostRecentClusters");
   if (!db_)
@@ -1978,15 +1989,20 @@ std::vector<Cluster> HistoryBackend::GetMostRecentClusters(
   const auto cluster_ids = db_->GetMostRecentClusterIds(
       inclusive_min_time, exclusive_max_time, max_clusters);
   std::vector<Cluster> clusters;
-  base::ranges::for_each(cluster_ids, [&](const auto& cluster_id) {
+  size_t accumulated_visits_count = 0;
+  for (const auto cluster_id : cluster_ids) {
     const auto cluster =
         GetCluster(cluster_id, include_keywords_and_duplicates);
     // `cluster` should be valid in the normal flow, but DB corruption can
     // happen. `GetCluster()` returning a cluster_id` of 0 indicates an invalid
     // cluster.
-    if (cluster.cluster_id > 0)
-      clusters.push_back(cluster);
-  });
+    if (cluster.cluster_id > 0) {
+      accumulated_visits_count += cluster.visits.size();
+      clusters.push_back(std::move(cluster));
+      if (accumulated_visits_count >= max_visits_soft_cap)
+        break;
+    }
+  }
   return clusters;
 }
 
@@ -2298,6 +2314,35 @@ MostVisitedURLList HistoryBackend::QueryMostVisitedURLs(int result_count) {
                       base::TimeTicks::Now() - begin_time);
 
   return result;
+}
+
+KeywordSearchTermVisitList HistoryBackend::QueryMostRepeatedQueriesForKeyword(
+    KeywordID keyword_id,
+    size_t result_count) {
+  if (!db_)
+    return {};
+
+  base::TimeTicks begin_time = base::TimeTicks::Now();
+
+  const base::Time age_threshold = base::Time::Now() - base::Days(90);
+  auto enumerator =
+      db_->CreateKeywordSearchTermVisitEnumerator(keyword_id, age_threshold);
+  if (!enumerator) {
+    return {};
+  }
+
+  KeywordSearchTermVisitList search_terms;
+  history::GetMostRepeatedSearchTermsFromEnumerator(*enumerator, &search_terms);
+
+  base::UmaHistogramTimes("History.QueryMostRepeatedQueriesTime",
+                          base::TimeTicks::Now() - begin_time);
+  base::UmaHistogramCounts10000("History.QueryMostRepeatedQueriesCount",
+                                search_terms.size());
+
+  if (search_terms.size() > result_count) {
+    search_terms.resize(result_count);
+  }
+  return search_terms;
 }
 
 void HistoryBackend::GetRedirectsFromSpecificVisit(VisitID cur_visit,

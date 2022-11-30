@@ -17,6 +17,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
+#include "chrome/browser/ui/user_education/scoped_new_badge_tracker.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -41,6 +43,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/feature_engagement/public/feature_constants.h"
 #include "components/zoom/page_zoom.h"
 #include "components/zoom/zoom_controller.h"
 #include "components/zoom/zoom_event_manager.h"
@@ -58,6 +61,7 @@
 #include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/themed_vector_icon.h"
+#include "ui/base/window_open_disposition_utils.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/gfx/canvas.h"
@@ -797,12 +801,12 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
 
 // AppMenu ------------------------------------------------------------------
 
-AppMenu::AppMenu(Browser* browser, int run_types, bool alert_reopen_tab_items)
-    : browser_(browser),
-      run_types_(run_types),
-      alert_reopen_tab_items_(alert_reopen_tab_items) {
+AppMenu::AppMenu(Browser* browser, int run_types)
+    : browser_(browser), run_types_(run_types) {
   global_error_observation_.Observe(
       GlobalErrorServiceFactory::GetForProfile(browser->profile()));
+  new_badge_tracker_ =
+      std::make_unique<ScopedNewBadgeTracker>(browser_->profile());
 }
 
 AppMenu::~AppMenu() {
@@ -1040,6 +1044,25 @@ void AppMenu::WillShowMenu(MenuItemView* menu) {
     CreateBookmarkMenu();
   else if (bookmark_menu_delegate_)
     bookmark_menu_delegate_->WillShowMenu(menu);
+
+  if (menu->GetCommand() == IDC_MORE_TOOLS_MENU) {
+    std::vector<MenuItemView*> more_tools_items =
+        menu->GetSubmenu()->GetMenuItems();
+
+    auto performanceItem =
+        base::ranges::find_if(more_tools_items, [](MenuItemView* item) -> bool {
+          return item->GetCommand() == IDC_PERFORMANCE;
+        });
+
+    if (performanceItem != more_tools_items.end()) {
+      bool show_new_badge =
+          browser_->window()->IsFeaturePromoActive(
+              feature_engagement::kIPHHighEfficiencyModeFeature) ||
+          new_badge_tracker_->TryShowNewBadge(
+              feature_engagement::kIPHPerformanceNewBadgeFeature);
+      (*performanceItem)->set_is_new(show_new_badge);
+    }
+  }
 }
 
 void AppMenu::WillHideMenu(MenuItemView* menu) {
@@ -1211,14 +1234,6 @@ MenuItemView* AppMenu::AddMenuItem(MenuItemView* parent,
     if (menu_type == MenuModel::TYPE_COMMAND && model->HasIcons()) {
       menu_item->SetIcon(model->GetIconAt(model_index));
     }
-
-    // If we want to show items relating to reopening the last-closed tab as
-    // alerted, we specifically need to show alerts on the recent tabs submenu
-    // and the last closed tab menu item.
-    if (alert_reopen_tab_items_ &&
-        ((command_id == IDC_RECENT_TABS_MENU) ||
-         (command_id == AppMenuModel::kMinRecentTabsCommandId)))
-      menu_item->SetAlerted();
   }
 
   return menu_item;

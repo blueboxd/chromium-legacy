@@ -78,9 +78,7 @@ void UserImageSyncObserver::OnProfileGained(Profile* profile) {
       kUserImageInfo,
       base::BindRepeating(&UserImageSyncObserver::OnPreferenceChanged,
                           base::Unretained(this)));
-  is_synced_ = chromeos::features::IsSyncSettingsCategorizationEnabled()
-                   ? prefs_->AreOsPriorityPrefsSyncing()
-                   : prefs_->IsPrioritySyncing();
+  is_synced_ = prefs_->AreOsPriorityPrefsSyncing();
   if (!is_synced_) {
     prefs_->AddObserver(this);
   } else {
@@ -126,9 +124,7 @@ void UserImageSyncObserver::OnUserImageChanged(const user_manager::User& user) {
 }
 
 void UserImageSyncObserver::OnIsSyncingChanged() {
-  is_synced_ = chromeos::features::IsSyncSettingsCategorizationEnabled()
-                   ? prefs_->AreOsPriorityPrefsSyncing()
-                   : prefs_->IsPrioritySyncing();
+  is_synced_ = prefs_->AreOsPriorityPrefsSyncing();
   if (is_synced_) {
     prefs_->RemoveObserver(this);
     OnInitialSync();
@@ -143,9 +139,9 @@ void UserImageSyncObserver::UpdateSyncedImageFromLocal() {
   int synced_index;
   if (GetSyncedImageIndex(&synced_index) && (synced_index == local_index))
     return;
-  DictionaryPrefUpdate update(prefs_, kUserImageInfo);
-  base::Value* dict = update.Get();
-  dict->SetIntKey(kImageIndex, local_index);
+  ScopedDictPrefUpdate update(prefs_, kUserImageInfo);
+  base::Value::Dict& dict = update.Get();
+  dict.Set(kImageIndex, local_index);
   VLOG(1) << "Saved avatar index " << local_index << " to sync.";
 }
 

@@ -17,6 +17,7 @@
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "build/build_config.h"
+#include "cc/base/features.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer.h"
@@ -451,7 +452,7 @@ bool IsTransformToRootOf3DRenderingContextBackFaceVisible(
   if (transform_tree_index != root_id)
     property_trees->transform_tree().CombineTransformsBetween(
         transform_tree_index, root_id, &to_3d_root);
-  to_3d_root.PreconcatTransform(root_node->to_parent);
+  to_3d_root.PreConcat(root_node->to_parent);
   return to_3d_root.IsBackFaceVisible();
 }
 
@@ -602,10 +603,11 @@ float LayerDrawOpacity(const LayerImpl* layer, const EffectTree& tree) {
 template <typename LayerType>
 gfx::Transform ScreenSpaceTransformInternal(LayerType* layer,
                                             const TransformTree& tree) {
-  gfx::Transform xform(1, 0, 0, 1, layer->offset_to_transform_parent().x(),
-                       layer->offset_to_transform_parent().y());
+  gfx::Transform xform =
+      gfx::Transform::MakeTranslation(layer->offset_to_transform_parent().x(),
+                                      layer->offset_to_transform_parent().y());
   gfx::Transform ssxform = tree.ToScreen(layer->transform_tree_index());
-  xform.ConcatTransform(ssxform);
+  xform.PostConcat(ssxform);
   return xform;
 }
 
@@ -785,7 +787,7 @@ std::pair<gfx::MaskFilterInfo, bool> GetMaskFilterInfoPair(
   auto result =
       std::make_pair(node->mask_filter_info, node->is_fast_rounded_corner);
 
-  if (!result.first.Transform(to_target))
+  if (!result.first.ApplyTransform(to_target))
     return kEmptyMaskFilterInfoPair;
 
   return result;
@@ -1194,8 +1196,14 @@ void UpdateElasticOverscroll(
   // transform.
   overscroll_elasticity_transform_node->local.MakeIdentity();
   overscroll_elasticity_transform_node->origin.SetPoint(0.f, 0.f, 0.f);
-  overscroll_elasticity_transform_node->to_screen_is_potentially_animated =
-      !elastic_overscroll.IsZero();
+  if (base::FeatureList::IsEnabled(
+          features::kAvoidRasterDuringElasticOverscroll)) {
+    overscroll_elasticity_transform_node->has_potential_animation =
+        !elastic_overscroll.IsZero();
+  } else {
+    overscroll_elasticity_transform_node->to_screen_is_potentially_animated =
+        !elastic_overscroll.IsZero();
+  }
 
   if (!elastic_overscroll.IsZero() && inner_viewport) {
     // The inner viewport container size takes into account the size change as a

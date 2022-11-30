@@ -9,7 +9,7 @@
 <translation id="1300209025925956156">Документиңизди скандоо</translation>
 <translation id="1309250603447638106">Документти скандоо функциясы үчүн жаңыртуулар жүктөлүп алынууда</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Кирүү үчүн Search + солго жебени басыңыз.</translation>
-<translation id="1393338179284529051">Quad HD</translation>
+<translation id="1417314334557041815"><ph name="INDEX" />-бетти түзөтүү</translation>
 <translation id="1430915738399379752">Басып чыгаруу</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> ажыратылды.</translation>
 <translation id="1473110567575736769">3 секунддук таймер</translation>
@@ -20,8 +20,8 @@
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Эч нерсе жаздырылган жок</translation>
-<translation id="169335673490251151">Кошумча беттерди скандоо</translation>
 <translation id="1838104802459806957">Өйдө кыйшайтуу</translation>
+<translation id="1843105061469674856">Кошумча бетти скандоо</translation>
 <translation id="1851169887664797861">Камераны көзөмөлдөй турган кошумча каражаттар бар</translation>
 <translation id="1851616744363735765">ТЫНДЫРЫЛДЫ</translation>
 <translation id="1862930711583847113"><ph name="FILE" /> файлын экспорттоо мүмкүн болбой жатат</translation>
@@ -46,7 +46,6 @@
 <translation id="2599796128805996109">Арткы камера</translation>
 <translation id="2759905922487820242"><ph name="CURRENT" />/<ph name="MAXIMAL" /> сек.</translation>
 <translation id="2761536921376153655">Скандоо түрү</translation>
-<translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">Чагылдырууну алдын ала көрүү</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> сайылып турат.</translation>
 <translation id="2904654629665923749">Документти скандоо функциясы жеткиликтүү</translation>
@@ -80,6 +79,7 @@
 <translation id="414641094616694804">Камеранын резолюциясын өзгөртүүгө болбойт</translation>
 <translation id="4269820728363426813">Шилтеме дарегин көчүрүү</translation>
 <translation id="4281620174117014503">Орточо резолюция</translation>
+<translation id="428234092390943511">Беттин эскизи</translation>
 <translation id="4329152592498422850">Чарчы сүрөт тартуу режимине которулуу</translation>
 <translation id="4340659173795395806">Эми бир нече беттен турган PDF файлын түзө аласыз</translation>
 <translation id="4383571725254449280">Басып чыгаруу майнаптуулугунун таржымалы</translation>
@@ -114,7 +114,6 @@
 <translation id="5916664084637901428">Күйүк</translation>
 <translation id="5975083100439434680">Кичирейтүү</translation>
 <translation id="5976160379964388480">Башкалар</translation>
-<translation id="603973421174355542">Full HD</translation>
 <translation id="6073451960410192870">Жаздырууну токтотуу</translation>
 <translation id="6197807149213783179">Метадайындарды сактоо</translation>
 <translation id="6233780560267770709">3 х 3</translation>
@@ -137,7 +136,6 @@
 <translation id="698156982839284926">3 секунд</translation>
 <translation id="712848772518857951"><ph name="COUNT" /> файлды чын эле өчүрөсүзбү?</translation>
 <translation id="7134221860976209830">10 секунддук таймер</translation>
-<translation id="7150591439198955032">4K</translation>
 <translation id="7191890674911603392">Жаздыруу түрү</translation>
 <translation id="7243947652761655814">Видеонун дааналыгы</translation>
 <translation id="7337660886763914220">Файл тутумунда ката кетти.</translation>
@@ -162,7 +160,6 @@
 <translation id="8167081290930651932">Сүрөт катары сактоо</translation>
 <translation id="8239780215768881278">Видео жаздыруу учурунда сүрөткө тартып алуу</translation>
 <translation id="8261506727792406068">Жок кылуу</translation>
-<translation id="839162370397157884">Баракты тандоо</translation>
 <translation id="8425673304802773841">Төмөн кыйшайтуу</translation>
 <translation id="8428213095426709021">Жөндөөлөр</translation>
 <translation id="8629662593426079630">360p</translation>

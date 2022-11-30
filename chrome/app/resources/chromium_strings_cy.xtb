@@ -12,6 +12,8 @@ Mae'n bosib na fydd rhai nodweddion ar gael ac ni fydd newidiadau o ran dewisiad
 <translation id="1131805035311359397">I wirio a yw'ch cyfrineiriau'n ddiogel rhag toriadau data a phroblemau diogelwch eraill, <ph name="BEGIN_LINK" />mewngofnodwch i Chromium<ph name="END_LINK" />.</translation>
 <translation id="1185134272377778587">Ynghylch Chromium</translation>
 <translation id="1203500561924088507">Diolch am osod. Rhaid i chi ailgychwyn eich porwr cyn defnyddio <ph name="BUNDLE_NAME" />.</translation>
+<translation id="1231839967188101156">Pan fydd ymlaen, mae Chromium yn rhyddhau cof o dabiau anweithredol. Mae hyn yn rhoi mwy o adnoddau cyfrifiadurol i dabiau gweithredol ac apiau eraill ac yn cadw Chromium yn gyflym. Mae eich tabiau anweithredol yn dod yn weithredol eto yn awtomatig pan fyddwch yn dychwelyd atynt. <ph name="BEGIN_LINK" />Dysgu rhagor<ph name="END_LINK" /></translation>
+<translation id="1261119230216066228">Mae Arbedwr Cof wedi gwneud Chromium yn Gyflymach</translation>
 <translation id="1315551408014407711">Gosod eich proffil Chromium newydd</translation>
 <translation id="1385859895174722837">Google Assistant yn Chromium</translation>
 <translation id="1396446129537741364">Mae Chromium yn ceisio dangos cyfrineiriau.</translation>
@@ -182,6 +184,7 @@ Mae'n bosib y bydd caniatadau rydych eisoes wedi'u rhoi i wefannau ac apiau yn b
 <translation id="5386450000063123300">Wrthi'n Diweddaru Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Caniatáu Mewngofnodi drwy Chromium</translation>
 <translation id="5398878173008909840">Mae fersiwn newydd o Chromium ar gael.</translation>
+<translation id="5405650547142096840">Tynnu o Chromium</translation>
 <translation id="5427571867875391349">Gosod Chromium fel eich porwr diofyn</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Beta Chromium</translation>
 <translation id="5473971139929175403">Mae'n bosib na fydd Chromium yn gweithredu'n gywir oherwydd nad yw'n cael ei gefnogi mwyach ar y dosbarthiad Linux hwn</translation>
@@ -209,6 +212,7 @@ Mae'n bosib y bydd caniatadau rydych eisoes wedi'u rhoi i wefannau ac apiau yn b
 <translation id="6055895534982063517">Mae fersiwn newydd o Chromium ar gael, ac mae'n gyflymach nag erioed.</translation>
 <translation id="6063093106622310249">&amp;Agor yn Chromium</translation>
 <translation id="6072279588547424923">Mae <ph name="EXTENSION_NAME" /> wedi'i ychwanegu at Chromium</translation>
+<translation id="6072463441809498330">Gwneud Chromium yn Gyflymach</translation>
 <translation id="608006075545470555">Ychwanegu Proffil Gwaith i'r porwr hwn</translation>
 <translation id="6096348254544841612">Personoleiddio a rheoli Chromium. Mae diweddariad ar gael.</translation>
 <translation id="6119438414301547735">Caniatáu i estyniad ddangos ceisiadau am fynediad ym mar offer Chromium</translation>
@@ -252,6 +256,7 @@ Mae'n bosib y bydd caniatadau rydych eisoes wedi'u rhoi i wefannau ac apiau yn b
 <translation id="6717134281241384636">Ni ellir defnyddio'ch proffil oherwydd ei fod yn dod o fersiwn mwy diweddar o Chromium.
 
 Mae'n bosib na fydd rhai nodweddion ar gael. Rhowch gyfeiriadur proffil gwahanol neu defnyddiwch fersiwn mwy diweddar o Chromium.</translation>
+<translation id="6730677189742196061">Mae Arbedwr Cof wedi gwneud Chromium yn gyflymach</translation>
 <translation id="6734291798041940871">Mae Chromium eisoes wedi'i osod ar gyfer pob defnyddiwr ar eich cyfrifiadur.</translation>
 <translation id="673636774878526923">I gael mynediad at eich holl bethau Chromium ar draws eich holl ddyfeisiau, mewngofnodwch, yna trowch gysoni ymlaen.</translation>
 <translation id="6774082503108938489">Mae dy riant wedi diffodd "Caniatadau ar gyfer gwefannau, apiau ac estyniadau" ar gyfer Chromium. Ni chaniateir galluogi'r <ph name="EXTENSION_TYPE_PARAMETER" /> hwn.</translation>
@@ -305,9 +310,9 @@ Ni all Chromium adfer eich gosodiadau.</translation>
 <translation id="7682601070171973634">Mae Chromium yn archwilio nodweddion newydd sy'n caniatáu i wefannau ddarparu'r un profiad pori drwy ddefnyddio llai o'ch data</translation>
 <translation id="7686590090926151193">Nid Chromium yw eich porwr diofyn</translation>
 <translation id="7689606757190482937">Cysoni â phersonoleiddio Chromium ar draws eich dyfeisiau</translation>
-<translation id="7714577916146996629">Pan fydd ymlaen, mae Chromium yn adfer cof o dabiau nad ydych yn eu defnyddio'n weithredol. Mae hyn yn rhyddhau adnoddau eich cyfrifiadur ar gyfer tasgau eraill ac yn cadw Chromium yn gyflym. Mae tabiau anweithredol yn ymddangos yn wag ac yn ail-lwytho'n awtomatig pan fyddwch yn clicio arnynt. <ph name="BEGIN_LINK" />Dysgu rhagor<ph name="END_LINK" /> neu <ph name="BEGIN_LINK_2" />anfon adborth<ph name="END_LINK_2" /></translation>
 <translation id="7745317241717453663">Bydd hyn yn dileu eich data pori o'r ddyfais hon. I adfer eich data yn nes ymlaen, mewngofnodwch i Chromium fel <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Ni allai'r gosodwr greu cyfeiriadur dros dro. Gwnewch yn siŵr bod gennych ddigon o le storio ar gael a bod gennych y caniatâd i osod meddalwedd.</translation>
+<translation id="7786760609782648049">Gwneud Chromium yn gyflymach</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7828947555739565424">Mae proffil Chromium gyda'r cyfrif hwn eisoes yn bodoli ar y ddyfais hon</translation>
 <translation id="7845233973568007926">Diolch am osod. Rhaid i chi ailgychwyn eich cyfrifiadur cyn defnyddio <ph name="BUNDLE_NAME" />.</translation>
@@ -335,11 +340,11 @@ Ni all Chromium adfer eich gosodiadau.</translation>
 <translation id="8453117565092476964">Mae'r archif gosodwr wedi'i lygru neu'n annilys. Lawrlwythwch Chromium eto.</translation>
 <translation id="8463672209299734063">Dewisol: Helpu i wella nodweddion a pherfformiad ChromiumOS drwy anfon data diagnostig a defnydd at Google yn awtomatig.</translation>
 <translation id="8493179195440786826">Mae Chromium yn Hen</translation>
-<translation id="8522220489792889625">Yn ôl yr angen, mae Chromium yn adfer cof o dabiau nad ydych yn eu defnyddio'n weithredol. Gallwch newid hyn unrhyw bryd yn y gosodiadau.</translation>
 <translation id="8550334526674375523">Mae'r proffil gwaith hwn yn hollol ar wahân i'ch proffil personol.</translation>
 <translation id="8558383651099478961">Mae dy riant wedi diffodd "Caniatadau ar gyfer gwefannau, apiau ac estyniadau" ar gyfer Chromium. Ni chaniateir ychwanegu'r <ph name="EXTENSION_TYPE_PARAMETER" /> hwn.</translation>
 <translation id="8561285221328166383">I gael diweddariadau Chromium yn y dyfodol, bydd angen macOS 10.13 neu'n hwyrach arnoch. Mae'r cyfrifiadur hwn yn defnyddio macOS 10.12.</translation>
 <translation id="8568283329061645092">Gall Chromium wirio'ch cyfrineiriau pan fyddwch yn mewngofnodi gyda'ch Cyfrif Google</translation>
+<translation id="8574036838419011058">Pan fydd ymlaen, mae Chromium yn arbed pŵer batri drwy gyfyngu ar weithgarwch cefndir ac effeithiau gweledol, megis sgrolio llyfn a chyfraddau ffrâm fideo. <ph name="BEGIN_LINK" />Dysgu rhagor<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">Hawlfraint <ph name="YEAR" /> Awduron Chromium. Cedwir Pob Hawl.</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />Sut rydym yn defnyddio'r data hyn:<ph name="END_BOLD" /> Gall gwefannau storio gwybodaeth am eich diddordebau gyda Chromium. Er enghraifft, os ydych yn ymweld â gwefan i brynu esgidiau ar gyfer marathon, mae'n bosib y bydd y wefan yn diffinio'ch diddordeb fel rhedeg marathon. Yn ddiweddarach, os byddwch yn ymweld â gwefan wahanol i gofrestru ar gyfer ras, gall y wefan honno ddangos hysbyseb i chi ar gyfer esgidiau rhedeg yn seiliedig ar eich diddordebau.</translation>
 <translation id="8619360774459241877">Wrthi'n lansio Chromium...</translation>

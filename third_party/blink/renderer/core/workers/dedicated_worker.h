@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_DEDICATED_WORKER_H_
 
 #include <memory>
+#include "base/functional/function_ref.h"
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/content_security_policy.mojom-blink-forward.h"
@@ -67,6 +68,13 @@ class CORE_EXPORT DedicatedWorker final
   DedicatedWorker(ExecutionContext*,
                   const KURL& script_request_url,
                   const WorkerOptions*);
+  // Exposed for testing.
+  DedicatedWorker(
+      ExecutionContext*,
+      const KURL& script_request_url,
+      const WorkerOptions*,
+      base::FunctionRef<DedicatedWorkerMessagingProxy*(DedicatedWorker*)>
+          context_proxy_factory);
   ~DedicatedWorker() override;
 
   void Dispose();

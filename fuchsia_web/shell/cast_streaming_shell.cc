@@ -20,7 +20,7 @@
 #include "base/time/time.h"
 #include "components/cast/message_port/fuchsia/create_web_message.h"
 #include "components/cast/message_port/platform_message_port.h"
-#include "components/cast_streaming/browser/test/cast_streaming_test_sender.h"
+#include "components/cast_streaming/test/cast_streaming_test_sender.h"
 #include "fuchsia_web/cast_streaming/cast_streaming.h"
 #include "fuchsia_web/common/init_logging.h"
 #include "fuchsia_web/common/test/fit_adapter.h"
@@ -253,6 +253,7 @@ int main(int argc, char** argv) {
   scoped_refptr<media::DecoderBuffer> video_decoder_buffer =
       video_helper.GetNextBuffer();
   video_decoder_buffer->set_timestamp(base::TimeDelta());
+  video_decoder_buffer->set_is_key_frame(true);
   sender.SendVideoBuffer(video_decoder_buffer);
 
   run_loop.Run();

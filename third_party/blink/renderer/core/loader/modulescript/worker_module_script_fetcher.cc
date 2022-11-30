@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,7 +116,7 @@ void WorkerModuleScriptFetcher::NotifyClient(
     ModuleType module_type,
     const ParkableString& source_text,
     const ResourceResponse& response,
-    SingleCachedMetadataHandler* cache_handler) {
+    CachedMetadataHandler* cache_handler) {
   HeapVector<Member<ConsoleMessage>> error_messages;
 
   const KURL response_url = response.ResponseUrl();

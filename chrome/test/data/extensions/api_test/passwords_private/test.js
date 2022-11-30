@@ -345,12 +345,12 @@ var availableTests = [
     });
   },
 
-  function getCompromisedCredentials() {
-    chrome.passwordsPrivate.getCompromisedCredentials(
-        compromisedCredentials => {
-          chrome.test.assertEq(1, compromisedCredentials.length);
+  function getInsecureCredentials() {
+    chrome.passwordsPrivate.getInsecureCredentials(
+        insecureCredentials => {
+          chrome.test.assertEq(2, insecureCredentials.length);
 
-          var compromisedCredential = compromisedCredentials[0];
+          var compromisedCredential = insecureCredentials[0];
           chrome.test.assertEq('example.com', compromisedCredential.urls.shown);
           chrome.test.assertEq(
               'https://example.com', compromisedCredential.urls.link);
@@ -367,25 +367,22 @@ var availableTests = [
               '3 days ago',
               compromisedCredential.compromisedInfo.elapsedTimeSinceCompromise);
           chrome.test.assertEq(
-              'LEAKED', compromisedCredential.compromisedInfo.compromiseType);
+              ['LEAKED'],
+              compromisedCredential.compromisedInfo.compromiseTypes);
+
+          var weakredential = insecureCredentials[1];
+          chrome.test.assertEq('example.com', weakredential.urls.shown);
+          chrome.test.assertEq('https://example.com', weakredential.urls.link);
+          chrome.test.assertFalse(weakredential.isAndroidCredential);
+          chrome.test.assertEq(
+              'https://example.com/change-password',
+              weakredential.changePasswordUrl);
+          chrome.test.assertEq('bob', weakredential.username);
+          chrome.test.assertEq(
+              ['LEAKED'],
+              compromisedCredential.compromisedInfo.compromiseTypes);
           chrome.test.succeed();
         });
-  },
-
-  function getWeakCredentials() {
-    chrome.passwordsPrivate.getWeakCredentials(weakCredentials => {
-      chrome.test.assertEq(1, weakCredentials.length);
-
-      var weakredential = weakCredentials[0];
-      chrome.test.assertEq('example.com', weakredential.urls.shown);
-      chrome.test.assertEq('https://example.com', weakredential.urls.link);
-      chrome.test.assertFalse(weakredential.isAndroidCredential);
-      chrome.test.assertEq(
-          'https://example.com/change-password',
-          weakredential.changePasswordUrl);
-      chrome.test.assertEq('bob', weakredential.username);
-      chrome.test.succeed();
-    });
   },
 
   function muteInsecureCredentialSucceeds() {
@@ -403,7 +400,7 @@ var availableTests = [
           compromisedInfo: {
             compromiseTime: COMPROMISE_TIME,
             elapsedTimeSinceCompromise: '3 days ago',
-            compromiseType: 'LEAKED',
+            compromiseTypes: ['LEAKED'],
             isMuted: false,
           },
           storedIn: chrome.passwordsPrivate.PasswordStoreSet.DEVICE,
@@ -431,7 +428,7 @@ var availableTests = [
           compromisedInfo: {
             compromiseTime: COMPROMISE_TIME,
             elapsedTimeSinceCompromise: '3 days ago',
-            compromiseType: 'LEAKED',
+            compromiseTypes: ['LEAKED'],
             isMuted: false,
           },
           storedIn: chrome.passwordsPrivate.PasswordStoreSet.DEVICE,
@@ -461,7 +458,7 @@ var availableTests = [
           compromisedInfo: {
             compromiseTime: COMPROMISE_TIME,
             elapsedTimeSinceCompromise: '3 days ago',
-            compromiseType: 'LEAKED',
+            compromiseTypes: ['LEAKED'],
             isMuted: true,
           },
           storedIn: chrome.passwordsPrivate.PasswordStoreSet.DEVICE,
@@ -489,7 +486,7 @@ var availableTests = [
           compromisedInfo: {
             compromiseTime: COMPROMISE_TIME,
             elapsedTimeSinceCompromise: '3 days ago',
-            compromiseType: 'LEAKED',
+            compromiseTypes: ['LEAKED'],
             isMuted: true,
           },
           storedIn: chrome.passwordsPrivate.PasswordStoreSet.DEVICE,
@@ -520,7 +517,7 @@ var availableTests = [
           compromisedInfo: {
             compromiseTime: COMPROMISE_TIME,
             elapsedTimeSinceCompromise: '3 days ago',
-            compromiseType: 'LEAKED',
+            compromiseTypes: ['LEAKED'],
             isMuted: false,
           },
           storedIn: chrome.passwordsPrivate.PasswordStoreSet.DEVICE,
@@ -548,7 +545,7 @@ var availableTests = [
           compromisedInfo: {
             compromiseTime: COMPROMISE_TIME,
             elapsedTimeSinceCompromise: '3 days ago',
-            compromiseType: 'LEAKED',
+            compromiseTypes: ['LEAKED'],
             isMuted: false,
           },
           storedIn: chrome.passwordsPrivate.PasswordStoreSet.DEVICE,
@@ -575,7 +572,7 @@ var availableTests = [
           compromisedInfo: {
             compromiseTime: COMPROMISE_TIME,
             elapsedTimeSinceCompromise: '3 days ago',
-            compromiseType: 'LEAKED',
+            compromiseTypes: ['LEAKED'],
             isMuted: false,
           },
           storedIn: chrome.passwordsPrivate.PasswordStoreSet.DEVICE,
@@ -641,7 +638,7 @@ var availableTests = [
           compromisedInfo: {
             compromiseTime: COMPROMISE_TIME,
             elapsedTimeSinceCompromise: '3 days ago',
-            compromiseType: 'LEAKED',
+            compromiseTypes: ['LEAKED'],
             isMuted: false,
           },
           storedIn: chrome.passwordsPrivate.PasswordStoreSet.DEVICE,
@@ -669,7 +666,7 @@ var availableTests = [
           compromisedInfo: {
             compromiseTime: COMPROMISE_TIME,
             elapsedTimeSinceCompromise: '3 days ago',
-            compromiseType: 'LEAKED',
+            compromiseTypes: ['LEAKED'],
             isMuted: false,
           },
           storedIn: chrome.passwordsPrivate.PasswordStoreSet.DEVICE,
@@ -692,6 +689,12 @@ var availableTests = [
       chrome.test.assertNoLastError();
       chrome.test.succeed();
     });
+  },
+
+  function switchBiometricAuthBeforeFillingState() {
+    chrome.passwordsPrivate.switchBiometricAuthBeforeFillingState();
+    chrome.test.assertNoLastError();
+    chrome.test.succeed();
   },
 ];
 

@@ -23,7 +23,6 @@
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/session_proto_db/session_proto_storage.h"
-#include "content/public/browser/browser_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
 
@@ -67,6 +66,11 @@ class SessionProtoDB : public KeyedService, public SessionProtoStorage<T> {
   // Represents an entry in the database.
   using ContentEntry = typename leveldb_proto::ProtoDatabase<T>::KeyEntryVector;
 
+  // Initializes the database.
+  SessionProtoDB(leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
+                 const base::FilePath& database_dir,
+                 leveldb_proto::ProtoDbType proto_db_type);
+
   SessionProtoDB(const SessionProtoDB&) = delete;
   SessionProtoDB& operator=(const SessionProtoDB&) = delete;
   ~SessionProtoDB() override;
@@ -101,12 +105,6 @@ class SessionProtoDB : public KeyedService, public SessionProtoStorage<T> {
   friend class ::SessionProtoDBTest;
   template <typename U>
   friend class ::SessionProtoDBFactory;
-
-  // Initializes the database.
-  SessionProtoDB(content::BrowserContext* browser_context,
-                 leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
-                 const base::FilePath& database_dir,
-                 leveldb_proto::ProtoDbType proto_db_type);
 
   // Used for testing.
   SessionProtoDB(
@@ -145,10 +143,6 @@ class SessionProtoDB : public KeyedService, public SessionProtoStorage<T> {
     return base::StartsWith(key, key_prefix, base::CompareCase::SENSITIVE);
   }
 
-  // Browser context associated with SessionProtoDB (SessionProtoDB are per
-  // BrowserContext).
-  raw_ptr<content::BrowserContext> browser_context_;
-
   // Status of the database initialization.
   absl::optional<leveldb_proto::Enums::InitStatus> database_status_;
 
@@ -161,6 +155,24 @@ class SessionProtoDB : public KeyedService, public SessionProtoStorage<T> {
 
   base::WeakPtrFactory<SessionProtoDB> weak_ptr_factory_{this};
 };
+
+template <typename T>
+SessionProtoDB<T>::SessionProtoDB(
+    leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
+    const base::FilePath& database_dir,
+    leveldb_proto::ProtoDbType proto_db_type)
+    : SessionProtoStorage<T>(),
+      database_status_(absl::nullopt),
+      storage_database_(proto_database_provider->GetDB<T>(
+          proto_db_type,
+          database_dir,
+          base::ThreadPool::CreateSequencedTaskRunner(
+              {base::MayBlock(), base::TaskPriority::USER_VISIBLE}))) {
+  static_assert(std::is_base_of<google::protobuf::MessageLite, T>::value,
+                "T must implement 'google::protobuf::MessageLite'");
+  storage_database_->Init(base::BindOnce(&SessionProtoDB::OnDatabaseInitialized,
+                                         weak_ptr_factory_.GetWeakPtr()));
+}
 
 template <typename T>
 SessionProtoDB<T>::~SessionProtoDB() = default;
@@ -341,26 +353,6 @@ void SessionProtoDB<T>::Destroy() const {
   // TODO(davidjm): Consider calling the factory's disassociate method here.
   //                This isn't strictly necessary since it will be called when
   //                the context is destroyed anyway.
-}
-
-template <typename T>
-SessionProtoDB<T>::SessionProtoDB(
-    content::BrowserContext* browser_context,
-    leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
-    const base::FilePath& database_dir,
-    leveldb_proto::ProtoDbType proto_db_type)
-    : SessionProtoStorage<T>(),
-      browser_context_(browser_context),
-      database_status_(absl::nullopt),
-      storage_database_(proto_database_provider->GetDB<T>(
-          proto_db_type,
-          database_dir,
-          base::ThreadPool::CreateSequencedTaskRunner(
-              {base::MayBlock(), base::TaskPriority::USER_VISIBLE}))) {
-  static_assert(std::is_base_of<google::protobuf::MessageLite, T>::value,
-                "T must implement 'google::protobuf::MessageLite'");
-  storage_database_->Init(base::BindOnce(&SessionProtoDB::OnDatabaseInitialized,
-                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 // Used for tests.

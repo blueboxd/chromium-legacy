@@ -21,8 +21,9 @@
 namespace base {
 
 // Enables backgrounding hidden renderers on Mac.
-const Feature kMacAllowBackgroundingProcesses{"MacAllowBackgroundingProcesses",
-                                              FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kMacAllowBackgroundingProcesses,
+             "MacAllowBackgroundingProcesses",
+             FEATURE_DISABLED_BY_DEFAULT);
 
 Time Process::CreationTime() const {
   int mib[] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, Pid()};
@@ -43,7 +44,7 @@ bool Process::CanBackgroundProcesses() {
 
 bool Process::IsProcessBackgrounded(PortProvider* port_provider) const {
   DCHECK(IsValid());
-  if (port_provider == nullptr || !CanBackgroundProcesses())
+  if (port_provider == nullptr)
     return false;
 
   mach_port_t task_port = port_provider->TaskForPid(Pid());

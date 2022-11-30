@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,75 +13,80 @@
 namespace blink {
 namespace scheduler {
 
-const base::Feature kDedicatedWorkerThrottling{
-    "BlinkSchedulerWorkerThrottling", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kDedicatedWorkerThrottling,
+             "BlinkSchedulerWorkerThrottling",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
-const base::Feature kBestEffortPriorityForFindInPage{
-    "BlinkSchedulerBestEffortPriorityForFindInPage",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kBestEffortPriorityForFindInPage,
+             "BlinkSchedulerBestEffortPriorityForFindInPage",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables setting the priority of background (with no audio) pages'
 // task queues to low priority.
-const base::Feature kLowPriorityForBackgroundPages{
-    "BlinkSchedulerLowPriorityForBackgroundPages",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kLowPriorityForBackgroundPages,
+             "BlinkSchedulerLowPriorityForBackgroundPages",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables setting the priority of background (with no audio) pages'
 // task queues to best effort.
-const base::Feature kBestEffortPriorityForBackgroundPages{
-    "BlinkSchedulerBestEffortPriorityForBackgroundPages",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kBestEffortPriorityForBackgroundPages,
+             "BlinkSchedulerBestEffortPriorityForBackgroundPages",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables setting the priority of sub-frame task queues to low
 // priority.
-const base::Feature kLowPriorityForSubFrame{
-    "BlinkSchedulerLowPriorityForSubFrame", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kLowPriorityForSubFrame,
+             "BlinkSchedulerLowPriorityForSubFrame",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables setting the priority of throttleable task queues to
 // low priority.
-const base::Feature kLowPriorityForThrottleableTask{
-    "BlinkSchedulerLowPriorityForThrottleableTask",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kLowPriorityForThrottleableTask,
+             "BlinkSchedulerLowPriorityForThrottleableTask",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables setting the priority of sub-frame throttleable
 // task queues to low priority.
-const base::Feature kLowPriorityForSubFrameThrottleableTask{
-    "BlinkSchedulerLowPriorityForSubFrameThrottleableTask",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kLowPriorityForSubFrameThrottleableTask,
+             "BlinkSchedulerLowPriorityForSubFrameThrottleableTask",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables setting the priority of hidden frame task queues to
 // low priority.
-const base::Feature kLowPriorityForHiddenFrame{
-    "BlinkSchedulerLowPriorityForHiddenFrame",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kLowPriorityForHiddenFrame,
+             "BlinkSchedulerLowPriorityForHiddenFrame",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables setting the priority of an ad frame to low priority.
-const base::Feature kLowPriorityForAdFrame{
-    "BlinkSchedulerLowPriorityForAdFrame", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kLowPriorityForAdFrame,
+             "BlinkSchedulerLowPriorityForAdFrame",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables setting the priority of an ad frame to best effort priority.
-const base::Feature kBestEffortPriorityForAdFrame{
-    "BlinkSchedulerBestEffortPriorityForAdFrame",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kBestEffortPriorityForAdFrame,
+             "BlinkSchedulerBestEffortPriorityForAdFrame",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables setting the priority of cross-origin task queues to
 // low priority.
-const base::Feature kLowPriorityForCrossOrigin{
-    "BlinkSchedulerLowPriorityForCrossOrigin",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kLowPriorityForCrossOrigin,
+             "BlinkSchedulerLowPriorityForCrossOrigin",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Prioritizes loading and compositing tasks while loading.
-const base::Feature kPrioritizeCompositingAndLoadingDuringEarlyLoading{
-    "PrioritizeCompositingAndLoadingDuringEarlyLoading",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kPrioritizeCompositingAndLoadingDuringEarlyLoading,
+             "PrioritizeCompositingAndLoadingDuringEarlyLoading",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Prioritizes one BeginMainFrame after input.
-const base::Feature kPrioritizeCompositingAfterInput{
-    "PrioritizeCompositingAfterInput", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kPrioritizeCompositingAfterInput,
+             "PrioritizeCompositingAfterInput",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable setting high priority database task type from field trial parameters.
-const base::Feature kHighPriorityDatabaseTaskType{
-    "HighPriorityDatabaseTaskType", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kHighPriorityDatabaseTaskType,
+             "HighPriorityDatabaseTaskType",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When features::kIntensiveWakeUpThrottling is enabled, wake ups from timers
 // with a high nesting level are limited to 1 per minute on a page that has been
@@ -119,14 +124,15 @@ PLATFORM_EXPORT base::TimeDelta GetIntensiveWakeUpThrottlingGracePeriod(
 // If enabled, base::ThreadTaskRunnerHandle::Get() and
 // base::SequencedTaskRunnerHandle::Get() returns the current active
 // per-ASG task runner instead of the per-thread task runner.
-const base::Feature kMbiOverrideTaskRunnerHandle{
-    "MbiOverrideTaskRunnerHandle", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kMbiOverrideTaskRunnerHandle,
+             "MbiOverrideTaskRunnerHandle",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, per-AgentGroupScheduler CompositorTaskRunner will be used instead
 // of per-MainThreadScheduler CompositorTaskRunner.
-const base::Feature kMbiCompositorTaskRunnerPerAgentSchedulingGroup{
-    "MbiCompositorTaskRunnerPerAgentSchedulingGroup",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kMbiCompositorTaskRunnerPerAgentSchedulingGroup,
+             "MbiCompositorTaskRunnerPerAgentSchedulingGroup",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Interval between Javascript timer wake ups when the "ThrottleForegroundTimers"
 // feature is enabled.
@@ -136,8 +142,7 @@ PLATFORM_EXPORT base::TimeDelta GetForegroundTimersThrottledWakeUpInterval();
 // With this feature enabled, the existing delay-based rendering anti-starvation
 // applies, and the compositor task queue priority is controlled with the
 // `kCompositorTQPolicyDuringThreadedScroll` `FeatureParam`.
-PLATFORM_EXPORT extern const base::Feature
-    kThreadedScrollPreventRenderingStarvation;
+PLATFORM_EXPORT BASE_DECLARE_FEATURE(kThreadedScrollPreventRenderingStarvation);
 
 enum class CompositorTQPolicyDuringThreadedScroll {
   // Compositor TQ has low priority, delay-based anti-starvation does not apply.
@@ -161,6 +166,26 @@ PLATFORM_EXPORT extern const base::FeatureParam<
 PLATFORM_EXPORT extern const base::FeatureParam<
     CompositorTQPolicyDuringThreadedScroll>
     kCompositorTQPolicyDuringThreadedScroll;
+
+BASE_FEATURE(kRejectedPromisesPerWindowAgent,
+             "BlinkSchedulerRejectedPromisesPerWindowAgent",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kMicrotaskQueuePerWindowAgent,
+             "BlinkSchedulerMicroTaskQueuePerWindowAgent",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kMicrotaskQueuePerPaintWorklet,
+             "BlinkSchedulerMicroTaskQueuePerPaintWorklet",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kMicrotaskQueuePerAnimationWorklet,
+             "BlinkSchedulerMicroTaskQueuePerAnimationWorklet",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kMicrotaskQueuePerAudioWorklet,
+             "BlinkSchedulerMicroTaskQueuePerAudioWorklet",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace scheduler
 }  // namespace blink

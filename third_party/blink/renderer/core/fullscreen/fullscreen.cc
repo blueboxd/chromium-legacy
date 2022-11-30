@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -55,10 +56,10 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 
 namespace blink {
 
@@ -577,9 +578,9 @@ void EnqueueEvent(const AtomicString& type,
                   Document& document,
                   FullscreenRequestType request_type) {
   const AtomicString& adjusted_type = AdjustEventType(type, request_type);
-  document.EnqueueAnimationFrameTask(WTF::Bind(FireEvent, adjusted_type,
-                                               WrapWeakPersistent(&element),
-                                               WrapWeakPersistent(&document)));
+  document.EnqueueAnimationFrameTask(
+      WTF::BindOnce(FireEvent, adjusted_type, WrapWeakPersistent(&element),
+                    WrapWeakPersistent(&document)));
 }
 
 }  // anonymous namespace
@@ -745,7 +746,7 @@ void Fullscreen::DidResolveEnterFullscreenRequest(Document& document,
   // but must still not synchronously change the fullscreen element. Instead
   // enqueue a microtask to continue.
   if (RequestFullscreenScope::RunningRequestFullscreen()) {
-    Microtask::EnqueueMicrotask(WTF::Bind(
+    document.GetAgent()->event_loop()->EnqueueMicrotask(WTF::BindOnce(
         [](Document* document, bool granted) {
           DCHECK(document);
           DidResolveEnterFullscreenRequest(*document, granted);
@@ -934,7 +935,7 @@ ScriptPromise Fullscreen::ExitFullscreen(Document& doc,
   //
   // Note: |doc| is not set here, but |doc| will be the topmost local ancestor
   // in |Fullscreen::ContinueExitFullscreen| if |resize| is true.
-  if (!docs.IsEmpty() && docs.back() == &top_level_doc &&
+  if (!docs.empty() && docs.back() == &top_level_doc &&
       IsSimpleFullscreenDocument(top_level_doc)) {
     resize = true;
   }
@@ -970,9 +971,9 @@ ScriptPromise Fullscreen::ExitFullscreen(Document& doc,
     // Note: We are past the "in parallel" point, and |ContinueExitFullscreen()|
     // will change script-observable state (document.fullscreenElement)
     // synchronously, so we have to continue asynchronously.
-    Microtask::EnqueueMicrotask(
-        WTF::Bind(ContinueExitFullscreen, WrapPersistent(&doc),
-                  WrapPersistent(resolver), false /* resize */));
+    doc.GetAgent()->event_loop()->EnqueueMicrotask(
+        WTF::BindOnce(ContinueExitFullscreen, WrapPersistent(&doc),
+                      WrapPersistent(resolver), false /* resize */));
   }
   return promise;
 }
@@ -983,7 +984,7 @@ void Fullscreen::DidExitFullscreen(Document& document) {
   Fullscreen& fullscreen = From(*document.domWindow());
   PendingExits exits;
   exits.swap(fullscreen.pending_exits_);
-  if (exits.IsEmpty()) {
+  if (exits.empty()) {
     FullyExitFullscreen(document, true /* ua_originated */);
   } else {
     for (const Member<PendingExit>& exit : exits)

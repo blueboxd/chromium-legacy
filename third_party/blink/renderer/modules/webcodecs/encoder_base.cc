@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -401,8 +401,9 @@ void EncoderBase<Traits>::ScheduleDequeueEvent() {
   event->async_task_context()->Schedule(GetExecutionContext(), event->type());
 
   callback_runner_->PostTask(
-      FROM_HERE, WTF::Bind(&EncoderBase<Traits>::DispatchDequeueEvent,
-                           WrapWeakPersistent(this), WrapPersistent(event)));
+      FROM_HERE,
+      WTF::BindOnce(&EncoderBase<Traits>::DispatchDequeueEvent,
+                    WrapWeakPersistent(this), WrapPersistent(event)));
 }
 
 template <typename Traits>

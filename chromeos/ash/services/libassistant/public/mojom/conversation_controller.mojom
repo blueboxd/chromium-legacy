@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module chromeos.libassistant.mojom;
+module ash.libassistant.mojom;
 
 import "chromeos/ash/services/libassistant/public/mojom/conversation_observer.mojom";
 import "chromeos/ash/services/libassistant/public/mojom/notification_delegate.mojom";
@@ -55,7 +55,7 @@ interface ConversationController {
 };
 
 // Models an Assistant feedback. This should be kept in sync with
-// |chromeos::assistant::AssistantFeedback|.
+// |ash::assistant::AssistantFeedback|.
 struct AssistantFeedback {
   // User input to be sent with the feedback report.
   string description;

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_uncaptured_error_event.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_validation_error.h"
 #include "third_party/blink/renderer/modules/webgpu/string_utils.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 
 namespace blink {
@@ -237,7 +236,7 @@ bool GPUDevice::ValidateTextureFormatUsage(V8GPUTextureFormat format,
 
 std::string GPUDevice::formattedLabel() const {
   std::string deviceLabel =
-      label().IsEmpty() ? "[Device]" : "[Device \"" + label().Utf8() + "\"]";
+      label().empty() ? "[Device]" : "[Device \"" + label().Utf8() + "\"]";
 
   return deviceLabel;
 }
@@ -393,6 +392,9 @@ GPUQueue* GPUDevice::queue() {
 void GPUDevice::destroy(ScriptState* script_state) {
   destroyed_ = true;
   DestroyAllExternalTextures();
+  // Dissociate mailboxes before destroying the device. This ensures that
+  // mailbox operations which run during dissociation can succeed.
+  DissociateMailboxes();
   UnmapAllMappableBuffers(script_state);
   GetProcs().deviceDestroy(GetHandle());
   FlushNow();
@@ -491,7 +493,7 @@ ScriptPromise GPUDevice::createRenderPipelineAsync(
 
   // WebGPU guarantees that promises are resolved in finite time so we need to
   // ensure commands are flushed.
-  EnsureFlush();
+  EnsureFlush(ToEventLoop(script_state));
   return promise;
 }
 
@@ -514,7 +516,7 @@ ScriptPromise GPUDevice::createComputePipelineAsync(
                                               callback->AsUserdata());
   // WebGPU guarantees that promises are resolved in finite time so we need to
   // ensure commands are flushed.
-  EnsureFlush();
+  EnsureFlush(ToEventLoop(script_state));
   return promise;
 }
 
@@ -559,7 +561,7 @@ ScriptPromise GPUDevice::popErrorScope(ScriptState* script_state) {
 
   // WebGPU guarantees that promises are resolved in finite time so we
   // need to ensure commands are flushed.
-  EnsureFlush();
+  EnsureFlush(ToEventLoop(script_state));
   return promise;
 }
 
@@ -608,6 +610,7 @@ void GPUDevice::Trace(Visitor* visitor) const {
   visitor->Trace(queue_);
   visitor->Trace(lost_property_);
   visitor->Trace(active_external_textures_);
+  visitor->Trace(textures_with_mailbox_);
   visitor->Trace(mappable_buffers_);
   ExecutionContextClient::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
@@ -624,6 +627,13 @@ void GPUDevice::DestroyAllExternalTextures() {
     external_texture->Destroy();
   }
   active_external_textures_.clear();
+}
+
+void GPUDevice::DissociateMailboxes() {
+  for (auto& texture : textures_with_mailbox_) {
+    texture->DissociateMailbox();
+  }
+  textures_with_mailbox_.clear();
 }
 
 void GPUDevice::UnmapAllMappableBuffers(ScriptState* script_state) {
@@ -649,6 +659,16 @@ void GPUDevice::RemoveActiveExternalTexture(
     GPUExternalTexture* external_texture) {
   DCHECK(external_texture);
   active_external_textures_.erase(external_texture);
+}
+
+void GPUDevice::TrackTextureWithMailbox(GPUTexture* texture) {
+  DCHECK(texture);
+  textures_with_mailbox_.insert(texture);
+}
+
+void GPUDevice::UntrackTextureWithMailbox(GPUTexture* texture) {
+  DCHECK(texture);
+  textures_with_mailbox_.erase(texture);
 }
 
 }  // namespace blink

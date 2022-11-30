@@ -77,8 +77,6 @@ class TestStartSuggestService : public StartSuggestService {
       : StartSuggestService(template_url_service,
                             url_loader_factory,
                             std::move(scheme_classifier),
-                            "us",
-                            "en",
                             request_initiator_url) {}
   ~TestStartSuggestService() override = default;
 

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -198,8 +198,8 @@ ScriptPromise WebSocketStream::UnderlyingSink::write(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();
   base::OnceClosure callback =
-      WTF::Bind(&UnderlyingSink::FinishWriteCallback, WrapWeakPersistent(this),
-                WrapPersistent(resolver));
+      WTF::BindOnce(&UnderlyingSink::FinishWriteCallback,
+                    WrapWeakPersistent(this), WrapPersistent(resolver));
   v8::Local<v8::Value> v8chunk = chunk.V8Value();
   SendAny(script_state, v8chunk, resolver, std::move(callback),
           exception_state);
@@ -463,7 +463,7 @@ void WebSocketStream::close(WebSocketCloseInfo* info,
   String reason = info->reason();
   if (info->hasCode()) {
     code = info->code();
-  } else if (!reason.IsNull() && !reason.IsEmpty()) {
+  } else if (!reason.IsNull() && !reason.empty()) {
     code = WebSocketChannel::kCloseEventCodeNormalClosure;
   }
   CloseInternal(code, info->reason(), exception_state);
@@ -623,7 +623,7 @@ void WebSocketStream::Connect(ScriptState* script_state,
     }
 
     signal->AddAlgorithm(
-        WTF::Bind(&WebSocketStream::OnAbort, WrapWeakPersistent(this)));
+        WTF::BindOnce(&WebSocketStream::OnAbort, WrapWeakPersistent(this)));
   }
 
   auto result = common_.Connect(

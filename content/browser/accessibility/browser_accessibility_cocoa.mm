@@ -26,6 +26,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/one_shot_accessibility_tree_search.h"
+#include "content/browser/accessibility/web_ax_platform_tree_manager_delegate.h"
 #include "content/public/common/content_client.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
@@ -47,13 +48,13 @@ using AXRange = ui::AXPlatformNodeDelegate::AXRange;
 using StringAttribute = ax::mojom::StringAttribute;
 using content::AccessibilityMatchPredicate;
 using content::BrowserAccessibility;
-using content::BrowserAccessibilityDelegate;
 using content::BrowserAccessibilityManager;
 using content::BrowserAccessibilityManagerMac;
 using content::ContentClient;
 using content::OneShotAccessibilityTreeSearch;
-using ui::AXNodeData;
+using content::WebAXPlatformTreeManagerDelegate;
 using ui::AXActionHandlerRegistry;
+using ui::AXNodeData;
 using ui::AXPositionToAXTextMarker;
 using ui::AXRangeToAXTextMarkerRange;
 using ui::AXTextMarkerRangeToAXRange;
@@ -111,9 +112,6 @@ NSString* const NSAccessibilityTextMarkerForPositionParameterizedAttribute =
     @"AXTextMarkerForPosition";
 NSString* const NSAccessibilityBoundsForTextMarkerRangeParameterizedAttribute =
     @"AXBoundsForTextMarkerRange";
-NSString* const
-    NSAccessibilityAttributedStringForTextMarkerRangeParameterizedAttribute =
-        @"AXAttributedStringForTextMarkerRange";
 NSString* const
     NSAccessibilityAttributedStringForTextMarkerRangeWithOptionsParameterizedAttribute =
         @"AXAttributedStringForTextMarkerRangeWithOptions";
@@ -270,80 +268,11 @@ AXRange GetSelectedRange(BrowserAccessibility& owner) {
                        *focus_object, focus_offset, focus_affinity);
 }
 
-void AddMisspelledTextAttributes(const AXRange& ax_range,
-                                 NSMutableAttributedString* attributed_string) {
-  int anchor_start_offset = 0;
-  [attributed_string beginEditing];
-  for (const AXRange& leaf_text_range : ax_range) {
-    DCHECK(!leaf_text_range.IsNull());
-    DCHECK_EQ(leaf_text_range.anchor()->GetAnchor(),
-              leaf_text_range.focus()->GetAnchor())
-        << "An anchor range should only span a single object.";
-
-    auto* manager =
-        BrowserAccessibilityManager::FromID(leaf_text_range.focus()->tree_id());
-    DCHECK(manager) << "A non-null position should have an associated AX tree.";
-    const BrowserAccessibility* anchor =
-        manager->GetFromID(leaf_text_range.focus()->anchor_id());
-    DCHECK(anchor) << "A non-null position should have a non-null anchor node.";
-    const std::vector<int32_t>& marker_types =
-        anchor->GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerTypes);
-    const std::vector<int>& marker_starts =
-        anchor->GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerStarts);
-    const std::vector<int>& marker_ends =
-        anchor->GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerEnds);
-    for (size_t i = 0; i < marker_types.size(); ++i) {
-      if (!(marker_types[i] &
-            static_cast<int32_t>(ax::mojom::MarkerType::kSpelling))) {
-        continue;
-      }
-
-      int misspelling_start = anchor_start_offset + marker_starts[i];
-      int misspelling_end = anchor_start_offset + marker_ends[i];
-      int misspelling_length = misspelling_end - misspelling_start;
-      DCHECK_LE(static_cast<unsigned long>(misspelling_end),
-                [attributed_string length]);
-      DCHECK_GT(misspelling_length, 0);
-      [attributed_string
-          addAttribute:NSAccessibilityMarkedMisspelledTextAttribute
-                 value:@YES
-                 range:NSMakeRange(misspelling_start, misspelling_length)];
-    }
-
-    anchor_start_offset += leaf_text_range.GetText().length();
-  }
-  [attributed_string endEditing];
-}
-
 NSString* GetTextForTextMarkerRange(id marker_range) {
   AXRange range = AXTextMarkerRangeToAXRange(marker_range);
   if (range.IsNull())
     return nil;
   return base::SysUTF16ToNSString(range.GetText());
-}
-
-NSAttributedString* GetAttributedTextForTextMarkerRange(id marker_range) {
-  AXRange ax_range = AXTextMarkerRangeToAXRange(marker_range);
-  if (ax_range.IsNull())
-    return nil;
-
-  NSString* text = base::SysUTF16ToNSString(ax_range.GetText());
-  if ([text length] == 0)
-    return nil;
-
-  NSMutableAttributedString* attributed_text =
-      [[[NSMutableAttributedString alloc] initWithString:text] autorelease];
-  // Currently, we only decorate the attributed string with misspelling
-  // information.
-  AddMisspelledTextAttributes(ax_range, attributed_text);
-  return attributed_text;
-}
-
-// Returns an autoreleased copy of the AXNodeData's attribute.
-NSString* NSStringForStringAttribute(BrowserAccessibility* browserAccessibility,
-                                     StringAttribute attribute) {
-  return base::SysUTF8ToNSString(
-      browserAccessibility->GetStringAttribute(attribute));
 }
 
 // GetState checks the bitmask used in AXNodeData to check
@@ -607,7 +536,6 @@ bool content::IsNSRange(id value) {
       {NSAccessibilityExpandedAttribute, @"expanded"},
       {NSAccessibilityFocusedAttribute, @"focused"},
       {NSAccessibilityHeaderAttribute, @"header"},
-      {NSAccessibilityHelpAttribute, @"help"},
       {NSAccessibilityIndexAttribute, @"index"},
       {NSAccessibilityInsertionPointLineNumberAttribute,
        @"insertionPointLineNumber"},
@@ -871,13 +799,6 @@ bool content::IsNSRange(id value) {
   return nil;
 }
 
-- (NSString*)help {
-  if (![self instanceActive])
-    return nil;
-  return NSStringForStringAttribute(_owner,
-                                    ax::mojom::StringAttribute::kDescription);
-}
-
 - (NSNumber*)index {
   if (![self instanceActive])
     return nil;
@@ -1095,7 +1016,9 @@ bool content::IsNSRange(id value) {
   // A nil parent means we're the root.
   // Hook back up to RenderWidgetHostViewCocoa.
   BrowserAccessibilityManagerMac* manager =
-      _owner->manager()->GetRootManager()->ToBrowserAccessibilityManagerMac();
+      _owner->manager()
+          ->GetManagerForRootFrame()
+          ->ToBrowserAccessibilityManagerMac();
   if (!manager) {
     // TODO(accessibility) Determine why this is happening.
     SANITIZER_NOTREACHED();
@@ -1195,7 +1118,7 @@ bool content::IsNSRange(id value) {
 
   // Get the delegate for the topmost BrowserAccessibilityManager, because
   // that's the only one that can convert points to their origin in the screen.
-  BrowserAccessibilityDelegate* delegate =
+  WebAXPlatformTreeManagerDelegate* delegate =
       _owner->manager()->GetDelegateFromRootManager();
   if (delegate) {
     return gfx::ScreenRectToNSRect(
@@ -1669,7 +1592,9 @@ bool content::IsNSRange(id value) {
     return nil;
 
   BrowserAccessibilityManagerMac* root_manager =
-      _owner->manager()->GetRootManager()->ToBrowserAccessibilityManagerMac();
+      _owner->manager()
+          ->GetManagerForRootFrame()
+          ->ToBrowserAccessibilityManagerMac();
   CHECK(root_manager) << "There should always be a root manager whenever an "
                          "object is instanceActive.";
   CHECK(root_manager->GetParentView());
@@ -1704,32 +1629,6 @@ bool content::IsNSRange(id value) {
       textContent.substr(range.location, range.length));
 }
 
-// Retrieves the text inside this object and decorates it with attributes
-// indicating specific ranges of interest within the text, e.g. the location of
-// misspellings.
-- (NSAttributedString*)attributedValueForRange:(NSRange)range {
-  if (![self instanceActive])
-    return nil;
-
-  std::u16string textContent = _owner->GetTextContentUTF16();
-  if (NSMaxRange(range) > textContent.length())
-    return nil;
-
-  // We potentially need to add text attributes to the whole text content
-  // because a spelling mistake might start or end outside the given range.
-  NSMutableAttributedString* attributedTextContent =
-      [[[NSMutableAttributedString alloc]
-          initWithString:base::SysUTF16ToNSString(textContent)] autorelease];
-  if (!_owner->IsText()) {
-    AXRange ax_range(
-        _owner->CreateTextPositionAt(0),
-        _owner->CreateTextPositionAt(static_cast<int>(textContent.length())));
-    AddMisspelledTextAttributes(ax_range, attributedTextContent);
-  }
-
-  return [attributedTextContent attributedSubstringFromRange:range];
-}
-
 - (NSRect)frameForRange:(NSRange)range {
   if (!_owner->IsText() && !_owner->IsAtomicTextField())
     return CGRectNull;
@@ -1758,11 +1657,6 @@ bool content::IsNSRange(id value) {
 - (id)AXStringForRange:(id)parameter {
   DCHECK([parameter isKindOfClass:[NSValue class]]);
   return [self valueForRange:[(NSValue*)parameter rangeValue]];
-}
-
-- (id)AXAttributedStringForRange:(id)parameter {
-  DCHECK([parameter isKindOfClass:[NSValue class]]);
-  return [self attributedValueForRange:[(NSValue*)parameter rangeValue]];
 }
 
 - (id)AXLineForIndex:(id)parameter {
@@ -1823,12 +1717,6 @@ bool content::IsNSRange(id value) {
   }
 
   if ([attribute
-          isEqualToString:
-              NSAccessibilityAttributedStringForRangeParameterizedAttribute]) {
-    return [self AXAttributedStringForRange:parameter];
-  }
-
-  if ([attribute
           isEqualToString:NSAccessibilityLineForIndexParameterizedAttribute]) {
     return [self AXLineForIndex:parameter];
   }
@@ -1877,7 +1765,15 @@ bool content::IsNSRange(id value) {
   if ([attribute
           isEqualToString:
               NSAccessibilityTextMarkerRangeForUIElementParameterizedAttribute]) {
-    AXPosition startPosition = _owner->CreateTextPositionAt(0);
+    if (![parameter isKindOfClass:[AXPlatformNodeCocoa class]])
+      return nil;
+
+    BrowserAccessibility* parameter_owner =
+        [(BrowserAccessibilityCocoa*)parameter owner];
+    if (!parameter_owner)
+      return nil;
+
+    AXPosition startPosition = parameter_owner->CreateTextPositionAt(0);
     AXPosition endPosition = startPosition->CreatePositionAtEndOfAnchor();
     AXRange range = AXRange(std::move(startPosition), std::move(endPosition));
     return AXRangeToAXTextMarkerRange(std::move(range));
@@ -1887,11 +1783,6 @@ bool content::IsNSRange(id value) {
           isEqualToString:
               NSAccessibilityStringForTextMarkerRangeParameterizedAttribute])
     return GetTextForTextMarkerRange(parameter);
-
-  if ([attribute
-          isEqualToString:
-              NSAccessibilityAttributedStringForTextMarkerRangeParameterizedAttribute])
-    return GetAttributedTextForTextMarkerRange(parameter);
 
   if ([attribute
           isEqualToString:
@@ -2343,7 +2234,7 @@ bool content::IsNSRange(id value) {
     return @(child->GetIndexInParent().value());
   }
 
-  return nil;
+  return [super accessibilityAttributeValue:attribute forParameter:parameter];
 }
 
 // Returns an array of parameterized attributes names that this object will
@@ -2366,7 +2257,6 @@ bool content::IsNSRange(id value) {
           NSAccessibilityStringForTextMarkerRangeParameterizedAttribute,
           NSAccessibilityTextMarkerForPositionParameterizedAttribute,
           NSAccessibilityBoundsForTextMarkerRangeParameterizedAttribute,
-          NSAccessibilityAttributedStringForTextMarkerRangeParameterizedAttribute,
           NSAccessibilityAttributedStringForTextMarkerRangeWithOptionsParameterizedAttribute,
           NSAccessibilityTextMarkerRangeForUnorderedTextMarkersParameterizedAttribute,
           NSAccessibilityNextTextMarkerForTextMarkerParameterizedAttribute,
@@ -2411,7 +2301,6 @@ bool content::IsNSRange(id value) {
       NSAccessibilityRangeForIndexParameterizedAttribute,
       NSAccessibilityBoundsForRangeParameterizedAttribute,
       NSAccessibilityRTFForRangeParameterizedAttribute,
-      NSAccessibilityAttributedStringForRangeParameterizedAttribute,
       NSAccessibilityStyleRangeForIndexParameterizedAttribute
     ]];
   }
@@ -2427,6 +2316,8 @@ bool content::IsNSRange(id value) {
     ]];
   }
 
+  NSArray* super_ret = [super accessibilityParameterizedAttributeNames];
+  [ret addObjectsFromArray:super_ret];
   return ret;
 }
 
@@ -2473,7 +2364,6 @@ bool content::IsNSRange(id value) {
                        NSAccessibilityEnabledAttribute,
                        NSAccessibilityEndTextMarkerAttribute,
                        NSAccessibilityFocusedAttribute,
-                       NSAccessibilityHelpAttribute,
                        NSAccessibilityLinkedUIElementsAttribute,
                        NSAccessibilityParentAttribute,
                        NSAccessibilityPositionAttribute,

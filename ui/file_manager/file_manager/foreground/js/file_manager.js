@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert, assertInstanceof} from 'chrome://resources/js/assert.m.js';
+import {startColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
+import {assert, assertInstanceof} from 'chrome://resources/js/assert.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
+import {getPreferences} from '../../common/js/api.js';
 import {ArrayDataModel} from '../../common/js/array_data_model.js';
 import {DialogType} from '../../common/js/dialog_type.js';
 import {FakeEntryImpl} from '../../common/js/files_app_entry_types.js';
@@ -13,6 +15,7 @@ import {FilesAppState} from '../../common/js/files_app_state.js';
 import {FilteredVolumeManager} from '../../common/js/filtered_volume_manager.js';
 import {metrics} from '../../common/js/metrics.js';
 import {ProgressItemState} from '../../common/js/progress_center_common.js';
+import {TrashRootEntry} from '../../common/js/trash.js';
 import {str, util} from '../../common/js/util.js';
 import {AllowedPaths, VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {Crostini} from '../../externs/background/crostini.js';
@@ -373,6 +376,18 @@ export class FileManager extends EventTarget {
     this.fakeDriveItem_ = null;
 
     /**
+     * Whether Trash is enabled or not, retrieved from user preferences.
+     * @type {boolean}
+     */
+    this.trashEnabled = false;
+
+    /**
+     * A fake Trash placeholder item.
+     * @private {?NavigationModelFakeItem}
+     */
+    this.fakeTrashItem_ = null;
+
+    /**
      * A fake entry for Recents.
      * @private {?FakeEntry}
      */
@@ -383,6 +398,8 @@ export class FileManager extends EventTarget {
      * @private {boolean}
      */
     this.guestMode_ = false;
+
+    startColorChangeUpdater();
   }
 
   /**
@@ -638,6 +655,10 @@ export class FileManager extends EventTarget {
     assert(this.fileOperationManager_);
     assert(this.dialogDom_);
 
+    if (util.isInlineSyncStatusEnabled()) {
+      this.fileBrowserBackground_.driveSyncHandler.metadataModel =
+          assert(this.metadataModel_);
+    }
     this.scanController_ = new ScanController(
         this.directoryModel_, this.ui_.listContainer, this.spinnerController_,
         this.selectionHandler_);
@@ -1589,44 +1610,102 @@ export class FileManager extends EventTarget {
   }
 
   /**
-   * Add or remove fake Drive item from the directory tree when Drive prefs
-   * change. If Drive has been enabled by prefs, add the fake Drive item.
-   * Remove the fake Drive item if Drive has been disabled.
+   * Add or remove the fake Drive and Trash item from the directory tree when
+   * the prefs change. If Drive or Trash has been enabled by prefs, add the item
+   * otherwise remove it. This supports dynamic refresh when the pref changes.
    */
-  onPreferencesChanged_() {
-    chrome.fileManagerPrivate.getPreferences(
-        (/** chrome.fileManagerPrivate.Preferences|undefined */ prefs) => {
-          if (chrome.runtime.lastError ||
-              this.driveEnabled_ === prefs.driveEnabled) {
-            return;
-          }
-          this.driveEnabled_ = prefs.driveEnabled;
-          if (prefs.driveEnabled) {
-            if (!this.fakeDriveItem_) {
-              this.fakeDriveItem_ = new NavigationModelFakeItem(
-                  str('DRIVE_DIRECTORY_LABEL'), NavigationModelItemType.DRIVE,
-                  new FakeEntryImpl(
-                      str('DRIVE_DIRECTORY_LABEL'),
-                      VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT));
-            }
-            this.directoryTree.dataModel.fakeDriveItem = this.fakeDriveItem_;
-          } else {
-            this.directoryTree.dataModel.fakeDriveItem = null;
-            // The fake Drive item is being hidden so navigate away if it's the
-            // current directory.
-            if (this.directoryModel_.getCurrentDirEntry() ===
-                this.fakeDriveItem_.entry) {
-              this.volumeManager_.getDefaultDisplayRoot((displayRoot) => {
-                if (this.directoryModel_.getCurrentDirEntry() ===
-                        this.fakeDriveItem_.entry &&
-                    displayRoot) {
-                  this.directoryModel_.changeDirectoryEntry(displayRoot);
-                }
-              });
-            }
-          }
-          this.directoryTree.redraw(false);
-        });
+  async onPreferencesChanged_() {
+    let prefs = null;
+    try {
+      prefs = await getPreferences();
+    } catch (e) {
+      console.error('Failed to retrieve preferences:', e);
+      return;
+    }
+
+    let redraw = false;
+    if (this.driveEnabled_ !== prefs.driveEnabled) {
+      this.driveEnabled_ = prefs.driveEnabled;
+      this.toggleDriveRootOnPreferencesUpdate_();
+      redraw = true;
+    }
+
+    if (this.trashEnabled !== prefs.trashEnabled) {
+      this.trashEnabled = prefs.trashEnabled;
+      this.toggleTrashRootOnPreferencesUpdate_();
+      this.toolbarController_.moveToTrashCommand.disabled = !this.trashEnabled;
+      this.toolbarController_.moveToTrashCommand.canExecuteChange(
+          this.ui_.listContainer.currentList);
+      redraw = true;
+    }
+
+    if (redraw) {
+      this.directoryTree.redraw(false);
+    }
+  }
+
+  /**
+   * Toggles the trash root visibility when the `trashEnabled` preference is
+   * updated.
+   * @private
+   */
+  toggleTrashRootOnPreferencesUpdate_() {
+    if (this.trashEnabled) {
+      if (!this.fakeTrashItem_) {
+        this.fakeTrashItem_ = new NavigationModelFakeItem(
+            str('TRASH_ROOT_LABEL'), NavigationModelItemType.TRASH,
+            new TrashRootEntry(this.volumeManager_));
+      }
+      this.directoryTree.dataModel.fakeTrashItem = this.fakeTrashItem_;
+      return;
+    }
+
+    this.directoryTree.dataModel.fakeTrashItem = null;
+    this.navigateAwayFromDisabledRoot_(this.fakeTrashItem_);
+  }
+
+  /**
+   * Toggles the drive root visibility when the `driveEnabled` preference is
+   * updated.
+   * @private
+   */
+  toggleDriveRootOnPreferencesUpdate_() {
+    if (this.driveEnabled_) {
+      if (!this.fakeDriveItem_) {
+        this.fakeDriveItem_ = new NavigationModelFakeItem(
+            str('DRIVE_DIRECTORY_LABEL'), NavigationModelItemType.DRIVE,
+            new FakeEntryImpl(
+                str('DRIVE_DIRECTORY_LABEL'),
+                VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT));
+      }
+      this.directoryTree.dataModel.fakeDriveItem = this.fakeDriveItem_;
+      return;
+    }
+
+    this.directoryTree.dataModel.fakeDriveItem = null;
+    this.navigateAwayFromDisabledRoot_(this.fakeDriveItem_);
+  }
+
+  /**
+   * If the root item has been disabled but it is the current visible entry,
+   * navigate away from it to the default display root.
+   * @param {?NavigationModelFakeItem} rootItem The item to navigate away from.
+   * @private
+   */
+  navigateAwayFromDisabledRoot_(rootItem) {
+    if (!rootItem) {
+      return;
+    }
+    // The fake root item is being hidden so navigate away if it's the
+    // current directory.
+    if (this.directoryModel_.getCurrentDirEntry() === rootItem.entry) {
+      this.volumeManager_.getDefaultDisplayRoot((displayRoot) => {
+        if (this.directoryModel_.getCurrentDirEntry() === rootItem.entry &&
+            displayRoot) {
+          this.directoryModel_.changeDirectoryEntry(displayRoot);
+        }
+      });
+    }
   }
 
   /**

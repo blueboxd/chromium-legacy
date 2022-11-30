@@ -16,10 +16,10 @@ const char* SegmentationKeyToUmaName(const std::string& segmentation_key) {
   // go/segmentation-field-trials-map.
   if (segmentation_key == kAdaptiveToolbarSegmentationKey) {
     return kAdaptiveToolbarUmaName;
-  } else if (segmentation_key == kDummySegmentationKey) {
-    return kDummyFeatureUmaName;
   } else if (segmentation_key == kChromeStartAndroidSegmentationKey) {
     return kChromeStartAndroidUmaName;
+  } else if (segmentation_key == kChromeStartAndroidV2SegmentationKey) {
+    return kChromeStartAndroidV2UmaName;
   } else if (segmentation_key == kQueryTilesSegmentationKey) {
     return kQueryTilesUmaName;
   } else if (segmentation_key == kChromeLowUserEngagementSegmentationKey) {
@@ -30,6 +30,8 @@ const char* SegmentationKeyToUmaName(const std::string& segmentation_key) {
     return kShoppingUserUmaName;
   } else if (segmentation_key == kContextualPageActionsKey) {
     return kContextualPageActionsUmaName;
+  } else if (segmentation_key == kSearchUserKey) {
+    return kSearchUserUmaName;
   } else if (segmentation_key == kPowerUserKey) {
     return kPowerUserUmaName;
   } else if (segmentation_key == kCrossDeviceUserKey) {
@@ -76,6 +78,8 @@ std::string SegmentIdToHistogramVariant(proto::SegmentId segment_id) {
     case proto::SegmentId::
         OPTIMIZATION_TARGET_CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING:
       return "ContextualPageActionPriceTracking";
+    case proto::SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SEARCH_USER:
+      return "SearchUserSegment";
     case proto::SegmentId::POWER_USER_SEGMENT:
       return "PowerUserSegment";
     case proto::SegmentId::CROSS_DEVICE_USER_SEGMENT:
@@ -86,6 +90,9 @@ std::string SegmentIdToHistogramVariant(proto::SegmentId segment_id) {
       return "IntentionalUser";
     case proto::SegmentId::RESUME_HEAVY_USER_SEGMENT:
       return "ResumeHeavyUserSegment";
+    case proto::SegmentId::
+        OPTIMIZATION_TARGET_SEGMENTATION_CHROME_START_ANDROID_V2:
+      return "ChromeStartAndroidV2";
     default:
       // This case is reached when UNKNOWN segment is valid, in case of boolean
       // segment results.

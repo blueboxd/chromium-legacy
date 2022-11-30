@@ -1,8 +1,6 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
-import json
 
 from blinkpy.common.host_mock import MockHost
 from blinkpy.common.system.log_testing import LoggingTestCase
@@ -31,22 +29,12 @@ class WptReportUploaderTest(LoggingTestCase):
                            "builder": {"builder": "test_builder"},
                            "status": "SUCCESS",
                            "number": "98"}]}
-        self.host.results_fetcher.web.responses.append({
-            'status_code':
-            200,
-            'body':
-            json.dumps(res).encode(),
-        })
+        self.host.results_fetcher.web.append_prpc_response(res)
         build = uploader.fetch_latest_complete_build(*builder)
         self.assertEqual(build, expected)
 
         res = {"builds": []}
-        self.host.results_fetcher.web.responses.append({
-            'status_code':
-            200,
-            'body':
-            json.dumps(res).encode(),
-        })
+        self.host.results_fetcher.web.append_prpc_response(res)
         build = uploader.fetch_latest_complete_build(*builder)
         self.assertIsNone(build)
 

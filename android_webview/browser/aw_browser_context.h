@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "android_webview/browser/aw_contents_origin_matcher.h"
 #include "android_webview/browser/aw_ssl_host_state_delegate.h"
 #include "android_webview/browser/network_service/aw_proxy_config_monitor.h"
 #include "base/compiler_specific.h"
@@ -28,6 +29,7 @@ class AutocompleteHistoryManager;
 }
 
 namespace content {
+class ClientHintsControllerDelegate;
 class PermissionControllerDelegate;
 class ResourceContext;
 class SSLHostStateDelegate;
@@ -44,6 +46,7 @@ class VisitedLinkWriter;
 
 namespace android_webview {
 
+class AwContentsOriginMatcher;
 class AwFormDatabaseService;
 class AwQuotaManagerBridge;
 
@@ -89,6 +92,11 @@ class AwBrowserContext : public content::BrowserContext,
   // TODO(amalova): implement for non-default browser context
   bool IsDefaultBrowserContext() { return true; }
 
+  base::android::ScopedJavaLocalRef<jobjectArray>
+  UpdateServiceWorkerXRequestedWithAllowListOriginMatcher(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobjectArray>& rules);
+
   // content::BrowserContext implementation.
   base::FilePath GetPath() override;
   bool IsOffTheRecord() override;
@@ -132,6 +140,8 @@ class AwBrowserContext : public content::BrowserContext,
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaBrowserContext();
 
+  scoped_refptr<AwContentsOriginMatcher> service_worker_xrw_allowlist_matcher();
+
  private:
   void CreateUserPrefService();
   void MigrateLocalStatePrefs();
@@ -150,8 +160,12 @@ class AwBrowserContext : public content::BrowserContext,
   std::unique_ptr<PrefService> user_pref_service_;
   std::unique_ptr<AwSSLHostStateDelegate> ssl_host_state_delegate_;
   std::unique_ptr<content::PermissionControllerDelegate> permission_manager_;
+  std::unique_ptr<content::ClientHintsControllerDelegate>
+      client_hints_controller_delegate_;
 
   SimpleFactoryKey simple_factory_key_;
+
+  scoped_refptr<AwContentsOriginMatcher> service_worker_xrw_allowlist_matcher_;
 
   base::android::ScopedJavaGlobalRef<jobject> obj_;
 };

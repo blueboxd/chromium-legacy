@@ -61,6 +61,10 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::EnterTestMode(url);
   }
 
+  void ExitTestMode() const override {
+    updater::test::ExitTestMode(updater_scope_);
+  }
+
   void ExpectSelfUpdateSequence(ScopedServer* test_server) const override {
     updater::test::ExpectSelfUpdateSequence(updater_scope_, test_server);
   }
@@ -255,8 +259,10 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::UninstallApp(updater_scope_, app_id);
   }
 
-  void RunOfflineInstall(bool is_silent_install) override {
-    updater::test::RunOfflineInstall(updater_scope_, is_silent_install);
+  void RunOfflineInstall(bool is_legacy_install,
+                         bool is_silent_install) override {
+    updater::test::RunOfflineInstall(updater_scope_, is_legacy_install,
+                                     is_silent_install);
   }
 
  private:

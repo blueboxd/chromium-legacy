@@ -40,9 +40,6 @@ inline const char* GameModeResultHistogramName(GameMode mode) {
   return "GameMode.Result.Arc";
 }
 
-void AddArcPkgNameForTesting(const std::string& pkg_name);
-void ClearArcPkgNamesForTesting();
-
 // When a Borealis or ARC game app game enters full screen, game mode is
 // enabled. Game Mode is actually enabled as a result of multiple sets of
 // criteria being fulfilled, each checked in sequence.

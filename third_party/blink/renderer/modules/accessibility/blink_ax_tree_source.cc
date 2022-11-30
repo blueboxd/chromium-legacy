@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_selection.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_deque.h"
-#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_common.h"
@@ -222,31 +221,30 @@ bool BlinkAXTreeSource::GetTreeData(ui::AXTreeData* tree_data) const {
     tree_data->root_scroller_id = 0;
 
   if (ax_object_cache_->GetAXMode().has_mode(ui::AXMode::kHTMLMetadata)) {
-    if (HTMLHeadElement* head = ax_object_cache_->GetDocument().head()) {
-      for (Node* child = head->firstChild(); child;
-           child = child->nextSibling()) {
-        if (!child->IsElementNode())
+    HTMLHeadElement* head = ax_object_cache_->GetDocument().head();
+    for (Node* child = head->firstChild(); child;
+         child = child->nextSibling()) {
+      if (!child->IsElementNode())
+        continue;
+      Element* elem = To<Element>(child);
+      if (elem->IsHTMLWithTagName("SCRIPT")) {
+        if (elem->getAttribute("type") != "application/ld+json")
           continue;
-        Element* elem = To<Element>(child);
-        if (elem->IsHTMLWithTagName("SCRIPT")) {
-          if (elem->getAttribute("type") != "application/ld+json")
-            continue;
-        } else if (!elem->IsHTMLWithTagName("LINK") &&
-                   !elem->IsHTMLWithTagName("TITLE") &&
-                   !elem->IsHTMLWithTagName("META")) {
-          continue;
-        }
-        // TODO(chrishtr): replace the below with elem->outerHTML().
-        String tag = elem->tagName().LowerASCII();
-        String html = "<" + tag;
-        for (unsigned i = 0; i < elem->Attributes().size(); i++) {
-          html = html + String(" ") + elem->Attributes().at(i).LocalName() +
-                 String("=\"") + elem->Attributes().at(i).Value() + "\"";
-        }
-        html = html + String(">") + elem->innerHTML() + String("</") + tag +
-               String(">");
-        tree_data->metadata.push_back(html.Utf8());
+      } else if (!elem->IsHTMLWithTagName("LINK") &&
+                 !elem->IsHTMLWithTagName("TITLE") &&
+                 !elem->IsHTMLWithTagName("META")) {
+        continue;
       }
+      // TODO(chrishtr): replace the below with elem->outerHTML().
+      String tag = elem->tagName().LowerASCII();
+      String html = "<" + tag;
+      for (unsigned i = 0; i < elem->Attributes().size(); i++) {
+        html = html + String(" ") + elem->Attributes().at(i).LocalName() +
+               String("=\"") + elem->Attributes().at(i).Value() + "\"";
+      }
+      html = html + String(">") + elem->innerHTML() + String("</") + tag +
+             String(">");
+      tree_data->metadata.push_back(html.Utf8());
     }
   }
 
@@ -409,9 +407,6 @@ void BlinkAXTreeSource::SerializeNode(AXObject* src,
     dst->AddStringAttribute(ax::mojom::blink::StringAttribute::kImageDataUrl,
                             src->ImageDataUrl(max_image_data_size_).Utf8());
   }
-
-  TRACE_EVENT2("accessibility", "BlinkAXTreeSource::SerializeNode", "role",
-               ui::ToString(dst->role), "id", dst->id);
 }
 
 void BlinkAXTreeSource::Trace(Visitor* visitor) const {

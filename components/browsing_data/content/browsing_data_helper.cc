@@ -13,6 +13,8 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
+#include "components/origin_trials/browser/prefservice_persistence_provider.h"
+#include "components/origin_trials/common/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/site_isolation/pref_names.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
@@ -151,8 +153,10 @@ void RemoveSiteSettingsData(const base::Time& delete_begin,
       ContentSettingsType::BLUETOOTH_CHOOSER_DATA, delete_begin, delete_end,
       HostContentSettingsMap::PatternSourcePredicate());
 
-  RemoveFederatedSiteSettingsData(delete_begin, delete_end,
-                                  host_content_settings_map);
+  RemoveFederatedSiteSettingsData(
+      delete_begin, delete_end,
+      HostContentSettingsMap::PatternSourcePredicate(),
+      host_content_settings_map);
 
 #if !BUILDFLAG(IS_ANDROID)
   host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
@@ -169,21 +173,28 @@ void RemoveSiteSettingsData(const base::Time& delete_begin,
 #endif
 }
 
+void RemovePersistentOriginTrials(PrefService* pref_service) {
+  if (pref_service->HasPrefPath(origin_trials::kOriginTrialPrefKey)) {
+    pref_service->ClearPref(origin_trials::kOriginTrialPrefKey);
+  }
+}
+
 void RemoveFederatedSiteSettingsData(
     const base::Time& delete_begin,
     const base::Time& delete_end,
+    HostContentSettingsMap::PatternSourcePredicate pattern_predicate,
     HostContentSettingsMap* host_content_settings_map) {
   host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
       ContentSettingsType::FEDERATED_IDENTITY_ACTIVE_SESSION, delete_begin,
-      delete_end, HostContentSettingsMap::PatternSourcePredicate());
+      delete_end, pattern_predicate);
 
   host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
       ContentSettingsType::FEDERATED_IDENTITY_API, delete_begin, delete_end,
-      HostContentSettingsMap::PatternSourcePredicate());
+      pattern_predicate);
 
   host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
       ContentSettingsType::FEDERATED_IDENTITY_SHARING, delete_begin, delete_end,
-      HostContentSettingsMap::PatternSourcePredicate());
+      pattern_predicate);
 }
 
 }  // namespace browsing_data

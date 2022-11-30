@@ -207,7 +207,7 @@ absl::optional<std::vector<std::string>> DeserializeStringVector(
   if (!list || !list->is_list())
     return absl::nullopt;
   std::vector<std::string> result;
-  for (const auto& value : list->GetListDeprecated())
+  for (const auto& value : list->GetList())
     result.push_back(value.GetString());
   return result;
 }
@@ -948,10 +948,6 @@ bool DoRecordInterestGroupJoin(sql::Database& db,
   // enclose them in a transaction since only one will actually modify the
   // database.
 
-  int64_t join_day = join_time.ToDeltaSinceWindowsEpoch()
-                         .FloorToMultiple(base::Days(1))
-                         .InMicroseconds();
-
   // clang-format off
   sql::Statement insert_join_hist(
       db.GetCachedStatement(SQL_FROM_HERE,
@@ -964,7 +960,7 @@ bool DoRecordInterestGroupJoin(sql::Database& db,
   insert_join_hist.Reset(true);
   insert_join_hist.BindString(0, Serialize(owner));
   insert_join_hist.BindString(1, name);
-  insert_join_hist.BindInt64(2, join_day);
+  insert_join_hist.BindTime(2, join_time);
   if (!insert_join_hist.Run())
     return false;
 
@@ -985,7 +981,7 @@ bool DoRecordInterestGroupJoin(sql::Database& db,
   update_join_hist.Reset(true);
   update_join_hist.BindString(0, Serialize(owner));
   update_join_hist.BindString(1, name);
-  update_join_hist.BindInt64(2, join_day);
+  update_join_hist.BindTime(2, join_time);
 
   return update_join_hist.Run();
 }
@@ -1247,10 +1243,6 @@ bool DoRecordInterestGroupBid(sql::Database& db,
   // enclose them in a transaction since only one will actually modify the
   // database.
 
-  int64_t bid_day = bid_time.ToDeltaSinceWindowsEpoch()
-                        .FloorToMultiple(base::Days(1))
-                        .InMicroseconds();
-
   // clang-format off
   sql::Statement insert_bid_hist(
       db.GetCachedStatement(SQL_FROM_HERE,
@@ -1263,7 +1255,7 @@ bool DoRecordInterestGroupBid(sql::Database& db,
   insert_bid_hist.Reset(true);
   insert_bid_hist.BindString(0, Serialize(group_key.owner));
   insert_bid_hist.BindString(1, group_key.name);
-  insert_bid_hist.BindInt64(2, bid_day);
+  insert_bid_hist.BindTime(2, bid_time);
   if (!insert_bid_hist.Run())
     return false;
 
@@ -1284,7 +1276,7 @@ bool DoRecordInterestGroupBid(sql::Database& db,
   update_bid_hist.Reset(true);
   update_bid_hist.BindString(0, Serialize(group_key.owner));
   update_bid_hist.BindString(1, group_key.name);
-  update_bid_hist.BindInt64(2, bid_day);
+  update_bid_hist.BindTime(2, bid_time);
 
   return update_bid_hist.Run();
 }
@@ -2365,6 +2357,15 @@ void InterestGroupStorage::DeleteInterestGroupData(
     DLOG(ERROR) << "Could not delete interest group data: "
                 << db_->GetErrorMessage();
   }
+}
+
+void InterestGroupStorage::DeleteAllInterestGroupData() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!EnsureDBInitialized())
+    return;
+
+  db_->RazeAndClose();
+  db_.reset();
 }
 
 void InterestGroupStorage::SetInterestGroupPriority(

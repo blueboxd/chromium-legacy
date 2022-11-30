@@ -4,7 +4,6 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/html_to_js.gni")
-import("../../../nearby_share/shared/nearby_shared.gni")
 import("../os_settings.gni")
 
 js_type_check("closure_compile_module") {
@@ -47,8 +46,8 @@ js_library("multidevice_constants") {
 js_library("multidevice_feature_behavior") {
   deps = [
     ":multidevice_constants",
+    "//ash/webui/common/resources:i18n_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements:i18n_behavior",
   ]
 }
 
@@ -62,7 +61,7 @@ js_library("multidevice_feature_item") {
     "..:route_origin_behavior",
     "../..:router",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:assert",
   ]
 }
 
@@ -87,18 +86,18 @@ js_library("multidevice_page") {
     "..:prefs_behavior",
     "..:route_observer_behavior",
     "../..:router",
+    "//ash/webui/common/resources:web_ui_listener_behavior",
     "//chrome/browser/resources/nearby_share/shared:nearby_share_settings_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements:web_ui_listener_behavior",
-    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:assert",
   ]
 }
 
 js_library("multidevice_notification_access_setup_dialog") {
   deps = [
     ":multidevice_constants",
-    "//ui/webui/resources/cr_elements:i18n_behavior",
-    "//ui/webui/resources/cr_elements:web_ui_listener_behavior",
+    "//ash/webui/common/resources:i18n_behavior",
+    "//ash/webui/common/resources:web_ui_listener_behavior",
     "//ui/webui/resources/js:load_time_data.m",
   ]
 }
@@ -106,8 +105,8 @@ js_library("multidevice_notification_access_setup_dialog") {
 js_library("multidevice_permissions_setup_dialog") {
   deps = [
     ":multidevice_constants",
-    "//ui/webui/resources/cr_elements:i18n_behavior",
-    "//ui/webui/resources/cr_elements:web_ui_listener_behavior",
+    "//ash/webui/common/resources:i18n_behavior",
+    "//ash/webui/common/resources:web_ui_listener_behavior",
   ]
 }
 
@@ -131,8 +130,8 @@ js_library("multidevice_smartlock_subpage") {
     "..:prefs_behavior",
     "..:route_observer_behavior",
     "../..:router",
+    "//ash/webui/common/resources:web_ui_listener_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements:web_ui_listener_behavior",
   ]
   externs_list = [
     "$externs_path/quick_unlock_private.js",
@@ -152,8 +151,8 @@ js_library("multidevice_subpage") {
     "..:os_settings_routes",
     "..:route_observer_behavior",
     "../..:router",
+    "//ash/webui/common/resources/network:network_listener_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
   ]
 }
 
@@ -162,8 +161,8 @@ js_library("multidevice_combined_setup_item") {
     ":multidevice_constants",
     ":multidevice_feature_behavior",
     ":multidevice_feature_item",
+    "//ash/webui/common/resources:web_ui_listener_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements:web_ui_listener_behavior",
   ]
   externs_list = [ "../settings_controls_types.js" ]
 }
@@ -173,10 +172,10 @@ js_library("multidevice_tether_item") {
     ":multidevice_feature_behavior",
     "..:os_route",
     "..:os_settings_routes",
+    "//ash/webui/common/resources/network:mojo_interface_provider",
+    "//ash/webui/common/resources/network:network_listener_behavior",
+    "//ash/webui/common/resources/network:onc_mojo",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
-    "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
-    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
   ]
 }
 
@@ -186,8 +185,8 @@ js_library("multidevice_task_continuation_item") {
     ":multidevice_feature_behavior",
     ":multidevice_feature_item",
     ":multidevice_task_continuation_disabled_link",
+    "//ash/webui/common/resources:web_ui_listener_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements:web_ui_listener_behavior",
   ]
   externs_list = [ "../settings_controls_types.js" ]
 }
@@ -201,9 +200,9 @@ js_library("multidevice_wifi_sync_item") {
     "..:route_origin_behavior",
     "../..:router",
     "../os_people_page:os_sync_browser_proxy",
+    "//ash/webui/common/resources:i18n_behavior",
+    "//ash/webui/common/resources:web_ui_listener_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements:i18n_behavior",
-    "//ui/webui/resources/cr_elements:web_ui_listener_behavior",
     "//ui/webui/resources/js:load_time_data.m",
   ]
   externs_list = [ "../settings_controls_types.js" ]
@@ -213,8 +212,8 @@ js_library("multidevice_task_continuation_disabled_link") {
   deps = [
     "..:os_route",
     "../..:router",
+    "//ash/webui/common/resources:i18n_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:load_time_data.m",
   ]
 }
@@ -225,8 +224,8 @@ js_library("multidevice_wifi_sync_disabled_link") {
     "..:os_route",
     "..:route_origin_behavior",
     "../..:router",
+    "//ash/webui/common/resources:i18n_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements:i18n_behavior",
     "//ui/webui/resources/js:load_time_data.m",
   ]
 }
@@ -235,12 +234,12 @@ js_library("multidevice_screen_lock_subpage") {
   deps = [
     "../os_people_page:lock_screen_password_prompt_dialog",
     "../os_people_page:lock_state_behavior",
+    "//ash/webui/common/resources:focus_without_ink_js",
+    "//ash/webui/common/resources:i18n_behavior",
+    "//ash/webui/common/resources/quick_unlock:lock_screen_constants",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_components/chromeos/quick_unlock:lock_screen_constants",
-    "//ui/webui/resources/cr_elements:i18n_behavior",
-    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:load_time_data.m",
-    "//ui/webui/resources/js/cr/ui:focus_without_ink_js",
   ]
   externs_list = [ "$externs_path/chrome_extensions.js" ]
 }
@@ -252,13 +251,13 @@ js_library("multidevice_smartlock_item") {
     ":multidevice_feature_behavior",
     ":multidevice_feature_item",
     "..:metrics_recorder",
+    "//ash/webui/common/resources:web_ui_listener_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements:web_ui_listener_behavior",
   ]
 }
 
 js_library("multidevice_metrics_logger") {
-  deps = [ "//ui/webui/resources/js:assert.m" ]
+  deps = [ "//ui/webui/resources/js:assert" ]
 }
 
 html_to_js("web_components") {

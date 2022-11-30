@@ -10,6 +10,8 @@
 <translation id="1131805035311359397">Du kan tjekke, om dine adgangskoder er beskyttet mod brud på datasikkerheden og andre sikkerhedsproblemer ved at <ph name="BEGIN_LINK" />logge ind på Chromium<ph name="END_LINK" />.</translation>
 <translation id="1185134272377778587">Om Chromium</translation>
 <translation id="1203500561924088507">Tak for installationen. Du skal genstarte browseren, før du bruger <ph name="BUNDLE_NAME" />.</translation>
+<translation id="1231839967188101156">Når indstillingen er aktiveret, frigør Chromium hukommelse fra inaktive faner. Dette tildeler aktive faner og andre apps flere computerressourcer og gør Chromium hurtig. Dine inaktive faner bliver automatisk aktive igen, når du vender tilbage til dem. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
+<translation id="1261119230216066228">Hukommelsessparefunktion har gjort Chromium hurtigere</translation>
 <translation id="1315551408014407711">Konfigurer din nye Chromium-profil</translation>
 <translation id="1385859895174722837">Google Assistent i Chromium</translation>
 <translation id="1396446129537741364">Chromium forsøger at vise adgangskoder.</translation>
@@ -180,6 +182,7 @@ De tilladelser, du har givet til websites og apps, gælder muligvis for denne ko
 <translation id="5386450000063123300">Opdaterer Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Tillad login via Chromium</translation>
 <translation id="5398878173008909840">Der er en ny version af Chromium til rådighed.</translation>
+<translation id="5405650547142096840">Fjern fra Chromium</translation>
 <translation id="5427571867875391349">Angiv Chromium som din standardbrowser</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium beta</translation>
 <translation id="5473971139929175403">Chromium fungerer muligvis ikke korrekt, da det ikke længere understøttes af denne Linux-distribution</translation>
@@ -207,6 +210,7 @@ De tilladelser, du har givet til websites og apps, gælder muligvis for denne ko
 <translation id="6055895534982063517">Der findes en ny version af Chromium, som er hurtigere end nogensinde før.</translation>
 <translation id="6063093106622310249">Åbn i Chr&amp;omium</translation>
 <translation id="6072279588547424923"><ph name="EXTENSION_NAME" /> er føjet til Chromium</translation>
+<translation id="6072463441809498330">Gør Chromium hurtigere</translation>
 <translation id="608006075545470555">Føj arbejdsprofilen til denne browser</translation>
 <translation id="6096348254544841612">Tilpas og administrer Chromium. Der er en tilgængelig opdatering.</translation>
 <translation id="6119438414301547735">Tillad, at udvidelsen viser adgangsanmodninger på Chromium-værktøjslinjen</translation>
@@ -250,6 +254,7 @@ De tilladelser, du har givet til websites og apps, gælder muligvis for denne ko
 <translation id="6717134281241384636">Din profil kan ikke bruges, da den stammer fra en nyere version af Chromium.
 
 Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller brug en nyere version af Chromium.</translation>
+<translation id="6730677189742196061">Hukommelsessparefunktion har gjort Chromium hurtigere</translation>
 <translation id="6734291798041940871">Chromium er allerede installeret for alle brugere på computeren.</translation>
 <translation id="673636774878526923">Log ind, og aktivér derefter synkronisering for at få adgang til dine Chromium-ting på alle dine enheder.</translation>
 <translation id="6774082503108938489">Din forælder har deaktiveret "Tilladelser til websites, apps og udvidelser" for Chromium. Det er ikke tilladt at aktivere denne <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
@@ -303,9 +308,9 @@ Chromium kan ikke gendanne dine præferencer.</translation>
 <translation id="7682601070171973634">Chromium afprøver nye funktioner, der giver websites mulighed for at levere den samme browseroplevelse med færre af dine data</translation>
 <translation id="7686590090926151193">Chromium er ikke din standardbrowser</translation>
 <translation id="7689606757190482937">Synkroniser og tilpas Chromium på alle dine enheder</translation>
-<translation id="7714577916146996629">Når indstillingen er aktiveret, bruger Chromium hukommelse fra faner, du ikke aktivt bruger. Dette frigør din computers ressourcer til andre opgaver og sørger for, at Chromium er hurtigt. Inaktive faner fremstår som tomme og genindlæses automatisk, når du klikker på dem. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" />, eller <ph name="BEGIN_LINK_2" />send feedback<ph name="END_LINK_2" /></translation>
 <translation id="7745317241717453663">Denne handling sletter dine browserdata på denne enhed. Hvis du senere vil hente dine data igen, skal du logge ind på Chromium som <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Installationsprogrammet kunne ikke oprette en midlertidig mappe. Tjek, om der er tilstrækkelig diskplads, og om der er tilladelse til at installere software.</translation>
+<translation id="7786760609782648049">Gør Chromium hurtigere</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7828947555739565424">Der findes allerede en Chromium-profil med denne konto på enheden</translation>
 <translation id="7845233973568007926">Tak for installationen. Du skal genstarte computeren, før du bruger <ph name="BUNDLE_NAME" />.</translation>
@@ -333,11 +338,11 @@ Chromium kan ikke gendanne dine præferencer.</translation>
 <translation id="8453117565092476964">Installationsarkivet er beskadiget eller ugyldigt. Download Chromium igen.</translation>
 <translation id="8463672209299734063">Valgfrit: Vær med til at forbedre funktioner og ydeevne i Chromium OS ved automatisk at sende diagnostik og brugsdata til Google.</translation>
 <translation id="8493179195440786826">Chromium er forældet</translation>
-<translation id="8522220489792889625">Når det er nødvendigt, bruger Chromium hukommelse fra faner, du ikke aktivt bruger. Du kan altid ændre dette under Indstillinger.</translation>
 <translation id="8550334526674375523">Denne arbejdsprofil er totalt adskilt fra din personlige profile.</translation>
 <translation id="8558383651099478961">Din forælder har deaktiveret "Tilladelser til websites, apps og udvidelser" for Chromium. Det er ikke tilladt at tilføje denne <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8561285221328166383">Hvis du vil have fremtidige Chromium-opdateringer, skal du have macOS 10.13 eller nyere. Denne computer anvender macOS 10.12.</translation>
 <translation id="8568283329061645092">Chromium kan tjekke dine adgangskoder, når du er logget ind med din Google-konto</translation>
+<translation id="8574036838419011058">Når denne indstilling er aktiveret, sparer Chromium på batteriet ved at begrænse aktivitet i baggrunden og visuelle effekter, f.eks. jævn rulning og videobilledfrekvenser. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Forfatterne bag Chromium. Alle rettigheder forbeholdes.</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />Sådan bruger vi disse data:<ph name="END_BOLD" /> Websites kan gemme oplysninger med Chromium om dine interesser. Hvis du f.eks. besøger et website for at købe sko til et maraton, kan websitet muligvis definere, at din interesse er at løbe maraton. Hvis du derefter besøger et andet website for at tilmelde dig et løb, kan det website vise dig en annonce for løbesko baseret på dine interesser.</translation>
 <translation id="8619360774459241877">Starter Chromium...</translation>

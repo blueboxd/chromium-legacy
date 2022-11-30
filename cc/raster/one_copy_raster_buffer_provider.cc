@@ -47,9 +47,9 @@ const int kMaxBytesPerCopyOperation = 1024 * 1024 * 4;
 // at normal thread priority.
 // TODO(crbug.com/1072756): Cleanup the feature when the Stable experiment is
 // complete, on November 25, 2020.
-const base::Feature kOneCopyRasterBufferPlaybackNormalThreadPriority{
-    "OneCopyRasterBufferPlaybackNormalThreadPriority",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kOneCopyRasterBufferPlaybackNormalThreadPriority,
+             "OneCopyRasterBufferPlaybackNormalThreadPriority",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace
 
@@ -400,7 +400,7 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
 
   if (mailbox->IsZero()) {
     uint32_t usage =
-        gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_RASTER;
+        gpu::SHARED_IMAGE_USAGE_DISPLAY_READ | gpu::SHARED_IMAGE_USAGE_RASTER;
     if (mailbox_texture_is_overlay_candidate)
       usage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
     *mailbox = sii->CreateSharedImage(

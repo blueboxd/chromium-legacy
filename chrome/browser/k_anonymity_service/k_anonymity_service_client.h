@@ -33,7 +33,11 @@
 // simplify implementation. With only one request out at a time 1) it is clear
 // which request the responses are associated with and 2) the limit on the
 // number of outstanding requests can be handled by the caller.
-class KAnonymityServiceClient : public content::KAnonymityServiceDelegate {
+//
+// IDs passed into the KAnonymityServiceClient will be hashed with SHA256
+// to convert them to a fixed size before being sent to the KAnonymity service.
+class KAnonymityServiceClient : public content::KAnonymityServiceDelegate,
+                                public KeyedService {
  public:
   // The profile must outlive the KAnonymityServiceClient.
   explicit KAnonymityServiceClient(Profile* profile);
@@ -63,6 +67,9 @@ class KAnonymityServiceClient : public content::KAnonymityServiceDelegate {
   // just marks all of the requested sets as not k-anonymous.
   void QuerySets(std::vector<std::string> set_ids,
                  base::OnceCallback<void(std::vector<bool>)> callback) override;
+
+  base::TimeDelta GetJoinInterval() override;
+  base::TimeDelta GetQueryInterval() override;
 
  private:
   struct PendingJoinRequest {

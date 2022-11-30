@@ -118,7 +118,7 @@ ExtensionAppsChromeOs::ExtensionAppsChromeOs(AppServiceProxy* proxy,
 ExtensionAppsChromeOs::~ExtensionAppsChromeOs() {
   app_window_registry_.Reset();
 
-  // In unit tests, AppServiceProxy might be ReInitializeForTesting, so
+  // In unit tests, AppServiceProxy might be ReinitializeForTesting, so
   // ExtensionApps might be destroyed without calling Shutdown, so arc_prefs_
   // needs to be removed from observer in the destructor function.
   if (arc_prefs_) {
@@ -810,6 +810,13 @@ bool ExtensionAppsChromeOs::Accepts(const extensions::Extension* extension) {
   }
 
   if (!extension->is_app() || IsBlocklisted(extension->id())) {
+    return false;
+  }
+
+  // Do not publish legacy packaged apps in Ash if Lacros is user's primary
+  // browser. Legacy packaged apps are deprecated and not supported by Lacros.
+  if (extension->is_legacy_packaged_app() &&
+      crosapi::browser_util::IsLacrosPrimaryBrowser()) {
     return false;
   }
 

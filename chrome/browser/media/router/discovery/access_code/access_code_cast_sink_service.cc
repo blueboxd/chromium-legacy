@@ -4,9 +4,8 @@
 
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_sink_service.h"
 
-#include <algorithm>
-
 #include "base/bind.h"
+#include "base/ranges/algorithm.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
@@ -30,6 +29,7 @@
 #include "components/media_router/common/media_sink.h"
 #include "components/media_router/common/mojom/media_router.mojom.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 
 namespace media_router {
@@ -261,6 +261,15 @@ void AccessCodeCastSinkService::DiscoverSink(const std::string& access_code,
                             absl::nullopt);
     return;
   }
+  if (content::GetNetworkConnectionTracker()->IsOffline()) {
+    LogWarning(
+        "We are not either not connected to a valid network or not connected "
+        "to any network.",
+        "");
+    std::move(callback).Run(AddSinkResultCode::SERVICE_NOT_PRESENT,
+                            absl::nullopt);
+    return;
+  }
   discovery_server_interface_ =
       std::make_unique<AccessCodeCastDiscoveryInterface>(
           profile_, access_code, media_router_->GetLogger(), identity_manager_);
@@ -383,10 +392,8 @@ absl::optional<const MediaRoute> AccessCodeCastSinkService::GetActiveRoute(
   if (!media_router_)
     return absl::nullopt;
   auto routes = media_router_->GetCurrentRoutes();
-  auto route_it = std::find_if(routes.begin(), routes.end(),
-                               [&sink_id](const MediaRoute& route) {
-                                 return route.media_sink_id() == sink_id;
-                               });
+  auto route_it =
+      base::ranges::find(routes, sink_id, &MediaRoute::media_sink_id);
   if (route_it == routes.end())
     return absl::nullopt;
   return *route_it;

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,7 +108,7 @@ static scoped_refptr<CSSVariableData> ConvertInitialVariableData(
     const CSSValue* value) {
   if (!value)
     return nullptr;
-  return To<CSSCustomPropertyDeclaration>(*value).Value();
+  return &To<CSSCustomPropertyDeclaration>(*value).Value();
 }
 
 PropertyRegistration* PropertyRegistration::MaybeCreateForDeclaredProperty(

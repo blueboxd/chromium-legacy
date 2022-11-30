@@ -83,6 +83,11 @@ class AX_EXPORT AXPlatformNodeDelegate {
   const AXNode* node() const { return node_; }
   AXNode* node() { return node_; }
   void SetNode(AXNode& node);
+  AXTreeManager* GetTreeManager() const;
+
+  // Returns the AXNodeID of the AXNode that this delegate encapsulates (if
+  // any), otherwise returns kInvalidAXNodeID
+  AXNodeID GetId() const;
 
   // Get the accessibility data that should be exposed for this node. This data
   // is readonly and comes directly from the accessibility tree's source, e.g.

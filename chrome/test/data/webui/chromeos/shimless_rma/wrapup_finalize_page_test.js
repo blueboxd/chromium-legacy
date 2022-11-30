@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 import {FakeShimlessRmaService} from 'chrome://shimless-rma/fake_shimless_rma_service.js';
 import {setShimlessRmaServiceForTesting} from 'chrome://shimless-rma/mojo_interface_provider.js';
 import {ShimlessRma} from 'chrome://shimless-rma/shimless_rma.js';
 import {FinalizationError, FinalizationStatus, RmadErrorCode} from 'chrome://shimless-rma/shimless_rma_types.js';
-import {WrapupFinalizePage} from 'chrome://shimless-rma/wrapup_finalize_page.js';
+import {FINALIZATION_ERROR_CODE_PREFIX, WrapupFinalizePage} from 'chrome://shimless-rma/wrapup_finalize_page.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.js';
 
 export function wrapupFinalizePageTest() {
   /**
@@ -18,7 +18,7 @@ export function wrapupFinalizePageTest() {
    * when handling calibration overall progress signals.
    * @type {?ShimlessRma}
    */
-  let shimless_rma_component = null;
+  let shimlessRmaComponent = null;
 
   /** @type {?WrapupFinalizePage} */
   let component = null;
@@ -33,8 +33,8 @@ export function wrapupFinalizePageTest() {
   });
 
   teardown(() => {
-    shimless_rma_component.remove();
-    shimless_rma_component = null;
+    shimlessRmaComponent.remove();
+    shimlessRmaComponent = null;
     component.remove();
     component = null;
     service.reset();
@@ -46,10 +46,10 @@ export function wrapupFinalizePageTest() {
   function initializeFinalizePage() {
     assertFalse(!!component);
 
-    shimless_rma_component =
+    shimlessRmaComponent =
         /** @type {!ShimlessRma} */ (document.createElement('shimless-rma'));
-    assertTrue(!!shimless_rma_component);
-    document.body.appendChild(shimless_rma_component);
+    assertTrue(!!shimlessRmaComponent);
+    document.body.appendChild(shimlessRmaComponent);
 
     component = /** @type {!WrapupFinalizePage} */ (
         document.createElement('wrapup-finalize-page'));
@@ -86,49 +86,57 @@ export function wrapupFinalizePageTest() {
     await initializeFinalizePage();
 
     let hardwareErrorEventFired = false;
+    let expectedFinalizationError;
 
     const eventHandler = (event) => {
       hardwareErrorEventFired = true;
-      assertEquals(RmadErrorCode.kFinalizationFailed, event.detail);
+      assertEquals(
+          RmadErrorCode.kFinalizationFailed, event.detail.rmadErrorCode);
+      assertEquals(
+          FINALIZATION_ERROR_CODE_PREFIX + expectedFinalizationError,
+          event.detail.fatalErrorCode);
     };
 
     component.addEventListener('fatal-hardware-error', eventHandler);
 
+    expectedFinalizationError = FinalizationError.kCannotEnableHardwareWp;
     service.triggerFinalizationObserver(
-        FinalizationStatus.kFailedBlocking, 0.0,
-        FinalizationError.kCannotEnableHardwareWp, 0);
+        FinalizationStatus.kFailedBlocking, 0.0, expectedFinalizationError, 0);
     await flushTasks();
     assertTrue(hardwareErrorEventFired);
 
     hardwareErrorEventFired = false;
+    expectedFinalizationError = FinalizationError.kCannotEnableSoftwareWp;
     service.triggerFinalizationObserver(
-        FinalizationStatus.kFailedBlocking, 0.0,
-        FinalizationError.kCannotEnableSoftwareWp, 0);
+        FinalizationStatus.kFailedBlocking, 0.0, expectedFinalizationError, 0);
     await flushTasks();
     assertTrue(hardwareErrorEventFired);
 
     hardwareErrorEventFired = false;
+    expectedFinalizationError = FinalizationError.kCr50;
     service.triggerFinalizationObserver(
-        FinalizationStatus.kFailedBlocking, 0.0, FinalizationError.kCr50, 0);
+        FinalizationStatus.kFailedBlocking, 0.0, expectedFinalizationError, 0);
     await flushTasks();
     assertTrue(hardwareErrorEventFired);
 
     hardwareErrorEventFired = false;
+    expectedFinalizationError = FinalizationError.kGbb;
     service.triggerFinalizationObserver(
-        FinalizationStatus.kFailedBlocking, 0.0, FinalizationError.kGbb, 0);
+        FinalizationStatus.kFailedBlocking, 0.0, expectedFinalizationError, 0);
     await flushTasks();
     assertTrue(hardwareErrorEventFired);
 
     hardwareErrorEventFired = false;
+    expectedFinalizationError = FinalizationError.kUnknown;
     service.triggerFinalizationObserver(
-        FinalizationStatus.kFailedBlocking, 0.0, FinalizationError.kUnknown, 0);
+        FinalizationStatus.kFailedBlocking, 0.0, expectedFinalizationError, 0);
     await flushTasks();
     assertTrue(hardwareErrorEventFired);
 
     hardwareErrorEventFired = false;
+    expectedFinalizationError = FinalizationError.kInternal;
     service.triggerFinalizationObserver(
-        FinalizationStatus.kFailedBlocking, 0.0, FinalizationError.kInternal,
-        0);
+        FinalizationStatus.kFailedBlocking, 0.0, expectedFinalizationError, 0);
     await flushTasks();
     assertTrue(hardwareErrorEventFired);
 

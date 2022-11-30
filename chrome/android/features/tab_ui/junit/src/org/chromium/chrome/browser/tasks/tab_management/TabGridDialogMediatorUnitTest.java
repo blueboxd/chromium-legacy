@@ -82,7 +82,8 @@ import java.util.List;
 @Config(manifest = Config.NONE)
 // clang-format off
 @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
-@Features.DisableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
+@Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
+                           ChromeFeatureList.TAB_SELECTION_EDITOR_V2})
 public class TabGridDialogMediatorUnitTest {
     // clang-format on
 
@@ -184,7 +185,9 @@ public class TabGridDialogMediatorUnitTest {
         doReturn(CUSTOMIZED_DIALOG_TITLE).when(mEditable).toString();
 
         if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(
-                    ContextUtils.getApplicationContext())) {
+                    ContextUtils.getApplicationContext())
+                && !TabUiFeatureUtilities.isTabSelectionEditorV2Enabled(
+                        ContextUtils.getApplicationContext())) {
             mTabSelectionEditorController = null;
         }
         mActivity = Robolectric.buildActivity(TestActivity.class).get();
@@ -195,7 +198,8 @@ public class TabGridDialogMediatorUnitTest {
 
         // TabModelObserver is registered when native is ready.
         assertThat(mTabModelObserverCaptor.getAllValues().isEmpty(), equalTo(true));
-        mMediator.initWithNative(mTabSelectionEditorController, mTabGroupTitleEditor);
+        mMediator.initWithNative(
+                () -> { return mTabSelectionEditorController; }, mTabGroupTitleEditor);
         assertThat(mTabModelObserverCaptor.getAllValues().isEmpty(), equalTo(false));
     }
 
@@ -225,9 +229,39 @@ public class TabGridDialogMediatorUnitTest {
         // Setup selection editor for ungrouping.
         assertThat(mModel.get(TabGridPanelProperties.MENU_CLICK_LISTENER),
                 instanceOf(View.OnClickListener.class));
+
+        mMediator.getToolbarMenuCallbackForTesting().onResult(R.id.ungroup_tab);
         verify(mTabSelectionEditorController)
                 .configureToolbar(eq(REMOVE_BUTTON_STRING), anyInt(),
                         any(TabSelectionEditorActionProvider.class), eq(1), eq(null));
+        verify(mTabSelectionEditorController).show(any());
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.TAB_SELECTION_EDITOR_V2)
+    public void setupTabSelectionEditorV2_flagEnabled() {
+        assertThat(TabUiFeatureUtilities.isTabSelectionEditorV2Enabled(
+                           ContextUtils.getApplicationContext()),
+                equalTo(true));
+
+        assertThat(mMediator.getKeyboardVisibilityListenerForTesting(), equalTo(null));
+        assertThat(mModel.get(TabGridPanelProperties.TITLE_TEXT_WATCHER), equalTo(null));
+        assertThat(mModel.get(TabGridPanelProperties.TITLE_TEXT_ON_FOCUS_LISTENER), equalTo(null));
+
+        // Setup selection editor for multiple items.
+        assertThat(mModel.get(TabGridPanelProperties.MENU_CLICK_LISTENER),
+                instanceOf(View.OnClickListener.class));
+
+        ArgumentCaptor<List<TabSelectionEditorAction>> captor =
+                ArgumentCaptor.forClass((Class) List.class);
+        mMediator.getToolbarMenuCallbackForTesting().onResult(R.id.select_tabs);
+        verify(mTabSelectionEditorController)
+                .configureToolbarWithMenuItems(captor.capture(), eq(null));
+        verify(mTabSelectionEditorController).show(any());
+        List<TabSelectionEditorAction> actions = captor.getValue();
+        assertThat(actions.get(0), instanceOf(TabSelectionEditorSelectionAction.class));
+        assertThat(actions.get(1), instanceOf(TabSelectionEditorCloseAction.class));
+        assertThat(actions.get(2), instanceOf(TabSelectionEditorUngroupAction.class));
     }
 
     @Test
@@ -655,6 +689,29 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
+    public void onFinishingMultipleTabClosure() {
+        List<Tab> tabs = Arrays.asList(mTab1, mTab2);
+        mTabModelObserverCaptor.getValue().onFinishingMultipleTabClosure(tabs);
+
+        verify(mSnackbarManager).dismissSnackbars(eq(mMediator), eq(tabs));
+    }
+
+    @Test
+    public void onFinishingMultipleTabClosure_singleTab() {
+        List<Tab> tabs = Arrays.asList(mTab1);
+        mTabModelObserverCaptor.getValue().onFinishingMultipleTabClosure(tabs);
+
+        verify(mSnackbarManager).dismissSnackbars(eq(mMediator), eq(TAB1_ID));
+    }
+
+    @Test
+    public void allTabsClosureCommitted() {
+        mTabModelObserverCaptor.getValue().allTabsClosureCommitted(false);
+
+        verify(mSnackbarManager).dismissSnackbars(eq(mMediator));
+    }
+
+    @Test
     public void tabPendingClosure_DialogVisible() {
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true);
 
@@ -664,10 +721,39 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
-    public void tabPendingClosure_DialogInVisible() {
+    public void tabPendingClosure_DialogInvisible() {
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
 
         mTabModelObserverCaptor.getValue().tabPendingClosure(mTab1);
+
+        verify(mSnackbarManager, never()).showSnackbar(any(Snackbar.class));
+    }
+
+    @Test
+    public void multipleTabsPendingClosure_DialogVisible() {
+        mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true);
+
+        mTabModelObserverCaptor.getValue().multipleTabsPendingClosure(
+                Arrays.asList(mTab1, mTab2), false);
+
+        verify(mSnackbarManager).showSnackbar(any(Snackbar.class));
+    }
+
+    @Test
+    public void multipleTabsPendingClosure_singleTab_DialogVisible() {
+        mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true);
+
+        mTabModelObserverCaptor.getValue().multipleTabsPendingClosure(Arrays.asList(mTab1), false);
+
+        verify(mSnackbarManager).showSnackbar(any(Snackbar.class));
+    }
+
+    @Test
+    public void multipleTabsPendingClosure_DialogInvisible() {
+        mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
+
+        mTabModelObserverCaptor.getValue().multipleTabsPendingClosure(
+                Arrays.asList(mTab1, mTab2), false);
 
         verify(mSnackbarManager, never()).showSnackbar(any(Snackbar.class));
     }
@@ -702,6 +788,35 @@ public class TabGridDialogMediatorUnitTest {
     public void hideDialog_WithVisibilityListener_BasicAnimation() {
         // Mock that the animation source view is null, and the dialog is showing.
         mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, null);
+        mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true);
+        // Set visibility listener.
+        mModel.set(TabGridPanelProperties.VISIBILITY_LISTENER, mMediator);
+
+        mMediator.hideDialog(false);
+
+        // Animation source view should not be specified.
+        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_SOURCE_VIEW), equalTo(null));
+        assertThat(mModel.get(TabGridPanelProperties.IS_DIALOG_VISIBLE), equalTo(false));
+        verifyZeroInteractions(mDialogController);
+    }
+
+    @Test
+    public void hideDialog_FadeOutAnimation_ClearsViewAnimation() {
+        // Mock that the animation source view is set, and the dialog is showing.
+        mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, mView);
+        mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true);
+
+        mMediator.hideDialog(false);
+
+        // Animation source view should not be specified.
+        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_SOURCE_VIEW), equalTo(null));
+        verify(mDialogController).resetWithListOfTabs(eq(null));
+    }
+
+    @Test
+    public void hideDialog_WithVisibilityListener_ClearsViewAnimation() {
+        // Mock that the animation source view exists, and the dialog is showing.
+        mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, mView);
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true);
         // Set visibility listener.
         mModel.set(TabGridPanelProperties.VISIBILITY_LISTENER, mMediator);
@@ -950,7 +1065,8 @@ public class TabGridDialogMediatorUnitTest {
         mMediator = new TabGridDialogMediator(mActivity, mDialogController, mModel,
                 mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler, null,
                 mShareDelegateSupplier, mSnackbarManager, "");
-        mMediator.initWithNative(mTabSelectionEditorController, mTabGroupTitleEditor);
+        mMediator.initWithNative(
+                () -> { return mTabSelectionEditorController; }, mTabGroupTitleEditor);
 
         // Mock that the dialog is hidden and animation source view, header title and scrim click
         // runnable are all null.
@@ -983,7 +1099,8 @@ public class TabGridDialogMediatorUnitTest {
         mMediator = new TabGridDialogMediator(mActivity, mDialogController, mModel,
                 mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler, null,
                 mShareDelegateSupplier, mSnackbarManager, "");
-        mMediator.initWithNative(mTabSelectionEditorController, mTabGroupTitleEditor);
+        mMediator.initWithNative(
+                () -> { return mTabSelectionEditorController; }, mTabGroupTitleEditor);
         // Mock that the dialog is hidden and animation source view, header title and scrim click
         // runnable are all null.
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
@@ -1017,7 +1134,8 @@ public class TabGridDialogMediatorUnitTest {
         mMediator = new TabGridDialogMediator(mActivity, mDialogController, mModel,
                 mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler, null,
                 mShareDelegateSupplier, mSnackbarManager, "");
-        mMediator.initWithNative(mTabSelectionEditorController, mTabGroupTitleEditor);
+        mMediator.initWithNative(
+                () -> { return mTabSelectionEditorController; }, mTabGroupTitleEditor);
         // Mock that the dialog is hidden and animation source view is set to some mock view for
         // testing purpose.
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
@@ -1082,7 +1200,7 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
-    public void testSnackbarController_onAction() {
+    public void testSnackbarController_onAction_singleTab() {
         doReturn(mTabModel).when(mTabModelSelector).getModelForTabId(TAB1_ID);
 
         mMediator.onAction(TAB1_ID);
@@ -1091,12 +1209,32 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
-    public void testSnackbarController_onDismissNoAction() {
+    public void testSnackbarController_onAction_multipleTabs() {
+        doReturn(mTabModel).when(mTabModelSelector).getModelForTabId(TAB1_ID);
+
+        mMediator.onAction(Arrays.asList(mTab1, mTab2));
+
+        verify(mTabModel).cancelTabClosure(eq(TAB1_ID));
+        verify(mTabModel).cancelTabClosure(eq(TAB2_ID));
+    }
+
+    @Test
+    public void testSnackbarController_onDismissNoAction_singleTab() {
         doReturn(mTabModel).when(mTabModelSelector).getModelForTabId(TAB1_ID);
 
         mMediator.onDismissNoAction(TAB1_ID);
 
         verify(mTabModel).commitTabClosure(eq(TAB1_ID));
+    }
+
+    @Test
+    public void testSnackbarController_onDismissNoAction_multipleTabs() {
+        doReturn(mTabModel).when(mTabModelSelector).getModelForTabId(TAB1_ID);
+
+        mMediator.onDismissNoAction(Arrays.asList(mTab1, mTab2));
+
+        verify(mTabModel).commitTabClosure(eq(TAB1_ID));
+        verify(mTabModel).commitTabClosure(eq(TAB2_ID));
     }
 
     @Test

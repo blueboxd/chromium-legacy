@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -170,7 +170,7 @@ void FontUniqueNameLookupWin::ReceiveReadOnlySharedMemoryRegion(
   DCHECK(lookup_mode_ == blink::mojom::UniqueFontLookupMode::kRetrieveTable);
   font_table_matcher_ =
       std::make_unique<FontTableMatcher>(shared_memory_region.Map());
-  while (!pending_callbacks_.IsEmpty()) {
+  while (!pending_callbacks_.empty()) {
     NotifyFontUniqueNameLookupReady callback = pending_callbacks_.TakeFirst();
     std::move(callback).Run();
   }

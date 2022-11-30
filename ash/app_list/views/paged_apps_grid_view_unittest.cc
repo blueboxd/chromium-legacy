@@ -64,11 +64,11 @@ class PageFlipWaiter : public PaginationModelObserver {
 
 }  // namespace
 
-class PagedAppsGridViewTestBase : public AshTestBase {
+class PagedAppsGridViewTest : public AshTestBase {
  public:
-  PagedAppsGridViewTestBase()
+  PagedAppsGridViewTest()
       : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
-  ~PagedAppsGridViewTestBase() override = default;
+  ~PagedAppsGridViewTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();
@@ -151,21 +151,6 @@ class PagedAppsGridViewTestBase : public AshTestBase {
     EXPECT_FALSE(GetPagedAppsGridView()->cardified_state_for_testing());
   }
 
-  std::unique_ptr<test::AppsGridViewTestApi> grid_test_api_;
-  std::unique_ptr<test::AppListTestModel> app_list_test_model_;
-  std::unique_ptr<SearchModel> search_model_;
-};
-
-// Tests with ProductivityLauncher enabled.
-class PagedAppsGridViewTest : public PagedAppsGridViewTestBase {
- public:
-  PagedAppsGridViewTest() {
-    scoped_features_.InitWithFeatures(
-        {features::kProductivityLauncher,
-         features::kLauncherDismissButtonsOnSortNudgeAndToast},
-        {});
-  }
-
   // Sorts app list with the specified order. If `wait` is true, wait for the
   // reorder animation to complete.
   void SortAppList(const absl::optional<AppListSortOrder>& order, bool wait) {
@@ -186,7 +171,9 @@ class PagedAppsGridViewTest : public PagedAppsGridViewTestBase {
     run_loop.Run();
   }
 
-  base::test::ScopedFeatureList scoped_features_;
+  std::unique_ptr<test::AppsGridViewTestApi> grid_test_api_;
+  std::unique_ptr<test::AppListTestModel> app_list_test_model_;
+  std::unique_ptr<SearchModel> search_model_;
 };
 
 // Tests with ProductivityLauncher and app list nudge enabled.
@@ -203,17 +190,7 @@ class PagedAppsGridViewWithNudgeTest : public PagedAppsGridViewTest {
   }
 };
 
-// Tests with ProductivityLauncher disabled, which disables the bubble launcher.
-class PagedAppsGridViewNonBubbleTest : public PagedAppsGridViewTestBase {
- public:
-  PagedAppsGridViewNonBubbleTest() {
-    scoped_features_.InitAndDisableFeature(features::kProductivityLauncher);
-  }
-
-  base::test::ScopedFeatureList scoped_features_;
-};
-
-TEST_F(PagedAppsGridViewNonBubbleTest, CreatePage) {
+TEST_F(PagedAppsGridViewTest, CreatePage) {
   PagedAppsGridView* apps_grid_view =
       GetAppListTestHelper()->GetRootPagedAppsGridView();
 
@@ -948,6 +925,69 @@ TEST_F(PagedAppsGridViewTest, CardifiedEnterAnimationInterruptedByExit) {
 
   WaitForItemLayerAnimations();
   EXPECT_FALSE(item_view->layer());
+}
+
+// Test that a first page item released outside of the grid with second page
+// shown will visually change back to the first page.
+TEST_F(PagedAppsGridViewTest, DragOutsideOfNextPageSelectsOriginalPage) {
+  const size_t kTotalApps = grid_test_api_->TilesPerPage(0) + 1;
+  app_list_test_model_->PopulateApps(kTotalApps);
+  UpdateLayout();
+
+  PaginationModel* pagination_model =
+      GetAppListTestHelper()->GetRootPagedAppsGridView()->pagination_model();
+  EXPECT_EQ(0, pagination_model->selected_page());
+  EXPECT_EQ(2, pagination_model->total_pages());
+
+  auto* item_view = GetPagedAppsGridView()->view_model()->view_at(0);
+  auto* generator = GetEventGenerator();
+
+  // Start dragging an item on the first page.
+  generator->MoveMouseTo(item_view->GetBoundsInScreen().CenterPoint());
+  generator->PressLeftButton();
+  item_view->FireMouseDragTimerForTest();
+
+  // Drag the item to launcher page flip zone, and flip the launcher to the
+  // second page.
+  generator->MoveMouseTo(
+      GetPagedAppsGridView()->GetBoundsInScreen().bottom_center() +
+      gfx::Vector2d(0, -1));
+  auto page_flip_waiter = std::make_unique<PageFlipWaiter>(pagination_model);
+  page_flip_waiter->Wait();
+
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Move the mouse down to be completely below the grid view. Releasing a drag
+  // here will move the item back to its starting position.
+  generator->MoveMouseBy(0, 50);
+
+  EXPECT_EQ(1, pagination_model->selected_page());
+
+  // With item dragged below the page flip area, end the drag and check that
+  // the first page is selected.
+  generator->ReleaseLeftButton();
+  WaitForItemLayerAnimations();
+
+  // First page should be selected.
+  EXPECT_EQ(0, pagination_model->selected_page());
+
+  // Dragged item should be in starting position.
+  EXPECT_EQ(item_view, grid_test_api_->GetViewAtIndex(GridIndex(0, 0)));
+
+  auto app_list_item_view_visible = [this](const views::View* view) -> bool {
+    return GetPagedAppsGridView()
+        ->GetWidget()
+        ->GetWindowBoundsInScreen()
+        .Contains(view->GetBoundsInScreen());
+  };
+
+  // It is possible that the selected page is correct but visually never
+  // changes, so check that the dragged 'item_view' is visible, and the item
+  // on the second page is not visible.
+  EXPECT_TRUE(app_list_item_view_visible(item_view));
+  EXPECT_FALSE(app_list_item_view_visible(
+      grid_test_api_->GetViewAtIndex(GridIndex(1, 0))));
 }
 
 }  // namespace ash

@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/ash/components/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/ash/components/login/auth/auth_factor_editor.h"
@@ -24,6 +25,8 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class AuthFailure;
+
+class PrefService;
 
 namespace ash {
 
@@ -66,16 +69,20 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH)
   // CryptohomeKeyDelegateServiceProvider would work correctly.
   // `is_ephemeral_mount_enforced` forces usage of ephemeral mounts for all
   // user types (including regular users and kiosks).
+  // `local_state` used to persist login-related state across reboots via
+  // `UserDirectoryIntegrityManager`
   AuthSessionAuthenticator(
       AuthStatusConsumer* consumer,
       std::unique_ptr<SafeModeDelegate> safe_mode_delegate,
       base::RepeatingCallback<void(const AccountId&)> user_recorder,
-      bool is_ephemeral_mount_enforced);
+      bool is_ephemeral_mount_enforced,
+      PrefService* local_state);
 
   // Authenticator overrides.
   void CompleteLogin(std::unique_ptr<UserContext> user_context) override;
 
   void AuthenticateToLogin(std::unique_ptr<UserContext> user_context) override;
+  void AuthenticateToUnlock(std::unique_ptr<UserContext> user_context) override;
   void LoginOffTheRecord() override;
   void LoginAsPublicSession(const UserContext& user_context) override;
   void LoginAsKioskAccount(const AccountId& app_account_id) override;
@@ -112,6 +119,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH)
   void DoCompleteLogin(bool user_exists,
                        std::unique_ptr<UserContext> context,
                        absl::optional<AuthenticationError> error);
+  void DoUnlock(bool user_exists,
+                std::unique_ptr<UserContext> context,
+                absl::optional<AuthenticationError> error);
 
   // Common part of login logic shared by user creation flow and flow when
   // user have changed password elsewhere and decides to re-create cryptohome.
@@ -147,6 +157,16 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH)
       bool user_exists,
       std::unique_ptr<UserContext> context,
       absl::optional<AuthenticationError> error);
+
+  // Notifies `UserDirectoryIntegrityManager` that a user creation
+  // process has started.
+  void RecordCreatingNewUser(std::unique_ptr<UserContext> context,
+                             AuthOperationCallback callback);
+
+  // Notifies `UserDirectoryIntegrityManager` that the newly created user
+  // has added a first auth factor.
+  void RecordFirstAuthFactorAdded(std::unique_ptr<UserContext> context,
+                                  AuthOperationCallback callback);
 
   void PrepareForNewAttempt(const std::string& method_id,
                             const std::string& long_desc);
@@ -203,6 +223,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH)
   std::unique_ptr<AuthPerformer> auth_performer_;
   std::unique_ptr<HibernateManager> hibernate_manager_;
   std::unique_ptr<MountPerformer> mount_performer_;
+
+  const base::raw_ptr<PrefService> local_state_;
 
   base::WeakPtrFactory<AuthSessionAuthenticator> weak_factory_{this};
 };

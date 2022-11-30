@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ bool IsValidContextName(const String& name_or_keyword) {
   // "A valid browsing context name is any string with at least one character
   // that does not start with a U+005F LOW LINE character. (Names starting with
   // an underscore are reserved for special keywords.)"
-  if (name_or_keyword.IsEmpty())
+  if (name_or_keyword.empty())
     return false;
   if (name_or_keyword.StartsWith("_"))
     return false;
@@ -142,9 +142,9 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input, const KURL& base_url) {
 }  // namespace
 
 // static
-SpeculationRuleSet* SpeculationRuleSet::ParseInline(const String& source_text,
-                                                    const KURL& base_url,
-                                                    String* out_error) {
+SpeculationRuleSet* SpeculationRuleSet::Parse(const String& source_text,
+                                              const KURL& base_url,
+                                              String* out_error) {
   // https://wicg.github.io/nav-speculation/speculation-rules.html#parse-speculation-rules
 
   // Let parsed be the result of parsing a JSON string to an Infra value given

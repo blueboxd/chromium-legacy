@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/history/core/browser/history_context.h"
+#include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/query_parser/query_parser.h"
 #include "components/query_parser/snippet.h"
@@ -430,8 +431,10 @@ struct Opener {
 
 // TopSites -------------------------------------------------------------------
 
-typedef std::vector<MostVisitedURL> MostVisitedURLList;
-typedef std::vector<FilteredURL> FilteredURLList;
+using MostVisitedURLList = std::vector<MostVisitedURL>;
+using KeywordSearchTermVisitList =
+    std::vector<std::unique_ptr<KeywordSearchTermVisit>>;
+using FilteredURLList = std::vector<FilteredURL>;
 
 struct MostVisitedURLWithRank {
   MostVisitedURL url;
@@ -924,6 +927,7 @@ struct ClusterKeywordData {
   ClusterKeywordData& operator=(ClusterKeywordData&&);
   ~ClusterKeywordData();
   bool operator==(const ClusterKeywordData& data) const;
+  std::string ToString() const;
 
   // Updates cluster keyword type if a new type is preferred over the existing
   // type.
@@ -944,6 +948,9 @@ struct ClusterKeywordData {
 
   // Entity collections associated with the keyword this is attached to.
   std::vector<std::string> entity_collections;
+
+  friend std::ostream& operator<<(std::ostream& out,
+                                  const ClusterKeywordData& data);
 };
 
 // A cluster of `ClusterVisit`s with associated metadata (i.e. `keywords` and

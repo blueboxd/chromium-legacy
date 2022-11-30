@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/components/settings/cros_settings_provider.h"
 #include "ash/public/cpp/child_accounts/parent_access_controller.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
@@ -32,10 +31,11 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/ui/webui/chromeos/in_session_password_change/lock_screen_reauth_dialogs.h"
+#include "chrome/browser/ui/webui/ash/in_session_password_change/lock_screen_reauth_dialogs.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chromeos/ash/components/settings/cros_settings_provider.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user_names.h"
@@ -351,16 +351,16 @@ void LoginScreenClientImpl::ShowGuestTosScreen() {
 
 void LoginScreenClientImpl::OnMaxIncorrectPasswordAttempted(
     const AccountId& account_id) {
-  RecordReauthReason(account_id, ash::ReauthReason::INCORRECT_PASSWORD_ENTERED);
+  RecordReauthReason(account_id, ash::ReauthReason::kIncorrectPasswordEntered);
 }
 
 void LoginScreenClientImpl::SetPublicSessionKeyboardLayout(
     const AccountId& account_id,
     const std::string& locale,
-    std::unique_ptr<base::ListValue> keyboard_layouts) {
+    base::Value::List keyboard_layouts) {
   std::vector<ash::InputMethodItem> result;
 
-  for (const auto& i : keyboard_layouts->GetList()) {
+  for (const auto& i : keyboard_layouts) {
     if (!i.is_dict())
       continue;
     const base::Value::Dict& dict = i.GetDict();

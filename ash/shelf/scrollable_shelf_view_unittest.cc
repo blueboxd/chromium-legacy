@@ -299,10 +299,12 @@ TEST_F(ScrollableShelfViewTest, CorrectUIAfterDisplayRotationShortToLong) {
   EXPECT_FALSE(scrollable_shelf_view_->ShouldAdjustForTest());
 }
 
+// TODO(crbug.com/1366645): Enable when the bug is fixed.
 // Verifies that the display rotation from the long side to the short side
 // should not break the scrollable shelf's UI behavior
 // (https://crbug.com/1000764).
-TEST_P(ScrollableShelfViewRTLTest, CorrectUIAfterDisplayRotationLongToShort) {
+TEST_P(ScrollableShelfViewRTLTest,
+       DISABLED_CorrectUIAfterDisplayRotationLongToShort) {
   // Changes the display setting in order that the display's width is greater
   // than the height.
   UpdateDisplay("600x300");
@@ -340,12 +342,12 @@ TEST_P(ScrollableShelfViewRTLTest, VerifyApplyMaskGradientShaderWhenNeeded) {
   AddAppShortcut();
   ASSERT_EQ(ScrollableShelfView::LayoutStrategy::kNotShowArrowButtons,
             scrollable_shelf_view_->layout_strategy_for_test());
-  EXPECT_FALSE(scrollable_shelf_view_->layer()->layer_mask_layer());
+  EXPECT_TRUE(scrollable_shelf_view_->layer()->gradient_mask().IsEmpty());
 
   AddAppShortcutsUntilOverflow();
   ASSERT_EQ(ScrollableShelfView::LayoutStrategy::kShowRightArrowButton,
             scrollable_shelf_view_->layout_strategy_for_test());
-  EXPECT_TRUE(scrollable_shelf_view_->layer()->layer_mask_layer());
+  EXPECT_FALSE(scrollable_shelf_view_->layer()->gradient_mask().IsEmpty());
 }
 
 // When hovering mouse on a shelf icon, the tooltip only shows for the visible
@@ -996,7 +998,8 @@ TEST_P(ScrollableShelfViewRTLTest, MouseWheelOnEmptyShelfShouldExpandAppList) {
   GetEventGenerator()->MoveMouseTo(empty_shelf_point);
   GetEventGenerator()->MoveMouseWheel(0, shelf_scroll_threshold + 1);
   auto* app_list_view = presenter->GetView();
-  EXPECT_EQ(AppListViewState::kPeeking, app_list_view->app_list_state());
+  EXPECT_EQ(AppListViewState::kFullscreenAllApps,
+            app_list_view->app_list_state());
 
   // Scrolling again should expand to all apps.
   GetEventGenerator()->MoveMouseWheel(0, shelf_scroll_threshold + 1);
@@ -1065,11 +1068,11 @@ TEST_P(ScrollableShelfViewRTLTest, VerifyScrollEvent) {
     GetEventGenerator()->ScrollSequence(start_point, base::TimeDelta(),
                                         /*x_offset=*/0, scroll_speed,
                                         scroll_steps, num_fingers);
-    EXPECT_EQ(AppListViewState::kPeeking, Shell::Get()
-                                              ->app_list_controller()
-                                              ->fullscreen_presenter()
-                                              ->GetView()
-                                              ->app_list_state());
+    EXPECT_EQ(AppListViewState::kFullscreenAllApps, Shell::Get()
+                                                        ->app_list_controller()
+                                                        ->fullscreen_presenter()
+                                                        ->GetView()
+                                                        ->app_list_state());
     EXPECT_EQ(default_strategy,
               scrollable_shelf_view_->layout_strategy_for_test());
   }

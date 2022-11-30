@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -572,8 +572,9 @@ WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
     MaybeCreateWatchTimeReporter();
   }
 
-  client_->DidMediaMetadataChange(HasAudio(), HasVideo(),
-                                  media::MediaContentType::OneShot);
+  client_->DidMediaMetadataChange(
+      HasAudio(), HasVideo(), media::AudioCodec::kUnknown,
+      media::VideoCodec::kUnknown, media::MediaContentType::OneShot);
   delegate_->DidMediaMetadataChange(delegate_id_, HasAudio(), HasVideo(),
                                     media::MediaContentType::OneShot);
 
@@ -669,7 +670,7 @@ void WebMediaPlayerMS::ReloadVideo() {
   auto video_components = descriptor.VideoComponents();
 
   RendererReloadAction renderer_action = RendererReloadAction::KEEP_RENDERER;
-  if (video_components.IsEmpty()) {
+  if (video_components.empty()) {
     if (video_frame_provider_)
       renderer_action = RendererReloadAction::REMOVE_RENDERER;
     current_video_track_id_ = WebString();
@@ -713,8 +714,9 @@ void WebMediaPlayerMS::ReloadVideo() {
   // TODO(perkj, magjed): We use OneShot focus type here so that it takes
   // audio focus once it starts, and then will not respond to further audio
   // focus changes. See https://crbug.com/596516 for more details.
-  client_->DidMediaMetadataChange(HasAudio(), HasVideo(),
-                                  media::MediaContentType::OneShot);
+  client_->DidMediaMetadataChange(
+      HasAudio(), HasVideo(), media::AudioCodec::kUnknown,
+      media::VideoCodec::kUnknown, media::MediaContentType::OneShot);
   delegate_->DidMediaMetadataChange(delegate_id_, HasAudio(), HasVideo(),
                                     media::MediaContentType::OneShot);
 }
@@ -730,7 +732,7 @@ void WebMediaPlayerMS::ReloadAudio() {
   auto audio_components = descriptor.AudioComponents();
 
   RendererReloadAction renderer_action = RendererReloadAction::KEEP_RENDERER;
-  if (audio_components.IsEmpty()) {
+  if (audio_components.empty()) {
     if (audio_renderer_)
       renderer_action = RendererReloadAction::REMOVE_RENDERER;
     current_audio_track_id_ = WebString();
@@ -773,8 +775,9 @@ void WebMediaPlayerMS::ReloadAudio() {
   // TODO(perkj, magjed): We use OneShot focus type here so that it takes
   // audio focus once it starts, and then will not respond to further audio
   // focus changes. See https://crbug.com/596516 for more details.
-  client_->DidMediaMetadataChange(HasAudio(), HasVideo(),
-                                  media::MediaContentType::OneShot);
+  client_->DidMediaMetadataChange(
+      HasAudio(), HasVideo(), media::AudioCodec::kUnknown,
+      media::VideoCodec::kUnknown, media::MediaContentType::OneShot);
   delegate_->DidMediaMetadataChange(delegate_id_, HasAudio(), HasVideo(),
                                     media::MediaContentType::OneShot);
 }
@@ -1006,6 +1009,11 @@ WebTimeRanges WebMediaPlayerMS::Buffered() const {
 WebTimeRanges WebMediaPlayerMS::Seekable() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return WebTimeRanges();
+}
+
+void WebMediaPlayerMS::OnFrozen() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(paused_);
 }
 
 bool WebMediaPlayerMS::DidLoadingProgress() {

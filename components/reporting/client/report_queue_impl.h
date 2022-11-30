@@ -97,12 +97,15 @@ class SpeculativeReportQueueImpl : public ReportQueue {
   // Moveable, non-copyable struct holding a pending record producer for the
   // |pending_record_producers_| queue below.
   struct PendingRecordProducer {
-    PendingRecordProducer(RecordProducer producer, Priority priority);
+    PendingRecordProducer(RecordProducer producer,
+                          EnqueueCallback callback,
+                          Priority priority);
     PendingRecordProducer(PendingRecordProducer&& other);
     PendingRecordProducer& operator=(PendingRecordProducer&& other);
     ~PendingRecordProducer();
 
     RecordProducer record_producer;
+    EnqueueCallback record_callback;
     Priority record_priority;
   };
 
@@ -118,7 +121,10 @@ class SpeculativeReportQueueImpl : public ReportQueue {
 
   // Enqueues head of the |pending_record_producers_| and reapplies for the rest
   // of it.
-  void EnqueuePendingRecordProducers(EnqueueCallback callback) const;
+  void EnqueuePendingRecordProducers() const;
+
+  // Purges all |pending_record_producers_| with error.
+  void PurgePendingProducers(Status status) const;
 
   // Optionally enqueues |record_producer| (owned) to actual queue, if ready.
   // Otherwise adds it to the end of |pending_record_producers_|.
@@ -131,9 +137,8 @@ class SpeculativeReportQueueImpl : public ReportQueue {
   const scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
   SEQUENCE_CHECKER(sequence_checker_);
 
-  // Creation status of |ReportQueue| and actual |ReportQueue| if successfully
-  // created.
-  absl::optional<StatusOr<std::unique_ptr<ReportQueue>>> status_or_report_queue_
+  // Actual |ReportQueue| once successfully created (immutable after that).
+  absl::optional<std::unique_ptr<ReportQueue>> actual_report_queue_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Queue of the pending record producers, collected before actual queue has
@@ -145,7 +150,6 @@ class SpeculativeReportQueueImpl : public ReportQueue {
   // Weak pointer factory.
   base::WeakPtrFactory<SpeculativeReportQueueImpl> weak_ptr_factory_{this};
 };
-
 }  // namespace reporting
 
 #endif  // COMPONENTS_REPORTING_CLIENT_REPORT_QUEUE_IMPL_H_

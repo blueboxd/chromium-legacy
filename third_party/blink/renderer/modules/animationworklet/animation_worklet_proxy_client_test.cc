@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -228,7 +228,7 @@ TEST_F(AnimationWorkletProxyClientTest,
   AnimationWorkletProxyClient* proxy_client =
       MakeGarbageCollected<AnimationWorkletProxyClient>(1, nullptr, nullptr,
                                                         nullptr, nullptr);
-  EXPECT_TRUE(proxy_client->mutator_items_.IsEmpty());
+  EXPECT_TRUE(proxy_client->mutator_items_.empty());
 
   scoped_refptr<base::SingleThreadTaskRunner> mutator_task_runner =
       base::ThreadTaskRunnerHandle::Get();

@@ -61,6 +61,7 @@
 #include "components/dom_distiller/content/browser/uma_helper.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/url_utils.h"
+#include "components/feature_engagement/public/event_constants.h"
 #include "components/performance_manager/public/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/profile_metrics/browser_profile_type.h"
@@ -282,12 +283,14 @@ const int AppMenuModel::kNumUnboundedMenuTypes;
 
 AppMenuModel::AppMenuModel(ui::AcceleratorProvider* provider,
                            Browser* browser,
-                           AppMenuIconController* app_menu_icon_controller)
+                           AppMenuIconController* app_menu_icon_controller,
+                           AlertMenuItem alert_item)
     : ui::SimpleMenuModel(this),
       uma_action_recorded_(false),
       provider_(provider),
       browser_(browser),
-      app_menu_icon_controller_(app_menu_icon_controller) {
+      app_menu_icon_controller_(app_menu_icon_controller),
+      alert_item_(alert_item) {
   DCHECK(browser_);
 }
 
@@ -396,6 +399,11 @@ void AppMenuModel::ExecuteCommand(int command_id, int event_flags) {
   if (error) {
     error->ExecuteMenuItem(browser_);
     return;
+  }
+
+  if (command_id == IDC_PERFORMANCE) {
+    browser()->window()->NotifyFeatureEngagementEvent(
+        feature_engagement::events::kPerformanceMenuItemActivated);
   }
 
   LogMenuMetrics(command_id);
@@ -789,6 +797,19 @@ bool AppMenuModel::IsCommandIdVisible(int command_id) const {
     default:
       return true;
   }
+}
+
+bool AppMenuModel::IsCommandIdAlerted(int command_id) const {
+  if ((command_id == IDC_RECENT_TABS_MENU) ||
+      (command_id == AppMenuModel::kMinRecentTabsCommandId)) {
+    return alert_item_ == AlertMenuItem::kReopenTabs;
+  }
+
+  if (command_id == IDC_PERFORMANCE) {
+    return alert_item_ == AlertMenuItem::kPerformance;
+  }
+
+  return false;
 }
 
 bool AppMenuModel::GetAcceleratorForCommandId(

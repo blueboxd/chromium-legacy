@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
 
 import {FileType} from '../../../common/js/file_type.js';
@@ -471,6 +471,13 @@ filelist.updateListItemExternalProps = (li, externalProps, isTeamDriveRoot) => {
     iconDiv.classList.toggle('computers-root', !!externalProps.isMachineRoot);
     iconDiv.classList.toggle(
         'external-media-root', !!externalProps.isExternalMedia);
+  }
+
+  if (util.isInlineSyncStatusEnabled()) {
+    li.toggleAttribute(
+        'data-sync-status', externalProps.syncStatus !== 'not_found');
+    li.setAttribute('data-sync-status', externalProps.syncStatus);
+    // TODO(msalomao): set sync status aria-label.
   }
 };
 

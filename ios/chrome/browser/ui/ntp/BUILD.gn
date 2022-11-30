@@ -24,7 +24,6 @@ source_set("ntp") {
     ":constants",
     ":feature_flags",
   ]
-  deps = [ "//ios/chrome/browser/ui/util" ]
 }
 
 source_set("logo") {
@@ -91,6 +90,7 @@ source_set("coordinator") {
     "//ios/chrome/browser/ui/context_menu/link_preview",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/follow",
+    "//ios/chrome/browser/ui/main:layout_guide_util",
     "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/ui/main:scene_state_observer",
     "//ios/chrome/browser/ui/ntp/feed_management",
@@ -118,6 +118,7 @@ source_set("util") {
   deps = [
     "//ios/chrome/browser",
     "//ios/chrome/browser/ntp",
+    "//ios/chrome/browser/url:constants",
     "//ios/web/public",
   ]
 }
@@ -257,7 +258,6 @@ source_set("unit_tests") {
     "//components/search_engines",
     "//components/sessions",
     "//components/variations",
-    "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state:test_support",
@@ -304,11 +304,11 @@ source_set("eg2_tests") {
     "//components/policy/core/common:test_support",
     "//components/strings",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser:chrome_url_constants",
     "//ios/chrome/browser/metrics:eg_test_support+eg2",
     "//ios/chrome/browser/policy:eg_test_support+eg2",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
     "//ios/chrome/browser/ui/popup_menu:constants",
+    "//ios/chrome/browser/url:constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",

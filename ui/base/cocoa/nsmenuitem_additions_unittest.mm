@@ -59,12 +59,13 @@ bool IsCommandlessCyrillicLayout(NSString* layoutId) {
          [layoutId isEqualToString:@"com.apple.keylayout.Mongolian-Cyrillic"];
 }
 
-void ExpectKeyFiresItemEq(bool result,
+void ExpectKeyFiresItemEq(bool expected_result,
                           NSEvent* key,
                           NSMenuItem* item,
                           bool compareCocoa) {
-  EXPECT_EQ(result, [item cr_firesForKeyEquivalentEvent:key]) << key << '\n'
-                                                              << item;
+  EXPECT_EQ(expected_result, [item cr_firesForKeyEquivalentEvent:key])
+      << key << '\n'
+      << item;
 
   // Make sure that Cocoa does in fact agree with our expectations. However,
   // in some cases cocoa behaves weirdly (if you create e.g. a new event that
@@ -77,7 +78,8 @@ void ExpectKeyFiresItemEq(bool result,
     [menu setAutoenablesItems:NO];
     EXPECT_FALSE([menu performKeyEquivalent:key]);
     [menu addItem:item];
-    EXPECT_EQ(result, [menu performKeyEquivalent:key]) << key << '\n' << item;
+    EXPECT_EQ(expected_result, [menu performKeyEquivalent:key]) << key << '\n'
+                                                                << item;
   }
 }
 
@@ -359,6 +361,70 @@ TEST(NSMenuItemAdditionsTest, TestFiresForKeyEvent) {
   // Change away from Command-QWERTY
   SetIsInputSourceCommandQwertyForTesting(false);
 
+  // With Dvorak Right or Left, some of the number row keys produce
+  // letters. Ensure that we ignore the key code when taking input
+  // from Dvorak RL.
+
+  const NSUInteger keyCodeForEightKey = 28;
+  key = KeyEvent(0x100110, @"8", @"8", keyCodeForEightKey);
+  item = MenuItem(@"f", NSEventModifierFlagCommand);
+  ExpectKeyDoesntFireItem(key, item);
+  item = MenuItem(@"8", NSEventModifierFlagCommand);
+  ExpectKeyFiresItem(key, item);
+
+  const NSUInteger keyCodeForNumericKeypadEightKey = 91;
+  key = KeyEvent(0x100110, @"8", @"8", keyCodeForNumericKeypadEightKey);
+  item = MenuItem(@"f", NSEventModifierFlagCommand);
+  ExpectKeyDoesntFireItem(key, item);
+  item = MenuItem(@"8", NSEventModifierFlagCommand);
+  ExpectKeyFiresItem(key, item);
+
+  const NSUInteger keyCodeForFiveKey = 23;
+  key = KeyEvent(0x100110, @"5", @"5", keyCodeForFiveKey);
+  item = MenuItem(@"f", NSEventModifierFlagCommand);
+  ExpectKeyDoesntFireItem(key, item);
+  item = MenuItem(@"5", NSEventModifierFlagCommand);
+  ExpectKeyFiresItem(key, item);
+
+  const NSUInteger keyCodeForNumericKeypadFiveKey = 87;
+  key = KeyEvent(0x100110, @"5", @"5", keyCodeForNumericKeypadFiveKey);
+  item = MenuItem(@"f", NSEventModifierFlagCommand);
+  ExpectKeyDoesntFireItem(key, item);
+  item = MenuItem(@"5", NSEventModifierFlagCommand);
+  ExpectKeyFiresItem(key, item);
+
+  SetIsInputSourceDvorakRightOrLeftForTesting(true);
+
+  // Under Dvorak Right, the eight key is the letter "f".
+  key = KeyEvent(0x100110, @"f", @"f", keyCodeForEightKey);
+  item = MenuItem(@"f", NSEventModifierFlagCommand);
+  ExpectKeyFiresItem(key, item);
+  item = MenuItem(@"8", NSEventModifierFlagCommand);
+  ExpectKeyDoesntFireItem(key, item);
+
+  // Pressing the eight key on the numeric keypad should switch tabs.
+  key = KeyEvent(0x100110, @"8", @"8", keyCodeForNumericKeypadEightKey);
+  item = MenuItem(@"f", NSEventModifierFlagCommand);
+  ExpectKeyDoesntFireItem(key, item);
+  item = MenuItem(@"8", NSEventModifierFlagCommand);
+  ExpectKeyFiresItem(key, item);
+
+  // Under Dvorak Left, the five key is the letter "f".
+  key = KeyEvent(0x100110, @"f", @"f", keyCodeForFiveKey);
+  item = MenuItem(@"f", NSEventModifierFlagCommand);
+  ExpectKeyFiresItem(key, item);
+  item = MenuItem(@"5", NSEventModifierFlagCommand);
+  ExpectKeyDoesntFireItem(key, item);
+
+  // Pressing the five key on the numeric keypad should switch tabs.
+  key = KeyEvent(0x100110, @"5", @"5", keyCodeForNumericKeypadFiveKey);
+  item = MenuItem(@"f", NSEventModifierFlagCommand);
+  ExpectKeyDoesntFireItem(key, item);
+  item = MenuItem(@"5", NSEventModifierFlagCommand);
+  ExpectKeyFiresItem(key, item);
+
+  SetIsInputSourceDvorakRightOrLeftForTesting(false);
+
   // cmd-shift-z on dvorak layout (so that we get a ':')
   key = KeyEvent(0x12010a, @";", @":", 6);
   ExpectKeyFiresItem(key, MenuItem(@":", NSEventModifierFlagCommand));
@@ -422,6 +488,18 @@ TEST(NSMenuItemAdditionsTest, TestFiresForKeyEvent) {
   key = KeyEvent(0x100108, @"é", @"é", 19);
   ExpectKeyFiresItem(key, MenuItem(@"2", NSEventModifierFlagCommand),
                      /*compareCocoa=*/false);
+
+  // In Hebrew layout, make sure Cmd-q works.
+  key = KeyEvent(0x100110, @"q", @"/", 12);
+  ExpectKeyDoesntFireItem(key, MenuItem(@"q", NSEventModifierFlagCommand),
+                          /*compareCocoa=*/false);
+
+  SetIsInputSourceCommandHebrewForTesting(true);
+
+  ExpectKeyFiresItem(key, MenuItem(@"q", NSEventModifierFlagCommand),
+                     /*compareCocoa=*/false);
+
+  SetIsInputSourceCommandHebrewForTesting(false);
 }
 
 NSString* keyCodeToCharacter(NSUInteger keyCode,
@@ -569,6 +647,22 @@ TEST(NSMenuItemAdditionsTest, MMFKEHandlesFlagsChangedEvents) {
 
   // Check that there are no issues with key up events.
   EXPECT_EQ(expected_flags, ModifierMaskForKeyEvent(key_up_event));
+
+  modifiers = NSEventModifierFlagFunction;
+  NSEvent* empty_chars_event = [NSEvent keyEventWithType:NSEventTypeKeyDown
+                                                location:NSZeroPoint
+                                           modifierFlags:modifiers
+                                               timestamp:0.0
+                                            windowNumber:0
+                                                 context:nil
+                                              characters:@""
+                             charactersIgnoringModifiers:@""
+                                               isARepeat:NO
+                                                 keyCode:0];
+
+  // Make sure we correctly handle the situation of function key press event
+  // with no characters (dead keys).
+  EXPECT_EQ(expected_flags, ModifierMaskForKeyEvent(empty_chars_event));
 }
 
 }  // namespace

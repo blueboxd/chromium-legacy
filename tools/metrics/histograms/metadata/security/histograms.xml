@@ -201,7 +201,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Security.PageEndReason" enum="PageEndReason"
-    expires_after="2022-10-10">
+    expires_after="2023-03-10">
   <owner>cthomp@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -241,12 +241,23 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.PageInfo.AdPersonalizationRowShown" enum="Boolean"
-    expires_after="M109">
+    expires_after="M112">
   <owner>dullweber@chromium.org</owner>
   <owner>sauski@google.com</owner>
   <summary>
     Tracks whether the Ads Personalization section was shown. Recorded every
     time PageInfo is opened.
+  </summary>
+</histogram>
+
+<histogram name="Security.PageInfo.Cookies.HasFPSInfo" enum="Boolean"
+    expires_after="M115">
+  <owner>tommasin@chromium.org</owner>
+  <owner>sauski@google.com</owner>
+  <owner>olesiamarukhno@google.com</owner>
+  <summary>
+    Tracks whether the FPS section was shown in the Cookies subpage. Recorded
+    every time Cookie subpage from PageInfo is opened.
   </summary>
 </histogram>
 
@@ -318,7 +329,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.SafetyTips.GetDomainInfoTime" units="ms"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>jdeblasio@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
@@ -330,7 +341,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.SafetyTips.GetReputationStatusWithEngagedSitesTime"
-    units="ms" expires_after="2023-01-15">
+    units="ms" expires_after="2023-03-19">
   <owner>jdeblasio@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
@@ -446,7 +457,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.SCTAuditing.OptIn.ReportCompletionStatus"
-    enum="SCTAuditingReportCompletionStatus" expires_after="2023-01-15">
+    enum="SCTAuditingReportCompletionStatus" expires_after="2023-03-19">
   <owner>cthomp@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -477,7 +488,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.SCTAuditing.OptIn.ReportSampled" enum="Boolean"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>cthomp@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -488,7 +499,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.SCTAuditing.OptIn.ReportSize" units="bytes"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>cthomp@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -498,7 +509,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.SCTAuditing.OptIn.ReportSucceeded" enum="Boolean"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>cthomp@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -543,7 +554,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.SCTAuditing.OptOut.ReportCount" units="reports"
-    expires_after="2023-02-01">
+    expires_after="2023-04-09">
   <owner>cthomp@chromium.org</owner>
   <owner>jdeblasio@chromium.org</owner>
   <summary>
@@ -609,7 +620,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.SecurityLevel.OnComplete" enum="SecurityLevel"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>cthomp@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -622,7 +633,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Security.SiteEngagement" units="units"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>cthomp@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -827,7 +838,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SiteIsolation.ORB.BlockingReason"
-    enum="OrbBlockingDecisionReason" expires_after="2023-01-22">
+    enum="OrbBlockingDecisionReason" expires_after="2023-03-26">
   <owner>creis@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -838,7 +849,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SiteIsolation.ORB.CorbVsOrb" enum="CorbVsOrb"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>creis@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -852,7 +863,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SiteIsolation.ORB.CorbVsOrb.OrbBlockedAndCorbDidnt.Reason"
-    enum="OrbBlockingDecisionReason" expires_after="2023-01-22">
+    enum="OrbBlockingDecisionReason" expires_after="2023-03-26">
   <owner>creis@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -962,7 +973,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SiteIsolation.ReusePendingOrCommittedSite.CouldReuse2"
-    enum="ReusePendingOrCommittedSiteEnum" expires_after="2023-01-20">
+    enum="ReusePendingOrCommittedSiteEnum" expires_after="2023-03-26">
   <owner>clamy@chromium.org</owner>
   <summary>
     Whether SiteInstances with a ProcessReusePolicy of

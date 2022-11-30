@@ -14,6 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
 #include "content/browser/devtools/protocol/network.h"
 #include "content/browser/devtools/protocol/network_handler.h"
@@ -422,6 +423,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   bool tainted_origin_ = false;
   bool fetch_cors_flag_ = false;
   std::string current_id_;
+  std::string redirected_request_id_;
 
   std::unique_ptr<BodyReader> body_reader_;
   std::unique_ptr<ResponseMetadata> response_metadata_;
@@ -875,6 +877,7 @@ void InterceptionJob::Detach() {
   if (state_ == State::kAuthRequired) {
     state_ = State::kRequestSent;
     waiting_for_resolution_ = false;
+    TRACE_EVENT_NESTABLE_ASYNC_END0("devtools", "Fetch.requestPaused", this);
     std::move(pending_auth_callback_).Run(true, absl::nullopt);
     return;
   }
@@ -888,7 +891,7 @@ Response InterceptionJob::InnerContinueRequest(
         "Invalid state for continueInterceptedRequest");
   }
   waiting_for_resolution_ = false;
-
+  TRACE_EVENT_NESTABLE_ASYNC_END0("devtools", "Fetch.requestPaused", this);
   if (modifications->intercept_response.isJust()) {
     if (modifications->intercept_response.fromJust()) {
       if (stage_ == InterceptionStage::REQUEST)
@@ -1027,8 +1030,12 @@ void InterceptionJob::ApplyModificationsToRequest(
 
   // Note this redirect is not visible to the page by design. If they want a
   // visible redirect they can mock a response with a 302.
-  if (modifications->modified_url.isJust())
-    request->url = GURL(modifications->modified_url.fromJust());
+  if (modifications->modified_url.isJust()) {
+    DCHECK_EQ(url_chain_.back(), request->url);
+    const GURL new_url(modifications->modified_url.fromJust());
+    request->url = new_url;
+    url_chain_.back() = new_url;
+  }
 
   if (modifications->modified_method.isJust())
     request->method = modifications->modified_method.fromJust();
@@ -1317,6 +1324,9 @@ std::unique_ptr<InterceptedRequestInfo> InterceptionJob::BuildRequestInfo(
 
   if (head && head->headers)
     result->response_headers = head->headers;
+  if (!redirected_request_id_.empty())
+    result->redirected_request_id = redirected_request_id_;
+
   return result;
 }
 
@@ -1376,6 +1386,7 @@ void InterceptionJob::NotifyClientWithCookies(
       protocol::NetworkHandler::CreateRequestFromResourceRequest(
           create_loader_params_->request, cookie_line);
 
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("devtools", "Fetch.requestPaused", this);
   waiting_for_resolution_ = true;
   interceptor_->request_intercepted_callback_.Run(std::move(request_info));
 }
@@ -1437,6 +1448,7 @@ void InterceptionJob::FollowRedirect(
   url_chain_.push_back(create_loader_params_->request.url);
 
   if (interceptor_) {
+    redirected_request_id_ = current_id_;
     // Pretend that each redirect hop is a new request -- this is for
     // compatibilty with URLRequestJob-based interception implementation.
     interceptor_->RemoveJob(current_id_);

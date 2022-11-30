@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,9 @@ NonMainThreadSchedulerBase::NonMainThreadSchedulerBase(
 NonMainThreadSchedulerBase::~NonMainThreadSchedulerBase() = default;
 
 scoped_refptr<NonMainThreadTaskQueue>
-NonMainThreadSchedulerBase::CreateTaskQueue(const char* name,
-                                            bool can_be_throttled) {
+NonMainThreadSchedulerBase::CreateTaskQueue(
+    base::sequence_manager::QueueName name,
+    bool can_be_throttled) {
   helper_.CheckOnValidThread();
   return helper_.NewTaskQueue(
       base::sequence_manager::TaskQueue::Spec(name).SetShouldMonitorQuiescence(

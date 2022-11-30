@@ -13,6 +13,8 @@ namespace {
 
 constexpr char kProductName[] = "Test Product Name";
 constexpr char kProductVersion[] = "1.0.0.2";
+constexpr char kTestBundleProductName[] = "TestApp";
+constexpr char kTestBundleProductVersion[] = "10.8";
 
 }  // namespace
 
@@ -26,6 +28,10 @@ base::FilePath GetTestDataDir() {
 
 base::FilePath GetSignedExePath() {
   return GetTestDataDir().AppendASCII("signed.exe");
+}
+
+base::FilePath GetMultiSignedExePath() {
+  return GetTestDataDir().AppendASCII("multi-signed.exe");
 }
 
 base::FilePath GetMetadataExePath() {
@@ -42,6 +48,45 @@ std::string GetMetadataProductName() {
 
 std::string GetMetadataProductVersion() {
   return kProductVersion;
+}
+
+base::FilePath GetTestBundlePath() {
+  return GetTestDataDir().AppendASCII("TestApp.app");
+}
+
+base::FilePath GetTestBundleBinaryPath() {
+  return GetTestBundlePath()
+      .AppendASCII("Contents")
+      .AppendASCII("MacOS")
+      .AppendASCII("TestApp");
+}
+
+std::string GetTestBundleProductName() {
+  return kTestBundleProductName;
+}
+
+std::string GetTestBundleProductVersion() {
+  return kTestBundleProductVersion;
+}
+
+base::FilePath GetUnsignedBundlePath() {
+  return GetTestDataDir().AppendASCII("UnsignedApp.app");
+}
+
+base::FilePath GetUnusedPath() {
+  return GetTestDataDir().AppendASCII("Unused");
+}
+
+base::FilePath GetEmptyPlistPath() {
+  return GetTestDataDir().AppendASCII("empty.plist");
+}
+
+base::FilePath GetMixArrayDictionaryPlistPath() {
+  return GetTestDataDir().AppendASCII("mix_array_dictionary.plist");
+}
+
+base::FilePath GetOnlyDictionaryPlistPath() {
+  return GetTestDataDir().AppendASCII("only_dictionary.plist");
 }
 
 }  // namespace device_signals::test

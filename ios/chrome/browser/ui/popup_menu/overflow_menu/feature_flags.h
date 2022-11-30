@@ -8,25 +8,19 @@
 #include "base/feature_list.h"
 
 // Feature to enable the new overflow menu.
-extern const base::Feature kNewOverflowMenu;
+BASE_DECLARE_FEATURE(kNewOverflowMenu);
 
 // Feature to add a Clear Browsing Data action to the new overflow menu.
-extern const base::Feature kNewOverflowMenuCBDAction;
-
-// Feature to add a Settings action to the new overflow menu.
-extern const base::Feature kNewOverflowMenuSettingsAction;
-
-// Feature to use simple icons for new overflow menu destinations.
-extern const base::Feature kNewOverflowMenuSimpleDestinationIcons;
+BASE_DECLARE_FEATURE(kNewOverflowMenuCBDAction);
 
 // Feature to enable smart sorting the new overflow menu.
-extern const base::Feature kSmartSortingNewOverflowMenu;
+BASE_DECLARE_FEATURE(kSmartSortingNewOverflowMenu);
 
 // Feature to add a "Share Chrome App" action to the overflow menu
-extern const base::Feature kNewOverflowMenuShareChromeAction;
+BASE_DECLARE_FEATURE(kNewOverflowMenuShareChromeAction);
 
 // Feature to use the alternate overflow IPH flow.
-extern const base::Feature kNewOverflowMenuAlternateIPH;
+BASE_DECLARE_FEATURE(kNewOverflowMenuAlternateIPH);
 
 // Whether the NewOverflowMenu feature is enabled.
 bool IsNewOverflowMenuEnabled();
@@ -34,14 +28,8 @@ bool IsNewOverflowMenuEnabled();
 // Whether or not the NewOverflowMenuCBDAction feature is enabled.
 bool IsNewOverflowMenuCBDActionEnabled();
 
-// Whether or not the NewOverflowMenuSettingsAction feature is enabled.
-bool IsNewOverflowMenuSettingsActionEnabled();
-
 // Whether or not the NewOverflowMenuReorderSettings feature is enabled.
 bool IsNewOverflowMenuReorderSettingsEnabled();
-
-// Whether or not the NewOverflowMenuSimpleDestinationIcons feature is enabled.
-bool IsNewOverflowMenuSimpleDestinationIconsEnabled();
 
 // Whether the new Google Password Manager branding is enabled.
 bool IsPasswordManagerBrandingUpdateEnabled();

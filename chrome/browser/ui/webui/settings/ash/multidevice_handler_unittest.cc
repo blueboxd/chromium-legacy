@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/components/multidevice/remote_device_test_util.h"
 #include "ash/components/phonehub/fake_camera_roll_manager.h"
 #include "ash/components/phonehub/fake_multidevice_feature_access_manager.h"
 #include "ash/components/phonehub/feature_setup_connection_operation.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/multidevice/remote_device_test_util.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -35,9 +35,7 @@
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
-
-namespace settings {
+namespace ash::settings {
 
 namespace {
 
@@ -64,9 +62,6 @@ constexpr char kDialogIntroScreenSetupModeHistogram[] =
 constexpr char kDialogSetUpFinishedScreenSetupModeHistogram[] =
     "PhoneHub.PermissionsOnboarding.SetUpMode.SetUpFinishedScreenShown";
 
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
-namespace multidevice_setup = ::ash::multidevice_setup;
-
 using ::testing::Optional;
 
 class TestMultideviceHandler : public MultideviceHandler {
@@ -79,8 +74,8 @@ class TestMultideviceHandler : public MultideviceHandler {
       multidevice_setup::AndroidSmsPairingStateTracker*
           android_sms_pairing_state_tracker,
       android_sms::AndroidSmsAppManager* android_sms_app_manager,
-      ash::eche_app::AppsAccessManager* apps_access_manager,
-      ash::phonehub::CameraRollManager* camera_roll_manager)
+      eche_app::AppsAccessManager* apps_access_manager,
+      phonehub::CameraRollManager* camera_roll_manager)
       : MultideviceHandler(prefs,
                            multidevice_setup_client,
                            multidevice_feature_access_manager,
@@ -142,56 +137,56 @@ void VerifyPageContentDict(
     bool expected_is_camera_roll_file_permission_granted_,
     bool expected_is_camera_roll_access_status_granted_,
     bool expected_is_feature_setup_request_supported_) {
-  const base::DictionaryValue* page_content_dict;
-  EXPECT_TRUE(value->GetAsDictionary(&page_content_dict));
+  ASSERT_TRUE(value->is_dict());
+  const base::Value::Dict& page_content_dict = value->GetDict();
 
-  absl::optional<int> mode = page_content_dict->FindIntKey("mode");
+  absl::optional<int> mode = page_content_dict.FindInt("mode");
   ASSERT_TRUE(mode);
   EXPECT_EQ(static_cast<int>(expected_host_status), *mode);
 
   absl::optional<int> better_together_state =
-      page_content_dict->FindIntKey("betterTogetherState");
+      page_content_dict.FindInt("betterTogetherState");
   ASSERT_TRUE(better_together_state);
   auto it = feature_states_map.find(
       multidevice_setup::mojom::Feature::kBetterTogetherSuite);
   EXPECT_EQ(static_cast<int>(it->second), *better_together_state);
 
   absl::optional<int> instant_tethering_state =
-      page_content_dict->FindIntKey("instantTetheringState");
+      page_content_dict.FindInt("instantTetheringState");
   ASSERT_TRUE(instant_tethering_state);
   it = feature_states_map.find(
       multidevice_setup::mojom::Feature::kInstantTethering);
   EXPECT_EQ(static_cast<int>(it->second), *instant_tethering_state);
 
   absl::optional<int> messages_state =
-      page_content_dict->FindIntKey("messagesState");
+      page_content_dict.FindInt("messagesState");
   ASSERT_TRUE(messages_state);
   it = feature_states_map.find(multidevice_setup::mojom::Feature::kMessages);
   EXPECT_EQ(static_cast<int>(it->second), *messages_state);
 
   absl::optional<int> smart_lock_state =
-      page_content_dict->FindIntKey("smartLockState");
+      page_content_dict.FindInt("smartLockState");
   ASSERT_TRUE(smart_lock_state);
   it = feature_states_map.find(multidevice_setup::mojom::Feature::kSmartLock);
   EXPECT_EQ(static_cast<int>(it->second), *smart_lock_state);
 
   absl::optional<int> phone_hub_state =
-      page_content_dict->FindIntKey("phoneHubState");
+      page_content_dict.FindInt("phoneHubState");
   ASSERT_TRUE(phone_hub_state);
   it = feature_states_map.find(multidevice_setup::mojom::Feature::kPhoneHub);
   EXPECT_EQ(static_cast<int>(it->second), *phone_hub_state);
 
   absl::optional<int> phone_hub_notifications_state =
-      page_content_dict->FindIntKey("phoneHubNotificationsState");
+      page_content_dict.FindInt("phoneHubNotificationsState");
   ASSERT_TRUE(phone_hub_notifications_state);
   it = feature_states_map.find(
       multidevice_setup::mojom::Feature::kPhoneHubNotifications);
   EXPECT_EQ(static_cast<int>(it->second), *phone_hub_notifications_state);
 
   absl::optional<int> phone_hub_camera_roll_state =
-      page_content_dict->FindIntKey("phoneHubCameraRollState");
+      page_content_dict.FindInt("phoneHubCameraRollState");
   ASSERT_TRUE(phone_hub_camera_roll_state);
-  if (base::FeatureList::IsEnabled(chromeos::features::kPhoneHubCameraRoll)) {
+  if (base::FeatureList::IsEnabled(ash::features::kPhoneHubCameraRoll)) {
     it = feature_states_map.find(
         multidevice_setup::mojom::Feature::kPhoneHubCameraRoll);
     EXPECT_EQ(static_cast<int>(it->second), *phone_hub_camera_roll_state);
@@ -203,16 +198,16 @@ void VerifyPageContentDict(
   }
 
   absl::optional<int> phone_hub_task_continuation_state =
-      page_content_dict->FindIntKey("phoneHubTaskContinuationState");
+      page_content_dict.FindInt("phoneHubTaskContinuationState");
   ASSERT_TRUE(phone_hub_task_continuation_state);
   it = feature_states_map.find(
       multidevice_setup::mojom::Feature::kPhoneHubTaskContinuation);
   EXPECT_EQ(static_cast<int>(it->second), *phone_hub_task_continuation_state);
 
   absl::optional<int> phone_hub_apps_state =
-      page_content_dict->FindIntKey("phoneHubAppsState");
+      page_content_dict.FindInt("phoneHubAppsState");
   ASSERT_TRUE(phone_hub_apps_state);
-  if (base::FeatureList::IsEnabled(chromeos::features::kEcheSWA)) {
+  if (base::FeatureList::IsEnabled(ash::features::kEcheSWA)) {
     it = feature_states_map.find(multidevice_setup::mojom::Feature::kEche);
     EXPECT_EQ(static_cast<int>(it->second), *phone_hub_apps_state);
   } else {
@@ -223,13 +218,13 @@ void VerifyPageContentDict(
   }
 
   absl::optional<int> wifi_sync_state =
-      page_content_dict->FindIntKey("wifiSyncState");
+      page_content_dict.FindInt("wifiSyncState");
   ASSERT_TRUE(wifi_sync_state);
   it = feature_states_map.find(multidevice_setup::mojom::Feature::kWifiSync);
   EXPECT_EQ(static_cast<int>(it->second), *wifi_sync_state);
 
   const std::string* host_device_name =
-      page_content_dict->FindStringKey("hostDeviceName");
+      page_content_dict.FindString("hostDeviceName");
   if (expected_host_device) {
     ASSERT_TRUE(host_device_name);
     EXPECT_EQ(expected_host_device->name(), *host_device_name);
@@ -237,26 +232,25 @@ void VerifyPageContentDict(
     EXPECT_FALSE(host_device_name);
   }
 
-  EXPECT_THAT(page_content_dict->FindBoolKey("isNearbyShareDisallowedByPolicy"),
+  EXPECT_THAT(page_content_dict.FindBool("isNearbyShareDisallowedByPolicy"),
               Optional(expected_is_nearby_share_disallowed_by_policy_));
 
-  EXPECT_THAT(page_content_dict->FindIntKey("appsAccessStatus"),
+  EXPECT_THAT(page_content_dict.FindInt("appsAccessStatus"),
               Optional(expected_is_phone_hub_apps_access_granted_ ? 2 : 1));
 
-  EXPECT_THAT(
-      page_content_dict->FindBoolKey("isCameraRollFilePermissionGranted"),
-      Optional(expected_is_camera_roll_file_permission_granted_));
+  EXPECT_THAT(page_content_dict.FindBool("isCameraRollFilePermissionGranted"),
+              Optional(expected_is_camera_roll_file_permission_granted_));
 
   EXPECT_THAT(
-      page_content_dict->FindBoolKey("isPhoneHubPermissionsDialogSupported"),
+      page_content_dict.FindBool("isPhoneHubPermissionsDialogSupported"),
       Optional(features::IsEcheSWAEnabled() ||
                features::IsPhoneHubCameraRollEnabled()));
 
-  EXPECT_THAT(page_content_dict->FindIntKey("cameraRollAccessStatus"),
+  EXPECT_THAT(page_content_dict.FindInt("cameraRollAccessStatus"),
               Optional(expected_is_camera_roll_access_status_granted_ ? 2 : 1));
 
   EXPECT_THAT(
-      page_content_dict->FindBoolKey("isPhoneHubFeatureCombinedSetupSupported"),
+      page_content_dict.FindBool("isPhoneHubFeatureCombinedSetupSupported"),
       Optional(expected_is_feature_setup_request_supported_));
 }
 
@@ -285,11 +279,11 @@ class MultideviceHandlerTest : public testing::Test {
     fake_android_sms_app_manager_ =
         std::make_unique<android_sms::FakeAndroidSmsAppManager>();
     fake_apps_access_manager_ =
-        std::make_unique<ash::eche_app::FakeAppsAccessManager>(
+        std::make_unique<eche_app::FakeAppsAccessManager>(
             phonehub::MultideviceFeatureAccessManager::AccessStatus::
                 kAvailableButNotGranted);
     fake_camera_roll_manager_ =
-        std::make_unique<ash::phonehub::FakeCameraRollManager>();
+        std::make_unique<phonehub::FakeCameraRollManager>();
 
     prefs_ = std::make_unique<TestingPrefServiceSimple>();
     RegisterNearbySharingPrefs(prefs_->registry());
@@ -303,9 +297,8 @@ class MultideviceHandlerTest : public testing::Test {
     prefs_->registry()->RegisterBooleanPref(ash::prefs::kEnableAutoScreenLock,
                                             false);
     prefs_->registry()->RegisterIntegerPref(
-        ash::phonehub::prefs::kScreenLockStatus,
-        static_cast<int>(
-            ash::phonehub::ScreenLockManager::LockStatus::kLockedOff));
+        phonehub::prefs::kScreenLockStatus,
+        static_cast<int>(phonehub::ScreenLockManager::LockStatus::kLockedOff));
 
     handler_ = std::make_unique<TestMultideviceHandler>(
         prefs_.get(), fake_multidevice_setup_client_.get(),
@@ -324,8 +317,9 @@ class MultideviceHandlerTest : public testing::Test {
     handler_->AllowJavascript();
   }
 
-  void InitWithFeatures(const std::vector<base::Feature>& enabled_features,
-                        const std::vector<base::Feature>& disabled_features) {
+  void InitWithFeatures(
+      const std::vector<base::test::FeatureRef>& enabled_features,
+      const std::vector<base::test::FeatureRef>& disabled_features) {
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
@@ -682,11 +676,11 @@ class MultideviceHandlerTest : public testing::Test {
     return fake_multidevice_feature_access_manager_.get();
   }
 
-  ash::eche_app::FakeAppsAccessManager* fake_apps_access_manager() {
+  eche_app::FakeAppsAccessManager* fake_apps_access_manager() {
     return fake_apps_access_manager_.get();
   }
 
-  ash::phonehub::FakeCameraRollManager* fake_camera_roll_manager() {
+  phonehub::FakeCameraRollManager* fake_camera_roll_manager() {
     return fake_camera_roll_manager_.get();
   }
 
@@ -719,14 +713,14 @@ class MultideviceHandlerTest : public testing::Test {
   }
 
   void SimulateAppsOptInStatusChange(
-      ash::eche_app::AppsAccessSetupOperation::Status status) {
+      eche_app::AppsAccessSetupOperation::Status status) {
     size_t call_data_count_before_call = test_web_ui()->call_data().size();
 
     fake_apps_access_manager()->SetAppsSetupOperationStatus(status);
 
     bool completed_successfully =
         status ==
-        ash::eche_app::AppsAccessSetupOperation::Status::kCompletedSuccessfully;
+        eche_app::AppsAccessSetupOperation::Status::kCompletedSuccessfully;
     if (completed_successfully)
       call_data_count_before_call++;
 
@@ -804,9 +798,8 @@ class MultideviceHandlerTest : public testing::Test {
     size_t call_data_count_before_call = test_web_ui()->call_data().size();
 
     prefs_->SetInteger(
-        ash::phonehub::prefs::kScreenLockStatus,
-        static_cast<int>(
-            ash::phonehub::ScreenLockManager::LockStatus::kLockedOn));
+        phonehub::prefs::kScreenLockStatus,
+        static_cast<int>(phonehub::ScreenLockManager::LockStatus::kLockedOn));
 
     EXPECT_EQ(call_data_count_before_call + 1u,
               test_web_ui()->call_data().size());
@@ -855,10 +848,8 @@ class MultideviceHandlerTest : public testing::Test {
       fake_multidevice_feature_access_manager_;
   std::unique_ptr<multidevice_setup::FakeAndroidSmsPairingStateTracker>
       fake_android_sms_pairing_state_tracker_;
-  std::unique_ptr<ash::eche_app::FakeAppsAccessManager>
-      fake_apps_access_manager_;
-  std::unique_ptr<ash::phonehub::FakeCameraRollManager>
-      fake_camera_roll_manager_;
+  std::unique_ptr<eche_app::FakeAppsAccessManager> fake_apps_access_manager_;
+  std::unique_ptr<phonehub::FakeCameraRollManager> fake_camera_roll_manager_;
 
   multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice
       host_status_with_device_;
@@ -972,10 +963,10 @@ TEST_F(MultideviceHandlerTest, NotificationSetupFlow) {
 }
 
 TEST_F(MultideviceHandlerTest, AppsSetupFlow) {
-  InitWithFeatures(/* enabled_features */ {chromeos::features::kPhoneHub,
-                                           chromeos::features::kEcheSWA},
+  InitWithFeatures(/* enabled_features */ {ash::features::kPhoneHub,
+                                           ash::features::kEcheSWA},
                    /* disabled_features */ {});
-  using Status = ash::eche_app::AppsAccessSetupOperation::Status;
+  using Status = eche_app::AppsAccessSetupOperation::Status;
 
   // Simulate success flow.
   CallAttemptAppsSetup(/*has_access_been_granted=*/false);
@@ -1075,7 +1066,6 @@ TEST_F(MultideviceHandlerTest, CameraRollSetupFlow) {
 }
 
 TEST_F(MultideviceHandlerTest, LogUmaMetricsForSetupFlow) {
-  using Status = phonehub::CombinedAccessSetupOperation::Status;
   fake_multidevice_feature_access_manager()
       ->SetFeatureSetupRequestSupportedInternal(true);
   base::HistogramTester histogram_tester;
@@ -1219,8 +1209,8 @@ TEST_F(MultideviceHandlerTest, LogUmaMetricsForSetUpFinishedScreenSetupMode) {
 }
 
 TEST_F(MultideviceHandlerTest, PageContentData) {
-  InitWithFeatures(/* enabled_features */ {chromeos::features::kPhoneHub,
-                                           chromeos::features::kEcheSWA},
+  InitWithFeatures(/* enabled_features */ {ash::features::kPhoneHub,
+                                           ash::features::kEcheSWA},
                    /* disabled_features */ {});
   CallGetPageContentData();
   CallGetPageContentData();
@@ -1300,8 +1290,8 @@ TEST_F(MultideviceHandlerTest, RemoveHostDevice) {
 }
 
 TEST_F(MultideviceHandlerTest, GetAndroidSmsInfo) {
-  InitWithFeatures(/* enabled_features */ {chromeos::features::kPhoneHub,
-                                           chromeos::features::kEcheSWA},
+  InitWithFeatures(/* enabled_features */ {ash::features::kPhoneHub,
+                                           ash::features::kEcheSWA},
                    /* disabled_features */ {});
   // Check that getAndroidSmsInfo returns correct value.
   CallGetAndroidSmsInfo(false /* expected_enabled */,
@@ -1343,8 +1333,8 @@ TEST_F(MultideviceHandlerTest, GetAndroidSmsInfo) {
 
 TEST_F(MultideviceHandlerTest, PageContentDataWhenEcheSWADisabled) {
   InitWithFeatures(
-      /* enabled_features */ {chromeos::features::kPhoneHub},
-      /* disabled_features */ {chromeos::features::kEcheSWA});
+      /* enabled_features */ {ash::features::kPhoneHub},
+      /* disabled_features */ {ash::features::kEcheSWA});
 
   multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap
       feature_states_map = GenerateDefaultFeatureStatesMap();
@@ -1356,8 +1346,8 @@ TEST_F(MultideviceHandlerTest, PageContentDataWhenEcheSWADisabled) {
 
 TEST_F(MultideviceHandlerTest, PageContentDataWhenPhoneHubCameraRollDisabled) {
   InitWithFeatures(
-      /* enabled_features */ {chromeos::features::kPhoneHub},
-      /* disabled_features */ {chromeos::features::kPhoneHubCameraRoll});
+      /* enabled_features */ {ash::features::kPhoneHub},
+      /* disabled_features */ {ash::features::kPhoneHubCameraRoll});
 
   multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap
       feature_states_map = GenerateDefaultFeatureStatesMap();
@@ -1368,7 +1358,8 @@ TEST_F(MultideviceHandlerTest, PageContentDataWhenPhoneHubCameraRollDisabled) {
 }
 
 TEST_F(MultideviceHandlerTest, EnableScreenLockChanged) {
-  InitWithFeatures(/* enabled_features */ {chromeos::features::kPhoneHub, chromeos::features::kEcheSWA},
+  InitWithFeatures(/* enabled_features */ {ash::features::kPhoneHub,
+                                           ash::features::kEcheSWA},
                    {});
   SetUpHandlerWithEmptyManagers();
 
@@ -1376,13 +1367,12 @@ TEST_F(MultideviceHandlerTest, EnableScreenLockChanged) {
 }
 
 TEST_F(MultideviceHandlerTest, ScreenLockStatusChanged) {
-  InitWithFeatures(/* enabled_features */ {chromeos::features::kPhoneHub, chromeos::features::kEcheSWA},
+  InitWithFeatures(/* enabled_features */ {ash::features::kPhoneHub,
+                                           ash::features::kEcheSWA},
                    {});
   SetUpHandlerWithEmptyManagers();
 
   SimulateScreenLockStatusChanged();
 }
 
-}  // namespace settings
-
-}  // namespace chromeos
+}  // namespace ash::settings

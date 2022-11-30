@@ -12,11 +12,23 @@
 #error "This file requires ARC support."
 #endif
 
-const base::Feature kEnableOpenInDownload = {
-    "EnableFREDefaultBrowserScreenTesting", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kEnableOpenInDownload,
+             "EnableFREDefaultBrowserScreenTesting",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
+const char kOpenInDownloadInShareButtonParam[] = "variant_with_openin_download";
 const char kOpenInDownloadWithWKDownloadParam[] = "variant_with_wkdownload";
 const char kOpenInDownloadWithV2Param[] = "variant_with_v2";
+
+bool IsOpenInDownloadInShareButton() {
+  if (@available(iOS 14.5, *)) {
+    if (base::FeatureList::IsEnabled(kEnableOpenInDownload)) {
+      return base::GetFieldTrialParamByFeatureAsBool(
+          kEnableOpenInDownload, kOpenInDownloadInShareButtonParam, false);
+    }
+  }
+  return false;
+}
 
 bool IsOpenInDownloadWithWKDownload() {
   if (@available(iOS 14.5, *)) {
@@ -38,6 +50,11 @@ bool IsOpenInDownloadWithV2() {
   return false;
 }
 
-bool IsOpenInDownloadEnabled() {
+bool IsOpenInNewDownloadEnabled() {
   return IsOpenInDownloadWithV2() || IsOpenInDownloadWithWKDownload();
+}
+
+bool IsOpenInActivitiesInShareButtonEnabled() {
+  return IsOpenInDownloadWithV2() || IsOpenInDownloadWithWKDownload() ||
+         IsOpenInDownloadInShareButton();
 }

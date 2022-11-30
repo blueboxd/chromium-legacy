@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,14 +56,14 @@ void MdnsResponderAdapter::CreateNameForAddress(const rtc::IPAddress& addr,
                                                 NameCreatedCallback callback) {
   shared_remote_client_->CreateNameForAddress(
       webrtc::RtcIPAddressToNetIPAddress(addr),
-      WTF::Bind(&OnNameCreatedForAddress, callback, addr));
+      WTF::BindOnce(&OnNameCreatedForAddress, callback, addr));
 }
 
 void MdnsResponderAdapter::RemoveNameForAddress(const rtc::IPAddress& addr,
                                                 NameRemovedCallback callback) {
   shared_remote_client_->RemoveNameForAddress(
       webrtc::RtcIPAddressToNetIPAddress(addr),
-      WTF::Bind(&OnNameRemovedForAddress, callback));
+      WTF::BindOnce(&OnNameRemovedForAddress, callback));
 }
 
 }  // namespace blink

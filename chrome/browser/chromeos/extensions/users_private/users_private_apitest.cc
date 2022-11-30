@@ -5,10 +5,10 @@
 #include <memory>
 #include <vector>
 
-#include "ash/components/settings/cros_settings_names.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
@@ -24,6 +24,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/users_private.h"
 #include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/prefs/pref_service.h"
@@ -81,7 +82,7 @@ class TestPrefsUtil : public PrefsUtil {
     if (value.is_string())
       email = value.GetString();
 
-    auto iter = std::find(user_list_.begin(), user_list_.end(), email);
+    auto iter = base::ranges::find(user_list_, email);
     if (iter != user_list_.end())
       user_list_.erase(iter);
 
@@ -157,8 +158,9 @@ class UsersPrivateApiTest : public ExtensionApiTest {
 
  protected:
   bool RunSubtest(const std::string& subtest) {
-    const std::string page_url = "main.html?" + subtest;
-    return RunExtensionTest("users_private", {.page_url = page_url.c_str()},
+    const std::string extension_url = "main.html?" + subtest;
+    return RunExtensionTest("users_private",
+                            {.extension_url = extension_url.c_str()},
                             {.load_as_component = true});
   }
 
@@ -240,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(UsersPrivateApiTest, IsOwner) {
 // User profile - logged in, screen not locked.
 IN_PROC_BROWSER_TEST_F(UsersPrivateApiLoginStatusTest, User) {
   EXPECT_TRUE(RunExtensionTest("users_private",
-                               {.page_url = "main.html?getLoginStatus"},
+                               {.extension_url = "main.html?getLoginStatus"},
                                {.load_as_component = true}))
       << message_;
 }
@@ -251,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(UsersPrivateApiLoginStatusTest, User) {
 IN_PROC_BROWSER_TEST_F(UsersPrivateApiLockStatusTest, ScreenLock) {
   ash::ScreenLockerTester().Lock();
   EXPECT_TRUE(RunExtensionTest("users_private",
-                               {.page_url = "main.html?getLoginStatus"},
+                               {.extension_url = "main.html?getLoginStatus"},
                                {.load_as_component = true}))
       << message_;
 }

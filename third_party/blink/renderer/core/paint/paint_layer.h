@@ -577,10 +577,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   PaintResult PreviousPaintResult() const {
     return static_cast<PaintResult>(previous_paint_result_);
   }
-  void SetPreviousPaintResult(PaintResult result) {
-    previous_paint_result_ = static_cast<unsigned>(result);
-    DCHECK(previous_paint_result_ == static_cast<unsigned>(result));
-  }
+  void SetPreviousPaintResult(PaintResult result);
 
   // Used to skip PaintPhaseDescendantOutlinesOnly for layers that have never
   // had descendant outlines.  The flag is set during paint invalidation on a
@@ -607,7 +604,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   }
 
   // See
-  // https://chromium.googlesource.com/chromium/src.git/+/master/third_party/blink/renderer/core/paint/README.md
+  // https://chromium.googlesource.com/chromium/src.git/+/main/third_party/blink/renderer/core/paint/README.md
   // for the definition of a replaced normal-flow stacking element.
   bool IsReplacedNormalFlowStacking() const;
 
@@ -751,9 +748,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   void MarkAncestorChainForFlagsUpdate(
       DescendantDependentFlagsUpdateFlag = kNeedsDescendantDependentUpdate);
 
-  // For transform updates we use a fast path that will not change
-  // NeedsPaintPropertyUpdate, but still need to set
-  // NeedsDescendantDependentFlagsUpdate to true, and will use this function.
   void SetNeedsDescendantDependentFlagsUpdate();
 
   void UpdateTransform(const ComputedStyle* old_style,
@@ -782,9 +776,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // PaintLayerPaintOrderIterator.
   PaintLayerStackingNode* StackingNode() const { return stacking_node_; }
 
-  void SetNeedsReorderOverlayOverflowControls(bool b) {
-    needs_reorder_overlay_overflow_controls_ = b;
-  }
+  void SetNeedsReorderOverlayOverflowControls(bool);
 
   bool ComputeHasFilterThatMovesPixels() const;
 

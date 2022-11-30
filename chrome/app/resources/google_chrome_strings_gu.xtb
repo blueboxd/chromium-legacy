@@ -15,6 +15,7 @@
 <translation id="1152920704813762236">ChromeOS વિશે</translation>
 <translation id="1154147086299354128">&amp;Chromeમાં ખોલો</translation>
 <translation id="1203500561924088507">ઇન્સ્ટૉલ કરવા બદલ આભાર. <ph name="BUNDLE_NAME" />નો ઉપયોગ કરતા પહેલાં તમારે તમારું બ્રાઉઝર ફરી શરૂ કરવું આવશ્યક છે.</translation>
+<translation id="1236866257838264361">તમે Chromeનો મહત્તમ લાભ મેળવી શકો છો</translation>
 <translation id="1278833599417554002">&amp;Chrome અપડેટ કરવા માટે, ફરીથી લૉન્ચ કરો</translation>
 <translation id="1302523850133262269">કૃપા કરીને Chrome નવીનતમ સિસ્ટમ અપડેટ્સ ઇન્સ્ટોલ કરે ત્યાં સુધી રાહ જુઓ.</translation>
 <translation id="1335640173511558774"><ph name="MANAGER" /> માટે જરૂરી છે કે તમે આ ડિવાઇસનો ઉપયોગ કરતા પહેલાં નીચેની સેવાની શરતો વાંચો અને સ્વીકારો. આ શરતો Google ChromeOS Flexની શરતોને વધારતી નથી, તેમાં ફેરફાર કરતી નથી અથવા તેને મર્યાદિત કરતી નથી.</translation>
@@ -62,7 +63,6 @@
 <translation id="2094648590148273905">ChromeOS Flexની શરતો</translation>
 <translation id="2094919256425865063">છતાં પણ Chrome બંધ કરવું છે?</translation>
 <translation id="2106831557840787829"><ph name="BEGIN_LINK_LINUX_OSS" />Linux ડેવલપમેન્ટ એન્વાયરમેન્ટ<ph name="END_LINK_LINUX_OSS" />ની જેમ, ChromeOS Flex વધારાના <ph name="BEGIN_LINK_CROS_OSS" />ઓપન સૉર્સ સૉફ્ટવેર<ph name="END_LINK_CROS_OSS" /> દ્વારા શક્ય બન્યું છે.</translation>
-<translation id="2112742052114331084">જ્યારે ચાલુ હોય, તમે જે ટૅબનો સક્રિય રીતે ઉપયોગ ન કરતા હો, Chrome એ ટૅબમાંથી મેમરી પાછી લઈ લે છે. આ તમારા કમ્પ્યુટરના સંસાધનોને અન્ય કાર્યો માટે ઉપલબ્ધ કરે છે અને Chromeની કામગીરી ઝડપી રાખે છે. નિષ્ક્રિય ટૅબ ખાલી દેખાય છે અને જ્યારે તમે તેના પર ક્લિક કરો, ત્યારે તે ઑટોમૅટિક રીતે ફરીથી લોડ થાય છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /> અથવા <ph name="BEGIN_LINK_2" />પ્રતિસાદ મોકલો<ph name="END_LINK_2" /></translation>
 <translation id="2120620239521071941">આ, <ph name="ITEMS_COUNT" /> આઇટમને આ ડિવાઇસમાંથી ડિલીટ કરશે. પછીથી તમારો ડેટા ફરીથી મેળવવા માટે, Chromeમાં <ph name="USER_EMAIL" /> તરીકે સાઇન ઇન કરો.</translation>
 <translation id="2121284319307530122">&amp;Chrome અપડેટ કરવા માટે, ફરીથી લૉન્ચ કરો</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />વર્તમાન સેટિંગ<ph name="END_LINK" />ની જાણ કરીને Chromeને બહેતર બનાવવામાં સહાય કરો</translation>
@@ -134,6 +134,7 @@
 <translation id="3360895254066713204">Chrome સહાયક</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome હમણાં ફરીથી લૉન્ચ થશે}=1{Chrome 1 સેકન્ડમાં ફરીથી લૉન્ચ થશે}one{Chrome # સેકન્ડમાં ફરીથી લૉન્ચ થશે}other{Chrome # સેકન્ડમાં ફરીથી લૉન્ચ થશે}}</translation>
 <translation id="3396977131400919238">ઇન્સ્ટૉલેશન દરમિયાન એક ઑપરેટિંગ સિસ્ટમની ભૂલ આવી. કૃપા કરીને Google Chrome ફરીથી ડાઉનલોડ કરો.</translation>
+<translation id="3426646014273736870">મેમરી સેવર દ્વારા Chromeને વધુ ઝડપી બનાવવામાં આવ્યું</translation>
 <translation id="3428747202529429621">તમને Chrome પર સલામત રાખે છે અને જ્યારે તમે સાઇન ઇન થયા હો, ત્યારે Googleની અન્ય ઍપમાં તમારી સુરક્ષા બહેતર બનાવવામાં ઉપયોગમાં લેવાઈ શકે છે</translation>
 <translation id="3434246496373299699">જ્યારે તમે તમારા Google એકાઉન્ટ વડે સાઇન ઇન કરો ત્યારે Chrome તમારા પાસવર્ડ ચેક કરી શકે છે</translation>
 <translation id="3451115285585441894">Chrome માં ઉમેરી રહ્યું છે...</translation>
@@ -235,6 +236,7 @@
 
 Google Chrome તમારા સેટિંગને રિકવર કરી શકતું નથી.</translation>
 <translation id="5524761631371622910">જ્યારે અજમાયશો ચાલુ હોય અને જો Chrome કોઈ સક્રિય અજમાયશમાં કોઈપણ ક્રમમાં તમારી ગોઠવણ કરી લે, તો તમારો બ્રાઉઝિંગ ઇતિહાસ તમને દેખાતી જાહેરાતો અને નીચે જણાવેલી અનુમાનિત રુચિઓને અસર કરે છે. તમારી પ્રાઇવસીની સુરક્ષા કરવા માટે Chrome નવા વિષયો આવતા જાય, તેના આધારે દર મહિને તમારી રુચિના વિષયોને ડિલીટ કરે છે.</translation>
+<translation id="5530733413481476019">Chromeને વધુ ઝડપી બનાવો</translation>
 <translation id="556024056938947818">Google Chrome પાસવર્ડ્સ બતાવવાનો પ્રયાસ કરી રહ્યું છે.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> જોખમી હોઈ શકે છે, તેથી Chrome એ તેને અવરોધિત કરેલ છે.</translation>
@@ -261,6 +263,7 @@ Google Chrome તમારા સેટિંગને રિકવર કરી
 <translation id="608006075545470555">આ બ્રાઉઝરમાં ઑફિસની પ્રોફાઇલ ઉમેરો</translation>
 <translation id="6113794647360055231">Chrome હવે પહેલાંથી બહેતર બન્યું છે</translation>
 <translation id="6145313976051292476">Chromeમાં PDFs ખોલો</translation>
+<translation id="6155960517327665396">મેમરી સેવર Chromeને વધુ ઝડપી બનાવે છે</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome બીટા</translation>
 <translation id="6235018212288296708">mDNS ટ્રાફિકને મંજૂરી આપવા માટે Google Chrome માટે ઇનબાઉન્ડ નિયમ.</translation>
@@ -268,6 +271,7 @@ Google Chrome તમારા સેટિંગને રિકવર કરી
 <translation id="6273793429163604305">તૈયાર રહો...</translation>
 <translation id="6291089322031436445">Chrome Dev ઍપ્લિકેશનો</translation>
 <translation id="6291549208091401781">Google Chrome, તમારા કમ્પ્યુટર પર પહેલાંથી તમામ વપરાશકર્તાઓ માટે ઇન્સ્ટૉલ કરેલ છે.</translation>
+<translation id="6326175484149238433">Chrome માંથી દૂર કરો</translation>
 <translation id="6327105987658262776">કોઈ અપડેટ ઉપલબ્ધ નથી.</translation>
 <translation id="6412673304250309937">URLsને Chromeમાં સ્ટોર કરેલી અસુરક્ષિત સાઇટની સૂચિ સાથે ચેક કરે છે. જો કોઈ સાઇટ તમારો પાસવર્ડ ચોરી કરવાનો પ્રયાસ કરે અથવા તમે કોઈ નુકસાનકારક ફાઇલ ડાઉનલોડ કરો, ત્યારે Chrome પેજ કન્ટેન્ટના બિટની સાથોસાથ URLs પણ Safe Browsingને મોકલી શકે છે.</translation>
 <translation id="6418662306461808273">વર્તમાન Chrome પ્રોફાઇલ પર સ્વિચ કરીએ?</translation>
@@ -278,10 +282,10 @@ Google Chrome તમારા સેટિંગને રિકવર કરી
 <translation id="6676384891291319759">ઇંટરનેટ ઍક્સેસ કરો</translation>
 <translation id="6679975945624592337">Google Chromeને બૅકગ્રાઉન્ડમાં ચાલવા દો</translation>
 <translation id="6696915334902295848">આ સાઇટ માટે Chromeને માઇક્રોફોનની પરવાનગીની જરૂર છે</translation>
+<translation id="6718739135284199302">Chromeને વધુ ઝડપી બનાવો</translation>
 <translation id="6735387454586646204">ChromeOS Flex સિસ્ટમ</translation>
 <translation id="6739177684496155661">નવી Chrome પ્રોફાઇલમાં બ્રાઉઝિંગ ચાલુ રાખીએ?</translation>
 <translation id="6750954913813541382">જોડણીની ભૂલો સુધારવા માટે, તમે બ્રાઉઝરમાં ટાઇપ કરો છો તે ટેક્સ્ટ Chrome દ્વારા Googleને મોકલવામાં આવે છે</translation>
-<translation id="6756581345161130259">આવશ્યકતા મુજબ, તમે જે ટૅબનો સક્રિય રીતે ઉપયોગ ન કરતા હો, Chrome એ ટૅબમાંથી મેમરી પાછી લઈ લે છે. સેટિંગમાં તમે આને કોઈપણ સમયે બદલી શકો છો.</translation>
 <translation id="677276454032249905">છતાં પણ Chromeમાંથી બહાર નિકળવું છે?</translation>
 <translation id="6785872064505734160">Google Assistant Chromeમાં, તમારા માટે ઘણી વેબસાઇટમાં અમુક ઍક્શન પૂર્ણ કરી શકે છે</translation>
 <translation id="683440813066116847">mDNS ટ્રાફિકને મંજૂરી આપવા માટે Google Chrome કૅનેરી માટે ઇનબાઉન્ડ નિયમ.</translation>
@@ -360,6 +364,7 @@ Google Chrome તમારા સેટિંગને રિકવર કરી
 <translation id="8286862437124483331">Google Chrome પાસવર્ડ્સ બતાવવાનો પ્રયાસ કરી રહ્યું છે. આની મંજૂરી આપવા માટે તમારો Windows પાસવર્ડ લખો.</translation>
 <translation id="828798499196665338">તમારા માતાપિતાએ Chrome માટે "સાઇટ, ઍપ અને એક્સ્ટેન્શન માટેની પરવાનગીઓ" બંધ કરી છે. આ <ph name="EXTENSION_TYPE_PARAMETER" /> ચાલુ કરવાની મંજૂરી નથી.</translation>
 <translation id="8290100596633877290">ઓહ! Google Chrome ક્રેશ થઈ ગયું. હમણાં ફરીથી લોંચ કરીએ?</translation>
+<translation id="8341646175450781745">જ્યારે ચાલુ હોય, ત્યારે Chrome નિષ્ક્રિય ટૅબમાંથી મેમરી ખાલી કરે છે. આ સક્રિય ટૅબ અને અન્ય ઍપને વધુ કમ્પ્યુટર સંસાધનો આપે છે અને Chromeને વધુ ઝડપી રાખે છે. તમે તમારા નિષ્ક્રિય ટૅબ પર પાછા જાઓ ત્યારે તે ઑટોમૅટિક રીતે ફરી સક્રિય થાય છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /> અથવા <ph name="BEGIN_LINK_2" />પ્રતિસાદ મોકલો<ph name="END_LINK_2" /></translation>
 <translation id="8342675569599923794">આ ફાઇલ જોખમી છે, તેથી Chrome એ તેને અવરોધિત કરેલ છે.</translation>
 <translation id="8349795646647783032"><ph name="BEGIN_BOLD" />અમે આ ડેટાનો ઉપયોગ કેવી રીતે કરીએ છીએ:<ph name="END_BOLD" /> સાઇટ, Chrome પર તમારી રુચિના વિષયો વિશેની માહિતી સ્ટોર કરી શકે છે. ઉદાહરણ તરીકે જો તમે મૅરેથનમાં દોડવા માટે શૂઝ ખરીદવા કોઈ સાઇટની મુલાકાત લો, તો એ સાઇટ મૅરેથન દોડને તમારી રુચિના વિષય તરીકે સાચવી શકે છે. પછી, જો તમે દોડ માટે રજિસ્ટ્રેશન કરાવવા કોઈ અન્ય સાઇટની મુલાકાત લેશો, તો તે સાઇટ તમારી રુચિના વિષયના આધારે તમને દોડવા માટેના શૂઝની જાહેરાત બતાવી શકે છે.</translation>
 <translation id="8370517070665726704">કૉપિરાઇટ <ph name="YEAR" /> Google LLC. સર્વાધિકાર સુરક્ષિત.</translation>
@@ -401,6 +406,7 @@ Google Chrome તમારા સેટિંગને રિકવર કરી
 <translation id="8986207147630327271">તમે આ બ્રાઉઝરમાં ઑફિસની પ્રોફાઇલ ઉમેરી રહ્યાં છો અને તમારા વ્યવસ્થાપકને માત્ર ઑફિસની પ્રોફાઇલનો નિયંત્રણ આપી રહ્યાં છો.</translation>
 <translation id="8989968390305463310">તમારો બ્રાઉઝિંગ ઇતિહાસ તમે જુઓ છો તે જાહેરાતોને અને નીચે જણાવેલી અનુમાનિત રુચિઓને અસર કરે છે. તમારી પ્રાઇવસીની સુરક્ષા કરવા માટે Chrome નવા વિષયો આવતા જાય, તેના આધારે દર મહિને તમારી રુચિના વિષયોને ઑટોમૅટિક રીતે ડિલીટ કરે છે. જો તમે રુચિઓને કાઢી ન નાખો, તો તે રિફ્રેશ થઈ શકે છે.</translation>
 <translation id="8999208279178790196">{0,plural, =0{એક Chrome અપડેટ ઉપલબ્ધ છે}=1{એક Chrome અપડેટ ઉપલબ્ધ છે}one{Chrome અપડેટ # દિવસ માટે ઉપલબ્ધ છે}other{Chrome અપડેટ # દિવસ માટે ઉપલબ્ધ છે}}</translation>
+<translation id="9003498785844995646">જ્યારે ચાલુ હોય ત્યારે Chrome, સ્મૂધ સ્ક્રોલિંગ અને વીડિયોના ફ્રેમ રેટ જેવી બૅકગ્રાઉન્ડની પ્રવૃત્તિ અને વિઝ્યુઅલ ઇફેક્ટને મર્યાદિત કરીને બૅટરી પાવર બચાવે છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /> અથવા <ph name="BEGIN_LINK_2" />પ્રતિસાદ મોકલો<ph name="END_LINK_2" /></translation>
 <translation id="9053892488859122171">ChromeOS Flex સિસ્ટમ</translation>
 <translation id="9067395829937117663">Google Chrome માટે Windows 7 અથવા તે પછીનું સંસ્કરણ આવશ્યક છે.</translation>
 <translation id="911206726377975832">તમારો બ્રાઉઝિંગ ડેટા પણ ડિલીટ કરી દઈએ?</translation>

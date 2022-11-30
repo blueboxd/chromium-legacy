@@ -36,7 +36,7 @@ class WaylandEventSourceTest : public WaylandTest {
     WaylandTest::SetUp();
 
     pointer_delegate_ = connection_->event_source();
-    DCHECK(pointer_delegate_);
+    ASSERT_TRUE(pointer_delegate_);
   }
 
  protected:
@@ -84,7 +84,7 @@ TEST_P(WaylandEventSourceTest, CheckPointerButtonHandling) {
   uint32_t tstamp = 0;
   wl_resource* surface_res =
       server_
-          .GetObject<wl::MockSurface>(window1->root_surface()->GetSurfaceId())
+          .GetObject<wl::MockSurface>(window1->root_surface()->get_surface_id())
           ->resource();
   wl_resource* pointer_res = server_.seat()->pointer()->resource();
 
@@ -137,7 +137,7 @@ TEST_P(WaylandEventSourceTest, DeleteBeforeTouchFrame) {
   uint32_t tstamp = 0;
   wl_resource* surface_res =
       server_
-          .GetObject<wl::MockSurface>(window1->root_surface()->GetSurfaceId())
+          .GetObject<wl::MockSurface>(window1->root_surface()->get_surface_id())
           ->resource();
   wl_resource* touch_res = server_.seat()->touch()->resource();
 

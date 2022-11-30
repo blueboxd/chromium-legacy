@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,8 +94,8 @@ class PageSchedulerImplTest : public testing::Test {
     feature_list_.InitAndEnableFeature(blink::features::kStopInBackground);
   }
 
-  PageSchedulerImplTest(std::vector<base::Feature> enabled_features,
-                        std::vector<base::Feature> disabled_features) {
+  PageSchedulerImplTest(std::vector<base::test::FeatureRef> enabled_features,
+                        std::vector<base::test::FeatureRef> disabled_features) {
     feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
@@ -698,7 +698,7 @@ TEST_F(PageSchedulerImplTest, VirtualTimeSettings_NewFrameScheduler) {
           base::Milliseconds(1));
 
   test_task_runner_->FastForwardUntilNoTasksRemain();
-  EXPECT_TRUE(run_order.IsEmpty());
+  EXPECT_TRUE(run_order.empty());
 
   vtc->SetVirtualTimePolicy(VirtualTimePolicy::kAdvance);
   test_task_runner_->FastForwardUntilNoTasksRemain();
@@ -959,7 +959,7 @@ TEST_F(PageSchedulerImplTest, PauseTimersWhileVirtualTimeIsPaused) {
                                            base::Unretained(&run_order)));
 
   test_task_runner_->FastForwardUntilNoTasksRemain();
-  EXPECT_TRUE(run_order.IsEmpty());
+  EXPECT_TRUE(run_order.empty());
 
   vtc->SetVirtualTimePolicy(VirtualTimePolicy::kAdvance);
   test_task_runner_->FastForwardUntilNoTasksRemain();

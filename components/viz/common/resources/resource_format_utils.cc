@@ -11,6 +11,7 @@
 #include <ostream>
 
 #include "base/check_op.h"
+#include "base/logging.h"
 #include "base/notreached.h"
 #include "build/chromeos_buildflags.h"
 #include "ui/gfx/buffer_types.h"
@@ -47,11 +48,9 @@ SkColorType ResourceFormatToClosestSkColorType(bool gpu_compositing,
       return kRGB_888x_SkColorType;
     case P010:
 #if BUILDFLAG(IS_MAC)
-      // TODO(https://crbug.com/1155760): Until individual planes can be bound
-      // as their own textures, P010 buffers are copied to F16 textures for
-      // sampling.
-      return kRGBA_F16_SkColorType;
+      DLOG(ERROR) << "Sampling of P010 resources must be done per-plane.";
 #endif
+      return kRGBA_1010102_SkColorType;
     case RGBA_1010102:
       return kRGBA_1010102_SkColorType;
     case BGRA_1010102:
@@ -60,8 +59,10 @@ SkColorType ResourceFormatToClosestSkColorType(bool gpu_compositing,
     // YUV images are sampled as RGB.
     case YVU_420:
     case YUV_420_BIPLANAR:
+#if BUILDFLAG(IS_MAC)
+      DLOG(ERROR) << "Sampling of YUV_420 resources must be done per-plane.";
+#endif
       return kRGB_888x_SkColorType;
-
     case RED_8:
       return kAlpha_8_SkColorType;
     case R16_EXT:
@@ -188,54 +189,6 @@ bool HasAlpha(ResourceFormat format) {
   }
   NOTREACHED();
   return false;
-}
-
-const char* ResourceFormatToString(ResourceFormat format) {
-  switch (format) {
-    case ResourceFormat::RGBA_8888:
-      return "RGBA_8888";
-    case ResourceFormat::RGBA_4444:
-      return "RGBA_4444";
-    case ResourceFormat::BGRA_8888:
-      return "BGRA_8888";
-    case ResourceFormat::ALPHA_8:
-      return "ALPHA_8";
-    case ResourceFormat::LUMINANCE_8:
-      return "LUMINANCE_8";
-    case ResourceFormat::RGB_565:
-      return "RGB_565";
-    case ResourceFormat::BGR_565:
-      return "BGR_565";
-    case ResourceFormat::ETC1:
-      return "ETC1";
-    case ResourceFormat::RED_8:
-      return "RED_8";
-    case ResourceFormat::RG_88:
-      return "RG_88";
-    case ResourceFormat::LUMINANCE_F16:
-      return "LUMINANCE_F16";
-    case ResourceFormat::RGBA_F16:
-      return "RGBA_F16";
-    case ResourceFormat::R16_EXT:
-      return "R16_EXT";
-    case ResourceFormat::RG16_EXT:
-      return "RG16_EXT";
-    case ResourceFormat::RGBX_8888:
-      return "RGBX_8888";
-    case ResourceFormat::BGRX_8888:
-      return "BGRX_8888";
-    case ResourceFormat::RGBA_1010102:
-      return "RGBA_1010102";
-    case ResourceFormat::BGRA_1010102:
-      return "BGRA_1010102";
-    case ResourceFormat::YVU_420:
-      return "YVU_420";
-    case ResourceFormat::YUV_420_BIPLANAR:
-      return "YUV_420_BIPLANAR";
-    case ResourceFormat::P010:
-      return "P010";
-  }
-  NOTREACHED();
 }
 
 unsigned int GLDataType(ResourceFormat format) {
@@ -405,16 +358,17 @@ unsigned int TextureStorageFormat(ResourceFormat format,
       return GL_ETC1_RGB8_OES;
     case P010:
 #if BUILDFLAG(IS_MAC)
-      // TODO(https://crbug.com/1155760): Until individual planes can be bound
-      // as their own textures, P010 buffers are copied to F16 textures for
-      // sampling.
-      return GL_RGBA16F_EXT;
+      DLOG(ERROR) << "Sampling of P010 resources must be done per-plane.";
 #endif
+      return GL_RGB10_A2_EXT;
     case RGBA_1010102:
     case BGRA_1010102:
       return GL_RGB10_A2_EXT;
     case YVU_420:
     case YUV_420_BIPLANAR:
+#if BUILDFLAG(IS_MAC)
+      DLOG(ERROR) << "Sampling of YUV_420 resources must be done per-plane.";
+#endif
       return GL_RGB8_OES;
     default:
       break;
@@ -650,6 +604,72 @@ wgpu::TextureFormat ToDawnFormat(ResourceFormat format) {
 
 WGPUTextureFormat ToWGPUFormat(ResourceFormat format) {
   return static_cast<WGPUTextureFormat>(ToDawnFormat(format));
+}
+
+// TODO (hitawala): Add support for multiplanar formats.
+SkColorType ResourceFormatToClosestSkColorType(bool gpu_compositing,
+                                               SharedImageFormat format) {
+  return ResourceFormatToClosestSkColorType(gpu_compositing,
+                                            format.resource_format());
+}
+
+int BitsPerPixel(SharedImageFormat format) {
+  return BitsPerPixel(format.resource_format());
+}
+
+bool HasAlpha(SharedImageFormat format) {
+  return HasAlpha(format.resource_format());
+}
+
+unsigned int GLDataType(SharedImageFormat format) {
+  return GLDataType(format.resource_format());
+}
+
+unsigned int GLDataFormat(SharedImageFormat format) {
+  return GLDataFormat(format.resource_format());
+}
+
+unsigned int GLInternalFormat(SharedImageFormat format) {
+  return GLInternalFormat(format.resource_format());
+}
+
+gfx::BufferFormat BufferFormat(SharedImageFormat format) {
+  return BufferFormat(format.resource_format());
+}
+
+bool IsResourceFormatCompressed(SharedImageFormat format) {
+  return IsResourceFormatCompressed(format.resource_format());
+}
+
+unsigned int TextureStorageFormat(SharedImageFormat format,
+                                  bool use_angle_rgbx_format) {
+  return TextureStorageFormat(format.resource_format(), use_angle_rgbx_format);
+}
+
+bool IsGpuMemoryBufferFormatSupported(SharedImageFormat format) {
+  return IsGpuMemoryBufferFormatSupported(format.resource_format());
+}
+
+bool GLSupportsFormat(SharedImageFormat format) {
+  return GLSupportsFormat(format.resource_format());
+}
+
+#if BUILDFLAG(ENABLE_VULKAN)
+bool HasVkFormat(SharedImageFormat format) {
+  return HasVkFormat(format.resource_format());
+}
+
+VkFormat ToVkFormat(SharedImageFormat format) {
+  return ToVkFormat(format.resource_format());
+}
+#endif
+
+wgpu::TextureFormat ToDawnFormat(SharedImageFormat format) {
+  return ToDawnFormat(format.resource_format());
+}
+
+WGPUTextureFormat ToWGPUFormat(SharedImageFormat format) {
+  return ToWGPUFormat(format.resource_format());
 }
 
 }  // namespace viz

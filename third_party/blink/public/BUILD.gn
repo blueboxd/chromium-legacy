@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -169,6 +169,7 @@ source_set("blink_headers") {
     "platform/web_audio_bus.h",
     "platform/web_audio_device.h",
     "platform/web_audio_latency_hint.h",
+    "platform/web_audio_sink_descriptor.h",
     "platform/web_audio_source_provider.h",
     "platform/web_back_forward_cache_loader_helper.h",
     "platform/web_blob_info.h",
@@ -199,6 +200,7 @@ source_set("blink_headers") {
     "platform/web_document_subresource_filter.h",
     "platform/web_drag_data.h",
     "platform/web_effective_connection_type.h",
+    "platform/web_encoding_data.h",
     "platform/web_encrypted_media_client.h",
     "platform/web_encrypted_media_key_information.h",
     "platform/web_encrypted_media_request.h",

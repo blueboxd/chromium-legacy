@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,7 +78,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kDirectGpuMemoryBuffer [[deprecated]] = 6,
     kPassThrough = 7,
     kSwapChain = 8,
-    kSkiaDawnSharedImage = 9,
+    kSkiaDawnSharedImage [[deprecated]] = 9,
     kMaxValue = kSkiaDawnSharedImage,
   };
 

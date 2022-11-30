@@ -1,5 +1,5 @@
 #!/usr/bin/env vpython3
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Utilities for checking for disallowed usage of non-Blink declarations.
@@ -22,7 +22,7 @@ import sys
 
 _DISALLOW_NON_BLINK_MOJOM = (
     # network::mojom::Foo is allowed to use as non-blink mojom type.
-    '(|::)(?!network::)(\w+::)?mojom::(?!blink).+',
+    '(?!network::)(\w+::)?mojom::(?!blink).+',
     'Using non-blink mojom types, consider using "::mojom::blink::Foo" instead'
     'of "::mojom::Foo" unless you have clear reasons not to do so.',
     'Warning')
@@ -34,6 +34,7 @@ _CONFIG = [
             # TODO(dcheng): Should these be in a more specific config?
             'gfx::ColorSpace',
             'gfx::CubicBezier',
+            'gfx::HDRMetadata',
             'gfx::ICCProfile',
             'gfx::RadToDeg',
 
@@ -364,6 +365,7 @@ _CONFIG = [
             'gfx::RectFToSkRect',
             'gfx::RectToSkIRect',
             'gfx::RectToSkRect',
+            'gfx::ScaleInsets',
             'gfx::ScaleToCeiledSize',
             'gfx::ScaleToEnclosedRect',
             'gfx::ScaleToEnclosingRect',
@@ -694,6 +696,7 @@ _CONFIG = [
             'ui::IsTableLike',
             'ui::IsTableRow',
             'ui::IsTableHeader',
+            'ui::IsText',
 
             # Blink uses UKM for logging e.g. always-on leak detection (crbug/757374)
             'ukm::.+',
@@ -716,6 +719,13 @@ _CONFIG = [
              'If you are in this case, you can use --bypass-hooks option to avoid the presubmit check when uploading your CL.'
              ),
             _DISALLOW_NON_BLINK_MOJOM,
+        ],
+        # These task runners are generally banned in blink to ensure
+        # that blink tasks remain properly labeled. See
+        # //third_party/blink/renderer/platform/scheduler/TaskSchedulingInBlink.md
+        # for more.
+        'inclass_disallowed': [
+            'base::(SingleThread|Sequenced)TaskRunner::(GetCurrentDefault|CurrentDefaultHandle)',
         ],
     },
     {
@@ -785,7 +795,7 @@ _CONFIG = [
         'paths': ['third_party/blink/renderer/core/offscreencanvas'],
         'allowed': [
             # Flags to be used to set up sharedImage
-            'gpu::SHARED_IMAGE_USAGE_DISPLAY',
+            'gpu::SHARED_IMAGE_USAGE_DISPLAY_READ',
             'gpu::SHARED_IMAGE_USAGE_SCANOUT',
         ],
     },
@@ -794,7 +804,7 @@ _CONFIG = [
             'third_party/blink/renderer/core/html/canvas/canvas_rendering_context_host.cc'
         ],
         'allowed': [
-            'gpu::SHARED_IMAGE_USAGE_DISPLAY',
+            'gpu::SHARED_IMAGE_USAGE_DISPLAY_READ',
             'gpu::SHARED_IMAGE_USAGE_SCANOUT',
             'gpu::SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE',
         ],
@@ -1303,6 +1313,9 @@ _CONFIG = [
             'libopus::.+',
             'libyuv::.+',
             'video_track_recorder::.+',
+        ],
+        'inclass_allowed': [
+            'base::(SingleThread|Sequenced)TaskRunner::(CurrentDefaultHandle|GetCurrentDefault)'
         ]
     },
     {
@@ -1347,6 +1360,9 @@ _CONFIG = [
             'webrtc::StreamConfig',
             'webrtc::TypingDetection',
             'webrtc::VideoTrackInterface',
+        ],
+        'inclass_allowed': [
+            'base::(SingleThread|Sequenced)TaskRunner::(CurrentDefaultHandle|GetCurrentDefault)'
         ]
     },
     {
@@ -1789,6 +1805,15 @@ _CONFIG = [
             'net::ParseMimeTypeWithoutParameter',
         ],
     },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/mediastream/media_stream_track.cc',
+        ],
+        'allowed': [
+            # Used for injecting a mock.
+            'base::NoDestructor',
+        ]
+    },
 ]
 
 
@@ -1831,6 +1856,8 @@ def _precompile_config():
     compiled_config = []
     for raw_entry in _CONFIG:
         disallowed, advice = compile_disallowed(raw_entry.get('disallowed'))
+        inclass_disallowed, inclass_advice = compile_disallowed(
+            raw_entry.get('inclass_disallowed'))
         compiled_config.append({
             'paths':
             raw_entry['paths'],
@@ -1840,22 +1867,49 @@ def _precompile_config():
             disallowed,
             'advice':
             advice,
+            'inclass_allowed':
+            compile_regexp(raw_entry.get('inclass_allowed')),
+            'inclass_disallowed':
+            inclass_disallowed,
+            'inclass_advice':
+            inclass_advice,
         })
     return compiled_config
 
 
 _COMPILED_CONFIG = _precompile_config()
 
-# Attempt to match identifiers qualified with a namespace. Since parsing C++ in
-# Python is hard, this regex assumes that namespace names only contain lowercase
-# letters, numbers, and underscores, matching the Google C++ style guide. This
-# is intended to minimize the number of matches where :: is used to qualify a
-# name with a class or enum name.
+# Attempt to match identifiers qualified with a namespace. Since
+# parsing C++ in Python is hard, this regex assumes that namespace
+# names only contain lowercase letters, numbers, and underscores,
+# matching the Google C++ style guide. This is intended to minimize
+# the number of matches where :: is used to qualify a name with a
+# class or enum name.
 #
 # As a bit of a minor hack, this regex also hardcodes a check for GURL, since
 # GURL isn't namespace qualified and wouldn't match otherwise.
+#
+# An example of an identifier that will be matched with this RE is
+# "base::BindOnce" or "performance_manager::policies::WorkingSetTrimData".
 _IDENTIFIER_WITH_NAMESPACE_RE = re.compile(
     r'\b(?:(?:[a-z_][a-z0-9_]*::)+[A-Za-z_][A-Za-z0-9_]*|GURL)\b')
+
+# Different check which matches a non-empty sequence of lower-case
+# alphanumeric namespaces, followed by at least one
+# upper-or-lower-case alphanumeric qualifier, followed by the
+# upper-or-lower-case alphanumeric identifier.  This matches
+# identifiers which are within a class.
+#
+# In case identifiers are matched by both _IDENTIFIER_IN_CLASS and
+# _IDENTIFIER_WITH_NAMESPACE, the behavior of
+# _IDENTIFIER_WITH_NAMESPACE takes precedence, and it is as if it was
+# not matched by _IDENTIFIER_IN_CLASS.
+#
+# An example of an identifier matched by this regex is
+# "base::SingleThreadTaskRunner::CurrentDefaultHandle".
+_IDENTIFIER_IN_CLASS_RE = re.compile(
+    r'\b(?:[a-z_][a-z0-9_]*::)+(?:[A-Za-z_][A-Za-z0-9_]*::)+[A-Za-z_][A-Za-z0-9_]*\b'
+)
 
 
 def _find_matching_entries(path):
@@ -1879,24 +1933,34 @@ def _find_matching_entries(path):
     return [entry['entry'] for entry in entries]
 
 
-def _check_entries_for_identifier(entries, identifier):
+def _check_entries_for_identifier(entries, identifier, in_class=False):
     """Check if an identifier is allowed"""
     for entry in entries:
-        if entry['disallowed'].match(identifier):
-            return False
-        if entry['allowed'].match(identifier):
-            return True
-    # Disallow by default.
-    return False
+        if in_class:
+            if entry['inclass_disallowed'].match(identifier):
+                return False
+            if entry['inclass_allowed'].match(identifier):
+                return True
+        else:
+            if entry['disallowed'].match(identifier):
+                return False
+            if entry['allowed'].match(identifier):
+                return True
+    # Identifiers in classes which are allowed are allowed by default,
+    # while non-inner identifiers are disallowed by default.
+    return in_class
 
 
-def _find_advice_for_identifier(entries, identifier):
+def _find_advice_for_identifier(entries, identifier, in_class=False):
     advice_list = []
+    all_warning = True
     for entry in entries:
-        for matcher, advice, warning in entry.get('advice', []):
+        for matcher, advice, warning in entry.get(
+                'inclass_advice' if in_class else 'advice', []):
             if matcher.match(identifier):
                 advice_list.append(advice)
-    return advice_list, warning
+                all_warning = all_warning and warning
+    return advice_list, all_warning
 
 
 class BadIdentifier(object):
@@ -1937,13 +2001,22 @@ def check(path, contents):
         idx = line.find('//')
         if idx >= 0:
             line = line[:idx]
-        identifiers = _IDENTIFIER_WITH_NAMESPACE_RE.findall(line)
+        identifiers = set(_IDENTIFIER_WITH_NAMESPACE_RE.findall(line))
+        in_class_identifiers = set(_IDENTIFIER_IN_CLASS_RE.findall(line))
+        in_class_identifiers -= identifiers
         for identifier in identifiers:
             if not _check_entries_for_identifier(entries, identifier):
                 advice, warning = _find_advice_for_identifier(
                     entries, identifier)
                 results.append(
                     BadIdentifier(identifier, line_number, advice, warning))
+        for identifier in in_class_identifiers:
+            if not _check_entries_for_identifier(entries, identifier, True):
+                advice, warning = _find_advice_for_identifier(
+                    entries, identifier, True)
+                results.append(
+                    BadIdentifier(identifier, line_number, advice, warning))
+
     return results
 
 

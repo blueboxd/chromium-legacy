@@ -24,8 +24,9 @@
 
 namespace {
 // The relevance score for suggest tiles.
-// Suggest tiles should be positioned below the Query Tiles object.
-constexpr const int kMostVisitedTilesRelevance = 1500;
+// Suggest tiles are placed in a dedicated SECTION_MOBILE_MOST_VISITED
+// making its relative relevance score not important.
+constexpr const int kMostVisitedTilesRelevance = 1;
 constexpr const int kMaxRecordedTileIndex = 15;
 
 constexpr char kHistogramTileTypeCountSearch[] =
@@ -68,6 +69,7 @@ AutocompleteMatch BuildMatch(AutocompleteProvider* provider,
   match.description_class = ClassifyTermMatches({}, match.description.length(),
                                                 0, ACMatchClassification::NONE);
 
+  match.suggestion_group_id = omnibox::GROUP_MOBILE_MOST_VISITED;
   return match;
 }
 
@@ -129,7 +131,6 @@ bool BuildTileSuggest(AutocompleteProvider* provider,
   }
   return true;
 }
-
 }  // namespace
 
 void MostVisitedSitesProvider::Start(const AutocompleteInput& input,
@@ -164,7 +165,6 @@ void MostVisitedSitesProvider::Start(const AutocompleteInput& input,
 void MostVisitedSitesProvider::Stop(bool clear_cached_results,
                                     bool due_to_user_inactivity) {
   AutocompleteProvider::Stop(clear_cached_results, due_to_user_inactivity);
-
   request_weak_ptr_factory_.InvalidateWeakPtrs();
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,8 +76,7 @@ class TabProxy extends ITabProxy.Stub {
     @Override
     public void executeScript(String script, boolean useSeparateIsolate, IStringCallback callback) {
         mHandler.post(() -> {
-            // TODO(rayankans): Verify the tab's origin is 1P.
-            getTab().executeScript(script, useSeparateIsolate, (String result) -> {
+            getTab().executeScriptIfAllowed(script, useSeparateIsolate, (String result) -> {
                 try {
                     callback.onResult(result);
                 } catch (RemoteException e) {

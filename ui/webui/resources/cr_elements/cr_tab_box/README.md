@@ -4,7 +4,7 @@ cr-tab-box is a non-Polymer custom element that can be used to create a simple
 tabbed UI. This is generally most useful for debug pages that are not
 concerned with matching the look/feel of the larger user-facing Chromium WebUIs
 that use Polymer (e.g. chrome://settings). cr-tab-box replaces the deprecated
-cr.ui.TabBox from ui/webui/resources/js/cr/ui/tabs.js which was previously
+cr.ui.TabBox from ui/webui/resources/js/tabs.js which was previously
 used by debug pages for this purpose.
 
 ## Example usage
@@ -13,12 +13,12 @@ order of the tabs should match the number and order of the panels. Example:
 
 ```html
   <cr-tab-box>
-    <div slot="tabs">Donuts</div>
-    <div slot="tabs">Cookies</div>
-    <div slot="panels">
+    <div slot="tab">Donuts</div>
+    <div slot="tab">Cookies</div>
+    <div slot="panel">
       <span>Some content related to donuts</span>
     </div>
-    <div slot="panels">
+    <div slot="panel">
       <span>Some content related to cookies</span>
     </div>
   </cr-tab-box>

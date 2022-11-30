@@ -278,7 +278,7 @@ void ExtensionActionAPI::DispatchEventToExtension(
     return;
 
   auto event = std::make_unique<Event>(
-      histogram_value, event_name, std::move(event_args->GetList()), context);
+      histogram_value, event_name, std::move(*event_args).TakeList(), context);
   event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
   EventRouter::Get(context)
       ->DispatchEventToExtension(extension_id, std::move(event));
@@ -399,6 +399,12 @@ ExtensionFunction::ResponseAction
 ExtensionActionHideFunction::RunExtensionAction() {
   SetVisible(false);
   return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+ActionIsEnabledFunction::RunExtensionAction() {
+  return RespondNow(OneArgument(base::Value(
+      extension_action_->GetIsVisibleIgnoringDeclarative(tab_id_))));
 }
 
 // static

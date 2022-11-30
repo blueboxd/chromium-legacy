@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/branding_view_controller.h"
 
-#import "base/mac/foundation_util.h"
 #import "base/notreached.h"
 #import "base/threading/sequenced_task_runner_handle.h"
 #import "base/time/time.h"
@@ -19,13 +18,15 @@ namespace {
 // The left margin of the branding logo, if visible.
 constexpr CGFloat kLeadingInset = 10;
 // The scale used by the "pop" animation.
-constexpr CGFloat kAnimationScale = 1.25;
-// Wait time after the branding is shown to perform pop animation.
+constexpr CGFloat kAnimationScale = ((CGFloat)4) / 3;
+// Wait time after the keyboard settles into place to perform pop animation.
 constexpr base::TimeDelta kAnimationWaitTime = base::Milliseconds(200);
 // Time it takes the "pop" animation to perform.
 constexpr base::TimeDelta kTimeToAnimate = base::Milliseconds(400);
 // Minimum time interval between two animations.
 constexpr base::TimeDelta kMinTimeIntervalBetweenAnimations = base::Seconds(3);
+// Accessibility ID of the view.
+constexpr NSString* kBrandingButtonAXId = @"kBrandingButtonAXId";
 }  // namespace
 
 @interface BrandingViewController ()
@@ -56,6 +57,8 @@ constexpr base::TimeDelta kMinTimeIntervalBetweenAnimations = base::Seconds(3);
       NOTREACHED();
       break;
   }
+  UIImage* logo = [[UIImage imageNamed:logoName]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
   UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
   if (@available(iOS 15.0, *)) {
     UIButtonConfiguration* buttonConfig =
@@ -66,41 +69,21 @@ constexpr base::TimeDelta kMinTimeIntervalBetweenAnimations = base::Seconds(3);
   } else {
     button.imageEdgeInsets = UIEdgeInsetsMake(0, kLeadingInset, 0, 0);
   }
+  [button setImage:logo forState:UIControlStateNormal];
+  [button setImage:logo forState:UIControlStateHighlighted];
+  button.accessibilityIdentifier = kBrandingButtonAXId;
+  button.imageView.contentMode = UIViewContentModeScaleAspectFit;
   button.isAccessibilityElement = NO;  // Prevents VoiceOver users from tap.
   button.translatesAutoresizingMaskIntoConstraints = NO;
   self.view = button;
-  [self configureBrandingWithImageName:logoName];
-}
 
-- (void)viewDidAppear:(BOOL)animated {
-  [super viewDidAppear:animated];
-  DCHECK(self.delegate);
-  if (!self.shouldAnimate) {
-    return;
-  }
-  // The "pop" animation should start after a slight timeout.
-  __weak BrandingViewController* weakSelf = self;
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(^{
-        [weakSelf performPopAnimation];
-      }),
-      kAnimationWaitTime);
-}
-
-#pragma mark - UITraitEnvironment
-
-// UIImages with rendering mode UIImageRenderingModeAlwaysOriginal do not
-// automatically respond when the user interface mode changes. To fix this, the
-// view controller should get notified on these changes and update the image
-// accordingly. Similar issue and fix as crbug.com/998090.
-- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  [super traitCollectionDidChange:previousTraitCollection];
-  if (self.traitCollection.userInterfaceStyle !=
-          previousTraitCollection.userInterfaceStyle &&
-      autofill::features::GetAutofillBrandingType() ==
-          autofill::features::AutofillBrandingType::kMonotone) {
-    [self configureBrandingWithImageName:@"monotone_branding_icon"];
-  }
+  // Adds keyboard popup listener to show animation when keyboard is fully
+  // settled.
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(onKeyboardAnimationComplete)
+             name:UIKeyboardDidShowNotification
+           object:nil];
 }
 
 #pragma mark - Accessors
@@ -118,24 +101,33 @@ constexpr base::TimeDelta kMinTimeIntervalBetweenAnimations = base::Seconds(3);
 - (void)setDelegate:(id<BrandingViewControllerDelegate>)delegate {
   _delegate = delegate;
   if (_delegate != nil) {
-    [base::mac::ObjCCast<UIButton>(self.view)
-               addTarget:_delegate
-                  action:@selector(brandingIconPressed)
-        forControlEvents:UIControlEventTouchUpInside];
+    [(UIButton*)self.view addTarget:_delegate
+                             action:@selector(brandingIconPressed)
+                   forControlEvents:UIControlEventTouchUpInside];
   }
 }
 
 #pragma mark - Private
 
-// Add the branding image with the correct size, and make sure it persists
-// across different button states.
-- (void)configureBrandingWithImageName:(NSString*)name {
-  UIImage* logo = [[UIImage imageNamed:name]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-  UIButton* button = base::mac::ObjCCast<UIButton>(self.view);
-  [button setImage:logo forState:UIControlStateNormal];
-  [button setImage:logo forState:UIControlStateHighlighted];
-  button.imageView.contentMode = UIViewContentModeScaleAspectFit;
+// Check if the branding icon is visible and should perform an animation, and do
+// so if it should.
+- (void)onKeyboardAnimationComplete {
+  // Branding is invisible.
+  if (self.view.window == nil || self.view.hidden) {
+    return;
+  }
+  // Branding is visible; animate if it should.
+  DCHECK(self.delegate);
+  if (!self.shouldAnimate) {
+    return;
+  }
+  // The "pop" animation should start after a slight timeout.
+  __weak BrandingViewController* weakSelf = self;
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::BindOnce(^{
+        [weakSelf performPopAnimation];
+      }),
+      kAnimationWaitTime);
 }
 
 // Performs the "pop" animation. This includes a quick enlarging of the icon
@@ -161,8 +153,8 @@ constexpr base::TimeDelta kMinTimeIntervalBetweenAnimations = base::Seconds(3);
             animations:^{
               weakSelf.view.transform = CGAffineTransformIdentity;
             }
-            completion:^(BOOL finished) {
-              if (finished) {
+            completion:^(BOOL innerFinished) {
+              if (innerFinished) {
                 [weakSelf.delegate brandingIconDidPerformPopAnimation];
               }
             }];

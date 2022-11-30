@@ -44,6 +44,7 @@
 #include "services/network/public/cpp/parsed_headers.h"
 #include "services/network/public/cpp/timing_allow_origin_parser.h"
 #include "services/network/public/mojom/parsed_headers.mojom-blink.h"
+#include "services/network/public/mojom/supports_loading_mode.mojom-blink.h"
 #include "services/network/public/mojom/timing_allow_origin.mojom-blink.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -95,6 +96,10 @@ blink::WebClientHintsType ConvertToBlink(WebClientHintsType in) {
   return in;
 }
 
+blink::LoadingMode ConvertToBlink(LoadingMode in) {
+  return static_cast<blink::LoadingMode>(in);
+}
+
 // ===== Converters for other basic Blink types =====
 String ConvertToBlink(const std::string& in) {
   return String::FromUTF8(in);
@@ -119,7 +124,7 @@ template <
     typename OutElement = decltype(ConvertToBlink(std::declval<InElement>()))>
 Vector<OutElement> ConvertToBlink(const std::vector<InElement>& in) {
   Vector<OutElement> out;
-  out.ReserveCapacity(base::checked_cast<wtf_size_t>(in.size()));
+  out.reserve(base::checked_cast<wtf_size_t>(in.size()));
   for (const auto& element : in) {
     out.push_back(ConvertToBlink(element));
   }
@@ -257,7 +262,8 @@ blink::ParsedHeadersPtr ConvertToBlink(const ParsedHeadersPtr& in) {
           ? absl::make_optional(ConvertToBlink(in->critical_ch.value()))
           : absl::nullopt,
       in->xfo, ConvertToBlink(in->link_headers),
-      ConvertToBlink(in->timing_allow_origin), in->is_credentialed_prerender,
+      ConvertToBlink(in->timing_allow_origin),
+      ConvertToBlink(in->supports_loading_mode),
       in->reporting_endpoints.has_value()
           ? absl::make_optional(ConvertToBlink(in->reporting_endpoints.value()))
           : absl::nullopt,
@@ -355,7 +361,7 @@ bool IsValidHTTPHeaderValue(const String& name) {
 
 // See RFC 7230, Section 3.2.6.
 bool IsValidHTTPToken(const String& characters) {
-  if (characters.IsEmpty())
+  if (characters.empty())
     return false;
   for (unsigned i = 0; i < characters.length(); ++i) {
     UChar c = characters[i];
@@ -483,7 +489,7 @@ AtomicString ExtractMIMETypeFromMediaType(const AtomicString& media_type) {
 
 ContentTypeOptionsDisposition ParseContentTypeOptionsHeader(
     const String& value) {
-  if (value.IsEmpty())
+  if (value.empty())
     return kContentTypeOptionsNone;
 
   Vector<String> results;
@@ -623,7 +629,7 @@ CacheControlHeader ParseCacheControlDirectives(
   static const char kMaxAgeDirective[] = "max-age";
   static const char kStaleWhileRevalidateDirective[] = "stale-while-revalidate";
 
-  if (!cache_control_value.IsEmpty()) {
+  if (!cache_control_value.empty()) {
     Vector<std::pair<String, String>> directives;
     ParseCacheHeader(cache_control_value, directives);
 
@@ -632,7 +638,7 @@ CacheControlHeader ParseCacheControlDirectives(
       // RFC2616 14.9.1: A no-cache directive with a value is only meaningful
       // for proxy caches.  It should be ignored by a browser level cache.
       if (EqualIgnoringASCIICase(directives[i].first, kNoCacheDirective) &&
-          directives[i].second.IsEmpty()) {
+          directives[i].second.empty()) {
         cache_control_header.contains_no_cache = true;
       } else if (EqualIgnoringASCIICase(directives[i].first,
                                         kNoStoreDirective)) {

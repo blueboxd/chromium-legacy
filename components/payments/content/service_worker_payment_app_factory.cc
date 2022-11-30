@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/payments/content/developer_console_logger.h"
@@ -59,9 +60,7 @@ class ServiceWorkerPaymentAppCreator {
       std::vector<std::string> enabled_methods =
           installed_app.second->enabled_methods;
       bool has_app_store_billing_method =
-          enabled_methods.end() != std::find(enabled_methods.begin(),
-                                             enabled_methods.end(),
-                                             methods::kGooglePlayBilling);
+          base::Contains(enabled_methods, methods::kGooglePlayBilling);
       if (ShouldSkipAppForPartialDelegation(
               installed_app.second->supported_delegations, delegate_,
               has_app_store_billing_method)) {
@@ -190,7 +189,7 @@ void ServiceWorkerPaymentAppFactory::Create(base::WeakPtr<Delegate> delegate) {
       ->GetAllPaymentApps(
           delegate->GetFrameSecurityOrigin(),
           delegate->GetPaymentManifestWebDataService(),
-          mojo::Clone(delegate->GetMethodData()),
+          mojo::Clone(delegate->GetMethodData()), delegate->GetCSPChecker(),
           base::BindOnce(&ServiceWorkerPaymentAppCreator::CreatePaymentApps,
                          creator_raw_pointer->GetWeakPtr()),
           base::BindOnce([]() {

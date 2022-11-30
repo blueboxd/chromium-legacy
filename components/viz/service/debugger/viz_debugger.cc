@@ -80,11 +80,13 @@ VizDebugger::VizDebugger()
 
 VizDebugger::~VizDebugger() = default;
 
-void VizDebugger::SubmitBuffer(int buff_id, VizDebugger::BufferInfo buffer) {
+void VizDebugger::SubmitBuffer(int buff_id, VizDebugger::BufferInfo&& buffer) {
+  read_write_lock_.WriteLock();
   VizDebugger::Buffer buff;
   buff.id = buff_id;
-  buff.buffer_info = buffer;
+  buff.buffer_info = std::move(buffer);
   buffers_.emplace_back(buff);
+  read_write_lock_.WriteUnLock();
 }
 
 base::Value VizDebugger::FrameAsJson(const uint64_t counter,
@@ -227,6 +229,7 @@ base::Value VizDebugger::FrameAsJson(const uint64_t counter,
   global_dict.SetKey("threads", std::move(new_threads));
 
   // Reset index counters for each buffer.
+  buffers_.clear();
   draw_rect_calls_tail_idx_ = 0;
   draw_text_calls_tail_idx_ = 0;
   logs_tail_idx_ = 0;
@@ -439,7 +442,7 @@ void VizDebugger::FilterDebugStream(base::Value json) {
 
   new_filters_.clear();
 
-  for (const auto& filter : filterlist->GetListDeprecated()) {
+  for (const auto& filter : filterlist->GetList()) {
     const base::Value* file = filter.FindPath("selector.file");
     const base::Value* func = filter.FindPath("selector.func");
     const base::Value* anno = filter.FindPath("selector.anno");

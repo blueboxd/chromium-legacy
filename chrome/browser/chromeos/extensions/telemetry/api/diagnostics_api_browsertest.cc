@@ -10,6 +10,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/base_telemetry_extension_browser_test.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/fake_diagnostics_service.h"
+#include "chromeos/crosapi/mojom/diagnostics_service.mojom.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,7 +20,6 @@
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/crosapi/mojom/diagnostics_service.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -232,6 +232,30 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
         );
         chrome.test.succeed();
       },
+      async function runDnsResolutionRoutine() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.diagnostics.runDnsResolutionRoutine(),
+            'Error: API chrome.os.diagnostics.runDnsResolutionRoutine ' +
+            'failed. Not supported by ash browser'
+        );
+        chrome.test.succeed();
+      },
+      async function runDnsResolverPresentRoutine() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.diagnostics.runDnsResolverPresentRoutine(),
+            'Error: API chrome.os.diagnostics.runDnsResolverPresentRoutine ' +
+            'failed. Not supported by ash browser'
+        );
+        chrome.test.succeed();
+      },
+      async function runGatewayCanBePingedRoutine() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.diagnostics.runGatewayCanBePingedRoutine(),
+            'Error: API chrome.os.diagnostics.runGatewayCanBePingedRoutine ' +
+                'failed. Not supported by ash browser'
+        );
+        chrome.test.succeed();
+      },
       async function runLanConnectivityRoutine() {
         await chrome.test.assertPromiseRejects(
             chrome.os.diagnostics.runLanConnectivityRoutine(),
@@ -256,6 +280,14 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
               }
             ),
             'Error: API chrome.os.diagnostics.runNvmeWearLevelRoutine ' +
+            'failed. Not supported by ash browser'
+        );
+        chrome.test.succeed();
+      },
+      async function runSignalStrengthRoutine() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.diagnostics.runSignalStrengthRoutine(),
+            'Error: API chrome.os.diagnostics.runSignalStrengthRoutine ' +
             'failed. Not supported by ash browser'
         );
         chrome.test.succeed();
@@ -316,9 +348,13 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
         crosapi::mojom::DiagnosticsRoutineEnum::kPrimeSearch,
         crosapi::mojom::DiagnosticsRoutineEnum::kCpuStress,
         crosapi::mojom::DiagnosticsRoutineEnum::kDiskRead,
+        crosapi::mojom::DiagnosticsRoutineEnum::kDnsResolution,
+        crosapi::mojom::DiagnosticsRoutineEnum::kDnsResolverPresent,
         crosapi::mojom::DiagnosticsRoutineEnum::kLanConnectivity,
         crosapi::mojom::DiagnosticsRoutineEnum::kMemory,
         crosapi::mojom::DiagnosticsRoutineEnum::kNvmeWearLevel,
+        crosapi::mojom::DiagnosticsRoutineEnum::kSignalStrength,
+        crosapi::mojom::DiagnosticsRoutineEnum::kGatewayCanBePinged,
         crosapi::mojom::DiagnosticsRoutineEnum::kSmartctlCheck,
     });
 
@@ -343,9 +379,13 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
               "cpu_prime_search",
               "cpu_stress",
               "disk_read",
+              "dns_resolution",
+              "dns_resolver_present",
               "lan_connectivity",
               "memory",
               "nvme_wear_level",
+              "signal_strength",
+              "gateway_can_be_pinged",
               "smartctl_check"
             ]
           }, response);
@@ -990,6 +1030,126 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
+                       RunDnsResolutionRoutineSuccess) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // If Diagnostics interface is not available on this version of ash-chrome,
+  // this test suite will no-op.
+  if (!IsServiceAvailable()) {
+    return;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+  // Configure FakeDiagnosticsService.
+  {
+    auto expected_response =
+        crosapi::mojom::DiagnosticsRunRoutineResponse::New();
+    expected_response->id = 0;
+    expected_response->status =
+        crosapi::mojom::DiagnosticsRoutineStatusEnum::kReady;
+
+    // Set the return value for a call to RunDiskReadRoutine.
+    auto fake_service_impl = std::make_unique<FakeDiagnosticsService>();
+    fake_service_impl->SetRunRoutineResponse(std::move(expected_response));
+
+    fake_service_impl->SetExpectedLastCalledRoutine(
+        crosapi::mojom::DiagnosticsRoutineEnum::kDnsResolution);
+
+    SetServiceForTesting(std::move(fake_service_impl));
+  }
+
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function runDnsResolutionRoutine() {
+        const response =
+          await chrome.os.diagnostics.runDnsResolutionRoutine();
+        chrome.test.assertEq({id: 0, status: "ready"}, response);
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+}
+
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
+                       RunDnsResolverPresentRoutineSuccess) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // If Diagnostics interface is not available on this version of ash-chrome,
+  // this test suite will no-op.
+  if (!IsServiceAvailable()) {
+    return;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+  // Configure FakeDiagnosticsService.
+  {
+    auto expected_response =
+        crosapi::mojom::DiagnosticsRunRoutineResponse::New();
+    expected_response->id = 0;
+    expected_response->status =
+        crosapi::mojom::DiagnosticsRoutineStatusEnum::kReady;
+
+    // Set the return value for a call to RunDiskReadRoutine.
+    auto fake_service_impl = std::make_unique<FakeDiagnosticsService>();
+    fake_service_impl->SetRunRoutineResponse(std::move(expected_response));
+
+    fake_service_impl->SetExpectedLastCalledRoutine(
+        crosapi::mojom::DiagnosticsRoutineEnum::kDnsResolverPresent);
+
+    SetServiceForTesting(std::move(fake_service_impl));
+  }
+
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function runDiskReadRoutine() {
+        const response =
+          await chrome.os.diagnostics.runDnsResolverPresentRoutine();
+        chrome.test.assertEq({id: 0, status: "ready"}, response);
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+}
+
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
+                       RunGatewayCanBePingedRoutineSuccess) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // If Diagnostics interface is not available on this version of ash-chrome,
+  // this test suite will no-op.
+  if (!IsServiceAvailable()) {
+    return;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+  // Configure FakeDiagnosticsService.
+  {
+    auto expected_response =
+        crosapi::mojom::DiagnosticsRunRoutineResponse::New();
+    expected_response->id = 0;
+    expected_response->status =
+        crosapi::mojom::DiagnosticsRoutineStatusEnum::kReady;
+
+    // Set the return value for a call to RunDiskReadRoutine.
+    auto fake_service_impl = std::make_unique<FakeDiagnosticsService>();
+    fake_service_impl->SetRunRoutineResponse(std::move(expected_response));
+
+    fake_service_impl->SetExpectedLastCalledRoutine(
+        crosapi::mojom::DiagnosticsRoutineEnum::kGatewayCanBePinged);
+
+    SetServiceForTesting(std::move(fake_service_impl));
+  }
+
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function runGatewayCanBePingedRoutine() {
+        const response =
+          await chrome.os.diagnostics.runGatewayCanBePingedRoutine();
+        chrome.test.assertEq({id: 0, status: "ready"}, response);
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+}
+
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
                        RunLanConnectivityRoutineSuccess) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // If Diagnostics interface is not available on this version of ash-chrome,
@@ -1114,6 +1274,47 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
               wear_level_threshold: 80
             }
           );
+        chrome.test.assertEq({id: 0, status: "ready"}, response);
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+}
+
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
+                       RunSignalStrengthRoutineSuccess) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // If Diagnostics interface is not available on this version of ash-chrome,
+  // this test suite will no-op.
+  if (!IsServiceAvailable()) {
+    return;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+  // Configure FakeDiagnosticsService.
+  {
+    auto expected_response =
+        crosapi::mojom::DiagnosticsRunRoutineResponse::New();
+    expected_response->id = 0;
+    expected_response->status =
+        crosapi::mojom::DiagnosticsRoutineStatusEnum::kReady;
+
+    // Set the return value for a call to RunSmartctlCheckRoutine.
+    auto fake_service_impl = std::make_unique<FakeDiagnosticsService>();
+    fake_service_impl->SetRunRoutineResponse(std::move(expected_response));
+
+    // Set the expected called routine.
+    fake_service_impl->SetExpectedLastCalledRoutine(
+        crosapi::mojom::DiagnosticsRoutineEnum::kSignalStrength);
+
+    SetServiceForTesting(std::move(fake_service_impl));
+  }
+
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function runSignalStrengthRoutine() {
+        const response =
+          await chrome.os.diagnostics.runSignalStrengthRoutine();
         chrome.test.assertEq({id: 0, status: "ready"}, response);
         chrome.test.succeed();
       }

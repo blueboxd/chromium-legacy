@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_disable_side_effects_scope.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -95,23 +96,19 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
     const NGConstraintSpace& new_space,
     const NGBlockBreakToken* break_token,
     const NGEarlyBreak* early_break,
+    const NGColumnSpannerPath* column_spanner_path,
     absl::optional<NGFragmentGeometry>* initial_fragment_geometry,
     NGLayoutCacheStatus* out_cache_status) {
   NOT_DESTROYED();
   *out_cache_status = NGLayoutCacheStatus::kNeedsLayout;
 
   const bool use_layout_cache_slot =
-      new_space.CacheSlot() == NGCacheSlot::kLayout &&
-      !layout_results_.IsEmpty();
-  const NGLayoutResult* cached_layout_result = use_layout_cache_slot
-                                                   ? GetCachedLayoutResult()
-                                                   : GetCachedMeasureResult();
+      new_space.CacheSlot() == NGCacheSlot::kLayout && !layout_results_.empty();
+  const NGLayoutResult* cached_layout_result =
+      use_layout_cache_slot ? GetCachedLayoutResult(break_token)
+                            : GetCachedMeasureResult();
 
   if (!cached_layout_result)
-    return nullptr;
-
-  // TODO(cbiesinger): Support caching fragmented boxes.
-  if (break_token)
     return nullptr;
 
   if (early_break)
@@ -132,6 +129,13 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
 
   const NGPhysicalBoxFragment& physical_fragment =
       To<NGPhysicalBoxFragment>(cached_layout_result->PhysicalFragment());
+
+  // No fun allowed for repeated content.
+  if ((physical_fragment.BreakToken() &&
+       physical_fragment.BreakToken()->IsRepeated()) ||
+      (break_token && break_token->IsRepeated()))
+    return nullptr;
+
   if (SelfNeedsLayoutForStyle() || child_needs_layout_unless_locked ||
       NeedsSimplifiedNormalFlowLayout() ||
       (NeedsPositionedMovementLayout() &&
@@ -179,8 +183,6 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
     }
   }
 
-  DCHECK(!physical_fragment.BreakToken());
-
   NGBlockNode node(this);
   NGLayoutCacheStatus size_cache_status = CalculateSizeBasedLayoutCacheStatus(
       node, break_token, *cached_layout_result, new_space,
@@ -214,7 +216,7 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
     // Simplified layout requires children to have a cached layout result. If
     // the current box has no cached layout result, its children might not,
     // either.
-    if (!use_layout_cache_slot && !GetCachedLayoutResult())
+    if (!use_layout_cache_slot && !GetCachedLayoutResult(break_token))
       return nullptr;
   }
 
@@ -227,6 +229,9 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
   bool are_bfc_offsets_equal;
   bool is_margin_strut_equal;
   bool is_exclusion_space_equal;
+  bool is_fragmented = IsResumingLayout(break_token) ||
+                       physical_fragment.BreakToken() ||
+                       PhysicalFragmentCount() > 1;
 
   {
     const NGConstraintSpace& old_space =
@@ -280,9 +285,6 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
 
     if (UNLIKELY(new_space.HasBlockFragmentation())) {
       DCHECK(old_space.HasBlockFragmentation());
-      // We're should currently be checking if the node is unfragmented before
-      // we get here.
-      DCHECK(physical_fragment.IsOnlyForNode());
 
       // Sometimes we perform simplified layout on a block-flow which is just
       // growing in block-size. When fragmentation is present we can't hit the
@@ -305,6 +307,9 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
       // so we should miss the cache in this case to ensure that such OOF
       // descendants are laid out correctly.
       if (physical_fragment.HasOutOfFlowFragmentChild())
+        return nullptr;
+
+      if (column_spanner_path || cached_layout_result->ColumnSpannerPath())
         return nullptr;
 
       // If the node didn't break into multiple fragments, we might be able to
@@ -336,12 +341,33 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
         // additional checks.)
       } else if (new_space.FragmentainerBlockSize() !=
                      old_space.FragmentainerBlockSize() ||
-                 new_space.FragmentainerOffsetAtBfc() !=
-                     old_space.FragmentainerOffsetAtBfc()) {
+                 new_space.FragmentainerOffset() !=
+                     old_space.FragmentainerOffset()) {
+        // The fragment block-offset will either change, or the fragmentainer
+        // block-size has changed. If the node is fragmented, we're going to
+        // have to refragment, since the fragmentation line has moved,
+        // relatively to the fragment.
+        if (is_fragmented)
+          return nullptr;
+
+        // Fragmentation inside a nested multicol container depends on the
+        // amount of remaining space in the outer fragmentation context, so if
+        // this has changed, we cannot necessarily re-use it. To keep things
+        // simple (lol, take a look around!), just don't re-use a nested
+        // fragmentation context root.
+        if (physical_fragment.IsFragmentationContextRoot())
+          return nullptr;
+
         // If the fragment was forced to stay in a fragmentainer (even if it
         // overflowed), BlockSizeForFragmentation() cannot be used for cache
         // testing.
         if (cached_layout_result->IsBlockSizeForFragmentationClamped())
+          return nullptr;
+
+        // If the fragment was truncated at the fragmentation line, and since we
+        // have now moved relatively to the fragmentation line, we cannot re-use
+        // the fragment.
+        if (cached_layout_result->IsTruncatedByFragmentationLine())
           return nullptr;
 
         // TODO(layout-dev): This likely shouldn't be scoped to just OOFs, but
@@ -365,7 +391,7 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
               cached_layout_result->ExclusionSpace();
           if (result_exclusion_space != old_space.ExclusionSpace()) {
             LayoutUnit block_end_offset =
-                new_space.FragmentainerOffsetAtBfc() +
+                FragmentainerOffsetAtBfc(new_space) +
                 result_exclusion_space.ClearanceOffset(EClear::kBoth);
             if (block_end_offset > new_space.FragmentainerBlockSize())
               return true;
@@ -407,7 +433,7 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
               cached_layout_result->BlockSizeForFragmentation();
 
           LayoutUnit block_end_offset =
-              new_space.FragmentainerOffsetAtBfc() +
+              FragmentainerOffsetAtBfc(new_space) +
               bfc_block_offset.value_or(LayoutUnit()) +
               block_size_for_fragmentation;
           if (block_end_offset > new_space.FragmentainerBlockSize())
@@ -428,6 +454,11 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
       }
     }
   }
+
+  // Simplified layout doesn't support fragmented nodes.
+  if (is_fragmented &&
+      cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout)
+    return nullptr;
 
   // We've performed all of the cache checks at this point. If we need
   // "simplified" layout then abort now.
@@ -460,7 +491,7 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
 
     // We need to update the cached layout result, as the call to
     // RecalcLayoutOverflow() might have modified it.
-    cached_layout_result = GetCachedLayoutResult();
+    cached_layout_result = GetCachedLayoutResult(break_token);
 #if DCHECK_IS_ON()
     cloned_cached_layout_result->CheckSameForSimplifiedLayout(
         *cached_layout_result);
@@ -506,7 +537,7 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
       bfc_block_offset, block_offset_delta);
 
   if (needs_cached_result_update && !NGDisableSideEffectsScope::IsDisabled())
-    SetCachedLayoutResult(new_result);
+    SetCachedLayoutResult(new_result, FragmentIndex(break_token));
 
   return new_result;
 }

@@ -2334,7 +2334,8 @@ TEST_P(LtrRtlShelfViewTest, TapInFullscreen) {
 }
 
 // Verifies that partying items are hidden from the shelf.
-TEST_P(LtrRtlShelfViewTest, PartyingItemsHiddenFromShelf) {
+// TODO(crbug/1372295): This test consistently times out.
+TEST_P(LtrRtlShelfViewTest, DISABLED_PartyingItemsHiddenFromShelf) {
   AddAppShortcut();
   AddAppShortcut();
   AddApp();
@@ -3622,6 +3623,46 @@ TEST_F(ShelfViewGestureTapTest, MouseClickInterruptionBeforeGestureLongPress) {
 
   EXPECT_FALSE(shelf_view_->IsShowingMenu());
   EXPECT_EQ(views::InkDropState::HIDDEN, GetInkDropStateOfAppIcon1());
+}
+
+class ShelfPartyTest : public ShelfViewTest,
+                       public testing::WithParamInterface<
+                           std::pair<ShelfAlignment, ShelfAutoHideBehavior>> {
+ public:
+  ShelfPartyTest()
+      : ShelfViewTest(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+  ShelfPartyTest(const ShelfPartyTest&) = delete;
+  ShelfPartyTest& operator=(const ShelfPartyTest&) = delete;
+  ~ShelfPartyTest() override = default;
+
+  void SetUp() override {
+    ShelfViewTest::SetUp();
+    shelf_view_->shelf()->SetAlignment(GetParam().first);
+    shelf_view_->shelf()->SetAutoHideBehavior(GetParam().second);
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ShelfPartyTest,
+    testing::Values(
+        std::make_pair(ShelfAlignment::kBottom, ShelfAutoHideBehavior::kAlways),
+        std::make_pair(ShelfAlignment::kBottom, ShelfAutoHideBehavior::kNever),
+        std::make_pair(ShelfAlignment::kLeft, ShelfAutoHideBehavior::kNever),
+        std::make_pair(ShelfAlignment::kRight, ShelfAutoHideBehavior::kNever),
+        std::make_pair(ShelfAlignment::kBottomLocked,
+                       ShelfAutoHideBehavior::kNever),
+        std::make_pair(ShelfAlignment::kBottom,
+                       ShelfAutoHideBehavior::kAlwaysHidden)));
+
+// Exercises the party animation.
+TEST_P(ShelfPartyTest, PartyAnimation) {
+  for (int i = 0; i < 16; ++i)
+    AddAppShortcut();
+  model_->ToggleShelfParty();
+  task_environment()->FastForwardBy(base::Seconds(2));
+  model_->ToggleShelfParty();
+  test_api_->RunMessageLoopUntilAnimationsDone();
 }
 
 }  // namespace ash

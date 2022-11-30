@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ StyleScope* StyleScope::Parse(CSSParserTokenRange prelude,
   // <scope-start>
   {
     auto block = prelude.ConsumeBlock();
-    from = CSSSelectorParser<>::ParseScopeBoundary(block, context, style_sheet);
+    from = CSSSelectorParser::ParseScopeBoundary(block, context, style_sheet);
     if (!from)
       return nullptr;
   }
@@ -56,7 +56,7 @@ StyleScope* StyleScope::Parse(CSSParserTokenRange prelude,
       return nullptr;
 
     auto block = prelude.ConsumeBlock();
-    to = CSSSelectorParser<>::ParseScopeBoundary(block, context, style_sheet);
+    to = CSSSelectorParser::ParseScopeBoundary(block, context, style_sheet);
     if (!to)
       return nullptr;
   }

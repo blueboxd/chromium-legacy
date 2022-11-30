@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {waitAfterNextRender} from 'chrome://test/test_util.js';
+import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
 import {assertEquals, assertTrue} from '../../chai_assert.js';
 
@@ -32,18 +32,11 @@ suite('OSSearchPageTests', function() {
     params.append('settingId', '600');
     Router.getInstance().navigateTo(routes.OS_SEARCH, params);
 
-    let deepLinkElement;
-    if (loadTimeData.getBoolean('syncSettingsCategorizationEnabled')) {
-      const browserSearchSettingsLink =
-          page.shadowRoot.querySelector('settings-search-engine')
-              .shadowRoot.querySelector('#browserSearchSettingsLink');
-      deepLinkElement =
-          browserSearchSettingsLink.shadowRoot.querySelector('cr-icon-button');
-    } else {
-      deepLinkElement =
-          page.shadowRoot.querySelector('settings-search-engine')
-              .shadowRoot.querySelector('#searchSelectionDialogButton');
-    }
+    const browserSearchSettingsLink =
+        page.shadowRoot.querySelector('settings-search-engine')
+            .shadowRoot.querySelector('#browserSearchSettingsLink');
+    const deepLinkElement =
+        browserSearchSettingsLink.shadowRoot.querySelector('cr-icon-button');
     assertTrue(!!deepLinkElement);
     await waitAfterNextRender(deepLinkElement);
     assertEquals(

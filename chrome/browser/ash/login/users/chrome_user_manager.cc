@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 
-#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
 #include "components/user_manager/user.h"
@@ -59,7 +59,6 @@ void ChromeUserManager::UpdateLoginState(const user_manager::User* active_user,
 
 bool ChromeUserManager::GetPlatformKnownUserId(
     const std::string& user_email,
-    const std::string& gaia_id,
     AccountId* out_account_id) const {
   if (user_email == user_manager::kStubUserEmail) {
     *out_account_id = user_manager::StubAccountId();

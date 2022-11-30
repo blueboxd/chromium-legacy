@@ -28,6 +28,9 @@ var OSSettingsV3BrowserTest = class extends PolymerTest {
     return {
       enabled: [
         'chromeos::features::kEnableHostnameSetting',
+        // TODO(b/217560706): Remove this explicit enabled flag when rollout
+        // completed.
+        'chromeos::features::kDiacriticsOnPhysicalKeyboardLongpress',
       ],
     };
   }
@@ -118,14 +121,6 @@ var OSSettingsPeoplePageOsSyncV3Test = class extends OSSettingsV3BrowserTest {
   get browsePreload() {
     return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_sync_controls_test.js&host=test';
   }
-
-  /** @override */
-  get featureList() {
-    return {
-      enabled: super.featureList.enabled.concat(
-          ['chromeos::features::kSyncSettingsCategorization']),
-    };
-  }
 };
 
 TEST_F('OSSettingsPeoplePageOsSyncV3Test', 'AllJsTests', () => {
@@ -206,22 +201,6 @@ var OSSettingsOsBluetoothSavedDevicesListV3Test =
 };
 
 TEST_F('OSSettingsOsBluetoothSavedDevicesListV3Test', 'AllJsTests', () => {
-  mocha.run();
-});
-
-var OSSettingsSearchEngineV3Test = class extends OSSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/search_engine_test.js&host=test';
-  }
-
-  /** @override */
-  get featureList() {
-    return {disabled: ['chromeos::features::kSyncSettingsCategorization']};
-  }
-};
-
-TEST_F('OSSettingsSearchEngineV3Test', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -319,7 +298,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ],
  ['AppManagementToggleRow', 'app_management/toggle_row_test.js'],
  ['AppManagementUninstallButton', 'app_management/uninstall_button_test.js'],
- ['BluetoothPage', 'bluetooth_page_tests.js'],
  ['CellularNetworksList', 'cellular_networks_list_test.js'],
  ['CellularRoamingToggleButton', 'cellular_roaming_toggle_button_test.js'],
  ['CellularSetupDialog', 'cellular_setup_dialog_test.js'],
@@ -336,6 +314,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['EsimRenameDialog', 'esim_rename_dialog_test.js'],
  ['FilesPage', 'os_files_page_test.js'],
  ['FingerprintPage', 'fingerprint_browsertest_chromeos.js'],
+ ['FindShortcutBehaviorTest', 'find_shortcut_behavior_test.js'],
  ['GoogleAssistantPage', 'google_assistant_page_test.js'],
  ['GuestOsSharedPaths', 'guest_os_shared_paths_test.js'],
  ['GuestOsSharedUsbDevices', 'guest_os_shared_usb_devices_test.js'],
@@ -401,6 +380,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
    'os_bluetooth_change_device_name_dialog_tests.js',
  ],
  ['OsEditDictionaryPage', 'os_edit_dictionary_page_test.js'],
+ [
+   'OsClearPersonalizationDataPage',
+   'os_clear_personalization_data_page_test.js'
+ ],
  ['OsLanguagesPageV2', 'os_languages_page_v2_tests.js'],
  ['OsPairedBluetoothList', 'os_paired_bluetooth_list_tests.js'],
  [
@@ -414,7 +397,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['OsPairedBluetoothListItem', 'os_paired_bluetooth_list_item_tests.js'],
  ['OsSettingsPage', 'os_settings_page_test.js'],
  ['OsSettingsUi', 'os_settings_ui_test.js'],
- ['OsSettingsUi2', 'os_settings_ui_test_2.js'],
+ /*
+   Flaky failures: https://crbug.com/1373052
+   ['OsSettingsUi2', 'os_settings_ui_test_2.js'],
+ */
  ['OsSettingsMain', 'os_settings_main_test.js'],
  ['OsSearchPage', 'os_search_page_test.js'],
  ['OsSettingsSearchBox', 'os_settings_search_box_test.js'],
@@ -425,7 +411,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  [
    'PersonalizationPageWithPersonalizationHub',
    'personalization_page_with_personalization_hub_test.js',
-   {enabled: ['ash::features::kPersonalizationHub']},
  ],
  ['PrintingPage', 'os_printing_page_tests.js'],
  [

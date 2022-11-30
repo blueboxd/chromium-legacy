@@ -5,6 +5,7 @@
 #ifndef CHROME_UPDATER_TEST_INTEGRATION_TESTS_IMPL_H_
 #define CHROME_UPDATER_TEST_INTEGRATION_TESTS_IMPL_H_
 
+#include <set>
 #include <string>
 
 #include "base/callback_forward.h"
@@ -39,7 +40,7 @@ class ScopedServer;
 base::FilePath GetSetupExecutablePath();
 
 // Returns the names for processes which may be running during unit tests.
-std::vector<base::FilePath::StringType> GetTestProcessNames();
+std::set<base::FilePath::StringType> GetTestProcessNames();
 
 // Ensures test processes are not running after the function is called.
 void CleanProcesses();
@@ -63,6 +64,10 @@ void ExpectClean(UpdaterScope scope);
 // Places the updater into test mode (use `url` as the update server and disable
 // CUP).
 void EnterTestMode(const GURL& url);
+
+// Takes the updater our of the test mode by deleting the external constants
+// JSON file.
+void ExitTestMode(UpdaterScope scope);
 
 // Sets the external constants for group policies.
 void SetGroupPolicies(const base::Value::Dict& values);
@@ -242,7 +247,9 @@ void InstallApp(UpdaterScope scope, const std::string& app_id);
 
 void UninstallApp(UpdaterScope scope, const std::string& app_id);
 
-void RunOfflineInstall(UpdaterScope scope, bool is_silent_install);
+void RunOfflineInstall(UpdaterScope scope,
+                       bool is_legacy_install,
+                       bool is_silent_install);
 
 }  // namespace updater::test
 

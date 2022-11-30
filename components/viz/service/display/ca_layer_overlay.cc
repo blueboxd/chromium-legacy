@@ -228,8 +228,8 @@ gfx::CALayerResult FromTileQuad(DisplayResourceProvider* resource_provider,
     return gfx::kCALayerFailedTileNotCandidate;
   ca_layer_overlay->contents_resource_id = resource_id;
   ca_layer_overlay->contents_rect = quad->tex_coord_rect;
-  ca_layer_overlay->contents_rect.Scale(1.f / quad->texture_size.width(),
-                                        1.f / quad->texture_size.height());
+  ca_layer_overlay->contents_rect.InvScale(quad->texture_size.width(),
+                                           quad->texture_size.height());
   ca_layer_overlay->filter = quad->nearest_neighbor ? GL_NEAREST : GL_LINEAR;
   return gfx::kCALayerSuccess;
 }
@@ -264,7 +264,6 @@ class CALayerOverlayProcessorInternal {
     // another CALayer to the tree). Handling non-single border radii is also,
     // but requires APIs not supported on all macOS versions.
     if (quad->shared_quad_state->mask_filter_info.HasRoundedCorners()) {
-      DCHECK(quad->shared_quad_state->clip_rect);
       if (quad->shared_quad_state->mask_filter_info.rounded_corner_bounds()
               .GetType() > gfx::RRectF::Type::kSingle) {
         return gfx::kCALayerFailedQuadRoundedCornerNotUniform;
@@ -361,13 +360,15 @@ class CALayerOverlayProcessorInternal {
 
 // Control using the CoreAnimation renderer, which is the path that replaces
 // all quads with CALayers.
-base::Feature kCARenderer{"CoreAnimationRenderer",
-                          base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kCARenderer,
+             "CoreAnimationRenderer",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Control using the CoreAnimation renderer, which is the path that replaces
 // all quads with CALayers.
-base::Feature kHDRUnderlays{"CoreAnimationHDRUnderlays",
-                            base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kHDRUnderlays,
+             "CoreAnimationHDRUnderlays",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace
 

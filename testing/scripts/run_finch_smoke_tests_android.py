@@ -11,6 +11,7 @@ import os
 import posixpath
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import time
@@ -102,9 +103,8 @@ def _merge_results_dicts(dict_to_merge, test_results_dict):
                              test_results_dict.setdefault(key, {}))
 
 
-# pylint: disable=super-with-arguments
+# pylint: disable=super-with-arguments, abstract-method
 class FinchTestCase(wpt_common.BaseWptScriptAdapter):
-
 
   def __init__(self, device):
     super(FinchTestCase, self).__init__()
@@ -164,6 +164,12 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
     # for Chrome and WebLayer.
     return True
 
+  def enable_wifi(self):
+    self._device.RunShellCommand(['svc', 'wifi', 'enable'])
+
+  def disable_wifi(self):
+    self._device.RunShellCommand(['svc', 'wifi', 'disable'])
+
   @contextlib.contextmanager
   def _archive_logcat(self, filename, endpoint_name):
     start_point = 'START {}'.format(endpoint_name)
@@ -183,33 +189,20 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
                                       end_point],
                                      check_return=True)
 
-    with open(filename, 'r+') as logcat_file:
-      logcat_lines = []
-      store_line = False
-      for line in logcat_file.readlines():
-        if start_point in line:
-          store_line = True
-        elif end_point in line:
-          store_line = False
-          logcat_lines.append(line)
-
-        if store_line:
-          logcat_lines.append(line)
-
-    with open(filename, 'w') as logcat_file:
-      logcat_file.write(''.join(logcat_lines))
-
   def parse_args(self, args=None):
     super(FinchTestCase, self).parse_args(args)
     if (not self.options.finch_seed_path or
         not os.path.exists(self.options.finch_seed_path)):
+      logger.warning('Could not find the finch seed passed '
+                     'as the argument for --finch-seed-path. '
+                     'Running tests on the default finch seed')
       self.options.finch_seed_path = self.default_finch_seed_path
 
   def __enter__(self):
     self._device.EnableRoot()
     # Run below commands to ensure that the device can download a seed
+    self.disable_wifi()
     self._device.adb.Emu(['power', 'ac', 'on'])
-    self._device.RunShellCommand(['svc', 'wifi', 'enable'])
     self._skia_gold_tmp_dir = tempfile.mkdtemp()
     self._skia_gold_session_manager = (
         finch_skia_gold_session_manager.FinchSkiaGoldSessionManager(
@@ -276,6 +269,9 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
     parser.add_argument('--browser-activity-name',
                         action='store',
                         help='Browser activity name')
+    parser.add_argument('--use-webview-installer-tool',
+                        action='store_true',
+                        help='Use the WebView installer tool.')
     parser.add_argument('--fake-variations-channel',
                         action='store',
                         default='stable',
@@ -292,7 +288,12 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
 
   def add_extra_arguments(self, parser):
     super(FinchTestCase, self).add_extra_arguments(parser)
+    self.add_product_specific_argument_groups(parser)
     self.add_common_arguments(parser)
+
+  @classmethod
+  def add_product_specific_argument_groups(cls, _):
+    pass
 
   def _compare_screenshots_with_baselines(self, all_pixel_tests_results_dict):
     """Compare pixel tests screenshots with baselines stored in skia gold
@@ -388,7 +389,7 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
             self.test_specific_browser_args)
 
   def run_tests(self, test_run_variation, all_test_results_dict,
-                extra_browser_args=None):
+                extra_browser_args=None, check_seed_loaded=False):
     """Run browser test on test device
 
     Args:
@@ -396,9 +397,10 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
       all_test_results_dict: Main results dictionary containing
         results for all test variations.
       extra_browser_args: Extra browser arguments.
+      check_seed_loaded: Check if the finch seed was loaded.
 
     Returns:
-      True if browser did not crash or False if the browser crashed.
+      The return code of all tests.
     """
     isolate_root_dir = os.path.dirname(
         self.options.isolated_script_test_output)
@@ -429,20 +431,28 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
     shutil.move(os.path.join(isolate_root_dir, logcat_filename),
                 final_logcat_path)
 
+    seed_loaded_result_dict = {'num_failures_by_type': {}, 'tests': {}}
+    if check_seed_loaded:
+      # Check in the logcat if the seed was loaded
+      ret |= self._finch_seed_loaded(final_logcat_path, seed_loaded_result_dict)
+
     with open(self.wpt_output, 'r') as test_harness_results:
       test_harness_results_dict = json.load(test_harness_results)
-      all_test_results_dict['tests'][test_run_variation] = (
-          test_harness_results_dict['tests'])
-      _merge_results_dicts(pixel_tests_results_dict['tests'],
-                           all_test_results_dict['tests'][test_run_variation])
-
       for test_results_dict in (test_harness_results_dict,
-                                pixel_tests_results_dict):
+                                pixel_tests_results_dict,
+                                seed_loaded_result_dict):
+        _merge_results_dicts(
+            test_results_dict['tests'],
+            all_test_results_dict['tests'].setdefault(test_run_variation, {}))
+
         for result, count in test_results_dict['num_failures_by_type'].items():
           all_test_results_dict['num_failures_by_type'].setdefault(result, 0)
           all_test_results_dict['num_failures_by_type'][result] += count
 
     return ret
+
+  def _finch_seed_loaded(self, logcat_path, all_results_dict):
+    raise NotImplementedError
 
   def _run_pixel_tests(self):
     """Run pixel tests on device
@@ -635,6 +645,68 @@ class WebViewFinchTestCase(FinchTestCase):
         'external/wpt/svg/pservers/reftests/radialgradient-basic-002.svg',
     ]
 
+  def _finch_seed_loaded(self, logcat_path, all_results_dict):
+    """Checks the logcat if the seed was loaded
+
+    Args:
+      logcat_path: Path to the logcat.
+      all_results_dict: Dictionary containing test results
+
+    Returns:
+      0 if the seed was loaded and experiments were loaded for finch seeds
+      other than the default seed. Otherwise it returns 1.
+    """
+    with open(logcat_path, 'r') as logcat:
+      logcat_content = logcat.read()
+
+    seed_loaded = 'cr_VariationsUtils: Loaded seed with age' in logcat_content
+    logcat_relpath = os.path.relpath(logcat_path,
+                                     os.path.dirname(self.wpt_output))
+    seed_loaded_results_dict = (
+        all_results_dict['tests'].setdefault(
+            'check_seed_loaded',
+            {'expected': 'PASS',
+             'artifacts': {'logcat_path': [logcat_relpath]}}))
+
+    if seed_loaded:
+      logger.info('The finch seed was loaded by WebView')
+      seed_loaded_results_dict['actual'] = 'PASS'
+    else:
+      logger.error('The finch seed was not loaded by WebView')
+      seed_loaded_results_dict['actual'] = 'FAIL'
+      all_results_dict['num_failures_by_type']['FAIL'] = 1
+
+    # If the value for the --finch-seed-path argument does not exist, then
+    # a default seed is consumed. The default seed may be too old to have it's
+    # experiments loaded.
+    if self.default_finch_seed_path != self.options.finch_seed_path:
+      # Check for a field trial that is guaranteed to be activated by
+      # the finch seed.
+      experiments_loaded = ('Active field trial '
+                            '"UMA-Uniformity-Trial-100-Percent" '
+                            'in group "group_01"') in logcat_content
+      field_trials_loaded_results_dict = (
+          all_results_dict['tests'].setdefault(
+              'check_field_trials_loaded',
+              {'expected': 'PASS',
+               'artifacts': {'logcat_path': [logcat_relpath]}}))
+
+      if experiments_loaded:
+        logger.info('Experiments were loaded from the finch seed by WebView')
+        field_trials_loaded_results_dict['actual'] = 'PASS'
+      else:
+        logger.error('Experiments were not loaded from '
+                     'the finch seed by WebView')
+        field_trials_loaded_results_dict['actual'] = 'FAIL'
+        all_results_dict['num_failures_by_type'].setdefault('FAIL', 0)
+        all_results_dict['num_failures_by_type']['FAIL'] += 1
+
+      return 0 if seed_loaded and experiments_loaded else 1
+
+    logger.warning('The default seed is being tested, '
+                   'skipping checks for active field trials')
+    return 0 if seed_loaded else 1
+
   @classmethod
   def finch_seed_download_args(cls):
     return [
@@ -653,6 +725,21 @@ class WebViewFinchTestCase(FinchTestCase):
     return os.path.join(SRC_DIR, 'testing', 'scripts',
                         'variations_smoke_test_data',
                         'webview_test_seed')
+
+  @classmethod
+  def add_product_specific_argument_groups(cls, parser):
+    installer_tool_group = parser.add_argument_group(
+      'WebView Installer tool arguments')
+    installer_tool_group.add_argument(
+      '--webview-installer-tool', type=os.path.realpath,
+      help='Path to the WebView installer tool')
+    installer_tool_group.add_argument(
+      '--chrome-version', '-V', type=str,
+      help='Chrome version to install with the WebView installer tool')
+    installer_tool_group.add_argument(
+      '--channel', '-c', help='Channel build of WebView to install')
+    installer_tool_group.add_argument(
+      '--milestone', '-M', help='Milestone build of WebView to install')
 
   def new_seed_downloaded(self):
     """Checks if a new seed was downloaded
@@ -689,10 +776,49 @@ class WebViewFinchTestCase(FinchTestCase):
   @contextlib.contextmanager
   def install_apks(self):
     """Install apks for testing"""
-    with super(WebViewFinchTestCase, self).install_apks(), \
-      webview_app.UseWebViewProvider(self._device,
-                                     self.options.webview_provider_apk):
+    with super(WebViewFinchTestCase, self).install_apks():
+      if self.options.use_webview_installer_tool:
+        install_webview = self._install_webview_with_tool()
+      else:
+        install_webview = webview_app.UseWebViewProvider(
+          self._device, self.options.webview_provider_apk)
+
+      with install_webview:
+        yield
+
+  @contextlib.contextmanager
+  def _install_webview_with_tool(self):
+    """Install WebView with the WebView installer tool"""
+    original_webview_provider = (
+        self._device.GetWebViewUpdateServiceDump()['CurrentWebViewPackage'])
+    current_webview_provider = None
+
+    try:
+      cmd = [self.options.webview_installer_tool, '-vvv',
+             '--product', self.product_name()]
+      assert self.options.chrome_version or self.options.milestone, (
+        'The --chrome-version or --milestone arguments must be used when '
+        'installing WebView with the WebView installer tool')
+
+      if self.options.chrome_version:
+        cmd.extend(['--chrome-version', self.options.chrome_version])
+      else:
+        cmd.extend(['--milestone', self.options.milestone])
+
+      if self.options.channel:
+        cmd.extend(['-c', self.options.channel])
+      exit_code = subprocess.call(cmd)
+      assert exit_code == 0, (
+          'The WebView installer tool failed to install WebView')
+
+      current_webview_provider = (
+        self._device.GetWebViewUpdateServiceDump()['CurrentWebViewPackage'])
       yield
+    finally:
+      self._device.SetWebViewImplementation(original_webview_provider)
+      # Restore the original webview provider
+      if current_webview_provider:
+        self._device.Uninstall(current_webview_provider)
 
   def install_seed(self):
     """Install finch seed for testing
@@ -783,6 +909,10 @@ def main(args):
   script_common.AddDeviceArguments(parser)
   script_common.AddEnvironmentArguments(parser)
   logging_common.AddLoggingArguments(parser)
+
+  for test_class in TEST_CASES.values():
+    test_class.add_product_specific_argument_groups(parser)
+
   options, _ = parser.parse_known_args(args)
 
   with get_device(options) as device, \
@@ -797,7 +927,7 @@ def main(args):
     # their adb binary.
     platform_tools_path = os.path.dirname(devil_env.config.FetchPath('adb'))
     os.environ['PATH'] = os.pathsep.join([platform_tools_path] +
-                                          os.environ['PATH'].split(os.pathsep))
+                                         os.environ['PATH'].split(os.pathsep))
 
     test_results_dict = OrderedDict({'version': 3, 'interrupted': False,
                                      'num_failures_by_type': {}, 'tests': {}})
@@ -805,18 +935,34 @@ def main(args):
     if test_case.product_name() == 'webview':
       ret = test_case.run_tests('without_finch_seed', test_results_dict)
       test_case.install_seed()
-      ret |= test_case.run_tests('with_finch_seed', test_results_dict)
-      # WebView needs several restarts to fetch and load a new finch seed
-      # TODO(b/187185389): Figure out why the first restart is needed
-      ret |= test_case.run_tests('extra_restart', test_results_dict,
-                                 test_case.finch_seed_download_args())
+      ret |= test_case.run_tests('with_finch_seed', test_results_dict,
+                                 check_seed_loaded=True)
+
+      # TODO(b/187185389): Figure out why WebView needs an extra restart
+      # to fetch and load a new finch seed.
+      ret |= test_case.run_tests(
+          'extra_restart', test_results_dict,
+          extra_browser_args=test_case.finch_seed_download_args(),
+          check_seed_loaded=True)
+
+      # enable wifi so that a new seed can be downloaded from the finch server
+      test_case.enable_wifi()
+
       # Restart webview+shell to fetch new seed to variations_seed_new
-      ret |= test_case.run_tests('fetch_new_seed_restart', test_results_dict,
-                                 test_case.finch_seed_download_args())
+      ret |= test_case.run_tests(
+          'fetch_new_seed_restart', test_results_dict,
+          extra_browser_args=test_case.finch_seed_download_args(),
+          check_seed_loaded=True)
       # Restart webview+shell to copy from
       # variations_seed_new to variations_seed
-      ret |= test_case.run_tests('load_new_seed_restart', test_results_dict,
-                                 test_case.finch_seed_download_args())
+      ret |= test_case.run_tests(
+          'load_new_seed_restart', test_results_dict,
+          extra_browser_args=test_case.finch_seed_download_args(),
+          check_seed_loaded=True)
+
+      # Disable wifi so that new updates will not be downloaded which can cause
+      # timeouts in the adb commands run below.
+      test_case.disable_wifi()
     else:
       test_case.install_seed()
       ret = test_case.run_tests('with_finch_seed', test_results_dict)

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -130,6 +130,7 @@ class BLINK_EXPORT WebLocalFrame : public WebFrame {
       WebLocalFrameClient*,
       blink::InterfaceRegistry*,
       const LocalFrameToken& frame_token,
+      const DocumentToken& document_token,
       std::unique_ptr<blink::WebPolicyContainer> policy_container,
       WebFrame* opener = nullptr,
       const WebString& name = WebString(),

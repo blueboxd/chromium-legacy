@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,6 +57,7 @@ import "third_party/blink/public/mojom/tokens/tokens.mojom";
 import "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom";
 import "third_party/blink/public/mojom/widget/platform_widget.mojom";
 import "third_party/blink/public/mojom/window_features/window_features.mojom";
+import "ui/base/ime/mojom/virtual_keyboard_types.mojom";
 import "ui/base/mojom/window_open_disposition.mojom";
 import "ui/events/mojom/scroll_granularity.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
@@ -135,6 +136,14 @@ enum PluginActionType {
 enum JavaScriptExecutionResultType {
   kSuccess,
   kException,
+};
+
+// The reason why a navigation API traversal was cancelled in the browser
+// process, so the navigation API can report the appropriate error.
+// https://wicg.github.io/navigation-api/#perform-a-navigation-api-traversal
+enum TraverseCancelledReason {
+  kNotFound,
+  kSandboxViolation,
 };
 
 // The maximum number of characters of the document's title that we're willing
@@ -229,10 +238,9 @@ interface LocalFrameHost {
   // in order to service IntersectionObserver's that track visibility.
   SetNeedsOcclusionTracking(bool needs_tracking);
 
-  // Indication that the associated frame would like to change the policy on
-  // whether or not the virtual keyboard should overlay content (vs. default
-  // behavior of 'shifting' the content via insets and a scrollIntoView).
-  SetVirtualKeyboardOverlayPolicy(bool vk_overlays_content);
+  // Indicates that the associated frame would like to change the policy of how
+  // the virtual keyboard interacts with Blink's viewports.
+  SetVirtualKeyboardMode(ui.mojom.VirtualKeyboardMode type);
 
   // Notifies the browser that the associated frame has changed its visibility
   // status. Visibility status changes occur when the frame moves in/out
@@ -526,7 +534,18 @@ interface LocalFrameHost {
   // Notifies the browser that a subframe's srcdoc attribute has changed, and
   // sends the new value to the browser. Also sent when a subframe's content
   // frame is changed.
-  DidChangeSrcDoc(blink.mojom.FrameToken child_frame_token, string srcdoc_value);
+  DidChangeSrcDoc(blink.mojom.FrameToken child_frame_token,
+                  string srcdoc_value);
+
+  // Notifies the browser that a document's base url has changed, and sends the
+  // new value to the browser. The base url is subsequently shared with srcdoc
+  // subframes. The base url is only sent if (1) the frame's base url is changed
+  // from the default value the browser would expect (e.g. it sets a <base>
+  // element), or (2) if the value is reset to the default the browser would
+  // expect, in which case an empty url is sent to 'reset' the previously sent
+  // value.
+  // Note: this is currently only used when IsolateSandboxedIframes is enabled.
+  DidChangeBaseURL(url.mojom.Url base_url);
 
   // Notifies the browser that this frame received a message from a local frame
   // with a delegated capability (https://wicg.github.io/capability-delegation).
@@ -870,6 +889,18 @@ interface LocalFrame {
   // bfcache.
   SetNavigationApiHistoryEntriesForRestore(
       NavigationApiHistoryEntryArrays entry_arrays);
+
+  // Updates navigation.entries() when entries are disposed from the session
+  // history.
+  NotifyNavigationApiOfDisposedEntries(array<string> keys);
+
+  // Called when a traversal requested by the NavigationApi is cancelled in the
+  // browser.
+  // When the NavigationApi requests a traversal, it provides
+  // |navigation_api_key| to the browser, which is an opaque reference to a
+  // session history entry for this frame. It is sent back to the renderer here
+  // to indicate which traversal failed.
+  TraverseCancelled(string navigation_api_key, TraverseCancelledReason reason);
 };
 
 // Also implemented in Blink, this interface defines frame-specific methods
@@ -909,6 +940,9 @@ interface LocalMainFrame {
   // Instructs the renderer to close the current page, including running the
   // onunload event handler.
   ClosePage() => ();
+
+  // Get width and height of the whole page content from the main frame.
+  GetFullPageSize() => (gfx.mojom.Size full_page_size);
 
   // Tells the renderer to focus the first (last if reverse is true) focusable
   // node.

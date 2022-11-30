@@ -31,11 +31,6 @@ class DestinationUsageHistoryTest : public PlatformTest {
   DestinationUsageHistoryTest() {}
 
  protected:
-  void TearDown() override {
-    [destination_usage_history_ disconnect];
-    PlatformTest::TearDown();
-  }
-
   // Creates CreateDestinationUsageHistory with empty pref data.
   DestinationUsageHistory* CreateDestinationUsageHistory() {
     CreatePrefs();
@@ -166,17 +161,6 @@ TEST_F(DestinationUsageHistoryTest, InitWithPrefServiceForDirtyPrefs) {
       nullptr);
   EXPECT_TRUE(
       pref_service->HasPrefPath(prefs::kOverflowMenuDestinationUsageHistory));
-}
-
-// Tests DestinationUsageHistory::disconnect correctly nullifies the
-// prefService.
-TEST_F(DestinationUsageHistoryTest, DestroysPrefServiceOnDisconnect) {
-  DestinationUsageHistory* destination_usage_history =
-      CreateDestinationUsageHistory();
-
-  [destination_usage_history disconnect];
-
-  EXPECT_EQ(destination_usage_history.prefService, nullptr);
 }
 
 // Tests that a new destination click is incremented and written to Chrome

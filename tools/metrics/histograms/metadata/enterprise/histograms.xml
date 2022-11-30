@@ -321,7 +321,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.CBCMPolicyRefresh" enum="EnterprisePolicyRefresh"
-    expires_after="2023-01-15">
+    expires_after="2023-03-19">
   <owner>anthonyvd@chromium.org</owner>
   <owner>cbe-eng@google.com</owner>
   <summary>
@@ -523,14 +523,47 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Enterprise.DeviceRemoteCommand.CRD.Result"
+<histogram name="Enterprise.DeviceRemoteCommand.Crd.Capturer.Aura.Created"
+    units="units" expires_after="2023-08-30">
+  <owner>macinashutosh@google.com</owner>
+  <owner>chromeos-commercial-crd@google.com</owner>
+  <summary>Reports the creation of AuraDesktopCapturer class object</summary>
+</histogram>
+
+<histogram name="Enterprise.DeviceRemoteCommand.Crd.Capturer.Aura.Destroyed"
+    units="units" expires_after="2023-08-30">
+  <owner>macinashutosh@google.com</owner>
+  <owner>chromeos-commercial-crd@google.com</owner>
+  <summary>Reports the destruction of AuraDesktopCapturer class object</summary>
+</histogram>
+
+<histogram name="Enterprise.DeviceRemoteCommand.Crd.Capturer.FrameSink.Created"
+    units="units" expires_after="2023-08-30">
+  <owner>macinashutosh@google.com</owner>
+  <owner>chromeos-commercial-crd@google.com</owner>
+  <summary>
+    Reports the creation of FrameSinkDesktopCapturer class object
+  </summary>
+</histogram>
+
+<histogram
+    name="Enterprise.DeviceRemoteCommand.Crd.Capturer.FrameSink.Destroyed"
+    units="units" expires_after="2023-08-30">
+  <owner>macinashutosh@google.com</owner>
+  <owner>chromeos-commercial-crd@google.com</owner>
+  <summary>
+    Reports the destruction of FrameSinkDesktopCapturer class object
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.DeviceRemoteCommand.Crd.Result"
     enum="EnterpriseCrdSessionResultCode" expires_after="2023-01-01">
   <owner>macinashutosh@google.com</owner>
   <owner>chromeos-commercial-crd@google.com</owner>
   <summary>Reports success/failure when a session is attempted.</summary>
 </histogram>
 
-<histogram name="Enterprise.DeviceRemoteCommand.CRD.SessionType"
+<histogram name="Enterprise.DeviceRemoteCommand.Crd.SessionType"
     enum="EnterpriseCrdUserType" expires_after="2023-01-01">
   <owner>macinashutosh@google.com</owner>
   <owner>chromeos-commercial-crd@google.com</owner>
@@ -629,6 +662,21 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Enterprise.DeviceSignals.Collection.Request.{Signal}.Items"
+    units="items" expires_after="2023-03-01">
+  <owner>seblalancette@chromium.org</owner>
+  <owner>cbe-device-trust-eng@google.com</owner>
+  <summary>
+    Captures the number of items as part of the {Signal} signal collection
+    response. Recorded when the collection request was received. This histogram
+    applies only to parameterized signals.
+  </summary>
+  <token key="Signal">
+    <variant name="FileSystemInfo" summary="file system items"/>
+    <variant name="SystemSettings" summary="system setting items"/>
+  </token>
+</histogram>
+
 <histogram name="Enterprise.DeviceSignals.Collection.Success.{Signal}.Items"
     units="items" expires_after="2023-03-01">
   <owner>seblalancette@chromium.org</owner>
@@ -640,9 +688,45 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="Signal">
     <variant name="AntiVirus" summary="AntiVirus"/>
-    <variant name="FileSystemInfo" summary="file system information"/>
+    <variant name="FileSystemInfo" summary="file system items"/>
     <variant name="Hotfixes" summary="Hotfixes"/>
     <variant name="SystemSettings" summary="system settings"/>
+  </token>
+</histogram>
+
+<histogram
+    name="Enterprise.DeviceSignals.Collection.{Outcome}.{Signal}.Latency"
+    units="ms" expires_after="2023-03-01">
+  <owner>seblalancette@chromium.org</owner>
+  <owner>cbe-device-trust-eng@google.com</owner>
+  <summary>
+    Captures the signal collection latency for the {Signal} signal. Recorded
+    only when the collection {Outcome}.
+  </summary>
+  <token key="Outcome">
+    <variant name="Failure" summary="failed"/>
+    <variant name="Success" summary="succeeded"/>
+  </token>
+  <token key="Signal">
+    <variant name="AntiVirus" summary="AntiVirus"/>
+    <variant name="FileSystemInfo" summary="file system items"/>
+    <variant name="Hotfixes" summary="Hotfixes"/>
+    <variant name="SystemSettings" summary="system settings"/>
+  </token>
+</histogram>
+
+<histogram name="Enterprise.DeviceSignals.Collection.{Signal}.Delta"
+    units="items" expires_after="2023-03-01">
+  <owner>seblalancette@chromium.org</owner>
+  <owner>cbe-device-trust-eng@google.com</owner>
+  <summary>
+    Captures the number of delta between requested and returned items as part of
+    the {Signal} signal collection response. Recorded when the collection
+    request was completed. This histogram applies only to parameterized signals.
+  </summary>
+  <token key="Signal">
+    <variant name="FileSystemInfo" summary="file system items"/>
+    <variant name="SystemSettings" summary="system setting items"/>
   </token>
 </histogram>
 
@@ -849,12 +933,22 @@ chromium-metrics-reviews@google.com.
   <token key="Variant">
     <variant name="Ash" summary="Ash"/>
     <variant name="Browser" summary="Browser (without cache)"/>
-    <variant name="Browser.WithCache" summary="Browser (with cache)"/>
     <variant name="Common" summary="Common (without cache)"/>
     <variant name="Common.WithCache" summary="Common (with cache)"/>
-    <variant name="Content" summary="Content"/>
+    <variant name="Context" summary="Context"/>
     <variant name="Full" summary="full set of"/>
   </token>
+</histogram>
+
+<histogram name="Enterprise.Dlp.ActiveFileEventsCount" units="entries"
+    expires_after="2023-03-01">
+  <owner>accorsi@google.com</owner>
+  <owner>chromeos-dlp@google.com</owner>
+  <summary>
+    Number of non-expired file events stored in the
+    DlpFilesController::EventStorage. It is recorded each time an entry is added
+    or updated.
+  </summary>
 </histogram>
 
 <histogram name="Enterprise.Dlp.CaptureModeInitBlocked" enum="BooleanBlocked"
@@ -2152,6 +2246,32 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="Enterprise.SecondaryGoogleAccountUsage.PolicyFetch.ResponseLatency"
+    units="ms" expires_after="2023-10-04">
+  <owner>rodmartin@google.com</owner>
+  <owner>chromeos-commercial-identity@google.com</owner>
+  <summary>
+    Latency of a SecondaryGoogleAccountUsage policy fetch request. This measures
+    the amount of time required to fetch the policy value of
+    SecondaryGoogleAccountUsage from the Secure Connect API. This is recorded
+    when a user account is added as a secondary account (in-session).
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.SecondaryGoogleAccountUsage.PolicyFetch.Status"
+    enum="SecondaryGoogleAccountUsagePolicyFetchStatus"
+    expires_after="2023-10-04">
+  <owner>rodmartin@google.com</owner>
+  <owner>chromeos-commercial-identity@google.com</owner>
+  <summary>
+    Tracks the result of
+    UserCloudSigninRestrictionPolicyFetcherChromeOS::GetSecondaryGoogleAccountUsage.
+    This is recorded when a user account is added as a secondary account
+    (in-session).
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.SystemFeaturesDisableList" enum="SystemFeature"
     expires_after="2023-06-01">
   <owner>ayaelattar@chromium.org</owner>
@@ -2164,7 +2284,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.SystemLogUploadResult"
-    enum="EnterpriseSystemLogUploadResult" expires_after="2023-01-15">
+    enum="EnterpriseSystemLogUploadResult" expires_after="2023-03-19">
   <owner>bmalcolm@chromium.org</owner>
   <owner>cros-client-wa@google.com</owner>
   <summary>Result of a single attempt to upload system logs.</summary>
@@ -2287,7 +2407,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Enterprise.UserPolicyChromeOS.ReregistrationResult"
     enum="EnterpriseUserPolicyChromeOSReregistrationResult"
-    expires_after="2023-01-31">
+    expires_after="2023-04-09">
   <owner>hendrich@chromium.org</owner>
   <owner>rbock@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -2374,7 +2494,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.VpdUpdateStatus" units="units"
-    expires_after="2023-01-22">
+    expires_after="2023-03-26">
   <owner>igorcov@chromium.org</owner>
   <owner>tnagel@chromium.org</owner>
   <summary>
@@ -2489,10 +2609,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.IsLocalMachine" enum="Boolean"
-    expires_after="2022-10-01">
-  <owner>rogerta@chromium.org</owner>
-  <owner>pastarmovj@chromium.org</owner>
+    expires_after="2023-10-01">
   <owner>zmin@chromium.org</owner>
+  <owner>pastarmovj@chromium.org</owner>
+  <owner>rogerta@chromium.org</owner>
   <summary>
     Whether the full machine name is the same as the short one, identifying a
     local machine. This check is performed once at start-up on Windows.
@@ -2500,10 +2620,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.IsLocalUser" enum="Boolean"
-    expires_after="2022-10-01">
+    expires_after="2023-10-01">
+  <owner>zmin@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <owner>rogerta@chromium.org</owner>
-  <owner>zmin@chromium.org</owner>
   <summary>
     Whether the currently logged in user is a local user or not, based on its
     SAM compatible user name and machine name. This check is performed once at
@@ -2512,10 +2632,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.IsManaged2" enum="BooleanEnabled"
-    expires_after="2023-02-12">
+    expires_after="2023-10-01">
+  <owner>zmin@chromium.org</owner>
   <owner>rogerta@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
-  <owner>zmin@chromium.org</owner>
   <summary>
     On Windows: Whether the machine is managed via MDM. On macOS: Whether Chrome
     found a file of managed policies to follow. On Android (OS version
@@ -2525,7 +2645,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.IsManagedOrEnterpriseDevice"
-    enum="BooleanEnabled" expires_after="2023-01-22">
+    enum="BooleanEnabled" expires_after="2023-10-01">
   <owner>pastarmovj@chromium.org</owner>
   <owner>rogerta@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
@@ -2583,16 +2703,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Whether we could obtain the address of the NetGetJoinInformation function.
     This check is performed once at start-up on Windows.
-  </summary>
-</histogram>
-
-<histogram name="EnterpriseCheck.OSType" enum="OsSuite"
-    expires_after="2022-08-23">
-  <owner>pastarmovj@chromium.org</owner>
-  <owner>rogerta@chomium.org</owner>
-  <summary>
-    The rough Windows suite we are running on. This check is performed once at
-    start-up on Windows.
   </summary>
 </histogram>
 

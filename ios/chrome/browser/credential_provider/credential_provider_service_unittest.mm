@@ -18,6 +18,10 @@
 #import "components/sync/base/user_selectable_type.h"
 #import "components/sync/test/test_sync_service.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/favicon/favicon_service_factory.h"
+#import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
+#import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
+#import "ios/chrome/browser/history/history_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
@@ -75,6 +79,16 @@ class CredentialProviderServiceTest : public PlatformTest {
         AuthenticationServiceFactory::GetInstance(),
         base::BindRepeating(
             &AuthenticationServiceFake::CreateAuthenticationService));
+    builder.AddTestingFactory(ios::FaviconServiceFactory::GetInstance(),
+                              ios::FaviconServiceFactory::GetDefaultFactory());
+    builder.AddTestingFactory(
+        IOSChromeLargeIconServiceFactory::GetInstance(),
+        IOSChromeLargeIconServiceFactory::GetDefaultFactory());
+    builder.AddTestingFactory(
+        IOSChromeFaviconLoaderFactory::GetInstance(),
+        IOSChromeFaviconLoaderFactory::GetDefaultFactory());
+    builder.AddTestingFactory(ios::HistoryServiceFactory::GetInstance(),
+                              ios::HistoryServiceFactory::GetDefaultFactory());
     chrome_browser_state_ = builder.Build();
 
     auth_service_ = static_cast<AuthenticationServiceFake*>(
@@ -91,7 +105,8 @@ class CredentialProviderServiceTest : public PlatformTest {
     credential_provider_service_ = std::make_unique<CredentialProviderService>(
         &testing_pref_service_, password_store_, auth_service_,
         credential_store_, nullptr, &sync_service_, &affiliation_service_,
-        nullptr);
+        IOSChromeFaviconLoaderFactory::GetForBrowserState(
+            chrome_browser_state_.get()));
 
     // Fire sync service state changed to simulate sync setup finishing.
     sync_service_.FireStateChanged();
@@ -117,7 +132,8 @@ class CredentialProviderServiceTest : public PlatformTest {
  protected:
   TestingPrefServiceSimple testing_pref_service_;
   base::ScopedTempDir temp_dir_;
-  web::WebTaskEnvironment task_environment_;
+  web::WebTaskEnvironment task_environment_{
+      web::WebTaskEnvironment::IO_MAINLOOP};
   IOSChromeScopedTestingLocalState scoped_testing_local_state_;
   scoped_refptr<PasswordStore> password_store_;
   id<CredentialStore> credential_store_;
@@ -201,7 +217,7 @@ TEST_F(CredentialProviderServiceTest, AccountChange) {
   ios::FakeChromeIdentityService* identity_service =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
   identity_service->AddManagedIdentities(@[ @"Name" ]);
-  ChromeIdentity* identity = account_manager_service_->GetDefaultIdentity();
+  id<SystemIdentity> identity = account_manager_service_->GetDefaultIdentity();
   auth_service_->SignIn(identity);
 
   ASSERT_TRUE(auth_service_->GetPrimaryIdentity(signin::ConsentLevel::kSignin));
@@ -301,9 +317,6 @@ TEST_F(CredentialProviderServiceTest, PasswordSyncStoredEmail) {
           stringForKey:AppGroupUserDefaultsCredentialProviderUserEmail()]);
 
   // Turn off password sync.
-  auto model_type_set = sync_service_.GetActiveDataTypes();
-  model_type_set.Remove(syncer::PASSWORDS);
-  sync_service_.SetActiveDataTypes(model_type_set);
   syncer::UserSelectableTypeSet user_selectable_type_set =
       sync_service_.GetUserSettings()->GetSelectedTypes();
   user_selectable_type_set.Remove(syncer::UserSelectableType::kPasswords);

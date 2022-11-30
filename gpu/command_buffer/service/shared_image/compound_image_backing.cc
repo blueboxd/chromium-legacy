@@ -93,15 +93,17 @@ class WrappedGLTextureCompoundImageRepresentation
 
   void EndAccess() final { wrapped_->EndAccess(); }
 
-  gpu::TextureBase* GetTextureBase() final {
-    return wrapped_->GetTextureBase();
+  gpu::TextureBase* GetTextureBase(int plane_index) final {
+    return wrapped_->GetTextureBase(plane_index);
   }
 
   bool SupportsMultipleConcurrentReadAccess() final {
     return wrapped_->SupportsMultipleConcurrentReadAccess();
   }
 
-  gles2::Texture* GetTexture() final { return wrapped_->GetTexture(); }
+  gles2::Texture* GetTexture(int plane_index) final {
+    return wrapped_->GetTexture(plane_index);
+  }
 
  private:
   std::unique_ptr<GLTextureImageRepresentation> wrapped_;
@@ -134,17 +136,17 @@ class WrappedGLTexturePassthroughCompoundImageRepresentation
   }
   void EndAccess() final { wrapped_->EndAccess(); }
 
-  gpu::TextureBase* GetTextureBase() final {
-    return wrapped_->GetTextureBase();
+  gpu::TextureBase* GetTextureBase(int plane_index) final {
+    return wrapped_->GetTextureBase(plane_index);
   }
 
   bool SupportsMultipleConcurrentReadAccess() final {
     return wrapped_->SupportsMultipleConcurrentReadAccess();
   }
 
-  const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough()
-      final {
-    return wrapped_->GetTexturePassthrough();
+  const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough(
+      int plane_index) final {
+    return wrapped_->GetTexturePassthrough(plane_index);
   }
 
  private:
@@ -308,20 +310,22 @@ std::unique_ptr<SharedImageBacking> CompoundImageBacking::CreateSharedMemory(
     return nullptr;
   }
 
+  auto si_format = viz::SharedImageFormat::SinglePlane(plane_format);
+
   auto shm_backing = std::make_unique<SharedMemoryImageBacking>(
-      mailbox, plane_format, plane_size, color_space, surface_origin,
-      alpha_type, SHARED_IMAGE_USAGE_CPU_WRITE, std::move(shm_wrapper));
+      mailbox, si_format, plane_size, color_space, surface_origin, alpha_type,
+      SHARED_IMAGE_USAGE_CPU_WRITE, std::move(shm_wrapper));
   shm_backing->SetNotRefCounted();
 
   return std::make_unique<CompoundImageBacking>(
-      mailbox, plane_format, plane_size, color_space, surface_origin,
-      alpha_type, usage, surface_handle, allow_shm_overlays,
-      std::move(shm_backing), gpu_backing_factory->GetWeakPtr());
+      mailbox, si_format, plane_size, color_space, surface_origin, alpha_type,
+      usage, surface_handle, allow_shm_overlays, std::move(shm_backing),
+      gpu_backing_factory->GetWeakPtr());
 }
 
 CompoundImageBacking::CompoundImageBacking(
     const Mailbox& mailbox,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
@@ -530,7 +534,7 @@ void CompoundImageBacking::OnMemoryDump(
 
   dump->AddString("type", "", GetName());
   dump->AddString("dimensions", "", size().ToString());
-  dump->AddString("format", "", viz::ResourceFormatToString(format()));
+  dump->AddString("format", "", format().ToString());
   dump->AddString("usage", "", CreateLabelForSharedImageUsage(usage()));
 
   // Add ownership edge to `client_guid` which expresses shared ownership with

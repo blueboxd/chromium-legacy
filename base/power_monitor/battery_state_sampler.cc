@@ -4,6 +4,8 @@
 
 #include "base/power_monitor/battery_state_sampler.h"
 
+#include "base/power_monitor/power_monitor_buildflags.h"
+
 #if !BUILDFLAG(IS_MAC)
 #include "base/power_monitor/timer_sampling_event_source.h"
 #endif
@@ -14,6 +16,7 @@ namespace {
 
 // Singleton instance of the BatteryStateSampler.
 BatteryStateSampler* g_battery_state_sampler = nullptr;
+bool g_test_instance_installed = false;
 
 }  // namespace
 
@@ -42,11 +45,19 @@ BatteryStateSampler::~BatteryStateSampler() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(g_battery_state_sampler, this);
   g_battery_state_sampler = nullptr;
+  g_test_instance_installed = false;
 }
 
 // static
 BatteryStateSampler* BatteryStateSampler::Get() {
+  // On a platform with a BatteryLevelProvider implementation, the global
+  // instance must be created before accessing it.
+  // TODO(crbug.com/1373560): ChromeOS currently doesn't define
+  // `HAS_BATTERY_LEVEL_PROVIDER_IMPL` but it should once the locations of the
+  // providers and sampling sources are consolidated.
+#if BUILDFLAG(HAS_BATTERY_LEVEL_PROVIDER_IMPL) || BUILDFLAG(IS_CHROMEOS_ASH)
   DCHECK(g_battery_state_sampler);
+#endif
   return g_battery_state_sampler;
 }
 
@@ -63,6 +74,27 @@ void BatteryStateSampler::AddObserver(Observer* observer) {
 void BatteryStateSampler::RemoveObserver(Observer* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observer_list_.RemoveObserver(observer);
+}
+
+void BatteryStateSampler::Shutdown() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  sampling_event_source_.reset();
+  battery_level_provider_.reset();
+}
+
+// static
+std::unique_ptr<base::BatteryStateSampler>
+BatteryStateSampler::CreateInstanceForTesting(
+    std::unique_ptr<SamplingEventSource> sampling_event_source,
+    std::unique_ptr<BatteryLevelProvider> battery_level_provider) {
+  g_test_instance_installed = true;
+  return std::make_unique<BatteryStateSampler>(
+      std::move(sampling_event_source), std::move(battery_level_provider));
+}
+
+// static
+bool BatteryStateSampler::HasTestingInstance() {
+  return g_test_instance_installed;
 }
 
 #if !BUILDFLAG(IS_MAC)
@@ -89,6 +121,7 @@ void BatteryStateSampler::OnInitialBatteryStateSampled(
 
 void BatteryStateSampler::OnSamplingEvent() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(battery_level_provider_);
 
   battery_level_provider_->GetBatteryState(base::BindOnce(
       &BatteryStateSampler::OnBatteryStateSampled, base::Unretained(this)));

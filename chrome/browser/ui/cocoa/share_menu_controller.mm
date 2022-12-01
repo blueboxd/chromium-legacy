@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <dlfcn.h>
+
 #import "chrome/browser/ui/cocoa/share_menu_controller.h"
 
 #include "base/mac/foundation_util.h"
@@ -82,31 +84,33 @@ bool CanShare() {
 }
 
 - (void)menuNeedsUpdate:(NSMenu*)menu {
-  [menu removeAllItems];
-  [menu setAutoenablesItems:NO];
+  if (@available(macOS 10.8, *)) {
+    [menu removeAllItems];
+    [menu setAutoenablesItems:NO];
 
-  bool canShare = CanShare();
-  // Using a real URL instead of empty string to avoid system log about relative
-  // URLs in the pasteboard. This URL will not actually be shared to, just used
-  // to fetch sharing services that can handle the NSURL type.
-  NSArray* services = [NSSharingService
-      sharingServicesForItems:@[ [NSURL URLWithString:@"https://google.com"] ]];
-  for (NSSharingService* service in services) {
-    // Don't include "Add to Reading List".
-    if ([[service name]
-            isEqualToString:NSSharingServiceNameAddToSafariReadingList])
-      continue;
-    NSMenuItem* item = [self menuItemForService:service];
-    [item setEnabled:canShare];
-    [menu addItem:item];
+    bool canShare = CanShare();
+    // Using a real URL instead of empty string to avoid system log about relative
+    // URLs in the pasteboard. This URL will not actually be shared to, just used
+    // to fetch sharing services that can handle the NSURL type.
+    NSArray* services = [NSSharingService
+        sharingServicesForItems:@[ [NSURL URLWithString:@"https://google.com"] ]];
+    for (NSSharingService* service in services) {
+      // Don't include "Add to Reading List".
+      if ([[service name]
+              isEqualToString:NSSharingServiceNameAddToSafariReadingList])
+        continue;
+      NSMenuItem* item = [self menuItemForService:service];
+      [item setEnabled:canShare];
+      [menu addItem:item];
+    }
+    base::scoped_nsobject<NSMenuItem> moreItem([[NSMenuItem alloc]
+        initWithTitle:l10n_util::GetNSString(IDS_SHARING_MORE_MAC)
+               action:@selector(openSharingPrefs:)
+        keyEquivalent:@""]);
+    [moreItem setTarget:self];
+    [moreItem setImage:[self moreImage]];
+    [menu addItem:moreItem];
   }
-  base::scoped_nsobject<NSMenuItem> moreItem([[NSMenuItem alloc]
-      initWithTitle:l10n_util::GetNSString(IDS_SHARING_MORE_MAC)
-             action:@selector(openSharingPrefs:)
-      keyEquivalent:@""]);
-  [moreItem setTarget:self];
-  [moreItem setImage:[self moreImage]];
-  [menu addItem:moreItem];
 }
 
 // NSSharingServiceDelegate
@@ -178,6 +182,44 @@ bool CanShare() {
 
 // Performs the share action using the sharing service represented by |sender|.
 - (void)performShare:(NSMenuItem*)sender {
+  static NSString* const* NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
+
+  if (NSUserActivityTypeBrowsingWebStr) {
+    DCHECK(CanShare());
+    Browser* browser = chrome::FindLastActive();
+    DCHECK(browser);
+    [self saveTransitionDataFromBrowser:browser];
+
+    content::WebContents* contents =
+        browser->tab_strip_model()->GetActiveWebContents();
+    NSURL* url = net::NSURLWithGURL(contents->GetLastCommittedURL());
+    NSString* title = base::SysUTF16ToNSString(contents->GetTitle());
+
+    NSSharingService* service =
+        base::mac::ObjCCastStrict<NSSharingService>([sender representedObject]);
+    [service setDelegate:self];
+    [service setSubject:title];
+
+    NSArray* itemsToShare;
+    if ([[service name] isEqual:NSSharingServiceNamePostOnTwitter]) {
+      // The Twitter share service expects the title as an additional share item.
+      // This is the same approach system apps use.
+      itemsToShare = @[ url, title ];
+    } else {
+      itemsToShare = @[ url ];
+    }
+    if ([[service name] isEqual:kRemindersSharingServiceName]) {
+      _activity.reset([[NSUserActivity alloc]
+          initWithActivityType:*NSUserActivityTypeBrowsingWebStr]);
+      // webpageURL must be http or https or an exception is thrown.
+      if ([url.scheme hasPrefix:@"http"]) {
+        [_activity setWebpageURL:url];
+      }
+      [_activity setTitle:title];
+      [_activity becomeCurrent];
+    }
+    [service performWithItems:itemsToShare];
+  }
 }
 
 // Opens the "Sharing" subpane of the "Extensions" macOS preference pane.

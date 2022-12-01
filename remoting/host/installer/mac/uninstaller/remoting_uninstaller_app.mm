@@ -78,7 +78,7 @@ base::scoped_nsobject<NSMenu> BuildMainMenu() {
   NSButton* cancelButton = [[[NSButton alloc]
       initWithFrame:NSMakeRect(308, 13, 82, 32)] autorelease];
   cancelButton.buttonType = NSButtonTypeMomentaryPushIn;
-  cancelButton.bezelStyle = NSBezelStyleRounded;
+  cancelButton.bezelStyle = NSRoundedBezelStyle;
   cancelButton.title = @"Cancel";
   cancelButton.action = @selector(cancel:);
   cancelButton.target = self;
@@ -87,7 +87,7 @@ base::scoped_nsobject<NSMenu> BuildMainMenu() {
   NSButton* uninstallButton = [[[NSButton alloc]
       initWithFrame:NSMakeRect(390, 13, 95, 32)] autorelease];
   uninstallButton.buttonType = NSButtonTypeMomentaryPushIn;
-  uninstallButton.bezelStyle = NSBezelStyleRounded;
+  uninstallButton.bezelStyle = NSRoundedBezelStyle;
   uninstallButton.title = @"Uninstall";
   uninstallButton.action = @selector(uninstall:);
   uninstallButton.target = self;

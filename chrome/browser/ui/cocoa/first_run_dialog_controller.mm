@@ -135,7 +135,7 @@ void CenterVertically(NSView* view) {
                             IDS_FIRSTRUN_DLG_MAC_SET_DEFAULT_BROWSER_LABEL)];
   [_defaultBrowserCheckbox
       setFrame:NSMakeRect(45, 107, kDialogWidth - 2 * 45, 18)];
-  [_defaultBrowserCheckbox setState:NSControlStateValueOn];
+  [_defaultBrowserCheckbox setState:NSOnState];
 
   _statsCheckbox = [ButtonUtils
       checkboxWithTitle:
@@ -143,7 +143,7 @@ void CenterVertically(NSView* view) {
               IDS_FIRSTRUN_DLG_MAC_OPTIONS_SEND_USAGE_STATS_LABEL)];
   [_statsCheckbox setFrame:NSMakeRect(45, 82, kDialogWidth - 2 * 45, 19)];
   if (_statsCheckboxInitiallyChecked)
-    [_statsCheckbox setState:NSControlStateValueOn];
+    [_statsCheckbox setState:NSOnState];
 
   NSButton* startChromeButton =
       [ButtonUtils buttonWithTitle:NSStringWithProductName(
@@ -216,11 +216,11 @@ void CenterVertically(NSView* view) {
 }
 
 - (BOOL)isStatsReportingEnabled {
-  return [_statsCheckbox state] == NSControlStateValueOn;
+  return [_statsCheckbox state] == NSOnState;
 }
 
 - (BOOL)isMakeDefaultBrowserEnabled {
-  return [_defaultBrowserCheckbox state] == NSControlStateValueOn;
+  return [_defaultBrowserCheckbox state] == NSOnState;
 }
 
 - (void)ok:(id)sender {

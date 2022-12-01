@@ -212,7 +212,7 @@ NSString* ColumnIdentifier(int id) {
   [column setHidden:!visibility];
 
   [_tableView sizeToFit];
-  [_tableView setNeedsDisplay:YES];
+  [_tableView setNeedsDisplay];
 }
 
 - (IBAction)killSelectedProcesses:(id)sender {
@@ -399,7 +399,7 @@ NSString* ColumnIdentifier(int id) {
       base::scoped_nsobject<NSButtonCell> nameCell(
           [[NSButtonCell alloc] initTextCell:@""]);
       [nameCell.get() setImagePosition:NSImageLeft];
-      [nameCell.get() setButtonType:NSButtonTypeSwitch];
+      [nameCell.get() setButtonType:NSSwitchButton];
       [nameCell.get() setAlignment:[[column dataCell] alignment]];
       [nameCell.get() setFont:[[column dataCell] font]];
       [column setDataCell:nameCell.get()];
@@ -426,8 +426,7 @@ NSString* ColumnIdentifier(int id) {
                                 keyEquivalent:@""];
     [item setTarget:self];
     [item setRepresentedObject:column];
-    [item setState:[column isHidden] ? NSControlStateValueOff
-                                     : NSControlStateValueOn];
+    [item setState:[column isHidden] ? NSOffState : NSOnState];
   }
 }
 
@@ -442,12 +441,10 @@ NSString* ColumnIdentifier(int id) {
   int columnId = [[column identifier] intValue];
   DCHECK(column);
   NSInteger oldState = [item state];
-  NSInteger newState = oldState == NSControlStateValueOn
-                           ? NSControlStateValueOff
-                           : NSControlStateValueOn;
+  NSInteger newState = oldState == NSOnState ? NSOffState : NSOnState;
 
   // If hiding the column, make sure at least one column will remain visible.
-  if (newState == NSControlStateValueOff) {
+  if (newState == NSOffState) {
     // Find the first column that will be visible after hiding |column|.
     NSTableColumn* firstRemainingVisibleColumn = nil;
 
@@ -575,7 +572,7 @@ NSString* ColumnIdentifier(int id) {
   // NSButtonCells expect an on/off state as objectValue. Their title is set
   // in |tableView:dataCellForTableColumn:row:| below.
   if ([[tableColumn identifier] intValue] == IDS_TASK_MANAGER_TASK_COLUMN) {
-    return [NSNumber numberWithInt:NSControlStateValueOff];
+    return [NSNumber numberWithInt:NSOffState];
   }
 
   return [self modelTextForRow:rowIndex

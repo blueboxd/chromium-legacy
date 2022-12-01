@@ -244,8 +244,6 @@ ContentAnalysisDialog::ContentAnalysisDialog(
 
   SetupButtons();
 
-  first_shown_timestamp_ = base::TimeTicks::Now();
-
   if (download_item_)
     download_item_->AddObserver(this);
 
@@ -272,16 +270,17 @@ ContentAnalysisDialog::ContentAnalysisDialog(
         bypass_justification_text_length_->GetColorProvider()->GetColor(
             ui::kColorAlertHighSeverity));
   }
-
-  if (observer_for_testing)
-    observer_for_testing->ViewsFirstShown(this, first_shown_timestamp_);
 }
 
 void ContentAnalysisDialog::ShowDialogNow() {
-  // If the web contents is still valid when the delay timer goes off, show the
-  // dialog now.
-  if (web_contents_)
+  // If the web contents is still valid when the delay timer goes off and the
+  // dialog has not yet been shown, show it now.
+  if (web_contents_ && !contents_view_) {
+    first_shown_timestamp_ = base::TimeTicks::Now();
     constrained_window::ShowWebModalDialogViews(this, web_contents_);
+    if (observer_for_testing)
+      observer_for_testing->ViewsFirstShown(this, first_shown_timestamp_);
+  }
 }
 
 std::u16string ContentAnalysisDialog::GetWindowTitle() const {
@@ -531,12 +530,18 @@ void ContentAnalysisDialog::UpdateViews() {
 void ContentAnalysisDialog::UpdateDialog() {
   if (!contents_view_) {
     // If the dialog is no longer pending, a final verdict was received before
-    // the dalog was displayed.  In this case close the dialog.  Otherwise the
-    // dialog will leak.
-    if (!is_pending())
-      CancelDialogAndDelete();
+    // the dalog was displayed.  If the verdict is success and this is not a
+    // cloud analysis, don't bother the user at all and close the dialog.
+    // Otherwise make sure it show right away with the verdict.
+    if (!is_pending()) {
+      if (is_success() || !is_cloud_) {
+        CancelDialogAndDelete();
+      } else {
+        ShowDialogNow();
+      }
 
-    return;
+      return;
+    }
   }
 
   DCHECK(is_result());
@@ -839,15 +844,27 @@ std::u16string ContentAnalysisDialog::GetCustomMessage() const {
 void ContentAnalysisDialog::AddLearnMoreLinkToDialog() {
   DCHECK(contents_view_);
   DCHECK(contents_layout_);
-  DCHECK(!learn_more_link_);
   DCHECK(is_warning() || is_failure());
+
+  // There is only ever up to one link in the dialog, so return early instead of
+  // adding another one.
+  if (learn_more_link_)
+    return;
 
   // Add a row for the new element, and add an empty view to skip the first
   // column.
   contents_layout_->AddRows(1, views::TableLayout::kFixedSize);
   contents_layout_->AddChildView(std::make_unique<views::View>());
 
-  learn_more_link_ = contents_layout_->AddChildView(
+  // Since `learn_more_link_` is not as wide as the column it's a part of,
+  // instead of being added directly to it, it has a parent with a BoxLayout so
+  // that its width corresponds to its own text size instead of the full column
+  // width.
+  views::View* learn_more_column =
+      contents_layout_->AddChildView(std::make_unique<views::View>());
+  learn_more_column->SetLayoutManager(std::make_unique<views::BoxLayout>());
+
+  learn_more_link_ = learn_more_column->AddChildView(
       std::make_unique<views::Link>(l10n_util::GetStringUTF16(
           IDS_DEEP_SCANNING_DIALOG_CUSTOM_MESSAGE_LEARN_MORE_LINK)));
   learn_more_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -859,8 +876,12 @@ void ContentAnalysisDialog::AddLearnMoreLinkToDialog() {
 void ContentAnalysisDialog::AddJustificationTextLabelToDialog() {
   DCHECK(contents_view_);
   DCHECK(contents_layout_);
-  DCHECK(!justification_text_label_);
   DCHECK(is_warning());
+
+  // There is only ever up to one justification section in the dialog, so return
+  // early instead of adding another one.
+  if (justification_text_label_)
+    return;
 
   // Add a row for the new element, and add an empty view to skip the first
   // column.
@@ -881,9 +902,13 @@ void ContentAnalysisDialog::AddJustificationTextLabelToDialog() {
 void ContentAnalysisDialog::AddJustificationTextAreaToDialog() {
   DCHECK(contents_view_);
   DCHECK(contents_layout_);
-  DCHECK(!bypass_justification_);
   DCHECK(justification_text_label_);
   DCHECK(is_warning());
+
+  // There is only ever up to one justification text box in the dialog, so
+  // return early instead of adding another one.
+  if (bypass_justification_)
+    return;
 
   // Add a row for the new element, and add an empty view to skip the first
   // column.
@@ -899,8 +924,12 @@ void ContentAnalysisDialog::AddJustificationTextAreaToDialog() {
 void ContentAnalysisDialog::AddJustificationTextLengthToDialog() {
   DCHECK(contents_view_);
   DCHECK(contents_layout_);
-  DCHECK(!bypass_justification_text_length_);
   DCHECK(is_warning());
+
+  // There is only ever up to one justification text length indicator in the
+  // dialog, so return early instead of adding another one.
+  if (bypass_justification_text_length_)
+    return;
 
   // Add a row for the new element, and add an empty view to skip the first
   // column.

@@ -77,7 +77,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecoder
   void CompleteFlush() override;
   void ChangeResolution(gfx::Size pic_size,
                         gfx::Rect visible_rect,
-                        size_t num_output_frames) override;
+                        size_t num_codec_reference_frames) override;
   void OutputFrame(scoped_refptr<VideoFrame> frame,
                    const gfx::Rect& visible_rect,
                    const VideoColorSpace& color_space,
@@ -138,7 +138,8 @@ class MEDIA_GPU_EXPORT V4L2VideoDecoder
   // Return CroStatus::Codes::kResetRequired if the setup is aborted.
   // Return CroStatus::Codes::kFailedToChangeResolution if other error occurs.
   CroStatus SetupOutputFormat(const gfx::Size& size,
-                              const gfx::Rect& visible_rect);
+                              const gfx::Rect& visible_rect,
+                              size_t num_codec_reference_frames);
 
   // Start streaming V4L2 input and (if |start_output_queue| is true) output
   // queues. Attempt to start |device_poll_thread_| after streaming starts.
@@ -156,7 +157,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecoder
   // Return CroStatus::Codes::kFailedToChangeResolution if any error occurs.
   CroStatus ContinueChangeResolution(const gfx::Size& pic_size,
                                      const gfx::Rect& visible_rect,
-                                     const size_t num_output_frames);
+                                     size_t num_codec_reference_frames);
   void OnChangeResolutionDone(CroStatus status);
 
   // Change the state and check the state transition is valid.
@@ -189,19 +190,16 @@ class MEDIA_GPU_EXPORT V4L2VideoDecoder
   // State of the instance.
   State state_ = State::kUninitialized;
 
-  // Number of output frames requested to |frame_pool_|.
-  // The default value is only used at the first time of
-  // DmabufVideoFramePool::Initialize() during Initialize().
-  size_t num_output_frames_ = 1;
+  // Aspect ratio from config to use for output frames.
+  VideoAspectRatio aspect_ratio_;
 
-  // Callback passed from Initialize().
+  // Callbacks passed from Initialize().
   OutputCB output_cb_;
 
-  // Initialize()-passed configuration options.
+  // Hold onto profile and color space passed in from Initialize() so that
+  // it is available for InitializeBackend().
   VideoCodecProfile profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
-  VideoAspectRatio aspect_ratio_;
   VideoColorSpace color_space_;
-  bool low_delay_;
 
   // V4L2 input and output queue.
   scoped_refptr<V4L2Queue> input_queue_;

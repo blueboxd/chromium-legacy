@@ -8,9 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/components/phonehub/notification.h"
-#include "ash/components/phonehub/phone_hub_manager.h"
-#include "ash/components/phonehub/user_action_recorder.h"
 #include "ash/constants/ash_features.h"
 #include "ash/controls/rounded_scroll_bar.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -20,6 +17,10 @@
 #include "ash/system/phonehub/phone_hub_view_ids.h"
 #include "ash/system/phonehub/ui_constants.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/webui/eche_app_ui/mojom/eche_app.mojom.h"
+#include "chromeos/ash/components/phonehub/notification.h"
+#include "chromeos/ash/components/phonehub/phone_hub_manager.h"
+#include "chromeos/ash/components/phonehub/user_action_recorder.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
@@ -28,6 +29,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -51,18 +53,22 @@ namespace {
 // Insets for the vertical scroll bar.
 constexpr auto kVerticalScrollInsets = gfx::Insets::TLBR(1, 0, 1, 1);
 
-constexpr auto kBubblePadding = gfx::Insets::VH(8, 8);
-constexpr int kHeaderHeight = 40;
-constexpr auto kHeaderDefaultSpacing = gfx::Insets::VH(0, 6);
+constexpr auto kHeaderDefaultSpacing = gfx::Insets::VH(0, 0);
 
 // The horizontal interior margin for the apps page container - i.e. the margin
 // between the apps page bounds and the page content.
-constexpr int kHorizontalInteriorMargin = 16;
+constexpr int kHorizontalInteriorMargin = 25;
 
 // Number of columns of apps in the grid
 constexpr int kColumns = 4;
 
-constexpr int kRowHeight = 80;
+constexpr int kRowHeight = 70;
+
+constexpr auto kHeaderViewInsets = gfx::Insets::TLBR(25, 15, 15, 15);
+
+constexpr int kAppViewWidth = 50;
+
+constexpr int kHeaderChildrenSpacing = 20;
 
 // The padding between different sections within the apps page. Also used for
 // interior apps page container margin.
@@ -81,7 +87,6 @@ AppStreamLauncherView::AppStreamLauncherView(
       .SetOrientation(views::LayoutOrientation::kVertical)
       .SetCollapseMargins(false)
       .SetDefault(views::kMarginsKey, kHeaderDefaultSpacing)
-      .SetInteriorMargin(kBubblePadding)
       .SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
 
   AddChildView(CreateHeaderView());
@@ -163,7 +168,8 @@ void AppStreamLauncherView::AppIconActivated(
       phone_hub_manager_->GetRecentAppsInteractionHandler();
   if (!interaction_handler_)
     return;
-  interaction_handler_->NotifyRecentAppClicked(app);
+  interaction_handler_->NotifyRecentAppClicked(
+      app, eche_app::mojom::AppStreamLaunchEntryPoint::APPS_LIST);
 }
 
 void AppStreamLauncherView::UpdateFromDataModel() {
@@ -177,10 +183,15 @@ void AppStreamLauncherView::UpdateFromDataModel() {
           ->GetAppsListSortedByName();
   auto* table_layout = items_container_->SetLayoutManager(
       std::make_unique<views::TableLayout>());
+  int spacing = (kTrayMenuWidth - kHorizontalInteriorMargin * 2 -
+                 kAppViewWidth * kColumns) /
+                (kColumns - 1);
   for (int i = 0; i < kColumns; i++) {
     table_layout->AddColumn(
         views::LayoutAlignment::kStretch, views::LayoutAlignment::kStretch, 1.0,
         views::TableLayout::ColumnSize::kUsePreferred, 0, 0);
+    if (i != kColumns - 1)
+      table_layout->AddPaddingColumn(1.0, spacing);
   }
   table_layout->AddRows(ceil((double)apps_list->size() / kColumns),
                         views::TableLayout::kFixedSize, kRowHeight);
@@ -200,12 +211,14 @@ std::unique_ptr<views::View> AppStreamLauncherView::CreateItemView(
 
 std::unique_ptr<views::View> AppStreamLauncherView::CreateHeaderView() {
   auto header = std::make_unique<views::View>();
-  header->SetLayoutManager(std::make_unique<views::FlexLayout>())
-      ->SetInteriorMargin(gfx::Insets::VH(0, 0))
-      .SetCollapseMargins(false)
-      .SetMinimumCrossAxisSize(kHeaderHeight)
-      .SetDefault(views::kMarginsKey, kHeaderDefaultSpacing)
-      .SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
+  header->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal, kHeaderViewInsets,
+      kHeaderChildrenSpacing));
+
+  header->SetBackground(views::CreateSolidBackground(
+      AshColorProvider::Get()->GetControlsLayerColor(
+          AshColorProvider::ControlsLayerType::
+              kControlBackgroundColorInactive)));
 
   // Add arrowback button
   arrow_back_button_ = header->AddChildView(CreateButton(

@@ -453,13 +453,9 @@ ImageCandidate HTMLImageElement::FindBestFitImageFromPictureParent() {
 
 LayoutObject* HTMLImageElement::CreateLayoutObject(const ComputedStyle& style,
                                                    LegacyLayout legacy) {
-  const ContentData* content_data = style.GetContentData();
-  if (content_data && content_data->IsImage()) {
-    const StyleImage* content_image =
-        To<ImageContentData>(content_data)->GetImage();
-    bool error_occurred = content_image && content_image->CachedImage() &&
-                          content_image->CachedImage()->ErrorOccurred();
-    if (!error_occurred)
+  if (auto* content_image =
+          DynamicTo<ImageContentData>(style.GetContentData())) {
+    if (!content_image->GetImage()->ErrorOccurred())
       return LayoutObject::CreateObject(this, style, legacy);
   }
 
@@ -509,18 +505,10 @@ Node::InsertionNotificationRequest HTMLImageElement::InsertedInto(
     was_added_to_picture_parent = picture_parent == insertion_point;
   }
 
-  bool image_was_modified = false;
-  if (GetDocument().IsActive() && was_added_to_picture_parent) {
-    ImageCandidate candidate = FindBestFitImageFromPictureParent();
-    if (!candidate.IsEmpty()) {
-      InvalidateAttributeMapping();
-      SetBestFitURLAndDPRFromImageCandidate(candidate);
-      image_was_modified = true;
-    }
-  }
-
-  if (image_was_modified || GetImageLoader().ShouldUpdateOnInsertedInto(
-                                insertion_point, referrer_policy_)) {
+  if (was_added_to_picture_parent) {
+    SelectSourceURL(ImageLoader::kUpdateIgnorePreviousError);
+  } else if (GetImageLoader().ShouldUpdateOnInsertedInto(insertion_point,
+                                                         referrer_policy_)) {
     GetImageLoader().UpdateFromElement(ImageLoader::kUpdateNormal,
                                        referrer_policy_);
   }
@@ -528,14 +516,18 @@ Node::InsertionNotificationRequest HTMLImageElement::InsertedInto(
 }
 
 void HTMLImageElement::RemovedFrom(ContainerNode& insertion_point) {
-  InvalidateAttributeMapping();
   if (!form_ || NodeTraversal::HighestAncestorOrSelf(*form_.Get()) !=
                     NodeTraversal::HighestAncestorOrSelf(*this))
     ResetFormOwner();
-  if (listener_) {
+  if (listener_)
     GetDocument().GetMediaQueryMatcher().RemoveViewportListener(listener_);
-    if (auto* picture_parent = DynamicTo<HTMLPictureElement>(parentNode()))
-      picture_parent->RemoveListenerFromSourceChildren();
+  bool was_removed_from_parent = !parentNode();
+  auto* picture_parent = DynamicTo<HTMLPictureElement>(
+      was_removed_from_parent ? &insertion_point : parentNode());
+  if (picture_parent) {
+    picture_parent->RemoveListenerFromSourceChildren();
+    if (was_removed_from_parent)
+      SelectSourceURL(ImageLoader::kUpdateIgnorePreviousError);
   }
   HTMLElement::RemovedFrom(insertion_point);
 }

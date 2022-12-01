@@ -56,7 +56,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
-#include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
+#include "chromeos/ash/components/login/login_state/scoped_test_public_session_login_state.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -708,7 +708,8 @@ class PrivacySandboxServiceTest : public testing::Test {
   GetMockDelegate() {
     auto mock_delegate = std::make_unique<
         privacy_sandbox_test_util::MockPrivacySandboxSettingsDelegate>();
-    mock_delegate->SetUpDefaultResponse(/*restricted=*/false);
+    mock_delegate->SetUpIsPrivacySandboxRestrictedResponse(
+        /*restricted=*/false);
     return mock_delegate;
   }
 
@@ -716,7 +717,7 @@ class PrivacySandboxServiceTest : public testing::Test {
     privacy_sandbox_settings_ =
         std::make_unique<privacy_sandbox::PrivacySandboxSettings>(
             GetMockDelegate(), host_content_settings_map(), cookie_settings(),
-            prefs(), /*incognito_profile=*/false);
+            prefs());
 #if !BUILDFLAG(IS_ANDROID)
     mock_sentiment_service_ =
         std::make_unique<::testing::NiceMock<MockTrustSafetySentimentService>>(

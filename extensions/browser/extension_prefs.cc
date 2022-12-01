@@ -717,17 +717,13 @@ bool ExtensionPrefs::ReadPrefAsString(const std::string& extension_id,
   return true;
 }
 
-bool ExtensionPrefs::ReadPrefAsList(const std::string& extension_id,
-                                    base::StringPiece pref_key,
-                                    const base::ListValue** out_value) const {
+const base::Value::List* ExtensionPrefs::ReadPrefAsList(
+    const std::string& extension_id,
+    base::StringPiece pref_key) const {
   const base::DictionaryValue* ext = GetExtensionPref(extension_id);
-  const base::ListValue* out = nullptr;
-  if (!ext || !ext->GetList(pref_key, &out))
-    return false;
-  if (out_value)
-    *out_value = out;
-
-  return true;
+  if (!ext)
+    return nullptr;
+  return ext->GetDict().FindListByDottedPath(pref_key);
 }
 
 const base::Value* ExtensionPrefs::GetPrefAsValue(
@@ -766,8 +762,8 @@ bool ExtensionPrefs::ReadPrefAsURLPatternSet(const std::string& extension_id,
                                              base::StringPiece pref_key,
                                              URLPatternSet* result,
                                              int valid_schemes) const {
-  const base::ListValue* value = nullptr;
-  if (!ReadPrefAsList(extension_id, pref_key, &value))
+  const base::Value::List* value = ReadPrefAsList(extension_id, pref_key);
+  if (!value)
     return false;
   const base::DictionaryValue* extension = GetExtensionPref(extension_id);
   if (!extension)
@@ -779,8 +775,7 @@ bool ExtensionPrefs::ReadPrefAsURLPatternSet(const std::string& extension_id,
   }
 
   bool allow_file_access = AllowFileAccess(extension_id);
-  return result->Populate(value->GetList(), valid_schemes, allow_file_access,
-                          nullptr);
+  return result->Populate(*value, valid_schemes, allow_file_access, nullptr);
 }
 
 void ExtensionPrefs::SetExtensionPrefURLPatternSet(
@@ -809,10 +804,10 @@ std::unique_ptr<PermissionSet> ExtensionPrefs::ReadPrefAsPermissionSet(
   // Retrieve the API permissions. Please refer SetExtensionPrefPermissionSet()
   // for api_values format.
   APIPermissionSet apis;
-  const base::ListValue* api_values = nullptr;
   std::string api_pref = JoinPrefs({pref_key, kPrefAPIs});
-  if (ReadPrefAsList(extension_id, api_pref, &api_values)) {
-    APIPermissionSet::ParseFromJSON(api_values,
+  const base::Value::List* api_values = ReadPrefAsList(extension_id, api_pref);
+  if (api_values) {
+    APIPermissionSet::ParseFromJSON(*api_values,
                                     APIPermissionSet::kAllowInternalPermissions,
                                     &apis, nullptr, nullptr);
   }
@@ -820,13 +815,13 @@ std::unique_ptr<PermissionSet> ExtensionPrefs::ReadPrefAsPermissionSet(
   // Retrieve the Manifest Keys permissions. Please refer to
   // |SetExtensionPrefPermissionSet| for manifest_permissions_values format.
   ManifestPermissionSet manifest_permissions;
-  const base::ListValue* manifest_permissions_values = nullptr;
   std::string manifest_permission_pref =
       JoinPrefs({pref_key, kPrefManifestPermissions});
-  if (ReadPrefAsList(extension_id, manifest_permission_pref,
-                     &manifest_permissions_values)) {
+  const base::Value::List* manifest_permissions_values =
+      ReadPrefAsList(extension_id, manifest_permission_pref);
+  if (manifest_permissions_values) {
     ManifestPermissionSet::ParseFromJSON(
-        manifest_permissions_values, &manifest_permissions, nullptr, nullptr);
+        *manifest_permissions_values, &manifest_permissions, nullptr, nullptr);
   }
 
   // Retrieve the explicit host permissions.
@@ -1381,6 +1376,14 @@ bool ExtensionPrefs::IsExternalExtensionUninstalled(
   return base::Contains(uninstalled_ids, id);
 }
 
+bool ExtensionPrefs::ClearExternalExtensionUninstalled(const std::string& id) {
+  ScopedListPrefUpdate update(prefs_, kExternalUninstalls);
+  size_t num_removed = update->EraseIf([&id](const base::Value& value) {
+    return value.is_string() && value.GetString() == id;
+  });
+  return num_removed > 0;
+}
+
 bool ExtensionPrefs::IsExtensionDisabled(const std::string& id) const {
   return DoesExtensionHaveState(id, Extension::DISABLED);
 }
@@ -1414,7 +1417,7 @@ void ExtensionPrefs::OnExtensionInstalled(
   // However, it's not clear if existing subsystems may also be relying on this
   // bit being set/unset. For now, maintain existing behavior.
   if (IsExternalExtensionUninstalled(extension->id()))
-    ClearExternalUninstallBit(extension->id());
+    ClearExternalExtensionUninstalled(extension->id());
 
   ScopedExtensionPrefUpdate update(prefs_, extension->id());
   auto extension_dict = update.Get();
@@ -2117,12 +2120,12 @@ absl::optional<std::set<declarative_net_request::RulesetID>>
 ExtensionPrefs::GetDNREnabledStaticRulesets(
     const ExtensionId& extension_id) const {
   std::set<declarative_net_request::RulesetID> ids;
-  const base::ListValue* ids_value = nullptr;
-  if (!ReadPrefAsList(extension_id, kDNREnabledStaticRulesetIDs, &ids_value))
+  const base::Value::List* ids_value =
+      ReadPrefAsList(extension_id, kDNREnabledStaticRulesetIDs);
+  if (!ids_value)
     return absl::nullopt;
 
-  DCHECK(ids_value);
-  for (const base::Value& id_value : ids_value->GetList()) {
+  for (const base::Value& id_value : *ids_value) {
     if (!id_value.is_int())
       return absl::nullopt;
 
@@ -2215,10 +2218,6 @@ void ExtensionPrefs::SetDNRKeepExcessAllocation(const ExtensionId& extension_id,
 // static
 void ExtensionPrefs::SetRunAlertsInFirstRunForTest() {
   g_run_alerts_in_first_run_for_testing = true;
-}
-
-void ExtensionPrefs::ClearExternalUninstallForTesting(const ExtensionId& id) {
-  ClearExternalUninstallBit(id);
 }
 
 const char ExtensionPrefs::kFakeObsoletePrefForTesting[] =
@@ -2733,13 +2732,6 @@ void ExtensionPrefs::MarkObsoleteComponentExtensionAsRemoved(
   DCHECK(existing_entry == current_ids.end());
   current_ids.Append(extension_id);
   OnExtensionUninstalled(extension_id, location, false);
-}
-
-void ExtensionPrefs::ClearExternalUninstallBit(const ExtensionId& id) {
-  ScopedListPrefUpdate update(prefs_, kExternalUninstalls);
-  update->EraseIf([&id](const base::Value& value) {
-    return value.is_string() && value.GetString() == id;
-  });
 }
 
 }  // namespace extensions

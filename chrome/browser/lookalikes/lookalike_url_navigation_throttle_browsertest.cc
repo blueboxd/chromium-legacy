@@ -250,14 +250,13 @@ class LookalikeUrlNavigationThrottleBrowserTest : public InProcessBrowserTest {
         LookalikeUrlService::Get(browser()->profile());
     lookalike_service->SetClockForTesting(&test_clock_);
 
-    test_helper_ = std::make_unique<LookalikeTestHelper>(browser());
-    test_helper_->SetUp();
+    SetUpLookalikeTestParams();
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
   void TearDownOnMainThread() override {
     InProcessBrowserTest::TearDownOnMainThread();
-    test_helper_->TearDown();
+    TearDownLookalikeTestParams();
   }
 
   GURL GetURL(const char* hostname) const {
@@ -439,7 +438,6 @@ class LookalikeUrlNavigationThrottleBrowserTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
   base::SimpleTestClock test_clock_;
-  std::unique_ptr<LookalikeTestHelper> test_helper_;
 };
 
 // Navigating to a non-IDN shouldn't show an interstitial or record metrics.
@@ -782,44 +780,28 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlNavigationThrottleBrowserTest,
            LookalikeUrlMatchType::kEditDistanceSiteEngagement);
 }
 
-// Navigate to a domain with a character swap of 1 to an engaged domain.
-// This should record metrics, but should not show a lookalike warning
-// interstitial yet.
+// Navigate to a domain within a character swap of 1 to a top domain.
+// This should not record interstitial metrics as it'll display a safety tip.
 IN_PROC_BROWSER_TEST_F(LookalikeUrlNavigationThrottleBrowserTest,
-                       CharacterSwap_EngagedDomain_SkeletonMatch) {
+                       CharacterSwap_TopDomain_Match_ShouldNotRecordMetrics) {
   base::HistogramTester histograms;
-  SetEngagementScore(browser(), GURL("https://character-swap.com"),
-                     kHighEngagement);
-
-  // The skeleton of this domain is one character swap from the skeleton of
-  // character-swap.com.
-  const GURL kNavigatedUrl = GetURL("character-wsap.com");
+  const GURL kNavigatedUrl = GetURL("goolge.com");
   // Even if the navigated site has a low engagement score, it should be
   // considered for lookalike suggestions.
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-  // Advance clock to force a fetch of new engaged sites list.
-  test_clock()->Advance(base::Hours(1));
 
   TestInterstitialNotShown(browser(), kNavigatedUrl);
-
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
-  histograms.ExpectBucketCount(
-      lookalikes::kHistogramName,
-      NavigationSuggestionEvent::kMatchCharacterSwapSiteEngagement, 1);
-
-  CheckUkm({kNavigatedUrl}, "MatchType",
-           LookalikeUrlMatchType::kCharacterSwapSiteEngagement);
+  histograms.ExpectTotalCount(lookalikes::kHistogramName, 0);
+  CheckNoUkm();
 }
 
-// Same as CharacterSwap_EngagedDomain_SkeletonMatch, but this time
-// the match is on the actual hostnames and not skeletons. Note that
-// the skeletons of example.com and éxaplme.com don't have exactly
-// one character swap (exarnple.com and exaprnle.com)
+// Tests that a hostname on a safe TLD can spoof another hostname without a
+// lookalike warning.
 IN_PROC_BROWSER_TEST_F(LookalikeUrlNavigationThrottleBrowserTest,
-                       CharacterSwap_EngagedDomain_HostnameMatch) {
+                       Idn_SafeTLD_CanSpoof) {
   base::HistogramTester histograms;
-  SetEngagementScore(browser(), GURL("https://example.com"), kHighEngagement);
-  const GURL kNavigatedUrl = GetURL("éxapmle.com");
+  SetEngagementScore(browser(), GURL("https://digital.gov"), kHighEngagement);
+  const GURL kNavigatedUrl = GetURL("digitál.gov");
   // Even if the navigated site has a low engagement score, it should be
   // considered for lookalike suggestions.
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
@@ -827,13 +809,8 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlNavigationThrottleBrowserTest,
   test_clock()->Advance(base::Hours(1));
 
   TestInterstitialNotShown(browser(), kNavigatedUrl);
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
-  histograms.ExpectBucketCount(
-      lookalikes::kHistogramName,
-      NavigationSuggestionEvent::kMatchCharacterSwapSiteEngagement, 1);
-
-  CheckUkm({kNavigatedUrl}, "MatchType",
-           LookalikeUrlMatchType::kCharacterSwapSiteEngagement);
+  histograms.ExpectTotalCount(lookalikes::kHistogramName, 0);
+  CheckNoUkm();
 }
 
 // Navigate to a domain within an edit distance of 1 to a top domain.
@@ -857,44 +834,6 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlNavigationThrottleBrowserTest,
                                1);
 
   CheckUkm({kNavigatedUrl}, "MatchType", LookalikeUrlMatchType::kEditDistance);
-}
-
-// Navigate to a domain within a character swap of 1 to a top domain.
-// This should record metrics, but should not show a lookalike warning
-// interstitial yet.
-IN_PROC_BROWSER_TEST_F(LookalikeUrlNavigationThrottleBrowserTest,
-                       CharacterSwap_TopDomain_Match) {
-  base::HistogramTester histograms;
-  const GURL kNavigatedUrl = GetURL("goolge.com");
-  // Even if the navigated site has a low engagement score, it should be
-  // considered for lookalike suggestions.
-  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-
-  TestInterstitialNotShown(browser(), kNavigatedUrl);
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
-  histograms.ExpectBucketCount(
-      lookalikes::kHistogramName,
-      NavigationSuggestionEvent::kMatchCharacterSwapTop500, 1);
-
-  CheckUkm({kNavigatedUrl}, "MatchType",
-           LookalikeUrlMatchType::kCharacterSwapTop500);
-}
-
-// Navigate to a domain within a character swap of 1 to a top domain,
-// but the character swap is at the registry. This should not be flagged
-// as a character swap match.
-IN_PROC_BROWSER_TEST_F(LookalikeUrlNavigationThrottleBrowserTest,
-                       CharacterSwap_TopDomainWithDifferentRegistry_NoMatch) {
-  base::HistogramTester histograms;
-  // google.sr is within one character swap of google.rs which is a top domain.
-  const GURL kNavigatedUrl = GetURL("google.sr");
-  // Even if the navigated site has a low engagement score, it should be
-  // considered for lookalike suggestions.
-  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-
-  TestInterstitialNotShown(browser(), kNavigatedUrl);
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 0);
-  CheckNoUkm();
 }
 
 // Navigate to a domain within an edit distance of 1 to a top domain, but that

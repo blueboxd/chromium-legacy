@@ -202,6 +202,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // mode.
 @property(nonatomic, strong) UIPanGestureRecognizer* searchResultPanRecognizer;
 
+@property(nonatomic, assign, getter=isDragSeesionInProgress)
+    BOOL dragSeesionInProgress;
+
 @end
 
 @implementation TabGridViewController
@@ -215,6 +218,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (self) {
     _pageConfiguration = tabGridPageConfiguration;
     _closeAllConfirmationDisplayed = NO;
+    _dragSeesionInProgress = NO;
 
     switch (_pageConfiguration) {
       case TabGridPageConfiguration::kAllPagesEnabled:
@@ -406,6 +410,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     // another.
     self.pageChangeInteraction = PageChangeInteractionItemDrag;
     [self recordActionSwitchingToPage:currentPage];
+    [self.topToolbar.pageControl setSelectedPage:currentPage animated:YES];
   }
   self.currentPage = currentPage;
   self.scrollViewAnimatingContentOffset = NO;
@@ -1718,12 +1723,13 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   BOOL incognitoTabsNeedsAuth =
       (self.currentPage == TabGridPageIncognitoTabs &&
        self.incognitoTabsViewController.contentNeedsAuthentication);
-  enabled = enabled && !incognitoTabsNeedsAuth;
+  enabled = enabled && !incognitoTabsNeedsAuth && !self.isDragSeesionInProgress;
 
   [self.topToolbar setCloseAllButtonEnabled:enabled];
   [self.bottomToolbar setCloseAllButtonEnabled:enabled];
   [self.bottomToolbar setEditButtonEnabled:enabled];
   [self.topToolbar setEditButtonEnabled:enabled];
+  [self.topToolbar setNewTabButtonEnabled:enabled];
 }
 
 // Shows the two toolbars and the floating button. Suitable for use in
@@ -2378,6 +2384,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)gridViewControllerDragSessionWillBegin:
     (GridViewController*)gridViewController {
+  self.dragSeesionInProgress = YES;
+
   // Actions on both bars should be disabled during dragging.
   [self.topToolbar setDoneButtonEnabled:NO];
   self.topToolbar.pageControl.userInteractionEnabled = NO;
@@ -2396,6 +2404,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)gridViewControllerDragSessionDidEnd:
     (GridViewController*)gridViewController {
+  self.dragSeesionInProgress = NO;
+
   // -configureDoneButtonBasedOnPage will enable the page control.
   [self configureDoneButtonBasedOnPage:self.currentPage];
   [self configureCloseAllButtonForCurrentPageAndUndoAvailability];

@@ -78,6 +78,9 @@ extern const char kAttributionReportingDebugModeDescription[];
 extern const char kBrokerFileOperationsOnDiskCacheInNetworkServiceName[];
 extern const char kBrokerFileOperationsOnDiskCacheInNetworkServiceDescription[];
 
+extern const char kCertDualVerificationEnabledName[];
+extern const char kCertDualVerificationEnabledDescription[];
+
 extern const char kCOLRV1FontsDescription[];
 
 extern const char kChromeRootStoreEnabledName[];
@@ -547,9 +550,6 @@ extern const char kEnablePreinstalledWebAppDuplicationFixerDescription[];
 
 extern const char kEnableTLS13EarlyDataName[];
 extern const char kEnableTLS13EarlyDataDescription[];
-
-extern const char kEnhancedNetworkVoicesName[];
-extern const char kEnhancedNetworkVoicesDescription[];
 
 extern const char kAccessibilityServiceName[];
 extern const char kAccessibilityServiceDescription[];

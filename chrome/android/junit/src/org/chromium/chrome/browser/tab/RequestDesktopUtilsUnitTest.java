@@ -511,15 +511,6 @@ public class RequestDesktopUtilsUnitTest {
                                 ChromePreferenceKeys.DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING,
                                 false));
         Assert.assertTrue(
-                "SharedPreference DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE should be true.",
-                mSharedPreferencesManager.contains(
-                        ChromePreferenceKeys
-                                .DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE)
-                        && mSharedPreferencesManager.readBoolean(
-                                ChromePreferenceKeys
-                                        .DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE,
-                                false));
-        Assert.assertTrue(
                 "SharedPreference DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT should be true.",
                 mSharedPreferencesManager.contains(
                         ChromePreferenceKeys.DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT)
@@ -553,6 +544,8 @@ public class RequestDesktopUtilsUnitTest {
 
     @Test
     public void testMaybeShowDefaultEnableGlobalSettingMessage() {
+        when(mTracker.shouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_DEFAULT_ON_FEATURE))
+                .thenReturn(true);
         enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, null, true);
 
         // Default-enable the global setting before the message is shown.
@@ -579,21 +572,17 @@ public class RequestDesktopUtilsUnitTest {
                 message.getValue().get(MessageBannerProperties.PRIMARY_BUTTON_TEXT));
         Assert.assertEquals("Message icon resource ID should match.", R.drawable.ic_desktop_windows,
                 message.getValue().get(MessageBannerProperties.ICON_RESOURCE_ID));
-        Assert.assertFalse(
-                "SharedPreference DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE should be removed.",
-                mSharedPreferencesManager.contains(
-                        ChromePreferenceKeys
-                                .DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE));
     }
 
     @Test
     public void testMaybeShowDefaultEnableGlobalSettingMessage_DoNotShowIfSettingIsDisabled() {
+        when(mTracker.shouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_DEFAULT_ON_FEATURE))
+                .thenReturn(true);
         enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, null, true);
 
         // Preference is set when the setting is default-enabled.
         mSharedPreferencesManager.writeBoolean(
-                ChromePreferenceKeys.DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE,
-                true);
+                ChromePreferenceKeys.DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING, true);
 
         // Simulate disabling of the setting by the user before the message is shown.
         when(mWebsitePreferenceBridgeJniMock.isContentSettingEnabled(
@@ -604,11 +593,6 @@ public class RequestDesktopUtilsUnitTest {
                 mProfile, mMessageDispatcher, mActivity);
         Assert.assertFalse(
                 "Message should not be shown if the content setting is disabled.", shown);
-        Assert.assertFalse(
-                "SharedPreference DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE should be removed.",
-                mSharedPreferencesManager.contains(
-                        ChromePreferenceKeys
-                                .DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE));
     }
 
     @Test
@@ -633,11 +617,6 @@ public class RequestDesktopUtilsUnitTest {
                 "SharedPreference DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING should be removed.",
                 mSharedPreferencesManager.contains(
                         ChromePreferenceKeys.DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING));
-        Assert.assertFalse(
-                "SharedPreference DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE should be removed.",
-                mSharedPreferencesManager.contains(
-                        ChromePreferenceKeys
-                                .DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE));
         Assert.assertFalse(
                 "SharedPreference DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT should be removed.",
                 mSharedPreferencesManager.contains(
@@ -679,15 +658,12 @@ public class RequestDesktopUtilsUnitTest {
                 "SharedPreference DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING should be removed.",
                 mSharedPreferencesManager.contains(
                         ChromePreferenceKeys.DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING));
-        Assert.assertFalse(
-                "SharedPreference DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE should be removed.",
-                mSharedPreferencesManager.contains(
-                        ChromePreferenceKeys
-                                .DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE));
     }
 
     @Test
     public void testShouldShowGlobalSettingOptInMessage_ExperimentControlGroup() {
+        when(mTracker.wouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_OPT_IN_FEATURE))
+                .thenReturn(true);
         Map<String, String> params = new HashMap<>();
         params.put(RequestDesktopUtils.PARAM_GLOBAL_SETTING_OPT_IN_ENABLED, "true");
         enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, null, false);
@@ -712,6 +688,10 @@ public class RequestDesktopUtilsUnitTest {
 
     @Test
     public void testMaybeShowGlobalSettingOptInMessage() {
+        when(mTracker.shouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_OPT_IN_FEATURE))
+                .thenReturn(true);
+        when(mTracker.wouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_OPT_IN_FEATURE))
+                .thenReturn(true);
         Map<String, String> params = new HashMap<>();
         params.put(RequestDesktopUtils.PARAM_GLOBAL_SETTING_OPT_IN_ENABLED, "true");
         enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, params, true);
@@ -735,11 +715,6 @@ public class RequestDesktopUtilsUnitTest {
         Assert.assertEquals("Message icon resource ID should match.", R.drawable.ic_desktop_windows,
                 message.getValue().get(MessageBannerProperties.ICON_RESOURCE_ID));
         Assert.assertTrue(
-                "SharedPreference DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_SHOWN should be true.",
-                mSharedPreferencesManager.readBoolean(
-                        ChromePreferenceKeys.DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_SHOWN,
-                        false));
-        Assert.assertTrue(
                 "SharedPreference DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_COHORT should be true.",
                 mSharedPreferencesManager.readBoolean(
                         ChromePreferenceKeys.DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_COHORT,
@@ -747,25 +722,11 @@ public class RequestDesktopUtilsUnitTest {
     }
 
     @Test
-    public void testMaybeShowGlobalSettingOptInMessage_ShowAtMostOnce() {
-        Map<String, String> params = new HashMap<>();
-        params.put(RequestDesktopUtils.PARAM_GLOBAL_SETTING_OPT_IN_ENABLED, "true");
-        enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, params, true);
-
-        boolean shown = RequestDesktopUtils.maybeShowGlobalSettingOptInMessage(
-                RequestDesktopUtils.DEFAULT_GLOBAL_SETTING_OPT_IN_DISPLAY_SIZE_MIN_THRESHOLD_INCHES,
-                mProfile, mMessageDispatcher, mActivity, mCurrentTabSupplier);
-
-        boolean shouldShow = RequestDesktopUtils.shouldShowGlobalSettingOptInMessage(
-                RequestDesktopUtils.DEFAULT_GLOBAL_SETTING_OPT_IN_DISPLAY_SIZE_MIN_THRESHOLD_INCHES,
-                mProfile);
-        Assert.assertFalse(
-                "Desktop site global setting opt-in message should be shown at most once.",
-                shouldShow);
-    }
-
-    @Test
     public void testMaybeShowGlobalSettingOptInMessage_DoNotShowIfSettingIsEnabled() {
+        when(mTracker.shouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_OPT_IN_FEATURE))
+                .thenReturn(true);
+        when(mTracker.wouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_OPT_IN_FEATURE))
+                .thenReturn(true);
         Map<String, String> params = new HashMap<>();
         params.put(RequestDesktopUtils.PARAM_GLOBAL_SETTING_OPT_IN_ENABLED, "true");
         enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, params, true);
@@ -784,6 +745,10 @@ public class RequestDesktopUtilsUnitTest {
 
     @Test
     public void testMaybeShowGlobalSettingOptInMessage_MemoryThreshold() {
+        when(mTracker.shouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_OPT_IN_FEATURE))
+                .thenReturn(true);
+        when(mTracker.wouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_OPT_IN_FEATURE))
+                .thenReturn(true);
         Map<String, String> params = new HashMap<>();
         params.put(RequestDesktopUtils.PARAM_GLOBAL_SETTING_OPT_IN_ENABLED, "true");
         params.put(RequestDesktopUtils.PARAM_GLOBAL_SETTING_OPT_IN_MEMORY_LIMIT, "4000");
@@ -923,6 +888,10 @@ public class RequestDesktopUtilsUnitTest {
     // the message is clicked on.
     @Test
     public void testGlobalSettingOptInMessageClickedOnDifferentTab() {
+        when(mTracker.shouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_OPT_IN_FEATURE))
+                .thenReturn(true);
+        when(mTracker.wouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_OPT_IN_FEATURE))
+                .thenReturn(true);
         Map<String, String> params = new HashMap<>();
         params.put(RequestDesktopUtils.PARAM_GLOBAL_SETTING_OPT_IN_ENABLED, "true");
         enableFeatureWithParams(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS, params, true);

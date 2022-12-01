@@ -116,6 +116,9 @@ class SharedImageFormat {
   // Returns number of channels for a plane for multiplanar formats.
   int NumChannelsInPlane(int plane_index) const;
 
+  // Returns the bit depth for multiplanar format based on the channel format.
+  int MultiplanarBitDepth() const;
+
   std::string ToString() const;
 
   // Returns true if the format contains alpha.
@@ -123,6 +126,10 @@ class SharedImageFormat {
 
   // Returns true if the format is ETC1 compressed.
   bool IsCompressed() const;
+
+  // Returns true if format is legacy multiplanar ResourceFormat i.e.
+  // YUV_420_BIPLANAR, YVU_420, YUVA_420_TRIPLANAR, P010.
+  bool IsLegacyMultiplanar() const;
 
   bool operator==(const SharedImageFormat& o) const;
   bool operator!=(const SharedImageFormat& o) const;

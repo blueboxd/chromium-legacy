@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/login/ui/login_display_host_common.h"
+
 #include <memory>
 
 #include "ash/constants/ash_features.h"
@@ -15,12 +16,14 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/language_preferences.h"
 #include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
+#include "chrome/browser/ash/login/choobe_flow_controller.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/lock_screen_utils.h"
 #include "chrome/browser/ash/login/oobe_quick_start/target_device_bootstrap_controller.h"
 #include "chrome/browser/ash/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/ash/login/screens/gaia_screen.h"
 #include "chrome/browser/ash/login/screens/pin_setup_screen.h"
+#include "chrome/browser/ash/login/screens/recovery_eligibility_screen.h"
 #include "chrome/browser/ash/login/screens/reset_screen.h"
 #include "chrome/browser/ash/login/screens/saml_confirm_password_screen.h"
 #include "chrome/browser/ash/login/screens/signin_fatal_error_screen.h"
@@ -35,6 +38,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/lifetime/termination_notification.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/ash/diagnostics_dialog.h"
@@ -478,6 +482,14 @@ void LoginDisplayHostCommon::StartUserOnboarding() {
 
 void LoginDisplayHostCommon::ResumeUserOnboarding(OobeScreenId screen_id) {
   SetScreenAfterManagedTos(screen_id);
+
+  if (chromeos::features::IsOobeChoobeEnabled()) {
+    if (ChoobeFlowController::IsOptionalScreen(screen_id)) {
+      GetWizardController()->GetChoobeFlowController()->MaybeResumeChoobe(
+          *ProfileManager::GetActiveUserProfile()->GetPrefs());
+    }
+  }
+
   // Try to show TermsOfServiceScreen first
   StartWizard(TermsOfServiceScreenView::kScreenId);
 }
@@ -503,7 +515,9 @@ void LoginDisplayHostCommon::ShowNewTermsForFlexUsers() {
 
 void LoginDisplayHostCommon::SetAuthSessionForOnboarding(
     const UserContext& user_context) {
-  if (PinSetupScreen::ShouldSkipBecauseOfPolicy())
+  if (PinSetupScreen::ShouldSkipBecauseOfPolicy() &&
+      !chromeos::features::IsCryptohomeRecoverySetupEnabled() &&
+      RecoveryEligibilityScreen::ShouldSkipRecoverySetupBecauseOfPolicy())
     return;
 
   wizard_context_->extra_factors_auth_session =

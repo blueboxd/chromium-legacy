@@ -587,7 +587,11 @@
           'gtest_tests': 'chromium_android_gtests',
         },
       },
-      'Android arm64 Builder (dbg)': {},
+      'Android arm64 Builder (dbg)': {
+        'additional_compile_targets': [
+          'android_lint',
+        ],
+      },
       'Android arm64 Builder All Targets (dbg)': {
         'additional_compile_targets': [
           'all',
@@ -2254,6 +2258,8 @@
       'android-marshmallow-arm64-rel-swarming': {
         'mixins': [
           'has_native_resultdb_integration',
+          'pie_fleet',
+          'walleye',
         ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_android_gtests',
@@ -2261,8 +2267,6 @@
         'swarming': {
           'dimension_sets': [
             {
-              'device_os': 'MMB29Q',
-              'device_type': 'bullhead',
               'os': 'Android',
             },
           ],
@@ -2773,8 +2777,6 @@
         'swarming': {
           'dimension_sets': [
             {
-              'device_os': 'MMB29Q',
-              'device_type': 'bullhead',
               'os': 'Android',
             },
           ],
@@ -2783,7 +2785,9 @@
           'gtest_tests': 'site_isolation_android_fyi_gtests',
         },
         'mixins': [
-          'has_native_resultdb_integration'
+          'has_native_resultdb_integration',
+          'pie_fleet',
+          'walleye',
         ],
       },
       'VR Linux': {
@@ -5133,6 +5137,7 @@
         'args': [
           '--test-launcher-print-test-stdio=always',
           '--combine-ash-logs-on-bots',
+          '--asan-symbolize-output',
         ],
       },
       'linux-ubsan-vptr': {
@@ -5387,7 +5392,6 @@
         'additional_compile_targets': [
           'mojo_rust',
           'rust_build_tests',
-          'rust_autocxx_tests',
         ],
         'mixins': [ 'pie_fleet' ],
         'test_suites': {
@@ -5401,7 +5405,6 @@
         'additional_compile_targets': [
           'mojo_rust',
           'rust_build_tests',
-          'rust_autocxx_tests',
         ],
         'mixins': [ 'pie_fleet' ],
         'test_suites': {
@@ -5417,7 +5420,6 @@
           'mojo_rust',
           'mojo_rust_tests',
           'rust_build_tests',
-          'rust_autocxx_tests',
         ],
         'mixins': [
           'linux-bionic'
@@ -5433,7 +5435,6 @@
           'mojo_rust',
           'mojo_rust_tests',
           'rust_build_tests',
-          'rust_autocxx_tests',
         ],
         'mixins': [
           'linux-bionic'
@@ -5449,7 +5450,6 @@
           'mojo_rust',
           'mojo_rust_tests',
           'rust_build_tests',
-          'rust_autocxx_tests',
         ],
         'mixins': [
           'linux-bionic'
@@ -5676,6 +5676,21 @@
         },
         'test_suites': {
           'gtest_tests': 'updater_gtests_mac',
+        },
+      },
+      # TODO(crbug.com/1381588): move to macOS 12 once crbug.com/1394839 is
+      # resolved.
+      'mac11.0-updater-tester-asan-dbg': {
+        'test_suites': {
+          'gtest_tests': 'updater_gtests_mac',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cpu': 'x86-64',
+              'os': 'Mac-11',
+            }
+          ]
         },
       },
       'mac11.0-updater-tester-dbg': {
@@ -6312,7 +6327,6 @@
           'net_unittests',
           'pdf_unittests',
           'pdfium_test',
-          'postmortem-metadata',
           'ppapi_unittests',
           'printing_unittests',
           'remoting_unittests',

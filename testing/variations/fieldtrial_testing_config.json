@@ -2968,7 +2968,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_20221128",
                     "params": {
                         "delay": "30s"
                     },
@@ -2978,7 +2978,6 @@
                         "CacheFeatureOverrideState",
                         "DelayFirstParkingOfStrings",
                         "EarlyExitOnNoopClassOrStyleChange",
-                        "ExplicitHighResolutionTimerWin",
                         "MessagePumpMacDelayedWorkOptimizations",
                         "NoWakeUpsForCanceledTasks",
                         "ReduceCpuUtilization",
@@ -7072,26 +7071,6 @@
             ]
         }
     ],
-    "NtpRealboxPedals": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "fuchsia",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NtpRealboxPedals"
-                    ]
-                }
-            ]
-        }
-    ],
     "NtpRealboxRundedCorners": [
         {
             "platforms": [
@@ -8428,6 +8407,25 @@
                     ],
                     "disable_features": [
                         "IPH_HighEfficiencyMode"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PermissionChip": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_2022-11-29",
+                    "enable_features": [
+                        "PermissionChip"
                     ]
                 }
             ]
@@ -12300,6 +12298,24 @@
                     "enable_features": [
                         "ConnectorsScanningReportOnlyUI"
                     ]
+                }
+            ]
+        }
+    ],
+    "WebRTC-ActiveIceController": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20221129"
                 }
             ]
         }

@@ -510,9 +510,12 @@ class ComputedStyle : public ComputedStyleBase,
   }
   // For containing blocks, use |HasNonInitialBackdropFilter()| which includes
   // will-change: backdrop-filter.
+  static bool HasBackdropFilter(const StyleFilterData* backdrop_filter) {
+    DCHECK(backdrop_filter);
+    return !backdrop_filter->operations_.Operations().empty();
+  }
   bool HasBackdropFilter() const {
-    DCHECK(BackdropFilterInternal().Get());
-    return !BackdropFilterInternal()->operations_.Operations().empty();
+    return HasBackdropFilter(BackdropFilterInternal());
   }
   bool BackdropFilterDataEquivalent(const ComputedStyle& o) const {
     return base::ValuesEquivalent(BackdropFilterInternal(),
@@ -537,9 +540,6 @@ class ComputedStyle : public ComputedStyleBase,
   // background-image
   bool HasBackgroundImage() const {
     return BackgroundInternal().AnyLayerHasImage();
-  }
-  bool HasUrlBackgroundImage() const {
-    return BackgroundInternal().AnyLayerHasUrlImage();
   }
   bool HasFixedAttachmentBackgroundImage() const {
     return BackgroundInternal().AnyLayerHasFixedAttachmentImage();
@@ -1498,9 +1498,11 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Position utility functions.
+  static bool HasOutOfFlowPosition(EPosition position) {
+    return position == EPosition::kAbsolute || position == EPosition::kFixed;
+  }
   bool HasOutOfFlowPosition() const {
-    return GetPosition() == EPosition::kAbsolute ||
-           GetPosition() == EPosition::kFixed;
+    return HasOutOfFlowPosition(GetPosition());
   }
   bool HasInFlowPosition() const {
     return GetPosition() == EPosition::kRelative ||
@@ -1511,14 +1513,17 @@ class ComputedStyle : public ComputedStyleBase,
            (!Top().IsAuto() || !Left().IsAuto() || !Right().IsAuto() ||
             !Bottom().IsAuto());
   }
-  EPosition GetPosition() const {
+  static EPosition GetPosition(EDisplay display, EPosition position_internal) {
     // Applied sticky position is static for table columns and column groups.
-    if (PositionInternal() == EPosition::kSticky &&
-        (Display() == EDisplay::kTableColumnGroup ||
-         Display() == EDisplay::kTableColumn)) {
+    if (position_internal == EPosition::kSticky &&
+        (display == EDisplay::kTableColumnGroup ||
+         display == EDisplay::kTableColumn)) {
       return EPosition::kStatic;
     }
-    return PositionInternal();
+    return position_internal;
+  }
+  EPosition GetPosition() const {
+    return GetPosition(Display(), PositionInternal());
   }
 
   // Clear utility functions.
@@ -1831,13 +1836,6 @@ class ComputedStyle : public ComputedStyleBase,
       return false;
 
     return true;
-  }
-
-  bool IsDisplayTableRowOrColumnType() const {
-    return Display() == EDisplay::kTableRow ||
-           Display() == EDisplay::kTableRowGroup ||
-           Display() == EDisplay::kTableColumn ||
-           Display() == EDisplay::kTableColumnGroup;
   }
 
   bool HasAutoHorizontalScroll() const {
@@ -2225,9 +2223,33 @@ class ComputedStyle : public ComputedStyleBase,
       const Longhand& color_property,
       bool* is_current_color = nullptr) const;
 
+  // A faster version of VisitedDependentColor() that specializes on the
+  // concrete property class; for the common case of not being inside a link,
+  // can inline the question in function directly. However, it uses more code
+  // space, so only use it on code paths that are actually hot.
+  template <class Property>
+  blink::Color VisitedDependentColorFast(
+      const Property& color_property,
+      bool* is_current_color = nullptr) const {
+    DCHECK(!Property().IsVisited());
+
+    if (InsideLink() != EInsideLink::kInsideVisitedLink) {
+      blink::Color color =
+          color_property.ColorIncludingFallback(false, *this,
+                                                /*is_current_color=*/nullptr);
+      DCHECK(color == VisitedDependentColor(color_property, is_current_color));
+      return color;
+    } else {
+      return VisitedDependentColor(color_property, is_current_color);
+    }
+  }
+
   // -webkit-appearance utility functions.
+  static bool HasEffectiveAppearance(ControlPart effective_appearance) {
+    return effective_appearance != kNoControlPart;
+  }
   bool HasEffectiveAppearance() const {
-    return EffectiveAppearance() != kNoControlPart;
+    return HasEffectiveAppearance(EffectiveAppearance());
   }
   bool IsCheckboxOrRadioPart() const {
     return HasEffectiveAppearance() &&
@@ -2500,7 +2522,17 @@ class ComputedStyle : public ComputedStyleBase,
       const ComputedStyle& old_style,
       const ComputedStyle& new_style);
 
-  bool ShouldForceColor(const StyleColor& unforced_color) const;
+  static bool ShouldForceColor(bool in_forced_colors_mode,
+                               EForcedColorAdjust forced_color_adjust,
+                               const StyleColor& unforced_color) {
+    return in_forced_colors_mode &&
+           forced_color_adjust == EForcedColorAdjust::kAuto &&
+           !unforced_color.IsSystemColorIncludingDeprecated();
+  }
+  bool ShouldForceColor(const StyleColor& unforced_color) const {
+    return ShouldForceColor(InForcedColorsMode(), ForcedColorAdjust(),
+                            unforced_color);
+  }
 
   // A one-element freelist that we can use to get fewer calls to new/delete
   // when recalculating style; the new and delete calls usually come in
@@ -2651,6 +2683,11 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     return *animations;
   }
 
+  // appearance
+  bool HasEffectiveAppearance() const {
+    return ComputedStyle::HasEffectiveAppearance(EffectiveAppearance());
+  }
+
   // backdrop-filter
   FilterOperations& MutableBackdropFilter() {
     DCHECK(BackdropFilterInternal().Get());
@@ -2661,6 +2698,9 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     if (BackdropFilterInternal()->operations_ != ops)
       MutableBackdropFilterInternal()->operations_ = ops;
   }
+  bool HasBackdropFilter() const {
+    return ComputedStyle::HasBackdropFilter(BackdropFilterInternal());
+  }
 
   // background
   FillLayer& AccessBackgroundLayers() { return MutableBackgroundInternal(); }
@@ -2669,6 +2709,9 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
       AccessBackgroundLayers().CullEmptyLayers();
       AccessBackgroundLayers().FillUnsetProperties();
     }
+  }
+  bool HasUrlBackgroundImage() const {
+    return BackgroundInternal().AnyLayerHasUrlImage();
   }
   void ClearBackgroundImage();
 
@@ -2786,6 +2829,26 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   }
   CursorList* Cursors() const { return CursorDataInternal().Get(); }
 
+  // display
+  bool IsDisplayInlineType() const {
+    return ComputedStyle::IsDisplayInlineType(Display());
+  }
+  bool IsDisplayReplacedType() const {
+    return ComputedStyle::IsDisplayReplacedType(Display());
+  }
+  bool IsDisplayMathType() const {
+    return ComputedStyle::IsDisplayMathBox(Display());
+  }
+  bool IsDisplayTableBox() const {
+    return ComputedStyle::IsDisplayTableBox(Display());
+  }
+  bool IsDisplayTableRowOrColumnType() const {
+    return Display() == EDisplay::kTableRow ||
+           Display() == EDisplay::kTableRowGroup ||
+           Display() == EDisplay::kTableColumn ||
+           Display() == EDisplay::kTableColumnGroup;
+  }
+
   // filter
   FilterOperations& MutableFilter() {
     DCHECK(FilterInternal().Get());
@@ -2796,6 +2859,9 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     if (FilterInternal()->operations_ != v)
       MutableFilterInternal()->operations_ = v;
   }
+
+  // float
+  bool IsFloating() const { return Floating() != EFloat::kNone; }
 
   // font
   void SetFontDescription(const FontDescription& v) {
@@ -2943,6 +3009,14 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     SetPerspectiveOrigin(LengthPoint(PerspectiveOrigin().X(), v));
   }
 
+  // position
+  EPosition GetPosition() const {
+    return ComputedStyle::GetPosition(Display(), PositionInternal());
+  }
+  bool HasOutOfFlowPosition() const {
+    return ComputedStyle::HasOutOfFlowPosition(GetPosition());
+  }
+
   // shape-image-threshold
   void SetShapeImageThreshold(float shape_image_threshold) {
     float clamped_shape_image_threshold =
@@ -3063,6 +3137,10 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   bool ShouldPreserveParentColor() const {
     return InForcedColorsMode() &&
            ForcedColorAdjust() == EForcedColorAdjust::kPreserveParentColor;
+  }
+  bool ShouldForceColor(const StyleColor& unforced_color) const {
+    return ComputedStyle::ShouldForceColor(InForcedColorsMode(),
+                                           ForcedColorAdjust(), unforced_color);
   }
 
   StyleColor InitialColorForColorScheme() const {

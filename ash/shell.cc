@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller_impl.h"
+#include "ash/accelerators/accelerator_tracker.h"
 #include "ash/accelerators/ash_accelerator_configuration.h"
 #include "ash/accelerators/ash_focus_manager_factory.h"
 #include "ash/accelerators/magnifier_key_scroller.h"
@@ -35,7 +36,6 @@
 #include "ash/clipboard/clipboard_history_controller_impl.h"
 #include "ash/clipboard/control_v_histogram_recorder.h"
 #include "ash/color_enhancement/color_enhancement_controller.h"
-#include "ash/components/peripheral_notification/peripheral_notification_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/controls/contextual_tooltip.h"
@@ -210,6 +210,7 @@
 #include "chromeos/ash/components/dbus/fwupd/fwupd_client.h"
 #include "chromeos/ash/components/dbus/usb/usbguard_client.h"
 #include "chromeos/ash/components/fwupd/firmware_update_manager.h"
+#include "chromeos/ash/components/peripheral_notification/peripheral_notification_manager.h"
 #include "chromeos/ash/services/assistant/public/cpp/features.h"
 #include "chromeos/dbus/init/initialize_dbus_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
@@ -687,6 +688,7 @@ Shell::~Shell() {
   overlay_filter_.reset();
 
   RemovePreTargetHandler(control_v_histogram_recorder_.get());
+  RemovePreTargetHandler(accelerator_tracker_.get());
   RemovePreTargetHandler(accelerator_filter_.get());
   RemovePreTargetHandler(event_transformation_handler_.get());
   if (back_gesture_event_handler_)
@@ -1265,6 +1267,12 @@ void Shell::Init(
 
   control_v_histogram_recorder_ = std::make_unique<ControlVHistogramRecorder>();
   AddPreTargetHandler(control_v_histogram_recorder_.get());
+
+  // AcceleratorTracker should be placed before AcceleratorFilter to make sure
+  // the accelerators won't be filtered out before getting AcceleratorTracker.
+  accelerator_tracker_ = std::make_unique<AcceleratorTracker>(
+      base::make_span(kAcceleratorTrackerList, kAcceleratorTrackerListLength));
+  AddPreTargetHandler(accelerator_tracker_.get());
 
   accelerator_filter_ = std::make_unique<::wm::AcceleratorFilter>(
       std::make_unique<PreTargetAcceleratorHandler>());

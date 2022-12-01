@@ -8,8 +8,8 @@
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/login/localized_values_builder.h"
 #include "components/strings/grit/components_strings.h"
@@ -318,19 +318,19 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
       {"apnMoreActionsTitle", IDS_SETTINGS_APN_MORE_ACTIONS_TITLE},
       {"apnDetailAddApnDialogTitle", IDS_SETTINGS_ADD_APN_DIALOG_TITLE},
       {"apnDetailAdvancedSettings", IDS_SETTINGS_APN_DIALOG_ADVANCED_SETTING},
-      {"apnDetailAPNTypes", IDS_SETTINGS_APN_DIALOG_APN_TYPES},
-      {"apnDetailAPNTypeDefault",
+      {"apnDetailApnTypes", IDS_SETTINGS_APN_DIALOG_APN_TYPES},
+      {"apnDetailApnTypeDefault",
        IDS_SETTINGS_APN_DIALOG_APN_TYPE_DEFAULT_CHECKBOX},
-      {"apnDetailAPNTypeAttach",
+      {"apnDetailApnTypeAttach",
        IDS_SETTINGS_APN_DIALOG_APN_TYPE_ATTACH_CHECKBOX},
-      {"apnDetailIPType", IDS_SETTINGS_APN_DIALOG_IP_TYPE_LABEL},
+      {"apnDetailIpType", IDS_SETTINGS_APN_DIALOG_IP_TYPE_LABEL},
       {"apnDetailAuthType", IDS_SETTINGS_APN_DIALOG_AUTH_TYPE_LABEL},
       {"apnDetailTypeAuto", IDS_SETTINGS_APN_DIALOG_AUTO},
       {"apnDetailAuthTypePAP", IDS_SETTINGS_APN_DIALOG_AUTH_TYPE_PAP},
       {"apnDetailAuthTypeCHAP", IDS_SETTINGS_APN_DIALOG_AUTH_TYPE_CHAP},
-      {"apnDetailIPTypeIPV4", IDS_SETTINGS_APN_DIALOG_IP_TYPE_IPV4},
-      {"apnDetailIPTypeIPV6", IDS_SETTINGS_APN_DIALOG_IP_TYPE_IPV6},
-      {"apnDetailIPTypeIPV4_IPV6", IDS_SETTINGS_APN_DIALOG_IP_TYPE_IPV4_IPV6},
+      {"apnDetailIpTypeIpv4", IDS_SETTINGS_APN_DIALOG_IP_TYPE_IPV4},
+      {"apnDetailIpTypeIpv6", IDS_SETTINGS_APN_DIALOG_IP_TYPE_IPV6},
+      {"apnDetailIpTypeIpv4_Ipv6", IDS_SETTINGS_APN_DIALOG_IP_TYPE_IPV4_IPV6},
       {"apnAutoDetected", IDS_SETTINGS_APN_AUTO_DETECTED},
       {"hidePassword", IDS_SETTINGS_PASSWORD_HIDE},
       {"showPassword", IDS_SETTINGS_PASSWORD_SHOW},

@@ -10,11 +10,11 @@ import '//resources/cr_elements/cr_checkbox/cr_checkbox.js';
 import '//resources/js/action_link.js';
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../../components/oobe_icons.m.js';
-import '../../components/common_styles/common_styles.m.js';
+import '../../components/common_styles/oobe_common_styles.m.js';
 import '../../components/common_styles/oobe_dialog_host_styles.m.js';
 import '../../components/buttons/oobe_text_button.js';
 
-import {announceAccessibleMessage} from '//resources/js/util.js';
+import {announceAccessibleMessage} from '//resources/ash/common/util.js';
 import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.m.js';

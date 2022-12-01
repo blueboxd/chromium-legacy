@@ -20,6 +20,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat;
 import androidx.core.widget.ImageViewCompat;
 
 import com.google.android.material.tabs.TabLayout;
@@ -163,9 +164,13 @@ public class SectionHeaderView extends LinearLayout {
             actionTitleId = R.string.feed_options_dropdown_description;
         }
 
-        ViewCompat.removeAccessibilityAction(tab.view, mActionId);
-        mActionId = ViewCompat.addAccessibilityAction(
-                tab.view, getResources().getString(actionTitleId), (view, arguments) -> {
+        tab.view.setOnLongClickListener(v -> {
+            mTabListener.onTabReselected(tab);
+            return true;
+        });
+
+        ViewCompat.replaceAccessibilityAction(tab.view, AccessibilityActionCompat.ACTION_LONG_CLICK,
+                getResources().getString(actionTitleId), (view, arguments) -> {
                     mTabListener.onTabReselected(tab);
                     return true;
                 });
@@ -282,8 +287,11 @@ public class SectionHeaderView extends LinearLayout {
             // Sets up a11y and ensures indicator is pointing in the right direction.
             updateDrawable(index, false);
         } else {
+            tab.view.setOnLongClickListener(null);
+            tab.view.setLongClickable(false);
             // If not visible, remove the expand/collapse actions.
-            ViewCompat.removeAccessibilityAction(tab.view, mActionId);
+            ViewCompat.replaceAccessibilityAction(
+                    tab.view, AccessibilityActionCompat.ACTION_LONG_CLICK, null, null);
         }
     }
 
@@ -456,7 +464,7 @@ public class SectionHeaderView extends LinearLayout {
 
     /** Shows an IPH on the feed section header title. */
     public void showHeaderIph(UserEducationHelper helper) {
-        helper.requestShowIPH(new IPHCommandBuilder(mTitleView.getContext().getResources(),
+        helper.requestShowIPH(new IPHCommandBuilder(getContext().getResources(),
                 FeatureConstants.FEATURE_NOTIFICATION_GUIDE_NTP_SUGGESTION_CARD_HELP_BUBBLE_FEATURE,
                 R.string.feature_notification_guide_tooltip_message_ntp_suggestion_card,
                 R.string.feature_notification_guide_tooltip_message_ntp_suggestion_card)
@@ -467,7 +475,7 @@ public class SectionHeaderView extends LinearLayout {
     /** Shows an IPH on the web feed tab in the section header. */
     public void showWebFeedAwarenessIph(
             UserEducationHelper helper, int tabIndex, Runnable scroller) {
-        helper.requestShowIPH(new IPHCommandBuilder(mTitleView.getContext().getResources(),
+        helper.requestShowIPH(new IPHCommandBuilder(getContext().getResources(),
                 FeatureConstants.WEB_FEED_AWARENESS_FEATURE, R.string.web_feed_awareness,
                 R.string.web_feed_awareness)
                                       .setAnchorView(getTabAt(tabIndex).view)

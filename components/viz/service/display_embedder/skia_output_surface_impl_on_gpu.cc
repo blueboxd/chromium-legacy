@@ -70,6 +70,7 @@
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/progress_reporter.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_WIN)
@@ -375,6 +376,8 @@ SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
     GrFlushInfo flush_info = {};
     gpu::AddVulkanCleanupTaskForSkiaFlush(context_state_->vk_context_provider(),
                                           &flush_info);
+    gl::ScopedProgressReporter scoped_process_reporter(
+        context_state_->progress_reporter());
     gr_context()->flush(flush_info);
     gr_context()->submit(true);
   }
@@ -484,12 +487,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
 
     // Draw will only fail if the SkSurface and SkDDL are incompatible.
     bool draw_success = scoped_output_device_paint_->Draw(ddl);
-#if BUILDFLAG(IS_OZONE)
-    if (!draw_success)
-      DLOG(ERROR) << "output_sk_surface()->draw() failed.";
-#else
     DCHECK(draw_success);
-#endif  // USE_OZONE
 
     destroy_after_swap_.emplace_back(std::move(ddl));
 
@@ -692,6 +690,8 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
       gpu::AddCleanupTaskForSkiaFlush(std::move(on_finished), &flush_info);
     }
 
+    gl::ScopedProgressReporter scoped_process_reporter(
+        context_state_->progress_reporter());
     auto end_state = scoped_access->TakeEndState();
     auto result = surface->flush(flush_info, end_state.get());
     if (result != GrSemaphoresSubmitted::kYes &&
@@ -918,6 +918,8 @@ bool SkiaOutputSurfaceImplOnGpu::FlushSurface(
   flush_info.fFinishedProc = finished_proc;
   flush_info.fFinishedContext = finished_context;
   gpu::AddVulkanCleanupTaskForSkiaFlush(vulkan_context_provider_, &flush_info);
+  gl::ScopedProgressReporter scoped_process_reporter(
+      context_state_->progress_reporter());
   GrSemaphoresSubmitted flush_result =
       surface->flush(flush_info, end_state.get());
   return flush_result == GrSemaphoresSubmitted::kYes || end_semaphores.empty();
@@ -1942,6 +1944,8 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffersInternal(
       gpu::ShouldVulkanSyncCpuForSkiaSubmit(vulkan_context_provider_);
 
   ResetStateOfImages();
+  gl::ScopedProgressReporter scoped_process_reporter(
+      context_state_->progress_reporter());
   output_device_->Submit(
       sync_cpu, base::BindOnce(&SkiaOutputSurfaceImplOnGpu::PostSubmit,
                                base::Unretained(this), std::move(frame)));

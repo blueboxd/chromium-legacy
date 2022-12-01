@@ -211,6 +211,10 @@ crbug.com/1380112 external/wpt/html/semantics/popovers/popover-anchor-display.te
 
 # ====== Popover and Anchor Positioning failures to here ======
 
+# Disable tests for DevTools frontend CL (crrev.com/c/4044821)
+crbug.com/1383735 http/tests/devtools/elements/styles-1/add-new-rule-inline-style-csp.js [ Failure Pass ]
+crbug.com/1383735 http/tests/devtools/modify-cross-domain-rule.js [ Failure Pass ]
+
 # Sheriff on 2020-09-03
 crbug.com/1124352 media/picture-in-picture/clear-after-request.html [ Crash Pass ]
 crbug.com/1124352 media/picture-in-picture/controls/picture-in-picture-button.html [ Crash Pass ]
@@ -2361,8 +2365,6 @@ crbug.com/876485 fast/performance/performance-measure-null-exception.html [ Fail
 crbug.com/630597 external/wpt/css/css-images/image-set/image-set-rendering.html [ Failure ]
 crbug.com/630597 external/wpt/css/css-images/image-set/image-set-content-rendering.html [ Failure ]
 
-crbug.com/604875 external/wpt/css/css-images/tiled-gradients.html [ Failure ]
-
 # CSS Color 4 interpolations
 crbug.com/1362022 external/wpt/css/css-images/gradient/gradient-eval-004.html [ Failure ]
 crbug.com/1362022 external/wpt/css/css-images/gradient/gradient-eval-006.html [ Failure ]
@@ -3013,7 +3015,6 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-19
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-194.xht [ Failure ]
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-195.xht [ Failure ]
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-196.xht [ Failure ]
-crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-197.xht [ Failure ]
 
 # Custom-elements
 crbug.com/1351482 external/wpt/custom-elements/form-associated/ElementInternals-target-element-is-held-strongly.html [ Timeout ]
@@ -7600,7 +7601,6 @@ crbug.com/1378078 [ Debug Linux ] media/controls/slow-doubletap.html [ Failure ]
 crbug.com/1385491 [ Win ] external/wpt/selection/user-select-on-input-and-contenteditable.html [ Skip Timeout ]
 crbug.com/1385538 [ Win ] http/tests/serviceworker/postmessage-cross-process.html [ Failure ]
 crbug.com/1385538 [ Linux ] http/tests/serviceworker/postmessage-cross-process.html [ Failure ]
-crbug.com/1377056 [ Debug Linux ] payments/payment-request-interface.html [ Failure ]
 crbug.com/1377056 [ Mac ] payments/payment-request-interface.html [ Failure ]
 crbug.com/1385919 [ Win ] external/wpt/css/selectors/focus-visible-018-2.html [ Skip Timeout ]
 crbug.com/1385919 [ Win ] external/wpt/css/selectors/focus-visible-002.html [ Skip Timeout ]
@@ -7614,12 +7614,12 @@ crbug.com/1385929 [ Win ] editing/selection/mouse/mouse-selection-horizontal.htm
 crbug.com/1392480 [ Win ] wpt_internal/hid/hidDevice_reports.https.window.html [ Timeout ]
 crbug.com/1386214 [ Win ] external/wpt/html/semantics/forms/the-input-element/selection-pointer.html [ Skip Timeout ]
 crbug.com/1386214 [ Win ] external/wpt/html/semantics/forms/the-input-element/show-picker-user-gesture.html [ Skip Timeout ]
-crbug.com/1392516 [ Win ] pointer-lock/wheel-event-cancelable.html [ Timeout ]
 crbug.com/1392517 [ Debug Linux ] http/tests/serviceworker/postmessage-after-terminate.html [ Failure ]
 crbug.com/1392781 [ Win ] http/tests/fetch/serviceworker-proxied/thorough/auth-base-https-other-https.html [ Crash Failure Pass Timeout ]
 crbug.com/1392781 [ Win ] http/tests/fetch/serviceworker/thorough/cookie-base-https-other-https.html [ Crash Failure Pass Timeout ]
 crbug.com/1392781 [ Win ] http/tests/fetch/window/thorough/auth-base-https-other-https.html [ Crash Failure Pass Timeout ]
 crbug.com/1375147 [ Win ] virtual/media-foundation-for-clear-dcomp/media/controls/singletap-on-overlay-closes-overflow-menu.html [ Failure ]
+crbug.com/1394559 [ Win10.20h2 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/unfenced-top.https.html [ Failure ]
 
 # Sheriff 2022-10-07
 crbug.com/1372556 [ Linux ] external/wpt/css/css-text/text-transform/text-transform-capitalize-* [ Failure Pass ]
@@ -7628,14 +7628,6 @@ crbug.com/1370050 http/tests/devtools/sources/debugger-ui/debugger-save-to-temp-
 
 crbug.com/1279220 [ Win ] virtual/percent-based-scrolling/fast/scrolling/scrollbars/touch-scrolling-on-root-scrollbar.html [ Pass Timeout ]
 crbug.com/1279220 [ Linux ] fast/scrolling/non-composited-scroller-in-position-fixed-scroller.html [ Failure Pass ]
-
-# Temporarily disable tests to show storage keys in DOMStorage instead of origin
-crbug.com/1349331 http/tests/devtools/application-panel/resources-panel-iframe-idb.js [ Crash Failure Pass Timeout ]
-crbug.com/1349331 http/tests/devtools/application-panel/resources-panel-on-navigation.js [ Crash Failure Pass Timeout ]
-crbug.com/1349331 http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Crash Failure Pass Timeout ]
-crbug.com/1349331 http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Crash Failure Pass Timeout ]
-crbug.com/1349331 http/tests/devtools/application-panel/resources-panel-websql.js [ Crash Failure Pass Timeout ]
-crbug.com/1349331 http/tests/devtools/oopif/oopif-storage.js [ Crash Failure Pass Timeout ]
 
 # Sheriff 2022-10-12
 crbug.com/1367495 [ Debug Linux ] virtual/threaded-no-composited-antialiasing/animations/direction-and-fill/animation-direction-reverse-timing-functions.html [ Failure Pass ]
@@ -8091,7 +8083,6 @@ crbug.com/1382865 virtual/storage-access-api/external/wpt/storage-access-api/req
 
 # Missing priority hints interfaces.
 crbug.com/1345601 external/wpt/priority-hints/iframe-attr-fetchpriority.tentative.html [ Failure ]
-crbug.com/1301942 external/wpt/priority-hints/service-worker-fetch-request-priority.tentative.https.html [ Failure ]
 
 # Sheriff 2022-11-31
 crbug.com/1383527 [ Mac ] http/tests/devtools/indexeddb/resources-panel.js [ Failure ]
@@ -8100,9 +8091,6 @@ crbug.com/1385483 [ Linux ] http/tests/devtools/indexeddb/resources-panel.js [ F
 # Sheriff 2022-11-15
 crbug.com/1383990 [ Mac ] external/wpt/html/dom/idlharness.worker.html [ Failure Skip ]
 crbug.com/1383989 [ Mac ] external/wpt/html/webappapis/scripting/events/event-handler-attributes-body-window.html [ Failure Skip ]
-
-# Temporarily disable tests to land background service changes.
-crbug.com/1382392 http/tests/inspector-protocol/background-services/background-services-events.js [ Failure Skip ]
 
 # Tests disabled for the memory measurement API.
 crbug.com/1085129 virtual/force-eager/external/wpt/measure-memory/detached.https.window.html [ Skip Timeout ]
@@ -8139,9 +8127,6 @@ crbug.com/1393067 [ Mac ] virtual/gpu-rasterization/images/23-55.html [ Failure 
 crbug.com/1393067 [ Mac ] virtual/gpu-rasterization/images/55.html [ Failure Pass ]
 crbug.com/1393056 [ Mac ] inspector-protocol/debugger/debugger-evaluate-in-worker-while-pause-in-page.js [ Failure Pass Timeout ]
 
-# Temporarily disable test to land BackgroundServices frontend CL
-crbug.com/1382392 http/tests/devtools/background-services/background-service-grid.js [ Failure Skip ]
-
 # Temporarily disable test to land CPU-backed canvas switching change
 crbug.com/1385633 [ Linux ] virtual/oopr-canvas2d/fast/canvas/check-stale-putImageData.html [ Failure ]
 
@@ -8171,6 +8156,3 @@ crbug.com/1394361 http/tests/inspector-protocol/tracing/interactions.js [ Failur
 
 # Sheriff 2022-11-29
 crbug.com/1394524 external/wpt/html/semantics/forms/the-selectmenu-element/selectmenu-form-state-restore.tentative.html [ Failure Pass ]
-
-# Temporarily disable test to roll protocol
-crbug.com/1382392 http/tests/devtools/elements/styles-4/styles-keyframes-display-none.js [ Failure Skip ]

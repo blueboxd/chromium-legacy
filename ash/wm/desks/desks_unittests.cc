@@ -173,15 +173,6 @@ bool DoesActiveDeskContainWindow(aura::Window* window) {
                         window);
 }
 
-OverviewGrid* GetOverviewGridForRoot(aura::Window* root) {
-  DCHECK(root->IsRootWindow());
-
-  auto* overview_controller = Shell::Get()->overview_controller();
-  DCHECK(overview_controller->InOverviewSession());
-
-  return overview_controller->overview_session()->GetGridWithRootWindow(root);
-}
-
 void CloseDeskFromMiniView(const DeskMiniView* desk_mini_view,
                            ui::test::EventGenerator* event_generator) {
   DCHECK(desk_mini_view);
@@ -1520,7 +1511,7 @@ TEST_P(DesksTest, AppListStaysOpenInClamshell) {
 
   // Open the app list.
   auto* app_list_controller = Shell::Get()->app_list_controller();
-  app_list_controller->ShowAppList();
+  app_list_controller->ShowAppList(AppListShowSource::kSearchKey);
   ASSERT_TRUE(app_list_controller->IsVisible());
 
   // Switch back to desk 1. Test that the app list is still open.
@@ -3690,7 +3681,7 @@ TEST_P(DesksTest, PerDeskZOrder) {
 
           // Retrieves the mirrored layers `mirrored_layers` of application
           // windows for `desk`. The root of `layer_tree_owner` is a layer that
-          // has only one child, and the only child acts as the parnet of all
+          // has only one child, and the only child acts as the parent of all
           // the mirrored layers of application windows.
           const ui::LayerTreeOwner* layer_tree_owner =
               DesksTestApi::GetMirroredContentsLayerTreeForRootAndDesk(root,
@@ -7105,7 +7096,7 @@ TEST_P(PersistentDesksBarTest, BarStaysOpenWhenLauncherOpens) {
   EXPECT_TRUE(IsWidgetVisible());
 
   // The bar should still exist when the app list is opened.
-  app_list_controller->ShowAppList();
+  app_list_controller->ShowAppList(AppListShowSource::kSearchKey);
   EXPECT_TRUE(GetBarWidget());
   EXPECT_TRUE(IsWidgetVisible());
 

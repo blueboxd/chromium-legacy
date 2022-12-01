@@ -1262,7 +1262,10 @@ void WizardController::OnConsolidatedConsentScreenExit(
   }
 }
 
-void WizardController::OnCryptohomeRecoverySetupScreenExit() {
+void WizardController::OnCryptohomeRecoverySetupScreenExit(
+    CryptohomeRecoverySetupScreen::Result result) {
+  OnScreenExit(CryptohomeRecoverySetupScreenView::kScreenId,
+               CryptohomeRecoverySetupScreen::GetResultString(result));
   ShowFingerprintSetupScreen();
 }
 
@@ -1361,6 +1364,13 @@ void WizardController::OnThemeSelectionScreenExit(
     ThemeSelectionScreen::Result result) {
   OnScreenExit(ThemeSelectionScreenView::kScreenId,
                ThemeSelectionScreen::GetResultString(result));
+
+  // Stop CHOOBE after exiting the last optional screen.
+  if (chromeos::features::IsOobeChoobeEnabled()) {
+    GetChoobeFlowController()->Stop(
+        *ProfileManager::GetActiveUserProfile()->GetPrefs());
+  }
+
   ShowMarketingOptInScreen();
 }
 
@@ -1994,6 +2004,13 @@ void WizardController::OnOobeFlowFinished() {
   known_user.SetOnboardingCompletedVersion(account_id,
                                            version_info::GetVersion());
   known_user.RemovePendingOnboardingScreen(account_id);
+
+  if (chromeos::features::IsOobeChoobeEnabled()) {
+    // Additional cleanup of the pref kChoobeSelectedScreens in case it was not
+    // already cleared.
+    ProfileManager::GetActiveUserProfile()->GetPrefs()->ClearPref(
+        prefs::kChoobeSelectedScreens);
+  }
 
   // Launch browser and delete login host controller.
   content::GetUIThreadTaskRunner({})->PostTask(

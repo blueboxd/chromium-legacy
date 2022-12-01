@@ -8,6 +8,7 @@ import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.swipeUp;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.PreferenceMatchers.withKey;
 import static androidx.test.espresso.matcher.RootMatchers.withDecorView;
@@ -1369,6 +1370,31 @@ public class SiteSettingsTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+    public void testOnlyExpectedExceptionsSiteData() {
+        createCookieExceptions();
+        SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.SITE_DATA);
+
+        onView(withText("primary.com")).check(matches(isDisplayed()));
+        onView(withText("secondary.com")).check(doesNotExist());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+    public void testOnlyExpectedExceptionsThirdPartyCookies() {
+        createCookieExceptions();
+        SiteSettingsTestUtils.startSiteSettingsCategory(
+                SiteSettingsCategory.Type.THIRD_PARTY_COOKIES);
+
+        onView(withText("primary.com")).check(doesNotExist());
+        onView(withText("secondary.com")).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
     @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_FPS_UI)
     public void testExpectedCookieButtonsCheckedWhenFPSUiEnabled() {
         SettingsActivity settingsActivity =
@@ -2356,6 +2382,36 @@ public class SiteSettingsTest {
     public void testRenderProtectedMediaPage() throws Exception {
         renderCategoryPage(
                 SiteSettingsCategory.Type.PROTECTED_MEDIA, "site_settings_protected_media_page");
+    }
+
+    /** Test case for checking that settings with binary toggles are disabled by policy.*/
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Policies.Add({
+        @Policies.Item(key = "DefaultJavaScriptSetting", string = "2")
+        , @Policies.Item(key = "DefaultPopupsSetting", string = "2"),
+                @Policies.Item(key = "DefaultGeolocationSetting", string = "2")
+    })
+    public void
+    testAllTwoStateToggleDisabledByPolicy() {
+        testTwoStateToggleDisabledByPolicy(SiteSettingsCategory.Type.JAVASCRIPT);
+        testTwoStateToggleDisabledByPolicy(SiteSettingsCategory.Type.POPUPS);
+        testTwoStateToggleDisabledByPolicy(SiteSettingsCategory.Type.DEVICE_LOCATION);
+        // TODO(crbug/1385889): add a test for sensors once crash in the sensors settings page is
+        // resolved.
+    }
+
+    public void testTwoStateToggleDisabledByPolicy(@SiteSettingsCategory.Type int type) {
+        final SettingsActivity settingsActivity =
+                SiteSettingsTestUtils.startSiteSettingsCategory(type);
+        SingleCategorySettings singleCategorySettings =
+                (SingleCategorySettings) settingsActivity.getMainFragment();
+        ChromeSwitchPreference binaryToggle =
+                (ChromeSwitchPreference) singleCategorySettings.findPreference(
+                        SingleCategorySettings.BINARY_TOGGLE_KEY);
+
+        Assert.assertFalse(binaryToggle.isEnabled());
     }
 
     /**

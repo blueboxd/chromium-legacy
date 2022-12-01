@@ -91,6 +91,12 @@ const char kBrokerFileOperationsOnDiskCacheInNetworkServiceDescription[] =
     "Broker file operations on disk cache running in the Network Service. This "
     "is no-op when the Network Service is running in the browser process.";
 
+const char kCertDualVerificationEnabledName[] = "Cert Dual Verification";
+const char kCertDualVerificationEnabledDescription[] =
+    "Runs both platform Cert Verifer and Chrome Cert Verifier, reporting "
+    "any differences to Chrome if Safe Browsing Extended Reporting is "
+    "enabled.";
+
 const char kClipboardUnsanitizedContentName[] =
     "Clipboard unsanitized read and write";
 const char kClipboardUnsanitizedContentDescription[] =
@@ -943,11 +949,6 @@ const char kEnableTLS13EarlyDataDescription[] =
     "This option enables TLS 1.3 Early Data, allowing GET requests to be sent "
     "during the handshake when resuming a connection to a compatible TLS 1.3 "
     "server.";
-
-const char kEnhancedNetworkVoicesName[] = "Enhanced network voices";
-const char kEnhancedNetworkVoicesDescription[] =
-    "This option enables high-quality, network-based voices in "
-    "Select-to-speak.";
 
 const char kAccessibilityServiceName[] = "Experimental Accessibility Service";
 const char kAccessibilityServiceDescription[] =

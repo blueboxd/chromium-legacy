@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/webui/settings/about_handler.h"
 #include "chrome/browser/ui/webui/settings/accessibility_main_handler.h"
 #include "chrome/browser/ui/webui/settings/appearance_handler.h"
-#include "chrome/browser/ui/webui/settings/autofill_assistant_handler.h"
 #include "chrome/browser/ui/webui/settings/browser_lifetime_handler.h"
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
 #include "chrome/browser/ui/webui/settings/extension_control_handler.h"
@@ -111,8 +110,6 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/arc/arc_util.h"
-#include "ash/components/phonehub/phone_hub_manager.h"
-#include "ash/constants/ash_features.h"
 #include "ash/webui/eche_app_ui/eche_app_manager.h"
 #include "chrome/browser/ash/account_manager/account_apps_availability.h"
 #include "chrome/browser/ash/account_manager/account_apps_availability_factory.h"
@@ -132,6 +129,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/ash/components/account_manager/account_manager_factory.h"
 #include "chromeos/ash/components/login/auth/password_visibility_utils.h"
+#include "chromeos/ash/components/phonehub/phone_hub_manager.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
 #include "components/user_manager/user.h"
@@ -147,6 +145,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/ui/webui/certificate_provisioning_ui_handler.h"
+#include "chromeos/constants/chromeos_features.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(USE_NSS_CERTS)
@@ -327,6 +326,12 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("userCannotManuallyEnterPassword", false);
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
+#if BUILDFLAG(IS_CHROMEOS)
+  html_source->AddBoolean(
+      "useSystemAuthenticationForPasswordManager",
+      chromeos::features::IsPasswordManagerSystemAuthenticationEnabled());
+#endif
+
   bool show_privacy_guide =
       !chrome::ShouldDisplayManagedUi(profile) && !profile->IsChild();
   html_source->AddBoolean("showPrivacyGuide", show_privacy_guide);
@@ -392,11 +397,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 
   // Add the metrics handler to write uma stats.
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
-  // Add the handler for personalization options, e.g. Autofill Assistant
-  // consent.
-  web_ui->AddMessageHandler(std::make_unique<AutofillAssistantHandler>(
-      std::vector<int>{IDS_SETTINGS_AUTOFILL_ASSISTANT_PREF,
-                       IDS_SETTINGS_AUTOFILL_ASSISTANT_PREF_DESC}));
 
   webui::SetupWebUIDataSource(
       html_source, base::make_span(kSettingsResources, kSettingsResourcesSize),

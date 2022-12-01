@@ -1064,7 +1064,6 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal" ],
       inherited: true,
       font: true,
-      runtime_flag: "FontPalette",
       converter: "ConvertFontPalette",
       type_name: "FontPalette",
       priority: "High",
@@ -5721,6 +5720,7 @@
       converter: "ConvertStyleColor",
       style_builder_template: "color",
       valid_for_highlight_legacy: true,
+      valid_for_highlight: true,
     },
     {
       name: "-webkit-text-stroke-width",
@@ -5732,6 +5732,7 @@
       type_name: "float",
       converter: "ConvertTextStrokeWidth",
       valid_for_highlight_legacy: true,
+      valid_for_highlight: true,
     },
     {
       name: "-webkit-transform-origin-x",
@@ -6480,13 +6481,11 @@
       name: "base-palette",
       is_descriptor: true,
       is_property: false,
-      runtime_flag: "FontPalette",
     },
     {
       name: "override-colors",
       is_descriptor: true,
       is_property: false,
-      runtime_flag: "FontPalette",
     },
 
     // Shorthands

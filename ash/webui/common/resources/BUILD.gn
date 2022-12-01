@@ -15,6 +15,7 @@ assert(is_chromeos_ash)
 
 preprocessed_dir = "preprocessed"
 preprocessed_manifest = "preprocessed_manifest.json"
+preprocessed_generated_manifest = "preprocessed_generated_manifest.json"
 
 web_component_files = [
   "keyboard_diagram.js",
@@ -111,6 +112,7 @@ non_web_component_files = [
   "cr_picture/webcam_utils.js",
   "cr_policy_indicator_behavior.js",
   "cr_scrollable_behavior.js",
+  "event_target.js",
   "event_tracker.js",
   "focus_row_js.js",
   "focus_row_behavior.js",
@@ -142,6 +144,7 @@ non_web_component_files = [
   "store/store_client.js",
   "traffic_counters/traffic_counters_adapter.js",
   "quick_unlock/lock_screen_constants.js",
+  "util.js",
   "web_ui_listener_behavior.js",
 ]
 
@@ -187,6 +190,28 @@ preprocess_if_expr("preprocess") {
   out_manifest = "$target_gen_dir/$preprocessed_manifest"
   in_files = non_web_component_files + web_component_files + icons_html_files +
              html_files + css_files
+}
+
+preprocess_if_expr("preprocess_ts_generated") {
+  deps = [ "hotspot:build_ts" ]
+  in_folder = "$target_gen_dir"
+  out_folder = "$target_gen_dir/$preprocessed_dir"
+  out_manifest = "$target_gen_dir/$preprocessed_generated_manifest"
+  in_files = [
+    "hotspot/cros_hotspot_config.js",
+    "hotspot/fake_hotspot_config.js",
+    "hotspot/cros_hotspot_config.mojom-webui.js",
+  ]
+}
+
+copy("copy_generated_dts_files") {
+  deps = [ "hotspot:build_ts" ]
+  sources = [
+    "$target_gen_dir/hotspot/cros_hotspot_config.d.ts",
+    "$target_gen_dir/hotspot/cros_hotspot_config.mojom-webui.d.ts",
+    "$target_gen_dir/hotspot/fake_hotspot_config.d.ts",
+  ]
+  outputs = [ "$target_gen_dir/$preprocessed_dir/hotspot/{{source_file_part}}" ]
 }
 
 html_to_wrapper("html_wrapper_files") {
@@ -266,8 +291,14 @@ generate_grd("build_grdp") {
     "network_health/test_warning.png",
   ]
   input_files_base_dir = rebase_path(".", "//")
-  public_deps = [ ":preprocess" ]
-  manifest_files = [ "$target_gen_dir/$preprocessed_manifest" ]
+  public_deps = [
+    ":preprocess",
+    ":preprocess_ts_generated",
+  ]
+  manifest_files = [
+    "$target_gen_dir/$preprocessed_manifest",
+    "$target_gen_dir/$preprocessed_generated_manifest",
+  ]
   grd_prefix = "ash_common"
   out_grd = "$target_gen_dir/${grd_prefix}_resources.grdp"
   resource_path_prefix = "ash/common"
@@ -290,6 +321,7 @@ generate_definitions_js_files = [
   "cr_picture/icons.html.js",
   "cr_picture/png.js",
   "cr_picture/webcam_utils.js",
+  "event_target.js",
   "event_tracker.js",
   "focus_row_js.js",
   "focus_without_ink_js.js",
@@ -303,6 +335,7 @@ generate_definitions_js_files = [
   "quick_unlock/pin_keyboard_icons.html.js",
   "store/store.js",
   "store/store_client.js",
+  "util.js",
 ]
 
 ts_definitions("generate_definitions") {
@@ -312,6 +345,7 @@ ts_definitions("generate_definitions") {
   deps = [ "//ui/webui/resources:library" ]
   extra_deps = [
     ":copy_checked_in_dts_files",
+    ":copy_generated_dts_files",
     ":css_wrapper_files",
     ":html_wrapper_files",
     ":preprocess",
@@ -459,6 +493,9 @@ js_library("cr_scrollable_behavior") {
   ]
 }
 
+js_library("event_target") {
+}
+
 js_library("event_tracker") {
 }
 
@@ -473,8 +510,8 @@ js_library("fake_method_resolver") {
 js_library("focus_row_js") {
   deps = [
     ":event_tracker",
+    ":util",
     "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:util",
   ]
 }
 
@@ -566,4 +603,8 @@ js_library("web_ui_listener_behavior") {
 
 js_library("webui_resource_test") {
   externs_list = [ "//ui/webui/resources/js/dom_automation_controller.js" ]
+}
+
+js_library("util") {
+  deps = [ "//ui/webui/resources/js:assert" ]
 }

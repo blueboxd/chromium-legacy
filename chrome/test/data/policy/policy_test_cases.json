@@ -15126,49 +15126,7 @@
   },
 
   "AssistantWebEnabled": {
-    "os": [
-      "win",
-      "linux",
-      "mac",
-      "chromeos_ash",
-      "chromeos_lacros",
-      "fuchsia",
-      "android"
-    ],
-    "can_be_recommended": true,
-    "policy_pref_mapping_tests": [
-      {
-        "note": "Checking default value (no policies set).",
-        "policies": {},
-        "prefs": {
-          "autofill_assistant.enabled": {
-            "default_value": true
-          }
-        }
-      },
-      {
-        "note": "Enabling by policy",
-        "policies": {
-          "AssistantWebEnabled": true
-        },
-        "prefs": {
-          "autofill_assistant.enabled": {
-            "value": true
-          }
-        }
-      },
-      {
-        "note": "Disabling by policy",
-        "policies": {
-          "AssistantWebEnabled": false
-        },
-        "prefs": {
-          "autofill_assistant.enabled": {
-            "value": false
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
 
   "VoiceInteractionContextEnabled": {
@@ -19864,6 +19822,41 @@
         "policies": {},
         "prefs": {
           "ash.floating_workspace_enabled": {
+            "default_value": false
+          }
+        }
+      }
+    ]
+  },
+  "FloatingWorkspaceV2Enabled": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "FloatingWorkspaceV2Enabled": true
+        },
+        "prefs": {
+          "ash.floating_workspace_v2_enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "FloatingWorkspaceV2Enabled": false
+        },
+        "prefs": {
+          "ash.floating_workspace_v2_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "ash.floating_workspace_v2_enabled": {
             "default_value": false
           }
         }

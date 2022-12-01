@@ -257,12 +257,6 @@ public final class ChromePreferenceKeys {
     public static final String DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING =
             "Chrome.RequestDesktopSiteGlobalSetting.DefaultEnabled";
     /**
-     * Indicates whether an opt-out message should be shown after the desktop site global setting
-     * was enabled by default for a device.
-     */
-    public static final String DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE =
-            "Chrome.RequestDesktopSiteGlobalSetting.DefaultEnabledShowMessage";
-    /**
      * Indicates whether the device qualifies for default-enabling the desktop site global setting.
      */
     public static final String DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT =
@@ -273,12 +267,6 @@ public final class ChromePreferenceKeys {
      */
     public static final String DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_COHORT =
             "Chrome.RequestDesktopSiteGlobalSetting.OptInMessageCohort";
-    /**
-     * Indicates whether an opt-in message was shown for the desktop site global setting based on
-     * device conditions.
-     */
-    public static final String DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_SHOWN =
-            "Chrome.RequestDesktopSiteGlobalSetting.OptInMessageShown";
     /**
      * Indicates whether the desktop site global setting was enabled prior to downgrade of desktop
      * site domain level exceptions.
@@ -1079,12 +1067,10 @@ public final class ChromePreferenceKeys {
                 DEFAULT_BROWSER_PROMO_PROMOED_COUNT,
                 DEFAULT_BROWSER_PROMO_SESSION_COUNT,
                 DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING,
-                DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_SHOW_MESSAGE,
                 DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT,
                 DESKTOP_SITE_EXCEPTIONS_DOWNGRADE_GLOBAL_SETTING_ENABLED,
                 DESKTOP_SITE_EXCEPTIONS_DOWNGRADE_TAB_SETTING_SET,
                 DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_COHORT,
-                DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_SHOWN,
                 DOWNLOAD_INTERSTITIAL_DOWNLOAD_PENDING_REMOVAL,
                 EXPLORE_OFFLINE_CONTENT_AVAILABILITY_STATUS,
                 FEED_ARTICLES_LIST_VISIBLE,

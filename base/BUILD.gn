@@ -859,8 +859,6 @@ component("base") {
     "task/thread_pool/thread_group.h",
     "task/thread_pool/thread_group_impl.cc",
     "task/thread_pool/thread_group_impl.h",
-    "task/thread_pool/thread_group_native.cc",
-    "task/thread_pool/thread_group_native.h",
     "task/thread_pool/thread_pool_impl.cc",
     "task/thread_pool/thread_pool_impl.h",
     "task/thread_pool/thread_pool_instance.cc",
@@ -1129,8 +1127,6 @@ component("base") {
       "synchronization/lock_impl_win.cc",
       "synchronization/waitable_event_watcher_win.cc",
       "synchronization/waitable_event_win.cc",
-      "task/thread_pool/thread_group_native_win.cc",
-      "task/thread_pool/thread_group_native_win.h",
       "threading/platform_thread_win.cc",
       "threading/platform_thread_win.h",
       "threading/thread_local_storage_win.cc",
@@ -1348,8 +1344,6 @@ component("base") {
       "strings/sys_string_conversions_mac.mm",
       "synchronization/waitable_event_mac.cc",
       "synchronization/waitable_event_watcher_mac.cc",
-      "task/thread_pool/thread_group_native_mac.h",
-      "task/thread_pool/thread_group_native_mac.mm",
       "threading/platform_thread_mac.mm",
       "threading/atomic.c",
     ]
@@ -1425,6 +1419,8 @@ component("base") {
       "process/process_linux.cc",
       "process/process_metrics_linux.cc",
       "threading/platform_thread_linux.cc",
+      "threading/thread_type_delegate.cc",
+      "threading/thread_type_delegate.h",
     ]
   }
 
@@ -1747,8 +1743,15 @@ component("base") {
       sources += [
         "profiler/chrome_unwind_info_android.cc",
         "profiler/chrome_unwind_info_android.h",
-        "profiler/chrome_unwinder_android_v2.cc",
-        "profiler/chrome_unwinder_android_v2.h",
+        "profiler/chrome_unwinder_android.cc",
+        "profiler/chrome_unwinder_android.h",
+      ]
+    }
+
+    if (current_cpu == "arm64") {
+      sources += [
+        "profiler/frame_pointer_unwinder.cc",
+        "profiler/frame_pointer_unwinder.h",
       ]
     }
 
@@ -2265,8 +2268,6 @@ component("base") {
       "strings/sys_string_conversions_mac.mm",
       "synchronization/waitable_event_mac.cc",
       "system/sys_info_ios.mm",
-      "task/thread_pool/thread_group_native_mac.h",
-      "task/thread_pool/thread_group_native_mac.mm",
       "threading/platform_thread_mac.mm",
       "time/time_conversion_posix.cc",
       "time/time_mac.mm",
@@ -3634,8 +3635,11 @@ test("base_unittests") {
     if (current_cpu == "arm") {
       sources += [
         "profiler/chrome_unwind_info_android_unittest.cc",
-        "profiler/chrome_unwinder_android_v2_unittest.cc",
+        "profiler/chrome_unwinder_android_unittest.cc",
       ]
+    }
+    if (current_cpu == "arm64") {
+      sources += [ "profiler/frame_pointer_unwinder_unittest.cc" ]
     }
     if (!exclude_unwind_tables &&
         (current_cpu == "arm" || current_cpu == "arm64")) {
@@ -4515,6 +4519,7 @@ if (is_android) {
       "//third_party/robolectric/custom_asynctask/java/src/org/chromium/base/task/test/ShadowAsyncTaskBridge.java",
       "test/android/junit/src/org/chromium/base/task/test/BackgroundShadowAsyncTask.java",
       "test/android/junit/src/org/chromium/base/task/test/CustomShadowAsyncTask.java",
+      "test/android/junit/src/org/chromium/base/task/test/PausedExecutorTestRule.java",
       "test/android/junit/src/org/chromium/base/task/test/ShadowPostTask.java",
       "test/android/junit/src/org/chromium/base/test/BaseRobolectricTestRunner.java",
       "test/android/junit/src/org/chromium/base/test/ShadowBuildInfo.java",

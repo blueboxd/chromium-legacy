@@ -45,8 +45,8 @@
   },
   {
     "name": "activate-metrics-reporting-enabled-policy",
-    "owners": [ "ogastorga", "ftirelo" ],
-    "expiry_milestone": 109
+    "owners": [ "ftirelo" ],
+    "expiry_milestone": 115
   },
   {
     "name": "adaptive-button-in-top-toolbar",
@@ -878,6 +878,11 @@
     // Never expires. This used in ChromeOS to switch to removable EUICC for
     // all eSIM operations. This is useful for debugging with test SIM cards.
     "expiry_milestone": -1
+  },
+  {
+    "name": "cert-dual-verification-enabled",
+    "owners": ["hchao", "mattm", "davidben", "chrome-trusty-transport-core@google.com"],
+    "expiry_milestone": 115
   },
   {
     "name": "check-offline-capability",
@@ -1782,11 +1787,6 @@
     "name": "enable-check-visibility-on-attention-log-start",
     "owners": [ "sczs", "tinazwang" ],
     "expiry_milestone": 120
-  },
-  {
-    "name": "enable-chrome-management-page-android",
-    "owners": [ "ogastorga", "ftirelo" ],
-    "expiry_milestone": 107
   },
   {
     "name": "enable-close-tab-suggestions",
@@ -3468,11 +3468,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "enhanced-network-voices",
-    "owners": ["joelriley@google.com", "ajitnarayanan@google.com"],
-    "expiry_milestone": 110
-  },
-  {
     "name": "ev-details-in-page-info",
     "owners": [ "cthomp" ],
     "expiry_milestone": 83
@@ -4865,27 +4860,27 @@
   {
     "name": "ntp-realbox-match-omnibox-theme",
     "owners": [ "mahmadi", "mfacey" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 120
   },
   {
     "name": "ntp-realbox-match-searchbox-theme",
     "owners": [ "mahmadi", "mfacey" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 120
   },
   {
     "name": "ntp-realbox-pedals",
     "owners": [ "mahmadi", "mfacey" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 120
   },
   {
     "name": "ntp-realbox-rounded-corners",
     "owners": [ "mahmadi", "mfacey" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 120
   },
   {
     "name": "ntp-realbox-use-google-g-icon",
     "owners": [ "mahmadi", "mfacey" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 120
   },
   {
     "name": "ntp-recipe-tasks-module",
@@ -6645,11 +6640,6 @@
     "name": "trim-on-memory-pressure",
     "owners": [ "bgeffon" ],
     "expiry_milestone": 90
-  },
-  {
-    "name": "truncate-table-view-cell-title",
-    "owners": [ "fedegermi", "bling-flags@google.com" ],
-    "expiry_milestone": 112
   },
   {
     "name": "trusted-web-activity-notification-permission-delegation",

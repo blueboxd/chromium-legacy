@@ -6918,7 +6918,12 @@ void RenderFrameHostImpl::DidChangeFrameOwnerProperties(
 
 void RenderFrameHostImpl::DidChangeOpener(
     const absl::optional<blink::LocalFrameToken>& opener_frame_token) {
-  frame_tree_node_->render_manager()->DidChangeOpener(
+  // `owner_` could be null when we get this message asynchronously from the
+  // renderer in pending deletion state.
+  if (!owner_)
+    return;
+
+  owner_->GetRenderFrameHostManager().DidChangeOpener(
       opener_frame_token, GetSiteInstance()->group());
 }
 
@@ -7762,7 +7767,6 @@ void RenderFrameHostImpl::ReceivedDelegatedCapability(
   }
 }
 
-// TODO(ahemery): Move checks to mojo bad message reporting.
 void RenderFrameHostImpl::BeginNavigation(
     blink::mojom::CommonNavigationParamsPtr common_params,
     blink::mojom::BeginNavigationParamsPtr begin_params,
@@ -8313,12 +8317,8 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
   if (!for_navigation) {
     // Cancel any pending navigations, to avoid their navigation commit/fail
     // event from wiping out the is_waiting_for_beforeunload_completion_ state.
-    if (frame_tree_node_->navigation_request() &&
-        frame_tree_node_->navigation_request()->IsNavigationStarted()) {
-      frame_tree_node_->navigation_request()->set_net_error(net::ERR_ABORTED);
-    }
-    frame_tree_node_->ResetNavigationRequest(
-        NavigationDiscardReason::kCancelled);
+    CHECK(owner_);
+    owner_->CancelNavigation();
   }
 
   // In renderer-initiated navigations, don't check for beforeunload in the
@@ -10670,9 +10670,9 @@ void RenderFrameHostImpl::BindTrustTokenQueryAnswerer(
     return;
   }
 
-  // TODO(crbug.com/1145346): Document.hasTrustToken is restricted to secure
-  // contexts, so we could additionally add a check verifying that the bind
-  // request "is coming from a secure context"---but there's currently no
+  // TODO(crbug.com/1145346): Document.hasPrivateStateToken is restricted to
+  // secure contexts, so we could additionally add a check verifying that the
+  // bind request "is coming from a secure context"---but there's currently no
   // direct way to perform such a check in the browser.
 
   GetProcess()->GetStoragePartition()->CreateTrustTokenQueryAnswerer(
@@ -11073,7 +11073,7 @@ bool RenderFrameHostImpl::IsNavigationSameSite(
   // TODO(peilinwang): remove when we've finished investigating BeginNavigation
   // jank (https://crbug.com/1380942).
   TRACE_EVENT0("navigation", "RenderFrameHostImpl::IsNavigationSameSite");
-  SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameHostImpl.IsNavigationSameSite");
+  SCOPED_UMA_HISTOGRAM_TIMER("Navigation.IsNavigationSameSite.Duration");
 
   if (!WebExposedIsolationInfo::AreCompatible(
           GetSiteInstance()->GetWebExposedIsolationInfo(),

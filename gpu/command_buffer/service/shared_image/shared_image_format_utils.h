@@ -12,6 +12,7 @@
 #include "gpu/vulkan/buildflags.h"
 #include "third_party/dawn/include/dawn/webgpu.h"
 #include "third_party/dawn/include/dawn/webgpu_cpp.h"
+#include "third_party/skia/include/core/SkYUVAInfo.h"
 #include "ui/gfx/buffer_types.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -20,9 +21,9 @@
 
 namespace gpu {
 
-// GLFormat is a struct containing the GL data type, data format, internal
+// GLFormatDesc is a struct containing the GL data type, data format, internal
 // format used by the image, internal format used for storage and GL target.
-struct GLFormat {
+struct GLFormatDesc {
   GLenum data_type = 0;
   GLenum data_format = 0;
   GLenum image_internal_format = 0;
@@ -43,17 +44,27 @@ GPU_GLES2_EXPORT int BitsPerPixel(viz::SharedImageFormat format);
 GPU_GLES2_EXPORT gfx::BufferFormat ToBufferFormat(
     viz::SharedImageFormat format);
 
+// Returns SkYUVAInfo::PlaneConfig equivalent of
+// SharedImageFormat::PlaneConfig.
+GPU_GLES2_EXPORT SkYUVAInfo::PlaneConfig ToSkYUVAPlaneConfig(
+    viz::SharedImageFormat format);
+
+// Returns SkYUVAInfo::Subsampling equivalent of
+// SharedImageFormat::Subsampling.
+GPU_GLES2_EXPORT SkYUVAInfo::Subsampling ToSkYUVASubsampling(
+    viz::SharedImageFormat format);
+
 // Following functions return the appropriate GL type/format for a
 // SharedImageFormat.
 // Returns true if given `format` is supported by GL.
 GPU_GLES2_EXPORT bool GLSupportsFormat(viz::SharedImageFormat format);
-// Return the GLFormat when using external sampler for a given `format`.
-GPU_GLES2_EXPORT GLFormat
-ToGLFormatExternalSampler(viz::SharedImageFormat format);
-// Return the GLFormat for a given `format`.
-GPU_GLES2_EXPORT GLFormat ToGLFormat(viz::SharedImageFormat format,
-                                     int plane_index,
-                                     bool use_angle_rgbx_format);
+// Return the GLFormatDesc when using external sampler for a given `format`.
+GPU_GLES2_EXPORT GLFormatDesc
+ToGLFormatDescExternalSampler(viz::SharedImageFormat format);
+// Return the GLFormatDesc for a given `format`.
+GPU_GLES2_EXPORT GLFormatDesc ToGLFormatDesc(viz::SharedImageFormat format,
+                                             int plane_index,
+                                             bool use_angle_rgbx_format);
 // Returns GL data type for given `format`.
 GPU_GLES2_EXPORT GLenum GLDataType(viz::SharedImageFormat format);
 // Returns GL data format for given `format`.

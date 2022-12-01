@@ -256,20 +256,10 @@ class PrerenderHoldbackDevToolsProtocolTest
 class MultiplePrerendersDevToolsProtocolTest
     : public PrerenderDevToolsProtocolTest {
  public:
-  MultiplePrerendersDevToolsProtocolTest() {
-    feature_list_.InitWithFeaturesAndParameters(
-        {{blink::features::kPrerender2MemoryControls,
-          // A value 100 allows prerenderings regardless of the current memory
-          // usage.
-          {{"acceptable_percent_of_system_memory", "100"},
-           // Allow prerendering on low-end trybot devices so that prerendering
-           // can run on any bots.
-           {"memory_threshold_in_mb", "0"}}}},
-        {});
-  }
+  MultiplePrerendersDevToolsProtocolTest() = default;
 
  private:
-  base::test::ScopedFeatureList feature_list_;
+  test::ScopedPrerenderFeatureList prerender_feature_list_;
 };
 
 class SyntheticMouseEventTest : public DevToolsProtocolTest {
@@ -2415,17 +2405,17 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, SetAndGetCookies) {
   ASSERT_TRUE(cookies);
   EXPECT_EQ(1u, cookies->size());
 
-  std::string name;
-  std::string value;
+  const std::string* name = nullptr;
+  const std::string* value = nullptr;
   {
-    const base::Value& cookie_value = cookies->front();
-    EXPECT_TRUE(cookie_value.is_dict());
-    const base::DictionaryValue& cookie =
-        base::Value::AsDictionaryValue(cookie_value);
-    EXPECT_TRUE(cookie.GetString("name", &name));
-    EXPECT_TRUE(cookie.GetString("value", &value));
-    EXPECT_EQ("cookie_for_this_url", name);
-    EXPECT_EQ("mendacious", value);
+    ASSERT_TRUE(cookies->front().is_dict());
+    const base::Value::Dict& cookie = cookies->front().GetDict();
+    name = cookie.FindString("name");
+    value = cookie.FindString("value");
+    ASSERT_TRUE(name);
+    ASSERT_TRUE(value);
+    EXPECT_EQ("cookie_for_this_url", *name);
+    EXPECT_EQ("mendacious", *value);
 
     // Then get all the cookies in the cookie jar.
     SendCommandSync("Network.getAllCookies");
@@ -2438,17 +2428,17 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, SetAndGetCookies) {
   // Note: the cookies will be returned in unspecified order.
   size_t found = 0;
   for (const base::Value& cookie_value : *cookies) {
-    EXPECT_TRUE(cookie_value.is_dict());
-    const base::DictionaryValue& cookie =
-        base::Value::AsDictionaryValue(cookie_value);
-    EXPECT_TRUE(cookie.GetString("name", &name));
-    if (name == "cookie_for_this_url") {
-      EXPECT_TRUE(cookie.GetString("value", &value));
-      EXPECT_EQ("mendacious", value);
+    ASSERT_TRUE(cookie_value.is_dict());
+    const base::Value::Dict& cookie = cookie_value.GetDict();
+    name = cookie.FindString("name");
+    value = cookie.FindString("value");
+    ASSERT_TRUE(name);
+    ASSERT_TRUE(value);
+    if (*name == "cookie_for_this_url") {
+      EXPECT_EQ("mendacious", *value);
       found++;
-    } else if (name == "cookie_for_another_url") {
-      EXPECT_TRUE(cookie.GetString("value", &value));
-      EXPECT_EQ("polyglottal", value);
+    } else if (*name == "cookie_for_another_url") {
+      EXPECT_EQ("polyglottal", *value);
       found++;
     } else {
       FAIL();

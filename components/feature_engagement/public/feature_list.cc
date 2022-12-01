@@ -77,6 +77,8 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHReadLaterAppMenuBookmarksFeature,
     &kIPHReadLaterBottomSheetFeature,
     &kIPHRequestDesktopSiteAppMenuFeature,
+    &kIPHRequestDesktopSiteDefaultOnFeature,
+    &kIPHRequestDesktopSiteOptInFeature,
     &kIPHShoppingListMenuItemFeature,
     &kIPHShoppingListSaveFlowFeature,
     &kIPHTabGroupsQuicklyComparePagesFeature,

@@ -16,6 +16,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
@@ -59,6 +60,7 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -857,6 +859,8 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
     SetCanMaximize(browser_->create_params().can_maximize);
     SetCanMinimize(true);
   }
+
+  SetProperty(views::kElementIdentifierKey, kBrowserViewElementId);
 
   // Create user education resources.
   UserEducationService* const user_education_service =
@@ -2288,8 +2292,9 @@ void BrowserView::UpdateIsIsolatedWebApp() {
 }
 
 void BrowserView::ToggleWindowControlsOverlayEnabled() {
-  browser()->app_controller()->ToggleWindowControlsOverlayEnabled();
-  UpdateWindowControlsOverlayEnabled();
+  browser()->app_controller()->ToggleWindowControlsOverlayEnabled(
+      base::BindOnce(&BrowserView::UpdateWindowControlsOverlayEnabled,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool BrowserView::IsBorderlessModeEnabled() const {

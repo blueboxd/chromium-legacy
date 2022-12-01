@@ -169,6 +169,20 @@ int SharedImageFormat::NumChannelsInPlane(int plane_index) const {
   return 0;
 }
 
+int SharedImageFormat::MultiplanarBitDepth() const {
+  switch (channel_format()) {
+    case ChannelFormat::k8:
+      return 8;
+    case ChannelFormat::k10:
+      return 10;
+    case ChannelFormat::k16:
+    case ChannelFormat::k16F:
+      return 16;
+  }
+  NOTREACHED();
+  return 0;
+}
+
 std::string SharedImageFormat::ToString() const {
   switch (plane_type_) {
     case PlaneType::kUnknown:
@@ -210,6 +224,21 @@ bool SharedImageFormat::HasAlpha() const {
 
 bool SharedImageFormat::IsCompressed() const {
   return is_single_plane() && resource_format() == ResourceFormat::ETC1;
+}
+
+bool SharedImageFormat::IsLegacyMultiplanar() const {
+  if (!is_single_plane())
+    return false;
+
+  switch (resource_format()) {
+    case ResourceFormat::YVU_420:
+    case ResourceFormat::YUV_420_BIPLANAR:
+    case ResourceFormat::YUVA_420_TRIPLANAR:
+    case ResourceFormat::P010:
+      return true;
+    default:
+      return false;
+  }
 }
 
 bool SharedImageFormat::operator==(const SharedImageFormat& o) const {

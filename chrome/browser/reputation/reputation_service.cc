@@ -99,10 +99,7 @@ std::string GetETLDPlusOneWithPrivateRegistries(const std::string& hostname) {
 
 }  // namespace
 
-ReputationService::ReputationService(Profile* profile)
-    : profile_(profile),
-      sensitive_keywords_(top500_domains::kTopKeywords),
-      num_sensitive_keywords_(top500_domains::kNumTopKeywords) {}
+ReputationService::ReputationService(Profile* profile) : profile_(profile) {}
 
 ReputationService::~ReputationService() = default;
 
@@ -148,18 +145,6 @@ void ReputationService::SetUserIgnore(const GURL& url) {
 void ReputationService::OnUIDisabledFirstVisit(const GURL& url) {
   warning_dismissed_etld1s_.insert(
       GetETLDPlusOneWithPrivateRegistries(url.host()));
-}
-
-void ReputationService::SetSensitiveKeywordsForTesting(
-    const char* const* new_keywords,
-    size_t num_new_keywords) {
-  sensitive_keywords_ = new_keywords;
-  num_sensitive_keywords_ = num_new_keywords;
-}
-
-void ReputationService::ResetSensitiveKeywordsForTesting() {
-  sensitive_keywords_ = top500_domains::kTopKeywords;
-  num_sensitive_keywords_ = top500_domains::kNumTopKeywords;
 }
 
 void ReputationService::ResetWarningDismissedETLDPlusOnesForTesting() {
@@ -208,10 +193,11 @@ void ReputationService::GetReputationStatusWithEngagedSites(
     done_checking_reputation_status = true;
   }
 
-  // 3. Protect against bad false positives by allowing top domains.
-  // Empty domain_and_registry happens on private domains.
+  // 3. Protect against bad false positives by allowing top domains and safe
+  // TLDs. Empty domain_and_registry happens on private domains.
   if (navigated_domain.domain_and_registry.empty() ||
-      IsTopDomain(navigated_domain)) {
+      IsTopDomain(navigated_domain) ||
+      IsSafeTLD(navigated_domain.domain_and_registry)) {
     done_checking_reputation_status = true;
   }
 
@@ -228,24 +214,12 @@ void ReputationService::GetReputationStatusWithEngagedSites(
     result.triggered_heuristics.lookalike_heuristic_triggered = true;
     done_checking_reputation_status = true;
   }
-
-  // 5. Keyword heuristics.
-  if (ShouldTriggerSafetyTipFromKeywordInURL(url, navigated_domain,
-                                             sensitive_keywords_,
-                                             num_sensitive_keywords_)) {
-    if (!done_checking_reputation_status) {
-      result.safety_tip_status = SafetyTipStatus::kBadKeyword;
-    }
-
-    result.triggered_heuristics.keywords_heuristic_triggered = true;
-    done_checking_reputation_status = true;
-  }
+  DCHECK(result.safety_tip_status != SafetyTipStatus::kBadKeyword);
 
   // If we found a SafetyTipStatus, possibly clear it if the URL is on the
   // allowlist.
   if (result.safety_tip_status != SafetyTipStatus::kUnknown &&
       result.safety_tip_status != SafetyTipStatus::kNone &&
-      result.safety_tip_status != SafetyTipStatus::kBadKeyword &&
       ShouldSuppressWarning(profile_, url, result.suggested_url)) {
     result.safety_tip_status = SafetyTipStatus::kNone;
     result.suggested_url = GURL();

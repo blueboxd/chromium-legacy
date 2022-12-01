@@ -4,14 +4,13 @@
 
 #include "ash/webui/eche_app_ui/eche_recent_app_click_handler.h"
 
-#include "ash/components/phonehub/phone_hub_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/eche/eche_tray.h"
 #include "ash/system/phonehub/phone_hub_ui_controller.h"
 #include "ash/webui/eche_app_ui/launch_app_helper.h"
-#include "ash/webui/eche_app_ui/mojom/eche_app.mojom.h"
 #include "base/metrics/histogram_functions.h"
+#include "chromeos/ash/components/phonehub/phone_hub_manager.h"
 
 namespace ash {
 namespace eche_app {
@@ -75,15 +74,15 @@ void EcheRecentAppClickHandler::HandleNotificationClick(
 }
 
 void EcheRecentAppClickHandler::OnRecentAppClicked(
-    const phonehub::Notification::AppMetadata& app_metadata) {
+    const phonehub::Notification::AppMetadata& app_metadata,
+    mojom::AppStreamLaunchEntryPoint entrypoint) {
   const LaunchAppHelper::AppLaunchProhibitedReason prohibited_reason =
       launch_app_helper_->CheckAppLaunchProhibitedReason(
           feature_status_provider_->GetStatus());
   switch (prohibited_reason) {
     case LaunchAppHelper::AppLaunchProhibitedReason::kNotProhibited:
-      base::UmaHistogramEnumeration(
-          "Eche.AppStream.LaunchAttempt",
-          mojom::AppStreamLaunchEntryPoint::RECENT_APPS);
+      base::UmaHistogramEnumeration("Eche.AppStream.LaunchAttempt", entrypoint);
+
       to_stream_apps_.emplace_back(app_metadata);
       launch_app_helper_->LaunchEcheApp(
           /*notification_id=*/absl::nullopt, app_metadata.package_name,

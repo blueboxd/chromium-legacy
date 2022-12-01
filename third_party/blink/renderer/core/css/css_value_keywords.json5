@@ -1233,6 +1233,7 @@
     "-webkit-repeating-linear-gradient",
     "-webkit-repeating-radial-gradient",
     "-webkit-image-set",
+    "image-set",
 
     // deprecated gradients
     "from",
@@ -1367,7 +1368,7 @@
     // "tan" - already declared for color value
     "asin",
     "atan",
-    // "atan2",
+    "atan2",
     "acos",
 
     "pi",

@@ -5,7 +5,6 @@
 package org.chromium.weblayer;
 
 import android.os.RemoteException;
-import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,7 +14,6 @@ import org.chromium.weblayer_private.interfaces.IBrowser;
 import org.chromium.weblayer_private.interfaces.IBrowserClient;
 import org.chromium.weblayer_private.interfaces.IRemoteFragment;
 import org.chromium.weblayer_private.interfaces.ITab;
-import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 import java.util.Set;
@@ -47,7 +45,6 @@ class Browser {
     private IBrowser mImpl;
     private final ObserverList<TabListCallback> mTabListCallbacks;
 
-    private final ObserverList<BrowserControlsOffsetCallback> mBrowserControlsOffsetCallbacks;
     private final ObserverList<BrowserRestoreCallback> mBrowserRestoreCallbacks;
 
     private static int sMaxNavigationsPerTabForInstanceState;
@@ -79,7 +76,6 @@ class Browser {
     protected Browser() {
         mImpl = null;
         mTabListCallbacks = null;
-        mBrowserControlsOffsetCallbacks = null;
         mBrowserRestoreCallbacks = null;
     }
 
@@ -90,7 +86,6 @@ class Browser {
         if (tabListCallback != null) {
             mTabListCallbacks.addObserver(tabListCallback);
         }
-        mBrowserControlsOffsetCallbacks = new ObserverList<BrowserControlsOffsetCallback>();
         mBrowserRestoreCallbacks = new ObserverList<BrowserRestoreCallback>();
 
         try {
@@ -339,114 +334,6 @@ class Browser {
     }
 
     /**
-     * Sets the View shown at the top of the browser. A value of null removes the view. The
-     * top-view is typically used to show the uri. The top-view scrolls with the page.
-     *
-     * @param view The new top-view.
-     */
-    public void setTopView(@Nullable View view) {
-        ThreadCheck.ensureOnUiThread();
-        throwIfDestroyed();
-        try {
-            mImpl.setTopView(ObjectWrapper.wrap(view));
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
-    }
-
-    /**
-     * Sets the View shown at the top of the browser. The top-view is typically used to show the
-     * uri. This method also allows you to control the scrolling behavior of the top-view by setting
-     * a minimum height it will scroll to, and pinning the top-view to the top of the web contents.
-     *
-     * @param view The new top-view, or null to remove the view.
-     * @param minHeight The minimum height in pixels that the top controls can scoll up to. A value
-     *        of 0 means the top-view should scroll entirely off screen.
-     * @param onlyExpandControlsAtPageTop Whether the top-view should only be expanded when the web
-     *        content is scrolled to the top. A true value makes the top-view behave as though it
-     *        were inserted into the top of the page content. If true, the top-view should NOT be
-     *        used to display the URL, as this will prevent it from expanding in security-sensitive
-     *        contexts where the URL should be visible to the user.
-     * @param animate Whether or not any height/visibility changes that result from this call
-     *        should be animated.
-     */
-    public void setTopView(@Nullable View view, int minHeight, boolean onlyExpandControlsAtPageTop,
-            boolean animate) {
-        ThreadCheck.ensureOnUiThread();
-        throwIfDestroyed();
-        try {
-            mImpl.setTopViewAndScrollingBehavior(
-                    ObjectWrapper.wrap(view), minHeight, onlyExpandControlsAtPageTop, animate);
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
-    }
-
-    /**
-     * Sets the View shown at the bottom of the browser. A value of null removes the view.
-     *
-     * @param view The new bottom-view.
-     */
-    public void setBottomView(@Nullable View view) {
-        ThreadCheck.ensureOnUiThread();
-        throwIfDestroyed();
-        try {
-            mImpl.setBottomView(ObjectWrapper.wrap(view));
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
-    }
-
-    /**
-     * Registers {@link callback} to be notified when the offset of the top or bottom view changes.
-     *
-     * @param callback The BrowserControlsOffsetCallback to notify
-     *
-     * @since 88
-     */
-    public void registerBrowserControlsOffsetCallback(
-            @NonNull BrowserControlsOffsetCallback callback) {
-        ThreadCheck.ensureOnUiThread();
-        throwIfDestroyed();
-        if (WebLayer.getSupportedMajorVersionInternal() < 88) {
-            throw new UnsupportedOperationException();
-        }
-        if (mBrowserControlsOffsetCallbacks.isEmpty()) {
-            try {
-                mImpl.setBrowserControlsOffsetsEnabled(true);
-            } catch (RemoteException e) {
-                throw new APICallException(e);
-            }
-        }
-        mBrowserControlsOffsetCallbacks.addObserver(callback);
-    }
-
-    /**
-     * Removes a BrowserControlsOffsetCallback that was added using {@link
-     * registerBrowserControlsOffsetCallback}.
-     *
-     * @param callback The BrowserControlsOffsetCallback to remove.
-     *
-     * @since 88
-     */
-    public void unregisterBrowserControlsOffsetCallback(
-            @NonNull BrowserControlsOffsetCallback callback) {
-        ThreadCheck.ensureOnUiThread();
-        throwIfDestroyed();
-        if (WebLayer.getSupportedMajorVersionInternal() < 88) {
-            throw new UnsupportedOperationException();
-        }
-        mBrowserControlsOffsetCallbacks.removeObserver(callback);
-        if (mBrowserControlsOffsetCallbacks.isEmpty()) {
-            try {
-                mImpl.setBrowserControlsOffsetsEnabled(false);
-            } catch (RemoteException e) {
-                throw new APICallException(e);
-            }
-        }
-    }
-
-    /**
      * Creates a new tab attached to this browser. This will call {@link TabListCallback#onTabAdded}
      * with the new tab.
      */
@@ -503,31 +390,6 @@ class Browser {
         }
     }
 
-    /**
-     * Normally when the Browser is detached the visibility of the page is set to hidden. When the
-     * visibility is hidden video may stop, or other side effects may result. At certain times,
-     * such as fullscreen or rotation, it may be necessary to transiently detach the Browser.
-     * Calling this method with a value of false results in WebLayer not hiding the page on the next
-     * detach. Once the Browser is reattached, the value is implicitly reset to true. Calling this
-     * method when the Browser is already detached does nothing.
-     *
-     * @param changeVisibility Whether WebLayer should change visibility as the result of a detach.
-     *
-     * @since 91
-     */
-    public void setChangeVisibilityOnNextDetach(boolean changeVisibility) {
-        ThreadCheck.ensureOnUiThread();
-        if (WebLayer.getSupportedMajorVersionInternal() < 91) {
-            throw new UnsupportedOperationException();
-        }
-        throwIfDestroyed();
-        try {
-            mImpl.setChangeVisibilityOnNextDetach(changeVisibility);
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
-    }
-
     private final class BrowserClientImpl extends IBrowserClient.Stub {
         @Override
         public void onActiveTabChanged(int activeTabId) {
@@ -577,17 +439,6 @@ class Browser {
         public IRemoteFragment createMediaRouteDialogFragment() {
             StrictModeWorkaround.apply();
             return new MediaRouteDialogFragmentEventHandler().getRemoteFragment();
-        }
-
-        @Override
-        public void onBrowserControlsOffsetsChanged(boolean isTop, int offset) {
-            for (BrowserControlsOffsetCallback callback : mBrowserControlsOffsetCallbacks) {
-                if (isTop) {
-                    callback.onTopViewOffsetChanged(offset);
-                } else {
-                    callback.onBottomViewOffsetChanged(offset);
-                }
-            }
         }
 
         @Override

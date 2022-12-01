@@ -34,7 +34,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chromeos/login/login_state/login_state.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -228,6 +228,8 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
        IDS_INPUT_DIAGNOSTICS_KEYBOARD_TESTER_FOCUS_LOSS_MESSAGE},
       {"keyboardTesterInstruction",
        IDS_INPUT_DIAGNOSTICS_KEYBOARD_TESTER_INSTRUCTION},
+      {"keyboardTesterShortcutInstruction",
+       IDS_INPUT_DIAGNOSTICS_KEYBOARD_TESTER_SHORTCUT_INSTRUCTION},
       {"keyboardTesterTitle", IDS_INPUT_DIAGNOSTICS_KEYBOARD_TESTER_TITLE},
       {"keyboardText", IDS_DIAGNOSTICS_KEYBOARD},
       {"joinNetworkLinkText", IDS_DIAGNOSTICS_JOIN_NETWORK_LINK_TEXT},

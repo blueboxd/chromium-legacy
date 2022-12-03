@@ -308,7 +308,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '18865d6af0404f2d2aeb1c99dd73503364ce0967',
+  'v8_revision': '3155b0d10c058d2a9f1d7bba00ad398b3e03b841',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -1247,7 +1247,7 @@ deps = {
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
 
   'src/third_party/devtools-frontend-internal': {
-      'url': 'https://chrome-internal.googlesource.com/devtools/devtools-internal.git' + '@' + '91cc0040d3fbc8fdb48d699368abda96c807ec13',
+      'url': 'https://chrome-internal.googlesource.com/devtools/devtools-internal.git' + '@' + '5b416729821b589991d492f0707a087f5a47bb1f',
     'condition': 'checkout_src_internal',
   },
 
@@ -1917,7 +1917,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@aee7b03f3a5f5cbaa1ff691b81303bac084e156c',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a63cd655ad37984fa08e1c95ca73acf55550f10d',
     'condition': 'checkout_src_internal',
   },
 

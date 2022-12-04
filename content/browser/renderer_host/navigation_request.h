@@ -61,6 +61,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/frame/view_transition_state.h"
 #include "third_party/blink/public/common/navigation/impression.h"
+#include "third_party/blink/public/common/runtime_feature_state/runtime_feature_state_context.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/loader/mixed_content.mojom-forward.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom-forward.h"
@@ -1038,6 +1039,20 @@ class CONTENT_EXPORT NavigationRequest
   // for a ViewTransition.
   void SetViewTransitionState(blink::ViewTransitionState view_transition_state);
 
+  // Returns a mutable reference to a blink::RuntimeFeatureStateContext object,
+  // which exposes the getters and setters for Blink Runtime-Enabled Features to
+  // the browser process. Any feature set using the RuntimeFeatureStateContext
+  // before navigation commit will be communicated back to the renderer process.
+  //
+  // This function should not be called once the navigation has been committed.
+  // NOTE: these feature changes will apply to the "to-be-created" document.
+  blink::RuntimeFeatureStateContext& GetMutableRuntimeFeatureStateContext();
+
+  // Returns a const reference to a blink::RuntimeFeatureStateContext object.
+  // Once the commit params are sent to the renderer we no longer allow write
+  // access to the RFSC, but read access is still available.
+  const blink::RuntimeFeatureStateContext& GetRuntimeFeatureStateContext();
+
  private:
   friend class NavigationRequestTest;
 
@@ -1500,10 +1515,16 @@ class CONTENT_EXPORT NavigationRequest
   // If they aren't, this returns false and emits a crash report.
   bool CoopCoepSanityCheck();
 
-  // Checks if all of the permissions policies that a fenced frame requires to
-  // be enabled for its origin are enabled. If not, it logs a console message
-  // and returns false.
+  // Checks that, given an origin to be committed, all of the permissions
+  // policies that a fenced frame requires to be enabled are enabled. If not, it
+  // logs a console message and returns false.
   bool CheckPermissionsPoliciesForFencedFrames(const url::Origin&);
+
+  // Helper function that determines if a given required permissions policy
+  // feature is properly enabled for a given origin to be committed.
+  bool IsFencedFrameRequiredPolicyFeatureAllowed(
+      const url::Origin&,
+      const blink::mojom::PermissionsPolicyFeature feature);
 
   // Returns the user-agent override, or an empty string if one isn't set.
   std::string GetUserAgentOverride();
@@ -2206,6 +2227,12 @@ class CONTENT_EXPORT NavigationRequest
   bool force_new_browsing_instance_ = false;
 
   scoped_refptr<NavigationOrDocumentHandle> navigation_or_document_handle_;
+
+  // Exposes getters and setters for Blink Runtime-Enabled Features to the
+  // browser process. Any feature set using the RuntimeFeatureStateContext
+  // before navigation commit will be communicated back to the renderer process.
+  // NOTE: these feature changes will apply to the "to-be-created" document.
+  blink::RuntimeFeatureStateContext runtime_feature_state_context_;
 
   // Renderer-initiated navigations can be canceled until the JS task that
   // started the navigation finishes. See RendererCancellationThrottle for more

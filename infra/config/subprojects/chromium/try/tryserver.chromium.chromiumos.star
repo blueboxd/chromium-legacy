@@ -36,6 +36,7 @@ try_.builder(
     mirrors = [
         "ci/chromeos-amd64-generic-cfi-thin-lto-rel",
     ],
+    goma_backend = None,
 )
 
 try_.builder(
@@ -96,6 +97,7 @@ try_.builder(
     name = "chromeos-arm64-generic-rel",
     branch_selector = branches.CROS_LTS_MILESTONE,
     mirrors = ["ci/chromeos-arm64-generic-rel"],
+    goma_backend = None,
 )
 
 try_.builder(
@@ -252,29 +254,6 @@ try_.compilator_builder(
     cores = "16|32",
 )
 
-try_.orchestrator_builder(
-    name = "linux-chromeos-rel-reclient",
-    builderless = True,
-    mirrors = [
-        "ci/linux-chromeos-rel",
-    ],
-    compilator = "linux-chromeos-rel-reclient-compilator",
-    use_clang_coverage = True,
-    coverage_test_types = ["unit", "overall"],
-    tryjob = try_.job(
-        experiment_percentage = 3,
-    ),
-    try_settings = builder_config.try_settings(
-        is_compile_only = True,
-    ),
-)
-
-try_.compilator_builder(
-    name = "linux-chromeos-rel-reclient-compilator",
-    builderless = True,
-    cores = 32,
-)
-
 try_.builder(
     name = "linux-lacros-dbg",
     # TODO(crbug.com/1233247) Adds the CI tester when it's available.
@@ -319,6 +298,9 @@ try_.builder(
 
 try_.builder(
     name = "linux-chromeos-annotator-rel",
+    mirrors = [
+        "ci/linux-chromeos-annotator-rel",
+    ],
 )
 
 try_.builder(

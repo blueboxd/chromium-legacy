@@ -63,6 +63,7 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
     await importModule('CursorRange', '/common/cursors/range.js');
     await importModule('EventGenerator', '/common/event_generator.js');
     await importModule('KeyCode', '/common/key_code.js');
+    await importModule('LocalStorage', '/common/local_storage.js');
 
     window.doGesture = this.doGesture;
     window.simulateHitTestResult = this.simulateHitTestResult;
@@ -2522,7 +2523,7 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'PhoneticsAndCommands', async function() {
 AX_TEST_F('ChromeVoxBackgroundTest', 'ToggleScreen', async function() {
   const mockFeedback = this.createMockFeedback();
   // Pretend we've already accepted the confirmation dialog once.
-  localStorage['acceptToggleScreen'] = 'true';
+  LocalStorage.set('acceptToggleScreen', true);
   await this.runWithLoadedTree('<div>Unimportant web content</div>');
   mockFeedback.call(doCmd('toggleScreen'))
       .expectSpeech('Screen off')
@@ -2847,9 +2848,12 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'TimeDateCommand', async function() {
   await mockFeedback.replay();
 });
 
-AX_TEST_F('ChromeVoxBackgroundTest', 'SwipeToScrollByPage', async function() {
-  const mockFeedback = this.createMockFeedback();
-  const site = `
+// TODO(https://crbug.com/1395217): Re-enable the test.
+AX_TEST_F(
+    'ChromeVoxBackgroundTest', 'DISABLED_SwipeToScrollByPage',
+    async function() {
+      const mockFeedback = this.createMockFeedback();
+      const site = `
     <p style="font-size: 200pt">This is a test</p>
     <p style="font-size: 200pt">This is a test</p>
     <p style="font-size: 200pt">This is a test</p>
@@ -2858,17 +2862,17 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'SwipeToScrollByPage', async function() {
     <p style="font-size: 200pt">This is a test</p>
     <p style="font-size: 200pt">This is a test</p>
   `;
-  const root = await this.runWithLoadedTree(site);
-  mockFeedback.call(doGesture(Gesture.SWIPE_UP3))
-      .expectSpeech(/Page 2 of/)
-      .call(doGesture(Gesture.SWIPE_UP3))
-      .expectSpeech(/Page 3 of/)
-      .call(doGesture(Gesture.SWIPE_DOWN3))
-      .expectSpeech(/Page 2 of/)
-      .call(doGesture(Gesture.SWIPE_DOWN3))
-      .expectSpeech(/Page 1 of/);
-  await mockFeedback.replay();
-});
+      const root = await this.runWithLoadedTree(site);
+      mockFeedback.call(doGesture(Gesture.SWIPE_UP3))
+          .expectSpeech(/Page 2 of/)
+          .call(doGesture(Gesture.SWIPE_UP3))
+          .expectSpeech(/Page 3 of/)
+          .call(doGesture(Gesture.SWIPE_DOWN3))
+          .expectSpeech(/Page 2 of/)
+          .call(doGesture(Gesture.SWIPE_DOWN3))
+          .expectSpeech(/Page 1 of/);
+      await mockFeedback.replay();
+    });
 
 AX_TEST_F(
     'ChromeVoxBackgroundTest', 'PointerOnOffOnRepeatsNode', async function() {
@@ -3658,7 +3662,7 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'DetailsChanged', async function() {
 
   // Make sure we're not testing reading of the hint from the button's output
   // below.
-  localStorage['useVerboseMode'] = false;
+  LocalStorage.set('useVerboseMode', false);
   const site = `
     <button id="click">ok</button>
     <p id="details">hello</p>

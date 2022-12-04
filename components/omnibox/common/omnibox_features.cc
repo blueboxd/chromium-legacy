@@ -379,7 +379,7 @@ BASE_FEATURE(kMostVisitedTiles,
 // shown on screen on narrow devices.
 BASE_FEATURE(kMostVisitedTilesDynamicSpacing,
              "OmniboxMostVisitedTilesDynamicSpacing",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, permits the title on the MostVisitedTiles to wrap around to
 // second line.
@@ -414,7 +414,7 @@ BASE_FEATURE(kOmniboxDefaultBrowserPedal,
 // header.
 BASE_FEATURE(kOmniboxHeaderPaddingUpdate,
              "OmniboxHeaderPaddingUpdate",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature used to synchronize the toolbar's and status bar's color.
 BASE_FEATURE(kOmniboxMatchToolbarAndStatusBarColor,
@@ -424,13 +424,13 @@ BASE_FEATURE(kOmniboxMatchToolbarAndStatusBarColor,
 // Feature used to remove the capitalization of the suggestion header text.
 BASE_FEATURE(kOmniboxRemoveSuggestionHeaderCapitalization,
              "OmniboxRemoveSuggestionHeaderCapitalization",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature used to remove the chevron on the right side of suggestion list
 // header under omnibox.
 BASE_FEATURE(kOmniboxRemoveSuggestionHeaderChevron,
              "OmniboxRemoveSuggestionHeaderChevron",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature used to add a recycled view pool on the most visited tile carousel.
 BASE_FEATURE(kOmniboxMostVisitedTilesAddRecycledViewPool,
@@ -440,7 +440,7 @@ BASE_FEATURE(kOmniboxMostVisitedTilesAddRecycledViewPool,
 // Feature used to add fading effect to most visited tiles on tablet.
 BASE_FEATURE(kOmniboxMostVisitedTilesFadingOnTablet,
              "OmniboxMostVisitedTilesFadingOnTablet",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature used to add most visited tiles to the suggestions when the user is on
 // a search result page that does not do search term replacement.
@@ -462,10 +462,6 @@ BASE_FEATURE(kOmniboxAssistantVoiceSearch,
 BASE_FEATURE(kClosePopupWithEscape,
              "OmniboxClosePopupWithEscape",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kBlurWithEscape,
-             "OmniboxBlurWithEscape",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, adds a "starter pack" of @history, @bookmarks, and @settings
 // scopes to Site Search/Keyword Mode.
@@ -511,6 +507,11 @@ BASE_FEATURE(kReportSearchboxStats,
 // Disabling the feature trims the suggestions list to the predefined limit.
 BASE_FEATURE(kRetainSuggestionsWithHeaders,
              "OmniboxRetainSuggestionsWithHeaders",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, logs Omnibox URL scoring signals to OmniboxEventProto in UMA.
+BASE_FEATURE(kLogUrlScoringSignals,
+             "LogUrlScoringSignals",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace omnibox

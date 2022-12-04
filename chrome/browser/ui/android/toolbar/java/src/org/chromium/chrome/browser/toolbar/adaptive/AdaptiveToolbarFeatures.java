@@ -6,13 +6,9 @@ package org.chromium.chrome.browser.toolbar.adaptive;
 
 import android.text.TextUtils;
 
-import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 /**
  * A utility class for handling feature flags used by {@link AdaptiveToolbarButtonController}.
@@ -64,29 +60,6 @@ public class AdaptiveToolbarFeatures {
     private static Boolean sDisableUiForTesting;
     private static Boolean sShowUiOnlyAfterReadyForTesting;
 
-    /**
-     * Unique identifiers for each of the possible button variants.
-     *
-     * <p>These values are persisted to logs. Entries should not be renumbered and numeric values
-     * should never be reused.
-     */
-    @IntDef({AdaptiveToolbarButtonVariant.UNKNOWN, AdaptiveToolbarButtonVariant.NONE,
-            AdaptiveToolbarButtonVariant.NEW_TAB, AdaptiveToolbarButtonVariant.SHARE,
-            AdaptiveToolbarButtonVariant.VOICE, AdaptiveToolbarButtonVariant.AUTO,
-            AdaptiveToolbarButtonVariant.PRICE_TRACKING, AdaptiveToolbarButtonVariant.READER_MODE})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface AdaptiveToolbarButtonVariant {
-        int UNKNOWN = 0;
-        int NONE = 1;
-        int NEW_TAB = 2;
-        int SHARE = 3;
-        int VOICE = 4;
-        int AUTO = 5;
-        int PRICE_TRACKING = 6;
-        int READER_MODE = 7;
-        int NUM_ENTRIES = 8;
-    }
-
     /** @return Whether the button variant is a dynamic action. */
     public static boolean isDynamicAction(@AdaptiveToolbarButtonVariant int variant) {
         switch (variant) {
@@ -102,6 +75,19 @@ public class AdaptiveToolbarFeatures {
                 return true;
         }
         return false;
+    }
+
+    private static String getFeatureNameForButtonVariant(
+            @AdaptiveToolbarButtonVariant int variant) {
+        switch (variant) {
+            case AdaptiveToolbarButtonVariant.PRICE_TRACKING:
+                return ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING;
+            case AdaptiveToolbarButtonVariant.READER_MODE:
+                return ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_READER_MODE;
+            default:
+                throw new IllegalArgumentException(
+                        "Provided button variant not assigned to feature");
+        }
     }
 
     /**
@@ -121,27 +107,30 @@ public class AdaptiveToolbarFeatures {
     }
 
     /** @return Whether the contextual page actions should show the action chip version. */
-    public static boolean shouldShowActionChip() {
+    public static boolean shouldShowActionChip(@AdaptiveToolbarButtonVariant int buttonVariant) {
+        if (!isDynamicAction(buttonVariant)) return false;
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS, "action_chip", false);
+                getFeatureNameForButtonVariant(buttonVariant), "action_chip", false);
     }
 
     /**
      * @return The amount of time the action chip should remain expanded in milliseconds. Default is
      *         3 seconds.
      */
-    public static int getContextualPageActionDelayMs() {
+    public static int getContextualPageActionDelayMs(
+            @AdaptiveToolbarButtonVariant int buttonVariant) {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS, "action_chip_time_ms",
+                getFeatureNameForButtonVariant(buttonVariant), "action_chip_time_ms",
                 DEFAULT_CONTEXTUAL_PAGE_ACTION_CHIP_DELAY_MS);
     }
 
     /**
      * @return Whether the CPA action chip should use a different background color when expanded.
      */
-    public static boolean shouldUseAlternativeActionChipColor() {
+    public static boolean shouldUseAlternativeActionChipColor(
+            @AdaptiveToolbarButtonVariant int buttonVariant) {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS, "action_chip_with_different_color",
+                getFeatureNameForButtonVariant(buttonVariant), "action_chip_with_different_color",
                 false);
     }
 
@@ -174,8 +163,8 @@ public class AdaptiveToolbarFeatures {
 
     public static boolean isReaderModeRateLimited() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS, "reader_mode_session_rate_limiting",
-                true);
+                ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_READER_MODE,
+                "reader_mode_session_rate_limiting", true);
     }
 
     /**

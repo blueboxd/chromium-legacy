@@ -244,7 +244,6 @@
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "ash/webui/personalization_app/personalization_app_ui.h"
 #include "ash/webui/personalization_app/search/search.mojom.h"
-#include "ash/webui/print_management/mojom/printing_manager.mojom.h"
 #include "ash/webui/print_management/print_management_ui.h"
 #include "ash/webui/scanning/mojom/scanning.mojom.h"
 #include "ash/webui/scanning/scanning_ui.h"
@@ -302,6 +301,7 @@
 #include "chromeos/ash/services/hotspot_config/public/mojom/cros_hotspot_config.mojom.h"
 #include "chromeos/ash/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "chromeos/components/print_management/mojom/printing_manager.mojom.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
 #include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"  // nogncheck
 #include "chromeos/services/network_health/public/mojom/network_health.mojom.h"  // nogncheck
@@ -1008,7 +1008,8 @@ void PopulateChromeWebUIFrameBinders(
 
   if (customize_chrome::IsSidePanelEnabled()) {
     RegisterWebUIControllerInterfaceBinder<
-        side_panel::mojom::CustomizeChromePageHandler, CustomizeChromeUI>(map);
+        side_panel::mojom::CustomizeChromePageHandlerFactory,
+        CustomizeChromeUI>(map);
   }
 
   if (user_notes::IsUserNotesEnabled()) {
@@ -1127,7 +1128,7 @@ void PopulateChromeWebUIFrameBinders(
       ash::ShimlessRMADialogUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
-      ash::printing::printing_manager::mojom::PrintingMetadataProvider,
+      chromeos::printing::printing_manager::mojom::PrintingMetadataProvider,
       ash::printing::printing_manager::PrintManagementUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<cros::mojom::CameraAppDeviceProvider,
@@ -1178,7 +1179,7 @@ void PopulateChromeWebUIFrameBinders(
       ash::diagnostics::mojom::InputDataProvider, ash::DiagnosticsDialogUI>(
       map);
 
-  if (chromeos::features::IsNetworkingInDiagnosticsAppEnabled()) {
+  if (ash::features::IsNetworkingInDiagnosticsAppEnabled()) {
     RegisterWebUIControllerInterfaceBinder<
         ash::diagnostics::mojom::NetworkHealthProvider,
         ash::DiagnosticsDialogUI>(map);

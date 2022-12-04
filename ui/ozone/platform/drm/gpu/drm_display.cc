@@ -149,26 +149,21 @@ uint32_t DrmDisplay::connector() const {
   return connector_->connector_id;
 }
 
-std::unique_ptr<display::DisplaySnapshot> DrmDisplay::Update(
-    HardwareDisplayControllerInfo* info,
-    uint8_t device_index) {
-  std::unique_ptr<display::DisplaySnapshot> params = CreateDisplaySnapshot(
-      info, drm_->get_fd(), drm_->device_path(), device_index, origin_);
-  base_connector_id_ = params->base_connector_id();
-  crtc_ = info->crtc()->crtc_id;
-  // TODO(crbug.com/1119499): consider taking ownership of |info->connector()|
-  connector_ = ScopedDrmConnectorPtr(
-      drm_->GetConnector(info->connector()->connector_id));
-  if (!connector_) {
-    PLOG(ERROR) << "Failed to get connector "
-                << info->connector()->connector_id;
-    return nullptr;
-  }
+void DrmDisplay::Update(HardwareDisplayControllerInfo* info,
+                        const display::DisplaySnapshot* display_snapshot) {
+  // We take ownership of |info|'s connector because it will not be used again
+  // beyond this point. It is safe to assume that |connector_| is populated
+  // since it was obtained from GetDisplayInfosAndInvalidCrtcs(), which discards
+  // invalid (nullptr) connectors.
+  connector_ = info->ReleaseConnector();
+  DCHECK(connector_);
 
-  display_id_ = params->display_id();
-  modes_ = GetDrmModeVector(info->connector());
-  is_hdr_capable_ =
-      params->bits_per_channel() > 8 && params->color_space().IsHDR();
+  crtc_ = info->crtc()->crtc_id;
+  display_id_ = display_snapshot->display_id();
+  base_connector_id_ = display_snapshot->base_connector_id();
+  modes_ = GetDrmModeVector(connector_.get());
+  is_hdr_capable_ = display_snapshot->bits_per_channel() > 8 &&
+                    display_snapshot->color_space().IsHDR();
   privacy_screen_property_ =
       std::make_unique<PrivacyScreenProperty>(drm(), connector_.get());
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -176,8 +171,6 @@ std::unique_ptr<display::DisplaySnapshot> DrmDisplay::Update(
       is_hdr_capable_ &&
       base::FeatureList::IsEnabled(display::features::kUseHDRTransferFunction);
 #endif
-
-  return params;
 }
 
 // When reading DRM state always check that it's still valid. Any sort of events
@@ -185,8 +178,7 @@ std::unique_ptr<display::DisplaySnapshot> DrmDisplay::Update(
 bool DrmDisplay::GetHDCPState(
     display::HDCPState* hdcp_state,
     display::ContentProtectionMethod* protection_method) {
-  if (!connector_)
-    return false;
+  DCHECK(connector_);
 
   TRACE_EVENT1("drm", "DrmDisplay::GetHDCPState", "connector",
                connector_->connector_id);
@@ -249,9 +241,7 @@ bool DrmDisplay::GetHDCPState(
 bool DrmDisplay::SetHDCPState(
     display::HDCPState state,
     display::ContentProtectionMethod protection_method) {
-  if (!connector_) {
-    return false;
-  }
+  DCHECK(connector_);
 
   if (protection_method != display::CONTENT_PROTECTION_METHOD_NONE) {
     ScopedDrmPropertyPtr content_type_property(

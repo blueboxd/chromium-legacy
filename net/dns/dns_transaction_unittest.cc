@@ -35,12 +35,12 @@
 #include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_util.h"
 #include "net/dns/dns_config.h"
+#include "net/dns/dns_names_util.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_server_iterator.h"
 #include "net/dns/dns_session.h"
 #include "net/dns/dns_test_util.h"
-#include "net/dns/dns_util.h"
 #include "net/dns/public/dns_over_https_config.h"
 #include "net/dns/public/dns_over_https_server_config.h"
 #include "net/dns/public/dns_protocol.h"
@@ -75,27 +75,11 @@ base::TimeDelta kFallbackPeriod = base::Seconds(1);
 
 const char kMockHostname[] = "mock.http";
 
-// Like `net::DNSDomainFromDot()` except allows converting more names than
-// accepted by that utility.
-std::string DomainFromDot(base::StringPiece dotted_name) {
-  std::string dns_name;
-
-  while (true) {
-    size_t next_dot = dotted_name.find('.');
-    if (next_dot == base::StringPiece::npos) {
-      dns_name.append(1, base::checked_cast<base::StringPiece::value_type>(
-                             dotted_name.size()));
-      dns_name.append(static_cast<std::string>(dotted_name));
-      dns_name.append(1, 0);
-      return dns_name;
-    } else {
-      dns_name.append(
-          1, base::checked_cast<base::StringPiece::value_type>(next_dot));
-      dns_name.append(
-          static_cast<std::string>(dotted_name.substr(0, next_dot)));
-      dotted_name = dotted_name.substr(next_dot + 1);
-    }
-  }
+std::vector<uint8_t> DomainFromDot(base::StringPiece dotted_name) {
+  absl::optional<std::vector<uint8_t>> dns_name =
+      dns_names_util::DottedNameToNetwork(dotted_name);
+  CHECK(dns_name.has_value());
+  return dns_name.value();
 }
 
 enum class Transport { UDP, TCP, HTTPS };

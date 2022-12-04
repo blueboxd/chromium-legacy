@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/desks/desks_client.h"
-
 #include <cstdint>
 #include <cstdlib>
 #include <memory>
@@ -26,19 +24,24 @@
 #include "ash/wm/desks/templates/saved_desk_presenter.h"
 #include "ash/wm/desks/templates/saved_desk_test_util.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
+#include "ash/wm/float/float_controller.h"
 #include "ash/wm/multitask_menu_nudge_controller.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_test_util.h"
+#include "ash/wm/window_state.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/guid.h"
+#include "base/json/json_writer.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/value_iterators.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -60,6 +63,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/desks/chrome_desks_templates_delegate.h"
 #include "chrome/browser/ui/ash/desks/chrome_desks_util.h"
+#include "chrome/browser/ui/ash/desks/desks_client.h"
 #include "chrome/browser/ui/ash/desks/desks_templates_app_launch_handler.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -76,7 +80,9 @@
 #include "chrome/test/base/chromeos/ash_browser_test_starter.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/crosapi/mojom/desk.mojom-shared.h"
 #include "chromeos/ui/base/window_state_type.h"
+#include "chromeos/ui/wm/features.h"
 #include "components/account_id/account_id.h"
 #include "components/app_constants/constants.h"
 #include "components/app_restore/app_launch_info.h"
@@ -175,7 +181,7 @@ std::unique_ptr<ash::DeskTemplate> CaptureActiveDeskAndSaveTemplate(
   std::unique_ptr<ash::DeskTemplate> desk_template;
   DesksClient::Get()->CaptureActiveDeskAndSaveTemplate(
       base::BindLambdaForTesting(
-          [&](std::string error_string,
+          [&](absl::optional<DesksClient::DeskActionError> error,
               std::unique_ptr<ash::DeskTemplate> captured_desk_template) {
             run_loop.Quit();
             ASSERT_TRUE(captured_desk_template);
@@ -191,8 +197,8 @@ std::vector<const ash::DeskTemplate*> GetDeskTemplates() {
   std::vector<const ash::DeskTemplate*> templates;
 
   DesksClient::Get()->GetDeskTemplates(base::BindLambdaForTesting(
-      [&](const std::vector<const ash::DeskTemplate*>& desk_templates,
-          std::string error_string) {
+      [&](absl::optional<DesksClient::DeskActionError> error,
+          const std::vector<const ash::DeskTemplate*>& desk_templates) {
         templates = desk_templates;
         run_loop.Quit();
       }));
@@ -216,10 +222,11 @@ std::string GetTemplateJson(const base::GUID& uuid, Profile* profile) {
   DesksClient::Get()->GetTemplateJson(
       uuid, profile,
       base::BindLambdaForTesting(
-          [&](const std::string& template_json, std::string error_string) {
+          [&](absl::optional<DesksClient::DeskActionError> error,
+              const base::Value& template_json) {
+            base::JSONWriter::Write(template_json, &template_json_result);
             run_loop.Quit();
-            ASSERT_TRUE(error_string.empty());
-            template_json_result = template_json;
+            ASSERT_FALSE(error);
           }));
   run_loop.Run();
   return template_json_result;
@@ -229,7 +236,9 @@ void DeleteDeskTemplate(const base::GUID& uuid) {
   base::RunLoop run_loop;
   DesksClient::Get()->DeleteDeskTemplate(
       uuid, base::BindLambdaForTesting(
-                [&](std::string error_string) { run_loop.Quit(); }));
+                [&](absl::optional<DesksClient::DeskActionError> error) {
+                  run_loop.Quit();
+                }));
   run_loop.Run();
 }
 
@@ -318,9 +327,9 @@ void ClickFirstTemplateItem() {
 
 const std::vector<const ash::DeskTemplate*> GetAllEntries() {
   std::vector<const ash::DeskTemplate*> templates;
-  auto result = DesksClient::Get()->GetDeskModel()->GetAllEntries();
-  DCHECK_EQ(desks_storage::DeskModel::GetAllEntriesStatus::kOk, result.status);
-  return result.entries;
+  auto error = DesksClient::Get()->GetDeskModel()->GetAllEntries();
+  DCHECK_EQ(desks_storage::DeskModel::GetAllEntriesStatus::kOk, error.status);
+  return error.entries;
 }
 
 // Creates a vector of tab groups based on the vector of GURLs passed into it.
@@ -456,7 +465,8 @@ class DesksClientTest : public extensions::PlatformAppBrowserTest {
   DesksClientTest() {
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/{ash::features::kDesksTemplates,
-                              ash::features::kEnableSavedDesks},
+                              ash::features::kEnableSavedDesks,
+                              chromeos::wm::features::kFloatWindow},
         /*disabled_features=*/{ash::features::kDeskTemplateSync});
   }
   DesksClientTest(const DesksClientTest&) = delete;
@@ -474,9 +484,8 @@ class DesksClientTest : public extensions::PlatformAppBrowserTest {
     base::RunLoop waiter;
     DesksClient::Get()->LaunchDeskTemplate(
         uuid, base::BindLambdaForTesting(
-                  [&](std::string error, const base::GUID& desk_uuid) {
-                    waiter.Quit();
-                  }));
+                  [&](absl::optional<DesksClient::DeskActionError> error,
+                      const base::GUID& desk_uuid) { waiter.Quit(); }));
     waiter.Run();
   }
 
@@ -1050,6 +1059,62 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateWithBrowserWindow) {
   EXPECT_EQ(ash::Shell::GetContainer(browser_window->GetRootWindow(),
                                      ash::kShellWindowId_DeskContainerB),
             browser_window->parent());
+}
+
+// Tests that launching a template that contains a floated browser window works
+// as expected.
+IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateWithFloatedWindow) {
+  // Test that Singleton was properly initialized.
+  ASSERT_TRUE(DesksClient::Get());
+
+  // Float browser window and move out from default location.
+  const gfx::Rect browser_bounds = gfx::Rect(0, 0, 800, 200);
+  aura::Window* window = browser()->window()->GetNativeWindow();
+  ui::test::EventGenerator event_generator(window->GetRootWindow());
+  event_generator.PressAndReleaseKey(ui::VKEY_F,
+                                     ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(ash::WindowState::Get(window)->IsFloated());
+  window->SetBounds(browser_bounds);
+  const int32_t browser_window_id =
+      window->GetProperty(app_restore::kWindowIdKey);
+
+  std::unique_ptr<ash::DeskTemplate> desk_template =
+      CaptureActiveDeskAndSaveTemplate(ash::DeskTemplateType::kTemplate);
+
+  // Test the default template's name is the current desk's name.
+  auto* desks_controller = ash::DesksController::Get();
+  EXPECT_EQ(
+      desk_template->template_name(),
+      desks_controller->GetDeskName(desks_controller->GetActiveDeskIndex()));
+
+  const app_restore::RestoreData* restore_data =
+      desk_template->desk_restore_data();
+  const auto& app_id_to_launch_list = restore_data->app_id_to_launch_list();
+  EXPECT_EQ(app_id_to_launch_list.size(), 1u);
+
+  // Find `browser` window's app restore data.
+  auto iter = app_id_to_launch_list.find(app_constants::kChromeAppId);
+  ASSERT_TRUE(iter != app_id_to_launch_list.end());
+  auto app_restore_data_iter = iter->second.find(browser_window_id);
+  ASSERT_TRUE(app_restore_data_iter != iter->second.end());
+  const auto& data = app_restore_data_iter->second;
+  // Verify floated window bounds is correctly captured.
+  EXPECT_EQ(browser_bounds, data->current_bounds.value());
+  // Verify window float state is correctly captured.
+  EXPECT_EQ(chromeos::WindowStateType::kFloated, data->window_state_type);
+
+  // Launch saved template and test floated window is restored correctly.
+  SetAndLaunchTemplate(std::move(desk_template));
+  EXPECT_EQ(1, desks_controller->GetActiveDeskIndex());
+
+  // Get the floated window from newly created desk.
+  auto* float_controller = ash::Shell::Get()->float_controller();
+  auto* floated_window = float_controller->FindFloatedWindowOfDesk(
+      desks_controller->active_desk());
+  DCHECK(floated_window);
+  DCHECK(ash::WindowState::Get(floated_window)->IsFloated());
+  // Restored floated window to the saved bounds instead of default bounds.
+  DCHECK_EQ(floated_window->bounds(), browser_bounds);
 }
 
 // Tests that launching a template that contains a browser window with tab
@@ -2379,11 +2444,12 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateAndCleanUpDesk) {
   // Launch one template, desk size should increase by 1.
   DesksClient::Get()->LaunchDeskTemplate(
       base::GUID(), base::BindLambdaForTesting(
-                        [&](std::string error, const base::GUID& desk_uuid) {
-                          EXPECT_TRUE(error.empty());
+                        [&](absl::optional<DesksClient::DeskActionError> error,
+                            const base::GUID& desk_uuid) {
                           EXPECT_EQ(2u, desks_controller->desks().size());
                           desk_id = desk_uuid;
                           loop.Quit();
+                          ASSERT_FALSE(error);
                         }));
   loop.Run();
 
@@ -2392,9 +2458,11 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateAndCleanUpDesk) {
   CreateBrowser({});
   base::HistogramTester histogram_tester;
   DesksClient::Get()->RemoveDesk(
-      desk_id, false, base::BindLambdaForTesting([](std::string error) {
-        EXPECT_TRUE(error.empty());
-      }));
+      desk_id, false,
+      base::BindLambdaForTesting(
+          [](absl::optional<DesksClient::DeskActionError> error) {
+            ASSERT_FALSE(error);
+          }));
   waiter.Wait();
   // Record number of windows being closed per source.
   // NOTE: The template contains an existing browser with 1 tab created by
@@ -2457,25 +2525,45 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, RemoveWithInvalidDeskId) {
   // Should have 1 default desk.
   EXPECT_EQ(1u, desks_controller->desks().size());
   // Construct an empty invalid desk_id.
-  base::GUID desk_id{};
+  base::GUID desk_id;
   DesksClient::Get()->RemoveDesk(
-      desk_id, false, base::BindLambdaForTesting([](std::string error) {
-        EXPECT_EQ("The desk identifier is not valid.", error);
-      }));
+      desk_id, false,
+      base::BindLambdaForTesting(
+          [](absl::optional<DesksClient::DeskActionError> error) {
+            EXPECT_EQ(DesksClient::DeskActionError::kInvalidIdError,
+                      error.value());
+          }));
 
   EXPECT_EQ(1u, desks_controller->desks().size());
 }
 
-// Tests list all available desks.
-IN_PROC_BROWSER_TEST_F(DesksClientTest, GetAllDesks) {
+// Tests list all available desks. Remove desk should fail when there is only
+// one desk.
+IN_PROC_BROWSER_TEST_F(DesksClientTest, GetAllDesksAndRemove) {
   auto* desks_controller = ash::DesksController::Get();
   // Should have 1 default active desk.
   EXPECT_EQ(1u, desks_controller->desks().size());
+
+  base::RunLoop loop;
+  // Retrieve desk id;
+  base::GUID desk_id;
   DesksClient::Get()->GetAllDesks(base::BindLambdaForTesting(
-      [&](const std::vector<const ash::Desk*>& desks, std::string error) {
-        EXPECT_TRUE(error.empty());
-        EXPECT_EQ(1u, desks_controller->desks().size());
+      [&](absl::optional<DesksClient::DeskActionError> error,
+          const std::vector<const ash::Desk*>& desks) {
+        loop.Quit();
+        ASSERT_FALSE(error);
+        ASSERT_EQ(1u, desks_controller->desks().size());
+        desk_id = desks_controller->desks().at(0)->uuid();
       }));
+  loop.Run();
+
+  DesksClient::Get()->RemoveDesk(
+      desk_id, false,
+      base::BindLambdaForTesting(
+          [](absl::optional<DesksClient::DeskActionError> error) {
+            EXPECT_EQ(DesksClient::DeskActionError::kDesksCountCheckFailedError,
+                      error);
+          }));
 }
 
 // Tests launch an empty desk with `desk_name` provided.
@@ -2489,15 +2577,16 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchEmptyDeskWithProvidedName) {
   ash::DeskSwitchAnimationWaiter waiter;
   DesksClient::Get()->LaunchEmptyDesk(
       base::BindLambdaForTesting(
-          [&](std::string error, const base::GUID& desk_uuid) {
-            EXPECT_TRUE(error.empty());
+          [&](absl::optional<DesksClient::DeskActionError> error,
+              const base::GUID& desk_uuid) {
+            loop.Quit();
+            ASSERT_FALSE(error);
             // Launch one template, desk size should increase by 1.
-            EXPECT_EQ(2u, desks_controller->desks().size());
+            ASSERT_EQ(2u, desks_controller->desks().size());
             // `desk_name` should be set as provided
             EXPECT_EQ(desk_name, desks_controller->desks().back()->name());
             // `desk_uuid` should be returned.
             EXPECT_GT(desk_uuid.AsLowercaseString().size(), 0u);
-            loop.Quit();
           }),
       desk_name);
   loop.Run();
@@ -2513,15 +2602,16 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchEmptyDeskWithDefaultName) {
   base::RunLoop loop;
   ash::DeskSwitchAnimationWaiter waiter;
   DesksClient::Get()->LaunchEmptyDesk(base::BindLambdaForTesting(
-      [&](std::string error, const base::GUID& desk_uuid) {
-        EXPECT_TRUE(error.empty());
+      [&](absl::optional<DesksClient::DeskActionError> error,
+          const base::GUID& desk_uuid) {
+        loop.Quit();
+        ASSERT_FALSE(error);
         // Launch one template, desk size should increase by 1.
-        EXPECT_EQ(2u, desks_controller->desks().size());
+        ASSERT_EQ(2u, desks_controller->desks().size());
         // `desk_name` should be set as default desk name
         EXPECT_EQ(u"Desk 2", desks_controller->desks().back()->name());
         // `desk_uuid` should be returned.
         EXPECT_GT(desk_uuid.AsLowercaseString().size(), 0u);
-        loop.Quit();
       }));
   loop.Run();
 
@@ -2546,24 +2636,28 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, SetWindowProperties) {
   // Set to all-desk window.
   DesksClient::Get()->SetAllDeskPropertyByBrowserSessionId(
       browser_session_id, true,
-      base::BindLambdaForTesting([&](std::string error) {
-        EXPECT_TRUE(error.empty());
-        // Should have 1 all-desk window now.
-        EXPECT_EQ(1u, desks_controller->visible_on_all_desks_windows().size());
-        loop1.Quit();
-      }));
+      base::BindLambdaForTesting(
+          [&](absl::optional<DesksClient::DeskActionError> error) {
+            loop1.Quit();
+            ASSERT_FALSE(error);
+            // Should have 1 all-desk window now.
+            EXPECT_EQ(1u,
+                      desks_controller->visible_on_all_desks_windows().size());
+          }));
   loop1.Run();
 
   base::RunLoop loop2;
   // Unset all-desk window.
   DesksClient::Get()->SetAllDeskPropertyByBrowserSessionId(
       browser_session_id, false,
-      base::BindLambdaForTesting([&](std::string error) {
-        EXPECT_TRUE(error.empty());
-        // Should have no all-desk window now.
-        EXPECT_EQ(0u, desks_controller->visible_on_all_desks_windows().size());
-        loop2.Quit();
-      }));
+      base::BindLambdaForTesting(
+          [&](absl::optional<DesksClient::DeskActionError> error) {
+            loop2.Quit();
+            ASSERT_FALSE(error);
+            // Should have no all-desk window now.
+            EXPECT_EQ(0u,
+                      desks_controller->visible_on_all_desks_windows().size());
+          }));
   loop2.Run();
 }
 
@@ -2572,20 +2666,69 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, ThrottleImmediateDeskAction) {
   base::GUID new_desk_id;
   ash::DeskSwitchAnimationWaiter waiter;
   DesksClient::Get()->LaunchEmptyDesk(base::BindLambdaForTesting(
-      [&](std::string error, const base::GUID& desk_uuid) {
-        new_desk_id = desk_uuid;
-      }));
+      [&](absl::optional<DesksClient::DeskActionError> error,
+          const base::GUID& desk_uuid) { new_desk_id = desk_uuid; }));
+
+  int remove_executed = 0;
   DesksClient::Get()->RemoveDesk(
-      new_desk_id, false, base::BindLambdaForTesting([](std::string error) {
-        EXPECT_EQ("The desk is currently being modified", error);
-      }));
+      new_desk_id, false,
+      base::BindLambdaForTesting(
+          [&](absl::optional<DesksClient::DeskActionError> error) {
+            EXPECT_EQ(DesksClient::DeskActionError::kDesksBeingModifiedError,
+                      error.value());
+            remove_executed++;
+          }));
+  EXPECT_EQ(1, remove_executed);
+
+  int launch_executed = 0;
   DesksClient::Get()->LaunchEmptyDesk(base::BindLambdaForTesting(
-      [&](std::string error, const base::GUID& desk_uuid) {
-        EXPECT_EQ("The desk is currently being modified", error);
+      [&](absl::optional<DesksClient::DeskActionError> error,
+          const base::GUID& desk_uuid) {
+        EXPECT_EQ(DesksClient::DeskActionError::kDesksBeingModifiedError,
+                  error.value());
+        launch_executed++;
       }));
-  std::string error = DesksClient::Get()->SwitchDesk(new_desk_id);
-  EXPECT_EQ("The desk is currently being modified", error);
+  EXPECT_EQ(1, launch_executed);
+  absl::optional<DesksClient::DeskActionError> error =
+      DesksClient::Get()->SwitchDesk(new_desk_id);
+  EXPECT_EQ(DesksClient::DeskActionError::kDesksBeingModifiedError,
+            error.value());
   waiter.Wait();
+}
+
+// Tests save an empty desk should fail.
+IN_PROC_BROWSER_TEST_F(DesksClientTest, SaveEmptyDesk) {
+  // Create a new browser and add a few tabs to it.
+  Browser* browser = CreateBrowser({GURL(kExampleUrl1), GURL(kExampleUrl2)});
+  aura::Window* window = browser->window()->GetNativeWindow();
+
+  const int32_t browser_window_id =
+      window->GetProperty(app_restore::kWindowIdKey);
+  // Get current tabs from browser.
+  std::vector<GURL> urls = GetURLsForBrowserWindow(browser);
+
+  std::unique_ptr<ash::DeskTemplate> desk_template =
+      CaptureActiveDeskAndSaveTemplate(ash::DeskTemplateType::kSaveAndRecall);
+  const app_restore::RestoreData* restore_data =
+      desk_template->desk_restore_data();
+  const auto& app_id_to_launch_list = restore_data->app_id_to_launch_list();
+  EXPECT_EQ(app_id_to_launch_list.size(), 1u);
+
+  // Find `browser` window's app restore data.
+  auto iter = app_id_to_launch_list.find(app_constants::kChromeAppId);
+  ASSERT_TRUE(iter != app_id_to_launch_list.end());
+  auto app_restore_data_iter = iter->second.find(browser_window_id);
+  ASSERT_TRUE(app_restore_data_iter != iter->second.end());
+  const auto& data = app_restore_data_iter->second;
+  // Check the urls are captured correctly in the `saved_desk`.
+  EXPECT_EQ(data->urls.value(), urls);
+
+  // Exit overview.
+  ash::ToggleOverview();
+  ash::WaitForOverviewExitAnimation();
+  // An empty desk should be created.
+  EXPECT_EQ(ash::DesksController::Get()->GetNumberOfDesks(), 1);
+  EXPECT_EQ(ash::DesksController::Get()->active_desk()->windows().size(), 0u);
 }
 
 // Tests save an active desk to library and remove it from desk list.
@@ -2659,7 +2802,9 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, RecallSavedDesk) {
   DesksClient::Get()->LaunchDeskTemplate(
       desk_template->uuid(),
       base::BindLambdaForTesting(
-          [desk_model, &loop](std::string error, const base::GUID& desk_uuid) {
+          [desk_model, &loop](
+              absl::optional<DesksClient::DeskActionError> error,
+              const base::GUID& desk_uuid) {
             EXPECT_EQ(ash::DesksController::Get()->GetNumberOfDesks(), 2);
             EXPECT_EQ(0u, desk_model->GetEntryCount());
             loop.Quit();
@@ -2672,8 +2817,8 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, SwitchToCurrentDesk) {
   base::GUID current_desk_uuid;
   current_desk_uuid = DesksClient::Get()->GetActiveDesk();
 
-  std::string error = DesksClient::Get()->SwitchDesk(current_desk_uuid);
-  EXPECT_TRUE(error.empty());
+  // Expect no error message.
+  EXPECT_FALSE(DesksClient::Get()->SwitchDesk(current_desk_uuid));
 
   base::GUID desk_uuid = DesksClient::Get()->GetActiveDesk();
   EXPECT_EQ(current_desk_uuid, desk_uuid);
@@ -2681,8 +2826,8 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, SwitchToCurrentDesk) {
 
 // Tests switch to invalid desk should return error.
 IN_PROC_BROWSER_TEST_F(DesksClientTest, SwitchToInvalidDesk) {
-  std::string error = DesksClient::Get()->SwitchDesk({});
-  EXPECT_EQ("The desk cannot be found.", error);
+  EXPECT_EQ(DesksClient::Get()->SwitchDesk({}).value(),
+            DesksClient::DeskActionError::kResourceNotFoundError);
 }
 
 // Tests switch to different desk should be trigger desk animation.
@@ -2690,18 +2835,21 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, SwitchToDifferentDesk) {
   base::GUID desk_uuid = DesksClient::Get()->GetActiveDesk();
 
   // Launches a new desk.
+  int launch_executed = 0;
   DesksClient::Get()->LaunchEmptyDesk(base::BindLambdaForTesting(
-      [&](std::string error, const base::GUID& desk_uuid) {
-        EXPECT_TRUE(error.empty());
+      [&](absl::optional<DesksClient::DeskActionError> error,
+          const base::GUID& desk_uuid) {
+        ASSERT_FALSE(error);
+        launch_executed++;
       }));
+  EXPECT_EQ(1, launch_executed);
 
   // Wait for launch desk animation to settle.
   ash::DeskSwitchAnimationWaiter waiter;
   waiter.Wait();
 
-  // Switches to previous desk.
-  std::string error = DesksClient::Get()->SwitchDesk(desk_uuid);
-  EXPECT_TRUE(error.empty());
+  // Switches to previous desk. Expect no error message.
+  EXPECT_FALSE(DesksClient::Get()->SwitchDesk(desk_uuid));
 
   // Wait for desk switch animation.
   ash::DeskSwitchAnimationWaiter waiter_;

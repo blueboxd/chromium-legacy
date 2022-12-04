@@ -74,6 +74,7 @@
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/web_app_callback_app_identity.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -149,6 +150,7 @@
 #if BUILDFLAG(IS_MAC)
 #include <ImageIO/ImageIO.h>
 #include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
+#include "chrome/browser/apps/app_shim/web_app_shim_manager_delegate_mac.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/app_shim_registry_mac.h"
@@ -275,7 +277,9 @@ base::flat_map<Site, SiteConfig> g_site_configs = {
       .relative_manifest_id = "webapps_integration/file_handler/basic.html",
       .app_name = "File Handler",
       .wco_not_enabled_title = u"File Handler",
-      .icon_color = SK_ColorBLACK}},
+      .icon_color = SK_ColorBLACK,
+      .alternate_titles = {"File Handler - Text Handler",
+                           "File Handler - Image Handler"}}},
     {Site::kNoServiceWorker,
      {.relative_url = "/webapps_integration/site_no_service_worker/basic.html",
       .relative_manifest_id =
@@ -771,7 +775,9 @@ std::ostream& operator<<(std::ostream& os, const StateSnapshot& snapshot) {
 }
 
 WebAppIntegrationTestDriver::WebAppIntegrationTestDriver(TestDelegate* delegate)
-    : delegate_(delegate) {
+    : delegate_(delegate),
+      update_dialog_scope_(web_app::SetIdentityUpdateDialogActionForTesting(
+          web_app::AppIdentityUpdate::kSkipped)) {
   scoped_feature_list_.InitAndEnableFeature(
       webapps::features::kDesktopPWAsDetailedInstallDialog);
 }
@@ -881,6 +887,10 @@ void WebAppIntegrationTestDriver::TearDownOnMainThread() {
 // prevent the app_id_update_dialog_waiter_ from hanging.
 void WebAppIntegrationTestDriver::HandleAppIdentityUpdateDialogResponse(
     UpdateDialogResponse response) {
+  // Resetting the global test state for app identity update dialogs so that
+  // tests can accept/cancel the app identity update dialog.
+  update_dialog_scope_ =
+      web_app::SetIdentityUpdateDialogActionForTesting(absl::nullopt);
   views::Widget* widget = app_id_update_dialog_waiter_->WaitIfNeededAndGet();
   ASSERT_TRUE(widget != nullptr);
   switch (response) {
@@ -1185,9 +1195,14 @@ void WebAppIntegrationTestDriver::LaunchFileExpectDialog(
   FileHandlerLaunchDialogView::SetDefaultRememberSelectionForTesting(
       ask_again == AskAgainOptions::kRemember);
 
-  LaunchFile(site, files_options);
+  base::RunLoop run_loop;
+#if BUILDFLAG(IS_MAC)
+  web_app::SetMacShimStartupDoneCallbackForTesting(run_loop.QuitClosure());
+#else
+  web_app::startup::SetStartupDoneCallbackForTesting(run_loop.QuitClosure());
+#endif
 
-  BrowserAddedWaiter browser_added_waiter;
+  LaunchFile(site, files_options);
 
   // Check the file handling dialog shows up.
   views::Widget* widget = waiter.WaitIfNeededAndGet();
@@ -1198,7 +1213,7 @@ void WebAppIntegrationTestDriver::LaunchFileExpectDialog(
   if (allow_deny == AllowDenyOptions::kDeny) {
     close_reason = views::Widget::ClosedReason::kCancelButtonClicked;
     if (ask_again == AskAgainOptions::kRemember) {
-      site_remember_deny_open_file.emplace(site);
+      site_remember_deny_open_file_.emplace(site);
     }
   } else {
     close_reason = views::Widget::ClosedReason::kAcceptButtonClicked;
@@ -1206,13 +1221,7 @@ void WebAppIntegrationTestDriver::LaunchFileExpectDialog(
   // File handling dialog should be destroyed after choosing the action.
   widget->CloseWithReason(close_reason);
   destroyed_waiter.Wait();
-
-  if (allow_deny == AllowDenyOptions::kAllow) {
-    browser_added_waiter.Wait();
-    app_browser_ = browser_added_waiter.browser_added();
-    ActivateBrowserAndWait(app_browser_);
-    EXPECT_EQ(app_browser()->app_controller()->app_id(), app_id);
-  }
+  run_loop.Run();
   AfterStateChangeAction();
 }
 
@@ -1221,17 +1230,20 @@ void WebAppIntegrationTestDriver::LaunchFileExpectNoDialog(
     FilesOptions files_options) {
   BeforeStateChangeAction(__FUNCTION__);
   AppId app_id = GetAppIdBySiteMode(site);
-  BrowserAddedWaiter browser_added_waiter;
+  base::RunLoop run_loop;
+#if BUILDFLAG(IS_MAC)
+  web_app::SetMacShimStartupDoneCallbackForTesting(run_loop.QuitClosure());
+#else
+  web_app::startup::SetStartupDoneCallbackForTesting(run_loop.QuitClosure());
+#endif
+
   LaunchFile(site, files_options);
 
   // If the user previously denied access to open files with this app, a window
   // is still opened for the app. The only difference is that no files would
   // have been passed to the app. Either way, we should always wait for a
-  // browser to be added.
-  browser_added_waiter.Wait();
-  app_browser_ = browser_added_waiter.browser_added();
-  ActivateBrowserAndWait(app_browser_);
-  EXPECT_EQ(app_browser()->app_controller()->app_id(), app_id);
+  // window / tab to be added.
+  run_loop.Run();
 
   AfterStateChangeAction();
 }
@@ -1873,7 +1885,7 @@ void WebAppIntegrationTestDriver::UninstallFromList(Site site) {
   handler.HandleUninstallApp(web_app_ids);
 #endif
   uninstall_waiter.Wait();
-  site_remember_deny_open_file.erase(site);
+  site_remember_deny_open_file_.erase(site);
 
   AfterStateChangeAction();
 }
@@ -1908,7 +1920,7 @@ void WebAppIntegrationTestDriver::UninstallFromAppSettings(Site site) {
   // Wait for app settings page to be closed.
   destroyed_watcher.Wait();
 
-  site_remember_deny_open_file.erase(site);
+  site_remember_deny_open_file_.erase(site);
 
   AfterStateChangeAction();
 #else
@@ -1946,7 +1958,7 @@ void WebAppIntegrationTestDriver::UninstallFromMenu(Site site) {
   // the app_browser.
   app_menu_model.reset();
   uninstall_waiter.Wait();
-  site_remember_deny_open_file.erase(site);
+  site_remember_deny_open_file_.erase(site);
   AfterStateChangeAction();
 }
 
@@ -1989,7 +2001,7 @@ void WebAppIntegrationTestDriver::UninstallPolicyApp(Site site) {
   // App Service.
   if (app == nullptr)
     uninstall_waiter.Wait();
-  site_remember_deny_open_file.erase(site);
+  site_remember_deny_open_file_.erase(site);
   AfterStateChangeAction();
 }
 
@@ -2013,12 +2025,30 @@ void WebAppIntegrationTestDriver::UninstallFromOs(Site site) {
       {profile()->GetPath(), StartupProfileMode::kBrowserWindow});
 
   uninstall_waiter.Wait();
-  site_remember_deny_open_file.erase(site);
+  site_remember_deny_open_file_.erase(site);
   AfterStateChangeAction();
 #else
   NOTREACHED() << "Not supported on non-Windows platforms";
 #endif
 }
+
+#if BUILDFLAG(IS_MAC)
+void WebAppIntegrationTestDriver::CorruptAppShim(Site site) {
+  if (!BeforeStateChangeAction(__FUNCTION__))
+    return;
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  AppId app_id = GetAppIdBySiteMode(site);
+  std::string app_name = GetSiteConfiguration(site).app_name;
+  base::FilePath app_path = GetShortcutPath(
+      override_registration_->shortcut_override->chrome_apps_folder.GetPath(),
+      app_name, app_id);
+  base::FilePath bin_path = app_path.AppendASCII("Contents")
+                                .AppendASCII("MacOS")
+                                .AppendASCII("app_mode_loader");
+  EXPECT_TRUE(base::DeleteFile(bin_path));
+  AfterStateChangeAction();
+}
+#endif
 
 void WebAppIntegrationTestDriver::CheckAppListEmpty() {
   if (!BeforeStateCheckAction(__FUNCTION__))
@@ -3357,7 +3387,7 @@ WebAppIntegrationTest::WebAppIntegrationTest() : helper_(this) {
   enabled_features.push_back(blink::features::kFileHandlingAPI);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   disabled_features.push_back(features::kWebAppsCrosapi);
-  disabled_features.push_back(chromeos::features::kLacrosPrimary);
+  disabled_features.push_back(ash::features::kLacrosPrimary);
 #endif
 #if BUILDFLAG(IS_CHROMEOS)
   // TODO(crbug.com/1357905): Update test driver to work with new UI.
@@ -3371,7 +3401,6 @@ WebAppIntegrationTest::~WebAppIntegrationTest() = default;
 void WebAppIntegrationTest::SetUp() {
   helper_.SetUp();
   InProcessBrowserTest::SetUp();
-  chrome::SetAutoAcceptAppIdentityUpdateForTesting(false);
 }
 
 void WebAppIntegrationTest::SetUpOnMainThread() {

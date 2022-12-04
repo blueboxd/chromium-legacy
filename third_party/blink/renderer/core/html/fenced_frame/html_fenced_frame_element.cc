@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/html/fenced_frame/html_fenced_frame_element.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/types/pass_key.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/fenced_frame/fenced_frame_utils.h"
@@ -155,6 +156,33 @@ void HTMLFencedFrameElement::DisconnectContentFrame() {
   HTMLFrameOwnerElement::DisconnectContentFrame();
 }
 
+ParsedPermissionsPolicy HTMLFencedFrameElement::ConstructContainerPolicy()
+    const {
+  if (!GetExecutionContext())
+    return ParsedPermissionsPolicy();
+
+  scoped_refptr<const SecurityOrigin> src_origin =
+      GetOriginForPermissionsPolicy();
+  scoped_refptr<const SecurityOrigin> self_origin =
+      GetExecutionContext()->GetSecurityOrigin();
+
+  PolicyParserMessageBuffer logger;
+
+  ParsedPermissionsPolicy container_policy =
+      PermissionsPolicyParser::ParseAttribute(allow_, self_origin, src_origin,
+                                              logger, GetExecutionContext());
+
+  for (const auto& message : logger.GetMessages()) {
+    GetDocument().AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kOther, message.level,
+            message.content),
+        /* discard_duplicates */ true);
+  }
+
+  return container_policy;
+}
+
 void HTMLFencedFrameElement::SetCollapsed(bool collapse) {
   if (collapsed_by_client_ == collapse)
     return;
@@ -168,6 +196,13 @@ void HTMLFencedFrameElement::SetCollapsed(bool collapse) {
   // Trigger style recalc to trigger layout tree re-attachment.
   SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
                                              style_change_reason::kFrame));
+}
+
+void HTMLFencedFrameElement::DidChangeContainerPolicy() {
+  // Don't notify about updates if frame_delegate_ is null, for example when
+  // the delegate hasn't been created yet.
+  if (frame_delegate_)
+    frame_delegate_->DidChangeFramePolicy(GetFramePolicy());
 }
 
 // START HTMLFencedFrameElement::FencedFrameDelegate.
@@ -418,6 +453,14 @@ void HTMLFencedFrameElement::ParseAttribute(
 
     KURL url = GetNonEmptyURLAttribute(html_names::kSrcAttr);
     Navigate(url);
+  } else if (params.name == html_names::kAllowAttr) {
+    if (allow_ != params.new_value) {
+      allow_ = params.new_value;
+      if (!params.new_value.empty()) {
+        UseCounter::Count(GetDocument(),
+                          WebFeature::kFeaturePolicyAllowAttribute);
+      }
+    }
   } else {
     HTMLFrameOwnerElement::ParseAttribute(params);
   }
@@ -503,6 +546,8 @@ void HTMLFencedFrameElement::Navigate(const KURL& url) {
     return;
   }
 
+  UpdateContainerPolicy();
+
   frame_delegate_->Navigate(url);
 
   if (!frozen_frame_size_) {
@@ -537,9 +582,18 @@ void HTMLFencedFrameElement::CreateDelegateAndNavigate() {
 
   frame_delegate_ = FencedFrameDelegate::Create(this);
 
-  KURL url = GetNonEmptyURLAttribute(html_names::kSrcAttr);
-  if (inner_config_) {
-    // If there is an inner config, the url will be retrieved from it.
+  KURL url;
+  // If there is an inner config, the urn or url will be retrieved from it.
+  if (!inner_config_) {
+    url = GetNonEmptyURLAttribute(html_names::kSrcAttr);
+  } else if (inner_config_->urn(PassKey())) {
+    // TODO(lbrady) Right now, the URN should always be null. It will eventually
+    // be able to have a value read into it. We will enable the DCHECK at that
+    // point.
+    // DCHECK(IsValidUrnUuidURL(GURL(inner_config_->urn().value())));
+    NOTREACHED();
+    url = inner_config_->urn(PassKey()).value();
+  } else {
     DCHECK(inner_config_->url());
     url = inner_config_->GetValueIgnoringVisibility<
         FencedFrameInnerConfig::Attribute::kURL>();

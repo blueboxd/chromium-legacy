@@ -17,8 +17,8 @@ import org.chromium.base.FeatureList;
 import org.chromium.base.ObserverList;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarButtonVariant;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures;
-import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures.AdaptiveToolbarButtonVariant;
 import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogManagerObserver;
@@ -116,7 +116,8 @@ public abstract class BaseButtonDataProvider implements ButtonDataProvider, OnCl
     private void maybeSetIphCommandBuilder(Tab tab) {
         if (mButtonData.getButtonSpec().getIPHCommandBuilder() != null || tab == null
                 || !FeatureList.isInitialized() || !AdaptiveToolbarFeatures.isCustomizationEnabled()
-                || AdaptiveToolbarFeatures.shouldShowActionChip()) {
+                || AdaptiveToolbarFeatures.shouldShowActionChip(
+                        mButtonData.getButtonSpec().getButtonVariant())) {
             return;
         }
 
@@ -125,7 +126,8 @@ public abstract class BaseButtonDataProvider implements ButtonDataProvider, OnCl
 
     private void maybeSetActionChipResourceId() {
         if (!mButtonData.getButtonSpec().isDynamicAction() || !FeatureList.isInitialized()
-                || !AdaptiveToolbarFeatures.shouldShowActionChip()
+                || !AdaptiveToolbarFeatures.shouldShowActionChip(
+                        mButtonData.getButtonSpec().getButtonVariant())
                 || mButtonData.getButtonSpec().getActionChipLabelResId() != Resources.ID_NULL) {
             return;
         }

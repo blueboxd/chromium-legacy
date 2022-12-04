@@ -101,13 +101,18 @@ Verbs fall into a number of different categories:
   triggers or the test will fail.
     - `WithElement()`
     - `WithView()` [Views]
-- **EnsureNotPresent** is the opposite of `WithElement`; if the element exists
-  when the step is triggered, the test fails. There is also a version that looks
-  for a DOM element in an
+- **Ensure** verbs check the presence or absence of an element after allowing
+  all pending events to settle. They are not compatible with `InAnyContext()`
+  for technical reasons, and therefore, take an `in_any_context` parameter.
+  There are also versions that look for a DOM element in an
   [instrumented WebContents](#webcontents-instrumentation) [Browser].
+    - `EnsurePresent()`
+    - `EnsureNotPresent()`
 - **Action** verbs simulate input to specific UI elements. You can often specify
   the type of input you want to simulate (keyboard, mouse, etc.) but you don't
-  have to. Examples:
+  have to. Some of these (`ActivateSurface()`, `SendAccelerator()`) may flake in
+  environments where the test fixture is not running as the only process, so
+  prefer to use those in interactive_ui_tests. Examples:
     - `PressButton()`
     - `SelectMenuItem()`
     - `SelectTab()`
@@ -129,7 +134,9 @@ Verbs fall into a number of different categories:
   include:
     - `NameView()` [Views]
     - `NameChildView()` [Views]
+    - `NameChildViewByType()` [Views]
     - `NameDescendantView()` [Views]
+    - `NameDescendantViewByType()` [Views]
     - `NameViewRelative()` [Views]
 - **WebContents** verbs either dynamically
   [instrument WebContents](#webcontents-instrumentation), navigate them, or wait
@@ -187,7 +194,7 @@ A modifier wraps around a step or steps and change their behavior.
 
 - **InAnyContext** allows the modified verb to find an element outside the test's default
   `ElementContext`. Unlike the other modifiers, there are a number of limitations on its use:
-  - It should not be used with `FlushEvents`, `EnsureNotPresent`, or any `Activate`,
+  - It should not be used with `FlushEvents`, most `Ensure`, or any `Activate`,
     `Event`, or `Mouse` verbs.
     - This is a shortcoming in the underlying framework that will be fixed in the future.
   - It should not be used with named elements, which can already be found in any context.
@@ -203,7 +210,8 @@ RunTestSequence(
 
 - **InSameContext** allows the modified verb (or verbs) to find an element in the same context
   as the previous step.
-  - Has no effect on `EnsureNotPresent()` when the `in_any_context` parameter is set to true.
+  - Has no effect on `EnsurePresent()` or `EnsureNotPresent()` when the `in_any_context`
+    parameter is set to true.
   - Example:
 ```cpp
 RunTestSequence(
@@ -213,7 +221,8 @@ RunTestSequence(
 
 - **InContext** allows the modified verb (or verbs) to execute in the specified context instead of
   the default context for the sequence.
-  - Has no effect on `EnsureNotPresent()` when the `in_any_context` parameter is set to true.
+  - Has no effect on `EnsurePresent()` or `EnsureNotPresent()` when the `in_any_context` parameter
+    is set to true.
   - Example:
 
 ```cpp

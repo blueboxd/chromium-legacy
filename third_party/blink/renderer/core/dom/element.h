@@ -1175,6 +1175,14 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void RemoveAnchorScrollData();
   AnchorScrollData* GetAnchorScrollData() const;
 
+  // Returns true if any popover is anchored to this element.
+  bool HasAnchoredPopover() const;
+  void DecrementAnchoredPopoverCount();
+  void IncrementAnchoredPopoverCount();
+
+  // https://drafts.csswg.org/css-anchor-1/#implicit-anchor-element
+  Element* ImplicitAnchorElement() const;
+
  protected:
   const ElementData* GetElementData() const { return element_data_.Get(); }
   UniqueElementData& EnsureUniqueElementData();

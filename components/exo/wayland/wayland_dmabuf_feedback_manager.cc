@@ -281,8 +281,11 @@ WaylandDmabufFeedbackManager::WaylandDmabufFeedbackManager(Display* display)
 
     base::flat_map<size_t, uint64_t> modifier_entries;
     modifier_entries.emplace(format_table_index++, DRM_FORMAT_MOD_INVALID);
-    for (uint64_t modifier : modifiers)
-      modifier_entries.emplace(format_table_index++, modifier);
+
+    if (base::FeatureList::IsEnabled(ash::features::kExoLinuxDmabufModifiers)) {
+      for (uint64_t modifier : modifiers)
+        modifier_entries.emplace(format_table_index++, modifier);
+    }
 
     drm_formats_and_modifiers_.emplace(drm_format, modifier_entries);
   }
@@ -306,14 +309,14 @@ WaylandDmabufFeedbackManager::WaylandDmabufFeedbackManager(Display* display)
     return;
   }
 
-  if (!base::FeatureList::IsEnabled(chromeos::features::kExoLinuxDmabufV3) &&
-      !base::FeatureList::IsEnabled(chromeos::features::kExoLinuxDmabufV4)) {
+  if (!base::FeatureList::IsEnabled(ash::features::kExoLinuxDmabufV3) &&
+      !base::FeatureList::IsEnabled(ash::features::kExoLinuxDmabufV4)) {
     version_ = ZWP_LINUX_BUFFER_PARAMS_V1_CREATE_IMMED_SINCE_VERSION;
     return;
   }
 
   struct stat device_stat;
-  if (!base::FeatureList::IsEnabled(chromeos::features::kExoLinuxDmabufV4) ||
+  if (!base::FeatureList::IsEnabled(ash::features::kExoLinuxDmabufV4) ||
       caps.drm_render_node.empty() ||
       stat(caps.drm_render_node.c_str(), &device_stat) != 0) {
     version_ = ZWP_LINUX_DMABUF_V1_MODIFIER_SINCE_VERSION;

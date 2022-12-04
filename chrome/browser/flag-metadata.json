@@ -112,11 +112,6 @@
     "expiry_milestone": 110
   },
   {
-    "name": "allow-poly-device-pairing",
-    "owners": [ "cros-connectivity@google.com"],
-    "expiry_milestone": 110
-  },
-  {
     "name": "allow-repeated-updates",
     "owners": [ "kimjae", "chromeos-core-services@google.com" ],
     "expiry_milestone": 112
@@ -781,6 +776,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "camera-app-low-storage-warning",
+    "owners": [ "kamchonlathorn" ],
+    "expiry_milestone": 114
+  },
+  {
     "name": "camera-app-multi-page-doc-scan",
     "owners": [ "chuhsuan" ],
     "expiry_milestone": 111
@@ -796,8 +796,13 @@
     "expiry_milestone": 120
   },
   {
+    "name": "captive-portal-error-page",
+    "owners": [ "stevenjb", "cros-network-health-team@google.com" ],
+    "expiry_milestone": 114
+  },
+  {
     "name": "captive-portal-ui-2022",
-    "owners": [ "michaelrygiel", "stevenjb", "cros-network-health@google.com" ],
+    "owners": [ "michaelrygiel", "stevenjb", "cros-network-health-team@google.com" ],
     "expiry_milestone": 110
   },
   {
@@ -1599,7 +1604,7 @@
   {
     "name": "edit-context",
     "owners": [ "shihken@microsoft.com", "snianu@microsoft.com", "yosin" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 116
   },
   {
     "name": "elastic-overscroll",
@@ -1866,6 +1871,11 @@
     "expiry_milestone": 101
   },
   {
+    "name": "enable-cros-autocorrect-by-default",
+    "owners": [ "curtismcmullan", "essential-inputs-team@google.com" ],
+    "expiry_milestone": 125
+  },
+  {
     "name": "enable-cros-autocorrect-params-tuning",
     "owners": [ "tranbaoduy", "essential-inputs-team@google.com" ],
     "expiry_milestone": 111
@@ -1934,6 +1944,11 @@
     "name": "enable-cros-ime-system-emoji-picker-extension",
     "owners": [ "curtismcmullan", "essential-inputs-team@google.com" ],
     "expiry_milestone": 110
+  },
+  {
+    "name": "enable-cros-ime-system-emoji-picker-gif-support",
+    "owners": [ "kaiqiliang", "essential-inputs-team@google.com" ],
+    "expiry_milestone": 130
   },
   {
     "name": "enable-cros-ime-system-emoji-picker-search-extension",
@@ -2148,6 +2163,11 @@
     "expiry_milestone": 118
   },
   {
+    "name": "enable-edid-based-display-ids",
+    "owners": [ "gildekel", "//ui/display/OWNERS", "chromeos-gfx-display@chromium.org" ],
+    "expiry_milestone": 120
+  },
+  {
     "name": "enable-enhanced-safe-browsing",
     "owners": [ "ajuma", "joemerramos", "bling-flags@google.com"],
     "expiry_milestone": 110
@@ -2156,6 +2176,11 @@
     "name": "enable-enhanced-safe-browsing-phase-2",
     "owners": [ "ajuma", "joemerramos", "bling-flags@google.com"],
     "expiry_milestone": 110
+  },
+  {
+    "name": "enable-enhanced-safe-browsing-settings-improvements",
+    "owners": [ "awado", "jacastro", "chrome-counter-abuse-alerts@google.com"],
+    "expiry_milestone": 114
   },
   {
     "name": "enable-experimental-accessibility-color-enhancement-settings",
@@ -4938,11 +4963,6 @@
     "expiry_milestone": 115
   },
   {
-    "name": "omnibox-blur-with-escape",
-    "owners": ["manukh", "chrome-omnibox-team@google.com"],
-    "expiry_milestone": 110
-  },
-  {
     "name": "omnibox-bookmark-paths",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 115
@@ -5051,6 +5071,11 @@
     "name": "omnibox-max-zps-matches",
     "owners": [ "stkhapugin", "christianxu", "chrome-omnibox-team@google.com" ],
     "expiry_milestone" : 113
+  },
+  {
+    "name": "omnibox-ml-log-url-scoring-signals",
+    "owners": [ "junzou", "manukh", "yoangela", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 120
   },
   {
     "name": "omnibox-modernize-visual-update",

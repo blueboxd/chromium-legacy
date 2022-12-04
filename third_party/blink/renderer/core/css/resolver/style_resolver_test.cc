@@ -2958,13 +2958,13 @@ TEST_F(StyleResolverTest, ScopedAnchorScroll) {
   Element* inner_anchor = shadow->getElementById("inner-anchor");
 
   EXPECT_EQ(*MakeGarbageCollected<ScopedCSSName>("--outer", &GetDocument()),
-            *outer_anchor->ComputedStyleRef().AnchorScroll());
+            outer_anchor->ComputedStyleRef().AnchorScroll()->GetName());
   EXPECT_EQ(*MakeGarbageCollected<ScopedCSSName>("--host", shadow),
-            *host->ComputedStyleRef().AnchorScroll());
+            host->ComputedStyleRef().AnchorScroll()->GetName());
   EXPECT_EQ(*MakeGarbageCollected<ScopedCSSName>("--part", &GetDocument()),
-            *part->ComputedStyleRef().AnchorScroll());
+            part->ComputedStyleRef().AnchorScroll()->GetName());
   EXPECT_EQ(*MakeGarbageCollected<ScopedCSSName>("--inner", shadow),
-            *inner_anchor->ComputedStyleRef().AnchorScroll());
+            inner_anchor->ComputedStyleRef().AnchorScroll()->GetName());
 }
 
 // |length| must be a calculated value of a single anchor query node.
@@ -3112,34 +3112,6 @@ TEST_F(StyleResolverTest, ScopedAnchorSizeFunction) {
                          min_height->ComputedStyleRef().MinHeight()));
   EXPECT_EQ(&GetDocument(), GetAnchorQueryTreeScope(
                                 max_height->ComputedStyleRef().MaxHeight()));
-}
-
-TEST_F(StyleResolverTestCQ, CanAffectAnimationsMPC) {
-  GetDocument().documentElement()->setInnerHTML(R"HTML(
-    <style>
-      #a { transition: color 1s; }
-      @container (width > 100000px) {
-        #b { animation-name: anim; }
-      }
-    </style>
-    <div id=a></div>
-    <div id=b></div>
-    <div id=c></div>
-  )HTML");
-
-  UpdateAllLifecyclePhasesForTest();
-
-  auto* a = GetDocument().getElementById("a");
-  auto* b = GetDocument().getElementById("b");
-  auto* c = GetDocument().getElementById("c");
-
-  ASSERT_TRUE(a);
-  ASSERT_TRUE(b);
-  ASSERT_TRUE(c);
-
-  EXPECT_TRUE(a->ComputedStyleRef().CanAffectAnimations());
-  EXPECT_TRUE(b->ComputedStyleRef().CanAffectAnimations());
-  EXPECT_FALSE(c->ComputedStyleRef().CanAffectAnimations());
 }
 
 }  // namespace blink

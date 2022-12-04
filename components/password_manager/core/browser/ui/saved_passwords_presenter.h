@@ -202,7 +202,6 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
   void NotifySavedPasswordsChanged();
 
   void RemoveObservers();
-  void AddObservers();
 
   // Returns the expected result for adding |credential|, looks for
   // missing/invalid fields and checks if the credential already exists in the
@@ -217,6 +216,10 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
   // Try to unblocklist in both stores.If credentials don't
   // exist, the unblocklist operation is a no-op.
   void UnblocklistBothStores(const CredentialUIEntry& credential);
+
+  // Helper functions to update local cache of PasswordForms.
+  void RemoveForms(const std::vector<PasswordForm>& forms);
+  void AddForms(const std::vector<PasswordForm>& forms);
 
   // The password stores containing the saved passwords.
   scoped_refptr<PasswordStoreInterface> profile_store_;

@@ -72,7 +72,6 @@ mojom("mojom_platform") {
     "drag/drag.mojom",
     "favicon/favicon_url.mojom",
     "feature_observer/feature_observer.mojom",
-    "fenced_frame/fenced_frame.mojom",
     "fetch/fetch_api_request.mojom",
     "fetch/fetch_api_response.mojom",
     "file/file_utilities.mojom",
@@ -251,6 +250,7 @@ mojom("mojom_platform") {
     ":script_type_mojo_bindings",
     ":web_feature_mojo_bindings",
     "//cc/mojom",
+    "//components/aggregation_service:mojom",
     "//components/payments/mojom",
     "//components/schema_org/common:mojom",
     "//components/services/filesystem/public/mojom",
@@ -561,6 +561,26 @@ mojom("mojom_platform") {
         {
           mojom = "blink.mojom.AttributionSourceData"
           cpp = "::attribution_reporting::SourceRegistration"
+
+          # Avoid expensive copies by forcing Mojo methods to take the type by
+          # value, not const ref
+          move_only = true
+        },
+        {
+          mojom = "blink.mojom.AttributionFilters"
+          cpp = "::attribution_reporting::Filters"
+        },
+        {
+          mojom = "blink.mojom.EventTriggerData"
+          cpp = "::attribution_reporting::EventTriggerData"
+        },
+        {
+          mojom = "blink.mojom.AttributionAggregatableTriggerData"
+          cpp = "::attribution_reporting::AggregatableTriggerData"
+        },
+        {
+          mojom = "blink.mojom.AttributionTriggerData"
+          cpp = "::attribution_reporting::TriggerRegistration"
 
           # Avoid expensive copies by forcing Mojo methods to take the type by
           # value, not const ref
@@ -1089,6 +1109,7 @@ mojom("mojom_core") {
     "messaging/user_activation_snapshot.mojom",
 
     # Depends on frame_policy.mojom.
+    "fenced_frame/fenced_frame.mojom",
     "navigation/navigation_params.mojom",
 
     # Depends on transferable_message.mojom.
@@ -1131,6 +1152,7 @@ mojom("mojom_core") {
     "//services/service_manager/public/mojom",
     "//services/viz/public/mojom",
     "//skia/public/mojom",
+    "//third_party/blink/public/mojom/runtime_feature_state",
     "//third_party/blink/public/mojom/service_worker:storage",
     "//third_party/blink/public/mojom/storage_key",
     "//ui/base/dragdrop/mojom",

@@ -32,8 +32,8 @@ namespace {
 // as a COM object. The class has thread-affinity for the STA thread.
 class UpdaterInternalCallback
     : public DynamicIIDsImpl<IUpdaterInternalCallback,
-                             IUpdaterInternalCallbackUser,
-                             IUpdaterInternalCallbackSystem> {
+                             __uuidof(IUpdaterInternalCallbackUser),
+                             __uuidof(IUpdaterInternalCallbackSystem)> {
  public:
   explicit UpdaterInternalCallback(base::OnceClosure callback)
       : callback_(std::move(callback)) {}
@@ -84,15 +84,15 @@ class UpdateServiceInternalProxyImpl
     : public base::RefCountedThreadSafe<UpdateServiceInternalProxyImpl>,
       public ProxyImplBase<UpdateServiceInternalProxyImpl,
                            IUpdaterInternal,
-                           IUpdaterInternalUser,
-                           IUpdaterInternalSystem> {
+                           __uuidof(IUpdaterInternalUser),
+                           __uuidof(IUpdaterInternalSystem)> {
  public:
   explicit UpdateServiceInternalProxyImpl(UpdaterScope scope)
       : ProxyImplBase(scope) {}
 
   static auto GetClassGuid(UpdaterScope scope) {
-    return scope == UpdaterScope::kSystem ? __uuidof(UpdaterInternalSystemClass)
-                                          : __uuidof(UpdaterInternalUserClass);
+    return IsSystemInstall(scope) ? __uuidof(UpdaterInternalSystemClass)
+                                  : __uuidof(UpdaterInternalUserClass);
   }
 
   void Run(base::OnceClosure callback) {

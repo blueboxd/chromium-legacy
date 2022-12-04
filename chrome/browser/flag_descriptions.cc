@@ -1089,6 +1089,13 @@ const char kDownloadRangeName[] = "Enable download range support";
 const char kDownloadRangeDescription[] =
     "Enables arbitrary download range request support.";
 
+const char kEnableEnhancedSafeBrowsingSettingsImprovementsName[] =
+    "Enable enhanced safe browsing settings improvements";
+const char kEnableEnhancedSafeBrowsingSettingsImprovementsDescription[] =
+    "Adds an in-product-help bubble to the ESB settings options when users are "
+    "directed to the chrome security settings page through ESB promotions and "
+    "also collapses the ESB option.";
+
 const char kEnableNetworkLoggingToFileName[] = "Enable network logging to file";
 const char kEnableNetworkLoggingToFileDescription[] =
     "Enables network logging to a file named netlog.json in the user data "
@@ -1897,11 +1904,6 @@ const char kOmniboxAssistantVoiceSearchDescription[] =
     "When enabled, use Assistant for omnibox voice query recognition instead of"
     " Android's built-in voice recognition service. Only works on Android.";
 
-const char kOmniboxBlurWithEscapeName[] = "Omnibox Blur with Escape";
-const char kOmniboxBlurWithEscapeDescription[] =
-    "When enabled, pressing escape when the omnibox is focused without user "
-    "input will blur the omnibox and focus the web page.";
-
 const char kOmniboxBookmarkPathsName[] = "Omnibox Bookmark Paths";
 const char kOmniboxBookmarkPathsDescription[] =
     "Allows inputs to match with bookmark paths. E.g. 'planets jupiter' can "
@@ -2092,6 +2094,11 @@ const char kOmniboxFocusTriggersContextualWebZeroSuggestDescription[] =
     "Enables on-focus suggestions on the Open Web, that are contextual to the "
     "current URL. Will only work if user is signed-in and syncing, or is "
     "otherwise eligible to send the current page URL to the suggest server.";
+
+const char kOmniboxMlLogUrlScoringSignalsName[] =
+    "Log Omnibox URL Scoring Signals";
+const char kOmniboxMlLogUrlScoringSignalsDescription[] =
+    "Enables Omnibox to log scoring signals of URL suggestions.";
 
 const char kOmniboxMostVisitedTilesFadingOnTabletName[] =
     "Omnibox Most Visited Tiles fading on tablet";
@@ -4625,11 +4632,6 @@ const char kAllowDisableTouchpadHapticFeedbackName[] =
 const char kAllowDisableTouchpadHapticFeedbackDescription[] =
     "Shows settings to adjust and disable touchpad haptic feedback.";
 
-const char kAllowPolyDevicePairingName[] =
-    "Allow pairing of Bluetooth devices by Poly";
-const char kAllowPolyDevicePairingDescription[] =
-    "Shows Poly devices in the Bluetooth pairing UI.";
-
 const char kAllowRepeatedUpdatesName[] =
     "Continue checking for updates before reboot and after initial update.";
 const char kAllowRepeatedUpdatesDescription[] =
@@ -4795,6 +4797,10 @@ const char kAutocompleteExtendedSuggestionsName[] =
     "Extended suggestions for CrOS autocomplete";
 const char kAutocompleteExtendedSuggestionsDescription[] =
     "Enables extended autocomplete suggestions experiment on ChromeOS.";
+
+const char kAutocorrectByDefaultName[] = "CrOS autocorrect by default";
+const char kAutocorrectByDefaultDescription[] =
+    "Enables autocorrect by default experiment on ChromeOS";
 
 const char kAutocorrectParamsTuningName[] = "CrOS autocorrect params tuning";
 const char kAutocorrectParamsTuningDescription[] =
@@ -4998,6 +5004,12 @@ const char kCameraAppDocScanDlcDescription[] =
     "Enables this flag to allow downloading document scanning feature via DLC "
     "and use it in the camera app";
 
+extern const char kCameraAppLowStorageWarningName[] =
+    "Camera App Low Storage Warning";
+extern const char kCameraAppLowStorageWarningDescription[] =
+    "Enable this flag to show warning and handle the video recording when "
+    "device storage is running low";
+
 const char kCameraAppMultiPageDocScanName[] = "Camera App Multi-Page Doc Scan";
 const char kCameraAppMultiPageDocScanDescription[] =
     "Enables this flag to show multi-page UI for document scanning featrue in "
@@ -5157,6 +5169,14 @@ const char kEnableDnsProxyName[] = "Enable DNS proxy service";
 const char kEnableDnsProxyDescription[] =
     "When enabled, standard DNS queries will be proxied through the system "
     "service";
+
+const char kEnableEdidBasedDisplayIdsName[] = "Enable EDID-based display IDs";
+const char kEnableEdidBasedDisplayIdsDescription[] =
+    "When enabled, a display's ID will be produced by hashing certain values "
+    "in the display's EDID blob. EDID-based display IDs allow ChromeOS to "
+    "consistently identify previously connected displays, regardless of the "
+    "physical port they were connected to, and load user display layouts more "
+    "accurately.";
 
 const char kDnsProxyEnableDOHName[] =
     "Enable DNS-over-HTTPS in the DNS proxy service";
@@ -5566,6 +5586,11 @@ const char kImeSystemEmojiPickerExtensionDescription[] =
     "Emoji picker extension allows users to select emoticons and symbols to "
     "input.";
 
+const char kImeSystemEmojiPickerGIFSupportName[] =
+    "System emoji picker gif support";
+const char kImeSystemEmojiPickerGIFSupportDescription[] =
+    "Emoji picker gif support allows users to select gifs to input.";
+
 const char kImeSystemEmojiPickerSearchExtensionName[] =
     "System emoji picker search extension";
 const char kImeSystemEmojiPickerSearchExtensionDescription[] =
@@ -5943,6 +5968,12 @@ const char kCaptivePortalUI2022Description[] =
     "Enables the Captive Portal UI 2022 changes, which includes updates to "
     "notifications, network details page, quick settings, and portal signin "
     "UI.";
+
+const char kCaptivePortalErrorPageName[] =
+    "Enables Captive Portal error page suggestions.";
+const char kCaptivePortalErrorPageDescription[] =
+    "Enables Captive Portal error page suggestions when a page fails to load "
+    "and ChromeOS has detected a captive portal.";
 
 const char kTerminalAlternativeEmulatorName[] = "Terminal alternative emulator";
 const char kTerminalAlternativeEmulatorDescription[] =

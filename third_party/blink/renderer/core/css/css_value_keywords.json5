@@ -1371,13 +1371,13 @@
     "atan2",
     "acos",
 
-    "pi",
-
     //<calc-constant>
     //https://drafts.csswg.org/css-values/#calc-syntax
     "infinity",
     "-infinity",
     "nan",
+    "pi",
+    "e",
 
     // scroll-snap-type
     // none
@@ -1589,6 +1589,10 @@
     // inline,
     "self-block",
     "self-inline",
+
+    // anchor-scroll
+    "implicit",
+    // none,
 
     // animation-[end-]delay
     // contain

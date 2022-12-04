@@ -72,7 +72,6 @@ class SearchResultActionButton : public IconButton {
   const char* GetClassName() const override;
 
   SearchResultActionsView* parent_;
-  const bool visible_on_hover_;
   bool to_be_activate_by_long_press_ = false;
 };
 
@@ -89,10 +88,9 @@ SearchResultActionButton::SearchResultActionButton(
                  action.tooltip_text,
                  /*is_togglable=*/false,
                  /*has_border=*/false),
-      parent_(parent),
-      visible_on_hover_(action.visible_on_hover) {
+      parent_(parent) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
-  SetVisible(!visible_on_hover_);
+  SetVisible(false);
 }
 
 void SearchResultActionButton::OnGestureEvent(ui::GestureEvent* event) {
@@ -128,8 +126,7 @@ void SearchResultActionButton::OnThemeChanged() {
 void SearchResultActionButton::UpdateOnStateChanged() {
   // Show button if the associated result row is hovered or selected, or one
   // of the action buttons is selected.
-  if (visible_on_hover_)
-    SetVisible(parent_->IsSearchResultHoveredOrSelected());
+  SetVisible(parent_->IsSearchResultHoveredOrSelected());
 }
 
 void SearchResultActionButton::OnPaintBackground(gfx::Canvas* canvas) {
@@ -262,11 +259,6 @@ void SearchResultActionsView::CreateImageButton(
     case SearchResultActionType::kRemove:
       icon = &ash::kSearchResultRemoveIcon;
       break;
-    case ash::SearchResultActionType::kAppend:
-      icon = &ash::kSearchResultAppendIcon;
-      break;
-    case ash::SearchResultActionType::kSearchResultActionTypeMax:
-      NOTREACHED();
   }
 
   DCHECK(icon);
@@ -277,8 +269,8 @@ void SearchResultActionsView::CreateImageButton(
           &SearchResultActionsViewDelegate::OnSearchResultActionActivated,
           base::Unretained(delegate_), action_index),
       features::IsProductivityLauncherEnabled()
-          ? IconButton::Type::kSmallFloating
-          : IconButton::Type::kMediumFloating,
+          ? IconButton::Type::kMediumFloating
+          : IconButton::Type::kLargeFloating,
       icon, action.tooltip_text));
   button->set_tag(action_index);
   subscriptions_.push_back(button->AddStateChangedCallback(

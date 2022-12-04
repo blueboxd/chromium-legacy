@@ -470,6 +470,11 @@ suite('SettingsDevicePage', function() {
     // enableAudioSettingsPage feature flag by default is turned on in tests.
     assertTrue(isVisible(devicePage.shadowRoot.querySelector('#audioRow')));
 
+    // enableInputDeviceSettingsSplit feature flag by default is turned off.
+    assertFalse(isVisible(devicePage.shadowRoot.querySelector('#mouseRow')));
+    assertFalse(isVisible(
+        devicePage.shadowRoot.querySelector('#perDeviceKeyboardRow')));
+
     webUIListenerCallback('has-mouse-changed', false);
     assertTrue(isVisible(devicePage.shadowRoot.querySelector('#pointersRow')));
 
@@ -489,6 +494,30 @@ suite('SettingsDevicePage', function() {
     });
     await init();
     assertFalse(isVisible(devicePage.shadowRoot.querySelector('#audioRow')));
+  });
+
+  test('mouse row visibility', async function() {
+    loadTimeData.overrideValues({
+      enableInputDeviceSettingsSplit: true,
+    });
+    await init();
+    assertTrue(isVisible(devicePage.shadowRoot.querySelector('#mouseRow')));
+  });
+
+  test('per-device-keyboard row visibility', async function() {
+    // Set enableInputDeviceSettingsSplit feature flag to true for split tests.
+    loadTimeData.overrideValues({
+      enableInputDeviceSettingsSplit: true,
+    });
+    await init();
+    assertTrue(isVisible(
+        devicePage.shadowRoot.querySelector('#perDeviceKeyboardRow')));
+
+    // Set enableInputDeviceSettingsSplit feature flag back to false to avoid
+    // corrupting other tests.
+    loadTimeData.overrideValues({
+      enableInputDeviceSettingsSplit: false,
+    });
   });
 
   suite(assert(TestNames.Audio), function() {
@@ -738,6 +767,27 @@ suite('SettingsDevicePage', function() {
       assertEquals(
           activeSpeakerFakeAudioSystemProperties.outputDevices.length,
           outputDeviceDropdown.length);
+    });
+
+    test('simulate setting active output device', async function() {
+      // Get dropdown.
+      /** @type {!HTMLSelectElement}*/
+      const outputDeviceDropdown =
+          audioPage.shadowRoot.querySelector('#audioOutputDeviceDropdown');
+
+      // Verify selected is active device.
+      const expectedInitialSelectionId =
+          `${fakeCrosAudioConfig.defaultFakeMicJack.id}`;
+      assertEquals(expectedInitialSelectionId, outputDeviceDropdown.value);
+
+      // change active device.
+      outputDeviceDropdown.selectedIndex = 0;
+      await flushTasks();
+
+      // Verify selected updated to latest active device.
+      const expectedUpdatedSelectionId =
+          `${fakeCrosAudioConfig.defaultFakeSpeaker.id}`;
+      assertEquals(expectedUpdatedSelectionId, outputDeviceDropdown.value);
     });
   });
 

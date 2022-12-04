@@ -218,11 +218,9 @@ void AddStreamObject(int stream_index,
 // Convert the sink capabilities to media::mojom::RemotingSinkMetadata.
 media::mojom::RemotingSinkMetadata ToRemotingSinkMetadata(
     const std::vector<std::string>& capabilities,
-    const std::string& receiver_name,
-    const mojom::SessionParameters& params,
-    const std::string& receiver_build_version) {
+    const mojom::SessionParameters& params) {
   media::mojom::RemotingSinkMetadata sink_metadata;
-  sink_metadata.friendly_name = receiver_name;
+  sink_metadata.friendly_name = params.receiver_friendly_name;
 
   for (const auto& capability : capabilities) {
     if (capability == "audio") {
@@ -367,17 +365,6 @@ Session::Session(
     resource_provider_->BindGpu(remote_gpu.InitWithNewPipeAndPassReceiver());
     gpu_ = viz::Gpu::Create(std::move(remote_gpu), io_task_runner);
   }
-
-  network::mojom::URLLoaderFactoryParamsPtr params =
-      network::mojom::URLLoaderFactoryParams::New();
-  params->process_id = network::mojom::kBrowserProcessId;
-  params->is_corb_enabled = false;
-  mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory;
-  network_context_->CreateURLLoaderFactory(
-      url_loader_factory.InitWithNewPipeAndPassReceiver(), std::move(params));
-
-  setup_querier_ = std::make_unique<ReceiverSetupQuerier>(
-      session_params_.receiver_address, std::move(url_loader_factory));
 }
 
 void Session::AsyncInitialize(AsyncInitializeDoneCB done_cb) {
@@ -473,7 +460,6 @@ void Session::StopSession() {
   media_remoter_.reset();
   message_dispatcher_.reset();
   rpc_dispatcher_.reset();
-  setup_querier_.reset();
   weak_factory_.InvalidateWeakPtrs();
   audio_encode_thread_ = nullptr;
   video_encode_thread_ = nullptr;
@@ -776,12 +762,18 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
       }
     }
     if (media_remoter_)
-      media_remoter_->OnMirroringResumed();
+      media_remoter_->OnMirroringResumed(switching_tab_source_);
+
+    switching_tab_source_ = false;
   }
 
-  if (initially_starting_session &&
-      ShouldQueryForRemotingCapabilities(session_params_.receiver_model_name)) {
-    QueryCapabilitiesForRemoting();
+  if (initially_starting_session) {
+    if (session_params_.is_remote_playback) {
+      InitMediaRemoter({});
+    } else if (ShouldQueryForRemotingCapabilities(
+                   session_params_.receiver_model_name)) {
+      QueryCapabilitiesForRemoting();
+    }
   }
 
   if (initially_starting_session && observer_)
@@ -970,6 +962,34 @@ void Session::RestartMirroringStreaming() {
   CreateAndSendOffer();
 }
 
+void Session::SwitchSourceTab() {
+  if (state_ == REMOTING) {
+    switching_tab_source_ = true;
+    video_capture_client_.reset();
+    media_remoter_->Stop(media::mojom::RemotingStopReason::LOCAL_PLAYBACK);
+    return;
+  }
+
+  DCHECK_EQ(state_, MIRRORING);
+
+  // Switch video source tab.
+  if (video_capture_client_) {
+    mojo::PendingRemote<media::mojom::VideoCaptureHost> video_host;
+    resource_provider_->GetVideoCaptureHost(
+        video_host.InitWithNewPipeAndPassReceiver());
+    video_capture_client_->SwitchVideoCaptureHost(std::move(video_host));
+  }
+
+  // Switch audio source tab.
+  if (audio_input_device_) {
+    audio_input_device_->Stop();
+    audio_input_device_->Start();
+  }
+
+  if (media_remoter_)
+    media_remoter_->OnMirroringResumed(true);
+}
+
 void Session::QueryCapabilitiesForRemoting() {
   DCHECK(!media_remoter_);
   const int32_t sequence_number = message_dispatcher_->GetNextSeqNumber();
@@ -986,6 +1006,13 @@ void Session::QueryCapabilitiesForRemoting() {
       std::move(query_message), ResponseType::CAPABILITIES_RESPONSE,
       sequence_number, kGetCapabilitiesTimeout,
       base::BindOnce(&Session::OnCapabilitiesResponse, base::Unretained(this)));
+}
+
+void Session::InitMediaRemoter(const std::vector<std::string>& caps) {
+  DCHECK(!media_remoter_);
+  rpc_dispatcher_ = std::make_unique<RpcDispatcherImpl>(*message_dispatcher_);
+  media_remoter_ = std::make_unique<MediaRemoter>(
+      *this, ToRemotingSinkMetadata(caps, session_params_), *rpc_dispatcher_);
 }
 
 void Session::OnCapabilitiesResponse(const ReceiverResponse& response) {
@@ -1022,21 +1049,7 @@ void Session::OnCapabilitiesResponse(const ReceiverResponse& response) {
     return;
   }
 
-  const std::vector<std::string>& caps = response.capabilities().media_caps;
-
-  std::string build_version;
-  std::string friendly_name;
-  if (setup_querier_) {
-    build_version = setup_querier_->build_version();
-    friendly_name = setup_querier_->friendly_name();
-  }
-
-  rpc_dispatcher_ = std::make_unique<RpcDispatcherImpl>(*message_dispatcher_);
-  media_remoter_ = std::make_unique<MediaRemoter>(
-      *this,
-      ToRemotingSinkMetadata(caps, friendly_name, session_params_,
-                             build_version),
-      *rpc_dispatcher_);
+  InitMediaRemoter(response.capabilities().media_caps);
 }
 
 }  // namespace mirroring

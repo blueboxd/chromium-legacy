@@ -114,8 +114,10 @@ bool IsPhysicalKeyboardAutocorrectEnabled(PrefService* prefs,
     return true;
   }
 
-  return GetPhysicalKeyboardAutocorrectPref(*(prefs), engine_id) ==
-         AutocorrectPreference::kEnabled;
+  AutocorrectPreference preference =
+      GetPhysicalKeyboardAutocorrectPref(*(prefs), engine_id);
+  return preference == AutocorrectPreference::kEnabled ||
+         preference == AutocorrectPreference::kEnabledByDefault;
 }
 
 bool IsPredictiveWritingEnabled(PrefService* pref_service,
@@ -591,6 +593,7 @@ NativeInputMethodEngineObserver::NativeInputMethodEngineObserver(
       autocorrect_manager_(std::move(autocorrect_manager)),
       suggestions_collector_(std::move(suggestions_collector)),
       grammar_manager_(std::move(grammar_manager)),
+      pref_change_recorder_(prefs),
       use_ime_service_(use_ime_service) {}
 
 NativeInputMethodEngineObserver::~NativeInputMethodEngineObserver() = default;

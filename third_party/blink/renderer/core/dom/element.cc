@@ -8237,4 +8237,33 @@ AnchorScrollData* Element::GetAnchorScrollData() const {
   return HasRareData() ? GetElementRareData()->GetAnchorScrollData() : nullptr;
 }
 
+void Element::IncrementAnchoredPopoverCount() {
+  DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
+      GetDocument().GetExecutionContext()));
+  if (RuntimeEnabledFeatures::CSSAnchorPositioningEnabled() &&
+      !HasAnchoredPopover() && GetLayoutObject()) {
+    // Invalidate layout to populate itself into NGPhysical/LogicalAnchorQuery.
+    GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
+        layout_invalidation_reason::kAnchorPositioning);
+    GetLayoutObject()->MarkMayHaveAnchorQuery();
+  }
+  EnsureElementRareData().IncrementAnchoredPopoverCount();
+}
+void Element::DecrementAnchoredPopoverCount() {
+  DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
+      GetDocument().GetExecutionContext()));
+  EnsureElementRareData().DecrementAnchoredPopoverCount();
+}
+bool Element::HasAnchoredPopover() const {
+  return HasRareData() && GetElementRareData()->HasAnchoredPopover();
+}
+
+Element* Element::ImplicitAnchorElement() const {
+  if (!RuntimeEnabledFeatures::CSSAnchorPositioningEnabled())
+    return nullptr;
+  if (const HTMLElement* html_element = DynamicTo<HTMLElement>(this))
+    return html_element->anchorElement();
+  return nullptr;
+}
+
 }  // namespace blink

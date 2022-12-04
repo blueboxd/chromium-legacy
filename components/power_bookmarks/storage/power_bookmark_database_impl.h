@@ -10,11 +10,13 @@
 #include "components/power_bookmarks/core/powers/power_overview.h"
 #include "components/power_bookmarks/storage/power_bookmark_database.h"
 #include "sql/database.h"
+#include "sql/meta_table.h"
 #include "url/gurl.h"
 
 namespace power_bookmarks {
 
 struct SearchParams;
+class PowerBookmarkSyncMetadataDatabase;
 
 constexpr base::FilePath::CharType kDatabaseName[] =
     FILE_PATH_LITERAL("PowerBookmarks.db");
@@ -34,16 +36,21 @@ class PowerBookmarkDatabaseImpl : public PowerBookmarkDatabase {
   bool IsOpen() override;
   std::vector<std::unique_ptr<Power>> GetPowersForURL(
       const GURL& url,
-      const PowerType& power_type) override;
+      const sync_pb::PowerBookmarkSpecifics::PowerType& power_type) override;
   std::vector<std::unique_ptr<PowerOverview>> GetPowerOverviewsForType(
-      const PowerType& power_type) override;
+      const sync_pb::PowerBookmarkSpecifics::PowerType& power_type) override;
   std::vector<std::unique_ptr<Power>> GetPowersForSearchParams(
       const SearchParams& search_params) override;
   bool CreatePower(std::unique_ptr<Power> power) override;
   bool UpdatePower(std::unique_ptr<Power> power) override;
   bool DeletePower(const base::GUID& guid) override;
-  bool DeletePowersForURL(const GURL& url,
-                          const PowerType& power_type) override;
+  bool DeletePowersForURL(
+      const GURL& url,
+      const sync_pb::PowerBookmarkSpecifics::PowerType& power_type) override;
+
+  PowerBookmarkSyncMetadataDatabase* GetSyncMetadataDatabase() {
+    return sync_db_.get();
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PowerBookmarkDatabaseImplTest,
@@ -56,11 +63,13 @@ class PowerBookmarkDatabaseImpl : public PowerBookmarkDatabase {
   bool InitSchema();
   bool CreateSchema();
 
-  absl::optional<PowerBookmarkSpecifics> DeserializeOrDelete(
+  absl::optional<sync_pb::PowerBookmarkSpecifics> DeserializeOrDelete(
       const std::string& data,
       const base::GUID& id);
 
   sql::Database db_ GUARDED_BY_CONTEXT(sequence_checker_);
+  sql::MetaTable meta_table_ GUARDED_BY_CONTEXT(sequence_checker_);
+  std::unique_ptr<PowerBookmarkSyncMetadataDatabase> sync_db_;
 
   const base::FilePath database_path_;
 

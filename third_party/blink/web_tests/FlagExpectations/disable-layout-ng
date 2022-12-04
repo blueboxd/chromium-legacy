@@ -3249,11 +3249,6 @@ crbug.com/1123630 editing/caret/in-multicol-child.html [ Failure ]
 crbug.com/1123630 paint/caret/multicol_block_children.html [ Failure ]
 crbug.com/1123630 paint/caret/multicol_inline_children.html [ Failure ]
 
-# Some Sanitizer API tests test behaviour for MathML, which in Chromium depends
-# on LayoutNG. We accept failures of those specific tests when LayoutNG is
-# disabled.
-crbug.com/1225606 external/wpt/sanitizer-api/sanitizer-names.https.tentative.html [ Failure Pass ]
-
 # broken by https://chromium-review.googlesource.com/c/chromium/src/+/3376745
 crbug.com/1283025 external/wpt/css/css-tables/fractional-percent-width.html [ Failure ]
 
@@ -3399,6 +3394,11 @@ crbug.com/1147859 wpt_internal/css/css-pseudo/target-text-002.html [ Failure ]
 
 # CSS Anchor Positioning is only implemented in ng.
 crbug.com/1309178 external/wpt/css/css-anchor-position/* [ Skip ]
+external/wpt/html/semantics/popovers/popover-anchor-change-display.tentative.html [ Skip ]
+external/wpt/html/semantics/popovers/popover-anchor-display-none.tentative.html [ Skip ]
+external/wpt/html/semantics/popovers/popover-anchor-display.tentative.html [ Skip ]
+external/wpt/html/semantics/popovers/popover-anchor-multicol-display.tentative.html [ Skip ]
+external/wpt/html/semantics/popovers/popover-anchor-scroll-display.tentative.html [ Skip ]
 
 crbug.com/1303102 external/wpt/css/css-images/object-view-box* [ Skip ]
 

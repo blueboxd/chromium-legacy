@@ -403,6 +403,10 @@ void HTMLFrameOwnerElement::DisposePluginSoon(WebPluginContainerImpl* plugin) {
 
 void HTMLFrameOwnerElement::UpdateContainerPolicy() {
   frame_policy_.container_policy = ConstructContainerPolicy();
+  DidChangeContainerPolicy();
+}
+
+void HTMLFrameOwnerElement::DidChangeContainerPolicy() {
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet.
   if (ContentFrame()) {
@@ -666,6 +670,8 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   KURL url_to_request = url.IsNull() ? BlankURL() : url;
   ResourceRequestHead request(url_to_request);
   request.SetReferrerPolicy(ReferrerPolicyAttribute());
+  request.SetHasUserGesture(
+      LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
 
   network::mojom::blink::TrustTokenParamsPtr trust_token_params =
       ConstructTrustTokenParams();

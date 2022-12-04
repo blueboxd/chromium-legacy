@@ -23,6 +23,7 @@ namespace attribution_reporting {
 class SuitableOrigin;
 
 struct SourceRegistration;
+struct TriggerRegistration;
 }  // namespace attribution_reporting
 
 namespace base {
@@ -35,10 +36,10 @@ namespace content {
 class AttributionManager;
 
 // Manages a receiver set of all ongoing `AttributionDataHost`s and forwards
-// events to the AttributionManager which owns `this`. Because attributionsrc
+// events to the `AttributionManager` that owns `this`. Because attributionsrc
 // requests may continue until after we have detached a frame, all browser
-// process data needed to validate sources/triggers is frozen and stored
-// alongside each receiver.
+// process data needed to validate sources/triggers is stored alongside each
+// receiver.
 class CONTENT_EXPORT AttributionDataHostManagerImpl
     : public AttributionDataHostManager,
       public blink::mojom::AttributionDataHost {
@@ -78,9 +79,8 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
       const blink::AttributionSrcToken& attribution_src_token) override;
 
  private:
-  // Represents frozen data from the browser process associated with each
-  // receiver.
-  struct FrozenContext;
+  class ReceiverContext;
+
   struct DelayedTrigger;
   struct NavigationDataHost;
 
@@ -91,7 +91,7 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
   // blink::mojom::AttributionDataHost:
   void SourceDataAvailable(attribution_reporting::SourceRegistration) override;
   void TriggerDataAvailable(
-      blink::mojom::AttributionTriggerDataPtr data) override;
+      attribution_reporting::TriggerRegistration) override;
 
   void OnReceiverDisconnected();
   void OnSourceEligibleDataHostFinished(base::TimeTicks register_time);
@@ -109,7 +109,7 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
   // Owns `this`.
   raw_ptr<AttributionManager> attribution_manager_;
 
-  mojo::ReceiverSet<blink::mojom::AttributionDataHost, FrozenContext>
+  mojo::ReceiverSet<blink::mojom::AttributionDataHost, ReceiverContext>
       receivers_;
 
   // Map which stores pending receivers for data hosts which are going to

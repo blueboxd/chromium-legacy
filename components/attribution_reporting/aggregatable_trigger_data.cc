@@ -60,10 +60,8 @@ base::expected<absl::uint128, TriggerRegistrationError> ParseKeyPiece(
 base::expected<AggregatableTriggerData::Keys, TriggerRegistrationError>
 ParseSourceKeys(base::Value::Dict& registration) {
   base::Value* v = registration.Find("source_keys");
-  if (!v) {
-    return base::unexpected(
-        TriggerRegistrationError::kAggregatableTriggerDataSourceKeysMissing);
-  }
+  if (!v)
+    return AggregatableTriggerData::Keys();
 
   base::Value::List* l = v->GetIfList();
   if (!l) {
@@ -142,6 +140,8 @@ AggregatableTriggerData::FromJSON(base::Value& value) {
   return AggregatableTriggerData(*key_piece, std::move(*source_keys),
                                  std::move(*filters), std::move(*not_filters));
 }
+
+AggregatableTriggerData::AggregatableTriggerData() = default;
 
 AggregatableTriggerData::AggregatableTriggerData(absl::uint128 key_piece,
                                                  Keys source_keys,

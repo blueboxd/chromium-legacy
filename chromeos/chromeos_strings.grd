@@ -2263,6 +2263,9 @@ Try tapping the mic to ask me anything.
       <message name="IDS_PERSONALIZATION_APP_SET_WALLPAPER_ERROR" desc="Label for the error toast notification when setting wallpaper failed">
         Something went wrong. Try choosing a wallpaper again or reopen the app.
       </message>
+      <message name="IDS_PERSONALIZATION_APP_AVATAR_NETWORK_ERROR" desc="Error message displayed when avatar information cannot be downloaded or set">
+        Please connect to a network and reload the page to view and set avatars.
+      </message>
       <message name="IDS_PERSONALIZATION_APP_DISMISS" desc="Label for the toast notification dismiss action">
         Dismiss
       </message>
@@ -2420,8 +2423,14 @@ Try tapping the mic to ask me anything.
       <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_MAIN_PAGE_ZERO_STATE_MESSAGE_V2" desc="Message shown in the Ambient subpage on the main page of personalization hub when ambient mode is disabled.">
         Turn on to select options
       </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_MAIN_PAGE_ENTERPRISE_USER_MESSAGE" desc="Message shown in the Ambient subpage on the main page of personalization hub when ambient mode is disabled by enterprise policy.">
+        Not available on your device
+      </message>
       <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_TURN_ON_LABEL" desc="Label of button to turn on ambient mode.">
         Turn on
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_LEARN_MORE_LABEL" desc="Label of button to explain how ambient mode is managed by enterprise policy.">
+        Learn more
       </message>
       <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_NETWORK_ERROR" desc="Error message displayed when screen saver information cannot be downloaded.">
         Please connect to a network and reload the page to view screen saver.
@@ -3651,6 +3660,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_SETTINGS_APN_MENU_DISABLE" desc="Disable button in three dotted menu for APNs">
         Disable
+      </message>
+      <message name="IDS_SETTINGS_APN_MENU_ENABLE" desc="Enable button in three dotted menu for APNs">
+        Enable
       </message>
       <message name="IDS_SETTINGS_APN_MENU_REMOVE" desc="Remove button in three dotted menu for APNs">
         Remove

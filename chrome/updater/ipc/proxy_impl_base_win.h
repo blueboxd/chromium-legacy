@@ -20,6 +20,7 @@
 #include "base/task/single_thread_task_runner_thread_mode.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "base/threading/platform_thread.h"
 #include "base/win/win_util.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util/win_util.h"
@@ -27,10 +28,13 @@
 
 namespace updater {
 
+// `iid_user` and `iid_system` are the interface ids corresponding to
+// `Interface` for user and system. These interface ids must be different for
+// COM automation marshaling to work correctly.
 template <typename Derived,
           typename Interface,
-          typename InterfaceUser,
-          typename InterfaceSystem>
+          REFIID iid_user,
+          REFIID iid_system>
 class ProxyImplBase {
  public:
   // Releases `impl` on `task_runner_`.
@@ -61,7 +65,7 @@ class ProxyImplBase {
 
   HResultOr<Microsoft::WRL::ComPtr<Interface>> CreateInterface() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    ::Sleep(kCreateUpdaterInstanceDelayMs);
+    base::PlatformThread::Sleep(kCreateUpdaterInstanceDelay);
 
     Microsoft::WRL::ComPtr<IUnknown> server;
     HRESULT hr = ::CoCreateInstance(Derived::GetClassGuid(scope_), nullptr,
@@ -72,10 +76,8 @@ class ProxyImplBase {
     }
 
     Microsoft::WRL::ComPtr<Interface> server_interface;
-    REFIID iid = scope_ == UpdaterScope::kSystem ? __uuidof(InterfaceSystem)
-                                                 : __uuidof(InterfaceUser);
+    REFIID iid = IsSystemInstall(scope_) ? iid_system : iid_user;
     hr = server.CopyTo(iid, IID_PPV_ARGS_Helper(&server_interface));
-
     if (FAILED(hr)) {
       VLOG(2) << "Failed to query the interface: "
               << base::win::WStringFromGUID(iid) << ": " << std::hex << hr;

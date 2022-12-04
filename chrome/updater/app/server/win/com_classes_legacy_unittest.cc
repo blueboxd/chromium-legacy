@@ -25,6 +25,7 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_variant.h"
 #include "base/win/win_util.h"
+#include "build/branding_buildflags.h"
 #include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/test_scope.h"
 #include "chrome/updater/unittest_util_win.h"
@@ -183,7 +184,7 @@ TEST_F(LegacyAppCommandWebImplTest, FailedToLaunchStatus) {
 }
 
 TEST_F(LegacyAppCommandWebImplTest, CommandRunningStatus) {
-  if (GetTestScope() == UpdaterScope::kSystem)
+  if (IsSystemInstall(GetTestScope()))
     return;
 
   Microsoft::WRL::ComPtr<LegacyAppCommandWebImpl> app_command_web;

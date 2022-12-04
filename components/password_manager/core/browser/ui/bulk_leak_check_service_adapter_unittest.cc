@@ -104,6 +104,8 @@ class BulkLeakCheckServiceAdapterTest : public ::testing::Test {
     prefs_.registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnabled, true);
     prefs_.registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnhanced,
                                            false);
+    presenter_.Init();
+    RunUntilIdle();
   }
 
   ~BulkLeakCheckServiceAdapterTest() override {
@@ -259,11 +261,8 @@ TEST_F(BulkLeakCheckServiceAdapterTest, OnEditedNoPrefs) {
 
   PasswordForm password =
       MakeSavedPassword(kExampleCom, kUsername1, kPassword1);
-  store().AddLogin(password);
-  // When |password| is read back from the store, its |in_store| member will be
-  // set, and SavedPasswordsPresenter::EditPassword() actually depends on that.
-  // So set it here too.
   password.in_store = PasswordForm::Store::kProfileStore;
+  store().AddLogin(password);
   RunUntilIdle();
 
   EXPECT_CALL(factory(), TryCreateBulkLeakCheck).Times(0);
@@ -279,11 +278,8 @@ TEST_F(BulkLeakCheckServiceAdapterTest, OnEditedNoPrefs) {
 TEST_F(BulkLeakCheckServiceAdapterTest, OnEditedWithPrefs) {
   PasswordForm password =
       MakeSavedPassword(kExampleCom, kUsername1, kPassword1);
-  store().AddLogin(password);
-  // When |password| is read back from the store, its |in_store| member will be
-  // set, and SavedPasswordsPresenter::EditPassword() actually depends on that.
-  // So set it here too.
   password.in_store = PasswordForm::Store::kProfileStore;
+  store().AddLogin(password);
   RunUntilIdle();
 
   std::vector<LeakCheckCredential> expected;

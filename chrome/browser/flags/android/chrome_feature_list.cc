@@ -415,6 +415,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &switches::kForceStartupSigninPromo,
     &switches::kForceDisableExtendedSyncPromos,
     &switches::kTangibleSync,
+    &syncer::kSyncEnableHistoryDataType,
     &syncer::kSyncTrustedVaultPassphraseRecovery,
     &syncer::kSyncAndroidLimitNTPPromoImpressions,
     &syncer::kSyncAndroidPromosWithAlternativeTitle,
@@ -796,7 +797,7 @@ BASE_FEATURE(kIncognitoScreenshot,
 
 BASE_FEATURE(kInfobarScrollOptimization,
              "InfobarScrollOptimization",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kInstantStart, "InstantStart", base::FEATURE_DISABLED_BY_DEFAULT);
 

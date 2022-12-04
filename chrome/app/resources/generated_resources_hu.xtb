@@ -55,7 +55,6 @@
 <translation id="1049743911850919806">Inkognitó mód</translation>
 <translation id="1049795001945932310">&amp;Nyelvi beállítások</translation>
 <translation id="1050693411695664090">Gyenge</translation>
-<translation id="1053831338284186718">Ellenőrizze a webhelyet, és próbálja meg módosítani a jelszavát.</translation>
 <translation id="1054048317165655285">Fejezze be a beállítást a telefonon</translation>
 <translation id="1054153489933238809">Az eredeti &amp;kép megnyitása új lapon</translation>
 <translation id="1055274863771110134">{NUM_WEEKS,plural, =1{A(z) <ph name="DEVICE_TYPE" /> frissítését 1 héten belül el kell végezni}other{A(z) <ph name="DEVICE_TYPE" /> frissítését {NUM_WEEKS} héten belül el kell végezni}}</translation>
@@ -72,6 +71,7 @@
 <translation id="1067048845568873861">Létrehozva</translation>
 <translation id="1067661089446014701">A nagyobb biztonság érdekében titkosíthatja jelszavait az eszközén, mielőtt a rendszer elmenti őket a Google-fiókjába.</translation>
 <translation id="1067922213147265141">Egyéb Google-szolgáltatások</translation>
+<translation id="106814709658156573">Az ujjlenyomat beállításához a gyermeknek meg kell érintenie a billentyűzet bal alsó sarkában található ujjlenyomat-érzékelőt. Gyermeke ujjlenyomatadatait a(z) <ph name="DEVICE_TYPE" /> biztonságosan tárolja, és soha nem kerülnek ki az eszközről.</translation>
 <translation id="1069104208554708737">Ez az azonosítókulcs csak ezen az eszközön lesz mentve</translation>
 <translation id="1069355737714877171">A következő eSIM-profil eltávolítása: <ph name="PROFILE_NAME" /></translation>
 <translation id="1069814191880976658">Válasszon másik képernyőt</translation>
@@ -314,7 +314,6 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="1285320974508926690">Ezt a webhelyet soha ne fordítsa le</translation>
 <translation id="1285484354230578868">Adattárolás a Google Drive-fiókban</translation>
 <translation id="1285625592773741684">A jelenlegi adathasználati beállítás: Mobiladatok</translation>
-<translation id="1287512808202289801">A Google Segéd leállt</translation>
 <translation id="1288037062697528143">Az Éjszakai fény automatikusan bekapcsol naplementekor.</translation>
 <translation id="1288300545283011870">Beszéd tulajdonságai</translation>
 <translation id="1289619947962767206">Ez a beállítás már nem támogatott. Lap átküldéséhez használja a <ph name="GOOGLE_MEET" /> szolgáltatást.</translation>
@@ -368,7 +367,6 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="1340527397989195812">Az eszközön található médiafájlok biztonsági mentése a Fájlok alkalmazással.</translation>
 <translation id="1343865611738742294">Engedély megadása a Linux-alkalmazásoknak az USB-eszközökhöz való hozzáférésre. A Linux nem jegyzi meg az USB-eszközt az eszköz eltávolítása után.</translation>
 <translation id="1343920184519992513">Ott folytathatja, ahol abbahagyta, és megnyithatja az oldalak egy adott készletét.</translation>
-<translation id="1344377983938103876"><ph name="URL" /> megnyitása…</translation>
 <translation id="134589511016534552">A médiatartalmat lejátszó lapok a Megnyitott lapok szakaszban is láthatók</translation>
 <translation id="1346630054604077329">Megerősítés és újraindítás</translation>
 <translation id="1346748346194534595">Jobbra</translation>
@@ -1012,6 +1010,7 @@ Az alkalmazások számára már megadott engedélyek erre a fiókra is érvénye
 <translation id="1892341345406963517">Üdvözöljük, <ph name="PARENT_NAME" />!</translation>
 <translation id="189358972401248634">Más nyelvek</translation>
 <translation id="1895658205118569222">Kikapcsolás</translation>
+<translation id="1896043844785689584">Az ujjlenyomat beállításához gyermekének meg kell érintenie a billentyűzet jobb alsó sarkában található ujjlenyomat-érzékelőt. Gyermeke ujjlenyomatadatait a(z) <ph name="DEVICE_TYPE" /> biztonságosan tárolja, és soha nem kerülnek ki az eszközről.</translation>
 <translation id="1897120393475391208">Erős jelszót használjon</translation>
 <translation id="1900305421498694955">Előfordulhat, hogy a Google Playről származó alkalmazások hozzáférést kérnek a teljes fájlrendszerhez, hogy olvashassák és módosíthassák a külső tárolóeszközökön lévő fájlokat. Az eszközön létrehozott fájlok és mappák minden olyan személy számára láthatók, aki a külső meghajtót használja. <ph name="LINK_BEGIN" />További információ<ph name="LINK_END" />.</translation>
 <translation id="1901303067676059328">Össz&amp;es kiválasztása</translation>
@@ -1394,7 +1393,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2251809247798634662">Új Inkognitóablak</translation>
 <translation id="2252017960592955005">Megtekintési védelem (béta)</translation>
 <translation id="225240747099314620">Azonosítók engedélyezése védett tartalomhoz (a számítógép újraindítását igényelheti)</translation>
-<translation id="2252617660166797081">További információ az automatikus jelszómódosításról</translation>
 <translation id="2255077166240162850">Az eszköz másik domainhez vagy módban van zárolva.</translation>
 <translation id="2255317897038918278">Microsoft - időbélyegzés</translation>
 <translation id="2256115617011615191">Újraindítás most</translation>
@@ -1594,6 +1592,7 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2408955596600435184">PIN-kód megadása</translation>
 <translation id="2409268599591722235">Rajta</translation>
 <translation id="2410079346590497630">build részletei</translation>
+<translation id="2410298923485357543">Természetes hang használata, amikor az eszköz csatlakozik az internethez</translation>
 <translation id="2410754283952462441">Válasszon fiókot</translation>
 <translation id="241082044617551207">Ismeretlen beépülő modul</translation>
 <translation id="2412753904894530585">Kerberos</translation>
@@ -1788,7 +1787,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2587922766792651800">Időtúllépés</translation>
 <translation id="2588636910004461974"><ph name="VENDOR_NAME" /> gyártótól származó eszközök</translation>
 <translation id="25899519884572181">Kilépés az olvasási módból</translation>
-<translation id="2591895621127187078">Az e-mailjei között keresse az új jelszó beállítására vonatkozó üzenetet</translation>
 <translation id="2593499352046705383">A telepítés megkezdése előtt gondoskodjon adatai biztonsági mentéséről. A <ph name="DEVICE_OS" /> telepítése felülírja a merevlemezen tárolt adatokat. További információk: g.co/flex/InstallGuide.</translation>
 <translation id="2594999711683503743">Keressen a Google-lal, vagy írja be az URL-t</translation>
 <translation id="25957578727513093">Ha gyorsabban szeretne idejutni, hozzon létre egy parancsikont a Google Jelszókezelőhöz</translation>
@@ -2212,7 +2210,6 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="2964245677645334031">Közeli megosztás láthatóság</translation>
 <translation id="2966937470348689686">Android-beállítások kezelése</translation>
 <translation id="2967926928600500959">Az ezeknek a szabályoknak megfelelő URL-eket a megadott böngészőben kényszeríti megnyitásra a rendszer.</translation>
-<translation id="2972266986002580503">Jelszavait bármikor ellenőrizheti itt: <ph name="GOOGLE_PASSWORD_MANAGER" />.</translation>
 <translation id="2972581237482394796">&amp;Újra</translation>
 <translation id="2973324205039581528">Webhely némítása</translation>
 <translation id="2973537811036309675">Oldalsó panel</translation>
@@ -2242,6 +2239,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="3000378525979847272">Engedélyezve: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /></translation>
 <translation id="3000461861112256445">Monó hang</translation>
 <translation id="3001144475369593262">Gyermekfiókok</translation>
+<translation id="3001835006423291524">Érintse meg a billentyűzet jobb alsó sarkában található ujjlenyomat-érzékelőt. Az ujjlenyomatadatokat a(z) <ph name="DEVICE_TYPE" /> biztonságosan tárolja, és soha nem kerülnek ki az eszközről.</translation>
 <translation id="3003144360685731741">Előnyben részesített hálózatok</translation>
 <translation id="3003623123441819449">CSS-gyorsítótár</translation>
 <translation id="3003828226041301643">Nem sikerült csatlakoztatni az eszközt a domainhez. Ellenőrizze eszközét: győződjön meg róla, hogy rendelkezik az eszközök hozzáadásához szükséges jogosultságokkal.</translation>
@@ -2314,6 +2312,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="3059195548603439580">A rendszerösszetevőket kereso? Nyissa meg ezt az oldalt:</translation>
 <translation id="3060952009917586498">Módosítsa az eszköz nyelvét. Jelenleg beállított nyelv: <ph name="LANGUAGE" />.</translation>
 <translation id="3060987956645097882">Nem tudtunk kapcsolatot létesíteni a telefonjával. Gondoskodjon arról, hogy telefonja fel legyen oldva, és a közelben legyen, bekapcsolt Bluetooth és Wi-Fi funkcióval.</translation>
+<translation id="3061302636956643119">A szöveg el lesz küldve a Google-nak feldolgozásra.</translation>
 <translation id="3064871050034234884">A webhelyek lejátszhatnak hangokat</translation>
 <translation id="3065041951436100775">Visszajelzés megszakított lapról.</translation>
 <translation id="3065522099314259755">Billentyűismétlés késleltetése</translation>
@@ -2322,6 +2321,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="3071624960923923138">Ide kattintva új lapot nyithat meg</translation>
 <translation id="3072775339180057696">Engedélyezi a webhelynek a következő megtekintését: <ph name="FILE_NAME" />?</translation>
 <translation id="3074499504015191586">Teljes oldal fordítása</translation>
+<translation id="3075144191779656260">Érintse meg a(z) <ph name="DEVICE_TYPE" /> bal oldalán található ujjlenyomat-érzékelőt. Az ujjlenyomatadatokat a(z) <ph name="DEVICE_TYPE" /> biztonságosan tárolja, és soha nem kerülnek ki az eszközről.</translation>
 <translation id="3075874217500066906">A Powerwash művelet elindításához újraindítás szükséges. Az újraindítás után a rendszer kéri a folytatás megerősítését.</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED" />/<ph name="DOWNLOAD_TOTAL" /></translation>
 <translation id="3076966043108928831">Mentés csak ezen az eszközön</translation>
@@ -2510,7 +2510,6 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="3277214528693754078">Navigálás szövegkurzorral (Caret Browsing)</translation>
 <translation id="3277594800340743211">Nagy árnyék</translation>
 <translation id="3278001907972365362">Google-fiókjaival kapcsolatban teendői akadtak</translation>
-<translation id="3279030509356143465">Sikerült annak a jelszónak a módosítása, amelyhez illetéktelenül hozzáfértek</translation>
 <translation id="3279092821516760512">A kiválasztott ismerősök tartalmakat oszthatnak meg Önnel, amikor a közelben vannak. Az elfogadásig nem kezdődik meg az átküldés.</translation>
 <translation id="3279230909244266691">Ez a folyamat néhány percet is igénybe vehet. A virtuális gép indítása folyamatban van.</translation>
 <translation id="3280237271814976245">Mentés &amp;másként...</translation>
@@ -2644,6 +2643,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="3406290648907941085">Használhatják a virtuálisvalóság-eszközöket és -adatokat</translation>
 <translation id="3406396172897554194">Kereshet nyelv vagy a beviteli módszer neve szerint</translation>
 <translation id="3406605057700382950">&amp;Könyvjelzősáv megjelenítése</translation>
+<translation id="3407967630066378878">Az ujjlenyomat beállításához gyermekének meg kell érintenie a(z) <ph name="DEVICE_TYPE" /> bal oldalán található ujjlenyomat-érzékelőt. Gyermeke ujjlenyomatadatait a(z) <ph name="DEVICE_TYPE" /> biztonságosan tárolja, és soha nem kerülnek ki az eszközről.</translation>
 <translation id="3408849592677950451">{NUM_PASSWORDS,plural, =1{1 jelszó importálása a Google Jelszókezelőbe a(z) <ph name="USER_EMAIL" /> fiók számára sikeresen megtörtént}other{{NUM_PASSWORDS} jelszó importálása a Google Jelszókezelőbe a(z) <ph name="USER_EMAIL" /> fiók számára sikeresen megtörtént}}</translation>
 <translation id="3409785640040772790">Térkép</translation>
 <translation id="3412265149091626468">Ugrás a kijelöléshez</translation>
@@ -2965,7 +2965,6 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="370649949373421643">Wi-Fi engedélyezése</translation>
 <translation id="370665806235115550">Betöltés...</translation>
 <translation id="3707163604290651814">Jelenleg bejelentkezve mint <ph name="NAME" /></translation>
-<translation id="3707414379011001517">Jelszava nem változott meg. Ha szeretné módosítani, próbálja meg újra, és hagyja megnyitva ezt a lapot és az oldalsó panelt. <ph name="LINK_TEXT" /></translation>
 <translation id="3708295717182051206">Feliratok</translation>
 <translation id="3708684582558000260">A bezárt webhelyek nem fejezhetik be az adatküldést és -fogadást</translation>
 <translation id="3709244229496787112">A böngészőt leállították, mielőtt a letöltés befejeződött volna.</translation>
@@ -3768,6 +3767,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4451479197788154834">A jelszó mentve van ezen az eszközön és a Google-fiókjában</translation>
 <translation id="4451757071857432900">Letiltva a tolakodó vagy félrevezető hirdetéseket megjelenítő webhelyeken (ajánlott)</translation>
 <translation id="4452898361839215358">vagy PPD kiválasztása. <ph name="LINK_BEGIN" />További információ<ph name="LINK_END" />.</translation>
+<translation id="4453430595102511050">Érintse meg a billentyűzet jobb felső sarkában található ujjlenyomat-érzékelőt. Az ujjlenyomatadatokat a(z) <ph name="DEVICE_TYPE" /> biztonságosan tárolja, és soha nem kerülnek ki az eszközről.</translation>
 <translation id="4453946976636652378">Keressen a(z) <ph name="SEARCH_ENGINE_NAME" /> segítségével, vagy írja be az URL-t</translation>
 <translation id="4458535500699390320">Amíg ez a lap inaktív volt, a memóriatakarékos mód memóriát szabadított fel az egyéb feladatokhoz. A beállításokban ezt bármikor módosíthatja.</translation>
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> napja volt aktív</translation>
@@ -3914,6 +3914,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4582563038311694664">Összes beállítás visszaállítása</translation>
 <translation id="4585793705637313973">Oldal szerkesztése</translation>
 <translation id="4586275095964870617">A(z) <ph name="URL" /> URL-címet nem sikerült másik böngészőben megnyitni. Kérjük, forduljon a rendszergazdához.</translation>
+<translation id="4587589328781138893">Webhelyek</translation>
 <translation id="4589713469967853491">Naplóesemények sikeresen mentve a Letöltések mappába.</translation>
 <translation id="4590324241397107707">Adatbázis-tároló</translation>
 <translation id="459204634473266369">Nincs eszköz mentve a következő fiókba: <ph name="PRIMARY_EMAIL" /></translation>
@@ -4477,7 +4478,6 @@ kicsinyítéshez pedig a Ctrl + Alt + Fényerő csökkentése billentyűpara
 <translation id="5130675701626084557">Nem sikerült a profil letöltése. Próbálja újra később, vagy forduljon segítségért a szolgáltatóhoz.</translation>
 <translation id="5131591206283983824">Koppintással húzás az érintőpadon</translation>
 <translation id="5135533361271311778">Nem sikerült létrehozni a könyvjelzőelemet.</translation>
-<translation id="5135828720964881054">Automatikus jelszómódosítás</translation>
 <translation id="5136343472380336530">Győződjön meg arról, hogy mindkét eszköz fel van oldva, közel vannak egymáshoz, és be van rajtuk kapcsolva a Bluetooth. <ph name="LINK_BEGIN" />További információ<ph name="LINK_END" />.</translation>
 <translation id="5137501176474113045">Elem törlése</translation>
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, <ph name="DEFAULT_SEARCH_ENGINE_NAME" />-keresés</translation>
@@ -5821,7 +5821,6 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="6406303162637086258">Böngésző újraindításának szimulálása</translation>
 <translation id="6406506848690869874">Szinkronizálás</translation>
 <translation id="6406708970972405507">Beállítások – <ph name="SECTION_TITLE" /></translation>
-<translation id="6407955178761087876">A Google Segéd segíthet a jelszó módosításában</translation>
 <translation id="6408118934673775994">Adatainak olvasása és módosítása itt: <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> és <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">Képfájlok</translation>
 <translation id="6410328738210026208">Csatorna módosítása és Powerwash</translation>
@@ -6043,6 +6042,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="6607831829715835317">További eszközök</translation>
 <translation id="6607890859198268021">A(z) <ph name="USER_EMAIL" /> fiókot már a(z) <ph name="DOMAIN" /> kezeli. Ha a szülői felügyeletet másik Google-fiókhoz szeretné beállítani, jelentkezzen ki a beállítás után, majd a bejelentkezési képernyőn válassza a „Személy hozzáadása” lehetőséget.</translation>
 <translation id="6608166463665411119">eSIM visszaállítása</translation>
+<translation id="6608773371844092260">Az ujjlenyomat beállításához gyermekének meg kell érintenie a(z) <ph name="DEVICE_TYPE" /> eszköz jobb oldalán található ujjlenyomat-érzékelőt. Gyermeke ujjlenyomatadatait a(z) <ph name="DEVICE_TYPE" /> biztonságosan tárolja, és soha nem kerülnek ki az eszközről.</translation>
 <translation id="6609478180749378879">Az inkognitó mód elhagyása után ez az eszköz tárolja a bejelentkezési adatokat. Eszközével később újra be tud jelentkezni ezen a webhelyen.</translation>
 <translation id="6610002944194042868">Fordítási beállítások</translation>
 <translation id="6611907964265870728">Ellenőrizze, hogy eszköze csatlakozik-e az internethez</translation>
@@ -6216,7 +6216,6 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="6783036716881942511">Elfelejteti az eszközt?</translation>
 <translation id="6784523122863989144">Nem támogatott profil</translation>
 <translation id="6785739405821760313">Mentett asztalok megtekintése. A Tab billentyű lenyomásával navigálhat.</translation>
-<translation id="6785872064505734160">A „Google Segéd a Chrome-ban” elvégezhet bizonyos műveleteket Önnek a különböző webhelyeken</translation>
 <translation id="6786747875388722282">Bővítmények</translation>
 <translation id="6787097042755590313">Másik lap</translation>
 <translation id="6787839852456839824">Billentyűkódok</translation>
@@ -6689,6 +6688,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="7225082563376899794">A Windows Hello használata jelszómezők kitöltésekor</translation>
 <translation id="7225179976675429563">Hiányzik a hálózat típusa</translation>
 <translation id="7227458944009118910">Az alábbi listában szereplő alkalmazások linkeket is képesek kezelni. Más alkalmazások engedélyt kérnek erre.</translation>
+<translation id="7228056665272655255">Az ujjlenyomat beállításához gyermekének meg kell érintenie a billentyűzet jobb felső sarkában található ujjlenyomat-érzékelőt. Gyermeke ujjlenyomatadatait a(z) <ph name="DEVICE_TYPE" /> biztonságosan tárolja, és soha nem kerülnek ki az eszközről.</translation>
 <translation id="7228523857728654909">Képernyőzár és bejelentkezés</translation>
 <translation id="7230222852462421043">&amp;Ablak visszaállítása</translation>
 <translation id="7231260028442989757">Telefonja értesítéseinek megtekintése, elvetése, illetve válasz rájuk</translation>
@@ -6816,6 +6816,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="7360233684753165754"><ph name="PAGE_NUMBER" /> oldal nyomtatása a következőn: <ph name="PRINTER_NAME" /></translation>
 <translation id="7360257054721917104">Mentett asztalok és sablonok megtekintése. A Tab billentyű lenyomásával navigálhat.</translation>
 <translation id="7361297102842600584">Kattintson jobb gombbal a(z) <ph name="PLUGIN_NAME" /> futtatásához</translation>
+<translation id="7361914392989692067">Érintse meg ujjával a bekapcsológombot. Az ujjlenyomatadatokat a(z) <ph name="DEVICE_TYPE" /> biztonságosan tárolja, és soha nem kerülnek ki az eszközről.</translation>
 <translation id="7362387053578559123">A webhelyek engedélyt kérhetnek a Bluetooth-eszközökhöz való csatlakozásra</translation>
 <translation id="7363349185727752629">Az adatvédelmi lehetőségek bemutatója</translation>
 <translation id="7364591875953874521">Hozzáférést kért</translation>
@@ -7254,7 +7255,6 @@ Nyomja meg valamelyik hozzárendelt kapcsolót vagy billentyűt a hozzárendelé
 <translation id="7753735457098489144">A telepítés tárhelyhiány miatt nem sikerült. Tárhely felszabadításához töröljön fájlokat az eszközről.</translation>
 <translation id="7754347746598978109">Nem használhatnak JavaScriptet</translation>
 <translation id="7754704193130578113">A letöltés előtt kérdezze meg, hová mentse az adott fájlokat</translation>
-<translation id="7755134875397410803">Annak érdekében, hogy segíteni tudjon a feladatok elvégzésében, a Google megkapja azoknak a webhelyeknek az URL-jeit és tartalmait, amelyeken Ön használta Segédjét, valamint megkapja a Segéden keresztül elküldött információkat. Ezek az információk megmaradhatnak az Ön Google-fiókjában. A Segédet a Chrome beállításai között kapcsolhatja ki. <ph name="LEARN_MORE" />.</translation>
 <translation id="7755287808199759310">A letiltást a szülő oldhatja fel</translation>
 <translation id="7757592200364144203">Eszköz nevének módosítása</translation>
 <translation id="7757739382819740102">A közelben lévő ismerősei megoszthatnak Önnel tartalmakat. Az Ön jóváhagyására lesz szükség.</translation>
@@ -7869,6 +7869,7 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8299319456683969623">Ön jelenleg offline állapotban van.</translation>
 <translation id="8300011035382349091">A jelenlegi laphoz tartozó könyvjelző szerkesztése</translation>
 <translation id="8300374739238450534">Éjkék</translation>
+<translation id="8301242268274839723">Érintse meg a billentyűzet bal alsó sarkában található ujjlenyomat-érzékelőt. Az ujjlenyomatadatokat a(z) <ph name="DEVICE_TYPE" /> biztonságosan tárolja, és soha nem kerülnek ki az eszközről.</translation>
 <translation id="8303616404642252802">{COUNT,plural, =1{Cím}other{# cím}}</translation>
 <translation id="8304383784961451596">Ön nem jogosult az eszköz használatára. Bejelentkezési engedély kéréséhez vegye fel a kapcsolatot a rendszergazdával, vagy jelentkezzen be a Family Linken keresztül felügyelt Google-fiókkal.</translation>
 <translation id="8306885873692337975">Szeretném megkapni a legújabb funkciókat és biztonsági fejlesztéseket.</translation>
@@ -8564,7 +8565,6 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="8967427617812342790">Hozzáadás olvasási listához</translation>
 <translation id="8968527460726243404">ChromeOS System Image Writer</translation>
 <translation id="8968766641738584599">Kártya mentése</translation>
-<translation id="8970887620466824814">Hiba történt.</translation>
 <translation id="89720367119469899">Vezérlő</translation>
 <translation id="8972513834460200407">Kérdezze meg a hálózati rendszergazdától, hogy a tűzfal nem tiltja-e le a Google szervereiről érkező letöltéseket.</translation>
 <translation id="8973263196882835828">Az Élő feliratozás &amp;bekapcsolása</translation>
@@ -8596,10 +8596,12 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="8993059306046735527">Akkor is visszaállíthatja a helyi adatait, ha elfelejtette <ph name="DEVICE_TYPE" /> eszköze jelszavát. Ehhez be kell jelentkeznie Google-fiókjába, vagy fiók-helyreállítást kell végeznie.</translation>
 <translation id="8993737615451556423">Vezérlőket biztosít az olvasás hangjának gyorsításához, lassításához és szüneteltetéséhez</translation>
 <translation id="899384117894244799">Korlátozott felhasználó eltávolítása</translation>
+<translation id="8993945059918628059">Érintse meg az ujjlenyomat-érzékelőt. Az ujjlenyomatadatokat a(z) <ph name="DEVICE_TYPE" /> biztonságosan tárolja, és soha nem kerülnek ki az eszközről.</translation>
 <translation id="899403249577094719">Netscape tanúsítvány - alap URL</translation>
 <translation id="899657321862108550">Az Ön Chrome-ja, bárhol</translation>
 <translation id="8998078711690114234">Az ilyen típusú fájlok veszélyesek lehetnek. Csak akkor mentse ezt a fájlt, ha megbízik a következőben: <ph name="ORIGIN" />.</translation>
 <translation id="8999560016882908256">Szakasszal kapcsolatos szintaktikai hiba: <ph name="ERROR_LINE" /></translation>
+<translation id="9000185763019430629">Érintse meg a(z) <ph name="DEVICE_TYPE" /> jobb oldalán található ujjlenyomat-érzékelőt. Az ujjlenyomatadatokat a(z) <ph name="DEVICE_TYPE" /> biztonságosan tárolja, és soha nem kerülnek ki az eszközről.</translation>
 <translation id="9003185744423389627">Nem sikerült kapcsolódni az eszközkezelő szerverhez (állapot: „<ph name="STATUS_TEXT" />”, időpont: <ph name="FAILURE_TIME" />)</translation>
 <translation id="9003647077635673607">Engedélyezés valamennyi webhelyen</translation>
 <translation id="9003677638446136377">Ellenőrzés újra</translation>

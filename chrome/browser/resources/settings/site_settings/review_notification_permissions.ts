@@ -7,6 +7,7 @@ import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import '../settings_shared.css.js';
+import '../site_settings_page/site_review_shared.css.js';
 import '../i18n_setup.js';
 
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
@@ -228,8 +229,7 @@ export class SettingsReviewNotificationPermissionsElement extends
 
     // The already rendered <cr-row>s are reused as the model is updated,
     // so we need to reset their CSS classes.
-    const rows = this.shadowRoot!.querySelectorAll(
-        '.notification-permissions-list .site-entry');
+    const rows = this.shadowRoot!.querySelectorAll('.site-list .site-entry');
     for (const row of rows) {
       row.classList.remove('removed');
     }
@@ -352,7 +352,6 @@ export class SettingsReviewNotificationPermissionsElement extends
   private onKeyDown_(e: KeyboardEvent) {
     // Only allow undoing via ctrl+z when the undo toast is opened.
     if (!this.$.undoToast.open) {
-      e.preventDefault();
       return;
     }
 
@@ -365,7 +364,6 @@ export class SettingsReviewNotificationPermissionsElement extends
      * and ctrl on mac).
      */
     if (e.key !== 'z') {
-      e.preventDefault();
       return;
     }
     const excludedModifiers = [e.altKey, e.shiftKey];
@@ -379,7 +377,6 @@ export class SettingsReviewNotificationPermissionsElement extends
     // </if>
     if (!excludedModifiers.some(Boolean) && targetModifier) {
       this.undoLastAction();
-      e.preventDefault();
     }
   }
 
@@ -406,8 +403,7 @@ export class SettingsReviewNotificationPermissionsElement extends
   }
 
   private hideItem_(origin?: string) {
-    const rows = this.shadowRoot!.querySelectorAll(
-        '.notification-permissions-list .site-entry');
+    const rows = this.shadowRoot!.querySelectorAll('.site-list .site-entry');
 
     // Remove the row that corresponds to |origin|. If no origin is specified,
     // remove all rows.
@@ -441,8 +437,7 @@ export class SettingsReviewNotificationPermissionsElement extends
      */
     if (this.sites_.length !== 0 && this.shouldRefocusExpandButton_) {
       this.shouldRefocusExpandButton_ = false;
-      const expandButton =
-          this.shadowRoot!.querySelector<HTMLElement>('#expandButton');
+      const expandButton = this.shadowRoot!.querySelector('cr-expand-button');
       assert(expandButton);
       expandButton.focus();
     }

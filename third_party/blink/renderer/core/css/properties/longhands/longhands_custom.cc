@@ -173,7 +173,8 @@ const CSSValue* AnchorScroll::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   if (CSSValue* value =
-          css_parsing_utils::ConsumeIdent<CSSValueID::kNone>(range)) {
+          css_parsing_utils::ConsumeIdent<CSSValueID::kNone,
+                                          CSSValueID::kImplicit>(range)) {
     return value;
   }
   return css_parsing_utils::ConsumeDashedIdent(range, context);
@@ -184,8 +185,10 @@ const CSSValue* AnchorScroll::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (!style.AnchorScroll())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
+  if (style.AnchorScroll()->IsImplicit())
+    return CSSIdentifierValue::Create(CSSValueID::kImplicit);
   return MakeGarbageCollected<CSSCustomIdentValue>(
-      style.AnchorScroll()->GetName());
+      style.AnchorScroll()->GetName().GetName());
 }
 
 const CSSValue* AnimationDelay::ParseSingleValue(
@@ -201,14 +204,18 @@ const CSSValue* AnimationDelay::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForAnimationDelayList(style.Animations());
+  // When CSSScrollTimeline is enabled, animation-delay is a shorthand
+  // which expands to animation-delay-start/end, therefore this should not
+  // be reachable without that feature.
+  DCHECK(!RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+  return ComputedStyleUtils::ValueForAnimationDelayStartList(
+      style.Animations());
 }
 
 const CSSValue* AnimationDelay::InitialValue() const {
-  DEFINE_STATIC_LOCAL(
-      const Persistent<CSSValue>, value,
-      (CSSNumericLiteralValue::Create(CSSTimingData::InitialDelay(),
-                                      CSSPrimitiveValue::UnitType::kSeconds)));
+  DEFINE_STATIC_LOCAL(const Persistent<CSSValue>, value,
+                      (ComputedStyleUtils::ValueForAnimationDelayStart(
+                          CSSTimingData::InitialDelayStart())));
   return value;
 }
 
@@ -229,6 +236,11 @@ const CSSValue* AnimationDelayStart::CSSValueFromComputedStyleInternal(
       style.Animations());
 }
 
+const CSSValue* AnimationDelayStart::InitialValue() const {
+  return ComputedStyleUtils::ValueForAnimationDelayStart(
+      CSSTimingData::InitialDelayStart());
+}
+
 const CSSValue* AnimationDelayEnd::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -243,6 +255,11 @@ const CSSValue* AnimationDelayEnd::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForAnimationDelayEndList(style.Animations());
+}
+
+const CSSValue* AnimationDelayEnd::InitialValue() const {
+  return ComputedStyleUtils::ValueForAnimationDelayEnd(
+      CSSTimingData::InitialDelayEnd());
 }
 
 const CSSValue* AnimationDirection::ParseSingleValue(
@@ -7624,14 +7641,14 @@ const CSSValue* TransitionDelay::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForAnimationDelayList(style.Transitions());
+  return ComputedStyleUtils::ValueForAnimationDelayStartList(
+      style.Transitions());
 }
 
 const CSSValue* TransitionDelay::InitialValue() const {
-  DEFINE_STATIC_LOCAL(
-      const Persistent<CSSValue>, value,
-      (CSSNumericLiteralValue::Create(CSSTimingData::InitialDelay(),
-                                      CSSPrimitiveValue::UnitType::kSeconds)));
+  DEFINE_STATIC_LOCAL(const Persistent<CSSValue>, value,
+                      (ComputedStyleUtils::ValueForAnimationDelayStart(
+                          CSSTimingData::InitialDelayStart())));
   return value;
 }
 

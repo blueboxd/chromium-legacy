@@ -40,8 +40,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.ButtonData.ButtonSpec;
 import org.chromium.chrome.browser.toolbar.R;
+import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarButtonVariant;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures;
-import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures.AdaptiveToolbarButtonVariant;
 import org.chromium.chrome.browser.toolbar.optional_button.OptionalButtonConstants.TransitionType;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuButton;
 
@@ -370,7 +370,7 @@ class OptionalButtonView extends FrameLayout implements TransitionListener {
         // When finished expanding the action chip schedule the collapse transition in 3 seconds.
         if (mState == State.SHOWING_ACTION_CHIP) {
             getHandler().postDelayed(mCollapseActionChipRunnable,
-                    AdaptiveToolbarFeatures.getContextualPageActionDelayMs());
+                    AdaptiveToolbarFeatures.getContextualPageActionDelayMs(mCurrentButtonVariant));
         }
     }
 
@@ -587,7 +587,7 @@ class OptionalButtonView extends FrameLayout implements TransitionListener {
         mButton.setImageDrawable(mIconDrawable);
         mButton.setVisibility(GONE);
 
-        if (AdaptiveToolbarFeatures.shouldUseAlternativeActionChipColor()) {
+        if (AdaptiveToolbarFeatures.shouldUseAlternativeActionChipColor(mCurrentButtonVariant)) {
             int highlightColor = MaterialColors.getColor(this, R.attr.colorSecondaryContainer);
             mBackground.setColorFilter(highlightColor);
         } else {

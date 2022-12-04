@@ -361,6 +361,7 @@
 #include "sandbox/policy/mac/params.h"
 #include "sandbox/policy/mac/sandbox_mac.h"
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/new_window_delegate.h"
@@ -381,6 +382,7 @@
 #include "chrome/browser/ash/login/signin/merge_session_throttling_utils.h"
 #include "chrome/browser/ash/login/signin_partition_manager.h"
 #include "chrome/browser/ash/login/startup_utils.h"
+#include "chrome/browser/ash/net/network_health/network_health_manager.h"
 #include "chrome/browser/ash/net/system_proxy_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/smb_client/fileapi/smbfs_file_system_backend_delegate.h"
@@ -446,6 +448,7 @@
 #include "chrome/browser/policy/networking/policy_cert_service.h"
 #include "chrome/browser/policy/networking/policy_cert_service_factory.h"
 #include "chrome/common/chromeos/extensions/chromeos_system_extension_info.h"
+#include "chromeos/services/network_health/public/cpp/network_health_helper.h"
 #include "components/crash/core/app/breakpad_linux.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #endif
@@ -1129,16 +1132,22 @@ bool ShouldHonorPolicies() {
 const char kDisableSandboxExternalProtocolSwitch[] =
     "disable-sandbox-external-protocols";
 
-void LaunchURL(base::WeakPtr<ChromeContentBrowserClient> client,
-               const GURL& url,
-               content::WebContents::Getter web_contents_getter,
-               ui::PageTransition page_transition,
-               bool is_primary_main_frame,
-               bool is_in_fenced_frame_tree,
-               network::mojom::WebSandboxFlags sandbox_flags,
-               bool has_user_gesture,
-               const absl::optional<url::Origin>& initiating_origin,
-               content::WeakDocumentPtr initiator_document) {
+void LaunchURL(
+    base::WeakPtr<ChromeContentBrowserClient> client,
+    const GURL& url,
+    content::WebContents::Getter web_contents_getter,
+    ui::PageTransition page_transition,
+    bool is_primary_main_frame,
+    bool is_in_fenced_frame_tree,
+    network::mojom::WebSandboxFlags sandbox_flags,
+    bool has_user_gesture,
+    const absl::optional<url::Origin>& initiating_origin,
+    content::WeakDocumentPtr initiator_document
+#if BUILDFLAG(IS_ANDROID)
+    ,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory
+#endif
+) {
   // If there is no longer a WebContents, the request may have raced with tab
   // closing. Don't fire the external request. (It may have been a prerender.)
   content::WebContents* web_contents = web_contents_getter.Run();
@@ -1254,7 +1263,12 @@ void LaunchURL(base::WeakPtr<ChromeContentBrowserClient> client,
     ExternalProtocolHandler::LaunchUrl(
         url, std::move(web_contents_getter), page_transition, has_user_gesture,
         is_in_fenced_frame_tree, initiating_origin,
-        std::move(initiator_document));
+        std::move(initiator_document)
+#if BUILDFLAG(IS_ANDROID)
+            ,
+        out_factory
+#endif
+    );
   }
 }
 
@@ -6257,6 +6271,18 @@ bool ChromeContentBrowserClient::HandleExternalProtocol(
                                      ? initiator_document->GetWeakDocumentPtr()
                                      : content::WeakDocumentPtr();
 
+#if BUILDFLAG(IS_ANDROID)
+  // For Android this is always called on the UI thread.
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // Called synchronously so we can populate the |out_factory| param.
+  LaunchURL(weak_factory_.GetWeakPtr(), url, std::move(web_contents_getter),
+            page_transition, is_primary_main_frame, is_in_fenced_frame_tree,
+            sandbox_flags, has_user_gesture, initiating_origin,
+            std::move(weak_initiator_document), out_factory);
+#else
+  // TODO(crbug.com/1394838): Figure out why this was initially made async, and,
+  // if possible, unify with the sync path above.
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(&LaunchURL, weak_factory_.GetWeakPtr(), url,
@@ -6264,6 +6290,7 @@ bool ChromeContentBrowserClient::HandleExternalProtocol(
                      is_primary_main_frame, is_in_fenced_frame_tree,
                      sandbox_flags, has_user_gesture, initiating_origin,
                      std::move(weak_initiator_document)));
+#endif
   return true;
 }
 
@@ -7134,18 +7161,40 @@ ChromeContentBrowserClient::GetAlternativeErrorPageOverrideInfo(
     content::RenderFrameHost* render_frame_host,
     content::BrowserContext* browser_context,
     int32_t error_code) {
-  if (error_code != net::ERR_INTERNET_DISCONNECTED)
-    return nullptr;
+  if (base::FeatureList::IsEnabled(features::kPWAsDefaultOfflinePage) &&
+      error_code == net::ERR_INTERNET_DISCONNECTED) {
+    content::mojom::AlternativeErrorPageOverrideInfoPtr
+        alternative_error_page_override_info = web_app::GetOfflinePageInfo(
+            url, render_frame_host, browser_context);
+    if (alternative_error_page_override_info) {
+      // Use the alternative error page dictionary to override the error page.
+      alternative_error_page_override_info->alternative_error_page_params.Set(
+          error_page::kOverrideErrorPage, base::Value(true));
+      web_app::TrackOfflinePageVisibility(render_frame_host);
+      return alternative_error_page_override_info;
+    }
+  }
 
-  if (!base::FeatureList::IsEnabled(features::kPWAsDefaultOfflinePage))
-    return nullptr;
+  // TODO(b/247618374): Lacros implementation
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (ash::features::IsCaptivePortalErrorPageEnabled()) {
+    auto alternative_error_page_override_info =
+        content::mojom::AlternativeErrorPageOverrideInfo::New();
+    // Use the alternative error page dictionary to provide additional
+    // suggestions in the default error page.
+    alternative_error_page_override_info->alternative_error_page_params.Set(
+        error_page::kOverrideErrorPage, base::Value(false));
+    bool is_portal_state =
+        ash::network_health::NetworkHealthManager::GetInstance()
+            ->helper()
+            ->IsPortalState();
+    alternative_error_page_override_info->alternative_error_page_params.Set(
+        error_page::kIsPortalStateKey, base::Value(is_portal_state));
+    return alternative_error_page_override_info;
+  }
+#endif
 
-  content::mojom::AlternativeErrorPageOverrideInfoPtr error_page =
-      web_app::GetOfflinePageInfo(url, render_frame_host, browser_context);
-  if (error_page)
-    web_app::TrackOfflinePageVisibility(render_frame_host);
-
-  return error_page;
+  return nullptr;
 }
 
 bool ChromeContentBrowserClient::OpenExternally(

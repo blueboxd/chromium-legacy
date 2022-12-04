@@ -556,64 +556,82 @@ const FeatureEntry::FeatureVariation
          std::size(kAdaptiveButtonCustomization_Voice), nullptr},
 };
 
-const FeatureEntry::FeatureParam kContextualPageActionPriceTracking_Quiet[] = {
+const FeatureEntry::FeatureParam kContextualPageActionsUiParams_Quiet[] = {
     {"action_chip", "false"},
 };
-const FeatureEntry::FeatureParam
-    kContextualPageActionPriceTracking_ActionChip[] = {
-        {"action_chip", "true"},
-        {"action_chip_time_ms", "3000"},
+const FeatureEntry::FeatureParam kContextualPageActionsUiParams_ActionChip[] = {
+    {"action_chip", "true"},
+    {"action_chip_time_ms", "3000"},
 };
 const FeatureEntry::FeatureParam
-    kContextualPageActionPriceTracking_ActionChip_6s[] = {
+    kContextualPageActionsUiParams_ActionChip_6s[] = {
         {"action_chip", "true"},
         {"action_chip_time_ms", "6000"},
 };
 const FeatureEntry::FeatureParam
-    kContextualPageActionPriceTracking_ActionChip_AltColor[] = {
+    kContextualPageActionsUiParams_ActionChip_AltColor[] = {
         {"action_chip", "true"},
         {"action_chip_time_ms", "3000"},
         {"action_chip_with_different_color", "true"},
 };
 const FeatureEntry::FeatureParam
-    kContextualPageActionPriceTracking_ActionChip_AltColor_6s[] = {
+    kContextualPageActionsUiParams_ActionChip_AltColor_6s[] = {
         {"action_chip", "true"},
         {"action_chip_time_ms", "6000"},
         {"action_chip_with_different_color", "true"},
 };
+
+const FeatureEntry::FeatureParam kContextualPageActions_DisableUi[]{
+    {"disable_ui", "true"},
+};
+const FeatureEntry::FeatureVariation kContextualPageActionsVariations[] = {
+    {"Disable UI", kContextualPageActions_DisableUi},
+};
+
 const FeatureEntry::FeatureVariation
     kContextualPageActionPriceTrackingVariations[] = {
-        {"Quiet", kContextualPageActionPriceTracking_Quiet,
-         std::size(kContextualPageActionPriceTracking_Quiet), nullptr},
-        {"Action Chip", kContextualPageActionPriceTracking_ActionChip,
-         std::size(kContextualPageActionPriceTracking_ActionChip), nullptr},
-        {"Action Chip - 6s", kContextualPageActionPriceTracking_ActionChip_6s,
-         std::size(kContextualPageActionPriceTracking_ActionChip_6s), nullptr},
+        {"Quiet", kContextualPageActionsUiParams_Quiet,
+         std::size(kContextualPageActionsUiParams_Quiet), nullptr},
+        {"Action Chip", kContextualPageActionsUiParams_ActionChip,
+         std::size(kContextualPageActionsUiParams_ActionChip), nullptr},
+        {"Action Chip - 6s", kContextualPageActionsUiParams_ActionChip_6s,
+         std::size(kContextualPageActionsUiParams_ActionChip_6s), nullptr},
         {"Action Chip - Alternative Color",
-         kContextualPageActionPriceTracking_ActionChip_AltColor,
-         std::size(kContextualPageActionPriceTracking_ActionChip_AltColor),
+         kContextualPageActionsUiParams_ActionChip_AltColor,
+         std::size(kContextualPageActionsUiParams_ActionChip_AltColor),
          nullptr},
         {"Action Chip - Alternative Color - 6s",
-         kContextualPageActionPriceTracking_ActionChip_AltColor_6s,
-         std::size(kContextualPageActionPriceTracking_ActionChip_AltColor_6s),
+         kContextualPageActionsUiParams_ActionChip_AltColor_6s,
+         std::size(kContextualPageActionsUiParams_ActionChip_AltColor_6s),
          nullptr},
 };
 
 const FeatureEntry::FeatureParam
-    kContextualPageActionReaderMode_NoRateLimiting[] = {
+    kContextualPageActionReaderMode_ActionChip_NotRateLimited[] = {
+        {"action_chip", "true"},
+        {"action_chip_time_ms", "3000"},
         {"reader_mode_session_rate_limiting", "false"},
 };
-const FeatureEntry::FeatureParam kContextualPageActionReaderMode_RateLimited[] =
-    {
-        {"reader_mode_session_rate_limiting", "true"},
-};
-
 const FeatureEntry::FeatureVariation
     kContextualPageActionReaderModeVariations[] = {
-        {"Use rate limiting", kContextualPageActionReaderMode_RateLimited,
-         std::size(kContextualPageActionReaderMode_RateLimited), nullptr},
-        {"Don't rate limit", kContextualPageActionReaderMode_NoRateLimiting,
-         std::size(kContextualPageActionReaderMode_NoRateLimiting), nullptr},
+        {"Quiet", kContextualPageActionsUiParams_Quiet,
+         std::size(kContextualPageActionsUiParams_Quiet), nullptr},
+        {"Action Chip", kContextualPageActionsUiParams_ActionChip,
+         std::size(kContextualPageActionsUiParams_ActionChip), nullptr},
+        {"Action Chip - 6s", kContextualPageActionsUiParams_ActionChip_6s,
+         std::size(kContextualPageActionsUiParams_ActionChip_6s), nullptr},
+        {"Action Chip - Alternative Color",
+         kContextualPageActionsUiParams_ActionChip_AltColor,
+         std::size(kContextualPageActionsUiParams_ActionChip_AltColor),
+         nullptr},
+        {"Action Chip - Alternative Color - 6s",
+         kContextualPageActionsUiParams_ActionChip_AltColor_6s,
+         std::size(kContextualPageActionsUiParams_ActionChip_AltColor_6s),
+         nullptr},
+        {"Action Chip - Not rate limited",
+         kContextualPageActionReaderMode_ActionChip_NotRateLimited,
+         std::size(kContextualPageActionReaderMode_ActionChip_NotRateLimited),
+         nullptr},
 };
 
 const FeatureEntry::FeatureParam
@@ -3618,10 +3636,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAdaptiveChargingForTestingName,
      flag_descriptions::kAdaptiveChargingForTestingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kAdaptiveChargingForTesting)},
-    {"allow-poly-device-pairing",
-     flag_descriptions::kAllowPolyDevicePairingName,
-     flag_descriptions::kAllowPolyDevicePairingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kAllowPolyDevicePairing)},
     {"ash-bento-bar", flag_descriptions::kBentoBarName,
      flag_descriptions::kBentoBarDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kBentoBar)},
@@ -3678,6 +3692,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"captive-portal-ui-2022", flag_descriptions::kCaptivePortalUI2022Name,
      flag_descriptions::kCaptivePortalUI2022Description, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kCaptivePortalUI2022)},
+    {"captive-portal-error-page",
+     flag_descriptions::kCaptivePortalErrorPageName,
+     flag_descriptions::kCaptivePortalErrorPageDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kCaptivePortalErrorPage)},
     {"cellular-bypass-esim-installation-connectivity-check",
      flag_descriptions::kCellularBypassESimInstallationConnectivityCheckName,
      flag_descriptions::
@@ -3798,6 +3816,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-dns-proxy", flag_descriptions::kEnableDnsProxyName,
      flag_descriptions::kEnableDnsProxyDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kEnableDnsProxy)},
+    {"enable-edid-based-display-ids",
+     flag_descriptions::kEnableEdidBasedDisplayIdsName,
+     flag_descriptions::kEnableEdidBasedDisplayIdsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(display::features::kEnableEdidBasedDisplayIds)},
     {"enforce-ash-extension-keeplist",
      flag_descriptions::kEnforceAshExtensionKeeplistName,
      flag_descriptions::kEnforceAshExtensionKeeplistDescription, kOsCrOS,
@@ -4117,21 +4139,23 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualPageActionsDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          segmentation_platform::features::kContextualPageActions,
-         kContextualPageActionPriceTrackingVariations,
+         kContextualPageActionsVariations,
          "ContextualPageActions")},
     {"contextual-page-actions-with-price-tracking",
      flag_descriptions::kContextualPageActionsPriceTrackingName,
      flag_descriptions::kContextualPageActionsPriceTrackingDescription,
      kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         segmentation_platform::features::kContextualPageActionPriceTracking)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         segmentation_platform::features::kContextualPageActionPriceTracking,
+         kContextualPageActionPriceTrackingVariations,
+         "ContextualPageActionPriceTracking")},
     {"contextual-page-actions-reader-mode",
      flag_descriptions::kContextualPageActionsReaderModeName,
      flag_descriptions::kContextualPageActionsReaderModeDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          segmentation_platform::features::kContextualPageActionReaderMode,
          kContextualPageActionReaderModeVariations,
-         "ContextualPageActions")},
+         "ContextualPageActionReaderMode")},
     {"reader-mode-heuristics", flag_descriptions::kReaderModeHeuristicsName,
      flag_descriptions::kReaderModeHeuristicsDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kReaderModeHeuristicsChoices)},
@@ -4804,6 +4828,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutocorrectToggleName,
      flag_descriptions::kAutocorrectToggleDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kAutocorrectToggle)},
+    {"enable-cros-autocorrect-by-default",
+     flag_descriptions::kAutocorrectByDefaultName,
+     flag_descriptions::kAutocorrectByDefaultDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kAutocorrectByDefault)},
     {"enable-cros-avatars-cloud-migration",
      flag_descriptions::kAvatarsCloudMigrationName,
      flag_descriptions::kAvatarsCloudMigrationDescription, kOsCrOS,
@@ -4849,6 +4877,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImeSystemEmojiPickerExtensionName,
      flag_descriptions::kImeSystemEmojiPickerExtensionDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kImeSystemEmojiPickerExtension)},
+    {"enable-cros-ime-system-emoji-picker-gif-support",
+     flag_descriptions::kImeSystemEmojiPickerGIFSupportName,
+     flag_descriptions::kImeSystemEmojiPickerGIFSupportDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kImeSystemEmojiPickerGIFSupport)},
     {"enable-cros-ime-system-emoji-picker-search-extension",
      flag_descriptions::kImeSystemEmojiPickerSearchExtensionName,
      flag_descriptions::kImeSystemEmojiPickerSearchExtensionDescription,
@@ -5092,6 +5124,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"camera-app-doc-scan-dlc", flag_descriptions::kCameraAppDocScanDlcName,
      flag_descriptions::kCameraAppDocScanDlcDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kCameraAppDocScanDlc)},
+    {"camera-app-low-storage-warning",
+     flag_descriptions::kCameraAppLowStorageWarningName,
+     flag_descriptions::kCameraAppLowStorageWarningDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kCameraAppLowStorageWarning)},
     {"camera-app-multi-page-doc-scan",
      flag_descriptions::kCameraAppMultiPageDocScanName,
      flag_descriptions::kCameraAppMultiPageDocScanDescription, kOsCrOS,
@@ -5395,9 +5431,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxClosePopupWithEscapeName,
      flag_descriptions::kOmniboxClosePopupWithEscapeDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kClosePopupWithEscape)},
-    {"omnibox-blur-with-escape", flag_descriptions::kOmniboxBlurWithEscapeName,
-     flag_descriptions::kOmniboxBlurWithEscapeDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kBlurWithEscape)},
+    {"omnibox-ml-log-url-scoring-signals",
+     flag_descriptions::kOmniboxMlLogUrlScoringSignalsName,
+     flag_descriptions::kOmniboxMlLogUrlScoringSignalsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kLogUrlScoringSignals)},
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) ||
         // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_FUCHSIA)
 #if BUILDFLAG(IS_WIN)
@@ -7834,6 +7871,15 @@ const FeatureEntry kFeatureEntries[] = {
     {"animated-image-resume", flag_descriptions::kAnimatedImageResumeName,
      flag_descriptions::kAnimatedImageResumeDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kAnimatedImageResume)},
+
+#if !BUILDFLAG(IS_ANDROID)
+    {"enable-enhanced-safe-browsing-settings-improvements",
+     flag_descriptions::kEnableEnhancedSafeBrowsingSettingsImprovementsName,
+     flag_descriptions::
+         kEnableEnhancedSafeBrowsingSettingsImprovementsDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(safe_browsing::kEsbIphBubbleAndCollapseSettings)},
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
     {"sct-auditing", flag_descriptions::kSCTAuditingName,

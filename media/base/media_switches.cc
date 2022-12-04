@@ -406,14 +406,24 @@ BASE_FEATURE(kCdmProcessSiteIsolation,
 // playback going to a specific output device in the audio service.
 BASE_FEATURE(kChromeWideEchoCancellation,
              "ChromeWideEchoCancellation",
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else
              base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 // If non-zero, audio processing is done on a dedicated processing thread which
 // receives audio from the audio capture thread via a fifo of a specified size.
 // Zero fifo size means the usage of such processing thread is disabled and
 // processing is done on the audio capture thread itself.
 const base::FeatureParam<int> kChromeWideEchoCancellationProcessingFifoSize{
-    &kChromeWideEchoCancellation, "processing_fifo_size", 0};
+  &kChromeWideEchoCancellation, "processing_fifo_size",
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
+      110  // Default value for the enabled feature.
+#else
+      0
+#endif
+};
 
 // When audio processing is done in the audio process, at the renderer side IPC
 // is set up to receive audio at the processing sample rate. This is a
@@ -451,7 +461,7 @@ BASE_FEATURE(kMemoryPressureBasedSourceBufferGC,
 // frames created by video capture.
 BASE_FEATURE(kMultiPlaneVideoCaptureSharedImages,
              "MultiPlaneVideoCaptureSharedImages",
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
@@ -1250,6 +1260,16 @@ BASE_FEATURE(kFuchsiaMediacodecVideoEncoder,
              "FuchsiaMediacodecVideoEncoder",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_FUCHSIA)
+
+// Enables binding software NV12 GMBs as separate shared images.
+BASE_FEATURE(kMultiPlaneSoftwareVideoSharedImages,
+             "MultiPlaneSoftwareVideoSharedImages",
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 bool IsChromeWideEchoCancellationEnabled() {
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)

@@ -123,6 +123,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
+#include "content/browser/runtime_feature_state/runtime_feature_state_document_data.h"
 #include "content/browser/scoped_active_url.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
@@ -636,8 +637,11 @@ DetermineWhetherToForbidTrustTokenRedemption(
     const url::Origin& subframe_origin) {
   std::unique_ptr<blink::PermissionsPolicy> subframe_policy;
   if (frame->IsNestedWithinFencedFrame()) {
-    // In Fenced Frames, all permission policy gated features must be disabled
-    // for privacy reasons.
+    // Fenced frames have a list of required permission policies to load and
+    // can't be granted extra policies, so use the required policies instead of
+    // inheriting from its parent. Note that the parent policies must allow the
+    // required policies, which is checked separately in
+    // NavigationRequest::CheckPermissionsPoliciesForFencedFrames.
     subframe_policy = blink::PermissionsPolicy::CreateForFencedFrame(
         subframe_origin,
         frame->frame_tree_node()->GetFencedFrameMode().value());
@@ -7647,6 +7651,13 @@ void RenderFrameHostImpl::CreateFencedFrame(
     }
   }
 
+  // Inactive pages cannot create fenced frames. If the page is in the BFCache,
+  // it will be evicted.
+  if (IsInactiveAndDisallowActivation(
+          DisallowActivationReasonId::kCreateFencedFrame)) {
+    return;
+  }
+
   fenced_frames_.push_back(
       std::make_unique<FencedFrame>(weak_ptr_factory_.GetSafeRef(), mode));
   FencedFrame* fenced_frame = fenced_frames_.back().get();
@@ -10195,8 +10206,11 @@ void RenderFrameHostImpl::CreateWebUsbService(
 
 void RenderFrameHostImpl::ResetPermissionsPolicy() {
   if (IsNestedWithinFencedFrame()) {
-    // In Fenced Frames, all permission policy gated features must be disabled
-    // for privacy reasons.
+    // Fenced frames have a list of required permission policies to load and
+    // can't be granted extra policies, so use the required policies instead of
+    // inheriting from its parent. Note that the parent policies must allow the
+    // required policies, which is checked separately in
+    // NavigationRequest::CheckPermissionsPoliciesForFencedFrames.
     permissions_policy_ = blink::PermissionsPolicy::CreateForFencedFrame(
         last_committed_origin_,
         frame_tree_node()->GetFencedFrameMode().value());
@@ -11839,6 +11853,11 @@ void RenderFrameHostImpl::DidCommitNewDocument(
   accessibility_fatal_error_count_ = 0;
 
   UpdateIsolatableSandboxedIframeTracking(navigation_request);
+
+  // After commit, the browser process's access of the features' state becomes
+  // read-only. (i.e. It can only get feature state, not set)
+  RuntimeFeatureStateDocumentData::CreateForCurrentDocument(
+      this, navigation_request->GetRuntimeFeatureStateContext());
 }
 
 // TODO(arthursonzogni): Below, many NavigationRequest's objects are passed from

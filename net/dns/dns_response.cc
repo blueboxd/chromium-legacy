@@ -5,18 +5,21 @@
 #include "net/dns/dns_response.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <limits>
 #include <numeric>
 #include <utility>
 #include <vector>
 
 #include "base/big_endian.h"
+#include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/dns/dns_names_util.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_response_result_extractor.h"
 #include "net/dns/dns_util.h"
@@ -275,7 +278,8 @@ DnsResponse::DnsResponse(
     const std::vector<DnsResourceRecord>& additional_records,
     const absl::optional<DnsQuery>& query,
     uint8_t rcode,
-    bool validate_records) {
+    bool validate_records,
+    bool validate_names_as_internet_hostnames) {
   bool has_query = query.has_value();
   dns_protocol::Header header;
   header.id = id;
@@ -323,17 +327,20 @@ DnsResponse::DnsResponse(
   }
   // Start the Answer section.
   for (const auto& answer : answers) {
-    success &= WriteAnswer(&writer, answer, query, validate_records);
+    success &= WriteAnswer(&writer, answer, query, validate_records,
+                           validate_names_as_internet_hostnames);
     DCHECK(success);
   }
   // Start the Authority section.
   for (const auto& record : authority_records) {
-    success &= WriteRecord(&writer, record, validate_records);
+    success &= WriteRecord(&writer, record, validate_records,
+                           validate_names_as_internet_hostnames);
     DCHECK(success);
   }
   // Start the Additional section.
   for (const auto& record : additional_records) {
-    success &= WriteRecord(&writer, record, validate_records);
+    success &= WriteRecord(&writer, record, validate_records,
+                           validate_names_as_internet_hostnames);
     DCHECK(success);
   }
   if (!success) {
@@ -373,10 +380,11 @@ DnsResponse::DnsResponse(const void* data, size_t length, size_t answer_offset)
 }
 
 // static
-DnsResponse DnsResponse::CreateEmptyNoDataResponse(uint16_t id,
-                                                   bool is_authoritative,
-                                                   base::StringPiece qname,
-                                                   uint16_t qtype) {
+DnsResponse DnsResponse::CreateEmptyNoDataResponse(
+    uint16_t id,
+    bool is_authoritative,
+    base::span<const uint8_t> qname,
+    uint16_t qtype) {
   return DnsResponse(id, is_authoritative,
                      /*answers=*/{},
                      /*authority_records=*/{},
@@ -419,7 +427,8 @@ bool DnsResponse::InitParse(size_t nbytes, const DnsQuery& query) {
     return false;
   }
 
-  absl::optional<std::string> dotted_qname = DnsDomainToString(query.qname());
+  absl::optional<std::string> dotted_qname =
+      dns_names_util::NetworkToDottedName(query.qname());
   if (!dotted_qname.has_value())
     return false;
   dotted_qnames_.push_back(std::move(dotted_qname).value());
@@ -547,7 +556,8 @@ bool DnsResponse::WriteQuestion(base::BigEndianWriter* writer,
 
 bool DnsResponse::WriteRecord(base::BigEndianWriter* writer,
                               const DnsResourceRecord& record,
-                              bool validate_record) {
+                              bool validate_record,
+                              bool validate_name_as_internet_hostname) {
   if (record.rdata != base::StringPiece(record.owned_rdata)) {
     VLOG(1) << "record.rdata should point to record.owned_rdata.";
     return false;
@@ -558,12 +568,19 @@ bool DnsResponse::WriteRecord(base::BigEndianWriter* writer,
     VLOG(1) << "Invalid RDATA size for a record.";
     return false;
   }
-  std::string domain_name;
-  if (!DNSDomainFromDot(record.name, &domain_name)) {
-    VLOG(1) << "Invalid dotted name.";
+
+  absl::optional<std::vector<uint8_t>> domain_name =
+      dns_names_util::DottedNameToNetwork(record.name,
+                                          validate_name_as_internet_hostname);
+  if (!domain_name.has_value()) {
+    VLOG(1) << "Invalid dotted name (as "
+            << (validate_name_as_internet_hostname ? "Internet hostname)."
+                                                   : "DNS name).");
     return false;
   }
-  return writer->WriteBytes(domain_name.data(), domain_name.size()) &&
+
+  return writer->WriteBytes(domain_name.value().data(),
+                            domain_name.value().size()) &&
          writer->WriteU16(record.type) && writer->WriteU16(record.klass) &&
          writer->WriteU32(record.ttl) &&
          writer->WriteU16(record.owned_rdata.size()) &&
@@ -575,7 +592,8 @@ bool DnsResponse::WriteRecord(base::BigEndianWriter* writer,
 bool DnsResponse::WriteAnswer(base::BigEndianWriter* writer,
                               const DnsResourceRecord& answer,
                               const absl::optional<DnsQuery>& query,
-                              bool validate_record) {
+                              bool validate_record,
+                              bool validate_name_as_internet_hostname) {
   // Generally assumed to be a mistake if we write answers that don't match the
   // query type, except CNAME answers which can always be added.
   if (validate_record && query.has_value() &&
@@ -584,7 +602,8 @@ bool DnsResponse::WriteAnswer(base::BigEndianWriter* writer,
     VLOG(1) << "Mismatched answer resource record type and qtype.";
     return false;
   }
-  return WriteRecord(writer, answer, validate_record);
+  return WriteRecord(writer, answer, validate_record,
+                     validate_name_as_internet_hostname);
 }
 
 }  // namespace net

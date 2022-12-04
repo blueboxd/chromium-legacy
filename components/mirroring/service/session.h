@@ -15,7 +15,6 @@
 #include "components/mirroring/service/media_remoter.h"
 #include "components/mirroring/service/message_dispatcher.h"
 #include "components/mirroring/service/mirror_settings.h"
-#include "components/mirroring/service/receiver_setup_querier.h"
 #include "components/mirroring/service/rpc_dispatcher_impl.h"
 #include "components/mirroring/service/rtp_stream.h"
 #include "gpu/config/gpu_info.h"
@@ -44,7 +43,6 @@ namespace mirroring {
 
 class ReceiverResponse;
 class VideoCaptureClient;
-class ReceiverSetupQuerier;
 
 // Controls a mirroring session, including audio/video capturing, Cast
 // Streaming, and the switching to/from media remoting. When constructed, it
@@ -113,6 +111,8 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
   // Callback for CAPABILITIES_RESPONSE.
   void OnCapabilitiesResponse(const ReceiverResponse& response);
 
+  void SwitchSourceTab();
+
  private:
   class AudioCapturingCallback;
   using SupportedProfiles = media::VideoEncodeAccelerator::SupportedProfiles;
@@ -155,6 +155,9 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
   // Send GET_CAPABILITIES message.
   void QueryCapabilitiesForRemoting();
 
+  // Initialize `media_remoter_` and `rpc_dispatcher_`.
+  void InitMediaRemoter(const std::vector<std::string>& caps);
+
   void OnAsyncInitializeDone(const SupportedProfiles& profiles);
 
   // Provided by client.
@@ -182,8 +185,6 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
   std::unique_ptr<RpcDispatcherImpl> rpc_dispatcher_;
   mojo::Remote<network::mojom::NetworkContext> network_context_;
 
-  std::unique_ptr<ReceiverSetupQuerier> setup_querier_;
-
   // Created after OFFER/ANSWER exchange succeeds.
   std::unique_ptr<AudioRtpStream> audio_stream_;
   std::unique_ptr<VideoRtpStream> video_stream_;
@@ -201,6 +202,9 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
 
   // A callback to call after initialization is completed
   AsyncInitializeDoneCB init_done_cb_;
+
+  // Indicates whether we're in the middle of switching tab sources.
+  bool switching_tab_source_ = false;
 
   base::WeakPtrFactory<Session> weak_factory_{this};
 };

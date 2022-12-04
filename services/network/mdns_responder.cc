@@ -29,6 +29,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/dns/dns_names_util.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/mdns_client.h"
@@ -385,10 +386,13 @@ CreateResponseToMdnsNameGeneratorServiceQuery(
       1, CreateTxtRecordWithNames(ttl, kMdnsNameGeneratorServiceInstanceName,
                                   mdns_names));
 
-  net::DnsResponse response(0 /* id */, true /* is_authoritative */, answers,
-                            {} /* authority_records */,
-                            {} /* additional_records */,
-                            absl::nullopt /* query */);
+  net::DnsResponse response(/*id=*/0, /*is_authoritative=*/true, answers,
+                            /*authority_records=*/{},
+                            /*additional_records=*/{},
+                            /*query=*/absl::nullopt,
+                            /*rcode=*/net::dns_protocol::kRcodeNOERROR,
+                            /*validate_records=*/true,
+                            /*validate_names_as_internet_hostnames=*/false);
   DCHECK(response.io_buffer() != nullptr);
   auto buf =
       base::MakeRefCounted<net::IOBufferWithSize>(response.io_buffer_size());
@@ -990,7 +994,7 @@ void MdnsResponderManager::OnMdnsQueryReceived(
   // to handle only such records. Once we have expanded the API surface to
   // include the service publishing, the handling logic should be unified.
   const absl::optional<std::string> qname =
-      net::DnsDomainToString(query.qname());
+      net::dns_names_util::NetworkToDottedName(query.qname());
   if (base::FeatureList::IsEnabled(
           features::kMdnsResponderGeneratedNameListing)) {
     if (should_respond_to_generator_service_query_ && qname &&
@@ -1259,7 +1263,7 @@ void MdnsResponder::OnMdnsQueryReceived(const net::DnsQuery& query,
                                         uint16_t recv_socket_handler_id) {
   // Currently we only support a single question in DnsQuery.
   absl::optional<std::string> dotted_name_to_resolve =
-      net::DnsDomainToString(query.qname());
+      net::dns_names_util::NetworkToDottedName(query.qname());
   if (!dotted_name_to_resolve)
     return;
   auto it = name_addr_map_.find(dotted_name_to_resolve.value());

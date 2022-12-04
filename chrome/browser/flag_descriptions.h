@@ -653,6 +653,9 @@ extern const char kDownloadBubbleV2Description[];
 extern const char kDownloadRangeName[];
 extern const char kDownloadRangeDescription[];
 
+extern const char kEnableEnhancedSafeBrowsingSettingsImprovementsName[];
+extern const char kEnableEnhancedSafeBrowsingSettingsImprovementsDescription[];
+
 extern const char kEnableFencedFramesName[];
 extern const char kEnableFencedFramesDescription[];
 
@@ -1075,9 +1078,6 @@ extern const char kOmniboxAdaptiveSuggestionsCountDescription[];
 extern const char kOmniboxAssistantVoiceSearchName[];
 extern const char kOmniboxAssistantVoiceSearchDescription[];
 
-extern const char kOmniboxBlurWithEscapeName[];
-extern const char kOmniboxBlurWithEscapeDescription[];
-
 extern const char kOmniboxBookmarkPathsName[];
 extern const char kOmniboxBookmarkPathsDescription[];
 
@@ -1109,6 +1109,9 @@ extern const char
     kOmniboxHistoryQuickProviderSpecificityScoreCountUniqueHostsName[];
 extern const char
     kOmniboxHistoryQuickProviderSpecificityScoreCountUniqueHostsDescription[];
+
+extern const char kOmniboxMlLogUrlScoringSignalsName[];
+extern const char kOmniboxMlLogUrlScoringSignalsDescription[];
 
 extern const char kOmniboxModernizeVisualUpdateName[];
 extern const char kOmniboxModernizeVisualUpdateDescription[];
@@ -2663,9 +2666,6 @@ extern const char kAdaptiveChargingForTestingDescription[];
 extern const char kAllowDisableTouchpadHapticFeedbackName[];
 extern const char kAllowDisableTouchpadHapticFeedbackDescription[];
 
-extern const char kAllowPolyDevicePairingName[];
-extern const char kAllowPolyDevicePairingDescription[];
-
 extern const char kAllowRepeatedUpdatesName[];
 extern const char kAllowRepeatedUpdatesDescription[];
 
@@ -2758,6 +2758,9 @@ extern const char kAutoFramingOverrideDescription[];
 
 extern const char kAutocompleteExtendedSuggestionsName[];
 extern const char kAutocompleteExtendedSuggestionsDescription[];
+
+extern const char kAutocorrectByDefaultName[];
+extern const char kAutocorrectByDefaultDescription[];
 
 extern const char kAutocorrectParamsTuningName[];
 extern const char kAutocorrectParamsTuningDescription[];
@@ -2879,6 +2882,9 @@ extern const char kBruschettaAlphaMigrateDescription[];
 extern const char kCameraAppDocScanDlcName[];
 extern const char kCameraAppDocScanDlcDescription[];
 
+extern const char kCameraAppLowStorageWarningName[];
+extern const char kCameraAppLowStorageWarningDescription[];
+
 extern const char kCameraAppMultiPageDocScanName[];
 extern const char kCameraAppMultiPageDocScanDescription[];
 
@@ -2958,6 +2964,9 @@ extern const char kEnableCrOSActionRecorderDescription[];
 
 extern const char kEnableDnsProxyName[];
 extern const char kEnableDnsProxyDescription[];
+
+extern const char kEnableEdidBasedDisplayIdsName[];
+extern const char kEnableEdidBasedDisplayIdsDescription[];
 
 extern const char kDnsProxyEnableDOHName[];
 extern const char kDnsProxyEnableDOHDescription[];
@@ -3211,6 +3220,9 @@ extern const char kHindiInscriptLayoutDescription[];
 extern const char kImeSystemEmojiPickerExtensionName[];
 extern const char kImeSystemEmojiPickerExtensionDescription[];
 
+extern const char kImeSystemEmojiPickerGIFSupportName[];
+extern const char kImeSystemEmojiPickerGIFSupportDescription[];
+
 extern const char kImeSystemEmojiPickerClipboardName[];
 extern const char kImeSystemEmojiPickerClipboardDescription[];
 
@@ -3424,6 +3436,9 @@ extern const char kQuickSettingsNetworkRevampDescription[];
 
 extern const char kCaptivePortalUI2022Name[];
 extern const char kCaptivePortalUI2022Description[];
+
+extern const char kCaptivePortalErrorPageName[];
+extern const char kCaptivePortalErrorPageDescription[];
 
 extern const char kTerminalAlternativeEmulatorName[];
 extern const char kTerminalAlternativeEmulatorDescription[];

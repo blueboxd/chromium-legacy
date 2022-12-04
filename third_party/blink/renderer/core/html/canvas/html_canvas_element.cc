@@ -113,7 +113,6 @@
 #include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "ui/base/resource/resource_scale_factor.h"
-#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "v8/include/v8.h"
 
@@ -477,9 +476,7 @@ void HTMLCanvasElement::configureHighDynamicRange(
 
   CanvasResourceHost::SetHDRConfiguration(hdr_mode, hdr_metadata);
   if (context_ && (IsWebGL() || IsWebGPU())) {
-    // TODO(https://crbug.com/1274220): Implement HDR support for WebGL and
-    // WebGPU.
-    NOTIMPLEMENTED();
+    context_->SetHDRConfiguration(hdr_mode, hdr_metadata);
   } else if (canvas2d_bridge_) {
     canvas2d_bridge_->SetHDRConfiguration(hdr_mode, hdr_metadata);
   }

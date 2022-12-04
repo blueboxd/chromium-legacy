@@ -86,10 +86,9 @@ int NumberOfEncodeThreads() {
 // Convert the sink capabilities to media::mojom::RemotingSinkMetadata.
 media::mojom::RemotingSinkMetadata ToRemotingSinkMetadata(
     const openscreen::cast::RemotingCapabilities& capabilities,
-    const std::string& receiver_name,
-    const mojom::SessionParameters& params) {
+    const std::string& friendly_name) {
   media::mojom::RemotingSinkMetadata sink_metadata;
-  sink_metadata.friendly_name = receiver_name;
+  sink_metadata.friendly_name = friendly_name;
 
   for (const openscreen::cast::AudioCapability capability :
        capabilities.audio) {
@@ -274,17 +273,6 @@ OpenscreenSessionHost::OpenscreenSessionHost(
     gpu_ = viz::Gpu::Create(std::move(remote_gpu), io_task_runner);
   }
 
-  network::mojom::URLLoaderFactoryParamsPtr params =
-      network::mojom::URLLoaderFactoryParams::New();
-  params->process_id = network::mojom::kBrowserProcessId;
-  params->is_corb_enabled = false;
-  mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory;
-  network_context_->CreateURLLoaderFactory(
-      url_loader_factory.InitWithNewPipeAndPassReceiver(), std::move(params));
-
-  setup_querier_ = std::make_unique<ReceiverSetupQuerier>(
-      session_params_.receiver_address, std::move(url_loader_factory));
-
   session_ = std::make_unique<openscreen::cast::SenderSession>(
       openscreen::cast::SenderSession::Configuration{
           .remote_address = media::cast::ToOpenscreenIPAddress(
@@ -449,6 +437,12 @@ void OpenscreenSessionHost::OnNegotiated(
     video_stream_ = std::make_unique<VideoRtpStream>(
         std::move(video_sender), weak_factory_.GetWeakPtr(),
         mirror_settings_.refresh_interval());
+
+    LogInfoMessage(base::StringPrintf(
+        "Created video stream with refresh interval of %d ms",
+        static_cast<int>(
+            mirror_settings_.refresh_interval().InMilliseconds())));
+
     if (!video_capture_client_) {
       mojo::PendingRemote<media::mojom::VideoCaptureHost> video_host;
       resource_provider_->GetVideoCaptureHost(
@@ -469,14 +463,22 @@ void OpenscreenSessionHost::OnNegotiated(
   }
 
   if (media_remoter_) {
-    media_remoter_->OnMirroringResumed();
+    media_remoter_->OnMirroringResumed(switching_tab_source_);
   }
+
+  switching_tab_source_ = false;
 
   if (initially_starting_session) {
     // We should only request capabilities once, in order to avoid instantiating
     // the media remoter multiple times.
-    session_->RequestCapabilities();
-
+    if (session_params_.is_remote_playback) {
+      // Initialize `media_remoter_` without capabilities for Remote Playback
+      // Media Source.
+      openscreen::cast::RemotingCapabilities capabilities;
+      InitMediaRemoter(capabilities);
+    } else {
+      session_->RequestCapabilities();
+    }
     if (observer_) {
       observer_->DidStart();
     }
@@ -512,17 +514,7 @@ void OpenscreenSessionHost::OnCapabilitiesDetermined(
   if (state_ == State::kStopped)
     return;
 
-  // TODO(crbug.com/1077786): the friendly name should come from the media
-  // router.
-  const std::string friendly_name =
-      setup_querier_ ? setup_querier_->friendly_name() : std::string();
-
-  rpc_dispatcher_ =
-      std::make_unique<OpenscreenRpcDispatcher>(session_->session_messenger());
-  media_remoter_ = std::make_unique<MediaRemoter>(
-      *this,
-      ToRemotingSinkMetadata(capabilities, friendly_name, session_params_),
-      *rpc_dispatcher_);
+  InitMediaRemoter(capabilities);
 }
 
 void OpenscreenSessionHost::OnError(
@@ -622,6 +614,34 @@ void OpenscreenSessionHost::RestartMirroringStreaming() {
   Negotiate();
 }
 
+void OpenscreenSessionHost::SwitchSourceTab() {
+  if (state_ == State::kRemoting) {
+    switching_tab_source_ = true;
+    video_capture_client_.reset();
+    media_remoter_->Stop(media::mojom::RemotingStopReason::LOCAL_PLAYBACK);
+    return;
+  }
+
+  DCHECK_EQ(state_, State::kMirroring);
+
+  // Switch video source tab.
+  if (video_capture_client_) {
+    mojo::PendingRemote<media::mojom::VideoCaptureHost> video_host;
+    resource_provider_->GetVideoCaptureHost(
+        video_host.InitWithNewPipeAndPassReceiver());
+    video_capture_client_->SwitchVideoCaptureHost(std::move(video_host));
+  }
+
+  // Switch audio source tab.
+  if (audio_input_device_) {
+    audio_input_device_->Stop();
+    audio_input_device_->Start();
+  }
+
+  if (media_remoter_)
+    media_remoter_->OnMirroringResumed(true);
+}
+
 void OpenscreenSessionHost::OnAsyncInitialized(
     const SupportedProfiles& profiles) {
   if (profiles.empty()) {
@@ -703,7 +723,6 @@ void OpenscreenSessionHost::StopSession() {
   // provider.
   media_remoter_.reset();
   rpc_dispatcher_.reset();
-  setup_querier_.reset();
   audio_encode_thread_.reset();
   video_encode_thread_.reset();
   video_capture_client_.reset();
@@ -991,6 +1010,17 @@ void OpenscreenSessionHost::NegotiateRemoting() {
 
   session_->NegotiateRemoting(ToOpenscreenAudioConfig(audio_config),
                               ToOpenscreenVideoConfig(video_config));
+}
+
+void OpenscreenSessionHost::InitMediaRemoter(
+    const openscreen::cast::RemotingCapabilities& capabilities) {
+  rpc_dispatcher_ =
+      std::make_unique<OpenscreenRpcDispatcher>(session_->session_messenger());
+  media_remoter_ = std::make_unique<MediaRemoter>(
+      *this,
+      ToRemotingSinkMetadata(capabilities,
+                             session_params_.receiver_friendly_name),
+      *rpc_dispatcher_);
 }
 
 network::mojom::NetworkContext* OpenscreenSessionHost::GetNetworkContext() {

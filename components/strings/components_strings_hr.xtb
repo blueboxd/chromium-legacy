@@ -518,7 +518,6 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="2219735899272417925">Uređaj je potrebno vratiti na zadano</translation>
 <translation id="2224337661447660594">Nema interneta</translation>
 <translation id="2225927550500503913">Virtualna kartica je uključena</translation>
-<translation id="2230458221926704099">Riješite problem s povezivanjem pomoću <ph name="BEGIN_LINK" />dijagnostičke aplikacije<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Pošalji sad</translation>
 <translation id="2241693394036365668">Datoteka je preuzeta</translation>
 <translation id="2246264294482514010">10 x 12 in</translation>
@@ -2220,7 +2219,6 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="6668389483194953109">Pronađen je naziv veličine papira "custom", ali je entitet "custom_size" prazan ili nevažeći.</translation>
 <translation id="6671697161687535275">Želite li ukloniti prijedlog iz Chromiuma?</translation>
 <translation id="6683717648675961851">Oglasi za poslove</translation>
-<translation id="6685834062052613830">Odjavite se i dovršite postavljanje</translation>
 <translation id="6687335167692595844">Zatražena je veličina fonta</translation>
 <translation id="6687696737818665306">Gluma i kazalište</translation>
 <translation id="6688743156324860098">Ažurirajte…</translation>
@@ -2849,6 +2847,7 @@ Dodatne pojedinosti:
 <translation id="8241707690549784388">Stranica koju ste tražili koristila je podatke koje ste unijeli. Vraćanje na tu stranicu može dovesti do ponavljanja poduzete radnje. Želite li nastaviti?</translation>
 <translation id="8241712895048303527">Blokiraj na ovoj web-lokaciji</translation>
 <translation id="8242426110754782860">Nastavi</translation>
+<translation id="8245703462678310750">Pritisnite i zadržite |<ph name="ACCELERATOR" />| da biste zatvorili prikaz na cijelom zaslonu i pregledali preuzimanje.</translation>
 <translation id="8249296373107784235">Prekini</translation>
 <translation id="8249463483885748674">Priprema za standardizirane testove i prijemne ispite</translation>
 <translation id="8252991034201168845">Gumb Upravljajte postavkama pristupačnosti, pritisnite Enter da biste prilagodili svoje alate za pristupačnost u postavkama Chrome OS-a</translation>

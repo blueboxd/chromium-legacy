@@ -529,7 +529,7 @@ const std::vector<SearchConcept>& GetPowerWithAdaptiveChargingSearchConcepts() {
 }
 
 bool AreScrollSettingsAllowed() {
-  return base::FeatureList::IsEnabled(ash::features::kAllowScrollSettings);
+  return base::FeatureList::IsEnabled(features::kAllowScrollSettings);
 }
 
 bool IsUnifiedDesktopAvailable() {
@@ -554,6 +554,7 @@ bool IsListAllDisplayModesEnabled() {
 void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString keyboard_strings[] = {
       {"keyboardTitle", IDS_SETTINGS_KEYBOARD_TITLE},
+      {"perDeviceKeyboardTitle", IDS_SETTINGS_PER_DEVICE_KEYBOARD_TITLE},
       {"keyboardKeyCtrl", IDS_SETTINGS_KEYBOARD_KEY_LEFT_CTRL},
       {"keyboardKeyAlt", IDS_SETTINGS_KEYBOARD_KEY_LEFT_ALT},
       {"keyboardKeyCapsLock", IDS_SETTINGS_KEYBOARD_KEY_CAPS_LOCK},
@@ -1085,7 +1086,7 @@ void DeviceSection::TouchpadExists(bool exists) {
 
   if (exists) {
     updater.AddSearchTags(GetTouchpadSearchConcepts());
-    if (base::FeatureList::IsEnabled(ash::features::kAllowScrollSettings))
+    if (base::FeatureList::IsEnabled(features::kAllowScrollSettings))
       updater.AddSearchTags(GetTouchpadScrollAccelerationSearchConcepts());
   }
 }

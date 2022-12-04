@@ -1541,7 +1541,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
 
 bool ShouldLinkSecureDnsOsSettings() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  return base::FeatureList::IsEnabled(chromeos::features::kEnableDnsProxy) &&
+  return base::FeatureList::IsEnabled(ash::features::kEnableDnsProxy) &&
          base::FeatureList::IsEnabled(::features::kDnsProxyEnableDOH);
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   return true;
@@ -1874,6 +1874,20 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
       {"topicsPageTitle", IDS_SETTINGS_TOPICS_PAGE_TITLE},
       {"fledgePageTitle", IDS_SETTINGS_FLEDGE_PAGE_TITLE},
       {"adMeasurementPageTitle", IDS_SETTINGS_AD_MEASUREMENT_PAGE_TITLE},
+      {"adMeasurementPageToggleLabel",
+       IDS_SETTINGS_AD_MEASUREMENT_PAGE_TOGGLE_LABEL},
+      {"adMeasurementPageToggleSubLabel",
+       IDS_SETTINGS_AD_MEASUREMENT_PAGE_TOGGLE_SUB_LABEL},
+      {"adMeasurementPageEnabledHeading",
+       IDS_SETTINGS_AD_MEASUREMENT_PAGE_ENABLED_HEADING},
+      {"adMeasurementPageConsiderHeading",
+       IDS_SETTINGS_AD_MEASUREMENT_PAGE_CONSIDER_HEADING},
+      {"adMeasurementPageEnabledBullet1",
+       IDS_SETTINGS_AD_MEASUREMENT_PAGE_ENABLED_BULLET_1},
+      {"adMeasurementPageEnabledBullet2",
+       IDS_SETTINGS_AD_MEASUREMENT_PAGE_ENABLED_BULLET_2},
+      {"adMeasurementPageConsiderBullet1",
+       IDS_SETTINGS_AD_MEASUREMENT_PAGE_CONSIDER_BULLET_1},
 
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);

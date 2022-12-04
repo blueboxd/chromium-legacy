@@ -674,15 +674,15 @@
         'build2': 'gpu_tests_release_bot_remote_links_reclient',
       },
       'Comparison Linux (reclient vs reclient remote links)(large)': {
-        'build1': 'gpu_tests_release_bot_reclient',
+        'build1': 'gpu_tests_release_bot_no_nacl_reclient',
         'build2': 'gpu_tests_release_bot_remote_links_large_reclient',
       },
       'Comparison Linux (reclient vs reclient remote links)(medium)': {
-        'build1': 'gpu_tests_release_bot_reclient',
+        'build1': 'gpu_tests_release_bot_no_nacl_reclient',
         'build2': 'gpu_tests_release_bot_remote_links_medium_reclient',
       },
       'Comparison Linux (reclient vs reclient remote links)(small)': {
-        'build1': 'gpu_tests_release_bot_reclient',
+        'build1': 'gpu_tests_release_bot_no_nacl_reclient',
         'build2': 'gpu_tests_release_bot_remote_links_small_reclient',
       },
       'Linux Builder reclient staging': 'gpu_tests_release_bot_reclient',
@@ -996,7 +996,6 @@
       'android-inverse-fieldtrials-pie-x86-fyi-rel': 'android_release_trybot_x86_fastbuild_webview_google_invert_fieldtrials',
       'android-nougat-x86-rel': 'android_release_trybot_x86_fastbuild_webview_monochrome_reclient',
       'android-nougat-x86-rel-inverse-fyi': 'android_release_trybot_x86_fastbuild_webview_monochrome',
-      'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
       'android-oreo-arm64-dbg': 'android_debug_trybot_arm64_reclient',
       'android-perfetto-rel': 'perfetto_release_trybot_android',
       # TODO(crbug/1182468) Remove android coverage bots after coverage is
@@ -1051,20 +1050,20 @@
     'tryserver.chromium.chromiumos': {
       # TODO(crbug.com/913750): Enable DCHECKS on the two amd64-generic bots
       # and two kevin bots when the PFQ has it enabled.
-      'chromeos-amd64-generic-cfi-thin-lto-rel': 'chromeos_amd64-generic_cfi_thin_lto',
+      'chromeos-amd64-generic-cfi-thin-lto-rel': 'chromeos_amd64-generic_cfi_thin_lto_reclient',
       'chromeos-amd64-generic-dbg': 'chromeos_amd64-generic_dbg_reclient',
       'chromeos-amd64-generic-rel': 'chromeos_amd64-generic_use_fake_dbus_clients_vm_optimized_dchecks_reclient',
       'chromeos-amd64-generic-rel-rts': 'chromeos_amd64-generic_use_fake_dbus_clients',
       'chromeos-arm-generic-dbg': 'chromeos_arm-generic_dbg',
       'chromeos-arm-generic-rel': 'chromeos_arm-generic_dcheck_always_on_reclient',
-      'chromeos-arm64-generic-rel': 'chromeos_arm64-generic_dchecks',
+      'chromeos-arm64-generic-rel': 'chromeos_arm64-generic_dchecks_reclient',
       'chromeos-jacuzzi-rel': 'chromeos_jacuzzi_dchecks',
       'chromeos-octopus-rel': 'chromeos_octopus_dchecks',
-      'gpu-fyi-try-chromeos-amd64-generic': 'gpu_tests_chromeos_amd64_release_trybot_dcheck_off_no_symbols',
-      'gpu-fyi-try-chromeos-jacuzzi-exp': 'gpu_tests_chromeos_jacuzzi_release_trybot',
-      'gpu-fyi-try-chromeos-kevin': 'gpu_tests_chromeos_kevin_release_trybot_dcheck_off_no_symbols',
-      'gpu-fyi-try-chromeos-octopus-exp': 'gpu_tests_chromeos_octopus_release_trybot',
-      'gpu-fyi-try-chromeos-zork-exp': 'gpu_tests_chromeos_zork_release_trybot',
+      'gpu-fyi-try-chromeos-amd64-generic': 'gpu_tests_chromeos_amd64_release_trybot_dcheck_off_no_symbols_reclient',
+      'gpu-fyi-try-chromeos-jacuzzi-exp': 'gpu_tests_chromeos_jacuzzi_release_trybot_reclient',
+      'gpu-fyi-try-chromeos-kevin': 'gpu_tests_chromeos_kevin_release_trybot_dcheck_off_no_symbols_reclient',
+      'gpu-fyi-try-chromeos-octopus-exp': 'gpu_tests_chromeos_octopus_release_trybot_reclient',
+      'gpu-fyi-try-chromeos-zork-exp': 'gpu_tests_chromeos_zork_release_trybot_reclient',
       'lacros-amd64-generic-rel': 'chromeos_amd64-generic_lacros_rel_dchecks_reclient',
       # TODO (crbug.com/1287228): Remove when orchestrator is verified
       'lacros-amd64-generic-rel-orchestrator': 'chromeos_amd64-generic_lacros_rel_dchecks',
@@ -1078,7 +1077,6 @@
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
       'linux-chromeos-inverse-fieldtrials-fyi-rel': 'chromeos_with_codecs_release_trybot_invert_fieldtrials',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_trybot_code_coverage_reclient',
-      'linux-chromeos-rel-reclient': 'chromeos_with_codecs_release_trybot_code_coverage_reclient',
       'linux-chromeos-rel-rts': 'chromeos_with_codecs_release_trybot_code_coverage', # should be kept in sync with linux-chromeos-rel
       'linux-lacros-dbg': 'lacros_on_linux_debug_bot',
       'linux-lacros-rel': 'lacros_on_linux_release_trybot_reclient',
@@ -1131,8 +1129,8 @@
     'tryserver.chromium.linux': {
       'cast-binary-size': 'cast_binary_size',
       'chromium_presubmit': 'presubmit',
-      'gpu-fyi-try-lacros-amd-rel': 'gpu_tests_ozone_linux_non_x11_release_trybot',
-      'gpu-fyi-try-lacros-intel-rel': 'gpu_tests_ozone_linux_non_x11_release_trybot',
+      'gpu-fyi-try-lacros-amd-rel': 'gpu_tests_ozone_linux_non_x11_release_trybot_reclient',
+      'gpu-fyi-try-lacros-intel-rel': 'gpu_tests_ozone_linux_non_x11_release_trybot_reclient',
       'gpu-fyi-try-linux-amd-rel': 'gpu_fyi_tests_release_trybot_reclient',
       'gpu-fyi-try-linux-intel-exp': 'gpu_fyi_tests_release_trybot_reclient',
       'gpu-fyi-try-linux-intel-rel': 'gpu_fyi_tests_release_trybot_reclient',
@@ -1964,11 +1962,6 @@
       'chromeos_amd64-generic_reclient', 'asan',
     ],
 
-    'chromeos_amd64-generic_cfi_thin_lto': [
-      'chromeos_amd64-generic', 'cfi_full', 'thin_lto',
-      'also_build_lacros_chrome_for_architecture_amd64',
-    ],
-
     'chromeos_amd64-generic_cfi_thin_lto_reclient': [
       'chromeos_amd64-generic_reclient', 'cfi_full', 'thin_lto',
       'also_build_lacros_chrome_for_architecture_amd64',
@@ -2096,10 +2089,6 @@
     ],
     'chromeos_arm64-generic_cfi_thin_lto_official_reclient': [
       'chromeos_device_reclient', 'arm64-generic', 'cfi_full', 'thin_lto', 'official', 'full_symbols',
-    ],
-
-    'chromeos_arm64-generic_dchecks': [
-      'chromeos_device', 'arm64-generic', 'dcheck_always_on',
     ],
 
     'chromeos_arm64-generic_dchecks_reclient': [
@@ -2641,26 +2630,13 @@
       'gpu_tests', 'android', 'release_trybot_minimal_symbols_reclient', 'static_angle',
     ],
 
-    'gpu_tests_chromeos_amd64_release_trybot_dcheck_off_no_symbols': [
-      'gpu_tests', 'chromeos_amd64-generic-vm', 'release_trybot_dcheck_off',
-      'no_symbols',
-    ],
-
     'gpu_tests_chromeos_amd64_release_trybot_dcheck_off_no_symbols_reclient': [
       'gpu_tests', 'chromeos_amd64-generic-vm_reclient',
       'release_trybot_dcheck_off_reclient', 'no_symbols',
     ],
 
-    'gpu_tests_chromeos_jacuzzi_release_trybot': [
-      'gpu_tests', 'chromeos_device', 'jacuzzi', 'release_trybot',
-    ],
-
     'gpu_tests_chromeos_jacuzzi_release_trybot_reclient': [
       'gpu_tests', 'chromeos_device_reclient', 'jacuzzi', 'release_trybot_reclient',
-    ],
-
-    'gpu_tests_chromeos_kevin_release_trybot_dcheck_off_no_symbols': [
-      'gpu_tests', 'chromeos_kevin', 'release_trybot_dcheck_off', 'no_symbols',
     ],
 
     'gpu_tests_chromeos_kevin_release_trybot_dcheck_off_no_symbols_reclient': [
@@ -2671,16 +2647,8 @@
       'gpu_tests', 'chromeos_kevin_reclient', 'release_trybot_dcheck_off_reclient', 'no_symbols', 'is_skylab',
     ],
 
-    'gpu_tests_chromeos_octopus_release_trybot': [
-      'gpu_tests', 'chromeos_device', 'octopus', 'release_trybot',
-    ],
-
     'gpu_tests_chromeos_octopus_release_trybot_reclient': [
       'gpu_tests', 'chromeos_device_reclient', 'octopus', 'release_trybot_reclient',
-    ],
-
-    'gpu_tests_chromeos_zork_release_trybot': [
-      'gpu_tests', 'chromeos_device', 'zork', 'release_trybot',
     ],
 
     'gpu_tests_chromeos_zork_release_trybot_reclient': [
@@ -2709,10 +2677,6 @@
 
     'gpu_tests_debug_trybot': [
       'gpu_tests', 'debug', 'no_symbols', 'dcheck_always_on', 'static', 'goma'
-    ],
-
-    'gpu_tests_ozone_linux_non_x11_release_trybot': [
-      'gpu_tests', 'ozone_linux', 'ozone_linux_non_x11', 'release_trybot_minimal_symbols',
     ],
 
     'gpu_tests_ozone_linux_non_x11_release_trybot_reclient': [
@@ -2760,16 +2724,20 @@
       'gpu_tests', 'release_bot_reclient_win_cross', 'minimal_symbols',
     ],
 
+    'gpu_tests_release_bot_no_nacl_reclient': [
+      'gpu_tests', 'release_bot_reclient', 'disable_nacl',
+    ],
+
     'gpu_tests_release_bot_reclient': [
       'gpu_tests', 'release_bot_reclient',
     ],
 
     'gpu_tests_release_bot_remote_links_large_reclient': [
-      'gpu_tests', 'release_bot_reclient', 'use_remoteexec_links_large',
+      'gpu_tests', 'release_bot_reclient', 'use_remoteexec_links_large', 'disable_nacl',
     ],
 
     'gpu_tests_release_bot_remote_links_medium_reclient': [
-      'gpu_tests', 'release_bot_reclient', 'use_remoteexec_links_medium',
+      'gpu_tests', 'release_bot_reclient', 'use_remoteexec_links_medium', 'disable_nacl',
     ],
 
     'gpu_tests_release_bot_remote_links_reclient': [
@@ -2777,7 +2745,7 @@
     ],
 
     'gpu_tests_release_bot_remote_links_small_reclient': [
-      'gpu_tests', 'release_bot_reclient', 'use_remoteexec_links_small',
+      'gpu_tests', 'release_bot_reclient', 'use_remoteexec_links_small', 'disable_nacl',
     ],
 
     'gpu_tests_release_bot_x86_minimal_symbols': [
@@ -2819,7 +2787,7 @@
 
     'gpu_tests_release_trybot_no_symbols_mac_code_coverage_chrome_for_testing': [
       'gpu_tests', 'release_trybot', 'no_symbols',
-      'use_clang_coverage', 'partial_code_coverage_instrumentation', 'chrome_for_testing',
+      'use_clang_coverage', 'chrome_for_testing',
     ],
 
     # Keep in sync with
@@ -2839,7 +2807,7 @@
 
     'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_do_typecheck_chrome_for_testing_reclient': [
       'gpu_tests', 'release_trybot_reclient', 'no_symbols', 'use_dummy_lastchange',
-      'use_clang_coverage', 'partial_code_coverage_instrumentation', 'devtools_do_typecheck', 'chrome_for_testing',
+      'use_clang_coverage', 'devtools_do_typecheck', 'chrome_for_testing',
     ],
 
     'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_do_typecheck_reclient': [
@@ -2883,7 +2851,7 @@
 
     'gpu_tests_release_trybot_resource_allowlisting_code_coverage_chrome_for_testing': [
       'gpu_tests', 'release_trybot', 'no_resource_allowlisting',
-      'use_clang_coverage', 'partial_code_coverage_instrumentation', 'chrome_for_testing',
+      'use_clang_coverage', 'chrome_for_testing',
     ],
 
     'gpu_tests_release_trybot_resource_allowlisting_code_coverage_reclient': [

@@ -388,7 +388,7 @@ const char kArcPrivacyPolicyPathFormat[] = "arc_tos/%s/privacy_policy.pdf";
 const char kEolNotificationURL[] = "https://www.google.com/chromebook/older/";
 
 const char kAutoUpdatePolicyURL[] =
-    "http://support.google.com/chrome/a?p=auto-update-policy";
+    "https://support.google.com/chrome/a?p=auto-update-policy";
 
 const char kGoogleNameserversLearnMoreURL[] =
     "https://developers.google.com/speed/public-dns";
@@ -431,6 +431,9 @@ const char kOsSettingsSearchHelpURL[] =
 const char kPeripheralDataAccessHelpURL[] =
     "https://support.google.com/chromebook?p=connect_thblt_usb4_accy";
 
+const char kSelectToSpeakLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=select_to_speak";
+
 const char kTPMFirmwareUpdateLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=tpm_update";
 
@@ -453,7 +456,7 @@ const char kWifiSyncLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=wifisync";
 
 const char kWifiHiddenNetworkURL[] =
-    "http://support.google.com/chromebook?p=hidden_networks";
+    "https://support.google.com/chromebook?p=hidden_networks";
 
 const char kNearbyShareLearnMoreURL[] =
     "https://support.google.com/chromebook?p=nearby_share";

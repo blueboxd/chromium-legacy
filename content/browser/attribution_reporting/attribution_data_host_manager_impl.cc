@@ -15,12 +15,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
-#include "components/aggregation_service/aggregation_service.mojom.h"
-#include "components/attribution_reporting/aggregatable_trigger_data.h"
-#include "components/attribution_reporting/aggregatable_values.h"
-#include "components/attribution_reporting/constants.h"
-#include "components/attribution_reporting/event_trigger_data.h"
-#include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
@@ -64,19 +58,17 @@ void RecordTriggerQueueEvent(TriggerQueueEvent event) {
 // numeric values should never be reused.
 enum class DataHandleStatus {
   kSuccess = 0,
-  kUntrustworthyOrigin = 1,
-  kContextError = 2,
-  kInvalidData = 3,
+  kContextError = 1,
 
-  kMaxValue = kInvalidData,
+  kMaxValue = kContextError,
 };
 
 void RecordSourceDataHandleStatus(DataHandleStatus status) {
-  base::UmaHistogramEnumeration("Conversions.SourceDataHandleStatus", status);
+  base::UmaHistogramEnumeration("Conversions.SourceDataHandleStatus2", status);
 }
 
 void RecordTriggerDataHandleStatus(DataHandleStatus status) {
-  base::UmaHistogramEnumeration("Conversions.TriggerDataHandleStatus", status);
+  base::UmaHistogramEnumeration("Conversions.TriggerDataHandleStatus2", status);
 }
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -100,45 +92,6 @@ const base::FeatureParam<base::TimeDelta> kTriggerDelay{
 
 constexpr size_t kMaxDelayedTriggers = 30;
 
-absl::optional<attribution_reporting::AggregatableTriggerDataList> FromMojo(
-    std::vector<blink::mojom::AttributionAggregatableTriggerDataPtr> mojo) {
-  if (mojo.size() >
-      attribution_reporting::kMaxAggregatableTriggerDataPerTrigger) {
-    return absl::nullopt;
-  }
-
-  std::vector<attribution_reporting::AggregatableTriggerData>
-      aggregatable_trigger_data;
-  aggregatable_trigger_data.reserve(mojo.size());
-
-  for (auto& aggregatable_trigger : mojo) {
-    absl::optional<attribution_reporting::Filters> filters =
-        attribution_reporting::Filters::Create(
-            std::move(aggregatable_trigger->filters->filter_values));
-    if (!filters.has_value())
-      return absl::nullopt;
-
-    absl::optional<attribution_reporting::Filters> not_filters =
-        attribution_reporting::Filters::Create(
-            std::move(aggregatable_trigger->not_filters->filter_values));
-    if (!not_filters.has_value())
-      return absl::nullopt;
-
-    absl::optional<attribution_reporting::AggregatableTriggerData> data =
-        attribution_reporting::AggregatableTriggerData::Create(
-            aggregatable_trigger->key_piece,
-            std::move(aggregatable_trigger->source_keys), std::move(*filters),
-            std::move(*not_filters));
-    if (!data.has_value())
-      return absl::nullopt;
-
-    aggregatable_trigger_data.push_back(std::move(*data));
-  }
-
-  return attribution_reporting::AggregatableTriggerDataList::Create(
-      std::move(aggregatable_trigger_data));
-}
-
 enum class RegistrationType {
   kNone,
   kSource,
@@ -147,25 +100,77 @@ enum class RegistrationType {
 
 }  // namespace
 
-struct AttributionDataHostManagerImpl::FrozenContext {
+class AttributionDataHostManagerImpl::ReceiverContext {
+ public:
+  ReceiverContext(SuitableOrigin context_origin,
+                  base::TimeTicks register_time,
+                  bool is_within_fenced_frame,
+                  absl::optional<AttributionInputEvent> input_event,
+                  absl::optional<AttributionNavigationType> nav_type)
+      : context_origin_(std::move(context_origin)),
+        register_time_(register_time),
+        is_within_fenced_frame_(is_within_fenced_frame),
+        input_event_(input_event),
+        nav_type_(nav_type) {}
+
+  ~ReceiverContext() = default;
+
+  ReceiverContext(const ReceiverContext&) = delete;
+  ReceiverContext& operator=(const ReceiverContext&) = delete;
+
+  ReceiverContext(ReceiverContext&&) = default;
+  ReceiverContext& operator=(ReceiverContext&&) = default;
+
+  const SuitableOrigin& context_origin() const { return context_origin_; }
+
+  RegistrationType registration_type() const { return registration_type_; }
+
+  void set_registration_type(RegistrationType type) {
+    DCHECK_NE(type, RegistrationType::kNone);
+    registration_type_ = type;
+  }
+
+  int num_data_registered() const {
+    DCHECK_GE(num_data_registered_, 0);
+    return num_data_registered_;
+  }
+
+  base::TimeTicks register_time() const { return register_time_; }
+
+  bool is_within_fenced_frame() const { return is_within_fenced_frame_; }
+
+  absl::optional<AttributionNavigationType> nav_type() const {
+    return nav_type_;
+  }
+
+  void IncrementNumDataRegistered() {
+    DCHECK_GE(num_data_registered_, 0);
+    ++num_data_registered_;
+  }
+
+ private:
   // Top-level origin the data host was created in.
   // Logically const.
-  SuitableOrigin context_origin;
+  SuitableOrigin context_origin_;
 
-  RegistrationType registration_type = RegistrationType::kNone;
+  RegistrationType registration_type_ = RegistrationType::kNone;
 
-  int num_data_registered = 0;
+  int num_data_registered_ = 0;
 
   // Logically const.
-  base::TimeTicks register_time;
+  base::TimeTicks register_time_;
 
   // Whether the attribution is registered within a fenced frame tree.
-  bool is_within_fenced_frame;
+  // Logically const.
+  bool is_within_fenced_frame_;
 
   // Input event associated with the navigation for navigation source data
   // hosts, `absl::nullopt` otherwise.
-  absl::optional<AttributionInputEvent> input_event;
-  absl::optional<AttributionNavigationType> nav_type;
+  // Logically const.
+  absl::optional<AttributionInputEvent> input_event_;
+
+  // Logically const.
+  absl::optional<AttributionNavigationType> nav_type_;
 };
 
 struct AttributionDataHostManagerImpl::DelayedTrigger {
@@ -230,11 +235,13 @@ void AttributionDataHostManagerImpl::RegisterDataHost(
     mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
     SuitableOrigin context_origin,
     bool is_within_fenced_frame) {
-  receivers_.Add(
-      this, std::move(data_host),
-      FrozenContext{.context_origin = std::move(context_origin),
-                    .register_time = base::TimeTicks::Now(),
-                    .is_within_fenced_frame = is_within_fenced_frame});
+  receivers_.Add(this, std::move(data_host),
+                 ReceiverContext(std::move(context_origin),
+                                 /*register_time=*/base::TimeTicks::Now(),
+                                 is_within_fenced_frame,
+                                 /*input_event=*/absl::nullopt,
+                                 /*nav_type=*/absl::nullopt));
+
   data_hosts_in_source_mode_++;
 }
 
@@ -307,11 +314,9 @@ void AttributionDataHostManagerImpl::NotifyNavigationForDataHost(
   if (it != navigation_data_host_map_.end()) {
     // Source navigations need to navigate the primary main frame to be valid.
     receivers_.Add(this, std::move(it->second.data_host),
-                   FrozenContext{.context_origin = source_origin,
-                                 .register_time = it->second.register_time,
-                                 .is_within_fenced_frame = false,
-                                 .input_event = it->second.input_event,
-                                 .nav_type = nav_type});
+                   ReceiverContext(source_origin, it->second.register_time,
+                                   /*is_within_fenced_frame=*/false,
+                                   it->second.input_event, nav_type));
 
     navigation_data_host_map_.erase(it);
     RecordNavigationDataHostStatus(NavigationDataHostStatus::kProcessed);
@@ -368,9 +373,9 @@ void AttributionDataHostManagerImpl::SourceDataAvailable(
   DCHECK(data.reporting_origin.IsValid());
   DCHECK(data.destination.IsValid());
 
-  FrozenContext& context = receivers_.current_context();
+  ReceiverContext& context = receivers_.current_context();
 
-  if (context.registration_type == RegistrationType::kTrigger) {
+  if (context.registration_type() == RegistrationType::kTrigger) {
     RecordSourceDataHandleStatus(DataHandleStatus::kContextError);
     mojo::ReportBadMessage(
         "AttributionDataHost: Cannot register sources after registering "
@@ -378,36 +383,35 @@ void AttributionDataHostManagerImpl::SourceDataAvailable(
     return;
   }
 
-  context.registration_type = RegistrationType::kSource;
+  context.set_registration_type(RegistrationType::kSource);
 
   RecordSourceDataHandleStatus(DataHandleStatus::kSuccess);
 
-  context.num_data_registered++;
+  context.IncrementNumDataRegistered();
 
   auto source_type = AttributionSourceType::kEvent;
-  if (context.nav_type.has_value()) {
+  if (auto nav_type = context.nav_type()) {
     source_type = AttributionSourceType::kNavigation;
 
     base::UmaHistogramEnumeration(
-        "Conversions.SourceRegistration.NavigationType.Background",
-        *context.nav_type);
+        "Conversions.SourceRegistration.NavigationType.Background", *nav_type);
   }
 
   attribution_manager_->HandleSource(
       StorableSource(std::move(data),
                      /*source_time=*/base::Time::Now(),
-                     /*source_origin=*/context.context_origin, source_type,
-                     context.is_within_fenced_frame));
+                     /*source_origin=*/context.context_origin(), source_type,
+                     context.is_within_fenced_frame()));
 }
 
 void AttributionDataHostManagerImpl::TriggerDataAvailable(
-    blink::mojom::AttributionTriggerDataPtr data) {
+    attribution_reporting::TriggerRegistration data) {
   // This is validated by the Mojo typemapping.
-  DCHECK(data->reporting_origin.IsValid());
+  DCHECK(data.reporting_origin.IsValid());
 
-  FrozenContext& context = receivers_.current_context();
+  ReceiverContext& context = receivers_.current_context();
 
-  if (context.nav_type.has_value()) {
+  if (context.nav_type().has_value()) {
     RecordTriggerDataHandleStatus(DataHandleStatus::kContextError);
     mojo::ReportBadMessage(
         "AttributionDataHost: Navigation-bound data hosts cannot register "
@@ -415,115 +419,28 @@ void AttributionDataHostManagerImpl::TriggerDataAvailable(
     return;
   }
 
-  if (context.registration_type == RegistrationType::kSource) {
-    RecordTriggerDataHandleStatus(DataHandleStatus::kContextError);
-    mojo::ReportBadMessage(
-        "AttributionDataHost: Cannot register triggers after registering "
-        "a source.");
-    return;
-  }
-
-  if (context.registration_type == RegistrationType::kNone) {
-    OnSourceEligibleDataHostFinished(context.register_time);
-    context.registration_type = RegistrationType::kTrigger;
-  }
-
-  absl::optional<attribution_reporting::Filters> filters =
-      attribution_reporting::Filters::Create(
-          std::move(data->filters->filter_values));
-  if (!filters.has_value()) {
-    RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
-    mojo::ReportBadMessage("AttributionDataHost: Invalid top-level filters.");
-    return;
-  }
-
-  absl::optional<attribution_reporting::Filters> not_filters =
-      attribution_reporting::Filters::Create(
-          std::move(data->not_filters->filter_values));
-  if (!not_filters.has_value()) {
-    RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
-    mojo::ReportBadMessage(
-        "AttributionDataHost: Invalid top-level negated filters.");
-    return;
-  }
-
-  if (data->event_triggers.size() >
-      attribution_reporting::kMaxEventTriggerData) {
-    RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
-    mojo::ReportBadMessage("AttributionDataHost: Too many event triggers.");
-    return;
-  }
-
-  std::vector<attribution_reporting::EventTriggerData> event_triggers;
-  event_triggers.reserve(data->event_triggers.size());
-
-  for (auto& event_trigger : data->event_triggers) {
-    absl::optional<attribution_reporting::Filters> event_filters =
-        attribution_reporting::Filters::Create(
-            std::move(event_trigger->filters->filter_values));
-    if (!event_filters.has_value()) {
-      RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
+  switch (context.registration_type()) {
+    case RegistrationType::kSource:
+      RecordTriggerDataHandleStatus(DataHandleStatus::kContextError);
       mojo::ReportBadMessage(
-          "AttributionDataHost: Invalid event-trigger filters.");
+          "AttributionDataHost: Cannot register triggers after registering "
+          "a source.");
       return;
-    }
-
-    absl::optional<attribution_reporting::Filters> not_event_filters =
-        attribution_reporting::Filters::Create(
-            std::move(event_trigger->not_filters->filter_values));
-    if (!not_event_filters.has_value()) {
-      RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
-      mojo::ReportBadMessage(
-          "AttributionDataHost: Invalid event-trigger not_filters.");
-      return;
-    }
-
-    event_triggers.emplace_back(
-        event_trigger->data, event_trigger->priority, event_trigger->dedup_key,
-        std::move(*event_filters), std::move(*not_event_filters));
-  }
-
-  absl::optional<attribution_reporting::AggregatableTriggerDataList>
-      aggregatable_trigger_data =
-          FromMojo(std::move(data->aggregatable_trigger_data));
-  if (!aggregatable_trigger_data.has_value()) {
-    RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
-    mojo::ReportBadMessage(
-        "AttributionDataHost: Invalid aggregatable trigger data.");
-    return;
-  }
-
-  absl::optional<attribution_reporting::AggregatableValues>
-      aggregatable_values = attribution_reporting::AggregatableValues::Create(
-          std::move(data->aggregatable_values));
-  if (!aggregatable_values.has_value()) {
-    RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
-    mojo::ReportBadMessage("AttributionDataHost: Invalid aggregatable values.");
-    return;
+    case RegistrationType::kNone:
+      OnSourceEligibleDataHostFinished(context.register_time());
+      context.set_registration_type(RegistrationType::kTrigger);
+      break;
+    case RegistrationType::kTrigger:
+      break;
   }
 
   RecordTriggerDataHandleStatus(DataHandleStatus::kSuccess);
 
-  context.num_data_registered++;
+  context.IncrementNumDataRegistered();
 
-  auto event_trigger_data_list =
-      attribution_reporting::EventTriggerDataList::Create(
-          std::move(event_triggers));
-  DCHECK(event_trigger_data_list);
-
-  // TODO(crbug.com/1394029): Parse aggregation_coordinator_identifier field
-  // from response header.
-
-  AttributionTrigger trigger(
-      attribution_reporting::TriggerRegistration(
-          std::move(data->reporting_origin), std::move(*filters),
-          std::move(*not_filters), data->debug_key,
-          data->aggregatable_dedup_key, std::move(*event_trigger_data_list),
-          std::move(*aggregatable_trigger_data),
-          std::move(*aggregatable_values), data->debug_reporting,
-          ::aggregation_service::mojom::AggregationCoordinator::kDefault),
-      /*destination_origin=*/context.context_origin,
-      context.is_within_fenced_frame);
+  AttributionTrigger trigger(std::move(data),
+                             /*destination_origin=*/context.context_origin(),
+                             context.is_within_fenced_frame());
 
   // Handle the trigger immediately if we're not waiting for any sources to be
   // registered.
@@ -584,27 +501,26 @@ void AttributionDataHostManagerImpl::ProcessDelayedTrigger() {
 }
 
 void AttributionDataHostManagerImpl::OnReceiverDisconnected() {
-  const FrozenContext& context = receivers_.current_context();
+  const ReceiverContext& context = receivers_.current_context();
 
-  DCHECK_GE(context.num_data_registered, 0);
-
-  if (context.num_data_registered > 0) {
-    DCHECK_NE(context.registration_type, RegistrationType::kNone);
-
-    if (context.registration_type == RegistrationType::kTrigger) {
-      base::UmaHistogramExactLinear("Conversions.RegisteredTriggersPerDataHost",
-                                    context.num_data_registered, 101);
-    } else {
-      base::UmaHistogramExactLinear("Conversions.RegisteredSourcesPerDataHost",
-                                    context.num_data_registered, 101);
-    }
+  const char* histogram_name = nullptr;
+  switch (context.registration_type()) {
+    case RegistrationType::kNone:
+      OnSourceEligibleDataHostFinished(context.register_time());
+      DCHECK_EQ(context.num_data_registered(), 0);
+      return;
+    case RegistrationType::kTrigger:
+      histogram_name = "Conversions.RegisteredTriggersPerDataHost";
+      break;
+    case RegistrationType::kSource:
+      OnSourceEligibleDataHostFinished(context.register_time());
+      histogram_name = "Conversions.RegisteredSourcesPerDataHost";
+      break;
   }
 
-  // If the receiver was handling triggers, there's nothing to do here.
-  if (context.registration_type == RegistrationType::kTrigger)
-    return;
-
-  OnSourceEligibleDataHostFinished(context.register_time);
+  const int num_data_registered = context.num_data_registered();
+  DCHECK_GT(num_data_registered, 0);
+  base::UmaHistogramExactLinear(histogram_name, num_data_registered, 101);
 }
 
 void AttributionDataHostManagerImpl::OnSourceEligibleDataHostFinished(

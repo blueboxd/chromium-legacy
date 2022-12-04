@@ -50,11 +50,6 @@ BASE_FEATURE(kAllowAmbientEQ,
              "AllowAmbientEQ",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Allows pairing to Bluetooth devices created by Poly. See b/228118615.
-BASE_FEATURE(kAllowPolyDevicePairing,
-             "AllowPolyDevicePairing",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Controls whether devices are updated before reboot after the first update.
 BASE_FEATURE(kAllowRepeatedUpdates,
              "AllowRepeatedUpdates",
@@ -267,6 +262,11 @@ BASE_FEATURE(kAutocorrectToggle,
              "AutocorrectToggle",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables using a toggle for enabling autocorrect on ChromeOS.
+BASE_FEATURE(kAutocorrectByDefault,
+             "AutocorrectByDefault",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, the autozoom nudge shown prefs will be reset at the start of
 // each new user session.
 BASE_FEATURE(kAutozoomNudgeSessionReset,
@@ -365,6 +365,11 @@ BASE_FEATURE(kCalendarJelly,
 BASE_FEATURE(kCameraAppDocScanDlc,
              "CameraAppDocScanDlc",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables to allow low storage warning feature in the camera app.
+BASE_FEATURE(kCameraAppLowStorageWarning,
+             "CameraAppLowStorageWarning",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables to show multi-page UI when for document scanning feature in the
 // camera app.
@@ -486,6 +491,12 @@ BASE_FEATURE(kBruschettaAlphaMigrate,
 BASE_FEATURE(kCaptivePortalUI2022,
              "CaptivePortalUI2022",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables the Captive Portal Error Page changes, which shows a suggestion in
+// the Chrome error page on ChromeOS when behind a captive portal.
+BASE_FEATURE(kCaptivePortalErrorPage,
+             "CaptivePortalErrorPage",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether Active Directory management on ChromeOS (Chromad) is
 // supported or not. When this feature is enabled, Chromad continues working
@@ -841,6 +852,14 @@ BASE_FEATURE(kExoLinuxDmabufV4,
              "ExoLinuxDmabufV4",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables sending explicit modifiers for the zwp_linux_dmabuf_v1 Wayland
+// protocol. This option only has an effect with version 3 or 4 of the protocol.
+// If disabled only the DRM_FORMAT_MOD_INVALID modifier will be send,
+// effectively matching version 2 behavior more closely.
+BASE_FEATURE(kExoLinuxDmabufModifiers,
+             "ExoLinuxDmabufModifiers",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enable or disable use of ordinal (unaccelerated) motion by Exo clients.
 BASE_FEATURE(kExoOrdinalMotion,
              "ExoOrdinalMotion",
@@ -1185,6 +1204,11 @@ BASE_FEATURE(kImeSystemEmojiPickerClipboard,
 BASE_FEATURE(kImeSystemEmojiPickerExtension,
              "SystemEmojiPickerExtension",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enable or disable system emoji picker GIF support
+BASE_FEATURE(kImeSystemEmojiPickerGIFSupport,
+             "SystemEmojiPickerGIFSupport",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable or disable system emoji picker search extension
 BASE_FEATURE(kImeSystemEmojiPickerSearchExtension,
@@ -2335,6 +2359,10 @@ bool IsCaptivePortalUI2022Enabled() {
   return base::FeatureList::IsEnabled(kCaptivePortalUI2022);
 }
 
+bool IsCaptivePortalErrorPageEnabled() {
+  return base::FeatureList::IsEnabled(kCaptivePortalErrorPage);
+}
+
 bool IsCheckPasswordsAgainstCryptohomeHelperEnabled() {
   return base::FeatureList::IsEnabled(kCheckPasswordsAgainstCryptohomeHelper);
 }
@@ -2633,7 +2661,7 @@ bool IsScreenSaverPreviewEnabled() {
 
 bool IsSnoopingProtectionEnabled() {
   return base::FeatureList::IsEnabled(kSnoopingProtection) &&
-         ash::switches::HasHps();
+         switches::HasHps();
 }
 
 bool IsStartAssistantAudioDecoderOnDemandEnabled() {
@@ -2890,10 +2918,6 @@ bool IsPinAutosubmitFeatureEnabled() {
   return base::FeatureList::IsEnabled(kQuickUnlockPinAutosubmit);
 }
 
-bool IsPolyDevicePairingAllowed() {
-  return base::FeatureList::IsEnabled(kAllowPolyDevicePairing);
-}
-
 bool IsPrivacyIndicatorsEnabled() {
   return base::FeatureList::IsEnabled(kPrivacyIndicators);
 }
@@ -2978,7 +3002,7 @@ bool IsProjectorAccountSwitchNotificationEnabled() {
 }
 
 bool IsQuickDimEnabled() {
-  return base::FeatureList::IsEnabled(kQuickDim) && ash::switches::HasHps();
+  return base::FeatureList::IsEnabled(kQuickDim) && switches::HasHps();
 }
 
 bool IsQuickSettingsNetworkRevampEnabled() {

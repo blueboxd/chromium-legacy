@@ -335,6 +335,20 @@ if (is_mac) {
       # For breakpad/src/common/stabs_reader.h.
       defines = [ "HAVE_MACH_O_NLIST_H" ]
     }
+    test("breakpad_unittests") {
+      sources = [ "breakpad/src/common/module_unittest.cc" ]
+      deps = [
+        ":common",
+        "//testing/gmock",
+        "//testing/gtest",
+        "//testing/gtest:gtest_main",
+      ]
+      include_dirs = [
+        "breakpad/src",
+        "chromium",  # Use our copy of breakpad_googletest_includes.h
+        ".",
+      ]
+    }
 
     executable("dump_syms") {
       sources = [ "breakpad/src/tools/mac/dump_syms/dump_syms_tool.cc" ]
@@ -732,7 +746,7 @@ if (is_linux || is_chromeos || is_android) {
       "breakpad/src/common/tests/file_utils.h",
       "breakpad/src/tools/linux/md2core/minidump_memory_range.h",
       "breakpad/src/tools/linux/md2core/minidump_memory_range_unittest.cc",
-      "linux/breakpad_googletest_includes.h",
+      "chromium/breakpad_googletest_includes.h",
     ]
 
     deps = [
@@ -746,7 +760,7 @@ if (is_linux || is_chromeos || is_android) {
     data_deps = [ ":linux_dumper_unittest_helper" ]
 
     include_dirs = [
-      "linux",  # Use our copy of breakpad_googletest_includes.h
+      "chromium",  # Use our copy of breakpad_googletest_includes.h
       ".",
     ]
 

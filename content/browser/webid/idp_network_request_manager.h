@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/identity_request_account.h"
 #include "content/public/browser/identity_request_dialog_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
@@ -86,10 +87,10 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
     ~Endpoints();
     Endpoints(const Endpoints&);
 
-    std::string token;
-    std::string accounts;
-    std::string client_metadata;
-    std::string metrics;
+    GURL token;
+    GURL accounts;
+    GURL client_metadata;
+    GURL metrics;
   };
 
   struct ClientMetadata {
@@ -118,7 +119,7 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
     kTokenEndpointInvalidResponse = 402,
   };
 
-  using AccountList = std::vector<content::IdentityRequestAccount>;
+  using AccountList = std::vector<IdentityRequestAccount>;
   using AccountsRequestCallback =
       base::OnceCallback<void(FetchStatus, AccountList)>;
   using DownloadCallback =

@@ -154,8 +154,10 @@
 #include "third_party/blink/public/common/navigation/navigation_params_mojom_traits.h"
 #include "third_party/blink/public/common/navigation/navigation_policy.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy_features.h"
 #include "third_party/blink/public/common/permissions_policy/policy_helper_public.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
+#include "third_party/blink/public/common/runtime_feature_state/runtime_feature_state_context.h"
 #include "third_party/blink/public/common/security/address_space_feature.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
@@ -165,6 +167,7 @@
 #include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 #include "third_party/blink/public/mojom/navigation/prefetched_signed_exchange_info.mojom.h"
+#include "third_party/blink/public/mojom/runtime_feature_state/runtime_feature_state.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/storage_key/ancestor_chain_bit.mojom.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom.h"
@@ -1271,7 +1274,9 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           /*navigation_delivery_type=*/
           network::mojom::NavigationDeliveryType::kDefault,
           /*view_transition_state=*/absl::nullopt,
-          /*soft_navigation_heuristic_task_id=*/absl::nullopt);
+          /*soft_navigation_heuristic_task_id=*/absl::nullopt,
+          /*modified_runtime_features=*/
+          base::flat_map<::blink::mojom::RuntimeFeatureState, bool>());
 
   // CreateRendererInitiated() should only be triggered when the navigation is
   // initiated by a frame in the same process.
@@ -1412,7 +1417,9 @@ NavigationRequest::CreateForSynchronousRendererCommit(
           /*navigation_delivery_type=*/
           network::mojom::NavigationDeliveryType::kDefault,
           /*view_transition_state=*/absl::nullopt,
-          /*soft_navigation_heuristic_task_id=*/absl::nullopt);
+          /*soft_navigation_heuristic_task_id=*/absl::nullopt,
+          /*modified_runtime_features=*/
+          base::flat_map<::blink::mojom::RuntimeFeatureState, bool>());
   blink::mojom::BeginNavigationParamsPtr begin_params =
       blink::mojom::BeginNavigationParams::New();
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
@@ -1561,6 +1568,9 @@ NavigationRequest::NavigationRequest(
   // invalidated yet at this point.
   CHECK(!rfh_restored_from_back_forward_cache.WasInvalidated());
   ScopedCrashKeys crash_keys(*this);
+
+  // Ensure the blink::RuntimeFeatureStateContext is initialized.
+  runtime_feature_state_context_ = blink::RuntimeFeatureStateContext();
 
   // There should be no navigations to about:newtab, about:version or other
   // similar URLs (see https://crbug.com/1145717):
@@ -5182,6 +5192,11 @@ void NavigationRequest::CommitNavigation() {
         response_head_->navigation_delivery_type;
   }
 
+  // Add our map of modified blink runtime-enabled features to
+  // the commit params so they can be communicated to the renderer process.
+  commit_params_->modified_runtime_features =
+      runtime_feature_state_context_.GetFeatureOverrides();
+
   auto common_params = common_params_->Clone();
   auto commit_params = commit_params_.Clone();
   auto response_head = response_head_.Clone();
@@ -6410,6 +6425,10 @@ void NavigationRequest::UpdateStateFollowingRedirect(
   // Note: the |common_params_->url| below is the post-redirect URL.
   // See https://crbug.com/728398.
   CHECK(!blink::IsRendererDebugURL(common_params_->url));
+
+  // Re-generate the feature context to ensure that the runtime-enabled features
+  // have the correct state values.
+  runtime_feature_state_context_ = blink::RuntimeFeatureStateContext();
 
   // Update the navigation parameters.
   if (!(common_params_->transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT)) {
@@ -7653,27 +7672,62 @@ bool NavigationRequest::CoopCoepSanityCheck() {
   return true;
 }
 
+bool NavigationRequest::IsFencedFrameRequiredPolicyFeatureAllowed(
+    const url::Origin& origin,
+    const blink::mojom::PermissionsPolicyFeature feature) {
+  const blink::PermissionsPolicyFeatureList& feature_list =
+      blink::GetPermissionsPolicyFeatureList();
+
+  // Check if the outer document's permissions policies allow all of the
+  // required policies for `origin`.
+  if (GetParentFrameOrOuterDocument()
+          ->permissions_policy()
+          ->GetAllowlistForFeatureIfExists(feature) &&
+      !GetParentFrameOrOuterDocument()
+           ->permissions_policy()
+           ->IsFeatureEnabledForOrigin(feature, origin)) {
+    return false;
+  }
+
+  // Check if the container policies to be committed allow all of the required
+  // policies for `origin`. This means that the policy must be either
+  // explicitly enabled for `origin`, or the policy must by default
+  // be enabled for all origins. Note: because the policies have not been
+  // read into a RenderFrameHost's permissions_policy_ yet, we need to check
+  // the ParsedPermissionsPolicyDeclaration object directly.
+  auto policy_iter = std::find_if(
+      commit_params_->frame_policy.container_policy.begin(),
+      commit_params_->frame_policy.container_policy.end(),
+      [feature](const blink::ParsedPermissionsPolicyDeclaration& d) {
+        return d.feature == feature;
+      });
+  if (policy_iter == commit_params_->frame_policy.container_policy.end()) {
+    return feature_list.at(feature) ==
+           blink::PermissionsPolicyFeatureDefault::EnableForAll;
+  }
+
+  return policy_iter->Contains(origin);
+}
+
 bool NavigationRequest::CheckPermissionsPoliciesForFencedFrames(
     const url::Origin& origin) {
   // These checks only apply to fenced frames.
   if (!frame_tree_node_->IsFencedFrameRoot())
     return true;
 
+  // Check that all of the required policies for a new document with origin
+  // `origin` in the fenced frame are allowed. This looks at the outer
+  // document's policies and the "allow" attribute. Note that the document will
+  // eventually only use the required policies without policy inheritance, so
+  // extra policies defined in the outer document/"allow" attribute won't have
+  // any effect.
   for (const blink::mojom::PermissionsPolicyFeature feature :
        blink::kFencedFrameOpaqueAdsDefaultAllowedFeatures) {
-    // Only check if the feature is enabled for this origin if
-    // a policy was explicitly specified.
-    if (GetParentFrameOrOuterDocument()
-            ->permissions_policy()
-            ->GetAllowlistForFeatureIfExists(feature) &&
-        !GetParentFrameOrOuterDocument()
-             ->permissions_policy()
-             ->IsFeatureEnabledForOrigin(feature, origin)) {
+    if (!IsFencedFrameRequiredPolicyFeatureAllowed(origin, feature)) {
       const blink::PermissionsPolicyFeatureToNameMap& feature_to_name_map =
           blink::GetPermissionsPolicyFeatureToNameMap();
-      const std::string feature_string(
-          (feature_to_name_map.find(feature))->second);
-      AddDeferredConsoleMessage(
+      const std::string feature_string(feature_to_name_map.at(feature));
+      frame_tree_node_->current_frame_host()->AddMessageToConsole(
           blink::mojom::ConsoleMessageLevel::kError,
           base::StringPrintf(
               "Refused to frame '%s' as a fenced frame because permissions "
@@ -8299,6 +8353,19 @@ NavigationRequest::GetJavaNavigationHandle() {
 void NavigationRequest::SetViewTransitionState(
     blink::ViewTransitionState view_transition_state) {
   commit_params_->view_transition_state = std::move(view_transition_state);
+}
+
+blink::RuntimeFeatureStateContext&
+NavigationRequest::GetMutableRuntimeFeatureStateContext() {
+  // runtime_feature_state_context_ shouldn't be modified after READY_TO_COMMIT
+  // as its state has already been sent to the renderer.
+  DCHECK_LT(state_, NavigationState::READY_TO_COMMIT);
+  return runtime_feature_state_context_;
+}
+
+const blink::RuntimeFeatureStateContext&
+NavigationRequest::GetRuntimeFeatureStateContext() {
+  return runtime_feature_state_context_;
 }
 
 }  // namespace content

@@ -1942,6 +1942,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // |initiator_document| refers to the document that initiated the navigation,
   // if it is still available. Use |initiating_origin| instead for security
   // decisions.
+  //
+  // |out_factory| allows the embedder to continue the navigation, by providing
+  // their own URLLoader. If it isn't set, the navigation is canceled. It is
+  // canceled either silently when this function returns true, or with an error
+  // page otherwise.
   virtual bool HandleExternalProtocol(
       const GURL& url,
       base::RepeatingCallback<WebContents*()> web_contents_getter,
@@ -2313,9 +2318,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // embedder to call content::FirstPartySetsHandler::SetPublicFirstPartySets.
   virtual bool WillProvidePublicFirstPartySets();
 
-  // Gets information required for an alternative error page from web app's
-  // manifest for |url|, including theme color, background color and app short
-  // name. The |error_code| is the network error as specified in
+  // This returns a dictionary that an embedder can use to pass data from the
+  // browser to the renderer for error pages.
+  // The |error_code| is the network error as specified in
   // `net/base/net_error_list.h`. Information is returned in a struct. Default
   // implementation returns nullptr.
   virtual mojom::AlternativeErrorPageOverrideInfoPtr

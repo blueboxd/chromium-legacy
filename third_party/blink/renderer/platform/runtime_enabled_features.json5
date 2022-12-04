@@ -705,6 +705,14 @@
       status: "stable",
     },
     {
+      // If enabled,
+      // image-set values without the `-webkit-` prefix
+      // will be parsed.
+      name: "CSSImageSet",
+      status: "experimental",
+      base_feature: "CSSImageSet",
+    },
+    {
       name: "CSSIndependentTransformProperties",
       status: "stable",
     },
@@ -712,7 +720,8 @@
         // http://crbug.com/1276900
         name: "CSSInitialLetter",
         depends_on: ["LayoutNG"],
-        status: "experimental",
+        status: "stable",
+        base_feature: "CSSInitialLetter",
     },
     {
       name: "CSSLastBaseline",
@@ -795,7 +804,7 @@
     },
     {
       name: "CSSOverflowForReplacedElements",
-      status: "test",
+      status: "stable",
       base_feature: "CSSOverflowForReplacedElements",
       copied_from_base_feature_if: "overridden",
     },
@@ -1022,6 +1031,11 @@
       name: "DisableHardwareNoiseSuppression",
       origin_trial_feature_name: "DisableHardwareNoiseSuppression",
       status: "experimental",
+    },
+    {
+      name: "DisableTextDecorationColorOverride",
+      status: "stable",
+      base_feature: "DisableTextDecorationColorOverride",
     },
     {
       name: "DisplayCutoutAPI",
@@ -2274,7 +2288,7 @@
       // User-Agent string.
       name: "ReduceUserAgentAndroidVersionDeviceModel",
       depends_on: ["ReduceUserAgentMinorVersion"],
-      status: {"Android": "stable"},
+      status: {"Android": "experimental"},
       base_feature: "ReduceUserAgentAndroidVersionDeviceModel",
     },
     // If enabled, the minor version of the User-Agent string will be reduced.
@@ -2716,6 +2730,7 @@
     // For unit tests.
     {
       name: "TestFeature",
+      browser_process_read_write_access: true,
     },
     // For unit tests.
     {

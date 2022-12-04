@@ -43,7 +43,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.ButtonData.ButtonSpec;
 import org.chromium.chrome.browser.toolbar.ButtonDataImpl;
-import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures.AdaptiveToolbarButtonVariant;
+import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarButtonVariant;
 import org.chromium.chrome.browser.toolbar.optional_button.OptionalButtonCoordinator.TransitionType;
 import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
@@ -212,7 +212,7 @@ public class OptionalButtonCoordinatorTest {
     public void testUpdateButton_actionChipResourceIdGetsRemovedWhenNotInVariant() {
         TestValues testValues = new TestValues();
         testValues.addFieldTrialParamOverride(
-                ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS, "action_chip", "false");
+                ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING, "action_chip", "false");
         FeatureList.setTestValues(testValues);
 
         Drawable iconDrawable = mock(Drawable.class);
@@ -237,7 +237,7 @@ public class OptionalButtonCoordinatorTest {
     public void testUpdateButton_actionChipResourceIdGetsRemovedByFeatureEngagement() {
         TestValues testValues = new TestValues();
         testValues.addFieldTrialParamOverride(
-                ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS, "action_chip", "true");
+                ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING, "action_chip", "true");
         FeatureList.setTestValues(testValues);
 
         doReturn(true).when(mMockTracker).isInitialized();
@@ -267,7 +267,7 @@ public class OptionalButtonCoordinatorTest {
     public void testUpdateButton_actionChipResourceIdGetsKeptByFeatureEngagement() {
         TestValues testValues = new TestValues();
         testValues.addFieldTrialParamOverride(
-                ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS, "action_chip", "true");
+                ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING, "action_chip", "true");
         FeatureList.setTestValues(testValues);
 
         doReturn(true).when(mMockTracker).isInitialized();

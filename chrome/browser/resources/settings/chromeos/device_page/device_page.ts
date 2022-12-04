@@ -133,6 +133,8 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
           if (routes.POINTERS) {
             map.set(routes.POINTERS.path, '#pointersRow');
           }
+          // TODO(@wangdanny): Add route for mouse settings page.
+          // TODO(yyhyyh): Add routes for Per-device Keyboard page.
           if (routes.KEYBOARD) {
             map.set(routes.KEYBOARD.path, '#keyboardRow');
           }

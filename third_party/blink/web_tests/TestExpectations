@@ -205,12 +205,6 @@ crbug.com/881555 external/wpt/css/css-position/sticky/position-sticky-fixed-ance
 # --- Skia roll test suppressions
 # --- END Skia roll test suppresions
 
-# ====== Popover and Anchor Positioning failures from here ======
-
-crbug.com/1380112 external/wpt/html/semantics/popovers/popover-anchor-display.tentative.html [ Failure ]
-
-# ====== Popover and Anchor Positioning failures to here ======
-
 # Disable tests for DevTools frontend CL (crrev.com/c/4044821)
 crbug.com/1383735 http/tests/devtools/elements/styles-1/add-new-rule-inline-style-csp.js [ Failure Pass ]
 crbug.com/1383735 http/tests/devtools/modify-cross-domain-rule.js [ Failure Pass ]
@@ -4290,7 +4284,6 @@ crbug.com/626703 [ Linux ] wpt_internal/webxr/xrWebGLLayer_dirty_framebuffer.htt
 crbug.com/626703 [ Mac11 ] external/wpt/credential-management/fedcm-network-requests.https.html [ Timeout ]
 crbug.com/626703 [ Win11 ] external/wpt/credential-management/fedcm-network-requests.https.html [ Timeout ]
 crbug.com/626703 [ Mac11 ] external/wpt/fetch/private-network-access/iframe.tentative.https.window.html [ Timeout ]
-crbug.com/626703 [ Mac11 ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-video.https.html [ Timeout ]
 crbug.com/626703 [ Mac12 ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-video.https.html [ Timeout ]
 crbug.com/626703 [ Win11 ] wpt_internal/bluetooth/characteristic/notifications/gc-with-pending-stop.https.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/css/css-grid/subgrid/grid-gap-010.html [ Failure ]
@@ -6473,7 +6466,6 @@ crbug.com/1210687 [ Mac10.15 ] external/wpt/html/user-activation/propagation-cro
 
 # Sheriff 2021-06-02
 crbug.com/1215584 [ Mac11 ] inspector-protocol/layout-fonts/lang-fallback.js [ Failure Pass ]
-crbug.com/1215584 [ Mac12 ] inspector-protocol/layout-fonts/lang-fallback.js [ Failure Pass ]
 
 # Fail with field trial testing config.
 crbug.com/1219767 [ Linux ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-local-time-null-1.https.html [ Failure ]
@@ -6504,7 +6496,6 @@ crbug.com/1201406 http/tests/credentialmanagement/publickeycredential-same-origi
 
 # Sheriff 2021-06-14
 crbug.com/1219499 external/wpt/websockets/Create-blocked-port.any.html?wpt_flags=h2 [ Failure Pass Timeout ]
-crbug.com/1219499 [ Win ] external/wpt/websockets/Create-blocked-port.any.html?wss [ Pass Timeout ]
 
 # Sheriff 2021-06-15
 crbug.com/1220007 [ Linux ] fullscreen/full-screen-iframe-allowed-video.html [ Failure Pass Timeout ]
@@ -6942,7 +6933,6 @@ crbug.com/1276290 [ Mac ] wpt_internal/mediastream/mediastreamtrackprocessor-tra
 
 # Sheriff 2021-12-03
 
-crbug.com/1277973 http/tests/xmlhttprequest/uri-resolution-opera-open-007.html [ Crash Failure Pass ]
 
 # Sheriff 2021-12-13
 crbug.com/1279586 [ Mac ] external/wpt/IndexedDB/idbobjectstore-rename-abort.html [ Failure ]
@@ -6983,8 +6973,6 @@ crbug.com/1285436 virtual/partitioned-cookies/http/tests/inspector-protocol/netw
 
 # Sheriff 2022-01-12
 crbug.com/1286619 [ Mac ] external/wpt/storage-access-api/storageAccess.testdriver.sub.html [ Failure Pass ]
-
-crbug.com/1225606 virtual/sanitizer-api-namespaces/external/wpt/sanitizer-api/sanitizer-names.https.tentative.html [ Failure ]
 
 # Temporarily disabled to unblock https://crrev.com/c/3657449
 crbug.com/1183990 http/tests/devtools/bindings/bindings-frame-attach-detach.js [ Failure Pass ]
@@ -7536,6 +7524,8 @@ crbug.com/1361956 [ Linux ] fast/dom/Element/scrollTop-scrollLeft-body.html [ Pa
 # Investigate timeouts on bots
 crbug.com/1366717 http/tests/inspector-protocol/storage/indexed-db-storage-key-track-untrack.js [ Failure Pass ]
 
+crbug.com/1394227 [ Linux ] external/wpt/element-timing/image-src-change.html [ Failure Pass ]
+crbug.com/1394227 [ Mac ] external/wpt/element-timing/image-src-change.html [ Failure Pass ]
 
 crbug.com/1367113 fast/dom/shadow/event-path-load.html [ Crash Failure Pass Timeout ]
 crbug.com/1367113 http/tests/security/cors-check-for-cached-image.html [ Crash Failure Pass Timeout ]
@@ -7622,6 +7612,8 @@ crbug.com/1392781 [ Win ] http/tests/fetch/serviceworker/thorough/cookie-base-ht
 crbug.com/1392781 [ Win ] http/tests/fetch/window/thorough/auth-base-https-other-https.html [ Crash Failure Pass Timeout ]
 crbug.com/1375147 [ Win ] virtual/media-foundation-for-clear-dcomp/media/controls/singletap-on-overlay-closes-overflow-menu.html [ Failure ]
 crbug.com/1394559 [ Win10.20h2 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/unfenced-top.https.html [ Failure ]
+crbug.com/1395120 [ Mac11-arm64 ] fast/frames/sandboxed-iframe-plugins.html [ Failure ]
+crbug.com/1394880 [ Mac ] external/wpt/bluetooth/characteristic/readValue/characteristic-is-removed.https.window.html [ Timeout ]
 
 # Sheriff 2022-10-07
 crbug.com/1372556 [ Linux ] external/wpt/css/css-text/text-transform/text-transform-capitalize-* [ Failure Pass ]
@@ -8157,4 +8149,20 @@ crbug.com/1385379 http/tests/devtools/elements/styles-4/styles-invalid-color-val
 crbug.com/1394361 http/tests/inspector-protocol/tracing/interactions.js [ Failure Pass ]
 
 # Sheriff 2022-11-29
-crbug.com/1394524 external/wpt/html/semantics/forms/the-selectmenu-element/selectmenu-form-state-restore.tentative.html [ Failure Pass ]
+crbug.com/1394524 external/wpt/html/semantics/forms/the-selectmenu-element/selectmenu-form-state-restore.tentative.html [ Failure Pass Timeout ]
+
+# Sheriff 2022-12-1
+# Temporarily disable tests to land Shared Storage element in Application Panel.
+crbug.com/1372007 http/tests/devtools/application-panel/resources-panel-iframe-idb.js [ Failure Pass ]
+crbug.com/1372007 http/tests/devtools/application-panel/resources-panel-on-navigation.js [ Failure Pass ]
+crbug.com/1372007 http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Failure Pass ]
+crbug.com/1372007 http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Failure Pass ]
+crbug.com/1372007 http/tests/devtools/application-panel/resources-panel-websql.js [ Failure Pass ]
+
+crbug.com/1394927 virtual/pending-beacon/external/wpt/pending-beacon/pending_beacon-sendondiscard.tentative.https.window.html [ Failure Pass Timeout ]
+
+# Sheriff 2022-12-2
+crbug.com/1395255 [ Win11 ] external/wpt/css/css-values/round-mod-rem-computed.html [ Failure ]
+crbug.com/1325514 http/tests/inspector-protocol/network/cookies-protocol-test.js [ Failure Pass ]
+
+crbug.com/1370050 http/tests/devtools/sources/debugger-ui/last-execution-context.js [ Failure Pass ]

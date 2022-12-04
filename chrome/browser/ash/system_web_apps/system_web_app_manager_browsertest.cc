@@ -53,6 +53,7 @@
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
@@ -82,6 +83,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/browsertest_util.h"
+#include "extensions/common/constants.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/idle/idle.h"
 #include "ui/base/idle/scoped_set_idle_state.h"
@@ -1498,6 +1500,9 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
         policy::policy_prefs::kSystemFeaturesDisableList);
     update->clear();
   }
+  SystemWebAppManager::GetWebAppProvider(browser()->profile())
+      ->command_manager()
+      .AwaitAllCommandsCompleteForTesting();
   EXPECT_EQ(apps::Readiness::kReady, GetAppReadiness(*settings_id));
   EXPECT_FALSE(apps::IconEffects::kBlocked &
                GetAppIconKey(*settings_id)->icon_effects);
@@ -1519,6 +1524,9 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
         policy::policy_prefs::kSystemFeaturesDisableList);
     update->Append(static_cast<int>(policy::SystemFeature::kOsSettings));
   }
+  SystemWebAppManager::GetWebAppProvider(browser()->profile())
+      ->command_manager()
+      .AwaitAllCommandsCompleteForTesting();
 
   EXPECT_EQ(apps::Readiness::kDisabledByPolicy, GetAppReadiness(*settings_id));
   EXPECT_TRUE(apps::IconEffects::kBlocked &
@@ -1530,6 +1538,9 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
         policy::policy_prefs::kSystemFeaturesDisableList);
     update->clear();
   }
+  SystemWebAppManager::GetWebAppProvider(browser()->profile())
+      ->command_manager()
+      .AwaitAllCommandsCompleteForTesting();
   EXPECT_EQ(apps::Readiness::kReady, GetAppReadiness(*settings_id));
   EXPECT_FALSE(apps::IconEffects::kBlocked &
                GetAppIconKey(*settings_id)->icon_effects);
@@ -1789,32 +1800,67 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerContextMenuBrowserTest, WebLink) {
   }
 }
 
-class SystemWebAppAccessibilityTest : public SystemWebAppManagerBrowserTest {
+class SystemWebAppSingleWindowTest : public SystemWebAppManagerBrowserTest {
  public:
-  SystemWebAppAccessibilityTest()
+  SystemWebAppSingleWindowTest()
       : SystemWebAppManagerBrowserTest(/*install_mock*/ false) {
     maybe_installation_ =
         TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp();
   }
-  ~SystemWebAppAccessibilityTest() override = default;
+  ~SystemWebAppSingleWindowTest() override = default;
+};
 
+IN_PROC_BROWSER_TEST_P(SystemWebAppSingleWindowTest, WindowReuse) {
+  WaitForTestSystemAppInstall();
+
+  content::WebContents* web_contents =
+      LaunchApp(maybe_installation_->GetType());
+
+  // Second launch reuses the window.
+  EXPECT_EQ(web_contents,
+            LaunchAppWithoutWaiting(maybe_installation_->GetType()));
+
+  // Third launch reuses the window despite different URL.
+  apps::AppLaunchParams params =
+      LaunchParamsForApp(maybe_installation_->GetType());
+  params.override_url = GURL("http://example.com/in-scope");
+  EXPECT_EQ(web_contents, LaunchAppWithoutWaiting(std::move(params)));
+}
+
+class SystemWebAppAccessibilityTest : public SystemWebAppSingleWindowTest {
  protected:
+  void EnableChromeVox();
   test::SpeechMonitor speech_monitor_;
 };
 
+void SystemWebAppAccessibilityTest::EnableChromeVox() {
+  AccessibilityManager::Get()->EnableSpokenFeedback(true);
+  speech_monitor_.ExpectSpeechPattern("*");
+  speech_monitor_.Call([this]() {
+    extensions::browsertest_util::ExecuteScriptInBackgroundPage(
+        browser()->profile(), extension_misc::kChromeVoxExtensionId, R"JS(
+        import('/chromevox/background/chromevox_state.js').then(
+            module => module.ChromeVoxState.ready().then(() =>
+                window.domAutomationController.send('done')));
+        )JS");
+  });
+}
+
 IN_PROC_BROWSER_TEST_P(SystemWebAppAccessibilityTest,
                        CanCycleToWindowControlButtons) {
-  AccessibilityManager::Get()->EnableSpokenFeedback(true);
+  EnableChromeVox();
   WaitForTestSystemAppInstall();
 
   // Launch the app so it shows up in shelf.
   Browser* app_browser;
-  LaunchApp(maybe_installation_->GetType(), &app_browser);
+  gfx::NativeWindow app_window;
 
-  auto* app_window = app_browser->window()->GetNativeWindow();
-
-  // F6 to switch pane.
   speech_monitor_.Call([&]() {
+    LaunchApp(maybe_installation_->GetType(), &app_browser);
+
+    app_window = app_browser->window()->GetNativeWindow();
+
+    // F6 to switch pane.
     ui_controls::SendKeyPress(app_window, ui::VKEY_F6, /*Ctrl*/ false,
                               /*Shift*/ false, /*Alt*/ false,
                               /*Launcher*/ false);
@@ -1848,8 +1894,7 @@ class SystemWebAppAbortsLaunchTest : public SystemWebAppManagerBrowserTest {
 IN_PROC_BROWSER_TEST_P(SystemWebAppAbortsLaunchTest, LaunchAborted) {
   WaitForTestSystemAppInstall();
 
-  ash::LaunchSystemWebAppAsync(browser()->profile(),
-                               maybe_installation_->GetType());
+  LaunchSystemWebAppAsync(browser()->profile(), maybe_installation_->GetType());
 
   EXPECT_EQ(0U, GetSystemWebAppBrowserCount(maybe_installation_->GetType()));
 }
@@ -1999,10 +2044,16 @@ INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
 
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     SystemWebAppManagerDefaultBoundsTest);
+
+INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
+    SystemWebAppSingleWindowTest);
+
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     SystemWebAppAccessibilityTest);
+
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     SystemWebAppAbortsLaunchTest);
+
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     SystemWebAppIconHealthMetricsTest);
 

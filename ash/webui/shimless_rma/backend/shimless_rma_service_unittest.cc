@@ -120,8 +120,7 @@ class ShimlessRmaServiceTest : public testing::Test {
   ~ShimlessRmaServiceTest() override {}
 
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {chromeos::features::kShimlessRMAOsUpdate}, {});
+    scoped_feature_list_.InitWithFeatures({features::kShimlessRMAOsUpdate}, {});
     chromeos::PowerManagerClient::InitializeFake();
     // VersionUpdater depends on UpdateEngineClient.
     UpdateEngineClient::InitializeFake();
@@ -148,13 +147,13 @@ class ShimlessRmaServiceTest : public testing::Test {
     RmadClient::Shutdown();
     NetworkHandler::Shutdown();
     cros_network_config_test_helper_.reset();
-    chromeos::LoginState::Shutdown();
+    LoginState::Shutdown();
     UpdateEngineClient::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
   }
 
   void SetupFakeNetwork() {
-    chromeos::LoginState::Initialize();
+    LoginState::Initialize();
 
     cros_network_config_test_helper_ =
         std::make_unique<network_config::CrosNetworkConfigTestHelper>(false);
@@ -3733,47 +3732,6 @@ TEST_F(ShimlessRmaServiceTest, ObserveFinalizationAfterSignal) {
   EXPECT_EQ(fake_observer.observations[0].status, expected_status);
   EXPECT_EQ(fake_observer.observations[0].progress, expected_progress);
   EXPECT_EQ(fake_observer.observations[0].error, expected_error);
-}
-
-TEST_F(ShimlessRmaServiceTest, GetWriteProtectManuallyDisabledInstructions) {
-  const std::vector<uint8_t> expected_qrcode_data = {
-      1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1,
-      1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1,
-      1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1,
-      1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1,
-      1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1,
-      1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1,
-      1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1,
-      0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-      1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1,
-      0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0,
-      0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1,
-      0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0,
-      1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0,
-      1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0,
-      1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1,
-      1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0,
-      1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1,
-      0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0,
-      1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1,
-      1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1,
-      1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1,
-      1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1,
-      1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1,
-      1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1,
-      1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1,
-  };
-
-  shimless_rma_provider_->GetWriteProtectManuallyDisabledInstructions(
-      base::BindLambdaForTesting(
-          [&](const std::string& url, mojom::QrCodePtr qrcode) {
-            EXPECT_EQ(url, "g.co/chromebook/");
-            EXPECT_EQ(qrcode->size, 25);
-            EXPECT_FALSE(qrcode.is_null());
-            EXPECT_EQ(qrcode->data.size(), 25UL * 25UL);
-            EXPECT_EQ(qrcode->data.size(), expected_qrcode_data.size());
-            EXPECT_EQ(qrcode->data, expected_qrcode_data);
-          }));
 }
 
 class FakeOsUpdateObserver : public mojom::OsUpdateObserver {

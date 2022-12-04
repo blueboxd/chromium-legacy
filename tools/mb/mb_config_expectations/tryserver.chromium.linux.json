@@ -21,8 +21,8 @@
       "proprietary_codecs": true,
       "symbol_level": 1,
       "use_bundled_weston": true,
-      "use_goma": true,
-      "use_ozone": true
+      "use_ozone": true,
+      "use_remoteexec": true
     }
   },
   "gpu-fyi-try-lacros-intel-rel": {
@@ -36,8 +36,8 @@
       "proprietary_codecs": true,
       "symbol_level": 1,
       "use_bundled_weston": true,
-      "use_goma": true,
-      "use_ozone": true
+      "use_ozone": true,
+      "use_remoteexec": true
     }
   },
   "gpu-fyi-try-linux-amd-rel": {
@@ -422,7 +422,6 @@
   },
   "linux-rel-cft": {
     "gn_args": {
-      "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
       "dcheck_always_on": true,
       "devtools_skip_typecheck": false,
       "ffmpeg_branding": "Chrome",

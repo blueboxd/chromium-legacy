@@ -20,7 +20,7 @@ BiometricAuthenticatorMac::~BiometricAuthenticatorMac() = default;
 bool BiometricAuthenticatorMac::CanAuthenticate(
     device_reauth::BiometricAuthRequester requester) {
   base::scoped_nsobject<LAContext> context([[LAContext alloc] init]);
-  bool is_available =
+  bool is_available = @available(macOS 10.12.2, *) &&
       [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
                            error:nil];
   base::UmaHistogramBoolean("PasswordManager.CanUseBiometricsMac",

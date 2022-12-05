@@ -150,7 +150,8 @@ constexpr NSString* const NSAccessibilityVisitedAttribute = @"AXVisited";
 // define a similarly named constant with the "Chrome" suffix, and the same
 // string. This is used as the key to a dictionary, so string-comparison will
 // work.
-AX_EXPORT constexpr NSString* const NSAccessibilityRequiredAttributeChrome =
+COMPONENT_EXPORT(AX_PLATFORM)
+constexpr NSString* const NSAccessibilityRequiredAttributeChrome =
     @"AXRequired";
 
 #endif  // UI_ACCESSIBILITY_PLATFORM_AX_PRIVATE_ATTRIBUTES_MAC_H_

@@ -245,7 +245,7 @@ void ClipboardMac::ReadAsciiText(ClipboardBuffer buffer,
   if (!contents)
     result->clear();
   else
-    result->assign(base::SysNSStringToUTF8(contents));
+    result->assign([contents UTF8String]);
 }
 
 // |data_dst| is not used. It's only passed to be consistent with other
@@ -360,16 +360,16 @@ void ClipboardMac::ReadBookmark(const DataTransferEndpoint* data_dst,
   NSPasteboard* pb = GetPasteboard();
 
   if (title) {
-    NSString* contents = [pb stringForType:kUTTypeURLName];
+    NSString* contents = ClipboardUtil::GetTitleFromPasteboardURL(pb);
     *title = base::SysNSStringToUTF16(contents);
   }
 
   if (url) {
-    NSString* url_string = [pb stringForType:NSPasteboardTypeURL];
+    NSString* url_string = ClipboardUtil::GetURLFromPasteboardURL(pb);
     if (!url_string)
       url->clear();
     else
-      url->assign(base::SysNSStringToUTF8(url_string));
+      url->assign([url_string UTF8String]);
   }
 }
 
@@ -450,9 +450,9 @@ void ClipboardMac::WriteBookmark(const char* title_data,
   std::string url_str(url_data, url_len);
   NSString* url = base::SysUTF8ToNSString(url_str);
 
-  NSArray<NSPasteboardItem*>* items =
-      ClipboardUtil::PasteboardItemsFromUrls(@[ url ], @[ title ]);
-  ClipboardUtil::AddDataToPasteboard(GetPasteboard(), items.firstObject);
+  base::scoped_nsobject<NSPasteboardItem> item(
+      ClipboardUtil::PasteboardItemFromUrl(url, title));
+  ClipboardUtil::AddDataToPasteboard(GetPasteboard(), item);
 }
 
 void ClipboardMac::WriteBitmap(const SkBitmap& bitmap) {

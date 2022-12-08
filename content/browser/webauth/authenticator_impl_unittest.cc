@@ -8300,17 +8300,14 @@ TEST_F(TouchIdAuthenticatorImplTest, IsUVPAA) {
   NavigateAndCommit(GURL(kTestOrigin1));
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
-
-  if (__builtin_available(macOS 10.12.2, *)) {
-    for (const bool touch_id_available : {false, true}) {
-      SCOPED_TRACE(::testing::Message()
-                   << "touch_id_available=" << touch_id_available);
-      touch_id_test_environment_.SetTouchIdAvailable(touch_id_available);
-      TestIsUvpaaCallback cb;
-      authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
-      cb.WaitForCallback();
-      EXPECT_EQ(touch_id_available, cb.value());
-    }
+  for (const bool touch_id_available : {false, true}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "touch_id_available=" << touch_id_available);
+    touch_id_test_environment_.SetTouchIdAvailable(touch_id_available);
+    TestIsUvpaaCallback cb;
+    authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
+    cb.WaitForCallback();
+    EXPECT_EQ(touch_id_available, cb.value());
   }
 }
 

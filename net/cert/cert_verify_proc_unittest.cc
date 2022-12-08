@@ -187,15 +187,6 @@ enum CertVerifyProcType {
   CERT_VERIFY_PROC_BUILTIN_CHROME_ROOTS,
 };
 
-// Wrapper for base::mac::IsAtLeastOS10_12() to avoid littering ifdefs.
-bool IsMacAtLeastOS10_12() {
-#if BUILDFLAG(IS_MAC)
-  return base::mac::IsAtLeastOS10_12();
-#else
-  return false;
-#endif
-}
-
 // Returns a textual description of the CertVerifyProc implementation
 // that is being tested, used to give better names to parameterized
 // tests.
@@ -423,8 +414,7 @@ class CertVerifyProcInternalTest
     }
 #elif BUILDFLAG(IS_MAC)
     // Starting with Mac OS 10.12, certs with keys < 1024 are invalid.
-    if (verify_proc_type() == CERT_VERIFY_PROC_MAC &&
-        base::mac::IsAtLeastOS10_12()) {
+    if (verify_proc_type() == CERT_VERIFY_PROC_MAC) {
       return size < 1024;
     }
 #endif
@@ -1181,12 +1171,9 @@ class CertVerifyProcInspectSignatureAlgorithmsTest : public ::testing::Test {
                  "algorithms cannot be imported";
     return false;
 #elif BUILDFLAG(IS_MAC)
-    if (base::mac::IsAtLeastOS10_12()) {
-      LOG(INFO) << "Skipping test on macOS >= 10.12 because certs with "
-                   "mismatched algorithms cannot be imported";
-      return false;
-    }
-    return true;
+    LOG(INFO) << "Skipping test on macOS >= 10.12 because certs with "
+                 "mismatched algorithms cannot be imported";
+    return false;
 #else
     return true;
 #endif
@@ -3894,7 +3881,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
       Verify(chain.get(), kHostname, flags, CRLSet::BuiltinCRLSet().get(),
              CertificateList(), &verify_result);
 
-  if (verify_proc_type() == CERT_VERIFY_PROC_MAC && IsMacAtLeastOS10_12()) {
+  if (verify_proc_type() == CERT_VERIFY_PROC_MAC) {
     // CRL handling seems broken on macOS >= 10.12.
     // TODO(mattm): followup on this.
     EXPECT_THAT(error, IsOk());
@@ -3935,7 +3922,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
       Verify(chain.get(), kHostname, flags, CRLSet::BuiltinCRLSet().get(),
              CertificateList(), &verify_result);
 
-  if (verify_proc_type() == CERT_VERIFY_PROC_MAC && IsMacAtLeastOS10_12()) {
+  if (verify_proc_type() == CERT_VERIFY_PROC_MAC) {
     // CRL handling seems broken on macOS >= 10.12.
     // TODO(mattm): followup on this.
     EXPECT_THAT(error, IsOk());
@@ -3978,7 +3965,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
       Verify(chain.get(), kHostname, flags, CRLSet::BuiltinCRLSet().get(),
              CertificateList(), &verify_result);
 
-  if (verify_proc_type() == CERT_VERIFY_PROC_MAC && IsMacAtLeastOS10_12()) {
+  if (verify_proc_type() == CERT_VERIFY_PROC_MAC) {
     // CRL handling seems broken on macOS >= 10.12.
     // TODO(mattm): followup on this.
     EXPECT_THAT(error, IsOk());
@@ -4026,9 +4013,9 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
       Verify(chain.get(), kHostname, flags, CRLSet::BuiltinCRLSet().get(),
              CertificateList(), &verify_result);
 
-  if (verify_proc_type() == CERT_VERIFY_PROC_WIN ||
-      (verify_proc_type() == CERT_VERIFY_PROC_MAC && !IsMacAtLeastOS10_12())) {
-    // Windows and Mac <= 10.11 honor MD5 CRLs. ¯\_(ツ)_/¯
+  if (verify_proc_type() == CERT_VERIFY_PROC_WIN) {
+    // Windows (and macOS <= 10.11 but that's not supported any more) honor MD5
+    // CRLs. ¯\_(ツ)_/¯
     EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
   } else {
     // Verification should succeed: MD5 signature algorithm is not supported

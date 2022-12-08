@@ -6262,13 +6262,6 @@ TEST_F(RenderTextTest, Multiline_SurrogatePairsOrCombiningChars) {
 TEST_F(RenderTextTest, Multiline_ZeroWidthChars) {
   RenderTextHarfBuzz* render_text = GetRenderText();
 
-#if defined(OS_APPLE)
-  // Don't use Helvetica Neue on 10.10 - it has a buggy zero-width space that
-  // actually gets some width. See http://crbug.com/799333.
-  if (base::mac::IsOS10_10())
-    render_text->SetFontList(FontList("Arial, 12px"));
-#endif
-
   render_text->SetMultiline(true);
   render_text->SetWordWrapBehavior(WRAP_LONG_WORDS);
 
@@ -6780,13 +6773,6 @@ TEST_F(RenderTextTest, HarfBuzz_BreakRunsByEmojiVariationSelectors) {
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
   EXPECT_EQ(gfx::Range(1, 1), render_text->selection());
   EXPECT_EQ(1 * kGlyphWidth, render_text->GetUpdatedCursorBounds().x());
-
-#if BUILDFLAG(IS_APPLE)
-  // Early versions of macOS provide a tofu glyph for the variation selector.
-  // Bail out early except on 10.12 and above.
-  if (base::mac::IsAtMostOS10_11())
-    return;
-#endif
 
   // TODO(865709): make this work on Android.
 #if !BUILDFLAG(IS_ANDROID)

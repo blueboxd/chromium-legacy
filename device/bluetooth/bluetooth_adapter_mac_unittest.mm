@@ -178,7 +178,7 @@ class BluetoothAdapterMacTest : public testing::Test {
     return (device != NULL);
   }
 
-  bool SetMockCentralManager(CBCentralManagerState desired_state) {
+  bool SetMockCentralManager(CBManagerState desired_state) {
     mock_central_manager_.reset([[MockCentralManager alloc] init]);
     [mock_central_manager_ setState:desired_state];
     CBCentralManager* centralManager =
@@ -255,7 +255,7 @@ TEST_F(BluetoothAdapterMacTest, PollAndChangePower) {
 }
 
 TEST_F(BluetoothAdapterMacTest, AddDiscoverySessionWithLowEnergyFilter) {
-  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
+  if (!SetMockCentralManager(CBManagerStatePoweredOn))
     return;
   EXPECT_EQ(0, [mock_central_manager_ scanForPeripheralsCallCount]);
   EXPECT_EQ(0, NumDiscoverySessions());
@@ -284,7 +284,7 @@ TEST_F(BluetoothAdapterMacTest, AddDiscoverySessionWithLowEnergyFilter) {
 // TODO(krstnmnlsn): Test changing the filter when adding the second discovery
 // session (once we have that ability).
 TEST_F(BluetoothAdapterMacTest, AddSecondDiscoverySessionWithLowEnergyFilter) {
-  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
+  if (!SetMockCentralManager(CBManagerStatePoweredOn))
     return;
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(
       new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE));
@@ -328,7 +328,7 @@ TEST_F(BluetoothAdapterMacTest, AddSecondDiscoverySessionWithLowEnergyFilter) {
 }
 
 TEST_F(BluetoothAdapterMacTest, RemoveDiscoverySessionWithLowEnergyFilter) {
-  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
+  if (!SetMockCentralManager(CBManagerStatePoweredOn))
     return;
   EXPECT_EQ(0, [mock_central_manager_ scanForPeripheralsCallCount]);
 
@@ -363,7 +363,7 @@ TEST_F(BluetoothAdapterMacTest, RemoveDiscoverySessionWithLowEnergyFilter) {
 }
 
 TEST_F(BluetoothAdapterMacTest, CheckGetPeripheralHashAddress) {
-  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
+  if (!SetMockCentralManager(CBManagerStatePoweredOn))
     return;
   base::scoped_nsobject<CBPeripheral> mock_peripheral(
       CreateMockPeripheral(kTestNSUUID));
@@ -373,7 +373,7 @@ TEST_F(BluetoothAdapterMacTest, CheckGetPeripheralHashAddress) {
 }
 
 TEST_F(BluetoothAdapterMacTest, LowEnergyDeviceUpdatedNewDevice) {
-  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
+  if (!SetMockCentralManager(CBManagerStatePoweredOn))
     return;
   base::scoped_nsobject<CBPeripheral> mock_peripheral(
       CreateMockPeripheral(kTestNSUUID));
@@ -437,7 +437,7 @@ TEST_F(BluetoothAdapterMacTest, GetNewlyPairedLowEnergyDevice) {
 
   const char kTestAddedDeviceNSUUID[] = "E7F8589A-A7D9-4B94-9A08-D89076A159F4";
 
-  ASSERT_TRUE(SetMockCentralManager(CBCentralManagerStatePoweredOn));
+  ASSERT_TRUE(SetMockCentralManager(CBManagerStatePoweredOn));
 
   base::scoped_nsobject<CBPeripheral> mock_peripheral_one(
       CreateMockPeripheral(kTestNSUUID));
@@ -486,7 +486,7 @@ TEST_F(BluetoothAdapterMacTest, NotifyObserverWhenDeviceIsUnpaired) {
       "</dict>"
       "</plist>";
 
-  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
+  if (!SetMockCentralManager(CBManagerStatePoweredOn))
     return;
 
   base::scoped_nsobject<CBPeripheral> mock_peripheral(

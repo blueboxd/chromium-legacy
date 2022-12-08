@@ -132,7 +132,6 @@ component("policy") {
       "CoreGraphics.framework",
       "Foundation.framework",
       "IOSurface.framework",
-      "ImageIO.framework",
     ]
   }
   if (is_win) {

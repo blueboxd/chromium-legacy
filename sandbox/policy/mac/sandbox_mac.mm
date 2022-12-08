@@ -4,41 +4,13 @@
 
 #include "sandbox/policy/mac/sandbox_mac.h"
 
-#import <Cocoa/Cocoa.h>
-#include <stddef.h>
-#include <stdint.h>
-
-#include <CoreFoundation/CFTimeZone.h>
-#include <signal.h>
 #include <fcntl.h>
 #include <sys/param.h>
 
-#include <algorithm>
-#include <iterator>
-#include <map>
 #include <string>
 
-#include "base/command_line.h"
-#include "base/compiler_specific.h"
-#include "base/files/file_util.h"
 #include "base/feature_list.h"
 #include "base/files/scoped_file.h"
-#include "base/mac/bundle_locations.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/mac_util.h"
-#include "base/mac/mach_port_rendezvous.h"
-#include "base/mac/scoped_cftyperef.h"
-#include "base/mac/scoped_nsobject.h"
-#include "base/rand_util.h"
-#include "base/stl_util.h"
-#include "base/strings/string_piece.h"
-#include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/system/sys_info.h"
-#include "sandbox/mac/sandbox_compiler.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "components/services/screen_ai/buildflags/buildflags.h"
@@ -61,56 +33,10 @@
 #endif
 #include "sandbox/policy/mac/speech_recognition.sb.h"
 #include "sandbox/policy/mac/utility.sb.h"
-#include "sandbox/policy/sandbox_type.h"
-#include "sandbox/policy/switches.h"
 #include "sandbox/policy/mojom/sandbox.mojom.h"
 
 namespace sandbox {
 namespace policy {
-
-// Load the appropriate template for the given sandbox type.
-// Returns the template as a string or an empty string on error.
-std::string LoadSandboxTemplate(sandbox::mojom::Sandbox sandbox_type) {
-  DCHECK_EQ(sandbox_type, sandbox::mojom::Sandbox::kGpu);
-  return kSeatbeltPolicyString_gpu;
-}
-
-// Turns on the OS X sandbox for this process.
-
-// static
-bool SandboxMac::Enable(sandbox::mojom::Sandbox sandbox_type) {
-  DCHECK_EQ(sandbox_type, sandbox::mojom::Sandbox::kGpu);
-
-  std::string sandbox_data = LoadSandboxTemplate(sandbox_type);
-  if (sandbox_data.empty())
-    return false;
-
-  SandboxCompiler compiler(sandbox_data);
-
-  // Enable verbose logging if enabled on the command line. (See common.sb
-  // for details).
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  bool enable_logging =
-      command_line->HasSwitch(switches::kEnableSandboxLogging);
-
-  // Splice the path of the user's home directory into the sandbox profile
-  // (see renderer.sb for details).
-  std::string home_dir = [NSHomeDirectory() fileSystemRepresentation];
-  base::FilePath home_dir_canonical =
-      GetCanonicalPath(base::FilePath(home_dir));
-
-  if (sandbox_type == sandbox::mojom::Sandbox::kGpu) {
-    base::FilePath bundle_path =
-        GetCanonicalPath(base::mac::FrameworkBundlePath());
-  }
-
-  // Initialize sandbox.
-  std::string error_str;
-  bool success = compiler.CompileAndApplyProfile(&error_str);
-  DLOG_IF(FATAL, !success) << "Failed to initialize sandbox: " << error_str;
-  return success;
-}
 
 base::FilePath GetCanonicalPath(const base::FilePath& path) {
   base::ScopedFD fd(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));

@@ -95,7 +95,7 @@
 
 ; Allow logging for all processes.
 (if (not (defined? 'vnode-type))
-  (allow file-write* (path (param log-file-path)))  
+  (allow file-write* (path (param log-file-path)))
 ;else
   (allow file-write*
     (require-all
@@ -179,7 +179,7 @@
 
 ; Access to /dev.
 (if (not (defined? 'vnode-type))
-  (allow file-ioctl file-ioctl file-read-data file-write-data (path "/dev/dtracehelper"))  
+  (allow file-ioctl file-ioctl file-read-data file-write-data (path "/dev/dtracehelper"))
 ;else
   (allow file-ioctl file-read-data file-write-data
     (require-all

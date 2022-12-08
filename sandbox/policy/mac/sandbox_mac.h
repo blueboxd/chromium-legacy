@@ -35,23 +35,6 @@ SANDBOX_POLICY_EXPORT base::FilePath GetCanonicalPath(
 SANDBOX_POLICY_EXPORT std::string GetSandboxProfile(
     sandbox::mojom::Sandbox sandbox_type);
 
-class SANDBOX_POLICY_EXPORT SandboxMac {
- public:
-  SandboxMac() = delete;
-  // Warm up System APIs that empirically need to be accessed before the
-  // sandbox is turned on. |sandbox_type| is the type of sandbox to warm up.
-  // Valid |sandbox_type| values are defined by the enum SandboxType, or can be
-  // defined by the embedder via
-  // ContentClient::GetSandboxProfileForProcessType().
-  static void Warmup(sandbox::mojom::Sandbox sandbox_type);
-
-  // Turns on the OS X sandbox for this process.
-  // |sandbox_type| - type of Sandbox to use. See SandboxWarmup() for legal
-  // values.
-  //
-  // Returns true on success, false if an error occurred enabling the sandbox.
-  static bool Enable(sandbox::mojom::Sandbox sandbox_type);
-};
 // Returns true if the compiled policy for the sandbox `sandbox_type` can be
 // cached and reused across multiple processes. Some sandbox policies bind
 // parameters that prevent the policy from being reused.
